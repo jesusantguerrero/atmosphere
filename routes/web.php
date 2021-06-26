@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\MealController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -31,4 +32,6 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/finance', function () {
         return Inertia::render('Finance');
     })->name('finance');
+
+    Route::resource('/meals', MealController::class);
 });

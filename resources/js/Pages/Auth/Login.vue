@@ -1,64 +1,25 @@
 <template>
-    <jet-authentication-card>
-        <template #logo>
-            <jet-authentication-card-logo />
-        </template>
-
-        <jet-validation-errors class="mb-4" />
-
-        <div v-if="status" class="mb-4 font-medium text-sm text-green-600">
-            {{ status }}
-        </div>
-
-        <form @submit.prevent="submit">
-            <div>
-                <jet-label for="email" value="Email" />
-                <jet-input id="email" type="email" class="mt-1 block w-full" v-model="form.email" required autofocus />
-            </div>
-
-            <div class="mt-4">
-                <jet-label for="password" value="Password" />
-                <jet-input id="password" type="password" class="mt-1 block w-full" v-model="form.password" required autocomplete="current-password" />
-            </div>
-
-            <div class="block mt-4">
-                <label class="flex items-center">
-                    <jet-checkbox name="remember" v-model:checked="form.remember" />
-                    <span class="ml-2 text-sm text-gray-600">Remember me</span>
-                </label>
-            </div>
-
-            <div class="flex items-center justify-end mt-4">
-                <inertia-link v-if="canResetPassword" :href="route('password.request')" class="underline text-sm text-gray-600 hover:text-gray-900">
-                    Forgot your password?
-                </inertia-link>
-
-                <jet-button class="ml-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                    Log in
-                </jet-button>
-            </div>
-        </form>
-    </jet-authentication-card>
+    <at-auth-box>
+        <at-auth-form
+            app-name="MyH CRM"
+            btn-class="text-white bg-pink-500 hover:bg-pink-600"
+            link-class="text-pink-500 hover:text-pink-600"
+            v-model:isLoading="form.processing"
+            :errors="errors"
+            @submit="submit"
+            @home-pressed="onHomePressed"
+            @link-pressed="onLinkPressed"
+        />
+    </at-auth-box>
 </template>
 
 <script>
-    import JetAuthenticationCard from '@/Jetstream/AuthenticationCard'
-    import JetAuthenticationCardLogo from '@/Jetstream/AuthenticationCardLogo'
-    import JetButton from '@/Jetstream/Button'
-    import JetInput from '@/Jetstream/Input'
-    import JetCheckbox from '@/Jetstream/Checkbox'
-    import JetLabel from '@/Jetstream/Label'
-    import JetValidationErrors from '@/Jetstream/ValidationErrors'
+    import { AtAuthBox, AtAuthForm } from "atmosphere-ui";
 
     export default {
         components: {
-            JetAuthenticationCard,
-            JetAuthenticationCardLogo,
-            JetButton,
-            JetInput,
-            JetCheckbox,
-            JetLabel,
-            JetValidationErrors
+            AtAuthBox,
+            AtAuthForm
         },
 
         props: {
@@ -77,10 +38,19 @@
         },
 
         methods: {
-            submit() {
+              onHomePressed() {
+                this.$inertia.visit('/');
+            },
+
+            onLinkPressed() {
+                this.$inertia.visit('register');
+            },
+
+            submit(formData) {
                 this.form
                     .transform(data => ({
-                        ... data,
+                        ...data,
+                        ... formData,
                         remember: this.form.remember ? 'on' : ''
                     }))
                     .post(this.route('login'), {
