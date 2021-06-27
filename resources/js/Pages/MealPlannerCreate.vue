@@ -6,25 +6,21 @@
                 <h2 class="text-xl font-semibold leading-tight text-gray-800">
                     Meal Planner
                 </h2>
-                <span>There a total of {{ meals.length }} meals</span>
+                <span>Editing {{ meals.name }} </span>
 
                 </div>
 
                 <div>
-                    <at-button class="text-white bg-pink-400" @click="openModal()"> New Meal</at-button>
+                    <at-button class="text-white bg-pink-400" @click="submit()"> Save </at-button>
                 </div>
             </div>
         </template>
 
         <div class="py-12">
             <div class="mx-auto max-w-7xl sm:px-6">
-                <MealSection :meals="meals.data"/>
-                <meal-modal
-                    :show="isModalOpen"
-                    :closeable="true"
-                    @close="isModalOpen=false"
-                    title="Add a new Meal"
-
+                <meal-form
+                    ref="mealForm"
+                    :meal="meals"
                 />
             </div>
         </div>
@@ -35,20 +31,22 @@
     import AppLayout from '@/Layouts/AppLayout';
     import { AtButton } from "atmosphere-ui";
     import MealSection from '@/Components/Meal';
-    import { reactive, toRefs } from '@vue/reactivity';
+    import { reactive, ref, toRefs } from '@vue/reactivity';
     import MealModal from '../Components/MealModal.vue';
+    import MealForm from '../Components/MealForm.vue';
 
     export default {
         components: {
             AppLayout,
             MealSection,
             AtButton,
-            MealModal
+            MealModal,
+            MealForm
         },
+
         props: {
             meals: {
-                type: Array,
-                required: true
+                type: Object,
             }
         },
         setup() {
@@ -56,13 +54,15 @@
                 isModalOpen: false
             })
 
-            const openModal = () => {
-                state.isModalOpen = true
+            const mealForm = ref(null);
+            const submit = () => {
+                mealForm.value.submit()
             }
 
             return {
                 ...toRefs(state),
-                openModal
+                mealForm,
+                submit
             }
         }
     }

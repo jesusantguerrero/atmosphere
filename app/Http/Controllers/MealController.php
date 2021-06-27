@@ -19,11 +19,13 @@ class MealController extends InertiaController
         $this->validationRules = [
             'name' => 'required'
         ];
-        $this->includes = [];
+        $this->includes = ['ingredients'];
         $this->filters = [];
 
     }
-    public function random () {
 
+    protected function afterSave($postData, $resource): void
+    {
+        $resource->saveIngredients($postData['ingredients']);
     }
 }
