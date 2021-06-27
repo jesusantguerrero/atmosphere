@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\MealController;
+use App\Http\Controllers\MealPlanController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -34,4 +35,6 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     })->name('finance');
 
     Route::resource('/meals', MealController::class);
+    Route::post('/meals/add-plan', [MealController::class, 'addPlan'])->name('meals.addPlan');
+    Route::resource('/meal-planner', MealPlanController::class);
 });

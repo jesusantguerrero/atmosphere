@@ -3,7 +3,7 @@
         <template #header>
             <div class="flex justify-between">
                 <div>
-                <h2 class="text-xl font-semibold leading-tight text-gray-800">
+                <h2 class="text-xl font-semibold leading-tight text-pink-500">
                     Meal Planner
                 </h2>
                 <span>There a total of {{ meals.length }} meals</span>
@@ -33,7 +33,7 @@
 
 <script>
     import AppLayout from '@/Layouts/AppLayout';
-    import { AtButton } from "atmosphere-ui";
+    import { AtButton } from "atmosphere-ui/dist/atmosphere-ui.es";
     import MealSection from '@/Components/Meal';
     import { reactive, toRefs } from '@vue/reactivity';
     import MealModal from '../Components/MealModal.vue';

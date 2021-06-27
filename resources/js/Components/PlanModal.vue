@@ -3,19 +3,25 @@
         <div class="px-4 pt-5 pb-4 bg-white sm:p-6 sm:pb-4">
             <div class="sm:flex sm:items-start">
                 <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                    <h3 class="text-lg">
-                        <slot name="title">Add a new meal</slot>
+                    <h3 class="text-lg font-bold text-pink-500">
+                        <slot name="title">
+                            {{ title }}
+                        </slot>
                     </h3>
 
                     <div class="mt-2">
                         <slot name="content">
                             <div>
                                 <at-field
-                                    label="Meal Name"
+                                    label="Search meal by name"
                                 >
                                     <at-input v-model="form.name"></at-input>
                                 </at-field>
-
+                                <meal
+                                    :meals="meals"
+                                    :selected="selectedMeals"
+                                    @click="handleSelect"
+                                />
                             </div>
                         </slot>
                     </div>
@@ -35,6 +41,7 @@
     import { useForm } from "@inertiajs/inertia-vue3"
     import { AtField, AtInput, AtButton } from "atmosphere-ui/dist/atmosphere-ui.es"
     import { reactive, toRefs } from '@vue/reactivity'
+    import Meal from './Meal.vue'
 
     export default {
         emits: ['close'],
@@ -43,7 +50,8 @@
             Modal,
             AtField,
             AtInput,
-            AtButton
+            AtButton,
+            Meal
         },
 
         props: {
@@ -56,24 +64,54 @@
             closeable: {
                 default: true
             },
+            meals: {
+                type: Array,
+                default() {
+                    return []
+                }
+            },
+            date: {
+                default: new Date()
+            },
+            title: {
+                type: String
+            }
         },
+
         setup(props, { emit }) {
             const state = reactive({
                 form: useForm({
                     name: ''
-                })
+                }),
+                selectedMeals: []
             })
 
             const close = () =>  {
                 emit('close')
             }
 
+            const handleSelect = (meal) => {
+                state.selectedMeals.push(meal)
+            }
+
             const submit = () => {
-                state.form.post(route('meals.store'))
+                state.form
+                .transform(()=> ({
+                    date: props.date,
+                    meals: state.selectedMeals.map(meal => ({
+                        id: meal.id
+                    }))
+                }))
+                .post(route('meals.addPlan'), {
+                    onSuccess: () => {
+                        emit('saved')
+                    }
+                })
             }
 
             return {
                 ...toRefs(state),
+                handleSelect,
                 submit,
                 close
             }

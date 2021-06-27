@@ -1,7 +1,13 @@
 <template>
     <div>
         <div class="py-6 space-y-4">
-            <div class="grid grid-cols-4 px-5 py-5 bg-white border rounded-lg cursor-pointer" @click="$inertia.visit(route('meals.edit',meal))" v-for="meal in meals" :key="meal.id">
+            <div
+                class="grid grid-cols-4 px-5 py-5 bg-white border rounded-lg cursor-pointer hover:bg-pink-200"
+                @click="$emit('click', meal)"
+                v-for="meal in meals"
+                :key="meal.id"
+                :class="{'bg-pink-300 text-white': isSelected(meal)}"
+            >
                 <div > {{ meal.name }} </div>
                 <div > Date </div>
                 <div > Price </div>
@@ -12,17 +18,32 @@
 </template>
 
 <script>
-    import { AtBadge } from "atmosphere-ui";
+    import { AtBadge } from "atmosphere-ui/dist/atmosphere-ui.es";
 
     export default {
         props: {
             meals: {
                 type: Array,
                 required: true
+            },
+            selected: {
+                type: Array,
+                default() {
+                    return []
+                }
             }
         },
         components: {
             AtBadge,
         },
+
+        setup(props) {
+
+            return {
+                isSelected(meal) {
+                    return props.selected.map(selectedMeal => selectedMeal.id).includes(meal.id)
+                }
+            }
+        }
     }
 </script>

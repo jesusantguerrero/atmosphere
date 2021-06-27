@@ -62,4 +62,13 @@ class InertiaController extends BaseController {
     protected function afterSave($postData, $resource): void {
 
     }
+
+    protected function getPostData(Request $request) {
+        $postData = $request->post();
+
+        $postData['user_id'] = $request->user()->id;
+        $postData['team_id'] = $request->user()->current_team_id;
+
+        return $postData;
+    }
 }
