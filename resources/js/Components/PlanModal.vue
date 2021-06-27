@@ -104,7 +104,8 @@
                 }))
                 .post(route('meals.addPlan'), {
                     onSuccess: () => {
-                        emit('saved')
+                        state.selectedMeals = [];
+                        emit('close')
                     }
                 })
             }

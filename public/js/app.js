@@ -16959,7 +16959,8 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         };
       }).post(route('meals.addPlan'), {
         onSuccess: function onSuccess() {
-          emit('saved');
+          state.selectedMeals = [];
+          emit('close');
         }
       });
     };
