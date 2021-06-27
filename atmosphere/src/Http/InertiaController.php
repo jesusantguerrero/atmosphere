@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 
 class InertiaController extends BaseController {
+    use Querify;
     protected $model;
     protected $templates;
     protected $searchable = ["id"];
@@ -21,18 +22,44 @@ class InertiaController extends BaseController {
         return Inertia::render($this->templates['index'], $this->getIndexProps($request));
     }
 
+    public function edit(Request $request, int $id) {
+        return Inertia::render($this->templates['edit'], $this->getEditProps($request, $id));
+    }
+
     public function store(Request $request) {
         $postData = $request->post();
 
         $postData['user_id'] = $request->user()->id;
         $postData['team_id'] = $request->user()->current_team_id;
-        $this->model::create($postData);
+        $resource = $this->model::create($postData);
+        $this->afterSave($postData, $resource);
+        return Redirect::back();
+    }
+
+    public function update(Request $request, int $id) {
+        $resource = $this->model::find($id);
+        $postData = $request->post();
+        $resource->update($postData);
+        $this->afterSave($postData, $resource);
         return Redirect::back();
     }
 
     protected function getIndexProps(Request $request) {
+        $queryParams = $request->query() ?? [];
+        $queryParams['limit'] = $queryParams['limit'] ?? 50;
+
         return [
-            $this->model->getTable() => $this->model->all()
+            $this->model->getTable() => $this->getModelQuery($request)
         ];
+    }
+
+    protected function getEditProps(Request $request, $id) {
+        return [
+            $this->model->getTable() => $this->getModelQuery($request, $id)[0]
+        ];
+    }
+
+    protected function afterSave($postData, $resource): void {
+
     }
 }
