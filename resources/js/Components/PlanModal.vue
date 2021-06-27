@@ -91,7 +91,12 @@
             }
 
             const handleSelect = (meal) => {
-                state.selectedMeals.push(meal)
+                const isSelected = state.selectedMeals.findIndex(selected => selected.id == meal.id)
+                if (isSelected >= 0) {
+                    state.selectedMeals.splice(isSelected, 1);
+                } else {
+                    state.selectedMeals.push(meal)
+                }
             }
 
             const submit = () => {
@@ -100,7 +105,7 @@
                     date: props.date,
                     meals: state.selectedMeals.map(meal => ({
                         id: meal.id
-                    }))
+                    })).filter(meal => meal.id )
                 }))
                 .post(route('meals.addPlan'), {
                     onSuccess: () => {

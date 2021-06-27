@@ -45,4 +45,10 @@ class MealController extends InertiaController
 
         return Redirect::back();
     }
+
+    public function random(Request $request) {
+        return Meal::where([
+            'team_id' => $request->user()->current_team_id
+        ])->get()->random();
+    }
 }

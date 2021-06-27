@@ -36,5 +36,6 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
     Route::resource('/meals', MealController::class);
     Route::post('/meals/add-plan', [MealController::class, 'addPlan'])->name('meals.addPlan');
+    Route::get('/meals-random', [MealController::class, 'random'])->name('meals.random');
     Route::resource('/meal-planner', MealPlanController::class);
 });
