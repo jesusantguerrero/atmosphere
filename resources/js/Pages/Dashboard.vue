@@ -31,7 +31,7 @@
 <script>
     import AppLayout from '@/Layouts/AppLayout'
     import Welcome from '@/Components/Welcome'
-    import { AtButton } from "atmosphere-ui";
+    import { AtButton } from "atmosphere-ui/dist/atmosphere-ui.es.js";
 
     export default {
         components: {

@@ -61,7 +61,7 @@
 <script>
     import AppLayout from '@/Layouts/AppLayout';
     import { format } from "date-fns";
-    import { AtButton, AtWeekPager } from "atmosphere-ui";
+    import { AtButton, AtWeekPager } from "atmosphere-ui/dist/atmosphere-ui.es.js";
     import MealSection from '@/Components/Meal';
     import { reactive, toRefs } from '@vue/reactivity';
     import PlanModal from '../Components/PlanModal.vue';

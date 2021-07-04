@@ -39,7 +39,7 @@
 <script>
     import Modal from '@/Jetstream/Modal'
     import { useForm } from "@inertiajs/inertia-vue3"
-    import { AtField, AtInput, AtButton } from "atmosphere-ui"
+    import { AtField, AtInput, AtButton } from "atmosphere-ui/dist/atmosphere-ui.es.js"
     import { reactive, toRefs } from '@vue/reactivity'
     import Meal from './Meal.vue'
 

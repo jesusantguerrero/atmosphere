@@ -238,7 +238,7 @@
     import JetDropdownLink from '@/Jetstream/DropdownLink'
     import JetNavLink from '@/Jetstream/NavLink'
     import JetResponsiveNavLink from '@/Jetstream/ResponsiveNavLink'
-    import { AtSide, AtSideItem, AtSideItemGroup } from "atmosphere-ui"
+    import { AtSide, AtSideItem, AtSideItemGroup } from "atmosphere-ui/dist/atmosphere-ui.es.js"
 
     export default {
         components: {
