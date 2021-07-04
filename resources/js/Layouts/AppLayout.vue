@@ -1,20 +1,12 @@
 <template>
     <div>
         <jet-banner />
-
-        <div class="min-h-screen bg-gray-100">
-            <nav class="bg-white border-b border-gray-100">
+        <div class="min-h-screen bg-gray-100 home-container">
+            <nav class="app-header">
                 <!-- Primary Navigation Menu -->
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div class="flex justify-between h-16">
                         <div class="flex">
-                            <!-- Logo -->
-                            <div class="flex-shrink-0 flex items-center">
-                                <inertia-link :href="route('dashboard')">
-                                    <jet-application-mark class="block h-9 w-auto" />
-                                </inertia-link>
-                            </div>
-
                             <!-- Navigation Links -->
                             <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
                                 <jet-nav-link :href="route('dashboard')" :active="route().current('dashboard')">
@@ -24,12 +16,12 @@
                         </div>
 
                         <div class="hidden sm:flex sm:items-center sm:ml-6">
-                            <div class="ml-3 relative">
+                            <div class="relative ml-3">
                                 <!-- Teams Dropdown -->
                                 <jet-dropdown align="right" width="60" v-if="$page.props.jetstream.hasTeamFeatures">
                                     <template #trigger>
                                         <span class="inline-flex rounded-md">
-                                            <button type="button" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:bg-gray-50 hover:text-gray-700 focus:outline-none focus:bg-gray-50 active:bg-gray-50 transition">
+                                            <button type="button" class="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition bg-white border border-transparent rounded-md hover:bg-gray-50 hover:text-gray-700 focus:outline-none focus:bg-gray-50 active:bg-gray-50">
                                                 {{ $page.props.user.current_team.name }}
 
                                                 <svg class="ml-2 -mr-0.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -67,7 +59,7 @@
                                                     <form @submit.prevent="switchToTeam(team)">
                                                         <jet-dropdown-link as="button">
                                                             <div class="flex items-center">
-                                                                <svg v-if="team.id == $page.props.user.current_team_id" class="mr-2 h-5 w-5 text-green-400" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                                <svg v-if="team.id == $page.props.user.current_team_id" class="w-5 h-5 mr-2 text-green-400" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                                                 <div>{{ team.name }}</div>
                                                             </div>
                                                         </jet-dropdown-link>
@@ -80,15 +72,15 @@
                             </div>
 
                             <!-- Settings Dropdown -->
-                            <div class="ml-3 relative">
+                            <div class="relative ml-3">
                                 <jet-dropdown align="right" width="48">
                                     <template #trigger>
-                                        <button v-if="$page.props.jetstream.managesProfilePhotos" class="flex text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-gray-300 transition">
-                                            <img class="h-8 w-8 rounded-full object-cover" :src="$page.props.user.profile_photo_url" :alt="$page.props.user.name" />
+                                        <button v-if="$page.props.jetstream.managesProfilePhotos" class="flex text-sm transition border-2 border-transparent rounded-full focus:outline-none focus:border-gray-300">
+                                            <img class="object-cover w-8 h-8 rounded-full" :src="$page.props.user.profile_photo_url" :alt="$page.props.user.name" />
                                         </button>
 
                                         <span v-else class="inline-flex rounded-md">
-                                            <button type="button" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition">
+                                            <button type="button" class="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition bg-white border border-transparent rounded-md hover:text-gray-700 focus:outline-none">
                                                 {{ $page.props.user.name }}
 
                                                 <svg class="ml-2 -mr-0.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -126,9 +118,9 @@
                         </div>
 
                         <!-- Hamburger -->
-                        <div class="-mr-2 flex items-center sm:hidden">
-                            <button @click="showingNavigationDropdown = ! showingNavigationDropdown" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition">
-                                <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                        <div class="flex items-center -mr-2 sm:hidden">
+                            <button @click="showingNavigationDropdown = ! showingNavigationDropdown" class="inline-flex items-center justify-center p-2 text-gray-400 transition rounded-md hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500">
+                                <svg class="w-6 h-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                                     <path :class="{'hidden': showingNavigationDropdown, 'inline-flex': ! showingNavigationDropdown }" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                                     <path :class="{'hidden': ! showingNavigationDropdown, 'inline-flex': showingNavigationDropdown }" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
@@ -149,12 +141,12 @@
                     <div class="pt-4 pb-1 border-t border-gray-200">
                         <div class="flex items-center px-4">
                             <div v-if="$page.props.jetstream.managesProfilePhotos" class="flex-shrink-0 mr-3" >
-                                <img class="h-10 w-10 rounded-full object-cover" :src="$page.props.user.profile_photo_url" :alt="$page.props.user.name" />
+                                <img class="object-cover w-10 h-10 rounded-full" :src="$page.props.user.profile_photo_url" :alt="$page.props.user.name" />
                             </div>
 
                             <div>
-                                <div class="font-medium text-base text-gray-800">{{ $page.props.user.name }}</div>
-                                <div class="font-medium text-sm text-gray-500">{{ $page.props.user.email }}</div>
+                                <div class="text-base font-medium text-gray-800">{{ $page.props.user.name }}</div>
+                                <div class="text-sm font-medium text-gray-500">{{ $page.props.user.email }}</div>
                             </div>
                         </div>
 
@@ -202,7 +194,7 @@
                                     <form @submit.prevent="switchToTeam(team)">
                                         <jet-responsive-nav-link as="button">
                                             <div class="flex items-center">
-                                                <svg v-if="team.id == $page.props.user.current_team_id" class="mr-2 h-5 w-5 text-green-400" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                <svg v-if="team.id == $page.props.user.current_team_id" class="w-5 h-5 mr-2 text-green-400" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                                 <div>{{ team.name }}</div>
                                             </div>
                                         </jet-responsive-nav-link>
@@ -213,18 +205,28 @@
                     </div>
                 </div>
             </nav>
-
-            <!-- Page Heading -->
-            <header class="bg-white shadow" v-if="$slots.header">
-                <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                    <slot name="header"></slot>
+            <div class="app-content">
+                <div class="appside-container">
+                    <AtSide
+                        class="text-gray-700 bg-white app-side"
+                        title="Atmosphere UI"
+                        :menu="menu"
+                    />
                 </div>
-            </header>
 
-            <!-- Page Content -->
-            <main>
-                <slot></slot>
-            </main>
+                <div class="app-content__inner ic-scroller">
+                    <!-- Page Heading -->
+                    <header class="" v-if="$slots.header">
+                        <div class="px-4 py-6 mx-auto max-w-7xl sm:px-6 lg:px-8">
+                            <slot name="header"></slot>
+                        </div>
+                    </header>
+                    <!-- Page Content -->
+                    <main>
+                        <slot></slot>
+                    </main>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -236,6 +238,7 @@
     import JetDropdownLink from '@/Jetstream/DropdownLink'
     import JetNavLink from '@/Jetstream/NavLink'
     import JetResponsiveNavLink from '@/Jetstream/ResponsiveNavLink'
+    import { AtSide, AtSideItem, AtSideItemGroup } from "atmosphere-ui"
 
     export default {
         components: {
@@ -245,11 +248,36 @@
             JetDropdownLink,
             JetNavLink,
             JetResponsiveNavLink,
+            AtSide,
+            AtSideItem,
+            AtSideItemGroup
         },
 
         data() {
             return {
                 showingNavigationDropdown: false,
+                menu: [
+    {
+      icon: 'users',
+      label: 'Users',
+      childs: [
+        {
+          icon: 'user',
+          label: 'Edit',
+        }
+      ]
+    },
+    {
+      icon: 'home',
+      label: 'Dashboard',
+      childs: [
+        {
+          icon: 'user',
+          label: 'Edit',
+        }
+      ]
+    }
+  ]
             }
         },
 
@@ -268,3 +296,154 @@
         }
     }
 </script>
+
+<style lang="scss">
+.home-container {
+  position: relative;
+  height: 100vh;
+}
+
+.app-header {
+    width: 100%;
+    top: 0;
+    position: fixed;
+    background: white;
+    border-bottom: 1px solid #f4f5f7;
+    z-index: 1000;
+}
+
+.appside-container {
+  padding-right: 0 !important;
+  position: fixed;
+  display: grid;
+  width: 300px;
+  height: 100%;
+  z-index: 1001;
+}
+
+.app-content {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  background: #f8f8f8 !important;
+  position: relative;
+  height: 100vh;
+
+  &__inner {
+    width: 100%;
+    grid-column-start: 2;
+    padding: 65px 0;
+    padding-bottom: 0;
+    position: relative;
+    max-height: 100%;
+    transition: all ease 0.3s;
+
+    &.header-replacer-mode {
+      padding-top: 0;
+
+      .header-replacer {
+        height: 73px;
+        margin: 0;
+        position: fixed;
+        left: 0;
+        top: 0;
+        display: flex;
+        width: 100%;
+        z-index: 1000;
+        background: white;
+        align-items: center;
+        padding: 0 10px;
+      }
+
+      .section-body {
+        padding-top: 140px;
+      }
+    }
+  }
+}
+
+.splash-screen {
+  background: dodgerblue;
+  width: 100%;
+  height: 100vh;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media screen and (max-width: 992px) {
+  .appside-container {
+    z-index: 999;
+    width: 256px;
+    left: -260px;
+    transition: all ease 0.3s;
+  }
+
+  .app-content__inner {
+    grid-column-start: 1;
+    grid-column-end: 3;
+  }
+
+  .home-container.menu-expanded {
+    .appside-container {
+      left: 0;
+    }
+  }
+}
+
+@media print {
+  .appside-container,
+  .no-print,
+  button {
+    display: none;
+  }
+
+  table {
+    width: 100% !important;
+    overflow: hidden;
+  }
+
+  th td {
+    overflow: hidden;
+  }
+
+  .app-content {
+    grid-column-start: 1;
+    grid-column-end: 3;
+  }
+}
+
+
+.ic-scroller {
+    &::-webkit-scrollbar-thumb {
+        background-color: transparentize($color: #000000, $amount: 0.7);
+        border-radius: 4px;
+
+        &:hover {
+            background-color: transparentize($color: #000000, $amount: 0.7);
+        }
+    }
+
+    &::-webkit-scrollbar {
+        background-color: transparent;
+        width: 8px;
+        height: 10px;
+    }
+
+    &-slim {
+        transition: all ease .3s;
+        &::-webkit-scrollbar {
+            height: 0;
+        }
+
+        &:hover {
+            &::-webkit-scrollbar {
+                height: 3px;
+            }
+        }
+    }
+}
+
+
+</style>
+

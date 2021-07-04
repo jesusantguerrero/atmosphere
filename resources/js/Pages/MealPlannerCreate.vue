@@ -29,7 +29,7 @@
 
 <script>
     import AppLayout from '@/Layouts/AppLayout';
-    import { AtButton } from "atmosphere-ui/dist/atmosphere-ui.es";
+    import { AtButton } from "atmosphere-ui";
     import MealSection from '@/Components/Meal';
     import { reactive, ref, toRefs } from '@vue/reactivity';
     import MealModal from '../Components/MealModal.vue';

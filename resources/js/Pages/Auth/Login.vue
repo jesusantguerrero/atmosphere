@@ -1,6 +1,7 @@
 <template>
-    <at-auth-box>
-        <at-auth-form
+    <!-- <at-auth-box> -->
+    <at-button> Hola </at-button>
+        <!-- <at-auth-form
             app-name="MyH CRM"
             btn-class="text-white bg-pink-500 hover:bg-pink-600"
             link-class="text-pink-500 hover:text-pink-600"
@@ -9,17 +10,18 @@
             @submit="submit"
             @home-pressed="onHomePressed"
             @link-pressed="onLinkPressed"
-        />
-    </at-auth-box>
+        /> -->
+    <!-- </at-auth-box> -->
 </template>
 
 <script>
-    import { AtAuthBox, AtAuthForm } from "atmosphere-ui/dist/atmosphere-ui.es";
+    import { AtAuthBox, AtAuthForm, AtButton } from "atmosphere-ui";
 
     export default {
         components: {
             AtAuthBox,
-            AtAuthForm
+            AtAuthForm,
+            AtButton
         },
 
         props: {

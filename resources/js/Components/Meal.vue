@@ -18,7 +18,7 @@
 </template>
 
 <script>
-    import { AtBadge } from "atmosphere-ui/dist/atmosphere-ui.es";
+    import { AtBadge } from "atmosphere-ui";
 
     export default {
         props: {

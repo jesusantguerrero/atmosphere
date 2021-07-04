@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\MealController;
 use App\Http\Controllers\MealPlanController;
+use App\Models\MealPlan;
 use Illuminate\Foundation\Application;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -27,8 +29,13 @@ Route::get('/', function () {
 });
 
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
-    Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard');
+    Route::get('/dashboard', function (Request $request) {
+        return Inertia::render('Dashboard', [
+            "meals" => MealPlan::where([
+                'team_id' => $request->user()->current_team_id,
+                'date' => date('Y-m-d')
+            ])->with('dateable')->get()
+        ]);
     })->name('dashboard');
     Route::get('/finance', function () {
         return Inertia::render('Finance');

@@ -6,6 +6,7 @@
             btn-class="text-white bg-pink-500 hover:bg-pink-600"
             link-class="text-pink-500 hover:text-pink-600"
             v-model:isLoading="form.processing"
+            :errors="form.errors"
             @submit="submit"
             @home-pressed="onHomePressed"
             @link-pressed="onLinkPressed"
@@ -20,7 +21,7 @@
 </template>
 
 <script>
-    import { AtAuthBox, AtAuthForm, AtInput, AtField } from "atmosphere-ui/dist/atmosphere-ui.es";
+    import { AtAuthBox, AtAuthForm, AtInput, AtField } from "atmosphere-ui";
 
     export default {
         components: {

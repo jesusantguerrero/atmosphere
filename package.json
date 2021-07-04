@@ -16,21 +16,20 @@
         "@tailwindcss/forms": "^0.2.1",
         "@tailwindcss/typography": "^0.3.0",
         "@vue/compiler-sfc": "^3.0.5",
+        "atmosphere-ui": "^0.1.5",
         "axios": "^0.21",
+        "date-fns": "^2.22.1",
         "laravel-mix": "^6.0.6",
         "lodash": "^4.17.19",
         "postcss": "^8.1.14",
         "postcss-import": "^12.0.1",
+        "sass": "^1.35.1",
+        "sass-loader": "^12.1.0",
         "tailwindcss": "^2.0.1",
         "ts-loader": "^9.2.3",
-        "typescript": "^4.3.4",
-        "vue": "^3.0.5",
+        "typescript": "^4.3.5",
+        "vue": "^3.1.4",
         "vue-loader": "^16.1.2"
     },
-    "dependencies": {
-        "atmosphere-ui": "^0.1.5",
-        "date-fns": "^2.22.1",
-        "sass": "^1.35.1",
-        "sass-loader": "^12.1.0"
-    }
+    "dependencies": {}
 }
