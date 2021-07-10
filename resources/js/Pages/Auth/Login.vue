@@ -1,7 +1,7 @@
 <template>
     <at-auth-box>
         <at-auth-form
-            app-name="MyH CRM"
+            app-name="Loger"
             btn-class="text-white bg-pink-500 hover:bg-pink-600"
             link-class="text-pink-500 hover:text-pink-600"
             v-model:isLoading="form.processing"

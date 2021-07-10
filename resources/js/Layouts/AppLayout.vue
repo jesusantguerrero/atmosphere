@@ -4,15 +4,10 @@
         <div class="min-h-screen bg-gray-100 home-container">
             <nav class="app-header">
                 <!-- Primary Navigation Menu -->
-                <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+                <div class="px-4 mx-auto sm:px-6 lg:px-8">
                     <div class="flex justify-between h-16">
                         <div class="flex">
                             <!-- Navigation Links -->
-                            <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                                <jet-nav-link :href="route('dashboard')" :active="route().current('dashboard')">
-                                    Dashboard
-                                </jet-nav-link>
-                            </div>
                         </div>
 
                         <div class="hidden sm:flex sm:items-center sm:ml-6">
@@ -209,9 +204,15 @@
                 <div class="appside-container">
                     <AtSide
                         class="text-gray-700 bg-white app-side"
-                        title="Atmosphere UI"
+                        title="Loger"
                         :menu="menu"
-                    />
+                        item-class="font-bold text-pink-500 hover:bg-gray-500 hover:text-white"
+                        item-active-class="text-white bg-gray-500"
+                    >
+                        <template #brand>
+                            <h1 class="pl-5 text-3xl font-bold text-pink-500">Loger.</h1>
+                        </template>
+                    </AtSide>
                 </div>
 
                 <div class="app-content__inner ic-scroller">
@@ -257,27 +258,27 @@
             return {
                 showingNavigationDropdown: false,
                 menu: [
-    {
-      icon: 'users',
-      label: 'Users',
-      childs: [
-        {
-          icon: 'user',
-          label: 'Edit',
-        }
-      ]
-    },
-    {
-      icon: 'home',
-      label: 'Dashboard',
-      childs: [
-        {
-          icon: 'user',
-          label: 'Edit',
-        }
-      ]
-    }
-  ]
+                    {
+                        icon: 'home',
+                        label: 'Home',
+                        to: '/dashboard'
+                    },
+                    {
+                        icon: '',
+                        label: 'Meal Planer',
+                        to: 'meal-planner'
+                    },
+                    {
+                        icon: '',
+                        label: 'Meals',
+                        to: 'meals'
+                    },
+                    {
+                        icon: '',
+                        label: 'Finance',
+                        to: 'finance'
+                    }
+                ]
             }
         },
 

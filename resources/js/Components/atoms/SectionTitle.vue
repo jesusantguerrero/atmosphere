@@ -1,0 +1,24 @@
+<template>
+    <h4 class="`text-lg font-bold" :class="textColor">
+        <slot></slot>
+    </h4>
+</template>
+
+<script setup>
+import { computed } from "@vue/runtime-core";
+
+const props = defineProps({
+    type: {
+        type: String,
+        default: "default",
+    },
+});
+const textColor = computed(() => {
+    const types = {
+        default: "text-blue-700",
+        primary: "text-pink-700",
+        secondary: "text-gray-400",
+    };
+    return types[props.type] || types.default;
+});
+</script>

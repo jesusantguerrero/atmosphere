@@ -1,7 +1,7 @@
 <template>
     <AtAuthBox>
         <AtAuthForm
-            app-name="MyH CRM"
+            app-name="Loger"
             mode="register"
             btn-class="text-white bg-pink-500 hover:bg-pink-600"
             link-class="text-pink-500 hover:text-pink-600"
