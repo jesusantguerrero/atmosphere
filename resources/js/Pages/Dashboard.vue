@@ -5,12 +5,22 @@
                 <section-title type="secondary"> Dashboard</section-title>
                 <budget-tracker
                     class="mt-5"
+                    :budget="budgetTotal"
+                    :expenses="15000"
                     :username="user.name"
                     @section-click="selected=$event"
                 >
                     <div class="pt-5 mt-2" v-if="selected">
                         <transactions-table v-if="selected=='expenses'"  table-label="Expenses" class="pt-3 mt-5" table-class="px-0 mt-5" />
-                        <transactions-table v-if="selected=='budget'" table-label="Budget" username="Jesus" class="pt-3 mt-5" table-class="px-0 mt-5" />
+                        <transactions-table
+                            v-if="selected=='budget'"
+                            table-label="Budget"
+                            username="Jesus"
+                            class="pt-3 mt-5"
+                            table-class="px-0 mt-5"
+                            :transactions="budget"
+                            :parser="budgetToTransaction"
+                        />
                         <div className="py-3 mt-5 text-center">
                             <AtButton class="text-pink-500" @click="selected=''"><i class="block fa fa-chevron-up"></i> Show less</AtButton>
                         </div>
@@ -68,13 +78,33 @@
             user: {
                 type: Object,
                 required: true,
+            },
+            budgetTotal: {
+                type: Number,
+                default: 0,
+            },
+            budget: {
+                type: Array,
+                default() {
+                    return []
+                }
             }
         },
         setup() {
             const selected = ref(null);
 
+            const budgetToTransaction = (budgets) => {
+                return budgets.map(budget => ({
+                    title: budget.account.name,
+                    subtitle: '',
+                    value: budget.amount,
+                    status: 'PENDING'
+                }))
+            }
+
             return {
-                selected
+                selected,
+                budgetToTransaction
             }
         }
     }

@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\MealController;
 use App\Http\Controllers\MealPlanController;
+use App\Models\Budget;
 use App\Models\MealPlan;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
@@ -30,11 +32,18 @@ Route::get('/', function () {
 
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/dashboard', function (Request $request) {
+        $teamId = $request->user()->current_team_id;
+        $budget = Budget::where([
+            'team_id' => $teamId
+        ])->with('account')->get();
+
         return Inertia::render('Dashboard', [
             "meals" => MealPlan::where([
-                'team_id' => $request->user()->current_team_id,
+                'team_id' => $teamId,
                 'date' => date('Y-m-d')
-            ])->with('dateable')->get()
+            ])->with('dateable')->get(),
+            "budgetTotal" => $budget->sum('amount'),
+            "budget" => $budget
         ]);
     })->name('dashboard');
     Route::get('/finance', function () {
@@ -45,4 +54,5 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::post('/meals/add-plan', [MealController::class, 'addPlan'])->name('meals.addPlan');
     Route::get('/meals-random', [MealController::class, 'random'])->name('meals.random');
     Route::resource('/meal-planner', MealPlanController::class);
+    Route::resource('/budgets', BudgetController::class);
 });

@@ -3,9 +3,7 @@
 <div :class="classes">
     <section-title type="secondary">{{ tableLabel }}</section-title>
     <div :class="tableClasses">
-        <transaction-card title="MCTekk" subtitle="Pago de nomina" status="PAID" value="60,000.00" />
-        <transaction-card title="MCTekk" subtitle="Pago de nomina" status="PAID" value="60,000.00" />
-        <transaction-card title="MCTekk" subtitle="Pago de nomina" status="PAID" value="60,000.00" />
+        <transaction-card v-bind="transaction" :key="transaction.id" v-for="transaction in transactions" />
     </div>
 </div>
 </template>
@@ -13,6 +11,7 @@
 <script>
 import TransactionCard from "../molecules/TransactionCard";
 import SectionTitle from "../atoms/SectionTitle";
+import { computed } from '@vue/runtime-core';
 
 export default {
   components: { SectionTitle, TransactionCard, },
@@ -28,7 +27,25 @@ export default {
         tableLabel: {
             type: String,
             default: ''
+        },
+        transactions: {
+            type: Array,
+            default() {
+                return []
+            }
+        },
+        parser: {
+            type: [Function, null],
+            default: null
         }
     },
+    setup(props) {
+
+        return {
+            transactions: computed(() => {
+                return !props.parser ? props.transactions : props.parser(props.transactions);
+            })
+        }
+    }
 }
 </script>
