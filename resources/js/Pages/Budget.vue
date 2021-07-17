@@ -37,14 +37,12 @@
                         </at-field>
                     </div>
                 </div>
-                <div v-for="budget in budgets.data" :key="budget" class="flex">
-                    <div class="w-full">
-                        {{ budget.account.name }}
-                    </div>
-                    <div class="w-full">
-                        {{ budget.amount }}
-                    </div>
-                </div>
+                <budget-item v-for="budget in budgets.data" :key="budget"
+                    :item="{
+                        name: budget.account.name,
+                        amount: budget.amount
+                    }"
+                />
             </div>
         </div>
     </app-layout>
@@ -58,6 +56,7 @@
     import { useForm } from '@inertiajs/inertia-vue3';
     import { NSelect } from "naive-ui"
     import { computed, reactive, toRefs } from 'vue';
+    import BudgetItem from '../Components/molecules/BudgetItem.vue';
 
     export default {
         components: {
@@ -68,6 +67,7 @@
             AtInput,
             MealModal,
             NSelect,
+            BudgetItem,
         },
         props: {
             budgets: {
