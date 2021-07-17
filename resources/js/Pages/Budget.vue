@@ -16,21 +16,19 @@
 
         <div class="py-12">
             <div class="mx-auto max-w-7xl sm:px-6">
-                <div class="flex">
+                <div class="flex space-x-2">
                     <at-field label="Amount">
                         <at-input type="number" v-model="form.amount" />
                     </at-field>
 
                     <at-field label="Category" v-if="categories.length">
-                        <select class="block" v-model="form.account_id">
-                            <option
-                                v-for="option in categories[0].subcategories[0].accounts"
-                                :key="option"
-                                :value="option.id"
-                            >
-                                {{ option.name }}
-                            </option>
-                        </select>
+                        <n-select
+                            filterable
+                            clearable
+                            v-model:value="form.account_id"
+                            :default-expand-all="true"
+                            :options="categoryOptions"
+                        />
                     </at-field>
 
                     <div>
@@ -56,9 +54,10 @@
     import AppLayout from '@/Layouts/AppLayout';
     import { AtButton, AtField, AtInput } from "atmosphere-ui/dist/atmosphere-ui.es.js";
     import MealSection from '@/Components/Meal';
-    import { reactive, toRefs } from '@vue/reactivity';
     import MealModal from '../Components/MealModal.vue';
     import { useForm } from '@inertiajs/inertia-vue3';
+    import { NSelect } from "naive-ui"
+    import { computed, reactive, toRefs } from 'vue';
 
     export default {
         components: {
@@ -67,7 +66,8 @@
             AtButton,
             AtField,
             AtInput,
-            MealModal
+            MealModal,
+            NSelect,
         },
         props: {
             budgets: {
@@ -79,12 +79,25 @@
                 required: true
             }
         },
-        setup() {
+        setup(props) {
             const state = reactive({
                 isModalOpen: false,
                 form: useForm({
                     amount: 0,
                     account_id: null,
+                }),
+                categoryOptions: computed(() => {
+                    return props.categories[0].subcategories.map(category => {
+                        category.type = 'group';
+                        category.key = category.id;
+                        category.label = category.name;
+                        category.children = category.accounts.map(subCategory => ({
+                            value: subCategory.id,
+                            label: subCategory.name
+
+                        }));
+                        return category;
+                    })
                 })
             })
 
