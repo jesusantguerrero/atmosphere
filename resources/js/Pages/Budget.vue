@@ -37,12 +37,22 @@
                         </at-field>
                     </div>
                 </div>
-                <budget-item v-for="budget in budgets.data" :key="budget"
+                <budget-item
+                    v-for="budget in budgets.data"
+                    :key="budget"
                     :item="{
                         name: budget.account.name,
                         amount: budget.amount
                     }"
                 />
+                <budget-item
+                    class="font-bold"
+                    :item="{
+                        name: 'Totals',
+                        amount: budgetTotal
+                    }"
+                />
+
             </div>
         </div>
     </app-layout>
@@ -57,6 +67,7 @@
     import { NSelect } from "naive-ui"
     import { computed, reactive, toRefs } from 'vue';
     import BudgetItem from '../Components/molecules/BudgetItem.vue';
+    import { useMoney } from "@/utils/useMoney";
 
     export default {
         components: {
@@ -80,11 +91,16 @@
             }
         },
         setup(props) {
+            const { sumMoney } = useMoney();
+
             const state = reactive({
                 isModalOpen: false,
                 form: useForm({
                     amount: 0,
                     account_id: null,
+                }),
+                budgetTotal: computed(() => {
+                    return sumMoney(props.budgets.data.map(item => item.amount));
                 }),
                 categoryOptions: computed(() => {
                     return props.categories[0].subcategories.map(category => {

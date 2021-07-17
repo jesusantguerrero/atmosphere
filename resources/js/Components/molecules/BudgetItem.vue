@@ -3,17 +3,16 @@
     <div class="w-full">
         {{ name }}
     </div>
-    <div class="w-full">
+    <div class="w-full text-right">
         {{ amount }}
     </div>
 </div>
 </template>
 
 <script>
-import { dinero, toFormat } from 'dinero.js';
-import { USD, DOP } from '@dinero.js/currencies';
 import { reactive, toRefs } from '@vue/reactivity';
 import { computed } from '@vue/runtime-core';
+import { useMoney } from "@/utils/useMoney";
 
 export default {
     props: {
@@ -23,11 +22,10 @@ export default {
         }
     },
     setup(props) {
-        const formatter = ({amount, currency }) => `${currency.code} ${amount}`
+        const { formatMoney } = useMoney()
         const state = reactive({
             amount: computed(() => {
-                const value = dinero({ amount: Number(props.item.amount.replace('.', '')), currency: DOP })
-                return toFormat(value, formatter);
+               return formatMoney(props.item.amount)
             }),
             name: props.item.name
         });
