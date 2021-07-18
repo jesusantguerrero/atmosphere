@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\MealController;
 use App\Http\Controllers\MealPlanController;
@@ -55,4 +56,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/meals-random', [MealController::class, 'random'])->name('meals.random');
     Route::resource('/meal-planner', MealPlanController::class);
     Route::resource('/budgets', BudgetController::class);
+});
+
+Route::middleware(['auth:sanctum', 'verified'])->prefix('/api')->group(function () {
+    Route::resource('categories', CategoryController::class);
 });

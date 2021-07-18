@@ -15,20 +15,26 @@
         </template>
 
         <div class="py-12">
-            <div class="mx-auto max-w-7xl sm:px-6">
-                <div class="flex space-x-2">
-                    <at-field label="Amount">
-                        <at-input type="number" v-model="form.amount" />
-                    </at-field>
-
-                    <at-field label="Category" v-if="categories.length">
+            <div class="mx-auto bg-white rounded-md shadow-lg max-w-7xl">
+                <div class="flex px-5 space-x-2 border-b">
+                    <at-field label="Category" class="w-7/12" v-if="categories.length">
                         <n-select
                             filterable
                             clearable
                             v-model:value="form.account_id"
                             :default-expand-all="true"
                             :options="categoryOptions"
-                        />
+                        >
+                         <template #action>
+                            <AtButton @click="isModalOpen = true" class="text-white bg-pink-500"> Add category </AtButton>
+                         </template>
+                        </n-select>
+                        <at-error-bags :errors="errors" field="account_id" />
+                    </at-field>
+
+                    <at-field label="Amount" class="w-4/12">
+                        <at-input type="number" v-model="form.amount" />
+                        <at-error-bags :errors="errors" field="amount" />
                     </at-field>
 
                     <div>
@@ -37,47 +43,60 @@
                         </at-field>
                     </div>
                 </div>
-                <budget-item
-                    v-for="budget in budgets.data"
-                    :key="budget"
-                    :item="{
-                        name: budget.account.name,
-                        amount: budget.amount
-                    }"
-                />
-                <budget-item
-                    class="font-bold"
-                    :item="{
-                        name: 'Totals',
-                        amount: budgetTotal
-                    }"
-                />
+
+                <div class="px-5 pt-2 pb-10 space-y-3">
+                    <div class="flex text-lg font-bold text-gray-400">
+                        <div class="w-full"> Category</div>
+                        <div class="w-full text-right"> Amount </div>
+                    </div>
+                    <budget-item
+                        v-for="budget in budgets.data"
+                        :key="budget"
+                        :item="{
+                            name: budget.account.name,
+                            amount: budget.amount
+                        }"
+                    />
+                    <budget-item
+                        class="font-bold"
+                        :item="{
+                            name: 'Totals',
+                            amount: budgetTotal
+                        }"
+                    />
+                </div>
 
             </div>
+
+            <category-modal
+                @close="isModalOpen=false"
+                v-model:show="isModalOpen"
+            />
         </div>
     </app-layout>
 </template>
 
 <script>
     import AppLayout from '@/Layouts/AppLayout';
-    import { AtButton, AtField, AtInput } from "atmosphere-ui/dist/atmosphere-ui.es.js";
-    import MealSection from '@/Components/Meal';
-    import MealModal from '../Components/MealModal.vue';
+    import { AtButton, AtField, AtInput, AtErrorBags } from "atmosphere-ui/dist/atmosphere-ui.es.js";
+    import CategoryModal from '../Components/CategoryModal.vue';
     import { useForm } from '@inertiajs/inertia-vue3';
-    import { NSelect } from "naive-ui"
-    import { computed, reactive, toRefs } from 'vue';
+    import { NSelect, NModal, NCard } from "naive-ui"
+    import { computed, provide, reactive, toRefs } from 'vue';
     import BudgetItem from '../Components/molecules/BudgetItem.vue';
     import { useMoney } from "@/utils/useMoney";
 
     export default {
         components: {
             AppLayout,
-            MealSection,
             AtButton,
             AtField,
             AtInput,
-            MealModal,
+            AtErrorBags,
+            CategoryModal,
             NSelect,
+            NModal,
+            NCard,
             BudgetItem,
         },
         props: {
@@ -117,8 +136,14 @@
                 })
             })
 
+            provide('categoryOptions', state.categoryOptions);
+
             const submit = () => {
-                state.form.post('/budgets')
+                state.form.post('/budgets', {
+                    onSuccess: () => {
+                        state.form.reset();
+                    }
+                })
             }
 
             return {

@@ -18,7 +18,10 @@ class BudgetController extends InertiaController
             "edit" => 'BudgetCreate'
         ];
         $this->searchable = ['name'];
-        $this->validationRules = [];
+        $this->validationRules = [
+            'account_id' => 'required',
+            'amount' => 'required'
+        ];
         $this->includes = ['account'];
         $this->filters = [];
     }

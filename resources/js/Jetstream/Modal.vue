@@ -96,6 +96,6 @@ export default {
 
 <style>
 .custom-modal {
-    z-index: 10000;
+    z-index: 1002;
 }
 </style>

@@ -28,7 +28,7 @@ class InertiaController extends BaseController {
 
     public function store(Request $request) {
         $postData = $request->post();
-
+        $this->validate($request, $this->validationRules);
         $postData['user_id'] = $request->user()->id;
         $postData['team_id'] = $request->user()->current_team_id;
         $resource = $this->model::create($postData);
