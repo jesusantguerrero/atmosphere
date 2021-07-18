@@ -52,6 +52,8 @@
                     <budget-item
                         v-for="budget in budgets.data"
                         :key="budget"
+                        show-delete
+                        @deleted="deleteBudget(budget)"
                         :item="{
                             name: budget.account.name,
                             amount: budget.amount
@@ -85,6 +87,7 @@
     import { computed, provide, reactive, toRefs } from 'vue';
     import BudgetItem from '../Components/molecules/BudgetItem.vue';
     import { useMoney } from "@/utils/useMoney";
+    import { Inertia } from '@inertiajs/inertia';
 
     export default {
         components: {
@@ -138,6 +141,16 @@
 
             provide('categoryOptions', state.categoryOptions);
 
+            const deleteBudget = (budget) => {
+                Inertia.delete(route('budgets.destroy', budget), {
+                    onSuccess: () => {
+                        Inertia.reload([
+                            'budgets'
+                        ]);
+                    },
+                })
+            }
+
             const submit = () => {
                 state.form.post('/budgets', {
                     onSuccess: () => {
@@ -148,7 +161,8 @@
 
             return {
                 ...toRefs(state),
-                submit
+                submit,
+                deleteBudget
             }
         }
     }

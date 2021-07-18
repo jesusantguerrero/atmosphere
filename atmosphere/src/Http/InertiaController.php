@@ -44,6 +44,12 @@ class InertiaController extends BaseController {
         return Redirect::back();
     }
 
+    public function destroy(Request $request, int $id) {
+        $resource = $this->model::find($id);
+        $resource->delete();
+        return Redirect::back();
+    }
+
     protected function getIndexProps(Request $request) {
         $queryParams = $request->query() ?? [];
         $queryParams['limit'] = $queryParams['limit'] ?? 50;
