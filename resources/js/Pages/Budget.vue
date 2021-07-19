@@ -87,6 +87,7 @@
     import { computed, provide, reactive, toRefs } from 'vue';
     import BudgetItem from '../Components/molecules/BudgetItem.vue';
     import { useMoney } from "@/utils/useMoney";
+    import { useSelects } from "@/utils/useSelects";
     import { Inertia } from '@inertiajs/inertia';
 
     export default {
@@ -114,6 +115,7 @@
         },
         setup(props) {
             const { sumMoney } = useMoney();
+            const { categoryOptions }  = useSelects();
 
             const state = reactive({
                 isModalOpen: false,
@@ -125,17 +127,7 @@
                     return sumMoney(props.budgets.data.map(item => item.amount));
                 }),
                 categoryOptions: computed(() => {
-                    return props.categories[0].subcategories.map(category => {
-                        category.type = 'group';
-                        category.key = category.id;
-                        category.label = category.name;
-                        category.children = category.accounts.map(subCategory => ({
-                            value: subCategory.id,
-                            label: subCategory.name
-
-                        }));
-                        return category;
-                    })
+                    return categoryOptions(props.categories[0], true);
                 })
             })
 

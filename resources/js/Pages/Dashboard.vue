@@ -6,12 +6,19 @@
                 <budget-tracker
                     class="mt-5"
                     :budget="budgetTotal"
-                    :expenses="15000"
+                    :expenses="transactionTotal"
                     :username="user.name"
                     @section-click="selected=$event"
                 >
                     <div class="pt-5 mt-2" v-if="selected">
-                        <transactions-table v-if="selected=='expenses'"  table-label="Expenses" class="pt-3 mt-5" table-class="px-0 mt-5" />
+                        <transactions-table
+                            v-if="selected=='expenses'"
+                            table-label="Expenses"
+                            class="pt-3 mt-5"
+                            table-class="px-0 mt-5"
+                            :transactions="transactions"
+                            :parser="transactionDBToTransaction"
+                        />
                         <transactions-table
                             v-if="selected=='budget'"
                             table-label="Budget"
@@ -60,6 +67,7 @@
     import TransactionsTable from "@/Components/organisms/TransactionsTable";
     import SectionTitle from "@/Components/atoms/SectionTitle";
     import { ref } from '@vue/reactivity';
+    import { useSelect } from '@/utils/useSelects';
 
     export default {
         components: {
@@ -88,9 +96,31 @@
                 default() {
                     return []
                 }
+            },
+            transactionTotal: {
+                type: Number,
+                default: 0,
+            },
+            transactions: {
+                type: Array,
+                default() {
+                    return []
+                }
+            },
+            categories: {
+                type: Array,
+                default() {
+                    return []
+                }
+            },
+            accounts: {
+                type: Array,
+                default() {
+                    return []
+                }
             }
         },
-        setup() {
+        setup(props) {
             const selected = ref(null);
 
             const budgetToTransaction = (budgets) => {
@@ -102,9 +132,23 @@
                 }))
             }
 
+            const transactionDBToTransaction = (transactions) => {
+                return transactions.map(transaction => ({
+                    title: transaction.description,
+                    subtitle: `${transaction.account.name} -> ${transaction.category.name} `,
+                    value: transaction.total,
+                    status: 'PENDING'
+                }))
+            }
+
+            const { categoryOptions: transformCategoryOptions } = useSelect()
+            transformCategoryOptions(props.categories[0].subcategories, true, 'categoryOptions');
+            transformCategoryOptions(props.accounts, true, 'accountsOptions');
+
             return {
                 selected,
-                budgetToTransaction
+                budgetToTransaction,
+                transactionDBToTransaction,
             }
         }
     }

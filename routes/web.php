@@ -10,6 +10,8 @@ use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Insane\Journal\Category;
+use Insane\Journal\Transaction;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,9 +36,13 @@ Route::get('/', function () {
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/dashboard', function (Request $request) {
         $teamId = $request->user()->current_team_id;
+
         $budget = Budget::where([
             'team_id' => $teamId
         ])->with('account')->get();
+
+        $transactions = Transaction::getByMonthMacro($teamId, date('m'), date('Y'))->get()
+        ;
 
         return Inertia::render('Dashboard', [
             "meals" => MealPlan::where([
@@ -44,9 +50,31 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
                 'date' => date('Y-m-d')
             ])->with('dateable')->get(),
             "budgetTotal" => $budget->sum('amount'),
-            "budget" => $budget
+            "budget" => $budget,
+            "categories" => Category::where([
+                'depth' => 0,
+                'display_id' => 'expenses'
+            ])->with([
+                'subCategories',
+                'subcategories.accounts' => function ($query) use ($teamId) {
+                    $query->where('team_id', '=', $teamId);
+                }
+            ])->get(),
+            "accounts" => Category::where([
+                'depth' => 1,
+                'display_id' => 'cash_and_bank'
+            ])->with([
+                'accounts' => function ($query) use ($teamId) {
+                    $query->where('team_id', '=', $teamId);
+                }
+            ])->get(),
+            "transactionTotal" => $transactions->sum('total'),
+            "transactions" => $transactions->map(function ($transaction) {
+                return Transaction::parser($transaction);
+            }),
         ]);
     })->name('dashboard');
+
     Route::get('/finance', function () {
         return Inertia::render('Finance');
     })->name('finance');

@@ -4,7 +4,16 @@
             <h1 class="font-bold text-gray-500">
                 Welcome to Loger <span class="text-pink-500">{{ username }}</span>
             </h1>
-            <AtButton class="text-white bg-pink-500" @click="$inertia.visit(route('budgets.index'))"> Edit budget </AtButton>
+            <div class="space-x-2">
+                <AtButton class="text-white bg-pink-500" @click="isTransferModalOpen=true">
+                    <i class="fa fa-exchange-alt"></i>
+                    Add transaction
+                </AtButton>
+                <AtButton class="text-white bg-pink-500" @click="$inertia.visit(route('budgets.index'))">
+                    <i class="fa fa-wallet"></i>
+                    Edit budget
+                </AtButton>
+            </div>
         </div>
         <div class="flex py-3">
             <div class="w-full transition cursor-pointer hover:opacity-75"
@@ -17,13 +26,18 @@
             </div>
         </div>
         <slot></slot>
+        <transaction-modal
+            @close="isTransferModalOpen=false"
+            v-model:show="isTransferModalOpen"
+        />
     </div>
 </template>
 
 <script setup>
 import SectionTitle from "../atoms/SectionTitle";
 import { AtButton } from "atmosphere-ui/dist/atmosphere-ui.es.js";
-import { computed } from "@vue/runtime-core";
+import { computed, ref } from "@vue/runtime-core";
+import TransactionModal from "../TransactionModal.vue"
 
 const props = defineProps({
     username: {
@@ -37,6 +51,8 @@ const props = defineProps({
         type: Number
     }
 })
+
+const isTransferModalOpen = ref(false);
 
 const sections = computed(() => ({
     expenses: {
