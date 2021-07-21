@@ -26,7 +26,6 @@
                             class="pt-3 mt-5"
                             table-class="px-0 mt-5"
                             :transactions="budget"
-                            :parser="budgetToTransaction"
                         />
                         <div className="py-3 mt-5 text-center">
                             <AtButton class="text-pink-500" @click="selected=''"><i class="block fa fa-chevron-up"></i> Show less</AtButton>

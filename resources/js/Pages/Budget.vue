@@ -29,12 +29,12 @@
                             <AtButton @click="isModalOpen = true" class="text-white bg-pink-500"> Add category </AtButton>
                          </template>
                         </n-select>
-                        <at-error-bags :errors="errors" field="account_id" />
+                        <at-error-bag :errors="errors" field="account_id" />
                     </at-field>
 
                     <at-field label="Amount" class="w-4/12">
                         <at-input type="number" v-model="form.amount" />
-                        <at-error-bags :errors="errors" field="amount" />
+                        <at-error-bag :errors="errors" field="amount" />
                     </at-field>
 
                     <div>
@@ -80,14 +80,14 @@
 
 <script>
     import AppLayout from '@/Layouts/AppLayout';
-    import { AtButton, AtField, AtInput, AtErrorBags } from "atmosphere-ui/dist/atmosphere-ui.es.js";
+    import { AtButton, AtField, AtInput, AtErrorBag } from "atmosphere-ui/dist/atmosphere-ui.es.js";
     import CategoryModal from '../Components/CategoryModal.vue';
     import { useForm } from '@inertiajs/inertia-vue3';
     import { NSelect, NModal, NCard } from "naive-ui"
     import { computed, provide, reactive, toRefs } from 'vue';
     import BudgetItem from '../Components/molecules/BudgetItem.vue';
     import { useMoney } from "@/utils/useMoney";
-    import { useSelects } from "@/utils/useSelects";
+    import { useSelect } from "@/utils/useSelects";
     import { Inertia } from '@inertiajs/inertia';
 
     export default {
@@ -96,7 +96,7 @@
             AtButton,
             AtField,
             AtInput,
-            AtErrorBags,
+            AtErrorBag,
             CategoryModal,
             NSelect,
             NModal,
@@ -115,7 +115,7 @@
         },
         setup(props) {
             const { sumMoney } = useMoney();
-            const { categoryOptions }  = useSelects();
+            const { categoryOptions }  = useSelect();
 
             const state = reactive({
                 isModalOpen: false,

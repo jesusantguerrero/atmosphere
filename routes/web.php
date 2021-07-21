@@ -41,7 +41,9 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
             'team_id' => $teamId
         ])->with('account')->get();
 
-        $transactions = Transaction::getByMonthMacro($teamId, date('m'), date('Y'))->get()
+        $transactions = Transaction::where([
+            'team_id' => $teamId
+        ])->getByMonth(date('Y-m-d'))->get()
         ;
 
         return Inertia::render('Dashboard', [
@@ -50,7 +52,9 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
                 'date' => date('Y-m-d')
             ])->with('dateable')->get(),
             "budgetTotal" => $budget->sum('amount'),
-            "budget" => $budget,
+            "budget" => $budget->map(function ($budget) {
+               return Budget::dashboardParser($budget, date('Y-m-d'));
+            }),
             "categories" => Category::where([
                 'depth' => 0,
                 'display_id' => 'expenses'
