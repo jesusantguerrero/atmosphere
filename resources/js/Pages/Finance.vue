@@ -1,11 +1,63 @@
 <template>
     <app-layout>
-        <div class="flex mx-auto mt-5 space-x-10 max-w-screen-2xl sm:px-6 lg:px-8">
-            <div class="w-9/12">
-                <section-title type="secondary"> Dashboard</section-title>
+        <div class="pb-20 mx-auto mt-5 max-w-screen-2xl sm:px-6 lg:px-8">
+            <section-title type="secondary"> Finance</section-title>
+              <div class="flex space-x-10">
+                <div class="w-6/12">
+                    <div class="px-5 mt-5">
+                        <SectionTitle type="secondary">Summary</SectionTitle>
+                    </div>
+                    <div class="flex justify-between px-5 py-5 mt-5 bg-white border shadow-sm rounded-xl">
+                        <div class="space-y-4">
+                            <FinanceCard
+                                class=""
+                                title="Income"
+                                :value="formatMoney(income)"
+                                :subtitle="`Last Month: ${incomeVariance}%`"
+                            />
+                            <FinanceCard
+                                title="Savings"
+                                value="10,000,00"
+                                subtitle="Total: 150,000.00"
+                            />
+                        </div>
+                        <div class="px-5 py-5 text-white bg-pink-500 rounded-xl">
+                            <h4> Expenses </h4>
+                            <div class="mt-2 text-4xl font-bold"> {{ formatMoney(transactionTotal) }} </div>
+                            <div class="px-5 py-2 mt-4 bg-gray-700 bg-opacity-25 rounded-3xl"> Last month variance:
+                            <span class="font-bold">{{ expenseVariance }}%</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-6/12">
+                    <TransactionsTable
+                        table-label="Subscriptions"
+                        class="pt-3 mt-5 "
+                        table-class="h-56 pt-5 mt-5 overflow-auto bg-white border rounded-lg shadow-md"
+                        :transactions="transactions"
+                        :parser="transactionDBToTransaction"
+                    />
+                </div>
             </div>
-            <div class="w-3/12">
-
+            <div class="flex mt-5 space-x-10">
+              <div class="w-6/12">
+                   <TransactionsTable
+                        table-label="My payments"
+                        class="pt-3 mt-5"
+                        table-class="mt-5 bg-white border rounded-lg shadow-md"
+                        :transactions="transactions"
+                        :parser="transactionDBToTransaction"
+                    />
+                </div>
+                <div class="w-6/12">
+                    <TransactionsTable
+                        table-label="Transactions"
+                        class="pt-3 mt-5 "
+                        table-class="mt-5 bg-white border rounded-lg shadow-md"
+                        :transactions="transactions"
+                        :parser="transactionDBToTransaction"
+                    />
+                </div>
             </div>
         </div>
     </app-layout>
@@ -15,11 +67,14 @@
     import { AtButton } from "atmosphere-ui/dist/atmosphere-ui.es.js";
     import AppLayout from '@/Layouts/AppLayout'
     import Welcome from '@/Components/Welcome'
+    import FinanceCard from "@/Components/molecules/FinanceCard";
     import BudgetTracker from "@/Components/organisms/BudgetTracker";
     import TransactionsTable from "@/Components/organisms/TransactionsTable";
     import SectionTitle from "@/Components/atoms/SectionTitle";
     import { ref } from '@vue/reactivity';
     import { useSelect } from '@/utils/useSelects';
+    import formatMoney from '@/utils/formatMoney';
+    import { computed } from '@vue/runtime-core';
 
     export default {
         components: {
@@ -28,7 +83,8 @@
             AtButton,
             BudgetTracker,
             SectionTitle,
-            TransactionsTable
+            TransactionsTable,
+            FinanceCard
         },
         props: {
             user: {
@@ -45,7 +101,19 @@
                     return []
                 }
             },
+            income: {
+                type: Number,
+                default: 0,
+            },
+            lastMonthIncome: {
+                type: Number,
+                default: 0,
+            },
             transactionTotal: {
+                type: Number,
+                default: 0,
+            },
+            lastMonthExpenses: {
                 type: Number,
                 default: 0,
             },
@@ -92,11 +160,26 @@
             const { categoryOptions: transformCategoryOptions } = useSelect()
             transformCategoryOptions(props.categories[0].subcategories, true, 'categoryOptions');
             transformCategoryOptions(props.accounts, true, 'accountsOptions');
+            const getVariances = (current, last) => {
+                const variance = (current - last) / last * 100
+                return variance.toFixed(2);
+            }
+
+            const incomeVariance = computed(() => {
+                return getVariances(props.income, props.lastMonthIncome);
+            });
+
+            const expenseVariance = computed(() => {
+                return getVariances(props.transactionTotal, props.lastMonthExpenses);
+            });
 
             return {
                 selected,
                 budgetToTransaction,
                 transactionDBToTransaction,
+                formatMoney,
+                expenseVariance,
+                incomeVariance
             }
         }
     }

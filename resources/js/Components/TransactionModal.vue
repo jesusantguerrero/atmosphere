@@ -3,26 +3,41 @@
         <div class="px-4 pt-5 pb-4 bg-white sm:p-6 sm:pb-4">
             <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                 <h3 class="text-lg">
-                    <slot name="title">Register transaction</slot>
+                    <slot name="title">Register
+                    <n-select
+                        v-model:value="form.direction"
+                        :options="[{
+                            value: 'DEPOSIT',
+                            label: 'Income'
+                        }, {
+                            value: 'WITHDRAW',
+                            label: 'Expense'
+                        }, {
+                            value: 'ENTRY',
+                            label: 'Transaction'
+                        }]"
+                    /></slot>
                 </h3>
 
                 <div class="mt-2">
                     <slot name="content">
                         <div>
-                            <div class="flex space-x-3">
-                                <at-field label="Category" class="w-full">
-                                    <n-select
-                                        filterable
-                                        clearable
-                                        tag
-                                        v-model:value="form.category_id"
-                                        @update:value="createCategory"
-                                        :default-expand-all="true"
-                                        :options="categoryOptions"
+                            <div class="flex space-x-2">
+                                <at-field label="Date" class="w-3/12">
+                                    <n-date-picker
+                                        v-model:value="form.date"
+                                        type="date"
                                     />
                                 </at-field>
 
-                                <at-field label="Account" class="w-full">
+                                <at-field
+                                    label="Description"
+                                    class="w-5/12"
+                                >
+                                    <at-input type="text" required v-model="form.description" />
+                                </at-field>
+
+                                 <at-field label="Account" class="w-4/12">
                                     <n-select
                                         filterable
                                         clearable
@@ -34,18 +49,25 @@
                                     />
                                 </at-field>
                             </div>
-
-                            <at-field
-                                label="Description"
-                            >
-                                <at-input type="text" required v-model="form.description" />
-                            </at-field>
-
-                            <at-field
-                                label="Amount"
-                            >
-                                <at-input type="number" v-model="form.amount" />
-                            </at-field>
+                                                      <div class="flex space-x-3">
+                                <at-field label="Category" class="w-full">
+                                    <n-select
+                                        filterable
+                                        clearable
+                                        tag
+                                        v-model:value="form.category_id"
+                                        @update:value="createCategory"
+                                        :default-expand-all="true"
+                                        :options="categoryOptions"
+                                    />
+                                </at-field>
+                                <at-field
+                                    label="Amount"
+                                    class="w-4/12"
+                                >
+                                    <at-input type="number" v-model="form.amount" />
+                                </at-field>
+                            </div>
                         </div>
                     </slot>
                 </div>
@@ -65,7 +87,7 @@
     import { AtField, AtInput, AtButton } from "atmosphere-ui/dist/atmosphere-ui.es.js"
     import { reactive, toRefs } from '@vue/reactivity'
     import { inject } from '@vue/runtime-core'
-    import { NSelect } from "naive-ui";
+    import { NSelect, NDatePicker } from "naive-ui";
     import { format } from 'date-fns'
 
     export default {
@@ -77,6 +99,7 @@
             AtInput,
             AtButton,
             NSelect,
+            NDatePicker
         },
 
         props: {
@@ -102,8 +125,9 @@
             const state = reactive({
                 form: useForm({
                     name: '',
+                    date: null,
                     description: '',
-                    isIncome: false,
+                    direction: 'WITHDRAW',
                     category_id: null,
                     account_id: null,
                     display_id: '',
@@ -132,10 +156,9 @@
             const submit = () => {
                 state.form
                 .transform((form) => {
-                    form.direction = form.isIncome ? 'DEPOSIT' : 'WITHDRAW';
                     form.resource_type_id = 'MANUAL';
                     form.total = form.amount
-                    form.date = format(new Date(), 'yyyy-MM-dd');
+                    form.date = format(new Date(form.date), 'yyyy-MM-dd');
                     return form;
                 })
                 .post(route('transactions.store'), {

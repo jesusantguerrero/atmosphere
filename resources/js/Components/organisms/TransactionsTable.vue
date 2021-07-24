@@ -2,7 +2,7 @@
 <template>
 <div :class="classes">
     <section-title type="secondary">{{ tableLabel }}</section-title>
-    <div :class="tableClasses">
+    <div :class="tableClass">
         <transaction-card v-bind="transaction" :key="transaction.id" v-for="transaction in transactions" />
     </div>
 </div>
@@ -16,7 +16,7 @@ import { computed } from '@vue/runtime-core';
 export default {
   components: { SectionTitle, TransactionCard, },
     props: {
-        class: {
+        classes: {
             type: String,
             default: 'px-5 mt-5'
         },

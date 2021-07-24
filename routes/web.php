@@ -46,9 +46,10 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         ])->with('account')->get();
 
         $transactions = Transaction::where([
-            'team_id' => $teamId
-        ])->getByMonth($startDate, $endDate)->get()
-        ;
+            'team_id' => $teamId,
+            'direction' => "WITHDRAW"
+        ])->getByMonth($startDate, $endDate)->get();
+
 
         return Inertia::render('Dashboard', [
             "meals" => MealPlan::where([
@@ -62,6 +63,9 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
             "categories" => Category::where([
                 'depth' => 0,
                 'display_id' => 'expenses'
+            ])->orWhere([
+                'depth' => 0,
+                'display_id' => 'incomes'
             ])->with([
                 'subCategories',
                 'subcategories.accounts' => function ($query) use ($teamId) {
@@ -86,6 +90,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/finance', function (Request $request) {
         $startDate = $request->query('startDate', Carbon::now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->query('endDate', Carbon::now()->endOfMonth()->format('Y-m-d'));
+        $lastMonthStartDate = $request->query('startDate', Carbon::now()->subMonth()->startOfMonth()->format('Y-m-d'));
+        $lastMonthEndDate = $request->query('endDate', Carbon::now()->subMonth()->endOfMonth()->format('Y-m-d'));
         $teamId = $request->user()->current_team_id;
 
 
@@ -94,9 +100,24 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         ])->with('account')->get();
 
         $transactions = Transaction::where([
-            'team_id' => $teamId
-        ])->getByMonth($startDate, $endDate)->get()
-        ;
+            'team_id' => $teamId,
+            'direction' => "WITHDRAW"
+        ])->getByMonth($startDate, $endDate)->get();
+
+        $incomes = Transaction::where([
+            'team_id' => $teamId,
+            'direction' => "DEPOSIT"
+        ])->getByMonth($startDate, $endDate)->sum('total');
+
+        $lastMonthIncomes= Transaction::where([
+            'team_id' => $teamId,
+            'direction' => "DEPOSIT"
+        ])->getByMonth($lastMonthStartDate, $lastMonthEndDate)->sum('total');
+
+        $lastMonthExpenses= Transaction::where([
+            'team_id' => $teamId,
+            'direction' => "WITHDRAW"
+        ])->getByMonth($lastMonthStartDate, $lastMonthEndDate)->sum('total');
 
         return Inertia::render('Finance', [
             "meals" => MealPlan::where([
@@ -125,6 +146,9 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
                 }
             ])->get(),
             "transactionTotal" => $transactions->sum('total'),
+            "lastMonthExpenses" => $lastMonthExpenses,
+            "income" => $incomes,
+            "lastMonthIncome" => $lastMonthIncomes,
             "transactions" => $transactions->map(function ($transaction) {
                 return Transaction::parser($transaction);
             }),
