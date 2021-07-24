@@ -6,6 +6,7 @@ use App\Http\Controllers\MealController;
 use App\Http\Controllers\MealPlanController;
 use App\Models\Budget;
 use App\Models\MealPlan;
+use Carbon\Carbon;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -35,7 +36,10 @@ Route::get('/', function () {
 
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/dashboard', function (Request $request) {
+        $startDate = $request->query('startDate', Carbon::now()->startOfMonth()->format('Y-m-d'));
+        $endDate = $request->query('endDate', Carbon::now()->endOfMonth()->format('Y-m-d'));
         $teamId = $request->user()->current_team_id;
+
 
         $budget = Budget::where([
             'team_id' => $teamId
@@ -43,7 +47,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
         $transactions = Transaction::where([
             'team_id' => $teamId
-        ])->getByMonth(date('Y-m-d'))->get()
+        ])->getByMonth($startDate, $endDate)->get()
         ;
 
         return Inertia::render('Dashboard', [
@@ -52,8 +56,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
                 'date' => date('Y-m-d')
             ])->with('dateable')->get(),
             "budgetTotal" => $budget->sum('amount'),
-            "budget" => $budget->map(function ($budget) {
-               return Budget::dashboardParser($budget, date('Y-m-d'));
+            "budget" => $budget->map(function ($budget) use($startDate, $endDate) {
+               return Budget::dashboardParser($budget, $startDate, $endDate);
             }),
             "categories" => Category::where([
                 'depth' => 0,
@@ -79,9 +83,55 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         ]);
     })->name('dashboard');
 
-    Route::get('/finance', function () {
-        return Inertia::render('Finance');
+    Route::get('/finance', function (Request $request) {
+        $startDate = $request->query('startDate', Carbon::now()->startOfMonth()->format('Y-m-d'));
+        $endDate = $request->query('endDate', Carbon::now()->endOfMonth()->format('Y-m-d'));
+        $teamId = $request->user()->current_team_id;
+
+
+        $budget = Budget::where([
+            'team_id' => $teamId
+        ])->with('account')->get();
+
+        $transactions = Transaction::where([
+            'team_id' => $teamId
+        ])->getByMonth($startDate, $endDate)->get()
+        ;
+
+        return Inertia::render('Finance', [
+            "meals" => MealPlan::where([
+                'team_id' => $teamId,
+                'date' => date('Y-m-d')
+            ])->with('dateable')->get(),
+            "budgetTotal" => $budget->sum('amount'),
+            "budget" => $budget->map(function ($budget) use($startDate, $endDate) {
+               return Budget::dashboardParser($budget, $startDate, $endDate);
+            }),
+            "categories" => Category::where([
+                'depth' => 0,
+                'display_id' => 'expenses'
+            ])->with([
+                'subCategories',
+                'subcategories.accounts' => function ($query) use ($teamId) {
+                    $query->where('team_id', '=', $teamId);
+                }
+            ])->get(),
+            "accounts" => Category::where([
+                'depth' => 1,
+                'display_id' => 'cash_and_bank'
+            ])->with([
+                'accounts' => function ($query) use ($teamId) {
+                    $query->where('team_id', '=', $teamId);
+                }
+            ])->get(),
+            "transactionTotal" => $transactions->sum('total'),
+            "transactions" => $transactions->map(function ($transaction) {
+                return Transaction::parser($transaction);
+            }),
+        ]);
     })->name('finance');
+
+
 
     Route::resource('/meals', MealController::class);
     Route::post('/meals/add-plan', [MealController::class, 'addPlan'])->name('meals.addPlan');

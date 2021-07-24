@@ -2,7 +2,7 @@ import { DOP } from "@dinero.js/currencies"
 import { add, dinero, toFormat, toUnit } from "dinero.js"
 
 export function useMoney() {
-    const formatter = ({amount, currency }) => `${currency.code} ${amount.toFixed(currency.exponent)}`
+    const formatter = ({amount, currency }) => `${currency.code} ${getMoneyString(amount.toFixed(currency.exponent))}`
 
     const decimalToMoney = (decimalValue) => {
         return Number(decimalValue.replace('.', ''))
@@ -29,6 +29,14 @@ export function useMoney() {
         let value = decimalToMoney(amount)
         value = dinero({ amount: value, currency: DOP })
         return toFormat(value, formatter)
+    }
+
+    const getMoneyString = (amount) => {
+        return new Intl.NumberFormat("en-IN", {
+            style: "currency",
+            currency: "DOP",
+            currencyDisplay: "symbol"
+          }).format(amount || 0);
     }
 
     return {

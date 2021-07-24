@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Account;
-use Insane\Journal\Transaction;
 
 class Budget extends Model
 {
@@ -22,7 +21,8 @@ class Budget extends Model
         ->where([
             'account_id' => $this->account_id
         ])
-        ->whereRaw("date = ?", [$startDate])
+        ->where("date",  ">=", $startDate)
+        ->where("date", "<=", $endDate)
         ->join('transactions', 'transactions.id', '=', 'transaction_id')
         ->selectRaw('sum(amount * type)  as total')
         ->get()[0]->total;

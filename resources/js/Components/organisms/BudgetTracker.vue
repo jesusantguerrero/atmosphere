@@ -22,7 +22,7 @@
                 v-for="(section, sectionName) in sections"
             >
                 <h4 class="text-gray-500">{{ section.label }}</h4>
-                <SectionTitle>{{ section.value }}</SectionTitle>
+                <SectionTitle>{{ formatMoney(section.value) }}</SectionTitle>
             </div>
         </div>
         <slot></slot>
@@ -38,6 +38,7 @@ import SectionTitle from "../atoms/SectionTitle";
 import { AtButton } from "atmosphere-ui/dist/atmosphere-ui.es.js";
 import { computed, ref } from "@vue/runtime-core";
 import TransactionModal from "../TransactionModal.vue"
+import formatMoney from "../../utils/formatMoney"
 
 const props = defineProps({
     username: {

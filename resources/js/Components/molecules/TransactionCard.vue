@@ -13,7 +13,7 @@
     </div>
     <div class="flex space-x-5">
         <div>
-            <h4 class="font-bold"> {{ value}} <span v-if="expenses" class="text-red-500">({{ expenses }})</span></h4>
+            <h4 class="font-bold"> {{ formatMoney(value)}} <span v-if="expenses" class="text-red-500">({{ formatMoney(expenses) }})</span></h4>
             <small class="text-sm"> {{ status }}</small>
         </div>
         <div v-if="markAsPaid">
@@ -30,6 +30,8 @@
 <script setup>
 import { computed } from "@vue/runtime-core";
 import { NProgress } from "naive-ui";
+import formatMoney from "../../utils/formatMoney";
+
 const props = defineProps({
     title: String,
     subtitle: String,

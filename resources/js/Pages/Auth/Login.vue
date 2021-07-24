@@ -5,7 +5,7 @@
             btn-class="text-white bg-pink-500 hover:bg-pink-600"
             link-class="text-pink-500 hover:text-pink-600"
             v-model:isLoading="form.processing"
-            :errors="errors"
+            :errors="form.errors"
             @submit="submit"
             @home-pressed="onHomePressed"
             @link-pressed="onLinkPressed"
@@ -25,7 +25,7 @@
 
         props: {
             canResetPassword: Boolean,
-            status: String
+            status: String,
         },
 
         data() {
@@ -39,7 +39,7 @@
         },
 
         methods: {
-              onHomePressed() {
+            onHomePressed() {
                 this.$inertia.visit('/');
             },
 
