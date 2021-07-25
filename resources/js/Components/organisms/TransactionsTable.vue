@@ -3,7 +3,7 @@
 <div :class="classes">
     <section-title type="secondary">{{ tableLabel }}</section-title>
     <div :class="tableClass">
-        <transaction-card v-bind="transaction" :key="transaction.id" v-for="transaction in transactions" />
+        <transaction-card v-bind="transaction" :mark-as-paid="allowMarkAsPaid" :key="transaction.id" v-for="transaction in transactions" @paid-clicked="$emit('paid-clicked', transaction)"/>
     </div>
 </div>
 </template>
@@ -37,6 +37,10 @@ export default {
         parser: {
             type: [Function, null],
             default: null
+        },
+        allowMarkAsPaid: {
+            type: Boolean,
+            default: false
         }
     },
     setup(props) {

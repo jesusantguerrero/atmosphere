@@ -2,20 +2,11 @@
     <modal :show="show" :max-width="maxWidth" :closeable="closeable" @close="close">
         <div class="px-4 pt-5 pb-4 bg-white sm:p-6 sm:pb-4">
             <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                <h3 class="text-lg">
+                <h3 class="flex text-lg">
                     <slot name="title">Register
                     <n-select
                         v-model:value="form.direction"
-                        :options="[{
-                            value: 'DEPOSIT',
-                            label: 'Income'
-                        }, {
-                            value: 'WITHDRAW',
-                            label: 'Expense'
-                        }, {
-                            value: 'ENTRY',
-                            label: 'Transaction'
-                        }]"
+                        :options="transactionTypes"
                     /></slot>
                 </h3>
 
@@ -66,6 +57,65 @@
                                     class="w-4/12"
                                 >
                                     <at-input type="number" v-model="form.amount" />
+                                </at-field>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex">
+                                <at-field label="Repeat this transaction" class="w-full">
+                                <n-select
+                                    v-model:value="schedule_settings.frequency"
+                                    :options="[
+                                        {
+                                            value: 'WEEKLY',
+                                            label: 'Weekly'
+                                        },
+                                        {
+                                            value: 'MONTHLY',
+                                            label: 'Monthly'
+                                        }
+                                    ]"
+                                />
+                                </at-field>
+                                <at-field label="frequencyLabel">
+                                    <at-input
+                                        type="number"
+                                        v-model="schedule_settings.repeat_on_day_of_month"
+                                    />
+                                </at-field>
+                            </div>
+                            <div class="flex">
+                                <at-field label="Ends" class="w-full">
+                                <n-select
+                                    v-model:value="schedule_settings.end_type"
+                                    :options="[
+                                        {
+                                            value: 'NEVER',
+                                            label: 'Never'
+                                        },
+                                        {
+                                            value: 'DATE',
+                                            label: 'At'
+                                        },
+                                        {
+                                            value: 'COUNT',
+                                            label: 'After'
+                                        }
+                                    ]"
+                                />
+                                </at-field>
+                                <at-field label="Date" v-if="schedule_settings.end_type == 'DATE'">
+                                    <n-date-picker
+                                        v-model:value="schedule_settings.end_date"
+                                        size="lg"
+                                    />
+                                </at-field>
+                                <at-field label="Instances" v-if="schedule_settings.end_type == 'COUNT'">
+                                    <at-input
+                                        type="number"
+                                        v-model="schedule_settings.count"
+                                    />
                                 </at-field>
                             </div>
                         </div>
@@ -123,6 +173,29 @@
         },
         setup(props, { emit }) {
             const state = reactive({
+                transactionTypes :[{
+                    value: 'DEPOSIT',
+                    label: 'Income'
+                }, {
+                    value: 'WITHDRAW',
+                    label: 'Expense'
+                }, {
+                    value: 'ENTRY',
+                    label: 'Transaction'
+                }],
+                frequencyLabel: 'every',
+                schedule_settings: {
+                    end_date: null,
+                    count: null,
+                    end_type: 'NEVER',
+                    final_item_date: null,
+                    interval: 1,
+                    frequency: "monthly",
+                    repeat_at_end_of_month: false,
+                    repeat_on_day_of_month: null,
+                    start_date: null,
+                    timezone_id: "America/Santo_Domingo"
+                },
                 form: useForm({
                     name: '',
                     date: null,
@@ -154,14 +227,17 @@
             }
 
             const submit = () => {
+                const isRecurrent = true;
+                const postRoute = isRecurrent ? route('budget.planned-transaction') : route('transactions.store');
                 state.form
-                .transform((form) => {
-                    form.resource_type_id = 'MANUAL';
-                    form.total = form.amount
-                    form.date = format(new Date(form.date), 'yyyy-MM-dd');
-                    return form;
-                })
-                .post(route('transactions.store'), {
+                .transform((form) => ({
+                    ...form,
+                    resource_type_id: 'MANUAL',
+                    total: form.amount,
+                    date:  format(new Date(form.date), 'yyyy-MM-dd'),
+                    ...state.schedule_settings
+                }))
+                .post(postRoute, {
                     onSuccess: ({ data }) => {
                         emit('close')
                         state.form.reset();

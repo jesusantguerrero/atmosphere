@@ -7,8 +7,8 @@
                     <div class="px-5 mt-5">
                         <SectionTitle type="secondary">Summary</SectionTitle>
                     </div>
-                    <div class="flex justify-between px-5 py-5 mt-5 bg-white border shadow-sm rounded-xl">
-                        <div class="space-y-4">
+                    <div class="flex flex-wrap justify-between px-5 py-5 mt-5 overflow-hidden bg-white border shadow-sm rounded-xl">
+                        <div class="mb-4 space-y-4">
                             <FinanceCard
                                 class=""
                                 title="Income"
@@ -34,8 +34,9 @@
                         table-label="Subscriptions"
                         class="pt-3 mt-5 "
                         table-class="h-56 pt-5 mt-5 overflow-auto bg-white border rounded-lg shadow-md"
-                        :transactions="transactions"
-                        :parser="transactionDBToTransaction"
+                        :transactions="planned"
+                        :allow-mark-as-paid="true"
+                        :parser="plannedDBToTransaction"
                     />
                 </div>
             </div>
@@ -45,8 +46,10 @@
                         table-label="My payments"
                         class="pt-3 mt-5"
                         table-class="mt-5 bg-white border rounded-lg shadow-md"
-                        :transactions="transactions"
-                        :parser="transactionDBToTransaction"
+                        @paid-clicked="markAsPaid"
+                        :allow-mark-as-paid="true"
+                        :transactions="planned"
+                        :parser="plannedDBToTransaction"
                     />
                 </div>
                 <div class="w-6/12">
@@ -75,6 +78,7 @@
     import { useSelect } from '@/utils/useSelects';
     import formatMoney from '@/utils/formatMoney';
     import { computed } from '@vue/runtime-core';
+import { Inertia } from '@inertiajs/inertia';
 
     export default {
         components: {
@@ -90,6 +94,12 @@
             user: {
                 type: Object,
                 required: true,
+            },
+            planned: {
+                type: Array,
+                default()  {
+                    return [];
+                }
             },
             budgetTotal: {
                 type: Number,
@@ -139,21 +149,25 @@
         setup(props) {
             const selected = ref(null);
 
-            const budgetToTransaction = (budgets) => {
-                return budgets.map(budget => ({
-                    title: budget.account.name,
-                    subtitle: '',
-                    value: budget.amount,
-                    status: 'PENDING'
+            const plannedDBToTransaction = (transactions) => {
+                return transactions.map(transaction => ({
+                    id: transaction.id,
+                    date: transaction.date,
+                    title: transaction.description,
+                    subtitle: `${transaction.account.name} -> ${transaction.category.name} `,
+                    value: transaction.total,
+                    status: 'PLANNED'
                 }))
             }
 
             const transactionDBToTransaction = (transactions) => {
                 return transactions.map(transaction => ({
+                    id: transaction.id,
+                    date: transaction.date,
                     title: transaction.description,
                     subtitle: `${transaction.account.name} -> ${transaction.category.name} `,
                     value: transaction.total,
-                    status: 'PENDING'
+                    status: 'VERIFIED'
                 }))
             }
 
@@ -173,13 +187,22 @@
                 return getVariances(props.transactionTotal, props.lastMonthExpenses);
             });
 
+            const markAsPaid = (transaction) => {
+                Inertia.put(`/transactions/${transaction.id}/mark-as-paid`, {}, {
+                    onSuccess: () => {
+                        Inertia.reload();
+                    }
+                })
+            }
+
             return {
                 selected,
-                budgetToTransaction,
+                plannedDBToTransaction,
                 transactionDBToTransaction,
                 formatMoney,
                 expenseVariance,
-                incomeVariance
+                incomeVariance,
+                markAsPaid
             }
         }
     }

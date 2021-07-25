@@ -3,11 +3,12 @@
   <div class="flex justify-between px-5 py-2">
     <div class="flex space-x-3">
         <div class="w-20 px-5 py-3 font-bold text-center rounded-md bg-gray-50">
-            MC
+            {{ title.slice(0,1) }}
         </div>
         <div>
             <h4 class="font-bold"> {{ title }}</h4>
             <small class="text-sm"> {{ subtitle }}</small>
+            <small class="block text-sm"> {{ date }}</small>
         </div>
 
     </div>
@@ -16,7 +17,7 @@
             <h4 class="font-bold"> {{ formatMoney(value)}} <span v-if="expenses" class="text-red-500">({{ formatMoney(expenses) }})</span></h4>
             <small class="text-sm"> {{ status }}</small>
         </div>
-        <div v-if="markAsPaid">
+        <div v-if="markAsPaid" class="font-bold text-pink-500 cursor-pointer" @click="$emit('paid-clicked')">
             Mark as Paid
         </div>
     </div>
@@ -35,6 +36,7 @@ import formatMoney from "../../utils/formatMoney";
 const props = defineProps({
     title: String,
     subtitle: String,
+    date: String,
     value: String,
     status: String,
     markAsPaid: Boolean,

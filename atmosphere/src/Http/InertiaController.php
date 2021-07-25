@@ -71,7 +71,6 @@ class InertiaController extends BaseController {
 
     protected function getPostData(Request $request) {
         $postData = $request->post();
-
         $postData['user_id'] = $request->user()->id;
         $postData['team_id'] = $request->user()->current_team_id;
 
