@@ -1,14 +1,18 @@
 <template>
     <modal :show="show" :max-width="maxWidth" :closeable="closeable" @close="close">
-        <div class="px-4 pt-5 pb-4 bg-white sm:p-6 sm:pb-4">
+        <div class="pb-4 bg-white sm:p-6 sm:pb-4">
             <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                <h3 class="flex text-lg">
-                    <slot name="title">Register
-                    <n-select
-                        v-model:value="form.direction"
+                <div class="grid grid-cols-3 overflow-hidden text-lg rounded-lg">
+                    <div
+                        v-for="type in transactionTypes"
+                        :key="type.value"
                         :options="transactionTypes"
-                    /></slot>
-                </h3>
+                        @click=""
+                        class="py-1 font-bold text-center text-gray-500 bg-gray-100 cursor-pointer hover:bg-gray-200"
+                    >
+                        {{ type.label }}
+                    </div>
+                </div>
 
                 <div class="mt-2">
                     <slot name="content">
@@ -61,7 +65,7 @@
                             </div>
                         </div>
 
-                        <div>
+                        <div v-if="recurrence">
                             <div class="flex">
                                 <at-field label="Repeat this transaction" class="w-full">
                                 <n-select
@@ -169,6 +173,10 @@
             accounts: {
                 type: Array,
                 default: []
+            },
+            recurrence: {
+                type: Boolean,
+                default: false
             }
         },
         setup(props, { emit }) {
@@ -227,8 +235,7 @@
             }
 
             const submit = () => {
-                const isRecurrent = true;
-                const postRoute = isRecurrent ? route('budget.planned-transaction') : route('transactions.store');
+                const postRoute = props.recurrence ? route('budget.planned-transaction') : route('transactions.store');
                 state.form
                 .transform((form) => ({
                     ...form,

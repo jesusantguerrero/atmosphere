@@ -264,18 +264,23 @@
                         to: '/dashboard'
                     },
                     {
-                        icon: '',
+                        icon: 'far fa-calendar-alt',
                         label: 'Meal Planer',
                         to: 'meal-planner'
                     },
                     {
-                        icon: '',
+                        icon: 'fas fa-drumstick-bite',
                         label: 'Meals',
                         to: 'meals'
                     },
                     {
-                        icon: '',
+                        icon: 'fas fa-dollar-sign',
                         label: 'Finance',
+                        to: 'finance'
+                    },
+                    {
+                        icon: 'fas fa-heart',
+                        label: 'Relationship',
                         to: 'finance'
                     }
                 ]

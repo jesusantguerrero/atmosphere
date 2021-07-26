@@ -1,7 +1,12 @@
 
 <template>
 <div :class="classes">
-    <section-title type="secondary">{{ tableLabel }}</section-title>
+    <div class="flex justify-between">
+        <section-title type="secondary">{{ tableLabel }}</section-title>
+        <div>
+            <slot name="action" />
+        </div>
+    </div>
     <div :class="tableClass">
         <transaction-card v-bind="transaction" :mark-as-paid="allowMarkAsPaid" :key="transaction.id" v-for="transaction in transactions" @paid-clicked="$emit('paid-clicked', transaction)"/>
     </div>
@@ -18,11 +23,11 @@ export default {
     props: {
         classes: {
             type: String,
-            default: 'px-5 mt-5'
+            default: 'mt-1'
         },
         tableClass: {
             type: String,
-            default: 'mt-5 bg-white border rounded-lg shadow-md'
+            default: 'mt-2 bg-white border rounded-lg shadow-md'
         },
         tableLabel: {
             type: String,

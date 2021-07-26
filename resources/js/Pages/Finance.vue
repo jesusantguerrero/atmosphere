@@ -4,7 +4,7 @@
             <section-title type="secondary"> Finance</section-title>
               <div class="flex space-x-10">
                 <div class="w-6/12">
-                    <div class="px-5 mt-5">
+                    <div class="mt-5">
                         <SectionTitle type="secondary">Summary</SectionTitle>
                     </div>
                     <div class="flex flex-wrap justify-between px-5 py-5 mt-5 overflow-hidden bg-white border shadow-sm rounded-xl">
@@ -33,11 +33,15 @@
                     <TransactionsTable
                         table-label="Subscriptions"
                         class="pt-3 mt-5 "
-                        table-class="h-56 pt-5 mt-5 overflow-auto bg-white border rounded-lg shadow-md"
+                        table-class="overflow-auto bg-white border rounded-lg shadow-md "
                         :transactions="planned"
                         :allow-mark-as-paid="true"
                         :parser="plannedDBToTransaction"
-                    />
+                    >
+                       <template #action>
+                            <at-button class="text-pink-500" @click="openModalFor('subscription')"><i class="fa fa-plus"></i> Add subscription</at-button>
+                        </template>
+                    </TransactionsTable>
                 </div>
             </div>
             <div class="flex mt-5 space-x-10">
@@ -45,23 +49,36 @@
                    <TransactionsTable
                         table-label="My payments"
                         class="pt-3 mt-5"
-                        table-class="mt-5 bg-white border rounded-lg shadow-md"
+                        table-class="bg-white border rounded-lg shadow-md"
                         @paid-clicked="markAsPaid"
                         :allow-mark-as-paid="true"
                         :transactions="planned"
                         :parser="plannedDBToTransaction"
-                    />
+                    >
+                    <template #action>
+                        <at-button class="text-pink-500" @click="openModalFor('transaction')"><i class="fa fa-plus"></i> Add planned payment</at-button>
+                    </template>
+                   </TransactionsTable>
                 </div>
                 <div class="w-6/12">
                     <TransactionsTable
                         table-label="Transactions"
                         class="pt-3 mt-5 "
-                        table-class="mt-5 bg-white border rounded-lg shadow-md"
+                        table-class="bg-white border rounded-lg shadow-md"
                         :transactions="transactions"
                         :parser="transactionDBToTransaction"
-                    />
+                    >
+                      <template #action>
+                        <at-button class="text-pink-500" @click="openModalFor()"><i class="fa fa-plus"></i> Add transaction</at-button>
+                        </template>
+                    </TransactionsTable>
                 </div>
             </div>
+
+            <transaction-modal
+                @close="isTransferModalOpen=false"
+                v-model:show="isTransferModalOpen"
+            />
         </div>
     </app-layout>
 </template>
@@ -69,26 +86,26 @@
 <script>
     import { AtButton } from "atmosphere-ui/dist/atmosphere-ui.es.js";
     import AppLayout from '@/Layouts/AppLayout'
-    import Welcome from '@/Components/Welcome'
     import FinanceCard from "@/Components/molecules/FinanceCard";
     import BudgetTracker from "@/Components/organisms/BudgetTracker";
     import TransactionsTable from "@/Components/organisms/TransactionsTable";
     import SectionTitle from "@/Components/atoms/SectionTitle";
-    import { ref } from '@vue/reactivity';
+    import { reactive, ref } from '@vue/reactivity';
     import { useSelect } from '@/utils/useSelects';
     import formatMoney from '@/utils/formatMoney';
     import { computed } from '@vue/runtime-core';
-import { Inertia } from '@inertiajs/inertia';
+    import { Inertia } from '@inertiajs/inertia';
+    import TransactionModal from "@/Components/TransactionModal.vue"
 
     export default {
         components: {
             AppLayout,
-            Welcome,
             AtButton,
             BudgetTracker,
             SectionTitle,
             TransactionsTable,
-            FinanceCard
+            FinanceCard,
+            TransactionModal,
         },
         props: {
             user: {
@@ -195,6 +212,16 @@ import { Inertia } from '@inertiajs/inertia';
                 })
             }
 
+            const isTransferModalOpen = ref(false);
+            const transferConfig = reactive({
+                recurrence: false,
+                automatic: false,
+            })
+
+            const openModalFor = (type) => {
+                isTransferModalOpen.value = true;
+            }
+
             return {
                 selected,
                 plannedDBToTransaction,
@@ -202,7 +229,10 @@ import { Inertia } from '@inertiajs/inertia';
                 formatMoney,
                 expenseVariance,
                 incomeVariance,
-                markAsPaid
+                markAsPaid,
+                isTransferModalOpen,
+                transferConfig,
+                openModalFor,
             }
         }
     }

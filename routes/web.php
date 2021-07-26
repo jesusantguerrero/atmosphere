@@ -159,7 +159,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
             "lastMonthIncome" => $lastMonthIncomes,
             "transactions" => $transactions->map(function ($transaction) {
                 return Transaction::parser($transaction);
-            }),
+            })->take(4),
         ]);
     })->name('finance');
 
