@@ -1,19 +1,19 @@
 <?php
 
+use App\Helpers\BudgetHelper;
+use App\Helpers\CategoryHelper;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\MealController;
 use App\Http\Controllers\MealPlanController;
 use App\Models\Budget;
 use App\Models\MealPlan;
-use App\Models\Transaction as ModelsTransaction;
+use App\Models\Transaction;
 use Carbon\Carbon;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use Insane\Journal\Category;
-use Insane\Journal\Transaction;
 
 /*
 |--------------------------------------------------------------------------
@@ -54,6 +54,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
 
         return Inertia::render('Dashboard', [
+            "strings" => __('dashboard'),
             "meals" => MealPlan::where([
                 'team_id' => $teamId,
                 'date' => date('Y-m-d')
@@ -62,23 +63,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
             "budget" => $budget->map(function ($budget) use($startDate, $endDate) {
                return Budget::dashboardParser($budget, $startDate, $endDate);
             }),
-            "categories" => Category::where([
-                'depth' => 0,
-                'display_id' => 'expenses'
-            ])->with([
-                'subCategories',
-                'subcategories.accounts' => function ($query) use ($teamId) {
-                    $query->where('team_id', '=', $teamId);
-                }
-            ])->get(),
-            "accounts" => Category::where([
-                'depth' => 1,
-                'display_id' => 'cash_and_bank'
-            ])->with([
-                'accounts' => function ($query) use ($teamId) {
-                    $query->where('team_id', '=', $teamId);
-                }
-            ])->get(),
+            "categories" => CategoryHelper::getSubcategories($teamId, ['expenses', 'incomes']),
+            "accounts" => CategoryHelper::getAccounts($teamId, ['cash_and_bank']),
             "transactionTotal" => $transactions->sum('total'),
             "transactions" => $transactions->map(function ($transaction) {
                 return Transaction::parser($transaction);
@@ -99,12 +85,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         ])->with('account')->get();
 
 
-        $planned = ModelsTransaction::where([
-            'team_id' => $teamId,
-            'status' => 'planned'
-        ])->get()->map(function ($transaction) {
-            return ModelsTransaction::parser($transaction);
-        });
+        $planned = BudgetHelper::getPlannedTransactions($teamId);
+        $subscriptions = BudgetHelper::getPlannedTransactions($teamId, 1);
 
         $transactions = Transaction::where([
             'team_id' => $teamId,
@@ -132,27 +114,13 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
         return Inertia::render('Finance', [
             "planned" => $planned,
+            "subscriptions" => $subscriptions,
             "budgetTotal" => $budget->sum('amount'),
             "budget" => $budget->map(function ($budget) use($startDate, $endDate) {
                return Budget::dashboardParser($budget, $startDate, $endDate);
             }),
-            "categories" => Category::where([
-                'depth' => 0,
-                'display_id' => 'expenses'
-            ])->with([
-                'subCategories',
-                'subcategories.accounts' => function ($query) use ($teamId) {
-                    $query->where('team_id', '=', $teamId);
-                }
-            ])->get(),
-            "accounts" => Category::where([
-                'depth' => 1,
-                'display_id' => 'cash_and_bank'
-            ])->with([
-                'accounts' => function ($query) use ($teamId) {
-                    $query->where('team_id', '=', $teamId);
-                }
-            ])->get(),
+            "categories" => CategoryHelper::getSubcategories($teamId, ['expenses', 'incomes']),
+            "accounts" => CategoryHelper::getAccounts($teamId, ['cash_and_bank']),
             "transactionTotal" => $transactions->sum('total'),
             "lastMonthExpenses" => $lastMonthExpenses,
             "income" => $incomes,

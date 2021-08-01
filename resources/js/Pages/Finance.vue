@@ -34,7 +34,7 @@
                         table-label="Subscriptions"
                         class="pt-3 mt-5 "
                         table-class="overflow-auto bg-white border rounded-lg shadow-md "
-                        :transactions="planned"
+                        :transactions="subscriptions"
                         :allow-mark-as-paid="true"
                         :parser="plannedDBToTransaction"
                     >
@@ -77,6 +77,7 @@
 
             <transaction-modal
                 @close="isTransferModalOpen=false"
+                v-bind="transferConfig"
                 v-model:show="isTransferModalOpen"
             />
         </div>
@@ -113,6 +114,12 @@
                 required: true,
             },
             planned: {
+                type: Array,
+                default()  {
+                    return [];
+                }
+            },
+            subscriptions: {
                 type: Array,
                 default()  {
                     return [];
@@ -189,7 +196,7 @@
             }
 
             const { categoryOptions: transformCategoryOptions } = useSelect()
-            transformCategoryOptions(props.categories[0].subcategories, true, 'categoryOptions');
+            transformCategoryOptions(props.categories, true, 'categoryOptions');
             transformCategoryOptions(props.accounts, true, 'accountsOptions');
             const getVariances = (current, last) => {
                 const variance = (current - last) / last * 100
@@ -218,8 +225,10 @@
                 automatic: false,
             })
 
-            const openModalFor = (type) => {
+            const openModalFor = (isRecurrent, automatic) => {
                 isTransferModalOpen.value = true;
+                transferConfig.recurrence = isRecurrent;
+                transferConfig.automatic = automatic;
             }
 
             return {

@@ -141,7 +141,7 @@
             }
 
             const { categoryOptions: transformCategoryOptions } = useSelect()
-            transformCategoryOptions(props.categories[0].subcategories, true, 'categoryOptions');
+            transformCategoryOptions(props.categories, true, 'categoryOptions');
             transformCategoryOptions(props.accounts, true, 'accountsOptions');
 
             return {

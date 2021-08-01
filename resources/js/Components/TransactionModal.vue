@@ -7,8 +7,9 @@
                         v-for="type in transactionTypes"
                         :key="type.value"
                         :options="transactionTypes"
-                        @click=""
-                        class="py-1 font-bold text-center text-gray-500 bg-gray-100 cursor-pointer hover:bg-gray-200"
+                        @click="form.direction = type.value"
+                        class="py-1 font-bold text-center cursor-pointer hover:bg-gray-200"
+                        :class="[form.direction == type.value ? 'bg-pink-500 hover:bg-pink-500 text-white' : 'text-gray-500 bg-gray-100']"
                     >
                         {{ type.label }}
                     </div>

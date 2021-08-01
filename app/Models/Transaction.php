@@ -8,7 +8,12 @@ use Insane\Journal\TransactionLine;
 
 class Transaction extends Model
 {
-    protected $fillable = ['team_id','user_id', 'transactionable_id', 'transactionable_type' , 'date','number', 'description', 'direction', 'notes', 'total'];
+    const STATUS_PLANNED = 'planned';
+    const STATUS_DRAFT = 'draft';
+    const STATUS_VERIFIED = 'verified';
+    const STATUS_CANCELED = 'canceled';
+
+    protected $fillable = ['team_id','user_id', 'transactionable_id', 'transactionable_type' , 'date','number', 'description', 'direction', 'notes', 'total', 'status'];
     protected $with = ['schedule'];
     /**
      * The "booted" method of the model.

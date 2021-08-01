@@ -4,12 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Budget;
 use App\Models\MealPlan;
-use App\Models\Transaction as ModelsTransaction;
+use App\Models\Transaction;
 use Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Insane\Journal\Category;
-use Insane\Journal\Transaction;
+use PhpParser\Builder\Trait_;
 
 class BudgetController extends InertiaController
 {
@@ -52,6 +52,7 @@ class BudgetController extends InertiaController
 
     public function addPlannedTransaction(Request $request) {
         $postData = $this->getPostData($request);
+        $postData['status'] = Transaction::STATUS_PLANNED;
         $transaction = Transaction::create($postData);
         $transaction->createLines($postData, $postData['items'] ?? []);
 
@@ -64,7 +65,7 @@ class BudgetController extends InertiaController
     }
 
     public function markAsPaid(Request $request, $transactionId) {
-        $transaction = ModelsTransaction::with(['schedule'])->find($transactionId);
+        $transaction = Transaction::with(['schedule'])->find($transactionId);
 
         if ($transaction->team_id == $request->user()->current_team_id) {
             $schedule = $transaction->schedule;
