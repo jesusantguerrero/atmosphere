@@ -139,7 +139,7 @@
 <script>
     import Modal from '@/Jetstream/Modal'
     import { useForm } from "@inertiajs/inertia-vue3"
-    import { AtField, AtInput, AtButton } from "atmosphere-ui/dist/atmosphere-ui.es.js"
+    import { AtField, AtInput, AtButton } from "atmosphere-ui"
     import { reactive, toRefs } from '@vue/reactivity'
     import { inject } from '@vue/runtime-core'
     import { NSelect, NDatePicker } from "naive-ui";
@@ -243,6 +243,7 @@
                     resource_type_id: 'MANUAL',
                     total: form.amount,
                     date:  format(new Date(form.date), 'yyyy-MM-dd'),
+                    status: 'verified',
                     ...state.schedule_settings
                 }))
                 .post(postRoute, {

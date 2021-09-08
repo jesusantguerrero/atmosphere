@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\CategoryHelper;
 use App\Models\Budget;
 use App\Models\MealPlan;
 use App\Models\Transaction;
 use Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
-use Insane\Journal\Category;
-use PhpParser\Builder\Trait_;
 
 class BudgetController extends InertiaController
 {
@@ -38,15 +37,7 @@ class BudgetController extends InertiaController
 
         return [
             'budgets' => $this->getModelQuery($request),
-            "categories" => Category::where([
-                'depth' => 0,
-                'display_id' => 'expenses'
-            ])->with([
-                'subCategories',
-                'subcategories.accounts' => function ($query) use ($teamId) {
-                    $query->where('team_id', '=', $teamId);
-                }
-            ])->get(),
+            "categories" => CategoryHelper::getSubcategories($teamId, ['expenses', 'incomes']),
         ];
     }
 

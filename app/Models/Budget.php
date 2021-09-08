@@ -23,6 +23,7 @@ class Budget extends Model
         ])
         ->where("date",  ">=", $startDate)
         ->where("date", "<=", $endDate)
+        ->where('status', Transaction::STATUS_VERIFIED)
         ->join('transactions', 'transactions.id', '=', 'transaction_id')
         ->selectRaw('sum(amount * type)  as total')
         ->get()[0]->total;

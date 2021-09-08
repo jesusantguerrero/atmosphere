@@ -13,7 +13,7 @@
 
     </div>
     <div class="flex space-x-5">
-        <div>
+        <div class="text-right">
             <h4 class="font-bold"> {{ formatMoney(value)}} <span v-if="expenses" class="text-red-500">({{ formatMoney(expenses) }})</span></h4>
             <small class="text-sm"> {{ status }}</small>
         </div>

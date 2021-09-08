@@ -35,7 +35,7 @@
 
 <script setup>
 import SectionTitle from "../atoms/SectionTitle";
-import { AtButton } from "atmosphere-ui/dist/atmosphere-ui.es.js";
+import { AtButton } from "atmosphere-ui";
 import { computed, ref } from "@vue/runtime-core";
 import TransactionModal from "../TransactionModal.vue"
 import formatMoney from "../../utils/formatMoney"

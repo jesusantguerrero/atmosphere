@@ -1,14 +1,14 @@
 <template>
     <app-layout>
-        <div class="pb-20 mx-auto mt-5 max-w-screen-2xl sm:px-6 lg:px-8">
+        <div class="px-6 pb-20 mx-auto mt-5 max-w-screen-2xl lg:px-8">
             <section-title type="secondary"> Finance</section-title>
-              <div class="flex space-x-10">
-                <div class="w-6/12">
+              <div class="flex flex-wrap md:flex-nowrap md:space-x-10">
+                <div class="w-full md:w-6/12">
                     <div class="mt-5">
                         <SectionTitle type="secondary">Summary</SectionTitle>
                     </div>
                     <div class="flex flex-wrap justify-between px-5 py-5 mt-5 overflow-hidden bg-white border shadow-sm rounded-xl">
-                        <div class="mb-4 space-y-4">
+                        <div class="mx-auto mb-4 space-y-4">
                             <FinanceCard
                                 class=""
                                 title="Income"
@@ -21,7 +21,7 @@
                                 subtitle="Total: 150,000.00"
                             />
                         </div>
-                        <div class="px-5 py-5 text-white bg-pink-500 rounded-xl">
+                        <div class="px-5 py-5 mx-auto text-white bg-pink-500 rounded-xl">
                             <h4> Expenses </h4>
                             <div class="mt-2 text-4xl font-bold"> {{ formatMoney(transactionTotal) }} </div>
                             <div class="px-5 py-2 mt-4 bg-gray-700 bg-opacity-25 rounded-3xl"> Last month variance:
@@ -29,7 +29,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="w-6/12">
+                <div class="w-full md:w-6/12">
                     <TransactionsTable
                         table-label="Subscriptions"
                         class="pt-3 mt-5 "
@@ -44,8 +44,8 @@
                     </TransactionsTable>
                 </div>
             </div>
-            <div class="flex mt-5 space-x-10">
-              <div class="w-6/12">
+            <div class="flex flex-wrap mt-5 md:flex-nowrap md:space-x-10">
+              <div class="w-full md:w-6/12">
                    <TransactionsTable
                         table-label="My payments"
                         class="pt-3 mt-5"
@@ -60,7 +60,7 @@
                     </template>
                    </TransactionsTable>
                 </div>
-                <div class="w-6/12">
+                <div class="w-full md:w-6/12">
                     <TransactionsTable
                         table-label="Transactions"
                         class="pt-3 mt-5 "
@@ -85,7 +85,7 @@
 </template>
 
 <script>
-    import { AtButton } from "atmosphere-ui/dist/atmosphere-ui.es.js";
+    import { AtButton } from "atmosphere-ui";
     import AppLayout from '@/Layouts/AppLayout'
     import FinanceCard from "@/Components/molecules/FinanceCard";
     import BudgetTracker from "@/Components/organisms/BudgetTracker";

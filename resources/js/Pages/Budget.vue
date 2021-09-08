@@ -29,12 +29,12 @@
                             <AtButton @click="isModalOpen = true" class="text-white bg-pink-500"> Add category </AtButton>
                          </template>
                         </n-select>
-                        <at-error-bag :errors="errors" field="account_id" />
+                        <at-error-bag v-if="errors" :errors="errors" field="account_id" />
                     </at-field>
 
                     <at-field label="Amount" class="w-4/12">
                         <at-input type="number" v-model="form.amount" />
-                        <at-error-bag :errors="errors" field="amount" />
+                        <at-error-bag v-if="errors" errors="errors" field="amount" />
                     </at-field>
 
                     <div>
@@ -80,7 +80,7 @@
 
 <script>
     import AppLayout from '@/Layouts/AppLayout';
-    import { AtButton, AtField, AtInput, AtErrorBag } from "atmosphere-ui/dist/atmosphere-ui.es.js";
+    import { AtButton, AtField, AtInput, AtErrorBag } from "atmosphere-ui";
     import CategoryModal from '../Components/CategoryModal.vue';
     import { useForm } from '@inertiajs/inertia-vue3';
     import { NSelect, NModal, NCard } from "naive-ui"
@@ -127,7 +127,7 @@
                     return sumMoney(props.budgets.data.map(item => item.amount));
                 }),
                 categoryOptions: computed(() => {
-                    return categoryOptions(props.categories[0], true);
+                    return categoryOptions(props.categories, true);
                 })
             })
 

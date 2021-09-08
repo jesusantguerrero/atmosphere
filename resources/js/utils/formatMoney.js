@@ -1,7 +1,7 @@
-const formatMoney = (value) => {
+const formatMoney = (value, symbol = "DOP") => {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
-      currency: "DOP",
+      currency: symbol,
       currencyDisplay: "symbol"
     }).format(value || 0);
 }

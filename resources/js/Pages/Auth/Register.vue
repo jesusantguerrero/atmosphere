@@ -21,7 +21,7 @@
 </template>
 
 <script>
-    import { AtAuthBox, AtAuthForm, AtInput, AtField } from "atmosphere-ui/dist/atmosphere-ui.es.js";
+    import { AtAuthBox, AtAuthForm, AtInput, AtField } from "atmosphere-ui";
 
     export default {
         components: {

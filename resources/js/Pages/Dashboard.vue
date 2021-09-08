@@ -59,7 +59,7 @@
 </template>
 
 <script>
-    import { AtButton } from "atmosphere-ui/dist/atmosphere-ui.es.js";
+    import { AtButton } from "atmosphere-ui";
     import AppLayout from '@/Layouts/AppLayout'
     import Welcome from '@/Components/Welcome'
     import BudgetTracker from "@/Components/organisms/BudgetTracker";

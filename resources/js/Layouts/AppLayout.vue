@@ -206,8 +206,8 @@
                         class="text-gray-700 bg-white app-side"
                         title="Loger"
                         :menu="menu"
-                        item-class="font-bold text-pink-500 hover:bg-gray-500 hover:text-white"
-                        item-active-class="text-white bg-gray-500"
+                        item-class="font-bold text-gray-400 hover:text-pink-400 hover:bg-gray-100"
+                        item-active-class="text-pink-500 bg-gray-100"
                     >
                         <template #brand>
                             <h1 class="pl-5 text-3xl font-bold text-pink-500">Loger.</h1>
@@ -239,7 +239,7 @@
     import JetDropdownLink from '@/Jetstream/DropdownLink'
     import JetNavLink from '@/Jetstream/NavLink'
     import JetResponsiveNavLink from '@/Jetstream/ResponsiveNavLink'
-    import { AtSide, AtSideItem, AtSideItemGroup } from "atmosphere-ui/dist/atmosphere-ui.es.js"
+    import { AtSide, AtSideItem, AtSideItemGroup } from "atmosphere-ui"
 
     export default {
         components: {
