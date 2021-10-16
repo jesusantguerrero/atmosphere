@@ -1,40 +1,22 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
+## About Loger [codename: Atmosphere]
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Loger (House in french) is a Monolith app using laravel 8, jetstream, intertia, vue3, Tailwindcss and some hand crafted packages [Atmosphere UI](), [Journal](), [Tresurer](), and others.
 
-## About Atmosphere
+Loger helps to manage my family house chores things like Meal Planner, Home Finance,
 
-Atmosphere is a software as a service starter kit to build all insane code's apps. Atmosphere is built on top of Laravel, Jetstream (inertia.js), Tailwindcss. and some hand crafted packages Atmosphere UI, Journal, Tresurer, and others.
-
-Done
-- Authentication
+Features:
+- Meal Planner
+- Random Meal 
+- Monthly Budget
+- Scheduled Payments Reminders
 - Subscriptions
-- Subscriptions Plans
-- Accounting Flow
-
-Todo:
-- Announcements
-- User
-- Notifications
-- Blog
-- Api
-- Admin
-- Themes
-
+- Transactions
 ## Demo
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+.
 
 ## Installation
 
-To install Atmosphere, you'll want to clone or download this repo:
+To install Loger, you'll need to clone or download this repo:
 
 ```
 git clone https://github.com/jesusantguerrero/atmosphere.git project_name
@@ -53,7 +35,7 @@ We need to specify our Environment variables for our application. You will see a
 Then, open up the `.env` file and update your *DB_DATABASE*, *DB_USERNAME*, and *DB_PASSWORD* in the appropriate fields. You will also want to update the *APP_URL* to the URL of your application.
 
 ```bash
-APP_URL=http://atmosphere.test
+APP_URL=http://logger.test
 
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
@@ -87,11 +69,5 @@ php artisan db:seed
 
 🎉 And that's it! You will now be able to visit your URL and see your Atmosphere application up and running.
 
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
 ## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+[MIT license](https://opensource.org/licenses/MIT).
