@@ -13,51 +13,39 @@
     </at-auth-box>
 </template>
 
-<script>
-    import { AtAuthBox, AtAuthForm, AtButton } from "atmosphere-ui";
+<script setup>
+    import { AtAuthBox, AtAuthForm } from "atmosphere-ui";
+    import { Inertia } from "@inertiajs/inertia";
+    import { useForm } from "@inertiajs/inertia-vue3";
 
-    export default {
-        components: {
-            AtAuthBox,
-            AtAuthForm,
-            AtButton
-        },
+    defineProps({
+        canResetPassword: Boolean,
+        status: String,
+    });
 
-        props: {
-            canResetPassword: Boolean,
-            status: String,
-        },
+    const form = useForm({
+        email: '',
+        password: '',
+        remember: false
+    })
 
-        data() {
-            return {
-                form: this.$inertia.form({
-                    email: '',
-                    password: '',
-                    remember: false
-                })
-            }
-        },
+    const onHomePressed = () => {
+        Inertia.visit('/');
+    }
 
-        methods: {
-            onHomePressed() {
-                this.$inertia.visit('/');
-            },
+    const onLinkPressed = () => {
+        Inertia.visit('register');
+    }
 
-            onLinkPressed() {
-                this.$inertia.visit('register');
-            },
-
-            submit(formData) {
-                this.form
-                    .transform(data => ({
-                        ...data,
-                        ... formData,
-                        remember: this.form.remember ? 'on' : ''
-                    }))
-                    .post(this.route('login'), {
-                        onFinish: () => this.form.reset('password'),
-                    })
-            }
-        }
+    const submit = (formData) => {
+        form
+            .transform(data => ({
+                ...data,
+                ... formData,
+                remember: form.remember ? 'on' : ''
+            }))
+            .post(route('login'), {
+                onFinish: () => form.reset('password'),
+            })
     }
 </script>

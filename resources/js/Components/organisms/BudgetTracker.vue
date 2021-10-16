@@ -1,15 +1,15 @@
 <template>
     <div class="px-5 py-3 transition bg-white border divide-y rounded-lg shadow-md">
-        <div class="flex justify-between pb-2">
+        <div class="pb-2 md:justify-between md:flex">
             <h1 class="font-bold text-gray-500">
-                Welcome to Loger <span class="text-pink-500">{{ username }}</span>
+                Welcome to Loger <span class="text-sm text-pink-500">{{ username }}</span>
             </h1>
             <div class="space-x-2">
-                <AtButton class="text-white bg-pink-500" @click="isTransferModalOpen=true">
+                <AtButton class="text-sm text-white bg-pink-500" @click="isTransferModalOpen=true">
                     <i class="fa fa-exchange-alt"></i>
                     Add transaction
                 </AtButton>
-                <AtButton class="text-white bg-pink-500" @click="$inertia.visit(route('budgets.index'))">
+                <AtButton class="text-sm text-white bg-pink-500" @click="$inertia.visit(route('budgets.index'))">
                     <i class="fa fa-wallet"></i>
                     Edit budget
                 </AtButton>
