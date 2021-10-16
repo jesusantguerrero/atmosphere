@@ -15,7 +15,7 @@ class CreatePlannerTable extends Migration
     {
         Schema::create('planners', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('parent_plan_id');
+            $table->foreignId('parent_plan_id')->nullable();
             $table->foreignId('team_id');
             $table->foreignId('user_id');
             $table->foreignId('dateable_id')->nullable();
@@ -25,7 +25,7 @@ class CreatePlannerTable extends Migration
             $table->text('ical')->nullable();
             $table->date('date');
             $table->date('end_date');
-            $table->boolean('automatic');
+            $table->boolean('automatic')->default(false);
             $table->timestamps();
         });
     }
