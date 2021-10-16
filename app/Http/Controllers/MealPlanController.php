@@ -23,14 +23,42 @@ class MealPlanController extends InertiaController
         $this->filters = [];
     }
 
+    function getIngredients($plans) {
+        $ingredients = [];
+        foreach ($plans as $plan) {
+            $mealIngredients = $plan->dateable->ingredients;
+            if ($mealIngredients && count($mealIngredients)) {
+                foreach ($mealIngredients as $product) {
+                    if (array_key_exists($product->name, $ingredients)) {
+                        $ingredients[$product->name] = array_merge($ingredients[$product->name], [
+                            'quantity' => $ingredients[$product->name]['quantity']++
+                        ]);
+                    } else {
+                        $ingredients[$product->name] = [
+                            'quantity' => $product->quantity,
+                            'unit' => $product->unit
+                        ];
+                    }
+                }
+            }
+        }
+
+        return $ingredients;
+    }
+
     protected function getIndexProps(Request $request)
     {
         $queryParams = $request->query() ?? [];
         $queryParams['limit'] = $queryParams['limit'] ?? 50;
-
+        $plans = $this->getModelQuery($request);
+        $mode = $queryParams['mode'] ?? '';
         return [
-            'mealPlans' => $this->getModelQuery($request),
-            'meals' =>function () use ($request) {
+            'mealPlans' => $plans,
+            'mode' => $mode,
+            'ingredients' => function () use ($plans) {
+                return $this->getIngredients($plans);
+            },
+            'meals' => function () use ($request) {
                 return Meal::where([
                     'team_id' => $request->user()->current_team_id
                 ])->get();

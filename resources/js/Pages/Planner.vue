@@ -11,8 +11,10 @@
                 </div>
 
                 <div class="space-x-2">
-                    <at-button class="text-white bg-pink-400" @click="openRandomModal()"> Random Meal </at-button>
-                    <at-button class="text-white bg-pink-400" @click="openModal()"> Get grocery list</at-button>
+                    <AtButton class="text-white bg-pink-400" @click="openRandomModal()"> Random Meal </AtButton>
+                    <AtButton class="text-white bg-pink-400" @click="toggleMode()">
+                        {{ toggleBtnText }}
+                    </AtButton>
                 </div>
             </div>
         </template>
@@ -20,13 +22,19 @@
         <div class="py-12">
             <div class="mx-auto max-w-7xl sm:px-6">
                 <at-week-pager
-                    class="h-12 bg-white"
+                    class="h-12 mb-10 bg-white"
                     v-model="date"
                     v-model:week="week"
                     next-mode="week"
                 />
 
-                <div class="pt-5 overflow-hidden divide-y-2 rounded-md">
+                <div v-if="isGroceryList" class="py-5 overflow-hidden bg-white border rounded-md">
+                    <div v-for="(ingredient, name) in ingredients" class="px-5 text-pink-500 bg-white cursor-pointer">
+                        {{name }} ({{ ingredient.quantity }}) {{ ingredient.unit }}
+                    </div>
+                </div>
+
+                <div v-else class="pt-5 overflow-hidden bg-white border divide-y-2 rounded-md">
                     <div v-for="day in week" :key="day" @click="isModalOpen=day" class="px-5 py-4 bg-white cursor-pointer">
                         {{ getDayName(day) }}
 
@@ -63,10 +71,9 @@
     import { format } from "date-fns";
     import { AtButton, AtWeekPager } from "atmosphere-ui";
     import MealSection from '@/Components/Meal';
-    import { reactive, toRefs } from '@vue/reactivity';
     import PlanModal from '../Components/PlanModal.vue';
     import { Inertia } from '@inertiajs/inertia';
-    import { nextTick } from '@vue/runtime-core';
+    import { computed, nextTick, reactive, toRefs, onMounted } from "vue";
     import RandomMealModal from '../Components/RandomMealModal.vue';
 
     export default {
@@ -86,6 +93,16 @@
             meals: {
                 type: Array,
                 required: true
+            },
+            ingredients: {
+                type: Object,
+                default() {
+                    return {}
+                }
+            },
+            mode: {
+                type: String,
+                default: ''
             }
         },
         setup(props) {
@@ -93,7 +110,13 @@
                 isModalOpen: false,
                 isRandomModalOpen: false,
                 date: new Date(),
-                week: null
+                week: null,
+                isGroceryList: computed(() => {
+                    return props.mode == 'grocery-list';
+                }),
+                toggleBtnText: computed(() => {
+                    return state.isGroceryList ? 'Meal planner' : 'Grocery List';
+                })
             })
 
             const openRandomModal = () => {
@@ -115,12 +138,37 @@
                 })
             }
 
+            const getMode = (toggled) => {
+                if (toggled) {
+                    return state.isGroceryList ? '' : 'mode=grocery-list';
+                } else {
+                    return props.mode ? `mode=${props.mode}` : '';
+                }
+            }
+
+            const getDates = () => {
+                const startDate = state.week[0];
+                const endDate = state.week[6];
+                return `filter[date]=${format(startDate, 'yyyy-MM-dd')}~${format(endDate, 'yyyy-MM-dd')}`;
+            }
+
+            const toggleMode = () => {
+                Inertia.visit(`/meal-planner?${getMode(true)}`);
+            }
+
+            const onWeekChanged = () => {
+                const params = [getMode(), getDates()].join('&');
+                Inertia.visit(`/meal-planner?${params}`);
+            };
+
             return {
                 ...toRefs(state),
                 openRandomModal,
                 getDayName,
                 getDayMeals,
-                onSaved
+                onSaved,
+                toggleMode,
+                onWeekChanged
             }
         }
     }
