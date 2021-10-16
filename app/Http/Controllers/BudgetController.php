@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Helpers\CategoryHelper;
 use App\Models\Budget;
-use App\Models\MealPlan;
+use App\Models\Planner;
 use App\Models\Transaction;
 use Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
@@ -47,7 +47,7 @@ class BudgetController extends InertiaController
         $transaction = Transaction::create($postData);
         $transaction->createLines($postData, $postData['items'] ?? []);
 
-        MealPlan::create(array_merge($postData ,[
+        Planner::create(array_merge($postData ,[
             'dateable_type' => Transaction::class,
             'dateable_id' => $transaction['id'],
         ]));

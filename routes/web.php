@@ -5,9 +5,9 @@ use App\Helpers\CategoryHelper;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\MealController;
-use App\Http\Controllers\MealPlanController;
+use App\Http\Controllers\PlannerController;
 use App\Models\Budget;
-use App\Models\MealPlan;
+use App\Models\Planner;
 use App\Models\Transaction;
 use Carbon\Carbon;
 use Illuminate\Foundation\Application;
@@ -55,7 +55,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
         return Inertia::render('Dashboard', [
             "strings" => __('dashboard'),
-            "meals" => MealPlan::where([
+            "meals" => Planner::where([
                 'team_id' => $teamId,
                 'date' => date('Y-m-d')
             ])->with('dateable')->get(),
@@ -63,8 +63,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
             "budget" => $budget->map(function ($budget) use($startDate, $endDate) {
                return Budget::dashboardParser($budget, $startDate, $endDate);
             }),
-            "categories" => CategoryHelper::getSubcategories($teamId, ['expenses', 'incomes']),
-            "accounts" => CategoryHelper::getAccounts($teamId, ['cash_and_bank']),
+            "categories" => $teamId ? CategoryHelper::getSubcategories($teamId, ['expenses', 'incomes']) : null,
+            "accounts" => $teamId ? CategoryHelper::getAccounts($teamId, ['cash_and_bank']) : null,
             "transactionTotal" => $transactions->sum('total'),
             "transactions" => $transactions->map(function ($transaction) {
                 return Transaction::parser($transaction);
@@ -136,7 +136,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::resource('/meals', MealController::class);
     Route::post('/meals/add-plan', [MealController::class, 'addPlan'])->name('meals.addPlan');
     Route::get('/meals-random', [MealController::class, 'random'])->name('meals.random');
-    Route::resource('/meal-planner', MealPlanController::class);
+    Route::resource('/meal-planner', PlannerController::class);
     Route::resource('/budgets', BudgetController::class);
     Route::post('/budgets/planed-budged', [BudgetController::class, 'addPlannedTransaction'])->name("budget.planned-transaction");
     Route::put('/transactions/{id}/mark-as-paid', [BudgetController::class, 'markAsPaid'])->name("transactions.mark-as-paid");

@@ -6,7 +6,7 @@
                 <h2 class="text-xl font-semibold leading-tight text-pink-500">
                     Meal Planner
                 </h2>
-                <span>There a total of {{ meals.length }} meals</span>
+                <span>There a total of {{ meals.data.length || 0 }} meals</span>
 
                 </div>
 
@@ -18,13 +18,15 @@
 
         <div class="py-12">
             <div class="mx-auto max-w-7xl sm:px-6">
-                <MealSection :meals="meals.data"/>
+                <MealSection
+                    :meals="meals.data"
+                    @click="$inertia.visit(route('meals.edit', $event))"
+                />
                 <meal-modal
                     :show="isModalOpen"
                     :closeable="true"
                     @close="isModalOpen=false"
                     title="Add a new Meal"
-
                 />
             </div>
         </div>

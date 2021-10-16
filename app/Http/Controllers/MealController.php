@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Meal;
-use App\Models\MealPlan;
+use App\Models\Planner;
 use Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -36,7 +36,7 @@ class MealController extends InertiaController
         $postData = $this->getPostData($request);
         foreach ($postData['meals'] as $meal) {
             if (!isset($meal['id'])) continue;
-            MealPlan::create(array_merge($postData ,[
+            Planner::create(array_merge($postData ,[
                 'dateable_type' => Meal::class,
                 'dateable_id' => $meal['id'],
                 'date' => Carbon::parse($postData['date'])->setTimezone('UTC')->toDateTimeString()

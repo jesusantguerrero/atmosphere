@@ -35,12 +35,12 @@ We need to specify our Environment variables for our application. You will see a
 Then, open up the `.env` file and update your *DB_DATABASE*, *DB_USERNAME*, and *DB_PASSWORD* in the appropriate fields. You will also want to update the *APP_URL* to the URL of your application.
 
 ```bash
-APP_URL=http://logger.test
+APP_URL=http://127.0.0.1:8000/
 
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=atmosphere
+DB_DATABASE=loger
 DB_USERNAME=root
 DB_PASSWORD=
 ```

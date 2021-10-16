@@ -206,7 +206,7 @@
                         class="text-gray-700 bg-white app-side"
                         title="Loger"
                         :menu="menu"
-                        item-class="font-bold text-gray-400 hover:text-pink-400 hover:bg-gray-100"
+                        item-class="block w-full px-5 py-2 font-bold text-gray-400 rounded-md hover:text-pink-400 hover:bg-gray-100"
                         item-active-class="text-pink-500 bg-gray-100"
                     >
                         <template #brand>
@@ -266,22 +266,22 @@
                     {
                         icon: 'far fa-calendar-alt',
                         label: 'Meal Planer',
-                        to: 'meal-planner'
+                        to: '/meal-planner'
                     },
                     {
                         icon: 'fas fa-drumstick-bite',
                         label: 'Meals',
-                        to: 'meals'
+                        to: '/meals'
                     },
                     {
                         icon: 'fas fa-dollar-sign',
                         label: 'Finance',
-                        to: 'finance'
+                        to: '/finance'
                     },
                     {
                         icon: 'fas fa-heart',
                         label: 'Relationship',
-                        to: 'finance'
+                        to: '/finance'
                     }
                 ]
             }

@@ -22,6 +22,10 @@ class InertiaController extends BaseController {
         return Inertia::render($this->templates['index'], $this->getIndexProps($request));
     }
 
+    public function create(Request $request) {
+        return Inertia::render($this->templates['create'], []);
+    }
+
     public function edit(Request $request, int $id) {
         return Inertia::render($this->templates['edit'], $this->getEditProps($request, $id));
     }

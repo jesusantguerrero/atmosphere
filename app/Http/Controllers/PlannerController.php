@@ -3,13 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Meal;
-use App\Models\MealPlan;
+use App\Models\Planner;
 use Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
 
-class MealPlanController extends InertiaController
+class PlannerController extends InertiaController
 {
-    public function __construct(MealPlan $mealPlan)
+    public function __construct(Planner $mealPlan)
     {
         $this->model = $mealPlan;
         $this->templates = [

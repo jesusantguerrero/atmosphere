@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\MealPlan;
+use App\Models\Planner;
 use Illuminate\Database\Eloquent\Model;
 use Insane\Journal\TransactionLine;
 
@@ -51,7 +51,7 @@ class Transaction extends Model
     }
 
     public function schedule() {
-        return $this->morphOne(MealPlan::class, 'dateable', 'dateable_type', 'dateable_id', );
+        return $this->morphOne(Planner::class, 'dateable', 'dateable_type', 'dateable_id', );
     }
 
     public function lines() {
