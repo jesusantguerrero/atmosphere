@@ -7,13 +7,18 @@
                         <slot name="title">Add a new meal</slot>
                     </h3>
 
-                    <div class="mt-2">
+                    <div class="mt-2 text-left">
                         <slot name="content">
                             <div>
                                 <at-field
-                                    label="Meal Name"
+                                    label="Title"
                                 >
-                                    <at-input v-model="form.name"></at-input>
+                                    <at-input v-model="form.name"/>
+                                </at-field>
+                                <at-field
+                                    label="Description"
+                                >
+                                    <at-input v-model="form.description"/>
                                 </at-field>
 
                             </div>
@@ -57,7 +62,7 @@
                 default: true
             },
         },
-        setup(props, { emit }) {
+        setup(_props, { emit }) {
             const state = reactive({
                 form: useForm({
                     name: ''
