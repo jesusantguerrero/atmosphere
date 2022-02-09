@@ -2,7 +2,7 @@
 
     <div>
         <at-field
-            label="Meal Name"
+            label="Title"
         >
             <at-input v-model="form.name"></at-input>
         </at-field>
@@ -10,12 +10,12 @@
         <at-field
             label="Ingredients"
         >
-            <div class="grid grid-cols-4 py-2 bg-white" v-for="(ingredient, index) in form.ingredients" :key="ingredient.id">
+            <div class="flex px-2 py-2 bg-white" v-for="(ingredient, index) in form.ingredients" :key="ingredient.id">
                 <div class="px-4">
                     <span>Qty</span>
                     <at-input type="number" v-model="ingredient.quantity" class="bg-gray-100 border-none rounded-t-none rounded-b-none"></at-input>
                 </div>
-                <div class="px-4">
+                <div class="w-full px-4">
                     <span>Name</span>
                     <at-input class="bg-gray-100 border-none rounded-t-none rounded-b-none" v-model="ingredient.name" @update:modelValue="checkIngredients(index, $event)"></at-input>
                 </div>

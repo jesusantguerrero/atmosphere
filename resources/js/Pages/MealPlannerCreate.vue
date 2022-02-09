@@ -17,7 +17,7 @@
         </template>
 
         <div class="py-12">
-            <div class="mx-auto max-w-7xl sm:px-6">
+            <div class="px-6 mx-auto max-w-7xl">
                 <meal-form
                     ref="mealForm"
                     :meal="meals"
