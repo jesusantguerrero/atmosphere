@@ -7,6 +7,7 @@
     "require": {
         "php": ">=8.0.1",
         "fruitcake/laravel-cors": "^2.0",
+        "google/apiclient": "2.12.1",
         "guzzlehttp/guzzle": "^7.0.1",
         "inertiajs/inertia-laravel": "^0.5.4",
         "insane/journal": "dev-master",
@@ -48,12 +49,16 @@
         ],
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi"
-        ]
+        ],
+        "pre-autoload-dump": "Google\\Task\\Composer::cleanup"
     },
     "extra": {
         "laravel": {
             "dont-discover": []
-        }
+        },
+        "google/apiclient-services": [
+            "Gmail"
+        ]
     },
     "config": {
         "optimize-autoloader": true,

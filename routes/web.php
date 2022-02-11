@@ -41,6 +41,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::controller(DashboardController::class)->group(function () {
         Route::get('/dashboard', 'index')->name('dashboard');
         Route::get('/finance', 'finance')->name('finance');
+        Route::get('/integrations', 'integrations')->name('integrations');
+        Route::post('/services/google', 'google')->name('services.google');
     });
 
     Route::resource('/meals', MealController::class);

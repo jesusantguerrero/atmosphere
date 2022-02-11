@@ -3,8 +3,8 @@ namespace App\Libraries;
 
 use App\Jobs\ProcessCalendar;
 use App\Jobs\ProcessGmail;
-use App\Models\Daily\Automation;
-use App\Models\Daily\Integration;
+use App\Models\Integrations\Automation;
+use App\Models\Integrations\Integration;
 use App\Models\User;
 use Google_Client;
 use Google_Service_Calendar;
@@ -64,37 +64,11 @@ class GoogleService
         return $client;
     }
 
-    public static function createItemFromCalendar($automationId, $afterResponse = null) {
-        $automation = Automation::find($automationId);
-        echo "$automation->name $automation->id \n";
-        $method = $afterResponse ? "dispatchAfterResponse" : "dispatch";
-        ProcessCalendar::$method($automation);
-        return true;
-    }
-
-    public static function listCalendars(int $integrationId) {
-        $client = self::getClient($integrationId);
-        $service = new Google_Service_Calendar($client);
-        return $service->calendarList->listCalendarList();
-    }
-
     public static function createItemFromGmail($automationId, $afterResponse = null) {
        $automation = Automation::find($automationId);
        echo "$automation->name $automation->id \n";
        $method = $afterResponse ? "dispatchAfterResponse" : "dispatch";
        ProcessGmail::$method($automation);
        return true;
-    }
-
-    public static function getSheetsService($integrationId) {
-        $client = GoogleService::getClient($integrationId);
-        $service = new Google_Service_Sheets($client);
-        return $service;
-    }
-
-    public static function getSheetService($integrationId) {
-        $client = GoogleService::getClient($integrationId);
-        $service = new Google_Service_Sheets_Sheet($client);
-        return $service;
     }
 }

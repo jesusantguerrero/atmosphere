@@ -4,12 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Helpers\BudgetHelper;
 use App\Helpers\CategoryHelper;
+use App\Libraries\GoogleService;
 use App\Models\Budget;
+use App\Models\Integrations\AutomationService;
+use App\Models\Integrations\Integration;
 use App\Models\Planner;
 use App\Models\Transaction;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Laravel\Jetstream\Jetstream;
 
 class DashboardController {
     public function index(Request $request) {
@@ -105,5 +109,22 @@ class DashboardController {
                 return Transaction::parser($transaction);
             })->take(4),
         ]);
+    }
+
+    public function integrations(Request $request) {
+        $user = $request->user();
+
+        return Jetstream::inertia()->render($request, 'Integrations/Index', [
+            "services" => AutomationService::all(),
+            "integrations" => Integration::where([
+                'team_id' => $user->current_team_id,
+                'user_id' => $user->id
+            ])->with(['automations'])->get()
+        ]);
+    }
+
+    public function google(Request $request)
+    {
+       return GoogleService::setTokens((object) $request->post('credentials'), $request->user()->id);
     }
 }
