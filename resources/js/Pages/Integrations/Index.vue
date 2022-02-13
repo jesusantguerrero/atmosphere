@@ -9,7 +9,7 @@
 
 
                     <AtButton class="text-white bg-pink-400"
-                        @click="state.isAutomationModalOpen=true"
+                        @click="openAutomationModal"
                     >
                         Add Automation
                     </AtButton>
@@ -54,14 +54,17 @@
                 </div>
 
                 <automation-modal
+                    :show="state.isAutomationModalOpen"
+                    :record-data="openedAutomation"
+                    :closeable="true"
+                    title="Add a new automation"
+                    :services="services"
+                    :integrations="integrations"
+                    :recipes="recipes"
+                    type="event"
                     @cancel="state.isAutomationModalOpen = false"
                     @saved="onItemSaved"
-                    :boards="boards"
-                    type="event"
-                    :record-data="openedAutomation"
-                    :is-open="state.isAutomationModalOpen"
-                >
-                </automation-modal>
+                />
             </div>
         </div>
     </app-layout>
@@ -82,6 +85,12 @@ const props = defineProps({
         }
     },
     integrations: {
+        type: Array,
+        default() {
+            return [];
+        }
+    },
+    recipes: {
         type: Array,
         default() {
             return [];
@@ -160,7 +169,12 @@ const google = (scopeName, service) => {
                             service_name: service.name,
                             user: profile.getEmail()
                         };
-                        Inertia.post('/services/google', { credentials })
+                        axios.post('/services/google', { credentials }).then(() => {
+                            Inertia.replace(`/integrations`, {
+                                only: ["integrations"],
+                                preserveState: true
+                            });
+                        });
                     })
             })
     });

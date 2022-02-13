@@ -2,6 +2,7 @@
 
 use App\Helpers\BudgetHelper;
 use App\Helpers\CategoryHelper;
+use App\Http\Controllers\Api\AutomationController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\DashboardController;
@@ -45,8 +46,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         Route::post('/services/google', 'google')->name('services.google');
     });
 
-    Route::resource('/meals', MealController::class);
     Route::controller(MealController::class)->group(function () {
+        Route::resource('/meals', MealController::class);
         Route::post('/meals/add-plan','addPlan')->name('meals.addPlan');
         Route::get('/meals-random', 'random')->name('meals.random');
     });
@@ -61,4 +62,9 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
 Route::middleware(['auth:sanctum', 'verified'])->prefix('/api')->group(function () {
     Route::resource('categories', CategoryController::class);
+
+    Route::controller(AutomationController::class)->group(function () {
+        Route::apiResource('automation', AutomationController::class);
+        Route::post('automation/{id}/run', 'run');
+    });
 });

@@ -6,6 +6,7 @@ use App\Helpers\BudgetHelper;
 use App\Helpers\CategoryHelper;
 use App\Libraries\GoogleService;
 use App\Models\Budget;
+use App\Models\Integrations\AutomationRecipe;
 use App\Models\Integrations\AutomationService;
 use App\Models\Integrations\Integration;
 use App\Models\Planner;
@@ -116,6 +117,7 @@ class DashboardController {
 
         return Jetstream::inertia()->render($request, 'Integrations/Index', [
             "services" => AutomationService::all(),
+            "recipes" => AutomationRecipe::all(),
             "integrations" => Integration::where([
                 'team_id' => $user->current_team_id,
                 'user_id' => $user->id

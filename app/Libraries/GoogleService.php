@@ -6,6 +6,7 @@ use App\Jobs\ProcessGmail;
 use App\Models\Integrations\Automation;
 use App\Models\Integrations\Integration;
 use App\Models\User;
+use Exception;
 use Google_Client;
 use Google_Service_Calendar;
 use Google_Service_Sheets;
@@ -20,13 +21,16 @@ class GoogleService
 
     public static function setTokens($data, $userId, $integrationId = null) {
         $client = new Google_Client();
-        $client->setAuthConfig(env("GOOGLE_CREDENTIALS_PATH"));
+        $client->setAuthConfig(base_path(env("GOOGLE_CREDENTIALS_PATH")));
         $client->setRedirectUri(config('app.url'));
         if ($data->code) {
             $tokenResponse = $client->fetchAccessTokenWithAuthCode($data->code);
             session(['g_token', json_encode($tokenResponse)]);
         } else {
             $tokenResponse = $data;
+        }
+        if (isset($tokenResponse["error"])) {
+            throw new Exception($tokenResponse["error_description"]);
         }
         $user = user::find($userId);
         $integration = new Integration();
