@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Actions\Integrations\CreateTaskFromGmail;
+use App\Actions\Integrations\ReadGmail;
 use App\Models\Integrations\Automation;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -35,6 +35,6 @@ class ProcessGmail implements ShouldQueue
      */
     public function handle()
     {
-        CreateTaskFromGmail::create($this->automation);
+        ReadGmail::create($this->automation);
     }
 }

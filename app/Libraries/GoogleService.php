@@ -1,16 +1,12 @@
 <?php
 namespace App\Libraries;
 
-use App\Jobs\ProcessCalendar;
 use App\Jobs\ProcessGmail;
 use App\Models\Integrations\Automation;
 use App\Models\Integrations\Integration;
 use App\Models\User;
 use Exception;
 use Google_Client;
-use Google_Service_Calendar;
-use Google_Service_Sheets;
-use Google_Service_Sheets_Sheet;
 
 class GoogleService
 {
@@ -68,7 +64,7 @@ class GoogleService
         return $client;
     }
 
-    public static function createItemFromGmail($automationId, $afterResponse = null) {
+    public static function entryFromGmail($automationId, $afterResponse = null) {
        $automation = Automation::find($automationId);
        echo "$automation->name $automation->id \n";
        $method = $afterResponse ? "dispatchAfterResponse" : "dispatch";

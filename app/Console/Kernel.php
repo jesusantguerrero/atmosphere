@@ -24,7 +24,10 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+        $automations = Automation::all();
+        foreach ($automations as $automation) {
+            $schedule->command("daily:service {$automation->name} {$automation->id}")->everyMinute()->runInBackground();
+        }
     }
 
     /**

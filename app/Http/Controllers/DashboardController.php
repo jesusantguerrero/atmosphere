@@ -33,6 +33,11 @@ class DashboardController {
             'status' => 'verified'
         ])->getByMonth($startDate, $endDate)->get();
 
+        $drafts = Transaction::where([
+            'team_id' => $teamId,
+            'status' => 'draft'
+        ])->get();
+
 
         return Inertia::render('Dashboard', [
             "strings" => __('dashboard'),
@@ -48,6 +53,9 @@ class DashboardController {
             "accounts" => $teamId ? CategoryHelper::getAccounts($teamId, ['cash_and_bank']) : null,
             "transactionTotal" => $transactions->sum('total'),
             "transactions" => $transactions->map(function ($transaction) {
+                return Transaction::parser($transaction);
+            }),
+            "drafts" => $drafts->map(function ($transaction) {
                 return Transaction::parser($transaction);
             }),
         ]);
