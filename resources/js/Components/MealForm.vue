@@ -1,5 +1,4 @@
 <template>
-
     <div>
         <at-field
             label="Title"
@@ -33,78 +32,68 @@
                 </div>
             </div>
         </at-field>
-
     </div>
 </template>
 
-<script>
-    import Modal from '@/Jetstream/Modal'
+<script setup>
     import { useForm } from "@inertiajs/inertia-vue3"
-    import { AtField, AtInput, AtButton, AtTextarea } from "atmosphere-ui"
-    import { reactive, toRefs } from '@vue/reactivity'
+    import { AtField, AtInput, AtButton } from "atmosphere-ui"
     import { nextTick } from '@vue/runtime-core'
 
-    export default {
-        emits: ['close'],
+    defineEmits(['close']);
+    const props = defineProps({
+        meal: {
+            type: Object,
+            default: () => ({
+                name: '',
+            }),
+        }
+    });
 
-        components: {
-            Modal,
-            AtField,
-            AtInput,
-            AtButton,
-            AtTextarea
-        },
-
-        props: {
-            meal: {
-                type: Object,
-                required: true
-            }
-        },
-        setup(props, { emit }) {
-            const state = reactive({
-                form: useForm({
-                    ...props.meal,
-                    ingredients: [...props.meal.ingredients, {
-
-                    }]
-                })
-            })
+    const form = useForm({
+        ...props.meal,
+        ingredients: props.meal ? [...props.meal?.ingredients, {}]: [{}]
+    })
 
 
-            const submit = () => {
-                state.form
-                  .transform(data => ({
-                        ...data,
-                        ingredients: data.ingredients.filter( ingredient => ingredient.name)
-                }))
-                .put(route('meals.update', props.meal))
-            }
-
-            const checkIngredients = (index, value) => {
-                if (state.form.ingredients.length == index + 1 && value) {
-                    state.form.ingredients.push({
-                        unit: 'unit',
-                        quantity: 1,
-                        name: ''
-                    })
+    const submit = async () => {
+        const method = props.meal ? 'put' : 'post';
+        const url = props.meal ? `/meals/${props.meal.id}` : '/meals';
+        form
+            .transform(data => ({
+                ...data,
+                ingredients: data.ingredients.filter( ingredient => ingredient.name)
+        }))
+        .submit(method, url, {
+            onSuccess: async () => {
+                if (method == 'post') {
+                    await nextTick()
+                    form.reset()
                 }
             }
+        })
 
-            const removeIngredient = (index) => {
-                state.form.ingredients.splice(index, 1);
-                const len = state.form.ingredients.length - 1;
-                nextTick(() => {
-                    checkIngredients(len, state.form.ingredients[len].name);
-                })
-            }
+    }
 
-            return {
-                ...toRefs(state),
-                submit,
-                checkIngredients,
-                removeIngredient
-            }
+    const checkIngredients = (index, value) => {
+        if (form.ingredients.length == index + 1 && value) {
+            form.ingredients.push({
+                unit: 'unit',
+                quantity: 1,
+                name: ''
+            })
         }
     }
+
+    const removeIngredient = (index) => {
+        form.ingredients.splice(index, 1);
+        const len = form.ingredients.length - 1;
+        nextTick(() => {
+            checkIngredients(len, form.ingredients[len].name);
+        })
+    }
+
+    defineExpose({
+        submit,
+    })
 </script>

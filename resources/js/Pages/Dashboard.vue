@@ -146,7 +146,8 @@
             date: transaction.date,
             subtitle: `${transaction.account.name} -> ${transaction.category.name} `,
             value: transaction.total,
-            status: 'PENDING'
+            currencyCode: transaction.currency_code,
+            status: transaction.status
         }))
     }
 
