@@ -57,7 +57,6 @@
     import { computed, inject } from '@vue/runtime-core'
     import { NSelect } from "naive-ui";
     import Slug from "slug";
-    import { Inertia } from '@inertiajs/inertia'
 
     export default {
         emits: ['close'],

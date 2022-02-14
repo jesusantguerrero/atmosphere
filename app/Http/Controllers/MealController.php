@@ -47,8 +47,10 @@ class MealController extends InertiaController
     }
 
     public function random(Request $request) {
-        return Meal::where([
+        $meals = Meal::where([
             'team_id' => $request->user()->current_team_id
-        ])->get()->random();
+        ])->get();
+
+        return count($meals) ? $meals->random(): null;
     }
 }

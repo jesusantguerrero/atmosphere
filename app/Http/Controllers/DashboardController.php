@@ -4,12 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Helpers\BudgetHelper;
 use App\Helpers\CategoryHelper;
+use App\Libraries\GoogleService;
 use App\Models\Budget;
+use App\Models\Integrations\AutomationRecipe;
+use App\Models\Integrations\AutomationService;
+use App\Models\Integrations\Integration;
 use App\Models\Planner;
 use App\Models\Transaction;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Laravel\Jetstream\Jetstream;
 
 class DashboardController {
     public function index(Request $request) {
@@ -28,6 +33,11 @@ class DashboardController {
             'status' => 'verified'
         ])->getByMonth($startDate, $endDate)->get();
 
+        $drafts = Transaction::where([
+            'team_id' => $teamId,
+            'status' => 'draft'
+        ])->get();
+
 
         return Inertia::render('Dashboard', [
             "strings" => __('dashboard'),
@@ -43,6 +53,9 @@ class DashboardController {
             "accounts" => $teamId ? CategoryHelper::getAccounts($teamId, ['cash_and_bank']) : null,
             "transactionTotal" => $transactions->sum('total'),
             "transactions" => $transactions->map(function ($transaction) {
+                return Transaction::parser($transaction);
+            }),
+            "drafts" => $drafts->map(function ($transaction) {
                 return Transaction::parser($transaction);
             }),
         ]);
@@ -105,5 +118,23 @@ class DashboardController {
                 return Transaction::parser($transaction);
             })->take(4),
         ]);
+    }
+
+    public function integrations(Request $request) {
+        $user = $request->user();
+
+        return Jetstream::inertia()->render($request, 'Integrations/Index', [
+            "services" => AutomationService::all(),
+            "recipes" => AutomationRecipe::all(),
+            "integrations" => Integration::where([
+                'team_id' => $user->current_team_id,
+                'user_id' => $user->id
+            ])->with(['automations'])->get()
+        ]);
+    }
+
+    public function google(Request $request)
+    {
+       return GoogleService::setTokens((object) $request->post('credentials'), $request->user()->id);
     }
 }

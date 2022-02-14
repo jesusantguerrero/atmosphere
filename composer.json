@@ -7,6 +7,7 @@
     "require": {
         "php": ">=8.0.1",
         "fruitcake/laravel-cors": "^2.0",
+        "google/apiclient": "2.12.1",
         "guzzlehttp/guzzle": "^7.0.1",
         "inertiajs/inertia-laravel": "^0.5.4",
         "insane/journal": "dev-master",
@@ -14,7 +15,9 @@
         "laravel/jetstream": "^2.3",
         "laravel/sanctum": "^2.6",
         "laravel/tinker": "^2.5",
+        "php-mime-mail-parser/php-mime-mail-parser": "^7.0",
         "simshaun/recurr": "^4.0",
+        "symfony/dom-crawler": "^6.0",
         "tightenco/ziggy": "^1.0"
     },
     "require-dev": {
@@ -48,12 +51,16 @@
         ],
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi"
-        ]
+        ],
+        "pre-autoload-dump": "Google\\Task\\Composer::cleanup"
     },
     "extra": {
         "laravel": {
             "dont-discover": []
-        }
+        },
+        "google/apiclient-services": [
+            "Gmail"
+        ]
     },
     "config": {
         "optimize-autoloader": true,

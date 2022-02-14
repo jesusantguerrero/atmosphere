@@ -8,7 +8,15 @@
         </div>
     </div>
     <div :class="tableClass">
-        <transaction-card v-bind="transaction" :mark-as-paid="allowMarkAsPaid" :key="transaction.id" v-for="transaction in transactions" @paid-clicked="$emit('paid-clicked', transaction)"/>
+        <transaction-card
+            v-for="transaction in transactionsParsed"
+            v-bind="transaction"
+            :mark-as-paid="allowMarkAsPaid"
+            :mark-as-approved="allowMarkAsApproved"
+            :key="transaction.id"
+            @paid-clicked="$emit('paid-clicked', transaction)"
+            @approved="$emit('approved', transaction)"
+        />
     </div>
 </div>
 </template>
@@ -46,12 +54,15 @@ export default {
         allowMarkAsPaid: {
             type: Boolean,
             default: false
+        },
+        allowMarkAsApproved: {
+            type: Boolean,
+            default: false
         }
     },
     setup(props) {
-
         return {
-            transactions: computed(() => {
+            transactionsParsed: computed(() => {
                 return !props.parser ? props.transactions : props.parser(props.transactions);
             })
         }

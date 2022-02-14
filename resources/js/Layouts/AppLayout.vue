@@ -274,6 +274,11 @@
                         to: '/meals'
                     },
                     {
+                        icon: 'fas fa-drumstick-bite',
+                        label: 'Integrations',
+                        to: '/integrations'
+                    },
+                    {
                         icon: 'fas fa-dollar-sign',
                         label: 'Finance',
                         to: '/finance'
