@@ -32,6 +32,23 @@
                         </div>
                     </div>
                 </budget-tracker>
+
+                <div class="mt-5 mb-10">
+                    <section-title type="secondary">
+                        Pending for approval
+                    </section-title>
+                    <div class="px-5 mt-5 rounded-md shadow-md py-1 bg-white border">
+                        <transactions-table
+                            table-label="Automatic Transactions"
+                            class="pt-3"
+                            table-class="px-0 mt-5"
+                            @approved="approveTransaction"
+                            :allow-mark-as-approved="true"
+                            :transactions="drafts"
+                            :parser="transactionDBToTransaction"
+                        />
+                    </div>
+                </div>
             </div>
             <div class="md:w-3/12">
                 <div class="space-y-5">
@@ -51,28 +68,18 @@
     </app-layout>
 </template>
 
-<script>
+<script setup>
     import { AtButton } from "atmosphere-ui";
     import AppLayout from '@/Layouts/AppLayout'
-    import Welcome from '@/Components/Welcome'
     import BudgetTracker from "@/Components/organisms/BudgetTracker";
     import TransactionsTable from "@/Components/organisms/TransactionsTable";
     import SectionTitle from "@/Components/atoms/SectionTitle";
     import { ref } from '@vue/reactivity';
     import { useSelect } from '@/utils/useSelects';
     import RandomMealCard from "../Components/RandomMealCard.vue";
+    import { Inertia } from "@inertiajs/inertia";
 
-    export default {
-        components: {
-            AppLayout,
-            Welcome,
-            AtButton,
-            BudgetTracker,
-            SectionTitle,
-            TransactionsTable,
-            RandomMealCard
-        },
-        props: {
+    const props = defineProps({
             meals: {
                 type: Array,
                 required: true,
@@ -101,6 +108,12 @@
                     return []
                 }
             },
+            drafts: {
+                type: Array,
+                default() {
+                    return []
+                }
+            },
             categories: {
                 type: Array,
                 default() {
@@ -113,37 +126,37 @@
                     return []
                 }
             }
-        },
-        setup(props) {
-            const selected = ref(null);
+        });
 
-            const budgetToTransaction = (budgets) => {
-                return budgets.map(budget => ({
-                    title: budget.account.name,
-                    subtitle: '',
-                    value: budget.amount,
-                    status: 'PENDING'
-                }))
-            }
+    const selected = ref(null);
 
-            const transactionDBToTransaction = (transactions) => {
-                return transactions.map(transaction => ({
-                    title: transaction.description,
-                    subtitle: `${transaction.account.name} -> ${transaction.category.name} `,
-                    value: transaction.total,
-                    status: 'PENDING'
-                }))
-            }
-
-            const { categoryOptions: transformCategoryOptions } = useSelect()
-            transformCategoryOptions(props.categories, true, 'categoryOptions');
-            transformCategoryOptions(props.accounts, true, 'accountsOptions');
-
-            return {
-                selected,
-                budgetToTransaction,
-                transactionDBToTransaction,
-            }
-        }
+    const budgetToTransaction = (budgets) => {
+        return budgets.map(budget => ({
+            title: budget.account.name,
+            subtitle: '',
+            value: budget.amount,
+            status: 'PENDING'
+        }))
     }
+
+    const transactionDBToTransaction = (transactions) => {
+        return transactions.map(transaction => ({
+            id: transaction.id,
+            title: transaction.description,
+            date: transaction.date,
+            subtitle: `${transaction.account.name} -> ${transaction.category.name} `,
+            value: transaction.total,
+            status: 'PENDING'
+        }))
+    }
+
+    const approveTransaction = (transaction) => {
+        Inertia.post(`/transactions/${transaction.id}/approve`).then(() => {
+            Inertia.reload();
+        })
+    }
+
+    const { categoryOptions: transformCategoryOptions } = useSelect()
+    transformCategoryOptions(props.categories, true, 'categoryOptions');
+    transformCategoryOptions(props.accounts, true, 'accountsOptions');
 </script>

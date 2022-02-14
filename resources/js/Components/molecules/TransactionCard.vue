@@ -20,6 +20,9 @@
         <div v-if="markAsPaid" class="font-bold text-pink-500 cursor-pointer" @click="$emit('paid-clicked')">
             Mark as Paid
         </div>
+        <div v-if="markAsApproved" class="font-bold text-pink-500 cursor-pointer" @click="$emit('approved')">
+            Approve
+        </div>
     </div>
     </div>
     <div class="px-5" v-if="expenses">
@@ -40,6 +43,7 @@ const props = defineProps({
     value: String,
     status: String,
     markAsPaid: Boolean,
+    markAsApproved: Boolean,
     expenses: Number
 })
 
