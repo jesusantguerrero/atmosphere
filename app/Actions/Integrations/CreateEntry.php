@@ -2,16 +2,19 @@
 
 namespace App\Actions\Integrations;
 
-use App\Libraries\GoogleService;
 use App\Models\Integrations\Automation;
-use Google_Service_Gmail;
+use App\Models\User;
+use App\Notifications\EntryGenerated;
 use Insane\Journal\Account;
 use Insane\Journal\Transaction;
 use Symfony\Component\DomCrawler\Crawler;
-use PhpMimeMailParser\Parser as EmailParser;
 
 class CreateEntry
 {
+    const BHD_CURRENCY_CODES = [
+        'USD' => 'USD',
+        'RD' => 'DOP',
+    ];
     /**
      * Validate and create a new team for the given user.
      *
@@ -26,13 +29,14 @@ class CreateEntry
             return $node->text();
         });
         $account = !empty($config->account_id) ? Account::find($config->account_id) : Account::defaultAccount($automation->user_id);
-        $total = (int) $tdValues[2];
+        $total = (int) str_replace(',','', $tdValues[2]);
         print_r($tdValues);
-        Transaction::createTransaction([
+        $transaction = Transaction::createTransaction([
             'team_id' => $automation->team_id,
             'user_id' => $automation->user_id,
             'account_id' => $account->id,
             'date' => Date('Y-m-d', strtotime($mail['date'])),
+            'currency_code' => self::BHD_CURRENCY_CODES[$tdValues[1]],
             'category_id' => Account::guessAccount($automation, [$tdValues[3], $tdValues[5]]),
             'description' => $tdValues[3] . " - " . $tdValues[5],
             'direction' => Transaction::DIRECTION_CREDIT,
@@ -45,5 +49,6 @@ class CreateEntry
             ]
 
         ]);
+        User::find($automation->user_id)->notify(new EntryGenerated($transaction));
     }
 }

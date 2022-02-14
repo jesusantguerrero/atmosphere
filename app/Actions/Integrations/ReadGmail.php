@@ -65,8 +65,6 @@ class ReadGmail
                 }
             }
         };
-
-        // AutomationCompleted::dispatch($automation);
     }
 
     public static function parseEmail($raw)
