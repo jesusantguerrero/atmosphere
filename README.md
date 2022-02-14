@@ -1,4 +1,4 @@
-## About Loger [codename: Atmosphere]
+## About Loger [codename: Atmosphere] (Work in progress)
 
 Loger (House in french) is a Monolith app using laravel 8, jetstream, intertia, vue3, Tailwindcss and some hand crafted packages [Atmosphere UI](), [Journal](), [Tresurer](), and others.
 
