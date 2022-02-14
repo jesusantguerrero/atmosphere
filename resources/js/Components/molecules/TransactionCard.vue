@@ -14,7 +14,7 @@
     </div>
     <div class="flex space-x-5">
         <div class="text-right">
-            <h4 class="font-bold"> {{ formatMoney(value)}} <span v-if="expenses" class="text-red-500">({{ formatMoney(expenses) }})</span></h4>
+            <h4 class="font-bold"> {{ formatMoney(value, currencyCode)}} <span v-if="expenses" class="text-red-500">({{ formatMoney(expenses, currencyCode) }})</span></h4>
             <small class="text-sm"> {{ status }}</small>
         </div>
         <div v-if="markAsPaid" class="font-bold text-pink-500 cursor-pointer" @click="$emit('paid-clicked')">
@@ -41,6 +41,7 @@ const props = defineProps({
     subtitle: String,
     date: String,
     value: String,
+    currencyCode: String,
     status: String,
     markAsPaid: Boolean,
     markAsApproved: Boolean,
