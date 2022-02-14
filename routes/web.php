@@ -8,6 +8,7 @@ use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MealController;
 use App\Http\Controllers\PlannerController;
+use App\Http\Controllers\SettingsController;
 use App\Models\Budget;
 use App\Models\Planner;
 use App\Models\Transaction;
@@ -58,6 +59,12 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         Route::put('/transactions/{id}/mark-as-paid', 'markAsPaid')->name("transactions.mark-as-paid");
     });
     Route::resource('/meal-planner', PlannerController::class);
+
+    Route::controller(SettingsController::class)->group(function () {
+        Route::resource('/settings', SettingsController::class);
+        Route::get('/settings/tab/{tabName}', 'index');
+        Route::get('/settings/{name}',  'section');
+    });
 });
 
 Route::middleware(['auth:sanctum', 'verified'])->prefix('/api')->group(function () {
