@@ -35,7 +35,7 @@
                 </div>
 
                 <div v-else class="pt-5 overflow-hidden bg-white border divide-y-2 rounded-md">
-                    <div v-for="day in week" :key="day" @click="isModalOpen=day" class="px-5 py-4 bg-white cursor-pointer">
+                    <div v-for="day in week" :key="day" @click="openDayInModal(day)" class="px-5 py-4 bg-white cursor-pointer">
                         {{ getDayName(day) }}
 
                         <div class="">
@@ -50,6 +50,7 @@
                     :show="isModalOpen"
                     :closeable="true"
                     :date="isModalOpen"
+                    :selected="selectedMealsOfDay"
                     :title="`Add a new meal to ${isModalOpen && getDayName(isModalOpen)}`"
                     :meals="meals"
                     @close="isModalOpen=false"
@@ -111,6 +112,7 @@
                 isRandomModalOpen: false,
                 date: new Date(),
                 week: null,
+                selectedMealsOfDay: [],
                 isGroceryList: computed(() => {
                     return props.mode == 'grocery-list';
                 }),
@@ -161,6 +163,15 @@
                 Inertia.visit(`/meal-planner?${params}`);
             };
 
+            const openDayInModal = (day) => {
+                state.selectedMealsOfDay = getDayMeals(day).map( item => ({
+                    ...item.dateable,
+                    schedule_id: item.id
+                })
+                );
+                state.isModalOpen = day;
+            }
+
             return {
                 ...toRefs(state),
                 openRandomModal,
@@ -168,7 +179,8 @@
                 getDayMeals,
                 onSaved,
                 toggleMode,
-                onWeekChanged
+                onWeekChanged,
+                openDayInModal,
             }
         }
     }

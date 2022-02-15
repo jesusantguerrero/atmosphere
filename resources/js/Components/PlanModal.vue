@@ -13,14 +13,10 @@
                 <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                     <slot name="content">
                         <div>
-                            <at-field
-                                label="Search meal by name"
-                            >
-                                <at-input v-model="form.name"></at-input>
-                            </at-field>
+                            <at-input v-model="searchText" placeholder="Search meal by name" />
                             <meal
                                 class="overflow-auto h-96"
-                                :meals="meals"
+                                :meals="filteredMeals"
                                 :selected="selectedMeals"
                                 @click="handleSelect"
                             />
@@ -32,30 +28,26 @@
 
         <div class="px-6 py-4 space-x-3 text-right bg-gray-100">
             <at-button type="secondary" @click="close"> Cancel </at-button>
-            <at-button class="text-white bg-pink-400" @click="submit"> Save </at-button>
+            <at-button
+                class="text-white bg-pink-400"
+                @click="submit"
+                :disabled="!hasValidMeals"
+            > Save
+            </at-button>
         </div>
     </modal>
 </template>
 
-<script>
+<script setup>
     import Modal from '@/Jetstream/Modal'
     import { useForm } from "@inertiajs/inertia-vue3"
-    import { AtField, AtInput, AtButton } from "atmosphere-ui"
-    import { reactive, toRefs } from '@vue/reactivity'
+    import { AtInput, AtButton } from "atmosphere-ui"
+    import { startOfDay } from 'date-fns'
+    import {  watch, ref, computed } from 'vue'
     import Meal from './Meal.vue'
 
-    export default {
-        emits: ['close'],
-
-        components: {
-            Modal,
-            AtField,
-            AtInput,
-            AtButton,
-            Meal
-        },
-
-        props: {
+    const emit = defineEmits(['close'])
+    const props = defineProps({
             show: {
                 default: false
             },
@@ -71,57 +63,69 @@
                     return []
                 }
             },
+            selected: {
+                type: Array,
+                default() {
+                    return []
+                }
+            },
             date: {
                 default: new Date()
             },
             title: {
                 type: String
             }
-        },
+    });
 
-        setup(props, { emit }) {
-            const state = reactive({
-                form: useForm({
-                    name: ''
-                }),
-                selectedMeals: []
-            })
+    const form = useForm({
+        name: ''
+    });
+    const selectedMeals = ref(props.selected);
+    const searchText = ref("");
 
-            const close = () =>  {
+    const filteredMeals = computed(() => {
+        return props.meals.filter( meal => meal.name.toLowerCase().includes(searchText.value.toLowerCase()))
+    })
+
+    watch(() => props.selected, (selected) => {
+        selectedMeals.value = selected;
+    }, { immediate: true })
+
+    const close = () =>  {
+        emit('close')
+    }
+
+    const handleSelect = (meal) => {
+        const isSelected = selectedMeals.value.findIndex(selected => selected.id == meal.id)
+        if (isSelected >= 0) {
+            selectedMeals.value.splice(isSelected, 1);
+        } else {
+            selectedMeals.value.push(meal)
+        }
+    }
+
+    const getValidMeals = (meals) => {
+        return meals.
+            filter(meal => meal.id && !meal.schedule_id )
+            .map(meal => ({
+                id: meal.id
+            }))
+    }
+
+    const hasValidMeals = computed(() => getValidMeals(selectedMeals.value).length);
+
+    const submit = () => {
+        if (!hasValidMeals.value) return
+        form
+        .transform(()=> ({
+            date: startOfDay(props.date),
+            meals: getValidMeals(selectedMeals.value)
+        }))
+        .post(route('meals.addPlan'), {
+            onSuccess: () => {
+                selectedMeals.value = [];
                 emit('close')
             }
-
-            const handleSelect = (meal) => {
-                const isSelected = state.selectedMeals.findIndex(selected => selected.id == meal.id)
-                if (isSelected >= 0) {
-                    state.selectedMeals.splice(isSelected, 1);
-                } else {
-                    state.selectedMeals.push(meal)
-                }
-            }
-
-            const submit = () => {
-                state.form
-                .transform(()=> ({
-                    date: props.date,
-                    meals: state.selectedMeals.map(meal => ({
-                        id: meal.id
-                    })).filter(meal => meal.id )
-                }))
-                .post(route('meals.addPlan'), {
-                    onSuccess: () => {
-                        state.selectedMeals = [];
-                        emit('close')
-                    }
-                })
-            }
-
-            return {
-                ...toRefs(state),
-                handleSelect,
-                submit,
-                close
-            }
-        }
+        })
     }
 </script>
