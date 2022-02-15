@@ -35,7 +35,8 @@
 
     defineProps({
         meals: {
-            type: Object,
+            type: [Object, null],
+            default: null
         }
     });
 

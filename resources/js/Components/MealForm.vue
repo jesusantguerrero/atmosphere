@@ -51,8 +51,10 @@
     });
 
     const form = useForm({
-        ...props.meal,
-        ingredients: props.meal ? [...props.meal?.ingredients, {}]: [{}]
+        ...{
+            name: props.meal?.name,
+        },
+        ingredients: props.meal ? [...props.meal.ingredients, {}]: [{}]
     })
 
 
