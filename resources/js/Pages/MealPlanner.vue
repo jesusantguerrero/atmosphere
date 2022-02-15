@@ -11,7 +11,7 @@
                 </div>
 
                 <div>
-                    <at-button class="text-white bg-pink-400" @click="openModal()"> New Meal</at-button>
+                    <at-button class="text-white bg-pink-400" @click="$inertia.visit(route('meals.create'))"> New Meal</at-button>
                 </div>
             </div>
         </template>
