@@ -33,7 +33,7 @@ class Gmail
         foreach ($results->getThreads() as $index => $thread) {
             $theadResponse = $service->users_threads->get("me", $thread->id, ['format' => 'MINIMAL']);
             $message = $theadResponse->getMessages()[0];
-            if ($message) {
+            if ($message && $message->historyId > $track['historyId']) {
                 $raw = $service->users_messages->get("me", $message->id, ['format' => 'raw']);
                 $parser = self::parseEmail($raw);
 
