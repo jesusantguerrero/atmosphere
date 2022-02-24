@@ -23,6 +23,9 @@
         <div v-if="markAsApproved" class="font-bold text-pink-500 cursor-pointer" @click="$emit('approved')">
             Approve
         </div>
+        <div v-if="allowRemove" class="font-bold text-pink-500 cursor-pointer" @click="$emit('removed')">
+            Remove
+        </div>
     </div>
     </div>
     <div class="px-5" v-if="expenses">
@@ -45,7 +48,8 @@ const props = defineProps({
     status: String,
     markAsPaid: Boolean,
     markAsApproved: Boolean,
-    expenses: Number
+    expenses: Number,
+    allowRemove: Boolean
 })
 
 const percentage = computed(() => {

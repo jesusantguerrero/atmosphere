@@ -390,9 +390,13 @@
     transition: all ease 0.3s;
   }
 
-  .app-content__inner {
-    grid-column-start: 1;
-    grid-column-end: 3;
+  .app-content {
+    height: auto;
+    &__inner {
+        grid-column-start: 1;
+        grid-column-end: 3;
+        padding-bottom: 40px;
+    }
   }
 
   .home-container.menu-expanded {

@@ -13,9 +13,11 @@
             v-bind="transaction"
             :mark-as-paid="allowMarkAsPaid"
             :mark-as-approved="allowMarkAsApproved"
+            :allow-remove="allowRemove"
             :key="transaction.id"
             @paid-clicked="$emit('paid-clicked', transaction)"
             @approved="$emit('approved', transaction)"
+            @removed="$emit('removed', transaction)"
         />
     </div>
 </div>
@@ -58,7 +60,11 @@ export default {
         allowMarkAsApproved: {
             type: Boolean,
             default: false
-        }
+        },
+        allowRemove: {
+            type: Boolean,
+            default: false
+        },
     },
     setup(props) {
         return {

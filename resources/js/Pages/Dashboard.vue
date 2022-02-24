@@ -43,7 +43,9 @@
                             class="pt-3"
                             table-class="px-0 mt-5"
                             @approved="approveTransaction"
+                            @removed="removeTransaction"
                             :allow-mark-as-approved="true"
+                            :allow-remove="true"
                             :transactions="drafts"
                             :parser="transactionDBToTransaction"
                         />
@@ -153,6 +155,12 @@
 
     const approveTransaction = (transaction) => {
         Inertia.post(`/transactions/${transaction.id}/approve`).then(() => {
+            Inertia.reload();
+        })
+    }
+
+    const removeTransaction = (transaction) => {
+        Inertia.delete(`/transactions/${transaction.id}`).then(() => {
             Inertia.reload();
         })
     }
