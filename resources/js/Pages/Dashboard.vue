@@ -159,7 +159,7 @@
         })
     }
 
-    const approveTransaction = (transaction) => {
+    const removeTransaction = (transaction) => {
         Inertia.delete(`/transactions/${transaction.id}`).then(() => {
             Inertia.reload();
         })
