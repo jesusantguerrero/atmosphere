@@ -16,7 +16,7 @@ class Gmail
      * @param  Automation  $automation
      * @return void
      */
-    public static function read(Automation $automation)
+    public static function received(Automation $automation)
     {
         $maxResults = 50;
         $track = json_decode($automation->track, true);

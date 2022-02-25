@@ -27,7 +27,11 @@
                         v-model:value="form.integration"
                     />
                 </AtField>
-                <AtField label="Recipe">
+                <div class="flex">
+                    <div @click="automationType='manual'">Manual</div>
+                    <div @click="automationType='recipe'">Recipes</div>
+                </div>
+                <AtField label="Recipe" v-if="automationType=='recipe'">
                     <n-select
                         filterable
                         clearable
@@ -35,6 +39,17 @@
                         v-model:value="form.recipe"
                     />
                 </AtField>
+                <div v-if="automationType=='manual'|| form.recipe">
+                    <AtField label="" v-for="(_task, index) in tasks">
+                        <n-select
+                            filterable
+                            clearable
+                            :options="taskOptions"
+                            v-model:value="tasks[index]"
+                        />
+                    </AtField>
+                    <Button> Add component </Button>
+                </div>
                 <AtField label="Condition type" v-if="hasInput('condition')">
                     <n-select
                         filterable
@@ -62,8 +77,9 @@ import Modal from '@/Jetstream/Modal'
 import { useForm } from '@inertiajs/inertia-vue3';
 import { AtField, AtButton, AtInput } from 'atmosphere-ui';
 import { NSelect } from "naive-ui";
-import { computed,  } from 'vue';
+import { computed, ref } from 'vue';
 
+const automationType = ref('manual');
 const props = defineProps({
     show: {
         type: Boolean,
@@ -99,6 +115,12 @@ const props = defineProps({
             return [];
         }
     },
+    tasks: {
+        type: Array,
+        default() {
+            return [];
+        }
+    },
 })
 
 const emit = defineEmits(['save'])
@@ -108,7 +130,8 @@ const form = useForm({
     recipe: null,
     integration: null,
     condition: null,
-    value: ''
+    value: '',
+    tasks: [],
 });
 
 const serviceOptions = props.services.map(service => {
@@ -131,6 +154,15 @@ const recipeOptions = computed(() => {
     return props.recipes.map(recipe => {
         return {
             label: recipe.name,
+            value: recipe.id,
+        }
+    });
+})
+
+const taskOptions = computed(() => {
+    return props.tasks.map(recipe => {
+        return {
+            label: task.label,
             value: recipe.id,
         }
     });

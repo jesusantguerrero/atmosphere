@@ -18,6 +18,7 @@ class AutomationServices extends Migration
             $table->string('name');
             $table->text('description');
             $table->text('logo');
+            $table->json('fields')->nullable();
             $table->timestamps();
         });
     }

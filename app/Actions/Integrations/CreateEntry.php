@@ -47,7 +47,6 @@ class CreateEntry
                 "resource_origin" => 'message',
                 "resource_type" => 'gmail',
             ]
-
         ]);
         User::find($automation->user_id)->notify(new EntryGenerated($transaction));
     }
