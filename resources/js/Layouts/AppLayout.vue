@@ -225,6 +225,7 @@
                     <!-- Page Content -->
                     <main>
                         <slot></slot>
+                        <NavigationBottom :menu-items="menu" />
                     </main>
                 </div>
             </div>
@@ -240,19 +241,21 @@
     import JetNavLink from '@/Jetstream/NavLink'
     import JetResponsiveNavLink from '@/Jetstream/ResponsiveNavLink'
     import { AtSide, AtSideItem, AtSideItemGroup } from "atmosphere-ui"
+    import NavigationBottom from '@/Components/organisms/NavigationBottom.vue'
 
     export default {
         components: {
-            JetApplicationMark,
-            JetBanner,
-            JetDropdown,
-            JetDropdownLink,
-            JetNavLink,
-            JetResponsiveNavLink,
-            AtSide,
-            AtSideItem,
-            AtSideItemGroup
-        },
+        JetApplicationMark,
+        JetBanner,
+        JetDropdown,
+        JetDropdownLink,
+        JetNavLink,
+        JetResponsiveNavLink,
+        AtSide,
+        AtSideItem,
+        AtSideItemGroup,
+        NavigationBottom
+    },
 
         data() {
             return {
@@ -260,27 +263,32 @@
                 menu: [
                     {
                         icon: 'home',
+                        name: 'home',
                         label: 'Home',
                         to: '/dashboard'
                     },
                     {
                         icon: 'far fa-calendar-alt',
                         label: 'Meal Planer',
+                        name: 'mealPlanner',
                         to: '/meal-planner'
                     },
                     {
                         icon: 'fas fa-drumstick-bite',
                         label: 'Meals',
+                        name: 'meals',
                         to: '/meals'
                     },
                     {
                         icon: 'fas fa-drumstick-bite',
                         label: 'Integrations',
+                        name: 'integrations',
                         to: '/integrations'
                     },
                     {
                         icon: 'fas fa-dollar-sign',
                         label: 'Finance',
+                        name: 'finance',
                         to: '/finance'
                     },
                     {
