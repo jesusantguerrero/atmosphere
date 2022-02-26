@@ -27,7 +27,11 @@
                         v-model:value="form.integration"
                     />
                 </AtField>
-                <AtField label="Recipe">
+                <div class="flex">
+                    <Button @click.prevent="selectType('manual')">Manual</Button>
+                    <Button @click.prevent="selectType('recipe')">Recipes</Button>
+                </div>
+                <AtField label="Recipe" v-if="automationType=='recipe'">
                     <n-select
                         filterable
                         clearable
@@ -35,19 +39,44 @@
                         v-model:value="form.recipe"
                     />
                 </AtField>
-                <AtField label="Condition type" v-if="hasInput('condition')">
-                    <n-select
-                        filterable
-                        clearable
-                        :options="emailConditions"
-                        v-model:value="form.condition"
-                    />
-                </AtField>
-                <AtField label="Condition text" v-if="hasInput('value')">
-                    <at-input
-                        v-model="form.value"
-                    />
-                </AtField>
+                <div v-if="automationType=='manual'|| form.recipe">
+                    <div v-for="(task, index) in form.tasks">
+                        <AtField label="Automation Task" >
+                            <n-select
+                                filterable
+                                clearable
+                                :options="taskOptions"
+                                v-model:value="tasks[index].automation_task_id"
+                                @update:value="setTask(index, $event)"
+                            />
+                        </AtField>
+                        <div v-if="task.config" class="ml-5">
+                            <AtField :label="field.label||field.title||fieldName" v-for="(field, fieldName) in task.config">
+                                <n-select
+                                    v-if="field.type=='select'"
+                                    filterable
+                                    clearable
+                                    :options="makeOptions(field.options)"
+                                    v-model:value="task.values[fieldName]"
+                                />
+                                <AtInput
+                                    v-else
+                                    type="text"
+                                    v-model.trim="task.values[fieldName]"
+                                >
+                                    <template name="suffix">
+                                        <div>
+                                            <button>Value</button>
+                                            <button>Formula</button>
+                                            <button>Field</button>
+                                        </div>
+                                    </template>
+                                </AtInput>
+                            </AtField>
+                        </div>
+                    </div>
+                    <Button @click.prevent="addComponent"> Add component </Button>
+                </div>
             </form>
         </div>
 
@@ -62,7 +91,9 @@ import Modal from '@/Jetstream/Modal'
 import { useForm } from '@inertiajs/inertia-vue3';
 import { AtField, AtButton, AtInput } from 'atmosphere-ui';
 import { NSelect } from "naive-ui";
-import { computed,  } from 'vue';
+import { computed, nextTick, ref } from 'vue';
+import { AtButton as Button } from 'atmosphere-ui';
+
 
 const props = defineProps({
     show: {
@@ -99,6 +130,12 @@ const props = defineProps({
             return [];
         }
     },
+    tasks: {
+        type: Array,
+        default() {
+            return [];
+        }
+    },
 })
 
 const emit = defineEmits(['save'])
@@ -107,9 +144,54 @@ const form = useForm({
     service: null,
     recipe: null,
     integration: null,
-    condition: null,
-    value: ''
+    tasks: [],
 });
+
+const automationType = ref('manual');
+const selectType = (type) => {
+    automationType.value = type;
+    if (type == 'manual' && form.tasks.length == 0) {
+        addComponent();
+    }
+}
+
+const makeOptions = (options) => {
+    return options.map(option => {
+        return {
+            label: option,
+            value: option,
+        }
+    })
+}
+
+const addComponent = () => {
+    form.tasks.push({
+        automation_task_id: null,
+        name: '',
+        label: '',
+        config: {},
+        values: {}
+    });
+}
+
+const setTask = (index, taskId) => {
+    nextTick(() => {
+        const newTask = form.tasks[index];
+        const taskDefinition = props.tasks.find(task => task.id == taskId);
+        const config = JSON.parse(taskDefinition.config || {});
+        form.tasks[index] = {
+            ...newTask,
+            automation_task_id: taskId,
+            name: taskDefinition.name,
+            label: taskDefinition.label,
+            config,
+            values: Object.keys(config).reduce((values, fieldName) => {
+                values[fieldName] = '';
+                return values;
+            }, {})
+        };
+    })
+}
 
 const serviceOptions = props.services.map(service => {
     return {
@@ -132,6 +214,15 @@ const recipeOptions = computed(() => {
         return {
             label: recipe.name,
             value: recipe.id,
+        }
+    });
+})
+
+const taskOptions = computed(() => {
+    return props.tasks.map(task => {
+        return {
+            label: task.label,
+            value: task.id,
         }
     });
 })
@@ -182,31 +273,15 @@ const hasInput = (inputName) => {
 
 const prepareForm = () => {
     const formData = { ...form.data() };
-    const  recipe = props.recipes.find(recipe => recipe.id == formData.recipe);
-    formData.automation_recipe_id = formData.recipe;
-    formData.name = recipe.name;
-    formData.description = recipe.description;
-    formData.sentence = recipe.sentence;
+    formData.name = formData.name || formData.tasks.map(task => task.name).join(' ');
+    formData.description = formData.description || formData.tasks.map(task => task.label).join(' ');
+    formData.sentence = formData.sentence || formData.tasks.map(task => task.label).join(' ');
 
     formData.config = {};
     if (form.integration) {
         formData.integration_id = formData.integration;
     }
 
-    if (formData.condition) {
-        formData.config["condition"] = formData.Condition.id;
-    }
-
-    const inputs = getInputs();
-    if (inputs) {
-        inputs.map((inputName) => {
-            if(!formData.config[inputName]) {
-                formData.config[inputName] = formData[inputName];
-            }
-        })
-    }
-
-    formData.config = JSON.stringify(formData.config);
     return formData;
 }
 

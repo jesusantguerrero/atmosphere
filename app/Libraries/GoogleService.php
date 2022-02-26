@@ -63,12 +63,4 @@ class GoogleService
 
         return $client;
     }
-
-    public static function entryFromGmail($automationId, $afterResponse = null) {
-       $automation = Automation::find($automationId);
-       echo "$automation->name $automation->id \n";
-       $method = $afterResponse ? "dispatchAfterResponse" : "dispatch";
-       ProcessGmail::$method($automation);
-       return true;
-    }
 }

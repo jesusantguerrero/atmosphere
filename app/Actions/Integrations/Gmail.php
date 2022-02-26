@@ -16,24 +16,26 @@ class Gmail
      * @param  Automation  $automation
      * @return void
      */
-    public static function read(Automation $automation)
+    public static function received(Automation $automation)
     {
         $maxResults = 50;
         $track = json_decode($automation->track, true);
         $track['historyId'] = $track['historyId'] ?? 0;
-        $config = json_decode($automation->config);
+        $trigger = $automation->trigger()->first();
+        $config = json_decode($trigger->values);
         $client = GoogleService::getClient($automation->integration_id);
         $service = new Google_Service_Gmail($client);
-        $condition = isset($config->condition) && $config->value ? "$config->condition($config->value)" : "";
+        $condition = isset($config->conditionType) && $config->value ? "$config->conditionType($config->value)" : "";
         if (!$condition) {
             $condition = $config->value ?? "";
         }
         $results = $service->users_threads->listUsersThreads("me", ['maxResults' => $maxResults, 'q' => "$condition"]);
 
         foreach ($results->getThreads() as $index => $thread) {
+            echo "reading thread $index \n";
             $theadResponse = $service->users_threads->get("me", $thread->id, ['format' => 'MINIMAL']);
             $message = $theadResponse->getMessages()[0];
-            if ($message && $message->historyId > $track['historyId']) {
+            if ($message) {
                 $raw = $service->users_messages->get("me", $message->id, ['format' => 'raw']);
                 $parser = self::parseEmail($raw);
 
@@ -55,13 +57,22 @@ class Gmail
                 }
 
                 $mail['message'] = $body;
-                $actionEntity = $automation->action;
-                $action = $automation->name;
-                try {
-                    $actionEntity::$action($automation, $mail, $config);
-                } catch (\Exception $e) {
-                    Log::error($e->getMessage(), $mail);
-                    continue;
+                $payload = $mail;
+                $tasks = $automation->tasks;
+                $previousTask = $tasks->first();
+                foreach ($tasks as $taskIndex => $task) {
+                    if ($taskIndex !== 0) {
+                        $action = $task->name;
+                        $actionEntity = $task->entity;
+                        try {
+                            $payload = $actionEntity::$action($automation, $payload, $task, $previousTask, $tasks[0]);
+                            $previousTask = $task;
+                        } catch (\Exception $e) {
+                            print_r($e->getMessage());
+                            Log::error($e->getMessage(), $mail);
+                            continue;
+                        }
+                    }
                 }
             }
         };
