@@ -4,7 +4,7 @@ namespace App\Helpers;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 
 class FormulaHelper {
-    public static function calculateFormula($formula, $variableSet)
+    public static function parseFormula($formula, $variableSet)
         {
             // here we take all the vars that are in ${variable}
             preg_match_all('/\$\{(.*?)}/', $formula, $matches);
@@ -22,9 +22,10 @@ class FormulaHelper {
                 }
             }
             // Here we get the value of the formula
-            $spreadsheet = new Spreadsheet();
-            $sheet = $spreadsheet->getActiveSheet();
-            $sheet->setCellValue('A1', '=' . $formula);
-            return $sheet->getCell('A1')->getCalculatedValue();
+            return $formula;
+            // $spreadsheet = new Spreadsheet();
+            // $sheet = $spreadsheet->getActiveSheet();
+            // $sheet->setCellValue('A1', '=' . $formula);
+            // return $sheet->getCell('A1')->getCalculatedValue();
         }
 }

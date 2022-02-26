@@ -2,7 +2,7 @@
 
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
-use App\Libraries\GoogleService;
+use App\Models\Integrations\Automation;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,6 +19,7 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Artisan::command('daily:service {service} {automationId}', function ($service, $automationId) {
-    GoogleService::$service($automationId);
+Artisan::command('automation:trigger {automationId}', function ($automationId) {
+    $automation = Automation::find($automationId);
+    $automation->dispatch();
 })->purpose('call services');

@@ -20,6 +20,12 @@ return new class extends Migration
             $table->foreignId('automation_id');
             $table->foreignId('automation_task_id');
             $table->string('name');
+            $table->text('entity');
+            $table->enum('task_type', [
+                'trigger',
+                'action',
+                'component',
+            ]);
             $table->json('values')->nullable();
             $table->timestamps();
         });
