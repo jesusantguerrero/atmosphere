@@ -21,6 +21,7 @@ return new class extends Migration
                 'action',
                 'component',
             ]);
+            $table->text('entity');
             $table->string('name');
             $table->string('label');
             $table->string('description')->nullable();

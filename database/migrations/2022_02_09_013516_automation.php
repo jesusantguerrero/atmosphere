@@ -18,9 +18,8 @@ class Automation extends Migration
             $table->foreignId('user_id');
             $table->foreignId('team_id');
             $table->foreignId('project_id');
-            $table->foreignId('automation_recipe_id');
+            $table->foreignId('automation_recipe_id')->nullable();
             $table->foreignId('integration_id');
-            $table->foreignId('board_id');
             $table->string('name');
             $table->text('description');
             $table->text('sentence');
