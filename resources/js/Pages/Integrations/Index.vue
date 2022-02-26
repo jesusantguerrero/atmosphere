@@ -61,6 +61,7 @@
                     :services="services"
                     :integrations="integrations"
                     :recipes="recipes"
+                    :tasks="tasks"
                     type="event"
                     @cancel="state.isAutomationModalOpen = false"
                     @saved="onItemSaved"
@@ -95,7 +96,13 @@ const props = defineProps({
         default() {
             return [];
         }
-    }
+    },
+    tasks: {
+        type: Array,
+        default() {
+            return [];
+        }
+    },
 })
 
 const state = reactive({

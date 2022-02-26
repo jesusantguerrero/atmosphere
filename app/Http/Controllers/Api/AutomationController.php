@@ -15,6 +15,11 @@ class AutomationController extends BaseController
         $this->validationRules = [];
     }
 
+    protected function afterSave($postData, $resource): void
+    {
+        $resource->saveTasks($postData['tasks']);
+    }
+
     public function run($automationId)
     {
         $automation = Automation::find($automationId);
