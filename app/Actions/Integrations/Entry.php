@@ -52,7 +52,6 @@ class Entry
             ]
         ]);
         User::find($automation->user_id)->notify(new EntryGenerated($transaction));
-        echo "Entry created: " . json_encode($transaction->toArray()) . "\n";
         return $transaction;
     }
 }

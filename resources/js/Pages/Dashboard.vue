@@ -37,7 +37,7 @@
                     <section-title type="secondary">
                         Pending for approval
                     </section-title>
-                    <div class="px-5 mt-5 rounded-md shadow-md py-1 bg-white border">
+                    <div class="px-5 py-1 mt-5 bg-white border rounded-md shadow-md">
                         <transactions-table
                             table-label="Automatic Transactions"
                             class="pt-3"
@@ -160,7 +160,7 @@
     }
 
     const removeTransaction = (transaction) => {
-        Inertia.delete(`/transactions/${transaction.id}`).then(() => {
+        axios.delete(`/transactions/${transaction.id}`).then(() => {
             Inertia.reload();
         })
     }

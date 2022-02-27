@@ -289,12 +289,12 @@
                         icon: 'fas fa-dollar-sign',
                         label: 'Finance',
                         name: 'finance',
-                        to: '/finance'
+                        to: route('finance')
                     },
                     {
                         icon: 'fas fa-heart',
                         label: 'Relationship',
-                        to: '/finance'
+                        to: route('finance')
                     }
                 ]
             }
