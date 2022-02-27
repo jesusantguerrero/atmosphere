@@ -18,6 +18,7 @@ class CreateTeamsTable extends Migration
             $table->foreignId('user_id')->index();
             $table->string('name');
             $table->boolean('personal_team');
+            $table->timestamp('trial_ends_at')->nullable();
             $table->timestamps();
         });
     }

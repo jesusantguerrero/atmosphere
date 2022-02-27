@@ -38,6 +38,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('automation_triggers');
+        Schema::dropIfExists('automation_tasks');
     }
 };
