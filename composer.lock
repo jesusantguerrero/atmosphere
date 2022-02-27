@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e9bccfdc2f972730b49281baef8b5fa3",
+    "content-hash": "a603bcaae7583b401934b8b2d8960c1a",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -1606,6 +1606,66 @@
                 "source": "https://github.com/insane-code/journal/tree/master"
             },
             "time": "2022-02-26T23:10:32+00:00"
+        },
+        {
+            "name": "insane/remotr",
+            "version": "dev-master",
+            "dist": {
+                "type": "path",
+                "url": "./packages/remotr",
+                "reference": "28902595ae2a88d137d4d1efb1f1d1b4e97a6e77"
+            },
+            "require-dev": {
+                "illuminate/support": "^5.8@dev",
+                "mockery/mockery": "^1.0@dev",
+                "orchestra/testbench": "^3.8@dev",
+                "phpunit/phpunit": "^7.4@dev",
+                "symfony/thanks": "^1.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Insane\\Remotr\\RemotrServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Insane\\Remotr\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Insane\\Remotr\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "vendor/bin/phpunit"
+                ],
+                "test-coverage": [
+                    "vendor/bin/phpunit --coverage-html coverage"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jesus Guerrero",
+                    "email": "jesusant.guerrero@gmail.com"
+                }
+            ],
+            "description": "Setup git repository for remote access in Digital Ocean",
+            "keywords": [
+                "Digital Ocean",
+                "Git",
+                "Laravel"
+            ],
+            "transport-options": {
+                "relative": true
+            }
         },
         {
             "name": "jaybizzle/crawler-detect",
@@ -7533,9 +7593,6 @@
             "require": {
                 "php": "^7.1 || ^8.0"
             },
-            "replace": {
-                "myclabs/deep-copy": "self.version"
-            },
             "require-dev": {
                 "doctrine/collections": "^1.0",
                 "doctrine/common": "^2.6",
@@ -9722,7 +9779,8 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "insane/journal": 20
+        "insane/journal": 20,
+        "insane/remotr": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,
@@ -9730,5 +9788,5 @@
         "php": ">=8.0.1"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.0.0"
+    "plugin-api-version": "2.2.0"
 }

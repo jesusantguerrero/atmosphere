@@ -11,6 +11,7 @@
         "guzzlehttp/guzzle": "^7.0.1",
         "inertiajs/inertia-laravel": "^0.5.4",
         "insane/journal": "dev-master",
+        "insane/remotr": "dev-master",
         "laravel/framework": "^9.0",
         "laravel/jetstream": "^2.3",
         "laravel/sanctum": "^2.6",
@@ -20,6 +21,12 @@
         "simshaun/recurr": "^4.0",
         "symfony/dom-crawler": "^6.0",
         "tightenco/ziggy": "^1.4.3"
+    },
+    "repositories": {
+        "local": {
+            "type": "path",
+            "url": "./packages/remotr"
+        }
     },
     "require-dev": {
         "spatie/laravel-ignition": "^1.0",
