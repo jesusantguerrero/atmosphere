@@ -7,7 +7,8 @@
         "watch-poll": "mix watch -- --watch-options-poll=1000",
         "hot": "mix watch --hot",
         "prod": "npm run production",
-        "production": "mix --production"
+        "production": "mix --production",
+        "local:setup": "php artisan migrate:refresh && php artisan db:seed && php artisan journal:set-accounts"
     },
     "devDependencies": {
         "@dinero.js/currencies": "^2.0.0-alpha.4",

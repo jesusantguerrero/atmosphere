@@ -27,6 +27,7 @@ return new class extends Migration
                 'component',
             ]);
             $table->json('values')->nullable();
+            $table->boolean('accepts_config')->default(false);
             $table->timestamps();
         });
     }
