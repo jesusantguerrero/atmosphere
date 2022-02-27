@@ -15,10 +15,16 @@
 
         <!-- Scripts -->
         <script src="https://apis.google.com/js/api.js" defer></script>
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=smoothscroll,NodeList.prototype.forEach,Promise,Object.values,Object.assign" defer></script>
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=String.prototype.startsWith" defer></script>
         @routes
         <script src="{{ mix('js/app.js') }}" defer></script>
     </head>
-    <body class="font-sans antialiased">
+    <body class="font-sans antialiased leading-none text-gray-700">
         @inertia
+
+        @env ('local')
+            <script src="http://localhost:3000/browser-sync/browser-sync-client.js"></script>
+        @endenv
     </body>
 </html>

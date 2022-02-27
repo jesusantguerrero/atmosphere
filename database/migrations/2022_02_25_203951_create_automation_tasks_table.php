@@ -21,6 +21,7 @@ return new class extends Migration
                 'action',
                 'component',
             ]);
+            $table->text('entity');
             $table->string('name');
             $table->string('label');
             $table->string('description')->nullable();
@@ -37,6 +38,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('automation_triggers');
+        Schema::dropIfExists('automation_tasks');
     }
 };
