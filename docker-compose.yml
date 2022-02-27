@@ -3,9 +3,10 @@ services:
   web-proxy:
     image: jwilder/nginx-proxy
     container_name: web-proxy
-    restart: unless-stopped
+    restart: always
     ports:
       - 80:80
+      - 443:443
     volumes:
       - ./:/var/www
       - ./docker-compose/nginx:/etc/nginx/conf.d/
@@ -20,11 +21,12 @@ services:
   ssl-companion:
     image: jrcs/letsencrypt-nginx-proxy-companion
     container_name: ssl-companion
-    volumes:
-      - ./docker-compose/nginx:/etc/nginx/certs:rw
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: always
     volumes_from:
       - web-proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./docker-compose/nginx:/etc/nginx/certs:rw
     depends_on:
       - web-proxy
   nginx:
@@ -32,7 +34,7 @@ services:
     container_name: web-nginx
     restart: unless-stopped
     ports:
-      - 8080:80
+      - 8080
     volumes:
       - ./:/var/www
       - ./docker-compose/nginx/vhosts:/etc/nginx/conf.d/
@@ -118,6 +120,23 @@ services:
       - web
     networks:
       - loger
+  phpmyadmin:
+    depends_on:
+      - db
+    #links:
+      #- db:mysql
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    restart: always
+    expose:
+      - "8002"
+    env_file: .env
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - VIRTUAL_HOST=phpmyadmin.${HOST_DOMAIN}
+      #- VIRTUAL_PORT=8002
+      - LETSENCRYPT_HOST=phpmyadmin.${HOST_DOMAIN}
+      - LETSENCRYPT_EMAIL=jesusant.guerrero@gmail.com
 networks:
   loger:
     driver: bridge
