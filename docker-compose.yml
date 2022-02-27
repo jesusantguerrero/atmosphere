@@ -3,26 +3,26 @@ services:
   web:
     build:
       args:
-        user: 'sunday'
+        user: 'loger'
         uid: 1000
         TZ: America\New_York
       context: ./
       dockerfile: Dockerfile
-    image: sunday
-    container_name: sunday-app
+    image: loger
+    container_name: loger-app
     restart: unless-stopped
     volumes:
       - ./:/var/www
       - ./docker-compose/web/timezone:/etc/timezone
-      - sunday_db:/var/lib/mysql
+      - loger_db:/var/lib/mysql
     networks:
-      - sunday
+      - loger
     depends_on:
       - db
       - redis
   db:
     image: mysql:5.7
-    container_name: sunday-db
+    container_name: loger-db
     restart: always
     ports:
       - "3306:3306"
@@ -36,13 +36,13 @@ services:
       SERVICE_NAME: mysql
     volumes:
       - ./docker-compose/mysql:/docker-entrypoint-initdb.d
-      - sunday_db:/var/lib/mysql
+      - loger_db:/var/lib/mysql
       - ./docker-compose/mysql:/home/root/cache/
     networks:
-      - sunday
+      - loger
   nginx:
     image: nginx:alpine
-    container_name: sunday-nginx
+    container_name: loger-nginx
     restart: unless-stopped
     ports:
       - "8080:80"
@@ -50,7 +50,7 @@ services:
       - ./:/var/www
       - ./docker-compose/nginx/vhosts:/etc/nginx/conf.d/
     networks:
-      - sunday
+      - loger
   redis:
     image: 'redis:alpine'
     ports:
@@ -58,20 +58,20 @@ services:
     volumes:
       - ./docker-compose/redis:/data
     networks:
-      - sunday
+      - loger
   memcached:
       image: 'memcached:alpine'
       ports:
           - '11211:11211'
       networks:
-          - sunday
+          - loger
   mailhog:
     image: 'mailhog/mailhog:latest'
     ports:
       - 1025:1025
       - 8025:8025
     networks:
-      - sunday
+      - loger
   cron:
     build:
       context: .
@@ -82,7 +82,7 @@ services:
     depends_on:
       - web
     networks:
-      - sunday
+      - loger
 volumes:
-  sunday_db:
+  loger_db:
     driver: local
