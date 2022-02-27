@@ -90,7 +90,8 @@ class AutomationServices extends Seeder
                                 'title' => 'search text',
                                 'type' => 'input',
                             ]
-                        ])
+                        ]),
+                        "accepts_config" => true,
                     ]
                 ],
             ],
@@ -139,7 +140,8 @@ class AutomationServices extends Seeder
                                 'options' => ['compra'],
                                 'required' => true
                             ]
-                        ])
+                        ]),
+
                     ]
                 ]
             ],
@@ -187,7 +189,7 @@ class AutomationServices extends Seeder
                 ]),
                 'actions' => [
                     [
-                        'name' => 'createEntry',
+                        'name' => 'create',
                         'label' => 'Create transaction',
                         'entity' => 'App\Actions\Integrations\Entries',
                         'description' => 'Create a new transaction',
@@ -236,7 +238,8 @@ class AutomationServices extends Seeder
                                 'required' => false,
                                 'template' => ''
                             ]
-                        ])
+                        ]),
+                        "accepts_config" => true,
                     ],
                 ]
 

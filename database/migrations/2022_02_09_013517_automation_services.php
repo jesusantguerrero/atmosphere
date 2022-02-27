@@ -16,6 +16,8 @@ class AutomationServices extends Migration
         Schema::create('automation_services', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('label');
+            $table->text('entity');
             $table->text('description');
             $table->text('logo');
             $table->json('fields')->nullable();

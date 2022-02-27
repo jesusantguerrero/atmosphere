@@ -27,6 +27,7 @@ return new class extends Migration
             $table->string('description')->nullable();
             $table->json('fields')->nullable();
             $table->json('config')->nullable();
+            $table->boolean('accepts_config')->default(false);
             $table->timestamps();
         });
     }

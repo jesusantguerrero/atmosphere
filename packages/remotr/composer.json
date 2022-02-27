@@ -1,0 +1,52 @@
+{
+    "name": "insane/remotr",
+    "description": "Setup git repository for remote access in Digital Ocean",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+		"Digital Ocean",
+		"Laravel",
+        "Git"
+	],
+    "authors": [
+        {
+            "name": "Jesus Guerrero",
+            "email": "jesusant.guerrero@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable":true,
+    "require": {},
+    "require-dev": {
+        "symfony/thanks": "^1.0",
+        "phpunit/phpunit": "^7.4@dev",
+        "mockery/mockery": "^1.0@dev",
+        "orchestra/testbench": "^3.8@dev",
+        "illuminate/support": "^5.8@dev"
+    },
+    "autoload": {
+        "psr-4": {
+            "Insane\\Remotr\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Insane\\Remotr\\Tests\\":"tests/"
+        }
+    },
+    "config": {
+        "preferred-install": "dist",
+        "sort-packages": true
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "test-coverage": "vendor/bin/phpunit --coverage-html coverage"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Insane\\Remotr\\RemotrServiceProvider"
+            ]
+        }
+    }
+}

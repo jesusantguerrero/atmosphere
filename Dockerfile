@@ -1,4 +1,4 @@
-FROM php:7.4-fpm
+FROM php:8.1.2-fpm
 
 ARG user
 ARG uid
@@ -14,11 +14,13 @@ RUN apt-get update && apt-get install -y \
     unzip \
     cron \
     default-mysql-client
-
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* && \
 # Install PHP extensions
 docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd && \
+#install mailparse
+pecl install mailparse && \
+echo extension=mailparse.so > /usr/local/etc/php/conf.d/mailparse.ini
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 

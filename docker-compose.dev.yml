@@ -1,0 +1,88 @@
+version: "3.7"
+services:
+  web:
+    build:
+      args:
+        user: 'loger'
+        uid: 1000
+        TZ: America\New_York
+      context: ./
+      dockerfile: Dockerfile
+    image: loger
+    container_name: loger-app
+    restart: unless-stopped
+    volumes:
+      - ./:/var/www
+      - ./docker-compose/web/timezone:/etc/timezone
+      - loger_db:/var/lib/mysql
+    networks:
+      - loger
+    depends_on:
+      - db
+      - redis
+  db:
+    image: mysql:5.7
+    container_name: loger-db
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - ./docker-compose/mysql:/docker-entrypoint-initdb.d
+      - loger_db:/var/lib/mysql
+      - ./docker-compose/mysql:/home/root/cache/
+    networks:
+      - loger
+  nginx:
+    image: nginx:alpine
+    container_name: loger-nginx
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www
+      - ./docker-compose/nginx/vhosts:/etc/nginx/conf.d/
+    networks:
+      - loger
+  redis:
+    image: 'redis:alpine'
+    ports:
+      - '${FORWARD_REDIS_PORT:-6379}:6379'
+    volumes:
+      - ./docker-compose/redis:/data
+    networks:
+      - loger
+  memcached:
+      image: 'memcached:alpine'
+      ports:
+          - '11211:11211'
+      networks:
+          - loger
+  mailhog:
+    image: 'mailhog/mailhog:latest'
+    ports:
+      - 1025:1025
+      - 8025:8025
+    networks:
+      - loger
+  cron:
+    build:
+      context: .
+      dockerfile: cron.dockerfile
+    container_name: cron
+    volumes:
+      - ./:/var/www
+    depends_on:
+      - web
+    networks:
+      - loger
+volumes:
+  loger_db:
+    driver: local

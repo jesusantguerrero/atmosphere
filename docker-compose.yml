@@ -1,28 +1,88 @@
 version: "3.7"
 services:
+  web-proxy:
+    image: jwilder/nginx-proxy
+    container_name: web-proxy
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./:/var/www
+      - ./docker-compose/nginx:/etc/nginx/conf.d/
+      - ./docker-compose/nginx:/etc/nginx/certs:ro
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./docker-compose/nginx/vhosts:/etc/nginx/vhost.d
+      - ./:/usr/share/nginx/html
+    networks:
+      - loger
+    depends_on:
+      - nginx
+  ssl-companion:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    container_name: ssl-companion
+    restart: always
+    volumes_from:
+      - web-proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./docker-compose/nginx:/etc/nginx/certs:rw
+    depends_on:
+      - web-proxy
+  nginx:
+    image: nginx:alpine
+    container_name: web-nginx
+    restart: unless-stopped
+    ports:
+      - 8080
+    volumes:
+      - ./:/var/www
+      - ./docker-compose/nginx/vhosts:/etc/nginx/conf.d/
+      - ./:/usr/share/nginx/html
+    environment:
+      - VIRTUAL_PORT=8080
+      - VIRTUAL_HOST=${VIRTUAL_APP_HOST}
+      - LETSENCRYPT_HOST=${VIRTUAL_APP_HOST}
+      - LETSENCRYPT_EMAIL=jesusant.guerrero@gmail.com
+    networks:
+      - loger
   web:
     build:
       args:
-        user: 'sunday'
+        user: 'loger'
         uid: 1000
         TZ: America\New_York
       context: ./
       dockerfile: Dockerfile
-    image: sunday
-    container_name: sunday-app
+    image: loger
+    container_name: loger-app
     restart: unless-stopped
-    volumes:
-      - ./:/var/www
-      - ./docker-compose/web/timezone:/etc/timezone
-      - sunday_db:/var/lib/mysql
-    networks:
-      - sunday
     depends_on:
       - db
-      - redis
+    volumes:
+      - ./:/var/www
+      - loger_db:/var/lib/mysql
+    networks:
+      - loger
+  landing:
+    build:
+      context: ecosystem/landing
+      dockerfile: Dockerfile
+    image: loger-landing
+    container_name: loger-landing
+    restart: unless-stopped
+    ports:
+      - 3000:3000
+    environment:
+      - VIRTUAL_PORT=3000
+      - VIRTUAL_HOST=${VIRTUAL_LANDING_HOST}
+      - LETSENCRYPT_HOST=${VIRTUAL_LANDING_HOST}
+      - LETSENCRYPT_EMAIL=jesusant.guerrero@gmail.com
+    networks:
+      - loger
   db:
     image: mysql:5.7
-    container_name: sunday-db
+    container_name: loger-db
     restart: always
     ports:
       - "3306:3306"
@@ -36,21 +96,10 @@ services:
       SERVICE_NAME: mysql
     volumes:
       - ./docker-compose/mysql:/docker-entrypoint-initdb.d
-      - sunday_db:/var/lib/mysql
+      - loger_db:/var/lib/mysql
       - ./docker-compose/mysql:/home/root/cache/
     networks:
-      - sunday
-  nginx:
-    image: nginx:alpine
-    container_name: sunday-nginx
-    restart: unless-stopped
-    ports:
-      - "8080:80"
-    volumes:
-      - ./:/var/www
-      - ./docker-compose/nginx/vhosts:/etc/nginx/conf.d/
-    networks:
-      - sunday
+      - loger
   redis:
     image: 'redis:alpine'
     ports:
@@ -58,20 +107,7 @@ services:
     volumes:
       - ./docker-compose/redis:/data
     networks:
-      - sunday
-  memcached:
-      image: 'memcached:alpine'
-      ports:
-          - '11211:11211'
-      networks:
-          - sunday
-  mailhog:
-    image: 'mailhog/mailhog:latest'
-    ports:
-      - 1025:1025
-      - 8025:8025
-    networks:
-      - sunday
+      - loger
   cron:
     build:
       context: .
@@ -79,10 +115,31 @@ services:
     container_name: cron
     volumes:
       - ./:/var/www
+    working_dir: /var/www
     depends_on:
       - web
     networks:
-      - sunday
+      - loger
+  phpmyadmin:
+    depends_on:
+      - db
+    #links:
+      #- db:mysql
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    restart: always
+    expose:
+      - "8002"
+    env_file: .env
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - VIRTUAL_HOST=phpmyadmin.${HOST_DOMAIN}
+      #- VIRTUAL_PORT=8002
+      - LETSENCRYPT_HOST=phpmyadmin.${HOST_DOMAIN}
+      - LETSENCRYPT_EMAIL=jesusant.guerrero@gmail.com
+networks:
+  loger:
+    driver: bridge
 volumes:
-  sunday_db:
+  loger_db:
     driver: local
