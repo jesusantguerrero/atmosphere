@@ -158,6 +158,7 @@ class Transaction extends Model
             'direction' => $transaction->direction,
             'account' => $transaction->mainLine ? $transaction->mainLine->account: [],
             'category' => $transaction->category ? $transaction->category->account : [],
+            'currency_code' => $transaction->currency_code,
             'total' => $transaction->total,
             'lines' => $transaction->lines,
             'mainLine' => $transaction->mainLine,

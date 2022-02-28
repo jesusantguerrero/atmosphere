@@ -3,10 +3,6 @@
 namespace App\Actions\Integrations;
 
 use App\Models\Integrations\Automation;
-use App\Models\User;
-use App\Notifications\EntryGenerated;
-use Insane\Journal\Account;
-use Insane\Journal\Transaction;
 use Symfony\Component\DomCrawler\Crawler;
 
 class BHD

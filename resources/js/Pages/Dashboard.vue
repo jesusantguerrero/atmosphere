@@ -154,8 +154,9 @@
     }
 
     const approveTransaction = (transaction) => {
-        Inertia.post(`/transactions/${transaction.id}/approve`).then(() => {
-            Inertia.reload();
+        axios.post(`/transactions/${transaction.id}/approve`).then(() => {
+            props.drafts.splice(props.drafts.findIndex(t => t.id == transaction.id), 1);
+            // Inertia.reload();
         })
     }
 

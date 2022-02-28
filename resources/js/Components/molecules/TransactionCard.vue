@@ -45,6 +45,7 @@ const props = defineProps({
     date: String,
     value: String,
     currencyCode: String,
+    currencyCode: String,
     status: String,
     markAsPaid: Boolean,
     markAsApproved: Boolean,

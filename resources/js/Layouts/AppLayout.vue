@@ -233,87 +233,64 @@
     </div>
 </template>
 
-<script>
-    import JetApplicationMark from '@/Jetstream/ApplicationMark'
+<script setup>
     import JetBanner from '@/Jetstream/Banner'
     import JetDropdown from '@/Jetstream/Dropdown'
     import JetDropdownLink from '@/Jetstream/DropdownLink'
-    import JetNavLink from '@/Jetstream/NavLink'
     import JetResponsiveNavLink from '@/Jetstream/ResponsiveNavLink'
-    import { AtSide, AtSideItem, AtSideItemGroup } from "atmosphere-ui"
+    import { AtSide } from "atmosphere-ui"
     import NavigationBottom from '@/Components/organisms/NavigationBottom.vue'
 
-    export default {
-        components: {
-        JetApplicationMark,
-        JetBanner,
-        JetDropdown,
-        JetDropdownLink,
-        JetNavLink,
-        JetResponsiveNavLink,
-        AtSide,
-        AtSideItem,
-        AtSideItemGroup,
-        NavigationBottom
-    },
 
-        data() {
-            return {
-                showingNavigationDropdown: false,
-                menu: [
-                    {
-                        icon: 'home',
-                        name: 'home',
-                        label: 'Home',
-                        to: '/dashboard'
-                    },
-                    {
-                        icon: 'far fa-calendar-alt',
-                        label: 'Meal Planer',
-                        name: 'mealPlanner',
-                        to: '/meal-planner'
-                    },
-                    {
-                        icon: 'fas fa-drumstick-bite',
-                        label: 'Meals',
-                        name: 'meals',
-                        to: '/meals'
-                    },
-                    {
-                        icon: 'fas fa-drumstick-bite',
-                        label: 'Integrations',
-                        name: 'integrations',
-                        to: '/integrations'
-                    },
-                    {
-                        icon: 'fas fa-dollar-sign',
-                        label: 'Finance',
-                        name: 'finance',
-                        to: route('finance')
-                    },
-                    {
-                        icon: 'fas fa-heart',
-                        label: 'Relationship',
-                        to: route('finance')
-                    }
-                ]
-            }
+
+    const showingNavigationDropdown = ref(false)
+    const menu =  reactive([
+        {
+            icon: 'home',
+            name: 'home',
+            label: 'Home',
+            to: '/dashboard'
         },
-
-        methods: {
-            switchToTeam(team) {
-                this.$inertia.put(route('current-team.update'), {
-                    'team_id': team.id
-                }, {
-                    preserveState: false
-                })
-            },
-
-            logout() {
-                this.$inertia.post(route('logout'));
-            },
+        {
+            icon: 'far fa-calendar-alt',
+            label: 'Meal Planer',
+            name: 'mealPlanner',
+            to: '/meal-planner'
+        },
+        {
+            icon: 'fas fa-drumstick-bite',
+            label: 'Meals',
+            name: 'meals',
+            to: '/meals'
+        },
+        {
+            icon: 'fas fa-drumstick-bite',
+            label: 'Integrations',
+            name: 'integrations',
+            to: '/integrations'
+        },
+        {
+            icon: 'fas fa-dollar-sign',
+            label: 'Finance',
+            name: 'finance',
+            to: route('finance')
+        },
+        {
+            icon: 'fas fa-heart',
+            label: 'Relationship',
+            to: route('finance')
         }
+    ])
+
+    const switchToTeam = (team) => {
+        Inertia.put(route('current-team.update'), {
+            'team_id': team.id
+        }, {
+            preserveState: false
+        })
     }
+
+    const logout = () => Inertia.post(route('logout'));
 </script>
 
 <style lang="scss">

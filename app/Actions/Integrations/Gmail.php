@@ -29,48 +29,52 @@ class Gmail
         if (!$condition) {
             $condition = $config->value ?? "";
         }
-        $results = $service->users_threads->listUsersThreads("me", ['maxResults' => $maxResults, 'q' => "$condition"]);
 
+        $historyId = isset($track['historyId']) ? $track['historyId'] : 0;
+        $results = $service->users_threads->listUsersThreads("me", ['maxResults' => $maxResults, 'q' => "$condition"], ['startHistoryId' => $historyId]);
+        dd($results);
+        die();
         foreach ($results->getThreads() as $index => $thread) {
             echo "reading thread $index \n";
             $theadResponse = $service->users_threads->get("me", $thread->id, ['format' => 'MINIMAL']);
-            $message = $theadResponse->getMessages()[0];
-            if ($message) {
-                $raw = $service->users_messages->get("me", $message->id, ['format' => 'raw']);
-                $parser = self::parseEmail($raw);
+            foreach ($theadResponse->getMessages() as $message) {
+                if ($message) {
+                    $raw = $service->users_messages->get("me", $message->id, ['format' => 'raw']);
+                    $parser = self::parseEmail($raw);
 
-                $body = $parser->getMessageBody('html');
-                $mail = [
-                    'index' => $index,
-                    'from' => $parser->getHeader('from'),
-                    'subject' => $parser->getHeader('subject'),
-                    'messageId' => $parser->getHeader('message-id'),
-                    'id' => $message->id,
-                    'threadId' => $message->threadId,
-                    'historyId' => $message->historyId,
-                    'date' => $parser->getHeader('date'),
-                ];
+                    $body = $parser->getMessageBody('html');
+                    $mail = [
+                        'index' => $index,
+                        'from' => $parser->getHeader('from'),
+                        'subject' => $parser->getHeader('subject'),
+                        'messageId' => $parser->getHeader('message-id'),
+                        'id' => $message->id,
+                        'threadId' => $message->threadId,
+                        'historyId' => $message->historyId,
+                        'date' => $parser->getHeader('date'),
+                    ];
 
-                if ($index == 0) {
-                    $automation->track = json_encode($mail);
-                    $automation->save();
-                }
+                    if ($index == 0) {
+                        $automation->track = json_encode($mail);
+                        $automation->save();
+                    }
 
-                $mail['message'] = $body;
-                $payload = $mail;
-                $tasks = $automation->tasks;
-                $previousTask = $tasks->first();
-                foreach ($tasks as $taskIndex => $task) {
-                    if ($taskIndex !== 0) {
-                        $action = $task->name;
-                        $actionEntity = $task->entity;
-                        try {
-                            $payload = $actionEntity::$action($automation, $payload, $task, $previousTask, $tasks[0]);
-                            $previousTask = $task;
-                        } catch (\Exception $e) {
-                            print_r($e->getMessage());
-                            Log::error($e->getMessage(), $mail);
-                            continue;
+                    $mail['message'] = $body;
+                    $payload = $mail;
+                    $tasks = $automation->tasks;
+                    $previousTask = $tasks->first();
+                    foreach ($tasks as $taskIndex => $task) {
+                        if ($taskIndex !== 0) {
+                            $action = $task->name;
+                            $actionEntity = $task->entity;
+                            try {
+                                $payload = $actionEntity::$action($automation, $payload, $task, $previousTask, $tasks[0]);
+                                $previousTask = $task;
+                            } catch (\Exception $e) {
+                                print_r($e->getMessage());
+                                Log::error($e->getMessage(), $mail);
+                                continue;
+                            }
                         }
                     }
                 }
