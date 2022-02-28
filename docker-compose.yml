@@ -3,7 +3,7 @@ services:
   web-proxy:
     image: jwilder/nginx-proxy
     container_name: web-proxy
-    restart: always
+    restart: unless-stopped
     ports:
       - 80:80
       - 443:443
@@ -34,7 +34,7 @@ services:
     container_name: web-nginx
     restart: unless-stopped
     ports:
-      - 8080
+      - 8080:80
     volumes:
       - ./:/var/www
       - ./docker-compose/nginx/vhosts:/etc/nginx/conf.d/
