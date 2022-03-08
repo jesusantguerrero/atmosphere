@@ -10,13 +10,11 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
-class ProcessGmail implements ShouldQueue
+class RunAutomations implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $automation;
-    protected $gmailThreads;
-    protected $service;
 
     /**
      * Create a new job instance.
@@ -35,6 +33,6 @@ class ProcessGmail implements ShouldQueue
      */
     public function handle()
     {
-        Gmail::read($this->automation);
+        $this->automation->dispatch();
     }
 }

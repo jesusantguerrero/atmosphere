@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use App\Models\Integrations\Automation;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -26,7 +27,7 @@ class Kernel extends ConsoleKernel
     {
         $automations = Automation::all();
         foreach ($automations as $automation) {
-            $schedule->command("daily:service {$automation->name} {$automation->id}")->everyMinute()->runInBackground();
+            $schedule->command("automation:trigger  {$automation->id}")->everyMinute()->runInBackground();
         }
     }
 

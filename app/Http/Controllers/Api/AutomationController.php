@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Jobs\ProcessGmail;
+use App\Jobs\RunAutomations;
 use App\Libraries\GoogleService;
 use App\Models\Integrations\Automation;
 
@@ -39,6 +40,17 @@ class AutomationController extends BaseController
             }
 
             return $automations;
+        }
+    }
+
+    public function runAll() {
+        $automationTasks = Automation::where([
+            "team_id" => auth()->user()->team_id,
+            "user_id" => auth()->user()->id,
+        ])->get();
+
+        foreach ($automationTasks as $automation) {
+            RunAutomations::dispatch($automation);
         }
     }
 }

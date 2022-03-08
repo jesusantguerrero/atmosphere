@@ -32,8 +32,6 @@ class Gmail
 
         $historyId = isset($track['historyId']) ? $track['historyId'] : 0;
         $results = $service->users_threads->listUsersThreads("me", ['maxResults' => $maxResults, 'q' => "$condition"], ['startHistoryId' => $historyId]);
-        dd($results);
-        die();
         foreach ($results->getThreads() as $index => $thread) {
             echo "reading thread $index \n";
             $theadResponse = $service->users_threads->get("me", $thread->id, ['format' => 'MINIMAL']);

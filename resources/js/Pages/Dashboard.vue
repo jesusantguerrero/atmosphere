@@ -48,7 +48,15 @@
                             :allow-remove="true"
                             :transactions="drafts"
                             :parser="transactionDBToTransaction"
-                        />
+                        >
+                            <template v-slot:action>
+                                <div class="flex justify-end">
+                                    <AtButton class="flex space-x-2 text-pink-500" @click="approveTransaction($event)"><i class="block fa fa-check"></i> Approve</AtButton>
+                                    <AtButton class="flex space-x-2 text-pink-500" @click="removeTransaction($event)"><i class="block fa fa-times"></i> Remove</AtButton>
+                                    <AtButton class="flex space-x-2 text-white bg-pink-500" @click="runAutomations()"><i class="block fa fa-robot"></i> Run Automations</AtButton>
+                                </div>
+                            </template>
+                        </transactions-table>
                     </div>
                 </div>
             </div>
@@ -153,6 +161,16 @@
         }))
     }
 
+    const runAutomations = () => {
+        axios.post('/api/automation/run-all')
+            .then(response => {
+                console.log(response.data)
+            })
+            .catch(error => {
+                console.log(error)
+            })
+    }
+
     const approveTransaction = (transaction) => {
         axios.post(`/transactions/${transaction.id}/approve`).then(() => {
             props.drafts.splice(props.drafts.findIndex(t => t.id == transaction.id), 1);
@@ -161,7 +179,7 @@
     }
 
     const removeTransaction = (transaction) => {
-        axios.delete(`/transactions/${transaction.id}`).then(() => {
+        Inertia.delete(`/transactions/${transaction.id}`).then(() => {
             Inertia.reload();
         })
     }

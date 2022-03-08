@@ -247,7 +247,7 @@
                     ...state.schedule_settings
                 }))
                 .post(postRoute, {
-                    onSuccess: ({ data }) => {
+                    onSuccess: () => {
                         emit('close')
                         state.form.reset();
                     },
