@@ -50,7 +50,7 @@ class AutomationController extends BaseController
         ])->get();
 
         foreach ($automationTasks as $automation) {
-            RunAutomations::dispatch($automation);
+            RunAutomations::dispatch($automation)->background();
         }
     }
 }

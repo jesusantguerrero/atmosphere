@@ -51,9 +51,14 @@
                         >
                             <template v-slot:action>
                                 <div class="flex justify-end">
-                                    <AtButton class="flex space-x-2 text-pink-500" @click="approveTransaction($event)"><i class="block fa fa-check"></i> Approve</AtButton>
-                                    <AtButton class="flex space-x-2 text-pink-500" @click="removeTransaction($event)"><i class="block fa fa-times"></i> Remove</AtButton>
-                                    <AtButton class="flex space-x-2 text-white bg-pink-500" @click="runAutomations()"><i class="block fa fa-robot"></i> Run Automations</AtButton>
+                                    <AtButton class="flex space-x-2 text-pink-500" @click="approveTransaction($event)">
+                                        <i class="block mr-2 fa fa-check"></i> Approve
+                                    </AtButton>
+                                    <AtButton class="flex mr-2 space-x-2 text-pink-500" @click="removeAllDrafts()">
+                                        <i class="block mr-2 fa fa-times"></i> Remove</AtButton>
+                                    <AtButton class="flex space-x-2 text-white bg-pink-500" @click="runAutomations()">
+                                        <i class="block mr-2 fa fa-robot"></i> Run Automations
+                                    </AtButton>
                                 </div>
                             </template>
                         </transactions-table>
@@ -171,10 +176,20 @@
             })
     }
 
+    const removeAllDrafts = () => {
+        axios.post('/transactions/remove-all-drafts')
+            .then(response => {
+                console.log(response.data)
+            })
+            .catch(error => {
+                console.log(error)
+            })
+    }
+
     const approveTransaction = (transaction) => {
-        axios.post(`/transactions/${transaction.id}/approve`).then(() => {
-            props.drafts.splice(props.drafts.findIndex(t => t.id == transaction.id), 1);
-            // Inertia.reload();
+        Inertia.post(`/transactions/${transaction.id}/approve`).then(() => {
+            // props.drafts.splice(props.drafts.findIndex(t => t.id == transaction.id), 1);
+            Inertia.reload();
         })
     }
 

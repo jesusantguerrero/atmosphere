@@ -37,7 +37,7 @@ class DashboardController {
         $drafts = Transaction::where([
             'team_id' => $teamId,
             'status' => 'draft'
-        ])->get();
+        ])->orderBy('date', 'desc')->get();
 
 
         return Inertia::render('Dashboard', [
