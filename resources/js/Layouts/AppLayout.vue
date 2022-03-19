@@ -225,7 +225,7 @@
                     <!-- Page Content -->
                     <main>
                         <slot></slot>
-                        <NavigationBottom :menu-items="menu" />
+                        <!-- <NavigationBottom :menu-items="menu" /> -->
                     </main>
                 </div>
             </div>
