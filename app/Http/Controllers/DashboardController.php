@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\BudgetHelper;
-use App\Helpers\CategoryHelper;
 use App\Libraries\GoogleService;
 use App\Models\Budget;
 use App\Models\Integrations\AutomationRecipe;
@@ -15,6 +14,7 @@ use App\Models\Transaction;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Insane\Journal\Helpers\CategoryHelper;
 use Laravel\Jetstream\Jetstream;
 
 class DashboardController {
