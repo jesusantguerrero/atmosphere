@@ -21,7 +21,7 @@
                                 subtitle="Total: 150,000.00"
                             />
                         </div>
-                        <div class="px-5 py-5 mx-auto text-white bg-pink-500 rounded-xl">
+                        <div class="px-5 py-5 mx-auto text-white bg-pink-500 rounded-xl cursor-pointer" @click="">
                             <h4> Expenses </h4>
                             <div class="mt-2 text-4xl font-bold"> {{ formatMoney(transactionTotal) }} </div>
                             <div class="px-5 py-2 mt-4 bg-gray-700 bg-opacity-25 rounded-3xl"> Last month variance:
@@ -84,31 +84,21 @@
     </app-layout>
 </template>
 
-<script>
+<script setup>
     import { AtButton } from "atmosphere-ui";
     import AppLayout from '@/Layouts/AppLayout'
     import FinanceCard from "@/Components/molecules/FinanceCard";
-    import BudgetTracker from "@/Components/organisms/BudgetTracker";
     import TransactionsTable from "@/Components/organisms/TransactionsTable";
     import SectionTitle from "@/Components/atoms/SectionTitle";
     import { reactive, ref } from '@vue/reactivity';
     import { useSelect } from '@/utils/useSelects';
     import formatMoney from '@/utils/formatMoney';
+    import { transactionDBToTransaction } from '@/utils/transactions';
     import { computed } from '@vue/runtime-core';
     import { Inertia } from '@inertiajs/inertia';
     import TransactionModal from "@/Components/TransactionModal.vue"
 
-    export default {
-        components: {
-            AppLayout,
-            AtButton,
-            BudgetTracker,
-            SectionTitle,
-            TransactionsTable,
-            FinanceCard,
-            TransactionModal,
-        },
-        props: {
+    const props = defineProps({
             user: {
                 type: Object,
                 required: true,
@@ -169,80 +159,54 @@
                     return []
                 }
             }
-        },
-        setup(props) {
-            const selected = ref(null);
+    });
 
-            const plannedDBToTransaction = (transactions) => {
-                return transactions.map(transaction => ({
-                    id: transaction.id,
-                    date: transaction.date,
-                    title: transaction.description,
-                    subtitle: `${transaction.account.name} -> ${transaction.category.name} `,
-                    value: transaction.total,
-                    status: 'PLANNED'
-                }))
+    const selected = ref(null);
+
+    const plannedDBToTransaction = (transactions) => {
+        return transactions.map(transaction => ({
+            id: transaction.id,
+            date: transaction.date,
+            title: transaction.description,
+            subtitle: `${transaction.account.name} -> ${transaction.category.name} `,
+            value: transaction.total,
+            status: 'PLANNED'
+        }))
+    }
+
+    const { categoryOptions: transformCategoryOptions } = useSelect()
+    transformCategoryOptions(props.categories, true, 'categoryOptions');
+    transformCategoryOptions(props.accounts, true, 'accountsOptions');
+    const getVariances = (current, last) => {
+        const variance = (current - last) / last * 100
+        return variance.toFixed(2);
+    }
+
+    const incomeVariance = computed(() => {
+        return getVariances(props.income, props.lastMonthIncome);
+    });
+
+    const expenseVariance = computed(() => {
+        return getVariances(props.transactionTotal, props.lastMonthExpenses);
+    });
+
+    const markAsPaid = (transaction) => {
+        Inertia.put(`/transactions/${transaction.id}/mark-as-paid`, {}, {
+            onSuccess: () => {
+                Inertia.reload();
             }
+        })
+    }
 
-            const transactionDBToTransaction = (transactions) => {
-                return transactions.map(transaction => ({
-                    id: transaction.id,
-                    date: transaction.date,
-                    title: transaction.description,
-                    subtitle: `${transaction.account.name} -> ${transaction.category.name} `,
-                    value: transaction.total,
-                    status: 'VERIFIED'
-                }))
-            }
+    const isTransferModalOpen = ref(false);
+    const transferConfig = reactive({
+        recurrence: false,
+        automatic: false,
+    })
 
-            const { categoryOptions: transformCategoryOptions } = useSelect()
-            transformCategoryOptions(props.categories, true, 'categoryOptions');
-            transformCategoryOptions(props.accounts, true, 'accountsOptions');
-            const getVariances = (current, last) => {
-                const variance = (current - last) / last * 100
-                return variance.toFixed(2);
-            }
-
-            const incomeVariance = computed(() => {
-                return getVariances(props.income, props.lastMonthIncome);
-            });
-
-            const expenseVariance = computed(() => {
-                return getVariances(props.transactionTotal, props.lastMonthExpenses);
-            });
-
-            const markAsPaid = (transaction) => {
-                Inertia.put(`/transactions/${transaction.id}/mark-as-paid`, {}, {
-                    onSuccess: () => {
-                        Inertia.reload();
-                    }
-                })
-            }
-
-            const isTransferModalOpen = ref(false);
-            const transferConfig = reactive({
-                recurrence: false,
-                automatic: false,
-            })
-
-            const openModalFor = (isRecurrent, automatic) => {
-                isTransferModalOpen.value = true;
-                transferConfig.recurrence = isRecurrent;
-                transferConfig.automatic = automatic;
-            }
-
-            return {
-                selected,
-                plannedDBToTransaction,
-                transactionDBToTransaction,
-                formatMoney,
-                expenseVariance,
-                incomeVariance,
-                markAsPaid,
-                isTransferModalOpen,
-                transferConfig,
-                openModalFor,
-            }
-        }
+    const openModalFor = (isRecurrent, automatic) => {
+        isTransferModalOpen.value = true;
+        transferConfig.recurrence = isRecurrent;
+        transferConfig.automatic = automatic;
     }
 </script>
