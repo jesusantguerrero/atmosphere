@@ -2495,6 +2495,10 @@ header[data-v-e8630722]::after{content:"";background:linear-gradient(to left bot
   --tw-bg-opacity: 1;
   background-color: rgb(219 39 119 / var(--tw-bg-opacity));
 }
+.hover\:bg-pink-400:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(244 114 182 / var(--tw-bg-opacity));
+}
 .hover\:bg-opacity-20:hover {
   --tw-bg-opacity: 0.2;
 }
@@ -2560,6 +2564,10 @@ header[data-v-e8630722]::after{content:"";background:linear-gradient(to left bot
 .hover\:text-red-500:hover {
   --tw-text-opacity: 1;
   color: rgb(239 68 68 / var(--tw-text-opacity));
+}
+.hover\:text-white:hover {
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity));
 }
 .hover\:opacity-75:hover {
   opacity: 0.75;

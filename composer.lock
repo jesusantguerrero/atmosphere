@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b470c00d58eb15396630618a5247e76f",
+    "content-hash": "86e3f7e18ea76e71a74861b383bc87a7",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -1551,16 +1551,10 @@
         {
             "name": "insane/journal",
             "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/insane-code/journal.git",
-                "reference": "7f9856b0bd3bb85be44760c8c8fa32fef51d2e0f"
-            },
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/insane-code/journal/zipball/7f9856b0bd3bb85be44760c8c8fa32fef51d2e0f",
-                "reference": "7f9856b0bd3bb85be44760c8c8fa32fef51d2e0f",
-                "shasum": ""
+                "type": "path",
+                "url": "../packages/journal",
+                "reference": "a12ebd765ebbe52ef7d79ccde3d49176fed6f5d0"
             },
             "require-dev": {
                 "fzaninotto/faker": "^1.9@dev",
@@ -1571,7 +1565,6 @@
                 "phpunit/phpunit": "^7.4@dev",
                 "symfony/thanks": "^1.0"
             },
-            "default-branch": true,
             "type": "library",
             "extra": {
                 "laravel": {
@@ -1588,7 +1581,19 @@
                     "Insane\\Journal\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "Insane\\Journal\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "vendor/bin/phpunit"
+                ],
+                "test-coverage": [
+                    "vendor/bin/phpunit --coverage-html coverage"
+                ]
+            },
             "license": [
                 "MIT"
             ],
@@ -1600,14 +1605,12 @@
             ],
             "description": "Accounting module for atmosphere and laravel",
             "keywords": [
-                "Accounting",
+                "accounting",
                 "invoicing"
             ],
-            "support": {
-                "issues": "https://github.com/insane-code/journal/issues",
-                "source": "https://github.com/insane-code/journal/tree/master"
-            },
-            "time": "2022-03-21T13:29:57+00:00"
+            "transport-options": {
+                "relative": true
+            }
         },
         {
             "name": "jaybizzle/crawler-detect",
@@ -6747,19 +6750,20 @@
         },
         {
             "name": "tightenco/ziggy",
-            "version": "v1.4.4",
+            "version": "v1.4.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tighten/ziggy.git",
-                "reference": "ad1b6590978efe3ec36ca404e91f8acaa6c742bd"
+                "reference": "d3c74474f624ab80b7fb4e3e264e62bb4043eee2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tighten/ziggy/zipball/ad1b6590978efe3ec36ca404e91f8acaa6c742bd",
-                "reference": "ad1b6590978efe3ec36ca404e91f8acaa6c742bd",
+                "url": "https://api.github.com/repos/tighten/ziggy/zipball/d3c74474f624ab80b7fb4e3e264e62bb4043eee2",
+                "reference": "d3c74474f624ab80b7fb4e3e264e62bb4043eee2",
                 "shasum": ""
             },
             "require": {
+                "ext-json": "*",
                 "laravel/framework": ">=5.4@dev"
             },
             "require-dev": {
@@ -6807,9 +6811,9 @@
             ],
             "support": {
                 "issues": "https://github.com/tighten/ziggy/issues",
-                "source": "https://github.com/tighten/ziggy/tree/v1.4.4"
+                "source": "https://github.com/tighten/ziggy/tree/v1.4.5"
             },
-            "time": "2022-03-11T18:06:53+00:00"
+            "time": "2022-03-25T22:36:59+00:00"
         },
         {
             "name": "tijsverkoyen/css-to-inline-styles",

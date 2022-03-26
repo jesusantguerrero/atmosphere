@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\AutomationController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FinancialController;
 use App\Http\Controllers\MealController;
 use App\Http\Controllers\PlannerController;
 use App\Http\Controllers\SettingsController;
@@ -64,6 +65,10 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         Route::resource('/settings', SettingsController::class);
         Route::get('/settings/tab/{tabName}', 'index');
         Route::get('/settings/{name}',  'section');
+    });
+
+    Route::controller(FinancialController::class)->group(function () {
+        Route::get('/financial', 'index');
     });
 });
 

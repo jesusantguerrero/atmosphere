@@ -23,20 +23,37 @@ class Transaction extends CoreTransaction
         return $transactionNew;
     }
 
-    public static function parser($transaction) {
-        return [
-            'id' => $transaction->id,
-            'date' => $transaction->date,
-            'number' => $transaction->number,
-            'description' => $transaction->description,
-            'direction' => $transaction->direction,
-            'account' => $transaction->mainLine ? $transaction->mainLine->account: [],
-            'category' => $transaction->category ? $transaction->category->account : [],
-            'currency_code' => $transaction->currency_code,
-            'total' => $transaction->total,
-            'lines' => $transaction->lines,
-            'mainLine' => $transaction->mainLine,
-            'schedule' => $transaction->schedule,
-        ];
+    public static function parser($transaction, $isGrouped = false) {
+        if (!$isGrouped) {
+            return [
+                'id' => $transaction->id,
+                'date' => $transaction->date,
+                'number' => $transaction->number,
+                'description' => $transaction->description,
+                'direction' => $transaction->direction,
+                'account' => $transaction->mainLine ? $transaction->mainLine->account: [],
+                'category' => $transaction->category ? $transaction->category->account : [],
+                'currency_code' => $transaction->currency_code,
+                'total' => $transaction->total,
+                'lines' => $transaction->lines,
+                'mainLine' => $transaction->mainLine,
+                'schedule' => $transaction->schedule,
+            ];
+        } else {
+            return [
+                // 'id' => $transaction->id,
+                // 'date' => $transaction->date,
+                // 'number' => $transaction->number,
+                'description' => $transaction->description,
+                // 'direction' => $transaction->direction,
+                'account' => $transaction->mainLine ? $transaction->mainLine->account: [],
+                'category' => $transaction->category ? $transaction->category->account : [],
+                'currency_code' => $transaction->currency_code,
+                'total' => $transaction->total,
+                // 'lines' => $transaction->lines,
+                // 'mainLine' => $transaction->mainLine,
+                // 'schedule' => $transaction->schedule,
+            ];
+        }
     }
 }

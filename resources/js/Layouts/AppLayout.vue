@@ -241,8 +241,7 @@
     import { AtSide } from "atmosphere-ui"
     import NavigationBottom from '@/Components/organisms/NavigationBottom.vue'
     import { reactive, ref } from 'vue'
-
-
+    import { Inertia } from '@inertiajs/inertia'
 
     const showingNavigationDropdown = ref(false)
     const menu =  reactive([
