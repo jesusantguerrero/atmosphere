@@ -39,7 +39,7 @@ class FinancialController {
         if ($groupBy && isset($groups[$groupBy])) {
 
             $transactionsQuery
-            ->selectRaw("sum(total) as total, description, group_concat(currency_code) as currency_code")
+            ->selectRaw("sum(total) as total, description, group_concat(DISTINCT currency_code) as currency_code")
             ->groupByRaw("$groups[$groupBy], currency_code")
             ->orderByDesc('total');
         }

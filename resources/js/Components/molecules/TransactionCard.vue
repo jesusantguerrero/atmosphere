@@ -2,7 +2,7 @@
 <div>
   <div class="flex justify-between px-5 py-2 transition" :class="{'cursor-pointer hover:bg-gray-100 ': allowSelect}" @click="handleSelect">
     <div class="flex space-x-3">
-        <div v-if="allowSelect" class="h-full flex items-center"><input :checked="isSelected" /></div>
+        <div v-if="allowSelect" class="h-full flex items-center"><input type="checkbox" :checked="isSelected" /></div>
         <div class="w-20 px-5 py-3 font-bold text-center rounded-md bg-gray-50 hover:bg-pink-400 hover:text-white transition-all">
             {{ title.slice(0,1) }}
         </div>

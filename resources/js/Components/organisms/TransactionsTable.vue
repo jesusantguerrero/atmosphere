@@ -80,15 +80,15 @@ const transactionsParsed = computed(() => {
 const selectedItems = reactive([]);
 
 const isSelected = (transaction) => {
-    return selectedItems.includes(transaction.id || transaction.description);
+    return selectedItems.includes(transaction.id || transaction.title);
 }
 
 const handleSelect = (transaction) => {
     if (props.allowSelect) {
         if (isSelected(transaction)) {
-            selectedItems.splice(selectedItems.indexOf(transaction.id || transaction.description), 1);
+            selectedItems.splice(selectedItems.indexOf(transaction.id || transaction.title), 1);
         } else {
-            selectedItems.push(transaction.id || transaction.description);
+            selectedItems.push(transaction.id || transaction.title);
         }
     }
     emit('update:selected', selectedItems);
