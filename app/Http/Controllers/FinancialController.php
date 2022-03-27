@@ -2,14 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\BudgetHelper;
-use App\Libraries\GoogleService;
-use App\Models\Budget;
-use App\Models\Integrations\AutomationRecipe;
-use App\Models\Integrations\AutomationService;
-use App\Models\Integrations\AutomationTask;
-use App\Models\Integrations\Integration;
-use App\Models\Planner;
 use App\Models\Transaction;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -23,7 +15,7 @@ class FinancialController {
         $lastMonthStartDate = $request->query('startDate', Carbon::now()->subMonth()->startOfMonth()->format('Y-m-d'));
         $lastMonthEndDate = $request->query('endDate', Carbon::now()->subMonth()->endOfMonth()->format('Y-m-d'));
 
-        $groupBy = $request->query('groupBy', 'account_id');
+        $groupBy = $request->query('group', 'account_id');
         $teamId = $request->user()->current_team_id;
         $groups = [
             'accounts' => 'transactions.account_id',
