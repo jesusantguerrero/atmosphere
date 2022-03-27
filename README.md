@@ -1,6 +1,6 @@
 ## About Loger [codename: Atmosphere] (Work in progress)
 
-Loger (House in french) is a Monolith app using laravel 8, jetstream, intertia, vue3, Tailwindcss and some hand crafted packages [Atmosphere UI](), [Journal](), [Tresurer](), and others.
+Loger (House in french) is a Monolith app using laravel 8, jetstream, intertia, vue3, Tailwindcss and some hand crafted packages [Atmosphere UI](https://github.com/insane-code/journal), [Journal](https://github.com/insane-code/journal), [Tresurer](https://github.com/jesusantguerrero/insane-treasurer), and others.
 
 Loger helps to manage my family house chores things like Meal Planner, Home Finance,
 
@@ -64,6 +64,7 @@ Finally, we will need to seed our database with the following command:
 
 ```php
 php artisan db:seed
+php artisan journal:set-accounts
 ```
 <br>
 
