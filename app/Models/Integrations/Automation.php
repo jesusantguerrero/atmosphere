@@ -23,11 +23,15 @@ class Automation extends Model
 
     public function saveTasks($tasks) {
         AutomationTaskAction::query()->where('automation_id', $this->id)->delete();
-        foreach ($tasks as $task) {
+        foreach ($tasks as $index => $task) {
             if (!$task['name']) continue;
+            $taskSource = AutomationTask::find($task['automation_task_id']);
             $this->tasks()->create([
                 "team_id" => $this->team_id,
                 "user_id" => $this->user_id,
+                "entity" => $taskSource->entity,
+                "task_type" => $taskSource->task_type,
+                'order' => $index,
                 "automation_id" => $this->id,
                 "automation_task_id" => $task['automation_task_id'],
                 "name" => $task['name'],

@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Insane\Journal\Transaction;
+use Insane\Journal\Models\Core\Transaction;
 
 class AutomationServices extends Seeder
 {

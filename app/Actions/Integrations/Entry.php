@@ -7,8 +7,8 @@ use App\Models\Integrations\Automation;
 use App\Models\Integrations\AutomationTaskAction;
 use App\Models\User;
 use App\Notifications\EntryGenerated;
-use Insane\Journal\Account;
-use Insane\Journal\Transaction;
+use Insane\Journal\Models\Core\Account;
+use Insane\Journal\Models\Core\Transaction;
 
 class Entry
 {

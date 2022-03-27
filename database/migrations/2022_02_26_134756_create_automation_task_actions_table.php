@@ -21,6 +21,7 @@ return new class extends Migration
             $table->foreignId('automation_task_id');
             $table->string('name');
             $table->text('entity');
+            $table->integer('order')->default(0);
             $table->enum('task_type', [
                 'trigger',
                 'action',
