@@ -177,18 +177,14 @@
     }
 
     const removeAllDrafts = () => {
-        axios.post('/transactions/remove-all-drafts')
+        Inertia.post('/transactions/remove-all-drafts')
             .then(response => {
-                console.log(response.data)
-            })
-            .catch(error => {
-                console.log(error)
+                Inertia.reload()
             })
     }
 
     const approveTransaction = (transaction) => {
-        Inertia.post(`/transactions/${transaction.id}/approve`).then(() => {
-            // props.drafts.splice(props.drafts.findIndex(t => t.id == transaction.id), 1);
+        Inertia.post(`/transactions/approve-all-drafts`).then(() => {
             Inertia.reload();
         })
     }
