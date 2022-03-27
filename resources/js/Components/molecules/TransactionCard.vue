@@ -1,9 +1,13 @@
 <template>
-<div>
-  <div class="flex justify-between px-5 py-2 transition" :class="{'cursor-pointer hover:bg-gray-100 ': allowSelect}" @click="handleSelect">
+<div class="transition group" :class="[
+    allowSelect && 'cursor-pointer hover:bg-gray-100 border-2 border-transparent hover:border-pink-400',
+    isSelected ? 'odd:bg-pink-100 even:bg-pink-200' : 'odd:bg-white even:bg-slate-100'
+
+    ]" @click="handleSelect">
+  <div class="flex justify-between px-5 py-2">
     <div class="flex space-x-3">
         <div v-if="allowSelect" class="h-full flex items-center"><input type="checkbox" :checked="isSelected" /></div>
-        <div class="w-20 px-5 py-3 font-bold text-center rounded-md bg-gray-50 hover:bg-pink-400 hover:text-white transition-all">
+        <div class="w-20 px-5 py-3 font-bold text-center rounded-md bg-gray-50 group-hover:bg-pink-400 group-hover:text-white transition-all">
             {{ title.slice(0,1) }}
         </div>
         <div>

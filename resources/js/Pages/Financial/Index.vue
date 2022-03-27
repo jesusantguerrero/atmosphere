@@ -7,6 +7,7 @@
             class="pt-3 mt-5 "
             table-class="overflow-auto bg-white border rounded-lg shadow-md mt-5"
             allow-select
+            show-sum
             :transactions="transactions"
             :parser="transactionDBToTransaction"
         >
@@ -34,15 +35,18 @@
     import TransactionsTable from "@/Components/organisms/TransactionsTable";
     import { transactionDBToTransaction } from '@/utils/transactions';
     import { NSelect } from 'naive-ui'
-    import { makeOptions } from '@/utils/naiveui';
-    import { reactive, watch } from "vue";
+    import { onMounted, reactive, watch } from "vue";
     import { Inertia } from "@inertiajs/inertia";
 
-    defineProps({
+    const props = defineProps({
         transactions: {
             type: Array,
             default: () => []
-        }
+        },
+        serverSearchOptions: {
+            type: Object,
+            default: () => ({})
+        },
     })
 
     const state = reactive({
@@ -57,15 +61,19 @@
             },
         ],
         searchOptions: {
-            group: []
+            group: ""
         }
+    })
+
+    Object.entries(props.serverSearchOptions).forEach(([key, value]) => {
+        state.searchOptions[key] = value;
     })
 
     const updateSearch = (group) => {
         let params = ''
         params = Object.entries(state.searchOptions).map(([key, value]) => {
-            return `${key}=${value}`
-        }).join('&')
+            return value ? `${key}=${value}` : ''
+        }).filter(value => value).join('&')
         Inertia.replace(`/financial?${params}`)
     }
 

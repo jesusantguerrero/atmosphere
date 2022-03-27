@@ -18,7 +18,7 @@ class FinancialController {
         $groupBy = $request->query('group', 'account_id');
         $teamId = $request->user()->current_team_id;
         $groups = [
-            'accounts' => 'transactions.account_id',
+            'accounts' => 'transactions.account_id, transactions.description',
             'description' => 'transactions.description',
         ];
 
@@ -52,6 +52,9 @@ class FinancialController {
             "transactions" => $transactions->map(function ($transaction) use ($groupBy) {
                 return Transaction::parser($transaction, (bool) $groupBy);
             }),
+            "serverSearchOptions" => [
+                "group" => $groupBy,
+            ]
         ]);
     }
 }

@@ -17,15 +17,18 @@
             :allow-select="allowSelect"
             :key="transaction.id"
             :isSelected="isSelected(transaction)"
+            class="odd:bg-white even:bg-slate-100"
             @selected="handleSelect(transaction)"
             @paid-clicked="$emit('paid-clicked', transaction)"
             @approved="$emit('approved', transaction)"
             @removed="$emit('removed', transaction)"
         />
-        <div>
-            <div>Selected Items sum</div>
-            <div v-for="currencySum, currency in selectedSum">
-                {{ formatMoney(currencySum, currency) }}
+        <div class="flex items-center justify-between py-5 bg-gray-200 px-4" v-if="showSum">
+            <div class="font-bold">Selected Items sum</div>
+            <div class="text-right space-y-1">
+                <div v-for="currencySum, currency in selectedSum">
+                    {{ formatMoney(currencySum, currency) }}
+                </div>
             </div>
         </div>
     </div>
@@ -61,6 +64,10 @@ const props = defineProps({
     parser: {
         type: [Function, null],
         default: null
+    },
+    showSum: {
+        type: Boolean,
+        default: false
     },
     allowMarkAsPaid: {
         type: Boolean,
@@ -104,7 +111,15 @@ const handleSelect = (transaction) => {
 }
 
 const selectedSum = computed(() => {
-    return selectedItems.reduce((sum, id) => {
+    return calculateSum(selectedItems);
+})
+
+const totalSum = computed(() => {
+    return calculateSum(transactionsParsed.value.map(transaction => transaction.id));
+})
+
+const calculateSum = (items) => {
+     return items.reduce((sum, id) => {
         const transaction = transactionsParsed.value.find(transaction => transaction.id === id || transaction.title === id);
         if (transaction) {
             if (sum[transaction.currencyCode]) {
@@ -117,5 +132,5 @@ const selectedSum = computed(() => {
     }, {
 
     });
-})
+}
 </script>

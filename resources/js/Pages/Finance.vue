@@ -21,7 +21,7 @@
                                 subtitle="Total: 150,000.00"
                             />
                         </div>
-                        <div class="px-5 py-5 mx-auto text-white bg-pink-500 rounded-xl cursor-pointer" @click="">
+                        <div class="px-5 py-5 mx-auto text-white bg-pink-500 rounded-xl cursor-pointer" @click="$inertia.visit('/financial')">
                             <h4> Expenses </h4>
                             <div class="mt-2 text-4xl font-bold"> {{ formatMoney(transactionTotal) }} </div>
                             <div class="px-5 py-2 mt-4 bg-gray-700 bg-opacity-25 rounded-3xl"> Last month variance:
