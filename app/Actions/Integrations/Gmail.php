@@ -20,7 +20,7 @@ class Gmail
     {
         $maxResults = 50;
         $track = json_decode($automation->track, true);
-        $track['historyId'] = $track['historyId'] ?? 0;
+        $trackId = $track['historyId'] ?? 0;
         $trigger = $automation->trigger()->first();
         $config = json_decode($trigger->values);
         $client = GoogleService::getClient($automation->integration_id);
@@ -30,13 +30,12 @@ class Gmail
             $condition = $config->value ?? "";
         }
 
-        $historyId = isset($track['historyId']) ? $track['historyId'] : 0;
-        $results = $service->users_threads->listUsersThreads("me", ['maxResults' => $maxResults, 'q' => "$condition"], ['startHistoryId' => $historyId]);
+        $results = $service->users_threads->listUsersThreads("me", ['maxResults' => $maxResults, 'q' => "$condition"]);
         foreach ($results->getThreads() as $index => $thread) {
             echo "reading thread $index \n";
             $theadResponse = $service->users_threads->get("me", $thread->id, ['format' => 'MINIMAL']);
             foreach ($theadResponse->getMessages() as $message) {
-                if ($message) {
+                if ($message && $message->getHistoryId() > $trackId) {
                     $raw = $service->users_messages->get("me", $message->id, ['format' => 'raw']);
                     $parser = self::parseEmail($raw);
 

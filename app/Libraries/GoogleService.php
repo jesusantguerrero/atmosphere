@@ -1,8 +1,6 @@
 <?php
 namespace App\Libraries;
 
-use App\Jobs\ProcessGmail;
-use App\Models\Integrations\Automation;
 use App\Models\Integrations\Integration;
 use App\Models\User;
 use Exception;

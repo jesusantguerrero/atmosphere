@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Jobs\ProcessGmail;
-use App\Jobs\RunAutomations;
 use App\Libraries\GoogleService;
 use App\Models\Integrations\Automation;
+use Illuminate\Support\Facades\Artisan;
 
 class AutomationController extends BaseController
 {
@@ -50,7 +50,9 @@ class AutomationController extends BaseController
         ])->get();
 
         foreach ($automationTasks as $automation) {
-            RunAutomations::dispatch($automation)->background();
+            Artisan::call('automation:trigger', [
+                'automation_id' => $automation->id,
+            ]);
         }
     }
 }
