@@ -93,7 +93,7 @@
             state.searchOptions.date.endDate = new Date(value.endDate)
             state.date = new Date(value.startDate)
         } else {
-            state.searchOptions[key] = value
+            state.searchOptions[key] = Object.values(state.filterOptions).map(filter => filter.value).includes(value) ? value : ""
         }
     })
 
