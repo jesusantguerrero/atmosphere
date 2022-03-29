@@ -21,7 +21,7 @@
 
         <div class="py-12">
             <div class="mx-auto max-w-7xl sm:px-6">
-                <at-week-pager
+                <AtDatePager
                     class="h-12 mb-10 bg-white"
                     v-model="date"
                     v-model:week="week"
@@ -70,7 +70,7 @@
 <script>
     import AppLayout from '@/Layouts/AppLayout';
     import { format } from "date-fns";
-    import { AtButton, AtWeekPager } from "atmosphere-ui";
+    import { AtButton, AtDatePager } from "atmosphere-ui";
     import MealSection from '@/Components/Meal';
     import PlanModal from '../Components/PlanModal.vue';
     import { Inertia } from '@inertiajs/inertia';
@@ -83,7 +83,7 @@
             MealSection,
             AtButton,
             PlanModal,
-            AtWeekPager,
+            AtDatePager,
             RandomMealModal
         },
         props: {
