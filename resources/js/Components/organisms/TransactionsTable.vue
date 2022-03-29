@@ -2,8 +2,8 @@
 <template>
 <div :class="classes">
     <div class="flex justify-between">
-        <SectionTitle type="secondary">{{ tableLabel }}</SectionTitle>
-        <div>
+        <SectionTitle type="secondary" class="w-full">{{ tableLabel }}</SectionTitle>
+        <div class="w-full">
             <slot name="action" />
         </div>
     </div>

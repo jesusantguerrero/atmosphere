@@ -15,8 +15,10 @@
                 <div class="flex items-center w-full space-x-2">
                     <AtDatePager
                         class="h-12 w-full"
-                        v-model="state.date"
+                        v-model="state.searchOptions.date.startDate"
                         v-model:dateSpan="state.dateSpan"
+                        v-model:startDate="state.searchOptions.date.startDate"
+                        v-model:endDate="state.searchOptions.date.endDate"
                         next-mode="month"
                     />
                     <n-select
@@ -49,6 +51,7 @@
     import { reactive, watch } from "vue";
     import { AtDatePager } from "atmosphere-ui"
     import { Inertia } from "@inertiajs/inertia";
+    import { format } from 'date-fns';
 
     const props = defineProps({
         transactions: {
@@ -73,7 +76,11 @@
             },
         ],
         searchOptions: {
-            group: ""
+            group: "",
+            date: {
+                startDate: null,
+                endDate: null,
+            }
         },
         date: new Date(),
         dateSpan: null,
@@ -81,14 +88,42 @@
     })
 
     Object.entries(props.serverSearchOptions).forEach(([key, value]) => {
-        state.searchOptions[key] = value;
+        if (key === 'date') {
+            state.searchOptions.date.startDate = new Date(value.startDate)
+            state.searchOptions.date.endDate = new Date(value.endDate)
+            state.date = new Date(value.startDate)
+        } else {
+            state.searchOptions[key] = value
+        }
     })
 
+    const filterParams = (mainDateField, {dates}) => {
+      let filters = [];
+
+      if (dates.startDate) {
+        let dateFilterValue = format(dates.startDate, 'yyyy-MM-dd');
+        if (dates.endDate) {
+          dateFilterValue += `~${format(dates.endDate, 'yyyy-MM-dd')}`;
+        }
+        filters.push(`filter[${mainDateField}]=${dateFilterValue}`);
+      }
+
+      return filters.join("&");
+    }
+
+    const groupParams = (groupValue) => {
+      return `group=${groupValue}`;
+    }
+
     const updateSearch = (group) => {
-        let params = ''
-        params = Object.entries(state.searchOptions).map(([key, value]) => {
-            return value ? `${key}=${value}` : ''
-        }).filter(value => value).join('&')
+        let params = [
+            filterParams('date', { dates: {
+                startDate: state.searchOptions.date.startDate,
+                endDate: state.dateSpan ? state.dateSpan[state.dateSpan.length - 1] : null
+            } }),
+            groupParams(state.searchOptions.group)
+        ]
+        params = params.filter(value => value).join("&");
         Inertia.replace(`/financial?${params}`)
     }
 
