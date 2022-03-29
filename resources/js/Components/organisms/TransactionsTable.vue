@@ -3,7 +3,7 @@
 <div :class="classes">
     <div class="flex justify-between">
         <SectionTitle type="secondary" class="w-full">{{ tableLabel }}</SectionTitle>
-        <div class="w-full">
+        <div class="w-full justify-end flex items-center">
             <slot name="action" />
         </div>
     </div>

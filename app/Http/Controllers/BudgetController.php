@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\CategoryHelper;
 use App\Models\Budget;
 use App\Models\Planner;
 use App\Models\Transaction;
 use Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
+use Insane\Journal\Helpers\CategoryHelper;
 
 class BudgetController extends InertiaController
 {
