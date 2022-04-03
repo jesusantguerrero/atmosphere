@@ -8,6 +8,7 @@ import "atmosphere-ui/dist/style.css"
 
 const el = document.getElementById('app');
 
+
 createApp({
     render: () =>
         h(InertiaApp, {
