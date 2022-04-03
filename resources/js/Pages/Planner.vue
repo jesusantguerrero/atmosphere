@@ -24,7 +24,7 @@
                 <AtDatePager
                     class="h-12 mb-10 bg-white"
                     v-model="date"
-                    v-model:week="week"
+                    v-model:dateSpan="week"
                     next-mode="week"
                 />
 

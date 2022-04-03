@@ -36,10 +36,9 @@ class FinancialController extends InertiaController {
             'team_id' => $teamId,
             'direction' => "WITHDRAW",
             'status' => 'verified'
-        ])->getByMonth($startDate, $endDate, false);
+        ])->getByMonth(null, null, !isset($groups[$groupBy]));
 
         if ($groupBy && isset($groups[$groupBy])) {
-
             $this->modelQuery
             ->selectRaw("sum(total) as total, description, group_concat(DISTINCT currency_code) as currency_code")
             ->groupByRaw("$groups[$groupBy], currency_code")
