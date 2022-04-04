@@ -7,15 +7,11 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FinancialController;
+use App\Http\Controllers\GoalController;
 use App\Http\Controllers\MealController;
 use App\Http\Controllers\PlannerController;
 use App\Http\Controllers\SettingsController;
-use App\Models\Budget;
-use App\Models\Planner;
-use App\Models\Transaction;
-use Carbon\Carbon;
 use Illuminate\Foundation\Application;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -52,6 +48,10 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         Route::resource('/meals', MealController::class);
         Route::post('/meals/add-plan','addPlan')->name('meals.addPlan');
         Route::get('/meals-random', 'random')->name('meals.random');
+    });
+
+    Route::controller(GoalController::class)->group(function () {
+        Route::resource('/goals', GoalController::class);
     });
 
     Route::resource('/budgets', BudgetController::class);

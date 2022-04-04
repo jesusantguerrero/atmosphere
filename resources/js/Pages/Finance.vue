@@ -20,6 +20,9 @@
                                 value="10,000,00"
                                 subtitle="Total: 150,000.00"
                             />
+                            <AtButton @click="$inertia.visit('/goals')" class="bg-pink-500 text-white rounded-md w-full">
+                                Goals
+                            </AtButton>
                         </div>
                         <div class="px-5 py-5 mx-auto text-white bg-pink-500 rounded-xl cursor-pointer" @click="$inertia.visit('/financial')">
                             <h4> Expenses </h4>
