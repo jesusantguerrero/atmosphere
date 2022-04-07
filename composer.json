@@ -21,8 +21,7 @@
         "symfony/dom-crawler": "^6.0",
         "tightenco/ziggy": "^1.4.3"
     },
-    "repositories": {
-        "local": [
+    "repositories": [
             {
                 "type": "path",
                 "url": "./packages/remotr"
@@ -31,8 +30,7 @@
                 "type": "path",
                 "url": "../packages/journal"
             }
-    ]
-    },
+    ],
     "require-dev": {
         "spatie/laravel-ignition": "^1.0",
         "fakerphp/faker": "^1.9.1",
