@@ -8,4 +8,4 @@ RUN yarn install --frozen-lockfile && yarn && yarn build
 
 EXPOSE 3000
 
-CMD npm start
+CMD npm run preview
