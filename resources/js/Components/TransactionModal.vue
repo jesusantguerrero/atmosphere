@@ -23,6 +23,7 @@
                                     <n-date-picker
                                         v-model:value="form.date"
                                         type="date"
+                                        size="large"
                                     />
                                 </at-field>
 
@@ -38,6 +39,7 @@
                                         filterable
                                         clearable
                                         tag
+                                        size="large"
                                         v-model:value="form.account_id"
                                         @update:value="createCategory"
                                         :default-expand-all="true"
@@ -45,23 +47,24 @@
                                     />
                                 </at-field>
                             </div>
-                                                      <div class="flex space-x-3">
+                            <div class="flex space-x-3">
                                 <at-field label="Category" class="w-full">
                                     <n-select
                                         filterable
                                         clearable
                                         tag
+                                        size="large"
                                         v-model:value="form.category_id"
                                         @update:value="createCategory"
                                         :default-expand-all="true"
-                                        :options="categoryOptions"
+                                        :options="categoryAccounts"
                                     />
                                 </at-field>
                                 <at-field
                                     label="Amount"
                                     class="w-4/12"
                                 >
-                                    <at-input type="number" v-model="form.amount" />
+                                    <at-input type="number" v-model="form.total" />
                                 </at-field>
                             </div>
                         </div>
@@ -140,7 +143,7 @@
     import Modal from '@/Jetstream/Modal'
     import { useForm } from "@inertiajs/inertia-vue3"
     import { AtField, AtInput, AtButton } from "atmosphere-ui"
-    import { reactive, toRefs } from '@vue/reactivity'
+    import { reactive, toRefs, watch, computed } from 'vue'
     import { inject } from '@vue/runtime-core'
     import { NSelect, NDatePicker } from "naive-ui";
     import { format } from 'date-fns'
@@ -178,6 +181,10 @@
             recurrence: {
                 type: Boolean,
                 default: false
+            },
+            transactionData: {
+                type: Object,
+                default: () => ({})
             }
         },
         setup(props, { emit }) {
@@ -213,12 +220,16 @@
                     category_id: null,
                     account_id: null,
                     display_id: '',
-                    amount: 0,
+                    total: 0,
                 }),
             })
 
             const categoryOptions = inject('categoryOptions', [])
             const accountsOptions = inject('accountsOptions', [])
+
+            const categoryAccounts = computed(() => {
+                return state.form.direction == 'ENTRY' ? accountsOptions : categoryOptions;
+            })
 
             const createCategory = async (createdLabel) => {
                 if (typeof createdLabel == 'string') {
@@ -236,17 +247,37 @@
             }
 
             const submit = () => {
-                const postRoute = props.recurrence ? route('budget.planned-transaction') : route('transactions.store');
+                const actions = {
+                    'transaction': {
+                        save: {
+                            method: 'post',
+                            url: route('transactions.store'),
+                        },
+                        update: {
+                            method: 'put',
+                            url: route('transactions.update', props.transactionData)
+                        },
+                    },
+                    recurrence: {
+                        save: {
+                            url: route('budget.planned-transaction'),
+                        }
+                    }
+
+                }
+                const method = props.transactionData.id ? 'update' : 'save'
+                const actionType = props.recurrence ? 'recurrence' : 'transaction'
+                const action = actions[actionType][method]
                 state.form
                 .transform((form) => ({
                     ...form,
                     resource_type_id: 'MANUAL',
-                    total: form.amount,
+                    total: form.total,
                     date:  format(new Date(form.date), 'yyyy-MM-dd'),
                     status: 'verified',
                     ...state.schedule_settings
                 }))
-                .post(postRoute, {
+                .submit(action.method, action.url, {
                     onSuccess: () => {
                         emit('close')
                         state.form.reset();
@@ -254,11 +285,23 @@
                 })
             }
 
+            watch(() => props.transactionData, (newValue) => {
+
+
+                Object.keys(state.form.data()).forEach((field) => {
+                    if (field == 'date') {
+                        state.form[field] = new Date(newValue[field])
+                    } else {
+                        state.form[field] = newValue[field]
+                    }
+                })
+            }, { deep: true })
+
             return {
                 ...toRefs(state),
                 createCategory,
                 accountsOptions,
-                categoryOptions,
+                categoryAccounts,
                 submit,
                 close
             }

@@ -54,6 +54,7 @@ const props = defineProps({
 })
 
 const isTransferModalOpen = ref(false);
+const openedTransaction = ref(null);
 
 const sections = computed(() => ({
     expenses: {
@@ -65,4 +66,13 @@ const sections = computed(() => ({
         value: props.budget
     }
 }));
+
+const setTransaction = (transaction) => {
+    openedTransaction.value = transaction;
+    isTransferModalOpen.value = true;
+}
+
+// defineExpose({
+//     setTransaction
+// })
 </script>
