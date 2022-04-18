@@ -10,7 +10,7 @@ use Insane\Journal\Models\Core\Account;
 class Budget extends Model
 {
     use HasFactory;
-    protected $fillable = ['team_id', 'user_id','account_id', 'amount'];
+    protected $fillable = ['team_id', 'user_id','account_id','parent_id', 'amount', 'name'];
 
     public function account() {
         return $this->belongsTo(Account::class);

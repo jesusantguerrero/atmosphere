@@ -17,6 +17,7 @@ class InertiaController extends BaseController {
     protected $includes = [];
     protected $appends = [];
     protected $filters = [];
+    protected $responseType = "inertia";
 
     public function index(Request $request) {
         return Inertia::render($this->templates['index'], $this->getIndexProps($request));
@@ -32,12 +33,16 @@ class InertiaController extends BaseController {
 
     public function store(Request $request) {
         $postData = $request->post();
-        $this->validate($request, $this->validationRules);
         $postData['user_id'] = $request->user()->id;
         $postData['team_id'] = $request->user()->current_team_id;
+        $this->validate($request, $this->validationRules);
         $resource = $this->model::create($postData);
         $this->afterSave($postData, $resource);
-        return Redirect::back();
+        if ($this->responseType == 'inertia') {
+            return Redirect::back();
+        } else {
+            return $resource;
+        }
     }
 
     public function update(Request $request, int $id) {
@@ -45,7 +50,11 @@ class InertiaController extends BaseController {
         $postData = $request->post();
         $resource->update($postData);
         $this->afterSave($postData, $resource);
-        return Redirect::back();
+        if ($this->responseType == 'inertia') {
+            return Redirect::back();
+        } else {
+            return $resource;
+        }
     }
 
     public function destroy(Request $request, int $id) {
@@ -80,4 +89,5 @@ class InertiaController extends BaseController {
 
         return $postData;
     }
+
 }
