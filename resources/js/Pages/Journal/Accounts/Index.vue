@@ -29,19 +29,27 @@
                             </template>
                         </div>
                     </div>
+                    <AtButton @click="openAccountModal">
+                        Add account
+                    </AtButton>
                 </article>
             </aside>
             <main class="w-8/12">
             </main>
         </div>
+        <AccountModal v-if="isAccountModalOpen" :show="isAccountModalOpen" @close="isAccountModalOpen=false" />
     </app-layout>
 </template>
 
 <script setup>
     import AppLayout from '@/Layouts/AppLayout'
     import SectionTitle from "@/Components/atoms/SectionTitle";
+    import AccountModal from '../../../Components/organisms/AccountModal.vue';
+    import { AtButton } from "atmosphere-ui";
+    import { ref } from 'vue';
+    import { useSelect } from '../../../utils/useSelects';
 
-    defineProps({
+    const props = defineProps({
         categories: {
             type: Array,
             default: () => []
@@ -50,5 +58,17 @@
             type: Array,
             default: () => []
         },
+        accountDetailTypes: {
+            type: Array,
+            default: () => []
+        },
     })
+
+    const isAccountModalOpen = ref(false)
+    const openAccountModal = () => {
+        isAccountModalOpen.value = true
+    }
+
+    const { categoryOptions: transformCategoryOptions } = useSelect()
+    transformCategoryOptions(props.categories, 'subcategories', 'categoryOptions');
 </script>
