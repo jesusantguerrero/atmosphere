@@ -251,21 +251,21 @@
                     'transaction': {
                         save: {
                             method: 'post',
-                            url: route('transactions.store'),
+                            url: () => route('transactions.store'),
                         },
                         update: {
                             method: 'put',
-                            url: route('transactions.update', props.transactionData)
+                            url: () => route('transactions.update', props.transactionData)
                         },
                     },
                     recurrence: {
                         save: {
-                            url: route('budget.planned-transaction'),
+                            url: () => route('budget.planned-transaction'),
                         }
                     }
 
                 }
-                const method = props.transactionData.id ? 'update' : 'save'
+                const method = props.transactionData && props.transactionData.id ? 'update' : 'save'
                 const actionType = props.recurrence ? 'recurrence' : 'transaction'
                 const action = actions[actionType][method]
                 state.form
@@ -277,7 +277,7 @@
                     status: 'verified',
                     ...state.schedule_settings
                 }))
-                .submit(action.method, action.url, {
+                .submit(action.method, action.url(), {
                     onSuccess: () => {
                         emit('close')
                         state.form.reset();

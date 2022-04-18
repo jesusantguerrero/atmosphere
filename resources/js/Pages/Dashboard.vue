@@ -208,6 +208,6 @@
     }
 
     const { categoryOptions: transformCategoryOptions } = useSelect()
-    transformCategoryOptions(props.categories, true, 'categoryOptions');
-    transformCategoryOptions(props.accounts, true, 'accountsOptions');
+    transformCategoryOptions(props.categories, 'accounts', 'categoryOptions');
+    transformCategoryOptions(props.accounts, 'accounts', 'accountsOptions');
 </script>

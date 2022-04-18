@@ -180,10 +180,13 @@
     }
 
     const { categoryOptions: transformCategoryOptions } = useSelect()
-    transformCategoryOptions(props.categories, true, 'categoryOptions');
-    transformCategoryOptions(props.accounts, true, 'accountsOptions');
+    transformCategoryOptions(props.categories, 'accounts', 'categoryOptions');
+    transformCategoryOptions(props.accounts, 'accounts', 'accountsOptions');
     const getVariances = (current, last) => {
-        const variance = (current - last) / last * 100
+        if (last === 0) {
+            return 0;
+        }
+        const variance = (current - last) / (last * 100)
         return variance.toFixed(2);
     }
 
@@ -192,7 +195,7 @@
     });
 
     const expenseVariance = computed(() => {
-        return getVariances(props.transactionTotal, props.lastMonthExpenses);
+        return getVariances(props.transactionTotal, props.lastMonthExpenses) || 0;
     });
 
     const markAsPaid = (transaction) => {
