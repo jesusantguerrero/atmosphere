@@ -20,53 +20,41 @@
   </AtAuthBox>
 </template>
 
-<script>
+<script setup>
+    import { Inertia } from "@inertiajs/inertia";
+import { useForm } from "@inertiajs/inertia-vue3";
     import { AtAuthBox, AtAuthForm, AtInput, AtField } from "atmosphere-ui";
 
-    export default {
-        components: {
-            AtAuthBox,
-            AtAuthForm,
-            AtInput,
-            AtField
-        },
 
-        data() {
-            return {
-                form: this.$inertia.form({
-                    name: '',
-                    email: '',
-                    password: '',
-                    password_confirmation: '',
-                    terms: false,
-                })
-            }
-        },
+const form = useForm({
+    name: '',
+    email: '',
+    password: '',
+    password_confirmation: '',
+    terms: false,
+});
 
-        methods: {
-            onHomePressed() {
-                this.$inertia.visit('/');
-            },
-            onLinkPressed() {
-                this.$inertia.visit('login');
-            },
+const onHomePressed = () => {
+    Inertia.visit('/');
+}
+const onLinkPressed = () => {
+    Inertia.visit('login');
+}
 
-            submit(formData) {
-                this.form
-                 .transform(data => ({
-                        ...data,
-                        email: formData.email,
-                        password: formData.password,
-                        password_confirmation: formData.confirmPassword,
-                        terms: true
-                }))
-                .post(this.route('register'), {
-                    onFinish: () => {
-                        this.form.reset('password', 'password_confirmation')
-                        this.$inertia.visit('login')
-                    }
-                })
-            }
+const submit = (formData) => {
+    form
+        .transform(data => ({
+            ...data,
+            email: formData.email,
+            password: formData.password,
+            password_confirmation: formData.confirmPassword,
+            terms: true
+    }))
+    .post(route('register'), {
+        onFinish: () => {
+            form.reset('password', 'password_confirmation')
+            Inertia.visit('login')
         }
-    }
+    })
+}
 </script>

@@ -10,16 +10,21 @@ use Insane\Journal\Models\Core\Account;
 class Budget extends Model
 {
     use HasFactory;
-    protected $fillable = ['team_id', 'user_id','account_id', 'amount'];
+    protected $fillable = ['team_id', 'user_id','account_id','parent_id', 'amount', 'name', 'target_type', 'frequency', 'frequency_date', 'frequency_week_day', 'frequency_month_date'];
+    protected $with = ['children'];
 
     public function account() {
         return $this->belongsTo(Account::class);
     }
 
+    public function children() {
+        return $this->hasMany(Budget::class, 'parent_id');
+    }
+
     public function getExpensesByPeriod($startDate, $endDate = null) {
         return DB::table('transaction_lines')
         ->where([
-            'account_id' => $this->account_id
+            'transaction_lines.account_id' => $this->account_id
         ])
         ->where("date",  ">=", $startDate)
         ->where("date", "<=", $endDate)
@@ -31,7 +36,7 @@ class Budget extends Model
 
     public static function dashboardParser($budget, $startDate, $endDate = null) {
         return [
-            "title" => $budget->account->name,
+            "title" => $budget->name,
             "subtitle" => '',
             "value" => $budget->amount,
             "status" => '',

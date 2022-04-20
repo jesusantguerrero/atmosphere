@@ -1,23 +1,23 @@
+import { cloneDeep } from "lodash";
 import { provide } from "vue";
 
 export function useSelect() {
-    const categoryOptions = (categories, isGroup = false, name = 'categoryOptions') => {
-        if (!categories || !categories.map) return
+    const categoryOptions = (categoriesData, groupName = 'subcategories', name = 'categoryOptions') => {
+        if (!categoriesData || !categoriesData.map) return
+        const categories = cloneDeep(categoriesData)
         const options = categories.map(category => {
-            category.type = isGroup && category.accounts ?  'group' : null;
+            category.type = groupName && category[groupName] ?  'group' : null;
             category.key = category.id;
+            category.value = category.id;
             category.label = category.name;
-            if (category.accounts) {
-                category.children = category.accounts.map(account => {
-                    account.value = account.id;
-                    account.label = account.name;
-                    return account;
-                });
+            if (category[groupName]) {
+                category.children = categoryOptions(category[groupName], false, false);
             }
             return category;
         })
-
-        provide(name, options);
+        if (name) {
+            provide(name, options);
+        }
         return options;
     }
 

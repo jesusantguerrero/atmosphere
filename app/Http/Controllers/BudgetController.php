@@ -22,11 +22,13 @@ class BudgetController extends InertiaController
         ];
         $this->searchable = ['name'];
         $this->validationRules = [
-            'account_id' => 'required',
-            'amount' => 'required'
+            'name' => 'required|string|max:255',
+            'amount' => 'numeric',
         ];
         $this->includes = ['account'];
-        $this->filters = [];
+        $this->filters = [
+            'parent_id' => '$null',
+        ];
     }
 
     protected function getIndexProps(Request $request)

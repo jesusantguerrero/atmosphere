@@ -5,6 +5,7 @@
                 <section-title type="secondary"> Dashboard</section-title>
                 <budget-tracker
                     class="mt-5"
+                    ref="budgetTrackerRef"
                     :budget="budgetTotal"
                     :expenses="transactionTotal"
                     :username="user.name"
@@ -44,6 +45,7 @@
                             table-class="px-0 mt-5"
                             @approved="approveTransaction"
                             @removed="removeTransaction"
+                            @edit="handleEdit"
                             :allow-mark-as-approved="true"
                             :allow-remove="true"
                             :transactions="drafts"
@@ -51,7 +53,7 @@
                         >
                             <template v-slot:action>
                                 <div class="flex justify-end">
-                                    <AtButton class="flex space-x-2 text-pink-500" @click="approveTransaction($event)">
+                                    <AtButton class="flex space-x-2 text-pink-500" @click="approveTransactionAll($event)">
                                         <i class="block mr-2 fa fa-check"></i> Approve
                                     </AtButton>
                                     <AtButton class="flex mr-2 space-x-2 text-pink-500" @click="removeAllDrafts()">
@@ -89,7 +91,7 @@
     import BudgetTracker from "@/Components/organisms/BudgetTracker";
     import TransactionsTable from "@/Components/organisms/TransactionsTable";
     import SectionTitle from "@/Components/atoms/SectionTitle";
-    import { ref } from '@vue/reactivity';
+    import { ref } from 'vue';
     import { useSelect } from '@/utils/useSelects';
     import RandomMealCard from "../Components/RandomMealCard.vue";
     import { Inertia } from "@inertiajs/inertia";
@@ -183,8 +185,13 @@
             })
     }
 
-    const approveTransaction = (transaction) => {
+    const approveTransactionAll = (transaction) => {
         Inertia.post(`/transactions/approve-all-drafts`).then(() => {
+            Inertia.reload();
+        })
+    }
+    const approveTransaction = (transaction) => {
+        Inertia.post(`/transactions/${transaction.id}/approve`).then(() => {
             Inertia.reload();
         })
     }
@@ -195,7 +202,12 @@
         })
     }
 
+    const budgetTrackerRef = ref();
+    const handleEdit = (transaction) => {
+        budgetTrackerRef.setTransaction(transaction)
+    }
+
     const { categoryOptions: transformCategoryOptions } = useSelect()
-    transformCategoryOptions(props.categories, true, 'categoryOptions');
-    transformCategoryOptions(props.accounts, true, 'accountsOptions');
+    transformCategoryOptions(props.categories, 'accounts', 'categoryOptions');
+    transformCategoryOptions(props.accounts, 'accounts', 'accountsOptions');
 </script>

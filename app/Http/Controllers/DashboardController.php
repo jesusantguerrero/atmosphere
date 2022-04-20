@@ -51,7 +51,7 @@ class DashboardController {
                return Budget::dashboardParser($budget, $startDate, $endDate);
             }),
             "categories" => $teamId ? CategoryHelper::getSubcategories($teamId, ['expenses', 'incomes']) : null,
-            "accounts" => $teamId ? CategoryHelper::getAccounts($teamId, ['cash_and_bank']) : null,
+            "accounts" => $teamId ? CategoryHelper::getAccounts($teamId, ['cash_and_bank', 'credit_card']) : null,
             "transactionTotal" => $transactions->sum('total'),
             "transactions" => $transactions->map(function ($transaction) {
                 return Transaction::parser($transaction);
@@ -110,7 +110,7 @@ class DashboardController {
                return Budget::dashboardParser($budget, $startDate, $endDate);
             }),
             "categories" => CategoryHelper::getSubcategories($teamId, ['expenses', 'incomes']),
-            "accounts" => CategoryHelper::getAccounts($teamId, ['cash_and_bank']),
+            "accounts" => CategoryHelper::getAccounts($teamId, ['cash_and_bank', 'credit_card']),
             "transactionTotal" => $transactions->sum('total'),
             "lastMonthExpenses" => $lastMonthExpenses,
             "income" => $incomes,

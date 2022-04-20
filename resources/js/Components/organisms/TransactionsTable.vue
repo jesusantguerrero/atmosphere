@@ -10,7 +10,7 @@
     <div :class="tableClass">
         <template v-if="transactionsParsed.length">
             <TransactionCard
-                v-for="transaction in transactionsParsed"
+                v-for="(transaction, index) in transactionsParsed"
                 v-bind="transaction"
                 :mark-as-paid="allowMarkAsPaid"
                 :mark-as-approved="allowMarkAsApproved"
@@ -23,6 +23,7 @@
                 @paid-clicked="$emit('paid-clicked', transaction)"
                 @approved="$emit('approved', transaction)"
                 @removed="$emit('removed', transaction)"
+                @dblclick="$emit('edit', transactions[index])"
             />
             <div class="flex items-center justify-between py-5 bg-gray-200 px-4" v-if="showSum">
                 <div class="font-bold">Selected Items sum</div>
@@ -98,7 +99,7 @@ const props = defineProps({
     }
 })
 
-const emit = defineEmits(['update:selected']);
+const emit = defineEmits(['update:selected', 'edit', 'paid-clicked', 'approved', 'removed']);
 const transactionsParsed = computed(() => {
     return !props.parser ? props.transactions : props.parser(props.transactions);
 })

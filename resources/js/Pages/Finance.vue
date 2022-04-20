@@ -40,6 +40,7 @@
                         :transactions="subscriptions"
                         :allow-mark-as-paid="true"
                         :parser="plannedDBToTransaction"
+                        @edit="handleEdit"
                     >
                        <template #action>
                             <at-button class="text-pink-500" @click="openModalFor('subscription')"><i class="fa fa-plus"></i> Add subscription</at-button>
@@ -70,6 +71,7 @@
                         table-class="bg-white border rounded-lg shadow-md"
                         :transactions="transactions"
                         :parser="transactionDBToTransaction"
+                        @edit="handleEdit"
                     >
                       <template #action>
                         <at-button class="text-pink-500" @click="openModalFor()"><i class="fa fa-plus"></i> Add transaction</at-button>
@@ -178,10 +180,13 @@
     }
 
     const { categoryOptions: transformCategoryOptions } = useSelect()
-    transformCategoryOptions(props.categories, true, 'categoryOptions');
-    transformCategoryOptions(props.accounts, true, 'accountsOptions');
+    transformCategoryOptions(props.categories, 'accounts', 'categoryOptions');
+    transformCategoryOptions(props.accounts, 'accounts', 'accountsOptions');
     const getVariances = (current, last) => {
-        const variance = (current - last) / last * 100
+        if (last === 0) {
+            return 0;
+        }
+        const variance = (current - last) / (last * 100)
         return variance.toFixed(2);
     }
 
@@ -190,7 +195,7 @@
     });
 
     const expenseVariance = computed(() => {
-        return getVariances(props.transactionTotal, props.lastMonthExpenses);
+        return getVariances(props.transactionTotal, props.lastMonthExpenses) || 0;
     });
 
     const markAsPaid = (transaction) => {
@@ -205,11 +210,17 @@
     const transferConfig = reactive({
         recurrence: false,
         automatic: false,
+        transactionData: null
     })
 
     const openModalFor = (isRecurrent, automatic) => {
         isTransferModalOpen.value = true;
         transferConfig.recurrence = isRecurrent;
         transferConfig.automatic = automatic;
+    }
+
+    const handleEdit = (transaction) => {
+        transferConfig.transactionData = transaction;
+        isTransferModalOpen.value = true;
     }
 </script>
