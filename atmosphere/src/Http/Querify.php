@@ -143,7 +143,7 @@ trait Querify
               break;
             case '$':
               $methodName = $where."Null";
-              $this->modelQuery->$methodName($field, $posValue);
+              $this->modelQuery->$methodName($field);
               break;
             default:
               $this->modelQuery->$where($field, $optionalValue);

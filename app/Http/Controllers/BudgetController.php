@@ -26,7 +26,9 @@ class BudgetController extends InertiaController
             'amount' => 'numeric',
         ];
         $this->includes = ['account'];
-        $this->filters = [];
+        $this->filters = [
+            'parent_id' => '$null',
+        ];
     }
 
     protected function getIndexProps(Request $request)
