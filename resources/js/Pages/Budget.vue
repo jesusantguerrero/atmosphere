@@ -21,7 +21,7 @@
             <div class="mx-auto bg-white rounded-md shadow-lg max-w-7xl">
                 <div class="flex px-5 space-x-2 border-b">
                     <AtField label="Parent Category" v-if="state.expandedCategory">
-                        <div>
+                        <div class="font-bold py-3">
                             {{ state.expandedCategory.name}}
                         </div>
                     </AtField>
@@ -31,7 +31,6 @@
                     </AtField>
                     <AtField label="Account" class="w-3/12" v-if="categories.length">
                         <NSelect
-                            v-if="!isAddingGroup"
                             filterable
                             clearable
                             size="large"
@@ -43,7 +42,6 @@
                             <AtButton @click="isModalOpen = true" class="text-white bg-pink-500"> Add category </AtButton>
                          </template>
                         </NSelect>
-                        <AtInput v-model="form.name" v-else />
                         <AtErrorBag v-if="errors" :errors="errors" field="account_id" />
                     </AtField>
 
@@ -62,10 +60,10 @@
                 <div class="flex">
                     <div class="px-5 pt-2 pb-10 space-y-3" :class="[!selectedBudget ? 'w-full': 'w-7/12']" >
                             <NDataTable
-                            :columns="state.cols"
-                            :data="budgets.data"
-                            :row-key="(row) => row.id"
-                            flex-height
+                                :columns="state.cols"
+                                :data="budgets.data"
+                                :row-key="({ id }) => id"
+                                flex-height
                         />
                         <BudgetItem
                             class="font-bold"
@@ -87,11 +85,7 @@
                             @cancel="selectedBudget = null"
                         />
                     </section>
-
                 </div>
-
-
-
             </div>
 
             <category-modal
@@ -132,7 +126,7 @@
 
     const state = reactive({
         isModalOpen: false,
-        isAddingGroup: false,
+        isAddingGroup: true,
         expandedCategory: null,
         selectedBudget: null,
         cols: [

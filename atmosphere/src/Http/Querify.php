@@ -8,6 +8,7 @@ trait Querify
     private $modelQuery;
     private $whereRaw;
     private $request;
+    protected $authorizedUser = true;
 
     public function getModelQuery($request, $id=null, $extendFunction=null)
     {
@@ -31,6 +32,10 @@ trait Querify
 
         if ($id) {
           return $this->modelQuery->where(["id" => $id])->get();
+        }
+
+        if ($this->authorizedUser) {
+           $this->modelQuery->where(["user_id" => $request->user()->id]);
         }
 
 
