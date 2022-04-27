@@ -1,5 +1,6 @@
 <template>
-    <div class="px-5 border-b text-left" :class="{'flex': !full }">
+    <div class="px-5 text-left border-b" :class="{'flex': !full }">
+        {{ selectedDay }}
         <AtField label="Category">
             <NSelect
                 v-if="!isAddingGroup"
@@ -70,7 +71,7 @@
 </template>
 
 <script setup>
-    import { AtButton, AtField, AtInput, AtErrorBag } from "atmosphere-ui";
+    import { AtButton, AtField, AtInput, AtErrorBag, useDatePager } from "atmosphere-ui";
     import { useForm } from '@inertiajs/inertia-vue3';
     import { NSelect } from "naive-ui"
     import { inject, reactive, toRefs, watch } from 'vue';
@@ -204,6 +205,13 @@
             }
         })
     }
+
+    const { controls, selectedDateSpan, salectedDay } =  useDatePager({
+        mode: 'month'
+    })
+    onMounted(() => {
+        console.log()
+    })
 
     const { form } = toRefs(state);
 </script>
