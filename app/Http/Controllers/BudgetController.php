@@ -4,11 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Budget;
 use App\Models\Planner;
+use App\Models\Team;
 use App\Models\Transaction;
 use Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Insane\Journal\Helpers\CategoryHelper;
+use Insane\Journal\Models\Core\Category;
+use Insane\Journal\Actions\CreateTransactionCategories;
 
 class BudgetController extends InertiaController
 {
@@ -36,6 +39,17 @@ class BudgetController extends InertiaController
         $queryParams = $request->query() ?? [];
         $queryParams['limit'] = $queryParams['limit'] ?? 50;
         $teamId = $request->user()->current_team_id;
+
+
+        $hasCategories = Category::where([
+            'team_id' => $teamId,
+            'resource_type' => 'transactions'
+        ])->count();
+
+        if (!$hasCategories) {
+            $team = Team::find($teamId);
+            (new CreateTransactionCategories())->create($team);
+        }
 
         return [
             'budgets' => $this->getModelQuery($request),

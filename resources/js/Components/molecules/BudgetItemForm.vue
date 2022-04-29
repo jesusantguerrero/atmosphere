@@ -71,13 +71,13 @@
 </template>
 
 <script setup>
-    import { AtButton, AtField, AtInput, AtErrorBag, useDatePager } from "atmosphere-ui";
-    import { useForm } from '@inertiajs/inertia-vue3';
+    import { inject, reactive, toRefs, watch, computed} from 'vue';
+    import { AtButton, AtField, AtInput, AtErrorBag } from "atmosphere-ui";
+    import { useDatePager } from "vueuse-temporals"
     import { NSelect } from "naive-ui"
-    import { inject, reactive, toRefs, watch } from 'vue';
+    import { useForm } from '@inertiajs/inertia-vue3';
     import { monthDays, weekDays } from "@/utils"
     import { makeOptions } from "@/utils/naiveui";
-    import { computed } from "vue";
 
     const props = defineProps({
         isAddingGroup: {
@@ -206,7 +206,7 @@
         })
     }
 
-    const { controls, selectedDateSpan, salectedDay } =  useDatePager({
+    const { controls, selectedSpan, selectedDay } =  useDatePager({
         mode: 'month'
     })
     onMounted(() => {
