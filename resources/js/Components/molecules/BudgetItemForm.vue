@@ -1,6 +1,9 @@
 <template>
     <div class="px-5 text-left border-b" :class="{'flex': !full }">
-        {{ selectedDay }}
+        <AtField label="Name">
+            <AtInput v-model="form.name" />
+            <AtErrorBag v-if="errors" :errors="errors" field="name" />
+        </AtField>
         <AtField label="Category">
             <NSelect
                 v-if="!isAddingGroup"
@@ -36,17 +39,12 @@
             <AtErrorBag v-if="errors" errors="errors" field="amount" />
         </AtField>
 
-        <div class="grid grid-cols-3 overflow-hidden text-lg rounded-lg">
-            <div
-                v-for="type in state.frequencies"
-                :key="type.value"
-                @click="form.frequency = type.value"
-                class="py-1 font-bold text-center cursor-pointer hover:bg-gray-200"
-                :class="[form.frequency == type.value ? 'bg-pink-500 hover:bg-pink-500 text-white' : 'text-gray-500 bg-gray-100']"
-            >
-                {{ type.label }}
-            </div>
-        </div>
+        <AtButtonGroup
+            v-model="form.frequency"
+            :options="state.frequencies"
+            theme="primary"
+            class="text-md"
+        />
 
         <AtField label="Every" v-if="['MONTHLY', 'WEEKLY'].includes(form.frequency)">
             <NSelect
@@ -57,6 +55,11 @@
                 :default-expand-all="true"
                 :options="frequencyUnit.options"
             />
+
+            <div class="flex space-x-2 mt-2">
+                <div v-for="instance in monthInstanceCount" class="h-2 w-full bg-primary-500" />
+            </div>
+
             <AtErrorBag v-if="errors" :errors="errors" :field="frequencyUnit.field" />
         </AtField>
 
@@ -72,12 +75,13 @@
 
 <script setup>
     import { inject, reactive, toRefs, watch, computed, onMounted} from 'vue';
-    import { AtButton, AtField, AtInput, AtErrorBag } from "atmosphere-ui";
+    import { AtButton, AtField, AtInput, AtErrorBag, AtButtonGroup } from "atmosphere-ui";
     import { useDatePager } from "vueuse-temporals"
     import { NSelect } from "naive-ui"
     import { useForm } from '@inertiajs/inertia-vue3';
-    import { monthDays, weekDays } from "@/utils"
+    import { monthDays, WEEK_DAYS, FREQUENCY_TYPE } from "@/utils"
     import { makeOptions } from "@/utils/naiveui";
+    import { format } from 'date-fns';
 
     const props = defineProps({
         isAddingGroup: {
@@ -168,7 +172,7 @@
             },
             WEEKLY: {
                 field: 'frequency_week_day',
-                options: makeOptions(weekDays)
+                options: makeOptions(WEEK_DAYS)
             }
         }
         return {
@@ -182,6 +186,7 @@
         Object.keys(state.form.data()).forEach(key => {
             state.form[key] = props.item[key]
         })
+        console.log(props.item)
     }), { deep: true, immediate: true }
 
     const submit = () => {
@@ -206,11 +211,16 @@
         })
     }
 
-    const { controls, selectedSpan, selectedDay } =  useDatePager({
-        mode: 'month'
+    const { selectedSpan } =  useDatePager({
+        nextMode: 'month'
     })
-    onMounted(() => {
-        console.log()
+
+    const monthInstanceCount = computed(() => {
+        return state.form.frequency == FREQUENCY_TYPE.WEEKLY &&
+        selectedSpan.value.filter(
+            day => {
+                return format(day, 'iiiiii').toLowerCase() == state.form.frequency_week_day.toLowerCase()
+            })
     })
 
     const { form } = toRefs(state);

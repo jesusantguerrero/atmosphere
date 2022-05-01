@@ -70,7 +70,7 @@ export const monthDays = () => {
     return days;
 }
 
-export const weekDays = {
+export const WEEK_DAYS = {
     SU: 'Sunday',
     MO: 'Monday',
     TU: 'Tuesday',
@@ -78,4 +78,10 @@ export const weekDays = {
     TH: 'Thursday',
     FR: 'Friday',
     SA: 'Saturday',
+}
+
+export const FREQUENCY_TYPE = {
+    WEEKLY: 'WEEKLY',
+    MONTHLY: 'MONTHLY',
+    BY_DATE: 'BY_DATE'
 }

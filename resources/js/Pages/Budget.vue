@@ -74,9 +74,6 @@
                         />
                     </div>
                     <section class="text-center py-5" :class="[selectedBudget ? 'w-5/12' : 'd-none']" v-if="selectedBudget">
-                        <SectionTitle>
-                            {{ selectedBudget.name }}
-                        </SectionTitle>
                         <BudgetItemForm
                             class="mt-5"
                             full

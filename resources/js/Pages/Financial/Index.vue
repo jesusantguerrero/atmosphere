@@ -124,12 +124,12 @@
             groupParams(state.searchOptions.group)
         ]
         params = params.filter(value => value).join("&");
-        Inertia.replace(`/financial?${params}`)
+        Inertia.get(`/financial?${params}`)
     }
 
     watch(() => state.searchOptions, (group) => {
         updateSearch();
-    }, { deep: true })
+    })
 
     const isSelectedList = (listTypeName) => {
         return state.listType == listTypeName

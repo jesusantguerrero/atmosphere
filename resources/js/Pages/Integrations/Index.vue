@@ -177,7 +177,7 @@ const google = (scopeName, service) => {
                             user: profile.getEmail()
                         };
                         axios.post('/services/google', { credentials }).then(() => {
-                            Inertia.replace(`/integrations`, {
+                            Inertia.get(`/integrations`, {
                                 only: ["integrations"],
                                 preserveState: true
                             });
