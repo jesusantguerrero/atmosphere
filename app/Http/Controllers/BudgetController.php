@@ -53,7 +53,11 @@ class BudgetController extends InertiaController
 
         return [
             'budgets' => $this->getModelQuery($request),
-            "categories" => CategoryHelper::getSubcategories($teamId, ['expenses', 'incomes']),
+            "categories" => Category::where([
+                'team_id' => $teamId,
+                'resource_type' => 'transactions'
+            ])->with('subCategories')->get(),
+
         ];
     }
 
