@@ -22,7 +22,6 @@ return new class extends Migration
             $table->decimal('funded');
             $table->decimal('spent');
             $table->timestamps();
-            $table->timestamps();
         });
     }
 

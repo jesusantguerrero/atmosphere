@@ -32,7 +32,7 @@ export default {
         const { formatMoney } = useMoney()
         const state = reactive({
             amount: computed(() => {
-               return formatMoney(props.item.amount)
+               return 0 // formatMoney(props.item.amount)
             }),
             name: props.item.name
         });

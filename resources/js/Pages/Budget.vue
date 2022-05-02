@@ -21,7 +21,7 @@
             <div class="mx-auto bg-white rounded-md shadow-lg max-w-7xl">
                 <div class="flex px-5 space-x-2 border-b">
                     <AtField label="Parent Category" v-if="state.expandedCategory">
-                        <div class="font-bold py-3">
+                        <div class="py-3 font-bold">
                             {{ state.expandedCategory.name}}
                         </div>
                     </AtField>
@@ -63,6 +63,7 @@
                                 :columns="state.cols"
                                 :data="budgets.data"
                                 :row-key="({ id }) => id"
+                                children-key="sub_categories"
                                 flex-height
                         />
                         <BudgetItem
@@ -73,12 +74,14 @@
                             }"
                         />
                     </div>
-                    <section class="text-center py-5" :class="[selectedBudget ? 'w-5/12' : 'd-none']" v-if="selectedBudget">
+                    <section class="py-5 text-center" :class="[selectedBudget ? 'w-5/12' : 'd-none']" v-if="selectedBudget">
                         <BudgetItemForm
                             class="mt-5"
                             full
-                            :item="selectedBudget"
+                            :category="selectedBudget"
+                            :item="selectedBudget.budget"
                             @saved="onBudgetItemSaved"
+                            @deleted="deleteBudget"
                             @cancel="selectedBudget = null"
                         />
                     </section>
@@ -105,7 +108,6 @@
     import { useSelect } from "@/utils/useSelects";
     import { Inertia } from '@inertiajs/inertia';
     import BudgetItemForm from '../Components/molecules/BudgetItemForm.vue';
-    import SectionTitle from '@/Components/atoms/SectionTitle.vue';
 
     const props = defineProps({
             budgets: {
@@ -176,7 +178,7 @@
             amount: 0,
         }),
         budgetTotal: computed(() => {
-            return sumMoney(props.budgets.data.map(item => item.amount));
+            return 0 // sumMoney(props.budgets.data.map(item => item.amount));
         }),
         categoryOptions: computed(() => {
             return makeCategoryOptions(props.categories, 'accounts', 'categoryOptions');

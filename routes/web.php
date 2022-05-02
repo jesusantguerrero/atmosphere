@@ -58,6 +58,10 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::controller(BudgetController::class)->group(function () {
         Route::post('/budgets/planed-budged', 'addPlannedTransaction')->name("budget.planned-transaction");
         Route::put('/transactions/{id}/mark-as-paid', 'markAsPaid')->name("transactions.mark-as-paid");
+
+        // Category budgets
+        Route::post('/categories/{categoryId}/budgets', 'addCategoryBudget')->name("category.budget.add");
+        Route::put('/categories/{categoryId}/budgets/{id}', 'updateCategoryBudget')->name("category.budget.update");
     });
     Route::resource('/meal-planner', PlannerController::class);
 

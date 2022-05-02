@@ -1,25 +1,8 @@
 <template>
     <div class="px-5 text-left border-b" :class="{'flex': !full }">
         <AtField label="Name">
-            <AtInput v-model="form.name" />
+            <AtInput v-model="category.name" />
             <AtErrorBag v-if="errors" :errors="errors" field="name" />
-        </AtField>
-        <AtField label="Category">
-            <NSelect
-                v-if="!isAddingGroup"
-                filterable
-                clearable
-                size="large"
-                v-model:value="form.account_id"
-                :default-expand-all="true"
-                :options="categoryOptions"
-            >
-                <template #action>
-                <AtButton @click="isModalOpen = true" class="text-white bg-pink-500"> Add category </AtButton>
-                </template>
-            </NSelect>
-            <AtInput v-model="form.name" v-else />
-            <AtErrorBag v-if="errors" :errors="errors" field="account_id" />
         </AtField>
 
         <AtField label="Target Type">
@@ -43,7 +26,7 @@
             v-model="form.frequency"
             :options="state.frequencies"
             theme="primary"
-            class="text-md"
+            class="text-lg"
         />
 
         <AtField label="Every" v-if="['MONTHLY', 'WEEKLY'].includes(form.frequency)">
@@ -56,8 +39,8 @@
                 :options="frequencyUnit.options"
             />
 
-            <div class="flex space-x-2 mt-2">
-                <div v-for="instance in monthInstanceCount" class="h-2 w-full bg-primary-500" />
+            <div class="flex mt-2 space-x-2">
+                <div v-for="instance in monthInstanceCount" class="w-full h-2 bg-primary-500" />
             </div>
 
             <AtErrorBag v-if="errors" :errors="errors" :field="frequencyUnit.field" />
@@ -96,18 +79,20 @@
             type: Boolean,
             default: false
         },
+        category: {
+            type: Object,
+            required: true
+        },
         item: {
             type: Object,
             default: () => {}
         }
     });
 
-    const categoryOptions = inject('categoryOptions', []);
-
     const state = reactive({
         isAddingGroup: false,
         form: useForm({
-            account_id: null,
+            category_id: null,
             parent_id: null,
             name: '',
             amount: 0,
@@ -183,24 +168,27 @@
     watch(() =>
         props.item,
         () => {
-        Object.keys(state.form.data()).forEach(key => {
-            state.form[key] = props.item[key]
-        })
-        console.log(props.item)
+            if (props.item) {
+                Object.keys(state.form.data()).forEach(key => {
+                    state.form[key] = props.item[key] || state.form[key]
+                })
+            } else {
+                state.form.reset()
+            }
     }), { deep: true, immediate: true }
 
     const submit = () => {
         const methods = {
             update: {
                 method: 'put',
-                url: props.item.id && `/budgets/${props.item.id}`
+                url: props.item?.id && `/categories/${props.category.id}/budgets/${props.item.id}`
             },
             save: {
                 method: 'post',
-                url: '/budgets'
+                url: `/categories/${props.category.id}/budgets`
             }
         }
-        const endpoint = methods[props.item.id ? 'update' : 'save']
+        const endpoint = methods[props.item?.id ? 'update' : 'save']
         state.form.transform((data) => ({
             ...data,
             parent_id: data.parent_id || state.parentId,
@@ -219,7 +207,7 @@
         return state.form.frequency == FREQUENCY_TYPE.WEEKLY &&
         selectedSpan.value.filter(
             day => {
-                return format(day, 'iiiiii').toLowerCase() == state.form.frequency_week_day.toLowerCase()
+                return format(day, 'iiiiii').toLowerCase() == state.form?.frequency_week_day?.toLowerCase()
             })
     })
 
