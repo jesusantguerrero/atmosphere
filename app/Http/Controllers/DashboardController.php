@@ -50,7 +50,7 @@ class DashboardController {
             "budget" => $budget->map(function ($budget) use($startDate, $endDate) {
                return Budget::dashboardParser($budget, $startDate, $endDate);
             }),
-            "categories" => $teamId ? CategoryHelper::getSubcategories($teamId, ['expenses', 'incomes']) : null,
+            "categories" => $teamId ? CategoryHelper::getSubcategories($teamId, ['expenses', 'incomes', 'liabilities']) : null,
             "accounts" => $teamId ? CategoryHelper::getAccounts($teamId, ['cash_and_bank', 'credit_card']) : null,
             "transactionTotal" => $transactions->sum('total'),
             "transactions" => $transactions->map(function ($transaction) {

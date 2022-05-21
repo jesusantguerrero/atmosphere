@@ -45,14 +45,14 @@ class AutomationController extends BaseController
 
     public function runAll() {
         $automationTasks = Automation::where([
-            "team_id" => auth()->user()->team_id,
+            // "team_id" => auth()->user()->team_id,
             "user_id" => auth()->user()->id,
         ])->get();
 
         foreach ($automationTasks as $automation) {
-            Artisan::call('automation:trigger', [
-                'automation_id' => $automation->id,
-            ]);
+            $automation->dispatch();
         }
+
+        return $automationTasks;
     }
 }
