@@ -220,6 +220,7 @@
     }
 
     const handleEdit = (transaction) => {
+        debugger
         transferConfig.transactionData = transaction;
         isTransferModalOpen.value = true;
     }

@@ -95,6 +95,7 @@
     import { useSelect } from '@/utils/useSelects';
     import RandomMealCard from "../Components/RandomMealCard.vue";
     import { Inertia } from "@inertiajs/inertia";
+    import { transactionDBToTransaction } from "../utils/transactions";
 
     const props = defineProps({
             meals: {
@@ -153,18 +154,6 @@
             subtitle: '',
             value: budget.amount,
             status: 'PENDING'
-        }))
-    }
-
-    const transactionDBToTransaction = (transactions) => {
-        return transactions.map(transaction => ({
-            id: transaction.id,
-            title: transaction.description,
-            date: transaction.date,
-            subtitle: `${transaction.account.name} -> ${transaction.category.name} `,
-            value: transaction.total,
-            currencyCode: transaction.currency_code,
-            status: transaction.status
         }))
     }
 

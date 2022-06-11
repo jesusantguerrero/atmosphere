@@ -73,6 +73,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
     Route::controller(FinancialController::class)->group(function () {
         Route::get('/financial', 'index');
+        Route::post('/financial/import', 'import');
     });
 });
 
