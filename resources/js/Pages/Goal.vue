@@ -20,7 +20,7 @@
 
         <div class="py-12">
             <div class="px-6 mx-auto max-w-7xl space-y-4">
-                <div v-for="goal in goals.data" class="rounded-md bg-white border px-5 py-3 space-y-4">
+                <div v-for="goal in goals.data" class="rounded-md bg-slate-600 border px-5 py-3 space-y-4">
                     <div class="flex">
                         <div class="h-10 w-10 bg-gray-700 rounded-full"></div>
                         <div class="ml-2">

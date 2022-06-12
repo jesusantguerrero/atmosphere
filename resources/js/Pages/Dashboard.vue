@@ -38,7 +38,7 @@
                     <section-title type="secondary">
                         Pending for approval
                     </section-title>
-                    <div class="px-5 py-1 mt-5 bg-white border rounded-md shadow-md">
+                    <div class="px-5 py-1 mt-5 border rounded-md shadow-md border-slate-700 bg-slate-600">
                         <transactions-table
                             table-label="Automatic Transactions"
                             class="pt-3"
@@ -56,7 +56,7 @@
                                     <AtButton class="flex space-x-2 text-pink-500" @click="approveTransactionAll($event)">
                                         <i class="block mr-2 fa fa-check"></i> Approve
                                     </AtButton>
-                                    <AtButton class="flex mr-2 space-x-2 text-pink-500" @click="removeAllDrafts()">
+                                    <AtButton class="flex mr-2 space-x-2 text-pink-600" @click="removeAllDrafts()">
                                         <i class="block mr-2 fa fa-times"></i> Remove</AtButton>
                                     <AtButton class="flex space-x-2 text-white bg-pink-500" @click="runAutomations()">
                                         <i class="block mr-2 fa fa-robot"></i> Run Automations
@@ -73,7 +73,7 @@
                     <RandomMealCard />
 
                     <h4 class="text-2xl font-bold text-pink-500"> Menu for today</h4>
-                    <div class="px-4 py-3 bg-white rounded-lg shadow-md cursor-pointer" v-for="plan in meals" :key="plan.id">
+                    <div class="px-4 py-3 bg-slate-600 rounded-lg shadow-md cursor-pointer" v-for="plan in meals" :key="plan.id">
                         <h4 class="font-bold text-blue-700">
                             {{ plan.dateable.name }}
                         </h4>

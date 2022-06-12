@@ -19,7 +19,7 @@
                     <div
                         v-for="service in services" :key="service.id"
                         @click="handleCommand(service)"
-                        class="flex px-5 py-3 bg-white shadow-md cursor-pointer">
+                        class="flex px-5 py-3 bg-slate-600 shadow-md cursor-pointer">
                     <div>
                         <img :src="service.logo" class="w-9" />
                     </div>
@@ -32,7 +32,7 @@
                     </div>
                 <div class="w-full integrations-form">
                     <div
-                        class="grid grid-cols-3 px-5 py-3 my-2 font-bold text-gray-500 bg-white cursor-pointer app-service__item"
+                        class="grid grid-cols-3 px-5 py-3 my-2 font-bold text-gray-500 bg-slate-600 cursor-pointer app-service__item"
                         v-for="service in integrations"
                         :key="service.id"
                     >
@@ -190,7 +190,7 @@ const google = (scopeName, service) => {
 
 <style lang="scss">
     .app-service__integration {
-        @apply bg-white text-gray-500 my-2 cursor-pointer px-5 py-3 font-bold;
+        @apply bg-slate-600 text-gray-500 my-2 cursor-pointer px-5 py-3 font-bold;
         @apply border-2 border-gray-300 rounded-md;
         width: 150px;
         display: flex;

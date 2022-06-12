@@ -18,7 +18,7 @@
         </template>
 
         <div class="py-12">
-            <div class="mx-auto bg-white rounded-md shadow-lg max-w-7xl">
+            <div class="mx-auto bg-slate-600 rounded-md shadow-lg max-w-7xl">
                 <div class="flex px-5 space-x-2 border-b">
                     <AtField label="Parent Category" v-if="state.expandedCategory">
                         <div class="py-3 font-bold">

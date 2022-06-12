@@ -1,7 +1,7 @@
 <template>
-    <div class="px-5 py-3 transition bg-white border divide-y rounded-lg shadow-md">
+    <div class="px-5 py-3 transition border divide-y rounded-lg shadow-md border-slate-700 bg-slate-600">
         <div class="pb-2 md:justify-between md:flex">
-            <h1 class="font-bold text-gray-500">
+            <h1 class="font-bold text-gray-200">
                 Welcome to Loger <span class="text-sm text-pink-500">{{ username }}</span>
             </h1>
             <div class="space-x-2">
@@ -21,8 +21,10 @@
                 :key="sectionName"
                 v-for="(section, sectionName) in sections"
             >
-                <h4 class="text-gray-500">{{ section.label }}</h4>
-                <SectionTitle>{{ formatMoney(section.value) }}</SectionTitle>
+                <h4 class="text-gray-200">{{ section.label }}</h4>
+                <SectionTitle class="mt-2">
+                    {{ formatMoney(section.value) }}
+                </SectionTitle>
             </div>
         </div>
         <slot></slot>

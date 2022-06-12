@@ -9,7 +9,7 @@
         <at-field
             label="Ingredients"
         >
-            <div class="flex px-2 py-2 bg-white" v-for="(ingredient, index) in form.ingredients" :key="ingredient.id">
+            <div class="flex px-2 py-2 bg-slate-600" v-for="(ingredient, index) in form.ingredients" :key="ingredient.id">
                 <div class="px-4">
                     <span>Qty</span>
                     <at-input type="number" v-model="ingredient.quantity" class="bg-gray-100 border-none rounded-t-none rounded-b-none"></at-input>

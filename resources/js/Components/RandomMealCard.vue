@@ -1,10 +1,10 @@
 <template>
-    <div class="px-4 py-3 bg-white rounded-lg shadow-md">
+    <div class="px-4 py-3 rounded-lg shadow-md bg-slate-600">
         <div class="flex justify-between">
-            <h4 class="text-2xl font-bold text-gray-500"> Get random meal</h4>
+            <h4 class="text-2xl font-bold text-gray-200"> Get random meal</h4>
             <at-button class="text-white bg-pink-500 rounded-full" @click="getRandomMeal" :disabled="state.isLoading"> <i class="fa fa-sync"></i></at-button>
         </div>
-        <div class="h-20 text-lg text-center text-gray-400">
+        <div class="h-20 text-lg text-center text-gray-100">
             {{ state.mealName  }}
             <div v-if="state.isLoading"> <i class="fa fa-spin fa-spinner"></i></div>
         </div>

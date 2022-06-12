@@ -1,8 +1,8 @@
 <template>
     <div>
         <jet-banner />
-        <div class="min-h-screen bg-gray-100 home-container">
-            <nav class="app-header">
+        <div class="min-h-screen bg-slate-800 home-container">
+            <nav class="border-b shadow-md border-slate-900 app-header bg-slate-800">
                 <!-- Primary Navigation Menu -->
                 <div class="px-4 mx-auto sm:px-6 lg:px-8">
                     <div class="flex justify-between h-16">
@@ -16,7 +16,7 @@
                                 <jet-dropdown align="right" width="60" v-if="$page.props.jetstream.hasTeamFeatures">
                                     <template #trigger>
                                         <span class="inline-flex rounded-md">
-                                            <button type="button" class="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition bg-white border border-transparent rounded-md hover:bg-gray-50 hover:text-gray-700 focus:outline-none focus:bg-gray-50 active:bg-gray-50">
+                                            <button type="button" class="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition bg-slate-600 border border-transparent rounded-md hover:bg-gray-50 hover:text-gray-700 focus:outline-none focus:bg-gray-50 active:bg-gray-50">
                                                 {{ $page.props.user.current_team.name }}
 
                                                 <svg class="ml-2 -mr-0.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -75,7 +75,7 @@
                                         </button>
 
                                         <span v-else class="inline-flex rounded-md">
-                                            <button type="button" class="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition bg-white border border-transparent rounded-md hover:text-gray-700 focus:outline-none">
+                                            <button type="button" class="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition bg-slate-600 border border-transparent rounded-md hover:text-gray-700 focus:outline-none">
                                                 {{ $page.props.user.name }}
 
                                                 <svg class="ml-2 -mr-0.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -203,11 +203,11 @@
             <div class="app-content">
                 <div class="appside-container">
                     <AtSide
-                        class="text-gray-700 bg-white app-side"
+                        class="text-gray-200 border-r shadow-md border-slate-900 bg-slate-800 app-side"
                         title="Loger"
                         :menu="menu"
-                        item-class="block w-full px-5 py-2 font-bold text-gray-400 rounded-md hover:text-pink-400 hover:bg-gray-100"
-                        item-active-class="text-pink-500 bg-gray-100"
+                        item-class="block w-full px-5 py-2 font-bold text-gray-400 rounded-md hover:text-pink-600 hover:bg-slate-400"
+                        item-active-class="text-pink-400 bg-slate-500"
                     >
                         <template #brand>
                             <h1 class="pl-5 text-3xl font-bold text-pink-500">Loger.</h1>
@@ -294,6 +294,9 @@
 </script>
 
 <style lang="scss">
+body, html {
+    background-color: #0F172A;
+}
 .home-container {
   position: relative;
   height: 100vh;
@@ -303,8 +306,6 @@
     width: 100%;
     top: 0;
     position: fixed;
-    background: white;
-    border-bottom: 1px solid #f4f5f7;
     z-index: 1000;
 }
 
@@ -320,7 +321,6 @@
 .app-content {
   display: grid;
   grid-template-columns: 300px minmax(0, 1fr);
-  background: #f8f8f8 !important;
   position: relative;
   height: 100vh;
 
