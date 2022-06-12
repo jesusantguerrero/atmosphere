@@ -15,6 +15,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Insane\Journal\Helpers\CategoryHelper;
+use Insane\Journal\Models\Core\Transaction as CoreTransaction;
 use Laravel\Jetstream\Jetstream;
 
 class DashboardController {
@@ -28,11 +29,7 @@ class DashboardController {
             'team_id' => $teamId
         ])->with('account')->get();
 
-        $transactions = Transaction::where([
-            'team_id' => $teamId,
-            'direction' => "WITHDRAW",
-            'status' => 'verified'
-        ])->getByMonth($startDate, $endDate)->get();
+        $transactions = Transaction::getExpenses($teamId, $startDate, $endDate);
 
         $drafts = Transaction::where([
             'team_id' => $teamId,
@@ -78,17 +75,15 @@ class DashboardController {
         $planned = BudgetHelper::getPlannedTransactions($teamId);
         $subscriptions = BudgetHelper::getPlannedTransactions($teamId, 1);
 
-        $transactions = Transaction::where([
-            'team_id' => $teamId,
-            'direction' => "WITHDRAW",
-            'status' => 'verified'
-        ])->getByMonth($startDate, $endDate)->get();
+        $transactions = Transaction::getExpenses($teamId,$startDate, $endDate);
 
         $incomes = Transaction::where([
             'team_id' => $teamId,
-            'direction' => "DEPOSIT",
             'status' => 'verified'
-        ])->getByMonth($startDate, $endDate)->sum('total');
+        ])
+        ->byCategories(['inflow'], $teamId)
+        ->getByMonth($startDate, $endDate)
+        ->sum('total');
 
         $lastMonthIncomes= Transaction::where([
             'team_id' => $teamId,

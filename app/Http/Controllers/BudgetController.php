@@ -26,6 +26,7 @@ class BudgetController extends InertiaController
             'name' => 'required|string|max:255',
             'amount' => 'numeric',
         ];
+        $this->sorts = ['index'];
         $this->includes = ['subCategories', 'subCategories.budget'];
         $this->filters = [
             'parent_id' => '$null',
@@ -39,22 +40,12 @@ class BudgetController extends InertiaController
         $queryParams['limit'] = $queryParams['limit'] ?? 50;
         $teamId = $request->user()->current_team_id;
 
-        $hasCategories = Category::where([
-            'team_id' => $teamId,
-            'resource_type' => 'transactions'
-        ])->count();
-
-        if (!$hasCategories) {
-            $team = Team::find($teamId);
-            (new CreateTransactionCategories())->create($team);
-        }
-
         return [
             'budgets' => $this->getModelQuery($request),
             "categories" => Category::where([
                 'team_id' => $teamId,
                 'resource_type' => 'transactions'
-            ])->with('subCategories')->get(),
+            ])->orderBy('index')->with('subCategories')->get(),
 
         ];
     }

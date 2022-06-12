@@ -36,6 +36,7 @@ class TransactionsImport extends ImportHelper
             'outflow' => (double) $outflow[1],
             'currency_code' => $CODES[$inflow[0]],
         ];
+
         $direction = $amounts->inflow > $amounts->outflow ? 'inflow' : 'outflow';
 
        return [
@@ -74,7 +75,7 @@ class TransactionsImport extends ImportHelper
         $row['transaction_category_id'] = $transactionCategoryId;
         $row['category_id'] = $categoryId;
         $row['description'] = $row['memo'] ?? $row['account'];
-        $row['direction'] = $money['direction'] == 'inflow' ? Transaction::DIRECTION_CREDIT : Transaction::DIRECTION_DEBIT;
+        $row['direction'] = $money['direction'] == 'inflow' ? Transaction::DIRECTION_DEBIT : Transaction::DIRECTION_CREDIT;
         $row['total'] = $money['amount'];
         $row['items'] = [];
         $row['metaData'] = [
@@ -82,6 +83,7 @@ class TransactionsImport extends ImportHelper
             "resource_origin" => 'YNAB',
             "resource_type" => 'transaction',
         ];
+        $row['is_transfer'] = $isTransfer;
         return $row;
     }
 }

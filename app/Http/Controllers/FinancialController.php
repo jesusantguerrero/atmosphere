@@ -74,5 +74,6 @@ class FinancialController extends InertiaController {
 
     public function import(Request $request) {
         Excel::import(new TransactionsImport($request->user()), $request->file('file'));
+        return redirect()->back();
     }
 }
