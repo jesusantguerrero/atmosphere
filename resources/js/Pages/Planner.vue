@@ -1,18 +1,16 @@
 <template>
-    <app-layout>
+    <AppLayout>
         <template #header>
             <div class="flex justify-between">
                 <div>
-                <h2 class="text-xl font-semibold leading-tight text-pink-500">
-                    Meal Planner
-                </h2>
-                <span></span>
-
+                    <h2 class="text-xl font-semibold leading-tight text-pink-400">
+                        Meal Planner
+                    </h2>
                 </div>
 
                 <div class="space-x-2">
-                    <AtButton class="text-white bg-pink-400" @click="openRandomModal()"> Random Meal </AtButton>
-                    <AtButton class="text-white bg-pink-400" @click="toggleMode()">
+                    <AtButton class="h-10 text-white bg-pink-400" @click="openRandomModal()" rounded> Random Meal </AtButton>
+                    <AtButton class="h-10 text-white bg-pink-400" @click="toggleMode()" rounded>
                         {{ toggleBtnText }}
                     </AtButton>
                 </div>
@@ -20,9 +18,9 @@
         </template>
 
         <div class="py-12">
-            <div class="mx-auto max-w-7xl sm:px-6">
+            <div class="px-6 mx-auto max-w-7xl md:px-0">
                 <AtDatePager
-                    class="h-12 mb-10 bg-slate-600"
+                    class="h-12 mb-10 bg-slate-600 border-slate-700"
                     v-model="date"
                     v-model:dateSpan="week"
                     next-mode="week"
@@ -34,19 +32,19 @@
                     </div>
                 </div>
 
-                <div v-else class="pt-5 overflow-hidden border divide-y-2 rounded-md bg-slate-600">
+                <div v-else class="pt-5 overflow-hidden text-gray-200 border divide-y-2 rounded-md divide-slate-800 border-slate-800 bg-slate-600">
                     <div v-for="day in week" :key="day" @click="openDayInModal(day)" class="px-5 py-4 cursor-pointer bg-slate-600">
                         {{ getDayName(day) }}
 
                         <div class="">
-                            <div v-for="meal in getDayMeals(day)" :key="meal.id" class="font-bold text-pink-500">
+                            <div v-for="meal in getDayMeals(day)" :key="meal.id" class="font-bold text-pink-400">
                                 {{ meal.dateable.name }}
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <plan-modal
+                <PlanModal
                     :show="isModalOpen"
                     :closeable="true"
                     :date="isModalOpen"
@@ -57,14 +55,14 @@
                     @saved="onSaved"
                 />
 
-                <random-meal-modal
+                <RandomMealModal
                     :show="isRandomModalOpen"
                     :closeable="true"
                     @close="isRandomModalOpen=false"
                 />
             </div>
         </div>
-    </app-layout>
+    </AppLayout>
 </template>
 
 <script>

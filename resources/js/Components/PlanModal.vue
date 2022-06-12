@@ -1,7 +1,7 @@
 <template>
     <modal :show="show" :max-width="maxWidth" :closeable="closeable" @close="close">
         <div class="px-10 pt-5 pb-4">
-            <h3 class="text-lg font-bold text-pink-500">
+            <h3 class="text-lg font-bold text-pink-400">
                 <slot name="title">
                     {{ title }}
                 </slot>
@@ -13,8 +13,12 @@
                 <div class="w-full text-center sm:mt-0 sm:ml-4 sm:text-left">
                     <slot name="content">
                         <div class="w-full">
-                            <at-input v-model="searchText" placeholder="Search meal by name" type="search" class="w-full" />
-                            <meal
+                            <AtInput
+                                v-model="searchText"
+                                placeholder="Search meal by name"
+                                type="search" class="w-full h-10 overflow-hidden text-gray-200 border rounded-md bg-slate-900 border-slate-700"
+                            />
+                            <Meal
                                 class="overflow-auto h-96"
                                 :meals="filteredMeals"
                                 :selected="selectedMeals"
@@ -26,14 +30,16 @@
             </div>
         </div>
 
-        <div class="px-6 py-4 space-x-3 text-right bg-gray-100">
-            <at-button type="secondary" @click="close"> Cancel </at-button>
-            <at-button
-                class="text-white bg-pink-400"
+        <div class="px-6 py-4 space-x-3 text-right bg-slate-600">
+            <AtButton type="secondary" rounded @click="close" class="h-10"> Cancel </AtButton>
+            <AtButton
+                class="h-10 text-white bg-pink-400"
+                rounded
                 @click="submit"
                 :disabled="!hasValidMeals"
-            > Save
-            </at-button>
+            >
+                Save
+            </AtButton>
         </div>
     </modal>
 </template>

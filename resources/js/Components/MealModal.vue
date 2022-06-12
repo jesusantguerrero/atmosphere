@@ -28,9 +28,9 @@
             </div>
         </div>
 
-        <div class="px-6 py-4 space-x-3 text-right bg-gray-100">
-            <at-button type="secondary" @click="close"> Cancel </at-button>
-            <at-button class="text-white bg-pink-400" @click="submit"> Save </at-button>
+        <div class="px-6 py-4 space-x-3 text-right bg-slate-600">
+            <AtButton type="secondary" rounded @click="close"> Cancel </AtButton>
+            <AtButton class="text-white bg-pink-400" rounded @click="submit"> Save </AtButton>
         </div>
     </modal>
 </template>
