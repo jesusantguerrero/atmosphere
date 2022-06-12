@@ -2,47 +2,23 @@
  * @license MIT */
 
 /*!
-  * rrule.js - Library for working with recurrence rules for calendar dates.
-  * https://github.com/jakubroztocil/rrule
-  *
-  * Copyright 2010, Jakub Roztocil and Lars Schoning
-  * Licenced under the BSD licence.
-  * https://github.com/jakubroztocil/rrule/blob/master/LICENCE
-  *
-  */
-
-/*!
  * The buffer module from node.js, for the browser.
  *
  * @author   Feross Aboukhadijeh <http://feross.org>
  * @license  MIT
  */
 
+/*!
+* rrule.js - Library for working with recurrence rules for calendar dates.
+* https://github.com/jakubroztocil/rrule
+*
+* Copyright 2010, Jakub Roztocil and Lars Schoning
+* Licenced under the BSD licence.
+* https://github.com/jakubroztocil/rrule/blob/master/LICENCE
+*
+*/
+
 /*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
-
-/**
-   * @license
-   * Lodash <https://lodash.com/>
-   * Copyright OpenJS Foundation and other contributors <https://openjsf.org/>
-   * Released under MIT license <https://lodash.com/license>
-   * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
-   * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-   */
-
-/**
-   * @license Complex.js v2.0.15 12/05/2020
-   *
-   * Copyright (c) 2020, Robert Eisele (robert@xarg.org)
-   * Dual licensed under the MIT or GPL Version 2 licenses.
-   **/
-
-/**
-   * @license Fraction.js v4.1.2 23/05/2021
-   * https://www.xarg.org/2014/03/rational-numbers-in-javascript/
-   *
-   * Copyright (c) 2021, Robert Eisele (robert@xarg.org)
-   * Dual licensed under the MIT or GPL Version 2 licenses.
-   **/
 
 /**
  * @license
@@ -52,3 +28,18 @@
  * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
  * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
  */
+
+/**
+ * @license Complex.js v2.0.15 12/05/2020
+ *
+ * Copyright (c) 2020, Robert Eisele (robert@xarg.org)
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ **/
+
+/**
+ * @license Fraction.js v4.1.2 23/05/2021
+ * https://www.xarg.org/2014/03/rational-numbers-in-javascript/
+ *
+ * Copyright (c) 2021, Robert Eisele (robert@xarg.org)
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ **/
