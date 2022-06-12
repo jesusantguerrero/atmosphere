@@ -74,7 +74,7 @@
 
                     <h4 class="text-2xl font-bold text-pink-400"> Menu for today</h4>
                     <div class="px-4 py-3 rounded-lg shadow-md cursor-pointer bg-slate-600" v-for="plan in meals" :key="plan.id">
-                        <h4 class="font-bold text-blue-700">
+                        <h4 class="font-bold text-blue-400">
                             {{ plan.dateable.name }}
                         </h4>
                         <small class="text-gray-400">Lunch</small>
