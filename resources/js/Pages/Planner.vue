@@ -28,14 +28,14 @@
                     next-mode="week"
                 />
 
-                <div v-if="isGroceryList" class="py-5 overflow-hidden bg-slate-600 border rounded-md">
-                    <div v-for="(ingredient, name) in ingredients" class="px-5 text-pink-500 bg-slate-600 cursor-pointer">
+                <div v-if="isGroceryList" class="py-5 overflow-hidden border rounded-md bg-slate-600">
+                    <div v-for="(ingredient, name) in ingredients" class="px-5 text-pink-500 cursor-pointer bg-slate-600">
                         {{name }} ({{ ingredient.quantity }}) {{ ingredient.unit }}
                     </div>
                 </div>
 
-                <div v-else class="pt-5 overflow-hidden bg-slate-600 border divide-y-2 rounded-md">
-                    <div v-for="day in week" :key="day" @click="openDayInModal(day)" class="px-5 py-4 bg-slate-600 cursor-pointer">
+                <div v-else class="pt-5 overflow-hidden border divide-y-2 rounded-md bg-slate-600">
+                    <div v-for="day in week" :key="day" @click="openDayInModal(day)" class="px-5 py-4 cursor-pointer bg-slate-600">
                         {{ getDayName(day) }}
 
                         <div class="">

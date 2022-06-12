@@ -1,37 +1,31 @@
 <template>
-    <div>
-        <at-field
+    <div class="text-gray-200">
+        <AtField
             label="Title"
         >
-            <at-input v-model="form.name"></at-input>
-        </at-field>
+            <AtInput v-model="form.name" rounded class="text-gray-200 border bg-slate-700 border-slate-800" />
+        </AtField>
 
-        <at-field
+        <AtField
             label="Ingredients"
         >
-            <div class="flex px-2 py-2 bg-slate-600" v-for="(ingredient, index) in form.ingredients" :key="ingredient.id">
-                <div class="px-4">
-                    <span>Qty</span>
-                    <at-input type="number" v-model="ingredient.quantity" class="bg-gray-100 border-none rounded-t-none rounded-b-none"></at-input>
-                </div>
-                <div class="w-full px-4">
-                    <span>Name</span>
-                    <at-input class="bg-gray-100 border-none rounded-t-none rounded-b-none" v-model="ingredient.name" @update:modelValue="checkIngredients(index, $event)"></at-input>
-                </div>
-                <div class="px-4">
-                    <span>Unit</span>
-                    <at-input v-model="ingredient.unit" class="bg-gray-100 border-none rounded-t-none rounded-b-none"></at-input>
-                </div>
-                <div>
-                    <span class="inline-block">Actions</span>
-                    <div>
-                        <at-button type="danger" @click="removeIngredient(index)">
-                            <i class="fa fa-trash"></i>
-                        </at-button>
-                    </div>
-                </div>
+            <div class="flex px-2 py-2 overflow-hidden rounded-md bg-slate-600" v-for="(ingredient, index) in form.ingredients" :key="ingredient.id">
+                <AtField class="px-4" label="Qty">
+                    <AtInput rounded type="number" v-model="ingredient.quantity" class="text-gray-200 border border-none rounded-t-none rounded-b-none bg-slate-700 border-slate-800" />
+                </AtField>
+                <AtField class="w-full px-4" label="Name">
+                    <AtInput rounded class="text-gray-200 border border-none rounded-t-none rounded-b-none bg-slate-700 border-slate-800" v-model="ingredient.name" @update:modelValue="checkIngredients(index, $event)"></AtInput>
+                </AtField>
+                <AtField class="px-4" label="Unit">
+                    <AtInput rounded v-model="ingredient.unit" class="text-gray-200 border border-none rounded-t-none rounded-b-none bg-slate-700 border-slate-800"/>
+                </AtField>
+                <AtField label="Actions">
+                    <AtButton type="danger" class="items-center h-10" rounded @click="removeIngredient(index)">
+                        <i class="fa fa-trash"></i>
+                    </AtButton>
+                </AtField>
             </div>
-        </at-field>
+        </AtField>
     </div>
 </template>
 
