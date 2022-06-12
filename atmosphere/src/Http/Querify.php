@@ -38,7 +38,6 @@ trait Querify
            $this->modelQuery->where(["user_id" => $request->user()->id]);
         }
 
-
         return $this->getPaginate($limit);
     }
 
@@ -162,8 +161,9 @@ trait Querify
         return $this->modelQuery->paginate($limit);
     }
 
-    private function getSorts($sorts)
+    private function getSorts($externalSorts)
     {
+        $sorts = implode(',', $this->sorts) . $externalSorts;
         if ($sorts) {
             $sorts = $this->splitAndTrim($sorts);
             foreach ($sorts as $sort) {

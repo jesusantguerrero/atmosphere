@@ -2,19 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Budget;
+use App\Models\Category;
 use App\Models\Planner;
+use App\Models\Team;
 use App\Models\Transaction;
 use Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
-use Insane\Journal\Helpers\CategoryHelper;
+use Insane\Journal\Actions\CreateTransactionCategories;
 
 class BudgetController extends InertiaController
 {
-    public function __construct(Budget $budget)
+    public function __construct(Category $category)
     {
-        $this->model = $budget;
+        $this->model = $category;
         $this->templates = [
             "index" => 'Budget',
             "create" => 'BudgetCreate',
@@ -25,9 +26,11 @@ class BudgetController extends InertiaController
             'name' => 'required|string|max:255',
             'amount' => 'numeric',
         ];
-        $this->includes = ['account'];
+        $this->sorts = ['index'];
+        $this->includes = ['subCategories', 'subCategories.budget'];
         $this->filters = [
             'parent_id' => '$null',
+            'resource_type' => 'transactions'
         ];
     }
 
@@ -39,8 +42,32 @@ class BudgetController extends InertiaController
 
         return [
             'budgets' => $this->getModelQuery($request),
-            "categories" => CategoryHelper::getSubcategories($teamId, ['expenses', 'incomes']),
+            "categories" => Category::where([
+                'team_id' => $teamId,
+                'resource_type' => 'transactions'
+            ])->orderBy('index')->with('subCategories')->get(),
+
         ];
+    }
+
+    public function addCategoryBudget(Request $request, $categoryId)
+    {
+        $category = Category::find($categoryId);
+        $postData = $request->post();
+        $category->budget()->create(array_merge($postData,[
+            'name' => $category->name,
+            'user_id' => $request->user()->id,
+            'team_id' => $request->user()->current_team_id
+        ]));
+        return Redirect::back();
+    }
+
+    public function updateCategoryBudget(Request $request, $categoryId)
+    {
+        $category = Category::find($categoryId);
+        $postData = $request->post();
+        $category->budget->update($postData);
+        return Redirect::back();
     }
 
     public function addPlannedTransaction(Request $request) {

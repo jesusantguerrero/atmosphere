@@ -56,4 +56,15 @@ class Transaction extends CoreTransaction
             ];
         }
     }
+
+    public static function getExpenses($teamId, $startDate, $endDate) {
+        return self::where([
+            'team_id' => $teamId,
+            'direction' => CoreTransaction::DIRECTION_CREDIT,
+            'status' => 'verified'
+        ])
+        ->whereNotNull('transaction_category_id')
+        ->getByMonth($startDate, $endDate)
+        ->get();
+    }
 }

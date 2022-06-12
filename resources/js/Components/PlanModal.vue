@@ -8,7 +8,7 @@
             </h3>
         </div>
 
-        <div class="px-4 pb-4 bg-white sm:p-6 sm:pb-4">
+        <div class="px-4 pb-4 bg-slate-600 sm:p-6 sm:pb-4">
             <div class="sm:flex sm:items-start">
                 <div class="w-full text-center sm:mt-0 sm:ml-4 sm:text-left">
                     <slot name="content">

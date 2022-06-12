@@ -4,7 +4,7 @@ export const transactionDBToTransaction = (transactions) => {
         id: transaction.id || v4(),
         date: transaction.date,
         title: transaction.description,
-        subtitle: transaction.account.name ? `${transaction.account.name} -> ${transaction.category.name}` : '',
+        subtitle: transaction.account?.name ? `${transaction.account?.name} -> ${transaction.category?.name}` : '',
         value: transaction.total,
         status: 'VERIFIED',
         currencyCode: transaction.currency_code,

@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="p-6 sm:px-20 bg-white border-b border-gray-200">
+        <div class="p-6 sm:px-20 bg-slate-600 border-b border-gray-200">
             <h1 class="text-bold text-3xl">
                 List of accounts
             </h1>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Imports\TransactionsImport;
 use App\Models\Transaction;
 use Atmosphere\Http\InertiaController;
 use Carbon\Carbon;
@@ -9,6 +10,7 @@ use Illuminate\Http\Request;
 use Insane\Journal\Helpers\CategoryHelper;
 use Laravel\Jetstream\Jetstream;
 use Atmosphere\Http\Querify;
+use Maatwebsite\Excel\Facades\Excel;
 
 class FinancialController extends InertiaController {
     use Querify;
@@ -25,7 +27,7 @@ class FinancialController extends InertiaController {
         $lastMonthEndDate = $request->query('endDate', Carbon::now()->subMonth()->endOfMonth()->format('Y-m-d'));
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
 
-        $groupBy = $request->query('group', 'account_id');
+        $groupBy = $request->query('group');
         $teamId = $request->user()->current_team_id;
         $groups = [
             'accounts' => 'transactions.account_id, transactions.description',
@@ -68,5 +70,10 @@ class FinancialController extends InertiaController {
                 "filters" => $filters,
             ]
         ]);
+    }
+
+    public function import(Request $request) {
+        Excel::import(new TransactionsImport($request->user()), $request->file('file'));
+        return redirect()->back();
     }
 }

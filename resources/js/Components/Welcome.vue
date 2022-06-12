@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="px-6 py-3 overflow-hidden bg-white border-b border-gray-200 shadow-md sm:rounded-lg sm:px-20">
+        <div class="px-6 py-3 overflow-hidden bg-slate-600 border-b border-gray-200 shadow-md sm:rounded-lg sm:px-20">
             <div class="mt-4 text-lg text-gray-600">
                 Welcome to <span class="font-bold">Loger</span>
             </div>

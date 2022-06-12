@@ -1,6 +1,6 @@
 <template>
     <modal :show="show" :max-width="maxWidth" :closeable="closeable" @close="close">
-        <div class="pb-4 bg-white sm:p-6 sm:pb-4">
+        <div class="pb-4 bg-slate-600 sm:p-6 sm:pb-4">
             <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                 <div class="grid grid-cols-3 overflow-hidden text-lg rounded-lg">
                     <div
@@ -48,6 +48,19 @@
                                 </at-field>
                             </div>
                             <div class="flex space-x-3">
+                              <at-field
+                                    label="Payee"
+                                    class="w-5/12"
+                                >
+                                    <n-auto-complete
+                                        v-model:value="form.payee"
+                                        :input-props="{
+                                            autocomplete: 'disabled'
+                                        }"
+                                        :options="options"
+                                        placeholder="Payee"
+                                    />
+                                </at-field>
                                 <at-field label="Category" class="w-full">
                                     <n-select
                                         filterable
@@ -139,7 +152,7 @@
     </modal>
 </template>
 
-<script>
+<script setup>
     import Modal from '@/Jetstream/Modal'
     import { useForm } from "@inertiajs/inertia-vue3"
     import { AtField, AtInput, AtButton } from "atmosphere-ui"
@@ -148,19 +161,8 @@
     import { NSelect, NDatePicker } from "naive-ui";
     import { format } from 'date-fns'
 
-    export default {
-        emits: ['close'],
-
-        components: {
-            Modal,
-            AtField,
-            AtInput,
-            AtButton,
-            NSelect,
-            NDatePicker
-        },
-
-        props: {
+    const emit = defineEmits(['close'])
+    const props = defineProps({
             show: {
                 default: false
             },
@@ -186,125 +188,120 @@
                 type: Object,
                 default: () => ({})
             }
+    });
+
+    const state = reactive({
+        transactionTypes :[{
+            value: 'DEPOSIT',
+            label: 'Income'
+        }, {
+            value: 'WITHDRAW',
+            label: 'Expense'
+        }, {
+            value: 'ENTRY',
+            label: 'Transaction'
+        }],
+        frequencyLabel: 'every',
+        schedule_settings: {
+            end_date: null,
+            count: null,
+            end_type: 'NEVER',
+            final_item_date: null,
+            interval: 1,
+            frequency: "monthly",
+            repeat_at_end_of_month: false,
+            repeat_on_day_of_month: null,
+            start_date: null,
+            timezone_id: "America/Santo_Domingo"
         },
-        setup(props, { emit }) {
-            const state = reactive({
-                transactionTypes :[{
-                    value: 'DEPOSIT',
-                    label: 'Income'
-                }, {
-                    value: 'WITHDRAW',
-                    label: 'Expense'
-                }, {
-                    value: 'ENTRY',
-                    label: 'Transaction'
-                }],
-                frequencyLabel: 'every',
-                schedule_settings: {
-                    end_date: null,
-                    count: null,
-                    end_type: 'NEVER',
-                    final_item_date: null,
-                    interval: 1,
-                    frequency: "monthly",
-                    repeat_at_end_of_month: false,
-                    repeat_on_day_of_month: null,
-                    start_date: null,
-                    timezone_id: "America/Santo_Domingo"
-                },
-                form: useForm({
-                    name: '',
-                    date: null,
-                    description: '',
-                    direction: 'WITHDRAW',
-                    category_id: null,
-                    account_id: null,
-                    display_id: '',
-                    total: 0,
-                }),
-            })
+        form: useForm({
+            name: '',
+            payee: '',
+            date: null,
+            description: '',
+            direction: 'WITHDRAW',
+            category_id: null,
+            account_id: null,
+            display_id: '',
+            total: 0,
+        }),
+    })
 
-            const categoryOptions = inject('categoryOptions', [])
-            const accountsOptions = inject('accountsOptions', [])
+    const categoryOptions = inject('categoryOptions', [])
+    const accountsOptions = inject('accountsOptions', [])
+    const payees = [
+        'La sirena'
+    ]
 
-            const categoryAccounts = computed(() => {
-                return state.form.direction == 'ENTRY' ? accountsOptions : categoryOptions;
-            })
+    const categoryAccounts = computed(() => {
+        return state.form.direction == 'ENTRY' ? accountsOptions : categoryOptions;
+    })
 
-            const createCategory = async (createdLabel) => {
-                if (typeof createdLabel == 'string') {
-                    category = await axios.post('/api/categories',
-                    { name: createdLabel, 'parent_id': 'expenses'} , {
-                        onSuccess: ({ data }) => {
-                            return data;
-                        }
-                    })
+    const createCategory = async (createdLabel) => {
+        if (typeof createdLabel == 'string') {
+            category = await axios.post('/api/categories',
+            { name: createdLabel, 'parent_id': 'expenses'} , {
+                onSuccess: ({ data }) => {
+                    return data;
                 }
-            }
-
-            const close = () =>  {
-                emit('close')
-            }
-
-            const submit = () => {
-                const actions = {
-                    'transaction': {
-                        save: {
-                            method: 'post',
-                            url: () => route('transactions.store'),
-                        },
-                        update: {
-                            method: 'put',
-                            url: () => route('transactions.update', props.transactionData)
-                        },
-                    },
-                    recurrence: {
-                        save: {
-                            url: () => route('budget.planned-transaction'),
-                        }
-                    }
-
-                }
-                const method = props.transactionData && props.transactionData.id ? 'update' : 'save'
-                const actionType = props.recurrence ? 'recurrence' : 'transaction'
-                const action = actions[actionType][method]
-                state.form
-                .transform((form) => ({
-                    ...form,
-                    resource_type_id: 'MANUAL',
-                    total: form.total,
-                    date:  format(new Date(form.date), 'yyyy-MM-dd'),
-                    status: 'verified',
-                    ...state.schedule_settings
-                }))
-                .submit(action.method, action.url(), {
-                    onSuccess: () => {
-                        emit('close')
-                        state.form.reset();
-                    },
-                })
-            }
-
-            watch(() => props.transactionData, (newValue) => {
-
-
-                Object.keys(state.form.data()).forEach((field) => {
-                    if (field == 'date') {
-                        state.form[field] = new Date(newValue[field])
-                    } else {
-                        state.form[field] = newValue[field]
-                    }
-                })
-            }, { deep: true })
-
-            return {
-                ...toRefs(state),
-                createCategory,
-                accountsOptions,
-                categoryAccounts,
-                submit,
-                close
-            }
+            })
         }
     }
+
+    const close = () =>  {
+        emit('close')
+    }
+
+    const submit = () => {
+        const actions = {
+            'transaction': {
+                save: {
+                    method: 'post',
+                    url: () => route('transactions.store'),
+                },
+                update: {
+                    method: 'put',
+                    url: () => route('transactions.update', props.transactionData)
+                },
+            },
+            recurrence: {
+                save: {
+                    url: () => route('budget.planned-transaction'),
+                }
+            }
+
+        }
+        const method = props.transactionData && props.transactionData.id ? 'update' : 'save'
+        const actionType = props.recurrence ? 'recurrence' : 'transaction'
+        const action = actions[actionType][method]
+        state.form
+        .transform((form) => ({
+            ...form,
+            resource_type_id: 'MANUAL',
+            total: form.total,
+            date:  format(new Date(form.date), 'yyyy-MM-dd'),
+            status: 'verified',
+            ...state.schedule_settings
+        }))
+        .submit(action.method, action.url(), {
+            onSuccess: () => {
+                emit('close')
+                state.form.reset();
+            },
+        })
+    }
+
+    watch(() => props.transactionData, (newValue) => {
+
+
+        Object.keys(state.form.data()).forEach((field) => {
+            if (field == 'date') {
+                state.form[field] = new Date(newValue[field])
+            } else {
+                state.form[field] = newValue[field]
+            }
+        })
+    }, { deep: true })
+
+    const { form, schedule_settings, transactionTypes } = toRefs(state)
 </script>

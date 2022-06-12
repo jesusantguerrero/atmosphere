@@ -1,3 +1,6 @@
+import { format } from "date-fns"
+import { Inertia } from "@inertiajs/inertia";
+
 export const targetTypes = [
     {
         value: 'spending',
@@ -70,7 +73,7 @@ export const monthDays = () => {
     return days;
 }
 
-export const weekDays = {
+export const WEEK_DAYS = {
     SU: 'Sunday',
     MO: 'Monday',
     TU: 'Tuesday',
@@ -78,4 +81,44 @@ export const weekDays = {
     TH: 'Thursday',
     FR: 'Friday',
     SA: 'Saturday',
+}
+
+export const FREQUENCY_TYPE = {
+    WEEKLY: 'WEEKLY',
+    MONTHLY: 'MONTHLY',
+    BY_DATE: 'BY_DATE'
+}
+
+export const getDateFromIso = (isoDateString) => {
+    return startOfDay(new Date(isoDateString))
+}
+
+export const filterParams = (mainDateField, {dates}) => {
+    let filters = [];
+
+    if (dates.startDate) {
+      let dateFilterValue = format(dates.startDate, 'yyyy-MM-dd');
+      if (dates.endDate) {
+        dateFilterValue += `~${format(dates.endDate, 'yyyy-MM-dd')}`;
+      }
+      filters.push(`filter[${mainDateField}]=${dateFilterValue}`);
+    }
+
+    return filters.join("&");
+  }
+
+export const groupParams = (groupValue) => {
+    return `group=${groupValue}`;
+  }
+
+export const updateSearch = (searchOptions, dateSpan) => {
+      let params = [
+          filterParams('date', { dates: {
+              startDate: searchOptions.date.startDate,
+              endDate: dateSpan ? dateSpan[dateSpan.length - 1] : null
+          } }),
+          groupParams(searchOptions.group)
+    ]
+    params = params.filter(value => value).join("&");
+    Inertia.get(`/financial?${params}`)
 }

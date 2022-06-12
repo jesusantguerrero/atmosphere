@@ -1,21 +1,8 @@
 <template>
-    <div class="px-5 border-b text-left" :class="{'flex': !full }">
-        <AtField label="Category">
-            <NSelect
-                v-if="!isAddingGroup"
-                filterable
-                clearable
-                size="large"
-                v-model:value="form.account_id"
-                :default-expand-all="true"
-                :options="categoryOptions"
-            >
-                <template #action>
-                <AtButton @click="isModalOpen = true" class="text-white bg-pink-500"> Add category </AtButton>
-                </template>
-            </NSelect>
-            <AtInput v-model="form.name" v-else />
-            <AtErrorBag v-if="errors" :errors="errors" field="account_id" />
+    <div class="px-5 text-left border-b" :class="{'flex': !full }">
+        <AtField label="Name">
+            <AtInput v-model="category.name" />
+            <AtErrorBag v-if="errors" :errors="errors" field="name" />
         </AtField>
 
         <AtField label="Target Type">
@@ -35,17 +22,12 @@
             <AtErrorBag v-if="errors" errors="errors" field="amount" />
         </AtField>
 
-        <div class="grid grid-cols-3 overflow-hidden text-lg rounded-lg">
-            <div
-                v-for="type in state.frequencies"
-                :key="type.value"
-                @click="form.frequency = type.value"
-                class="py-1 font-bold text-center cursor-pointer hover:bg-gray-200"
-                :class="[form.frequency == type.value ? 'bg-pink-500 hover:bg-pink-500 text-white' : 'text-gray-500 bg-gray-100']"
-            >
-                {{ type.label }}
-            </div>
-        </div>
+        <AtButtonGroup
+            v-model="form.frequency"
+            :options="state.frequencies"
+            theme="primary"
+            class="text-lg"
+        />
 
         <AtField label="Every" v-if="['MONTHLY', 'WEEKLY'].includes(form.frequency)">
             <NSelect
@@ -56,6 +38,11 @@
                 :default-expand-all="true"
                 :options="frequencyUnit.options"
             />
+
+            <div class="flex mt-2 space-x-2">
+                <div v-for="instance in monthInstanceCount" class="w-full h-2 bg-primary-500" />
+            </div>
+
             <AtErrorBag v-if="errors" :errors="errors" :field="frequencyUnit.field" />
         </AtField>
 
@@ -70,13 +57,14 @@
 </template>
 
 <script setup>
-    import { AtButton, AtField, AtInput, AtErrorBag } from "atmosphere-ui";
-    import { useForm } from '@inertiajs/inertia-vue3';
+    import { inject, reactive, toRefs, watch, computed, onMounted} from 'vue';
+    import { AtButton, AtField, AtInput, AtErrorBag, AtButtonGroup } from "atmosphere-ui";
+    import { useDatePager } from "vueuse-temporals"
     import { NSelect } from "naive-ui"
-    import { inject, reactive, toRefs, watch } from 'vue';
-    import { monthDays, weekDays } from "@/utils"
+    import { useForm } from '@inertiajs/inertia-vue3';
+    import { monthDays, WEEK_DAYS, FREQUENCY_TYPE } from "@/utils"
     import { makeOptions } from "@/utils/naiveui";
-    import { computed } from "vue";
+    import { format } from 'date-fns';
 
     const props = defineProps({
         isAddingGroup: {
@@ -91,18 +79,20 @@
             type: Boolean,
             default: false
         },
+        category: {
+            type: Object,
+            required: true
+        },
         item: {
             type: Object,
             default: () => {}
         }
     });
 
-    const categoryOptions = inject('categoryOptions', []);
-
     const state = reactive({
         isAddingGroup: false,
         form: useForm({
-            account_id: null,
+            category_id: null,
             parent_id: null,
             name: '',
             amount: 0,
@@ -167,7 +157,7 @@
             },
             WEEKLY: {
                 field: 'frequency_week_day',
-                options: makeOptions(weekDays)
+                options: makeOptions(WEEK_DAYS)
             }
         }
         return {
@@ -178,23 +168,27 @@
     watch(() =>
         props.item,
         () => {
-        Object.keys(state.form.data()).forEach(key => {
-            state.form[key] = props.item[key]
-        })
+            if (props.item) {
+                Object.keys(state.form.data()).forEach(key => {
+                    state.form[key] = props.item[key] || state.form[key]
+                })
+            } else {
+                state.form.reset()
+            }
     }), { deep: true, immediate: true }
 
     const submit = () => {
         const methods = {
             update: {
                 method: 'put',
-                url: props.item.id && `/budgets/${props.item.id}`
+                url: props.item?.id && `/categories/${props.category.id}/budgets/${props.item.id}`
             },
             save: {
                 method: 'post',
-                url: '/budgets'
+                url: `/categories/${props.category.id}/budgets`
             }
         }
-        const endpoint = methods[props.item.id ? 'update' : 'save']
+        const endpoint = methods[props.item?.id ? 'update' : 'save']
         state.form.transform((data) => ({
             ...data,
             parent_id: data.parent_id || state.parentId,
@@ -204,6 +198,18 @@
             }
         })
     }
+
+    const { selectedSpan } =  useDatePager({
+        nextMode: 'month'
+    })
+
+    const monthInstanceCount = computed(() => {
+        return state.form.frequency == FREQUENCY_TYPE.WEEKLY &&
+        selectedSpan.value.filter(
+            day => {
+                return format(day, 'iiiiii').toLowerCase() == state.form?.frequency_week_day?.toLowerCase()
+            })
+    })
 
     const { form } = toRefs(state);
 </script>

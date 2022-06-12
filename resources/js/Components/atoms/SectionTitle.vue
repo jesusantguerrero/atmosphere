@@ -15,8 +15,8 @@ const props = defineProps({
 });
 const textColor = computed(() => {
     const types = {
-        default: "text-blue-700",
-        primary: "text-pink-700",
+        default: "text-blue-400",
+        primary: "text-pink-400",
         secondary: "text-gray-400",
     };
     return types[props.type] || types.default;

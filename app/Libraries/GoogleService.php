@@ -41,7 +41,7 @@ class GoogleService
     public static function getClient($integrationId) {
         $integration = Integration::find($integrationId);
         $client = new Google_Client();
-        $client->setAuthConfig(env("GOOGLE_CREDENTIALS_PATH"));
+        $client->setAuthConfig(base_path(env("GOOGLE_CREDENTIALS_PATH")));
         if (!$accessToken = session('g_token')) {
             $accessToken = $client->fetchAccessTokenWithRefreshToken(decrypt($integration->token));
         }
