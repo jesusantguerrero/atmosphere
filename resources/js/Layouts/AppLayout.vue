@@ -16,7 +16,7 @@
                                 <jet-dropdown align="right" width="60" v-if="$page.props.jetstream.hasTeamFeatures">
                                     <template #trigger>
                                         <span class="inline-flex rounded-md">
-                                            <button type="button" class="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition bg-slate-600 border border-transparent rounded-md hover:bg-gray-50 hover:text-gray-700 focus:outline-none focus:bg-gray-50 active:bg-gray-50">
+                                            <button type="button" class="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-200 transition border border-transparent rounded-md bg-slate-600 hover:bg-gray-50 hover:text-gray-700 focus:outline-none focus:bg-gray-50 active:bg-gray-50">
                                                 {{ $page.props.user.current_team.name }}
 
                                                 <svg class="ml-2 -mr-0.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -75,7 +75,7 @@
                                         </button>
 
                                         <span v-else class="inline-flex rounded-md">
-                                            <button type="button" class="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition bg-slate-600 border border-transparent rounded-md hover:text-gray-700 focus:outline-none">
+                                            <button type="button" class="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-200 transition border border-transparent rounded-md bg-slate-600 hover:text-gray-700 focus:outline-none">
                                                 {{ $page.props.user.name }}
 
                                                 <svg class="ml-2 -mr-0.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -114,7 +114,7 @@
 
                         <!-- Hamburger -->
                         <div class="flex items-center -mr-2 sm:hidden">
-                            <button @click="showingNavigationDropdown = ! showingNavigationDropdown" class="inline-flex items-center justify-center p-2 text-gray-400 transition rounded-md hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500">
+                            <button @click="showingNavigationDropdown = ! showingNavigationDropdown" class="inline-flex items-center justify-center p-2 text-gray-400 transition rounded-md hover:text-gray-200 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-200">
                                 <svg class="w-6 h-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                                     <path :class="{'hidden': showingNavigationDropdown, 'inline-flex': ! showingNavigationDropdown }" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                                     <path :class="{'hidden': ! showingNavigationDropdown, 'inline-flex': showingNavigationDropdown }" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -141,7 +141,7 @@
 
                             <div>
                                 <div class="text-base font-medium text-gray-800">{{ $page.props.user.name }}</div>
-                                <div class="text-sm font-medium text-gray-500">{{ $page.props.user.email }}</div>
+                                <div class="text-sm font-medium text-gray-200">{{ $page.props.user.email }}</div>
                             </div>
                         </div>
 
@@ -218,7 +218,7 @@
                 <div class="app-content__inner ic-scroller">
                     <!-- Page Heading -->
                     <header class="" v-if="$slots.header">
-                        <div class="px-4 py-6 mx-auto max-w-7xl sm:px-6 lg:px-8">
+                        <div class="px-4 py-6 mx-auto md:px-0 max-w-7xl">
                             <slot name="header"></slot>
                         </div>
                     </header>
@@ -295,7 +295,7 @@
 
 <style lang="scss">
 body, html {
-    background-color: #0F172A;
+    background-color: #1E293B;
 }
 .home-container {
   position: relative;
