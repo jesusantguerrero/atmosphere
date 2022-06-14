@@ -9,8 +9,9 @@
                     <strong>
                         {{ account.name }}
                     </strong>
-                    <p>
-                    {{ formatMoney(account.balance) }}
+                    <p class="relative">
+                        <NumberHider />
+                        {{ formatMoney(account.balance) }}
                     </p>
             </div>
         </div>
@@ -19,6 +20,7 @@
 
 <script setup>
 import formatMoney from '../../utils/formatMoney';
+import NumberHider from '../molecules/NumberHider';
 import { AtField } from "atmosphere-ui"
 import { Inertia } from '@inertiajs/inertia';
 
