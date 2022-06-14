@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Accounts;
 use App\Helpers\BudgetHelper;
 use App\Libraries\GoogleService;
 use App\Models\Budget;
@@ -15,6 +16,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Insane\Journal\Helpers\CategoryHelper;
+use Insane\Journal\Models\Core\Account;
 use Insane\Journal\Models\Core\Transaction as CoreTransaction;
 use Laravel\Jetstream\Jetstream;
 
@@ -105,7 +107,8 @@ class DashboardController {
                return Budget::dashboardParser($budget, $startDate, $endDate);
             }),
             "categories" => CategoryHelper::getSubcategories($teamId, ['expenses', 'incomes']),
-            "accounts" => CategoryHelper::getAccounts($teamId, ['cash_and_bank', 'credit_card']),
+            "accounts" => Account::where('team_id', $teamId)->byDetailTypes(
+                ['cash', 'bank', 'cash_on_hand', 'savings', 'credit_card'])->get(),
             "transactionTotal" => $transactions->sum('total'),
             "lastMonthExpenses" => $lastMonthExpenses,
             "income" => $incomes,

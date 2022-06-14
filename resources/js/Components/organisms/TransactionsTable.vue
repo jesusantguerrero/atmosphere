@@ -3,11 +3,11 @@
 <div :class="classes" class="overflow-hidden">
     <div class="flex justify-between">
         <SectionTitle type="secondary" class="w-full">{{ tableLabel }}</SectionTitle>
-        <div class="flex items-center justify-end w-">
+        <div class="flex items-center justify-end w-full">
             <slot name="action" />
         </div>
     </div>
-    <div :class="tableClass" class="overflow-hidden">
+    <div :class="tableClass" class="overflow-hidden border-slate-800">
         <template v-if="transactionsParsed.length">
             <TransactionCard
                 v-for="(transaction, index) in transactionsParsed"
@@ -61,7 +61,7 @@ const props = defineProps({
     },
     tableClass: {
         type: String,
-        default: 'mt-2 bg-slate-600 border rounded-lg shadow-md'
+        default: 'mt-2 bg-slate-600 border border-slate-800 rounded-lg shadow-md'
     },
     tableLabel: {
         type: String,

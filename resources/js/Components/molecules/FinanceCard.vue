@@ -1,7 +1,7 @@
 <template>
     <div :class="classes">
-        <div class="relative text-xl font-bold text-blue-400">
-            <div class="absolute w-full h-full text-xl rounded-sm bg-slate-400" v-if="hidden" />
+        <div class="relative text-lg font-bold text-blue-400">
+            <div class="absolute w-full h-full rounded-sm bg-slate-400" v-if="hidden" />
             {{ value }}
         </div>
         <div class="ml-5 text-gray-100">

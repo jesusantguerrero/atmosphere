@@ -35,7 +35,7 @@
     import { AtButton } from "atmosphere-ui";
     import { ref } from 'vue';
     import { useSelect } from '../../../utils/useSelects';
-import { Inertia } from '@inertiajs/inertia';
+    import { Inertia } from '@inertiajs/inertia';
 
     const props = defineProps({
         categories: {
