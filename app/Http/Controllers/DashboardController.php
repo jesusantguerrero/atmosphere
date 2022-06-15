@@ -108,7 +108,8 @@ class DashboardController {
             }),
             "categories" => CategoryHelper::getSubcategories($teamId, ['expenses', 'incomes']),
             "accounts" => Account::where('team_id', $teamId)->byDetailTypes(
-                ['cash', 'bank', 'cash_on_hand', 'savings', 'credit_card'])->get(),
+                ['cash', 'bank', 'cash_on_hand', 'savings', 'credit_card'])
+                ->orderBy('index', )->get(),
             "transactionTotal" => $transactions->sum('total'),
             "lastMonthExpenses" => $lastMonthExpenses,
             "income" => $incomes,

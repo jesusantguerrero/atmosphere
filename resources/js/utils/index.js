@@ -120,7 +120,7 @@ export const updateSearch = (searchOptions, dateSpan) => {
           groupParams(searchOptions.group)
     ]
     params = params.filter(value => value).join("&");
-    Inertia.visit(`/financial?${params}`, {
+    Inertia.visit(`${window.location.pathname}?${params}`, {
         preserveState: true,
     })
 }
