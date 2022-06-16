@@ -1,3 +1,4 @@
+import { Inertia } from '@inertiajs/inertia';
 import { v4 } from 'uuid';
 export const transactionDBToTransaction = (transactions) => {
     return transactions.map(transaction => ({

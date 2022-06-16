@@ -15,11 +15,12 @@
             <template #action>
                 <div class="flex items-center w-full space-x-2">
                     <AtDatePager
-                        class="h-12 w-full"
+                        class="h-12 w-full bg-slate-600 text-gray-200 border-none"
                         v-model="state.date"
                         v-model:dateSpan="state.dateSpan"
                         v-model:startDate="state.searchOptions.date.startDate"
                         v-model:endDate="state.searchOptions.date.endDate"
+                        controlsClass="bg-transparent text-gray-200 hover:bg-slate-600"
                         next-mode="month"
                     />
                     <n-select
@@ -30,10 +31,6 @@
                         :options="state.filterOptions"
                         v-model:value="state.searchOptions.group"
                     />
-                    <AtField label="Import Transactions">
-                        <input type="file" />
-                        <button @click="importTransaction">Submit</button>
-                    </AtField>
                     <div class="flex text-white rounded-md bg-pink-400 h-10 min-w-max divide-x-2 divide-white overflow-hidden">
                         <button class="px-5" :class="{'bg-pink-700': isSelectedList('table')}" @click="state.listType = 'table'">
                             <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--ic" width="32" height="32" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path fill="currentColor" d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"></path></svg></button>
@@ -60,7 +57,7 @@
     import { NSelect } from 'naive-ui'
     import { reactive, ref, watch } from "vue";
     import { AtDatePager } from "atmosphere-ui"
-    import { startOfDay } from 'date-fns';
+    import { isSameMonth, startOfDay } from 'date-fns';
     import TransactionModal from "../TransactionModal.vue";
     import { Inertia } from "@inertiajs/inertia";
 
@@ -97,21 +94,20 @@
                 endDate: null,
             }
         },
-        date: startOfDay(new Date()),
+        date: startOfDay(props.serverSearchOptions?.date?.startDate || new Date()),
         dateSpan: null,
         listType: 'table'
     })
 
-    watch(() => state.searchOptions, (group, oldGroup) => {
-        const options = props.serverSearchOptions
+    watch(() => state.searchOptions, () => {
         updateSearch(state.searchOptions, state.dateSpan);
-    })
+    }, { deep: true })
 
     Object.entries(props.serverSearchOptions).forEach(([key, value]) => {
         if (key === 'date') {
-            state.searchOptions.date.startDate = getDateFromIso(value.startDate)
-            state.searchOptions.date.endDate = getDateFromIso(value.endDate)
-            state.date = getDateFromIso(value.startDate)
+            state.searchOptions.date.startDate = startOfDay(getDateFromIso(value.startDate))
+            state.searchOptions.date.endDate = startOfDay(getDateFromIso(value.endDate))
+            state.date = startOfDay(getDateFromIso(value.startDate))
         } else {
             state.searchOptions[key] = Object.values(state.filterOptions).map(filter => filter.value).includes(value) ? value : ""
         }

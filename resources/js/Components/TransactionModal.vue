@@ -1,6 +1,6 @@
 <template>
     <modal :show="show" :max-width="maxWidth" :closeable="closeable" @close="close">
-        <div class="pb-4 bg-slate-600 sm:p-6 sm:pb-4">
+        <div class="pb-4 bg-slate-600 sm:p-6 sm:pb-4 text-gray-200">
             <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                 <div class="grid grid-cols-3 overflow-hidden text-lg rounded-lg">
                     <div
@@ -8,8 +8,8 @@
                         :key="type.value"
                         :options="transactionTypes"
                         @click="form.direction = type.value"
-                        class="py-1 font-bold text-center cursor-pointer hover:bg-gray-200"
-                        :class="[form.direction == type.value ? 'bg-pink-500 hover:bg-pink-500 text-white' : 'text-gray-500 bg-gray-100']"
+                        class="py-1 font-bold text-center cursor-pointer hover:bg-slate-400"
+                        :class="[form.direction == type.value ? 'bg-pink-500 hover:bg-pink-500 text-white' : 'text-gray-200 bg-slate-500']"
                     >
                         {{ type.label }}
                     </div>
@@ -19,22 +19,22 @@
                     <slot name="content">
                         <div>
                             <div class="flex space-x-2">
-                                <at-field label="Date" class="w-3/12">
+                                <AtField label="Date" class="w-3/12">
                                     <n-date-picker
                                         v-model:value="form.date"
                                         type="date"
                                         size="large"
                                     />
-                                </at-field>
+                                </AtField>
 
-                                <at-field
+                                <AtField
                                     label="Description"
                                     class="w-5/12"
                                 >
-                                    <at-input type="text" required v-model="form.description" />
-                                </at-field>
+                                    <LogerInput v-model="form.description" />
+                                </AtField>
 
-                                 <at-field label="Account" class="w-4/12">
+                                 <AtField label="Account" class="w-4/12">
                                     <n-select
                                         filterable
                                         clearable
@@ -45,10 +45,10 @@
                                         :default-expand-all="true"
                                         :options="accountsOptions"
                                     />
-                                </at-field>
+                                </AtField>
                             </div>
                             <div class="flex space-x-3">
-                              <at-field
+                              <AtField
                                     label="Payee"
                                     class="w-5/12"
                                 >
@@ -60,8 +60,8 @@
                                         :options="options"
                                         placeholder="Payee"
                                     />
-                                </at-field>
-                                <at-field label="Category" class="w-full">
+                                </AtField>
+                                <AtField label="Category" class="w-full">
                                     <n-select
                                         filterable
                                         clearable
@@ -72,19 +72,19 @@
                                         :default-expand-all="true"
                                         :options="categoryAccounts"
                                     />
-                                </at-field>
-                                <at-field
+                                </AtField>
+                                <AtField
                                     label="Amount"
                                     class="w-4/12"
                                 >
-                                    <at-input type="number" v-model="form.total" />
-                                </at-field>
+                                    <LogerInput type="number" v-model="form.total" />
+                                </AtField>
                             </div>
                         </div>
 
                         <div v-if="recurrence">
                             <div class="flex">
-                                <at-field label="Repeat this transaction" class="w-full">
+                                <AtField label="Repeat this transaction" class="w-full">
                                 <n-select
                                     v-model:value="schedule_settings.frequency"
                                     :options="[
@@ -98,16 +98,16 @@
                                         }
                                     ]"
                                 />
-                                </at-field>
-                                <at-field label="frequencyLabel">
-                                    <at-input
+                                </AtField>
+                                <AtField label="frequencyLabel">
+                                    <AtInput
                                         type="number"
                                         v-model="schedule_settings.repeat_on_day_of_month"
                                     />
-                                </at-field>
+                                </AtField>
                             </div>
                             <div class="flex">
-                                <at-field label="Ends" class="w-full">
+                                <AtField label="Ends" class="w-full">
                                 <n-select
                                     v-model:value="schedule_settings.end_type"
                                     :options="[
@@ -125,19 +125,19 @@
                                         }
                                     ]"
                                 />
-                                </at-field>
-                                <at-field label="Date" v-if="schedule_settings.end_type == 'DATE'">
+                                </AtField>
+                                <AtField label="Date" v-if="schedule_settings.end_type == 'DATE'">
                                     <n-date-picker
                                         v-model:value="schedule_settings.end_date"
                                         size="lg"
                                     />
-                                </at-field>
-                                <at-field label="Instances" v-if="schedule_settings.end_type == 'COUNT'">
-                                    <at-input
+                                </AtField>
+                                <AtField label="Instances" v-if="schedule_settings.end_type == 'COUNT'">
+                                    <AtInput
                                         type="number"
                                         v-model="schedule_settings.count"
                                     />
-                                </at-field>
+                                </AtField>
                             </div>
                         </div>
                     </slot>
@@ -145,9 +145,9 @@
             </div>
         </div>
 
-        <div class="px-6 py-4 space-x-3 text-right bg-gray-100">
-            <at-button type="secondary" @click="close"> Cancel </at-button>
-            <at-button class="text-white bg-pink-400" @click="submit"> Save </at-button>
+        <div class="px-6 py-4 space-x-3 text-right bg-slate-700">
+            <AtButton type="secondary" @click="close" rounded class="h-10"> Cancel </AtButton>
+            <AtButton class="text-white bg-pink-400 h-10" @click="submit" rounded> Save </AtButton>
         </div>
     </modal>
 </template>
@@ -155,7 +155,8 @@
 <script setup>
     import Modal from '@/Jetstream/Modal'
     import { useForm } from "@inertiajs/inertia-vue3"
-    import { AtField, AtInput, AtButton } from "atmosphere-ui"
+    import { AtField, AtButton } from "atmosphere-ui"
+    import LogerInput from "@/Components/atoms/LogerInput"
     import { reactive, toRefs, watch, computed } from 'vue'
     import { inject } from '@vue/runtime-core'
     import { NSelect, NDatePicker } from "naive-ui";

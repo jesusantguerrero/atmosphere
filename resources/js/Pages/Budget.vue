@@ -10,15 +10,15 @@
                 </div>
 
                 <div>
-                    <at-button class="text-white bg-pink-400" @click="isAddingGroup=true">
+                    <AtButton class="h-10 text-white bg-pink-400" @click="isAddingGroup=true" rounded>
                         Add Budget Group
-                    </at-button>
+                    </AtButton>
                 </div>
             </div>
         </template>
 
         <div class="py-12">
-            <div class="mx-auto bg-slate-600 rounded-md shadow-lg max-w-7xl">
+            <div class="mx-auto text-gray-200 rounded-md shadow-lg bg-slate-600 max-w-7xl">
                 <div class="flex px-5 space-x-2 border-b">
                     <AtField label="Parent Category" v-if="state.expandedCategory">
                         <div class="py-3 font-bold">
@@ -52,7 +52,9 @@
 
                     <div>
                         <AtField label="Action">
-                            <at-button class="block h-full text-white bg-pink-500" @click="submit()"> Save </at-button>
+                            <AtButton class="block h-10 text-white bg-pink-400" @click="submit()" rounded>
+                                Save
+                            </AtButton>
                         </AtField>
                     </div>
                 </div>

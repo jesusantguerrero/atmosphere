@@ -20,7 +20,7 @@
     <div class="flex space-x-5">
         <div class="text-right">
             <h4 class="relative font-bold">
-                <div class="absolute w-full h-full text-xl rounded-sm bg-slate-400" v-if="hasHiddenValues" />
+                <NumberHider />
                 {{ formatMoney(value, currencyCode)}} <span v-if="expenses" class="text-red-500">({{ formatMoney(expenses, currencyCode) }})</span>
             </h4>
             <small class="text-sm"> {{ status }}</small>
@@ -46,6 +46,7 @@
 import { computed, inject } from "vue";
 import { NProgress } from "naive-ui";
 import formatMoney from "../../utils/formatMoney";
+import NumberHider from "./NumberHider.vue";
 
 const props = defineProps({
     title: String,
@@ -63,7 +64,6 @@ const props = defineProps({
     isSelected: Boolean,
 })
 
-const hasHiddenValues = inject('hasHiddenValues')
 const emit = defineEmits(['selected'])
 const percentage = computed(() => {
     const percentage = Number(props.expenses||0) / Number(props.value||0) * 100
