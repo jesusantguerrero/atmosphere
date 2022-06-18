@@ -65,7 +65,7 @@
                                 :columns="state.cols"
                                 :data="budgets.data"
                                 :row-key="({ id }) => id"
-                                children-key="sub_categories"
+                                children-key="subCategories"
                                 flex-height
                         />
                         <BudgetItem
@@ -106,10 +106,12 @@
     import { NSelect, NDataTable } from "naive-ui"
     import { computed, h, reactive, toRefs } from 'vue';
     import BudgetItem from '../Components/molecules/BudgetItem.vue';
+    import LogerInput from '../Components/atoms/LogerInput.vue';
     import { useMoney } from "@/utils/useMoney";
     import { useSelect } from "@/utils/useSelects";
     import { Inertia } from '@inertiajs/inertia';
     import BudgetItemForm from '../Components/molecules/BudgetItemForm.vue';
+    import { format, startOfMonth } from 'date-fns';
 
     const props = defineProps({
             budgets: {
@@ -158,6 +160,23 @@
         {
             title: 'Assigned',
             key: 'amount',
+            render(row) {
+                return row.parent_id && h(LogerInput, {
+                    modelValue: row.budgeted || 0,
+                    onInput: (e) => {
+                        console.log(e)
+                        row.budgeted = e.target.value;
+                    },
+                    onBlur: (e) => {
+                        const month = format(startOfMonth(new Date()), 'yyyy-MM-dd');
+                        Inertia.post(`/budgets/${row.id}/months/${month}`, {
+                            id: row.id,
+                            budgeted: row.budgeted
+                        });
+                       console.log("we are here")
+                    }
+                })
+            }
         },
         {
             title: 'Activity',

@@ -54,14 +54,17 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         Route::resource('/goals', GoalController::class);
     });
 
-    Route::resource('/budgets', BudgetController::class);
     Route::controller(BudgetController::class)->group(function () {
+        Route::resource('/budgets', BudgetController::class);
         Route::post('/budgets/planed-budged', 'addPlannedTransaction')->name("budget.planned-transaction");
         Route::put('/transactions/{id}/mark-as-paid', 'markAsPaid')->name("transactions.mark-as-paid");
 
         // Category budgets
         Route::post('/categories/{categoryId}/budgets', 'addCategoryBudget')->name("category.budget.add");
         Route::put('/categories/{categoryId}/budgets/{id}', 'updateCategoryBudget')->name("category.budget.update");
+
+        // Budget assignments
+        Route::post('/budgets/{categoryId}/months/{month}', 'assignMonthBudget')->name("budget.assignment");
     });
     Route::resource('/meal-planner', PlannerController::class);
 
