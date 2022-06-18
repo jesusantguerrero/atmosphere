@@ -1,4 +1,5 @@
 <template>
+<n-config-provider :theme="darkTheme" :theme-overrides="darkThemeOverrides">
     <div>
         <jet-banner />
         <div class="min-h-screen bg-slate-800 home-container">
@@ -231,6 +232,7 @@
             </div>
         </div>
     </div>
+</n-config-provider>
 </template>
 
 <script setup>
@@ -239,9 +241,24 @@
     import JetDropdownLink from '@/Jetstream/DropdownLink'
     import JetResponsiveNavLink from '@/Jetstream/ResponsiveNavLink'
     import { AtSide } from "atmosphere-ui"
-    import NavigationBottom from '@/Components/organisms/NavigationBottom.vue'
     import { reactive, ref } from 'vue'
     import { Inertia } from '@inertiajs/inertia'
+    import { darkTheme, NConfigProvider, createTheme } from 'naive-ui'
+    import colors from 'tailwindcss/colors'
+
+    /**
+   * @type import('naive-ui').GlobalThemeOverrides
+   */
+
+    const darkThemeOverrides = {
+        DataTable: {
+            borderRadius: '8px',
+            common: {
+                baseColor: colors.slate[600],
+                bodyColor: colors.slate[600],
+            }
+        }
+    }
 
     const showingNavigationDropdown = ref(false)
     const menu =  reactive([

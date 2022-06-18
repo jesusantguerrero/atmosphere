@@ -25,11 +25,11 @@
                             {{ state.expandedCategory.name}}
                         </div>
                     </AtField>
-                    <AtField label="Category" class="w-3/12" v-if="state.expandedCategory">
+                    <AtField label="Category" class="w-full" v-if="state.expandedCategory">
                         <AtInput v-model="form.name"/>
                         <AtErrorBag v-if="errors" :errors="errors" field="account_id" />
                     </AtField>
-                    <AtField label="Account" class="w-3/12" v-if="categories.length">
+                    <AtField label="Account" class="w-full" v-if="categories.length">
                         <NSelect
                             filterable
                             clearable
@@ -45,8 +45,8 @@
                         <AtErrorBag v-if="errors" :errors="errors" field="account_id" />
                     </AtField>
 
-                    <AtField label="Amount" class="w-4/12">
-                        <AtInput type="number" v-model="form.amount" />
+                    <AtField label="Amount" class="w-full">
+                        <LogerInput type="number" v-model="form.amount" />
                         <AtErrorBag v-if="errors" errors="errors" field="amount" />
                     </AtField>
 
@@ -63,7 +63,7 @@
                     <div class="px-5 pt-2 pb-10 space-y-3" :class="[!selectedBudget ? 'w-full': 'w-7/12']" >
                             <NDataTable
                                 :columns="state.cols"
-                                :data="budgets.data"
+                                :data="state.budget"
                                 :row-key="({ id }) => id"
                                 children-key="subCategories"
                                 flex-height
@@ -112,6 +112,8 @@
     import { Inertia } from '@inertiajs/inertia';
     import BudgetItemForm from '../Components/molecules/BudgetItemForm.vue';
     import { format, startOfMonth } from 'date-fns';
+    import ExactMath from "exact-math";
+    import formatMoney from '../utils/formatMoney';
 
     const props = defineProps({
             budgets: {
@@ -161,7 +163,7 @@
             title: 'Assigned',
             key: 'amount',
             render(row) {
-                return row.parent_id && h(LogerInput, {
+                return !row.parent_id ? formatMoney(row.budgeted) : h(LogerInput, {
                     modelValue: row.budgeted || 0,
                     onInput: (e) => {
                         console.log(e)
@@ -182,14 +184,14 @@
             title: 'Activity',
             key: 'activity',
             render (row, index) {
-                return h('span', ['row ', index])
+                return h('span', formatMoney(row.spent))
             }
         },
         {
             title: 'Available',
             key: 'available',
             render (row, index) {
-                return h('span', ['row ', index])
+                return h('span', formatMoney(row.available))
             }
         }],
         form: useForm({
@@ -203,6 +205,14 @@
         }),
         categoryOptions: computed(() => {
             return makeCategoryOptions(props.categories, 'accounts', 'categoryOptions');
+        }),
+        budget: computed(() => {
+            return props.budgets.data.map(item => {
+                item.budgeted = Object.values(item.subCategories).reduce((acc, cur) => ExactMath.add(acc, cur.budgeted || 0), 0);
+                item.spent = Object.values(item.subCategories).reduce((acc, cur) => ExactMath.add(acc, cur.spent || 0), 0);
+                item.available = Object.values(item.subCategories).reduce((acc, cur) => ExactMath.add(acc, cur.available || 0), 0);
+                return item
+            });
         })
     })
 
