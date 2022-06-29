@@ -19,10 +19,10 @@
 </template>
 
 <script setup>
-import formatMoney from '../../utils/formatMoney';
-import NumberHider from '../molecules/NumberHider';
 import { AtField } from "atmosphere-ui"
 import { Inertia } from '@inertiajs/inertia';
+import NumberHider from '@/Components/molecules/NumberHider.vue';
+import formatMoney from '@/utils/formatMoney';
 
 
 const handleImport = async () => {

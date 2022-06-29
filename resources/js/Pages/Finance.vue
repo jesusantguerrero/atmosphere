@@ -106,19 +106,19 @@
 </template>
 
 <script setup>
-    import { AtButton } from "atmosphere-ui";
-    import AppLayout from '@/Layouts/AppLayout'
-    import FinanceCard from "@/Components/molecules/FinanceCard";
-    import FinanceVarianceCard from "@/Components/molecules/FinanceVarianceCard";
-    import TransactionsTable from "@/Components/organisms/TransactionsTable";
-    import AccountsLedger from "@/Components/templates/AccountsLedger.vue";
-    import SectionTitle from "@/Components/atoms/SectionTitle";
     import { reactive, ref, provide, computed } from 'vue';
+    import { Inertia } from '@inertiajs/inertia';
+    import { AtButton } from "atmosphere-ui";
+    import AppLayout from '@/Layouts/AppLayout.vue'
+    import FinanceCard from "@/Components/molecules/FinanceCard.vue";
+    import FinanceVarianceCard from "@/Components/molecules/FinanceVarianceCard.vue";
+    import TransactionsTable from "@/Components/organisms/TransactionsTable.vue";
+    import AccountsLedger from "@/Components/templates/AccountsLedger.vue";
+    import SectionTitle from "@/Components/atoms/SectionTitle.vue";
+    import TransactionModal from "@/Components/TransactionModal.vue"
+    import { transactionDBToTransaction } from '@/utils/transactions';
     import { useSelect } from '@/utils/useSelects';
     import formatMoney from '@/utils/formatMoney';
-    import { transactionDBToTransaction } from '@/utils/transactions';
-    import { Inertia } from '@inertiajs/inertia';
-    import TransactionModal from "@/Components/TransactionModal.vue"
 
     const props = defineProps({
             user: {
