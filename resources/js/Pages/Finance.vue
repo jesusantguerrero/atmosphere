@@ -1,6 +1,6 @@
 <template>
     <app-layout>
-        <div class="pl-6 pb-20 mx-auto mt-5 max-w-screen-2xl space-x-2 flex lg:pl-8">
+        <div class="pl-6 pb-20 mt-5 max-w-screen-2xl space-x-2 flex lg:pl-8">
             <div class="w-10/12 pr-5">
                 <section-title type="secondary">
                     Finance

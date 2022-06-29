@@ -5,11 +5,11 @@
             <button class="text-slate-200" @click="handleImport">Import</button>
         </AtField>
         <div class="space-y-2">
-            <div v-for="account in accounts" :key="account.id" class="hover:bg-slate-600 cursor-pointer py-3 px-2 rounded-md">
+            <div v-for="account in accounts" :key="account.id" class="hover:bg-slate-600 cursor-pointer py-2 px-2 rounded-md">
                     <strong>
                         {{ account.name }}
                     </strong>
-                    <p class="relative">
+                    <p class="relative text-sm">
                         <NumberHider />
                         {{ formatMoney(account.balance) }}
                     </p>
