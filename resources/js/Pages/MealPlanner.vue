@@ -33,10 +33,10 @@
 </template>
 
 <script>
-    import AppLayout from '@/Layouts/AppLayout';
     import { reactive, toRefs } from 'vue';
     import { AtButton } from "atmosphere-ui";
-    import MealSection from '@/Components/Meal';
+    import AppLayout from '@/Layouts/AppLayout.vue';
+    import MealSection from '@/Components/Meal.vue';
     import MealModal from '../Components/MealModal.vue';
 
     export default {

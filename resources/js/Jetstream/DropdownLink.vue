@@ -8,14 +8,15 @@
             <slot></slot>
         </a>
 
-        <inertia-link :href="href" class="block px-4 py-2 text-sm leading-5 text-gray-200 transition hover:bg-slate-500 focus:outline-none focus:bg-gray-100" v-else>
+        <Link :href="href" class="block px-4 py-2 text-sm leading-5 text-gray-200 transition hover:bg-slate-500 focus:outline-none focus:bg-gray-100" v-else>
             <slot></slot>
-        </inertia-link>
+        </Link>
     </div>
 </template>
 
-<script>
-    export default {
+<script setup>
+import { Link } from "@inertiajs/inertia-vue3"
+defineProps({
         props: ['href', 'as']
-    }
+})
 </script>

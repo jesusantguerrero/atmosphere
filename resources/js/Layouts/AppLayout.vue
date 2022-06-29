@@ -1,7 +1,7 @@
 <template>
-    <n-config-provider :theme="darkTheme" :theme-overrides="darkThemeOverrides">
+    <NConfigProvider :theme="darkTheme" :theme-overrides="darkThemeOverrides">
         <div>
-            <jet-banner />
+            <JetBanner />
             <div class="min-h-screen bg-slate-800 home-container">
                 <nav class="border-b shadow-md border-slate-900 app-header bg-slate-800">
                     <!-- Primary Navigation Menu -->
@@ -233,7 +233,7 @@
                 </div>
             </div>
         </div>
-    </n-config-provider>
+    </NConfigProvider>
 </template>
 
 <script setup>

@@ -72,11 +72,11 @@
 </template>
 
 <script setup>
-import AppLayout from "@/Layouts/AppLayout";
 import { nextTick, reactive } from "vue";
 import { Inertia } from '@inertiajs/inertia';
-import AutomationModal from '@/Components/AutomationModal.vue';
 import { AtButton } from "atmosphere-ui";
+import AppLayout from "@/Layouts/AppLayout.vue";
+import AutomationModal from '@/Components/AutomationModal.vue';
 
 const props = defineProps({
     services: {

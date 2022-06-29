@@ -51,15 +51,15 @@
 </template>
 
 <script setup>
-    import TransactionsTable from "@/Components/organisms/TransactionsTable";
-    import { transactionDBToTransaction } from '@/utils/transactions';
-    import { updateSearch, getDateFromIso } from '@/utils';
     import { NSelect } from 'naive-ui'
     import { reactive, ref, watch } from "vue";
     import { AtDatePager } from "atmosphere-ui"
-    import { isSameMonth, startOfDay } from 'date-fns';
-    import TransactionModal from "../TransactionModal.vue";
+    import { startOfDay } from 'date-fns';
     import { Inertia } from "@inertiajs/inertia";
+    import TransactionsTable from "@/Components/organisms/TransactionsTable.vue";
+    import { updateSearch, getDateFromIso } from '@/utils';
+    import TransactionModal from "../TransactionModal.vue";
+    import { transactionDBToTransaction } from '@/utils/transactions';
 
     const props = defineProps({
         transactions: {

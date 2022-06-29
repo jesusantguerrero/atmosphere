@@ -3,9 +3,9 @@
         <template #header>
             <div class="flex justify-between">
                 <div>
-                <inertia-link href="/meals" class="block text-xl font-semibold leading-tight text-pink-500">
+                <Link href="/meals" class="block text-xl font-semibold leading-tight text-pink-500">
                     Goals
-                </inertia-link>
+                </Link>
                 <p v-if="meals">Editing <span class="font-bold">{{ meals.name }}</span></p>
 
                 </div>
@@ -27,7 +27,8 @@
 <script setup>
     import AppLayout from '@/Layouts/AppLayout';
     import { AtButton } from "atmosphere-ui";
-    import { ref } from '@vue/reactivity';
+    import { ref } from 'vue';
+    import { Link } from "@inertiajs/inertia-vue3"
     import GoalForm from '../Components/GoalForm.vue';
 
     defineProps({
