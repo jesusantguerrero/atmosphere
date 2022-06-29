@@ -48,11 +48,11 @@
 </template>
 
 <script setup>
-import TransactionCard from "../molecules/TransactionCard";
-import SectionTitle from "../atoms/SectionTitle";
 import { computed, reactive } from 'vue';
 import ExactMath from "exact-math";
 import formatMoney from "@/utils/formatMoney";
+import TransactionCard from "../molecules/TransactionCard.vue";
+import SectionTitle from "../atoms/SectionTitle.vue";
 
 const props = defineProps({
     classes: {

@@ -237,10 +237,10 @@
 </template>
 
 <script setup>
-    import JetBanner from '@/Jetstream/Banner'
-    import JetDropdown from '@/Jetstream/Dropdown'
-    import JetDropdownLink from '@/Jetstream/DropdownLink'
-    import JetResponsiveNavLink from '@/Jetstream/ResponsiveNavLink'
+    import JetBanner from '@/Jetstream/Banner.vue'
+    import JetDropdown from '@/Jetstream/Dropdown.vue'
+    import JetDropdownLink from '@/Jetstream/DropdownLink.vue'
+    import JetResponsiveNavLink from '@/Jetstream/ResponsiveNavLink.vue'
     import { AtSide } from "atmosphere-ui"
     import { reactive, ref } from 'vue'
     import { Inertia } from '@inertiajs/inertia'

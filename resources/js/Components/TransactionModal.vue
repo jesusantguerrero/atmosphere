@@ -153,14 +153,13 @@
 </template>
 
 <script setup>
-    import Modal from '@/Jetstream/Modal'
+    import { format } from 'date-fns'
+    import { reactive, toRefs, watch, computed, inject } from 'vue'
+    import Modal from '@/Jetstream/Modal.vue'
     import { useForm } from "@inertiajs/inertia-vue3"
     import { AtField, AtButton } from "atmosphere-ui"
-    import LogerInput from "@/Components/atoms/LogerInput"
-    import { reactive, toRefs, watch, computed } from 'vue'
-    import { inject } from '@vue/runtime-core'
     import { NSelect, NDatePicker } from "naive-ui";
-    import { format } from 'date-fns'
+    import LogerInput from "@/Components/atoms/LogerInput.vue"
 
     const emit = defineEmits(['close'])
     const props = defineProps({
