@@ -1,13 +1,9 @@
 <template>
-    <jet-form-section @submitted="updateProfileInformation">
-        <template #title>
-            Profile Information
-        </template>
-
-        <template #description>
-            Update your account's profile information and email address.
-        </template>
-
+    <JetFormSection
+        title="Profile Information"
+        description="Update your account's profile information and email address."
+        @submitted="updateProfileInformation"
+    >
         <template #form>
             <!-- Profile Photo -->
             <div class="col-span-6 sm:col-span-4" v-if="$page.props.jetstream.managesProfilePhotos">
@@ -42,40 +38,47 @@
             </div>
 
             <!-- Name -->
-            <div class="col-span-6 sm:col-span-4">
-                <jet-label for="name" value="Name" />
-                <jet-input id="name" type="text" class="mt-1 block w-full" v-model="form.name" autocomplete="name" />
-                <jet-input-error :message="form.errors.name" class="mt-2" />
-            </div>
+            <AtField class="col-span-6 sm:col-span-4"
+                label="Name"
+                field="name"
+                :errors="form.errors"
+            >
+                <LogerInput id="name" type="text"  v-model="form.name" autocomplete="name" />
+            </AtField>
 
             <!-- Email -->
-            <div class="col-span-6 sm:col-span-4">
-                <jet-label for="email" value="Email" />
-                <jet-input id="email" type="email" class="mt-1 block w-full" v-model="form.email" />
-                <jet-input-error :message="form.errors.email" class="mt-2" />
-            </div>
+            <AtField
+                class="col-span-6 sm:col-span-4"
+                label="Email"
+                field="email"
+                :errors="form.errors"
+            >
+                <LogerInput id="email" type="email" v-model="form.email" />
+            </AtField>
         </template>
 
         <template #actions>
-            <jet-action-message :on="form.recentlySuccessful" class="mr-3">
+            <JetActionMessage :on="form.recentlySuccessful" class="mr-3">
                 Saved.
-            </jet-action-message>
+            </JetActionMessage>
 
-            <jet-button :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+            <JetButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
                 Save
-            </jet-button>
+            </JetButton>
         </template>
-    </jet-form-section>
+    </JetFormSection>
 </template>
 
 <script>
-    import JetButton from '@/Jetstream/Button'
-    import JetFormSection from '@/Jetstream/FormSection'
-    import JetInput from '@/Jetstream/Input'
-    import JetInputError from '@/Jetstream/InputError'
-    import JetLabel from '@/Jetstream/Label'
-    import JetActionMessage from '@/Jetstream/ActionMessage'
-    import JetSecondaryButton from '@/Jetstream/SecondaryButton'
+    import JetButton from '@/Jetstream/Button.vue'
+    import JetFormSection from '@/Jetstream/FormSection.vue'
+    import JetInput from '@/Jetstream/Input.vue'
+    import JetInputError from '@/Jetstream/InputError.vue'
+    import JetLabel from '@/Jetstream/Label.vue'
+    import JetActionMessage from '@/Jetstream/ActionMessage.vue'
+    import JetSecondaryButton from '@/Jetstream/SecondaryButton.vue'
+    import { AtField } from "atmosphere-ui"
+    import LogerInput from '@/Components/atoms/LogerInput.vue'
 
     export default {
         components: {
@@ -86,6 +89,8 @@
             JetInputError,
             JetLabel,
             JetSecondaryButton,
+            AtField,
+            LogerInput
         },
 
         props: ['user'],

@@ -17,6 +17,11 @@
 <script setup>
 import { Link } from "@inertiajs/inertia-vue3"
 defineProps({
-        props: ['href', 'as']
+    href: {
+        type: String
+    },
+    as: {
+        type: String
+    }
 })
 </script>

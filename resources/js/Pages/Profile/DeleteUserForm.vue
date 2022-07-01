@@ -1,15 +1,8 @@
 <template>
-    <jet-action-section>
-        <template #title>
-            Delete Account
-        </template>
-
-        <template #description>
-            Permanently delete your account.
-        </template>
+    <jet-action-section title="Delete Account" description="Permanently delete your account.">
 
         <template #content>
-            <div class="max-w-xl text-sm text-gray-600">
+            <div class="max-w-xl text-sm">
                 Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.
             </div>
 
@@ -53,12 +46,12 @@
 </template>
 
 <script>
-    import JetActionSection from '@/Jetstream/ActionSection'
-    import JetDialogModal from '@/Jetstream/DialogModal'
-    import JetDangerButton from '@/Jetstream/DangerButton'
-    import JetInput from '@/Jetstream/Input'
-    import JetInputError from '@/Jetstream/InputError'
-    import JetSecondaryButton from '@/Jetstream/SecondaryButton'
+    import JetActionSection from '@/Jetstream/ActionSection.vue'
+    import JetDialogModal from '@/Jetstream/DialogModal.vue'
+    import JetDangerButton from '@/Jetstream/DangerButton.vue'
+    import JetInput from '@/Jetstream/Input.vue'
+    import JetInputError from '@/Jetstream/InputError.vue'
+    import JetSecondaryButton from '@/Jetstream/SecondaryButton.vue'
 
     export default {
         components: {
