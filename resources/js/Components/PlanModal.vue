@@ -45,7 +45,7 @@
 </template>
 
 <script setup>
-    import Modal from '@/Jetstream/Modal'
+    import Modal from '@/Jetstream/Modal.vue'
     import { useForm } from "@inertiajs/inertia-vue3"
     import { AtInput, AtButton } from "atmosphere-ui"
     import { startOfDay } from 'date-fns'

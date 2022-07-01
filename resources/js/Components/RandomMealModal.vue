@@ -34,7 +34,7 @@
 </template>
 
 <script>
-    import Modal from '@/Jetstream/Modal'
+    import Modal from '@/Jetstream/Modal.vue'
     import { AtField, AtInput, AtButton } from "atmosphere-ui"
     import { reactive, toRefs } from '@vue/reactivity'
     import Meal from './Meal.vue'

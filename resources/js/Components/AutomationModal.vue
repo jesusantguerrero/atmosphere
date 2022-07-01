@@ -87,12 +87,12 @@
    </modal>
 </template>
 <script setup>
-import Modal from '@/Jetstream/Modal'
 import { useForm } from '@inertiajs/inertia-vue3';
 import { AtField, AtButton, AtInput } from 'atmosphere-ui';
 import { NSelect } from "naive-ui";
 import { computed, nextTick, ref } from 'vue';
 import { AtButton as Button } from 'atmosphere-ui';
+import Modal from '@/Jetstream/Modal.vue'
 
 
 const props = defineProps({

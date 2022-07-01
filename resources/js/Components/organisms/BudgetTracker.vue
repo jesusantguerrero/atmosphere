@@ -36,9 +36,9 @@
 </template>
 
 <script setup>
-import SectionTitle from "../atoms/SectionTitle";
 import { AtButton } from "atmosphere-ui";
-import { computed, ref } from "@vue/runtime-core";
+import { computed, ref } from "vue";
+import SectionTitle from "../atoms/SectionTitle.vue";
 import TransactionModal from "../TransactionModal.vue"
 import formatMoney from "../../utils/formatMoney"
 

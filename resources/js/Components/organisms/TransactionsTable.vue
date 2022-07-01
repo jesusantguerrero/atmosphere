@@ -25,7 +25,7 @@
                 @removed="$emit('removed', transaction)"
                 @dblclick="$emit('edit', transactions[index])"
             />
-            <div class="flex items-center justify-between px-4 py-5 bg-gray-200" v-if="showSum">
+            <div class="flex items-center justify-between px-4 py-5 bg-slate-600 text-white" v-if="showSum">
                 <div class="font-bold">Selected Items sum</div>
                 <div class="space-y-1 text-right">
                     <div v-for="currencySum, currency in selectedSum">
@@ -48,11 +48,11 @@
 </template>
 
 <script setup>
-import TransactionCard from "../molecules/TransactionCard";
-import SectionTitle from "../atoms/SectionTitle";
 import { computed, reactive } from 'vue';
 import ExactMath from "exact-math";
 import formatMoney from "@/utils/formatMoney";
+import TransactionCard from "../molecules/TransactionCard.vue";
+import SectionTitle from "../atoms/SectionTitle.vue";
 
 const props = defineProps({
     classes: {

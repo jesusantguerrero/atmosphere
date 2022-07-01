@@ -1,7 +1,7 @@
 <template>
-    <n-config-provider :theme="darkTheme" :theme-overrides="darkThemeOverrides">
+    <NConfigProvider :theme="darkTheme" :theme-overrides="darkThemeOverrides">
         <div>
-            <jet-banner />
+            <JetBanner />
             <div class="min-h-screen bg-slate-800 home-container">
                 <nav class="border-b shadow-md border-slate-900 app-header bg-slate-800">
                     <!-- Primary Navigation Menu -->
@@ -208,7 +208,7 @@
                             title="Loger"
                             :menu="menu"
                             :current-path="currentPath"
-                            item-class="block w-full px-5 py-2 font-bold text-gray-400 rounded-md hover:text-pink-600 hover:bg-slate-400"
+                            item-class="block w-full px-5 py-1 mb-2 text-md font-bold text-gray-400 rounded-md hover:text-pink-600 hover:bg-slate-400"
                             item-active-class="text-pink-400 bg-slate-500"
                         >
                             <template #brand>
@@ -233,14 +233,14 @@
                 </div>
             </div>
         </div>
-    </n-config-provider>
+    </NConfigProvider>
 </template>
 
 <script setup>
-    import JetBanner from '@/Jetstream/Banner'
-    import JetDropdown from '@/Jetstream/Dropdown'
-    import JetDropdownLink from '@/Jetstream/DropdownLink'
-    import JetResponsiveNavLink from '@/Jetstream/ResponsiveNavLink'
+    import JetBanner from '@/Jetstream/Banner.vue'
+    import JetDropdown from '@/Jetstream/Dropdown.vue'
+    import JetDropdownLink from '@/Jetstream/DropdownLink.vue'
+    import JetResponsiveNavLink from '@/Jetstream/ResponsiveNavLink.vue'
     import { AtSide } from "atmosphere-ui"
     import { reactive, ref } from 'vue'
     import { Inertia } from '@inertiajs/inertia'
@@ -270,18 +270,6 @@
             label: 'Meal Planer',
             name: 'mealPlanner',
             to: '/meal-planner'
-        },
-        {
-            icon: 'fas fa-drumstick-bite',
-            label: 'Meals',
-            name: 'meals',
-            to: '/meals'
-        },
-        {
-            icon: 'fas fa-drumstick-bite',
-            label: 'Integrations',
-            name: 'integrations',
-            to: '/integrations'
         },
         {
             icon: 'fas fa-dollar-sign',
@@ -327,7 +315,7 @@ body, html {
   padding-right: 0 !important;
   position: fixed;
   display: grid;
-  width: 300px;
+  width: 230px;
   height: 100%;
   z-index: 1001;
 }

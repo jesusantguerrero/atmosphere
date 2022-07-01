@@ -87,15 +87,15 @@
 
 <script setup>
     import { AtButton } from "atmosphere-ui";
-    import AppLayout from '@/Layouts/AppLayout'
-    import BudgetTracker from "@/Components/organisms/BudgetTracker";
-    import TransactionsTable from "@/Components/organisms/TransactionsTable";
-    import SectionTitle from "@/Components/atoms/SectionTitle";
     import { ref } from 'vue';
-    import { useSelect } from '@/utils/useSelects';
-    import RandomMealCard from "../Components/RandomMealCard.vue";
     import { Inertia } from "@inertiajs/inertia";
-    import { transactionDBToTransaction } from "../utils/transactions";
+    import { useSelect } from '@/utils/useSelects';
+    import { transactionDBToTransaction } from "@/utils/transactions";
+    import AppLayout from '@/Layouts/AppLayout.vue'
+    import BudgetTracker from "@/Components/organisms/BudgetTracker.vue";
+    import TransactionsTable from "@/Components/organisms/TransactionsTable.vue";
+    import SectionTitle from "@/Components/atoms/SectionTitle.vue";
+    import RandomMealCard from "../Components/RandomMealCard.vue";
 
     const props = defineProps({
             meals: {

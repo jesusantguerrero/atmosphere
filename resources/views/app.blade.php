@@ -10,21 +10,14 @@
         <!-- Fonts -->
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
-        <!-- Styles -->
-        <link rel="stylesheet" href="{{ mix('css/app.css') }}">
 
         <!-- Scripts -->
         <script src="https://apis.google.com/js/api.js" defer></script>
-        <script src="https://polyfill.io/v3/polyfill.min.js?features=smoothscroll,NodeList.prototype.forEach,Promise,Object.values,Object.assign" defer></script>
-        <script src="https://polyfill.io/v3/polyfill.min.js?features=String.prototype.startsWith" defer></script>
         @routes
-        <script src="{{ mix('js/app.js') }}" defer></script>
+        @vite('resources/js/app.js')
+        @inertiaHead
     </head>
-    <body class="font-sans antialiased leading-none text-gray-700">
+    <body class="font-sans antialiased">
         @inertia
-
-        @env ('local')
-            <script src="http://localhost:3000/browser-sync/browser-sync-client.js"></script>
-        @endenv
     </body>
 </html>

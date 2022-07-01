@@ -66,7 +66,7 @@
 </template>
 
 <script setup>
-    import Modal from '@/Jetstream/Modal'
+    import Modal from '@/Jetstream/Modal.vue'
     import { useForm, usePage } from "@inertiajs/inertia-vue3"
     import { AtField, AtInput, AtButton } from "atmosphere-ui"
     import { reactive, toRefs } from '@vue/reactivity'

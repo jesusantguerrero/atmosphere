@@ -1,6 +1,6 @@
 <template>
     <app-layout>
-        <div class="pl-6 pb-20 mx-auto mt-5 max-w-screen-2xl space-x-2 flex lg:pl-8">
+        <div class="pl-6 pb-20 mt-5 max-w-screen-2xl space-x-2 flex lg:pl-8">
             <div class="w-10/12 pr-5">
                 <section-title type="secondary">
                     Finance
@@ -106,19 +106,19 @@
 </template>
 
 <script setup>
-    import { AtButton } from "atmosphere-ui";
-    import AppLayout from '@/Layouts/AppLayout'
-    import FinanceCard from "@/Components/molecules/FinanceCard";
-    import FinanceVarianceCard from "@/Components/molecules/FinanceVarianceCard";
-    import TransactionsTable from "@/Components/organisms/TransactionsTable";
-    import AccountsLedger from "@/Components/templates/AccountsLedger.vue";
-    import SectionTitle from "@/Components/atoms/SectionTitle";
     import { reactive, ref, provide, computed } from 'vue';
+    import { Inertia } from '@inertiajs/inertia';
+    import { AtButton } from "atmosphere-ui";
+    import AppLayout from '@/Layouts/AppLayout.vue'
+    import FinanceCard from "@/Components/molecules/FinanceCard.vue";
+    import FinanceVarianceCard from "@/Components/molecules/FinanceVarianceCard.vue";
+    import TransactionsTable from "@/Components/organisms/TransactionsTable.vue";
+    import AccountsLedger from "@/Components/templates/AccountsLedger.vue";
+    import SectionTitle from "@/Components/atoms/SectionTitle.vue";
+    import TransactionModal from "@/Components/TransactionModal.vue"
+    import { transactionDBToTransaction } from '@/utils/transactions';
     import { useSelect } from '@/utils/useSelects';
     import formatMoney from '@/utils/formatMoney';
-    import { transactionDBToTransaction } from '@/utils/transactions';
-    import { Inertia } from '@inertiajs/inertia';
-    import TransactionModal from "@/Components/TransactionModal.vue"
 
     const props = defineProps({
             user: {

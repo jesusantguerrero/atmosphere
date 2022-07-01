@@ -11,7 +11,7 @@
 </template>
 
 <script setup>
-   import NumberHider from '../molecules/NumberHider';
+   import NumberHider from '@/Components/molecules/NumberHider.vue';
 
     defineProps({
          value: {
