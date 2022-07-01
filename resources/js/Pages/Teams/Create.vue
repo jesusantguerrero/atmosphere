@@ -14,14 +14,7 @@
     </app-layout>
 </template>
 
-<script>
-    import AppLayout from '@/Layouts/AppLayout'
-    import CreateTeamForm from './CreateTeamForm'
-
-    export default {
-        components: {
-            AppLayout,
-            CreateTeamForm,
-        },
-    }
+<script setup>
+    import AppLayout from '@/Layouts/AppLayout.vue'
+    import CreateTeamForm from './CreateTeamForm.vue'
 </script>
