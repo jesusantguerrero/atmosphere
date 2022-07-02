@@ -1,6 +1,6 @@
 <template>
     <NConfigProvider :theme="darkTheme" :theme-overrides="darkThemeOverrides">
-        <div>
+        <main>
             <JetBanner />
             <div class="min-h-screen bg-slate-800 home-container">
                 <nav class="border-b shadow-md border-slate-900 app-header bg-slate-800">
@@ -12,8 +12,10 @@
                             </div>
 
                             <div class="hidden sm:flex sm:items-center sm:ml-6">
+                                <PrivacyToggle v-model="isPrivacyMode" />
+
+                                <!-- Teams Dropdown -->
                                 <div class="relative ml-3">
-                                    <!-- Teams Dropdown -->
                                     <jet-dropdown align="right" width="60" v-if="$page.props.jetstream.hasTeamFeatures">
                                         <template #trigger>
                                             <span class="inline-flex rounded-md">
@@ -232,7 +234,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </main>
     </NConfigProvider>
 </template>
 
@@ -242,10 +244,11 @@
     import JetDropdownLink from '@/Jetstream/DropdownLink.vue'
     import JetResponsiveNavLink from '@/Jetstream/ResponsiveNavLink.vue'
     import { AtSide } from "atmosphere-ui"
-    import { reactive, ref } from 'vue'
+    import { provide, reactive, ref } from 'vue'
     import { Inertia } from '@inertiajs/inertia'
     import { darkTheme, NConfigProvider, createTheme } from 'naive-ui'
     import colors from 'tailwindcss/colors'
+import PrivacyToggle from '@/Components/molecules/PrivacyToggle.vue'
 
     const darkThemeOverrides = {
         DataTable: {
@@ -283,6 +286,9 @@
             to: route('finance')
         }
     ])
+
+    const isPrivacyMode = ref(false)
+    provide('hasHiddenValues', isPrivacyMode)
 
     const switchToTeam = (team) => {
         Inertia.put(route('current-team.update'), {

@@ -2,10 +2,9 @@
     <app-layout>
         <div class="pl-6 pb-20 mt-5 max-w-screen-2xl space-x-2 flex lg:pl-8">
             <div class="w-10/12 pr-5">
-                <section-title type="secondary">
+                <SectionTitle type="secondary">
                     Finance
-                    <button @click="hasHiddenValues=!hasHiddenValues">hidden</button>
-                </section-title>
+                </SectionTitle>
                 <div class="flex flex-wrap md:flex-nowrap md:space-x-2">
                     <div class="w-full md:w-7/12">
                         <div class="mt-5">
@@ -182,11 +181,6 @@
                 }
             }
     });
-
-    const hasHiddenValues = ref(false)
-    provide('hasHiddenValues', hasHiddenValues)
-
-    const selected = ref(null);
 
     const plannedDBToTransaction = (transactions) => {
         return transactions.map(transaction => ({
