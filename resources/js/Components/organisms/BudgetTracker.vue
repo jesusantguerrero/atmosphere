@@ -23,7 +23,10 @@
             >
                 <h4 class="text-gray-200">{{ section.label }}</h4>
                 <SectionTitle class="mt-2">
-                    {{ formatMoney(section.value) }}
+                    <span class="relative">
+                        <NumberHider />
+                        {{ formatMoney(section.value) }}
+                    </span>
                 </SectionTitle>
             </div>
         </div>
@@ -41,6 +44,7 @@ import { computed, ref } from "vue";
 import SectionTitle from "../atoms/SectionTitle.vue";
 import TransactionModal from "../TransactionModal.vue"
 import formatMoney from "../../utils/formatMoney"
+import NumberHider from "../molecules/NumberHider.vue";
 
 const props = defineProps({
     username: {
