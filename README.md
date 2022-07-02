@@ -14,6 +14,26 @@ Features:
 ## Demo
 .
 
+### Prerequisites
+
+| Prerequisite                                          | Version     |
+| ------------------------------------------------------| ----------  |
+| [Docker*]()                                           |    --       |
+| [Node.js](http://nodejs.org)                          | `~ ^14.18.0`|
+| npm (comes with Node) or yarn (used)                  | `~ ^5`      |
+| [PHP]                                                 | `~ ^8.1.2`  |
+| [Composer](https://getcomposer.org/)                  | ' ^2.3.8    |
+| [Cloud Platform Project (with Gmail API)**](https://developers.google.com/gmail/api/quickstart/js)                                |    --                                                 |             |
+| PHP extension ext-mailparse**                         |      --     |
+
+`* Docker is optional and have all the dependencies you need ext-mailparse included`
+`** Those requirements are optional for Gmail integration/automation`
+
+```shell
+node -v
+php -v
+```
+
 ## Installation
 
 To install Loger, you'll need to clone or download this repo:
@@ -46,27 +66,31 @@ DB_PASSWORD=
 ```
 
 ### 3. Add Composer Dependencies
-
-Next, we will need to install all our composer dependencies by running the following command:
-
 ```php
-composer install
+composer install --ignore-platform-reqs
 ```
 ### 4. Run Migrations and Seeds
 
-We need to migrate our database structure into our database, which we can do by running:
-
-```php
+```bash
 php artisan migrate
-```
-<br>
-Finally, we will need to seed our database with the following command:
-
-```php
 php artisan db:seed
 php artisan journal:set-accounts
 ```
 <br>
+
+backend development
+```bash
+php artisan serve
+```
+Frontend development
+The bachend have to be running
+
+```bash
+# install npm packages
+npm install
+# development
+npm run dev
+```
 
 🎉 And that's it! You will now be able to visit your URL and see your Atmosphere application up and running.
 
