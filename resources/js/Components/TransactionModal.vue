@@ -1,5 +1,5 @@
 <template>
-    <modal :show="show" :max-width="maxWidth" :closeable="closeable" @close="close">
+    <modal :show="show" :max-width="maxWidth" :closeable="closeable" v-slot:default="{ close }" @close="$emit('update:show', false)">
         <div class="pb-4 bg-slate-600 sm:p-6 sm:pb-4 text-gray-200">
             <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                 <div class="grid grid-cols-3 overflow-hidden text-lg rounded-lg">
@@ -161,7 +161,6 @@
     import { NSelect, NDatePicker } from "naive-ui";
     import LogerInput from "@/Components/atoms/LogerInput.vue"
 
-    const emit = defineEmits(['close'])
     const props = defineProps({
             show: {
                 default: false
