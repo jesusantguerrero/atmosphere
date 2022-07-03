@@ -1,10 +1,7 @@
 <template>
-    <app-layout>
-        <div class="pl-6 pb-20 mt-5 max-w-screen-2xl space-x-2 flex lg:pl-8">
-            <div class="w-10/12 pr-5">
-                <SectionTitle type="secondary">
-                    Finance
-                </SectionTitle>
+    <AppLayout>
+        <FinanceTemplate title="finance" :accounts="accounts" ref="financeTemplateRef">
+            <section>
                 <div class="flex flex-wrap md:flex-nowrap md:space-x-2">
                     <div class="w-full md:w-7/12">
                         <div class="mt-5">
@@ -67,7 +64,7 @@
                             :parser="plannedDBToTransaction"
                         >
                         <template #action>
-                            <at-button class="text-pink-500" @click="openModalFor('transaction')"><i class="fa fa-plus"></i> Add planned payment</at-button>
+                            <AtButton class="text-pink-500" @click="openModalFor('transaction')"><i class="fa fa-plus"></i> Add planned payment</AtButton>
                         </template>
                     </TransactionsTable>
                     </div>
@@ -86,39 +83,28 @@
                         </TransactionsTable>
                     </div>
                 </div>
-            </div>
-
-            <div class="w-2/12">
-                <SectionTitle class="mt-5 pl-5" type="secondary">
-                    Budget Accounts
-                </SectionTitle>
-                <AccountsLedger :accounts="accounts" class="mt-5" />
-            </div>
-
-            <transaction-modal
-                @close="isTransferModalOpen=false"
-                v-bind="transferConfig"
-                v-model:show="isTransferModalOpen"
-            />
-        </div>
-    </app-layout>
+            </section>
+        </FinanceTemplate>
+    </AppLayout>
 </template>
 
 <script setup>
-    import { reactive, ref, provide, computed } from 'vue';
+    import { computed, ref } from 'vue';
     import { Inertia } from '@inertiajs/inertia';
     import { AtButton } from "atmosphere-ui";
     import AppLayout from '@/Layouts/AppLayout.vue'
     import FinanceCard from "@/Components/molecules/FinanceCard.vue";
     import FinanceVarianceCard from "@/Components/molecules/FinanceVarianceCard.vue";
     import TransactionsTable from "@/Components/organisms/TransactionsTable.vue";
-    import AccountsLedger from "@/Components/templates/AccountsLedger.vue";
     import SectionTitle from "@/Components/atoms/SectionTitle.vue";
-    import TransactionModal from "@/Components/TransactionModal.vue"
     import { transactionDBToTransaction } from '@/utils/transactions';
     import { useSelect } from '@/utils/useSelects';
     import formatMoney from '@/utils/formatMoney';
+    import FinanceTemplate from '@/Components/templates/FinanceTemplate.vue';
+    import { useTransactionModal } from '@/utils/useTransactionModal'
 
+    const financeTemplateRef = ref(null)
+    const { openModalFor, handleEdit } = useTransactionModal(financeTemplateRef)
     const props = defineProps({
             user: {
                 type: Object,
@@ -218,23 +204,5 @@
                 Inertia.reload();
             }
         })
-    }
-
-    const isTransferModalOpen = ref(false);
-    const transferConfig = reactive({
-        recurrence: false,
-        automatic: false,
-        transactionData: null
-    })
-
-    const openModalFor = (isRecurrent, automatic) => {
-        isTransferModalOpen.value = true;
-        transferConfig.recurrence = isRecurrent;
-        transferConfig.automatic = automatic;
-    }
-
-    const handleEdit = (transaction) => {
-        transferConfig.transactionData = transaction;
-        isTransferModalOpen.value = true;
     }
 </script>
