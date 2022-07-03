@@ -1,7 +1,7 @@
 <template>
-    <modal :show="show" :max-width="maxWidth" :closeable="closeable" v-slot:default="{ close }" @close="$emit('update:show', false)">
+    <modal :show="show" :max-width="maxWidth" :closeable="closeable" v-slot:default="{ close }" @close="emitClose">
         <div class="pb-4 bg-slate-600 sm:p-6 sm:pb-4 text-gray-200">
-            <ImportHolder />
+            <ImportHolder ref="importHolderRef" @uploaded="emitClose"/>
         </div>
 
         <div class="px-6 py-4 space-x-3 text-right bg-slate-700">
@@ -15,6 +15,7 @@
     import Modal from '@/Jetstream/Modal.vue'
     import ImportHolder from '@/Components/organisms/ImportHolder.vue';
     import { AtButton } from "atmosphere-ui"
+    import { ref } from 'vue';
 
     defineProps({
             show: {
@@ -27,4 +28,15 @@
                 default: true
             },
     });
+
+    const emit = defineEmits(['update:show'])
+
+    const importHolderRef = ref()
+    const submit = () => {
+        importHolderRef.value.processImport()
+    }
+
+    const emitClose = () => {
+        emit('update:show', false)
+    }
 </script>
