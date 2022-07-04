@@ -2,6 +2,9 @@ import LogerInput from "../../Components/atoms/LogerInput.vue";
 import formatMoney from "../../utils/formatMoney";
 import { AtButton } from 'atmosphere-ui';
 import { h } from "vue"
+import { format, startOfMonth } from "date-fns";
+import { Inertia } from "@inertiajs/inertia";
+import BalanceInput from "@/Components/atoms/BalanceInput.vue";
 
 export const budgetCols = (state) =>  [
     {
@@ -42,8 +45,10 @@ export const budgetCols = (state) =>  [
                     Inertia.post(`/budgets/${row.id}/months/${month}`, {
                         id: row.id,
                         budgeted: row.budgeted
+                    }, {
+                        preserveState: true,
+                        preserveScroll: true
                     });
-                   console.log("we are here")
                 }
             })
         }
@@ -59,7 +64,8 @@ export const budgetCols = (state) =>  [
         title: 'Available',
         key: 'available',
         render (row, index) {
-            return h('span', formatMoney(row.available))
-        }
+            return row.parent_id ? h(BalanceInput, { value: row.available, formatter: formatMoney }) : formatMoney(row.available)
+        },
+        class: 'text-right'
     }
 ];

@@ -38,14 +38,16 @@ class Category extends CoreCategory
 
     public function getBudgetInfo(string $month) {
         $yearMonth = substr((string) $month, 0, 7);
+        $budgeted = $this->budgets->where('month', $month)->first()->budgeted ?? 0;
+        $monthBalance = $this->getMonthBalance($yearMonth);
         return [
-            'budgeted' => $this->budgets->where('month', $month)->first()->budgeted ?? 0,
-            'spent' => $this->getMonthBalance($yearMonth),
-            'remaining' => 0,
+            'budgeted' => $budgeted,
+            'spent' => $monthBalance,
+            'available' => $budgeted + $monthBalance,
         ];
     }
 
-        /**
+    /**
      * Get the current balance.
      *
      * @return string

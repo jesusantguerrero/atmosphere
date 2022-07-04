@@ -67,4 +67,11 @@ class Transaction extends CoreTransaction
         ->getByMonth($startDate, $endDate)
         ->get();
     }
+
+    public static function getDrafts($teamId) {
+        return self::where([
+            'team_id' => $teamId,
+            'status' => 'draft'
+        ])->orderBy('date', 'desc')->get();
+    }
 }
