@@ -10,6 +10,7 @@ use App\Models\Integrations\AutomationRecipe;
 use App\Models\Integrations\AutomationService;
 use App\Models\Integrations\AutomationTask;
 use App\Models\Integrations\Integration;
+use App\Models\MonthBudget;
 use App\Models\Planner;
 use App\Models\Transaction;
 use Carbon\Carbon;
@@ -27,16 +28,11 @@ class DashboardController {
         $teamId = $request->user()->current_team_id;
 
 
-        $budget = Budget::where([
-            'team_id' => $teamId
-        ])->with('account')->get();
+        $budget = MonthBudget::getMonthAssignments($teamId, $startDate);
 
         $transactions = Transaction::getExpenses($teamId, $startDate, $endDate);
 
-        $drafts = Transaction::where([
-            'team_id' => $teamId,
-            'status' => 'draft'
-        ])->orderBy('date', 'desc')->get();
+        $drafts = Transaction::getDrafts($teamId);
 
 
         return Inertia::render('Dashboard', [
@@ -45,10 +41,8 @@ class DashboardController {
                 'team_id' => $teamId,
                 'date' => date('Y-m-d')
             ])->with('dateable')->get(),
-            "budgetTotal" => $budget->sum('amount'),
-            "budget" => $budget->map(function ($budget) use($startDate, $endDate) {
-               return Budget::dashboardParser($budget, $startDate, $endDate);
-            }),
+            "budgetTotal" => $budget->sum('budgeted'),
+            "budget" => [],
             "categories" => $teamId ? CategoryHelper::getSubcategories($teamId, ['expenses', 'incomes', 'liabilities']) : null,
             "accounts" => $teamId ? CategoryHelper::getAccounts($teamId, ['cash_and_bank', 'credit_card']) : null,
             "transactionTotal" => $transactions->sum('total'),

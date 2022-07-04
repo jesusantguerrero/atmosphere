@@ -10,36 +10,14 @@
                     :expenses="transactionTotal"
                     :username="user.name"
                     @section-click="selected=$event"
-                >
-                    <div class="pt-5 mt-2" v-if="selected">
-                        <transactions-table
-                            v-if="selected=='expenses'"
-                            table-label="Expenses"
-                            class="pt-3 mt-5"
-                            table-class="px-0 mt-5"
-                            :transactions="transactions"
-                            :parser="transactionDBToTransaction"
-                        />
-                        <transactions-table
-                            v-if="selected=='budget'"
-                            table-label="Budget"
-                            username="Jesus"
-                            class="pt-3 mt-5"
-                            table-class="px-0 mt-5"
-                            :transactions="budget"
-                        />
-                        <div className="py-3 mt-5 text-center">
-                            <AtButton class="text-pink-500" @click="selected=''"><i class="block fa fa-chevron-up"></i> Show less</AtButton>
-                        </div>
-                    </div>
-                </budget-tracker>
+                />
 
-                <div class="mt-5 mb-10">
+                <div class="mt-5 mb-10" v-if="drafts.length">
                     <section-title type="secondary">
                         Pending for approval
                     </section-title>
                     <div class="px-5 py-1 mt-5 border rounded-md shadow-md border-slate-700 bg-slate-600">
-                        <transactions-table
+                        <TransactionsTable
                             table-label="Automatic Transactions"
                             class="pt-3"
                             table-class="px-0 mt-5"
@@ -63,7 +41,7 @@
                                     </AtButton>
                                 </div>
                             </template>
-                        </transactions-table>
+                        </TransactionsTable>
                     </div>
                 </div>
             </div>

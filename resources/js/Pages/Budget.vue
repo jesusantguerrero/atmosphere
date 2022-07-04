@@ -1,12 +1,12 @@
 <template>
-    <app-layout>
+    <AppLayout>
         <template #header>
             <div class="flex justify-between px-10">
-                <div>
-                <h2 class="text-xl font-bold leading-tight text-pink-400">
-                    Budget settings
-                </h2>
-
+                <div class="flex items-center">
+                    <h2 class="text-xl font-bold leading-tight text-pink-400">
+                        Budget settings
+                    </h2>
+                    <span class="text-slate-200 ml-2"> {{ readyToAssign }} </span>
                 </div>
 
                 <div>
@@ -22,7 +22,7 @@
                 <div class="space-y-3" :class="[!selectedBudget ? 'w-full': 'w-7/12']" >
                 <NDataTable
                     :columns="budgetCols(state)"
-                    :data="state.budget"
+                    :data="budgetState"
                     :row-key="({ id }) => id"
                     children-key="subCategories"
                     flex-height
@@ -46,26 +46,22 @@
             @close="isModalOpen=false"
             v-model:show="isModalOpen"
         />
-    </app-layout>
+    </AppLayout>
 </template>
 
 <script setup>
-    import AppLayout from '@/Layouts/AppLayout';
-    import { AtButton, AtField, AtInput, AtErrorBag } from "atmosphere-ui";
-    import CategoryModal from '../Components/CategoryModal.vue';
+    import { computed, reactive, toRefs } from 'vue';
+    import { Inertia } from '@inertiajs/inertia';
     import { useForm } from '@inertiajs/inertia-vue3';
-    import { NSelect, NDataTable } from "naive-ui"
-    import { computed, h, reactive, toRefs } from 'vue';
-    import BudgetItem from '../Components/molecules/BudgetItem.vue';
-    import LogerInput from '../Components/atoms/LogerInput.vue';
+    import { AtButton } from "atmosphere-ui";
+    import ExactMath from "exact-math";
+    import { NDataTable } from "naive-ui"
+    import AppLayout from '@/Layouts/AppLayout.vue';
+    import CategoryModal from '@/Components/CategoryModal.vue';
     import { useMoney } from "@/utils/useMoney";
     import { useSelect } from "@/utils/useSelects";
-    import { Inertia } from '@inertiajs/inertia';
-    import BudgetItemForm from '../Components/molecules/BudgetItemForm.vue';
-    import { format, startOfMonth } from 'date-fns';
-    import ExactMath from "exact-math";
-    import formatMoney from '../utils/formatMoney';
-    import { budgetCols } from "@/domains/budget/budgetCols"
+    import BudgetItemForm from '@/Components/molecules/BudgetItemForm.vue';
+    import { budgetCols, useBudget } from "@/domains/budget"
 
     const props = defineProps({
             budgets: {
@@ -78,9 +74,10 @@
             }
     });
 
-    const { sumMoney } = useMoney();
     const { categoryOptions: makeCategoryOptions }  = useSelect();
 
+    const { budgets } = toRefs(props)
+    const { readyToAssign, budgetState } = useBudget(budgets)
 
     const state = reactive({
         isModalOpen: false,
@@ -98,14 +95,6 @@
         }),
         categoryOptions: computed(() => {
             return makeCategoryOptions(props.categories, 'accounts', 'categoryOptions');
-        }),
-        budget: computed(() => {
-            return props.budgets.data.map(item => {
-                item.budgeted = Object.values(item.subCategories).reduce((acc, cur) => ExactMath.add(acc, cur.budgeted || 0), 0);
-                item.spent = Object.values(item.subCategories).reduce((acc, cur) => ExactMath.add(acc, cur.spent || 0), 0);
-                item.available = Object.values(item.subCategories).reduce((acc, cur) => ExactMath.add(acc, cur.available || 0), 0);
-                return item
-            });
         })
     })
 
@@ -119,16 +108,5 @@
         })
     }
 
-    const submit = () => {
-        state.form.transform((data) => ({
-            ...data,
-            parent_id: state.expandedCategory ? state.expandedCategory.id : null
-        })).post('/budgets', {
-            onSuccess: () => {
-                state.form.reset();
-            }
-        })
-    }
-
-    const { budgetTotal, categoryOptions, isModalOpen, form, isAddingGroup, selectedBudget } = toRefs(state);
+    const { isModalOpen, isAddingGroup, selectedBudget } = toRefs(state);
 </script>
