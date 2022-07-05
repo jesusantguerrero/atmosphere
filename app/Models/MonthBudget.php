@@ -22,7 +22,6 @@ class MonthBudget extends Model
         $monthBudget = self::where([
             "team_id" => $data['team_id'],
             'month' => $data['month'],
-            'budgeted' => $data['budgeted'],
             'currency_code' => $data['currency_code'],
             'category_id' => $data['category_id'],
         ])->get();

@@ -28,7 +28,7 @@ class BudgetImport extends ImportHelper
             'USD' => 'USD',
         ];
         $inflow = explode('$', str_replace('-', '', $currencyValue));
-        $money = floatval(preg_replace('/[^\d\.]/', '', $currencyValue));
+        $money = floatval(preg_replace('/[^-\d\.]/', '', $currencyValue));
         $amounts = (object) [
             'money' => (double) $money,
             'currency_code' => $CODES[$inflow[0]],
