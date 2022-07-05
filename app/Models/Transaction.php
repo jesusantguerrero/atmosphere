@@ -64,6 +64,16 @@ class Transaction extends CoreTransaction
         ->get();
     }
 
+    public static function getIncome($teamId, $startDate, $endDate) {
+        return self::where([
+            'team_id' => $teamId,
+            'status' => 'verified'
+        ])
+        ->byCategories(['inflow'], $teamId)
+        ->getByMonth($startDate, $endDate)
+        ->sum('total');
+    }
+
     public static function getDrafts($teamId) {
         return self::where([
             'team_id' => $teamId,

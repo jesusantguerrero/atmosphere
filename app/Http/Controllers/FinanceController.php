@@ -32,39 +32,21 @@ class FinanceController extends InertiaController {
         $lastMonthEndDate = $request->query('endDate', Carbon::now()->subMonth()->endOfMonth()->format('Y-m-d'));
         $teamId = $request->user()->current_team_id;
 
-
         $budget = Budget::where([
             'team_id' => $teamId
         ])->with('account')->get();
 
 
         $planned = BudgetHelper::getPlannedTransactions($teamId);
-        $subscriptions = BudgetHelper::getPlannedTransactions($teamId, 1);
 
         $transactions = Transaction::getExpenses($teamId, $startDate, $endDate);
-
-        $income = Transaction::where([
-            'team_id' => $teamId,
-            'status' => 'verified'
-        ])
-        ->byCategories(['inflow'], $teamId)
-        ->getByMonth($startDate, $endDate)
-        ->sum('total');
-
-        $lastMonthIncome = Transaction::where([
-            'team_id' => $teamId,
-            'direction' => "DEPOSIT",
-            'status' => 'verified'
-        ])
-        ->byCategories(['inflow'], $teamId)
-        ->getByMonth($lastMonthStartDate, $lastMonthEndDate)
-        ->sum('total');
-
         $lastMonthExpenses= Transaction::getExpenses($teamId, $lastMonthStartDate, $lastMonthEndDate)->sum('total');
+
+        $income = Transaction::getIncome( $teamId, $startDate, $endDate);
+        $lastMonthIncome = Transaction::getIncome( $teamId, $lastMonthStartDate, $lastMonthEndDate);
 
         return Jetstream::inertia()->render($request, 'Finance/Index', [
             "planned" => $planned,
-            "subscriptions" => $subscriptions,
             "budgetTotal" => $budget->sum('amount'),
             "budget" => $budget->map(function ($budget) use($startDate, $endDate) {
                return Budget::dashboardParser($budget, $startDate, $endDate);
