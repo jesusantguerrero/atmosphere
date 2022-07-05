@@ -1,7 +1,7 @@
 <template>
     <modal :show="show" :max-width="maxWidth" :closeable="closeable" v-slot:default="{ close }" @close="emitClose">
         <div class="pb-4 bg-slate-600 sm:p-6 sm:pb-4 text-gray-200">
-            <ImportHolder ref="importHolderRef" @uploaded="emitClose"/>
+            <ImportHolder ref="importHolderRef" @uploaded="emitClose" endpoint="/finance/import-budget"/>
         </div>
 
         <div class="px-6 py-4 space-x-3 text-right bg-slate-700">
