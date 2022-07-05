@@ -20,6 +20,10 @@ const props = defineProps({
     placeholder: {
         type: String,
         default: 'Drag a CSV file here or upload via the button to import your transactions'
+    },
+    endpoint: {
+        type: String,
+        default: "/financial/import"
     }
 })
 const emit = defineEmits(['uploaded', 'error', 'canceled'])
@@ -50,10 +54,10 @@ const processImport = async () => {
     formData.setError('file', "You have to submit a file")
     return
   }
-  formData.post("/financial/import", {
+  formData.post(props.endpoint, {
     onSuccess() {
         emit('uploaded')
-       clearFile()
+        clearFile()
     }
   })
 };

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\BudgetHelper;
+use App\Imports\BudgetImport;
 use App\Imports\TransactionsImport;
 use App\Models\Budget;
 use App\Models\Transaction;
@@ -134,8 +135,13 @@ class FinanceController extends InertiaController {
         ]);
     }
 
-    public function import(Request $request) {
+    public function importTransactions(Request $request) {
         Excel::import(new TransactionsImport($request->user()), $request->file('file'));
+        return redirect()->back();
+    }
+
+    public function importMonthBudgets(Request $request) {
+        Excel::import(new BudgetImport($request->user()), $request->file('file'));
         return redirect()->back();
     }
 }

@@ -71,7 +71,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         Route::get('/finance', 'index')->name('finance');
         Route::get('/finance/transactions', 'transactions')->name('finance.transactions');
         Route::get('/finance/{accountId}/transactions', 'transactions')->name('finance.account.transactions');
-        Route::post('/finance/import', 'import')->name('finance.import');
+        Route::post('/finance/import', 'importTransactions')->name('finance.import');
+        Route::post('/finance/import-budget', 'importMonthBudgets')->name('finance.import.budget');
     });
 });
 
