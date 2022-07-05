@@ -1,7 +1,7 @@
 <template>
-    <AppLayout>
-        <template #header>
-            <div class="flex justify-between px-10">
+    <AppLayout title="Budget Settings">
+        <FinanceTemplate :accounts="accounts">
+            <div class="flex mt-2 justify-between">
                 <div class="flex items-center">
                     <h2 class="text-xl font-bold leading-tight text-pink-400">
                         Budget settings
@@ -15,37 +15,36 @@
                     </AtButton>
                 </div>
             </div>
-        </template>
-
-        <div class="mx-auto text-gray-200 rounded-lg shadow-lg bg-slate-600 max-w-7xl ">
-            <div class="flex">
-                <div class="space-y-3" :class="[!selectedBudget ? 'w-full': 'w-7/12']" >
-                <NDataTable
-                    :columns="budgetCols(state)"
-                    :data="budgetState"
-                    :row-key="({ id }) => id"
-                    children-key="subCategories"
-                    flex-height
-                />
-                </div>
-                <section class="py-5 text-center" :class="[selectedBudget ? 'w-5/12' : 'd-none']" v-if="selectedBudget">
-                    <BudgetItemForm
-                        class="mt-5"
-                        full
-                        :category="selectedBudget"
-                        :item="selectedBudget.budget"
-                        @saved="onBudgetItemSaved"
-                        @deleted="deleteBudget"
-                        @cancel="selectedBudget = null"
+             <div class="mx-auto mt-8 text-gray-200 rounded-lg shadow-lg bg-slate-600 max-w-7xl ">
+                <div class="flex">
+                    <div class="space-y-3" :class="[!selectedBudget ? 'w-full': 'w-7/12']" >
+                    <NDataTable
+                        :columns="budgetCols(state)"
+                        :data="budgetState"
+                        :row-key="({ id }) => id"
+                        children-key="subCategories"
+                        flex-height
                     />
-                </section>
+                    </div>
+                    <section class="py-5 text-center" :class="[selectedBudget ? 'w-5/12' : 'd-none']" v-if="selectedBudget">
+                        <BudgetItemForm
+                            class="mt-5"
+                            full
+                            :category="selectedBudget"
+                            :item="selectedBudget.budget"
+                            @saved="onBudgetItemSaved"
+                            @deleted="deleteBudget"
+                            @cancel="selectedBudget = null"
+                        />
+                    </section>
+                </div>
             </div>
-        </div>
 
         <category-modal
             @close="isModalOpen=false"
             v-model:show="isModalOpen"
         />
+        </FinanceTemplate>
     </AppLayout>
 </template>
 
@@ -54,19 +53,24 @@
     import { Inertia } from '@inertiajs/inertia';
     import { useForm } from '@inertiajs/inertia-vue3';
     import { AtButton } from "atmosphere-ui";
-    import ExactMath from "exact-math";
     import { NDataTable } from "naive-ui"
     import AppLayout from '@/Layouts/AppLayout.vue';
     import CategoryModal from '@/Components/CategoryModal.vue';
-    import { useMoney } from "@/utils/useMoney";
     import { useSelect } from "@/utils/useSelects";
     import BudgetItemForm from '@/Components/molecules/BudgetItemForm.vue';
+    import FinanceTemplate from '@/Components/templates/FinanceTemplate.vue';
     import { budgetCols, useBudget } from "@/domains/budget"
 
     const props = defineProps({
             budgets: {
                 type: Array,
                 required: true
+            },
+            accounts: {
+                type: Array,
+                default() {
+                    return []
+                }
             },
             categories: {
                 type: Array,

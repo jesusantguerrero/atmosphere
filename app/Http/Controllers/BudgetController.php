@@ -10,6 +10,7 @@ use App\Models\Transaction;
 use Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
+use Insane\Journal\Models\Core\Account;
 
 class BudgetController extends InertiaController
 {
@@ -17,7 +18,7 @@ class BudgetController extends InertiaController
     {
         $this->model = $category;
         $this->templates = [
-            "index" => 'Budget',
+            "index" => 'Finance/Budget',
             "create" => 'BudgetCreate',
             "edit" => 'BudgetCreate'
         ];
@@ -43,6 +44,9 @@ class BudgetController extends InertiaController
 
         return [
             'budgets' => CategoryGroupCollection::collection($this->getModelQuery($request)),
+            "accounts" => Account::where('team_id', $teamId)->byDetailTypes(
+                ['cash', 'bank', 'cash_on_hand', 'savings', 'credit_card'])
+                ->orderBy('index', )->get(),
             "categories" => Category::where([
                 'categories.team_id' => $teamId,
                 'categories.resource_type' => 'transactions'
