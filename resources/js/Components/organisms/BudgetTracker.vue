@@ -41,10 +41,10 @@
 <script setup>
 import { AtButton } from "atmosphere-ui";
 import { computed, ref } from "vue";
-import SectionTitle from "../atoms/SectionTitle.vue";
-import TransactionModal from "../TransactionModal.vue"
-import formatMoney from "../../utils/formatMoney"
-import NumberHider from "../molecules/NumberHider.vue";
+import SectionTitle from "@/Components/atoms/SectionTitle.vue";
+import TransactionModal from "@/Components/TransactionModal.vue"
+import NumberHider from "@/Components/molecules/NumberHider.vue";
+import formatMoney from "@/utils/formatMoney"
 
 const props = defineProps({
     username: {
