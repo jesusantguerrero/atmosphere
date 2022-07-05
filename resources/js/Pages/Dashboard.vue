@@ -1,9 +1,9 @@
 <template>
-    <app-layout>
+    <AppLayout>
         <div class="px-5 mx-auto mt-5 space-y-10 md:space-y-0 md:space-x-10 md:flex max-w-screen-2xl sm:px-6 lg:px-8">
             <div class="md:w-9/12">
-                <section-title type="secondary"> Dashboard</section-title>
-                <budget-tracker
+                <SectionTitle type="secondary"> Dashboard</SectionTitle>
+                <BudgetTracker
                     class="mt-5"
                     ref="budgetTrackerRef"
                     :budget="budgetTotal"
@@ -13,9 +13,9 @@
                 />
 
                 <div class="mt-5 mb-10" v-if="drafts.length">
-                    <section-title type="secondary">
+                    <SectionTitle type="secondary">
                         Pending for approval
-                    </section-title>
+                    </SectionTitle>
                     <div class="px-5 py-1 mt-5 border rounded-md shadow-md border-slate-700 bg-slate-600">
                         <TransactionsTable
                             table-label="Automatic Transactions"
@@ -47,7 +47,7 @@
             </div>
             <div class="md:w-3/12">
                 <div class="space-y-5">
-                    <section-title type="secondary"> Meals</section-title>
+                    <SectionTitle type="secondary"> Meals</SectionTitle>
                     <RandomMealCard />
 
                     <h4 class="text-2xl font-bold text-pink-400"> Menu for today</h4>
@@ -60,20 +60,20 @@
                 </div>
             </div>
         </div>
-    </app-layout>
+    </AppLayout>
 </template>
 
 <script setup>
     import { AtButton } from "atmosphere-ui";
     import { ref } from 'vue';
     import { Inertia } from "@inertiajs/inertia";
-    import { useSelect } from '@/utils/useSelects';
-    import { transactionDBToTransaction } from "@/utils/transactions";
     import AppLayout from '@/Layouts/AppLayout.vue'
     import BudgetTracker from "@/Components/organisms/BudgetTracker.vue";
     import TransactionsTable from "@/Components/organisms/TransactionsTable.vue";
     import SectionTitle from "@/Components/atoms/SectionTitle.vue";
-    import RandomMealCard from "../Components/RandomMealCard.vue";
+    import RandomMealCard from "@/Components/RandomMealCard.vue";
+    import { useSelect } from '@/utils/useSelects';
+    import { transactionDBToTransaction } from "@/domains/transactions";
 
     const props = defineProps({
             meals: {

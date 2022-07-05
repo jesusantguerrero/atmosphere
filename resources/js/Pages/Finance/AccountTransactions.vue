@@ -1,7 +1,7 @@
 <template>
 <AppLayout>
     <FinanceTemplate title="Transactions" :accounts="accounts">
-        <component :is="listComponent"
+        <TransactionTemplate
             :transactions="transactions"
             :server-search-options="serverSearchOptions"
         />
@@ -11,12 +11,10 @@
 
 <script setup>
     import AppLayout from '@/Layouts/AppLayout.vue'
-    import TransactionSearch from '../../Components/templates/TransactionSearch.vue';
-    import FinanceTemplate from '@/Components/templates/FinanceTemplate.vue';
     import TransactionTemplate from '@/Components/templates/TransactionTemplate.vue';
-    import { computed } from 'vue';
+    import FinanceTemplate from '@/Components/templates/FinanceTemplate.vue';
 
-    const props = defineProps({
+    defineProps({
         transactions: {
             type: Array,
             default: () => []
@@ -29,12 +27,5 @@
             type: Object,
             default: () => ({})
         },
-        accountId: {
-            type: [Number, null],
-        }
-    })
-
-    const listComponent = computed(() => {
-        return props.accountId ? TransactionTemplate : TransactionSearch
     })
 </script>

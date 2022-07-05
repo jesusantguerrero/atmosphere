@@ -97,11 +97,10 @@
     import FinanceVarianceCard from "@/Components/molecules/FinanceVarianceCard.vue";
     import TransactionsTable from "@/Components/organisms/TransactionsTable.vue";
     import SectionTitle from "@/Components/atoms/SectionTitle.vue";
-    import { transactionDBToTransaction } from '@/utils/transactions';
     import { useSelect } from '@/utils/useSelects';
     import formatMoney from '@/utils/formatMoney';
     import FinanceTemplate from '@/Components/templates/FinanceTemplate.vue';
-    import { useTransactionModal } from '@/utils/useTransactionModal'
+    import { useTransactionModal, transactionDBToTransaction  } from '@/domains/transactions'
 
     const financeTemplateRef = ref(null)
     const { openModalFor, handleEdit } = useTransactionModal(financeTemplateRef)

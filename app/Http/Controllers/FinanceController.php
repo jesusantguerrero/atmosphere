@@ -98,7 +98,6 @@ class FinanceController extends InertiaController {
 
         $this->modelQuery = Transaction::where([
             'team_id' => $teamId,
-            'direction' => "WITHDRAW",
             'status' => 'verified'
         ])->getByMonth($startDate, $endDate, !isset($groups[$groupBy]));
 

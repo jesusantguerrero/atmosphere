@@ -1,5 +1,5 @@
 <template>
-    <div class="pb-20 mt-5 ">
+    <div class="pb-20 mt-5">
         <TransactionsTable
             table-label=""
             class="pt-3 mt-5 "
@@ -21,7 +21,7 @@
                         controlsClass="bg-transparent text-gray-200 hover:bg-slate-600"
                         next-mode="month"
                     />
-                    <n-select
+                    <NSelect
                         filterable
                         clearable
                         size="large"
@@ -57,7 +57,7 @@
     import TransactionsTable from "@/Components/organisms/TransactionsTable.vue";
     import { updateSearch, getDateFromIso } from '@/utils';
     import TransactionModal from "../TransactionModal.vue";
-    import { transactionDBToTransaction } from '@/utils/transactions';
+    import { transactionDBToTransaction } from '@/domains/transactions';
 
     const props = defineProps({
         transactions: {

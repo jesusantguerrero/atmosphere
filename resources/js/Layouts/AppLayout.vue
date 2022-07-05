@@ -302,6 +302,9 @@ import PrivacyToggle from '@/Components/molecules/PrivacyToggle.vue'
 </script>
 
 <style lang="scss">
+:root {
+    --app-side-width: 230px
+}
 body, html {
     background-color: #1E293B;
 }
@@ -321,14 +324,14 @@ body, html {
   padding-right: 0 !important;
   position: fixed;
   display: grid;
-  width: 230px;
+  width: var(--app-side-width);
   height: 100%;
   z-index: 1001;
 }
 
 .app-content {
   display: grid;
-  grid-template-columns: 300px minmax(0, 1fr);
+  grid-template-columns: var(--app-side-width) minmax(0, 1fr);
   position: relative;
   height: 100vh;
 
