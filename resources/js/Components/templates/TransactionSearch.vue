@@ -1,9 +1,7 @@
 <template>
-
-    <div class="px-6 pb-20 mx-auto mt-5 max-w-screen-2xl lg:px-8">
-        <section-title type="secondary">{{ title }}</section-title>
+    <div class="pb-20 mt-5 ">
         <TransactionsTable
-            table-label="Transactions"
+            table-label=""
             class="pt-3 mt-5 "
             table-class="overflow-auto bg-slate-600 border rounded-lg shadow-md mt-5"
             allow-select

@@ -2,7 +2,7 @@
     <div class="pl-6 pb-20 mt-5 max-w-screen-2xl space-x-2 flex lg:pl-8">
         <div class="w-10/12 pr-5">
             <SectionTitle type="secondary">
-                Finance
+                {{ title }}
             </SectionTitle>
             <slot />
         </div>
@@ -35,6 +35,9 @@
     import ImportResourceModal from '@/Components/ImportResourceModal.vue';
 
     const props = defineProps({
+        title: {
+            type: String
+        },
         categories: {
             type: Array,
             default() {

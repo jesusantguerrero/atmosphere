@@ -1,6 +1,6 @@
 <template>
     <AppLayout>
-        <FinanceTemplate title="finance" :accounts="accounts" ref="financeTemplateRef">
+        <FinanceTemplate title="Finance" :accounts="accounts" ref="financeTemplateRef">
             <section>
                 <div class="flex flex-wrap md:flex-nowrap md:space-x-2">
                     <div class="w-full md:w-7/12">
@@ -28,7 +28,7 @@
                                 </AtButton>
                             </div>
                             <FinanceVarianceCard
-                                @click="$inertia.visit('/financial')"
+                                @click="$inertia.visit('/finance/transactions')"
                                 title="Expenses"
                                 :value="formatMoney(transactionTotal)"
                                 variance-title="Last month variance"
@@ -186,7 +186,7 @@
         if (last === 0) {
             return 0;
         }
-        const variance = (current - last) / (last * 100)
+        const variance = (current - last) / last * 100
         return variance.toFixed(2);
     }
 
