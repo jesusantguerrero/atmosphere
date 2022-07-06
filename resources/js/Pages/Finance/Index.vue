@@ -40,14 +40,18 @@
                         <TransactionsTable
                             table-label="Budget"
                             class="pt-3 mt-5 "
-                            table-class="overflow-auto border rounded-lg shadow-md bg-slate-600 "
-                            :transactions="subscriptions"
-                            :allow-mark-as-paid="true"
-                            :parser="plannedDBToTransaction"
+                            table-class="overflow-auto text-sm border rounded-lg shadow-md bg-slate-600 "
+                            :transactions="topExpenses"
+                            :parser="categoryDBToTransaction"
                             @edit="handleEdit"
                         >
                         <template #action>
-                                <AtButton class="text-pink-500" @click="openModalFor('subscription')"><i class="fa fa-plus"></i> Go to Budget</AtButton>
+                                <AtButton class="text-pink-500 items-center flex" @click="Inertia.visit('/budgets')">
+                                    <span>
+                                        Go to Budget
+                                    </span>
+                                    <i class="fa fa-chevron-right ml-2"></i>
+                                </AtButton>
                             </template>
                         </TransactionsTable>
                     </div>
@@ -100,7 +104,7 @@
     import { useSelect } from '@/utils/useSelects';
     import formatMoney from '@/utils/formatMoney';
     import FinanceTemplate from '@/Components/templates/FinanceTemplate.vue';
-    import { useTransactionModal, transactionDBToTransaction  } from '@/domains/transactions'
+    import { useTransactionModal, transactionDBToTransaction, categoryDBToTransaction, plannedDBToTransaction } from '@/domains/transactions'
 
     const financeTemplateRef = ref(null)
     const { openModalFor, handleEdit } = useTransactionModal(financeTemplateRef)
@@ -115,7 +119,7 @@
                     return [];
                 }
             },
-            subscriptions: {
+            topExpenses: {
                 type: Array,
                 default()  {
                     return [];
@@ -166,17 +170,6 @@
                 }
             }
     });
-
-    const plannedDBToTransaction = (transactions) => {
-        return transactions.map(transaction => ({
-            id: transaction.id,
-            date: transaction.date,
-            title: transaction.description,
-            subtitle: `${transaction.account.name} -> ${transaction.category.name} `,
-            value: transaction.total,
-            status: 'PLANNED'
-        }))
-    }
 
     const { categoryOptions: transformCategoryOptions } = useSelect()
     transformCategoryOptions(props.categories, 'accounts', 'categoryOptions');

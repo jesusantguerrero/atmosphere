@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Planner;
+use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Transaction as CoreTransaction;
 
 class Transaction extends CoreTransaction
@@ -61,6 +62,22 @@ class Transaction extends CoreTransaction
         ])
         ->whereNotNull('transaction_category_id')
         ->getByMonth($startDate, $endDate)
+        ->get();
+    }
+
+    public static function getCategoryExpenses($teamId, $startDate, $endDate, $limit = 4) {
+        return self::where([
+            'transactions.team_id' => $teamId,
+            'direction' => CoreTransaction::DIRECTION_CREDIT,
+            'transactions.status' => 'verified'
+        ])
+        ->whereNotNull('transaction_category_id')
+        ->getByMonth($startDate, $endDate, false)
+        ->groupBy('transaction_category_id')
+        ->select(DB::raw('sum(total) as total, transaction_category_id, categories.name'))
+        ->join('categories', 'categories.id', 'transaction_category_id')
+        ->orderBy('total', 'desc')
+        ->limit($limit)
         ->get();
     }
 

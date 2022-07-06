@@ -40,17 +40,18 @@ class FinanceController extends InertiaController {
         $planned = BudgetHelper::getPlannedTransactions($teamId);
 
         $transactions = Transaction::getExpenses($teamId, $startDate, $endDate);
+        $topCategories = Transaction::getCategoryExpenses($teamId, $startDate, $endDate);
         $lastMonthExpenses= Transaction::getExpenses($teamId, $lastMonthStartDate, $lastMonthEndDate)->sum('total');
 
         $income = Transaction::getIncome( $teamId, $startDate, $endDate);
         $lastMonthIncome = Transaction::getIncome( $teamId, $lastMonthStartDate, $lastMonthEndDate);
-
         return Jetstream::inertia()->render($request, 'Finance/Index', [
             "planned" => $planned,
             "budgetTotal" => $budget->sum('amount'),
             "budget" => $budget->map(function ($budget) use($startDate, $endDate) {
                return Budget::dashboardParser($budget, $startDate, $endDate);
             }),
+            "topExpenses" => $topCategories,
             "categories" => CategoryHelper::getSubcategories($teamId, ['expenses', 'incomes']),
             "accounts" => Account::where('team_id', $teamId)->byDetailTypes(
                 ['cash', 'bank', 'cash_on_hand', 'savings', 'credit_card'])
