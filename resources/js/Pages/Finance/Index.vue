@@ -40,12 +40,12 @@
                         <TransactionsTable
                             table-label="Budget"
                             class="pt-3 mt-5 "
-                            table-class="overflow-auto text-sm border rounded-lg shadow-md bg-slate-600 "
+                            table-class="overflow-auto text-sm rounded-t-lg shadow-md bg-slate-600"
                             :transactions="topExpenses"
                             :parser="categoryDBToTransaction"
                             @edit="handleEdit"
                         >
-                        <template #action>
+                            <template #action>
                                 <AtButton class="text-pink-500 items-center flex" @click="Inertia.visit('/budgets')">
                                     <span>
                                         Go to Budget
@@ -54,6 +54,7 @@
                                 </AtButton>
                             </template>
                         </TransactionsTable>
+                        <BudgetProgress :goal="budgetTotal" :current="transactionTotal" class="border-t "/>
                     </div>
                 </div>
                 <div class="flex flex-wrap mt-5 md:flex-nowrap md:space-x-2">
@@ -105,6 +106,7 @@
     import formatMoney from '@/utils/formatMoney';
     import FinanceTemplate from '@/Components/templates/FinanceTemplate.vue';
     import { useTransactionModal, transactionDBToTransaction, categoryDBToTransaction, plannedDBToTransaction } from '@/domains/transactions'
+import BudgetProgress from '@/Components/molecules/BudgetProgress.vue';
 
     const financeTemplateRef = ref(null)
     const { openModalFor, handleEdit } = useTransactionModal(financeTemplateRef)
@@ -128,12 +130,6 @@
             budgetTotal: {
                 type: Number,
                 default: 0,
-            },
-            budget: {
-                type: Array,
-                default() {
-                    return []
-                }
             },
             income: {
                 type: Number,

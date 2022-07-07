@@ -18,6 +18,11 @@ class MonthBudget extends Model
         return self::where('team_id', $teamId)->where('month', $yearMonth)->get();
     }
 
+    public static function getMonthAssignmentTotal($teamId, $date, $field="budgeted") {
+        $yearMonth = (new DateTime($date))->format('Y-m'). "-01";
+        return self::where('team_id', $teamId)->where('month', $yearMonth)->sum($field);
+    }
+
     public static function createBudget($data) {
         $monthBudget = self::where([
             "team_id" => $data['team_id'],
