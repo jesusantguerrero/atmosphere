@@ -5,10 +5,15 @@
             <div class="min-h-screen bg-slate-800 home-container">
                 <nav class="border-b shadow-md border-slate-900 app-header bg-slate-800">
                     <!-- Primary Navigation Menu -->
-                    <div class="px-4 mx-auto sm:px-6 lg:px-8">
-                        <div class="flex justify-between h-16">
-                            <div class="flex">
-                                <!-- Navigation Links -->
+                    <div class="pr-4 mx-auto sm:pr-6 lg:pr-8 text-white">
+                        <div class="flex justify-between h-16 items-center">
+                            <div class="flex items-center">
+                                <LogerTabButton @click="$emit('back')" v-if="showBackButton">
+                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--ic" width="32" height="32" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path fill="currentColor" d="M14.71 6.71a.996.996 0 0 0-1.41 0L8.71 11.3a.996.996 0 0 0 0 1.41l4.59 4.59a.996.996 0 1 0 1.41-1.41L10.83 12l3.88-3.88c.39-.39.38-1.03 0-1.41z"></path></svg>
+                                </LogerTabButton>
+                                <h4 :class="[showBackButton ? 'ml-2' : 'ml-6']">
+                                    {{ sectionTitle }}
+                                </h4>
                             </div>
 
                             <div class="hidden sm:flex sm:items-center sm:ml-6">
@@ -208,10 +213,10 @@
                         <AtSide
                             class="text-gray-200 border-r shadow-md border-slate-900 bg-slate-800 app-side"
                             title="Loger"
-                            :menu="menu"
+                            :menu="appMenu"
                             :current-path="currentPath"
-                            item-class="block w-full px-5 py-1 mb-2 text-md font-bold text-gray-400 rounded-md hover:text-pink-600 hover:bg-slate-400"
-                            item-active-class="text-pink-400 bg-slate-500"
+                            item-class="block w-full px-5 py-1 mb-2 text-md font-bold text-gray-400 rounded-md hover:text-pink-500 hover:bg-slate-600/50"
+                            item-active-class="text-pink-500 bg-slate-600/75"
                         >
                             <template #brand>
                                 <h1 class="pl-5 text-3xl font-bold text-pink-500">Loger.</h1>
@@ -221,7 +226,7 @@
 
                     <div class="app-content__inner ic-scroller">
                         <!-- Page Heading -->
-                        <header class="" v-if="$slots.header">
+                        <header>
                             <div class="px-4 py-6 mx-auto md:px-0 max-w-7xl">
                                 <slot name="header"></slot>
                             </div>
@@ -239,57 +244,39 @@
 </template>
 
 <script setup>
+    import { provide, ref, computed } from 'vue'
+    import { Inertia } from '@inertiajs/inertia'
+    import { AtSide } from "atmosphere-ui"
     import JetBanner from '@/Jetstream/Banner.vue'
     import JetDropdown from '@/Jetstream/Dropdown.vue'
     import JetDropdownLink from '@/Jetstream/DropdownLink.vue'
     import JetResponsiveNavLink from '@/Jetstream/ResponsiveNavLink.vue'
-    import { AtSide } from "atmosphere-ui"
-    import { provide, reactive, ref } from 'vue'
-    import { Inertia } from '@inertiajs/inertia'
-    import { darkTheme, NConfigProvider, createTheme } from 'naive-ui'
-    import colors from 'tailwindcss/colors'
-import PrivacyToggle from '@/Components/molecules/PrivacyToggle.vue'
+    import { darkTheme, NConfigProvider } from 'naive-ui'
+    import PrivacyToggle from '@/Components/molecules/PrivacyToggle.vue'
+    import { darkThemeOverrides } from '@/utils/naiveui'
+    import { appMenu } from '@/domains/app'
+import { usePage } from '@inertiajs/inertia-vue3'
+import LogerTabButton from '@/Components/atoms/LogerTabButton.vue'
 
-    const darkThemeOverrides = {
-        DataTable: {
-            borderRadius: '8px',
-            common: {
-                baseColor: colors.slate[600],
-                bodyColor: colors.slate[600],
-            }
+    const props = defineProps({
+        title: {
+            type: String
+        },
+        showBackButton: {
+            type: Boolean,
         }
-    }
+    })
 
-    const showingNavigationDropdown = ref(false)
-    const menu =  reactive([
-        {
-            icon: 'home',
-            name: 'home',
-            label: 'Home',
-            to: '/dashboard'
-        },
-        {
-            icon: 'far fa-calendar-alt',
-            label: 'Meal Planer',
-            name: 'mealPlanner',
-            to: '/meal-planner'
-        },
-        {
-            icon: 'fas fa-dollar-sign',
-            label: 'Finance',
-            name: 'finance',
-            to: route('finance')
-        },
-        {
-            icon: 'fas fa-heart',
-            label: 'Relationship',
-            to: route('finance')
-        }
-    ])
+    const pageProps = usePage().props
+    const sectionTitle = computed(() => {
+        return props.title || pageProps.value.sectionTitle
+    })
 
     const isPrivacyMode = ref(false)
     provide('hasHiddenValues', isPrivacyMode)
 
+    // routing
+    const showingNavigationDropdown = ref(false)
     const switchToTeam = (team) => {
         Inertia.put(route('current-team.update'), {
             'team_id': team.id
@@ -297,6 +284,10 @@ import PrivacyToggle from '@/Components/molecules/PrivacyToggle.vue'
             preserveState: false
         })
     }
+
+    const currentPath = computed(() => {
+        return document?.location?.pathname
+    })
 
     const logout = () => Inertia.post(route('logout'));
 </script>
@@ -318,6 +309,7 @@ body, html {
     top: 0;
     position: fixed;
     z-index: 1000;
+    padding-left: var(--app-side-width);
 }
 
 .appside-container {

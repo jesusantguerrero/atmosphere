@@ -46,6 +46,7 @@ class FinanceController extends InertiaController {
         $income = Transaction::getIncome( $teamId, $startDate, $endDate);
         $lastMonthIncome = Transaction::getIncome( $teamId, $lastMonthStartDate, $lastMonthEndDate);
         return Jetstream::inertia()->render($request, 'Finance/Index', [
+            "sectionTitle" => "Finance",
             "planned" => $planned,
             "budgetTotal" => $budget->sum('amount'),
             "budget" => $budget->map(function ($budget) use($startDate, $endDate) {
@@ -100,8 +101,8 @@ class FinanceController extends InertiaController {
 
         $transactions = $this->modelQuery->get();
 
-
         return Jetstream::inertia()->render($request, 'Finance/Transactions', [
+            "sectionTitle" => "Finance Transactions",
             "categories" => CategoryHelper::getSubcategories($teamId, ['expenses', 'incomes']),
             "transactionTotal" => $transactions->sum('total'),
             "transactions" => $transactions->map(function ($transaction) use ($groupBy) {

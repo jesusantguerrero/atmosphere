@@ -1,5 +1,5 @@
 <template>
-    <AppLayout title="Budget Settings">
+    <AppLayout title="Budget Settings" @back="$inertia.visit(route('finance'))" :show-back-button="true">
         <FinanceTemplate :accounts="accounts">
             <div class="flex mt-2 justify-between">
                 <div class="flex items-center">

@@ -32,6 +32,7 @@ class DashboardController {
 
 
         return Inertia::render('Dashboard', [
+            "sectionTitle" => "Dashboard",
             "strings" => __('dashboard'),
             "meals" => Planner::where([
                 'team_id' => $teamId,

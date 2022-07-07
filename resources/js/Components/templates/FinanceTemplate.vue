@@ -1,9 +1,6 @@
 <template>
-    <div class="pl-6 pb-20 mt-5 max-w-screen-2xl space-x-2 flex lg:pl-8">
+    <div class="pl-6 pb-20 max-w-screen-2xl space-x-2 flex lg:pl-8">
         <div class="w-10/12 pr-5">
-            <SectionTitle type="secondary">
-                {{ title }}
-            </SectionTitle>
             <slot />
         </div>
 
