@@ -23,7 +23,10 @@
             >
                 <h4 class="text-gray-200">{{ section.label }}</h4>
                 <SectionTitle class="mt-2">
-                    {{ formatMoney(section.value) }}
+                    <span class="relative">
+                        <NumberHider />
+                        {{ formatMoney(section.value) }}
+                    </span>
                 </SectionTitle>
             </div>
         </div>
@@ -38,9 +41,10 @@
 <script setup>
 import { AtButton } from "atmosphere-ui";
 import { computed, ref } from "vue";
-import SectionTitle from "../atoms/SectionTitle.vue";
-import TransactionModal from "../TransactionModal.vue"
-import formatMoney from "../../utils/formatMoney"
+import SectionTitle from "@/Components/atoms/SectionTitle.vue";
+import TransactionModal from "@/Components/TransactionModal.vue"
+import NumberHider from "@/Components/molecules/NumberHider.vue";
+import formatMoney from "@/utils/formatMoney"
 
 const props = defineProps({
     username: {

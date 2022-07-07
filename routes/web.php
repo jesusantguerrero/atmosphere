@@ -6,7 +6,7 @@ use App\Http\Controllers\Api\AutomationController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\FinancialController;
+use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\GoalController;
 use App\Http\Controllers\MealController;
 use App\Http\Controllers\PlannerController;
@@ -67,9 +67,12 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         Route::get('/settings/{name}',  'section');
     });
 
-    Route::controller(FinancialController::class)->group(function () {
-        Route::get('/financial', 'index');
-        Route::post('/financial/import', 'import');
+    Route::controller(FinanceController::class)->group(function () {
+        Route::get('/finance', 'index')->name('finance');
+        Route::get('/finance/transactions', 'transactions')->name('finance.transactions');
+        Route::get('/finance/{accountId}/transactions', 'transactions')->name('finance.account.transactions');
+        Route::post('/finance/import', 'importTransactions')->name('finance.import');
+        Route::post('/finance/import-budget', 'importMonthBudgets')->name('finance.import.budget');
     });
 });
 

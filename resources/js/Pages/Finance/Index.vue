@@ -1,11 +1,7 @@
 <template>
-    <app-layout>
-        <div class="pl-6 pb-20 mt-5 max-w-screen-2xl space-x-2 flex lg:pl-8">
-            <div class="w-10/12 pr-5">
-                <section-title type="secondary">
-                    Finance
-                    <button @click="hasHiddenValues=!hasHiddenValues">hidden</button>
-                </section-title>
+    <AppLayout>
+        <FinanceTemplate title="Finance" :accounts="accounts" ref="financeTemplateRef">
+            <section>
                 <div class="flex flex-wrap md:flex-nowrap md:space-x-2">
                     <div class="w-full md:w-7/12">
                         <div class="mt-5">
@@ -32,7 +28,7 @@
                                 </AtButton>
                             </div>
                             <FinanceVarianceCard
-                                @click="$inertia.visit('/financial')"
+                                @click="$inertia.visit('/finance/transactions')"
                                 title="Expenses"
                                 :value="formatMoney(transactionTotal)"
                                 variance-title="Last month variance"
@@ -44,14 +40,18 @@
                         <TransactionsTable
                             table-label="Budget"
                             class="pt-3 mt-5 "
-                            table-class="overflow-auto border rounded-lg shadow-md bg-slate-600 "
-                            :transactions="subscriptions"
-                            :allow-mark-as-paid="true"
-                            :parser="plannedDBToTransaction"
+                            table-class="overflow-auto text-sm border rounded-lg shadow-md bg-slate-600 "
+                            :transactions="topExpenses"
+                            :parser="categoryDBToTransaction"
                             @edit="handleEdit"
                         >
                         <template #action>
-                                <AtButton class="text-pink-500" @click="openModalFor('subscription')"><i class="fa fa-plus"></i> Go to Budget</AtButton>
+                                <AtButton class="text-pink-500 items-center flex" @click="Inertia.visit('/budgets')">
+                                    <span>
+                                        Go to Budget
+                                    </span>
+                                    <i class="fa fa-chevron-right ml-2"></i>
+                                </AtButton>
                             </template>
                         </TransactionsTable>
                     </div>
@@ -68,7 +68,7 @@
                             :parser="plannedDBToTransaction"
                         >
                         <template #action>
-                            <at-button class="text-pink-500" @click="openModalFor('transaction')"><i class="fa fa-plus"></i> Add planned payment</at-button>
+                            <AtButton class="text-pink-500" @click="openModalFor('transaction')"><i class="fa fa-plus"></i> Add planned payment</AtButton>
                         </template>
                     </TransactionsTable>
                     </div>
@@ -87,39 +87,27 @@
                         </TransactionsTable>
                     </div>
                 </div>
-            </div>
-
-            <div class="w-2/12">
-                <SectionTitle class="mt-5 pl-5" type="secondary">
-                    Budget Accounts
-                </SectionTitle>
-                <AccountsLedger :accounts="accounts" class="mt-5" />
-            </div>
-
-            <transaction-modal
-                @close="isTransferModalOpen=false"
-                v-bind="transferConfig"
-                v-model:show="isTransferModalOpen"
-            />
-        </div>
-    </app-layout>
+            </section>
+        </FinanceTemplate>
+    </AppLayout>
 </template>
 
 <script setup>
-    import { reactive, ref, provide, computed } from 'vue';
+    import { computed, ref } from 'vue';
     import { Inertia } from '@inertiajs/inertia';
     import { AtButton } from "atmosphere-ui";
     import AppLayout from '@/Layouts/AppLayout.vue'
     import FinanceCard from "@/Components/molecules/FinanceCard.vue";
     import FinanceVarianceCard from "@/Components/molecules/FinanceVarianceCard.vue";
     import TransactionsTable from "@/Components/organisms/TransactionsTable.vue";
-    import AccountsLedger from "@/Components/templates/AccountsLedger.vue";
     import SectionTitle from "@/Components/atoms/SectionTitle.vue";
-    import TransactionModal from "@/Components/TransactionModal.vue"
-    import { transactionDBToTransaction } from '@/utils/transactions';
     import { useSelect } from '@/utils/useSelects';
     import formatMoney from '@/utils/formatMoney';
+    import FinanceTemplate from '@/Components/templates/FinanceTemplate.vue';
+    import { useTransactionModal, transactionDBToTransaction, categoryDBToTransaction, plannedDBToTransaction } from '@/domains/transactions'
 
+    const financeTemplateRef = ref(null)
+    const { openModalFor, handleEdit } = useTransactionModal(financeTemplateRef)
     const props = defineProps({
             user: {
                 type: Object,
@@ -131,7 +119,7 @@
                     return [];
                 }
             },
-            subscriptions: {
+            topExpenses: {
                 type: Array,
                 default()  {
                     return [];
@@ -183,22 +171,6 @@
             }
     });
 
-    const hasHiddenValues = ref(false)
-    provide('hasHiddenValues', hasHiddenValues)
-
-    const selected = ref(null);
-
-    const plannedDBToTransaction = (transactions) => {
-        return transactions.map(transaction => ({
-            id: transaction.id,
-            date: transaction.date,
-            title: transaction.description,
-            subtitle: `${transaction.account.name} -> ${transaction.category.name} `,
-            value: transaction.total,
-            status: 'PLANNED'
-        }))
-    }
-
     const { categoryOptions: transformCategoryOptions } = useSelect()
     transformCategoryOptions(props.categories, 'accounts', 'categoryOptions');
     transformCategoryOptions(props.accounts, 'accounts', 'accountsOptions');
@@ -206,7 +178,7 @@
         if (last === 0) {
             return 0;
         }
-        const variance = (current - last) / (last * 100)
+        const variance = (current - last) / last * 100
         return variance.toFixed(2);
     }
 
@@ -224,23 +196,5 @@
                 Inertia.reload();
             }
         })
-    }
-
-    const isTransferModalOpen = ref(false);
-    const transferConfig = reactive({
-        recurrence: false,
-        automatic: false,
-        transactionData: null
-    })
-
-    const openModalFor = (isRecurrent, automatic) => {
-        isTransferModalOpen.value = true;
-        transferConfig.recurrence = isRecurrent;
-        transferConfig.automatic = automatic;
-    }
-
-    const handleEdit = (transaction) => {
-        transferConfig.transactionData = transaction;
-        isTransferModalOpen.value = true;
     }
 </script>

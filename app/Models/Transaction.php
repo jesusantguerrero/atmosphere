@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Planner;
+use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Transaction as CoreTransaction;
 
 class Transaction extends CoreTransaction
@@ -29,10 +30,13 @@ class Transaction extends CoreTransaction
                 'id' => $transaction->id,
                 'date' => $transaction->date,
                 'number' => $transaction->number,
+                'direction' => $transaction->direction,
+                'payee' => $transaction->payee,
                 'description' => $transaction->description,
                 'direction' => $transaction->direction,
                 'account' => $transaction->mainLine ? $transaction->mainLine->account: [],
                 'category' => $transaction->category ? $transaction->category->account : [],
+                'transactionCategory' => $transaction->transactionCategory,
                 'currency_code' => $transaction->currency_code,
                 'total' => $transaction->total,
                 'lines' => $transaction->lines,
@@ -41,18 +45,11 @@ class Transaction extends CoreTransaction
             ];
         } else {
             return [
-                // 'id' => $transaction->id,
-                // 'date' => $transaction->date,
-                // 'number' => $transaction->number,
                 'description' => $transaction->description,
-                // 'direction' => $transaction->direction,
                 'account' => $transaction->mainLine ? $transaction->mainLine->account: [],
                 'category' => $transaction->category ? $transaction->category->account : [],
                 'currency_code' => $transaction->currency_code,
                 'total' => $transaction->total,
-                // 'lines' => $transaction->lines,
-                // 'mainLine' => $transaction->mainLine,
-                // 'schedule' => $transaction->schedule,
             ];
         }
     }
@@ -66,5 +63,38 @@ class Transaction extends CoreTransaction
         ->whereNotNull('transaction_category_id')
         ->getByMonth($startDate, $endDate)
         ->get();
+    }
+
+    public static function getCategoryExpenses($teamId, $startDate, $endDate, $limit = 4) {
+        return self::where([
+            'transactions.team_id' => $teamId,
+            'direction' => CoreTransaction::DIRECTION_CREDIT,
+            'transactions.status' => 'verified'
+        ])
+        ->whereNotNull('transaction_category_id')
+        ->getByMonth($startDate, $endDate, false)
+        ->groupBy('transaction_category_id')
+        ->select(DB::raw('sum(total) as total, transaction_category_id, categories.name'))
+        ->join('categories', 'categories.id', 'transaction_category_id')
+        ->orderBy('total', 'desc')
+        ->limit($limit)
+        ->get();
+    }
+
+    public static function getIncome($teamId, $startDate, $endDate) {
+        return self::where([
+            'team_id' => $teamId,
+            'status' => 'verified'
+        ])
+        ->byCategories(['inflow'], $teamId)
+        ->getByMonth($startDate, $endDate)
+        ->sum('total');
+    }
+
+    public static function getDrafts($teamId) {
+        return self::where([
+            'team_id' => $teamId,
+            'status' => 'draft'
+        ])->orderBy('date', 'desc')->get();
     }
 }
