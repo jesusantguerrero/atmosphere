@@ -1,5 +1,5 @@
 <template>
-<AppLayout>
+<AppLayout @back="$inertia.visit(route('finance'))" :show-back-button="true">
     <FinanceTemplate title="Transactions" :accounts="accounts">
         <component :is="listComponent"
             :transactions="transactions"

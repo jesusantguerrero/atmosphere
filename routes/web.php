@@ -32,16 +32,17 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
     Route::controller(DashboardController::class)->group(function () {
         Route::get('/dashboard', 'index')->name('dashboard');
-        Route::get('/finance', 'finance')->name('finance');
         Route::get('/integrations', 'integrations')->name('integrations');
         Route::post('/services/google', 'google')->name('services.google');
     });
 
+    //  Meal Planner
     Route::controller(MealController::class)->group(function () {
         Route::resource('/meals', MealController::class);
         Route::post('/meals/add-plan','addPlan')->name('meals.addPlan');
         Route::get('/meals-random', 'random')->name('meals.random');
     });
+    Route::resource('/meal-planner', PlannerController::class);
 
     Route::controller(GoalController::class)->group(function () {
         Route::resource('/goals', GoalController::class);
@@ -59,7 +60,6 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         // Budget assignments
         Route::post('/budgets/{categoryId}/months/{month}', 'assignMonthBudget')->name("budget.assignment");
     });
-    Route::resource('/meal-planner', PlannerController::class);
 
     Route::controller(SettingsController::class)->group(function () {
         Route::resource('/settings', SettingsController::class);

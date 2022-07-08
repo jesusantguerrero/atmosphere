@@ -6,6 +6,7 @@ use App\Helpers\BudgetHelper;
 use App\Imports\BudgetImport;
 use App\Imports\TransactionsImport;
 use App\Models\Budget;
+use App\Models\MonthBudget;
 use App\Models\Transaction;
 use Atmosphere\Http\InertiaController;
 use Carbon\Carbon;
@@ -32,10 +33,7 @@ class FinanceController extends InertiaController {
         $lastMonthEndDate = $request->query('endDate', Carbon::now()->subMonth()->endOfMonth()->format('Y-m-d'));
         $teamId = $request->user()->current_team_id;
 
-        $budget = Budget::where([
-            'team_id' => $teamId
-        ])->with('account')->get();
-
+        $budgetTotal = MonthBudget::getMonthAssignmentTotal($teamId, $startDate);
 
         $planned = BudgetHelper::getPlannedTransactions($teamId);
 
@@ -46,11 +44,9 @@ class FinanceController extends InertiaController {
         $income = Transaction::getIncome( $teamId, $startDate, $endDate);
         $lastMonthIncome = Transaction::getIncome( $teamId, $lastMonthStartDate, $lastMonthEndDate);
         return Jetstream::inertia()->render($request, 'Finance/Index', [
+            "sectionTitle" => "Finance",
             "planned" => $planned,
-            "budgetTotal" => $budget->sum('amount'),
-            "budget" => $budget->map(function ($budget) use($startDate, $endDate) {
-               return Budget::dashboardParser($budget, $startDate, $endDate);
-            }),
+            "budgetTotal" => $budgetTotal,
             "topExpenses" => $topCategories,
             "categories" => CategoryHelper::getSubcategories($teamId, ['expenses', 'incomes']),
             "accounts" => Account::where('team_id', $teamId)->byDetailTypes(
@@ -100,8 +96,8 @@ class FinanceController extends InertiaController {
 
         $transactions = $this->modelQuery->get();
 
-
         return Jetstream::inertia()->render($request, 'Finance/Transactions', [
+            "sectionTitle" => "Finance Transactions",
             "categories" => CategoryHelper::getSubcategories($teamId, ['expenses', 'incomes']),
             "transactionTotal" => $transactions->sum('total'),
             "transactions" => $transactions->map(function ($transaction) use ($groupBy) {
