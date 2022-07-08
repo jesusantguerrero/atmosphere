@@ -13,6 +13,7 @@ use App\Http\Controllers\PlannerController;
 use App\Http\Controllers\SettingsController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
 
 /*
@@ -25,6 +26,10 @@ use Inertia\Inertia;
 | contains the "web" middleware group. Now create something great!
 |
 */
+
+if (getenv('APP_ENV') == 'production') {
+    URL::forceScheme('https');
+}
 
 Route::middleware(['auth:sanctum', 'verified'])->get('/', [DashboardController::class, 'index']);
 
