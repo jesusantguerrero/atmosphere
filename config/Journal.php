@@ -667,6 +667,6 @@ return [
         ]
     ],
     "features" => [
-        Features::transactionCategories(),
+        // Features::transactionCategories(),
     ]
 ];
