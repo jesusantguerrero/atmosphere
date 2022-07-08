@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Meal;
+use App\Models\MealType;
 use App\Models\Planner;
 use Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PlannerController extends InertiaController
 {
@@ -13,9 +15,9 @@ class PlannerController extends InertiaController
     {
         $this->model = $mealPlan;
         $this->templates = [
-            "index" => 'Planner',
-            "create" => 'PlannerCreate',
-            "edit" => 'PlannerCreate'
+            "index" => 'Meals/Planner',
+            "create" => 'Meals/PlannerCreate',
+            "edit" => 'Meals/PlannerCreate'
         ];
         $this->searchable = ['name'];
         $this->validationRules = [];
@@ -52,6 +54,7 @@ class PlannerController extends InertiaController
         $queryParams['limit'] = $queryParams['limit'] ?? 50;
         $plans = $this->getModelQuery($request);
         $mode = $queryParams['mode'] ?? '';
+        $teamId = Auth()->user()->current_team_id;
         return [
             'mealPlans' => $plans,
             'mode' => $mode,
@@ -62,7 +65,8 @@ class PlannerController extends InertiaController
                 return Meal::where([
                     'team_id' => $request->user()->current_team_id
                 ])->get();
-            }
+            },
+            'mealTypes' => MealType::where('team_id', $teamId)->get()
         ];
     }
 }

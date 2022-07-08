@@ -15,9 +15,9 @@ class MealController extends InertiaController
     {
         $this->model = $meal;
         $this->templates = [
-            "index" => 'MealPlanner',
-            "create" => 'MealPlannerCreate',
-            "edit" => 'MealPlannerCreate'
+            "index" => 'Meals/Index',
+            "create" => 'Meals/Create',
+            "edit" => 'Meals/Create'
         ];
         $this->searchable = ['name'];
         $this->validationRules = [
