@@ -1,8 +1,8 @@
 <template>
-    <at-auth-box>
-        <at-auth-form
+    <AtAuthBox>
+        <AtAuthForm
             app-name="Loger"
-            btn-class="text-white bg-pink-500 hover:bg-pink-600"
+            btn-class="text-white rounded-lg overflow-hidden bg-pink-500 hover:bg-pink-600"
             link-class="text-pink-500 hover:text-pink-600"
             v-model:isLoading="form.processing"
             :errors="form.errors"
@@ -10,7 +10,7 @@
             @home-pressed="onHomePressed"
             @link-pressed="onLinkPressed"
         />
-    </at-auth-box>
+    </AtAuthBox>
 </template>
 
 <script setup>

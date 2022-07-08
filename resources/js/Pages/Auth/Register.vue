@@ -3,7 +3,7 @@
         <AtAuthForm
             app-name="Loger"
             mode="register"
-            btn-class="text-white bg-pink-500 hover:bg-pink-600"
+            btn-class="text-white bg-pink-500 rounded-lg hover:bg-pink-600"
             link-class="text-pink-500 hover:text-pink-600"
             v-model:isLoading="form.processing"
             :errors="form.errors"
@@ -12,9 +12,9 @@
             @link-pressed="onLinkPressed"
         >
             <template #prependInput>
-                <at-field label="Name">
-                    <at-input v-model="form.name" required/>
-                </at-field>
+                <AtField label="Name">
+                    <AtInput v-model="form.name" required />
+                </AtField>
             </template>
         </AtAuthForm>
   </AtAuthBox>
@@ -22,7 +22,7 @@
 
 <script setup>
     import { Inertia } from "@inertiajs/inertia";
-import { useForm } from "@inertiajs/inertia-vue3";
+    import { useForm } from "@inertiajs/inertia-vue3";
     import { AtAuthBox, AtAuthForm, AtInput, AtField } from "atmosphere-ui";
 
 
@@ -53,7 +53,7 @@ const submit = (formData) => {
     .post(route('register'), {
         onFinish: () => {
             form.reset('password', 'password_confirmation')
-            Inertia.visit('login')
+            Inertia.visit('dashboard')
         }
     })
 }
