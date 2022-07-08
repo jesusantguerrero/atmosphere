@@ -1,5 +1,5 @@
 <template>
-    <app-layout>
+    <AppLayout>
         <template #header>
             <div class="flex justify-between">
                 <div>
@@ -21,15 +21,15 @@
                 <goal-form :form="form" @close="close" ref="resourceForm" />
             </div>
         </div>
-    </app-layout>
+    </AppLayout>
 </template>
 
 <script setup>
-    import AppLayout from '@/Layouts/AppLayout';
-    import { AtButton } from "atmosphere-ui";
     import { ref } from 'vue';
+    import { AtButton } from "atmosphere-ui";
     import { Link } from "@inertiajs/inertia-vue3"
-    import GoalForm from '../Components/GoalForm.vue';
+    import AppLayout from '@/Layouts/AppLayout.vue';
+    import GoalForm from '@/Components/GoalForm.vue';
 
     defineProps({
         meals: {

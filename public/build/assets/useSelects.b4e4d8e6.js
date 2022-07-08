@@ -1,0 +1,1 @@
+import{V as u,s as f}from"./app.e738c84d.js";function o(){const l=(i,n="subcategories",e="categoryOptions")=>{if(!i||!i.map)return;const p=u.exports.cloneDeep(i).map(s=>(s.type=n&&s[n]?"group":null,s.key=s.id,s.value=s.id,s.label=s.name,s[n]&&(s.children=l(s[n],!1,!1)),s));return e&&f(e,p),p};return{categoryOptions:l}}export{o as u};

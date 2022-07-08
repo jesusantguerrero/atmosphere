@@ -1,29 +1,29 @@
 <template>
     <div>
-        <at-field
+        <AtField
             label="Title"
         >
-            <at-input v-model="form.name" placeholder="Your goal's name" />
-        </at-field>
+            <AtInput v-model="form.name" placeholder="Your goal's name" />
+        </AtField>
 
-        <at-field
+        <AtField
             label="Target amount"
         >
-            <at-input  v-model="form.target" type="number" />
-        </at-field>
-        <at-field
+            <AtInput  v-model="form.target" type="number" />
+        </AtField>
+        <AtField
             label="Amount saved"
         >
-            <at-input  v-model="form.amount" type="number" />
-        </at-field>
-        <at-field
+            <AtInput  v-model="form.amount" type="number" />
+        </AtField>
+        <AtField
             label="Due date"
         >
             <n-date-picker
                 v-model:value="form.due_date"
                 type="date"
             />
-        </at-field>
+        </AtField>
     </div>
 </template>
 

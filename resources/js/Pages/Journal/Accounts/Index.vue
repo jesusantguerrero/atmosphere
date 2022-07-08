@@ -29,12 +29,12 @@
 </template>
 
 <script setup>
-    import AppLayout from '@/Layouts/AppLayout'
-    import SectionTitle from "@/Components/atoms/SectionTitle";
-    import AccountModal from '../../../Components/organisms/AccountModal.vue';
+    import AppLayout from '@/Layouts/AppLayout.vue'
+    import SectionTitle from "@/Components/atoms/SectionTitle.vue";
+    import AccountModal from '@/Components/organisms/AccountModal.vue';
     import { AtButton } from "atmosphere-ui";
     import { ref } from 'vue';
-    import { useSelect } from '../../../utils/useSelects';
+    import { useSelect } from '@/utils/useSelects';
     import { Inertia } from '@inertiajs/inertia';
 
     const props = defineProps({
