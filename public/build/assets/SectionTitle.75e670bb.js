@@ -1,1 +1,0 @@
-import{c as o,o as r,a as l,g as n,y as p,u as c}from"./app.e738c84d.js";const f={props:{type:{type:String,default:"default"}},setup(e){const s=e,a=o(()=>{const t={default:"text-blue-400",primary:"text-pink-400",secondary:"text-gray-400"};return t[s.type]||t.default});return(t,u)=>(r(),l("h4",{class:p(["`text-lg font-bold",c(a)])},[n(t.$slots,"default")],2))}};export{f as _};
