@@ -27,7 +27,7 @@ use Inertia\Inertia;
 |
 */
 
-if (getenv('APP_ENV') == 'production') {
+if (config('app.env') == 'production') {
     URL::forceScheme('https');
 }
 
