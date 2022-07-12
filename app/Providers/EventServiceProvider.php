@@ -23,7 +23,10 @@ class EventServiceProvider extends ServiceProvider
         TeamCreated::class => [
             CreateTeamAccounts::class,
             CreateTeamSettings::class
-         ],
+        ],
+        AccountCreated::class => [
+            CreateBudgetCategory::class
+        ]
     ];
 
     /**

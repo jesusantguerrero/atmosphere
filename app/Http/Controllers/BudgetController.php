@@ -44,9 +44,7 @@ class BudgetController extends InertiaController
 
         return [
             'budgets' => CategoryGroupCollection::collection($this->getModelQuery($request)),
-            "accounts" => Account::where('team_id', $teamId)->byDetailTypes(
-                ['cash', 'bank', 'cash_on_hand', 'savings', 'credit_card'])
-                ->orderBy('index', )->get(),
+            "accounts" => Account::getByDetailTypes($teamId),
             "categories" => Category::where([
                 'categories.team_id' => $teamId,
                 'categories.resource_type' => 'transactions'

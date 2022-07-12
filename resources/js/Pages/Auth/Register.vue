@@ -30,7 +30,7 @@ const form = useForm({
     name: '',
     email: '',
     password: '',
-    password_confirmation: '',
+    confirmPassword: '',
     terms: false,
 });
 

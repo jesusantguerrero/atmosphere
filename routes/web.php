@@ -37,7 +37,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
     Route::controller(DashboardController::class)->group(function () {
         Route::get('/dashboard', 'index')->name('dashboard');
-        Route::get('/integrations', 'integrations')->name('integrations');
+        Route::get('/settings/integrations', [DashboardController::class, 'integrations'])->name('settings.integrations');
         Route::post('/services/google', 'google')->name('services.google');
     });
 
