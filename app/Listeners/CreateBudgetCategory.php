@@ -2,10 +2,9 @@
 
 namespace App\Listeners;
 
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
 use Insane\Journal\Models\Core\AccountDetailType;
-use Insane\Journal\Models\Core\Category;
+use Insane\Journal\Events\AccountCreated;
+use App\Models\Category;
 
 class CreateBudgetCategory
 {
@@ -28,8 +27,12 @@ class CreateBudgetCategory
     public function handle(AccountCreated $event)
     {
         if ($event->account->detailTypeId?->name == AccountDetailType::CREDIT_CARD) {
-            $categoryGroupId = Category::findOrCreateByName($this->session, 'Credit Card Payments', ['editable' => 'false']);
-            Category::findOrCreateByName($this->session, $event->account->name, $categoryGroupId);
+            $session = [
+                "team_id" => $event->account->team_id,
+                "user_id" => $event->account->user_id
+            ];
+            $categoryGroupId = Category::findOrCreateByName($session, 'Credit Card Payments');
+            Category::findOrCreateByName($session, $event->account->name, $categoryGroupId);
         }
     }
 }

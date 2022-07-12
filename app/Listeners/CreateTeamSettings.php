@@ -20,7 +20,7 @@ class CreateTeamSettings
         $team = $event->team;
 
         if ($team->personal_team) {
-            // (new CreateChartAccounts)->create($team);
+            (new CreateChartAccounts)->create($team);
             (new CreateTransactionCategories)->create($team);
             $this->setTrialPeriod($team);
         }

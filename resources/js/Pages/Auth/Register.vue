@@ -53,8 +53,7 @@ const submit = (formData) => {
     .post(route('register'), {
         onFinish: () => {
             form.reset('password', 'password_confirmation')
-            Inertia.visit('dashboard')
         }
-    })
+    });
 }
 </script>

@@ -2,11 +2,13 @@
 
 namespace App\Providers;
 
+use App\Listeners\CreateBudgetCategory;
 use App\Listeners\CreateTeamSettings;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Insane\Journal\Listeners\CreateTeamAccounts;
+use Insane\Journal\Events\AccountCreated;
 use Laravel\Jetstream\Events\TeamCreated;
 
 class EventServiceProvider extends ServiceProvider
@@ -21,8 +23,8 @@ class EventServiceProvider extends ServiceProvider
             SendEmailVerificationNotification::class,
         ],
         TeamCreated::class => [
-            CreateTeamAccounts::class,
-            CreateTeamSettings::class
+            CreateTeamSettings::class,
+            // CreateTeamAccounts::class
         ],
         AccountCreated::class => [
             CreateBudgetCategory::class

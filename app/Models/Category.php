@@ -29,6 +29,8 @@ class Category extends CoreCategory
     public function assignBudget(string $month, mixed $postData) {
         return MonthBudget::updateOrCreate([
             'category_id' => $this->id,
+            'team_id' => $this->team_id,
+            'user_id' => $this->user_id,
             'month' => $month,
             'name' => $month,
         ], [

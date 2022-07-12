@@ -225,9 +225,8 @@ return [
             "resource_type" => "transactions",
             "display_id" => "inflow",
             "name" => "Inflow",
-            "Description" => "To be budgeted",
+            "description" => "To be budgeted",
             "depth" => 0,
-            'is_editable' => false,
             "childs" => [
                 [
                     "resource_type" => "transactions",
@@ -235,11 +234,8 @@ return [
                     "name" => "Ready to Assign",
                     "Description" => "Money expecting assignment",
                     "depth" => 1,
-                ],
+                ]
             ]
         ]
     ],
-    "features" => [
-        Features::transactionCategories(),
-    ]
 ];
