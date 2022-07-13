@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 
 use App\Libraries\GoogleService;
+use App\Models\Category;
 use App\Models\Integrations\AutomationRecipe;
 use App\Models\Integrations\AutomationService;
 use App\Models\Integrations\AutomationTask;
@@ -14,7 +15,7 @@ use App\Models\Transaction;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Insane\Journal\Helpers\CategoryHelper;
+use Insane\Journal\Models\Core\Account;
 use Laravel\Jetstream\Jetstream;
 
 class DashboardController {
@@ -30,6 +31,7 @@ class DashboardController {
 
         $drafts = Transaction::getDrafts($teamId);
 
+        $categories = Category::getBudgetSubcategories($teamId);
 
         return Inertia::render('Dashboard', [
             "sectionTitle" => "Dashboard",
@@ -40,8 +42,8 @@ class DashboardController {
             ])->with('dateable')->get(),
             "budgetTotal" => $budget->sum('budgeted'),
             "budget" => [],
-            "categories" => $teamId ? CategoryHelper::getSubcategories($teamId, ['expenses', 'incomes', 'liabilities']) : null,
-            "accounts" => $teamId ? CategoryHelper::getAccounts($teamId, ['cash_and_bank', 'credit_card']) : null,
+            "categories" => $categories,
+            "accounts" => $teamId ? Account::getByDetailTypes($teamId) : [],
             "transactionTotal" => $transactions->sum('total'),
             "transactions" => $transactions->map(function ($transaction) {
                 return Transaction::parser($transaction);

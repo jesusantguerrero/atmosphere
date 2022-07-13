@@ -49,6 +49,17 @@ class Category extends CoreCategory
         ];
     }
 
+    public static function getBudgetSubcategories($teamId) {
+        return self::where([
+            'categories.team_id' => $teamId,
+            'categories.resource_type' => 'transactions',
+        ])
+        ->whereNull('parent_id')
+            ->orderBy('index')
+            ->with('subCategories')
+            ->get();
+    }
+
     /**
      * Get the current balance.
      *

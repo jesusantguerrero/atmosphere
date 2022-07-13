@@ -294,7 +294,8 @@ import { useSelect } from '@/utils/useSelects'
 
     //  categories
     const { categoryOptions: transformCategoryOptions } = useSelect()
-    transformCategoryOptions(pageProps.value.categories, 'subcategories', 'categoryOptions');
+    transformCategoryOptions(pageProps.value.categories, 'sub_categories', 'categoryOptions');
+    transformCategoryOptions(pageProps.value.accounts, 'accounts', 'accountsOptions');
 </script>
 
 <style lang="scss">
