@@ -3,7 +3,7 @@ import '../css/app.css';
 
 // Import modules...
 import { createApp, h } from 'vue';
-import { createInertiaApp, Link } from '@inertiajs/inertia-vue3';
+import { createInertiaApp } from '@inertiajs/inertia-vue3';
 import { InertiaProgress } from '@inertiajs/progress';
 import "atmosphere-ui/style.css"
 import { ZiggyVue } from '../../vendor/tightenco/ziggy/dist/vue.m';

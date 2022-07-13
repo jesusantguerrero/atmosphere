@@ -49,9 +49,7 @@ class FinanceController extends InertiaController {
             "budgetTotal" => $budgetTotal,
             "topExpenses" => $topCategories,
             "categories" => CategoryHelper::getSubcategories($teamId, ['expenses', 'incomes']),
-            "accounts" => Account::where('team_id', $teamId)->byDetailTypes(
-                ['cash', 'bank', 'cash_on_hand', 'savings', 'credit_card'])
-                ->orderBy('index', )->get(),
+            "accounts" => Account::getByDetailTypes($teamId),
             "transactionTotal" => $transactions->sum('total'),
             "lastMonthExpenses" => $lastMonthExpenses,
             "income" => $income,
@@ -104,9 +102,7 @@ class FinanceController extends InertiaController {
                 return Transaction::parser($transaction, (bool) $groupBy);
             }),
             "accountId" => $accountId,
-            "accounts" => Account::where('team_id', $teamId)->byDetailTypes(
-                ['cash', 'bank', 'cash_on_hand', 'savings', 'credit_card'])
-                ->orderBy('index', )->get(),
+            "accounts" => Account::getByDetailTypes($teamId),
             "serverSearchOptions" => [
                 "group" => $groupBy,
                 "filters" => $filters,

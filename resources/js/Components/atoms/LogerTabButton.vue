@@ -5,6 +5,9 @@
     :class="tabClasses"
     v-bind="$attrs"
   >
+    <slot name="icon">
+        <i class="fa mr-2" :class="icon" v-if="icon" />
+    </slot>
     <slot />
   </button>
 </template>
@@ -17,6 +20,9 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  icon: {
+    type: String
+  }
 });
 const tabClasses = computed(() => {
   const activeStateClass = props.keepActiveState && "focus:bg-slate-600";

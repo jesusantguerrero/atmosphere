@@ -4,6 +4,7 @@ use App\Helpers\BudgetHelper;
 use App\Helpers\CategoryHelper;
 use App\Http\Controllers\Api\AutomationController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\PayeeApiController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FinanceController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\PlannerController;
 use App\Http\Controllers\SettingsController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
 
 /*
@@ -26,13 +28,17 @@ use Inertia\Inertia;
 |
 */
 
+if (config('app.env') == 'production') {
+    URL::forceScheme('https');
+}
+
 Route::middleware(['auth:sanctum', 'verified'])->get('/', [DashboardController::class, 'index']);
 
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
     Route::controller(DashboardController::class)->group(function () {
         Route::get('/dashboard', 'index')->name('dashboard');
-        Route::get('/integrations', 'integrations')->name('integrations');
+        Route::get('/settings/integrations', [DashboardController::class, 'integrations'])->name('settings.integrations');
         Route::post('/services/google', 'google')->name('services.google');
     });
 
@@ -84,4 +90,6 @@ Route::middleware(['auth:sanctum', 'verified'])->prefix('/api')->group(function 
         Route::post('/automation/{id}/run', 'run');
         Route::post('/automation/run-all', 'runAll');
     });
+
+    Route::resource('payees', PayeeApiController::class);
 });

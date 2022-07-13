@@ -6,7 +6,7 @@
                     <h2 class="text-xl font-bold leading-tight text-pink-400">
                         Budget settings
                     </h2>
-                    <span class="text-slate-200 ml-2"> {{ readyToAssign }} </span>
+                    <span class="text-slate-200 ml-2"> {{ formatMoney(readyToAssign) }} </span>
                 </div>
 
                 <div>
@@ -60,6 +60,8 @@
     import BudgetItemForm from '@/Components/molecules/BudgetItemForm.vue';
     import FinanceTemplate from '@/Components/templates/FinanceTemplate.vue';
     import { budgetCols, useBudget } from "@/domains/budget"
+    import formatMoney from '@/utils/formatMoney';
+
 
     const props = defineProps({
             budgets: {
