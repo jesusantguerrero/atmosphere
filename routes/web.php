@@ -4,6 +4,7 @@ use App\Helpers\BudgetHelper;
 use App\Helpers\CategoryHelper;
 use App\Http\Controllers\Api\AutomationController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\PayeeApiController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FinanceController;
@@ -89,4 +90,6 @@ Route::middleware(['auth:sanctum', 'verified'])->prefix('/api')->group(function 
         Route::post('/automation/{id}/run', 'run');
         Route::post('/automation/run-all', 'runAll');
     });
+
+    Route::resource('payees', PayeeApiController::class);
 });
