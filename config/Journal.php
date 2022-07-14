@@ -230,7 +230,7 @@ return [
             "childs" => [
                 [
                     "resource_type" => "transactions",
-                    "display_id" => "ready-to-assign",
+                    "display_id" => "ready_to_assign",
                     "name" => "Ready to Assign",
                     "Description" => "Money expecting assignment",
                     "depth" => 1,

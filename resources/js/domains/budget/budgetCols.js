@@ -5,8 +5,15 @@ import { h } from "vue"
 import { format, startOfMonth } from "date-fns";
 import { Inertia } from "@inertiajs/inertia";
 import BalanceInput from "@/Components/atoms/BalanceInput.vue";
+import { createBudgetCategory } from "./createBudgetCategory";
 
-export const budgetCols = (state) =>  [
+export const budgetCols = (state) =>  {
+    const isExpandedCategory = (category) => {
+        return state.expandedCategory && state.expandedCategory.id == category.id
+    };
+
+
+    return [
     {
         type: 'selection',
         fixed: 'left'
@@ -14,21 +21,37 @@ export const budgetCols = (state) =>  [
     {
         title: 'Category',
         key: 'name',
+        className: 'flex items-center',
         render (row, index) {
-            const tag = !row.parent_id ? 'strong' : 'span';
-            return h(tag, [
+            const tag = !row.parent_id ? 'div' : 'div';
+            return h(tag, { class: 'flex items-center' },
+                [
                     row.name,
                     h(AtButton, {
                         onclick: () => {
                             state.selectedBudget = row;
                         }},
                     'Edit'),
-                    !row.parent_id && h(AtButton, {
+                    !row.parent_id && (!isExpandedCategory(row) ? h(AtButton, {
                         onclick: () => {
                             state.expandedCategory = row;
                         }},
                         'Add subcategory'
-                    )])
+                    ) : h(LogerInput, {
+                        modelValue: state.categoryForm.name,
+                        withSave: true,
+                        class: 'w-40',
+                        placeholder: 'Add subcategory',
+                        onInput: (e) => {
+                            state.categoryForm.name = e.target.value;
+                        },
+                        onKeypress: (e) => {
+                            if (e.ctrlKey && e.which == 10) {
+                                createBudgetCategory(state.categoryForm, row.id)
+                                state.expandedCategory = null
+                            }
+                        }
+                }))])
         }
     },
     {
@@ -68,4 +91,4 @@ export const budgetCols = (state) =>  [
         },
         class: 'text-right'
     }
-];
+]};

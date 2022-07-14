@@ -17,21 +17,14 @@ class BudgetAssigned
      * @var \App\Models\MonthBudget
      */
     public $monthBudget;
-    /**
-     * The formData array.
-     *
-     * @var array
-     */
-    public $formData;
 
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct(MonthBudget $monthBudget, mixed $formData)
+    public function __construct(MonthBudget $monthBudget)
     {
         $this->monthBudget = $monthBudget;
-        $this->formData = $formData;
     }
 }

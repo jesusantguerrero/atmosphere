@@ -47,11 +47,6 @@
                     </section>
                 </div>
             </div>
-
-            <CategoryModal
-                @close="isModalOpen=false"
-                v-model:show="isModalOpen"
-            />
         </FinanceTemplate>
     </AppLayout>
 </template>
@@ -71,6 +66,7 @@
     import LogerTabButton from '@/Components/atoms/LogerTabButton.vue';
     import LogerInput from '@/Components/atoms/LogerInput.vue';
     import formatMoney from '@/utils/formatMoney';
+import { createBudgetCategory } from '@/domains/budget/createBudgetCategory';
 
     const props = defineProps({
             budgets: {
@@ -104,15 +100,15 @@
         }),
         categoryOptions: computed(() => {
             return makeCategoryOptions(props.categories, 'accounts', 'categoryOptions');
+        }),
+        categoryForm: useForm({
+            account_id: null,
+            parent_id: null,
+            name: '',
+            amount: 0,
         })
     })
 
-    const categoryForm = useForm({
-        account_id: null,
-        parent_id: null,
-        name: '',
-        amount: 0,
-    });
 
     const deleteBudget = (budget) => {
         Inertia.delete(route('budgets.destroy', budget), {
@@ -125,19 +121,8 @@
     }
 
     const saveBudgetCategory = () => {
-        categoryForm.transform((formData) => ({
-            ...formData,
-            resource_type: "transactions"
-        })).post("/budgets", {
-            onSuccess() {
-                Inertia.reload({
-                    preserveScroll: true
-                })
-                categoryForm.reset();
-            }
-        })
-
+        createBudgetCategory(state.categoryForm)
     }
 
-    const { isModalOpen, isAddingGroup, selectedBudget } = toRefs(state);
+    const { categoryForm, selectedBudget } = toRefs(state);
 </script>
