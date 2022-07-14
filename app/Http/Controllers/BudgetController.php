@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\BudgetAssigned;
 use App\Http\Resources\CategoryCollection;
 use App\Http\Resources\CategoryGroupCollection;
 use App\Models\Category;
@@ -44,9 +45,7 @@ class BudgetController extends InertiaController
 
         return [
             'budgets' => CategoryGroupCollection::collection($this->getModelQuery($request)),
-            "accounts" => Account::where('team_id', $teamId)->byDetailTypes(
-                ['cash', 'bank', 'cash_on_hand', 'savings', 'credit_card'])
-                ->orderBy('index', )->get(),
+            "accounts" => Account::getByDetailTypes($teamId),
             "categories" => Category::where([
                 'categories.team_id' => $teamId,
                 'categories.resource_type' => 'transactions'
@@ -74,7 +73,8 @@ class BudgetController extends InertiaController
     {
         $category = Category::find($categoryId);
         $postData = $request->post();
-        $category->assignBudget($month, $postData);
+        $monthBalance = $category->assignBudget($month, $postData);
+        BudgetAssigned::dispatch($monthBalance, $postData);
         return Redirect::back();
     }
 

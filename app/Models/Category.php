@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Events\BudgetAssigned;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Category as CoreCategory;
 
