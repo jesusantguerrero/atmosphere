@@ -173,8 +173,4 @@
     const handleEdit = (transaction) => {
         budgetTrackerRef.setTransaction(transaction)
     }
-
-    const { categoryOptions: transformCategoryOptions } = useSelect()
-    transformCategoryOptions(props.categories, 'accounts', 'categoryOptions');
-    transformCategoryOptions(props.accounts, 'accounts', 'accountsOptions');
 </script>

@@ -32,7 +32,6 @@
         </div>
         <slot></slot>
         <transaction-modal
-            @close="isTransferModalOpen=false"
             v-model:show="isTransferModalOpen"
         />
     </div>

@@ -3,6 +3,8 @@
 namespace App\Listeners;
 
 use Carbon\Carbon;
+use Insane\Journal\Actions\CreateChartAccounts;
+use Insane\Journal\Actions\CreateTransactionCategories;
 use Laravel\Jetstream\Events\TeamCreated;
 
 class CreateTeamSettings
@@ -18,8 +20,8 @@ class CreateTeamSettings
         $team = $event->team;
 
         if ($team->personal_team) {
-            // (new CreateChartAccounts)->create($team);
-            // (new CreateTransactionCategories)->create($team);
+            (new CreateChartAccounts)->create($team);
+            (new CreateTransactionCategories)->create($team);
             $this->setTrialPeriod($team);
         }
     }

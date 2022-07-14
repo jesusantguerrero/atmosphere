@@ -255,8 +255,9 @@
     import PrivacyToggle from '@/Components/molecules/PrivacyToggle.vue'
     import { darkThemeOverrides } from '@/utils/naiveui'
     import { appMenu } from '@/domains/app'
-import { usePage } from '@inertiajs/inertia-vue3'
-import LogerTabButton from '@/Components/atoms/LogerTabButton.vue'
+    import { usePage } from '@inertiajs/inertia-vue3'
+    import LogerTabButton from '@/Components/atoms/LogerTabButton.vue'
+import { useSelect } from '@/utils/useSelects'
 
     const props = defineProps({
         title: {
@@ -290,6 +291,11 @@ import LogerTabButton from '@/Components/atoms/LogerTabButton.vue'
     })
 
     const logout = () => Inertia.post(route('logout'));
+
+    //  categories
+    const { categoryOptions: transformCategoryOptions } = useSelect()
+    transformCategoryOptions(pageProps.value.categories, 'sub_categories', 'categoryOptions');
+    transformCategoryOptions(pageProps.value.accounts, 'accounts', 'accountsOptions');
 </script>
 
 <style lang="scss">

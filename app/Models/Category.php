@@ -30,6 +30,8 @@ class Category extends CoreCategory
     public function assignBudget(string $month, mixed $postData) {
         return MonthBudget::updateOrCreate([
             'category_id' => $this->id,
+            'team_id' => $this->team_id,
+            'user_id' => $this->user_id,
             'month' => $month,
             'name' => $month,
         ], [
@@ -46,6 +48,17 @@ class Category extends CoreCategory
             'spent' => $monthBalance,
             'available' => $monthBudget ? $monthBudget->available : 0,
         ];
+    }
+
+    public static function getBudgetSubcategories($teamId) {
+        return self::where([
+            'categories.team_id' => $teamId,
+            'categories.resource_type' => 'transactions',
+        ])
+        ->whereNull('parent_id')
+            ->orderBy('index')
+            ->with('subCategories')
+            ->get();
     }
 
     /**
