@@ -17,6 +17,10 @@
                             </div>
 
                             <div class="hidden sm:flex sm:items-center sm:ml-6">
+                                <AtButton class="text-sm text-white bg-pink-400" rounded @click="openTransferModal()">
+                                    <i class="fa fa-exchange-alt"></i>
+                                    Add transaction
+                                </AtButton>
                                 <PrivacyToggle v-model="isPrivacyMode" />
 
                                 <!-- Teams Dropdown -->
@@ -246,7 +250,7 @@
 <script setup>
     import { provide, ref, computed } from 'vue'
     import { Inertia } from '@inertiajs/inertia'
-    import { AtSide } from "atmosphere-ui"
+    import { AtSide, AtButton } from "atmosphere-ui"
     import JetBanner from '@/Jetstream/Banner.vue'
     import JetDropdown from '@/Jetstream/Dropdown.vue'
     import JetDropdownLink from '@/Jetstream/DropdownLink.vue'
@@ -257,8 +261,11 @@
     import { appMenu } from '@/domains/app'
     import { usePage } from '@inertiajs/inertia-vue3'
     import LogerTabButton from '@/Components/atoms/LogerTabButton.vue'
-import { useSelect } from '@/utils/useSelects'
+    import { useSelect } from '@/utils/useSelects'
+    import { useTransferModal } from '@/utils/useTransferModal'
 
+
+    const { openTransferModal } = useTransferModal()
     const props = defineProps({
         title: {
             type: String

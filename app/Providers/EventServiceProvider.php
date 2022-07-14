@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Events\BudgetAssigned;
+use App\Listeners\CreateBudgetMovement;
 use App\Listeners\CreateBudgetCategory;
 use App\Listeners\CreateTeamSettings;
 use Illuminate\Auth\Events\Registered;
@@ -23,8 +25,11 @@ class EventServiceProvider extends ServiceProvider
             SendEmailVerificationNotification::class,
         ],
         TeamCreated::class => [
-            CreateTeamSettings::class,
-            // CreateTeamAccounts::class
+            CreateTeamAccounts::class,
+            CreateTeamSettings::class
+        ],
+        BudgetAssigned::class => [
+            CreateBudgetMovement::class
         ],
         AccountCreated::class => [
             CreateBudgetCategory::class

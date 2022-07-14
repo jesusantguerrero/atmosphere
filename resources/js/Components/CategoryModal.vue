@@ -9,8 +9,8 @@
                 <div class="mt-2">
                     <slot name="content">
                         <div>
-                            <at-field label="Category" class="w-full">
-                                <n-select
+                            <AtField label="Category" class="w-full">
+                                <NSelect
                                     filterable
                                     clearable
                                     tag
@@ -18,22 +18,20 @@
                                     @update:value="createCategory"
                                     :default-expand-all="true"
                                     :options="categoryOptions"
-                                >
+                                />
+                            </AtField>
 
-                                </n-select>
-                            </at-field>
-
-                            <at-field
+                            <AtField
                                 label="Category Name"
                             >
-                                <at-input v-model="form.name"></at-input>
-                            </at-field>
+                                <AtInput v-model="form.name" />
+                            </AtField>
 
-                            <at-field
+                            <AtField
                                 label="Description"
                             >
-                                <at-input v-model="form.description"></at-input>
-                            </at-field>
+                                <AtInput v-model="form.description" />
+                            </AtField>
 
 
                         </div>

@@ -5,13 +5,11 @@ namespace App\Models;
 use DateTime;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
 
 class MonthBudget extends Model
 {
     use HasFactory;
     protected $fillable = ['team_id', 'user_id', 'category_id', 'month', 'name', 'budgeted', 'spent' , 'available'];
-
 
     public static function getMonthAssignments($teamId, $date) {
         $yearMonth = (new DateTime($date))->format('Y-m'). "-01";

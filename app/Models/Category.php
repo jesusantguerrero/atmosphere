@@ -7,6 +7,7 @@ use Insane\Journal\Models\Core\Category as CoreCategory;
 
 class Category extends CoreCategory
 {
+    const READY_TO_ASSIGN = "Ready to Assign";
     protected $with = ['budget'];
 
     public function budget() {

@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\BudgetAssigned;
 use App\Http\Resources\CategoryCollection;
 use App\Http\Resources\CategoryGroupCollection;
+use App\Models\BudgetMovement;
 use App\Models\Category;
 use App\Models\Planner;
 use App\Models\Transaction;
@@ -25,7 +27,7 @@ class BudgetController extends InertiaController
         ];
         $this->searchable = ['name'];
         $this->validationRules = [
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|unique:categories',
             'amount' => 'numeric',
         ];
         $this->sorts = ['index'];
@@ -73,7 +75,8 @@ class BudgetController extends InertiaController
     {
         $category = Category::find($categoryId);
         $postData = $request->post();
-        $category->assignBudget($month, $postData);
+        $monthBalance = $category->assignBudget($month, $postData);
+        BudgetMovement::registerMovement($monthBalance, $postData);
         return Redirect::back();
     }
 
