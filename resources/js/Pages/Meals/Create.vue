@@ -28,11 +28,11 @@
 </template>
 
 <script setup>
-    import AppLayout from '@/Layouts/AppLayout';
-    import { AtButton } from "atmosphere-ui";
     import { ref } from 'vue';
+    import { AtButton } from "atmosphere-ui";
     import { Link } from "@inertiajs/inertia-vue3"
-    import MealForm from '../Components/MealForm.vue';
+    import AppLayout from '@/Layouts/AppLayout.vue';
+    import MealForm from '@/Components/MealForm.vue';
 
     defineProps({
         meals: {

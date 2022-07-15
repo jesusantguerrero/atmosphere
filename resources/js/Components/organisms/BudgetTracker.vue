@@ -5,10 +5,6 @@
                 Welcome to Loger <span class="text-pink-400">{{ username }}</span>
             </h1>
             <div class="space-x-2">
-                <AtButton class="text-sm text-white bg-pink-400" rounded @click="isTransferModalOpen=true">
-                    <i class="fa fa-exchange-alt"></i>
-                    Add transaction
-                </AtButton>
                 <AtButton class="text-sm text-white bg-pink-400" rounded @click="$inertia.visit(route('budgets.index'))">
                     <i class="fa fa-wallet"></i>
                     Edit budget
@@ -32,7 +28,6 @@
         </div>
         <slot></slot>
         <transaction-modal
-            @close="isTransferModalOpen=false"
             v-model:show="isTransferModalOpen"
         />
     </div>
@@ -45,6 +40,7 @@ import SectionTitle from "@/Components/atoms/SectionTitle.vue";
 import TransactionModal from "@/Components/TransactionModal.vue"
 import NumberHider from "@/Components/molecules/NumberHider.vue";
 import formatMoney from "@/utils/formatMoney"
+import { useTransferModal } from "@/utils/useTransferModal";
 
 const props = defineProps({
     username: {
@@ -59,7 +55,8 @@ const props = defineProps({
     }
 })
 
-const isTransferModalOpen = ref(false);
+const { isOpen: isTransferModalOpen } = useTransferModal()
+
 const openedTransaction = ref(null);
 
 const sections = computed(() => ({

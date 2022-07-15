@@ -9,8 +9,8 @@
 </template>
 
 <script setup>
-    import AppLayout from '@/Layouts/AppLayout'
-    import TransactionSearch from '../../../Components/templates/TransactionSearch.vue';
+    import AppLayout from '@/Layouts/AppLayout.vue'
+    import TransactionSearch from '@/Components/templates/TransactionSearch.vue';
 
    defineProps({
         account: {

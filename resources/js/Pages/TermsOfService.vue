@@ -13,14 +13,8 @@
     </div>
 </template>
 
-<script>
-import JetAuthenticationCardLogo from '@/Jetstream/AuthenticationCardLogo'
+<script setup>
+import JetAuthenticationCardLogo from '@/Jetstream/AuthenticationCardLogo.vue'
 
-export default {
-    props: ['terms'],
-
-    components: {
-        JetAuthenticationCardLogo,
-    },
-}
+defineProps(['terms']);
 </script>

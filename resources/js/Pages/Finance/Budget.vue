@@ -6,18 +6,18 @@
                     <h2 class="text-xl font-bold leading-tight text-pink-400">
                         Budget settings
                     </h2>
-                    <span class="text-slate-200 ml-2"> {{ readyToAssign }} </span>
+                    <span class="text-slate-200 ml-2"> {{ formatMoney(readyToAssign) }} </span>
                 </div>
 
                 <div>
-                    <AtButton class="h-10 text-white bg-pink-400" @click="isAddingGroup=true" rounded>
+                    <AtButton class="h-10 text-white bg-pink-400" @click="state.isAddingGroup=true" rounded>
                         Add Budget Group
                     </AtButton>
                 </div>
             </div>
              <div class="mx-auto mt-8 text-gray-200 rounded-lg shadow-lg bg-slate-600 max-w-7xl ">
                 <div class="flex">
-                    <div class="space-y-3" :class="[!selectedBudget ? 'w-full': 'w-7/12']" >
+                    <div :class="[!selectedBudget ? 'w-full': 'w-7/12']" >
                     <NDataTable
                         :columns="budgetCols(state)"
                         :data="budgetState"
@@ -25,6 +25,14 @@
                         children-key="subCategories"
                         flex-height
                     />
+                    <section class="flex">
+                        <AtField class="w-full">
+                            <LogerInput v-model="categoryForm.name" placeholder="New Category group" />
+                        </AtField>
+                        <LogerTabButton class="text-center min-w-max justify-center" @click="saveBudgetCategory">
+                            Add Budget Group
+                        </LogerTabButton>
+                    </section>
                     </div>
                     <section class="py-5 text-center" :class="[selectedBudget ? 'w-5/12' : 'd-none']" v-if="selectedBudget">
                         <BudgetItemForm
@@ -39,11 +47,6 @@
                     </section>
                 </div>
             </div>
-
-        <category-modal
-            @close="isModalOpen=false"
-            v-model:show="isModalOpen"
-        />
         </FinanceTemplate>
     </AppLayout>
 </template>
@@ -60,6 +63,10 @@
     import BudgetItemForm from '@/Components/molecules/BudgetItemForm.vue';
     import FinanceTemplate from '@/Components/templates/FinanceTemplate.vue';
     import { budgetCols, useBudget } from "@/domains/budget"
+    import LogerTabButton from '@/Components/atoms/LogerTabButton.vue';
+    import LogerInput from '@/Components/atoms/LogerInput.vue';
+    import formatMoney from '@/utils/formatMoney';
+import { createBudgetCategory } from '@/domains/budget/createBudgetCategory';
 
     const props = defineProps({
             budgets: {
@@ -88,19 +95,20 @@
         isAddingGroup: true,
         expandedCategory: null,
         selectedBudget: null,
-        form: useForm({
-            account_id: null,
-            parent_id: null,
-            name: '',
-            amount: 0,
-        }),
         budgetTotal: computed(() => {
             return 0 // sumMoney(props.budgets.data.map(item => item.amount));
         }),
         categoryOptions: computed(() => {
             return makeCategoryOptions(props.categories, 'accounts', 'categoryOptions');
+        }),
+        categoryForm: useForm({
+            account_id: null,
+            parent_id: null,
+            name: '',
+            amount: 0,
         })
     })
+
 
     const deleteBudget = (budget) => {
         Inertia.delete(route('budgets.destroy', budget), {
@@ -112,5 +120,9 @@
         })
     }
 
-    const { isModalOpen, isAddingGroup, selectedBudget } = toRefs(state);
+    const saveBudgetCategory = () => {
+        createBudgetCategory(state.categoryForm)
+    }
+
+    const { categoryForm, selectedBudget } = toRefs(state);
 </script>
