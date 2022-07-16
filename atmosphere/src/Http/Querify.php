@@ -94,6 +94,8 @@ trait Querify
                 $this->addFilter($filter, $value);
             }
         }
+
+        return $this->filters;
     }
 
     private function addFilter($field, $value)
