@@ -49,7 +49,6 @@ import { computed, reactive } from 'vue';
 import ExactMath from "exact-math";
 import formatMoney from "@/utils/formatMoney";
 import TransactionCard from "../molecules/TransactionCard.vue";
-import SectionTitle from "../atoms/SectionTitle.vue";
 import SectionCard from '../molecules/SectionCard.vue';
 
 const props = defineProps({

@@ -2,13 +2,13 @@
     <AppLayout>
         <FinanceTemplate title="Finance" :accounts="accounts" ref="financeTemplateRef">
             <section>
-                <div class="flex flex-wrap md:flex-nowrap md:space-x-2">
+                <div class="flex flex-wrap md:flex-nowrap md:space-x-8">
                     <div class="w-full md:w-7/12">
                         <div class="mt-5">
                             <SectionTitle type="secondary">Summary</SectionTitle>
                         </div>
-                        <div class="flex flex-wrap justify-between px-2 py-5 mt-3 overflow-hidden border shadow-sm border-slate-700 bg-slate-600 rounded-xl">
-                            <div class="mx-auto space-y-2">
+                        <div class="flex flex-nowrap space-x-4 justify-between px-4 py-5 mt-3 overflow-hidden border shadow-sm border-slate-700 bg-slate-600 rounded-xl">
+                            <div class="mx-auto space-y-2 w-full">
                                 <FinanceCard
                                     class="text-gray-100 bg-slate-500"
                                     title="Income"
@@ -28,6 +28,7 @@
                                 </AtButton>
                             </div>
                             <FinanceVarianceCard
+                                class="w-full"
                                 @click="$inertia.visit('/finance/transactions')"
                                 title="Expenses"
                                 :value="formatMoney(transactionTotal)"
@@ -57,7 +58,7 @@
                         <BudgetProgress :goal="budgetTotal" :current="transactionTotal" class="border-t "/>
                     </div>
                 </div>
-                <div class="flex flex-wrap mt-5 md:flex-nowrap md:space-x-2">
+                <div class="flex flex-wrap mt-5 md:flex-nowrap md:space-x-8">
                     <div class="w-full md:w-7/12">
                         <SectionCard
                             section-title="Expenses by category"
