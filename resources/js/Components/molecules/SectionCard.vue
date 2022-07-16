@@ -1,0 +1,46 @@
+
+<template>
+<div :class="classes" class="overflow-hidden text-white">
+    <div class="flex justify-between">
+        <SectionTitle type="secondary" class="w-full">{{ sectionTitle }}</SectionTitle>
+        <div class="flex items-center justify-end w-full">
+            <slot name="action">
+                <AtButton class="text-pink-500 items-center flex" @click="$emit('action')">
+                    <span>
+                        {{ action.label }}
+                    </span>
+                    <i class="ml-2" :class="action.iconClass" v-if="action.iconClass" />
+                </AtButton>
+            </slot>
+        </div>
+    </div>
+    <div :class="cardClass" class="overflow-hidden border-slate-800">
+        <slot />
+    </div>
+</div>
+</template>
+
+<script setup>
+import SectionTitle from "@/Components/atoms/SectionTitle.vue";
+import { AtButton } from "atmosphere-ui";
+
+defineProps({
+    classes: {
+        type: String,
+        default: 'mt-1'
+    },
+    cardClass: {
+        type: String,
+        default: 'mt-2 bg-slate-600 border border-slate-800 rounded-lg shadow-md'
+    },
+    sectionTitle: {
+        type: String,
+        default: ''
+    },
+    action: {
+        type: [Object, null]
+    }
+})
+
+defineEmits(['action'])
+</script>
