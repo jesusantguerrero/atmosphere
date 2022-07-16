@@ -1,13 +1,11 @@
 
 <template>
-<div :class="classes" class="overflow-hidden">
-    <div class="flex justify-between">
-        <SectionTitle type="secondary" class="w-full">{{ tableLabel }}</SectionTitle>
-        <div class="flex items-center justify-end w-full">
-            <slot name="action" />
-        </div>
-    </div>
-    <div :class="tableClass" class="overflow-hidden border-slate-800">
+<SectionCard :classes="classes" :section-title="tableLabel" :card-class="tableClass">
+    <template #action>
+        <slot name="action" />
+    </template>
+
+    <div>
         <template v-if="transactionsParsed.length">
             <TransactionCard
                 v-for="(transaction, index) in transactionsParsed"
@@ -42,9 +40,8 @@
                 No transactions found
             </span>
         </div>
-
     </div>
-</div>
+</SectionCard>
 </template>
 
 <script setup>
@@ -53,6 +50,7 @@ import ExactMath from "exact-math";
 import formatMoney from "@/utils/formatMoney";
 import TransactionCard from "../molecules/TransactionCard.vue";
 import SectionTitle from "../atoms/SectionTitle.vue";
+import SectionCard from '../molecules/SectionCard.vue';
 
 const props = defineProps({
     classes: {

@@ -53,5 +53,9 @@
         "vite": "^2.9.13",
         "vue": "^3.2.33",
         "vueuse-temporals": "^1.0.3"
+    },
+    "dependencies": {
+        "chart.js": "^3.8.0",
+        "vue-chart-3": "^3.1.8"
     }
 }
