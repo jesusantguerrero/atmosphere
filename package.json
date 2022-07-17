@@ -35,7 +35,7 @@
         "@vitejs/plugin-vue": "^2.3.3",
         "@vue/server-renderer": "^3.2.31",
         "@vueuse/core": "^8.5.0",
-        "atmosphere-ui": "^0.7.5",
+        "atmosphere-ui": "^0.7.7",
         "autoprefixer": "^10.4.7",
         "axios": "^0.27.2",
         "date-fns": "^2.22.1",
@@ -53,5 +53,9 @@
         "vite": "^2.9.13",
         "vue": "^3.2.33",
         "vueuse-temporals": "^1.0.3"
+    },
+    "dependencies": {
+        "chart.js": "^3.8.0",
+        "vue-chart-3": "^3.1.8"
     }
 }

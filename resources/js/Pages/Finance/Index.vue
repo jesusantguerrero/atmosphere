@@ -2,13 +2,13 @@
     <AppLayout>
         <FinanceTemplate title="Finance" :accounts="accounts" ref="financeTemplateRef">
             <section>
-                <div class="flex flex-wrap md:flex-nowrap md:space-x-2">
+                <div class="flex flex-wrap md:flex-nowrap md:space-x-8">
                     <div class="w-full md:w-7/12">
                         <div class="mt-5">
                             <SectionTitle type="secondary">Summary</SectionTitle>
                         </div>
-                        <div class="flex flex-wrap justify-between px-2 py-5 mt-3 overflow-hidden border shadow-sm border-slate-700 bg-slate-600 rounded-xl">
-                            <div class="mx-auto space-y-2">
+                        <div class="flex flex-nowrap space-x-4 justify-between px-4 py-5 mt-3 overflow-hidden border shadow-sm border-slate-700 bg-slate-600 rounded-xl">
+                            <div class="mx-auto space-y-2 w-full">
                                 <FinanceCard
                                     class="text-gray-100 bg-slate-500"
                                     title="Income"
@@ -28,6 +28,7 @@
                                 </AtButton>
                             </div>
                             <FinanceVarianceCard
+                                class="w-full"
                                 @click="$inertia.visit('/finance/transactions')"
                                 title="Expenses"
                                 :value="formatMoney(transactionTotal)"
@@ -41,7 +42,7 @@
                             table-label="Budget"
                             class="pt-3 mt-5 "
                             table-class="overflow-auto text-sm rounded-t-lg shadow-md bg-slate-600"
-                            :transactions="topExpenses"
+                            :transactions="topCategories"
                             :parser="categoryDBToTransaction"
                             @edit="handleEdit"
                         >
@@ -57,21 +58,17 @@
                         <BudgetProgress :goal="budgetTotal" :current="transactionTotal" class="border-t "/>
                     </div>
                 </div>
-                <div class="flex flex-wrap mt-5 md:flex-nowrap md:space-x-2">
-                <div class="w-full md:w-7/12">
-                    <TransactionsTable
-                            table-label="My payments"
-                            class="pt-3 mt-5"
-                            table-class="border rounded-lg shadow-md bg-slate-600"
-                            @paid-clicked="markAsPaid"
-                            :allow-mark-as-paid="true"
-                            :transactions="planned"
-                            :parser="plannedDBToTransaction"
-                        >
-                        <template #action>
-                            <AtButton class="text-pink-500" @click="openModalFor('transaction')"><i class="fa fa-plus"></i> Add planned payment</AtButton>
-                        </template>
-                    </TransactionsTable>
+                <div class="flex flex-wrap mt-5 md:flex-nowrap md:space-x-8">
+                    <div class="w-full md:w-7/12">
+                        <SectionCard
+                            section-title="Expenses by category"
+                            :action="{
+                                label: 'Go to Trends',
+                                iconClass: 'fa fa-chevron-right'
+                            }"
+                            @action="Inertia.visit('/finance/trends')">
+                            <DonutChart  :series="expensesByCategoryGroup" label="name" value="total" />
+                        </SectionCard>
                     </div>
                     <div class="w-full md:w-5/12">
                         <TransactionsTable
@@ -84,7 +81,7 @@
                         >
                         <template #action>
                             <at-button class="text-pink-500" @click="openModalFor()"><i class="fa fa-plus"></i> Add transaction</at-button>
-                            </template>
+                        </template>
                         </TransactionsTable>
                     </div>
                 </div>
@@ -106,7 +103,9 @@
     import formatMoney from '@/utils/formatMoney';
     import FinanceTemplate from '@/Components/templates/FinanceTemplate.vue';
     import { useTransactionModal, transactionDBToTransaction, categoryDBToTransaction, plannedDBToTransaction } from '@/domains/transactions'
-import BudgetProgress from '@/Components/molecules/BudgetProgress.vue';
+    import BudgetProgress from '@/Components/molecules/BudgetProgress.vue';
+    import DonutChart from '@/Components/organisms/DonutChart.vue';
+    import SectionCard from '@/Components/molecules/SectionCard.vue';
 
     const financeTemplateRef = ref(null)
     const { openModalFor, handleEdit } = useTransactionModal(financeTemplateRef)
@@ -121,7 +120,13 @@ import BudgetProgress from '@/Components/molecules/BudgetProgress.vue';
                     return [];
                 }
             },
-            topExpenses: {
+            expensesByCategory: {
+                type: Array,
+                default()  {
+                    return [];
+                }
+            },
+            expensesByCategoryGroup: {
                 type: Array,
                 default()  {
                     return [];
@@ -186,11 +191,5 @@ import BudgetProgress from '@/Components/molecules/BudgetProgress.vue';
         return getVariances(props.transactionTotal, props.lastMonthExpenses) || 0;
     });
 
-    const markAsPaid = (transaction) => {
-        Inertia.put(`/transactions/${transaction.id}/mark-as-paid`, {}, {
-            onSuccess: () => {
-                Inertia.reload();
-            }
-        })
-    }
+    const topCategories = props.expensesByCategory.slice(0, 4)
 </script>

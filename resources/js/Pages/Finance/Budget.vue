@@ -8,23 +8,10 @@
                     </h2>
                     <span class="text-slate-200 ml-2"> {{ formatMoney(readyToAssign) }} </span>
                 </div>
-
-                <div>
-                    <AtButton class="h-10 text-white bg-pink-400" @click="state.isAddingGroup=true" rounded>
-                        Add Budget Group
-                    </AtButton>
-                </div>
             </div>
              <div class="mx-auto mt-8 text-gray-200 rounded-lg shadow-lg bg-slate-600 max-w-7xl ">
                 <div class="flex">
                     <div :class="[!selectedBudget ? 'w-full': 'w-7/12']" >
-                    <NDataTable
-                        :columns="budgetCols(state)"
-                        :data="budgetState"
-                        :row-key="({ id }) => id"
-                        children-key="subCategories"
-                        flex-height
-                    />
                     <section class="flex">
                         <AtField class="w-full">
                             <LogerInput v-model="categoryForm.name" placeholder="New Category group" />
@@ -33,6 +20,13 @@
                             Add Budget Group
                         </LogerTabButton>
                     </section>
+                    <NDataTable
+                        :columns="budgetCols(state)"
+                        :data="budgetState"
+                        :row-key="({ id }) => id"
+                        children-key="subCategories"
+                        flex-height
+                    />
                     </div>
                     <section class="py-5 text-center" :class="[selectedBudget ? 'w-5/12' : 'd-none']" v-if="selectedBudget">
                         <BudgetItemForm

@@ -13,7 +13,7 @@
         <div>
             <h4 class="font-bold"> {{ title }}</h4>
             <small class="text-sm"> {{ subtitle }}</small>
-            <small class="block text-sm"> {{ date }}</small>
+            <small class="block text-sm"> {{ formatDate(date) }}</small>
         </div>
 
     </div>
@@ -43,10 +43,11 @@
 </template>
 
 <script setup>
-import { computed, inject } from "vue";
+import { computed } from "vue";
 import { NProgress } from "naive-ui";
 import formatMoney from "../../utils/formatMoney";
 import NumberHider from "./NumberHider.vue";
+import { parseISO, format } from "date-fns";
 
 const props = defineProps({
     title: String,
@@ -74,5 +75,9 @@ const handleSelect = () => {
     if (props.allowSelect) {
         emit('selected');
     }
+}
+
+const formatDate = (dateISOString) => {
+    return dateISOString && format(parseISO(dateISOString + 'T00:00:00'), 'MMM dd, yyyy')
 }
 </script>

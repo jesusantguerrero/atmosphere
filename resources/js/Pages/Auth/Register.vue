@@ -3,7 +3,7 @@
         <AtAuthForm
             app-name="Loger"
             mode="register"
-            btn-class="text-white bg-pink-500 rounded-lg hover:bg-pink-600"
+            btn-class="mb-2 font-bold border-2 border-pink-400 rounded-md bg-gradient-to-br from-purple-400 to-pink-500 hover:bg-pink-500"
             link-class="text-pink-500 hover:text-pink-600"
             v-model:isLoading="form.processing"
             :errors="form.errors"
@@ -11,6 +11,11 @@
             @home-pressed="onHomePressed"
             @link-pressed="onLinkPressed"
         >
+            <template #brand>
+                <Link :to="{name: 'landing'}" class="w-full font-light font-brand">
+                    Loger DHM
+                </Link>
+            </template>
             <template #prependInput>
                 <AtField label="Name">
                     <AtInput v-model="form.name" required />
@@ -22,7 +27,7 @@
 
 <script setup>
     import { Inertia } from "@inertiajs/inertia";
-    import { useForm } from "@inertiajs/inertia-vue3";
+    import { useForm, Link } from "@inertiajs/inertia-vue3";
     import { AtAuthBox, AtAuthForm, AtInput, AtField } from "atmosphere-ui";
 
 

@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Helpers\BudgetHelper;
 use App\Imports\BudgetImport;
 use App\Imports\TransactionsImport;
-use App\Models\Budget;
 use App\Models\MonthBudget;
 use App\Models\Transaction;
 use Atmosphere\Http\InertiaController;
@@ -38,16 +37,18 @@ class FinanceController extends InertiaController {
         $planned = BudgetHelper::getPlannedTransactions($teamId);
 
         $transactions = Transaction::getExpenses($teamId, $startDate, $endDate);
-        $topCategories = Transaction::getCategoryExpenses($teamId, $startDate, $endDate);
+        $expensesByCategory = Transaction::getCategoryExpenses($teamId, $startDate, $endDate, 4);
+        $expensesByCategoryGroup = Transaction::getCategoryExpensesGroup($teamId, $startDate, $endDate);
         $lastMonthExpenses= Transaction::getExpenses($teamId, $lastMonthStartDate, $lastMonthEndDate)->sum('total');
-
         $income = Transaction::getIncome( $teamId, $startDate, $endDate);
         $lastMonthIncome = Transaction::getIncome( $teamId, $lastMonthStartDate, $lastMonthEndDate);
+
         return Jetstream::inertia()->render($request, 'Finance/Index', [
             "sectionTitle" => "Finance",
             "planned" => $planned,
             "budgetTotal" => $budgetTotal,
-            "topExpenses" => $topCategories,
+            "expensesByCategory" => $expensesByCategory,
+            "expensesByCategoryGroup" => $expensesByCategoryGroup,
             "categories" => CategoryHelper::getSubcategories($teamId, ['expenses', 'incomes']),
             "accounts" => Account::getByDetailTypes($teamId),
             "transactionTotal" => $transactions->sum('total'),
@@ -60,12 +61,18 @@ class FinanceController extends InertiaController {
         ]);
     }
 
+    private Function getFilterDates($filters) {
+        $dates = isset($filters['date']) ? explode("~", $filters['date']) : [
+            Carbon::now()->startOfMonth()->format('Y-m-d'),
+            Carbon::now()->endOfMonth()->format('Y-m-d')
+        ];
+        return $dates;
+    }
 
     public function transactions(Request $request, $accountId = null) {
         $queryParams = $request->query();
-        $startDate = $request->query('startDate', Carbon::now()->startOfMonth()->format('Y-m-d'));
-        $endDate = $request->query('endDate', Carbon::now()->endOfMonth()->format('Y-m-d'));
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
+        [$startDate, $endDate] = $this->getFilterDates($filters);
 
         $groupBy = $request->query('group');
         $teamId = $request->user()->current_team_id;
@@ -85,6 +92,7 @@ class FinanceController extends InertiaController {
             ->groupByRaw("$groups[$groupBy], currency_code")
             ->orderByDesc('total');
         }
+
 
         if ($accountId) {
             $this->modelQuery->where('account_id', $accountId);
