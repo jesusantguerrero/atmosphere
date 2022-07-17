@@ -7,9 +7,8 @@
                         class="h-12 w-full border-none bg-slate-600 text-gray-200 ml-auto"
                         v-model="state.date"
                         v-model:dateSpan="state.dateSpan"
-                        v-model:startDate="state.searchOptions.date.startDate"
-                        v-model:endDate="state.searchOptions.date.endDate"
                         controlsClass="bg-transparent text-gray-200 hover:bg-slate-600"
+                        next-mode="week"
                     />
                     <AtButton class="h-10 w-64 text-white bg-pink-400" @click="openRandomModal()" rounded> Random Meal </AtButton>
                     <AtButton class="h-10 w-52 text-white bg-pink-400" @click="toggleMode()" rounded>
@@ -57,7 +56,7 @@
 </template>
 
 <script setup>
-    import { format, startOfDay } from "date-fns";
+    import { format, startOfDay, startOfWeek } from "date-fns";
     import { AtButton, AtDatePager } from "atmosphere-ui";
     import AppLayout from '@/Layouts/AppLayout.vue';
     import PlanModal from '@/Components/PlanModal.vue';
@@ -89,14 +88,7 @@
     const state = reactive({
         isModalOpen: false,
         isRandomModalOpen: false,
-        searchOptions: {
-            group: "",
-            date: {
-                startDate: null,
-                endDate: null,
-            }
-        },
-        date: startOfDay(props.serverSearchOptions?.date?.startDate || new Date()),
+        date: startOfDay(new Date()),
         dateSpan: null,
         mode: "week",
         selectedMealsOfDay: [],

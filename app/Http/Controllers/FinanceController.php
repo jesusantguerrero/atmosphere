@@ -61,12 +61,18 @@ class FinanceController extends InertiaController {
         ]);
     }
 
+    private Function getFilterDates($filters) {
+        $dates = isset($filters['date']) ? explode("~", $filters['date']) : [
+            Carbon::now()->startOfMonth()->format('Y-m-d'),
+            Carbon::now()->endOfMonth()->format('Y-m-d')
+        ];
+        return $dates;
+    }
 
     public function transactions(Request $request, $accountId = null) {
         $queryParams = $request->query();
-        $startDate = $request->query('startDate', Carbon::now()->startOfMonth()->format('Y-m-d'));
-        $endDate = $request->query('endDate', Carbon::now()->endOfMonth()->format('Y-m-d'));
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
+        [$startDate, $endDate] = $this->getFilterDates($filters);
 
         $groupBy = $request->query('group');
         $teamId = $request->user()->current_team_id;
@@ -86,6 +92,7 @@ class FinanceController extends InertiaController {
             ->groupByRaw("$groups[$groupBy], currency_code")
             ->orderByDesc('total');
         }
+
 
         if ($accountId) {
             $this->modelQuery->where('account_id', $accountId);

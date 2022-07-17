@@ -16,6 +16,7 @@ module.exports = {
     theme: {
         extend: {
             fontFamily: {
+                brand: ['Pacifico', 'cursive'],
                 sans: ['Nunito', ...defaultTheme.fontFamily.sans],
             },
             colors: {

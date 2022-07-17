@@ -12,7 +12,8 @@ Features:
 - Subscriptions
 - Transactions
 ## Demo
-.
+
+![Finance Dashboard](/public/images/finance-dashboard.png)
 
 ### Prerequisites
 
