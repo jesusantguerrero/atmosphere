@@ -23,7 +23,7 @@
 
         <div class="relative z-50 py-10 mx-auto max-w-7xl md:items-center md:py-32 sm:px-4 md:flex md:justify-between">
             <div class="w-full text-left">
-                <h1 class="text-2xl font-extrabold tracking-tight text-white md:leading-10 md:text-4xl sm:text-5xl sm:leading-none xl:text-3xl"><span class="block">The Home Management System</span> <span class="inline-block mt-3 text-transparent text-white ">.</span></h1>
+                <h1 class="text-2xl font-extrabold tracking-tight text-white md:text-4xl sm:text-5xl leading-none xl:text-3xl">The Home Management System</h1>
                 <div class="max-w-lg mt-1 text-sm text-gray-200 md:mt-4 sm:text-base -md:max-w-xl md:text-lg xl:text-xl">Manage finance, grocery list, menu and more all in one place </div>
                 <div class="max-w-md mt-12 text-left md:space-x-5 md:items-center md:flex">
                     <AtButton
