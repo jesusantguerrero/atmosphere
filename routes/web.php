@@ -32,7 +32,7 @@ if (config('app.env') == 'production') {
     URL::forceScheme('https');
 }
 
-Route::middleware(['auth:sanctum', 'verified'])->get('/', [DashboardController::class, 'index']);
+Route::get('/', fn () => Inertia::render('Landing/Index'));
 
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
