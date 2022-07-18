@@ -13,6 +13,7 @@ Features:
 - Transactions
 ## Demo
 
+![Landing](/public/images/landing.png)
 ![Finance Dashboard](/public/images/finance-dashboard.png)
 
 ### Prerequisites

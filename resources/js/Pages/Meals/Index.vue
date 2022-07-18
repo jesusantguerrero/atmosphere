@@ -1,23 +1,23 @@
 <template>
-    <AppLayout title="Recipies" :show-back-button="true" @back="$inertia.visit('/meal-planner')">
-        <div class="pl-6 pb-20 max-w-screen-2xl lg:pl-8">
-            <div class="flex justify-between">
+    <AppLayout title="Recipes" :show-back-button="true" @back="$inertia.visit('/meal-planner')">
+        <template #header>
+            <div class="flex justify-between items-center">
                 <div>
 
-                    <span class="mt-1 text-gray-200">There a total of {{ meals.data.length || 0 }} meals</span>
+                    <span class="mt-1 text-gray-200">There a total of {{ recipes.length || 0 }} meals</span>
                 </div>
 
                 <div>
                     <AtButton class="items-center h-10 text-white bg-pink-400" rounded @click="$inertia.visit(route('meals.create'))"> New Meal</AtButton>
                 </div>
             </div>
-            <div class="md:px-0">
-                <MealSection
-                    :meals="meals.data"
-                    @click="$inertia.visit(route('meals.edit', $event))"
-                />
-            </div>
-        </div>
+        </template>
+        <MealTemplate class="mx-auto">
+            <MealSection
+                :meals="recipes"
+                @click="$inertia.visit(route('meals.edit', $event))"
+            />
+        </MealTemplate>
     </AppLayout>
 </template>
 
@@ -25,11 +25,17 @@
     import { AtButton } from "atmosphere-ui";
     import AppLayout from '@/Layouts/AppLayout.vue';
     import MealSection from '@/Components/Meal.vue';
+    import { computed } from "vue";
+    import MealTemplate from "@/Components/templates/MealTemplate.vue";
 
-    defineProps({
-            meals: {
-                type: Array,
-                required: true
-            }
+    const props = defineProps({
+        meals: {
+            type: Array,
+            required: true
+        }
     });
+
+    const recipes = computed(() => {
+        return props.meals?.data?.length ?? []
+    })
 </script>

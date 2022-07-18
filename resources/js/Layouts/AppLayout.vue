@@ -230,10 +230,8 @@
 
                     <div class="app-content__inner ic-scroller">
                         <!-- Page Heading -->
-                        <header>
-                            <div class="px-4 py-6 mx-auto md:px-0 max-w-7xl">
-                                <slot name="header"></slot>
-                            </div>
+                        <header v-if="$slots.header" class="px-4  mb-8 py-1 w-full bg-slate-600/20 border-b border-slate-400">
+                            <slot name="header"></slot>
                         </header>
                         <!-- Page Content -->
                         <main class="overflow-hidden overflow-y-auto">
