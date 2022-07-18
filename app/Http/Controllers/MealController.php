@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Meal;
+use App\Models\MealType;
 use App\Models\Planner;
 use Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
@@ -25,6 +26,21 @@ class MealController extends InertiaController
         ];
         $this->includes = ['ingredients'];
         $this->filters = [];
+    }
+
+    protected function getIndexProps(Request $request)
+    {
+        $queryParams = $request->query() ?? [];
+        $queryParams['limit'] = $queryParams['limit'] ?? 50;
+        $queryParams['date'] = $queryParams['date'] ?? date('Y-m-01');
+        $teamId = $request->user()->current_team_id;
+
+        return [
+            "mealTypes" => MealType::where([
+                "team_id" => $teamId,
+                "user_id" => $request->user()->id
+            ])->get(),
+        ];
     }
 
     protected function afterSave($postData, $resource): void

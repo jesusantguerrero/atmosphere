@@ -2,6 +2,7 @@
     <AtAuthBox>
         <AtAuthForm
             app-name="Loger"
+            btn-label="Send email"
             btn-class="mb-2 font-bold border-2 border-pink-400 rounded-md bg-gradient-to-br from-purple-400 to-pink-500 hover:bg-pink-500"
             link-class="text-pink-500 hover:text-pink-600"
             v-model:isLoading="form.processing"

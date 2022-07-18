@@ -111,12 +111,12 @@ const state = {
   actions: [
     {
       name: "Login",
-      to: "/login",
+      url: "/login",
       class: "bg-white text-pink-500 hover:bg-gray-100 transition",
     },
     {
       name: "Start for free",
-      to: "/register",
+      url: "/register",
       class: "mb-2 font-bold border-2 text-white border-pink-400 transition rounded-md bg-gradient-to-br from-purple-400 to-pink-500 hover:bg-pink-500",
     },
   ],
