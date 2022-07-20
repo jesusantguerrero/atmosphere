@@ -3,7 +3,7 @@
         <main>
             <JetBanner />
             <div class="min-h-screen dark:bg-base-500 home-container">
-                <nav class="border-b shadow-md dark:border-base-500 app-header dark:bg-base-500">
+                <nav class="border-b shadow-md dark:border-base-600 app-header dark:bg-base-600">
                     <!-- Primary Navigation Menu -->
                     <div class="pr-4 mx-auto sm:pr-6 lg:pr-8 text-white">
                         <div class="flex justify-between h-16 items-center">
@@ -215,12 +215,12 @@
                 <div class="app-content">
                     <div class="appside-container">
                         <AtSide
-                            class="dark:text-gray-200 border-r shadow-md dark:border-base-900 dark:bg-base-500 app-side"
+                            class="dark:text-gray-200 border-r shadow-md dark:border-base-600 dark:bg-base-600 app-side"
                             title="Loger"
                             :menu="appMenu"
                             :current-path="currentPath"
-                            item-class="block w-full px-5 py-1 mb-2 text-md font-bold text-gray-400 rounded-md hover:text-primary-500 hover:bg-base-600/50"
-                            item-active-class="text-primary-500 bg-base-600/75"
+                            item-class="block w-full px-5 py-1 mb-2 text-md font-bold text-gray-400 rounded-md hover:text-primary-500 hover:bg-base-500/50"
+                            item-active-class="text-primary-500 bg-base-500/20"
                         >
                             <template #brand>
                                 <h1 class="pl-5 text-3xl font-bold text-primary-500">Loger.</h1>

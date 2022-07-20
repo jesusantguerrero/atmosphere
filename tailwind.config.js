@@ -22,7 +22,14 @@ module.exports = {
             },
             colors: {
                 primary: colors.pink,
-                base: customColors.rhino
+                "secondary": "#95b3f9",
+                "accent": "#7c5bbf",
+                "neutral": "#232130",
+                base: customColors.rhino,                 
+                info: "#3D68F5",
+                success: "#79E7AE",
+                warning: "#D39E17",
+                error: "#F61909",
             }
         },
     },
