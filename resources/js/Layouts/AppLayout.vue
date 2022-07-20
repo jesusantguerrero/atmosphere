@@ -2,8 +2,8 @@
     <NConfigProvider :theme="darkTheme" :theme-overrides="darkThemeOverrides">
         <main>
             <JetBanner />
-            <div class="min-h-screen bg-slate-800 home-container">
-                <nav class="border-b shadow-md border-slate-900 app-header bg-slate-800">
+            <div class="min-h-screen dark:bg-slate-800 home-container">
+                <nav class="border-b shadow-md dark:border-slate-900 app-header dark:bg-slate-800">
                     <!-- Primary Navigation Menu -->
                     <div class="pr-4 mx-auto sm:pr-6 lg:pr-8 text-white">
                         <div class="flex justify-between h-16 items-center">
@@ -215,7 +215,7 @@
                 <div class="app-content">
                     <div class="appside-container">
                         <AtSide
-                            class="text-gray-200 border-r shadow-md border-slate-900 bg-slate-800 app-side"
+                            class="dark:text-gray-200 border-r shadow-md dark:border-slate-900 dark:bg-slate-800 app-side"
                             title="Loger"
                             :menu="appMenu"
                             :current-path="currentPath"
@@ -230,7 +230,7 @@
 
                     <div class="app-content__inner ic-scroller">
                         <!-- Page Heading -->
-                        <header v-if="$slots.header" class="px-4  mb-8 py-1 w-full bg-slate-600/20 border-b border-slate-400">
+                        <header v-if="$slots.header" class="mb-8  w-full bg-slate-600/20 border-b border-slate-400">
                             <slot name="header"></slot>
                         </header>
                         <!-- Page Content -->

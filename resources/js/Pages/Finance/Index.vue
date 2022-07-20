@@ -1,5 +1,15 @@
 <template>
     <AppLayout>
+        <template #header>
+            <FinanceSectionNav>
+                <template #actions>
+                    <div>
+                        <AtButton class="bg-primary-400 text-white rounded-md">Import Transactions</AtButton>
+                    </div>
+                </template>
+            </FinanceSectionNav>
+        </template>
+        
         <FinanceTemplate title="Finance" :accounts="accounts" ref="financeTemplateRef">
             <section>
                 <div class="flex flex-wrap md:flex-nowrap md:space-x-8">
@@ -106,6 +116,7 @@
     import BudgetProgress from '@/Components/molecules/BudgetProgress.vue';
     import DonutChart from '@/Components/organisms/DonutChart.vue';
     import SectionCard from '@/Components/molecules/SectionCard.vue';
+    import FinanceSectionNav from '@/Components/templates/FinanceSectionNav.vue';
 
     const financeTemplateRef = ref(null)
     const { openModalFor, handleEdit } = useTransactionModal(financeTemplateRef)

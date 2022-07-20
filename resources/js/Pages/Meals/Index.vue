@@ -1,16 +1,13 @@
 <template>
     <AppLayout title="Recipes" :show-back-button="true" @back="$inertia.visit('/meal-planner')">
         <template #header>
-            <div class="flex justify-between items-center">
-                <div>
-
-                    <span class="mt-1 text-gray-200">There a total of {{ recipes.length || 0 }} meals</span>
-                </div>
-
-                <div>
-                    <AtButton class="items-center h-10 text-white bg-pink-400" rounded @click="$inertia.visit(route('meals.create'))"> New Meal</AtButton>
-                </div>
-            </div>
+            <MealSectionNav>
+                <template #actions>
+                   <div>
+                        <AtButton class="items-center h-10 text-white bg-pink-400" rounded @click="$inertia.visit(route('meals.create'))"> New Meal</AtButton>
+                    </div>
+                </template>
+            </MealSectionNav>
         </template>
         <MealTemplate class="mx-auto">
             <MealSection
@@ -27,6 +24,7 @@
     import MealSection from '@/Components/Meal.vue';
     import { computed } from "vue";
     import MealTemplate from "@/Components/templates/MealTemplate.vue";
+    import MealSectionNav from "@/Components/templates/MealSectionNav.vue";
 
     const props = defineProps({
         meals: {

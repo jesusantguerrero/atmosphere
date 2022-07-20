@@ -1,7 +1,8 @@
 <template>
     <AppLayout title="Meal Planner">
         <template #header>
-            <div class="flex justify-between w-full">
+            <MealSectionNav>
+                <template #actions>
                     <div class="space-x-2 flex justify-end items-center ml-auto">
                         <AtDatePager
                             class="h-12 w-full border-none bg-slate-600 text-gray-200 ml-auto"
@@ -15,7 +16,8 @@
                             {{ state.toggleBtnText }}
                         </AtButton>
                     </div>
-            </div>
+                </template>
+            </MealSectionNav>
         </template>
         <MealTemplate class="mx-auto">
             <div class="pb-20 space-x-2">
@@ -75,6 +77,7 @@
     import RandomMealModal from '@/Components/RandomMealModal.vue';
     import MealTemplate from "@/Components/templates/MealTemplate.vue";
     import { usePage } from "@inertiajs/inertia-vue3";
+    import MealSectionNav from "@/Components/templates/MealSectionNav.vue";
 
     const pageProps = usePage().props;
 

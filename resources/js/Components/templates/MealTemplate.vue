@@ -1,6 +1,6 @@
 <template>
   <section class="pl-6 pb-20 max-w-screen-2xl">
-    <header class="">
+    <header class="" v-if="showMealTypes">
       <article class="flex w-full justify-between mb-2">
         <SectionTitle> Meals </SectionTitle>
         <LogerTabButton class="font-bold">Add Meal</LogerTabButton>
@@ -32,36 +32,20 @@ import { provide, reactive, ref } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
 import SectionTitle from "@/Components/atoms/SectionTitle.vue";
 import TransactionModal from "@/Components/TransactionModal.vue";
-import { useSelect } from "@/utils/useSelects";
 import LogerTabButton from "@/Components/atoms/LogerTabButton.vue";
 import ImportResourceModal from "@/Components/ImportResourceModal.vue";
 
 const pageProps = usePage().props;
 
-const props = defineProps({
+defineProps({
   title: {
     type: String,
   },
-  categories: {
-    type: Array,
-    default() {
-      return [];
-    },
-  },
-  accounts: {
-    type: Array,
-    default() {
-      return [];
-    },
-  },
+  showMealTypes: {
+    type: Boolean, 
+    default: true
+  }
 });
-
-const { categoryOptions: transformCategoryOptions } = useSelect();
-transformCategoryOptions(props.categories, "accounts", "categoryOptions");
-transformCategoryOptions(props.accounts, "accounts", "accountsOptions");
-
-// import modal related
-const isImportModalOpen = ref(false);
 
 // Transaction modal things
 const isTransferModalOpen = ref(false);
@@ -70,6 +54,7 @@ const transferConfig = reactive({
   automatic: false,
   transactionData: null,
 });
+
 const openTransactionModal = (isRecurrent, automatic) => {
   isTransferModalOpen.value = true;
   transferConfig.recurrence = isRecurrent;

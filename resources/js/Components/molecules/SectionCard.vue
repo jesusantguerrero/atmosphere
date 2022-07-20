@@ -4,8 +4,8 @@
     <div class="flex justify-between">
         <SectionTitle type="secondary" class="w-full">{{ sectionTitle }}</SectionTitle>
         <div class="flex items-center justify-end w-full">
-            <slot name="action">
-                <AtButton class="text-pink-500 items-center flex" @click="$emit('action')">
+            <slot name="action" v-if="action || $slots.action">
+                <AtButton v-if="action" class="text-pink-500 items-center flex" @click="$emit('action')">
                     <span>
                         {{ action.label }}
                     </span>

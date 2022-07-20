@@ -1,5 +1,14 @@
 <template>
     <AppLayout title="Budget Settings" @back="$inertia.visit(route('finance'))" :show-back-button="true">
+        <template #header>
+            <FinanceSectionNav>
+                <template #actions>
+                    <div>
+                        <AtButton class="bg-primary-400 text-white rounded-md">Import Transactions</AtButton>
+                    </div>
+                </template>
+            </FinanceSectionNav>
+        </template>
         <FinanceTemplate :accounts="accounts">
             <div class="flex mt-2 justify-between">
                 <div class="flex items-center">
@@ -52,7 +61,6 @@
     import { AtButton } from "atmosphere-ui";
     import { NDataTable } from "naive-ui"
     import AppLayout from '@/Layouts/AppLayout.vue';
-    import CategoryModal from '@/Components/CategoryModal.vue';
     import { useSelect } from "@/utils/useSelects";
     import BudgetItemForm from '@/Components/molecules/BudgetItemForm.vue';
     import FinanceTemplate from '@/Components/templates/FinanceTemplate.vue';
@@ -60,7 +68,8 @@
     import LogerTabButton from '@/Components/atoms/LogerTabButton.vue';
     import LogerInput from '@/Components/atoms/LogerInput.vue';
     import formatMoney from '@/utils/formatMoney';
-import { createBudgetCategory } from '@/domains/budget/createBudgetCategory';
+    import { createBudgetCategory } from '@/domains/budget/createBudgetCategory';
+    import FinanceSectionNav from '@/Components/templates/FinanceSectionNav.vue';
 
     const props = defineProps({
             budgets: {
