@@ -10,7 +10,7 @@
             <strong class="flex flex-wrap overflow-ellipsis overflow-hidden">
                 {{ account.name }}
             </strong>
-            <p class="relative text-sm">
+            <p class="relative text-sm" :class="{'text-red-400': isDebt(account.balance)}">
                 <NumberHider />
                 {{ formatMoney(account.balance) }}
             </p>
@@ -36,4 +36,8 @@ defineProps({
         default: false
    }
 })
+
+const isDebt = (amount) => {
+    return amount < 0
+}
 </script>
