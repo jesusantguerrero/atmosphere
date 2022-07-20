@@ -16,14 +16,14 @@
                 :allow-select="allowSelect"
                 :key="transaction.id"
                 :isSelected="isSelected(transaction)"
-                class="odd:bg-slate-600 even:bg-slate-500"
+                class="odd:bg-base-600 even:bg-base-500"
                 @selected="handleSelect(transaction)"
                 @paid-clicked="$emit('paid-clicked', transaction)"
                 @approved="$emit('approved', transaction)"
                 @removed="$emit('removed', transaction)"
                 @dblclick="$emit('edit', transactions[index])"
             />
-            <div class="flex items-center justify-between px-4 py-5 bg-slate-600 text-white" v-if="showSum">
+            <div class="flex items-center justify-between px-4 py-5 bg-base-600 text-white" v-if="showSum">
                 <div class="font-bold">Selected Items sum</div>
                 <div class="space-y-1 text-right">
                     <div v-for="currencySum, currency in selectedSum">
@@ -58,7 +58,7 @@ const props = defineProps({
     },
     tableClass: {
         type: String,
-        default: 'mt-2 bg-slate-600 border border-slate-800 rounded-lg shadow-md'
+        default: 'mt-2 bg-base-600 border border-base-800 rounded-lg shadow-md'
     },
     tableLabel: {
         type: String,

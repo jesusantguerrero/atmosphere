@@ -27,7 +27,7 @@
         danger: 'bg-red-600',
         needs: 'bg-yellow-600',
         overspend: 'bg-yellow-600',
-        default: 'bg-slate-600'
+        default: 'bg-base-600'
     }
 
     const badgeClass = computed(() => {

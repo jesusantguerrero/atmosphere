@@ -2,8 +2,8 @@
     <NConfigProvider :theme="darkTheme" :theme-overrides="darkThemeOverrides">
         <main>
             <JetBanner />
-            <div class="min-h-screen dark:bg-slate-800 home-container">
-                <nav class="border-b shadow-md dark:border-slate-900 app-header dark:bg-slate-800">
+            <div class="min-h-screen dark:bg-base-500 home-container">
+                <nav class="border-b shadow-md dark:border-base-500 app-header dark:bg-base-500">
                     <!-- Primary Navigation Menu -->
                     <div class="pr-4 mx-auto sm:pr-6 lg:pr-8 text-white">
                         <div class="flex justify-between h-16 items-center">
@@ -17,7 +17,7 @@
                             </div>
 
                             <div class="hidden sm:flex sm:items-center sm:ml-6">
-                                <AtButton class="text-sm text-white bg-pink-400" rounded @click="openTransferModal()">
+                                <AtButton class="text-sm text-white bg-primary-400" rounded @click="openTransferModal()">
                                     <i class="fa fa-exchange-alt"></i>
                                     Add transaction
                                 </AtButton>
@@ -28,7 +28,7 @@
                                     <jet-dropdown align="right" width="60" v-if="$page.props.jetstream.hasTeamFeatures">
                                         <template #trigger>
                                             <span class="inline-flex rounded-md">
-                                                <button type="button" class="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-200 transition border border-transparent rounded-md hover:bg-slate-500 hover:text-gray-100 focus:outline-none focus:bg-slate-600">
+                                                <button type="button" class="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-200 transition border border-transparent rounded-md hover:bg-base-500 hover:text-gray-100 focus:outline-none focus:bg-base-600">
                                                     {{ $page.props.user.current_team.name }}
 
                                                     <svg class="ml-2 -mr-0.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -87,7 +87,7 @@
                                             </button>
 
                                             <span v-else class="inline-flex rounded-md">
-                                                <button type="button" class="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-200 transition border border-transparent rounded-md hover:text-gray-100 hover:bg-slate-600 focus:outline-none focus:bg-slate-500">
+                                                <button type="button" class="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-200 transition border border-transparent rounded-md hover:text-gray-100 hover:bg-base-600 focus:outline-none focus:bg-base-500">
                                                     {{ $page.props.user.name }}
 
                                                     <svg class="ml-2 -mr-0.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -139,9 +139,9 @@
                     <!-- Responsive Navigation Menu -->
                     <div :class="{'block': showingNavigationDropdown, 'hidden': ! showingNavigationDropdown}" class="sm:hidden">
                         <div class="pt-2 pb-3 space-y-1">
-                            <jet-responsive-nav-link :href="route('dashboard')" :active="route().current('dashboard')">
+                            <JetResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">
                                 Dashboard
-                            </jet-responsive-nav-link>
+                            </JetResponsiveNavLink>
                         </div>
 
                         <!-- Responsive Settings Options -->
@@ -215,22 +215,22 @@
                 <div class="app-content">
                     <div class="appside-container">
                         <AtSide
-                            class="dark:text-gray-200 border-r shadow-md dark:border-slate-900 dark:bg-slate-800 app-side"
+                            class="dark:text-gray-200 border-r shadow-md dark:border-base-900 dark:bg-base-500 app-side"
                             title="Loger"
                             :menu="appMenu"
                             :current-path="currentPath"
-                            item-class="block w-full px-5 py-1 mb-2 text-md font-bold text-gray-400 rounded-md hover:text-pink-500 hover:bg-slate-600/50"
-                            item-active-class="text-pink-500 bg-slate-600/75"
+                            item-class="block w-full px-5 py-1 mb-2 text-md font-bold text-gray-400 rounded-md hover:text-primary-500 hover:bg-base-600/50"
+                            item-active-class="text-primary-500 bg-base-600/75"
                         >
                             <template #brand>
-                                <h1 class="pl-5 text-3xl font-bold text-pink-500">Loger.</h1>
+                                <h1 class="pl-5 text-3xl font-bold text-primary-500">Loger.</h1>
                             </template>
                         </AtSide>
                     </div>
 
                     <div class="app-content__inner ic-scroller">
                         <!-- Page Heading -->
-                        <header v-if="$slots.header" class="mb-8  w-full bg-slate-600/20 border-b border-slate-400">
+                        <header v-if="$slots.header" class="mb-8  w-full bg-base-600/20 border-b border-base-400">
                             <slot name="header"></slot>
                         </header>
                         <!-- Page Content -->
@@ -339,6 +339,7 @@ body, html {
   height: 100vh;
 
   &__inner {
+    @apply bg-base-700;
     width: 100%;
     grid-column-start: 2;
     padding: 65px 0;

@@ -1,6 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 const defaultTheme = require('tailwindcss/defaultTheme');
 const colors = require("tailwindcss/colors");
+const customColors = require('./tailwindTheme/colors');
 
 module.exports = {
     content: [
@@ -20,7 +21,8 @@ module.exports = {
                 sans: ['Nunito', ...defaultTheme.fontFamily.sans],
             },
             colors: {
-                primary: colors.pink
+                primary: colors.pink,
+                base: customColors.rhino
             }
         },
     },

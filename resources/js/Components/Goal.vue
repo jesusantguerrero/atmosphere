@@ -2,11 +2,11 @@
     <div>
         <div class="py-6 space-y-4">
             <div
-                class="grid w-full grid-cols-4 px-5 py-5 bg-slate-600 border rounded-lg cursor-pointer hover:bg-pink-200"
+                class="grid w-full grid-cols-4 px-5 py-5 bg-base-600 border rounded-lg cursor-pointer hover:bg-primary-200"
                 @click="$emit('click', meal)"
                 v-for="meal in meals"
                 :key="meal.id"
-                :class="{'bg-pink-300 text-white': isSelected(meal)}"
+                :class="{'bg-primary-300 text-white': isSelected(meal)}"
             >
                 <div > {{ meal.name }} </div>
                 <div > Date </div>

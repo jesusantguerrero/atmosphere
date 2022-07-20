@@ -1,6 +1,6 @@
 <template>
     <modal :show="show" :max-width="maxWidth" :closeable="closeable" @close="close">
-        <div class="px-4 pt-5 pb-4 bg-slate-600 sm:p-6 sm:pb-4 text-white">
+        <div class="px-4 pt-5 pb-4 bg-base-600 sm:p-6 sm:pb-4 text-white">
             <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                 <h3 class="text-lg">
                     <slot name="title">Add Account</slot>
@@ -39,9 +39,9 @@
             </div>
         </div>
 
-        <div class="px-6 py-4 space-x-3 text-right bg-slate-500">
+        <div class="px-6 py-4 space-x-3 text-right bg-base-500">
             <AtButton type="secondary" @click="close" rounded> Cancel </AtButton>
-            <AtButton class="text-white bg-pink-400" @click="submit" rounded> Save </AtButton>
+            <AtButton class="text-white bg-primary-400" @click="submit" rounded> Save </AtButton>
         </div>
     </modal>
 </template>

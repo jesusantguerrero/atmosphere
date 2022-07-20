@@ -9,7 +9,7 @@
                 </template>
             </FinanceSectionNav>
         </template>
-        
+
         <FinanceTemplate title="Finance" :accounts="accounts" ref="financeTemplateRef">
             <section>
                 <div class="flex flex-wrap md:flex-nowrap md:space-x-8">
@@ -17,23 +17,23 @@
                         <div class="mt-5">
                             <SectionTitle type="secondary">Summary</SectionTitle>
                         </div>
-                        <div class="flex flex-nowrap space-x-4 justify-between px-4 py-5 mt-3 overflow-hidden border shadow-sm border-slate-700 bg-slate-600 rounded-xl">
+                        <div class="flex flex-nowrap space-x-4 justify-between px-4 py-5 mt-3 overflow-hidden border shadow-sm border-base-700 bg-base-600 rounded-xl">
                             <div class="mx-auto space-y-2 w-full">
                                 <FinanceCard
-                                    class="text-gray-100 bg-slate-500"
+                                    class="text-gray-100 bg-base-500"
                                     title="Income"
                                     :hidden="hasHiddenValues"
                                     :value="formatMoney(income)"
                                     :subtitle="`Last Month: ${incomeVariance}%`"
                                 />
                                 <FinanceCard
-                                    class="text-gray-100 bg-slate-500"
+                                    class="text-gray-100 bg-base-500"
                                     title="Savings"
                                     :value="formatMoney('10000')"
                                     :hidden="hasHiddenValues"
                                     subtitle="Total: 150,000.00"
                                 />
-                                <AtButton @click="$inertia.visit('/goals')" class="w-full h-10 mt-auto text-white bg-pink-500 rounded-md">
+                                <AtButton @click="$inertia.visit('/goals')" class="w-full h-10 mt-auto text-white bg-primary-500 rounded-md">
                                     Goals
                                 </AtButton>
                             </div>
@@ -51,13 +51,13 @@
                         <TransactionsTable
                             table-label="Budget"
                             class="pt-3 mt-5 "
-                            table-class="overflow-auto text-sm rounded-t-lg shadow-md bg-slate-600"
+                            table-class="overflow-auto text-sm rounded-t-lg shadow-md bg-base-600"
                             :transactions="topCategories"
                             :parser="categoryDBToTransaction"
                             @edit="handleEdit"
                         >
                             <template #action>
-                                <AtButton class="text-pink-500 items-center flex" @click="Inertia.visit('/budgets')">
+                                <AtButton class="text-primary-500 items-center flex" @click="Inertia.visit('/budgets')">
                                     <span>
                                         Go to Budget
                                     </span>
@@ -84,13 +84,13 @@
                         <TransactionsTable
                             table-label="Transactions"
                             class="pt-3 mt-5 "
-                            table-class="border rounded-lg shadow-md bg-slate-600"
+                            table-class="border rounded-lg shadow-md bg-base-600"
                             :transactions="transactions"
                             :parser="transactionDBToTransaction"
                             @edit="handleEdit"
                         >
                         <template #action>
-                            <at-button class="text-pink-500" @click="openModalFor()"><i class="fa fa-plus"></i> Add transaction</at-button>
+                            <at-button class="text-primary-500" @click="openModalFor()"><i class="fa fa-plus"></i> Add transaction</at-button>
                         </template>
                         </TransactionsTable>
                     </div>

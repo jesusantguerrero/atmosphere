@@ -12,13 +12,13 @@
         <FinanceTemplate :accounts="accounts">
             <div class="flex mt-2 justify-between">
                 <div class="flex items-center">
-                    <h2 class="text-xl font-bold leading-tight text-pink-400">
+                    <h2 class="text-xl font-bold leading-tight text-primary-400">
                         Budget settings
                     </h2>
-                    <span class="text-slate-200 ml-2"> {{ formatMoney(readyToAssign) }} </span>
+                    <span class="text-base-200 ml-2"> {{ formatMoney(readyToAssign) }} </span>
                 </div>
             </div>
-             <div class="mx-auto mt-8 text-gray-200 rounded-lg shadow-lg bg-slate-600 max-w-7xl ">
+             <div class="mx-auto mt-8 text-gray-200 rounded-lg shadow-lg bg-base-600 max-w-7xl ">
                 <div class="flex">
                     <div :class="[!selectedBudget ? 'w-full': 'w-7/12']" >
                     <section class="flex">

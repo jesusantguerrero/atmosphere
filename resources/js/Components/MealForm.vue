@@ -3,21 +3,21 @@
         <AtField
             label="Title"
         >
-            <AtInput v-model="form.name" rounded class="text-gray-200 border bg-slate-700 border-slate-800" />
+            <AtInput v-model="form.name" rounded class="text-gray-200 border bg-base-700 border-base-800" />
         </AtField>
 
         <AtField
             label="Ingredients"
         >
-            <div class="flex px-2 py-2 overflow-hidden rounded-md bg-slate-600" v-for="(ingredient, index) in form.ingredients" :key="ingredient.id">
+            <div class="flex px-2 py-2 overflow-hidden rounded-md bg-base-600" v-for="(ingredient, index) in form.ingredients" :key="ingredient.id">
                 <AtField class="px-4" label="Qty">
-                    <AtInput rounded type="number" v-model="ingredient.quantity" class="text-gray-200 border border-none rounded-t-none rounded-b-none bg-slate-700 border-slate-800" />
+                    <AtInput rounded type="number" v-model="ingredient.quantity" class="text-gray-200 border border-none rounded-t-none rounded-b-none bg-base-700 border-base-800" />
                 </AtField>
                 <AtField class="w-full px-4" label="Name">
-                    <AtInput rounded class="text-gray-200 border border-none rounded-t-none rounded-b-none bg-slate-700 border-slate-800" v-model="ingredient.name" @update:modelValue="checkIngredients(index, $event)"></AtInput>
+                    <AtInput rounded class="text-gray-200 border border-none rounded-t-none rounded-b-none bg-base-700 border-base-800" v-model="ingredient.name" @update:modelValue="checkIngredients(index, $event)"></AtInput>
                 </AtField>
                 <AtField class="px-4" label="Unit">
-                    <AtInput rounded v-model="ingredient.unit" class="text-gray-200 border border-none rounded-t-none rounded-b-none bg-slate-700 border-slate-800"/>
+                    <AtInput rounded v-model="ingredient.unit" class="text-gray-200 border border-none rounded-t-none rounded-b-none bg-base-700 border-base-800"/>
                 </AtField>
                 <AtField label="Actions">
                     <AtButton type="danger" class="items-center h-10" rounded @click="removeIngredient(index)">

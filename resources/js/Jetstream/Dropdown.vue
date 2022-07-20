@@ -40,7 +40,7 @@ export default {
             default: '48'
         },
         contentClasses: {
-            default: () => ['py-1', 'bg-slate-600']
+            default: () => ['py-1', 'bg-base-600']
         }
     },
 
