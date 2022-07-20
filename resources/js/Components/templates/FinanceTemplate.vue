@@ -13,7 +13,7 @@
                     <IconImport />
                 </LogerTabButton>
             </SectionTitle>
-            <AccountsLedger :accounts="accounts" class="mt-5" />
+            <AccountsLedger :accounts="accounts" @reordered="saveReorder" class="mt-5" />
         </div>
 
         <TransactionModal v-bind="transferConfig" v-model:show="isTransferModalOpen" />
@@ -77,6 +77,15 @@
 
     provide('openTransactionModal', openTransactionModal)
     provide('openTransactionModalForEdit', openTransactionModalForEdit)
+
+
+    function saveReorder(items) {
+        const savedItems =  items?.reduce((accounts, account) => {
+            accounts[account.id] = account;
+            return accounts;
+        }, {})
+        axios.patch('/api/accounts/', { accounts: savedItems })
+    }
 
     defineExpose({
         openTransactionModal,

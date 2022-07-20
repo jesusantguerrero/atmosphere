@@ -2,6 +2,7 @@
 
 use App\Helpers\BudgetHelper;
 use App\Helpers\CategoryHelper;
+use App\Http\Controllers\Api\AccountApiController;
 use App\Http\Controllers\Api\AutomationController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\PayeeApiController;
@@ -12,7 +13,6 @@ use App\Http\Controllers\GoalController;
 use App\Http\Controllers\MealController;
 use App\Http\Controllers\PlannerController;
 use App\Http\Controllers\SettingsController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
@@ -92,4 +92,6 @@ Route::middleware(['auth:sanctum', 'verified'])->prefix('/api')->group(function 
     });
 
     Route::resource('payees', PayeeApiController::class);
+
+    Route::patch('/accounts', [AccountApiController::class,  'bulkUpdate']);
 });
