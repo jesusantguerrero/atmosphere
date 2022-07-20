@@ -1,5 +1,5 @@
 <template>
-    <div class="pl-6 pb-20 max-w-screen-2xl space-x-2 flex lg:pl-8">
+    <div class="pb-20 max-w-screen-2xl mx-auto space-x-2 flex">
         <div class="w-10/12 pr-5">
             <slot />
         </div>
