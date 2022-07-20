@@ -36,10 +36,8 @@
                                         <div v-if="isAdding">
                                             <LogerInput placeholder="Add subcategory" v-model="state.categoryForm.name" @keydown.enter.ctrl="saveBudgetCategory(itemGroup.id, toggleAdding)" />
                                         </div>
-                                        <div v-if="isExpanded">  
-                                            <div v-for="item in itemGroup.subCategories">
-                                                {{ item.name }}
-                                            </div>
+                                        <div v-if="isExpanded" class="space-y-2 py-2">  
+                                            <BudgetItem class="bg-base-500" v-for="item in itemGroup.subCategories" :item="item" />
                                         </div>
                                     </div>
                                 </template>
@@ -80,6 +78,7 @@
     import { createBudgetCategory } from '@/domains/budget/createBudgetCategory';
     import FinanceSectionNav from '@/Components/templates/FinanceSectionNav.vue';
     import BudgetGroupItem from '@/Components/molecules/BudgetGroupItem.vue';
+    import BudgetItem from '@/Components/molecules/BudgetItem.vue';
 
     const props = defineProps({
             budgets: {

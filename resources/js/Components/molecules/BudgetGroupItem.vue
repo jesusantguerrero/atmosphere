@@ -13,13 +13,17 @@
             </div>
         </div>
         <div class="flex items-center space-x-2">
+            <p>
+                {{ formatMoney(item.spent) }} of
+                {{ formatMoney(item.budgeted) }}  
+            </p>
             <LogerTabButton @click="toggleAdding">
                 <i class="fa fa-plus" />
             </LogerTabButton>
             <LogerTabButton> <i class="fa fa-ellipsis-v"></i></LogerTabButton>
         </div>
     </header>
-    <section class="px-4">
+    <section class="pl-4 border-l-4 border-primary-500 bg-base-700">
             <slot :isExpanded="isExpanded" :toggleAdding="toggleAdding" :isAdding="isAdding" name="content"/>
     </section>
 </article>
@@ -30,6 +34,7 @@
 import IconDrag from "../icons/IconDrag.vue";
 import { computed, ref }  from "vue";
 import LogerTabButton from "@/Components/atoms/LogerTabButton.vue";
+import formatMoney from "@/utils/formatMoney";
 
 defineProps({
     item: {
