@@ -1,6 +1,7 @@
 import { Inertia } from "@inertiajs/inertia";
+import { nextTick } from "vue";
 
-export const createBudgetCategory = (categoryForm, parentCategoryId = null) => {
+export const createBudgetCategory = (categoryForm, parentCategoryId = null, callback) => {
     categoryForm.transform((formData) => ({
         ...formData,
         resource_type: "transactions",
@@ -11,6 +12,9 @@ export const createBudgetCategory = (categoryForm, parentCategoryId = null) => {
                 preserveScroll: true
             })
             categoryForm.reset();
+            nextTick(() => {
+                callback && callback()
+            })
         }
     })
 }

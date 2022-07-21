@@ -3,7 +3,7 @@
         <template #header>
             <div class="flex justify-between">
                 <div>
-                <h2 class="text-xl font-semibold leading-tight text-pink-500">
+                <h2 class="text-xl font-semibold leading-tight text-primary-500">
                     Goals
                 </h2>
                 <span>There a total of {{ goals.data.length || 0 }} goals</span>
@@ -11,7 +11,7 @@
                 </div>
 
                 <div>
-                    <at-button class="text-white bg-pink-400" @click="$inertia.visit(route('goals.create'))">
+                    <at-button class="text-white bg-primary-400" @click="$inertia.visit(route('goals.create'))">
                         Create goal
                     </at-button>
                 </div>
@@ -20,7 +20,7 @@
 
         <div class="py-12">
             <div class="px-6 mx-auto max-w-7xl space-y-4">
-                <div v-for="goal in goals.data" class="rounded-md bg-slate-600 border px-5 py-3 space-y-4">
+                <div v-for="goal in goals.data" class="rounded-md bg-base-600 border px-5 py-3 space-y-4">
                     <div class="flex">
                         <div class="h-10 w-10 bg-gray-700 rounded-full"></div>
                         <div class="ml-2">

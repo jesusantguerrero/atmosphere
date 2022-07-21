@@ -36,7 +36,7 @@
             <div class="w-full">
                 <div class="mt-10 md:mt-0">
                     <AtVideo
-                        class="overflow-hidden rounded-md shadow-lg shadow-slate-200/20 border-pink-400/75"
+                        class="overflow-hidden rounded-md shadow-lg shadow-base-200/20 border-pink-400/75"
                         imageUrl="/images/finance-dashboard.png"
                         src="https://www.framer.com/images/developers/hero.mp4"
                         :style="{with: '400px'}"
@@ -185,7 +185,6 @@ const state = {
 
 <style lang="scss" scoped>
 header {
-    background: url('../../assets/zen-photo.jpg');
     background-size: cover;
     position: relative;
     width: 100%;

@@ -1,10 +1,8 @@
 <?php
 
-use App\Helpers\BudgetHelper;
-use App\Helpers\CategoryHelper;
 use App\Http\Controllers\Api\AccountApiController;
 use App\Http\Controllers\Api\AutomationController;
-use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\CategoryApiController;
 use App\Http\Controllers\Api\PayeeApiController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\DashboardController;
@@ -83,7 +81,9 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 });
 
 Route::middleware(['auth:sanctum', 'verified'])->prefix('/api')->group(function () {
-    Route::resource('categories', CategoryController::class);
+    Route::resource('categories', CategoryApiController::class);
+    Route::patch('/categories', [CategoryApiController::class,  'bulkUpdate']);
+
 
     Route::controller(AutomationController::class)->group(function () {
         Route::apiResource('automation', AutomationController::class);

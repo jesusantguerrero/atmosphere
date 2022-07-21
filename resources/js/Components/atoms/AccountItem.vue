@@ -1,7 +1,7 @@
 <template>
     <div
-        class="hover:bg-slate-600 cursor-pointer py-2 px-2 rounded-md overflow-hidden flex justify-between group"
-        :class="{'bg-slate-500': isSelected}"
+        class="hover:bg-base-600 cursor-pointer py-2 px-2 rounded-md overflow-hidden flex justify-between group"
+        :class="{'bg-base-500': isSelected}"
         v-bind="$attrs"
         v-on="$attrs"
         :title="account.balance"
@@ -10,7 +10,7 @@
             <strong class="flex flex-wrap overflow-ellipsis overflow-hidden">
                 {{ account.name }}
             </strong>
-            <p class="relative text-sm">
+            <p class="relative text-sm" :class="{'text-red-400': isDebt(account.balance)}">
                 <NumberHider />
                 {{ formatMoney(account.balance) }}
             </p>
@@ -36,4 +36,8 @@ defineProps({
         default: false
    }
 })
+
+const isDebt = (amount) => {
+    return amount < 0
+}
 </script>

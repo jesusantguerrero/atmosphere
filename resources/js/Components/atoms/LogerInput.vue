@@ -1,5 +1,5 @@
 <template>
-<AtInput type="text" class="bg-slate-500/80 text-slate-200 border-slate-700" v-bind="$attrs" rounded required :model-value="modelValue" @update:model-value="$emit('update:model-value', $event)" />
+<AtInput type="text" class="bg-base-500/80 text-base-200 border-base-700" v-bind="$attrs" rounded required :model-value="modelValue" @update:model-value="$emit('update:model-value', $event)" />
 </template>
 
 <script setup>

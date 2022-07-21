@@ -8,7 +8,7 @@
         @row-click="$emit('row-click', $event)"
     >
         <thead>
-            <tr class="px-2 py-4 font-bold text-left text-slate-200 border-b border-gray-200">
+            <tr class="px-2 py-4 font-bold text-left text-base-200 border-b border-gray-200">
                  <th v-for="col in cols" :key="col.name" class="px-2 py-4" :class="[col.headerClass]">
                     {{ col.label }}
                  </th>
@@ -25,8 +25,8 @@
             </tr>
             <tr v-for="(data, index) in tableData"
                 :key="`data-row-${index}`"
-                class="text-slate-200"
-                :class="{'bg-slate-700/50': index % 2}"
+                class="text-base-200"
+                :class="{'bg-base-700/50': index % 2}"
             >
                 <td v-for="col in cols" :key="col.name" class="h-full align-baseline" :style="{width: col.width, maxWidth: col.maxWidth}">
                     <div class="flex flex-col w-full h-full px-2 py-1 text-left" :class="col.class">
@@ -58,7 +58,7 @@
             <tr>
                 <td :colspan="cols.length" class="flex flex-col w-full">
                     <slot name="empty" v-if="!hideEmptyText">
-                        <div class="py-5 text-center text-slate-200 w-full">
+                        <div class="py-5 text-center text-base-200 w-full">
                             {{ emptyText }}
                         </div>
                     </slot>

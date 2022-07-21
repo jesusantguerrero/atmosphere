@@ -1,10 +1,10 @@
 
 <template>
-<div class="h-8 w-full rounded-b-lg bg-slate-600 relative overflow-hidden">
+<div class="h-8 w-full rounded-b-lg bg-base-600 relative overflow-hidden">
 <div class="w-full h-full flex items-center justify-center  absolute text-white z-20">
     {{ progress }}% of {{ formatMoney(goal) }}
 </div>
-    <div class="absolute h-full flex z-10 bg-pink-400 w-full" :style="progressStyle" />
+    <div class="absolute h-full flex z-10 bg-primary-400 w-full" :style="progressStyle" />
 </div>
 </template>
 

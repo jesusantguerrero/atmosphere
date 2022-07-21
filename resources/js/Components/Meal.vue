@@ -2,11 +2,11 @@
     <div>
         <div class="py-6 space-y-4">
             <div
-                class="flex justify-between w-full grid-cols-4 px-5 py-5 text-gray-200 border rounded-lg cursor-pointer bg-slate-600 hover:bg-slate-500"
+                class="flex justify-between w-full grid-cols-4 px-5 py-5 text-gray-200 border rounded-lg cursor-pointer bg-base-600 hover:bg-base-500"
                 @click="$emit('click', meal)"
                 v-for="meal in meals"
                 :key="meal.id"
-                :class="{'bg-pink-300 text-white': isSelected(meal)}"
+                :class="{'bg-primary-300 text-white': isSelected(meal)}"
             >
                 <div > {{ meal.name }} </div>
                 <div class="space-x-2 text-right">

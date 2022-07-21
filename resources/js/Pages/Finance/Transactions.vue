@@ -5,12 +5,12 @@
             <template #actions>
                 <div class="flex items-center w-full space-x-2">
                     <AtDatePager
-                        class="h-12 w-full bg-slate-600 text-gray-200 border-none"
+                        class="h-12 w-full bg-base-600 text-gray-200 border-none"
                         v-model="state.date"
                         v-model:dateSpan="state.dateSpan"
                         v-model:startDate="state.searchOptions.date.startDate"
                         v-model:endDate="state.searchOptions.date.endDate"
-                        controlsClass="bg-transparent text-gray-200 hover:bg-slate-600"
+                        controlsClass="bg-transparent text-gray-200 hover:bg-base-600"
                         next-mode="month"
                     />
                     <NSelect
@@ -22,11 +22,11 @@
                     v-model:value="state.searchOptions.group"
                     />
                     <div
-                    class="flex text-white rounded-md bg-pink-400 h-10 min-w-max divide-x-2 divide-white overflow-hidden"
+                    class="flex text-white rounded-md bg-primary-400 h-10 min-w-max divide-x-2 divide-white overflow-hidden"
                     >
                     <button
                         class="px-5"
-                        :class="{ 'bg-pink-700': isSelectedList('table') }"
+                        :class="{ 'bg-primary-700': isSelectedList('table') }"
                         @click="state.listType = 'table'"
                     >
                         <svg
@@ -48,7 +48,7 @@
                     </button>
                     <button
                         class="px-5"
-                        :class="{ 'bg-pink-700': isSelectedList('graph') }"
+                        :class="{ 'bg-primary-700': isSelectedList('graph') }"
                         @click="state.listType = 'graph'"
                     >
                         <svg

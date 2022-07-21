@@ -51,7 +51,7 @@
                 <at-button class="block h-full text-red-500" @click="$emit('delete')"> Delete </at-button>
                 <at-button class="block h-full text-gray-500 " @click="$emit('cancel')"> Cancel </at-button>
             </div>
-            <at-button class="block h-full text-white bg-pink-500" @click="submit()"> Save </at-button>
+            <at-button class="block h-full text-white bg-primary-500" @click="submit()"> Save </at-button>
         </div>
     </div>
 </template>

@@ -12,30 +12,37 @@
         <FinanceTemplate :accounts="accounts">
             <div class="flex mt-2 justify-between">
                 <div class="flex items-center">
-                    <h2 class="text-xl font-bold leading-tight text-pink-400">
+                    <h2 class="text-xl font-bold leading-tight text-primary-400">
                         Budget settings
                     </h2>
-                    <span class="text-slate-200 ml-2"> {{ formatMoney(readyToAssign) }} </span>
+                    <span class="text-base-200 ml-2"> {{ formatMoney(readyToAssign) }} </span>
                 </div>
             </div>
-             <div class="mx-auto mt-8 text-gray-200 rounded-lg shadow-lg bg-slate-600 max-w-7xl ">
+             <div class="mx-auto mt-8 text-gray-200 rounded-lg shadow-lg bg-base-700 max-w-7xl ">
                 <div class="flex">
                     <div :class="[!selectedBudget ? 'w-full': 'w-7/12']" >
-                    <section class="flex">
-                        <AtField class="w-full">
-                            <LogerInput v-model="categoryForm.name" placeholder="New Category group" />
-                        </AtField>
-                        <LogerTabButton class="text-center min-w-max justify-center" @click="saveBudgetCategory">
-                            Add Budget Group
-                        </LogerTabButton>
-                    </section>
-                    <NDataTable
-                        :columns="budgetCols(state)"
-                        :data="budgetState"
-                        :row-key="({ id }) => id"
-                        children-key="subCategories"
-                        flex-height
-                    />
+                        <section class="flex">
+                            <AtField class="w-full">
+                                <LogerInput v-model="categoryForm.name" placeholder="New Category group" />
+                            </AtField>
+                            <LogerTabButton class="text-center min-w-max justify-center" @click="saveBudgetCategory">
+                                Add Budget Group
+                            </LogerTabButton>
+                        </section>
+                        <Draggable class="dragArea list-group w-full space-y-2 mt-4" :list="budgetState" handle=".handle"  @end="saveReorder(budgetState)">
+                            <BudgetGroupItem v-for="itemGroup in budgetState" :item="itemGroup" class="bg-base-600" >
+                                <template v-slot:content="{ isExpanded, isAdding, toggleAdding }">
+                                    <div>
+                                        <div v-if="isAdding" class="pt-2">
+                                            <LogerInput placeholder="Add subcategory" v-model="state.categoryForm.name" @keydown.enter.ctrl="saveBudgetCategory(itemGroup.id, toggleAdding)" />
+                                        </div>
+                                        <Draggable v-if="isExpanded" class="space-y-2 py-2" :list="itemGroup.subCategories" handle=".handle" @end="saveReorder(itemGroup.subCategories)">  
+                                            <BudgetItem class="bg-base-500" v-for="item in itemGroup.subCategories" :item="item" />
+                                        </Draggable>
+                                    </div>
+                                </template>
+                            </BudgetGroupItem>
+                        </Draggable>
                     </div>
                     <section class="py-5 text-center" :class="[selectedBudget ? 'w-5/12' : 'd-none']" v-if="selectedBudget">
                         <BudgetItemForm
@@ -59,17 +66,19 @@
     import { Inertia } from '@inertiajs/inertia';
     import { useForm } from '@inertiajs/inertia-vue3';
     import { AtButton } from "atmosphere-ui";
-    import { NDataTable } from "naive-ui"
+    import { VueDraggableNext as Draggable } from "vue-draggable-next"
     import AppLayout from '@/Layouts/AppLayout.vue';
     import { useSelect } from "@/utils/useSelects";
     import BudgetItemForm from '@/Components/molecules/BudgetItemForm.vue';
     import FinanceTemplate from '@/Components/templates/FinanceTemplate.vue';
-    import { budgetCols, useBudget } from "@/domains/budget"
+    import { useBudget } from "@/domains/budget"
     import LogerTabButton from '@/Components/atoms/LogerTabButton.vue';
     import LogerInput from '@/Components/atoms/LogerInput.vue';
     import formatMoney from '@/utils/formatMoney';
     import { createBudgetCategory } from '@/domains/budget/createBudgetCategory';
     import FinanceSectionNav from '@/Components/templates/FinanceSectionNav.vue';
+    import BudgetGroupItem from '@/Components/molecules/BudgetGroupItem.vue';
+    import BudgetItem from '@/Components/molecules/BudgetItem.vue';
 
     const props = defineProps({
             budgets: {
@@ -123,9 +132,24 @@
         })
     }
 
-    const saveBudgetCategory = () => {
-        createBudgetCategory(state.categoryForm)
+    const saveBudgetCategory = (parentId, callback) => {
+        createBudgetCategory(state.categoryForm, parentId, callback)
     }
 
     const { categoryForm, selectedBudget } = toRefs(state);
+    const groupById = (items) => items?.reduce((items, item) => {
+            items[item.id] = item;
+            return items;
+    }, {})
+
+    const saveReorder = (categories) => {
+        const items = categories.map((item, index) => ({
+            id: item.id,
+            name: item.name,
+            index
+        }));
+
+        const savedItems =  groupById(items)
+        axios.patch('/api/categories/', { data: savedItems })
+    }
 </script>

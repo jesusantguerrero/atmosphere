@@ -1,5 +1,5 @@
 import ExactMath from "exact-math";
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 
 export const useBudget = (budgets) => {
 
@@ -23,9 +23,15 @@ export const useBudget = (budgets) => {
 
     });
 
-    const budgetState = computed(() => {
+    const budgetState = ref([]);
+
+    watch(budgets, () => {
+        budgetState.value = getBudgetState();
+    }, { immediate: true })
+
+    function getBudgetState() {
         return budget.value.filter((category) => category.name != 'Inflow')
-    })
+    }
 
     const inflow = computed(() => {
         return budget.value.find((category) => category.name == 'Inflow')

@@ -3,12 +3,12 @@
         <div class="px-6 pb-20 mx-auto mt-5 max-w-screen-2xl lg:px-8">
 
             <aside class="w-4/12">
-                <article class="rounded-md border bg-slate-600 py-2 px-5">
+                <article class="rounded-md border bg-base-600 py-2 px-5">
                     <SectionTitle type="secondary"> Accounts</SectionTitle>
 
                     <div class="mt-4 space-y-2">
                         <section>
-                            <div v-for="account in accounts" :key="account.id" class="px-5 py-3 cursor-pointer rounded-md bg-slate-600 border-2">
+                            <div v-for="account in accounts" :key="account.id" class="px-5 py-3 cursor-pointer rounded-md bg-base-600 border-2">
                                 <p>{{ account.name }}</p>
                                 <strong class="mt-2 block">{{ account.balance }}</strong>
                                 <button @click="deleteAccount(account.id)"> delete </button>

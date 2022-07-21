@@ -8,7 +8,7 @@
       <article class="flex space-x-4">
         <div
           v-for="mealType in pageProps.mealTypes"
-          class="cursor-pointer font-bold text-white border-pink-400 transition rounded-md bg-gradient-to-br from-purple-400 to-pink-500 hover:bg-pink-500 h-20 w-full flex flex-col items-center justify-center"
+          class="cursor-pointer font-bold text-white border-primary-400 transition rounded-md bg-gradient-to-br from-purple-400 to-primary-500 hover:bg-primary-500 h-20 w-full flex flex-col items-center justify-center"
         >
           <h4 class="capitalize">
             {{ mealType.name }}
@@ -42,7 +42,7 @@ defineProps({
     type: String,
   },
   showMealTypes: {
-    type: Boolean, 
+    type: Boolean,
     default: true
   }
 });

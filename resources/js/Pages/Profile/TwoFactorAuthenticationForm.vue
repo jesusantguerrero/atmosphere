@@ -7,7 +7,7 @@
                 {{ titleLabel }}
             </h3>
 
-            <div class="mt-3 max-w-xl text-sm text-slate-400">
+            <div class="mt-3 max-w-xl text-sm text-base-400">
                 <p>
                     When two factor authentication is enabled, you will be prompted for a secure, random token during authentication. You may retrieve this token from your phone's Google Authenticator application.
                 </p>
@@ -21,7 +21,7 @@
                         </p>
                     </div>
 
-                    <div class="mt-4 dark:p-4 dark:w-56 dark:bg-slate-600" v-html="qrCode">
+                    <div class="mt-4 dark:p-4 dark:w-56 dark:bg-base-600" v-html="qrCode">
                     </div>
                 </div>
 

@@ -2,7 +2,7 @@
     <nav class="flex items-center h-24 mx-auto max-w-7xl">
         <div class="z-50 flex flex-wrap items-center justify-between w-full h-24 mx-auto font-medium">
             <router-link to="/" class="py-4 pr-4">
-                <span class="text-3xl leading-none text-white select-none logo zen">Loger<span class="text-pink-500">.</span></span>
+                <span class="text-3xl leading-none text-white select-none logo zen">Loger<span class="text-primary-500">.</span></span>
             </router-link>
 
             <div class="flex-col items-center justify-end hidden w-full h-full mt-12 font-bold text-center text-green-700 md:flex md:text-green-400 md:w-2/3 md:mt-0 md:flex-row md:items-center">
