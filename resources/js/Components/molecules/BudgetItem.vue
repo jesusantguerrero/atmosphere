@@ -5,7 +5,7 @@
             <i class="fa fa-trash"></i>
         </button>
         <div class="cursor-grab mr-4">
-            <IconDrag />
+            <IconDrag class="handle" />
         </div>
         <div>
             <h4> {{ item.name }} </h4>
@@ -16,7 +16,7 @@
     </div>
     <div class="flex text-right space-x-2 items-center flex-nowrap min-w-fit">
         <span class="min-w-fit"> {{ formatMoney(item.spent) }}</span>
-        <BalanceInput :value="balanceInput" :formatter="formatMoney" />
+        <BalanceInput :value="item.available" :formatter="formatMoney" />
         <LogerTabButton @click="toggleAdding">
             <i class="fa fa-plus" />
         </LogerTabButton>

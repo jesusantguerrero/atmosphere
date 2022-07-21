@@ -29,16 +29,16 @@
                                 Add Budget Group
                             </LogerTabButton>
                         </section>
-                        <Draggable class="dragArea list-group w-full space-y-2 mt-4" :list="budgetState" handle=".handle"  @end="saveReorder">
+                        <Draggable class="dragArea list-group w-full space-y-2 mt-4" :list="budgetState" handle=".handle"  @end="saveReorder(budgetState)">
                             <BudgetGroupItem v-for="itemGroup in budgetState" :item="itemGroup" class="bg-base-600" >
                                 <template v-slot:content="{ isExpanded, isAdding, toggleAdding }">
                                     <div>
-                                        <div v-if="isAdding">
+                                        <div v-if="isAdding" class="pt-2">
                                             <LogerInput placeholder="Add subcategory" v-model="state.categoryForm.name" @keydown.enter.ctrl="saveBudgetCategory(itemGroup.id, toggleAdding)" />
                                         </div>
-                                        <div v-if="isExpanded" class="space-y-2 py-2">  
+                                        <Draggable v-if="isExpanded" class="space-y-2 py-2" :list="itemGroup.subCategories" handle=".handle" @end="saveReorder(itemGroup.subCategories)">  
                                             <BudgetItem class="bg-base-500" v-for="item in itemGroup.subCategories" :item="item" />
-                                        </div>
+                                        </Draggable>
                                     </div>
                                 </template>
                             </BudgetGroupItem>
@@ -137,18 +137,19 @@
     }
 
     const { categoryForm, selectedBudget } = toRefs(state);
+    const groupById = (items) => items?.reduce((items, item) => {
+            items[item.id] = item;
+            return items;
+    }, {})
 
-    const saveReorder = () => {
-        const items = budgetState.value.map((item, index) => ({
+    const saveReorder = (categories) => {
+        const items = categories.map((item, index) => ({
             id: item.id,
             name: item.name,
             index
         }));
 
-         const savedItems =  items?.reduce((items, item) => {
-            items[item.id] = item;
-            return items;
-        }, {})
+        const savedItems =  groupById(items)
         axios.patch('/api/categories/', { data: savedItems })
     }
 </script>
