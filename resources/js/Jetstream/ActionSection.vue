@@ -6,7 +6,7 @@
         </jet-section-title>
 
         <div class="mt-5 md:mt-0 md:col-span-2">
-            <div class="px-4 py-5 sm:p-6 bg-base-600 shadow sm:rounded-lg text-base-200">
+            <div class="px-4 py-5 sm:p-6 bg-base-lvl-1 shadow sm:rounded-lg text-base-200">
                 <slot name="content"></slot>
             </div>
         </div>

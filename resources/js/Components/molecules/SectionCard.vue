@@ -14,7 +14,7 @@
             </slot>
         </div>
     </div>
-    <div :class="cardClass" class="overflow-hidden border-base-800">
+    <div :class="cardClass" class="overflow-hidden border-base-deep-1">
         <slot />
     </div>
 </div>
@@ -31,7 +31,7 @@ defineProps({
     },
     cardClass: {
         type: String,
-        default: 'mt-2 bg-base-600 border border-base-800 rounded-lg shadow-md'
+        default: 'mt-2 bg-base-lvl-1 border border-base-deep-1 rounded-lg shadow-md'
     },
     sectionTitle: {
         type: String,

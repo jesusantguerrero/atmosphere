@@ -1,5 +1,5 @@
 <template>
-    <div class="px-5 py-3 transition border divide-y rounded-lg shadow-md divide-base-700 border-base-700 bg-base-600">
+    <div class="px-5 py-3 transition border divide-y rounded-lg shadow-md divide-base border-base bg-base-lvl-1">
         <div class="items-center pb-2 md:justify-between md:flex">
             <h1 class="font-bold text-gray-200">
                 Welcome to Loger <span class="text-primary-400">{{ username }}</span>

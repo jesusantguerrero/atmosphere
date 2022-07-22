@@ -34,6 +34,6 @@
     });
 
     const recipes = computed(() => {
-        return props.meals?.data?.length ?? []
+        return props.meals?.data ?? []
     })
 </script>

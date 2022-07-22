@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Meal;
 use App\Models\MealType;
 use App\Models\Planner;
+use App\Http\Resources\MealResource;
 use Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -24,7 +25,7 @@ class MealController extends InertiaController
         $this->validationRules = [
             'name' => 'required'
         ];
-        $this->includes = ['ingredients'];
+        $this->includes = ['ingredients', 'mealType'];
         $this->filters = [];
     }
 
@@ -40,6 +41,7 @@ class MealController extends InertiaController
                 "team_id" => $teamId,
                 "user_id" => $request->user()->id
             ])->get(),
+            "meals" => MealResource::collection($this->getModelQuery($request))
         ];
     }
 
@@ -50,11 +52,20 @@ class MealController extends InertiaController
 
     public function addPlan(Request $request) {
         $postData = $this->getPostData($request);
-        foreach ($postData['meals'] as $meal) {
-            if (!isset($meal['id'])) continue;
+        foreach ($postData['meals'] as $mealData) {
+            if (isset($mealData['id']) && $mealData['id'] !== 'new') {
+                $meal = Meal::find($mealData['id']);
+            } else if (isset($mealData['name'])) {
+                $meal = Meal::create([
+                    'name' => $mealData['name'],
+                    'meal_type_id' => $mealData['meal_type_id'],
+                    'team_id' => $request->user()->current_team_id,
+                    'user_id' => $request->user()->id
+                ]);
+            }
             Planner::create(array_merge($postData ,[
                 'dateable_type' => Meal::class,
-                'dateable_id' => $meal['id'],
+                'dateable_id' => $meal->id,
                 'date' => Carbon::parse($postData['date'])->setTimezone('UTC')->toDateTimeString()
             ]));
         }

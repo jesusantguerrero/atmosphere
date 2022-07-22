@@ -3,7 +3,7 @@
     <TransactionsTable
       table-label=""
       class="pt-3 mt-5"
-      table-class="overflow-auto bg-base-600 border rounded-lg shadow-md mt-5"
+      table-class="overflow-auto bg-base-lvl-1 border rounded-lg shadow-md mt-5"
       allow-select
       show-sum
       :transactions="transactions"

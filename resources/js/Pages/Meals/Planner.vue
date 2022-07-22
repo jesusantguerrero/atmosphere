@@ -5,10 +5,10 @@
                 <template #actions>
                     <div class="space-x-2 flex justify-end items-center ml-auto">
                         <AtDatePager
-                            class="h-12 w-full border-none bg-base-600 text-gray-200 ml-auto"
+                            class="h-12 w-full border-none bg-base-lvl-1 text-gray-200 ml-auto"
                             v-model="state.date"
                             v-model:dateSpan="state.dateSpan"
-                            controlsClass="bg-transparent text-gray-200 hover:bg-base-600"
+                            controlsClass="bg-transparent text-gray-200 hover:bg-base-lvl-1"
                             next-mode="week"
                         />
                         <AtButton class="h-10 w-64 text-white bg-primary-400" @click="openRandomModal()" rounded> Random Meal </AtButton>
@@ -23,39 +23,28 @@
             <div class="pb-20 space-x-2">
 
 
-                <div v-if="state.isGroceryList" class="py-5 overflow-hidden border rounded-md bg-base-600">
-                    <div v-for="(ingredient, name) in ingredients" class="px-5 text-primary-500 cursor-pointer bg-base-600">
+                <div v-if="state.isGroceryList" class="py-5 overflow-hidden border rounded-md bg-base-lvl-1">
+                    <div v-for="(ingredient, name) in ingredients" class="px-5 text-primary-500 cursor-pointer bg-base-lvl-1">
                         {{name }} ({{ ingredient.quantity }}) {{ ingredient.unit }}
                     </div>
                 </div>
 
-                <div v-else class="pt-5 overflow-hidden text-gray-200 border divide-y-2 rounded-md divide-base-800 border-base-800 bg-base-600">
-                    <div v-for="day in state.dateSpan" :key="day" @click="openDayInModal(day)" class="px-5 py-4 cursor-pointer bg-base-600">
+                <div v-else class="pt-5 overflow-hidden text-gray-200 border divide-y-2 rounded-md divide-base-deep-1 border-base-deep-1 bg-base-lvl-1">
+                    <div v-for="day in state.dateSpan" :key="day" @click="openDayInModal(day)" class="px-5 py-4 cursor-pointer bg-base-lvl-1">
                         {{ getDayName(day) }}
 
-                        <div class="flex space-x-2 mt-2">
+                        <div class="flex space-x-2 mt-2 items-center">
                             <div v-for="mealType in pageProps.mealTypes" class="w-full">
-                                <div class="border border-dashed rounded-md px-5 py-2 w-full">
-                                    Add {{ mealType.name }}
-                                </div>
-                            </div>
-                            <div v-for="meal in getDayMeals(day)" :key="meal.id" class="font-bold text-primary-400">
-                                {{ meal.dateable.name }}
+                                <MealTypeCell
+                                    v-model="recipe"
+                                    :planned-meal="getDayMeals(day, mealType.id)"
+                                    :meal-type="mealType"
+                                    @submit="addPlan"
+                                />                                
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <PlanModal
-                    :show="state.isModalOpen"
-                    :closeable="true"
-                    :date="state.isModalOpen"
-                    :selected="state.selectedMealsOfDay"
-                    :title="`Add a new meal to ${isModalOpen && getDayName(isModalOpen)}`"
-                    :meals="meals"
-                    @close="state.isModalOpen=false"
-                    @saved="onSaved"
-                />
 
                 <RandomMealModal
                     :show="state.isRandomModalOpen"
@@ -68,16 +57,16 @@
 </template>
 
 <script setup>
-    import { format, startOfDay, startOfWeek } from "date-fns";
+    import { format, startOfDay } from "date-fns";
     import { AtButton, AtDatePager } from "atmosphere-ui";
+    import { useForm, usePage } from "@inertiajs/inertia-vue3";
     import AppLayout from '@/Layouts/AppLayout.vue';
-    import PlanModal from '@/Components/PlanModal.vue';
     import { Inertia } from '@inertiajs/inertia';
-    import { computed, nextTick, reactive, toRefs } from "vue";
+    import { computed, reactive } from "vue";
     import RandomMealModal from '@/Components/RandomMealModal.vue';
     import MealTemplate from "@/Components/templates/MealTemplate.vue";
-    import { usePage } from "@inertiajs/inertia-vue3";
     import MealSectionNav from "@/Components/templates/MealSectionNav.vue";
+    import MealTypeCell from "@/Components/molecules/MealTypeCell.vue";
 
     const pageProps = usePage().props;
 
@@ -103,7 +92,7 @@
     });
 
     const state = reactive({
-        isModalOpen: false,
+        selectedDay: false,
         isRandomModalOpen: false,
         date: startOfDay(new Date()),
         dateSpan: null,
@@ -125,15 +114,11 @@
         return format(date, 'iiii')
     }
 
-    const getDayMeals = (date) => {
+    const getDayMeals = (date, mealTypeId) => {
         const isoDate = format(date, 'yyyy-MM-dd');
-        return props.mealPlans.data.filter(mealPlan => mealPlan.date == isoDate);
-    }
-
-    const onSaved = () => {
-        nextTick(() => {
-            Inertia.reload();
-        })
+        return props.mealPlans.data.find(mealPlan => {
+            return mealPlan.date == isoDate && mealPlan.dateable.meal_type_id == mealTypeId
+        });
     }
 
     const getMode = (toggled) => {
@@ -149,11 +134,27 @@
     }
 
     const openDayInModal = (day) => {
-        state.selectedMealsOfDay = getDayMeals(day).map( item => ({
-            ...item.dateable,
-            schedule_id: item.id
+        state.selectedDay = day;
+    }
+
+    const form = useForm({
+        date: null,
+        meals: []
+    });
+
+    const addPlan = (recipe) => {
+        if (!recipe.id && !recipe.name) return
+        form
+        .transform(()=> ({
+            date: startOfDay(state.selectedDay),
+            meals: [recipe]
+        }))
+        .post(route('meals.addPlan'), {
+            onSuccess: () => {
+                form.id = "";
+                form.name = ""
+                form.reset()
+            }
         })
-        );
-        state.isModalOpen = day;
     }
 </script>

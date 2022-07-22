@@ -18,7 +18,7 @@
                     <span class="text-base-200 ml-2"> {{ formatMoney(readyToAssign) }} </span>
                 </div>
             </div>
-             <div class="mx-auto mt-8 text-gray-200 rounded-lg shadow-lg bg-base-700 max-w-7xl ">
+             <div class="mx-auto mt-8 text-gray-200 rounded-lg shadow-lg bg-base max-w-7xl ">
                 <div class="flex">
                     <div :class="[!selectedBudget ? 'w-full': 'w-7/12']" >
                         <section class="flex">
@@ -30,14 +30,14 @@
                             </LogerTabButton>
                         </section>
                         <Draggable class="dragArea list-group w-full space-y-2 mt-4" :list="budgetState" handle=".handle"  @end="saveReorder(budgetState)">
-                            <BudgetGroupItem v-for="itemGroup in budgetState" :item="itemGroup" class="bg-base-600" >
+                            <BudgetGroupItem v-for="itemGroup in budgetState" :item="itemGroup" class="bg-base-lvl-1" >
                                 <template v-slot:content="{ isExpanded, isAdding, toggleAdding }">
                                     <div>
                                         <div v-if="isAdding" class="pt-2">
                                             <LogerInput placeholder="Add subcategory" v-model="state.categoryForm.name" @keydown.enter.ctrl="saveBudgetCategory(itemGroup.id, toggleAdding)" />
                                         </div>
                                         <Draggable v-if="isExpanded" class="space-y-2 py-2" :list="itemGroup.subCategories" handle=".handle" @end="saveReorder(itemGroup.subCategories)">  
-                                            <BudgetItem class="bg-base-500" v-for="item in itemGroup.subCategories" :item="item" />
+                                            <BudgetItem class="bg-base-lvl-2" v-for="item in itemGroup.subCategories" :item="item" />
                                         </Draggable>
                                     </div>
                                 </template>

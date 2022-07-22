@@ -5,12 +5,12 @@
             <template #actions>
                 <div class="flex items-center w-full space-x-2">
                     <AtDatePager
-                        class="h-12 w-full bg-base-600 text-gray-200 border-none"
+                        class="h-12 w-full bg-base-lvl-1 text-gray-200 border-none"
                         v-model="state.date"
                         v-model:dateSpan="state.dateSpan"
                         v-model:startDate="state.searchOptions.date.startDate"
                         v-model:endDate="state.searchOptions.date.endDate"
-                        controlsClass="bg-transparent text-gray-200 hover:bg-base-600"
+                        controlsClass="bg-transparent text-gray-200 hover:bg-base-lvl-1"
                         next-mode="month"
                     />
                     <NSelect

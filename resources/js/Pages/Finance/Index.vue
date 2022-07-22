@@ -17,17 +17,17 @@
                         <div class="mt-5">
                             <SectionTitle type="secondary">Summary</SectionTitle>
                         </div>
-                        <div class="flex flex-nowrap space-x-4 justify-between px-4 py-5 mt-3 overflow-hidden border shadow-sm border-base-700 bg-base-600 rounded-xl">
+                        <div class="flex flex-nowrap space-x-4 justify-between px-4 py-5 mt-3 overflow-hidden border shadow-sm border-base bg-base-lvl-1 rounded-xl">
                             <div class="mx-auto space-y-2 w-full">
                                 <FinanceCard
-                                    class="text-gray-100 bg-base-500"
+                                    class="text-gray-100 bg-base-lvl-2"
                                     title="Income"
                                     :hidden="hasHiddenValues"
                                     :value="formatMoney(income)"
                                     :subtitle="`Last Month: ${incomeVariance}%`"
                                 />
                                 <FinanceCard
-                                    class="text-gray-100 bg-base-500"
+                                    class="text-gray-100 bg-base-lvl-2"
                                     title="Savings"
                                     :value="formatMoney('10000')"
                                     :hidden="hasHiddenValues"
@@ -51,7 +51,7 @@
                         <TransactionsTable
                             table-label="Budget"
                             class="pt-3 mt-5 "
-                            table-class="overflow-auto text-sm rounded-t-lg shadow-md bg-base-600"
+                            table-class="overflow-auto text-sm rounded-t-lg shadow-md bg-base-lvl-1"
                             :transactions="topCategories"
                             :parser="categoryDBToTransaction"
                             @edit="handleEdit"
@@ -84,7 +84,7 @@
                         <TransactionsTable
                             table-label="Transactions"
                             class="pt-3 mt-5 "
-                            table-class="border rounded-lg shadow-md bg-base-600"
+                            table-class="border rounded-lg shadow-md bg-base-lvl-1"
                             :transactions="transactions"
                             :parser="transactionDBToTransaction"
                             @edit="handleEdit"

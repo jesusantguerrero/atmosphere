@@ -1,5 +1,5 @@
 <template>
-  <div class="border-l border-base-600 px-5 text-base-200">
+  <div class="border-l border-base-lvl-1 px-5 text-base-200">
     <div class="space-y-2">
       <LogerTabButton class="w-full" icon="fa-plus" @click="openAccountModal()">
         Add Account

@@ -20,7 +20,7 @@
                         </slot>
                         <div class="mt-5">
                             <at-button
-                                class="text-gray-700 bg-base-600"
+                                class="text-gray-700 bg-base-lvl-1"
                                 :disabled="!meal"
                                 @click="submit()">
                                     Random

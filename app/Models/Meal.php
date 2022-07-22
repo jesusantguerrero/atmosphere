@@ -8,10 +8,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Meal extends Model
 {
     use HasFactory;
-    protected $fillable = ['team_id','user_id','name'];
+    protected $fillable = ['team_id','user_id','name', 'meal_type_id', 'menu_id', 'notes'];
 
     public function ingredients() {
         return $this->hasMany(Ingredient::class);
+    }
+
+    public function mealType() {
+        return $this->belongsTo(MealType::class);
     }
 
     public function saveIngredients($items) {

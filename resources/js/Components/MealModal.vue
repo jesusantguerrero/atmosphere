@@ -1,6 +1,6 @@
 <template>
     <modal :show="show" :max-width="maxWidth" :closeable="closeable" @close="close">
-        <div class="px-4 pt-5 pb-4 bg-base-600 sm:p-6 sm:pb-4">
+        <div class="px-4 pt-5 pb-4 bg-base-lvl-1 sm:p-6 sm:pb-4">
             <div class="sm:flex sm:items-start">
                 <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                     <h3 class="text-lg">
@@ -28,7 +28,7 @@
             </div>
         </div>
 
-        <div class="px-6 py-4 space-x-3 text-right bg-base-600">
+        <div class="px-6 py-4 space-x-3 text-right bg-base-lvl-1">
             <AtButton type="secondary" rounded @click="close"> Cancel </AtButton>
             <AtButton class="text-white bg-primary-400" rounded @click="submit"> Save </AtButton>
         </div>
