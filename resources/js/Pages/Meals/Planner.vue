@@ -39,7 +39,7 @@
                                     v-model="recipe"
                                     :planned-meal="getDayMeals(day, mealType.id)"
                                     :meal-type="mealType"
-                                    @action="addPlan(mealType.id)"
+                                    @submit="addPlan"
                                 />                                
                             </div>
                         </div>
@@ -137,20 +137,13 @@
         state.selectedDay = day;
     }
 
-    const recipe = reactive({
-        id: '',
-        name: ''
-    });
-
     const form = useForm({
         date: null,
         meals: []
     });
 
-    const addPlan = (mealTypeId) => {
-        debugger
+    const addPlan = (recipe) => {
         if (!recipe.id && !recipe.name) return
-        recipe.meal_type_id = mealTypeId
         form
         .transform(()=> ({
             date: startOfDay(state.selectedDay),
