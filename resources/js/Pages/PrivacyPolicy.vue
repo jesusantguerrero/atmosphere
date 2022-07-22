@@ -6,7 +6,7 @@
                     <jet-authentication-card-logo />
                 </div>
 
-                <div v-html="policy" class="w-full sm:max-w-2xl mt-6 p-6 bg-base-600 shadow-md overflow-hidden sm:rounded-lg prose">
+                <div v-html="policy" class="w-full sm:max-w-2xl mt-6 p-6 bg-base-lvl-1 shadow-md overflow-hidden sm:rounded-lg prose">
                 </div>
             </div>
         </div>

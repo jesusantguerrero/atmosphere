@@ -16,7 +16,7 @@
                     <SectionTitle type="secondary">
                         Pending for approval
                     </SectionTitle>
-                    <div class="px-5 py-1 mt-5 border rounded-md shadow-md border-base-700 bg-base-600">
+                    <div class="px-5 py-1 mt-5 border rounded-md shadow-md border-base bg-base-lvl-1">
                         <TransactionsTable
                             table-label="Automatic Transactions"
                             class="pt-3"
@@ -51,7 +51,7 @@
                     <RandomMealCard />
 
                     <h4 class="text-2xl font-bold text-primary-400"> Menu for today</h4>
-                    <div class="px-4 py-3 rounded-lg shadow-md cursor-pointer bg-base-600" v-for="plan in meals" :key="plan.id">
+                    <div class="px-4 py-3 rounded-lg shadow-md cursor-pointer bg-base-lvl-1" v-for="plan in meals" :key="plan.id">
                         <h4 class="font-bold text-blue-400">
                             {{ plan.dateable.name }}
                         </h4>

@@ -2,7 +2,7 @@
     <div>
         <div class="py-6 space-y-4">
             <div
-                class="grid w-full grid-cols-4 px-5 py-5 bg-base-600 border rounded-lg cursor-pointer hover:bg-primary-200"
+                class="grid w-full grid-cols-4 px-5 py-5 bg-base-lvl-1 border rounded-lg cursor-pointer hover:bg-primary-200"
                 @click="$emit('click', meal)"
                 v-for="meal in meals"
                 :key="meal.id"

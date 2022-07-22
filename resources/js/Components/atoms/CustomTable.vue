@@ -26,7 +26,7 @@
             <tr v-for="(data, index) in tableData"
                 :key="`data-row-${index}`"
                 class="text-base-200"
-                :class="{'bg-base-700/50': index % 2}"
+                :class="{'bg-base/50': index % 2}"
             >
                 <td v-for="col in cols" :key="col.name" class="h-full align-baseline" :style="{width: col.width, maxWidth: col.maxWidth}">
                     <div class="flex flex-col w-full h-full px-2 py-1 text-left" :class="col.class">

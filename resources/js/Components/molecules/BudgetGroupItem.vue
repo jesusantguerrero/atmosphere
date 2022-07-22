@@ -23,7 +23,7 @@
             <LogerTabButton> <i class="fa fa-ellipsis-v"></i></LogerTabButton>
         </div>
     </header>
-    <section class="pl-4 border-l-4 border-primary-500 bg-base-700">
+    <section class="pl-4 border-l-4 border-primary-500 bg-base">
             <slot :isExpanded="isExpanded" :toggleAdding="toggleAdding" :isAdding="isAdding" name="content"/>
     </section>
 </article>

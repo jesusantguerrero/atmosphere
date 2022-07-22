@@ -1,6 +1,6 @@
 
 <template>
-<div class="h-8 w-full rounded-b-lg bg-base-600 relative overflow-hidden">
+<div class="h-8 w-full rounded-b-lg bg-base-lvl-1 relative overflow-hidden">
 <div class="w-full h-full flex items-center justify-center  absolute text-white z-20">
     {{ progress }}% of {{ formatMoney(goal) }}
 </div>
