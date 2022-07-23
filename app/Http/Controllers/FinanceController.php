@@ -11,8 +11,8 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Laravel\Jetstream\Jetstream;
 use Insane\Journal\Helpers\CategoryHelper;
-use Insane\Atmosphere\Http\InertiaController;
-use Insane\Atmosphere\Http\Querify;
+use Atmosphere\Http\InertiaController;
+use Atmosphere\Http\Querify;
 use Insane\Journal\Models\Core\Account;
 use Maatwebsite\Excel\Facades\Excel;
 

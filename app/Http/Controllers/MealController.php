@@ -6,7 +6,7 @@ use App\Models\Meal;
 use App\Models\MealType;
 use App\Models\Planner;
 use App\Http\Resources\MealResource;
-use Insane\Atmosphere\Http\InertiaController;
+use Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Redirect;

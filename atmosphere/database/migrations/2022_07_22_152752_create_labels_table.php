@@ -13,14 +13,20 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('budget_funds', function (Blueprint $table) {
+        Schema::create('labels', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id');
             $table->foreignId('team_id');
-            $table->foreignId('budget_id');
-            $table->string('year_month');
-            $table->decimal('funded');
-            $table->decimal('spent');
+
+            $table->foreignId('labelable_group_id')->nullable();
+            $table->foreignId('labelable_id')->nullable();
+            $table->text('labelable_group_type')->nullable();
+            $table->text('labelable_type')->nullable();
+
+            $table->string('name');
+            $table->string('label');
+            $table->string('color');
+
             $table->timestamps();
         });
     }
@@ -32,6 +38,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('budget_funds');
+        Schema::dropIfExists('labels');
     }
 };
