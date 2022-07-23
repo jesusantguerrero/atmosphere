@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3ea08c10c390ae5d5be9ef69b3508d85",
+    "content-hash": "097c417929e9bc6382fb1b4fa89ed83b",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -1055,6 +1055,56 @@
                 "source": "https://github.com/firebase/php-jwt/tree/v5.5.1"
             },
             "time": "2021-11-08T20:18:51+00:00"
+        },
+        {
+            "name": "freesgen/atmosphere",
+            "version": "dev-master",
+            "dist": {
+                "type": "path",
+                "url": "./atmosphere",
+                "reference": "4047cdff76d5e575af6e3b33bfbe9302fa1182e1"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Freesgen\\Atmosphere\\AtmosphereServiceProvider"
+                    ],
+                    "aliases": {
+                        "Atmosphere": "Freesgen\\Atmosphere\\Facades\\Atmosphere"
+                    }
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Freesgen\\Atmosphere\\": "src/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jesus Guerrero",
+                    "email": "jesusant.guerrero@gmail.com"
+                }
+            ],
+            "description": "Atmosphere is a SaaS and Starter Kit for Jetstream/Inertia",
+            "homepage": "https://atmosphere.neatlancer.com",
+            "keywords": [
+                "SaaS",
+                "Starter Kit",
+                "inertia",
+                "jetstream",
+                "laravel"
+            ],
+            "support": {
+                "issues": "https://neatlancer.com/forums",
+                "source": "https://neatlancer.com"
+            },
+            "transport-options": {
+                "relative": true
+            }
         },
         {
             "name": "fruitcake/php-cors",
@@ -10262,6 +10312,7 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
+        "freesgen/atmosphere": 20,
         "insane/journal": 20,
         "insane/remotr": 20
     },

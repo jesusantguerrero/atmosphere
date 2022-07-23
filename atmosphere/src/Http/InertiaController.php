@@ -1,6 +1,6 @@
 <?php
 
-namespace Atmosphere\Http;
+namespace Freesgen\Atmosphere\Http;
 
 use App\Http\Controllers\Controller as BaseController;
 use Illuminate\Http\Request;

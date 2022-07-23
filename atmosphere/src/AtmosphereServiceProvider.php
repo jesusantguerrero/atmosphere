@@ -1,6 +1,6 @@
 <?php
 
-namespace Atmosphere;
+namespace Freesgen\Atmosphere;
 
 use Illuminate\Support\ServiceProvider;
 
@@ -13,7 +13,7 @@ class AtmosphereServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->loadMigrationsFrom(__DIR__.'../database/database/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
         // $this->registerRoutes();
 
     }

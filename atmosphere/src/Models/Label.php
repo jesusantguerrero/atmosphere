@@ -1,6 +1,6 @@
 <?php
 
-namespace Atmosphere\Models;
+namespace Freesgen\Atmosphere\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

@@ -17,7 +17,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "Atmosphere\\Base": "src/"
+            "Freesgen\\Atmosphere\\": "src/"
         }
     },
     "config": {
