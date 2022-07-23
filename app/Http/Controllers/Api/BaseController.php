@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Atmosphere\Http\Querify;
+use Insane\Atmosphere\Http\Querify;
 
 abstract class BaseController extends Controller
 {

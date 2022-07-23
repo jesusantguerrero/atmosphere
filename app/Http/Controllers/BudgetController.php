@@ -9,7 +9,7 @@ use App\Models\BudgetMovement;
 use App\Models\Category;
 use App\Models\Planner;
 use App\Models\Transaction;
-use Atmosphere\Http\InertiaController;
+use Insane\Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;

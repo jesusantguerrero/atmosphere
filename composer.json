@@ -8,7 +8,11 @@
         {
             "type": "path",
             "url": "../packages/journal"
-            }
+        },
+        {
+            "type": "path",
+            "url": "../packages/atmosphere"
+        }
     ],
     "require": {
         "php": "^8.0.2",
@@ -17,6 +21,7 @@
         "guzzlehttp/guzzle": "^7.0.2",
         "inertiajs/inertia-laravel": "^0.5.4",
         "insane/journal": "dev-master",
+        "insane/atmosphere": "dev-master",
         "laravel/framework": "^9.19",
         "laravel/jetstream": "^2.3",
         "laravel/sanctum": "^2.8",
