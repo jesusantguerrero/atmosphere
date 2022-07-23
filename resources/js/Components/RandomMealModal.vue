@@ -1,6 +1,6 @@
 <template>
     <modal :show="show" :max-width="maxWidth" :closeable="closeable" @close="close">
-        <div class="px-4 py-5 text-center text-white bg-primary-500 sm:p-6 sm:pb-4">
+        <div class="px-4 py-5 text-center text-white bg-primary sm:p-6 sm:pb-4">
             <div class="justify-center sm:flex sm:items-start">
                 <div class="mt-3 text-center sm:mt-0 sm:ml-4">
                     <h3 class="w-full text-4xl font-bold text-white">

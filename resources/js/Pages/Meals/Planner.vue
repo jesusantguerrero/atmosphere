@@ -3,16 +3,16 @@
         <template #header>
             <MealSectionNav>
                 <template #actions>
-                    <div class="space-x-2 flex justify-end items-center ml-auto">
+                    <div class="flex items-center justify-end ml-auto space-x-2">
                         <AtDatePager
-                            class="h-12 w-full border-none bg-base-lvl-1 text-gray-200 ml-auto"
+                            class="w-full h-12 ml-auto border-none bg-base-lvl-1 text-body"
                             v-model="state.date"
                             v-model:dateSpan="state.dateSpan"
-                            controlsClass="bg-transparent text-gray-200 hover:bg-base-lvl-1"
+                            controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
                             next-mode="week"
                         />
-                        <AtButton class="h-10 w-64 text-white bg-primary-400" @click="openRandomModal()" rounded> Random Meal </AtButton>
-                        <AtButton class="h-10 w-52 text-white bg-primary-400" @click="toggleMode()" rounded>
+                        <AtButton class="w-64 h-10 text-white bg-primary" @click="openRandomModal()" rounded> Random Meal </AtButton>
+                        <AtButton class="h-10 text-white w-52 bg-primary" @click="toggleMode()" rounded>
                             {{ state.toggleBtnText }}
                         </AtButton>
                     </div>
@@ -21,26 +21,24 @@
         </template>
         <MealTemplate class="mx-auto">
             <div class="pb-20 space-x-2">
-
-
                 <div v-if="state.isGroceryList" class="py-5 overflow-hidden border rounded-md bg-base-lvl-1">
-                    <div v-for="(ingredient, name) in ingredients" class="px-5 text-primary-500 cursor-pointer bg-base-lvl-1">
+                    <div v-for="(ingredient, name) in ingredients" class="px-5 cursor-pointer text-primary bg-base-lvl-1">
                         {{name }} ({{ ingredient.quantity }}) {{ ingredient.unit }}
                     </div>
                 </div>
 
-                <div v-else class="pt-5 overflow-hidden text-gray-200 border divide-y-2 rounded-md divide-base-deep-1 border-base-deep-1 bg-base-lvl-1">
-                    <div v-for="day in state.dateSpan" :key="day" @click="openDayInModal(day)" class="px-5 py-4 cursor-pointer bg-base-lvl-1">
+                <div v-else class="pt-5 overflow-hidden border divide-y-2 rounded-md text-body divide-base border-base bg-base-lvl-3">
+                    <div v-for="day in state.dateSpan" :key="day" @click="openDayInModal(day)" class="px-5 py-4 cursor-pointer bg-base-lvl-3">
                         {{ getDayName(day) }}
 
-                        <div class="flex space-x-2 mt-2 items-center">
+                        <div class="flex items-center mt-2 space-x-2">
                             <div v-for="mealType in pageProps.mealTypes" class="w-full">
                                 <MealTypeCell
                                     v-model="recipe"
                                     :planned-meal="getDayMeals(day, mealType.id)"
                                     :meal-type="mealType"
                                     @submit="addPlan"
-                                />                                
+                                />
                             </div>
                         </div>
                     </div>

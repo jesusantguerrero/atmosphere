@@ -67,7 +67,7 @@
                                         Last used {{ token.last_used_ago }}
                                     </div>
 
-                                    <button class="cursor-pointer ml-6 text-sm text-gray-200 underline"
+                                    <button class="cursor-pointer ml-6 text-sm text-body underline"
                                         @click="manageApiTokenPermissions(token)"
                                         v-if="availablePermissions.length > 0"
                                     >
@@ -119,7 +119,7 @@
                     <div v-for="permission in availablePermissions" :key="permission">
                         <label class="flex items-center">
                             <JetCheckbox :value="permission" v-model:checked="updateApiTokenForm.permissions"/>
-                            <span class="ml-2 text-sm text-gray-200">{{ permission }}</span>
+                            <span class="ml-2 text-sm text-body">{{ permission }}</span>
                         </label>
                     </div>
                 </div>

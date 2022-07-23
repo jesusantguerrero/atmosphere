@@ -50,7 +50,7 @@
               <h1 class="font-bold capitalize" :class="[value.color]">{{ matrix }}</h1>
               <matrix-help-view
                 :matrix="matrix"
-                class="text-gray-200 bg-transparent"
+                class="text-body bg-transparent"
                 title-class="text-white"
                 >
               </matrix-help-view>

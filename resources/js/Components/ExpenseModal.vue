@@ -44,7 +44,7 @@
 
         <div class="px-6 py-4 space-x-3 text-right bg-gray-100">
             <at-button type="secondary" @click="close"> Cancel </at-button>
-            <at-button class="text-white bg-primary-400" @click="submit"> Save </at-button>
+            <at-button class="text-white bg-primary" @click="submit"> Save </at-button>
         </div>
     </modal>
 </template>

@@ -8,7 +8,7 @@
                     <div class="px-5 font-bold text-gray-600">Automations</div>
 
 
-                    <AtButton class="text-white bg-primary-400"
+                    <AtButton class="text-white bg-primary"
                         @click="openAutomationModal"
                     >
                         Add Automation

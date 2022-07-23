@@ -1,7 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 const defaultTheme = require('tailwindcss/defaultTheme');
-const colors = require("tailwindcss/colors");
-const customColors = require('./tailwindTheme/colors');
+const themes = require('./tailwindTheme/index');
 
 module.exports = {
     content: [
@@ -21,19 +20,7 @@ module.exports = {
                 sans: ['Nunito', ...defaultTheme.fontFamily.sans],
             },
             colors: {
-                primary: colors.pink,
-                "secondary": "#95b3f9",
-                "accent": "#7c5bbf",
-                "neutral": "#232130",
-                "base-deep-1": customColors.rhino[800],
-                base: customColors.rhino[700],
-                "base-lvl-1": customColors.rhino[600],              
-                "base-lvl-2": customColors.rhino[500],              
-                "base-lvl-3": customColors.rhino[400],             
-                info: "#3D68F5",
-                success: "#79E7AE",
-                warning: "#D39E17",
-                error: "#F61909",
+                ...themes.defaultLight
             }
         },
     },

@@ -2,7 +2,7 @@
   <div
     class="border border-dashed bg-base-lvl-2 rounded-md px-5 py-2 w-ful flex overflow-hidden mb-4"
   >
-    <div class="px-5 py-2 bg-base-lvl-2 font-bold text-primary-400" v-if="plannedMeal">
+    <div class="px-5 py-2 bg-base-lvl-2 font-bold text-primary" v-if="plannedMeal">
       {{ plannedMeal.dateable.name }}
     </div>
     <div class="flex" v-else>

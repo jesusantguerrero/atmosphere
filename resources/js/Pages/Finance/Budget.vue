@@ -4,40 +4,40 @@
             <FinanceSectionNav>
                 <template #actions>
                     <div>
-                        <AtButton class="bg-primary-400 text-white rounded-md">Import Transactions</AtButton>
+                        <AtButton class="text-white rounded-md bg-primary">Import Transactions</AtButton>
                     </div>
                 </template>
             </FinanceSectionNav>
         </template>
         <FinanceTemplate :accounts="accounts">
-            <div class="flex mt-2 justify-between">
+            <div class="flex justify-between mt-2">
                 <div class="flex items-center">
-                    <h2 class="text-xl font-bold leading-tight text-primary-400">
+                    <h2 class="text-xl font-bold leading-tight text-primary">
                         Budget settings
                     </h2>
-                    <span class="text-base-200 ml-2"> {{ formatMoney(readyToAssign) }} </span>
+                    <span class="ml-2 text-base-200"> {{ formatMoney(readyToAssign) }} </span>
                 </div>
             </div>
-             <div class="mx-auto mt-8 text-gray-200 rounded-lg shadow-lg bg-base max-w-7xl ">
+             <div class="mx-auto mt-8 rounded-lg text-body bg-base max-w-7xl ">
                 <div class="flex">
                     <div :class="[!selectedBudget ? 'w-full': 'w-7/12']" >
                         <section class="flex">
                             <AtField class="w-full">
                                 <LogerInput v-model="categoryForm.name" placeholder="New Category group" />
                             </AtField>
-                            <LogerTabButton class="text-center min-w-max justify-center" @click="saveBudgetCategory">
+                            <LogerTabButton class="justify-center text-center min-w-max" @click="saveBudgetCategory()">
                                 Add Budget Group
                             </LogerTabButton>
                         </section>
-                        <Draggable class="dragArea list-group w-full space-y-2 mt-4" :list="budgetState" handle=".handle"  @end="saveReorder(budgetState)">
-                            <BudgetGroupItem v-for="itemGroup in budgetState" :item="itemGroup" class="bg-base-lvl-1" >
+                        <Draggable class="w-full mt-4 space-y-2 dragArea list-group" :list="budgetState" handle=".handle"  @end="saveReorder(budgetState)">
+                            <BudgetGroupItem v-for="itemGroup in budgetState" :item="itemGroup" class="bg-base-lvl-3" >
                                 <template v-slot:content="{ isExpanded, isAdding, toggleAdding }">
                                     <div>
                                         <div v-if="isAdding" class="pt-2">
                                             <LogerInput placeholder="Add subcategory" v-model="state.categoryForm.name" @keydown.enter.ctrl="saveBudgetCategory(itemGroup.id, toggleAdding)" />
                                         </div>
-                                        <Draggable v-if="isExpanded" class="space-y-2 py-2" :list="itemGroup.subCategories" handle=".handle" @end="saveReorder(itemGroup.subCategories)">  
-                                            <BudgetItem class="bg-base-lvl-2" v-for="item in itemGroup.subCategories" :item="item" />
+                                        <Draggable v-if="isExpanded" class="py-2 space-y-2" :list="itemGroup.subCategories" handle=".handle" @end="saveReorder(itemGroup.subCategories)">
+                                            <BudgetItem class="bg-base-lvl-1" v-for="item in itemGroup.subCategories" :item="item" />
                                         </Draggable>
                                     </div>
                                 </template>

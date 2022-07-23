@@ -1,6 +1,6 @@
 <template>
     <modal :show="show" :max-width="maxWidth" :closeable="closeable" v-slot:default="{ close }" @close="$emit('update:show', false)">
-        <div class="pb-4 bg-base-lvl-1 sm:p-6 sm:pb-4 text-gray-200">
+        <div class="pb-4 bg-base-lvl-1 sm:p-6 sm:pb-4 text-body">
             <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                 <div class="grid grid-cols-3 overflow-hidden text-lg rounded-lg">
                     <div
@@ -9,7 +9,7 @@
                         :options="transactionTypes"
                         @click="form.direction = type.value"
                         class="py-1 font-bold text-center cursor-pointer hover:bg-base-lvl-3"
-                        :class="[form.direction == type.value ? 'bg-primary-500 hover:bg-primary-500 text-white' : 'text-gray-200 bg-base-lvl-2']"
+                        :class="[form.direction == type.value ? 'bg-primary hover:bg-primary text-white' : 'text-body bg-base-lvl-2']"
                     >
                         {{ type.label }}
                     </div>
@@ -148,7 +148,7 @@
 
         <div class="px-6 py-4 space-x-3 text-right bg-base">
             <AtButton @click="close" rounded class="h-10 text-white"> Cancel </AtButton>
-            <AtButton class="text-white bg-primary-400 h-10" @click="submit" rounded> Save </AtButton>
+            <AtButton class="text-white bg-primary h-10" @click="submit" rounded> Save </AtButton>
         </div>
     </modal>
 </template>

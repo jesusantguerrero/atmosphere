@@ -4,7 +4,7 @@
             <FinanceSectionNav>
                 <template #actions>
                     <div>
-                        <AtButton class="bg-primary-400 text-white rounded-md">Import Transactions</AtButton>
+                        <AtButton class="text-white rounded-md bg-primary">Import Transactions</AtButton>
                     </div>
                 </template>
             </FinanceSectionNav>
@@ -17,23 +17,23 @@
                         <div class="mt-5">
                             <SectionTitle type="secondary">Summary</SectionTitle>
                         </div>
-                        <div class="flex flex-nowrap space-x-4 justify-between px-4 py-5 mt-3 overflow-hidden border shadow-sm border-base bg-base-lvl-1 rounded-xl">
-                            <div class="mx-auto space-y-2 w-full">
+                        <div class="flex justify-between px-4 py-5 mt-3 space-x-4 overflow-hidden border shadow-sm flex-nowrap border-base bg-base-lvl-3 rounded-xl">
+                            <div class="w-full mx-auto space-y-2">
                                 <FinanceCard
-                                    class="text-gray-100 bg-base-lvl-2"
+                                    class="text-body-1 bg-base-lvl-1"
                                     title="Income"
                                     :hidden="hasHiddenValues"
                                     :value="formatMoney(income)"
                                     :subtitle="`Last Month: ${incomeVariance}%`"
                                 />
                                 <FinanceCard
-                                    class="text-gray-100 bg-base-lvl-2"
+                                    class="text-body-1 bg-base-lvl-1"
                                     title="Savings"
                                     :value="formatMoney('10000')"
                                     :hidden="hasHiddenValues"
                                     subtitle="Total: 150,000.00"
                                 />
-                                <AtButton @click="$inertia.visit('/goals')" class="w-full h-10 mt-auto text-white bg-primary-500 rounded-md">
+                                <AtButton @click="$inertia.visit('/goals')" class="w-full h-10 mt-auto text-white rounded-md bg-primary">
                                     Goals
                                 </AtButton>
                             </div>
@@ -51,17 +51,17 @@
                         <TransactionsTable
                             table-label="Budget"
                             class="pt-3 mt-5 "
-                            table-class="overflow-auto text-sm rounded-t-lg shadow-md bg-base-lvl-1"
+                            table-class="overflow-auto text-sm rounded-t-lg shadow-md bg-base-lvl-3"
                             :transactions="topCategories"
                             :parser="categoryDBToTransaction"
                             @edit="handleEdit"
                         >
                             <template #action>
-                                <AtButton class="text-primary-500 items-center flex" @click="Inertia.visit('/budgets')">
+                                <AtButton class="flex items-center text-primary" @click="Inertia.visit('/budgets')">
                                     <span>
                                         Go to Budget
                                     </span>
-                                    <i class="fa fa-chevron-right ml-2"></i>
+                                    <i class="ml-2 fa fa-chevron-right"></i>
                                 </AtButton>
                             </template>
                         </TransactionsTable>
@@ -84,13 +84,13 @@
                         <TransactionsTable
                             table-label="Transactions"
                             class="pt-3 mt-5 "
-                            table-class="border rounded-lg shadow-md bg-base-lvl-1"
+                            table-class="border rounded-lg shadow-md border-base bg-base-lvl-3"
                             :transactions="transactions"
                             :parser="transactionDBToTransaction"
                             @edit="handleEdit"
                         >
                         <template #action>
-                            <at-button class="text-primary-500" @click="openModalFor()"><i class="fa fa-plus"></i> Add transaction</at-button>
+                            <at-button class="text-primary" @click="openModalFor()"><i class="fa fa-plus"></i> Add transaction</at-button>
                         </template>
                         </TransactionsTable>
                     </div>

@@ -4,9 +4,9 @@
             <NumberHider />
             {{ value }}
         </div>
-        <div class="ml-5 text-gray-100">
+        <div class="w-full ml-5 text-right">
             <p class="font-bold">{{ title }}</p>
-            <span class="text-sm overflow-ellipsis flex flex-nowrap overflow-hidden"> {{ subtitle }}</span>
+            <span class="w-full overflow-hidden text-sm text-right flex-block overflow-ellipsis flex-nowrap"> {{ subtitle }}</span>
         </div>
     </div>
 </template>

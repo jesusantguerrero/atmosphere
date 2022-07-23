@@ -9,7 +9,7 @@
     }, 
     {
         label: 'Ingredients',
-        url: '/meals/ingredients'
+        url: '/ingredients'
     }, {
         label: 'Menus',
         url: '/meals/menus'

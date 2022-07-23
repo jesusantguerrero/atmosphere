@@ -1,12 +1,12 @@
 <template>
-    <div class="h-32 w-full relative rounded-md flex items-end  justify-center border-dashed border border-primary-500 cursor-pointer hover:bg-base-lvl-2 transition" role="button" @click="openFileSelector" relative>
+    <div class="h-32 w-full relative rounded-md flex items-end  justify-center border-dashed border border-primary cursor-pointer hover:bg-base-lvl-2 transition" role="button" @click="openFileSelector" relative>
         <div class="w-full h-full absolute z-20 px-5 py-2 bg-transparent flex items-center justify-center">
             <input name="fileInput" type="file" ref="fileInputRef" class="hidden" @change="setFile" />
             <label for="fileInput" class="cursor-pointer text-base-300 font-bold text-sm">
                 {{ filePlaceholderText }}
             </label>
         </div>
-        <div class="absolute h-full flex z-10 bg-primary-500/30 w-full" :style="progressStyle" />
+        <div class="absolute h-full flex z-10 bg-primary/30 w-full" :style="progressStyle" />
         <small v-if="formData.hasErrors" class="text-red-300">  {{ formData.errors.file }}</small>
     </div>
 

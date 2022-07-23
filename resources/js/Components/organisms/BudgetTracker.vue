@@ -1,11 +1,11 @@
 <template>
-    <div class="px-5 py-3 transition border divide-y rounded-lg shadow-md divide-base border-base bg-base-lvl-1">
+    <div class="px-5 py-3 transition border divide-y rounded-lg shadow-md divide-base border-base bg-base-lvl-3">
         <div class="items-center pb-2 md:justify-between md:flex">
-            <h1 class="font-bold text-gray-200">
-                Welcome to Loger <span class="text-primary-400">{{ username }}</span>
+            <h1 class="font-bold text-body">
+                Welcome to Loger <span class="text-primary">{{ username }}</span>
             </h1>
             <div class="space-x-2">
-                <AtButton class="text-sm text-white bg-primary-400" rounded @click="$inertia.visit(route('budgets.index'))">
+                <AtButton class="text-sm text-white bg-primary" rounded @click="$inertia.visit(route('budgets.index'))">
                     <i class="fa fa-wallet"></i>
                     Edit budget
                 </AtButton>
@@ -17,7 +17,7 @@
                 :key="sectionName"
                 v-for="(section, sectionName) in sections"
             >
-                <h4 class="text-gray-200">{{ section.label }}</h4>
+                <h4 class="text-body">{{ section.label }}</h4>
                 <SectionTitle class="mt-2">
                     <span class="relative">
                         <NumberHider />

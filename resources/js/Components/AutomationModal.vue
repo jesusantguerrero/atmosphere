@@ -1,7 +1,7 @@
 <template>
    <modal :show="show" :max-width="maxWidth" :closeable="closeable" @close="close">
         <div class="px-10 pt-5 pb-4">
-            <h3 class="text-lg font-bold text-primary-500">
+            <h3 class="text-lg font-bold text-primary">
                 <slot name="title">
                     {{ title }}
                 </slot>
@@ -82,7 +82,7 @@
 
         <div class="px-6 py-4 space-x-3 text-right bg-gray-100">
             <at-button type="secondary" @click="close"> Cancel </at-button>
-            <at-button class="text-white bg-primary-400" @click="submit"> Save </at-button>
+            <at-button class="text-white bg-primary" @click="submit"> Save </at-button>
         </div>
    </modal>
 </template>

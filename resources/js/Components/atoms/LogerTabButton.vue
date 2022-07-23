@@ -1,7 +1,7 @@
 <template>
   <button
     type="button"
-    class="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-200 transition border border-transparent rounded-md hover:bg-base-lvl-2 hover:text-gray-100 focus:outline-none"
+    class="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-body transition border border-transparent rounded-md hover:bg-base-lvl-2 hover:text-body/80 focus:outline-none"
     :class="tabClasses"
     v-bind="$attrs"
   >

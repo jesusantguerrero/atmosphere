@@ -9,6 +9,7 @@ use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\GoalController;
+use App\Http\Controllers\IngredientController;
 use App\Http\Controllers\MealController;
 use App\Http\Controllers\PlannerController;
 use App\Http\Controllers\SettingsController;
@@ -46,6 +47,10 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         Route::resource('/meals', MealController::class);
         Route::post('/meals/add-plan','addPlan')->name('meals.addPlan');
         Route::get('/meals-random', 'random')->name('meals.random');
+    });
+
+    Route::controller(IngredientController::class)->group(function () {
+        Route::resource('/ingredients', IngredientController::class);
     });
     Route::resource('/meal-planner', PlannerController::class);
 
