@@ -9,7 +9,7 @@
                 <span>
                     Budget Accounts
                 </span>
-                <LogerTabButton class="text-primary-500 flex items-center ml-2" @click="isImportModalOpen=!isImportModalOpen" title="import">
+                <LogerTabButton class="text-primary flex items-center ml-2" @click="isImportModalOpen=!isImportModalOpen" title="import">
                     <IconImport />
                 </LogerTabButton>
             </SectionTitle>

@@ -16,7 +16,7 @@
                     <SectionTitle type="secondary">
                         Pending for approval
                     </SectionTitle>
-                    <div class="px-5 py-1 mt-5 border rounded-md shadow-md border-base bg-base-lvl-1">
+                    <div class="px-5 py-1 mt-5 border rounded-md shadow-md border-base bg-base-lvl-3">
                         <TransactionsTable
                             table-label="Automatic Transactions"
                             class="pt-3"
@@ -31,12 +31,12 @@
                         >
                             <template v-slot:action>
                                 <div class="flex justify-end">
-                                    <AtButton class="flex items-center h-10 space-x-2 text-primary-400" rounded @click="approveTransactionAll($event)">
+                                    <AtButton class="flex items-center h-10 space-x-2 text-primary" rounded @click="approveTransactionAll($event)">
                                         <i class="block mr-2 fa fa-check"></i> Approve
                                     </AtButton>
-                                    <AtButton class="flex items-center h-10 mr-2 space-x-2 text-primary-400" rounded @click="removeAllDrafts()">
+                                    <AtButton class="flex items-center h-10 mr-2 space-x-2 text-primary" rounded @click="removeAllDrafts()">
                                         <i class="block mr-2 fa fa-times"></i> Remove</AtButton>
-                                    <AtButton class="flex items-center h-10 space-x-2 text-white bg-primary-400" rounded @click="runAutomations()">
+                                    <AtButton class="flex items-center h-10 space-x-2 text-white bg-primary" rounded @click="runAutomations()">
                                         <i class="block fa fa-robot"></i>
                                     </AtButton>
                                 </div>
@@ -47,15 +47,20 @@
             </div>
             <div class="md:w-3/12">
                 <div class="space-y-5">
-                    <SectionTitle type="secondary"> Meals</SectionTitle>
-                    <RandomMealCard />
-
-                    <h4 class="text-2xl font-bold text-primary-400"> Menu for today</h4>
-                    <div class="px-4 py-3 rounded-lg shadow-md cursor-pointer bg-base-lvl-1" v-for="plan in meals" :key="plan.id">
-                        <h4 class="font-bold text-blue-400">
-                            {{ plan.dateable.name }}
-                        </h4>
-                        <small class="text-gray-400">Lunch</small>
+                    <SectionTitle type="secondary"> Menu for today</SectionTitle>
+                    <div class="px-4 py-3 rounded-lg shadow-md cursor-pointer min-h-min bg-base-lvl-3">
+                        <template v-if="meals.length">
+                            <div v-for="plan in meals" :key="plan.id">
+                                <h4 class="font-bold text-blue-400">
+                                    {{ plan.dateable.name }}
+                                </h4>
+                                <small class="text-gray-400">Lunch</small>
+                            </div>
+                        </template>
+                        <div v-else class="py-4 text-center">
+                            <h4 class="py-1 text-2xl font-bold text-body-1"> No meals </h4>
+                            <AtButton class="mt-4 text-white rounded-md bg-primary">Go to planner</AtButton>
+                        </div>
                     </div>
                 </div>
             </div>

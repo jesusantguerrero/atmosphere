@@ -3,12 +3,15 @@
 use App\Http\Controllers\Api\AccountApiController;
 use App\Http\Controllers\Api\AutomationController;
 use App\Http\Controllers\Api\CategoryApiController;
+use App\Http\Controllers\Api\IngredientApiController;
+use App\Http\Controllers\Api\LabelApiController;
 use App\Http\Controllers\Api\PayeeApiController;
 use App\Http\Controllers\Api\RecipeApiController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\GoalController;
+use App\Http\Controllers\IngredientController;
 use App\Http\Controllers\MealController;
 use App\Http\Controllers\PlannerController;
 use App\Http\Controllers\SettingsController;
@@ -46,6 +49,10 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         Route::resource('/meals', MealController::class);
         Route::post('/meals/add-plan','addPlan')->name('meals.addPlan');
         Route::get('/meals-random', 'random')->name('meals.random');
+    });
+
+    Route::controller(IngredientController::class)->group(function () {
+        Route::resource('/ingredients', IngredientController::class);
     });
     Route::resource('/meal-planner', PlannerController::class);
 
@@ -93,6 +100,12 @@ Route::middleware(['auth:sanctum', 'verified'])->prefix('/api')->group(function 
     });
 
     Route::resource('payees', PayeeApiController::class);
-    Route::resource('recipes', RecipeApiController::class);
     Route::patch('/accounts', [AccountApiController::class,  'bulkUpdate']);
+
+    Route::resource('recipes', RecipeApiController::class);
+    Route::controller(IngredientApiController::class)->group(function() {
+        Route::resource('ingredients', IngredientApiController::class);
+        Route::post('/ingredients/{id}/labels', 'addLabel')->name('ingredients.label.add');
+    });
+    Route::resource('labels', LabelApiController::class);
 });

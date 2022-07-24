@@ -3,8 +3,8 @@
         <AtAuthForm
             app-name="Loger"
             mode="register"
-            btn-class="mb-2 font-bold border-2 border-primary-400 rounded-md bg-gradient-to-br from-purple-400 to-primary-500 hover:bg-primary-500"
-            link-class="text-primary-500 hover:text-primary-600"
+            btn-class="mb-2 font-bold border-2 border-primary rounded-md bg-gradient-to-br from-purple-400 to-primary hover:bg-primary"
+            link-class="text-primary hover:text-primary"
             v-model:isLoading="form.processing"
             :errors="form.errors"
             @submit="submit"

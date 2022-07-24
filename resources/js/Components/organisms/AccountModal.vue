@@ -41,7 +41,7 @@
 
         <div class="px-6 py-4 space-x-3 text-right bg-base-lvl-2">
             <AtButton type="secondary" @click="close" rounded> Cancel </AtButton>
-            <AtButton class="text-white bg-primary-400" @click="submit" rounded> Save </AtButton>
+            <AtButton class="text-white bg-primary" @click="submit" rounded> Save </AtButton>
         </div>
     </modal>
 </template>

@@ -11,7 +11,7 @@
 
 
 <script setup>
-import SubmenuTab from '../atoms/SubmenuTab.vue';
+import SubmenuTab from '@/Components/atoms/SubmenuTab.vue';
 import { computed } from "vue"
 
 defineProps({

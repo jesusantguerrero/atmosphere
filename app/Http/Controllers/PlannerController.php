@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Meal;
 use App\Models\MealType;
 use App\Models\Planner;
-use Atmosphere\Http\InertiaController;
+use Freesgen\Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 

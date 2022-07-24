@@ -40,7 +40,7 @@
             />
 
             <div class="flex mt-2 space-x-2">
-                <div v-for="instance in monthInstanceCount" class="w-full h-2 bg-primary-500" />
+                <div v-for="instance in monthInstanceCount" class="w-full h-2 bg-primary" />
             </div>
 
             <AtErrorBag v-if="errors" :errors="errors" :field="frequencyUnit.field" />
@@ -51,7 +51,7 @@
                 <at-button class="block h-full text-red-500" @click="$emit('delete')"> Delete </at-button>
                 <at-button class="block h-full text-gray-500 " @click="$emit('cancel')"> Cancel </at-button>
             </div>
-            <at-button class="block h-full text-white bg-primary-500" @click="submit()"> Save </at-button>
+            <at-button class="block h-full text-white bg-primary" @click="submit()"> Save </at-button>
         </div>
     </div>
 </template>

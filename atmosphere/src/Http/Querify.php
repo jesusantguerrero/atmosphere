@@ -1,6 +1,6 @@
 <?php
 
-namespace Atmosphere\Http;
+namespace Freesgen\Atmosphere\Http;
 
 trait Querify
 {

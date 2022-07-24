@@ -4,7 +4,7 @@
             <MealSectionNav>
                 <template #actions>
                    <div>
-                        <AtButton class="items-center h-10 text-white bg-primary-400" rounded @click="$inertia.visit(route('meals.create'))"> New Meal</AtButton>
+                        <AtButton class="items-center h-10 text-white bg-primary" rounded @click="$inertia.visit(route('meals.create'))"> New Meal</AtButton>
                     </div>
                 </template>
             </MealSectionNav>

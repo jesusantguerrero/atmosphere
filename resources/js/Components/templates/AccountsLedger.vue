@@ -1,10 +1,10 @@
 <template>
-  <div class="border-l border-base-lvl-1 px-5 text-base-200">
+  <div class="px-5 border-l border-base-lvl-1 text-base-200">
     <div class="space-y-2">
-      <LogerTabButton class="w-full" icon="fa-plus" @click="openAccountModal()">
+      <LogerTabButton class="w-full bg-base-lvl-3" icon="fa-plus" @click="openAccountModal()">
         Add Account
       </LogerTabButton>
-       <Draggable class="dragArea list-group w-full" :list="accounts" handle=".handle"  @end="saveReorder">
+       <Draggable class="w-full dragArea list-group" :list="accounts" handle=".handle"  @end="saveReorder">
         <TransitionGroup>
             <AccountItem
                 v-for="account in accounts"

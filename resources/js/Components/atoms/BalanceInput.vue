@@ -1,6 +1,6 @@
 <template>
 <div class="w-full text-right">
-    <span class="rounded-3xl px-5 py-1 text-white cursor-pointer" :class="badgeClass">
+    <span class="px-5 py-1 cursor-pointer rounded-3xl text-body-1" :class="badgeClass">
         {{ formatter(value) }}
     </span>
 </div>
@@ -23,11 +23,11 @@
     })
 
     const theme = {
-        good: 'bg-green-600',
-        danger: 'bg-red-600',
-        needs: 'bg-yellow-600',
-        overspend: 'bg-yellow-600',
-        default: 'bg-base-lvl-1'
+        good: 'bg-success',
+        danger: 'bg-danger',
+        needs: 'bg-warning',
+        overspend: 'bg-warning',
+        default: 'bg-base-lvl-3'
     }
 
     const badgeClass = computed(() => {

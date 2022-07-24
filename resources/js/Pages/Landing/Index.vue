@@ -3,13 +3,13 @@
     <HeroSection />
     <!-- <learn-more /> -->
     <div class="flex flex-col items-center py-24 bg-white">
-      <h2 class="text-4xl font-bold text-primary-400">Try Loger for free.</h2>
+      <h2 class="text-4xl font-bold text-primary">Try Loger for free.</h2>
 
       <div class="mt-12">
         <Link
             role="button"
             href="/register"
-            class="py-3 px-5 mb-2 font-bold border-2 text-white border-primary-400 transition rounded-md bg-gradient-to-br from-purple-400 to-primary-500 hover:bg-primary-500"
+            class="py-3 px-5 mb-2 font-bold border-2 text-white border-primary transition rounded-md bg-gradient-to-br from-purple-400 to-primary hover:bg-primary"
         >
           Organize your daily routine
         </Link>

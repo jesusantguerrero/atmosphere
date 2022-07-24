@@ -5,7 +5,7 @@
         <SectionTitle type="secondary" class="w-full">{{ sectionTitle }}</SectionTitle>
         <div class="flex items-center justify-end w-full">
             <slot name="action" v-if="action || $slots.action">
-                <AtButton v-if="action" class="text-primary-500 items-center flex" @click="$emit('action')">
+                <AtButton v-if="action" class="flex items-center text-primary" @click="$emit('action')">
                     <span>
                         {{ action.label }}
                     </span>
@@ -14,7 +14,7 @@
             </slot>
         </div>
     </div>
-    <div :class="cardClass" class="overflow-hidden border-base-deep-1">
+    <div :class="cardClass" class="overflow-hidden border-base">
         <slot />
     </div>
 </div>
@@ -31,7 +31,7 @@ defineProps({
     },
     cardClass: {
         type: String,
-        default: 'mt-2 bg-base-lvl-1 border border-base-deep-1 rounded-lg shadow-md'
+        default: 'mt-2 bg-base-lvl-3 border border-base rounded-lg shadow-md'
     },
     sectionTitle: {
         type: String,
