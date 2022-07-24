@@ -1,15 +1,11 @@
 <template>
-    <div class="px-5 py-3 transition border divide-y rounded-lg shadow-md divide-slate-700 border-slate-700 bg-slate-600">
+    <div class="px-5 py-3 transition border divide-y rounded-lg shadow-md divide-base border-base bg-base-lvl-3">
         <div class="items-center pb-2 md:justify-between md:flex">
-            <h1 class="font-bold text-gray-200">
-                Welcome to Loger <span class="text-pink-400">{{ username }}</span>
+            <h1 class="font-bold text-body">
+                Welcome to Loger <span class="text-primary">{{ username }}</span>
             </h1>
             <div class="space-x-2">
-                <AtButton class="text-sm text-white bg-pink-400" rounded @click="isTransferModalOpen=true">
-                    <i class="fa fa-exchange-alt"></i>
-                    Add transaction
-                </AtButton>
-                <AtButton class="text-sm text-white bg-pink-400" rounded @click="$inertia.visit(route('budgets.index'))">
+                <AtButton class="text-sm text-white bg-primary" rounded @click="$inertia.visit(route('budgets.index'))">
                     <i class="fa fa-wallet"></i>
                     Edit budget
                 </AtButton>
@@ -21,26 +17,30 @@
                 :key="sectionName"
                 v-for="(section, sectionName) in sections"
             >
-                <h4 class="text-gray-200">{{ section.label }}</h4>
+                <h4 class="text-body">{{ section.label }}</h4>
                 <SectionTitle class="mt-2">
-                    {{ formatMoney(section.value) }}
+                    <span class="relative">
+                        <NumberHider />
+                        {{ formatMoney(section.value) }}
+                    </span>
                 </SectionTitle>
             </div>
         </div>
         <slot></slot>
         <transaction-modal
-            @close="isTransferModalOpen=false"
             v-model:show="isTransferModalOpen"
         />
     </div>
 </template>
 
 <script setup>
-import SectionTitle from "../atoms/SectionTitle";
 import { AtButton } from "atmosphere-ui";
-import { computed, ref } from "@vue/runtime-core";
-import TransactionModal from "../TransactionModal.vue"
-import formatMoney from "../../utils/formatMoney"
+import { computed, ref } from "vue";
+import SectionTitle from "@/Components/atoms/SectionTitle.vue";
+import TransactionModal from "@/Components/TransactionModal.vue"
+import NumberHider from "@/Components/molecules/NumberHider.vue";
+import formatMoney from "@/utils/formatMoney"
+import { useTransferModal } from "@/utils/useTransferModal";
 
 const props = defineProps({
     username: {
@@ -55,7 +55,8 @@ const props = defineProps({
     }
 })
 
-const isTransferModalOpen = ref(false);
+const { isOpen: isTransferModalOpen } = useTransferModal()
+
 const openedTransaction = ref(null);
 
 const sections = computed(() => ({

@@ -1,14 +1,14 @@
 <template>
-    <app-layout>
+    <AppLayout>
         <div class="px-6 pb-20 mx-auto mt-5 max-w-screen-2xl lg:px-8">
 
             <aside class="w-4/12">
-                <article class="rounded-md border bg-slate-600 py-2 px-5">
-                    <section-title type="secondary"> Accounts</section-title>
+                <article class="rounded-md border bg-base-lvl-1 py-2 px-5">
+                    <SectionTitle type="secondary"> Accounts</SectionTitle>
 
                     <div class="mt-4 space-y-2">
                         <section>
-                            <div v-for="account in accounts" :key="account.id" class="px-5 py-3 cursor-pointer rounded-md bg-slate-600 border-2">
+                            <div v-for="account in accounts" :key="account.id" class="px-5 py-3 cursor-pointer rounded-md bg-base-lvl-1 border-2">
                                 <p>{{ account.name }}</p>
                                 <strong class="mt-2 block">{{ account.balance }}</strong>
                                 <button @click="deleteAccount(account.id)"> delete </button>
@@ -25,16 +25,16 @@
             </main>
         </div>
         <AccountModal v-if="isAccountModalOpen" :show="isAccountModalOpen" @close="isAccountModalOpen=false" />
-    </app-layout>
+    </AppLayout>
 </template>
 
 <script setup>
-    import AppLayout from '@/Layouts/AppLayout'
-    import SectionTitle from "@/Components/atoms/SectionTitle";
-    import AccountModal from '../../../Components/organisms/AccountModal.vue';
+    import AppLayout from '@/Layouts/AppLayout.vue'
+    import SectionTitle from "@/Components/atoms/SectionTitle.vue";
+    import AccountModal from '@/Components/organisms/AccountModal.vue';
     import { AtButton } from "atmosphere-ui";
     import { ref } from 'vue';
-    import { useSelect } from '../../../utils/useSelects';
+    import { useSelect } from '@/utils/useSelects';
     import { Inertia } from '@inertiajs/inertia';
 
     const props = defineProps({

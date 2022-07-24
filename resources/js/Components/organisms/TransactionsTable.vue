@@ -1,13 +1,11 @@
 
 <template>
-<div :class="classes" class="overflow-hidden">
-    <div class="flex justify-between">
-        <SectionTitle type="secondary" class="w-full">{{ tableLabel }}</SectionTitle>
-        <div class="flex items-center justify-end w-full">
-            <slot name="action" />
-        </div>
-    </div>
-    <div :class="tableClass" class="overflow-hidden border-slate-800">
+<SectionCard :classes="classes" :section-title="tableLabel" :card-class="tableClass">
+    <template #action>
+        <slot name="action" />
+    </template>
+
+    <div>
         <template v-if="transactionsParsed.length">
             <TransactionCard
                 v-for="(transaction, index) in transactionsParsed"
@@ -18,14 +16,14 @@
                 :allow-select="allowSelect"
                 :key="transaction.id"
                 :isSelected="isSelected(transaction)"
-                class="odd:bg-slate-600 even:bg-slate-500"
+                class="odd:bg-base-lvl-1 even:bg-base-lvl-2"
                 @selected="handleSelect(transaction)"
                 @paid-clicked="$emit('paid-clicked', transaction)"
                 @approved="$emit('approved', transaction)"
                 @removed="$emit('removed', transaction)"
                 @dblclick="$emit('edit', transactions[index])"
             />
-            <div class="flex items-center justify-between px-4 py-5 bg-gray-200" v-if="showSum">
+            <div class="flex items-center justify-between px-4 py-5 bg-base-lvl-1 text-white" v-if="showSum">
                 <div class="font-bold">Selected Items sum</div>
                 <div class="space-y-1 text-right">
                     <div v-for="currencySum, currency in selectedSum">
@@ -42,17 +40,16 @@
                 No transactions found
             </span>
         </div>
-
     </div>
-</div>
+</SectionCard>
 </template>
 
 <script setup>
-import TransactionCard from "../molecules/TransactionCard";
-import SectionTitle from "../atoms/SectionTitle";
 import { computed, reactive } from 'vue';
 import ExactMath from "exact-math";
 import formatMoney from "@/utils/formatMoney";
+import TransactionCard from "../molecules/TransactionCard.vue";
+import SectionCard from '../molecules/SectionCard.vue';
 
 const props = defineProps({
     classes: {
@@ -61,7 +58,7 @@ const props = defineProps({
     },
     tableClass: {
         type: String,
-        default: 'mt-2 bg-slate-600 border border-slate-800 rounded-lg shadow-md'
+        default: 'mt-2 bg-base-lvl-1 border border-base-deep-1 rounded-lg shadow-md'
     },
     tableLabel: {
         type: String,

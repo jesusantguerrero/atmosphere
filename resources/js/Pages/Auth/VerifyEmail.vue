@@ -1,7 +1,7 @@
 <template>
-    <jet-authentication-card>
+    <JetAuthenticationCard>
         <template #logo>
-            <jet-authentication-card-logo />
+            <JetAuthenticationCardLogo />
         </template>
 
         <div class="mb-4 text-sm text-gray-600">
@@ -14,48 +14,34 @@
 
         <form @submit.prevent="submit">
             <div class="mt-4 flex items-center justify-between">
-                <jet-button :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+                <JetButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
                     Resend Verification Email
-                </jet-button>
+                </JetButton>
 
-                <inertia-link :href="route('logout')" method="post" as="button" class="underline text-sm text-gray-600 hover:text-gray-900">Log Out</inertia-link>
+                <Link :href="route('logout')" method="post" as="button" class="underline text-sm text-gray-600 hover:text-gray-900">Log Out</Link>
             </div>
         </form>
-    </jet-authentication-card>
+    </JetAuthenticationCard>
 </template>
 
-<script>
-    import JetAuthenticationCard from '@/Jetstream/AuthenticationCard'
-    import JetAuthenticationCardLogo from '@/Jetstream/AuthenticationCardLogo'
-    import JetButton from '@/Jetstream/Button'
+<script setup>
+    import JetAuthenticationCard from '@/Jetstream/AuthenticationCard.vue'
+    import JetAuthenticationCardLogo from '@/Jetstream/AuthenticationCardLogo.vue'
+    import JetButton from '@/Jetstream/Button.vue'
+    import { Link, useForm } from "@inertiajs/inertia-vue3"
+    import { computed } from 'vue';
 
-    export default {
-        components: {
-            JetAuthenticationCard,
-            JetAuthenticationCardLogo,
-            JetButton,
-        },
-
-        props: {
+    const props = defineProps({
             status: String
-        },
+    });
 
-        data() {
-            return {
-                form: this.$inertia.form()
-            }
-        },
+    const form = useForm({})
 
-        methods: {
-            submit() {
-                this.form.post(this.route('verification.send'))
-            },
-        },
-
-        computed: {
-            verificationLinkSent() {
-                return this.status === 'verification-link-sent';
-            }
-        }
+    const submit = () => {
+        form.post(route('verification.send'))
     }
+
+    const verificationLinkSent = computed(() => {
+        return props.status === 'verification-link-sent';
+    })
 </script>

@@ -1,6 +1,6 @@
 <template>
     <modal :show="show" :max-width="maxWidth" :closeable="closeable" @close="close">
-        <div class="px-4 pt-5 pb-4 bg-slate-600 sm:p-6 sm:pb-4">
+        <div class="px-4 pt-5 pb-4 bg-base-lvl-1 sm:p-6 sm:pb-4">
             <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                 <h3 class="text-lg">
                     <slot name="title">Add a new category</slot>
@@ -9,8 +9,8 @@
                 <div class="mt-2">
                     <slot name="content">
                         <div>
-                            <at-field label="Category" class="w-full">
-                                <n-select
+                            <AtField label="Category" class="w-full">
+                                <NSelect
                                     filterable
                                     clearable
                                     tag
@@ -18,22 +18,20 @@
                                     @update:value="createCategory"
                                     :default-expand-all="true"
                                     :options="categoryOptions"
-                                >
+                                />
+                            </AtField>
 
-                                </n-select>
-                            </at-field>
-
-                            <at-field
+                            <AtField
                                 label="Category Name"
                             >
-                                <at-input v-model="form.name"></at-input>
-                            </at-field>
+                                <AtInput v-model="form.name" />
+                            </AtField>
 
-                            <at-field
+                            <AtField
                                 label="Description"
                             >
-                                <at-input v-model="form.description"></at-input>
-                            </at-field>
+                                <AtInput v-model="form.description" />
+                            </AtField>
 
 
                         </div>
@@ -44,13 +42,13 @@
 
         <div class="px-6 py-4 space-x-3 text-right bg-gray-100">
             <at-button type="secondary" @click="close"> Cancel </at-button>
-            <at-button class="text-white bg-pink-400" @click="submit"> Save </at-button>
+            <at-button class="text-white bg-primary" @click="submit"> Save </at-button>
         </div>
     </modal>
 </template>
 
 <script>
-    import Modal from '@/Jetstream/Modal'
+    import Modal from '@/Jetstream/Modal.vue'
     import { useForm } from "@inertiajs/inertia-vue3"
     import { AtField, AtInput, AtButton } from "atmosphere-ui"
     import { reactive, toRefs } from '@vue/reactivity'

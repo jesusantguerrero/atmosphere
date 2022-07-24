@@ -1,41 +1,59 @@
 <template>
-    <div class="rounded-md border-l border-slate-600 px-5 text-slate-200">
-        <AtField label="Import Transactions">
-            <input type="file" />
-            <button class="text-slate-200" @click="handleImport">Import</button>
-        </AtField>
-        <div class="space-y-2">
-            <div v-for="account in accounts" :key="account.id" class="hover:bg-slate-600 cursor-pointer py-3 px-2 rounded-md">
-                    <strong>
-                        {{ account.name }}
-                    </strong>
-                    <p class="relative">
-                        <NumberHider />
-                        {{ formatMoney(account.balance) }}
-                    </p>
-            </div>
-        </div>
+  <div class="px-5 border-l border-base-lvl-1 text-base-200">
+    <div class="space-y-2">
+      <LogerTabButton class="w-full bg-base-lvl-3" icon="fa-plus" @click="openAccountModal()">
+        Add Account
+      </LogerTabButton>
+       <Draggable class="w-full dragArea list-group" :list="accounts" handle=".handle"  @end="saveReorder">
+        <TransitionGroup>
+            <AccountItem
+                v-for="account in accounts"
+                :key="account.id"
+                :account="account"
+                :is-selected="isSelectedAccount(account.id)"
+                @click="Inertia.visit(`/finance/${account.id}/transactions`)"
+            />
+        </TransitionGroup>
+       </Draggable>
     </div>
+
+    <AccountModal v-if="isAccountModalOpen" :show="isAccountModalOpen" @close="isAccountModalOpen = false"/>
+  </div>
 </template>
 
 <script setup>
-import formatMoney from '../../utils/formatMoney';
-import NumberHider from '../molecules/NumberHider';
-import { AtField } from "atmosphere-ui"
-import { Inertia } from '@inertiajs/inertia';
+import { ref } from "vue";
+import { Inertia } from "@inertiajs/inertia";
+import { usePage } from "@inertiajs/inertia-vue3";
+import AccountItem from "@/Components/atoms/AccountItem.vue";
+import LogerTabButton from "@/Components/atoms/LogerTabButton.vue";
+import AccountModal from "@/Components/organisms/AccountModal.vue";
+import { VueDraggableNext as Draggable } from "vue-draggable-next"
 
+const pageProps = usePage().props;
+const isSelectedAccount = (accountId) => {
+  return pageProps.value.accountId == accountId;
+};
 
-const handleImport = async () => {
-    const file = document.querySelector('input[type="file"]').files[0]
-    Inertia.post('/financial/import', {
-        file
-    })
+const props = defineProps({
+  accounts: {
+    type: Array,
+    default: () => [],
+  },
+});
+
+const emit = defineEmits(['reordered'])
+
+const isAccountModalOpen = ref(false);
+const openAccountModal = () => {
+  isAccountModalOpen.value = true;
+};
+
+const saveReorder = () => {
+    const items = props.accounts.map((item, index) => ({
+        ...item,
+        index
+    }));
+    emit("reordered", items)
 }
-
-defineProps({
-   accounts: {
-       type: Array,
-       default: () => []
-   },
-})
 </script>

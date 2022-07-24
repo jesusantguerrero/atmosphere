@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\BudgetAssigned;
+use App\Http\Resources\CategoryCollection;
+use App\Http\Resources\CategoryGroupCollection;
+use App\Models\BudgetMovement;
 use App\Models\Category;
 use App\Models\Planner;
-use App\Models\Team;
 use App\Models\Transaction;
-use Atmosphere\Http\InertiaController;
+use Freesgen\Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
-use Insane\Journal\Actions\CreateTransactionCategories;
+use Insane\Journal\Models\Core\Account;
 
 class BudgetController extends InertiaController
 {
@@ -17,17 +20,17 @@ class BudgetController extends InertiaController
     {
         $this->model = $category;
         $this->templates = [
-            "index" => 'Budget',
+            "index" => 'Finance/Budget',
             "create" => 'BudgetCreate',
             "edit" => 'BudgetCreate'
         ];
         $this->searchable = ['name'];
         $this->validationRules = [
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|unique:categories',
             'amount' => 'numeric',
         ];
         $this->sorts = ['index'];
-        $this->includes = ['subCategories', 'subCategories.budget'];
+        $this->includes = ['subCategories', 'subCategories.budget', 'subCategories.budgets'];
         $this->filters = [
             'parent_id' => '$null',
             'resource_type' => 'transactions'
@@ -38,14 +41,19 @@ class BudgetController extends InertiaController
     {
         $queryParams = $request->query() ?? [];
         $queryParams['limit'] = $queryParams['limit'] ?? 50;
+        $queryParams['date'] = $queryParams['date'] ?? date('Y-m-01');
         $teamId = $request->user()->current_team_id;
 
         return [
-            'budgets' => $this->getModelQuery($request),
+            'budgets' => CategoryGroupCollection::collection($this->getModelQuery($request)),
+            "accounts" => Account::getByDetailTypes($teamId),
             "categories" => Category::where([
-                'team_id' => $teamId,
-                'resource_type' => 'transactions'
-            ])->orderBy('index')->with('subCategories')->get(),
+                'categories.team_id' => $teamId,
+                'categories.resource_type' => 'transactions'
+            ])
+                ->orderBy('index')
+                ->with('subCategories')
+                ->get(),
 
         ];
     }
@@ -59,6 +67,15 @@ class BudgetController extends InertiaController
             'user_id' => $request->user()->id,
             'team_id' => $request->user()->current_team_id
         ]));
+        return Redirect::back();
+    }
+
+    public function assignMonthBudget(Request $request, $categoryId, $month)
+    {
+        $category = Category::find($categoryId);
+        $postData = $request->post();
+        $monthBalance = $category->assignBudget($month, $postData);
+        BudgetMovement::registerMovement($monthBalance, $postData);
         return Redirect::back();
     }
 

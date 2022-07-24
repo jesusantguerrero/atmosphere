@@ -19,8 +19,8 @@
                         leave-active-class="duration-200 ease-in"
                         leave-from-class="translate-y-0 opacity-100 sm:scale-100"
                         leave-to-class="translate-y-4 opacity-0 sm:translate-y-0 sm:scale-95">
-                    <div v-show="show" class="mb-6 overflow-hidden transition-all transform bg-slate-600 rounded-lg shadow-xl sm:w-full sm:mx-auto" :class="maxWidthClass">
-                        <slot v-if="show"></slot>
+                    <div v-show="show" class="mb-6 overflow-hidden transition-all transform bg-base-lvl-1 rounded-lg shadow-xl sm:w-full sm:mx-auto" :class="maxWidthClass">
+                        <slot v-if="show" :close="close" />
                     </div>
                 </transition>
             </div>
@@ -28,13 +28,12 @@
     </teleport>
 </template>
 
-<script>
-import { onMounted, onUnmounted } from "vue";
+<script setup>
+import { computed, onMounted, onUnmounted, watch } from "vue";
 
-export default {
-        emits: ['close'],
+const emit = defineEmits(['close'])
 
-        props: {
+const props = defineProps({
             show: {
                 default: false
             },
@@ -44,54 +43,43 @@ export default {
             closeable: {
                 default: true
             },
-        },
+});
 
-        watch: {
-            show: {
-                immediate: true,
-                handler: (show) => {
-                    if (show) {
-                        document.body.style.overflow = 'hidden'
-                    } else {
-                        document.body.style.overflow = null
-                    }
-                }
-            }
-        },
-
-        setup(props, {emit}) {
-            const close = () => {
-                if (props.closeable) {
-                    emit('close')
-                }
-            }
-
-            const closeOnEscape = (e) => {
-                if (e.key === 'Escape' && props.show) {
-                    close()
-                }
-            }
-
-            onMounted(() => document.addEventListener('keydown', closeOnEscape))
-            onUnmounted(() => document.removeEventListener('keydown', closeOnEscape))
-
-            return {
-                close,
-            }
-        },
-
-        computed: {
-            maxWidthClass() {
-                return {
-                    'sm': 'sm:max-w-sm',
-                    'md': 'sm:max-w-md',
-                    'lg': 'sm:max-w-lg',
-                    'xl': 'sm:max-w-xl',
-                    '2xl': 'sm:max-w-2xl',
-                }[this.maxWidth]
-            }
-        }
+watch(props.show, (show) => {
+  if (show) {
+        document.body.style.overflow = 'hidden'
+    } else {
+        document.body.style.overflow = null
     }
+}, {
+    immediate: true,
+})
+
+const close = () => {
+    console.log('close')
+    if (props.closeable) {
+        emit('close')
+    }
+}
+
+const closeOnEscape = (e) => {
+    if (e.key === 'Escape' && props.show) {
+        close()
+    }
+}
+
+onMounted(() => document.addEventListener('keydown', closeOnEscape))
+onUnmounted(() => document.removeEventListener('keydown', closeOnEscape))
+
+const maxWidthClass = computed(() => {
+    return {
+        'sm': 'sm:max-w-sm',
+        'md': 'sm:max-w-md',
+        'lg': 'sm:max-w-lg',
+        'xl': 'sm:max-w-xl',
+        '2xl': 'sm:max-w-2xl',
+    }[props.maxWidth]
+})
 </script>
 
 <style>

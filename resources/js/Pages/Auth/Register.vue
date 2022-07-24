@@ -3,18 +3,23 @@
         <AtAuthForm
             app-name="Loger"
             mode="register"
-            btn-class="text-white bg-pink-500 hover:bg-pink-600"
-            link-class="text-pink-500 hover:text-pink-600"
+            btn-class="mb-2 font-bold border-2 border-primary rounded-md bg-gradient-to-br from-purple-400 to-primary hover:bg-primary"
+            link-class="text-primary hover:text-primary"
             v-model:isLoading="form.processing"
             :errors="form.errors"
             @submit="submit"
             @home-pressed="onHomePressed"
             @link-pressed="onLinkPressed"
         >
+            <template #brand>
+                <Link :to="{name: 'landing'}" class="w-full font-light font-brand">
+                    Loger DHM
+                </Link>
+            </template>
             <template #prependInput>
-                <at-field label="Name">
-                    <at-input v-model="form.name" required/>
-                </at-field>
+                <AtField label="Name">
+                    <AtInput v-model="form.name" required />
+                </AtField>
             </template>
         </AtAuthForm>
   </AtAuthBox>
@@ -22,7 +27,7 @@
 
 <script setup>
     import { Inertia } from "@inertiajs/inertia";
-import { useForm } from "@inertiajs/inertia-vue3";
+    import { useForm, Link } from "@inertiajs/inertia-vue3";
     import { AtAuthBox, AtAuthForm, AtInput, AtField } from "atmosphere-ui";
 
 
@@ -30,7 +35,7 @@ const form = useForm({
     name: '',
     email: '',
     password: '',
-    password_confirmation: '',
+    confirmPassword: '',
     terms: false,
 });
 
@@ -53,8 +58,7 @@ const submit = (formData) => {
     .post(route('register'), {
         onFinish: () => {
             form.reset('password', 'password_confirmation')
-            Inertia.visit('login')
         }
-    })
+    });
 }
 </script>

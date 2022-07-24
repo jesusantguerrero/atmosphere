@@ -1,18 +1,18 @@
 <template>
     <div :class="classes">
-        <div class="relative text-lg font-bold text-blue-400">
+        <div class="relative text-sm font-bold text-blue-400">
             <NumberHider />
             {{ value }}
         </div>
-        <div class="ml-5 text-gray-100">
+        <div class="w-full ml-5 text-right">
             <p class="font-bold">{{ title }}</p>
-            <span>{{ subtitle }}</span>
+            <span class="w-full overflow-hidden text-sm text-right flex-block overflow-ellipsis flex-nowrap"> {{ subtitle }}</span>
         </div>
     </div>
 </template>
 
 <script setup>
-    import NumberHider from '../molecules/NumberHider';
+    import NumberHider from '@/Components/molecules/NumberHider.vue';
     defineProps({
          value: {
              type: String,

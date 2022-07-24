@@ -1,6 +1,6 @@
 <template>
-    <modal :show="show" :max-width="maxWidth" :closeable="closeable" @close="close">
-        <div class="pb-4 bg-slate-600 sm:p-6 sm:pb-4 text-gray-200">
+    <modal :show="show" :max-width="maxWidth" :closeable="closeable" v-slot:default="{ close }" @close="$emit('update:show', false)">
+        <div class="pb-4 bg-base-lvl-1 sm:p-6 sm:pb-4 text-body">
             <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                 <div class="grid grid-cols-3 overflow-hidden text-lg rounded-lg">
                     <div
@@ -8,8 +8,8 @@
                         :key="type.value"
                         :options="transactionTypes"
                         @click="form.direction = type.value"
-                        class="py-1 font-bold text-center cursor-pointer hover:bg-slate-400"
-                        :class="[form.direction == type.value ? 'bg-pink-500 hover:bg-pink-500 text-white' : 'text-gray-200 bg-slate-500']"
+                        class="py-1 font-bold text-center cursor-pointer hover:bg-base-lvl-3"
+                        :class="[form.direction == type.value ? 'bg-primary hover:bg-primary text-white' : 'text-body bg-base-lvl-2']"
                     >
                         {{ type.label }}
                     </div>
@@ -52,13 +52,14 @@
                                     label="Payee"
                                     class="w-5/12"
                                 >
-                                    <n-auto-complete
-                                        v-model:value="form.payee"
-                                        :input-props="{
-                                            autocomplete: 'disabled'
-                                        }"
-                                        :options="options"
-                                        placeholder="Payee"
+                                    <LogerApiSelect
+                                        v-model="form.payee_id"
+                                        v-model:label="form.payee_label"
+                                        tag
+                                        custom-label="name"
+                                        track-id="id"
+                                        placeholder="Add a payee"
+                                        endpoint="/api/payees"
                                     />
                                 </AtField>
                                 <AtField label="Category" class="w-full">
@@ -67,7 +68,7 @@
                                         clearable
                                         tag
                                         size="large"
-                                        v-model:value="form.category_id"
+                                        v-model:value="form.transaction_category_id"
                                         @update:value="createCategory"
                                         :default-expand-all="true"
                                         :options="categoryAccounts"
@@ -145,24 +146,24 @@
             </div>
         </div>
 
-        <div class="px-6 py-4 space-x-3 text-right bg-slate-700">
-            <AtButton type="secondary" @click="close" rounded class="h-10"> Cancel </AtButton>
-            <AtButton class="text-white bg-pink-400 h-10" @click="submit" rounded> Save </AtButton>
+        <div class="px-6 py-4 space-x-3 text-right bg-base">
+            <AtButton @click="close" rounded class="h-10 text-white"> Cancel </AtButton>
+            <AtButton class="text-white bg-primary h-10" @click="submit" rounded> Save </AtButton>
         </div>
     </modal>
 </template>
 
 <script setup>
-    import Modal from '@/Jetstream/Modal'
+    import { format } from 'date-fns'
+    import { reactive, toRefs, watch, computed, inject, ref } from 'vue'
+    import Modal from '@/Jetstream/Modal.vue'
     import { useForm } from "@inertiajs/inertia-vue3"
     import { AtField, AtButton } from "atmosphere-ui"
-    import LogerInput from "@/Components/atoms/LogerInput"
-    import { reactive, toRefs, watch, computed } from 'vue'
-    import { inject } from '@vue/runtime-core'
     import { NSelect, NDatePicker } from "naive-ui";
-    import { format } from 'date-fns'
+    import LogerInput from "@/Components/atoms/LogerInput.vue"
+    import axios from 'axios'
+    import LogerApiSelect from './organisms/LogerApiSelect.vue'
 
-    const emit = defineEmits(['close'])
     const props = defineProps({
             show: {
                 default: false
@@ -217,11 +218,12 @@
         },
         form: useForm({
             name: '',
-            payee: '',
+            payee_id: '',
+            payee_label: '',
             date: null,
             description: '',
             direction: 'WITHDRAW',
-            category_id: null,
+            transaction_category_id: null,
             account_id: null,
             display_id: '',
             total: 0,
@@ -230,24 +232,11 @@
 
     const categoryOptions = inject('categoryOptions', [])
     const accountsOptions = inject('accountsOptions', [])
-    const payees = [
-        'La sirena'
-    ]
+
 
     const categoryAccounts = computed(() => {
         return state.form.direction == 'ENTRY' ? accountsOptions : categoryOptions;
     })
-
-    const createCategory = async (createdLabel) => {
-        if (typeof createdLabel == 'string') {
-            category = await axios.post('/api/categories',
-            { name: createdLabel, 'parent_id': 'expenses'} , {
-                onSuccess: ({ data }) => {
-                    return data;
-                }
-            })
-        }
-    }
 
     const close = () =>  {
         emit('close')

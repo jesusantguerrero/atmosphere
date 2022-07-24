@@ -1,6 +1,6 @@
 <?php
 
-namespace Atmosphere\Http;
+namespace Freesgen\Atmosphere\Http;
 
 trait Querify
 {
@@ -94,6 +94,8 @@ trait Querify
                 $this->addFilter($filter, $value);
             }
         }
+
+        return $this->filters;
     }
 
     private function addFilter($field, $value)

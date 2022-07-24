@@ -1,7 +1,8 @@
 {
-    "name": "insane/atmosphere",
-    "description": "Atmosphere is a SAAS and Starter Kit for Jetstream/Inertia",
-    "keywords": ["laravel", "inertia", "jetstream", "saas"],
+    "name": "freesgen/atmosphere",
+    "description": "Atmosphere is a SaaS and Starter Kit for Jetstream/Inertia",
+    "keywords": ["laravel", "inertia", "jetstream", "SaaS", "Starter Kit"],
+    "type": "library",
     "license": "MIT",
     "homepage": "https://atmosphere.neatlancer.com",
     "support": {
@@ -16,15 +17,22 @@
     ],
     "autoload": {
         "psr-4": {
-            "Atmosphere\\": "/"
+            "Freesgen\\Atmosphere\\": "src/"
         }
     },
-    "minimum-stability": "stable",
+    "config": {
+        "preferred-install": "dist",
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
     "extra": {
         "laravel": {
             "providers": [
-                "Atmosphere\\AtmosphereServiceProvider"
-            ]
+                "Freesgen\\Atmosphere\\AtmosphereServiceProvider"
+            ],
+            "aliases": {
+                "Atmosphere": "Freesgen\\Atmosphere\\Facades\\Atmosphere"
+            }
         }
     }
 }

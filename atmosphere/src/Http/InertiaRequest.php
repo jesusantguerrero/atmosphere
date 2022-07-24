@@ -1,6 +1,6 @@
 <?php
 
-namespace Atmosphere\Http;
+namespace Freesgen\Atmosphere\Http;
 use Illuminate\Http\Request as BaseRequest;
 
 class InertiaRequest extends BaseRequest {

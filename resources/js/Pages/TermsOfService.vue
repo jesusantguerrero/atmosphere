@@ -6,21 +6,15 @@
                     <jet-authentication-card-logo />
                 </div>
 
-                <div v-html="terms" class="w-full sm:max-w-2xl mt-6 p-6 bg-slate-600 shadow-md overflow-hidden sm:rounded-lg prose">
+                <div v-html="terms" class="w-full sm:max-w-2xl mt-6 p-6 bg-base-lvl-1 shadow-md overflow-hidden sm:rounded-lg prose">
                 </div>
             </div>
         </div>
     </div>
 </template>
 
-<script>
-import JetAuthenticationCardLogo from '@/Jetstream/AuthenticationCardLogo'
+<script setup>
+import JetAuthenticationCardLogo from '@/Jetstream/AuthenticationCardLogo.vue'
 
-export default {
-    props: ['terms'],
-
-    components: {
-        JetAuthenticationCardLogo,
-    },
-}
+defineProps(['terms']);
 </script>

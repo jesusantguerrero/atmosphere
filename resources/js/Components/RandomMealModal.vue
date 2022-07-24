@@ -1,6 +1,6 @@
 <template>
     <modal :show="show" :max-width="maxWidth" :closeable="closeable" @close="close">
-        <div class="px-4 py-5 text-center text-white bg-pink-500 sm:p-6 sm:pb-4">
+        <div class="px-4 py-5 text-center text-white bg-primary sm:p-6 sm:pb-4">
             <div class="justify-center sm:flex sm:items-start">
                 <div class="mt-3 text-center sm:mt-0 sm:ml-4">
                     <h3 class="w-full text-4xl font-bold text-white">
@@ -20,7 +20,7 @@
                         </slot>
                         <div class="mt-5">
                             <at-button
-                                class="text-gray-700 bg-slate-600"
+                                class="text-gray-700 bg-base-lvl-1"
                                 :disabled="!meal"
                                 @click="submit()">
                                     Random
@@ -34,7 +34,7 @@
 </template>
 
 <script>
-    import Modal from '@/Jetstream/Modal'
+    import Modal from '@/Jetstream/Modal.vue'
     import { AtField, AtInput, AtButton } from "atmosphere-ui"
     import { reactive, toRefs } from '@vue/reactivity'
     import Meal from './Meal.vue'

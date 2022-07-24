@@ -58,6 +58,7 @@ const toOrdinals = (num) => {
     return `${num}${suffix}`
 
 }
+
 export const monthDays = () => {
     const days = [];
     for (let i = 1; i <= 31; i++) {
@@ -124,3 +125,6 @@ export const updateSearch = (searchOptions, dateSpan) => {
         preserveState: true,
     })
 }
+
+
+export const generateRandomColor = () => `#${Math.floor(Math.random() * 16777215).toString(16)}`;

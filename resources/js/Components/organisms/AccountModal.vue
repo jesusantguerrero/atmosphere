@@ -1,23 +1,14 @@
 <template>
     <modal :show="show" :max-width="maxWidth" :closeable="closeable" @close="close">
-        <div class="px-4 pt-5 pb-4 bg-slate-600 sm:p-6 sm:pb-4">
+        <div class="px-4 pt-5 pb-4 bg-base-lvl-1 sm:p-6 sm:pb-4 text-white">
             <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                 <h3 class="text-lg">
-                    <slot name="title">Add a new account</slot>
+                    <slot name="title">Add Account</slot>
                 </h3>
 
                 <div class="mt-2">
                     <slot name="content">
                         <div>
-                            <AtField label="Category" class="w-full">
-                                <NSelect
-                                    filterable
-                                    clearable
-                                    tag
-                                    v-model:value="form.category_id"
-                                    :options="categoryOptions"
-                                />
-                            </AtField>
                             <AtField label="Detail Type" class="w-full">
                                 <NSelect
                                     filterable
@@ -29,27 +20,17 @@
                                 />
                             </AtField>
 
-                            <div class="flex space-x-4">
-                                <AtField
-                                    label="Account ID"
-                                    class="w-6/12"
-                                >
-                                    <AtInput v-model="accountDisplayId" readonly />
-                                </AtField>
+                            <AtField
+                                label="Account Label"
+                            >
+                                <LogerInput v-model="form.name" />
+                            </AtField>
 
-                                <AtField
-                                    label="Account Label"
-                                    class="w-6/12"
-                                >
-                                    <AtInput v-model="form.name" />
-                                </AtField>
-                            </div>
-
-                            <at-field
+                            <AtField
                                 label="Description"
                             >
-                                <at-input v-model="form.description"></at-input>
-                            </at-field>
+                                <LogerInput v-model="form.description" />
+                            </AtField>
 
 
                         </div>
@@ -58,22 +39,23 @@
             </div>
         </div>
 
-        <div class="px-6 py-4 space-x-3 text-right bg-gray-100">
-            <at-button type="secondary" @click="close"> Cancel </at-button>
-            <at-button class="text-white bg-pink-400" @click="submit"> Save </at-button>
+        <div class="px-6 py-4 space-x-3 text-right bg-base-lvl-2">
+            <AtButton type="secondary" @click="close" rounded> Cancel </AtButton>
+            <AtButton class="text-white bg-primary" @click="submit" rounded> Save </AtButton>
         </div>
     </modal>
 </template>
 
 <script setup>
-    import Modal from '@/Jetstream/Modal'
+    import Modal from '@/Jetstream/Modal.vue'
     import { useForm, usePage } from "@inertiajs/inertia-vue3"
-    import { AtField, AtInput, AtButton } from "atmosphere-ui"
+    import { AtField, AtButton } from "atmosphere-ui"
     import { reactive, toRefs } from '@vue/reactivity'
-    import { computed, inject } from '@vue/runtime-core'
+    import { computed } from '@vue/runtime-core'
     import { NSelect } from "naive-ui";
     import Slug from "slug";
-    import { makeOptions } from '../../utils/naiveui'
+    import { makeOptions } from '@/utils/naiveui'
+    import LogerInput from '@/Components/atoms/LogerInput.vue'
 
     const emit = defineEmits(['close'])
     defineProps({
@@ -100,17 +82,6 @@
             return Slug(state.form.name, '_')
         })
     })
-    const categoryOptions = inject('categoryOptions')
-    const createCategory = async (createdLabel) => {
-        if (typeof createdLabel == 'string') {
-            category = await axios.post('/api/categories',
-            { name: createdLabel, 'parent_id': 'expenses'} , {
-                onSuccess: ({ data }) => {
-                    return data;
-                }
-            })
-        }
-    }
 
     const close = () =>  {
         emit('close')
@@ -134,5 +105,5 @@
     const detailTypes = usePage().props.value.accountDetailTypes
     const detailOptions = makeOptions(detailTypes, ['id', 'label'])
 
-    const { form, accountDisplayId } = toRefs(state)
+    const { form } = toRefs(state)
 </script>

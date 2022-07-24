@@ -1,6 +1,6 @@
 <template>
     <modal :show="show" :max-width="maxWidth" :closeable="closeable" @close="close">
-        <div class="bg-slate-600 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+        <div class="bg-base-lvl-1 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div class="sm:flex sm:items-start">
                 <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
                     <svg class="h-6 w-6 text-red-600" stroke="currentColor" fill="none" viewBox="0 0 24 24">
@@ -28,7 +28,7 @@
 </template>
 
 <script>
-    import Modal from './Modal'
+    import Modal from './Modal.vue'
 
     export default {
         emits: ['close'],
