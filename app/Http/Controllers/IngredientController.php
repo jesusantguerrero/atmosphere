@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Ingredient;
 use Freesgen\Atmosphere\Http\InertiaController;
+use Insane\Journal\Models\Product\Product;
 
 class IngredientController extends InertiaController
 {
-    public function __construct(Ingredient $ingredient)
+    public function __construct(Product $ingredient)
     {
         $this->model = $ingredient;
         $this->templates = [

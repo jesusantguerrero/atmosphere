@@ -17,14 +17,7 @@ class IngredientResource extends JsonResource
         return [
             "id" => $this->id,
             "name" => $this->name,
-            "notes" =>$this->notes,
-            "meal_type_id" => $this->meal_type_id,
-            "meal_type" => $this->meal_type->name,
-            "menu_id" => $this->menu_id,
-            "menu" => $this->menu->name,
-            "ingredients" => IngredientResource::collection($this->whenLoaded('ingredients')),
-            "created_at" => $this->created_at,
-            "updated_at" => $this->updated_at,
+            "labels" => $this->labels ?? [],
         ];
     }
 }

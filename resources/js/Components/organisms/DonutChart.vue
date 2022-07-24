@@ -3,6 +3,7 @@
 </template>
 
 <script setup>
+import { generateRandomColor } from "@/utils";
 import { Chart, registerables } from "chart.js";
 import { computed } from "vue";
 import { DoughnutChart, useDoughnutChart } from "vue-chart-3";
@@ -34,7 +35,6 @@ const props = defineProps({
   },
 });
 
-const generateRandomColor = () => `#${Math.floor(Math.random() * 16777215).toString(16)}`;
 const chartData = computed(() => {
   return {
     labels: props.series.map((item) => item[props.label]),

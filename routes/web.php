@@ -3,6 +3,8 @@
 use App\Http\Controllers\Api\AccountApiController;
 use App\Http\Controllers\Api\AutomationController;
 use App\Http\Controllers\Api\CategoryApiController;
+use App\Http\Controllers\Api\IngredientApiController;
+use App\Http\Controllers\Api\LabelApiController;
 use App\Http\Controllers\Api\PayeeApiController;
 use App\Http\Controllers\Api\RecipeApiController;
 use App\Http\Controllers\BudgetController;
@@ -98,6 +100,12 @@ Route::middleware(['auth:sanctum', 'verified'])->prefix('/api')->group(function 
     });
 
     Route::resource('payees', PayeeApiController::class);
-    Route::resource('recipes', RecipeApiController::class);
     Route::patch('/accounts', [AccountApiController::class,  'bulkUpdate']);
+
+    Route::resource('recipes', RecipeApiController::class);
+    Route::controller(IngredientApiController::class)->group(function() {
+        Route::resource('ingredients', IngredientApiController::class);
+        Route::post('/ingredients/{id}/labels', 'addLabel')->name('ingredients.label.add');
+    });
+    Route::resource('labels', LabelApiController::class);
 });

@@ -1,13 +1,12 @@
 <template>
-    <AppLayout title="Create Recipe" :show-back-button="true" @back="$inertia.visit('/meal-planner')">
+    <AppLayout :title="mealFormLabel" :show-back-button="true" @back="$inertia.visit('/meal-planner')">
         <template #header>
               <MealSectionNav>
-                <template #actions>
-                    <p v-if="meals">Editing <span class="font-bold">{{ meals.name }}</span></p>
-                    <div>
-                        <AtButton class="h-10 text-white bg-primary" rounded @click="submit()"> Save </AtButton>
-                    </div>
-                </template>
+                    <template #actions>
+                        <div>
+                            <AtButton class="h-10 text-white bg-primary" rounded @click="submit()"> Save </AtButton>
+                        </div>
+                    </template>
               </MealSectionNav>
         </template>
 
@@ -21,15 +20,14 @@
 </template>
 
 <script setup>
-    import { ref } from 'vue';
+    import { ref, computed } from 'vue';
     import { AtButton } from "atmosphere-ui";
-    import { Link } from "@inertiajs/inertia-vue3"
     import AppLayout from '@/Layouts/AppLayout.vue';
     import MealForm from '@/Components/MealForm.vue';
     import MealSectionNav from '@/Components/templates/MealSectionNav.vue';
     import MealTemplate from '@/Components/templates/MealTemplate.vue';
 
-    defineProps({
+    const props = defineProps({
         meals: {
             type: [Object, null],
             default: null
@@ -40,4 +38,8 @@
     const submit = () => {
         mealForm.value.submit()
     }
+
+    const mealFormLabel = computed(() => {
+        return props.meals ? `Meals / ${props.meals.name}`  : "Create recipe";
+    })
 </script>

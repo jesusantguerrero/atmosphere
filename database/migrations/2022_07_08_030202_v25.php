@@ -26,8 +26,8 @@ return new class extends Migration
         });
 
         Schema::table('meals', function (Blueprint $table) {
-            $table->foreignId('meal_type_id')->after('user_id');
-            $table->text('notes');
+            $table->foreignId('meal_type_id')->nullable()->after('user_id');
+            $table->text('notes')->nullable();
         });
     }
 

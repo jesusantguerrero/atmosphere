@@ -1,6 +1,6 @@
 <template>
 <NSelect
-    :value="modelValue"
+    :value="optionParser(modelValue)"
     filterable
     clearable
     remote
@@ -9,8 +9,9 @@
     :options="options"
     :loading="isLoading"
     v-bind="$attrs"
-    @update:value="emitInput"
+    :render-label="renderLabel"
     :clear-filter-after-select="false"
+    @update:value="emitInput"
     @search="handleSearch"
 >
     <template #action>
@@ -26,7 +27,7 @@ import { ref } from "vue";
 import { debounce } from "lodash";
 
 const props = defineProps({
-    modeValue: {
+    modelValue: {
         type: [Object]
     },
     endpoint: {
@@ -39,17 +40,23 @@ const props = defineProps({
         type: Boolean
     },
     customLabel: {
-        type: String
+        type: String,
+        default: "label"
     },
     trackId: {
         type: String
-    }
+    },
 })
 const emit = defineEmits(['update:modelValue', 'update:label'])
 
 const options = ref([]);
 const isLoading = ref(false);
 
+
+const optionParser = (option) => {
+    const optionLabel = props.customLabel ? option[props.customLabel] : option.label;
+    return optionLabel
+}
 
 const resultParser = (apiOptions, query) => {
     let includeCustom = true;

@@ -10,10 +10,7 @@
             </MealSectionNav>
         </template>
         <MealTemplate class="mx-auto">
-            <MealSection
-                :meals="recipes"
-                @click="$inertia.visit(route('meals.edit', $event))"
-            />
+            <MealSection :meals="productData" @tag-selected="assignProductLabel" />
         </MealTemplate>
     </AppLayout>
 </template>
@@ -25,15 +22,24 @@
     import { computed } from "vue";
     import MealTemplate from "@/Components/templates/MealTemplate.vue";
     import MealSectionNav from "@/Components/templates/MealSectionNav.vue";
+    import { generateRandomColor } from "@/utils";
 
     const props = defineProps({
-        meals: {
+        products: {
             type: Array,
             required: true
         }
     });
 
-    const recipes = computed(() => {
-        return props.meals?.data ?? []
+    const productData = computed(() => {
+        return props.products?.data ?? []
     })
+
+
+    const assignProductLabel = (label, product) => {
+        axios.post(`/api/ingredients/${product.id}/labels`, {
+            ...label,
+            color: generateRandomColor()
+        })
+    }
 </script>
