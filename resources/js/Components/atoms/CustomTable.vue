@@ -8,7 +8,7 @@
         @row-click="$emit('row-click', $event)"
     >
         <thead>
-            <tr class="px-2 py-4 font-bold text-left text-base-200 border-b border-gray-200">
+            <tr class="px-2 py-4 font-bold text-left text-body border-b border-gray-200">
                  <th v-for="col in cols" :key="col.name" class="px-2 py-4" :class="[col.headerClass]">
                     {{ col.label }}
                  </th>
@@ -25,8 +25,8 @@
             </tr>
             <tr v-for="(data, index) in tableData"
                 :key="`data-row-${index}`"
-                class="text-base-200"
-                :class="{'bg-base/50': index % 2}"
+                class="text-body"
+                :class="{'bg-base-lvl-2': index % 2}"
             >
                 <td v-for="col in cols" :key="col.name" class="h-full align-baseline" :style="{width: col.width, maxWidth: col.maxWidth}">
                     <div class="flex flex-col w-full h-full px-2 py-1 text-left" :class="col.class">
@@ -39,7 +39,7 @@
                                     {{ formatMoney(data[col.name]) }}
                                 </div>
 
-                                <span v-else-if="col.render" v-html="col.render(data)" :class="col.class" />
+                                <CustomCell v-else-if="col.render" :class="col.class" :col="col" :data="data" />
 
                                 <div v-else>
                                     {{ data[col.name] }}
@@ -79,6 +79,7 @@
 
 <script setup>
 import formatMoney from "@/utils/formatMoney";
+import CustomCell from "./customCell.js";
 
 defineProps({
     cols: {
