@@ -12,6 +12,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\GoalController;
 use App\Http\Controllers\IngredientController;
+use App\Http\Controllers\Jetstream\TeamInvitationController;
 use App\Http\Controllers\MealController;
 use App\Http\Controllers\PlannerController;
 use App\Http\Controllers\SettingsController;
@@ -40,6 +41,8 @@ Route::get('/', fn () => Inertia::render('Landing/Index'));
 Route::resource('onboarding', OnboardingController::class)->middleware(['auth:sanctum', 'atmosphere.unteamed', 'verified']);
 
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
+    // Jetstream teams invitations override
+    Route::put('/team-invitations/{invitation}', [TeamInvitationController::class, 'resend'])->name('team-invitations.resend');
 
     Route::controller(DashboardController::class)->group(function () {
         Route::get('/dashboard', 'index')->name('dashboard');
@@ -57,6 +60,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     Route::controller(IngredientController::class)->group(function () {
         Route::resource('/ingredients', IngredientController::class);
     });
+
     Route::resource('/meal-planner', PlannerController::class);
 
     Route::controller(GoalController::class)->group(function () {

@@ -39,6 +39,22 @@ class InviteTeamMember implements InvitesTeamMembers
         Mail::to($email)->send(new TeamInvitation($invitation));
     }
 
+     /**
+     * Invite a new team member to the given team.
+     *
+     * @param  mixed  $user
+     * @param  mixed  $team
+     * @param  string  $email
+     * @param  string|null  $role
+     * @return void
+     */
+    public function resend($user, $team, $invitation)
+    {
+        Gate::forUser($user)->authorize('addTeamMember', $team);
+
+
+        Mail::to($invitation->email)->send(new TeamInvitation($invitation));
+    }
     /**
      * Validate the invite member operation.
      *

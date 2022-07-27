@@ -84,7 +84,7 @@
                         <div class="flex items-center justify-between" v-for="invitation in team.team_invitations" :key="invitation.id">
                             <div class="text-gray-600">{{ invitation.email }}</div>
 
-                            <div class="flex items-center">
+                            <div class="flex items-center space-x-2">
                                 <!-- Cancel Team Invitation -->
                                 <button class="cursor-pointer ml-6 text-sm text-red-500 focus:outline-none"
                                     @click="cancelTeamInvitation(invitation)"
@@ -92,6 +92,12 @@
                                 >
                                     Cancel
                                 </button>
+                                <AtButton class="text-white  rounded-lg bg-primary"
+                                    @click="resendTeamInvitation(invitation)"
+                                    v-if="userPermissions.canRemoveTeamMembers"
+                                >
+                                    Send Invitation
+                                </AtButton>
                             </div>
                         </div>
                     </div>
@@ -254,9 +260,9 @@
     import JetSectionBorder from '@/Jetstream/SectionBorder.vue'
     import LogerInput from '@/Components/atoms/LogerInput.vue'
     import { AtField, AtButton } from "atmosphere-ui"
-import { useForm } from '@inertiajs/inertia-vue3'
-import { Inertia } from '@inertiajs/inertia'
-import { reactive } from 'vue'
+    import { useForm } from '@inertiajs/inertia-vue3'
+    import { Inertia } from '@inertiajs/inertia'
+    import { reactive } from 'vue'
 
     const props = defineProps([
         'team',
@@ -288,6 +294,12 @@ import { reactive } from 'vue'
             errorBag: 'addTeamMember',
             preserveScroll: true,
             onSuccess: () => addTeamMemberForm.reset(),
+        });
+    }
+
+    function resendTeamInvitation(invitation) {
+        useForm().put(route('team-invitations.resend', invitation), {
+            preserveScroll: true,
         });
     }
 
