@@ -63,5 +63,9 @@ class Kernel extends HttpKernel
         'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+        'atmosphere.teamed' => \Freesgen\Atmosphere\Http\Middleware\EnsureUserHasTeam::class,
+        'atmosphere.unteamed' => \Freesgen\Atmosphere\Http\Middleware\EnsureHasNoTeam::class,
+        'treasurer.biller' => \Insane\Treasurer\Http\Middleware\EnsureIsBiller::class,
+        'treasurer.subscribed' => \Insane\Treasurer\Http\Middleware\Subscribed::class
     ];
 }

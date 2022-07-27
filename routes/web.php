@@ -15,6 +15,7 @@ use App\Http\Controllers\IngredientController;
 use App\Http\Controllers\MealController;
 use App\Http\Controllers\PlannerController;
 use App\Http\Controllers\SettingsController;
+use Freesgen\Atmosphere\Http\OnboardingController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
@@ -36,7 +37,9 @@ if (config('app.env') == 'production') {
 
 Route::get('/', fn () => Inertia::render('Landing/Index'));
 
-Route::middleware(['auth:sanctum', 'verified'])->group(function () {
+Route::resource('onboarding', OnboardingController::class)->middleware(['auth:sanctum', 'atmosphere.unteamed', 'verified']);
+
+Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
 
     Route::controller(DashboardController::class)->group(function () {
         Route::get('/dashboard', 'index')->name('dashboard');
@@ -88,7 +91,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     });
 });
 
-Route::middleware(['auth:sanctum', 'verified'])->prefix('/api')->group(function () {
+Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('/api')->group(function () {
     Route::resource('categories', CategoryApiController::class);
     Route::patch('/categories', [CategoryApiController::class,  'bulkUpdate']);
 

@@ -6,7 +6,7 @@
         <div class="w-full text-right">
             <button
                 @click="$emit('change')"
-                class="text-blue-500 hover:text-blue-400 font-bold underline">
+                class="text-primary/80 hover:text-primary font-bold underline">
                 Create my own Organization
             </button>
         </div>

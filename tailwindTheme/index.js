@@ -20,8 +20,8 @@ module.exports = {
         "body-1": colors.slate[200]
     },
     defaultLight: {
-        primary: "#8a00d4",
-        "secondary": "#d527b7",
+        primary: "#d527b7",
+        secondary: "#8a00d4",
         "accent": "#f782c2",
         "neutral": "#e3e3e3",
         "base-deep-1": colors.slate[400],
@@ -33,8 +33,8 @@ module.exports = {
         success: "#79E7AE",
         warning: "#D39E17",
         error: "#F61909",
-        "body": "#2E384D",
-        "body-1": "#9298AD"
+        "body": colors.gray[900],
+        "body-1": colors.gray[700]
     },
     blueLight: {
         primary: "#1f436e",
