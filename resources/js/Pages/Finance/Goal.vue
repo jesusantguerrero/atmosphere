@@ -11,9 +11,9 @@
                 </div>
 
                 <div>
-                    <at-button class="text-white bg-primary" @click="$inertia.visit(route('goals.create'))">
+                    <AtButton class="text-white bg-primary" @click="$inertia.visit(route('goals.create'))">
                         Create goal
-                    </at-button>
+                    </AtButton>
                 </div>
             </div>
         </template>

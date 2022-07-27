@@ -1,28 +1,26 @@
 <template>
-    <app-layout>
+    <AppLayout title="Settings - Teams">
         <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Team Settings
-            </h2>
+            <SettingsSectionNav />
         </template>
 
         <div>
             <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
-                <update-team-name-form :team="team" :permissions="permissions" />
+                <UpdateTeamNameForm :team="team" :permissions="permissions" />
 
-                <team-member-manager class="mt-10 sm:mt-0"
+                <TeamMemberManager class="mt-10 sm:mt-0"
                             :team="team"
                             :available-roles="availableRoles"
                             :user-permissions="permissions" />
 
                 <template v-if="permissions.canDeleteTeam && ! team.personal_team">
-                    <jet-section-border />
+                    <JetSectionBorder />
 
-                    <delete-team-form class="mt-10 sm:mt-0" :team="team" />
+                    <DeleteTeamForm class="mt-10 sm:mt-0" :team="team" />
                 </template>
             </div>
         </div>
-    </app-layout>
+    </AppLayout>
 </template>
 
 <script>
@@ -31,6 +29,7 @@
     import DeleteTeamForm from './DeleteTeamForm.vue'
     import JetSectionBorder from '@/Jetstream/SectionBorder.vue'
     import UpdateTeamNameForm from './UpdateTeamNameForm.vue'
+import SettingsSectionNav from '@/Components/templates/SettingsSectionNav.vue'
 
     export default {
         props: [
@@ -40,11 +39,12 @@
         ],
 
         components: {
-            AppLayout,
-            DeleteTeamForm,
-            JetSectionBorder,
-            TeamMemberManager,
-            UpdateTeamNameForm,
-        },
+    AppLayout,
+    DeleteTeamForm,
+    JetSectionBorder,
+    TeamMemberManager,
+    UpdateTeamNameForm,
+    SettingsSectionNav
+},
     }
 </script>

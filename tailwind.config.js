@@ -20,7 +20,7 @@ module.exports = {
                 sans: ['Nunito', ...defaultTheme.fontFamily.sans],
             },
             colors: {
-                ...themes.defaultDark
+                ...themes.defaultLight
             }
         },
     },
