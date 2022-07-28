@@ -41,7 +41,7 @@ export const useBudget = (budgets) => {
         const budgeted = budgetState.value.reduce((acc, category) => {
             return ExactMath.add(category.budgeted, acc || 0)
         }, 0)
-        return ExactMath.sub(inflow.value.spent, budgeted)
+        return ExactMath.sub(inflow.value?.spent | 0, budgeted || 0)
     })
 
     return {

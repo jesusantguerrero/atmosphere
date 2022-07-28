@@ -43,6 +43,8 @@ Route::resource('onboarding', OnboardingController::class)->middleware(['auth:sa
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
     // Jetstream teams invitations override
     Route::put('/team-invitations/{invitation}', [TeamInvitationController::class, 'resend'])->name('team-invitations.resend');
+    Route::patch('/v2/team-invitations/{invitation}', [TeamInvitationController::class, 'accept'])->name('team-invitations.accept-internal');
+    Route::delete('/v2/team-invitations/{invitation}', [TeamInvitationController::class, 'reject'])->name('team-invitations.reject');
 
     Route::controller(DashboardController::class)->group(function () {
         Route::get('/dashboard', 'index')->name('dashboard');

@@ -21,8 +21,9 @@ class EnsureUserHasTeam
         if ($currentUser) {
             if (!$currentUser->allTeams()->count()) {
                 return Redirect()->route('onboarding.index');
+            } else if($this->ensureOneOfTeamIsCurrent($currentUser)) {
+                return Redirect('/dashboard');
             }
-            $this->ensureOneOfTeamIsCurrent($currentUser);
         }
         return $next($request);
     }
@@ -33,6 +34,8 @@ class EnsureUserHasTeam
         }
 
         $firstTeamId = $currentUser->allTeams()->first()->id;
-        $currentUser->update(['current_team_id' => $firstTeamId]);
+        $currentUser->current_team_id = $firstTeamId;
+        $currentUser->save();
+        return true;
     }
 }

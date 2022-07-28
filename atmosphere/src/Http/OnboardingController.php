@@ -4,6 +4,7 @@ namespace Freesgen\Atmosphere\Http;
 
 use App\Actions\Jetstream\CreateTeam;
 use App\Http\Controllers\Controller;
+use App\Models\TeamInvitation;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Inertia\Inertia;
@@ -11,7 +12,9 @@ use Inertia\Inertia;
 class OnboardingController extends Controller
 {
     public function index() {
-        return Inertia::render('Onboarding/CreateTeam');
+        return Inertia::render('Onboarding/CreateTeam', [
+            'invitations' => TeamInvitation::where('email', auth()->user()->email)->with(['team', 'team.owner'])->get(),
+        ]);
     }
 
     public function store(Request $request, Response $response, CreateTeam $createTeam, SettingsController $settings) {

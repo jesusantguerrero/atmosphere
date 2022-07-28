@@ -344,6 +344,6 @@
     }
 
     function displayableRole(role) {
-        return this.availableRoles.find(r => r.key === role).name
+        return props.availableRoles.find(r => r.key === role).name
     };
 </script>

@@ -45,7 +45,7 @@
                 </div>
             </div>
 
-            <accept-invitation v-else @change="state.currentMode = 'createTeam'" />
+            <accept-invitation v-else @change="state.currentMode = 'createTeam'" :invitations="invitations" />
         </div>
     </AppLayout>
 </template>
@@ -67,6 +67,10 @@ const props = defineProps({
             return;
         },
     },
+    invitations: {
+        type: Array,
+        default: () => ([])
+    }
 });
 
 const state = reactive({

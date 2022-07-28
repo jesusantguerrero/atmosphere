@@ -16,3 +16,4 @@ yarn-error.log
 /packages/**
 rr
 .rr.yaml
+/public/build/**
