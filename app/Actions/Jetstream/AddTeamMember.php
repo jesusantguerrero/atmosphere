@@ -28,7 +28,7 @@ class AddTeamMember implements AddsTeamMembers
         $this->validate($team, $email, $role);
 
         $newTeamMember = Jetstream::findUserByEmailOrFail($email);
-
+        $user->update(['current_team_id' => $team->id]);
         AddingTeamMember::dispatch($team, $newTeamMember);
 
         $team->users()->attach(

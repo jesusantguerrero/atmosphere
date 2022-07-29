@@ -1,26 +1,18 @@
 <template>
-    <jet-action-section>
-        <template #title>
-            Delete Team
-        </template>
-
-        <template #description>
-            Permanently delete this team.
-        </template>
-
+    <JetActionSection title="Delete Team" description="Permanently delete this team.">
         <template #content>
             <div class="max-w-xl text-sm text-gray-600">
                 Once a team is deleted, all of its resources and data will be permanently deleted. Before deleting this team, please download any data or information regarding this team that you wish to retain.
             </div>
 
             <div class="mt-5">
-                <jet-danger-button @click="confirmTeamDeletion">
+                <JetDangerButton @click="confirmTeamDeletion">
                     Delete Team
-                </jet-danger-button>
+                </JetDangerButton>
             </div>
 
             <!-- Delete Team Confirmation Modal -->
-            <jet-confirmation-modal :show="confirmingTeamDeletion" @close="confirmingTeamDeletion = false">
+            <JetConfirmationModal :show="confirmingTeamDeletion" @close="confirmingTeamDeletion = false">
                 <template #title>
                     Delete Team
                 </template>
@@ -38,9 +30,9 @@
                         Delete Team
                     </jet-danger-button>
                 </template>
-            </jet-confirmation-modal>
+            </JetConfirmationModal>
         </template>
-    </jet-action-section>
+    </JetActionSection>
 </template>
 
 <script>

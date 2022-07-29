@@ -10,13 +10,8 @@
             </FinanceSectionNav>
         </template>
         <FinanceTemplate :accounts="accounts">
-            <div class="flex justify-between mt-2">
-                <div class="flex items-center">
-                    <h2 class="text-xl font-bold leading-tight text-primary">
-                        Budget settings
-                    </h2>
-                    <span class="ml-2 text-base-200"> {{ formatMoney(readyToAssign) }} </span>
-                </div>
+            <div class="flex justify-between mt-2 rounded-md bg-success/20 py-4 px-2">
+                <span class="ml-2 text-body-1 font-bold"> {{ formatMoney(readyToAssign) }} </span>
             </div>
              <div class="mx-auto mt-8 rounded-lg text-body bg-base max-w-7xl ">
                 <div class="flex">

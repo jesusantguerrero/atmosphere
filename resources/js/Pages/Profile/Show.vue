@@ -1,9 +1,7 @@
 <template>
-    <AppLayout>
+    <AppLayout  title="Settings - Profile">
         <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Profile
-            </h2>
+            <SettingsSectionNav />
         </template>
 
         <div>
@@ -45,6 +43,7 @@
     import TwoFactorAuthenticationForm from './TwoFactorAuthenticationForm.vue'
     import UpdatePasswordForm from './UpdatePasswordForm.vue'
     import UpdateProfileInformationForm from './UpdateProfileInformationForm.vue'
+import SettingsSectionNav from '@/Components/templates/SettingsSectionNav.vue'
 
     defineProps(['sessions'])
     const pageProps = usePage().props

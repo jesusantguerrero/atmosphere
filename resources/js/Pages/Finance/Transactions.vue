@@ -14,12 +14,12 @@
                         next-mode="month"
                     />
                     <NSelect
-                    filterable
-                    clearable
-                    size="large"
-                    placeholder="Group by"
-                    :options="state.filterOptions"
-                    v-model:value="state.searchOptions.group"
+                        filterable
+                        clearable
+                        size="large"
+                        placeholder="Group by"
+                        :options="state.filterOptions"
+                        v-model:value="state.searchOptions.group"
                     />
                     <div
                     class="flex text-white rounded-md bg-primary h-10 min-w-max divide-x-2 divide-white overflow-hidden"
