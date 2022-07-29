@@ -2,6 +2,8 @@
 
 namespace App\Actions\Jetstream;
 
+use App\Models\Team;
+use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Jetstream\Contracts\CreatesTeams;
@@ -34,4 +36,21 @@ class CreateTeam implements CreatesTeams
 
         return $team;
     }
+
+    /**
+     * Create a personal team for the user.
+     *
+     * @param  \App\Models\User  $user
+     * @return void
+     */
+    public function createUserTeam(User $user, $teamName)
+    {
+        $teamName = $teamName ?? explode(' ', $user->name, 2)[0]."'s Team";
+        $user->ownedTeams()->save(Team::forceCreate([
+            'user_id' => $user->id,
+            'name' => $teamName,
+            'personal_team' => true,
+        ]));
+    }
+
 }

@@ -15,7 +15,7 @@ use App\Http\Controllers\IngredientController;
 use App\Http\Controllers\Jetstream\TeamInvitationController;
 use App\Http\Controllers\MealController;
 use App\Http\Controllers\PlannerController;
-use App\Http\Controllers\SettingsController;
+use Freesgen\Atmosphere\Http\Controllers\SettingsController;
 use Freesgen\Atmosphere\Http\OnboardingController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;

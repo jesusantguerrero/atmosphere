@@ -19,7 +19,7 @@ class EnsureHasNoTeam
     {
         $currentUser = $request->user();
         if ($currentUser->allTeams()->count()) {
-            return Redirect()->route(RouteServiceProvider::HOME);
+            return Redirect(RouteServiceProvider::HOME);
         }
         return $next($request);
     }

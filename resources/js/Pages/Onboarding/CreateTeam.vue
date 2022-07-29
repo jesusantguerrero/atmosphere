@@ -18,7 +18,7 @@
                 v-if="state.currentMode == 'createTeam'"
             >
                 <AtField class="space-y-2 md:max-w-sm" label="Team Name">
-                    <LogerInput placeholder="Team Name" v-model="formData.business_name" />
+                    <LogerInput placeholder="Team Name" v-model="formData.team_name" />
                 </AtField>
 
                 <div class="w-full">

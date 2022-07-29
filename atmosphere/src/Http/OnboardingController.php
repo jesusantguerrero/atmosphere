@@ -5,6 +5,8 @@ namespace Freesgen\Atmosphere\Http;
 use App\Actions\Jetstream\CreateTeam;
 use App\Http\Controllers\Controller;
 use App\Models\TeamInvitation;
+use Freesgen\Atmosphere\Http\Controllers\SettingsController;
+use Freesgen\Atmosphere\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Inertia\Inertia;
@@ -17,13 +19,14 @@ class OnboardingController extends Controller
         ]);
     }
 
-    public function store(Request $request, Response $response, CreateTeam $createTeam, SettingsController $settings) {
+    public function store(Request $request, CreateTeam $createTeam) {
         $postData = $request->post();
-        $createTeam->create($request->user(), [
-            'name' => $postData['business_name'],
-        ], true);
-
-        $settings->store($request, $response);
+        $entryData = [
+            'user_id' =>  $request->user()->id,
+            'team_id' => $request->user()->current_team_id
+        ];
+        Setting::storeBulk($postData, $entryData);
+        $createTeam->createUserTeam($request->user(), $postData['team_name']);
 
         return Redirect('/dashboard');
     }
