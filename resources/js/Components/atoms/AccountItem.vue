@@ -1,22 +1,22 @@
 <template>
     <div
-        class="hover:bg-base-lvl-1 cursor-pointer py-2 px-2 rounded-md overflow-hidden flex justify-between group"
+        class="flex justify-between px-2 py-2 overflow-hidden rounded-md cursor-pointer hover:bg-base-lvl-1 group"
         :class="{'bg-base-lvl-2': isSelected}"
         v-bind="$attrs"
         v-on="$attrs"
         :title="account.balance"
     >
         <div>
-            <strong class="flex flex-wrap overflow-ellipsis overflow-hidden">
+            <strong class="flex flex-wrap overflow-hidden overflow-ellipsis">
                 {{ account.name }}
             </strong>
             <p class="relative text-sm" :class="{'text-red-400': isDebt(account.balance)}">
                 <NumberHider />
-                {{ formatMoney(account.balance) }}
+                {{ formatMoney(account.balance, account.currency_code) }}
             </p>
         </div>
         <div class="w-4">
-            <IconDrag class="hidden group-hover:inline-block h-10 handle"/>
+            <IconDrag class="hidden h-10 group-hover:inline-block handle"/>
         </div>
     </div>
 </template>

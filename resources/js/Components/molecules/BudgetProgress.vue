@@ -1,10 +1,10 @@
 
 <template>
-<div class="relative w-full h-8 overflow-hidden rounded-b-lg bg-base-lvl-3">
-<div class="absolute z-20 flex items-center justify-center w-full h-full text-body-1">
+<div class="relative w-full h-8 overflow-hidden rounded-b-lg bg-primary/40">
+<div class="absolute z-20 flex items-center justify-center w-full h-full text-white">
     {{ progress }}% of {{ formatMoney(goal) }}
 </div>
-    <div class="absolute z-10 flex w-full h-full bg-primary" :style="progressStyle" />
+    <div class="absolute z-10 flex w-full h-full text-white bg-primary" :style="progressStyle" />
 </div>
 </template>
 
@@ -23,7 +23,9 @@ const props = defineProps({
 })
 
 const progress = computed(() => {
-    return Math.floor(props.current / props.goal * 100) || 0
+    let progressValue = Math.floor(props.current / props.goal * 100) || 0
+    progressValue = Number.isFinite(progressValue) ? progressValue : 0
+    return progressValue
 })
 const progressStyle = computed(() => {
     return {

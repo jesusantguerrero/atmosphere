@@ -4,7 +4,7 @@
       <FinanceSectionNav>
         <template #actions>
           <AtDatePager
-            class="h-12 w-full bg-base-lvl-1 text-body border-none"
+            class="w-full h-12 border-none bg-base-lvl-1 text-body"
             v-model="pageState.date"
             v-model:dateSpan="pageState.dateSpan"
             v-model:startDate="pageState.searchOptions.date.startDate"
@@ -13,7 +13,7 @@
             next-mode="month"
           />
           <div>
-            <AtButton class="text-white rounded-md bg-primary"
+            <AtButton class="text-white rounded-md bg-primary w-72"
               >Import Transactions</AtButton
             >
           </div>
@@ -35,7 +35,6 @@
                 <FinanceCard
                   class="text-body-1 bg-base-lvl-1"
                   title="Income"
-                  :hidden="hasHiddenValues"
                   :value="formatMoney(income)"
                   :subtitle="`Last Month: ${incomeVariance}%`"
                 />
@@ -43,7 +42,6 @@
                   class="text-body-1 bg-base-lvl-1"
                   title="Savings"
                   :value="formatMoney('10000')"
-                  :hidden="hasHiddenValues"
                   subtitle="Total: 150,000.00"
                 />
                 <AtButton
@@ -63,7 +61,7 @@
               />
             </div>
           </div>
-          <div class="w-full md:w-5/12">
+          <div class="hidden md:block md:w-5/12">
             <TransactionsTable
               table-label="Budget"
               class="pt-3 mt-5"
@@ -137,7 +135,7 @@ import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
 import {
   useTransactionModal,
   transactionDBToTransaction,
-  categoryDBToTransaction
+  categoryDBToTransaction,
 } from "@/domains/transactions";
 import BudgetProgress from "@/Components/molecules/BudgetProgress.vue";
 import DonutChart from "@/Components/organisms/DonutChart.vue";
@@ -147,8 +145,8 @@ import { useSelect } from "@/utils/useSelects";
 import formatMoney from "@/utils/formatMoney";
 import { useServerSearch } from "./useServerSearch";
 
-const { serverSearchOptions } = toRefs(props)
-const pageState = useServerSearch(serverSearchOptions)
+const { serverSearchOptions } = toRefs(props);
+const pageState = useServerSearch(serverSearchOptions);
 
 const financeTemplateRef = ref(null);
 const { openModalFor, handleEdit } = useTransactionModal(financeTemplateRef);

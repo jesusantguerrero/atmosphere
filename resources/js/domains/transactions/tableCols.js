@@ -37,7 +37,8 @@ export const tableCols = [
         label: "Amount",
         name: "total",
         render(row) {
-            return formatMoney(row.total)
+            console.log(row)
+            return formatMoney(row.total, row.currency_code)
         }
     },
     {

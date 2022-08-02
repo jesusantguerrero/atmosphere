@@ -1,5 +1,5 @@
 <template>
-<div class="text-slate-body transition group" :class="[
+<div class="transition text-slate-body group" :class="[
     allowSelect && 'cursor-pointer hover:bg-gray-500 border-2 border-transparent hover:border-primary',
     isSelected ? 'odd:bg-primary-100 even:bg-primary' : 'odd:bg-base-lvl-1 even:bg-base-100'
 
@@ -25,13 +25,13 @@
             </h4>
             <small class="text-sm"> {{ status }}</small>
         </div>
-        <div v-if="markAsPaid" class="font-bold text-primary cursor-pointer" @click="$emit('paid-clicked')">
+        <div v-if="markAsPaid" class="font-bold cursor-pointer text-primary" @click="$emit('paid-clicked')">
             Mark as Paid
         </div>
-        <div v-if="markAsApproved" class="font-bold text-primary cursor-pointer" @click="$emit('approved')">
+        <div v-if="markAsApproved" class="font-bold cursor-pointer text-primary" @click="$emit('approved')">
             Approve
         </div>
-        <div v-if="allowRemove" class="font-bold text-primary cursor-pointer" @click="$emit('removed')">
+        <div v-if="allowRemove" class="font-bold cursor-pointer text-primary" @click="$emit('removed')">
             Remove
         </div>
     </div>
@@ -54,7 +54,6 @@ const props = defineProps({
     subtitle: String,
     date: String,
     value: String,
-    currencyCode: String,
     currencyCode: String,
     status: String,
     markAsPaid: Boolean,

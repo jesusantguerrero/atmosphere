@@ -2,6 +2,8 @@
 
 namespace Freesgen\Atmosphere\Http;
 
+use Illuminate\Support\Facades\Schema;
+
 trait Querify
 {
 
@@ -83,15 +85,18 @@ trait Querify
 
         if (count($this->filters)) {
             foreach ($this->filters as $filter => $value) {
-                if ($valueField = explode('.', $value)) {
+                if ($valueField  = explode('.', $value)) {
                     if (count($valueField) > 1 && $valueField[0] == 'user') {
                         $userField = $valueField[1];
                         $value = $this->request->user()->$userField;
-                    } else {
+                    } else if (Schema::hasColumn($this->model->getTable(),$filter)) {
                         $filter = $this->model->getTable().".".$filter;
+                    } else {
+                        $filter = '';
                     }
                 }
-                $this->addFilter($filter, $value);
+
+                $filter && $this->addFilter($filter, $value);
             }
         }
 
@@ -116,6 +121,7 @@ trait Querify
            break;
         }
 
+
         foreach ($optionalValues as $index => $optionalValue) {
           $where = "where";
           if ($index && !$disableSecondWhere) {
@@ -132,7 +138,6 @@ trait Querify
           }
 
           $posValue =  substr($optionalValue, 1);
-
           switch (substr($optionalValue, 0, 1)) {
             case '>':
               $this->modelQuery->$where($field, ">", $posValue);

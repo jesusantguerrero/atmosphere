@@ -1,15 +1,15 @@
 <template>
-    <div class="pb-20 max-w-screen-2xl mx-auto space-x-2 flex">
-        <div class="w-10/12 pr-5">
+    <div class="flex pb-20 mx-auto space-x-2 max-w-screen-2xl">
+        <div class="w-full pr-5 md:w-10/12">
             <slot />
         </div>
 
-        <div class="w-2/12">
-            <SectionTitle class="mt-5 pl-5 items-center flex" type="secondary">
+        <div class="hidden md:w-2/12 md:block">
+            <SectionTitle class="flex items-center pl-5 mt-5" type="secondary">
                 <span>
                     Budget Accounts
                 </span>
-                <LogerTabButton class="text-primary flex items-center ml-2" @click="isImportModalOpen=!isImportModalOpen" title="import">
+                <LogerTabButton class="flex items-center ml-2 text-primary" @click="isImportModalOpen=!isImportModalOpen" title="import">
                     <IconImport />
                 </LogerTabButton>
             </SectionTitle>
