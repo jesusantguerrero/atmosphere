@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Helpers\RequestQueryHelper;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class CategoryCollection extends JsonResource
@@ -14,8 +15,12 @@ class CategoryCollection extends JsonResource
      */
     public function toArray($request)
     {
-        $month = $request->query('date') ?? date('Y-m-01');
+        $queryParams = $request->query();
+        $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
+        [ $startDate ] = RequestQueryHelper::getFilterDates($filters);
+
+        $month = $startDate ?? date('Y-m-01');
         $normalArray = parent::toArray($request);
-        return array_merge($this->getBudgetInfo($month), $normalArray);
+        return array_merge($this->getBudgetInfo($month), $normalArray, [ 'month' => $month ]);
     }
 }

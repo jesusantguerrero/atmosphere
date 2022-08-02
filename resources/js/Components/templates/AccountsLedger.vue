@@ -4,7 +4,7 @@
       <LogerTabButton class="w-full bg-base-lvl-3" icon="fa-plus" @click="openAccountModal()">
         Add Account
       </LogerTabButton>
-       <Draggable class="w-full dragArea list-group" ref="draggableRef" :list="accounts" handle=".handle"  @end="saveReorder" tag="div">
+       <Draggable class="w-full space-y-1 dragArea list-group" ref="draggableRef" :list="accounts" handle=".handle"  @end="saveReorder" tag="div">
             <AccountItem
                 v-for="account in accounts"
                 :key="account.id"
@@ -57,7 +57,7 @@ const saveReorder = () => {
 }
 
 const draggableRef = ref()
-onMounted(() => {
-    autoAnimate(draggableRef.value) // thats it!
-})
+// onMounted(() => {
+//     autoAnimate(draggableRef.value) // thats it!
+// })
 </script>

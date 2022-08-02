@@ -8,7 +8,7 @@
         >
             <template v-slot:total="{ scope: { row } }">
                 <div class="font-bold" :class="{'text-red-400':  row.direction == 'WITHDRAW', 'text-green-500': row.direction == 'DEPOSIT'}">
-                    {{ formatMoney(row.total) }}
+                    {{ formatMoney(row.total, row.currency_code) }}
                 </div>
             </template>
         </CustomTable>

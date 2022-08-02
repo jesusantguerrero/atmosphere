@@ -16,7 +16,7 @@
                                 </h4>
                             </div>
 
-                            <div class="hidden sm:flex sm:items-center sm:ml-6">
+                            <div class="hidden space-x-2 sm:flex sm:items-center sm:ml-6">
                                 <AtButton class="text-sm text-white bg-primary" rounded @click="openTransferModal()" v-if="!isOnboarding">
                                     <i class="fa fa-exchange-alt"></i>
                                     Add transaction
@@ -198,7 +198,7 @@
 
                     <div class="app-content__inner ic-scroller">
                         <!-- Page Heading -->
-                        <header v-if="$slots.header" class="w-full mb-8 border-b bg-base-lvl-1 border-base-lvl-3">
+                        <header v-if="$slots.header" class="w-full mb-8 overflow-hidden border-b bg-base-lvl-1 border-base-lvl-3">
                             <slot name="header"></slot>
                         </header>
                         <!-- Page Content -->
