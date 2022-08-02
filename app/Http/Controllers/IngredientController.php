@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
 use Freesgen\Atmosphere\Http\InertiaController;
-use Insane\Journal\Models\Product\Product;
 
 class IngredientController extends InertiaController
 {
@@ -19,6 +19,7 @@ class IngredientController extends InertiaController
         $this->validationRules = [
             'name' => 'required'
         ];
+        $this->includes = ['labels'];
         $this->filters = [];
     }
 }
