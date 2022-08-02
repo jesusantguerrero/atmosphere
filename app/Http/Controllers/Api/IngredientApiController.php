@@ -11,6 +11,7 @@ class IngredientApiController extends BaseController
         $this->model = new Product();
         $this->searchable = ['name'];
         $this->validationRules = [];
+        $this->includes = ['labels'];
     }
 
 
