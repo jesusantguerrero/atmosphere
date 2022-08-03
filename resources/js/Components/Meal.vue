@@ -2,7 +2,7 @@
     <div>
         <div class="py-6 space-y-4">
             <div
-                class="flex justify-between w-full grid-cols-4 px-5 py-5 border rounded-lg cursor-pointer text-body bg-base-lvl-1 hover:bg-base-lvl-2"
+                class="flex justify-between w-full grid-cols-4 px-5 py-5 border rounded-lg cursor-pointer text-body bg-base-lvl-3 hover:bg-base-lvl-2"
                 @click="$emit('click', meal)"
                 v-for="meal in meals"
                 :key="meal.id"
@@ -10,17 +10,22 @@
             >
                 <div > {{ meal.name }} </div>
                 <div class="flex items-center space-x-2 text-right">
-                    <LogerApiSelect
-                        v-model="label.label_id"
-                        v-model:label="label.name"
-                        class="w-24"
-                        tag
-                        custom-label="name"
-                        track-id="id"
-                        placeholder="Add label"
-                        endpoint="/api/labels"
-                        @update:label="$emit('tag-selected', label, meal)"
-                    />
+                    <div class="flex items-center space-x-1 font-bold">
+                        <div v-for="tag in meal.labels" :style="{color: tag.color}">
+                            #{{ tag.name  }}
+                        </div>
+                        <LogerApiSelect
+                            v-model="label.label_id"
+                            v-model:label="label.name"
+                            class="w-24"
+                            tag
+                            custom-label="name"
+                            track-id="id"
+                            placeholder="Add label"
+                            endpoint="/api/labels"
+                            @update:label="$emit('tag-selected', label, meal)"
+                        />
+                    </div>
                     <AtBadge type="primary"> Available </AtBadge>
                     <AtButton type="secondary">
                         <i class="fa fa-trash"></i>
