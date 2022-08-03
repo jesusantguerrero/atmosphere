@@ -18,8 +18,14 @@
                 v-for="(section, sectionName) in sections"
             >
                 <h4 class="text-body">{{ section.label }}</h4>
-                <SectionTitle class="mt-2">
-                    <span class="relative">
+                <SectionTitle class="flex flex-col mt-2 space-y-2" v-if="isMultiple(section.value)">
+                    <span class="relative w-72" v-for="currency in section.value">
+                        <NumberHider />
+                        {{ formatMoney(currency.total, currency.currency_code) }}
+                    </span>
+                </SectionTitle>
+                <SectionTitle class="mt-2" v-else>
+                    <span class="relative w-72">
                         <NumberHider />
                         {{ formatMoney(section.value) }}
                     </span>
@@ -51,7 +57,7 @@ const props = defineProps({
         type: Number
     },
     expenses: {
-        type: Number
+        type: Array
     }
 })
 
@@ -70,12 +76,7 @@ const sections = computed(() => ({
     }
 }));
 
-const setTransaction = (transaction) => {
-    openedTransaction.value = transaction;
-    isTransferModalOpen.value = true;
+const isMultiple = (value) => {
+    return Array.isArray(value)
 }
-
-// defineExpose({
-//     setTransaction
-// })
 </script>

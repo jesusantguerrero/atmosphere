@@ -75,7 +75,7 @@
                       @end="saveReorder(itemGroup.subCategories)"
                     >
                       <BudgetItem
-                        class="bg-base-lvl-1"
+                        class="bg-base-lvl-2 border-base-lvl-3"
                         v-for="item in itemGroup.subCategories"
                         :item="item"
                       />

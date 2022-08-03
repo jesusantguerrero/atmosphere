@@ -100,7 +100,7 @@
                 }
             },
             transactionTotal: {
-                type: Number,
+                type: Array,
                 default: 0,
             },
             transactions: {

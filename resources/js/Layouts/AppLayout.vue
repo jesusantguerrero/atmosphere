@@ -1,5 +1,5 @@
 <template>
-    <NConfigProvider :theme="darkTheme" :theme-overrides="darkThemeOverrides">
+    <NConfigProvider>
         <main>
             <JetBanner />
             <div class="min-h-screen dark:bg-base-lvl-3 home-container">

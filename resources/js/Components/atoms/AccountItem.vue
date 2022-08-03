@@ -1,6 +1,6 @@
 <template>
     <div
-        class="flex justify-between px-2 py-2 overflow-hidden rounded-md cursor-pointer hover:bg-base-lvl-1 group"
+        class="flex justify-between px-2 py-2 overflow-hidden rounded-md cursor-pointer hover:bg-base-lvl-3 group"
         :class="{'bg-base-lvl-2': isSelected}"
         v-bind="$attrs"
         v-on="$attrs"
