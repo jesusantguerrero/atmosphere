@@ -89,6 +89,7 @@
         :transactions="transactions"
         :server-search-options="serverSearchOptions"
         :with-teleport="true"
+        @removed="removeTransaction"
       />
     </FinanceTemplate>
   </AppLayout>
@@ -176,4 +177,11 @@ Object.entries(props.serverSearchOptions).forEach(([key, value]) => {
 const listComponent = computed(() => {
   return props.accountId ? TransactionTemplate : TransactionSearch;
 });
+
+const removeTransaction = (transaction) => {
+    debugger
+    Inertia.delete(`/transactions/${transaction.id}`).then(() => {
+        Inertia.reload();
+    })
+}
 </script>

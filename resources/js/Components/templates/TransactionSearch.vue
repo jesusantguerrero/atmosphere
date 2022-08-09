@@ -6,9 +6,12 @@
       table-class="overflow-auto bg-base-lvl-1 border rounded-lg shadow-md mt-5"
       allow-select
       show-sum
+      allow-remove
+      allow-edit
       :transactions="transactions"
       :parser="transactionDBToTransaction"
       @edit="handleEdit"
+      @removed="removeTransaction"
     />
   </div>
 </template>
@@ -53,4 +56,14 @@ const importTransaction = () => {
     file,
   });
 };
+
+const removeTransaction = (transaction) => {
+    if (confirm("Are you sure you want to remove this transaction?")) {
+        Inertia.delete(`/transactions/${transaction.id}`, {
+            onSuccess() {
+                Inertia.reload();
+            }
+        })
+    }
+}
 </script>

@@ -198,7 +198,7 @@
 
                     <div class="app-content__inner ic-scroller">
                         <!-- Page Heading -->
-                        <header v-if="$slots.header" class="w-full mb-8 overflow-hidden border-b bg-base-lvl-1 border-base-lvl-3">
+                        <header v-if="$slots.header" class="w-full mb-8 overflow-hidden border-b bg-base-lvl-3 border-base-deep-1">
                             <slot name="header"></slot>
                         </header>
                         <!-- Page Content -->
