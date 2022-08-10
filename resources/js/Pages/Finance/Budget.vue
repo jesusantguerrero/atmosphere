@@ -7,7 +7,7 @@
     <template #header>
       <FinanceSectionNav>
         <template #actions>
-          <div class="flex items-center">
+          <div class="flex items-center space-x-2">
             <AtDatePager
               class="w-full h-12 border-none bg-base-lvl-1 text-body"
               v-model="pageState.date"
@@ -17,7 +17,7 @@
               controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
               next-mode="month"
             />
-            <AtButton class="text-white rounded-md w-96 bg-primary"
+            <AtButton class="text-white rounded-md w-64 bg-primary"
               >Import Transactions</AtButton
             >
           </div>
@@ -25,9 +25,21 @@
       </FinanceSectionNav>
     </template>
     <FinanceTemplate :accounts="accounts">
+
+      <!-- Budget to assign -->
       <div class="flex justify-between px-2 py-4 mt-2 rounded-md bg-success/20">
         <span class="ml-2 font-bold text-body-1"> {{ formatMoney(readyToAssign) }} </span>
       </div>
+
+      <!-- Overspent notice -->
+      <div class="bg-info/80 items-center justify-between text-white px-2 py-2 flex">
+        <span>
+            {{ overspentCategories.length }} overspent categories
+        </span>
+        <AtButton class="text-info/80 bg-white rounded-md font-bold" @click="toggleOverspent">View categories</AtButton>
+      </div>
+
+
       <div class="mx-auto mt-8 rounded-lg text-body bg-base max-w-7xl">
         <div class="flex">
           <div :class="[!selectedBudget ? 'w-full' : 'w-7/12']">
@@ -39,13 +51,15 @@
 
             <Draggable
               class="w-full mt-4 space-y-2 dragArea list-group"
-              :list="budgetState"
+              :list="visibleCategories"
               handle=".handle"
-              @end="saveReorder(budgetState)"
+              @end="saveReorder(visibleCategories)"
             >
               <BudgetGroupItem
-                v-for="itemGroup in budgetState"
+                v-for="itemGroup in visibleCategories"
+                :key="itemGroup.id"
                 :item="itemGroup"
+                :force-expanded="overspentFilter"
                 class="bg-base-lvl-3"
               >
                 <template v-slot:content="{ isExpanded, isAdding, toggleAdding }">
@@ -148,7 +162,7 @@ const pageState = useServerSearch(serverSearchOptions);
 const { categoryOptions: makeCategoryOptions } = useSelect();
 
 const { budgets } = toRefs(props);
-const { readyToAssign, budgetState } = useBudget(budgets);
+const { readyToAssign, visibleCategories, overspentCategories, toggleOverspent, overspentFilter } = useBudget(budgets);
 
 const state = reactive({
   isModalOpen: false,

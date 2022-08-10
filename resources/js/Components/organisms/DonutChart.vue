@@ -52,9 +52,9 @@ const options = computed(() => ({
   plugins: {
     legend: {
       position: props.legendPosition,
-      labels: {
-          color: "white",
-      }
+    //   labels: {
+    //       color: "white",
+    //   }
     },
     title: {
       display: props.title,

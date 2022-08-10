@@ -33,7 +33,7 @@
 
 <script setup>
 
-import { computed, ref, onMounted }  from "vue";
+import { computed, ref, onMounted, watchEffect }  from "vue";
 import autoAnimate from "@formkit/auto-animate"
 import { NDropdown } from "naive-ui";
 
@@ -49,11 +49,21 @@ const props = defineProps({
     item: {
         type: Object,
         required: true
+    },
+    forceExpanded: {
+        type: Boolean,
+        default: false
     }
 })
 
-const isExpanded = ref(false);
+const isExpanded = ref(props.forceExpanded);
 const toggleIcon = computed(() => isExpanded.value ? 'fa-chevron-up' : 'fa-chevron-down')
+watchEffect(() => {
+    if(props.forceExpanded) {
+        isExpanded.value = true
+    }
+})
+
 const isAdding = ref(false);
 const toggleAdding = () => isAdding.value = !isAdding.value;
 
