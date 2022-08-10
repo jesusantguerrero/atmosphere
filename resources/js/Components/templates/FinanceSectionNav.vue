@@ -1,6 +1,6 @@
 <template>
 <SectionNav :sections="[{
-    label: 'Dashboard',
+    label: 'Overview',
     url: '/finance'
 }, {
     label: 'Transactions',

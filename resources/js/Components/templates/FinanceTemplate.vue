@@ -1,6 +1,6 @@
 <template>
     <div class="flex pb-20 mx-auto space-x-2 max-w-screen-2xl">
-        <div class="w-full pr-5 md:w-10/12">
+        <div class="w-full pr-5 md:w-10/12 md:pl-8">
             <slot />
         </div>
 
@@ -50,7 +50,6 @@
     });
 
     const { categoryOptions: transformCategoryOptions } = useSelect()
-    transformCategoryOptions(props.categories, 'accounts', 'categoryOptions');
     transformCategoryOptions(props.accounts, 'accounts', 'accountsOptions');
 
     // import modal related

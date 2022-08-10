@@ -37,7 +37,7 @@ export const useServerSearch = (serverSearchOptions: Ref<IServerSearchOptions>) 
 
     watch(
       () => state.searchOptions,
-      () => {
+      (newSearch, oldSearch) => {
         updateSearch(state.searchOptions, state.dateSpan);
       },
       { deep: true }

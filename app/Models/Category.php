@@ -42,11 +42,16 @@ class Category extends CoreCategory
     public function getBudgetInfo(string $month) {
         $yearMonth = substr((string) $month, 0, 7);
         $monthBudget = $this->budgets->where('month', $month)->first();
+        $budgeted = $monthBudget ? $monthBudget->budgeted : 0;
         $monthBalance = $this->getMonthBalance($yearMonth);
+        $oldAvailable = $this->getOldAvailable($yearMonth);
+        $available = $budgeted + $oldAvailable + $monthBalance;
+
         return [
-            'budgeted' => $monthBudget ? $monthBudget->budgeted : 0,
+            'budgeted' => $budgeted,
             'spent' => $monthBalance,
-            'available' => $monthBudget ? $monthBudget->available : 0,
+            'available' => $available,
+            'oldAvailable' => $oldAvailable
         ];
     }
 
@@ -71,9 +76,49 @@ class Category extends CoreCategory
        return $this->transactions()
         ->where([
             'status' => 'verified'
-        ])->whereRaw(DB::raw("date_format(transactions.date, '%Y-%m') = '$yearMonth'"))->sum(DB::raw("CASE
-        WHEN transactions.direction = 'WITHDRAW'
-        THEN total * -1
-        ELSE total * 1 END"));
+        ])
+        ->whereRaw(DB::raw("date_format(transactions.date, '%Y-%m') = '$yearMonth'"))
+        ->sum(DB::raw("CASE
+            WHEN transactions.direction = 'WITHDRAW'
+            THEN total * -1
+            ELSE total * 1 END"
+        ));
     }
+
+
+    /**
+     * Get the current balance.
+     *
+     * @return string
+     */
+    public function getOldAvailable($yearMonth)
+    {
+       return DB::query()
+       ->select('*')
+       ->where([
+           'category_id' => $this->id,
+        ])
+        ->whereRaw("date_format(month, '%Y-%m') < '$yearMonth'")
+        ->from('month_budgets')
+        ->sum(DB::raw("budgeted + spent"));
+    }
+
+    //    /**
+    //  * Get the current balance.
+    //  *
+    //  * @return string
+    //  */
+    // public function getOldAvailable($yearMonth)
+    // {
+    //    return $this->budgets()
+    //    ->where('transactions.category_id', '=', 24)
+    //     ->whereRaw(DB::raw("date_format(month_budgets.month, '%Y%m') < '$yearMonth'"))
+    //     ->selectRaw(DB::raw("sum(COALESCE(budgeted, 0)) + sum(CASE
+    //      WHEN transactions.direction = 'WITHDRAW'
+    //      THEN total * -1
+    //      ELSE total * 1 END) as budgeted")
+    //     )
+    //     ->join('transactions', 'transactions.transaction_category_id', '=', 'month_budgets.category_id')
+    //     ->dump();
+    // }
 }

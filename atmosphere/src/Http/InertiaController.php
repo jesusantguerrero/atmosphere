@@ -60,8 +60,12 @@ class InertiaController extends BaseController {
 
     public function destroy(Request $request, int $id) {
         $resource = $this->model::find($id);
-        $resource->delete();
-        return Redirect::back();
+        if ($this->validateDelete($request, $resource)) {
+            $resource->delete();
+            return Redirect::back();
+        } else {
+            return Redirect::back()->withErrors(['error' => 'You cannot delete this resource']);
+        }
     }
 
     protected function getIndexProps(Request $request) {
@@ -89,6 +93,10 @@ class InertiaController extends BaseController {
         $postData['team_id'] = $request->user()->current_team_id;
 
         return $postData;
+    }
+
+    protected function validateDelete(Request $request, $resource) {
+        return true;
     }
 
 }

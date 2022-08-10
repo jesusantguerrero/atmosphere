@@ -1,7 +1,10 @@
 <template>
 <div class="px-5 py-5 mx-auto text-white bg-primary cursor-pointer rounded-xl" @click="$emit('click')">
-    <h4> {{ title }} </h4>
-    <div class="mt-2 text-4xl font-bold relative">
+    <header class="flex justify-between">
+        <h4> {{ title }} </h4>
+        <span><i class="fa fa-cogs"></i></span>
+    </header>
+    <div class="mt-2 text-2xl font-bold relative">
         <NumberHider />
         {{ value }}
     </div>

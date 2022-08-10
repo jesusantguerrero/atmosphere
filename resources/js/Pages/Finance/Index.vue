@@ -53,11 +53,11 @@
               </div>
               <FinanceVarianceCard
                 class="w-full"
-                @click="$inertia.visit('/finance/transactions')"
                 title="Expenses"
+                variance-title="Last month"
                 :value="formatMoney(transactionTotal)"
-                variance-title="Last month variance"
                 :variance="expenseVariance"
+                @click="$inertia.visit('/finance/transactions')"
               />
             </div>
           </div>
@@ -65,7 +65,7 @@
             <TransactionsTable
               table-label="Budget"
               class="pt-3 mt-5"
-              table-class="overflow-auto text-sm rounded-t-lg shadow-md bg-base-lvl-3"
+              table-class="overflow-auto text-sm rounded-t-lg shadow-md bg-base-lvl-3 p-2 border"
               :transactions="topCategories"
               :parser="categoryDBToTransaction"
               @edit="handleEdit"
@@ -104,7 +104,7 @@
             <TransactionsTable
               table-label="Transactions"
               class="pt-3 mt-5"
-              table-class="border rounded-lg shadow-md border-base bg-base-lvl-3"
+              table-class="overflow-auto text-sm rounded-t-lg shadow-md bg-base-lvl-3 p-2 border"
               :transactions="transactions"
               :parser="transactionDBToTransaction"
               @edit="handleEdit"

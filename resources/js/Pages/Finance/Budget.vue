@@ -7,7 +7,7 @@
     <template #header>
       <FinanceSectionNav>
         <template #actions>
-          <div class="flex items-center">
+          <div class="flex items-center space-x-2">
             <AtDatePager
               class="w-full h-12 border-none bg-base-lvl-1 text-body"
               v-model="pageState.date"
@@ -17,7 +17,7 @@
               controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
               next-mode="month"
             />
-            <AtButton class="text-white rounded-md w-96 bg-primary"
+            <AtButton class="text-white rounded-md w-64 bg-primary"
               >Import Transactions</AtButton
             >
           </div>
@@ -25,35 +25,43 @@
       </FinanceSectionNav>
     </template>
     <FinanceTemplate :accounts="accounts">
-      <div class="flex justify-between px-2 py-4 mt-2 rounded-md bg-success/20">
-        <span class="ml-2 font-bold text-body-1"> {{ formatMoney(readyToAssign) }} </span>
+
+      <!-- Budget to assign -->
+      <BalanceAssign
+        :value="readyToAssign.balance"
+        :formatter="formatMoney"
+        :category="readyToAssign"
+      />
+
+      <!-- Overspent notice -->
+      <div v-if="overspentCategories.length" class="bg-info/80 items-center justify-between text-white px-2 py-2 flex">
+        <span>
+            {{ overspentCategories.length }} overspent categories
+        </span>
+        <AtButton class="text-info/80 bg-white rounded-md font-bold" @click="toggleOverspent">View categories</AtButton>
       </div>
+
+
       <div class="mx-auto mt-8 rounded-lg text-body bg-base max-w-7xl">
         <div class="flex">
           <div :class="[!selectedBudget ? 'w-full' : 'w-7/12']">
-            <section class="flex">
-              <AtField class="w-full">
-                <LogerInput
-                  v-model="categoryForm.name"
-                  placeholder="New Category group"
-                />
-              </AtField>
-              <LogerTabButton
-                class="justify-center text-center min-w-max"
-                @click="saveBudgetCategory()"
-              >
-                Add Budget Group
-              </LogerTabButton>
-            </section>
+
+            <BudgetGroupForm
+                v-model="categoryForm.name"
+                @save="saveBudgetCategory()"
+            />
+
             <Draggable
               class="w-full mt-4 space-y-2 dragArea list-group"
-              :list="budgetState"
+              :list="visibleCategories"
               handle=".handle"
-              @end="saveReorder(budgetState)"
+              @end="saveReorder(visibleCategories)"
             >
               <BudgetGroupItem
-                v-for="itemGroup in budgetState"
+                v-for="itemGroup in visibleCategories"
+                :key="itemGroup.id"
                 :item="itemGroup"
+                :force-expanded="overspentFilter"
                 class="bg-base-lvl-3"
               >
                 <template v-slot:content="{ isExpanded, isAdding, toggleAdding }">
@@ -77,6 +85,7 @@
                       <BudgetItem
                         class="bg-base-lvl-2 border-base-lvl-3"
                         v-for="item in itemGroup.subCategories"
+                        :key="item.id"
                         :item="item"
                       />
                     </Draggable>
@@ -118,7 +127,6 @@ import { useSelect } from "@/utils/useSelects";
 import BudgetItemForm from "@/Components/molecules/BudgetItemForm.vue";
 import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
 import { useBudget } from "@/domains/budget";
-import LogerTabButton from "@/Components/atoms/LogerTabButton.vue";
 import LogerInput from "@/Components/atoms/LogerInput.vue";
 import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
 import BudgetGroupItem from "@/Components/molecules/BudgetGroupItem.vue";
@@ -127,6 +135,8 @@ import BudgetItem from "@/Components/molecules/BudgetItem.vue";
 import { useServerSearch } from "./useServerSearch";
 import formatMoney from "@/utils/formatMoney";
 import { createBudgetCategory } from "@/domains/budget/createBudgetCategory";
+import BudgetGroupForm from "@/Components/molecules/BudgetGroupForm.vue";
+import BalanceAssign from "@/Components/atoms/BalanceAssign.vue";
 
 const props = defineProps({
   budgets: {
@@ -152,10 +162,8 @@ const props = defineProps({
 const { serverSearchOptions } = toRefs(props);
 const pageState = useServerSearch(serverSearchOptions);
 
-const { categoryOptions: makeCategoryOptions } = useSelect();
-
 const { budgets } = toRefs(props);
-const { readyToAssign, budgetState } = useBudget(budgets);
+const { readyToAssign, visibleCategories, overspentCategories, toggleOverspent, overspentFilter } = useBudget(budgets);
 
 const state = reactive({
   isModalOpen: false,
@@ -164,9 +172,6 @@ const state = reactive({
   selectedBudget: null,
   budgetTotal: computed(() => {
     return 0; // sumMoney(props.budgets.data.map(item => item.amount));
-  }),
-  categoryOptions: computed(() => {
-    return makeCategoryOptions(props.categories, "accounts", "categoryOptions");
   }),
   categoryForm: useForm({
     account_id: null,
