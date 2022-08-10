@@ -1,11 +1,13 @@
 import ExactMath from "exact-math";
+import { cloneDeep } from "lodash";
 import { computed, ref, watch } from "vue";
 
 export const useBudget = (budgets) => {
     const overspentCategories = ref([])
     const budget = computed(() => {
         overspentCategories.value = [];
-        return budgets.value.data.map(item => {
+        const cloned = cloneDeep(budgets.value)
+        return cloned.data.map(item => {
             const totals = Object.values(item.subCategories).reduce((acc, category) => {
                 acc.budgeted = ExactMath.add(acc.budgeted, category.budgeted || 0)
                 acc.spent =  ExactMath.add(acc.spent, category.spent || 0)
@@ -33,9 +35,9 @@ export const useBudget = (budgets) => {
     const overspentFilter = ref(false)
     const visibleCategories = ref([]);
 
-    watch(budgets, () => {
+    watch(() => budgets.value, () => {
         visibleCategories.value = getVisibleCategories();
-    }, { immediate: true })
+    }, { immediate: true, deep: true })
 
     const toggleOverspent = () => {
         overspentFilter.value = !overspentFilter.value
@@ -68,7 +70,12 @@ export const useBudget = (budgets) => {
         const budgeted = outflow.value.reduce((acc, category) => {
             return ExactMath.add(category.budgeted, acc || 0)
         }, 0)
-        return ExactMath.sub(inflow.value?.spent | 0, budgeted || 0)
+        const balance = ExactMath.sub(inflow.value?.spent | 0, budgeted || 0)
+        const category = inflow.value.subCategories[0]
+        return {
+            balance,
+            ...category
+        }
     })
 
     return {

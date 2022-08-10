@@ -1,30 +1,24 @@
 <template>
-<div class="w-full text-right">
-    <NPopover trigger="manual" placement="bottom"  @update:show="handleUpdateShow" :show="showPopover">
+    <section
+        class="px-5 py-1 cursor-pointer rounded-3xl text-body-1 flex justify-between"
+        :class="badgeClass"
+        @click="toggle"
+    >
+        <article class="flex flex-col h-10 justify-center">
+            <p> {{ formatter(value) }} </p>
+            <small v-if="isOverspent">
+                You assigned more than you have
+            </small>
+        </article>
+
+        <NPopover v-if="isOverspent" trigger="manual" placement="bottom"  @update:show="handleUpdateShow" :show="showPopover">
         <template #trigger>
-            <span
-                class="px-5 py-1 cursor-pointer rounded-3xl text-body-1"
-                :class="badgeClass"
-                @click="toggle"
-            >
-                {{ formatter(value) }}
-            </span>
+            <AtButton class="rounded-md bg-white/80">
+                Fix this
+            </AtButton>
         </template>
         <div>
-            <AtField label="Move">
-                <LogerInput v-model="form.amount" />
-            </AtField>
-            <AtField label="To" v-if="status == BALANCE_STATUS.available">
-                <NSelect
-                    filterable
-                    clearable
-                    size="large"
-                    v-model:value="form.destination_category_id"
-                    :default-expand-all="true"
-                    :options="categoryOptions"
-                />
-            </AtField>
-             <AtField label="From" v-else>
+             <AtField label="From">
                 <NSelect
                     filterable
                     clearable
@@ -40,7 +34,7 @@
             </div>
         </div>
     </NPopover>
-</div>
+    </section>
 </template>
 
 <script setup>
@@ -48,9 +42,8 @@
     import { computed, inject, ref } from "vue"
     import { NPopover, NSelect } from "naive-ui";
     import { AtField, AtButton } from "atmosphere-ui";
-
-    import LogerInput from "./LogerInput.vue";
-import { format, startOfMonth } from "date-fns";
+    import { format, startOfMonth } from "date-fns";
+    import ExactMath from "exact-math";
 
     const props = defineProps({
         value: {
@@ -72,7 +65,7 @@ import { format, startOfMonth } from "date-fns";
 
     const theme = {
         good: 'bg-success',
-        danger: 'bg-danger',
+        danger: 'bg-error/50',
         needs: 'bg-warning',
         overspend: 'bg-warning',
         default: 'bg-base-lvl-3'
@@ -92,12 +85,16 @@ import { format, startOfMonth } from "date-fns";
         }
     })
 
+    const isOverspent = computed(() => {
+        return status.value == BALANCE_STATUS.overspent
+    })
+
     const badgeClass = computed(() => {
         let themeColor = theme.default
-        if (props.value > 0) {
+        if (status.value === BALANCE_STATUS.available) {
             themeColor = theme.good
-        } else if (props.value < 0) {
-            themeColor = theme.overspend
+        } else if (status.value === BALANCE_STATUS.overspent) {
+            themeColor = theme.danger
         }
         return [themeColor]
     })
@@ -109,12 +106,12 @@ import { format, startOfMonth } from "date-fns";
     });
 
     const onAssignBudget = () => {
-        if (Number(props.category.budgeted) !== Number(form.amount)) {
+        if (Number(form.amount) > 0) {
             const month = format(startOfMonth(new Date()), 'yyyy-MM-dd');
             const field = status.value == BALANCE_STATUS.available ? 'source_category_id' : 'destination_category_id'
             form.transform(data => ({
                 ...data,
-                budgeted: props.category.budgeted + data.amount,
+                budgeted: ExactMath.add(Number( props.category.budgeted),  Number(data.amount)),
                 [field]: props.category.id
             })).post(`/budgets/${props.category.id}/months/${month}`, {
                 preserveState: true,

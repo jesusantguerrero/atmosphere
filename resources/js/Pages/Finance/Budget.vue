@@ -27,12 +27,14 @@
     <FinanceTemplate :accounts="accounts">
 
       <!-- Budget to assign -->
-      <div class="flex justify-between px-2 py-4 mt-2 rounded-md bg-success/20">
-        <span class="ml-2 font-bold text-body-1"> {{ formatMoney(readyToAssign) }} </span>
-      </div>
+      <BalanceAssign
+        :value="readyToAssign.balance"
+        :formatter="formatMoney"
+        :category="readyToAssign"
+      />
 
       <!-- Overspent notice -->
-      <div class="bg-info/80 items-center justify-between text-white px-2 py-2 flex">
+      <div v-if="overspentCategories.length" class="bg-info/80 items-center justify-between text-white px-2 py-2 flex">
         <span>
             {{ overspentCategories.length }} overspent categories
         </span>
@@ -134,6 +136,7 @@ import { useServerSearch } from "./useServerSearch";
 import formatMoney from "@/utils/formatMoney";
 import { createBudgetCategory } from "@/domains/budget/createBudgetCategory";
 import BudgetGroupForm from "@/Components/molecules/BudgetGroupForm.vue";
+import BalanceAssign from "@/Components/atoms/BalanceAssign.vue";
 
 const props = defineProps({
   budgets: {

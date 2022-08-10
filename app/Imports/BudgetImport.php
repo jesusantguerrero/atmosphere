@@ -57,7 +57,7 @@ class BudgetImport extends ImportHelper
         $row['name'] = $row['month'];
         $row['currency_code'] = $budgeted['currency_code'];
         $row['budgeted'] = $budgeted['amount'];
-        $row['activity'] = $activity['amount'];
+        $row['spent'] = $activity['amount'];
         $row['available'] = $available['amount'];
         $row['metaData'] = [
             "resource_id" => 'YNAB',

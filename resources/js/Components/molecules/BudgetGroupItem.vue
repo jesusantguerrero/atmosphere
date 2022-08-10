@@ -85,7 +85,6 @@ const removeCategory = () => {
                 Inertia.reload({
                     only: ['budgets'],
                     preserveScroll: true,
-                    preserveState: true
                 })
             }
         })
