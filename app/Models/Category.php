@@ -42,11 +42,13 @@ class Category extends CoreCategory
     public function getBudgetInfo(string $month) {
         $yearMonth = substr((string) $month, 0, 7);
         $monthBudget = $this->budgets->where('month', $month)->first();
+        $budgeted = $monthBudget ? $monthBudget->budgeted : 0;
         $monthBalance = $this->getMonthBalance($yearMonth);
+        $available = $budgeted + $monthBalance;
         return [
-            'budgeted' => $monthBudget ? $monthBudget->budgeted : 0,
+            'budgeted' => $budgeted,
             'spent' => $monthBalance,
-            'available' => $monthBudget ? $monthBudget->available : 0,
+            'available' => $available,
         ];
     }
 
@@ -71,7 +73,9 @@ class Category extends CoreCategory
        return $this->transactions()
         ->where([
             'status' => 'verified'
-        ])->whereRaw(DB::raw("date_format(transactions.date, '%Y-%m') = '$yearMonth'"))->sum(DB::raw("CASE
+        ])
+        ->whereRaw(DB::raw("date_format(transactions.date, '%Y-%m') = '$yearMonth'"))
+        ->sum(DB::raw("CASE
         WHEN transactions.direction = 'WITHDRAW'
         THEN total * -1
         ELSE total * 1 END"));

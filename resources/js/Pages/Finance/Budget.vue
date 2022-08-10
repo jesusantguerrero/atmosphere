@@ -31,20 +31,12 @@
       <div class="mx-auto mt-8 rounded-lg text-body bg-base max-w-7xl">
         <div class="flex">
           <div :class="[!selectedBudget ? 'w-full' : 'w-7/12']">
-            <section class="flex">
-              <AtField class="w-full">
-                <LogerInput
-                  v-model="categoryForm.name"
-                  placeholder="New Category group"
-                />
-              </AtField>
-              <LogerTabButton
-                class="justify-center text-center min-w-max"
-                @click="saveBudgetCategory()"
-              >
-                Add Budget Group
-              </LogerTabButton>
-            </section>
+
+            <BudgetGroupForm
+                v-model="categoryForm.name"
+                @save="saveBudgetCategory()"
+            />
+
             <Draggable
               class="w-full mt-4 space-y-2 dragArea list-group"
               :list="budgetState"
@@ -77,6 +69,7 @@
                       <BudgetItem
                         class="bg-base-lvl-2 border-base-lvl-3"
                         v-for="item in itemGroup.subCategories"
+                        :key="item.id"
                         :item="item"
                       />
                     </Draggable>
@@ -118,7 +111,6 @@ import { useSelect } from "@/utils/useSelects";
 import BudgetItemForm from "@/Components/molecules/BudgetItemForm.vue";
 import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
 import { useBudget } from "@/domains/budget";
-import LogerTabButton from "@/Components/atoms/LogerTabButton.vue";
 import LogerInput from "@/Components/atoms/LogerInput.vue";
 import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
 import BudgetGroupItem from "@/Components/molecules/BudgetGroupItem.vue";
@@ -127,6 +119,7 @@ import BudgetItem from "@/Components/molecules/BudgetItem.vue";
 import { useServerSearch } from "./useServerSearch";
 import formatMoney from "@/utils/formatMoney";
 import { createBudgetCategory } from "@/domains/budget/createBudgetCategory";
+import BudgetGroupForm from "@/Components/molecules/BudgetGroupForm.vue";
 
 const props = defineProps({
   budgets: {

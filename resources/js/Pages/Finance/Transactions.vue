@@ -98,12 +98,14 @@
 <script setup>
 import { NSelect } from "naive-ui";
 import { AtDatePager } from "atmosphere-ui";
-import AppLayout from "@/Layouts/AppLayout.vue";
 import { computed, reactive, watch } from "vue";
+
+import AppLayout from "@/Layouts/AppLayout.vue";
 import TransactionSearch from "@/Components/templates/TransactionSearch.vue";
 import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
 import TransactionTemplate from "@/Components/templates/TransactionTemplate.vue";
 import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
+
 import { updateSearch, getDateFromIso } from "@/utils";
 import { startOfDay } from "date-fns";
 
