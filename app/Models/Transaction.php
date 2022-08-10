@@ -68,6 +68,20 @@ class Transaction extends CoreTransaction
         ])
         ->whereNotNull('transaction_category_id')
         ->getByMonth($startDate, $endDate)
+        ->groupBy(['transactions.id', 'currency_code'])
+        ->get();
+    }
+
+    public static function getExpensesTotal($teamId, $startDate, $endDate) {
+        return self::where([
+            'team_id' => $teamId,
+            'direction' => CoreTransaction::DIRECTION_CREDIT,
+            'status' => 'verified'
+        ])
+        ->whereNotNull('transaction_category_id')
+        ->whereBetween('date', [$startDate, $endDate])
+        ->select(DB::raw('SUM(total) as total, currency_code'))
+        ->groupBy('currency_code')
         ->get();
     }
 

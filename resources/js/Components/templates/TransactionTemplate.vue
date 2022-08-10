@@ -8,7 +8,20 @@
         >
             <template v-slot:total="{ scope: { row } }">
                 <div class="font-bold" :class="{'text-red-400':  row.direction == 'WITHDRAW', 'text-green-500': row.direction == 'DEPOSIT'}">
-                    {{ formatMoney(row.total) }}
+                    {{ formatMoney(row.total, row.currency_code) }}
+                </div>
+            </template>
+            <template v-slot:actions="{ scope: { row } }">
+               <div>
+                 <NDropdown
+                    trigger="click"
+                    key-field="name"
+                    :options="options"
+                    :on-select="handleOptions"
+                    @click.stop
+                >
+                <button class="hover:bg-base-lvl-3 px-2"> <i class="fa fa-ellipsis-v"></i></button>
+                </NDropdown>
                 </div>
             </template>
         </CustomTable>
@@ -16,10 +29,11 @@
 </template>
 
 <script setup>
-    import { reactive, ref, watch } from "vue";
-    import { AtDatePager } from "atmosphere-ui"
-    import { startOfDay } from 'date-fns';
+    import { reactive, ref, computed } from "vue";
+    import { NDropdown } from "naive-ui";
+
     import CustomTable from "@/Components/atoms/CustomTable.vue";
+
     import { tableCols } from '@/domains/transactions';
     import formatMoney from '@/utils/formatMoney';
 
@@ -49,4 +63,24 @@
         transferConfig.transactionData = transaction;
         isTransferModalOpen.value = true;
     }
+
+
+    const options = computed(() => {
+        const defaultOptions = [
+            {
+            name: "edit",
+            label: "Edit",
+            },
+            {
+            name: "removed",
+            label: "Remove",
+            },
+        ];
+
+    return defaultOptions.filter(option => !option.hide)
+    });
+
+    const handleOptions = (option) => {
+        emit(option);
+    };
 </script>

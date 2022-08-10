@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\BudgetAssigned;
-use App\Http\Resources\CategoryCollection;
 use App\Http\Resources\CategoryGroupCollection;
 use App\Models\BudgetMovement;
 use App\Models\Category;
@@ -43,9 +41,10 @@ class BudgetController extends InertiaController
         $queryParams['limit'] = $queryParams['limit'] ?? 50;
         $queryParams['date'] = $queryParams['date'] ?? date('Y-m-01');
         $teamId = $request->user()->current_team_id;
+        $budget = CategoryGroupCollection::collection($this->getModelQuery($request));
 
         return [
-            'budgets' => CategoryGroupCollection::collection($this->getModelQuery($request)),
+            'budgets' => $budget,
             "accounts" => Account::getByDetailTypes($teamId),
             "categories" => Category::where([
                 'categories.team_id' => $teamId,
@@ -56,6 +55,17 @@ class BudgetController extends InertiaController
                 ->get(),
 
         ];
+    }
+
+    protected function validateDelete(Request $request, $resource)
+    {
+        $transactions = Transaction::where('transaction_category_id', $resource->id)->count();
+        $budgetMovements = BudgetMovement::where('destination_category_id', $resource->id)
+        ->orWhere('source_category_id', $resource->id)->count();
+        if ($transactions > 0 || $budgetMovements > 0 || $resource->subCategories->count() > 0) {
+            return false;
+        }
+        return true;
     }
 
     public function addCategoryBudget(Request $request, $categoryId)

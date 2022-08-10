@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Events\BudgetAssigned;
+use App\Listeners\AcceptInvitation;
 use App\Listeners\CreateBudgetMovement;
 use App\Listeners\CreateBudgetCategory;
 use App\Listeners\CreateTeamSettings;
@@ -33,7 +34,10 @@ class EventServiceProvider extends ServiceProvider
         ],
         AccountCreated::class => [
             CreateBudgetCategory::class
-        ]
+        ],
+        TeamMemberAdded::class => [
+            AcceptInvitation::class
+        ],
     ];
 
     /**

@@ -20,12 +20,12 @@ module.exports = {
         "body-1": colors.slate[200]
     },
     defaultLight: {
-        primary: "#8a00d4",
-        "secondary": "#d527b7",
+        primary: "#d527b7",
+        secondary: "#8a00d4",
         "accent": "#f782c2",
-        "neutral": "#e3e3e3",
+        "neutral": "#F3F4F6",
         "base-deep-1": colors.slate[400],
-        base: "#e3e3e3",
+        base: "#F3F4F6",
         "base-lvl-1": colors.slate[100],
         "base-lvl-2": colors.slate[50],
         "base-lvl-3": colors.white,
@@ -33,8 +33,8 @@ module.exports = {
         success: "#79E7AE",
         warning: "#D39E17",
         error: "#F61909",
-        "body": "#2E384D",
-        "body-1": "#9298AD"
+        "body": colors.gray[900],
+        "body-1": colors.gray[700]
     },
     blueLight: {
         primary: "#1f436e",

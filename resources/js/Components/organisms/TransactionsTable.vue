@@ -14,6 +14,7 @@
                 :mark-as-approved="allowMarkAsApproved"
                 :allow-remove="allowRemove"
                 :allow-select="allowSelect"
+                :allow-edit="allowEdit"
                 :key="transaction.id"
                 :isSelected="isSelected(transaction)"
                 class="odd:bg-base-lvl-1 even:bg-base-lvl-2"
@@ -21,9 +22,9 @@
                 @paid-clicked="$emit('paid-clicked', transaction)"
                 @approved="$emit('approved', transaction)"
                 @removed="$emit('removed', transaction)"
-                @dblclick="$emit('edit', transactions[index])"
+                @edit="$emit('edit', transactions[index])"
             />
-            <div class="flex items-center justify-between px-4 py-5 bg-base-lvl-1 text-white" v-if="showSum">
+            <div class="flex items-center justify-between px-4 py-5 bg-base-lvl-1 text-body-1" v-if="showSum">
                 <div class="font-bold">Selected Items sum</div>
                 <div class="space-y-1 text-right">
                     <div v-for="currencySum, currency in selectedSum">
@@ -91,6 +92,10 @@ const props = defineProps({
         default: false
     },
     allowSelect: {
+        type: Boolean,
+        default: false
+    },
+    allowEdit: {
         type: Boolean,
         default: false
     }

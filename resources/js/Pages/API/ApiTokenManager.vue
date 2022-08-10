@@ -8,16 +8,12 @@
 
             <template #form>
                 <!-- Token Name -->
-                <div class="col-span-6 sm:col-span-4">
-                    <jet-label for="name" value="Name" />
-                    <jet-input id="name" type="text" class="mt-1 block w-full" v-model="createApiTokenForm.name" autofocus />
-                    <jet-input-error :message="createApiTokenForm.errors.name" class="mt-2" />
-                </div>
+                <AtField class="col-span-6 sm:col-span-4" label="Name" field="name" :errors="createApiTokenForm.errors">
+                    <LogerInput id="name" type="text" v-model="createApiTokenForm.name" autofocus />
+                </AtField>
 
                 <!-- Token Permissions -->
-                <div class="col-span-6" v-if="availablePermissions.length > 0">
-                    <jet-label for="permissions" value="Permissions" />
-
+                <AtField class="col-span-6" v-if="availablePermissions.length > 0" label="Permissions" field="permissions">
                     <div class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div v-for="permission in availablePermissions" :key="permission">
                             <label class="flex items-center">
@@ -26,7 +22,7 @@
                             </label>
                         </div>
                     </div>
-                </div>
+                </AtField>
             </template>
 
             <template #actions>
@@ -45,15 +41,7 @@
 
             <!-- Manage API Tokens -->
             <div class="mt-10 sm:mt-0">
-                <jet-action-section>
-                    <template #title>
-                        Manage API Tokens
-                    </template>
-
-                    <template #description>
-                        You may delete any of your existing tokens if they are no longer needed.
-                    </template>
-
+                <JetActionSection title="Manage API Tokens" description="You may delete any of your existing tokens if they are no longer needed.">
                     <!-- API Token List -->
                     <template #content>
                         <div class="space-y-6">
@@ -81,7 +69,7 @@
                             </div>
                         </div>
                     </template>
-                </jet-action-section>
+                </JetActionSection>
             </div>
         </div>
 
@@ -167,15 +155,14 @@
     import JetDangerButton from '@/Jetstream/DangerButton.vue'
     import JetDialogModal from '@/Jetstream/DialogModal.vue'
     import JetFormSection from '@/Jetstream/FormSection.vue'
-    import JetInput from '@/Jetstream/Input.vue'
     import JetCheckbox from '@/Jetstream/Checkbox.vue'
-    import JetInputError from '@/Jetstream/InputError.vue'
-    import JetLabel from '@/Jetstream/Label.vue'
     import JetSecondaryButton from '@/Jetstream/SecondaryButton.vue'
     import JetSectionBorder from '@/Jetstream/SectionBorder.vue'
     import { ref } from 'vue'
     import { Inertia } from '@inertiajs/inertia'
     import { useForm } from '@inertiajs/inertia-vue3'
+    import { AtField, AtButton } from "atmosphere-ui"
+    import LogerInput from '@/Components/atoms/LogerInput.vue'
 
     const props = defineProps([
         'tokens',

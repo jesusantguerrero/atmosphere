@@ -4,6 +4,7 @@ namespace Freesgen\Atmosphere\Http;
 
 use App\Http\Controllers\Controller as BaseController;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 
@@ -31,7 +32,7 @@ class InertiaController extends BaseController {
         return Inertia::render($this->templates['edit'], $this->getEditProps($request, $id));
     }
 
-    public function store(Request $request) {
+    public function store(Request $request, Response $response) {
         $postData = $request->post();
         $postData['user_id'] = $request->user()->id;
         $postData['team_id'] = $request->user()->current_team_id;
@@ -39,9 +40,9 @@ class InertiaController extends BaseController {
         $resource = $this->model::create($postData);
         $this->afterSave($postData, $resource);
         if ($this->responseType == 'inertia') {
-            return Redirect::back();
+            return redirect()->back();
         } else {
-            return $resource;
+            return $response->setContent($resource);
         }
     }
 
@@ -59,8 +60,12 @@ class InertiaController extends BaseController {
 
     public function destroy(Request $request, int $id) {
         $resource = $this->model::find($id);
-        $resource->delete();
-        return Redirect::back();
+        if ($this->validateDelete($request, $resource)) {
+            $resource->delete();
+            return Redirect::back();
+        } else {
+            return Redirect::back()->withErrors(['error' => 'You cannot delete this resource']);
+        }
     }
 
     protected function getIndexProps(Request $request) {
@@ -88,6 +93,10 @@ class InertiaController extends BaseController {
         $postData['team_id'] = $request->user()->current_team_id;
 
         return $postData;
+    }
+
+    protected function validateDelete(Request $request, $resource) {
+        return true;
     }
 
 }

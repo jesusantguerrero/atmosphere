@@ -12,9 +12,11 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\GoalController;
 use App\Http\Controllers\IngredientController;
+use App\Http\Controllers\Jetstream\TeamInvitationController;
 use App\Http\Controllers\MealController;
 use App\Http\Controllers\PlannerController;
-use App\Http\Controllers\SettingsController;
+use Freesgen\Atmosphere\Http\Controllers\SettingsController;
+use Freesgen\Atmosphere\Http\OnboardingController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
@@ -36,7 +38,13 @@ if (config('app.env') == 'production') {
 
 Route::get('/', fn () => Inertia::render('Landing/Index'));
 
-Route::middleware(['auth:sanctum', 'verified'])->group(function () {
+Route::resource('onboarding', OnboardingController::class)->middleware(['auth:sanctum', 'atmosphere.unteamed', 'verified']);
+
+Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
+    // Jetstream teams invitations override
+    Route::put('/team-invitations/{invitation}', [TeamInvitationController::class, 'resend'])->name('team-invitations.resend');
+    Route::patch('/v2/team-invitations/{invitation}', [TeamInvitationController::class, 'accept'])->name('team-invitations.accept-internal');
+    Route::delete('/v2/team-invitations/{invitation}', [TeamInvitationController::class, 'reject'])->name('team-invitations.reject');
 
     Route::controller(DashboardController::class)->group(function () {
         Route::get('/dashboard', 'index')->name('dashboard');
@@ -54,6 +62,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::controller(IngredientController::class)->group(function () {
         Route::resource('/ingredients', IngredientController::class);
     });
+
     Route::resource('/meal-planner', PlannerController::class);
 
     Route::controller(GoalController::class)->group(function () {
@@ -88,7 +97,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     });
 });
 
-Route::middleware(['auth:sanctum', 'verified'])->prefix('/api')->group(function () {
+Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('/api')->group(function () {
     Route::resource('categories', CategoryApiController::class);
     Route::patch('/categories', [CategoryApiController::class,  'bulkUpdate']);
 

@@ -34,7 +34,7 @@ class TransactionsImport extends ImportHelper
         $amounts = (object) [
             'inflow' => (double) $inflow[1],
             'outflow' => (double) $outflow[1],
-            'currency_code' => $CODES[$inflow[0]],
+            'currency_code' => $CODES[$inflow[0]] ?? 'USD',
         ];
 
         $direction = $amounts->inflow > $amounts->outflow ? 'inflow' : 'outflow';
@@ -49,7 +49,9 @@ class TransactionsImport extends ImportHelper
     public function map($row): array
     {
         $money = $this->getYNABMoney($row);
-        $accountId = Account::guessAccount($this->session, [$row['account']]);
+        $accountId = Account::guessAccount($this->session, [$row['account']], [
+            'currency_code' => $money['currency_code'],
+        ]);
         $isTransfer = str_contains($row['payee'], 'Transfer :');
         if (!$isTransfer) {
             $categoryGroupId = Category::findOrCreateByName($this->session, $row['category_group']);

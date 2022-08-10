@@ -1,11 +1,10 @@
 <template>
-  <div class="px-5 border-l border-base-lvl-1 text-base-200">
+  <div class="px-5 border-l border-base-lvl-1 text-body-1">
     <div class="space-y-2">
       <LogerTabButton class="w-full bg-base-lvl-3" icon="fa-plus" @click="openAccountModal()">
         Add Account
       </LogerTabButton>
-       <Draggable class="w-full dragArea list-group" :list="accounts" handle=".handle"  @end="saveReorder">
-        <TransitionGroup>
+       <Draggable class="w-full space-y-1 dragArea list-group" ref="draggableRef" :list="accounts" handle=".handle"  @end="saveReorder" tag="div">
             <AccountItem
                 v-for="account in accounts"
                 :key="account.id"
@@ -13,7 +12,6 @@
                 :is-selected="isSelectedAccount(account.id)"
                 @click="Inertia.visit(`/finance/${account.id}/transactions`)"
             />
-        </TransitionGroup>
        </Draggable>
     </div>
 
@@ -22,13 +20,14 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { Inertia } from "@inertiajs/inertia";
 import { usePage } from "@inertiajs/inertia-vue3";
 import AccountItem from "@/Components/atoms/AccountItem.vue";
 import LogerTabButton from "@/Components/atoms/LogerTabButton.vue";
 import AccountModal from "@/Components/organisms/AccountModal.vue";
 import { VueDraggableNext as Draggable } from "vue-draggable-next"
+import autoAnimate from "@formkit/auto-animate"
 
 const pageProps = usePage().props;
 const isSelectedAccount = (accountId) => {
@@ -56,4 +55,9 @@ const saveReorder = () => {
     }));
     emit("reordered", items)
 }
+
+const draggableRef = ref()
+// onMounted(() => {
+//     autoAnimate(draggableRef.value) // thats it!
+// })
 </script>

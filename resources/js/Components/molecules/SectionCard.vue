@@ -1,6 +1,6 @@
 
 <template>
-<div :class="classes" class="overflow-hidden text-white">
+<div :class="classes" class="overflow-hidden text-body-1">
     <div class="flex justify-between">
         <SectionTitle type="secondary" class="w-full">{{ sectionTitle }}</SectionTitle>
         <div class="flex items-center justify-end w-full">

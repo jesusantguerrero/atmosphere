@@ -18,6 +18,7 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class FinanceController extends InertiaController {
     use Querify;
+    const DateFormat = 'Y-m-d';
 
     public function __construct(Transaction $transaction)
     {
@@ -26,10 +27,13 @@ class FinanceController extends InertiaController {
 
 
     public function index(Request $request) {
-        $startDate = $request->query('startDate', Carbon::now()->startOfMonth()->format('Y-m-d'));
-        $endDate = $request->query('endDate', Carbon::now()->endOfMonth()->format('Y-m-d'));
-        $lastMonthStartDate = $request->query('startDate', Carbon::now()->subMonth()->startOfMonth()->format('Y-m-d'));
-        $lastMonthEndDate = $request->query('endDate', Carbon::now()->subMonth()->endOfMonth()->format('Y-m-d'));
+        $queryParams = $request->query();
+        $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
+        [$startDate, $endDate] = $this->getFilterDates($filters);
+
+
+        $lastMonthStartDate = Carbon::createFromFormat(self::DateFormat, $startDate)->subMonth()->startOfMonth()->format(self::DateFormat);
+        $lastMonthEndDate = Carbon::createFromFormat(self::DateFormat, $endDate)->subMonth()->endOfMonth()->format(self::DateFormat);
         $teamId = $request->user()->current_team_id;
 
         $budgetTotal = MonthBudget::getMonthAssignmentTotal($teamId, $startDate);

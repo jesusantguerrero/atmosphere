@@ -1,5 +1,5 @@
 <template>
-    <NConfigProvider :theme="darkTheme" :theme-overrides="darkThemeOverrides">
+    <NConfigProvider>
         <main>
             <JetBanner />
             <div class="min-h-screen dark:bg-base-lvl-3 home-container">
@@ -16,17 +16,17 @@
                                 </h4>
                             </div>
 
-                            <div class="hidden sm:flex sm:items-center sm:ml-6">
-                                <AtButton class="text-sm text-white bg-primary" rounded @click="openTransferModal()">
+                            <div class="hidden space-x-2 sm:flex sm:items-center sm:ml-6">
+                                <AtButton class="text-sm text-white bg-primary" rounded @click="openTransferModal()" v-if="!isOnboarding">
                                     <i class="fa fa-exchange-alt"></i>
                                     Add transaction
                                 </AtButton>
-                                <PrivacyToggle v-model="isPrivacyMode" />
+                                <PrivacyToggle v-model="isPrivacyMode" v-if="!isOnboarding" />
 
                                 <!-- Teams Dropdown -->
                                 <div class="relative ml-3">
                                     <LogerDropdown
-                                        v-if="$page.props.jetstream.hasTeamFeatures"
+                                        v-if="$page.props.jetstream.hasTeamFeatures && $page.props.user.current_team"
                                         :label="$page.props.user.current_team.name"
                                         :disabled="!$page.props.jetstream.hasTeamFeatures"
                                         :items="teamMenuItems"
@@ -142,7 +142,7 @@
                                 </form>
 
                                 <!-- Team Management -->
-                                <template v-if="$page.props.jetstream.hasTeamFeatures">
+                                <template v-if="$page.props.jetstream.hasTeamFeatures && $page.props.user.current_team">
                                     <div class="border-t border-gray-200"></div>
 
                                     <div class="block px-4 py-2 text-xs text-gray-400">
@@ -185,7 +185,7 @@
                         <AtSide
                             class="border-r shadow-md text-body border-base-lvl-1 bg-base-lvl-3 app-side"
                             title="Loger"
-                            :menu="appMenu"
+                            :menu="currentMenu"
                             :current-path="currentPath"
                             item-class="block w-full px-5 py-1 mb-2 font-bold text-gray-400 rounded-md text-md hover:text-primary hover:bg-base-lvl-1"
                             item-active-class="text-primary bg-base-lvl-1"
@@ -198,7 +198,7 @@
 
                     <div class="app-content__inner ic-scroller">
                         <!-- Page Heading -->
-                        <header v-if="$slots.header" class="w-full mb-8 border-b bg-base-lvl-1 border-base-lvl-3">
+                        <header v-if="$slots.header" class="w-full mb-8 overflow-hidden border-b bg-base-lvl-3 border-base-deep-1">
                             <slot name="header"></slot>
                         </header>
                         <!-- Page Content -->
@@ -227,7 +227,7 @@
     import LogerDropdown from '@/Components/molecules/LogerDropdown.vue'
     import { darkThemeOverrides } from '@/utils/naiveui'
     import { appMenu } from '@/domains/app'
-    import { usePage } from '@inertiajs/inertia-vue3'
+    import { Link, usePage } from '@inertiajs/inertia-vue3'
     import { useSelect } from '@/utils/useSelects'
     import { useTransferModal } from '@/utils/useTransferModal'
 
@@ -238,7 +238,27 @@
         },
         showBackButton: {
             type: Boolean,
+        },
+        isOnboarding: {
+            type: Boolean,
+            default: false
         }
+    })
+
+    const currentMenu = computed(() => {
+        return props.isOnboarding ? [{
+            icon: 'home',
+            name: 'onboarding',
+            label: 'Setup',
+            to: '/onboarding',
+            as: Link
+        }, {
+            icon: 'users',
+            name: 'userProfile',
+            label: 'User Profile',
+            to: '/user/profile',
+            as: Link
+        }] : appMenu
     })
 
     const pageProps = usePage().props

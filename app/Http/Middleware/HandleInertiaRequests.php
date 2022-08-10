@@ -38,6 +38,8 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request)
     {
+        $user = $request->user();
+        $team = $user ? $user->currentTeam : null;
         return array_merge(parent::share($request), [
             'auth' => [
                 'user' => $request->user(),
@@ -48,6 +50,10 @@ class HandleInertiaRequests extends Middleware
                 ]);
             },
             'accountDetailTypes' => AccountDetailType::all(),
+            'trialEndsAt' => $team ? $team->trial_ends_at : null,
+            'unreadNotifications' => function() use ($user) {
+                return $user ? $user->unreadNotifications->count() : 0;
+            },
         ]);
     }
 }

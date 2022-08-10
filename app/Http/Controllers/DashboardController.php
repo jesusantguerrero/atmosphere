@@ -14,6 +14,7 @@ use App\Models\Planner;
 use App\Models\Transaction;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Insane\Journal\Models\Core\Account;
 use Laravel\Jetstream\Jetstream;
@@ -26,11 +27,8 @@ class DashboardController {
 
 
         $budget = MonthBudget::getMonthAssignments($teamId, $startDate);
-
-        $transactions = Transaction::getExpenses($teamId, $startDate, $endDate);
-
+        $transactionsTotal = Transaction::getExpensesTotal($teamId, $startDate, $endDate);
         $drafts = Transaction::getDrafts($teamId);
-
         $categories = Category::getBudgetSubcategories($teamId);
 
         return Inertia::render('Dashboard', [
@@ -41,13 +39,9 @@ class DashboardController {
                 'date' => date('Y-m-d')
             ])->with('dateable')->get(),
             "budgetTotal" => $budget->sum('budgeted'),
-            "budget" => [],
             "categories" => $categories,
             "accounts" => $teamId ? Account::getByDetailTypes($teamId) : [],
-            "transactionTotal" => $transactions->sum('total'),
-            "transactions" => $transactions->map(function ($transaction) {
-                return Transaction::parser($transaction);
-            }),
+            "transactionTotal" => $transactionsTotal,
             "drafts" => $drafts->map(function ($transaction) {
                 return Transaction::parser($transaction);
             }),

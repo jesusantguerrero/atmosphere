@@ -11,18 +11,18 @@
                 </div>
 
                 <div>
-                    <at-button class="text-white bg-primary" @click="$inertia.visit(route('goals.create'))">
+                    <AtButton class="text-white bg-primary" @click="$inertia.visit(route('goals.create'))">
                         Create goal
-                    </at-button>
+                    </AtButton>
                 </div>
             </div>
         </template>
 
         <div class="py-12">
-            <div class="px-6 mx-auto max-w-7xl space-y-4">
-                <div v-for="goal in goals.data" class="rounded-md bg-base-lvl-1 border px-5 py-3 space-y-4">
+            <div class="px-6 mx-auto space-y-4 max-w-7xl">
+                <div v-for="goal in goals.data" class="px-5 py-3 space-y-4 border rounded-md bg-base-lvl-1">
                     <div class="flex">
-                        <div class="h-10 w-10 bg-gray-700 rounded-full"></div>
+                        <div class="w-10 h-10 bg-gray-700 rounded-full"></div>
                         <div class="ml-2">
                             <h4 class="text-xl font-bold">{{ goal.name }}</h4>
                             <p class="font-bold text-gray-500"> {{ goal.due_date }}</p>
@@ -31,9 +31,9 @@
                     <div>
                         <n-progress :percentage="getPercentage(goal.amount, goal.target)" :stroke-width="1"  border-radius="0" />
                     </div>
-                    <div class="goal_foot flex justify-between">
-                        <span class="text-green-500 font-bold"> Saved: {{ formatMoney(goal.amount) }}</span>
-                        <span class="text-gray-500 font-bold"> Goal: {{ formatMoney(goal.target) }}</span>
+                    <div class="flex justify-between goal_foot">
+                        <span class="font-bold text-green-500"> Saved: {{ formatMoney(goal.amount) }}</span>
+                        <span class="font-bold text-gray-500"> Goal: {{ formatMoney(goal.target) }}</span>
                     </div>
                 </div>
             </div>

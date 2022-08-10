@@ -1,11 +1,13 @@
 <template>
     <AtAuthBox>
         <AtAuthForm
+            v-model:isLoading="form.processing"
+            :initial-values="form"
+            :config="formConfig"
             app-name="Loger"
             mode="register"
             btn-class="mb-2 font-bold border-2 border-primary rounded-md bg-gradient-to-br from-purple-400 to-primary hover:bg-primary"
             link-class="text-primary hover:text-primary"
-            v-model:isLoading="form.processing"
             :errors="form.errors"
             @submit="submit"
             @home-pressed="onHomePressed"
@@ -26,9 +28,10 @@
 </template>
 
 <script setup>
-    import { Inertia } from "@inertiajs/inertia";
-    import { useForm, Link } from "@inertiajs/inertia-vue3";
-    import { AtAuthBox, AtAuthForm, AtInput, AtField } from "atmosphere-ui";
+import { Inertia } from "@inertiajs/inertia";
+import { useForm, Link } from "@inertiajs/inertia-vue3";
+import { AtAuthBox, AtAuthForm, AtInput, AtField } from "atmosphere-ui";
+import { computed, onMounted, ref } from "vue";
 
 
 const form = useForm({
@@ -61,4 +64,21 @@ const submit = (formData) => {
         }
     });
 }
+
+const fixedEmail = ref(null)
+onMounted(() => {
+    const thisUrl = new URL(window.location.href)
+    fixedEmail.value = thisUrl.searchParams.get('email');
+    if (fixedEmail.value) {
+        form.email = fixedEmail.value
+    }
+})
+
+const formConfig = computed(() => {
+    return {
+        email: {
+            disabled: fixedEmail.value
+        }
+    }
+})
 </script>
