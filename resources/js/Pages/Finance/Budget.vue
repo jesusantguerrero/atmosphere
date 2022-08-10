@@ -159,8 +159,6 @@ const props = defineProps({
 const { serverSearchOptions } = toRefs(props);
 const pageState = useServerSearch(serverSearchOptions);
 
-const { categoryOptions: makeCategoryOptions } = useSelect();
-
 const { budgets } = toRefs(props);
 const { readyToAssign, visibleCategories, overspentCategories, toggleOverspent, overspentFilter } = useBudget(budgets);
 
@@ -171,9 +169,6 @@ const state = reactive({
   selectedBudget: null,
   budgetTotal: computed(() => {
     return 0; // sumMoney(props.budgets.data.map(item => item.amount));
-  }),
-  categoryOptions: computed(() => {
-    return makeCategoryOptions(props.categories, "accounts", "categoryOptions");
   }),
   categoryForm: useForm({
     account_id: null,

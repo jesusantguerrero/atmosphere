@@ -50,7 +50,6 @@
     });
 
     const { categoryOptions: transformCategoryOptions } = useSelect()
-    transformCategoryOptions(props.categories, 'accounts', 'categoryOptions');
     transformCategoryOptions(props.accounts, 'accounts', 'accountsOptions');
 
     // import modal related
