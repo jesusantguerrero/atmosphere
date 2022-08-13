@@ -17,7 +17,7 @@ class CreateMealsTable extends Migration
             $table->id();
             $table->foreignId('team_id');
             $table->foreignId('user_id');
-            $table->foreignId('menu_id');
+            $table->foreignId('menu_id')->nullable();
             $table->string('name');
             $table->timestamps();
         });

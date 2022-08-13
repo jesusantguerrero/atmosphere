@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\Actions\Loger\CreateDefaultMealTypes;
 use Carbon\Carbon;
 use Insane\Journal\Actions\CreateChartAccounts;
 use Insane\Journal\Actions\CreateTransactionCategories;
@@ -22,6 +23,7 @@ class CreateTeamSettings
         if ($team->personal_team) {
             (new CreateChartAccounts)->create($team);
             (new CreateTransactionCategories)->create($team);
+            (new CreateDefaultMealTypes)->setup($team->id, $team->user_id);
             $this->setTrialPeriod($team);
         }
     }
