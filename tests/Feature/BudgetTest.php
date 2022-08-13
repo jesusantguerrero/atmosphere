@@ -13,7 +13,8 @@ class BudgetTest extends TestCase
 
     public function test_get_budget_info()
     {
-        $this->actingAs(User::factory()->create());
+        $user = User::factory()->withPersonalTeam()->create();
+        $this->actingAs($user);
 
         $this->get('/budgets')
         ->assertInertia(fn (Assert $page) => $page
