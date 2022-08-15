@@ -14,7 +14,7 @@
         </div>
         <div class="flex items-center space-x-2">
             <p>
-                {{ formatMoney(item.spent) }} of
+                {{ formatMoney(item.activity) }} of
                 {{ formatMoney(item.budgeted) }}
             </p>
             <LogerTabButton @click="toggleAdding">

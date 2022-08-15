@@ -8,8 +8,8 @@
                         :key="type.value"
                         :options="transactionTypes"
                         @click="form.direction = type.value"
-                        class="py-1 font-bold text-center cursor-pointer hover:bg-base-lvl-3"
-                        :class="[form.direction == type.value ? 'bg-primary hover:bg-primary text-white' : 'text-body bg-base-lvl-2']"
+                        class="py-1 font-bold text-center cursor-pointer"
+                        :class="[form.direction == type.value ? 'bg-primary hover:bg-primary text-white' : 'hover:bg-base-lvl-3 text-body bg-base-lvl-2']"
                     >
                         {{ type.label }}
                     </div>
@@ -147,7 +147,7 @@
         </div>
 
         <div class="px-6 py-4 space-x-3 text-right bg-base">
-            <AtButton @click="close" rounded class="h-10 text-white"> Cancel </AtButton>
+            <AtButton @click="close" rounded class="h-10 text-body"> Cancel </AtButton>
             <AtButton class="text-white bg-primary h-10" @click="submit" rounded> Save </AtButton>
         </div>
     </modal>
@@ -192,6 +192,7 @@
             }
     });
 
+    const emit = defineEmits(['close', 'saved'])
     const state = reactive({
         transactionTypes :[{
             value: 'DEPOSIT',

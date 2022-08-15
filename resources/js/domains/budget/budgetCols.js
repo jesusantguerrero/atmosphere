@@ -80,7 +80,7 @@ export const budgetCols = (state) =>  {
         title: 'Activity',
         key: 'activity',
         render (row, index) {
-            return h('span', formatMoney(row.spent))
+            return h('span', formatMoney(row.activity))
         }
     },
     {

@@ -10,7 +10,7 @@ use App\Models\Transaction;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
-use Insane\Journal\Models\Core\Account;
+use Illuminate\Validation\Rule;
 
 class BudgetController extends InertiaController
 {
@@ -25,7 +25,6 @@ class BudgetController extends InertiaController
         $this->searchable = ['name'];
         $this->validationRules = [
             'name' => 'required|string|max:255|unique:categories',
-            'amount' => 'numeric',
         ];
         $this->sorts = ['index'];
         $this->includes = ['subCategories', 'subCategories.budget', 'subCategories.budgets'];
@@ -40,20 +39,10 @@ class BudgetController extends InertiaController
         $queryParams = $request->query() ?? [];
         $queryParams['limit'] = $queryParams['limit'] ?? 50;
         $queryParams['date'] = $queryParams['date'] ?? date('Y-m-01');
-        $teamId = $request->user()->current_team_id;
         $budget = CategoryGroupCollection::collection($this->getModelQuery($request));
 
         return [
-            'budgets' => $budget,
-            "accounts" => Account::getByDetailTypes($teamId),
-            "categories" => Category::where([
-                'categories.team_id' => $teamId,
-                'categories.resource_type' => 'transactions'
-            ])
-                ->orderBy('index')
-                ->with('subCategories')
-                ->get(),
-
+            'budgets' => $budget
         ];
     }
 
@@ -135,5 +124,13 @@ class BudgetController extends InertiaController
 
 
         return Redirect::back();
+    }
+
+    protected function getValidationRules($postData)
+    {
+        return $this->validationRules = [
+            'name' => 'required|string|max:255|',
+            Rule::unique('categories',)->where(fn ($query) => $query->where('team_id', $postData['team_id'])),
+        ];
     }
 }

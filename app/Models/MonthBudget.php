@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 class MonthBudget extends Model
 {
     use HasFactory;
-    protected $fillable = ['team_id', 'user_id', 'category_id', 'month', 'name', 'budgeted', 'spent' , 'available'];
+    protected $fillable = ['team_id', 'user_id', 'category_id', 'month', 'name', 'budgeted', 'activity' , 'available'];
 
     public static function getMonthAssignments($teamId, $date) {
         $yearMonth = (new DateTime($date))->format('Y-m'). "-01";

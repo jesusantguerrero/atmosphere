@@ -36,7 +36,7 @@ class InertiaController extends BaseController {
         $postData = $request->post();
         $postData['user_id'] = $request->user()->id;
         $postData['team_id'] = $request->user()->current_team_id;
-        $this->validate($request, $this->validationRules);
+        $this->validate($request, $this->getValidationRules($postData));
         $resource = $this->model::create($postData);
         $this->afterSave($postData, $resource);
         if ($this->responseType == 'inertia') {
@@ -97,6 +97,10 @@ class InertiaController extends BaseController {
 
     protected function validateDelete(Request $request, $resource) {
         return true;
+    }
+
+    protected function getValidationRules($postData) {
+        return $this->validationRules;
     }
 
 }

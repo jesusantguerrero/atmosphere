@@ -9,6 +9,8 @@ use Illuminate\Queue\InteractsWithQueue;
 
 class CreateBudgetMovement
 {
+
+    protected $formData;
     /**
      * Create the event listener.
      *

@@ -20,7 +20,7 @@ return new class extends Migration
             $table->foreignId('budget_id');
             $table->string('year_month');
             $table->decimal('funded');
-            $table->decimal('spent');
+            $table->decimal('activity');
             $table->timestamps();
         });
     }

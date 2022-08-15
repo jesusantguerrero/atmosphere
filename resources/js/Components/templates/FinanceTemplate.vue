@@ -16,7 +16,9 @@
             <AccountsLedger :accounts="accounts" @reordered="saveReorder" class="mt-5" />
         </div>
 
-        <TransactionModal v-bind="transferConfig" v-model:show="isTransferModalOpen" />
+        <transaction-modal
+            v-model:show="isTransferModalOpen"
+        />
         <ImportResourceModal v-model:show="isImportModalOpen" />
     </div>
 </template>
@@ -30,6 +32,9 @@
     import IconImport from '@/Components/icons/IconImport.vue';
     import LogerTabButton from '@/Components/atoms/LogerTabButton.vue';
     import ImportResourceModal from '@/Components/ImportResourceModal.vue';
+    import { useTransferModal } from '@/utils/useTransferModal';
+
+    const { openTransferModal, isOpen: isTransferModalOpen } = useTransferModal()
 
     const props = defineProps({
         title: {
@@ -56,28 +61,6 @@
     const isImportModalOpen = ref(false)
 
 
-    // Transaction modal things
-    const isTransferModalOpen = ref(false);
-    const transferConfig = reactive({
-        recurrence: false,
-        automatic: false,
-        transactionData: null
-    })
-    const openTransactionModal = (isRecurrent, automatic) => {
-        isTransferModalOpen.value = true;
-        transferConfig.recurrence = isRecurrent;
-        transferConfig.automatic = automatic;
-    }
-
-    const openTransactionModalForEdit = (transaction) => {
-        transferConfig.transactionData = transaction;
-        isTransferModalOpen.value = true;
-    }
-
-    provide('openTransactionModal', openTransactionModal)
-    provide('openTransactionModalForEdit', openTransactionModalForEdit)
-
-
     function saveReorder(items) {
         const savedItems =  items?.reduce((accounts, account) => {
             accounts[account.id] = account;
@@ -85,9 +68,4 @@
         }, {})
         axios.patch('/api/accounts/', { accounts: savedItems })
     }
-
-    defineExpose({
-        openTransactionModal,
-        openTransactionModalForEdit
-    })
 </script>

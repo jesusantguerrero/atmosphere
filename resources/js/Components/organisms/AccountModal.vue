@@ -1,6 +1,6 @@
 <template>
     <modal :show="show" :max-width="maxWidth" :closeable="closeable" @close="close">
-        <div class="px-4 pt-5 pb-4 bg-base-lvl-1 sm:p-6 sm:pb-4 text-white">
+        <div class="px-4 pt-5 pb-4 bg-base-lvl-3 sm:p-6 sm:pb-4 text-body">
             <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                 <h3 class="text-lg">
                     <slot name="title">Add Account</slot>

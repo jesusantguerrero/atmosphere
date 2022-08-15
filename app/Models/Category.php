@@ -49,7 +49,7 @@ class Category extends CoreCategory
 
         return [
             'budgeted' => $budgeted,
-            'spent' => $monthBalance,
+            'activity' => $monthBalance,
             'available' => $available,
             'oldAvailable' => $oldAvailable
         ];
@@ -100,7 +100,7 @@ class Category extends CoreCategory
         ])
         ->whereRaw("date_format(month, '%Y-%m') < '$yearMonth'")
         ->from('month_budgets')
-        ->sum(DB::raw("budgeted + spent"));
+        ->sum(DB::raw("budgeted + activity"));
     }
 
     //    /**

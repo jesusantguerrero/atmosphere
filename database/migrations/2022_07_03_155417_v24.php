@@ -15,8 +15,8 @@ return new class extends Migration
     {
         Schema::table('month_budgets', function (Blueprint $table) {
             $table->string('currency_code')->default('DOP')->after("name");
-            $table->decimal('spent')->default(0)->after("budgeted");
-            $table->decimal('available')->default(0)->after("spent");
+            $table->decimal('activity')->default(0)->after("budgeted");
+            $table->decimal('available')->default(0)->after("activity");
         });
     }
     /**
@@ -28,7 +28,7 @@ return new class extends Migration
     {
         Schema::table('month_budgets', function (Blueprint $table) {
             $table->dropColumn('currency_code');
-            $table->dropColumn('spent');
+            $table->dropColumn('activity');
             $table->dropColumn('available');
         });
     }

@@ -70,9 +70,7 @@
                       <LogerInput
                         placeholder="Add subcategory"
                         v-model="state.categoryForm.name"
-                        @keydown.enter.ctrl="
-                          saveBudgetCategory(itemGroup.id, toggleAdding)
-                        "
+                        @keydown.enter.ctrl="saveBudgetCategory(itemGroup.id, toggleAdding)"
                       />
                     </div>
                     <Draggable
@@ -190,7 +188,9 @@ const deleteBudget = (budget) => {
 };
 
 const saveBudgetCategory = (parentId, callback) => {
-  createBudgetCategory(state.categoryForm, parentId, callback);
+    if (!categoryForm.value.processing) {
+        createBudgetCategory(state.categoryForm, parentId, callback);
+    }
 };
 
 const { categoryForm, selectedBudget } = toRefs(state);
