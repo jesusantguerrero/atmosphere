@@ -23,12 +23,13 @@ class BudgetMonth extends Model
     }
 
     public static function createBudget($data) {
-       return self::updateOrCreate([
+        $month = self::updateOrCreate([
             "team_id" => $data['team_id'],
             'month' => $data['month'],
             'category_id' => $data['destination_category_id'] ?? $data['category_id'],
         ], [
             'budgeted' => DB::raw("budgeted + {$data['budgeted']}"),
         ]);
+        return $month;
     }
 }

@@ -29,14 +29,15 @@ class Category extends CoreCategory
     }
 
     public function assignBudget(string $month, mixed $postData) {
-       $month = BudgetMonth::updateOrCreate([
+        $amount = (double) $postData['budgeted'];
+        $month = BudgetMonth::updateOrCreate([
             'category_id' => $this->id,
             'team_id' => $this->team_id,
             'user_id' => $this->user_id,
             'month' => $month,
             'name' => $month,
         ], [
-            'budgeted' => (double) $postData['budgeted']
+            'budgeted' => $this->display_id == self::READY_TO_ASSIGN ? DB::raw("budgeted + $amount") : $amount,
         ]);
 
         BudgetAssigned::dispatch($month, $postData);
