@@ -37,7 +37,7 @@ class Category extends CoreCategory
             'month' => $month,
             'name' => $month,
         ], [
-            'budgeted' => $this->display_id == self::READY_TO_ASSIGN ? DB::raw("budgeted + $amount") : $amount,
+            'budgeted' => $this->name === self::READY_TO_ASSIGN ? DB::raw("budgeted + $amount") : $amount,
         ]);
 
         BudgetAssigned::dispatch($month, $postData);

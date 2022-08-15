@@ -107,7 +107,7 @@
     });
 
     const onAssignBudget = () => {
-        if (Number(form.amount) > 0) {
+        if (Number(props.value) !== 0) {
             const month = format(startOfMonth(new Date()), 'yyyy-MM-dd');
             const field = status.value == BALANCE_STATUS.available ? 'source_category_id' : 'destination_category_id'
             form.transform(data => ({

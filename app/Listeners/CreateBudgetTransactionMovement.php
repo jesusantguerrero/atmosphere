@@ -34,14 +34,14 @@ class CreateBudgetTransactionMovement
         $amount = $transaction->total * $type;
         $month = substr($transaction->date, 0, 7) . "-01";
         if ($transaction->transaction_category_id) {
-            BudgetMonth::upsert([
+            BudgetMonth::updateOrCreate([
                 'category_id' => $transaction->transaction_category_id,
                 'team_id' => $transaction->team_id,
-                'user_id' => $transaction->user_id,
                 'name' => $month,
                 'month' => $month,
-                'activity' => DB::raw("activity + $amount"),
-            ], ['category_id', 'team_id', 'user_id', 'name'], [ 'activity']);
+            ], [
+                'activity' => DB::raw("activity + $amount")
+            ]);
         }
 
     }
