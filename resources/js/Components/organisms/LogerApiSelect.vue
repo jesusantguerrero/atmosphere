@@ -78,9 +78,10 @@ const resultParser = (apiOptions, query) => {
 
     return [...custom, ...originalMap]
 }
+
 const handleSearch = debounce((query) => {
     if (!query.length) {
-        payees.value = []
+        options.value = []
         return;
     }
     isLoading.value = true

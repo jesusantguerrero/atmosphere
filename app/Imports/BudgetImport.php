@@ -3,7 +3,7 @@
 namespace App\Imports;
 
 use App\Helpers\ImportHelper;
-use App\Models\MonthBudget;
+use App\Models\BudgetMonth;
 use Carbon\Carbon;
 use Insane\Journal\Models\Core\Category;
 
@@ -19,7 +19,7 @@ class BudgetImport extends ImportHelper
     */
     public function model(array $row)
     {
-        return MonthBudget::createBudget($row);
+        return BudgetMonth::createBudget($row);
     }
 
     public function getYNABMoney($currencyValue)  {
@@ -57,7 +57,7 @@ class BudgetImport extends ImportHelper
         $row['name'] = $row['month'];
         $row['currency_code'] = $budgeted['currency_code'];
         $row['budgeted'] = $budgeted['amount'];
-        $row['spent'] = $activity['amount'];
+        $row['activity'] = $activity['amount'];
         $row['available'] = $available['amount'];
         $row['metaData'] = [
             "resource_id" => 'YNAB',

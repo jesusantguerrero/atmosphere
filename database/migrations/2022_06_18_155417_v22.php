@@ -22,7 +22,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('month_budgets', function (Blueprint $table) {
+        Schema::create('budget_months', function (Blueprint $table) {
             $table->id();
             $table->foreignId('category_id');
             $table->string('month');
@@ -40,6 +40,6 @@ return new class extends Migration
     {
         //
         Schema::dropIfExists('goal_types');
-        Schema::dropIfExists('month_budgets');
+        Schema::dropIfExists('budget_months');
     }
 };

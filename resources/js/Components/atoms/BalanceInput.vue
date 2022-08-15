@@ -109,13 +109,14 @@ import { format, startOfMonth } from "date-fns";
     });
 
     const onAssignBudget = () => {
-        if (Number(props.category.budgeted) !== Number(form.amount)) {
+        if (BALANCE_STATUS.available || Number(props.category.budgeted) !== Number(form.amount)) {
             const month = format(startOfMonth(new Date()), 'yyyy-MM-dd');
             const field = status.value == BALANCE_STATUS.available ? 'source_category_id' : 'destination_category_id'
             form.transform(data => ({
                 ...data,
-                budgeted: props.category.budgeted + data.amount,
-                [field]: props.category.id
+                budgeted: BALANCE_STATUS.available ? data.amount : props.category.budgeted + data.amount,
+                [field]: props.category.id,
+                type: 'movement'
             })).post(`/budgets/${props.category.id}/months/${month}`, {
                 preserveState: true,
                 preserveScroll: true

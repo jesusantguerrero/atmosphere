@@ -2,8 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use Insane\Journal\Models\Core\Account as CoreAccount;
 use Insane\Journal\Models\Core\AccountDetailType;
 use Tightenco\Ziggy\Ziggy;
 
@@ -54,6 +56,14 @@ class HandleInertiaRequests extends Middleware
             'unreadNotifications' => function() use ($user) {
                 return $user ? $user->unreadNotifications->count() : 0;
             },
+            "accounts" => $team ? CoreAccount::getByDetailTypes($team->id) : [],
+            "categories" => $team ? Category::where([
+                'categories.team_id' => $team->id,
+                'categories.resource_type' => 'transactions'
+            ])
+                ->orderBy('index')
+                ->with('subCategories')
+                ->get() : [],
         ]);
     }
 }

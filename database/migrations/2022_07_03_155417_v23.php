@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('month_budgets', function (Blueprint $table) {
+        Schema::table('budget_months', function (Blueprint $table) {
             $table->foreignId('team_id')->after('id');
             $table->foreignId('user_id')->after('team_id');
         });
@@ -25,7 +25,7 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('month_budgets', function (Blueprint $table) {
+        Schema::table('budget_months', function (Blueprint $table) {
             $table->dropColumn('team_id');
             $table->dropColumn('user_id');
         });

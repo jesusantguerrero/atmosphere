@@ -5,11 +5,12 @@ namespace App\Models;
 use DateTime;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
-class MonthBudget extends Model
+class BudgetMonth extends Model
 {
     use HasFactory;
-    protected $fillable = ['team_id', 'user_id', 'category_id', 'month', 'name', 'budgeted', 'spent' , 'available'];
+    protected $fillable = ['team_id', 'user_id', 'category_id', 'month', 'name', 'budgeted', 'activity' , 'available'];
 
     public static function getMonthAssignments($teamId, $date) {
         $yearMonth = (new DateTime($date))->format('Y-m'). "-01";
@@ -22,18 +23,13 @@ class MonthBudget extends Model
     }
 
     public static function createBudget($data) {
-        $monthBudget = self::where([
+        $month = self::updateOrCreate([
             "team_id" => $data['team_id'],
             'month' => $data['month'],
-            'currency_code' => $data['currency_code'],
-            'category_id' => $data['category_id'],
-        ])->get();
-        if ($monthBudget->count()) {
-            $monthBudget->first()->update($data);
-            $monthBudget = $monthBudget->first();
-        } else {
-            $monthBudget = self::create($data);
-        }
-        return $monthBudget;
+            'category_id' => $data['destination_category_id'] ?? $data['category_id'],
+        ], [
+            'budgeted' => DB::raw("budgeted + {$data['budgeted']}"),
+        ]);
+        return $month;
     }
 }

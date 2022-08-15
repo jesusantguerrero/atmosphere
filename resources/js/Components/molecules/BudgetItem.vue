@@ -7,9 +7,12 @@
         <div class="mr-4 cursor-grab">
             <IconDrag class="handle" />
         </div>
-        <div>
+        <div ref="inputContainer">
             <h4> {{ item.name }} </h4>
-            <LogerInput v-model="budgeted" @blur="onAssignBudget" />
+            <span v-if="!isEditing" @click="toggleEditing" class="border border-transparent px-4 rounded-md hover:border-slate-400 cursor-pointer py-2.5 inline-block transition hover:text-primary">
+                {{ budgeted }}
+            </span>
+            <LogerInput v-model="budgeted" @blur="onAssignBudget" v-else ref="input" />
         </div>
     </div>
     <div class="flex items-center space-x-2 text-right flex-nowrap min-w-fit">
@@ -23,7 +26,7 @@
 
 <script setup>
 import { format, startOfMonth } from 'date-fns';
-import { ref } from 'vue';
+import { ref, nextTick, onMounted } from 'vue';
 import { Inertia } from '@inertiajs/inertia';
 import { NDropdown } from 'naive-ui';
 
@@ -32,6 +35,7 @@ import BalanceInput from "@/Components/atoms/BalanceInput.vue";
 import LogerTabButton from "@/Components/atoms/LogerTabButton.vue";
 import LogerInput from '../atoms/LogerInput.vue';
 import formatMoney from "@/utils/formatMoney";
+import autoAnimate from '@formkit/auto-animate';
 
 const props = defineProps({
     item: {
@@ -52,12 +56,13 @@ const onAssignBudget = () => {
         const month = format(startOfMonth(new Date()), 'yyyy-MM-dd');
         Inertia.post(`/budgets/${props.item.id}/months/${month}`, {
             id: props.item.id,
-            budgeted: budgeted.value
+            budgeted: Number(budgeted.value)
         }, {
             preserveState: true,
             preserveScroll: true
         });
     }
+    toggleEditing()
 }
 
 const options = [{
@@ -91,4 +96,20 @@ const handleOptions = (option) => {
             break;
     }
 }
+
+const isEditing = ref(false);
+const input = ref()
+const toggleEditing = () => {
+    isEditing.value = !isEditing.value
+    if (isEditing.value) {
+        nextTick(() => {
+            input.value.focus()
+        })
+    }
+}
+
+const inputContainer = ref()
+onMounted(() => {
+    autoAnimate(inputContainer.value)
+})
 </script>

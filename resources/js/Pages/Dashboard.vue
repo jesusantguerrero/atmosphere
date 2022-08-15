@@ -48,13 +48,13 @@
             <div class="md:w-3/12">
                 <div class="space-y-5">
                     <SectionTitle type="secondary"> Menu for today</SectionTitle>
-                    <div class="px-4 py-3 rounded-lg shadow-md cursor-pointer min-h-min bg-base-lvl-3">
-                        <template v-if="meals.length">
-                            <div v-for="plan in meals" :key="plan.id">
-                                <h4 class="font-bold text-blue-400">
-                                    {{ plan.dateable.name }}
+                    <div class="px-4 py-3 space-y-4 rounded-lg shadow-md cursor-pointer min-h-min bg-base-lvl-3">
+                        <template v-if="meals.data.length">
+                            <div v-for="plannedMeal in meals.data" :key="plannedMeal.id">
+                                <h4 class="font-bold text-body-1">
+                                    {{ plannedMeal.name }}
                                 </h4>
-                                <small class="text-gray-400">Lunch</small>
+                                <small class="text-primary">{{ plannedMeal.mealTypeName }}</small>
                             </div>
                         </template>
                         <div v-else class="py-4 text-center">

@@ -2,19 +2,18 @@
 
 namespace App\Http\Controllers;
 
-
+use App\Http\Resources\PlannedMealResource;
 use App\Libraries\GoogleService;
 use App\Models\Category;
 use App\Models\Integrations\AutomationRecipe;
 use App\Models\Integrations\AutomationService;
 use App\Models\Integrations\AutomationTask;
 use App\Models\Integrations\Integration;
-use App\Models\MonthBudget;
+use App\Models\BudgetMonth;
 use App\Models\Planner;
 use App\Models\Transaction;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Insane\Journal\Models\Core\Account;
 use Laravel\Jetstream\Jetstream;
@@ -26,25 +25,24 @@ class DashboardController {
         $teamId = $request->user()->current_team_id;
 
 
-        $budget = MonthBudget::getMonthAssignments($teamId, $startDate);
+        $budget = BudgetMonth::getMonthAssignments($teamId, $startDate);
         $transactionsTotal = Transaction::getExpensesTotal($teamId, $startDate, $endDate);
-        $drafts = Transaction::getDrafts($teamId);
         $categories = Category::getBudgetSubcategories($teamId);
+        $plannedMeals = Planner::where([
+            'team_id' => $teamId,
+            'date' => date('Y-m-d')
+        ])->with(['dateable', 'dateable.mealType'])->get();
+
+        // dd(PlannedMealResource::collection($plannedMeals));
 
         return Inertia::render('Dashboard', [
             "sectionTitle" => "Dashboard",
             "strings" => __('dashboard'),
-            "meals" => Planner::where([
-                'team_id' => $teamId,
-                'date' => date('Y-m-d')
-            ])->with('dateable')->get(),
+            "meals" => PlannedMealResource::collection($plannedMeals),
             "budgetTotal" => $budget->sum('budgeted'),
             "categories" => $categories,
             "accounts" => $teamId ? Account::getByDetailTypes($teamId) : [],
             "transactionTotal" => $transactionsTotal,
-            "drafts" => $drafts->map(function ($transaction) {
-                return Transaction::parser($transaction);
-            }),
         ]);
     }
 

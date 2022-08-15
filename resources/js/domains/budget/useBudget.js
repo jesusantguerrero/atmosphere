@@ -10,9 +10,9 @@ export const useBudget = (budgets) => {
         return cloned.data.map(item => {
             const totals = Object.values(item.subCategories).reduce((acc, category) => {
                 acc.budgeted = ExactMath.add(acc.budgeted, category.budgeted || 0)
-                acc.spent =  ExactMath.add(acc.spent, category.spent || 0)
+                acc.activity =  ExactMath.add(acc.activity, category.activity || 0)
                 acc.available = ExactMath.add(acc.available, category.available || 0)
-                if (Number(category.available) < 0) {
+                if (Number(category.available) < 0 && item.name !== 'Inflow') {
                     overspentCategories.value.push(category);
                     category.hasOverspent = true;
                     acc.hasOverspent = true;
@@ -20,11 +20,11 @@ export const useBudget = (budgets) => {
                 return acc;
             }, {
                 budgeted: 0,
-                spent: 0,
+                activity: 0,
                 available: 0
             });
             item.budgeted = totals.budgeted;
-            item.spent = totals.spent;
+            item.activity = totals.activity;
             item.available = totals.available;
             item.hasOverspent = totals.hasOverspent;
             return item
@@ -70,7 +70,7 @@ export const useBudget = (budgets) => {
         const budgeted = outflow.value.reduce((acc, category) => {
             return ExactMath.add(category.budgeted, acc || 0)
         }, 0)
-        const balance = ExactMath.sub(inflow.value?.spent | 0, budgeted || 0)
+        const balance = ExactMath.sub(inflow.value?.activity | 0, budgeted || 0)
         const category = inflow.value.subCategories[0]
         return {
             balance,
