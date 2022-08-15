@@ -9,7 +9,7 @@ use App\Models\Integrations\AutomationRecipe;
 use App\Models\Integrations\AutomationService;
 use App\Models\Integrations\AutomationTask;
 use App\Models\Integrations\Integration;
-use App\Models\MonthBudget;
+use App\Models\BudgetMonth;
 use App\Models\Planner;
 use App\Models\Transaction;
 use Carbon\Carbon;
@@ -25,7 +25,7 @@ class DashboardController {
         $teamId = $request->user()->current_team_id;
 
 
-        $budget = MonthBudget::getMonthAssignments($teamId, $startDate);
+        $budget = BudgetMonth::getMonthAssignments($teamId, $startDate);
         $transactionsTotal = Transaction::getExpensesTotal($teamId, $startDate, $endDate);
         $categories = Category::getBudgetSubcategories($teamId);
         $plannedMeals = Planner::where([

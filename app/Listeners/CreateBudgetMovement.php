@@ -16,14 +16,9 @@ class CreateBudgetMovement
      *
      * @return void
      */
-    public function __construct(BudgetAssigned $event)
+    public function __construct()
     {
-        $this->formData = [
-            'team_id' => $event->monthBudget->team_id,
-            'user_id' => $event->monthBudget->user_id,
-            'source_category_id' => $event->formData['source_category_id'] ?? "",
-            'destination_category_id' => $event->monthBudget->category_id
-        ];
+
     }
 
     /**
@@ -32,8 +27,8 @@ class CreateBudgetMovement
      * @param  object  $event
      * @return void
      */
-    public function handle()
+    public function handle(BudgetAssigned $event)
     {
-        BudgetMovement::registerMovement($this->formData);
+        // BudgetMovement::registerMovement($event->monthBudget, $this->formData);
     }
 }

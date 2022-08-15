@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Helpers\BudgetHelper;
 use App\Imports\BudgetImport;
 use App\Imports\TransactionsImport;
-use App\Models\MonthBudget;
+use App\Models\BudgetMonth;
 use App\Models\Transaction;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -36,7 +36,7 @@ class FinanceController extends InertiaController {
         $lastMonthEndDate = Carbon::createFromFormat(self::DateFormat, $endDate)->subMonth()->endOfMonth()->format(self::DateFormat);
         $teamId = $request->user()->current_team_id;
 
-        $budgetTotal = MonthBudget::getMonthAssignmentTotal($teamId, $startDate);
+        $budgetTotal = BudgetMonth::getMonthAssignmentTotal($teamId, $startDate);
 
         $planned = BudgetHelper::getPlannedTransactions($teamId);
 

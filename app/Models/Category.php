@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Events\BudgetAssigned;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Category as CoreCategory;
 
@@ -24,11 +25,11 @@ class Category extends CoreCategory
     }
 
     public function budgets() {
-        return $this->hasMany(MonthBudget::class)->orderBy('month', 'desc');
+        return $this->hasMany(BudgetMonth::class)->orderBy('month', 'desc');
     }
 
     public function assignBudget(string $month, mixed $postData) {
-        return MonthBudget::updateOrCreate([
+       $month = BudgetMonth::updateOrCreate([
             'category_id' => $this->id,
             'team_id' => $this->team_id,
             'user_id' => $this->user_id,
@@ -37,6 +38,9 @@ class Category extends CoreCategory
         ], [
             'budgeted' => (double) $postData['budgeted']
         ]);
+
+        BudgetAssigned::dispatch($month, $postData);
+        return $month;
     }
 
     public function getBudgetInfo(string $month) {
@@ -99,7 +103,7 @@ class Category extends CoreCategory
            'category_id' => $this->id,
         ])
         ->whereRaw("date_format(month, '%Y-%m') < '$yearMonth'")
-        ->from('month_budgets')
+        ->from('budget_months')
         ->sum(DB::raw("budgeted + activity"));
     }
 
@@ -112,13 +116,13 @@ class Category extends CoreCategory
     // {
     //    return $this->budgets()
     //    ->where('transactions.category_id', '=', 24)
-    //     ->whereRaw(DB::raw("date_format(month_budgets.month, '%Y%m') < '$yearMonth'"))
+    //     ->whereRaw(DB::raw("date_format(budget_months.month, '%Y%m') < '$yearMonth'"))
     //     ->selectRaw(DB::raw("sum(COALESCE(budgeted, 0)) + sum(CASE
     //      WHEN transactions.direction = 'WITHDRAW'
     //      THEN total * -1
     //      ELSE total * 1 END) as budgeted")
     //     )
-    //     ->join('transactions', 'transactions.transaction_category_id', '=', 'month_budgets.category_id')
+    //     ->join('transactions', 'transactions.transaction_category_id', '=', 'budget_months.category_id')
     //     ->dump();
     // }
 }

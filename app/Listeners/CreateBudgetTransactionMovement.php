@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use App\Models\MonthBudget;
+use App\Models\BudgetMonth;
 use App\Models\Transaction;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
@@ -34,7 +34,7 @@ class CreateBudgetTransactionMovement
         $amount = $transaction->total * $type;
         $month = substr($transaction->date, 0, 7) . "-01";
         if ($transaction->transaction_category_id) {
-            MonthBudget::upsert([
+            BudgetMonth::upsert([
                 'category_id' => $transaction->transaction_category_id,
                 'team_id' => $transaction->team_id,
                 'user_id' => $transaction->user_id,

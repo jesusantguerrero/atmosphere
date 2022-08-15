@@ -7,6 +7,10 @@
     "repositories": [
         {
             "type": "path",
+            "url": "../packages/journal"
+        },
+        {
+            "type": "path",
             "url": "./atmosphere"
         }
     ],

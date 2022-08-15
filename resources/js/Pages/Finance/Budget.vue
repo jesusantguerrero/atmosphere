@@ -83,7 +83,7 @@
                       <BudgetItem
                         class="bg-base-lvl-2 border-base-lvl-3"
                         v-for="item in itemGroup.subCategories"
-                        :key="item.id"
+                        :key="`${item.id}-${item.budgeted}`"
                         :item="item"
                       />
                     </Draggable>

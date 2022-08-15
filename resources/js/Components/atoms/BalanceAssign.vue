@@ -39,6 +39,7 @@
 
 <script setup>
     import { useForm } from "@inertiajs/inertia-vue3";
+    import { Inertia } from "@inertiajs/inertia";
     import { computed, inject, ref } from "vue"
     import { NPopover, NSelect } from "naive-ui";
     import { AtField, AtButton } from "atmosphere-ui";
@@ -111,11 +112,15 @@
             const field = status.value == BALANCE_STATUS.available ? 'source_category_id' : 'destination_category_id'
             form.transform(data => ({
                 ...data,
-                budgeted: ExactMath.add(Number( props.category.budgeted),  Number(data.amount)),
-                [field]: props.category.id
+                budgeted: Math.abs(props.value),
+                [field]: props.category.id,
+                'type': 'movement'
             })).post(`/budgets/${props.category.id}/months/${month}`, {
-                preserveState: true,
-                preserveScroll: true
+                onSuccess() {
+                    Inertia.reload({
+                        preserveScroll: true,
+                    })
+                }
             });
         }
     }
