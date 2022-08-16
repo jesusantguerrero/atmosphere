@@ -1,6 +1,7 @@
 <template>
     <AppLayout>
         <div class="px-5 mx-auto mt-5 space-y-10 md:space-y-0 md:space-x-10 md:flex max-w-screen-2xl sm:px-6 lg:px-8">
+
             <div class="md:w-9/12">
                 <SectionTitle type="secondary"> Dashboard</SectionTitle>
                 <BudgetTracker
@@ -45,7 +46,8 @@
                     </div>
                 </div>
             </div>
-            <div class="md:w-3/12">
+            <div class="md:w-3/12 space-y-4">
+                <OnboardingSteps />
                 <div class="space-y-5">
                     <SectionTitle type="secondary"> Menu for today</SectionTitle>
                     <div class="px-4 py-3 space-y-4 rounded-lg shadow-md cursor-pointer min-h-min bg-base-lvl-3">
@@ -79,6 +81,7 @@
     import RandomMealCard from "@/Components/RandomMealCard.vue";
     import { useSelect } from '@/utils/useSelects';
     import { transactionDBToTransaction } from "@/domains/transactions";
+import OnboardingSteps from "@/Components/OnboardingSteps.vue";
 
     const props = defineProps({
             meals: {
@@ -127,7 +130,7 @@
                     return []
                 }
             }
-        });
+    });
 
     const selected = ref(null);
 
@@ -162,6 +165,7 @@
             Inertia.reload();
         })
     }
+
     const approveTransaction = (transaction) => {
         Inertia.post(`/transactions/${transaction.id}/approve`).then(() => {
             Inertia.reload();
