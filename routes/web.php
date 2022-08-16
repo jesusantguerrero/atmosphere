@@ -7,7 +7,8 @@ use App\Http\Controllers\Api\IngredientApiController;
 use App\Http\Controllers\Api\LabelApiController;
 use App\Http\Controllers\Api\PayeeApiController;
 use App\Http\Controllers\Api\RecipeApiController;
-use App\Http\Controllers\BudgetController;
+use App\Http\Controllers\BudgetCategoryController;
+use App\Http\Controllers\BudgetMonthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\GoalController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\IngredientController;
 use App\Http\Controllers\Jetstream\TeamInvitationController;
 use App\Http\Controllers\MealController;
 use App\Http\Controllers\PlannerController;
+use App\Http\Controllers\TransactionDraftController;
 use Freesgen\Atmosphere\Http\Controllers\SettingsController;
 use Freesgen\Atmosphere\Http\OnboardingController;
 use Illuminate\Support\Facades\Route;
@@ -41,10 +43,25 @@ Route::get('/', fn () => Inertia::render('Landing/Index'));
 Route::resource('onboarding', OnboardingController::class)->middleware(['auth:sanctum', 'atmosphere.unteamed', 'verified']);
 
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
+    /**
+     *  Jetstream & Settings Section
+     */
+
     // Jetstream teams invitations override
     Route::put('/team-invitations/{invitation}', [TeamInvitationController::class, 'resend'])->name('team-invitations.resend');
     Route::patch('/v2/team-invitations/{invitation}', [TeamInvitationController::class, 'accept'])->name('team-invitations.accept-internal');
     Route::delete('/v2/team-invitations/{invitation}', [TeamInvitationController::class, 'reject'])->name('team-invitations.reject');
+
+    // Settings routes
+    Route::controller(SettingsController::class)->group(function () {
+        Route::resource('/settings', SettingsController::class);
+        Route::get('/settings/tab/{tabName}', 'index');
+        Route::get('/settings/{name}',  'section');
+    });
+
+    /**************************************************************************************
+     *                                  Dashboard Section
+    ***************************************************************************************/
 
     Route::controller(DashboardController::class)->group(function () {
         Route::get('/dashboard', 'index')->name('dashboard');
@@ -52,7 +69,11 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
         Route::post('/services/google', 'google')->name('services.google');
     });
 
-    //  Meal Planner
+    /**************************************************************************************
+     *                                  Meal Section
+    ***************************************************************************************/
+
+    //  Meal related routes
     Route::controller(MealController::class)->group(function () {
         Route::resource('/meals', MealController::class);
         Route::post('/meals/add-plan','addPlan')->name('meals.addPlan');
@@ -65,29 +86,26 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
 
     Route::resource('/meal-planner', PlannerController::class);
 
+   /**************************************************************************************
+     *                               Finance Section
+    ***************************************************************************************/
+
+    // Budgeting & Goals routes
+    Route::resource('/budgets', BudgetCategoryController::class);
+    Route::post('/budgets/{categoryId}/months/{month}', [BudgetMonthController::class, 'assignMonthBudget'])
+    ->name("budget.assignment");
     Route::controller(GoalController::class)->group(function () {
         Route::resource('/goals', GoalController::class);
     });
 
-    Route::controller(BudgetController::class)->group(function () {
-        Route::resource('/budgets', BudgetController::class);
-        Route::post('/budgets/planed-budged', 'addPlannedTransaction')->name("budget.planned-transaction");
-        Route::put('/transactions/{id}/mark-as-paid', 'markAsPaid')->name("transactions.mark-as-paid");
 
-        // Category budgets
-        Route::post('/categories/{categoryId}/budgets', 'addCategoryBudget')->name("category.budget.add");
-        Route::put('/categories/{categoryId}/budgets/{id}', 'updateCategoryBudget')->name("category.budget.update");
-
-        // Budget assignments
-        Route::post('/budgets/{categoryId}/months/{month}', 'assignMonthBudget')->name("budget.assignment");
+    // Account && Transactions
+    Route::controller(TransactionDraftController::class)->group(function () {
+        Route::patch('/planned-transactions/{id}/mark-as-paid', 'markAsPaid')->name("transactions.mark-as-paid");
+        Route::post('/planned-transactions', 'addPlannedTransaction')->name("budget.planned-transaction");
     });
 
-    Route::controller(SettingsController::class)->group(function () {
-        Route::resource('/settings', SettingsController::class);
-        Route::get('/settings/tab/{tabName}', 'index');
-        Route::get('/settings/{name}',  'section');
-    });
-
+    // Finance dashboard related routes
     Route::controller(FinanceController::class)->group(function () {
         Route::get('/finance', 'index')->name('finance');
         Route::get('/finance/transactions', 'transactions')->name('finance.transactions');
@@ -97,24 +115,32 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     });
 });
 
+
+/**************************************************************************************
+ *                                  API Section
+ ***************************************************************************************/
+
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('/api')->group(function () {
-    Route::resource('categories', CategoryApiController::class);
-    Route::patch('/categories', [CategoryApiController::class,  'bulkUpdate']);
-
-
+    //  automation routes
     Route::controller(AutomationController::class)->group(function () {
         Route::apiResource('automation', AutomationController::class);
         Route::post('/automation/{id}/run', 'run');
         Route::post('/automation/run-all', 'runAll');
     });
 
+    //  accounts and transactions
     Route::resource('payees', PayeeApiController::class);
     Route::patch('/accounts', [AccountApiController::class,  'bulkUpdate']);
+    Route::resource('categories', CategoryApiController::class);
+    Route::patch('/categories', [CategoryApiController::class,  'bulkUpdate']);
 
+    //  recipes & ingredients
     Route::resource('recipes', RecipeApiController::class);
     Route::controller(IngredientApiController::class)->group(function() {
         Route::resource('ingredients', IngredientApiController::class);
         Route::post('/ingredients/{id}/labels', 'addLabel')->name('ingredients.label.add');
     });
+
+    // Labels
     Route::resource('labels', LabelApiController::class);
 });

@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\Rule;
 
-class BudgetController extends InertiaController
+class BudgetCategoryController extends InertiaController
 {
     public function __construct(Category $category)
     {
