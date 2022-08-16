@@ -7,6 +7,7 @@ use App\Listeners\AcceptInvitation;
 use App\Listeners\CreateBudgetMovement;
 use App\Listeners\CreateBudgetCategory;
 use App\Listeners\CreateBudgetTransactionMovement;
+use App\Listeners\CreateStartingBalance;
 use App\Listeners\CreateTeamSettings;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
@@ -35,7 +36,8 @@ class EventServiceProvider extends ServiceProvider
             CreateBudgetMovement::class
         ],
         AccountCreated::class => [
-            CreateBudgetCategory::class
+            CreateBudgetCategory::class,
+            CreateStartingBalance::class
         ],
         TransactionCreated::class => [
             CreateBudgetTransactionMovement::class

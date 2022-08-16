@@ -17,7 +17,7 @@
               controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
               next-mode="month"
             />
-            <AtButton class="text-white rounded-md w-64 bg-primary"
+            <AtButton class="text-white rounded-md w-72 bg-primary"
               >Import Transactions</AtButton
             >
           </div>
