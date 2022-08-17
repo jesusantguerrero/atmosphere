@@ -27,7 +27,7 @@ import SiteFooter from "./SiteFooter.vue";
 import { Link } from "@inertiajs/inertia-vue3"
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .bg-secondary {
   background: linear-gradient(to left bottom, #3a4a73 0, #1b243f);
   color: white;
