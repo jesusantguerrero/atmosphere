@@ -28,17 +28,19 @@
 
       <!-- Budget to assign -->
       <BalanceAssign
+        class="rounded-t-2xl"
+        :class="{'rounded-b-2xl': !overspentCategories.length}"
         :value="readyToAssign.balance"
         :formatter="formatMoney"
         :category="readyToAssign"
       />
 
       <!-- Overspent notice -->
-      <div v-if="overspentCategories.length" class="bg-info/80 items-center justify-between text-white px-2 py-2 flex">
+      <div v-if="overspentCategories.length" class="bg-primary/40 items-center rounded-b-2xl justify-between text-white px-2 py-2 flex">
         <span>
             {{ overspentCategories.length }} overspent categories
         </span>
-        <AtButton class="text-info/80 bg-white rounded-md font-bold" @click="toggleOverspent">View categories</AtButton>
+        <AtButton class="text-primary/80 bg-white rounded-md font-bold" @click="toggleOverspent">View categories</AtButton>
       </div>
 
 

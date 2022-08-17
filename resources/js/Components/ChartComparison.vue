@@ -11,7 +11,10 @@
             class="comparison-header__item justify-center w-full items-center flex-col flex  previous-period cursor-pointer hover:text-body/80"
             >
             <h6 class="period-title">{{ header.label }}</h6>
-            <span class="period-value"> {{ formatMoney(header.value) }}</span>
+            <span class="period-value">
+                <NumberHider />
+                {{ formatMoney(header.value) }}
+            </span>
           </div>
         </div>
         <LogerChart
@@ -31,7 +34,9 @@
 import formatMoney from "@/utils/formatMoney";
 import { format, parseISO } from "date-fns";
 import { computed, reactive, ref } from "vue";
+
 import LogerChart from "./organisms/LogerChart.vue";
+import NumberHider from "./molecules/NumberHider.vue";
 
 const props = defineProps({
     title: {
@@ -74,7 +79,7 @@ const state = reactive({
         id: dateString
     })),
     options: {
-        colors: ["#fa6b88", "#80CDFE"],
+        colors: ["#8a00d4", "#80CDFE"],
     },
     series: currentSeries
 });
@@ -109,7 +114,7 @@ const state = reactive({
         height: 10px;
         width: 10px;
         border-radius: 50%;
-        background: #fa6b88;
+        background: #8a00d4;
       }
     }
   }

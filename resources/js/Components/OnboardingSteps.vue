@@ -7,7 +7,7 @@
     <div v-if="!isCollapsed" class="space-y-2">
         <div v-for="step in steps" class="border cursor-pointer group flex flex-nowrap space-x-4 bg-base-lvl-3 rounded-md p-4 shadow-md">
             <div class="h-10 w-10 border-slate-300 transition-all group-hover:border-primary group-hover:text-primary text-slate-300 justify-center rounded-md border flex items-center">
-                <i class="fa fa-plus"></i>
+                <i :class="step.icon" />
             </div>
             <div class="ml-4 w-full">
                 <h1 class="text-body-1 font-bold"> {{ step.label }}</h1>
@@ -28,7 +28,7 @@ import { useCollapse } from '@/composables/useCollapse';
 
 const steps = [
     {
-        icon: '',
+        icon: 'fas fa-envelope-open-text',
         name: 'confirmEmail',
         label: 'Step 1: confirm your email',
         description: 'Validate your email address',
@@ -36,6 +36,7 @@ const steps = [
             label: 'Resend confirmation'
         }
     }, {
+        icon: 'fas fa-credit-card',
         name: 'addAccounts',
         label: 'Step 2: Add accounts',
         description: 'Create your accounts',
@@ -43,6 +44,7 @@ const steps = [
             label: 'Go to finance/accounts'
         }
     }, {
+        icon: 'fas fa-tags',
         name: 'AddCategories',
         label: 'Step 3: Add budget categories',
         description: 'Structure your budgets with category groups and categories',
@@ -50,6 +52,7 @@ const steps = [
             label: 'Go to finance/budget'
         }
     }, {
+        icon: 'fas fa-calendar-alt',
         name: 'AddMealPlan',
         label: 'Step 4: Add meal plan',
         description: 'Organize your meals',
