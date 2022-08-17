@@ -92,8 +92,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
 
     // Budgeting & Goals routes
     Route::resource('/budgets', BudgetCategoryController::class);
-    Route::post('/budgets/{categoryId}/months/{month}', [BudgetMonthController::class, 'assignMonthBudget'])
-    ->name("budget.assignment");
+    Route::post('/budgets/{categoryId}/months/{month}', [BudgetMonthController::class, 'assign'])->name("budget.assignment");
     Route::controller(GoalController::class)->group(function () {
         Route::resource('/goals', GoalController::class);
     });
