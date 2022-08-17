@@ -17,15 +17,15 @@ class TransactionDraftController extends InertiaController
     {
         $this->model = $transaction;
         $this->templates = [
-            "index" => 'Finance/TransactionDraft',
-            "create" => 'Finance/TransactionDraftForm',
-            "edit" => 'Finance/TransactionDraftForm'
+            "index" => 'Finance/Drafts',
+            "create" => 'Finance/DraftForm',
+            "edit" => 'Finance/DraftForm'
         ];
         $this->searchable = ['name'];
         $this->validationRules = [
             'name' => 'required|string|max:255|unique:categories',
         ];
-        $this->sorts = ['index'];
+        $this->sorts = ['date'];
         $this->includes = [];
         $this->filters = [
             'status' => Transaction::STATUS_DRAFT

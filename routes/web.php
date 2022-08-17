@@ -103,6 +103,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     Route::controller(TransactionDraftController::class)->group(function () {
         Route::patch('/planned-transactions/{id}/mark-as-paid', 'markAsPaid')->name("transactions.mark-as-paid");
         Route::post('/planned-transactions', 'addPlannedTransaction')->name("budget.planned-transaction");
+        Route::get('/finance/transaction-drafts', 'index')->name("budget.planned-transaction");
     });
 
     // Finance dashboard related routes

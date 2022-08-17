@@ -15,7 +15,7 @@ use App\Models\Transaction;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Insane\Journal\Models\Core\Account;
+use Insane\Journal\Helpers\ReportHelper;
 use Laravel\Jetstream\Jetstream;
 
 class DashboardController {
@@ -23,7 +23,7 @@ class DashboardController {
         $startDate = $request->query('startDate', Carbon::now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->query('endDate', Carbon::now()->endOfMonth()->format('Y-m-d'));
         $teamId = $request->user()->current_team_id;
-
+        $reportHelper = new ReportHelper();
 
         $budget = BudgetMonth::getMonthAssignments($teamId, $startDate);
         $transactionsTotal = Transaction::getExpensesTotal($teamId, $startDate, $endDate);
@@ -40,9 +40,8 @@ class DashboardController {
             "strings" => __('dashboard'),
             "meals" => PlannedMealResource::collection($plannedMeals),
             "budgetTotal" => $budget->sum('budgeted'),
-            "categories" => $categories,
-            "accounts" => $teamId ? Account::getByDetailTypes($teamId) : [],
             "transactionTotal" => $transactionsTotal,
+            "revenue" => $reportHelper->revenueReport($teamId, 'expenses'),
         ]);
     }
 
