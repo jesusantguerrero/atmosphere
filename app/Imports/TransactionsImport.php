@@ -53,7 +53,7 @@ class TransactionsImport extends ImportHelper
             'currency_code' => $money['currency_code'],
         ]);
         $isTransfer = str_contains($row['payee'], 'Transfer :');
-        if (!$isTransfer) {
+        if (!$isTransfer && $row['category_group']) {
             $categoryGroupId = Category::findOrCreateByName($this->session, $row['category_group']);
             $transactionCategoryId = Category::findOrCreateByName($this->session, $row['category'], $categoryGroupId);
             $payee = Payee::findOrCreateByName($this->session, $row['payee'] ?? 'General Provider');
@@ -61,7 +61,7 @@ class TransactionsImport extends ImportHelper
             $categoryId = $payee->account_id;
         } else {
             $transfers = explode('Transfer :', $row['payee']);
-            $transfer = trim($transfers[1]);
+            $transfer = trim($transfers[1] ?? $transfers[0]);
             $categoryGroupId = null;
             $transactionCategoryId = null;
             $payeeId = null;

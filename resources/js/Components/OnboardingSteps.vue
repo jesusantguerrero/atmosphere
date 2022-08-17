@@ -1,0 +1,64 @@
+<template>
+<div class="space-y-2 rounded border border-transparent" ref="collapsable" :class="{'bg-base-lvl-3 shadow-md border-base rounded border': isCollapsed}">
+    <header class="px-4 py-2 flex justify-between cursor-pointer" @click="toggleCollapse()">
+        <SectionTitle type="secondary"> Onboarding </SectionTitle>
+        <i :class="icon" />
+    </header>
+    <div v-if="!isCollapsed" class="space-y-2">
+        <div v-for="step in steps" class="border cursor-pointer group flex flex-nowrap space-x-4 bg-base-lvl-3 rounded-md p-4 shadow-md">
+            <div class="h-10 w-10 border-slate-300 transition-all group-hover:border-primary group-hover:text-primary text-slate-300 justify-center rounded-md border flex items-center">
+                <i class="fa fa-plus"></i>
+            </div>
+            <div class="ml-4 w-full">
+                <h1 class="text-body-1 font-bold"> {{ step.label }}</h1>
+                <p class="text-body">
+                    {{ step.description }}
+                </p>
+                <a href="" class="mt-2 text-sm text-body-1 group-hover:text-primary/80"> {{ step.action.label }}</a>
+            </div>
+        </div>
+    </div>
+</div>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+import SectionTitle from '@/Components/atoms/SectionTitle.vue';
+import { useCollapse } from '@/composables/useCollapse';
+
+const steps = [
+    {
+        icon: '',
+        name: 'confirmEmail',
+        label: 'Step 1: confirm your email',
+        description: 'Validate your email address',
+        action: {
+            label: 'Resend confirmation'
+        }
+    }, {
+        name: 'addAccounts',
+        label: 'Step 2: Add accounts',
+        description: 'Create your accounts',
+        action: {
+            label: 'Go to finance/accounts'
+        }
+    }, {
+        name: 'AddCategories',
+        label: 'Step 3: Add budget categories',
+        description: 'Structure your budgets with category groups and categories',
+        action: {
+            label: 'Go to finance/budget'
+        }
+    }, {
+        name: 'AddMealPlan',
+        label: 'Step 4: Add meal plan',
+        description: 'Organize your meals',
+        action: {
+            label: 'Go to meal/plan'
+        }
+    }
+]
+
+const collapsable = ref();
+const { isCollapsed, toggleCollapse, icon } = useCollapse(collapsable, false);
+</script>

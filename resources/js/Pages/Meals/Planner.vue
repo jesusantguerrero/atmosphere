@@ -11,8 +11,8 @@
                             controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
                             next-mode="week"
                         />
-                        <AtButton class="w-64 h-10 text-white bg-primary" @click="openRandomModal()" rounded> Random Meal </AtButton>
-                        <AtButton class="h-10 text-white w-52 bg-primary" @click="toggleMode()" rounded>
+                        <AtButton class="w-64 h-10 text-white bg-primary/80" @click="openRandomModal()" rounded> Random Meal </AtButton>
+                        <AtButton class="h-10 text-white w-52 bg-transparent/30" @click="toggleMode()" rounded>
                             {{ state.toggleBtnText }}
                         </AtButton>
                     </div>

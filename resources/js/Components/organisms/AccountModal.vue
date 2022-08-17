@@ -27,12 +27,10 @@
                             </AtField>
 
                             <AtField
-                                label="Description"
+                                label="Opening Balance"
                             >
-                                <LogerInput v-model="form.description" />
+                                <LogerInput v-model="form.opening_balance" type="number" />
                             </AtField>
-
-
                         </div>
                     </slot>
                 </div>
@@ -77,6 +75,7 @@
             account_detail_type_id: null,
             display_id: '',
             description: '',
+            opening_balance: 0
         }),
         accountDisplayId: computed(() => {
             return Slug(state.form.name, '_')
