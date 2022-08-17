@@ -17,19 +17,17 @@
                     class="w-full mt-4 overflow-hidden bg-white shadow-xl sm:rounded-lg"
                 >
                     <ChartComparison
-                        comparison-title="Revenue"
+                        title="Expenses summary"
                         ref="ComparisonRevenue"
-                        :chart="comparisonRevenue"
-                        :headerInfo="comparisonRevenue.headers"
-                        :actionInfo="''"
+                        :data="props.revenue"
                     />
                 </div>
             </div>
             <div class="md:w-3/12 space-y-4">
                 <OnboardingSteps />
-                <div class="space-y-5">
+                <div class="space-y-5 mb-10">
                     <SectionTitle type="secondary"> Menu for today</SectionTitle>
-                    <div class="px-4 py-3 space-y-4 rounded-lg shadow-md cursor-pointer min-h-min bg-base-lvl-3">
+                    <div class="px-4 py-3 space-y-4 rounded-md shadow-md cursor-pointer min-h-min bg-base-lvl-3">
                         <template v-if="meals.data.length">
                             <div v-for="plannedMeal in meals.data" :key="plannedMeal.id">
                                 <h4 class="font-bold text-body-1">
@@ -52,7 +50,10 @@
 <script setup>
     import { AtButton } from "atmosphere-ui";
     import { reactive, ref } from 'vue';
+    import { groupBy } from "lodash";
+    import { parseISO, format } from "date-fns";
     import { Inertia } from "@inertiajs/inertia";
+
     import AppLayout from '@/Layouts/AppLayout.vue'
     import BudgetTracker from "@/Components/organisms/BudgetTracker.vue";
     import TransactionsTable from "@/Components/organisms/TransactionsTable.vue";
@@ -131,39 +132,4 @@
     const handleEdit = (transaction) => {
         budgetTrackerRef.setTransaction(transaction)
     }
-
-    //  Stats
-    const comparisonRevenue = reactive({
-        headers: {
-            gapName: "Year",
-            previous: props.revenue.previousYear.total,
-            current: props.revenue.currentYear.total,
-        },
-        options: {
-            chart: {
-                id: "vuechart-example",
-            },
-            stroke: {
-                curve: "smooth",
-            },
-            dropShadow: {
-                enabled: true,
-                top: 3,
-                left: 0,
-                blur: 1,
-                opacity: 0.5,
-            },
-            colors: ["#fa6b88", "#80CDFE"],
-        },
-        series: [
-            {
-                name: "previous year",
-                data: props.revenue.previousYear.values.map(item => item.total),
-            },
-            {
-                name: "current year",
-                data: props.revenue.currentYear.values.map(item => item.total),
-            },
-        ],
-    });
 </script>
