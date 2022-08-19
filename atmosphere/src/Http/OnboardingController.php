@@ -5,6 +5,8 @@ namespace Freesgen\Atmosphere\Http;
 use App\Actions\Jetstream\CreateTeam;
 use App\Http\Controllers\Controller;
 use App\Models\TeamInvitation;
+use DateTimeZone;
+use ErnySans\Laraworld\Facades\Countries;
 use Freesgen\Atmosphere\Http\Controllers\SettingsController;
 use Freesgen\Atmosphere\Models\Setting;
 use Illuminate\Http\Request;
@@ -16,6 +18,17 @@ class OnboardingController extends Controller
     public function index() {
         return Inertia::render('Onboarding/CreateTeam', [
             'invitations' => TeamInvitation::where('email', auth()->user()->email)->with(['team', 'team.owner'])->get(),
+            'currencies' => collect(Countries::all())->map(function ($country) {
+                    return [
+                        'name' => $country->name,
+                        'code' => $country->currency_code,
+                        'symbol' => $country->currency
+                    ];
+                }
+            )->filter(function ($curr) {
+                return isset($curr['code']);
+            })->unique('code')->sortBy('code')->values()->all(),
+            'timezones' => DateTimeZone::listIdentifiers(),
         ]);
     }
 
