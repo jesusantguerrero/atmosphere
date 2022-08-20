@@ -1,11 +1,11 @@
 <template>
-    <div class="px-5 py-3 transition border divide-y rounded-lg shadow-md divide-base border-base bg-base-lvl-3">
+    <div class="px-5 py-3 transition border divide-y rounded-lg shadow-xl divide-base border-base bg-base-lvl-3">
         <div class="items-center pb-2 md:justify-between md:flex">
             <h1 class="font-bold text-body">
                 Welcome to Loger <span class="text-primary">{{ username }}</span>
             </h1>
             <div class="space-x-2">
-                <AtButton class="text-sm text-white bg-primary" rounded @click="$inertia.visit(route('budgets.index'))">
+                <AtButton class="text-sm text-primary" rounded @click="$inertia.visit(route('budgets.index'))">
                     <i class="fa fa-wallet"></i>
                     Edit budget
                 </AtButton>

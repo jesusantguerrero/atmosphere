@@ -9,71 +9,26 @@
                 </div>
 
                 <div  class="flex overflow-hidden font-bold text-gray-500 rounded-lg max-w-min">
-                    <AtButton v-if="state.currentMode == 'createTeam'" @click="createOrganization" class="w-48 bg-primary text-white"> Create Space</AtButton>
+                    <AtButton :disabled="!formData.name" v-if="state.currentMode == 'createTeam'" @click="createBudget" class="w-48 bg-primary text-white"> Create Space</AtButton>
                 </div>
             </div>
 
-            <div
+            <TeamForm
                 class="w-full px-5 py-4 space-y-5 bg-white rounded-md "
                 v-if="state.currentMode == 'createTeam'"
+                :form-data="formData"
             >
-                <AtField class="space-y-2 md:max-w-sm" label="Budget Name">
-                    <LogerInput placeholder="Team Name" v-model="formData.team_name" />
-                </AtField>
-
-                <div class="w-full">
-                    <div class="md:max-w-sm">
-                        <h2 class="my-4 font-bold">Payment Preferences</h2>
-                        <AtField label="Timezone" >
-                            <NSelect
-                                v-model:value="formData.team_timezone"
-                                filterable
-                                :options="utcTimezones"
-                                placeholder="Select"
-                            />
-                        </AtField>
+                <template #append>
+                    <div class="w-full text-right">
+                        <button
+                            @click="state.currentMode = 'invite'"
+                            class="font-bold text-primary/80 underline hover:text-primary"
+                        >
+                            I have got an invitation
+                        </button>
                     </div>
-                </div>
-                <div class="w-full">
-                    <div class="md:max-w-sm">
-                        <AtField label="Primary Currency" >
-                            <NSelect
-                                v-model:value="formData.team_primary_currency_code"
-                                filterable
-                                :options="currencyCodes"
-                                placeholder="Select"
-                            />
-                        </AtField>
-                    </div>
-                </div>
-                <div class="w-full">
-                    <AtField label="Currency Locale" class="md:max-w-sm">
-                        <NSelect
-                            v-model:value="formData.team_currency_symbol_option"
-                            filterable
-                            :options="currencyLocaleOptions"
-                            placeholder="Select"
-                        />
-                    </AtField>
-                    <AtField label="Date Format" class="md:max-w-sm">
-                        <NSelect
-                            v-model:value="formData.team_date_format"
-                            filterable
-                            :options="dateFormats"
-                            placeholder="Select"
-                        />
-                    </AtField>
-                </div>
-
-                <div class="w-full text-right">
-                    <button
-                        @click="state.currentMode = 'invite'"
-                        class="font-bold text-primary/80 underline hover:text-primary"
-                    >
-                        I have got an invitation
-                    </button>
-                </div>
-            </div>
+                </template>
+            </TeamForm>
 
             <accept-invitation v-else @change="state.currentMode = 'createTeam'" :invitations="invitations" />
         </div>
@@ -90,20 +45,10 @@ import AppLayout from "@/Layouts/AppLayout.vue";
 import { useForm } from '@inertiajs/inertia-vue3';
 import LogerInput from "@/Components/atoms/LogerInput.vue";
 import { format } from "date-fns";
+import TeamForm from "./TeamForm.vue";
+import { parseTeamForm } from "@/domains/app";
 
 const props = defineProps({
-    timezones: {
-        type: Array,
-        default() {
-            return;
-        },
-    },
-    currencies: {
-        type: Array,
-        default() {
-            return []
-        }
-    },
     invitations: {
         type: Array,
         default: () => ([])
@@ -117,42 +62,18 @@ const state = reactive({
 const defaultTimezone = "UTC";
 
 const formData = useForm({
-    team_name: '',
-    team_timezone: defaultTimezone,
-    team_primary_currency_code: 'USD',
-    team_currency_symbol_option: 'before',
-    team_date_format: ''
+    name: '',
+    timezone: defaultTimezone,
+    primary_currency_code: 'USD',
+    currency_symbol_option: 'before',
+    date_format: ''
 });
 
-const utcTimezones = props.timezones.map(timezone => ({
-    value: timezone,
-    label: timezone
-}))
 
-const currencyCodes = props.currencies.map(currency => ({
-    value: currency.code,
-    label: `${currency.code} ${currency.symbol}`
-}))
-
-const date = new Date()
-const formats = ['dd MMM, yyyy', 'dd.MM.yyyy', 'MM/dd/yyyy', 'yyyy.MM.dd']
-const dateFormats = formats.map((formatString) => ({
-    value: formatString,
-    label: format(date, formatString)
-}))
-
-const currencyLocaleOptions = [{
-    value: 'after',
-    label: 'After'
-}, {
-    value: 'before',
-    label: 'Before'
-}, {
-    value: 'without_symbol',
-    label: 'Without Symbol'
-}]
-
-const createOrganization = () => {
-    formData.post('/onboarding')
+const createBudget = () => {
+    formData.transform((data) => {
+        data.primary_currency_code = data.primary_currency_code.code || data.primary_currency_code
+        return parseTeamForm(data)
+    }).post('/onboarding')
 }
 </script>

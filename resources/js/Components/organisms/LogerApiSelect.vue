@@ -60,7 +60,8 @@ const handleSearch = debounce((query) => {
         return;
     }
     isLoading.value = true
-    window.axios.get(`${props.endpoint}?q=${query}`).then(({ data }) => {
+    axios.get(`${props.endpoint}?q=${query}`).then(({ data }) => {
+        debugger
         options.value = data.data;
         isLoading.value = false
     })

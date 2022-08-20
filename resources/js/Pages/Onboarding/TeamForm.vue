@@ -3,7 +3,7 @@
         class="w-full px-5 py-4 space-y-5 bg-white rounded-md"
     >
         <AtField class="space-y-2" label="Budget Name">
-            <LogerInput placeholder="Team Name" v-model="formData.name" />
+            <LogerInput placeholder="Team Name" v-model="formData.name" required />
         </AtField>
 
         <AtField label="Timezone">
@@ -52,30 +52,18 @@
 
 <script setup>
 import { NSelect } from "naive-ui";
-import AcceptInvitation from "./AcceptInvitation.vue";
-import { AtButton, AtField} from "atmosphere-ui";
-import { computed, reactive } from "vue";
-import { uniq } from "lodash"
-import AppLayout from "@/Layouts/AppLayout.vue";
+import { AtField} from "atmosphere-ui";
 import { useForm } from '@inertiajs/inertia-vue3';
-import LogerInput from "@/Components/atoms/LogerInput.vue";
 import { format } from "date-fns";
-import { DEFAULT_TIMEZONE, defaultDateFormats } from "@/domains/app/index";
+
+import AcceptInvitation from "./AcceptInvitation.vue";
+import AppLayout from "@/Layouts/AppLayout.vue";
+import LogerInput from "@/Components/atoms/LogerInput.vue";
 import LogerApiSelect from "@/Components/organisms/LogerApiSelect.vue";
 
+import { DEFAULT_TIMEZONE, defaultDateFormats } from "@/domains/app/index";
+
 const props = defineProps({
-    timezones: {
-        type: Array,
-        default() {
-            return;
-        },
-    },
-    currencies: {
-        type: Array,
-        default() {
-            return []
-        }
-    },
     formData: {
         type: Object,
         default() {
@@ -89,9 +77,6 @@ const props = defineProps({
         }
     }
 });
-
-const form = useForm(props.formData);
-
 
 const currencyCodeFormatter = currency => {
     return currency.code ? `${currency.code} ${currency.symbol}` : currency.name ?? currency;
