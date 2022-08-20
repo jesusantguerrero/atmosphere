@@ -41,12 +41,13 @@ class CreateTeam implements CreatesTeams
      * Create a personal team for the user.
      *
      * @param  \App\Models\User  $user
-     * @return void
+     * @return \App\Models\Team
      */
+
     public function createUserTeam(User $user, $teamName)
     {
         $teamName = $teamName ?? explode(' ', $user->name, 2)[0]."'s Team";
-        $user->ownedTeams()->save(Team::forceCreate([
+        return $user->ownedTeams()->save(Team::forceCreate([
             'user_id' => $user->id,
             'name' => $teamName,
             'personal_team' => true,

@@ -3,10 +3,12 @@
 use App\Http\Controllers\Api\AccountApiController;
 use App\Http\Controllers\Api\AutomationController;
 use App\Http\Controllers\Api\CategoryApiController;
+use App\Http\Controllers\Api\CurrencyApiController;
 use App\Http\Controllers\Api\IngredientApiController;
 use App\Http\Controllers\Api\LabelApiController;
 use App\Http\Controllers\Api\PayeeApiController;
 use App\Http\Controllers\Api\RecipeApiController;
+use App\Http\Controllers\Api\TimezonesApiController;
 use App\Http\Controllers\BudgetCategoryController;
 use App\Http\Controllers\BudgetMonthController;
 use App\Http\Controllers\DashboardController;
@@ -121,6 +123,12 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
  ***************************************************************************************/
 
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('/api')->group(function () {
+    //timezones
+    Route::get('/timezones', [TimezonesApiController::class, 'index']);
+
+    // currencies
+    Route::get('/currencies', [CurrencyApiController::class, 'index']);
+
     //  automation routes
     Route::controller(AutomationController::class)->group(function () {
         Route::apiResource('automation', AutomationController::class);

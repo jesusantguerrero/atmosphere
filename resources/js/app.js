@@ -1,13 +1,14 @@
 import './bootstrap';
 import '../css/app.css';
-
+import "atmosphere-ui/style.css"
+import "vue-multiselect/dist/vue-multiselect.css"
 // Import modules...
 import { createApp, h } from 'vue';
 import { createInertiaApp } from '@inertiajs/inertia-vue3';
 import { InertiaProgress } from '@inertiajs/progress';
-import "atmosphere-ui/style.css"
 import { ZiggyVue } from '../../vendor/tightenco/ziggy/dist/vue.m';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
+import VueMultiselect from 'vue-multiselect'
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
@@ -16,6 +17,7 @@ createInertiaApp({
         createApp({ render: () => h(app, props)})
         .use(plugin)
         .use(ZiggyVue, Ziggy)
+        .component('Multiselect', VueMultiselect)
         .mount(el);
     }
 });

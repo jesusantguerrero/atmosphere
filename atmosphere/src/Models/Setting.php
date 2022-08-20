@@ -70,18 +70,17 @@ class Setting extends Model
     public static function storeBulk($settings, $sessionData) {
         foreach ($settings as $settingName => $setting) {
             $setting = array_merge($sessionData, [
-                "value" => $setting,
+                "value" => $setting ?? " ",
                 "name" => $settingName
             ]);
-            $resource = Setting::where(array_merge($sessionData, [
-                'name' => $settingName
-            ]))->limit(1)->get();
 
-            if (count($resource)) {
-                $resource[0]->update($setting);
-            } else {
-                $resource = Setting::create($setting);
-            }
+            Setting::updateOrCreate([
+                "name" => $settingName,
+                "team_id" => $sessionData["team_id"],
+                "user_id" => $sessionData["user_id"]
+            ], [
+                'value' => $setting['value'],
+            ]);
         }
 
         return Setting::getFormatted($sessionData);

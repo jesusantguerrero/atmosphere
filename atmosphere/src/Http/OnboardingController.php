@@ -34,12 +34,12 @@ class OnboardingController extends Controller
 
     public function store(Request $request, CreateTeam $createTeam) {
         $postData = $request->post();
+        $team = $createTeam->createUserTeam($request->user(), $postData['team_name']);
         $entryData = [
             'user_id' =>  $request->user()->id,
-            'team_id' => $request->user()->current_team_id
+            'team_id' => $team->id
         ];
         Setting::storeBulk($postData, $entryData);
-        $createTeam->createUserTeam($request->user(), $postData['team_name']);
 
         return Redirect('/dashboard');
     }

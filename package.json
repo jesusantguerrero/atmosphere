@@ -57,6 +57,7 @@
         "@formkit/auto-animate": "^1.0.0-beta.1",
         "chart.js": "^3.8.0",
         "vue-chart-3": "^3.1.8",
-        "vue-draggable-next": "^2.1.1"
+        "vue-draggable-next": "^2.1.1",
+        "vue-multiselect": "^3.0.0-alpha.2"
     }
 }

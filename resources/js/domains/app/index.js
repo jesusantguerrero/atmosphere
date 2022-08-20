@@ -35,3 +35,28 @@ export const appMenu =  [
         as: Link
     }
 ]
+
+export const DEFAULT_TIMEZONE = "UTC";
+
+export const defaultDateFormats = ['dd MMM, yyyy', 'dd.MM.yyyy', 'MM/dd/yyyy', 'yyyy.MM.dd']
+
+
+export const mapTeamFormServer = (team, prefix="team_") => {
+    const regPrefix = new RegExp(prefix);
+    return team.settings.reduce((acc, setting) => {
+        const fieldName = setting.name.replace(regPrefix, '')
+        acc[fieldName] = setting.value;
+        return acc;
+    }, {
+        name: team.name,
+    })
+}
+
+export const parseTeamForm = (team, prefix="team_") => {
+    return Object.keys(team).reduce((acc, fieldName) => {
+        acc[prefix+fieldName] = team[fieldName];
+        return acc;
+    }, {
+        name: team.name,
+    })
+}

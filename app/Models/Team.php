@@ -11,6 +11,7 @@ use Laravel\Jetstream\Team as JetstreamTeam;
 class Team extends JetstreamTeam
 {
     use HasFactory;
+    protected $with = ['settings'];
 
     /**
      * The attributes that should be cast to native types.
@@ -41,4 +42,8 @@ class Team extends JetstreamTeam
         'updated' => TeamUpdated::class,
         'deleted' => TeamDeleted::class,
     ];
+
+    public function settings() {
+        return $this->hasMany(Setting::class);
+    }
 }

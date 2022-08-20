@@ -11,6 +11,7 @@ trait Querify
     private $whereRaw;
     private $request;
     protected $authorizedUser = true;
+    protected $authorizedTeam = true;
 
     public function getModelQuery($request, $id=null, $extendFunction=null)
     {
@@ -39,6 +40,10 @@ trait Querify
         if ($this->authorizedUser) {
            $this->modelQuery->where(["user_id" => $request->user()->id]);
         }
+
+        if ($this->authorizedTeam) {
+            $this->modelQuery->where(["team_id" => $request->user()->current_team_id]);
+         }
 
         return $this->getPaginate($limit);
     }

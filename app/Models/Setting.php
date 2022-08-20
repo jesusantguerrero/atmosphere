@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
+use Freesgen\Atmosphere\Models\Setting as ModelsSetting;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
-class Setting extends Model
+class Setting extends ModelsSetting
 {
     use HasFactory;
     protected $fillable = ['user_id', 'team_id', 'name', 'value'];
