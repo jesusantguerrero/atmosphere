@@ -6,7 +6,7 @@
 import { generateRandomColor } from "@/utils";
 import { Chart, registerables } from "chart.js";
 import { computed } from "vue";
-import { DoughnutChart, useDoughnutChart } from "vue-chart-3";
+import { DoughnutChart } from "vue-chart-3";
 Chart.register(...registerables);
 
 const props = defineProps({
@@ -21,6 +21,10 @@ const props = defineProps({
   },
   label: {
     type: String,
+  },
+  legend: {
+    type: Boolean,
+    default: true
   },
   legendPosition: {
     type: String,
@@ -50,12 +54,9 @@ const chartData = computed(() => {
 
 const options = computed(() => ({
   plugins: {
-    legend: {
+    ...(props.legend && { legend: {
       position: props.legendPosition,
-    //   labels: {
-    //       color: "white",
-    //   }
-    },
+    }}),
     title: {
       display: props.title,
       text: props.title,

@@ -1,7 +1,7 @@
 <template>
   <div class="w-full comparison-card">
-    <div class="pb-10 px-5">
-      <h5 class="card-title text-left p-4">{{ title }}</h5>
+    <div class="pb-10 px-5 rounded-lg">
+      <h5 class="card-title text-left p-4 font-bold">{{ title }}</h5>
       <div class="card-text">
         <div class="comparison-header px-10 text-body-1/50 space-x-2 divide-x divide-dashed divide-opacity-20 divide-body-1 bg-base-lvl-2 mb-2">
           <div

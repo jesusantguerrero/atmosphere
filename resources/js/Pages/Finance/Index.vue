@@ -97,7 +97,7 @@
               }"
               @action="Inertia.visit('/finance/trends')"
             >
-              <DonutChart :series="expensesByCategoryGroup" label="name" value="total" />
+              <DonutChart   style="height:324px; background: white; width: 100%" :series="expensesByCategoryGroup" label="name" value="total" />
             </SectionCard>
           </div>
           <div class="w-full md:w-5/12">
