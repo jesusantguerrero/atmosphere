@@ -2,6 +2,7 @@
 
 namespace App\Actions\Jetstream;
 
+use App\Models\Setting;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Jetstream\Contracts\UpdatesTeamNames;
@@ -27,5 +28,12 @@ class UpdateTeamName implements UpdatesTeamNames
         $team->forceFill([
             'name' => $input['name'],
         ])->save();
+
+        $entryData = [
+            'user_id' =>  $user->id,
+            'team_id' => $team->id
+        ];
+
+        Setting::storeBulk($input, $entryData);
     }
 }

@@ -131,4 +131,20 @@ class FinanceController extends InertiaController {
         Excel::import(new BudgetImport($request->user()), $request->file('file'));
         return redirect()->back();
     }
+
+    public function trends(Request $request) {
+        $queryParams = $request->query();
+        $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
+        [$startDate, $endDate] = $this->getFilterDates($filters);
+
+        $teamId = $request->user()->current_team_id;
+
+        $expensesByCategory = Transaction::getCategoryExpenses($teamId, $startDate, $endDate, 4);
+        $expensesByCategoryGroup = Transaction::getCategoryExpensesGroup($teamId, $startDate, $endDate);
+
+        return Jetstream::inertia()->render($request, 'Finance/Trends', [
+            "expensesByCategory" => $expensesByCategory,
+            "expensesByCategoryGroup" => $expensesByCategoryGroup,
+        ]);
+    }
 }

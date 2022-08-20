@@ -3,7 +3,7 @@
         <main>
             <JetBanner />
             <div class="min-h-screen dark:bg-base-lvl-3 home-container">
-                <nav class="border-b shadow-md border-base-lvl-3 app-header bg-base-lvl-3">
+                <nav class="border-b border-base-lvl-3 app-header bg-base-lvl-3" :class="{'shadow-md': !$slots.header}">
                     <!-- Primary Navigation Menu -->
                     <div class="pr-4 mx-auto sm:pr-6 lg:pr-8 text-body">
                         <div class="flex items-center justify-between h-16">
@@ -17,9 +17,13 @@
                             </div>
 
                             <div class="hidden space-x-2 sm:flex sm:items-center sm:ml-6">
-                                <AtButton class="text-sm text-white bg-primary" rounded @click="openTransferModal()" v-if="!isOnboarding">
-                                    <i class="fa fa-exchange-alt"></i>
-                                    Add transaction
+                                <AtButton class="text-sm flex space-x-2 px-2 items-center text-white bg-primary" rounded @click="openTransferModal()" v-if="!isOnboarding">
+                                    <div class="rounded-md bg-white/40 px-1 items-center justify-center flex py-1">
+                                        <i class="fa fa-exchange-alt"></i>
+                                    </div>
+                                    <span>
+                                        Add transaction
+                                    </span>
                                 </AtButton>
                                 <PrivacyToggle v-model="isPrivacyMode" v-if="!isOnboarding" />
 
@@ -198,7 +202,7 @@
 
                     <div class="app-content__inner ic-scroller">
                         <!-- Page Heading -->
-                        <header v-if="$slots.header" class="w-full mb-8 overflow-hidden border-b bg-base-lvl-3 border-base-deep-1">
+                        <header v-if="$slots.header" class="w-full pr-56 fixed z-30 mb-8 shadow-md overflow-hidden border-b bg-base-lvl-3 border-base-deep-1">
                             <slot name="header"></slot>
                         </header>
                         <!-- Page Content -->

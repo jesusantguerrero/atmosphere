@@ -161,6 +161,7 @@ return [
         Illuminate\Translation\TranslationServiceProvider::class,
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
+        ErnySans\Laraworld\LaraworldServiceProvider::class,
 
         /*
          * Package Service Providers...
@@ -229,6 +230,9 @@ return [
         'URL' => Illuminate\Support\Facades\URL::class,
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
+        'Countries' => ErnySans\Laraworld\Facades\Countries::class,
+        'TimeZones' => ErnySans\Laraworld\Facades\TimeZones::class,
+        'Languages' => ErnySans\Laraworld\Facades\Languages::class,
 
     ],
 

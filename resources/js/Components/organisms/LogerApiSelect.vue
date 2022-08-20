@@ -1,28 +1,30 @@
 <template>
-<NSelect
-    :value="optionParser(modelValue)"
+<Multiselect
+    :model-value="modelValue"
     filterable
     clearable
     remote
     size="large"
+    :searchable="true"
     :placeholder="placeholder"
     :options="options"
     :loading="isLoading"
     v-bind="$attrs"
-    :render-label="renderLabel"
-    :clear-filter-after-select="false"
-    @update:value="emitInput"
-    @search="handleSearch"
+    :custom-label="customLabel"
+    :show-no-results="false"
+    :hide-selected="true"
+    @open="handleSearch(' ')"
+    @search-change="handleSearch"
+    @update:modelValue="$emit('update:modelValue', $event)"
 >
     <template #action>
       <slot name="action" />
     </template>
-</NSelect>
+</Multiselect>
 </template>
 
 
 <script setup>
-import { NSelect } from "naive-ui";
 import { ref } from "vue";
 import { debounce } from "lodash";
 
@@ -40,8 +42,7 @@ const props = defineProps({
         type: Boolean
     },
     customLabel: {
-        type: String,
-        default: "label"
+        type: [Function, null]
     },
     trackId: {
         type: String
@@ -53,40 +54,15 @@ const options = ref([]);
 const isLoading = ref(false);
 
 
-const optionParser = (option) => {
-    const optionLabel = props.customLabel ? option[props.customLabel] : option.label;
-    return optionLabel
-}
-
-const resultParser = (apiOptions, query) => {
-    let includeCustom = true;
-    const originalMap = apiOptions.map(option => {
-        const optionLabel = props.customLabel ? option[props.customLabel] : option.label;
-        if (includeCustom && optionLabel.includes(query)) includeCustom = false;
-        return {
-            label: optionLabel,
-            value: props.trackId ? option[props.trackId] : option.id
-        }
-    })
-
-    const custom = includeCustom ? [
-            {
-                label: query,
-                value: 'new'
-            }
-    ]: [];
-
-    return [...custom, ...originalMap]
-}
-
 const handleSearch = debounce((query) => {
     if (!query.length) {
         options.value = []
         return;
     }
     isLoading.value = true
-    window.axios.get(`${props.endpoint}?q=${query}`).then(({ data }) => {
-        options.value = resultParser(data.data, query);
+    axios.get(`${props.endpoint}?q=${query}`).then(({ data }) => {
+        debugger
+        options.value = data.data;
         isLoading.value = false
     })
 }, 200)

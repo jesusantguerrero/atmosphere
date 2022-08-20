@@ -1,5 +1,5 @@
 <template>
-  <section class="pl-6 pb-20 max-w-screen-2xl">
+  <section class="pl-6 pb-20 pt-16 max-w-screen-2xl">
     <header class="" v-if="showMealTypes">
       <article class="flex w-full justify-between mb-2">
         <SectionTitle> Meals </SectionTitle>

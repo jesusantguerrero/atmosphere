@@ -1,6 +1,6 @@
 <template>
     <modal :show="show" :max-width="maxWidth" :closeable="closeable" v-slot:default="{ close }" @close="$emit('update:show', false)">
-        <div class="pb-4 bg-base-lvl-1 sm:p-6 sm:pb-4 text-body">
+        <div class="pb-4 bg-base-lvl-3 sm:p-6 sm:pb-4 text-body">
             <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                 <div class="grid grid-cols-3 overflow-hidden text-lg rounded-lg">
                     <div

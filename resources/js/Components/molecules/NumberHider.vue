@@ -1,5 +1,5 @@
 <template>
-<div class="absolute rounded-md h-full w-full bg-white/30 backdrop-blur-xl" v-if="hasHiddenValues" />
+<div class="absolute rounded-md h-full w-full bg-white/10 border-white/20 border backdrop-blur-xl" v-if="hasHiddenValues" />
 </template>
 
 <script setup>

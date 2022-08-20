@@ -3,10 +3,12 @@
 use App\Http\Controllers\Api\AccountApiController;
 use App\Http\Controllers\Api\AutomationController;
 use App\Http\Controllers\Api\CategoryApiController;
+use App\Http\Controllers\Api\CurrencyApiController;
 use App\Http\Controllers\Api\IngredientApiController;
 use App\Http\Controllers\Api\LabelApiController;
 use App\Http\Controllers\Api\PayeeApiController;
 use App\Http\Controllers\Api\RecipeApiController;
+use App\Http\Controllers\Api\TimezonesApiController;
 use App\Http\Controllers\BudgetCategoryController;
 use App\Http\Controllers\BudgetMonthController;
 use App\Http\Controllers\DashboardController;
@@ -17,6 +19,7 @@ use App\Http\Controllers\Jetstream\TeamInvitationController;
 use App\Http\Controllers\MealController;
 use App\Http\Controllers\PlannerController;
 use App\Http\Controllers\TransactionDraftController;
+use App\Http\Controllers\TrendController;
 use Freesgen\Atmosphere\Http\Controllers\SettingsController;
 use Freesgen\Atmosphere\Http\OnboardingController;
 use Illuminate\Support\Facades\Route;
@@ -49,8 +52,6 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
 
     // Jetstream teams invitations override
     Route::put('/team-invitations/{invitation}', [TeamInvitationController::class, 'resend'])->name('team-invitations.resend');
-    Route::patch('/v2/team-invitations/{invitation}', [TeamInvitationController::class, 'accept'])->name('team-invitations.accept-internal');
-    Route::delete('/v2/team-invitations/{invitation}', [TeamInvitationController::class, 'reject'])->name('team-invitations.reject');
 
     // Settings routes
     Route::controller(SettingsController::class)->group(function () {
@@ -92,8 +93,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
 
     // Budgeting & Goals routes
     Route::resource('/budgets', BudgetCategoryController::class);
-    Route::post('/budgets/{categoryId}/months/{month}', [BudgetMonthController::class, 'assignMonthBudget'])
-    ->name("budget.assignment");
+    Route::post('/budgets/{categoryId}/months/{month}', [BudgetMonthController::class, 'assign'])->name("budget.assignment");
     Route::controller(GoalController::class)->group(function () {
         Route::resource('/goals', GoalController::class);
     });
@@ -114,12 +114,26 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
         Route::post('/finance/import', 'importTransactions')->name('finance.import');
         Route::post('/finance/import-budget', 'importMonthBudgets')->name('finance.import.budget');
     });
+
+    Route::get('/trends', [TrendController::class, 'index'])->name('finance.trends');
+    Route::get('/trends/{name}', [TrendController::class, 'index'])->name('finance.trend-section');
 });
 
 
 /**************************************************************************************
  *                                  API Section
  ***************************************************************************************/
+
+Route::middleware(['auth:sanctum'])->prefix('/api')->group(function () {
+    //timezones
+    Route::get('/timezones', [TimezonesApiController::class, 'index']);
+    // currencies
+    Route::get('/currencies', [CurrencyApiController::class, 'index']);
+
+    // Jetstream teams rewrite
+    Route::patch('/v2/team-invitations/{invitation}', [TeamInvitationController::class, 'accept'])->name('team-invitations.accept-internal');
+    Route::delete('/v2/team-invitations/{invitation}', [TeamInvitationController::class, 'reject'])->name('team-invitations.reject');
+});
 
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('/api')->group(function () {
     //  automation routes

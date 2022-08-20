@@ -1,6 +1,6 @@
 <template>
     <section
-        class="px-5 py-1 cursor-pointer rounded-3xl text-body-1 flex justify-between"
+        class="px-5 py-1 cursor-pointer text-body-1 flex justify-between"
         :class="badgeClass"
         @click="toggle"
     >

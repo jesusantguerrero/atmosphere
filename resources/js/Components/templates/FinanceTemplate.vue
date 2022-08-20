@@ -1,19 +1,21 @@
 <template>
-    <div class="flex pb-20 mx-auto space-x-2 max-w-screen-2xl">
+    <div class="flex pb-20 pt-16 mx-auto space-x-2 max-w-screen-2xl">
         <div class="w-full pr-5 md:w-10/12 md:pl-8">
             <slot />
         </div>
 
         <div class="hidden md:w-2/12 md:block">
-            <SectionTitle class="flex items-center pl-5 mt-5" type="secondary">
-                <span>
-                    Budget Accounts
-                </span>
-                <LogerTabButton class="flex items-center ml-2 text-primary" @click="isImportModalOpen=!isImportModalOpen" title="import">
-                    <IconImport />
-                </LogerTabButton>
-            </SectionTitle>
-            <AccountsLedger :accounts="accounts" @reordered="saveReorder" class="mt-5" />
+            <slot name="panel">
+                <SectionTitle class="flex items-center pl-5 mt-5" type="secondary">
+                    <span>
+                        Budget Accounts
+                    </span>
+                    <LogerTabButton class="flex items-center ml-2 text-primary" @click="isImportModalOpen=!isImportModalOpen" title="import">
+                        <IconImport />
+                    </LogerTabButton>
+                </SectionTitle>
+                <AccountsLedger :accounts="accounts" @reordered="saveReorder" class="mt-5" />
+            </slot>
         </div>
 
         <transaction-modal

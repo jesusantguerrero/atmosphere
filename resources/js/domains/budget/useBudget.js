@@ -71,7 +71,7 @@ export const useBudget = (budgets) => {
             return ExactMath.add(category.budgeted, acc || 0)
         }, 0)
         const balance = ExactMath.sub(inflow.value?.activity | 0, budgeted || 0)
-        const category = inflow.value.subCategories[0]
+        const category = inflow.value?.subCategories[0] ?? {}
         return {
             balance,
             ...category

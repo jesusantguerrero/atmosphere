@@ -23,11 +23,9 @@ class DashboardController {
         $startDate = $request->query('startDate', Carbon::now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->query('endDate', Carbon::now()->endOfMonth()->format('Y-m-d'));
         $teamId = $request->user()->current_team_id;
-        $reportHelper = new ReportHelper();
 
         $budget = BudgetMonth::getMonthAssignments($teamId, $startDate);
         $transactionsTotal = Transaction::getExpensesTotal($teamId, $startDate, $endDate);
-        $categories = Category::getBudgetSubcategories($teamId);
         $plannedMeals = Planner::where([
             'team_id' => $teamId,
             'date' => date('Y-m-d')
@@ -41,7 +39,7 @@ class DashboardController {
             "meals" => PlannedMealResource::collection($plannedMeals),
             "budgetTotal" => $budget->sum('budgeted'),
             "transactionTotal" => $transactionsTotal,
-            "revenue" => $reportHelper->revenueReport($teamId, 'expenses'),
+            "revenue" => ReportHelper::generateExpensesByPeriod($teamId),
         ]);
     }
 

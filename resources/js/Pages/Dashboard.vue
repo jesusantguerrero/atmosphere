@@ -13,23 +13,29 @@
                     @section-click="selected=$event"
                 />
 
-                <div
-                    class="w-full mt-4 overflow-hidden bg-white shadow-xl sm:rounded-lg"
-                >
+                <div class="flex space-x-4">
                     <ChartComparison
-                        comparison-title="Revenue"
+                        class="w-full mt-4 mb-10 overflow-hidden bg-white shadow-xl rounded-lg"
+                        title="Expenses summary"
                         ref="ComparisonRevenue"
-                        :chart="comparisonRevenue"
-                        :headerInfo="comparisonRevenue.headers"
-                        :actionInfo="''"
+                        :data="props.revenue"
                     />
+
+                    <div
+                        v-if="false"
+                        class="w-4/12 mt-4  mb-10 overflow-hidden bg-white shadow-xl sm:rounded-lg"
+                    >
+                        <h4 class="p-4 font-bold">Next Payments</h4>
+                    </div>
+
                 </div>
+
             </div>
             <div class="md:w-3/12 space-y-4">
                 <OnboardingSteps />
-                <div class="space-y-5">
+                <div class="space-y-5 pb-10">
                     <SectionTitle type="secondary"> Menu for today</SectionTitle>
-                    <div class="px-4 py-3 space-y-4 rounded-lg shadow-md cursor-pointer min-h-min bg-base-lvl-3">
+                    <div class="px-4 py-2 space-y-4 rounded-md shadow-xl cursor-pointer min-h-min bg-base-lvl-3">
                         <template v-if="meals.data.length">
                             <div v-for="plannedMeal in meals.data" :key="plannedMeal.id">
                                 <h4 class="font-bold text-body-1">
@@ -38,7 +44,7 @@
                                 <small class="text-primary">{{ plannedMeal.mealTypeName }}</small>
                             </div>
                         </template>
-                        <div v-else class="py-4 text-center">
+                        <div v-else class="py-1.5 text-center">
                             <h4 class="py-1 text-2xl font-bold text-body-1"> No meals </h4>
                             <AtButton class="mt-4 text-white rounded-md bg-primary">Go to planner</AtButton>
                         </div>
@@ -52,7 +58,10 @@
 <script setup>
     import { AtButton } from "atmosphere-ui";
     import { reactive, ref } from 'vue';
+    import { groupBy } from "lodash";
+    import { parseISO, format } from "date-fns";
     import { Inertia } from "@inertiajs/inertia";
+
     import AppLayout from '@/Layouts/AppLayout.vue'
     import BudgetTracker from "@/Components/organisms/BudgetTracker.vue";
     import TransactionsTable from "@/Components/organisms/TransactionsTable.vue";
@@ -131,39 +140,4 @@
     const handleEdit = (transaction) => {
         budgetTrackerRef.setTransaction(transaction)
     }
-
-    //  Stats
-    const comparisonRevenue = reactive({
-        headers: {
-            gapName: "Year",
-            previous: props.revenue.previousYear.total,
-            current: props.revenue.currentYear.total,
-        },
-        options: {
-            chart: {
-                id: "vuechart-example",
-            },
-            stroke: {
-                curve: "smooth",
-            },
-            dropShadow: {
-                enabled: true,
-                top: 3,
-                left: 0,
-                blur: 1,
-                opacity: 0.5,
-            },
-            colors: ["#fa6b88", "#80CDFE"],
-        },
-        series: [
-            {
-                name: "previous year",
-                data: props.revenue.previousYear.values.map(item => item.total),
-            },
-            {
-                name: "current year",
-                data: props.revenue.currentYear.values.map(item => item.total),
-            },
-        ],
-    });
 </script>

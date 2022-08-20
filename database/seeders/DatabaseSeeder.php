@@ -14,8 +14,10 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         $this->call([
-            AutomationServices::class
+            AutomationServices::class,
+            CountriesTableSeeder::class,
+            TimeZonesTableSeeder::class,
+            LanguagesTableSeeder::class
         ]);
-        // \App\Models\User::factory(10)->create();
     }
 }

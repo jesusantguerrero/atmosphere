@@ -20,7 +20,7 @@ module.exports = {
         "body-1": colors.slate[200]
     },
     defaultLight: {
-        primary: "#d527b7",
+        primary: "#d527b7", // "#3a4a73"
         secondary: "#8a00d4",
         "accent": "#f782c2",
         "neutral": "#F3F4F6",
