@@ -26,11 +26,12 @@
         <div class="flex flex-wrap mt-5 md:flex-nowrap md:space-x-8">
           <div class="w-full md:w-full">
             <SectionCard
-              section-title="Expenses by category"
+              :section-title="metaData.title"
             >
               <DonutChart
                 style="background: white; width: 100%"
                 :series="data"
+                @clicked="handleSelection"
                 label="name"
                 value="total"
                 :legend="false"
@@ -70,8 +71,6 @@ import { useSelect } from "@/utils/useSelects";
 import formatMoney from "@/utils/formatMoney";
 import { useServerSearch } from "./useServerSearch";
 
-const { serverSearchOptions } = toRefs(props);
-const pageState = useServerSearch(serverSearchOptions);
 
 const financeTemplateRef = ref(null);
 const { openModalFor, handleEdit } = useTransactionModal(financeTemplateRef);
@@ -86,11 +85,17 @@ const props = defineProps({
       return [];
     },
   },
+  metaData: {
+    type: Object
+  },
   serverSearchOptions: {
     type: Object,
     default: () => ({}),
   },
 });
+
+const { serverSearchOptions } = toRefs(props);
+const pageState = useServerSearch(serverSearchOptions);
 
 const { categoryOptions: transformCategoryOptions } = useSelect();
 transformCategoryOptions(props.categories, "accounts", "categoryOptions");
@@ -111,5 +116,9 @@ const expenseVariance = computed(() => {
   return getVariances(props.transactionTotal, props.lastMonthExpenses) || 0;
 });
 
-const topCategories = props.expensesByCategory.slice(0, 4);
+const handleSelection = (index) => {
+    const parent = props.data[index]
+    Inertia.visit(`/trends/categories?filter[parent_id]=${parent.id}`)
+}
+
 </script>

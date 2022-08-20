@@ -61,7 +61,6 @@ const handleSearch = debounce((query) => {
     }
     isLoading.value = true
     axios.get(`${props.endpoint}?q=${query}`).then(({ data }) => {
-        debugger
         options.value = data.data;
         isLoading.value = false
     })

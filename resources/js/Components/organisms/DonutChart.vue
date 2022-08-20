@@ -1,11 +1,12 @@
 <template>
-  <DoughnutChart :chartData="chartData" :options="options" />
+  <DoughnutChart ref="chartRef" :chartData="chartData" :options="options" />
 </template>
 
 <script setup>
 import { generateRandomColor } from "@/utils";
 import { Chart, registerables } from "chart.js";
-import { computed } from "vue";
+import { getRelativePosition } from "chart.js/helpers";
+import { computed, ref } from "vue";
 import { DoughnutChart } from "vue-chart-3";
 Chart.register(...registerables);
 
@@ -39,6 +40,8 @@ const props = defineProps({
   },
 });
 
+
+const emit = defineEmits('clicked')
 const chartData = computed(() => {
   return {
     labels: props.series.map((item) => item[props.label]),
@@ -52,18 +55,27 @@ const chartData = computed(() => {
   };
 });
 
+
+const chartRef = ref()
 const options = computed(() => ({
-  plugins: {
-    ...(props.legend && { legend: {
-      position: props.legendPosition,
-    }}),
-    title: {
-      display: props.title,
-      text: props.title,
+    plugins: {
+        ...(props.legend && { legend: {
+        position: props.legendPosition,
+        }}),
+        title: {
+        display: props.title,
+        text: props.title,
+        },
     },
-  },
-  layout: {
-    padding: 20,
-  },
+    layout: {
+        padding: 20,
+    },
+    onClick: (e, ...args) => {
+        const chart = chartRef.value.chartInstance
+        console.log(chart.tooltip.dataPoints)
+        const index = chart.tooltip.dataPoints[0].dataIndex;
+       emit('clicked', index)
+
+    }
 }));
 </script>
