@@ -61,11 +61,30 @@ class TrendController extends Controller {
         $teamId = $request->user()->current_team_id;
 
         $data  = Transaction::getCategoryExpenses($teamId, $startDate, $endDate, null, $filters['parent_id'] ?? null);
+        $parentName = $data[0]?->parent_name ? $data[0]?->parent_name . " - " : null;
         return [
             'data' => $data,
             'metaData' => [
-                'title' => 'Category Trends',
-                'parent_id' => $data[0]?->parent_name ?? null,
+                'title' => $parentName . 'Category Trends',
+                'parent_id' => $data[0]?->parent_id ?? null,
+                'parent_name' => $data[0]?->parent_name ?? null,
+            ]
+        ];
+    }
+
+
+    public function netWorth(Request $request) {
+        $queryParams = $request->query();
+        $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
+        [$startDate, $endDate] = $this->getFilterDates($filters);
+
+        $teamId = $request->user()->current_team_id;
+
+        return [
+            'data' => Transaction::getNetWorth($teamId, $startDate, $endDate),
+            'metaData' => [
+                'name' => 'netWorth',
+                'title' => 'Net Worth',
             ]
         ];
     }
