@@ -160,7 +160,7 @@ const props = defineProps({
 });
 
 const { serverSearchOptions } = toRefs(props);
-const pageState = useServerSearch(serverSearchOptions);
+const {state: pageState }= useServerSearch(serverSearchOptions);
 
 const { budgets } = toRefs(props);
 const { readyToAssign, visibleCategories, overspentCategories, toggleOverspent, overspentFilter } = useBudget(budgets);
