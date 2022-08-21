@@ -22,13 +22,28 @@ class BudgetMonth extends Model
         return self::where('team_id', $teamId)->where('month', $yearMonth)->sum($field);
     }
 
-    public static function createBudget($data) {
+    public static function createBudget($data, $startingBalance = true) {
         $month = self::updateOrCreate([
             "team_id" => $data['team_id'],
             'month' => $data['month'],
+            'name' => $data['name'],
+            'category_id' => $data['destination_category_id'] ?? $data['category_id'],
+        ], [
+            'budgeted' => $data['budgeted'] ?? 0,
+            'activity' => $data['activity'] ?? 0,
+        ]);
+        return $month;
+    }
+
+    public static function updateBudget($data, $startingBalance = true) {
+        $month = self::updateOrCreate([
+            "team_id" => $data['team_id'],
+            'month' => $data['month'],
+            'name' => $data['name'],
             'category_id' => $data['destination_category_id'] ?? $data['category_id'],
         ], [
             'budgeted' => DB::raw("budgeted + {$data['budgeted']}"),
+            'activity' => DB::raw("activity + {$data['activity']}"),
         ]);
         return $month;
     }

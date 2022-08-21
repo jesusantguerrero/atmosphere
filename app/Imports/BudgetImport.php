@@ -49,12 +49,13 @@ class BudgetImport extends ImportHelper
 
         $categoryGroupId = Category::findOrCreateByName($this->session, $row['category_group']);
         $transactionCategoryId = Category::findOrCreateByName($this->session, $row['category'], $categoryGroupId);
+        $month = Carbon::createFromFormat('M Y', $row['month'])->format('Y-m') . "-01";
 
         $row['team_id'] = $this->session['team_id'];
         $row['user_id'] = $this->session['user_id'];
         $row['category_id'] = $transactionCategoryId;
-        $row['month'] = Carbon::createFromFormat('M Y', $row['month'])->format('Y-m') . "-01";
-        $row['name'] = $row['month'];
+        $row['month'] = $month;
+        $row['name'] = $month;
         $row['currency_code'] = $budgeted['currency_code'];
         $row['budgeted'] = $budgeted['amount'];
         $row['activity'] = $activity['amount'];

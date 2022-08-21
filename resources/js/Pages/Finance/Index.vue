@@ -95,7 +95,7 @@
                 label: 'Go to Trends',
                 iconClass: 'fa fa-chevron-right',
               }"
-              @action="Inertia.visit('/finance/trends')"
+              @action="Inertia.visit('/trends')"
             >
               <DonutChart   style="height:324px; background: white; width: 100%" :series="expensesByCategoryGroup" label="name" value="total" />
             </SectionCard>
@@ -146,7 +146,7 @@ import formatMoney from "@/utils/formatMoney";
 import { useServerSearch } from "./useServerSearch";
 
 const { serverSearchOptions } = toRefs(props);
-const pageState = useServerSearch(serverSearchOptions);
+const {state: pageState} = useServerSearch(serverSearchOptions);
 
 const financeTemplateRef = ref(null);
 const { openModalFor, handleEdit } = useTransactionModal(financeTemplateRef);

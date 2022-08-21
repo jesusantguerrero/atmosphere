@@ -2,31 +2,39 @@ import { getDateFromIso, updateSearch } from "@/utils";
 import { startOfDay } from "date-fns";
 import { computed, reactive, Ref, watch }  from "vue"
 
-interface IServerSearchOptions {
+interface IServerSearchData {
     startDate: Date,
     endDate: Date,
     page?: Number,
+    parent_id: Number,
 }
-export const useServerSearch = (serverSearchOptions: Ref<IServerSearchOptions>) => {
+
+interface IServerSearchOptions {
+    manual?: Boolean,
+}
+
+export const useServerSearch = (serverSearchData: Ref<IServerSearchData>, options: IServerSearchOptions = {}) => {
     const state = reactive({
         filterOptions: [
             {
-            label: "Accounts",
-            value: "accounts",
+                label: "Accounts",
+                value: "accounts",
             },
             {
-            label: "Descriptions",
-            value: "description",
+                label: "Descriptions",
+                value: "description",
             },
         ],
         searchOptions: {
             group: "",
+            parent_id: "",
             date: {
                 startDate: null,
                 endDate: null,
             },
         },
-        date: startOfDay(serverSearchOptions.value?.startDate || new Date()),
+        parent_id: serverSearchData.value.parent_id,
+        date: startOfDay(serverSearchData.value?.startDate || new Date()),
         dateSpan: null,
         listType: "table",
     });
@@ -35,27 +43,36 @@ export const useServerSearch = (serverSearchOptions: Ref<IServerSearchOptions>) 
       return state.listType == listTypeName;
     };
 
-    watch(
-      () => state.searchOptions,
-      (newSearch, oldSearch) => {
-        updateSearch(state.searchOptions, state.dateSpan);
-      },
-      { deep: true }
-    );
-
-    Object.entries(serverSearchOptions.value).forEach(([key, value]) => {
-      if (key === "date") {
-        state.searchOptions.date.startDate = startOfDay(getDateFromIso(value.startDate));
-        state.searchOptions.date.endDate = startOfDay(getDateFromIso(value.endDate));
-        state.date = startOfDay(getDateFromIso(value.startDate));
-      } else {
-        state.searchOptions[key] = Object.values(state.filterOptions)
-          .map((filter) => filter.value)
-          .includes(value)
-          ? value
-          : "";
-      }
+    Object.entries(serverSearchData.value).forEach(([key, value]) => {
+        if (key === "date") {
+          state.searchOptions.date.startDate = startOfDay(getDateFromIso(value.startDate));
+          state.searchOptions.date.endDate = startOfDay(getDateFromIso(value.endDate));
+          state.date = startOfDay(getDateFromIso(value.startDate));
+        } else {
+          state.searchOptions[key] = Object.values(state.filterOptions)
+            .map((filter) => filter.value)
+            .includes(value)
+            ? value
+            : "";
+        }
     });
 
-    return state
+    if (!options.manual) {
+        watch(
+            () => state.searchOptions,
+            () => {
+            updateSearch(state.searchOptions, state.dateSpan);
+            },
+            { deep: true }
+        );
+    }
+
+    const executeSearch = () => {
+        updateSearch(state.searchOptions, state.dateSpan);
+    }
+
+    return {
+        state,
+        executeSearch
+    }
 }

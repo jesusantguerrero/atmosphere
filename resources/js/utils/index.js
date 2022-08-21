@@ -1,4 +1,4 @@
-import { format } from "date-fns"
+import { format, startOfDay } from "date-fns"
 import { Inertia } from "@inertiajs/inertia";
 
 export const targetTypes = [

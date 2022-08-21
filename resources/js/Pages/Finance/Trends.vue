@@ -1,9 +1,9 @@
 <template>
-  <AppLayout>
+  <AppLayout :title="metaData.title">
     <template #header>
       <FinanceSectionNav>
         <template #actions>
-          <AtDatePager
+          <!-- <AtDatePager
             class="w-full h-12 border-none bg-base-lvl-1 text-body"
             v-model="pageState.date"
             v-model:dateSpan="pageState.dateSpan"
@@ -11,7 +11,7 @@
             v-model:endDate="pageState.searchOptions.date.endDate"
             controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
             next-mode="month"
-          />
+          /> -->
           <div>
             <AtButton class="rounded-md text-primary w-32"
               >Print</AtButton
@@ -26,55 +26,48 @@
         <div class="flex flex-wrap mt-5 md:flex-nowrap md:space-x-8">
           <div class="w-full md:w-full">
             <SectionCard
-              section-title="Expenses by category"
+              :section-title="metaData.title"
             >
-              <DonutChart
-                style="background: white; width: 100%"
-                :series="data"
-                label="name"
-                value="total"
-                :legend="false"
-            />
+                <component :is="trendComponent"
+                    style="background: white; width: 100%"
+                    :series="data"
+                    :data="data"
+                    @clicked="handleSelection"
+                    label="name"
+                    value="total"
+                    :legend="false"
+                />
             </SectionCard>
           </div>
         </div>
       </section>
 
       <template #panel>
-            <div>Hello I am a pannel </div>
+            <div class="divide-y-2">
+                <Link :href="trend.link" v-for="trend in trends" class="block py-4 px-2 hover:bg-base-lvl-3 cursor-pointer">
+                    {{ trend.name }}
+                </Link>
+            </div>
       </template>
     </FinanceTemplate>
   </AppLayout>
 </template>
 
 <script setup>
-import { computed, ref, toRefs } from "vue";
+import { computed, toRefs } from "vue";
 import { Inertia } from "@inertiajs/inertia";
 import { AtButton, AtDatePager } from "atmosphere-ui";
+import { Link } from "@inertiajs/inertia-vue3";
+
 import AppLayout from "@/Layouts/AppLayout.vue";
-import FinanceCard from "@/Components/molecules/FinanceCard.vue";
-import FinanceVarianceCard from "@/Components/molecules/FinanceVarianceCard.vue";
-import TransactionsTable from "@/Components/organisms/TransactionsTable.vue";
-import SectionTitle from "@/Components/atoms/SectionTitle.vue";
 import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
-import {
-  useTransactionModal,
-  transactionDBToTransaction,
-  categoryDBToTransaction,
-} from "@/domains/transactions";
-import BudgetProgress from "@/Components/molecules/BudgetProgress.vue";
 import DonutChart from "@/Components/organisms/DonutChart.vue";
+import ChartNetWorth from "../../Components/ChartNetworth.vue";
 import SectionCard from "@/Components/molecules/SectionCard.vue";
 import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
-import { useSelect } from "@/utils/useSelects";
-import formatMoney from "@/utils/formatMoney";
+
 import { useServerSearch } from "./useServerSearch";
 
-const { serverSearchOptions } = toRefs(props);
-const pageState = useServerSearch(serverSearchOptions);
-
-const financeTemplateRef = ref(null);
-const { openModalFor, handleEdit } = useTransactionModal(financeTemplateRef);
 const props = defineProps({
   user: {
     type: Object,
@@ -86,30 +79,50 @@ const props = defineProps({
       return [];
     },
   },
+  metaData: {
+    type: Object
+  },
   serverSearchOptions: {
     type: Object,
     default: () => ({}),
   },
 });
 
-const { categoryOptions: transformCategoryOptions } = useSelect();
-transformCategoryOptions(props.categories, "accounts", "categoryOptions");
-transformCategoryOptions(props.accounts, "accounts", "accountsOptions");
-const getVariances = (current, last) => {
-  if (last === 0) {
-    return 0;
-  }
-  const variance = ((current - last) / last) * 100;
-  return variance.toFixed(2);
-};
+const { serverSearchOptions } = toRefs(props);
+const {state: pageState, executeSearch }= useServerSearch(serverSearchOptions);
 
-const incomeVariance = computed(() => {
-  return getVariances(props.income, props.lastMonthIncome);
-});
+const handleSelection = (index) => {
+    const parent = props.data[index]
+    if (!props.metaData.parent_name) {
+        Inertia.visit(`/trends/categories?filter[parent_id]=${parent.id}`)
+    }
+}
 
-const expenseVariance = computed(() => {
-  return getVariances(props.transactionTotal, props.lastMonthExpenses) || 0;
-});
+const trends = [
+    {
+        name: 'Category Group Trends',
+        link: '/trends'
+    },
+    {
+        name: 'Category Trends',
+        link: '/trends/categories'
+    },
+    {
+        name: 'Net Worth',
+        link: '/trends/net-worth'
+    },
+    {
+        name: 'Income v Expenses'
+    }
+]
 
-const topCategories = props.expensesByCategory.slice(0, 4);
+const components = {
+    groups: DonutChart,
+    categories: DonutChart,
+    netWorth: ChartNetWorth
+}
+
+const trendComponent = computed(() => {
+    return components[props.metaData.name] || DonutChart
+})
 </script>

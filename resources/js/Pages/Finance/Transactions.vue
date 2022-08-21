@@ -181,7 +181,6 @@ const listComponent = computed(() => {
 });
 
 const removeTransaction = (transaction) => {
-    debugger
     Inertia.delete(`/transactions/${transaction.id}`).then(() => {
         Inertia.reload();
     })

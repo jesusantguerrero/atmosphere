@@ -21,19 +21,21 @@ class TrendController extends Controller {
     const DateFormat = 'Y-m-d';
     const sections  = [
         'groups' => 'groupTrends',
-        'categories' => 'categories',
+        'categories' => 'categoryTrends',
         'payees' => 'payees',
         'net-worth' => 'NetWorth',
         'income-expenses' => 'IncomeExpenses',
     ];
 
     public function index(Request $request, $sectionName = 'groups') {
+        $queryParams = $request->query();
+        $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
         $section = self::sections[$sectionName];
         $data = $this->$section($request);
 
-        return Jetstream::inertia()->render($request, 'Finance/Trends', [
-            "data" => $data,
-        ]);
+        return Jetstream::inertia()->render($request, 'Finance/Trends', array_merge([
+            "serverSearchOptions" => $filters
+        ], $data));
     }
 
     public function groupTrends(Request $request) {
@@ -43,7 +45,48 @@ class TrendController extends Controller {
 
         $teamId = $request->user()->current_team_id;
 
-        return Transaction::getCategoryExpensesGroup($teamId, $startDate, $endDate);
+        return [
+            'data' => Transaction::getCategoryExpensesGroup($teamId, $startDate, $endDate),
+            'metaData' => [
+                'title' => 'Category Group Trends',
+            ]
+        ];
+    }
+
+    public function categoryTrends(Request $request) {
+        $queryParams = $request->query();
+        $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
+        [$startDate, $endDate] = $this->getFilterDates($filters);
+
+        $teamId = $request->user()->current_team_id;
+
+        $data  = Transaction::getCategoryExpenses($teamId, $startDate, $endDate, null, $filters['parent_id'] ?? null);
+        $parentName = $data[0]?->parent_name ? $data[0]?->parent_name . " - " : null;
+        return [
+            'data' => $data,
+            'metaData' => [
+                'title' => $parentName . 'Category Trends',
+                'parent_id' => $data[0]?->parent_id ?? null,
+                'parent_name' => $data[0]?->parent_name ?? null,
+            ]
+        ];
+    }
+
+
+    public function netWorth(Request $request) {
+        $queryParams = $request->query();
+        $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
+        [$startDate, $endDate] = $this->getFilterDates($filters);
+
+        $teamId = $request->user()->current_team_id;
+
+        return [
+            'data' => Transaction::getNetWorth($teamId, $startDate, $endDate),
+            'metaData' => [
+                'name' => 'netWorth',
+                'title' => 'Net Worth',
+            ]
+        ];
     }
 
     private Function getFilterDates($filters) {
