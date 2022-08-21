@@ -25,6 +25,7 @@ Features:
 | npm (comes with Node) or yarn (used)                  | `~ ^5`      |
 | [PHP]                                                 | `~ ^8.1.2`  |
 | [Composer](https://getcomposer.org/)                  | ' ^2.3.8    |
+| [MariaDB](https://mariadb.org/)                       |  `10.8.4    |
 | [Cloud Platform Project (with Gmail API)**](https://developers.google.com/gmail/api/quickstart/js)                                |    --                                                 |             |
 | PHP extension ext-mailparse**                         |      --     |
 
