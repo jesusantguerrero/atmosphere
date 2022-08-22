@@ -192,7 +192,7 @@
                     :menu="currentMenu"
                     :current-path="currentPath"
                     icon-class="text-gray-400 hover:text-primary transition"
-                    item-class="block w-full px-5 py-1 mb-2 font-bold text-gray-400 rounded-md text-md hover:text-primary hover:bg-base-lvl-1"
+                    item-class="block w-full px-5 py-1.5 mb-2 font-bold text-gray-400 rounded-md text-md hover:text-primary hover:bg-base-lvl-1"
                     item-active-class="text-primary bg-base-lvl-1"
                     is-expandable
                 >
