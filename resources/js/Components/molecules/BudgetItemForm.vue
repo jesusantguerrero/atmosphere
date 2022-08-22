@@ -211,5 +211,5 @@
             })
     })
 
-    const { form } = toRefs(state);
+    const { form, targetTypes, frequencies } = toRefs(state);
 </script>

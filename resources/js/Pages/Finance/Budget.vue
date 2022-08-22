@@ -45,9 +45,6 @@
 
 
       <div class="mx-auto mt-8 rounded-lg text-body bg-base max-w-7xl">
-        <div class="flex">
-          <div :class="[!selectedBudget ? 'w-full' : 'w-7/12']">
-
             <BudgetGroupForm
                 v-model="categoryForm.name"
                 @save="saveBudgetCategory()"
@@ -87,16 +84,17 @@
                         v-for="item in itemGroup.subCategories"
                         :key="`${item.id}-${item.budgeted}`"
                         :item="item"
+                        @click="selectedBudget = item"
                       />
                     </Draggable>
                   </div>
                 </template>
               </BudgetGroupItem>
             </Draggable>
-          </div>
+      </div>
+      <template #panel>
           <section
-            class="py-5 text-center"
-            :class="[selectedBudget ? 'w-5/12' : 'd-none']"
+            class="py-5 text-center w-full"
             v-if="selectedBudget"
           >
             <BudgetItemForm
@@ -109,8 +107,7 @@
               @cancel="selectedBudget = null"
             />
           </section>
-        </div>
-      </div>
+      </template>
     </FinanceTemplate>
   </AppLayout>
 </template>
@@ -126,17 +123,17 @@ import AppLayout from "@/Layouts/AppLayout.vue";
 import { useSelect } from "@/utils/useSelects";
 import BudgetItemForm from "@/Components/molecules/BudgetItemForm.vue";
 import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
-import { useBudget } from "@/domains/budget";
 import LogerInput from "@/Components/atoms/LogerInput.vue";
 import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
 import BudgetGroupItem from "@/Components/molecules/BudgetGroupItem.vue";
 import BudgetItem from "@/Components/molecules/BudgetItem.vue";
-
-import { useServerSearch } from "./useServerSearch";
-import formatMoney from "@/utils/formatMoney";
-import { createBudgetCategory } from "@/domains/budget/createBudgetCategory";
 import BudgetGroupForm from "@/Components/molecules/BudgetGroupForm.vue";
 import BalanceAssign from "@/Components/atoms/BalanceAssign.vue";
+
+import { useServerSearch } from "./useServerSearch";
+import { useBudget } from "@/domains/budget";
+import formatMoney from "@/utils/formatMoney";
+import { createBudgetCategory } from "@/domains/budget/createBudgetCategory";
 
 const props = defineProps({
   budgets: {
@@ -168,7 +165,6 @@ const { readyToAssign, visibleCategories, overspentCategories, toggleOverspent, 
 const state = reactive({
   isModalOpen: false,
   isAddingGroup: true,
-  expandedCategory: null,
   selectedBudget: null,
   budgetTotal: computed(() => {
     return 0; // sumMoney(props.budgets.data.map(item => item.amount));
