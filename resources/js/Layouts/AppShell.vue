@@ -1,5 +1,5 @@
 <template>
-    <main class="min-h-screen bg-base-lvl-3 home-container">
+    <main class="min-h-screen bg-base-lvl-3 home-container" v-auto-animate :class="{expanded: isExpanded}">
         <nav class="border-b border-base-lvl-3 app-header bg-base-lvl-3" :class="navClass">
             <slot name="navigation" />
         </nav>
@@ -8,7 +8,7 @@
                 <slot name="aside" />
             </aside>
 
-            <section class="app-content__inner ic-scroller">
+            <section class="app-content__inner ic-scroller bg-base">
                <slot name="main-section" />
             </section>
         </article>
@@ -19,20 +19,27 @@
 defineProps({
     navClass: {
         type: String
+    },
+    isExpanded: {
+        type: Boolean,
+        default: true
     }
 })
 </script>
 
 <style lang="scss">
-:root {
-    --app-side-width: 230px
-}
 body, html {
     background-color: #1E293B;
 }
 .home-container {
   position: relative;
   height: 100vh;
+
+  --app-side-width: 80px;
+
+  &.expanded {
+    --app-side-width: 230px
+  }
 }
 
 .app-header {
@@ -57,9 +64,9 @@ body, html {
   grid-template-columns: var(--app-side-width) minmax(0, 1fr);
   position: relative;
   height: 100vh;
+  transition: all ease .3s;
 
   &__inner {
-    @apply bg-base;
     width: 100%;
     grid-column-start: 2;
     padding: 65px 0;

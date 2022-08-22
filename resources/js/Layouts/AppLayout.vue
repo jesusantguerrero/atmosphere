@@ -1,7 +1,7 @@
 <template>
     <NConfigProvider>
-        <main class="min-h-screen dark:bg-base-lvl-3 home-container">
-            <nav class="border-b border-base-lvl-3 app-header bg-base-lvl-3" :class="{'shadow-md': !$slots.header}">
+        <AppShell :is-expanded="isExpanded" :nav-class="{'shadow-md': !$slots.header }">
+            <template #navigation>
                 <!-- Primary Navigation Menu -->
                 <div class="pr-4 mx-auto sm:pr-6 lg:pr-8 text-body">
                     <div class="flex items-center justify-between h-16">
@@ -182,47 +182,47 @@
                         </div>
                     </div>
                 </div>
-            </nav>
-            <article class="app-content">
-                <aside class="app-side-container">
-                    <AtSide
-                        class="border-r shadow-md text-body border-base-lvl-1 bg-base-lvl-3 app-side"
-                        title="Loger"
-                        v-model:isExpanded="isExpanded"
-                        :menu="currentMenu"
-                        :current-path="currentPath"
-                        item-class="block w-full px-5 py-1 mb-2 font-bold text-gray-400 rounded-md text-md hover:text-primary hover:bg-base-lvl-1"
-                        item-active-class="text-primary bg-base-lvl-1"
-                        is-expandable
-                    >
-                        <template #brand>
-                            <div class="flex">
-                                <div class="font-brand border border-dashed border-primary w-14 h-14 flex justify-center items-center text-primary rounded-full text-3xl">
-                                    L.
-                                </div>
-                                <div class="text-left pl-5" v-if="isExpanded">
-                                    <h1 class="text-3xl font-bold text-primary">Loger.</h1>
-                                    <small class="text-xs">Digital Home</small>
-                                </div>
-                            </div>
-                        </template>
-                    </AtSide>
-                </aside>
+            </template>
 
-                <section class="app-content__inner ic-scroller">
-                    <!-- Page Heading -->
-                    <header v-if="$slots.header" class="w-full pr-56 fixed z-30 mb-8 shadow-md overflow-hidden border-b bg-base-lvl-3 border-base-deep-1">
-                        <slot name="header"></slot>
-                    </header>
-                    <!-- Page Content -->
-                    <article class="overflow-hidden overflow-y-auto ic-scroller">
-                        <JetBanner />
-                        <slot></slot>
-                        <!-- <NavigationBottom :menu-items="menu" /> -->
-                    </article>
-                </section>
-            </article>
-        </main>
+            <template #aside>
+                <AtSide
+                    class="border-r shadow-md text-body border-base-lvl-1 bg-base-lvl-3 app-side"
+                    title="Loger"
+                    v-model:isExpanded="isExpanded"
+                    :menu="currentMenu"
+                    :current-path="currentPath"
+                    icon-class="text-gray-400 hover:text-primary transition"
+                    item-class="block w-full px-5 py-1 mb-2 font-bold text-gray-400 rounded-md text-md hover:text-primary hover:bg-base-lvl-1"
+                    item-active-class="text-primary bg-base-lvl-1"
+                    is-expandable
+                >
+                    <template #brand>
+                        <div class="flex">
+                            <div class="font-brand border border-dashed border-primary w-14 h-14 flex justify-center items-center text-primary rounded-full text-3xl">
+                                L.
+                            </div>
+                            <div class="text-left pl-5" v-if="isExpanded">
+                                <h1 class="text-3xl text-primary font-brand">Loger.</h1>
+                                <small class="text-xs">Digital Home</small>
+                            </div>
+                        </div>
+                    </template>
+                </AtSide>
+            </template>
+
+            <template #main-section>
+                <!-- Page Heading -->
+                <header v-if="$slots.header" :class="[isExpanded ? 'pr-56' : 'pr-20']" class="w-full fixed z-30 mb-8 shadow-md overflow-hidden border-b bg-base-lvl-3 border-base-deep-1">
+                    <slot name="header"></slot>
+                </header>
+                <!-- Page Content -->
+                <article class="overflow-hidden overflow-y-auto ic-scroller">
+                    <JetBanner />
+                    <slot></slot>
+                    <!-- <NavigationBottom :menu-items="menu" /> -->
+                </article>
+            </template>
+        </AppShell>
     </NConfigProvider>
 </template>
 
@@ -231,6 +231,8 @@
     import { darkTheme, NConfigProvider } from 'naive-ui'
     import { Inertia } from '@inertiajs/inertia'
     import { AtSide, AtButton } from "atmosphere-ui"
+    import { useLocalStorage } from "@vueuse/core"
+
     import JetBanner from '@/Jetstream/Banner.vue'
     import JetDropdown from '@/Jetstream/Dropdown.vue'
     import JetDropdownLink from '@/Jetstream/DropdownLink.vue'
@@ -239,6 +241,8 @@
     import LogerTabButton from '@/Components/atoms/LogerTabButton.vue'
     import LogerDropdown from '@/Components/molecules/LogerDropdown.vue'
     import { darkThemeOverrides } from '@/utils/naiveui'
+    import AppShell from './AppShell.vue'
+
     import { appMenu } from '@/domains/app'
     import { Link, usePage } from '@inertiajs/inertia-vue3'
     import { useSelect } from '@/utils/useSelects'
@@ -279,7 +283,7 @@
         return props.title || pageProps.value.sectionTitle
     })
 
-    const isPrivacyMode = ref(false)
+    const isPrivacyMode = useLocalStorage('hasHiddenValues', false)
     provide('hasHiddenValues', isPrivacyMode)
 
     // routing
@@ -311,7 +315,7 @@
     const currentPath = computed(() => {
         return document?.location?.pathname
     })
-    const isExpanded = ref(true);
+    const isExpanded = useLocalStorage('isMenuExpanded', true);
     const logout = () => Inertia.post(route('logout'));
 
     //  categories
@@ -319,160 +323,4 @@
     transformCategoryOptions(pageProps.value.categories, 'sub_categories', 'categoryOptions');
     transformCategoryOptions(pageProps.value.accounts, 'accounts', 'accountsOptions');
 </script>
-
-<style lang="scss">
-:root {
-    --app-side-width: 230px
-}
-body, html {
-    background-color: #1E293B;
-}
-.home-container {
-  position: relative;
-  height: 100vh;
-}
-
-.app-header {
-    width: 100%;
-    top: 0;
-    position: fixed;
-    z-index: 1000;
-    padding-left: var(--app-side-width);
-}
-
-.app-side-container {
-  padding-right: 0 !important;
-  position: fixed;
-  display: grid;
-  width: var(--app-side-width);
-  height: 100%;
-  z-index: 1001;
-}
-
-.app-content {
-  display: grid;
-  grid-template-columns: var(--app-side-width) minmax(0, 1fr);
-  position: relative;
-  height: 100vh;
-
-  &__inner {
-    @apply bg-base;
-    width: 100%;
-    grid-column-start: 2;
-    padding: 65px 0;
-    padding-bottom: 0;
-    position: relative;
-    max-height: 100%;
-    transition: all ease 0.3s;
-
-    &.header-replacer-mode {
-      padding-top: 0;
-
-      .header-replacer {
-        height: 73px;
-        margin: 0;
-        position: fixed;
-        left: 0;
-        top: 0;
-        display: flex;
-        width: 100%;
-        z-index: 1000;
-        background: white;
-        align-items: center;
-        padding: 0 10px;
-      }
-
-      .section-body {
-        padding-top: 140px;
-      }
-    }
-  }
-}
-
-.splash-screen {
-  background: dodgerblue;
-  width: 100%;
-  height: 100vh;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-@media screen and (max-width: 992px) {
-  .app-side-container {
-    z-index: 999;
-    width: 256px;
-    left: -260px;
-    transition: all ease 0.3s;
-  }
-
-  .app-content {
-    height: auto;
-    &__inner {
-        grid-column-start: 1;
-        grid-column-end: 3;
-        padding-bottom: 40px;
-    }
-  }
-
-  .home-container.menu-expanded {
-    .app-side-container {
-      left: 0;
-    }
-  }
-}
-
-@media print {
-  .app-side-container,
-  .no-print,
-  button {
-    display: none;
-  }
-
-  table {
-    width: 100% !important;
-    overflow: hidden;
-  }
-
-  th td {
-    overflow: hidden;
-  }
-
-  .app-content {
-    grid-column-start: 1;
-    grid-column-end: 3;
-  }
-}
-
-.ic-scroller {
-    &::-webkit-scrollbar-thumb {
-        background-color: transparentize($color: #000000, $amount: 0.7);
-        border-radius: 4px;
-
-        &:hover {
-            background-color: transparentize($color: #000000, $amount: 0.7);
-        }
-    }
-
-    &::-webkit-scrollbar {
-        background-color: transparent;
-        width: 8px;
-        height: 10px;
-    }
-
-    &-slim {
-        transition: all ease .3s;
-        &::-webkit-scrollbar {
-            height: 0;
-        }
-
-        &:hover {
-            &::-webkit-scrollbar {
-                height: 3px;
-            }
-        }
-    }
-}
-</style>
 

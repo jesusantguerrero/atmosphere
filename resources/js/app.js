@@ -9,6 +9,7 @@ import { InertiaProgress } from '@inertiajs/progress';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy/dist/vue.m';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import VueMultiselect from 'vue-multiselect'
+import { autoAnimatePlugin } from '@formkit/auto-animate/vue'
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
@@ -17,6 +18,7 @@ createInertiaApp({
         createApp({ render: () => h(app, props)})
         .use(plugin)
         .use(ZiggyVue, Ziggy)
+        .use(autoAnimatePlugin)
         .component('Multiselect', VueMultiselect)
         .mount(el);
     }
