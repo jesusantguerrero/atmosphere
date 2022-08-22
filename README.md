@@ -2,7 +2,7 @@
 
 Loger (House in french) is a Monolith app using laravel 8, jetstream, intertia, vue3, Tailwindcss and some hand crafted packages [Atmosphere UI](https://github.com/insane-code/journal), [Journal](https://github.com/insane-code/journal), [Tresurer](https://github.com/jesusantguerrero/insane-treasurer), and others.
 
-Loger helps to manage my family house chores things like Meal Planner, Home Finance,
+Loger helps to manage my family chores. Things like Meal Planner, Home Finance, House Projects & Relationships plans.
 
 Features:
 - Meal Planner
@@ -11,6 +11,7 @@ Features:
 - Scheduled Payments Reminders
 - Subscriptions
 - Transactions
+
 ## Showcase
 
 ![Landing](/public/images/landing.png)
