@@ -1,11 +1,11 @@
 <template>
   <div
-    class="border border-dashed bg-base-lvl-2 rounded-md px-5 py-2 w-ful flex overflow-hidden mb-4"
+    class="meal-cell border border-dashed border-primary rounded-md px-5 py-2 w-ful flex overflow-visible mb-4"
   >
     <div class="px-5 py-2 bg-base-lvl-2 font-bold text-primary" v-if="plannedMeal">
       {{ plannedMeal.dateable.name }}
     </div>
-    <div class="flex" v-else>
+    <div class="flex w-full overflow-visible" v-else>
       <LogerApiSelect
         v-model="recipe.id"
         v-model:label="recipe.name"
@@ -16,7 +16,7 @@
         :placeholder="`Add ${mealType.name}`"
         endpoint="/api/recipes"
       />
-      <LogerTabButton @click="submit">Save</LogerTabButton>
+      <LogerTabButton @click="submit" v-if="recipe.id">Save</LogerTabButton>
     </div>
   </div>
 </template>
@@ -47,3 +47,9 @@ const submit = (name, value) => {
   emit("submit", {...recipe, meal_type_id: props.mealType.id });
 };
 </script>
+
+<style lang="scss">
+.meal-cell .multiselect__tags {
+ border: none;
+}
+</style>

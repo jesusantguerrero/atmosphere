@@ -11,9 +11,9 @@ class GoalController extends InertiaController
     {
         $this->model = $goal;
         $this->templates = [
-            "index" => 'Goal',
-            "create" => 'GoalCreate',
-            "edit" => 'GoalCreate'
+            "index" => 'Finance/Goal',
+            "create" => 'Finance/GoalCreate',
+            "edit" => 'Finance/GoalCreate'
         ];
         $this->searchable = ['name'];
         $this->validationRules = [
