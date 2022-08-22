@@ -11,10 +11,26 @@ Features:
 - Scheduled Payments Reminders
 - Subscriptions
 - Transactions
-## Demo
+## Showcase
 
 ![Landing](/public/images/landing.png)
-![Finance Dashboard](/public/images/finance-dashboard.png)
+
+Dashboard Expanded 
+![Dashboard](/public/images/full-sized-dashboard.png)
+
+Dashboard
+![Dashboard](/public/images/dashboard-small-menu.png)
+
+Meal Planner
+![Meal Planner](/public/images/meal-planner.png)
+
+Finance Overview
+![Finance Overview](/public/images/finance-overview.png)
+
+Budget
+![Budget](/public/images/budget.png)
+
+
 
 ### Prerequisites
 
