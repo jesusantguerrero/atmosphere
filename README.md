@@ -1,8 +1,6 @@
 ## About Loger [codename: Atmosphere] (Work in progress)
 
-Loger (House in french) is a Monolith app using laravel 8, jetstream, intertia, vue3, Tailwindcss and some hand crafted packages [Atmosphere UI](https://github.com/insane-code/journal), [Journal](https://github.com/insane-code/journal), [Tresurer](https://github.com/jesusantguerrero/insane-treasurer), and others.
-
-Loger helps to manage my family chores. Things like Meal Planner, Home Finance, House Projects & Relationships plans.
+Loger (House in french) helps to manage my family chores. Things like Meal Planner, Home Finance, House Projects & Relationships plans.
 
 Features:
 - Meal Planner
@@ -32,22 +30,23 @@ Budget
 ![Budget](/public/images/budget.png)
 
 
+## Technical Stuff
+Loger is a Monolith app using laravel 8, jetstream, intertia, vue3, Tailwindcss and some hand crafted packages [Atmosphere UI](https://github.com/insane-code/journal), [Journal](https://github.com/insane-code/journal), [Tresurer](https://github.com/jesusantguerrero/insane-treasurer), and others.
 
 ### Prerequisites
 
 | Prerequisite                                          | Version     |
 | ------------------------------------------------------| ----------  |
-| [Docker*]()                                           |    --       |
 | [Node.js](http://nodejs.org)                          | `~ ^14.18.0`|
 | npm (comes with Node) or yarn (used)                  | `~ ^5`      |
 | [PHP]                                                 | `~ ^8.1.2`  |
 | [Composer](https://getcomposer.org/)                  | ' ^2.3.8    |
-| [MariaDB](https://mariadb.org/)                       |  `10.8.4    |
+| [MariaDB](https://mariadb.org/)***                    |  `10.8.4`   |
 | [Cloud Platform Project (with Gmail API)**](https://developers.google.com/gmail/api/quickstart/js)                                |    --                                                 |             |
 | PHP extension ext-mailparse**                         |      --     |
 
-`* Docker is optional and have all the dependencies you need ext-mailparse included`
 `** Those requirements are optional for Gmail integration/automation`
+`*** MariaDB could be replaced with MySql8`
 
 ```shell
 node -v
