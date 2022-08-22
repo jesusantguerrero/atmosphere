@@ -15,6 +15,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\GoalController;
 use App\Http\Controllers\IngredientController;
+use App\Http\Controllers\IntegrationController;
 use App\Http\Controllers\Jetstream\TeamInvitationController;
 use App\Http\Controllers\MealController;
 use App\Http\Controllers\PlannerController;
@@ -64,11 +65,10 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
      *                                  Dashboard Section
     ***************************************************************************************/
 
-    Route::controller(DashboardController::class)->group(function () {
-        Route::get('/dashboard', 'index')->name('dashboard');
-        Route::get('/settings/integrations', [DashboardController::class, 'integrations'])->name('settings.integrations');
-        Route::post('/services/google', 'google')->name('services.google');
-    });
+
+    Route::get('/dashboard', DashboardController::class)->name('dashboard');
+    Route::get('/integrations', IntegrationController::class)->name('settings.integrations');
+    Route::post('/integrations/google', [IntegrationController::class, 'google'])->name('services.google');
 
     /**************************************************************************************
      *                                  Meal Section

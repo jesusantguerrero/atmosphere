@@ -3,14 +3,27 @@
     {
         label: 'Profile',
         url: '/user/profile'
-    }, {
+    },
+    {
         label: 'Api Tokens',
         url: '/user/api-tokens'
     },
     {
         label: 'Teams',
         url: '/teams/1'
-    }]">
+    },
+    {
+        label: 'Integrations',
+        url: '/integrations'
+    },
+    {
+        label: 'Personalization',
+        url: '/integrations'
+    },
+    {
+        label: 'Personalization',
+        url: '/integrations'
+    },]">
     <template #actions>
         <slot name="actions"> <div class="py-4 w-1"></div> </slot>
     </template>

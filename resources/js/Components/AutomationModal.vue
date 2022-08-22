@@ -1,83 +1,85 @@
 <template>
    <modal :show="show" :max-width="maxWidth" :closeable="closeable" @close="close">
-        <div class="px-10 pt-5 pb-4">
-            <h3 class="text-lg font-bold text-primary">
-                <slot name="title">
-                    {{ title }}
-                </slot>
-            </h3>
-        </div>
+        <div class="bg-base-lvl-3">
+            <div class="px-5 pt-5 pb-4">
+                <h3 class="text-lg font-bold text-primary">
+                    <slot name="title">
+                        {{ title }}
+                    </slot>
+                </h3>
+            </div>
 
-        <div class="px-5 py-3">
-            <form @submit.prevent="submit">
-                <AtField label="Services">
-                    <n-select
-                        filterable
-                        clearable
-                        v-model:value="form.service"
-                        :default-expand-all="true"
-                        :options="serviceOptions"
-                    />
-                </AtField>
-                <AtField label="Integration">
-                    <n-select
-                        filterable
-                        clearable
-                        :options="integrationOptions"
-                        v-model:value="form.integration"
-                    />
-                </AtField>
-                <div class="flex">
-                    <Button @click.prevent="selectType('manual')">Manual</Button>
-                    <Button @click.prevent="selectType('recipe')">Recipes</Button>
-                </div>
-                <AtField label="Recipe" v-if="automationType=='recipe'">
-                    <n-select
-                        filterable
-                        clearable
-                        :options="recipeOptions"
-                        v-model:value="form.recipe"
-                    />
-                </AtField>
-                <div v-if="automationType=='manual'|| form.recipe">
-                    <div v-for="(task, index) in form.tasks">
-                        <AtField label="Automation Task" >
-                            <n-select
-                                filterable
-                                clearable
-                                :options="taskOptions"
-                                v-model:value="tasks[index].automation_task_id"
-                                @update:value="setTask(index, $event)"
-                            />
-                        </AtField>
-                        <div v-if="task.config" class="ml-5">
-                            <AtField :label="field.label||field.title||fieldName" v-for="(field, fieldName) in task.config">
+            <div class="px-5 py-3">
+                <form @submit.prevent="submit">
+                    <AtField label="Services">
+                        <n-select
+                            filterable
+                            clearable
+                            v-model:value="form.service"
+                            :default-expand-all="true"
+                            :options="serviceOptions"
+                        />
+                    </AtField>
+                    <AtField label="Integration">
+                        <n-select
+                            filterable
+                            clearable
+                            :options="integrationOptions"
+                            v-model:value="form.integration"
+                        />
+                    </AtField>
+                    <div class="flex">
+                        <Button @click.prevent="selectType('manual')">Manual</Button>
+                        <Button @click.prevent="selectType('recipe')">Recipes</Button>
+                    </div>
+                    <AtField label="Recipe" v-if="automationType=='recipe'">
+                        <n-select
+                            filterable
+                            clearable
+                            :options="recipeOptions"
+                            v-model:value="form.recipe"
+                        />
+                    </AtField>
+                    <div v-if="automationType=='manual'|| form.recipe">
+                        <div v-for="(task, index) in form.tasks">
+                            <AtField label="Automation Task" >
                                 <n-select
-                                    v-if="field.type=='select'"
                                     filterable
                                     clearable
-                                    :options="makeOptions(field.options)"
-                                    v-model:value="task.values[fieldName]"
+                                    :options="taskOptions"
+                                    v-model:value="tasks[index].automation_task_id"
+                                    @update:value="setTask(index, $event)"
                                 />
-                                <AtInput
-                                    v-else
-                                    type="text"
-                                    v-model.trim="task.values[fieldName]"
-                                >
-                                    <template name="suffix">
-                                        <div>
-                                            <button>Value</button>
-                                            <button>Formula</button>
-                                            <button>Field</button>
-                                        </div>
-                                    </template>
-                                </AtInput>
                             </AtField>
+                            <div v-if="task.config" class="ml-5">
+                                <AtField :label="field.label||field.title||fieldName" v-for="(field, fieldName) in task.config">
+                                    <n-select
+                                        v-if="field.type=='select'"
+                                        filterable
+                                        clearable
+                                        :options="makeOptions(field.options)"
+                                        v-model:value="task.values[fieldName]"
+                                    />
+                                    <AtInput
+                                        v-else
+                                        type="text"
+                                        v-model.trim="task.values[fieldName]"
+                                    >
+                                        <template name="suffix">
+                                            <div>
+                                                <button>Value</button>
+                                                <button>Formula</button>
+                                                <button>Field</button>
+                                            </div>
+                                        </template>
+                                    </AtInput>
+                                </AtField>
+                            </div>
                         </div>
+                        <Button @click.prevent="addComponent"> Add component </Button>
                     </div>
-                    <Button @click.prevent="addComponent"> Add component </Button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
 
         <div class="px-6 py-4 space-x-3 text-right bg-gray-100">
