@@ -108,13 +108,11 @@ class FinanceController extends InertiaController {
 
         return Jetstream::inertia()->render($request, 'Finance/Transactions', [
             "sectionTitle" => "Finance Transactions",
-            "categories" => CategoryHelper::getSubcategories($teamId, ['expenses', 'incomes']),
             "transactionTotal" => $transactions->sum('total'),
             "transactions" => $transactions->map(function ($transaction) use ($groupBy) {
                 return Transaction::parser($transaction, (bool) $groupBy);
             }),
             "accountId" => $accountId,
-            "accounts" => Account::getByDetailTypes($teamId),
             "serverSearchOptions" => [
                 "group" => $groupBy,
                 "filters" => $filters,

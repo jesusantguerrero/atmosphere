@@ -20,7 +20,7 @@
                         <div>
                             <div class="flex space-x-2">
                                 <AtField label="Date" class="w-3/12">
-                                    <n-date-picker
+                                    <NDatePicker
                                         v-model:value="form.date"
                                         type="date"
                                         size="large"
@@ -35,7 +35,7 @@
                                 </AtField>
 
                                  <AtField label="Account" class="w-4/12">
-                                    <n-select
+                                    <NSelect
                                         filterable
                                         clearable
                                         tag
@@ -52,7 +52,7 @@
                                     label="Payee"
                                     class="w-5/12"
                                 >
-                                    <LogerApiSelect
+                                    <LogerApiSimpleSelect
                                         v-model="form.payee_id"
                                         v-model:label="form.payee_label"
                                         tag
@@ -63,7 +63,7 @@
                                     />
                                 </AtField>
                                 <AtField label="Category" class="w-full">
-                                    <n-select
+                                    <NSelect
                                         filterable
                                         clearable
                                         tag
@@ -162,7 +162,7 @@
     import { NSelect, NDatePicker } from "naive-ui";
     import LogerInput from "@/Components/atoms/LogerInput.vue"
     import axios from 'axios'
-    import LogerApiSelect from './organisms/LogerApiSelect.vue'
+    import LogerApiSimpleSelect from './organisms/LogerApiSimpleSelect.vue'
 
     const props = defineProps({
             show: {
@@ -283,8 +283,6 @@
     }
 
     watch(() => props.transactionData, (newValue) => {
-
-
         Object.keys(state.form.data()).forEach((field) => {
             if (field == 'date') {
                 state.form[field] = new Date(newValue[field])

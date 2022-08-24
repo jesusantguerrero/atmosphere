@@ -3,6 +3,11 @@ import { format, parseISO } from "date-fns"
 import { h } from "vue"
 import IconTransfer from "@/Components/icons/IconTransfer.vue";
 
+const TRANSACTION_TYPES = {
+    WITHDRAW: 'outflow',
+    DEPOSIT: 'inflow'
+}
+
 export const tableCols = [
     {
         label: "Date",
@@ -34,12 +39,17 @@ export const tableCols = [
         width: 300,
     },
     {
+        label: "Type",
+        name: "direction",
+        width: 300,
+        render(row) {
+            return TRANSACTION_TYPES[row.direction];
+        },
+    },
+    {
         label: "Amount",
         name: "total",
-        render(row) {
-            console.log(row)
-            return formatMoney(row.total, row.currency_code)
-        }
+        type: "custom"
     },
     {
         label: "",

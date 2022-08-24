@@ -107,10 +107,10 @@
               table-class="overflow-auto text-sm rounded-t-lg shadow-md bg-base-lvl-3 p-2 border"
               :transactions="transactions"
               :parser="transactionDBToTransaction"
-              @edit="handleEdit"
+              @edit="''"
             >
               <template #action>
-                <at-button class="text-primary" @click="openModalFor()"
+                <at-button class="text-primary" @click="''"
                   ><i class="fa fa-plus"></i> Add transaction</at-button
                 >
               </template>
@@ -148,8 +148,6 @@ import { useServerSearch } from "./useServerSearch";
 const { serverSearchOptions } = toRefs(props);
 const {state: pageState} = useServerSearch(serverSearchOptions);
 
-const financeTemplateRef = ref(null);
-const { openModalFor, handleEdit } = useTransactionModal(financeTemplateRef);
 const props = defineProps({
   user: {
     type: Object,

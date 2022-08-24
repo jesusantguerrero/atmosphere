@@ -1,5 +1,5 @@
 <template>
-    <div class="pb-20 mt-5">
+    <div class="pb-20 mt-5 bg-base-lvl-3">
         <CustomTable
             :cols="tableCols"
             :show-prepend="true"
@@ -7,7 +7,7 @@
             @edit="handleEdit"
         >
             <template v-slot:total="{ scope: { row } }">
-                <div class="font-bold" :class="{'text-red-400':  row.direction == 'WITHDRAW', 'text-green-500': row.direction == 'DEPOSIT'}">
+                <div class="font-bold" :class="[getTransactionColor(row)]">
                     {{ formatMoney(row.total, row.currency_code) }}
                 </div>
             </template>
@@ -17,7 +17,7 @@
                     trigger="click"
                     key-field="name"
                     :options="options"
-                    :on-select="handleOptions"
+                    :on-select="(optionName) => handleOptions(optionName, row)"
                     @click.stop
                 >
                 <button class="hover:bg-base-lvl-3 px-2"> <i class="fa fa-ellipsis-v"></i></button>
@@ -52,6 +52,8 @@
         }
     })
 
+    const emit = defineEmits(['removed', 'edit', 'approved'])
+
     const isTransferModalOpen = ref(false);
     const transferConfig = reactive({
         recurrence: false,
@@ -63,7 +65,6 @@
         transferConfig.transactionData = transaction;
         isTransferModalOpen.value = true;
     }
-
 
     const options = computed(() => {
         const defaultOptions = [
@@ -80,7 +81,14 @@
     return defaultOptions.filter(option => !option.hide)
     });
 
-    const handleOptions = (option) => {
-        emit(option);
+    const handleOptions = (option, transaction) => {
+        emit(option, transaction);
     };
+
+    const getTransactionColor = (row) => {
+        if (row.payee?.name) {
+            return row.direction == 'WITHDRAW' ? 'text-red-400':  'text-green-500';
+        }
+        return 'text-body-1';
+    }
 </script>

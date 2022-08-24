@@ -22,7 +22,6 @@
       <slot />
     </div>
 
-    <TransactionModal v-bind="transferConfig" v-model:show="isTransferModalOpen" />
     <ImportResourceModal v-model:show="isImportModalOpen" />
   </section>
 </template>
@@ -45,32 +44,5 @@ defineProps({
     type: Boolean,
     default: true
   }
-});
-
-// Transaction modal things
-const isTransferModalOpen = ref(false);
-const transferConfig = reactive({
-  recurrence: false,
-  automatic: false,
-  transactionData: null,
-});
-
-const openTransactionModal = (isRecurrent, automatic) => {
-  isTransferModalOpen.value = true;
-  transferConfig.recurrence = isRecurrent;
-  transferConfig.automatic = automatic;
-};
-
-const openTransactionModalForEdit = (transaction) => {
-  transferConfig.transactionData = transaction;
-  isTransferModalOpen.value = true;
-};
-
-provide("openTransactionModal", openTransactionModal);
-provide("openTransactionModalForEdit", openTransactionModalForEdit);
-
-defineExpose({
-  openTransactionModal,
-  openTransactionModalForEdit,
 });
 </script>

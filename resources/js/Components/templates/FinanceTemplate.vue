@@ -18,9 +18,6 @@
             </slot>
         </div>
 
-        <transaction-modal
-            v-model:show="isTransferModalOpen"
-        />
         <ImportResourceModal v-model:show="isImportModalOpen" />
     </div>
 </template>
@@ -55,9 +52,6 @@
             }
         }
     });
-
-    const { categoryOptions: transformCategoryOptions } = useSelect()
-    transformCategoryOptions(props.accounts, 'accounts', 'accountsOptions');
 
     // import modal related
     const isImportModalOpen = ref(false)
