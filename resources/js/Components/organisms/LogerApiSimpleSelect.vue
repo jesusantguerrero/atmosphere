@@ -1,13 +1,15 @@
 <template>
 <NSelect
+    :value="optionParser(modelValue)"
     filterable
     clearable
     remote
     size="large"
-    :value="optionParser(modelValue)"
     :placeholder="placeholder"
     :options="options"
     :loading="isLoading"
+    v-bind="$attrs"
+    :render-label="renderLabel"
     :clear-filter-after-select="false"
     @update:value="emitInput"
     @search="handleSearch"
@@ -44,65 +46,48 @@ const props = defineProps({
     trackId: {
         type: String
     },
-    tag: {
-        type: Boolean,
-        default: true
-    },
-    once: {
-        type: Boolean,
-        default: true
-    },
-    resultParser: {
-        type: [null, Function],
-    }
 })
 const emit = defineEmits(['update:modelValue', 'update:label'])
 
 const options = ref([]);
 const isLoading = ref(false);
 
+
 const optionParser = (option) => {
-    const optionLabel = props.customLabel ? option[props.customLabel] : option.label;
+    if (!option) return option
+    const optionLabel = props.customLabel && option ? option[props.customLabel] : option.label;
     return optionLabel
 }
 
-const processResults = (apiOptions, query) => {
+const resultParser = (apiOptions, query) => {
     let includeCustom = true;
     const originalMap = apiOptions.map(option => {
         const optionLabel = props.customLabel ? option[props.customLabel] : option.label;
-        if (!props.tag || (includeCustom && optionLabel.includes(query))) includeCustom = false;
-
-        const value = props.trackId ? option[props.trackId] : option.id || option
+        if (includeCustom && optionLabel.includes(query)) includeCustom = false;
         return {
-            label: typeof option !== 'string' ? optionLabel : option,
-            value
+            label: optionLabel,
+            value: props.trackId ? option[props.trackId] : option.id
         }
     })
 
     const custom = includeCustom ? [
-        {
-            label: query,
-            value: 'new'
-        }
+            {
+                label: query,
+                value: 'new'
+            }
     ]: [];
 
     return [...custom, ...originalMap]
 }
 
 const handleSearch = debounce((query) => {
-    if (!query.length && !props.once) {
+    if (!query.length) {
         options.value = []
         return;
     }
-
-    if (props.once && options.value.length) {
-        return
-    }
-
     isLoading.value = true
-
     window.axios.get(`${props.endpoint}?q=${query}`).then(({ data }) => {
-        options.value = processResults(data.data, query);
+        options.value = resultParser(data.data, query);
         isLoading.value = false
     })
 }, 200)
