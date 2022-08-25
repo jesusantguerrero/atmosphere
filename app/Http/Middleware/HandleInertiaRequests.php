@@ -51,6 +51,9 @@ class HandleInertiaRequests extends Middleware
                     'location' => $request->url(),
                 ]);
             },
+            'onboarding' => function () use ($team) {
+                return $team ? $team->onboarding()->steps() : [];
+            },
             'accountDetailTypes' => AccountDetailType::all(),
             'trialEndsAt' => $team ? $team->trial_ends_at : null,
             'unreadNotifications' => function() use ($user) {

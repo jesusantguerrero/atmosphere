@@ -21,6 +21,7 @@ use App\Http\Controllers\IntegrationController;
 use App\Http\Controllers\Jetstream\TeamInvitationController;
 use App\Http\Controllers\MealController;
 use App\Http\Controllers\PlannerController;
+use App\Http\Controllers\System\NotificationController;
 use App\Http\Controllers\TransactionDraftController;
 use Freesgen\Atmosphere\Http\Controllers\SettingsController;
 use Freesgen\Atmosphere\Http\OnboardingController;
@@ -60,6 +61,11 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
         Route::resource('/settings', SettingsController::class);
         Route::get('/settings/tab/{tabName}', 'index');
         Route::get('/settings/{name}',  'section');
+    });
+
+    Route::controller(NotificationController::class)->group(function () {
+        Route::get('/notifications', 'index')->name('notifications');
+        Route::patch('/notifications/{notificationId}', 'update')->name('notifications.update');
     });
 
     /**************************************************************************************
