@@ -10,7 +10,7 @@
                 :key="account.id"
                 :account="account"
                 :is-selected="isSelectedAccount(account.id)"
-                @click="Inertia.visit(`/finance/${account.id}/transactions`)"
+                @click="Inertia.visit(`/finance/transactions?filter[account_id]=${account.id}`)"
             />
        </Draggable>
     </div>
@@ -20,7 +20,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, inject } from "vue";
 import { Inertia } from "@inertiajs/inertia";
 import { usePage } from "@inertiajs/inertia-vue3";
 import AccountItem from "@/Components/atoms/AccountItem.vue";
@@ -29,9 +29,9 @@ import AccountModal from "@/Components/organisms/AccountModal.vue";
 import { VueDraggableNext as Draggable } from "vue-draggable-next"
 import autoAnimate from "@formkit/auto-animate"
 
-const pageProps = usePage().props;
+const selectedAccountId = inject('selectedAccountId', null);
 const isSelectedAccount = (accountId) => {
-  return pageProps.value.accountId == accountId;
+  return Number(selectedAccountId) === accountId;
 };
 
 const props = defineProps({

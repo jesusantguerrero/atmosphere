@@ -7,10 +7,6 @@
     url: '/finance/transactions'
 },
 {
-    label: 'Drafts Transactions',
-    url: '/finance/transaction-drafts'
-},
-{
     label: 'Budget',
     url: '/budgets'
 }, {

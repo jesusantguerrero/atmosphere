@@ -10,7 +10,7 @@ use Insane\Journal\Models\Core\Account;
 class Budget extends Model
 {
     use HasFactory;
-    protected $fillable = ['team_id', 'user_id','account_id','parent_id', 'amount', 'name', 'target_type', 'frequency', 'frequency_date', 'frequency_week_day', 'frequency_month_date'];
+    protected $fillable = ['team_id', 'user_id', 'target_amount', 'name', 'target_type', 'frequency', 'frequency_date', 'frequency_week_day', 'frequency_month_date'];
     protected $with = ['children'];
 
     public function account() {

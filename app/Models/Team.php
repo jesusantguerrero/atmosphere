@@ -3,14 +3,17 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Insane\Journal\Models\Core\Account;
 use Laravel\Jetstream\Events\TeamCreated;
 use Laravel\Jetstream\Events\TeamDeleted;
 use Laravel\Jetstream\Events\TeamUpdated;
 use Laravel\Jetstream\Team as JetstreamTeam;
-
-class Team extends JetstreamTeam
+use Spatie\Onboard\Concerns\Onboardable;
+use Spatie\Onboard\Concerns\GetsOnboarded;
+class Team extends JetstreamTeam implements Onboardable
 {
     use HasFactory;
+    use GetsOnboarded;
     protected $with = ['settings'];
 
     /**
@@ -45,5 +48,13 @@ class Team extends JetstreamTeam
 
     public function settings() {
         return $this->hasMany(Setting::class);
+    }
+
+    public function accounts() {
+        return $this->hasMany(Account::class);
+    }
+
+    public function meals() {
+        return $this->hasMany(Meal::class);
     }
 }

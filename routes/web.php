@@ -13,14 +13,16 @@ use App\Http\Controllers\BudgetCategoryController;
 use App\Http\Controllers\BudgetMonthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FinanceController;
+use App\Http\Controllers\FinanceTransactionController;
+use App\Http\Controllers\FinanceTrendController;
 use App\Http\Controllers\GoalController;
 use App\Http\Controllers\IngredientController;
 use App\Http\Controllers\IntegrationController;
 use App\Http\Controllers\Jetstream\TeamInvitationController;
 use App\Http\Controllers\MealController;
 use App\Http\Controllers\PlannerController;
+use App\Http\Controllers\System\NotificationController;
 use App\Http\Controllers\TransactionDraftController;
-use App\Http\Controllers\TrendController;
 use Freesgen\Atmosphere\Http\Controllers\SettingsController;
 use Freesgen\Atmosphere\Http\OnboardingController;
 use Illuminate\Support\Facades\Route;
@@ -61,6 +63,11 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
         Route::get('/settings/{name}',  'section');
     });
 
+    Route::controller(NotificationController::class)->group(function () {
+        Route::get('/notifications', 'index')->name('notifications');
+        Route::patch('/notifications/{notificationId}', 'update')->name('notifications.update');
+    });
+
     /**************************************************************************************
      *                                  Dashboard Section
     ***************************************************************************************/
@@ -93,11 +100,14 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
 
     // Budgeting & Goals routes
     Route::resource('/budgets', BudgetCategoryController::class);
-    Route::post('/budgets/{categoryId}/months/{month}', [BudgetMonthController::class, 'assign'])->name("budget.assignment");
+    Route::controller(BudgetMonthController::class)->group(function () {
+        Route::post('/budgets/{categoryId}/months/{month}', 'assign')->name("budget.assignment");
+        Route::post('/budgets/import', 'import')->name('budget.import');
+    });
+
     Route::controller(GoalController::class)->group(function () {
         Route::resource('/goals', GoalController::class);
     });
-
 
     // Account && Transactions
     Route::controller(TransactionDraftController::class)->group(function () {
@@ -109,14 +119,16 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     // Finance dashboard related routes
     Route::controller(FinanceController::class)->group(function () {
         Route::get('/finance', 'index')->name('finance');
-        Route::get('/finance/transactions', 'transactions')->name('finance.transactions');
-        Route::get('/finance/{accountId}/transactions', 'transactions')->name('finance.account.transactions');
-        Route::post('/finance/import', 'importTransactions')->name('finance.import');
-        Route::post('/finance/import-budget', 'importMonthBudgets')->name('finance.import.budget');
     });
 
-    Route::get('/trends', [TrendController::class, 'index'])->name('finance.trends');
-    Route::get('/trends/{name}', [TrendController::class, 'index'])->name('finance.trend-section');
+    Route::controller(FinanceTransactionController::class)->group(function() {
+        Route::get('/finance/transactions', 'index')->name('finance.transactions');
+        Route::get('/finance/{accountId}/transactions', 'index')->name('finance.account.transactions');
+        Route::post('/finance/import', 'import')->name('finance.import');
+    });
+
+    Route::get('/trends', [FinanceTrendController::class, 'index'])->name('finance.trends');
+    Route::get('/trends/{name}', [FinanceTrendController::class, 'index'])->name('finance.trend-section');
 });
 
 

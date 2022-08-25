@@ -5,10 +5,8 @@
         <template #actions>
           <AtDatePager
             class="w-full h-12 border-none bg-base-lvl-1 text-body"
-            v-model="pageState.date"
-            v-model:dateSpan="pageState.dateSpan"
-            v-model:startDate="pageState.searchOptions.date.startDate"
-            v-model:endDate="pageState.searchOptions.date.endDate"
+            v-model:startDate="pageState.dates.startDate"
+            v-model:endDate="pageState.dates.endDate"
             controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
             next-mode="month"
           />
@@ -107,10 +105,10 @@
               table-class="overflow-auto text-sm rounded-t-lg shadow-md bg-base-lvl-3 p-2 border"
               :transactions="transactions"
               :parser="transactionDBToTransaction"
-              @edit="handleEdit"
+              @edit="''"
             >
               <template #action>
-                <at-button class="text-primary" @click="openModalFor()"
+                <at-button class="text-primary" @click="''"
                   ><i class="fa fa-plus"></i> Add transaction</at-button
                 >
               </template>
@@ -148,8 +146,6 @@ import { useServerSearch } from "./useServerSearch";
 const { serverSearchOptions } = toRefs(props);
 const {state: pageState} = useServerSearch(serverSearchOptions);
 
-const financeTemplateRef = ref(null);
-const { openModalFor, handleEdit } = useTransactionModal(financeTemplateRef);
 const props = defineProps({
   user: {
     type: Object,

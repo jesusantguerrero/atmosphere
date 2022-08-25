@@ -26,6 +26,18 @@
 
                             <PrivacyToggle v-model="isPrivacyMode" v-if="!isOnboarding" />
 
+                            <div>
+                                <LogerTabButton
+                                    type="button"
+                                    class="relative "
+                                    @click="$inertia.visit('/notifications')"
+                                >
+                                    <i class="mr-1 fa fa-bell" />
+                                    <div class="absolute bottom-0 right-0 w-4 h-4 text-xs text-white bg-red-400 rounded-full shadow-md">
+                                        {{ $page.props.unreadNotifications }}
+                                    </div>
+                                </LogerTabButton>
+                            </div>
                             <!-- Teams Dropdown -->
                             <div class="relative ml-3">
                                 <LogerDropdown
@@ -198,9 +210,7 @@
                 >
                     <template #brand>
                         <div class="flex">
-                            <div class="font-brand border border-dashed border-primary w-14 h-14 flex justify-center items-center text-primary rounded-full text-3xl">
-                                L.
-                            </div>
+                            <AppIcon />
                             <div class="text-left pl-5" v-if="isExpanded">
                                 <h1 class="text-3xl text-primary font-brand">Loger.</h1>
                                 <small class="text-xs">Digital Home</small>
@@ -223,6 +233,7 @@
                 </article>
             </template>
         </AppShell>
+        <AppGlobals />
     </NConfigProvider>
 </template>
 
@@ -242,6 +253,8 @@
     import LogerDropdown from '@/Components/molecules/LogerDropdown.vue'
     import { darkThemeOverrides } from '@/utils/naiveui'
     import AppShell from './AppShell.vue'
+    import AppIcon from '@/Components/AppIcon.vue'
+    import AppGlobals from './AppGlobals.vue'
 
     import { appMenu } from '@/domains/app'
     import { Link, usePage } from '@inertiajs/inertia-vue3'
@@ -259,7 +272,7 @@
         isOnboarding: {
             type: Boolean,
             default: false
-        }
+        },
     })
 
     const currentMenu = computed(() => {

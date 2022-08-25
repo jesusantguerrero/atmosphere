@@ -55,7 +55,7 @@ const emitClose = () => {
 };
 
 const options = [{
-    value: '/finance/import-budget',
+    value: '/budgets/import',
     label: 'Budget'
 }, {
     value: '/finance/import',

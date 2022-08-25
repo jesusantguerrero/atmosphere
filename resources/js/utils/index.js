@@ -94,37 +94,4 @@ export const getDateFromIso = (isoDateString) => {
     return startOfDay(new Date(isoDateString))
 }
 
-export const filterParams = (mainDateField, {dates}) => {
-    let filters = [];
-
-    if (dates.startDate) {
-      let dateFilterValue = format(dates.startDate, 'yyyy-MM-dd');
-      if (dates.endDate) {
-        dateFilterValue += `~${format(dates.endDate, 'yyyy-MM-dd')}`;
-      }
-      filters.push(`filter[${mainDateField}]=${dateFilterValue}`);
-    }
-
-    return filters.join("&");
-  }
-
-export const groupParams = (groupValue) => {
-    return `group=${groupValue}`;
-  }
-
-export const updateSearch = (searchOptions, dateSpan) => {
-      let params = [
-          filterParams('date', { dates: {
-              startDate: searchOptions.date.startDate,
-              endDate: dateSpan ? dateSpan[dateSpan.length - 1] : null
-          } }),
-          groupParams(searchOptions.group)
-    ]
-    params = params.filter(value => value).join("&");
-    Inertia.visit(`${window.location.pathname}?${params}`, {
-        preserveState: true,
-    })
-}
-
-
 export const generateRandomColor = () => `#${Math.floor(Math.random() * 16777215).toString(16)}`;
