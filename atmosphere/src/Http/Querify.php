@@ -12,22 +12,31 @@ trait Querify
     private $request;
     protected $authorizedUser = true;
     protected $authorizedTeam = true;
+    private $serverParams;
 
     public function getModelQuery($request, $id=null, $extendFunction=null)
     {
         $this->request = $request;
         $queryParams = $request->query();
-        $limit = isset($queryParams['limit']) ? $queryParams['limit'] : null;
-        $search = isset($queryParams['search']) ? $queryParams['search'] : null;
-        $sorts = isset($queryParams['sort']) ? $queryParams['sort'] : null;
-        $relationships = isset($queryParams['relationships']) ? $queryParams['relationships'] : null;
-        $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
+        $limit = $queryParams['limit'] ?? null;
+        $page = $queryParams['page'] ?? null;
+        $search = $queryParams['search'] ?? null;
+        $sorts =  $queryParams['sort'] ?? null;
+        $relationships = $queryParams['relationships'] ?? null;
+        $filters = $queryParams['filter'] ?? [];
 
         $this->modelQuery = $this->model::query();
         $this->whereRaw = $this->getSearch($search);
         $this->getRelationships($relationships);
-        $this->getFilters($filters);
         $this->getSorts($sorts);
+
+        $this->serverParams = [
+            'filters' => $this->getFilters($filters),
+            'limit' => $limit,
+            'search' => $search,
+            'sorts' => $sorts,
+            'relationships' => $relationships
+        ];
 
         if ($extendFunction) {
           $extendFunction($this->modelQuery, $queryParams);
@@ -45,7 +54,11 @@ trait Querify
             $this->modelQuery->where(["team_id" => $request->user()->current_team_id]);
          }
 
-        return $this->getPaginate($limit);
+        return $this->getPaginate($limit, $page);
+    }
+
+    public function getServerParams() {
+        return $this->serverParams;
     }
 
     private function getSearch($search)
@@ -168,9 +181,15 @@ trait Querify
         }
     }
 
-    private function getPaginate($limit)
+    private function getPaginate($limit, $page)
     {
-        return $this->modelQuery->paginate($limit);
+        if ($limit && $page) {
+            return $this->modelQuery->paginate($limit, $page);
+        } else if ($limit) {
+            return $this->modelQuery->limit($limit);
+        }
+
+        return $this->modelQuery->get();
     }
 
     private function getSorts($externalSorts)
@@ -179,7 +198,7 @@ trait Querify
         if ($sorts) {
             $sorts = $this->splitAndTrim($sorts);
             foreach ($sorts as $sort) {
-                $direction = strpos($sort, "-") ? "DESC" : "ASC";
+                $direction = strpos($sort, "-") !== False ? "DESC" : "ASC";
                 $sort = $direction == "ASC" ? $sort : substr($sort, 1);
                 $this->modelQuery->orderBy($sort, $direction);
             }

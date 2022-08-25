@@ -24,27 +24,31 @@ class FinanceTransactionController extends InertiaController {
             'index' => 'Finance/Transactions'
         ];
         $this->searchable = ["id", "date"];
-        $this->sorts = [];
-        $this->includes = [];
+        $this->sorts = ['-date'];
+        $this->includes = [
+            'mainLine',
+            'lines',
+            'category',
+            'transactionCategory',
+            'mainLine.account',
+            'category.account'
+        ];
         $this->appends = [];
-        $this->filters = [];
+        $dates = $this->getFilterDates();
+        $this->filters = [
+            'date' => "{$dates['0']}~{$dates['1']}",
+            'status' => Transaction::STATUS_VERIFIED
+        ];
     }
 
-    public function index(Request $request, $accountId = null) {
-        $options = $this->getOptionParams();
-        $teamId = $request->user()->current_team_id;
-        $transactionService = new TransactionService();
-
-        $transactions = $accountId
-        ? $transactionService->getForAccount($accountId, $teamId, $options)
-        : $transactionService->getList($teamId, $options);
-
-        return Jetstream::inertia()->render($request, 'Finance/Transactions', [
+    public function getIndexProps(Request $request, $accountId = null) {
+        return  [
             "sectionTitle" => "Finance Transactions",
-            "transactions" => TransactionResource::collection($transactions),
-            "accountId" => $accountId,
-            "serverSearchOptions" => $options
-        ]);
+        ];
+    }
+
+    protected function parser($results) {
+        return TransactionResource::collection($results);
     }
 
     public function import(Request $request) {
@@ -55,10 +59,7 @@ class FinanceTransactionController extends InertiaController {
     private function getOptionParams() {
         $queryParams = request()->query();
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
-        [$startDate, $endDate] = $this->getFilterDates($filters);
         $queryParams['filters'] = $filters;
-        $queryParams['startDate'] = $startDate;
-        $queryParams['endDate'] = $endDate;
         return $queryParams;
     }
 }

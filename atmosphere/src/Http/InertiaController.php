@@ -20,9 +20,14 @@ class InertiaController extends BaseController {
     protected $appends = [];
     protected $filters = [];
     protected $responseType = "inertia";
+    protected $parser;
 
     public function index(Request $request) {
-        return Inertia::render($this->templates['index'], $this->getIndexProps($request));
+        return Inertia::render($this->templates['index'],
+        array_merge([
+            $this->model->getTable() => $this->parser($this->getModelQuery($request)),
+            "serverSearchOptions" => $this->getServerParams()
+        ], $this->getIndexProps($request)));
     }
 
     public function create(Request $request) {
@@ -70,12 +75,11 @@ class InertiaController extends BaseController {
     }
 
     protected function getIndexProps(Request $request) {
-        $queryParams = $request->query() ?? [];
-        $queryParams['limit'] = $queryParams['limit'] ?? 50;
+        return [];
+    }
 
-        return [
-            $this->model->getTable() => $this->getModelQuery($request)
-        ];
+    protected function parser($results) {
+        return $results;
     }
 
     protected function getEditProps(Request $request, $id) {
@@ -104,12 +108,11 @@ class InertiaController extends BaseController {
         return $this->validationRules;
     }
 
-    protected Function getFilterDates($filters) {
+    protected function getFilterDates($filters = [], $subCount=0) {
         $dates = isset($filters['date']) ? explode("~", $filters['date']) : [
-            Carbon::now()->startOfMonth()->format('Y-m-d'),
+            Carbon::now()->subMonths($subCount)->startOfMonth()->format('Y-m-d'),
             Carbon::now()->endOfMonth()->format('Y-m-d')
         ];
         return $dates;
     }
-
 }
