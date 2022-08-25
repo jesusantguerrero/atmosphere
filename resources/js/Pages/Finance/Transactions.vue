@@ -11,6 +11,7 @@
               controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
               next-mode="month"
             />
+            <DraftButtons v-if="isDraft" />
           </div>
         </template>
       </FinanceSectionNav>
@@ -40,6 +41,7 @@ import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
 
 import { useTransferModal } from "@/utils/useTransferModal";
 import { useServerSearch } from "./useServerSearch";
+import DraftButtons from "./DraftButtons.vue";
 
 const { openTransferModal } = useTransferModal();
 
@@ -75,6 +77,10 @@ const selectedAccountId = computed(() => {
 })
 
 provide('selectedAccountId', selectedAccountId.value)
+
+const isDraft = computed(() => {
+    return serverSearchOptions.value.filters?.status == "draft";
+});
 
 const removeTransaction = (transaction) => {
     Inertia.delete(`/transactions/${transaction.id}`, {

@@ -6,6 +6,8 @@ use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Transaction\Resources\TransactionResource;
 use App\Domains\Transaction\Services\TransactionService;
 use App\Imports\TransactionsImport;
+use App\Models\Planner;
+use App\Notifications\TransactionsImported;
 use Carbon\Carbon;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
@@ -52,7 +54,49 @@ class FinanceTransactionController extends InertiaController {
     }
 
     public function import(Request $request) {
-        Excel::import(new TransactionsImport($request->user()), $request->file('file'));
+        $user = $request->user();
+        Excel::import(new TransactionsImport($user), $request->file('file'));
+        $user->notify(new TransactionsImported());
+        return redirect()->back();
+    }
+
+    public function addPlannedTransaction(Request $request) {
+        $postData = $this->getPostData($request);
+        $postData['status'] = Transaction::STATUS_PLANNED;
+        $transaction = Transaction::create($postData);
+        $transaction->createLines($postData, $postData['items'] ?? []);
+
+        Planner::create(array_merge($postData ,[
+            'dateable_type' => Transaction::class,
+            'dateable_id' => $transaction['id'],
+        ]));
+
+        return redirect()->back();
+    }
+
+    public function markPlannedAsPaid(Request $request, $transactionId) {
+        $transaction = Transaction::with(['schedule'])->find($transactionId);
+
+        if ($transaction->team_id == $request->user()->current_team_id) {
+            $schedule = $transaction->schedule;
+            $rule = (new \Recurr\Rule())
+                ->setStartDate(new \DateTime($schedule['date']))
+                ->setTimezone($schedule->timezone)
+                ->setFreq($schedule->frequency);
+
+            $transformer = new \Recurr\Transformer\ArrayTransformer();
+            $transformerConfig = new \Recurr\Transformer\ArrayTransformerConfig();
+            $transformerConfig->enableLastDayOfMonthFix();
+            $transformer->setConfig($transformerConfig);
+
+            $nextDate = $transformer->transform($rule)[1];
+
+            $transaction->copy(['status' => 'verified']);
+            $transaction->update(['date' => $nextDate->getStart()->format('Y-m-d')]);
+            $transaction->schedule->update(['date' => $nextDate->getStart()->format('Y-m-d')]);
+        }
+
+
         return redirect()->back();
     }
 

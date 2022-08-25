@@ -26,6 +26,18 @@
 
                             <PrivacyToggle v-model="isPrivacyMode" v-if="!isOnboarding" />
 
+                            <div>
+                                <LogerTabButton
+                                    type="button"
+                                    class="relative "
+                                    @click="$inertia.visit('/notifications')"
+                                >
+                                    <i class="mr-1 fa fa-bell" />
+                                    <div class="absolute bottom-0 right-0 w-4 h-4 text-xs text-white bg-red-400 rounded-full shadow-md">
+                                        {{ $page.props.unreadNotifications }}
+                                    </div>
+                                </LogerTabButton>
+                            </div>
                             <!-- Teams Dropdown -->
                             <div class="relative ml-3">
                                 <LogerDropdown
@@ -260,7 +272,7 @@
         isOnboarding: {
             type: Boolean,
             default: false
-        }
+        },
     })
 
     const currentMenu = computed(() => {
