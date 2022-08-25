@@ -2,15 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\CategoryGroupCollection;
+use App\Imports\BudgetImport;
 use App\Models\BudgetMovement;
 use App\Models\Category;
-use App\Models\Planner;
-use App\Models\Transaction;
-use Freesgen\Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Facades\Excel;
 
 class BudgetMonthController extends Controller
 {
@@ -23,5 +20,10 @@ class BudgetMonthController extends Controller
         $monthBalance = $category->assignBudget($month, $postData);
         BudgetMovement::registerMovement($monthBalance, $postData);
         return Redirect::back();
+    }
+
+    public function import(Request $request) {
+        Excel::import(new BudgetImport($request->user()), $request->file('file'));
+        return redirect()->back();
     }
 }

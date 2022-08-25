@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\CategoryGroupCollection;
-use App\Imports\BudgetImport;
 use App\Models\BudgetMovement;
 use App\Models\Category;
 use App\Models\Planner;
@@ -12,7 +11,6 @@ use Freesgen\Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\Rule;
-use Maatwebsite\Excel\Facades\Excel;
 
 class BudgetCategoryController extends InertiaController
 {
@@ -23,9 +21,7 @@ class BudgetCategoryController extends InertiaController
     {
         $this->model = $category;
         $this->templates = [
-            "index" => 'Finance/Budget',
-            "create" => 'BudgetCreate',
-            "edit" => 'BudgetCreate'
+            "index" => 'Finance/Budget'
         ];
         $this->searchable = ['name'];
         $this->validationRules = [
@@ -74,6 +70,14 @@ class BudgetCategoryController extends InertiaController
         return Redirect::back();
     }
 
+    public function updateCategoryBudget(Request $request, $categoryId)
+    {
+        $category = Category::find($categoryId);
+        $postData = $request->post();
+        $category->budget->update($postData);
+        return Redirect::back();
+    }
+
     public function assignMonthBudget(Request $request, $categoryId, $month)
     {
         $category = Category::find($categoryId);
@@ -83,64 +87,11 @@ class BudgetCategoryController extends InertiaController
         return Redirect::back();
     }
 
-    public function updateCategoryBudget(Request $request, $categoryId)
-    {
-        $category = Category::find($categoryId);
-        $postData = $request->post();
-        $category->budget->update($postData);
-        return Redirect::back();
-    }
-
-    public function addPlannedTransaction(Request $request) {
-        $postData = $this->getPostData($request);
-        $postData['status'] = Transaction::STATUS_PLANNED;
-        $transaction = Transaction::create($postData);
-        $transaction->createLines($postData, $postData['items'] ?? []);
-
-        Planner::create(array_merge($postData ,[
-            'dateable_type' => Transaction::class,
-            'dateable_id' => $transaction['id'],
-        ]));
-
-        return Redirect::back();
-    }
-
-    public function markAsPaid(Request $request, $transactionId) {
-        $transaction = Transaction::with(['schedule'])->find($transactionId);
-
-        if ($transaction->team_id == $request->user()->current_team_id) {
-            $schedule = $transaction->schedule;
-            $rule = (new \Recurr\Rule())
-                ->setStartDate(new \DateTime($schedule['date']))
-                ->setTimezone($schedule->timezone)
-                ->setFreq($schedule->frequency);
-
-            $transformer = new \Recurr\Transformer\ArrayTransformer();
-            $transformerConfig = new \Recurr\Transformer\ArrayTransformerConfig();
-            $transformerConfig->enableLastDayOfMonthFix();
-            $transformer->setConfig($transformerConfig);
-
-            $nextDate = $transformer->transform($rule)[1];
-
-            $transaction->copy(['status' => 'verified']);
-            $transaction->update(['date' => $nextDate->getStart()->format('Y-m-d')]);
-            $transaction->schedule->update(['date' => $nextDate->getStart()->format('Y-m-d')]);
-        }
-
-
-        return Redirect::back();
-    }
-
     protected function getValidationRules($postData)
     {
         return $this->validationRules = [
             'name' => 'required|string|max:255|',
             Rule::unique('categories',)->where(fn ($query) => $query->where('team_id', $postData['team_id'])),
         ];
-    }
-
-    public function importMonthBudgets(Request $request) {
-        Excel::import(new BudgetImport($request->user()), $request->file('file'));
-        return redirect()->back();
     }
 }
