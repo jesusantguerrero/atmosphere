@@ -5,10 +5,8 @@
         <template #actions>
           <AtDatePager
             class="w-full h-12 border-none bg-base-lvl-1 text-body"
-            v-model="pageState.date"
-            v-model:dateSpan="pageState.dateSpan"
-            v-model:startDate="pageState.searchOptions.date.startDate"
-            v-model:endDate="pageState.searchOptions.date.endDate"
+            v-model:startDate="pageState.dates.startDate"
+            v-model:endDate="pageState.dates.endDate"
             controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
             next-mode="month"
           />

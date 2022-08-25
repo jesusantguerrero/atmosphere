@@ -1,74 +1,119 @@
-import { getDateFromIso, updateSearch } from "@/utils";
-import { startOfDay } from "date-fns";
+import { getDateFromIso } from "@/utils";
+import { Inertia } from "@inertiajs/inertia";
+import { format, startOfDay } from "date-fns";
 import { computed, reactive, Ref, watch }  from "vue"
 
 interface IServerSearchData {
-    startDate: Date,
-    endDate: Date,
-    page?: Number,
-    parent_id: Number,
+    filters: Record<string, string>
+    dates: IDateSpan
+    limit?: number
+    relationships: string
+    search?: string
+    sorts?: string
+    page?: number
 }
 
 interface IServerSearchOptions {
     manual?: Boolean,
+    mainDateField?: string,
+}
+
+interface IDateSpan {
+    startDate: Date,
+    endDate?: Date
+}
+
+interface ISearchState {
+    filters: Record<string, string>,
+    dates: IDateSpan,
+    sorts: string,
+    limit: number,
+    relationships: string,
+    search?: string
+    page?: number
+}
+
+export const filterParams = (mainDateField, externalFilters: Record<string, string>, dates: IDateSpan) => {
+    let filters = [];
+    if (externalFilters) {
+        Object.entries(externalFilters).forEach(
+            ([name, value]) => {
+                if (value) {
+                    filters.push(`filter[${name}]=${value}`);
+                }
+            }
+        );
+    }
+
+    if (dates.startDate) {
+      let dateFilterValue = format(dates.startDate, 'yyyy-MM-dd');
+      if (dates.endDate) {
+        dateFilterValue += `~${format(dates.endDate, 'yyyy-MM-dd')}`;
+      }
+      filters.push(`filter[${mainDateField}]=${dateFilterValue}`);
+    }
+
+    return filters.join("&");
+}
+
+export const groupParams = (groupValue) => {
+    return `group=${groupValue}`;
+  }
+
+export const updateSearch = (state: ISearchState) => {
+    let params = [
+        filterParams('date', state.filters, state.dates)
+    ];
+
+    const urlParams = params.filter(value => value).join("&");
+
+    const finalUrl = `${window.location.pathname}?${urlParams}`
+    if (finalUrl != window.location.toString()) {
+        Inertia.visit(`${window.location.pathname}?${params}`, {
+            preserveState: true,
+        })
+    }
 }
 
 export const useServerSearch = (serverSearchData: Ref<IServerSearchData>, options: IServerSearchOptions = {}) => {
+    const dates = parseDateFilters(serverSearchData)
     const state = reactive({
-        filterOptions: [
-            {
-                label: "Accounts",
-                value: "accounts",
-            },
-            {
-                label: "Descriptions",
-                value: "description",
-            },
-        ],
-        searchOptions: {
-            group: "",
-            parent_id: "",
-            date: {
-                startDate: null,
-                endDate: null,
-            },
+        filters: {
+            ...serverSearchData.value.filters,
+            date: null
         },
-        parent_id: serverSearchData.value.parent_id,
-        date: startOfDay(serverSearchData.value?.startDate || new Date()),
-        dateSpan: null,
-        listType: "table",
-    });
-
-    const isSelectedList = (listTypeName) => {
-      return state.listType == listTypeName;
-    };
-
-    Object.entries(serverSearchData.value).forEach(([key, value]) => {
-        if (key === "date") {
-          state.searchOptions.date.startDate = startOfDay(getDateFromIso(value.startDate));
-          state.searchOptions.date.endDate = startOfDay(getDateFromIso(value.endDate));
-          state.date = startOfDay(getDateFromIso(value.startDate));
-        } else {
-          state.searchOptions[key] = Object.values(state.filterOptions)
-            .map((filter) => filter.value)
-            .includes(value)
-            ? value
-            : "";
-        }
+        dates: {
+            startDate: dates.startDate,
+            endDate: dates.endDate,
+        },
+        sorts: serverSearchData.value.sorts,
+        limit: serverSearchData.value.limit,
+        relationships: serverSearchData.value.relationships,
+        search: serverSearchData.value.search,
+        page: serverSearchData.value.page
     });
 
     if (!options.manual) {
         watch(
-            () => state.searchOptions,
+            () => state,
             () => {
-            updateSearch(state.searchOptions, state.dateSpan);
+                updateSearch(state);
             },
             { deep: true }
         );
     }
 
     const executeSearch = () => {
-        updateSearch(state.searchOptions, state.dateSpan);
+        updateSearch(state);
+    }
+
+    function parseDateFilters(options: Ref<IServerSearchData>) {
+        const dates = options?.value.filters?.date ? options.value.filters.date.split('~') : [null, null]
+
+        return {
+            startDate: dates[0],
+            endDate: dates[1] ?? null
+        }
     }
 
     return {

@@ -4,22 +4,19 @@
       <FinanceSectionNav>
         <template #actions>
           <div class="flex items-center w-full space-x-2">
-            <!-- <AtDatePager
+            <AtDatePager
               class="w-full h-12 border-none bg-base-lvl-1 text-body"
-              v-model="pageState.date"
-              v-model:dateSpan="pageState.dateSpan"
-              v-model:startDate="pageState.searchOptions.date.startDate"
-              v-model:endDate="pageState.searchOptions.date.endDate"
+              v-model:startDate="pageState.dates.startDate"
+              v-model:endDate="pageState.dates.endDate"
               controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
               next-mode="month"
-            /> -->
+            />
           </div>
         </template>
       </FinanceSectionNav>
     </template>
     <FinanceTemplate title="Transactions" :accounts="accounts">
-      <Component
-        :is="listComponent"
+      <TransactionTemplate
         :transactions="transactions.data"
         :server-search-options="serverSearchOptions"
         @removed="removeTransaction"
@@ -32,7 +29,7 @@
 <script setup>
 import { NSelect } from "naive-ui";
 import { AtDatePager } from "atmosphere-ui";
-import { computed, toRefs} from "vue";
+import { computed, toRefs, provide} from "vue";
 import { Inertia } from "@inertiajs/inertia";
 
 import AppLayout from "@/Layouts/AppLayout.vue";
@@ -42,7 +39,7 @@ import TransactionTemplate from "@/Components/templates/TransactionTemplate.vue"
 import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
 
 import { useTransferModal } from "@/utils/useTransferModal";
-
+import { useServerSearch } from "./useServerSearch";
 
 const { openTransferModal } = useTransferModal();
 
@@ -71,14 +68,13 @@ const props = defineProps({
 });
 
 const { serverSearchOptions } = toRefs(props);
+const {state: pageState, executeSearch } = useServerSearch(serverSearchOptions)
 
-const isAccountTransactions = computed(() => {
-    return props.accountId;
+const selectedAccountId = computed(() => {
+    return serverSearchOptions.value.filters?.account_id;
 })
 
-const listComponent = computed(() => {
-  return TransactionTemplate;
-});
+provide('selectedAccountId', selectedAccountId.value)
 
 const removeTransaction = (transaction) => {
     Inertia.delete(`/transactions/${transaction.id}`, {
