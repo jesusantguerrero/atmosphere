@@ -2,21 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\BudgetHelper;
-use App\Imports\BudgetImport;
-use App\Imports\TransactionsImport;
-use App\Models\BudgetMonth;
 use App\Models\Transaction;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Laravel\Jetstream\Jetstream;
-use Insane\Journal\Helpers\CategoryHelper;
-use Freesgen\Atmosphere\Http\InertiaController;
 use Freesgen\Atmosphere\Http\Querify;
-use Insane\Journal\Models\Core\Account;
-use Maatwebsite\Excel\Facades\Excel;
 
-class TrendController extends Controller {
+class FinanceTrendController extends Controller {
     use Querify;
     const DateFormat = 'Y-m-d';
     const sections  = [
@@ -71,7 +63,6 @@ class TrendController extends Controller {
             ]
         ];
     }
-
 
     public function netWorth(Request $request) {
         $queryParams = $request->query();

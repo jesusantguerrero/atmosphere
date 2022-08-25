@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\CategoryGroupCollection;
+use App\Imports\BudgetImport;
 use App\Models\BudgetMovement;
 use App\Models\Category;
 use App\Models\Planner;
@@ -11,6 +12,7 @@ use Freesgen\Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Facades\Excel;
 
 class BudgetCategoryController extends InertiaController
 {
@@ -135,5 +137,10 @@ class BudgetCategoryController extends InertiaController
             'name' => 'required|string|max:255|',
             Rule::unique('categories',)->where(fn ($query) => $query->where('team_id', $postData['team_id'])),
         ];
+    }
+
+    public function importMonthBudgets(Request $request) {
+        Excel::import(new BudgetImport($request->user()), $request->file('file'));
+        return redirect()->back();
     }
 }

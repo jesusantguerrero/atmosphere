@@ -5,6 +5,7 @@ namespace Freesgen\Atmosphere\Http;
 use App\Http\Controllers\Controller as BaseController;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 
@@ -101,6 +102,14 @@ class InertiaController extends BaseController {
 
     protected function getValidationRules($postData) {
         return $this->validationRules;
+    }
+
+    protected Function getFilterDates($filters) {
+        $dates = isset($filters['date']) ? explode("~", $filters['date']) : [
+            Carbon::now()->startOfMonth()->format('Y-m-d'),
+            Carbon::now()->endOfMonth()->format('Y-m-d')
+        ];
+        return $dates;
     }
 
 }

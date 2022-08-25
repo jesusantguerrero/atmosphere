@@ -20,17 +20,17 @@ class FinanceController extends InertiaController {
     use Querify;
     const DateFormat = 'Y-m-d';
 
+
     public function __construct(Transaction $transaction)
     {
         $this->model = $transaction;
-    }
 
+    }
 
     public function index(Request $request) {
         $queryParams = $request->query();
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
         [$startDate, $endDate] = $this->getFilterDates($filters);
-
 
         $lastMonthStartDate = Carbon::createFromFormat(self::DateFormat, $startDate)->subMonth()->startOfMonth()->format(self::DateFormat);
         $lastMonthEndDate = Carbon::createFromFormat(self::DateFormat, $endDate)->subMonth()->endOfMonth()->format(self::DateFormat);
@@ -62,87 +62,6 @@ class FinanceController extends InertiaController {
             "transactions" => $transactions->map(function ($transaction) {
                 return Transaction::parser($transaction);
             })->take(4),
-        ]);
-    }
-
-    private Function getFilterDates($filters) {
-        $dates = isset($filters['date']) ? explode("~", $filters['date']) : [
-            Carbon::now()->startOfMonth()->format('Y-m-d'),
-            Carbon::now()->endOfMonth()->format('Y-m-d')
-        ];
-        return $dates;
-    }
-
-    public function transactions(Request $request, $accountId = null) {
-        $queryParams = $request->query();
-        $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
-        [$startDate, $endDate] = $this->getFilterDates($filters);
-
-        $groupBy = $request->query('group');
-        $teamId = $request->user()->current_team_id;
-        $groups = [
-            'accounts' => 'transactions.account_id, transactions.description',
-            'description' => 'transactions.description',
-        ];
-
-        $this->modelQuery = Transaction::where([
-            'team_id' => $teamId,
-            'status' => 'verified'
-        ])->getByMonth($startDate, $endDate, !isset($groups[$groupBy]));
-
-        if ($groupBy && isset($groups[$groupBy])) {
-            $this->modelQuery
-            ->selectRaw("sum(total) as total, description, group_concat(DISTINCT currency_code) as currency_code")
-            ->groupByRaw("$groups[$groupBy], currency_code")
-            ->orderByDesc('total');
-        }
-
-
-        if ($accountId) {
-            $this->modelQuery->where('account_id', $accountId);
-        }
-
-        $this->getFilters($filters);
-
-        $transactions = $this->modelQuery->get();
-
-        return Jetstream::inertia()->render($request, 'Finance/Transactions', [
-            "sectionTitle" => "Finance Transactions",
-            "transactionTotal" => $transactions->sum('total'),
-            "transactions" => $transactions->map(function ($transaction) use ($groupBy) {
-                return Transaction::parser($transaction, (bool) $groupBy);
-            }),
-            "accountId" => $accountId,
-            "serverSearchOptions" => [
-                "group" => $groupBy,
-                "filters" => $filters,
-            ]
-        ]);
-    }
-
-    public function importTransactions(Request $request) {
-        Excel::import(new TransactionsImport($request->user()), $request->file('file'));
-        return redirect()->back();
-    }
-
-    public function importMonthBudgets(Request $request) {
-        Excel::import(new BudgetImport($request->user()), $request->file('file'));
-        return redirect()->back();
-    }
-
-    public function trends(Request $request) {
-        $queryParams = $request->query();
-        $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
-        [$startDate, $endDate] = $this->getFilterDates($filters);
-
-        $teamId = $request->user()->current_team_id;
-
-        $expensesByCategory = Transaction::getCategoryExpenses($teamId, $startDate, $endDate, 4);
-        $expensesByCategoryGroup = Transaction::getCategoryExpensesGroup($teamId, $startDate, $endDate);
-
-        return Jetstream::inertia()->render($request, 'Finance/Trends', [
-            "expensesByCategory" => $expensesByCategory,
-            "expensesByCategoryGroup" => $expensesByCategoryGroup,
         ]);
     }
 }

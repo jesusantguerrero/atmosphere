@@ -4,7 +4,7 @@
       <FinanceSectionNav>
         <template #actions>
           <div class="flex items-center w-full space-x-2">
-            <AtDatePager
+            <!-- <AtDatePager
               class="w-full h-12 border-none bg-base-lvl-1 text-body"
               v-model="pageState.date"
               v-model:dateSpan="pageState.dateSpan"
@@ -12,7 +12,7 @@
               v-model:endDate="pageState.searchOptions.date.endDate"
               controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
               next-mode="month"
-            />
+            /> -->
           </div>
         </template>
       </FinanceSectionNav>
@@ -20,7 +20,7 @@
     <FinanceTemplate title="Transactions" :accounts="accounts">
       <Component
         :is="listComponent"
-        :transactions="transactions"
+        :transactions="transactions.data"
         :server-search-options="serverSearchOptions"
         @removed="removeTransaction"
         @edit="handleEdit"
@@ -41,7 +41,6 @@ import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
 import TransactionTemplate from "@/Components/templates/TransactionTemplate.vue";
 import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
 
-import { useServerSearch } from "./useServerSearch";
 import { useTransferModal } from "@/utils/useTransferModal";
 
 
@@ -72,7 +71,6 @@ const props = defineProps({
 });
 
 const { serverSearchOptions } = toRefs(props);
-const {state: pageState } = useServerSearch(serverSearchOptions)
 
 const isAccountTransactions = computed(() => {
     return props.accountId;
