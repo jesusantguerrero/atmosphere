@@ -20,7 +20,7 @@ use App\Http\Controllers\IngredientController;
 use App\Http\Controllers\IntegrationController;
 use App\Http\Controllers\Jetstream\TeamInvitationController;
 use App\Http\Controllers\MealController;
-use App\Http\Controllers\PlannerController;
+use App\Http\Controllers\MealPlannerController;
 use App\Http\Controllers\System\NotificationController;
 use App\Http\Controllers\TransactionDraftController;
 use Freesgen\Atmosphere\Http\Controllers\SettingsController;
@@ -92,7 +92,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
         Route::resource('/ingredients', IngredientController::class);
     });
 
-    Route::resource('/meal-planner', PlannerController::class);
+    Route::resource('/meal-planner', MealPlannerController::class);
 
    /**************************************************************************************
      *                               Finance Section
