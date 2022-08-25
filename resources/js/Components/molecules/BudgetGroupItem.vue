@@ -25,7 +25,7 @@
             </NDropdown>
         </div>
     </header>
-    <section class="pl-4 border-l-4 border-primary bg-base" ref="dropdown">
+    <section class="pl-4 border-l-4 border-primary bg-base-lvl-3" ref="dropdown">
             <slot v-if="isExpanded || isAdding" :isExpanded="isExpanded" :toggleAdding="toggleAdding" :isAdding="isAdding" name="content"/>
     </section>
 </article>

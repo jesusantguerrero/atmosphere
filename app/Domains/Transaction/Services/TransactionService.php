@@ -125,4 +125,8 @@ class TransactionService {
         ->getByMonth($startDate, $endDate)
         ->sum('total');
     }
+
+    public static function getSavings($teamId, $startDate, $endDate) {
+        // todo
+    }
 }

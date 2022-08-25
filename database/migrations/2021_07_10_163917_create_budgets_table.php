@@ -15,11 +15,32 @@ class CreateBudgetsTable extends Migration
     {
         Schema::create('budgets', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id');
-            $table->foreignId('team_id');
-            $table->foreignId('account_id');
+            $table->foreignId('user_id')->index();
+            $table->foreignId('team_id')->index();
+            $table->foreignId('category_id')->index();
+            $table->string('name');
+            $table->string('color')->nullable();
+            $table->text('icon')->nullable();
+            $table->decimal('target_amount', 11, 2)->default(0);
+            $table->enum('target_type', [
+                'spending',
+                'saving_balance',
+                'savings_monthly',
+                'debt_monthly_payment',
+                'debt_payoff_date'
+            ])->nullable();
+            $table->enum('frequency', ['MONTHLY', 'WEEKLY', 'DATE'])->nullable();
+            $table->integer('frequency_interval')->nullable();
+            $table->string('frequency_interval_unit')->nullable();
+            $table->integer('frequency_month_date')->nullable();
+            $table->string('frequency_week_day')->nullable();
+            $table->text('note')->nullable();
+            $table->enum('status', [
+                'active',
+                'paused',
+            ])->default('active');
             $table->boolean('is_private')->default(false);
-            $table->decimal('amount');
+            $table->boolean('is_team_goal')->default(false);
             $table->timestamps();
         });
     }

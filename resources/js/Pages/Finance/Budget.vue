@@ -26,8 +26,8 @@
 
       <!-- Budget to assign -->
       <BalanceAssign
-        class="rounded-t-2xl"
-        :class="{'rounded-b-2xl': !overspentCategories.length}"
+        class="rounded-t-md mt-5"
+        :class="{'rounded-b-md shadow-md': !overspentCategories.length}"
         :value="readyToAssign.balance"
         :formatter="formatMoney"
         :category="readyToAssign"
@@ -45,6 +45,7 @@
       <div class="mx-auto mt-8 rounded-lg text-body bg-base max-w-7xl">
             <BudgetGroupForm
                 v-model="categoryForm.name"
+                class="shadow-md rounded-md"
                 @save="saveBudgetCategory()"
             />
 
@@ -59,10 +60,10 @@
                 :key="itemGroup.id"
                 :item="itemGroup"
                 :force-expanded="overspentFilter"
-                class="bg-base-lvl-3"
+                class="bg-base-lvl-3 shadow-md"
               >
                 <template v-slot:content="{ isExpanded, isAdding, toggleAdding }">
-                  <div>
+                  <div class="bg-base-lvl-3">
                     <div v-if="isAdding" class="pt-2">
                       <LogerInput
                         placeholder="Add subcategory"
@@ -90,9 +91,10 @@
               </BudgetGroupItem>
             </Draggable>
       </div>
+
       <template #panel>
           <section
-            class="py-5 text-center w-full"
+            class="text-center w-full"
             v-if="selectedBudget"
           >
             <BudgetItemForm
