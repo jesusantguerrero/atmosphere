@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Meal;
 
 use App\Models\MealType;
 use App\Models\User;
@@ -20,17 +20,12 @@ class MealRecipeTest extends TestCase
     public function test_meal_planer_index()
     {
         $user = User::factory()->withPersonalTeam()->create();
-        MealType::factory()->count(3)->create([
-            'user_id' => $user->id,
-            'team_id' => $user->ownedTeams()->first()->id,
-        ]);
-
 
         $this->actingAs($user);
         $this->get('/meal-planner')
         ->assertInertia(fn (Assert $page) => $page
         ->component('Meals/Planner')
         ->has('meals')
-        ->has('mealTypes', 3));
+        ->has('mealTypes', 4));
     }
 }
