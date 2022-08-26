@@ -11,11 +11,10 @@
         }
     ],
     "require": {
-        "php": "^8.0.2",
+        "php": "^8.1.0",
         "doctrine/dbal": "^3.3",
         "ernysans/laraworld": "^1.0",
         "freesgen/atmosphere": "dev-master",
-        "google/apiclient": "^2.12.6",
         "guzzlehttp/guzzle": "^7.0.2",
         "inertiajs/inertia-laravel": "^0.6.3",
         "insane/journal": "dev-master",
@@ -62,16 +61,12 @@
         ],
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi"
-        ],
-        "pre-autoload-dump": "Google\\Task\\Composer::cleanup"
+        ]
     },
     "extra": {
         "laravel": {
             "dont-discover": []
-        },
-        "google/apiclient-services": [
-            "Gmail"
-        ]
+        }
     },
     "config": {
         "optimize-autoloader": true,
