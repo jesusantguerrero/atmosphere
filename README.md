@@ -11,6 +11,9 @@ Features:
 - Scheduled Payments Reminders
 - Subscriptions
 - Transactions
+## Demo
+
+<a href="https://cloud.digitalocean.com/apps/new?repo=https://github.com/jesusantguerrero/atmosphere/tree/staging" target="_blank"><img src="https://www.deploytodo.com/do-btn-blue.svg" width="240" alt="Deploy to DO"></a>
 ## Showcase
 
 ![Landing](/public/images/landing.png)
@@ -29,7 +32,6 @@ Finance Overview
 
 Budget
 ![Budget](/public/images/budget.png)
-
 
 
 ### Prerequisites
