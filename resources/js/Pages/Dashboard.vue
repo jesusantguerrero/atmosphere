@@ -46,7 +46,7 @@
                         </template>
                         <div v-else class="py-1.5 text-center">
                             <h4 class="py-1 text-2xl font-bold text-body-1"> No meals </h4>
-                            <AtButton class="mt-4 text-white rounded-md bg-primary">Go to planner</AtButton>
+                            <LogerButton type="inverse">Go to planner</LogerButton>
                         </div>
                     </div>
                 </div>
@@ -71,6 +71,7 @@
     import { transactionDBToTransaction } from "@/domains/transactions";
     import OnboardingSteps from "@/Components/OnboardingSteps.vue";
     import ChartComparison from "@/Components/ChartComparison.vue";
+import LogerButton from "@/Components/atoms/LogerButton.vue";
 
     const props = defineProps({
         revenue: {
