@@ -5,7 +5,7 @@ spec:
     git:
       branch: staging
       repo_clone_url: https://github.com/jesusantguerrero/atmosphere.git
-    run_command: npm run local:setup
+    run_command: npm run local:setup ; heroku-php-apache2 public/
     envs:
     - key: APP_NAME
       scope: RUN_TIME
