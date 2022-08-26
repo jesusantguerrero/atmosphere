@@ -3,7 +3,7 @@ spec:
   services:
   - name: web
     git:
-      branch: main
+      branch: staging
       repo_clone_url: https://github.com/jesusantguerrero/atmosphere.git
     run_command: npm run local:setup
     envs:
@@ -136,7 +136,7 @@ spec:
     kind: POST_DEPLOY
     git:
       repo_clone_url: https://github.com/jesusantguerrero/atmosphere.git
-      branch: main
+      branch: staging
     run_command: php artisan migrate --seed
     envs:
     - key: APP_NAME
@@ -184,5 +184,5 @@ spec:
     kind: POST_DEPLOY
     git:
       repo_clone_url: https://github.com/jesusantguerrero/atmosphere.git
-      branch: main
+      branch: staging
     run_command: php artisan storage:link
