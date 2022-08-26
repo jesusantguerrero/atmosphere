@@ -259,9 +259,9 @@
     import { appMenu } from '@/domains/app'
     import { Link, usePage } from '@inertiajs/inertia-vue3'
     import { useSelect } from '@/utils/useSelects'
-    import { useTransferModal } from '@/utils/useTransferModal'
+    import { useTransactionModal } from '@/domains/transactions'
 
-    const { openTransferModal } = useTransferModal()
+    const { openTransferModal } = useTransactionModal()
     const props = defineProps({
         title: {
             type: String

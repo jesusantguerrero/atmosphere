@@ -87,7 +87,7 @@ const handleSearch = debounce((query) => {
     }
     isLoading.value = true
     window.axios.get(`${props.endpoint}?q=${query}`).then(({ data }) => {
-        options.value = resultParser(data.data, query);
+        options.value = resultParser(data?.data || data, query);
         isLoading.value = false
     })
 }, 200)

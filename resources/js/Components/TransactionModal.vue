@@ -83,7 +83,11 @@
                             </div>
                         </div>
 
-                        <div v-if="recurrence">
+                        <div>
+                            <button @click="toggleRecurrence"> Set recurrence </button>
+                        </div>
+
+                        <div v-if="isRecurrence">
                             <div class="flex">
                                 <AtField label="Repeat this transaction" class="w-full">
                                 <n-select
@@ -100,7 +104,7 @@
                                     ]"
                                 />
                                 </AtField>
-                                <AtField label="frequencyLabel">
+                                <AtField :label="frequencyLabel">
                                     <AtInput
                                         type="number"
                                         v-model="schedule_settings.repeat_on_day_of_month"
@@ -141,6 +145,7 @@
                                 </AtField>
                             </div>
                         </div>
+
                     </slot>
                 </div>
             </div>
@@ -257,13 +262,18 @@
             },
             recurrence: {
                 save: {
+                    method: 'post',
+                    url: () => route('budget.planned-transaction'),
+                },
+                update: {
+                    method: 'update',
                     url: () => route('budget.planned-transaction'),
                 }
             }
 
         }
         const method = props.transactionData && props.transactionData.id ? 'update' : 'save'
-        const actionType = props.recurrence ? 'recurrence' : 'transaction'
+        const actionType = isRecurrence.value ? 'recurrence' : 'transaction'
         const action = actions[actionType][method]
         state.form
         .transform((form) => ({
@@ -291,6 +301,12 @@
             }
         })
     }, { deep: true })
+
+    const isRecurrence = ref(props.recurrence);
+    const toggleRecurrence = () => {
+        isRecurrence.value = !isRecurrence.value
+        emit('update:recurrence', isRecurrence.value)
+    }
 
     const { form, schedule_settings, transactionTypes } = toRefs(state)
 </script>

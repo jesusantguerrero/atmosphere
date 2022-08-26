@@ -19,6 +19,17 @@ class TransactionService {
             ->get();
     }
 
+    public function getPlanned($teamId) {
+        return Transaction::where([
+            'team_id' => $teamId,
+        ])
+        ->planned()
+        ->get()
+        ->map(function ($transaction) {
+            return Transaction::parser($transaction);
+        });
+    }
+
     public function getForAccount($accountId, $teamId,  $options) {
         return $this->model::verified()
             ->where('team_id', $teamId)

@@ -7,8 +7,8 @@
 
 <script setup>
 import TransactionModal from '@/Components/TransactionModal.vue';
-import { useTransferModal, transferModalState } from '@/utils/useTransferModal';
+import { useTransactionModal, transferModalState } from '@/domains/transactions';
 
 
-const {  isOpen } = useTransferModal()
+const {  isOpen } = useTransactionModal()
 </script>

@@ -58,11 +58,11 @@ class FinanceTransactionController extends InertiaController {
         return redirect()->back();
     }
 
-    public function addPlannedTransaction(Request $request) {
+    public function addPlanned(Request $request) {
         $postData = $this->getPostData($request);
         $postData['status'] = Transaction::STATUS_PLANNED;
         $transaction = Transaction::create($postData);
-        $transaction->createLines($postData, $postData['items'] ?? []);
+        $transaction->createLines($postData['items'] ?? []);
 
         Planner::create(array_merge($postData ,[
             'dateable_type' => Transaction::class,

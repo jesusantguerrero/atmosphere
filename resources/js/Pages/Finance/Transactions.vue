@@ -39,11 +39,11 @@ import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
 import TransactionTemplate from "@/Components/templates/TransactionTemplate.vue";
 import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
 
-import { useTransferModal } from "@/utils/useTransferModal";
+import { useTransactionModal } from "@/domains/transactions";
 import { useServerSearch } from "./useServerSearch";
 import DraftButtons from "./DraftButtons.vue";
 
-const { openTransferModal } = useTransferModal();
+const { openTransferModal } = useTransactionModal();
 
 const props = defineProps({
   transactions: {
