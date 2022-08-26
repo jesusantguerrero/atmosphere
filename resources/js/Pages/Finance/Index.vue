@@ -42,12 +42,11 @@
                   :value="formatMoney('10000')"
                   subtitle="Total: 150,000.00"
                 />
-                <AtButton
-                  @click="$inertia.visit('/goals')"
-                  class="w-full h-10 mt-auto text-white rounded-md bg-primary"
-                >
-                  Goals
-                </AtButton>
+                 <BudgetProgress
+                    :goal="budgetTotal"
+                    :current="transactionTotal"
+                    class="border-t"
+                />
               </div>
               <FinanceVarianceCard
                 class="w-full"
@@ -61,42 +60,31 @@
           </div>
           <div class="hidden md:block md:w-5/12">
             <TransactionsTable
-              table-label="Budget"
+              table-label="Planned Transactions"
               class="pt-3 mt-5"
               table-class="overflow-auto text-sm rounded-t-lg shadow-md bg-base-lvl-3 p-2 border"
-              :transactions="topCategories"
-              :parser="categoryDBToTransaction"
+              :transactions="planned"
+              :parser="plannedDBToTransaction"
               @edit="handleEdit"
             >
               <template #action>
                 <AtButton
                   class="flex items-center text-primary"
-                  @click="Inertia.visit('/budgets')"
+                  @click="Inertia.visit('/transactions?filter[status]=planned')"
                 >
-                  <span> Go to Budget </span>
+                  <span> See scheduled</span>
                   <i class="ml-2 fa fa-chevron-right"></i>
                 </AtButton>
               </template>
             </TransactionsTable>
-            <BudgetProgress
-              :goal="budgetTotal"
-              :current="transactionTotal"
-              class="border-t"
-            />
           </div>
         </div>
         <div class="flex flex-wrap mt-5 md:flex-nowrap md:space-x-8">
           <div class="w-full md:w-7/12">
-            <SectionCard
-              section-title="Expenses by category"
-              :action="{
-                label: 'Go to Trends',
-                iconClass: 'fa fa-chevron-right',
-              }"
-              @action="Inertia.visit('/trends')"
-            >
-              <DonutChart   style="height:324px; background: white; width: 100%" :series="expensesByCategoryGroup" label="name" value="total" />
-            </SectionCard>
+            <CategoryTrendsPreview
+                :category-data="topCategories"
+                :group-data="expensesByCategoryGroup"
+            />
           </div>
           <div class="w-full md:w-5/12">
             <TransactionsTable
@@ -133,6 +121,7 @@ import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
 import {
   useTransactionModal,
   transactionDBToTransaction,
+  plannedDBToTransaction,
   categoryDBToTransaction,
 } from "@/domains/transactions";
 import BudgetProgress from "@/Components/molecules/BudgetProgress.vue";
@@ -142,6 +131,7 @@ import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
 import { useSelect } from "@/utils/useSelects";
 import formatMoney from "@/utils/formatMoney";
 import { useServerSearch } from "./useServerSearch";
+import CategoryTrendsPreview from "@/Components/finance/CategoryTrendsPreview.vue";
 
 const { serverSearchOptions } = toRefs(props);
 const {state: pageState} = useServerSearch(serverSearchOptions);

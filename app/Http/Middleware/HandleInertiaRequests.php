@@ -64,9 +64,10 @@ class HandleInertiaRequests extends Middleware
                 'categories.team_id' => $team->id,
                 'categories.resource_type' => 'transactions'
             ])
+                ->whereNull('parent_id')
                 ->orderBy('index')
                 ->with('subCategories')
-                ->get() : [],
+                ->get() : [''],
         ]);
     }
 }

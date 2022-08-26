@@ -29,11 +29,11 @@
                             <div>
                                 <LogerTabButton
                                     type="button"
-                                    class="relative "
+                                    class="relative text-body-1"
                                     @click="$inertia.visit('/notifications')"
                                 >
                                     <i class="mr-1 fa fa-bell" />
-                                    <div class="absolute bottom-0 right-0 w-4 h-4 text-xs text-white bg-red-400 rounded-full shadow-md">
+                                    <div class="absolute bottom-0 right-0 w-4 h-4 text-xs text-white bg-error rounded-full shadow-md">
                                         {{ $page.props.unreadNotifications }}
                                     </div>
                                 </LogerTabButton>
@@ -259,9 +259,9 @@
     import { appMenu } from '@/domains/app'
     import { Link, usePage } from '@inertiajs/inertia-vue3'
     import { useSelect } from '@/utils/useSelects'
-    import { useTransferModal } from '@/utils/useTransferModal'
+    import { useTransactionModal } from '@/domains/transactions'
 
-    const { openTransferModal } = useTransferModal()
+    const { openTransferModal } = useTransactionModal()
     const props = defineProps({
         title: {
             type: String

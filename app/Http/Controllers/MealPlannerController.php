@@ -7,9 +7,8 @@ use App\Models\MealType;
 use App\Models\Planner;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
-class PlannerController extends InertiaController
+class MealPlannerController extends InertiaController
 {
     public function __construct(Planner $mealPlan)
     {
@@ -23,6 +22,7 @@ class PlannerController extends InertiaController
         $this->validationRules = [];
         $this->includes = ['dateable'];
         $this->filters = [];
+        $this->resourceName = "mealPlans";
     }
 
     function getIngredients($plans) {
@@ -48,18 +48,15 @@ class PlannerController extends InertiaController
         return $ingredients;
     }
 
-    protected function getIndexProps(Request $request)
+    protected function getIndexProps(Request $request, $resource = null)
     {
-        $queryParams = $request->query() ?? [];
-        $queryParams['limit'] = $queryParams['limit'] ?? 50;
-        $plans = $this->getModelQuery($request);
         $mode = $queryParams['mode'] ?? '';
         $teamId = Auth()->user()->current_team_id;
+
         return [
-            'mealPlans' => $plans,
             'mode' => $mode,
-            'ingredients' => function () use ($plans) {
-                return $this->getIngredients($plans);
+            'ingredients' => function () use ($resource) {
+                return $this->getIngredients($resource);
             },
             'meals' => function () use ($request) {
                 return Meal::where([

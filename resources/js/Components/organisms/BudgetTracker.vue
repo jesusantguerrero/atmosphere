@@ -43,7 +43,7 @@ import SectionTitle from "@/Components/atoms/SectionTitle.vue";
 import TransactionModal from "@/Components/TransactionModal.vue"
 import NumberHider from "@/Components/molecules/NumberHider.vue";
 import formatMoney from "@/utils/formatMoney"
-import { useTransferModal } from "@/utils/useTransferModal";
+import { useTransactionModal } from "@/domains/transactions";
 
 const props = defineProps({
     username: {
@@ -58,7 +58,7 @@ const props = defineProps({
     }
 })
 
-const { isOpen: isTransferModalOpen } = useTransferModal()
+const { isOpen: isTransferModalOpen } = useTransactionModal()
 
 const openedTransaction = ref(null);
 

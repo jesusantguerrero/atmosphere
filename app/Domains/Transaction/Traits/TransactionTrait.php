@@ -13,6 +13,13 @@ trait TransactionTrait {
         return $query->where('status', 'verified');
     }
 
+    public function scopePlanned($query, $isAutomatic = false) {
+        return  $query->where('status', 'planned')
+        ->whereHas('schedule', function($query) use ($isAutomatic) {
+            $query->where('automatic', $isAutomatic);
+        });
+    }
+
     public function scopeInDateFrame($query, $startDate = null, $endDate = null, $orderByDate = true) {
         return $query
         ->when($startDate && !$endDate, function ($query) use ($startDate) {

@@ -20,14 +20,17 @@ class InertiaController extends BaseController {
     protected $appends = [];
     protected $filters = [];
     protected $responseType = "inertia";
-    protected $parser;
+    protected $resourceName;
 
     public function index(Request $request) {
+        $resourceName = $this->resourceName ?? $this->model->getTable();
+        $resources = $this->parser($this->getModelQuery($request));
+
         return Inertia::render($this->templates['index'],
         array_merge([
-            $this->model->getTable() => $this->parser($this->getModelQuery($request)),
+            $resourceName => $this->parser($this->getModelQuery($request)),
             "serverSearchOptions" => $this->getServerParams()
-        ], $this->getIndexProps($request)));
+        ], $this->getIndexProps($request, $resources)));
     }
 
     public function create(Request $request) {

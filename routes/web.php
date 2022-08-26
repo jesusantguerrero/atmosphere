@@ -20,7 +20,7 @@ use App\Http\Controllers\IngredientController;
 use App\Http\Controllers\IntegrationController;
 use App\Http\Controllers\Jetstream\TeamInvitationController;
 use App\Http\Controllers\MealController;
-use App\Http\Controllers\PlannerController;
+use App\Http\Controllers\MealPlannerController;
 use App\Http\Controllers\System\NotificationController;
 use App\Http\Controllers\TransactionDraftController;
 use Freesgen\Atmosphere\Http\Controllers\SettingsController;
@@ -92,7 +92,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
         Route::resource('/ingredients', IngredientController::class);
     });
 
-    Route::resource('/meal-planner', PlannerController::class);
+    Route::resource('/meal-planner', MealPlannerController::class);
 
    /**************************************************************************************
      *                               Finance Section
@@ -109,13 +109,6 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
         Route::resource('/goals', GoalController::class);
     });
 
-    // Account && Transactions
-    Route::controller(TransactionDraftController::class)->group(function () {
-        Route::patch('/planned-transactions/{id}/mark-as-paid', 'markAsPaid')->name("transactions.mark-as-paid");
-        Route::post('/planned-transactions', 'addPlannedTransaction')->name("budget.planned-transaction");
-        Route::get('/finance/transaction-drafts', 'index')->name("budget.planned-transaction");
-    });
-
     // Finance dashboard related routes
     Route::controller(FinanceController::class)->group(function () {
         Route::get('/finance', 'index')->name('finance');
@@ -125,6 +118,9 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
         Route::get('/finance/transactions', 'index')->name('finance.transactions');
         Route::get('/finance/{accountId}/transactions', 'index')->name('finance.account.transactions');
         Route::post('/finance/import', 'import')->name('finance.import');
+
+        Route::patch('/planned-transactions/{id}/mark-as-paid', 'markPlannedAsPaid')->name("transactions.mark-as-paid");
+        Route::post('/planned-transactions', 'addPlanned')->name("budget.planned-transaction");
     });
 
     Route::get('/trends', [FinanceTrendController::class, 'index'])->name('finance.trends');

@@ -2,19 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Domains\Transaction\Services\TransactionService;
 use App\Helpers\BudgetHelper;
-use App\Imports\BudgetImport;
-use App\Imports\TransactionsImport;
 use App\Models\BudgetMonth;
 use App\Models\Transaction;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Laravel\Jetstream\Jetstream;
-use Insane\Journal\Helpers\CategoryHelper;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Freesgen\Atmosphere\Http\Querify;
-use Insane\Journal\Models\Core\Account;
-use Maatwebsite\Excel\Facades\Excel;
 
 class FinanceController extends InertiaController {
     use Querify;
@@ -28,17 +24,17 @@ class FinanceController extends InertiaController {
     }
 
     public function index(Request $request) {
+        $teamId = $request->user()->current_team_id;
         $queryParams = $request->query();
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
         [$startDate, $endDate] = $this->getFilterDates($filters);
 
         $lastMonthStartDate = Carbon::createFromFormat(self::DateFormat, $startDate)->subMonth()->startOfMonth()->format(self::DateFormat);
         $lastMonthEndDate = Carbon::createFromFormat(self::DateFormat, $endDate)->subMonth()->endOfMonth()->format(self::DateFormat);
-        $teamId = $request->user()->current_team_id;
 
         $budgetTotal = BudgetMonth::getMonthAssignmentTotal($teamId, $startDate);
 
-        $planned = BudgetHelper::getPlannedTransactions($teamId);
+        $planned = (new TransactionService())->getPlanned($teamId);
 
         $transactions = Transaction::getExpenses($teamId, $startDate, $endDate);
         $expensesByCategory = Transaction::getCategoryExpenses($teamId, $startDate, $endDate, 4);
@@ -53,8 +49,6 @@ class FinanceController extends InertiaController {
             "budgetTotal" => $budgetTotal,
             "expensesByCategory" => $expensesByCategory,
             "expensesByCategoryGroup" => $expensesByCategoryGroup,
-            "categories" => CategoryHelper::getSubcategories($teamId, ['expenses', 'incomes']),
-            "accounts" => Account::getByDetailTypes($teamId),
             "transactionTotal" => $transactions->sum('total'),
             "lastMonthExpenses" => $lastMonthExpenses,
             "income" => $income,

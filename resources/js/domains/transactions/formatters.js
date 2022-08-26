@@ -29,7 +29,7 @@ export const plannedDBToTransaction = (transactions) => {
         id: transaction.id,
         date: transaction.date,
         title: transaction.description,
-        subtitle: `${transaction.account.name} -> ${transaction.category.name} `,
+        subtitle: `${transaction.account?.name} -> ${transaction.category?.name ?? ''} `,
         value: transaction.total,
         status: 'PLANNED'
     }))

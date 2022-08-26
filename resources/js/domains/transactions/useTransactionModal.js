@@ -1,22 +1,48 @@
+import { reactive, toRefs } from "vue"
+
 /**
- * useTransactionModal - get transaction modal functions of a child
- * @param {import("vue").Ref} modalParent - ComponentRef owner of the transaction modal
- * @returns {{ openModalFor: Function, handleEdit: Function }}
+ *
  */
+export const transferModalState = reactive({
+    isOpen: false,
+    transactionData: null,
+    recurrence: false,
+    automatic: false,
+})
 
-import { inject } from "vue"
+/**
+ * useTransactionModal - get controls and state of transaction modal
+ * @returns {{ toggleTransferModal: Function, openTransferModal: Function, closeTransferModal: Function, isOpen: Boolean }}
+ */
+export const useTransactionModal = () => {
+    const closeTransferModal = () => {
+        transferModalState.isOpen = false
+        transferModalState.automatic = false
+        transferModalState.transactionData = null
+        transferModalState.recurrence = false
+    }
 
-export const useTransactionModal = (modalParentRef) =>{
-    const openModalFor = inject('openTransactionModal', (...args) => {
-        modalParentRef?.value?.openTransactionModal.apply(null, args)
-    })
+    const openTransferModal = (config = {}) => {
+        transferModalState.automatic = config.automatic ?? false
+        transferModalState.transactionData = config.transactionData ?? null
+        transferModalState.recurrence = config.recurrence ?? false
+        transferModalState.isOpen = true
+    }
 
-    const handleEdit = inject('openTransactionModalForEdit', (...args) => {
-        modalParentRef?.value?.openTransactionModalForEdit.apply(null, args)
-    })
+    const toggleTransferModal = (config) => {
+        if (transferModalState.isOpen)  {
+            closeTransferModal()
+        } else {
+            openTransferModal(config)
+        }
+    }
+
+    const { isOpen } = toRefs(transferModalState)
 
     return {
-        handleEdit,
-        openModalFor
+        toggleTransferModal,
+        openTransferModal,
+        closeTransferModal,
+        isOpen,
     }
 }

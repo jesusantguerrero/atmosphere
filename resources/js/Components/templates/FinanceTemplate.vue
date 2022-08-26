@@ -31,9 +31,9 @@
     import IconImport from '@/Components/icons/IconImport.vue';
     import LogerTabButton from '@/Components/atoms/LogerTabButton.vue';
     import ImportResourceModal from '@/Components/ImportResourceModal.vue';
-    import { useTransferModal } from '@/utils/useTransferModal';
+    import { useTransactionModal } from '@/domains/transactions';
 
-    const { openTransferModal, isOpen: isTransferModalOpen } = useTransferModal()
+    const { openTransferModal, isOpen: isTransferModalOpen } = useTransactionModal()
 
     const props = defineProps({
         title: {
