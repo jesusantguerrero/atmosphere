@@ -26,18 +26,11 @@
 
                             <PrivacyToggle v-model="isPrivacyMode" v-if="!isOnboarding" />
 
-                            <div>
-                                <LogerTabButton
-                                    type="button"
-                                    class="relative text-body-1"
-                                    @click="$inertia.visit('/notifications')"
-                                >
-                                    <i class="mr-1 fa fa-bell" />
-                                    <div class="absolute bottom-0 right-0 w-4 h-4 text-xs text-white bg-error rounded-full shadow-md">
-                                        {{ $page.props.unreadNotifications }}
-                                    </div>
-                                </LogerTabButton>
-                            </div>
+                            <AppNotificationBell
+                                :notifications="$page.props.unreadNotifications"
+                                @click="$inertia.visit('/notifications')"
+                             />
+
                             <!-- Teams Dropdown -->
                             <div class="relative ml-3">
                                 <LogerDropdown
@@ -260,6 +253,7 @@
     import { Link, usePage } from '@inertiajs/inertia-vue3'
     import { useSelect } from '@/utils/useSelects'
     import { useTransactionModal } from '@/domains/transactions'
+    import AppNotificationBell from '../Components/molecules/AppNotificationBell.vue'
 
     const { openTransferModal } = useTransactionModal()
     const props = defineProps({

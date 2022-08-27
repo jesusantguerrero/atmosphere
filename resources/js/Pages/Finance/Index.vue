@@ -11,9 +11,9 @@
             next-mode="month"
           />
           <div>
-            <AtButton class="text-white rounded-md bg-primary w-72"
-              >Import Transactions</AtButton
-            >
+            <AtButton class="text-white rounded-md bg-primary w-48">
+                Import Transactions
+            </AtButton>
           </div>
         </template>
       </FinanceSectionNav>

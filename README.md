@@ -10,6 +10,10 @@ Features:
 - Subscriptions
 - Transactions
 
+## Demo
+
+<a href="https://cloud.digitalocean.com/apps/new?repo=https://github.com/jesusantguerrero/atmosphere/tree/staging" target="_blank"><img src="https://www.deploytodo.com/do-btn-blue.svg" width="240" alt="Deploy to DO"></a>
+
 ## Showcase
 
 ![Landing](/public/images/landing.png)
@@ -33,7 +37,7 @@ Budget
 ## Technical Stuff
 Loger is a Monolith app using laravel 8, jetstream, intertia, vue3, Tailwindcss and some hand crafted packages [Atmosphere UI](https://github.com/insane-code/journal), [Journal](https://github.com/insane-code/journal), [Tresurer](https://github.com/jesusantguerrero/insane-treasurer), and others.
 
-### Prerequisites
+
 
 | Prerequisite                                          | Version     |
 | ------------------------------------------------------| ----------  |
