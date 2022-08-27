@@ -5,7 +5,8 @@ spec:
     git:
       branch: staging
       repo_clone_url: https://github.com/jesusantguerrero/atmosphere.git
-    run_command: php artisan migrate:fresh --force ; php artisan db:seed ; php artisan journal:set-accounts ; heroku-php-apache2 public/
+    build_command: npm run build
+    run_command: php artisan migrate --force ; heroku-php-apache2 public/
     envs:
     - key: APP_NAME
       scope: RUN_TIME
@@ -137,7 +138,7 @@ spec:
     git:
       repo_clone_url: https://github.com/jesusantguerrero/atmosphere.git
       branch: staging
-    run_command: php artisan migrate --seed
+    run_command: php artisan db:seed ; php artisan journal:set-accounts
     envs:
     - key: APP_NAME
       scope: RUN_TIME
@@ -162,7 +163,7 @@ spec:
       value: "debug"
     - key: DB_CONNECTION
       scope: RUN_TIME
-      value: "pgsql"
+      value: "mysql"
     - key: DB_HOST
       scope: RUN_TIME
       value: ${loger-db.HOSTNAME}
