@@ -137,7 +137,7 @@ spec:
     kind: POST_DEPLOY
     git:
       repo_clone_url: https://github.com/jesusantguerrero/atmosphere.git
-      branch: main
+      branch: staging
     run_command: php artisan migrate --seed ; php artisan journal:set-accounts
     envs:
     - key: APP_NAME
