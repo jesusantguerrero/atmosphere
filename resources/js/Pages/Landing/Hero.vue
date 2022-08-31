@@ -37,7 +37,7 @@
                 <div class="mt-10 md:mt-0">
                     <AtVideo
                         class="overflow-hidden rounded-md shadow-lg shadow-base-200/20 border-pink-400/75"
-                        imageUrl="/images/finance-dashboard.png"
+                        imageUrl="/images/finance-overview.png"
                         src="https://www.framer.com/images/developers/hero.mp4"
                         :style="{with: '400px'}"
                     />

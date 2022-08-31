@@ -6,12 +6,14 @@ export function useSelect() {
         if (!categoriesData || !categoriesData.map) return
         const categories = cloneDeep(categoriesData)
         const options = categories.map(category => {
-            category.type = groupName && category[groupName] ?  'group' : null;
-            category.key = category.id;
-            category.value = category.id;
-            category.label = category.name;
-            if (category[groupName]) {
-                category.children = categoryOptions(category[groupName], false, false);
+            if (category) {
+                category.type = groupName && category[groupName] ?  'group' : null;
+                category.key = category.id;
+                category.value = category.id;
+                category.label = category.name;
+                if (category[groupName]) {
+                    category.children = categoryOptions(category[groupName], false, false);
+                }
             }
             return category;
         })
