@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Imports;
+namespace App\Domains\Budget\Imports;
 
-use App\Helpers\ImportHelper;
-use App\Models\BudgetMonth;
+use App\Domains\Budget\Models\BudgetMonth;
+use App\Domains\Imports\ImportConcern;
 use Carbon\Carbon;
 use Insane\Journal\Models\Core\Category;
 
 
-class BudgetImport extends ImportHelper
+class BudgetImport extends ImportConcern
 {
 
 

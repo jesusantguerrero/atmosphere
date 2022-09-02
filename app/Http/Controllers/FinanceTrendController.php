@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Transaction;
+use App\Domains\Transaction\Models\Transaction;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Laravel\Jetstream\Jetstream;

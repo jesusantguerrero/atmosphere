@@ -2,9 +2,9 @@
 
 namespace App\Listeners;
 
+use App\Domains\AppCore\Models\Category;
 use Insane\Journal\Models\Core\AccountDetailType;
 use Insane\Journal\Events\AccountCreated;
-use App\Models\Category;
 
 class CreateBudgetCategory
 {

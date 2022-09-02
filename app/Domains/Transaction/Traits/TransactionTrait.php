@@ -13,6 +13,10 @@ trait TransactionTrait {
         return $query->where('status', 'verified');
     }
 
+    public function scopeByTeam($query, $teamId) {
+        return $query->where('team_id', $teamId);
+    }
+
     public function scopePlanned($query, $isAutomatic = false) {
         return  $query->where('status', 'planned')
         ->whereHas('schedule', function($query) use ($isAutomatic) {

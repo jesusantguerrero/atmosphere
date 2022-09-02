@@ -73,6 +73,15 @@ class TransactionService {
         ]);
     }
 
+    public static function getExpenses($teamId, $startDate, $endDate) {
+        return Transaction::expenses()
+        ->verified()
+        ->byTeam($teamId)
+        ->inDateFrame($startDate, $endDate)
+        ->groupBy(['transactions.id', 'currency_code'])
+        ->get();
+    }
+
     public static function getExpensesTotal($teamId, $startDate, $endDate) {
         return Transaction::where([
             'team_id' => $teamId,

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Domains\Budget\Models;
 
 use DateTime;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

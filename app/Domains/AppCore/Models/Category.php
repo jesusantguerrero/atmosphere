@@ -1,7 +1,10 @@
 <?php
 
-namespace App\Models;
+namespace App\Domains\AppCore\Models;
 
+use App\Domains\Budget\Models\Budget;
+use App\Domains\Budget\Models\BudgetMonth;
+use App\Domains\Transaction\Models\Transaction;
 use App\Events\BudgetAssigned;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Category as CoreCategory;

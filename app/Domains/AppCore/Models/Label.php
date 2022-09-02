@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Domains\AppCore\Models;
 
 use Freesgen\Atmosphere\Models\Label as FreesgenLabel;
 

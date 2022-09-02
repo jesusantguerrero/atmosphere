@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Goal;
+use App\Domains\Budget\Models\Goal;
 use Freesgen\Atmosphere\Http\InertiaController;
 
 class GoalController extends InertiaController

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Actions\Integrations;
+namespace App\Domains\Integration\Actions;
 
-use App\Models\Integrations\Automation;
+use App\Domains\Integration\Models\Automation;
 use Symfony\Component\DomCrawler\Crawler;
 
 class BHD

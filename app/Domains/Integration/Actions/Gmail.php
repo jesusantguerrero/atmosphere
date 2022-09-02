@@ -1,10 +1,9 @@
 <?php
 
-namespace App\Actions\Integrations;
+namespace App\Domains\Integration\Actions;
 
+use App\Domains\Integration\Models\Automation;
 use App\Libraries\GoogleService;
-use App\Models\Integrations\Automation;
-use Google_Service_Gmail;
 use Illuminate\Support\Facades\Log;
 use PhpMimeMailParser\Parser as EmailParser;
 
@@ -24,7 +23,7 @@ class Gmail
         $trigger = $automation->trigger()->first();
         $config = json_decode($trigger->values);
         $client = GoogleService::getClient($automation->integration_id);
-        $service = new Google_Service_Gmail($client);
+        $service = new Gmail($client);
         $condition = isset($config->conditionType) && $config->value ? "$config->conditionType($config->value)" : "";
         if (!$condition) {
             $condition = $config->value ?? "";

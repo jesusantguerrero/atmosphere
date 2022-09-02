@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Domains\Meal\Models;
 
 use Freesgen\Atmosphere\Models\Label;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;

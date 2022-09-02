@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Domains\AppCore\Models\Setting;
+use App\Domains\Meal\Models\Meal;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Insane\Journal\Models\Core\Account;
 use Laravel\Jetstream\Events\TeamCreated;

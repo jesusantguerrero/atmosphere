@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Domains\Budget\Models\BudgetMonth;
+use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Transaction\Services\TransactionService;
-use App\Helpers\BudgetHelper;
-use App\Models\BudgetMonth;
-use App\Models\Transaction;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Laravel\Jetstream\Jetstream;
@@ -36,12 +35,12 @@ class FinanceController extends InertiaController {
 
         $planned = (new TransactionService())->getPlanned($teamId);
 
-        $transactions = Transaction::getExpenses($teamId, $startDate, $endDate);
-        $expensesByCategory = Transaction::getCategoryExpenses($teamId, $startDate, $endDate, 4);
-        $expensesByCategoryGroup = Transaction::getCategoryExpensesGroup($teamId, $startDate, $endDate);
-        $lastMonthExpenses= Transaction::getExpenses($teamId, $lastMonthStartDate, $lastMonthEndDate)->sum('total');
-        $income = Transaction::getIncome( $teamId, $startDate, $endDate);
-        $lastMonthIncome = Transaction::getIncome( $teamId, $lastMonthStartDate, $lastMonthEndDate);
+        $transactions = TransactionService::getExpenses($teamId, $startDate, $endDate);
+        $expensesByCategory = TransactionService::getCategoryExpenses($teamId, $startDate, $endDate, 4);
+        $expensesByCategoryGroup = TransactionService::getCategoryExpensesGroup($teamId, $startDate, $endDate);
+        $lastMonthExpenses= TransactionService::getExpenses($teamId, $lastMonthStartDate, $lastMonthEndDate)->sum('total');
+        $income = TransactionService::getIncome( $teamId, $startDate, $endDate);
+        $lastMonthIncome = TransactionService::getIncome( $teamId, $lastMonthStartDate, $lastMonthEndDate);
 
         return Jetstream::inertia()->render($request, 'Finance/Index', [
             "sectionTitle" => "Finance",

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Actions\Integrations;
+namespace App\Domains\Integration\Actions;
 
+use App\Domains\Integration\Models\Automation;
+use App\Domains\Integration\Models\AutomationTaskAction;
 use App\Helpers\FormulaHelper;
-use App\Models\Integrations\Automation;
-use App\Models\Integrations\AutomationTaskAction;
 use App\Models\User;
 use App\Notifications\EntryGenerated;
 use Insane\Journal\Models\Core\Account;

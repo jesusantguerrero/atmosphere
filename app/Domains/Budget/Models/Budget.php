@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Models;
+namespace App\Domains\Budget\Models;
 
+use App\Domains\Transaction\Models\Transaction;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;

@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Meal;
-use App\Models\MealType;
-use App\Models\Planner;
+use App\Domains\AppCore\Models\Planner;
+use App\Domains\Meal\Models\Meal;
+use App\Domains\Meal\Models\MealType;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
 
