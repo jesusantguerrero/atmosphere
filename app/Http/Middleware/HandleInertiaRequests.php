@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Category;
+use App\Domains\AppCore\Models\Category;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Insane\Journal\Models\Core\Account as CoreAccount;

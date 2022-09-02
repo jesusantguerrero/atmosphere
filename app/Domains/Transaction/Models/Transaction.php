@@ -2,7 +2,7 @@
 
 namespace App\Domains\Transaction\Models;
 
-use App\Models\Planner;
+use App\Domains\AppCore\Models\Planner;
 use Insane\Journal\Models\Core\Category;
 use Insane\Journal\Models\Core\Transaction as CoreTransaction;
 use App\Domains\Transaction\Traits\TransactionTrait;

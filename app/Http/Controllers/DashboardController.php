@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Domains\AppCore\Models\Planner;
+use App\Domains\Budget\Models\BudgetMonth;
+use App\Domains\Transaction\Models\Transaction;
+use App\Domains\Transaction\Services\TransactionService;
 use App\Http\Resources\PlannedMealResource;
-use App\Models\BudgetMonth;
-use App\Models\Planner;
-use App\Models\Transaction;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Insane\Journal\Helpers\ReportHelper;
 
@@ -19,7 +19,7 @@ class DashboardController {
         $teamId = $request->user()->current_team_id;
 
         $budget = BudgetMonth::getMonthAssignments($teamId, $startDate);
-        $transactionsTotal = Transaction::getExpensesTotal($teamId, $startDate, $endDate);
+        $transactionsTotal = TransactionService::getExpensesTotal($teamId, $startDate, $endDate);
         $plannedMeals = Planner::where([
             'team_id' => $teamId,
             'date' => date('Y-m-d')

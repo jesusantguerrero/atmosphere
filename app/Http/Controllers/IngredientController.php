@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
+use App\Domains\Meal\Models\Product;
 use Freesgen\Atmosphere\Http\InertiaController;
 
 class IngredientController extends InertiaController

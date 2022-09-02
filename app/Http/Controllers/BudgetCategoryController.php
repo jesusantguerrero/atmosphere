@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Domains\AppCore\Models\Category;
+use App\Domains\Budget\Models\BudgetMovement;
+use App\Domains\Transaction\Models\Transaction;
 use App\Http\Resources\CategoryGroupCollection;
-use App\Models\BudgetMovement;
-use App\Models\Category;
-use App\Models\Planner;
-use App\Models\Transaction;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;

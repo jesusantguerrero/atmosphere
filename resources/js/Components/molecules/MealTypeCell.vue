@@ -6,7 +6,7 @@
       {{ plannedMeal.dateable.name }}
     </div>
     <div class="flex w-full overflow-visible" v-else>
-      <LogerApiSelect
+      <LogerApiSimpleSelect
         v-model="recipe.id"
         v-model:label="recipe.name"
         class="w-full"
@@ -24,7 +24,7 @@
 <script setup>
 import { reactive } from "vue";
 import LogerTabButton from "@/Components/atoms/LogerTabButton.vue";
-import LogerApiSelect from "@/Components/organisms/LogerApiSelect.vue";
+import LogerApiSimpleSelect from "../organisms/LogerApiSimpleSelect.vue";
 
 const props = defineProps({
   plannedMeal: {

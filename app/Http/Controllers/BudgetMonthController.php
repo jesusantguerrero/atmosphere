@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Imports\BudgetImport;
-use App\Models\BudgetMovement;
-use App\Models\Category;
+use App\Domains\AppCore\Models\Category;
+use App\Domains\Budget\Imports\BudgetImport;
+use App\Domains\Budget\Models\BudgetMovement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Maatwebsite\Excel\Facades\Excel;

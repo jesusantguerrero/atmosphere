@@ -13,6 +13,7 @@
 </template>
 
 <script setup>
+import { Inertia } from "@inertiajs/inertia";
 import { useForm } from "@inertiajs/inertia-vue3";
 import { computed, ref } from "vue";
 
@@ -54,7 +55,8 @@ const processImport = async () => {
     formData.setError('file', "You have to submit a file")
     return
   }
-  formData.post(props.endpoint, {
+
+  Inertia.post(props.endpoint, formData.data(), {
     onSuccess() {
         emit('uploaded')
         clearFile()
