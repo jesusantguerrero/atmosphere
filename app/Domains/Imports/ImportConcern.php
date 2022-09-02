@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Helpers;
+namespace App\Domains\Imports;
 
 use Maatwebsite\Excel\Concerns\Importable;
 use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
@@ -10,7 +10,7 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithLimit;
 use Maatwebsite\Excel\Concerns\WithMapping;
 
-abstract class ImportHelper  implements WithMapping, ToModel, WithHeadingRow, WithChunkReading, WithLimit, SkipsEmptyRows {
+abstract class ImportConcern implements WithMapping, ToModel, WithHeadingRow, WithChunkReading, WithLimit, SkipsEmptyRows {
     use Importable;
     public $session;
 

@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Domains\Transaction\Imports\TransactionsImport;
 use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Transaction\Resources\TransactionResource;
 use App\Domains\Transaction\Services\TransactionService;
-use App\Imports\TransactionsImport;
 use App\Models\Planner;
 use App\Notifications\TransactionsImported;
 use Freesgen\Atmosphere\Http\InertiaController;
@@ -53,9 +53,16 @@ class FinanceTransactionController extends InertiaController {
 
     public function import(Request $request) {
         $user = $request->user();
-        Excel::import(new TransactionsImport($user), $request->file('file'));
+        $importedData = (new TransactionsImport($user))->toCollection($request->file('file'));
+        $total = count($importedData);
+        $startDate = $importedData[0]->min('date');
+        $endDate = $importedData[0]->max('date');
+
         $user->notify(new TransactionsImported());
-        return redirect()->back();
+        $url = "/finance/transactions?filter[status]=draft&filter[date]=$startDate~$endDate";
+        return redirect($url)->with('flash', [
+            'banner' => "Successfully Imported $total transactions"
+        ]);
     }
 
     public function addPlanned(Request $request) {

@@ -1,9 +1,13 @@
 <template>
     <div class="px-5 text-left border-b bg-base-lvl-3 rounded-md shadow-xl pt-8" :class="{'flex': !full }">
-        <AtField label="Name">
+        <AtField label="Name" :errors="errors" field="name">
             <AtInput v-model="category.name" />
-            <AtErrorBag v-if="errors" :errors="errors" field="name" />
         </AtField>
+
+        <!-- <AtField label="Icon" :errors="errors" field="icon">
+            <AtInput v-model="category.icon" />
+            <IconPicker />
+        </AtField> -->
 
         <AtField label="Target Type">
             <NSelect
@@ -17,9 +21,8 @@
             <AtErrorBag v-if="errors" :errors="errors" field="account_id" />
         </AtField>
 
-        <AtField label="Amount">
+        <AtField label="Amount" errors="errors" field="amount">
             <AtInput type="number" v-model="form.amount" />
-            <AtErrorBag v-if="errors" errors="errors" field="amount" />
         </AtField>
 
         <AtButtonGroup
@@ -29,7 +32,7 @@
             selected-class="bg-primary text-white"
         />
 
-        <AtField label="Every" v-if="['MONTHLY', 'WEEKLY'].includes(form.frequency)">
+        <AtField label="Every" v-if="['MONTHLY', 'WEEKLY'].includes(form.frequency)" :errors="errors" :field="frequencyUnit.field">
             <NSelect
                 filterable
                 clearable
@@ -40,10 +43,8 @@
             />
 
             <div class="flex mt-2 space-x-2">
-                <div v-for="instance in monthInstanceCount" class="w-full h-2 bg-primary" />
+                <div v-for="instance in monthInstanceCount" class="w-full h-2 bg-primary" :key="instance" />
             </div>
-
-            <AtErrorBag v-if="errors" :errors="errors" :field="frequencyUnit.field" />
         </AtField>
 
         <div class="flex justify-between mb-4 mt-4">
@@ -65,6 +66,7 @@
     import { monthDays, WEEK_DAYS, FREQUENCY_TYPE } from "@/utils"
     import { makeOptions } from "@/utils/naiveui";
     import { format } from 'date-fns';
+    // import IconPicker from '../IconPicker.vue';
 
     const props = defineProps({
         isAddingGroup: {
