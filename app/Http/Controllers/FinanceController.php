@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Domains\Budget\Models\BudgetMonth;
+use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Transaction\Services\TransactionService;
 use Carbon\Carbon;
@@ -41,6 +42,7 @@ class FinanceController extends InertiaController {
         $lastMonthExpenses= TransactionService::getExpenses($teamId, $lastMonthStartDate, $lastMonthEndDate)->sum('total');
         $income = TransactionService::getIncome( $teamId, $startDate, $endDate);
         $lastMonthIncome = TransactionService::getIncome( $teamId, $lastMonthStartDate, $lastMonthEndDate);
+        $savings = BudgetCategoryService::getSavings($teamId, $startDate, $endDate);
 
         return Jetstream::inertia()->render($request, 'Finance/Index', [
             "sectionTitle" => "Finance",
@@ -51,6 +53,7 @@ class FinanceController extends InertiaController {
             "transactionTotal" => $transactions->sum('total'),
             "lastMonthExpenses" => $lastMonthExpenses,
             "income" => $income,
+            "savings" => $savings,
             "lastMonthIncome" => $lastMonthIncome,
             "transactions" => $transactions->map(function ($transaction) {
                 return Transaction::parser($transaction);

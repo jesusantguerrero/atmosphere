@@ -6,21 +6,11 @@ use App\Domains\Transaction\Models\Transaction;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use Insane\Journal\Models\Core\Account;
 
 class Budget extends Model
 {
     use HasFactory;
-    protected $fillable = ['team_id', 'user_id', 'target_amount', 'name', 'target_type', 'frequency', 'frequency_date', 'frequency_week_day', 'frequency_month_date'];
-    protected $with = ['children'];
-
-    public function account() {
-        return $this->belongsTo(Account::class);
-    }
-
-    public function children() {
-        return $this->hasMany(Budget::class, 'parent_id');
-    }
+    protected $fillable = ['team_id', 'user_id', 'amount', 'name', 'target_type', 'frequency', 'frequency_date', 'frequency_week_day', 'frequency_month_date'];
 
     public function getExpensesByPeriod($startDate, $endDate = null) {
         return DB::table('transaction_lines')

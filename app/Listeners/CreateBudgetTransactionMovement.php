@@ -2,8 +2,8 @@
 
 namespace App\Listeners;
 
-use App\Models\BudgetMonth;
-use App\Models\Transaction;
+use App\Domains\Budget\Models\BudgetMonth;
+use App\Domains\Transaction\Models\Transaction;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\DB;

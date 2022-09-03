@@ -39,8 +39,8 @@
                 <FinanceCard
                   class="text-body-1 bg-base-lvl-1"
                   title="Savings"
-                  :value="formatMoney('10000')"
-                  subtitle="Total: 150,000.00"
+                  :value="formatMoney(savings)"
+                  :subtitle="`Total: ${formatMoney(savings)}`"
                 />
                  <BudgetProgress
                     :goal="budgetTotal"
@@ -166,6 +166,9 @@ const props = defineProps({
   income: {
     type: Number,
     default: 0,
+  },
+  savings: {
+    type: Number,
   },
   lastMonthIncome: {
     type: Number,

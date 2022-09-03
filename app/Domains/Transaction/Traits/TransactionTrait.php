@@ -2,6 +2,7 @@
 
 namespace App\Domains\Transaction\Traits;
 
+use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Transaction;
 
 trait TransactionTrait {
@@ -10,11 +11,11 @@ trait TransactionTrait {
     }
 
     public function scopeVerified($query) {
-        return $query->where('status', 'verified');
+        return $query->where('transactions.status', 'verified');
     }
 
     public function scopeByTeam($query, $teamId) {
-        return $query->where('team_id', $teamId);
+        return $query->where('transactions.team_id', $teamId);
     }
 
     public function scopePlanned($query, $isAutomatic = false) {
@@ -40,8 +41,8 @@ trait TransactionTrait {
 
     public function scopeExpenses($query) {
         return $query->where([
-            'direction' => Transaction::DIRECTION_CREDIT,
-            'status' => 'verified'
+            'transactions.direction' => Transaction::DIRECTION_CREDIT,
+            'transactions.status' => 'verified'
         ])
         ->whereNotNull('transaction_category_id');
     }

@@ -85,9 +85,7 @@ class Category extends CoreCategory
     public function getMonthBalance($yearMonth)
     {
        return $this->transactions()
-        ->where([
-            'status' => 'verified'
-        ])
+        ->verified()
         ->whereRaw(DB::raw("date_format(transactions.date, '%Y-%m') = '$yearMonth'"))
         ->sum(DB::raw("CASE
             WHEN transactions.direction = 'WITHDRAW'
@@ -95,7 +93,6 @@ class Category extends CoreCategory
             ELSE total * 1 END"
         ));
     }
-
 
     /**
      * Get the current balance.
@@ -113,23 +110,4 @@ class Category extends CoreCategory
         ->from('budget_months')
         ->sum(DB::raw("budgeted + activity"));
     }
-
-    //    /**
-    //  * Get the current balance.
-    //  *
-    //  * @return string
-    //  */
-    // public function getOldAvailable($yearMonth)
-    // {
-    //    return $this->budgets()
-    //    ->where('transactions.category_id', '=', 24)
-    //     ->whereRaw(DB::raw("date_format(budget_months.month, '%Y%m') < '$yearMonth'"))
-    //     ->selectRaw(DB::raw("sum(COALESCE(budgeted, 0)) + sum(CASE
-    //      WHEN transactions.direction = 'WITHDRAW'
-    //      THEN total * -1
-    //      ELSE total * 1 END) as budgeted")
-    //     )
-    //     ->join('transactions', 'transactions.transaction_category_id', '=', 'budget_months.category_id')
-    //     ->dump();
-    // }
 }

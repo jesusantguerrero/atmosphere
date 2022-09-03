@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\RecipeApiController;
 use App\Http\Controllers\Api\TimezonesApiController;
 use App\Http\Controllers\BudgetCategoryController;
 use App\Http\Controllers\BudgetMonthController;
+use App\Http\Controllers\BudgetTargetController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\FinanceTransactionController;
@@ -100,6 +101,10 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
 
     // Budgeting & Goals routes
     Route::resource('/budgets', BudgetCategoryController::class);
+    Route::controller(BudgetTargetController::class)->group(function() {
+        Route::post('/budgets/{category}/targets/', 'store')->name("budget.target.store");
+        Route::put('/budgets/{category}/targets/{target}', 'update')->name("budget.target.update");
+    });
     Route::controller(BudgetMonthController::class)->group(function () {
         Route::post('/budgets/{categoryId}/months/{month}', 'assign')->name("budget.assignment");
         Route::post('/budgets/import', 'import')->name('budget.import');
