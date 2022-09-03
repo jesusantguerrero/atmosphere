@@ -3,7 +3,6 @@
 namespace App\Listeners;
 
 use App\Events\BudgetAssigned;
-use App\Models\BudgetMovement;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 

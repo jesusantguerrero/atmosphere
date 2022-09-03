@@ -6,6 +6,7 @@ use App\Domains\AppCore\Models\Planner;
 use App\Domains\Transaction\Imports\TransactionsImport;
 use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Transaction\Resources\TransactionResource;
+use App\Domains\Transaction\Services\TransactionService;
 use App\Notifications\TransactionsImported;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
@@ -51,15 +52,12 @@ class FinanceTransactionController extends InertiaController {
 
     public function import(Request $request) {
         $user = $request->user();
-        $importedData = (new TransactionsImport($user))->toCollection($request->file('file'));
-        $total = count($importedData);
-        $startDate = $importedData[0]->min('date');
-        $endDate = $importedData[0]->max('date');
+        $results = TransactionService::importAndSave($user, request()->file('file'));
 
         $user->notify(new TransactionsImported());
-        $url = "/finance/transactions?filter[status]=draft&filter[date]=$startDate~$endDate";
+        $url = "/finance/transactions?filter[status]=draft&filter[date]=$results->startDate~$results->endDate";
         return redirect($url)->with('flash', [
-            'banner' => "Successfully Imported $total transactions"
+            'banner' => "Successfully Imported $results->total transactions"
         ]);
     }
 

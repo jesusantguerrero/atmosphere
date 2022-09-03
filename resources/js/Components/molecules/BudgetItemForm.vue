@@ -25,27 +25,32 @@
             <AtInput type="number" v-model="form.amount" />
         </AtField>
 
-        <AtButtonGroup
-            v-model="form.frequency"
-            :options="state.frequencies"
-            class="text-lg"
-            selected-class="bg-primary text-white"
-        />
-
-        <AtField label="Every" v-if="['MONTHLY', 'WEEKLY'].includes(form.frequency)" :errors="errors" :field="frequencyUnit.field">
-            <NSelect
-                filterable
-                clearable
-                size="large"
-                v-model:value="form[frequencyUnit.field]"
-                :default-expand-all="true"
-                :options="frequencyUnit.options"
+        <section v-if="form.target_type == 'spending'">
+            <AtButtonGroup
+                v-model="form.frequency"
+                :options="state.frequencies"
+                class="text-lg"
+                selected-class="bg-primary text-white"
             />
 
-            <div class="flex mt-2 space-x-2">
-                <div v-for="instance in monthInstanceCount" class="w-full h-2 bg-primary" :key="instance" />
-            </div>
-        </AtField>
+            <AtField
+                label="Every"
+                v-if="['MONTHLY', 'WEEKLY'].includes(form.frequency)"
+                :errors="errors" :field="frequencyUnit.field">
+                <NSelect
+                    filterable
+                    clearable
+                    size="large"
+                    v-model:value="form[frequencyUnit.field]"
+                    :default-expand-all="true"
+                    :options="frequencyUnit.options"
+                />
+
+                <div class="flex mt-2 space-x-2">
+                    <div v-for="instance in monthInstanceCount" class="w-full h-2 bg-primary" :key="instance" />
+                </div>
+            </AtField>
+        </section>
 
         <div class="flex justify-between mb-4 mt-4">
             <div class="flex font-bold">
@@ -183,11 +188,11 @@
         const methods = {
             update: {
                 method: 'put',
-                url: props.item?.id && `/categories/${props.category.id}/budgets/${props.item.id}`
+                url: props.item?.id && `/budgets/${props.category.id}/targets/${props.item.id}`
             },
             save: {
                 method: 'post',
-                url: `/categories/${props.category.id}/budgets`
+                url: `/budgets/${props.category.id}/targets`
             }
         }
         const endpoint = methods[props.item?.id ? 'update' : 'save']

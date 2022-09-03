@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Domains\AppCore\Models;
+namespace App\Models;
 
 use Freesgen\Atmosphere\Models\Setting as ModelsSetting;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

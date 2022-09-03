@@ -21,7 +21,7 @@ class CreateBudgetsTable extends Migration
             $table->string('name');
             $table->string('color')->nullable();
             $table->text('icon')->nullable();
-            $table->decimal('target_amount', 11, 2)->default(0);
+            $table->decimal('amount', 11, 2)->default(0);
             $table->enum('target_type', [
                 'spending',
                 'saving_balance',

@@ -2,6 +2,7 @@
 
 namespace App\Domains\Transaction\Services;
 
+use App\Domains\Transaction\Imports\TransactionsImport;
 use App\Domains\Transaction\Models\Transaction;
 use Illuminate\Support\Facades\DB;
 
@@ -83,13 +84,10 @@ class TransactionService {
     }
 
     public static function getExpensesTotal($teamId, $startDate, $endDate) {
-        return Transaction::where([
-            'team_id' => $teamId,
-            'direction' => Transaction::DIRECTION_CREDIT,
-            'status' => 'verified'
-        ])
-        ->whereNotNull('transaction_category_id')
-        ->whereBetween('date', [$startDate, $endDate])
+        return Transaction::byTeam($teamId)
+        ->verified()
+        ->expenses()
+        ->inDateFrame($startDate, $endDate)
         ->select(DB::raw('SUM(total) as total, currency_code'))
         ->groupBy('currency_code')
         ->get();
@@ -137,16 +135,24 @@ class TransactionService {
     }
 
     public static function getIncome($teamId, $startDate, $endDate) {
-        return Transaction::where([
-            'team_id' => $teamId,
-            'status' => 'verified'
-        ])
+        return Transaction::byTeam($teamId)
+        ->verified()
         ->byCategories(['inflow'], $teamId)
         ->getByMonth($startDate, $endDate)
         ->sum('total');
     }
 
-    public static function getSavings($teamId, $startDate, $endDate) {
-        // todo
+    public static function importAndSave($user, $file) {
+        $importedData = (new TransactionsImport($user))->toCollection($file);
+
+        foreach ($importedData[0]->toArray() as $transaction) {
+            Transaction::createTransaction($transaction);
+        }
+
+        return (object) [
+            "total" => count($importedData),
+            "startDate" => $importedData[0]->min('date'),
+            "endDate" => $importedData[0]->max('date')
+        ];
     }
 }
