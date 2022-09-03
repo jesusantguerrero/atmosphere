@@ -275,6 +275,7 @@
         const method = props.transactionData && props.transactionData.id ? 'update' : 'save'
         const actionType = isRecurrence.value ? 'recurrence' : 'transaction'
         const action = actions[actionType][method]
+
         state.form
         .transform((form) => ({
             ...form,

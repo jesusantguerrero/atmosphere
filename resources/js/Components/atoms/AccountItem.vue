@@ -6,7 +6,10 @@
         v-on="$attrs"
         :title="account.balance"
     >
-        <div>
+        <div class="w-4">
+            <IconDrag class="hidden h-10 group-hover:inline-block handle"/>
+        </div>
+        <div class="w-full pl-2">
             <strong class="flex flex-wrap overflow-hidden overflow-ellipsis">
                 {{ account.name }}
             </strong>
@@ -15,8 +18,13 @@
                 {{ formatMoney(account.balance, account.currency_code) }}
             </p>
         </div>
-        <div class="w-4">
-            <IconDrag class="hidden h-10 group-hover:inline-block handle"/>
+        <div>
+            <LogerTabButton
+                class="h-full flex items-center justify-center px-0.5 rounded-md hover:text-primary hover:bg-base-lvl-2"
+                @click.stop="$emit('edit')"
+            >
+                <i class="fa fa-edit"></i>
+            </LogerTabButton>
         </div>
     </div>
 </template>

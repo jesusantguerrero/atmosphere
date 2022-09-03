@@ -3,7 +3,7 @@
         <div class="px-4 pt-5 pb-4 bg-base-lvl-3 sm:p-6 sm:pb-4 text-body">
             <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                 <h3 class="text-lg">
-                    <slot name="title">Add Account</slot>
+                    <slot name="title">{{ modalTitle }}</slot>
                 </h3>
 
                 <div class="mt-2">
@@ -28,6 +28,7 @@
 
                             <AtField
                                 label="Opening Balance"
+                                v-if="!form.id"
                             >
                                 <LogerInput v-model="form.opening_balance" type="number" />
                             </AtField>
@@ -45,31 +46,37 @@
 </template>
 
 <script setup>
-    import Modal from '@/Jetstream/Modal.vue'
     import { useForm, usePage } from "@inertiajs/inertia-vue3"
-    import { AtField, AtButton } from "atmosphere-ui"
-    import { reactive, toRefs } from '@vue/reactivity'
-    import { computed } from '@vue/runtime-core'
+    import { reactive, toRefs, computed, watch } from 'vue'
     import { NSelect } from "naive-ui";
+    import { AtField, AtButton } from "atmosphere-ui"
     import Slug from "slug";
-    import { makeOptions } from '@/utils/naiveui'
+
+    import Modal from '@/Jetstream/Modal.vue'
     import LogerInput from '@/Components/atoms/LogerInput.vue'
 
+    import { makeOptions } from '@/utils/naiveui'
+
     const emit = defineEmits(['close'])
-    defineProps({
-            show: {
-                default: false
-            },
-            maxWidth: {
-                default: '2xl'
-            },
-            closeable: {
-                default: true
-            },
+    const props = defineProps({
+        show: {
+            default: false
+        },
+        maxWidth: {
+            default: '2xl'
+        },
+        closeable: {
+            default: true
+        },
+        formData: {
+            type:Object,
+            default: () => ({})
+        }
     });
 
     const state = reactive({
         form: useForm({
+            id: null,
             name: '',
             category_id: null,
             account_detail_type_id: null,
@@ -82,18 +89,44 @@
         })
     })
 
+    const modalTitle = computed(() => {
+        return props.formData.id ? `Edit ${props.formData.name} account` : 'Add Account';
+    })
+
+    watch(() => props.formData, (newValue) => {
+        Object.keys(state.form.data()).forEach((field) => {
+            if (field == 'date') {
+                state.form[field] = new Date(newValue[field])
+            } else {
+                state.form[field] = newValue[field]
+            }
+        })
+    }, { deep: true, immediate: true })
+
     const close = () =>  {
         emit('close')
     }
 
     const submit = () => {
+        const actions = {
+            save: {
+                method: 'post',
+                url: () => route('accounts.store'),
+            },
+            update: {
+                method: 'put',
+                url: () => route('accounts.update', props.formData)
+            },
+        };
+
+        const method = props.formData && props.formData.id ? 'update' : 'save'
+        const action = actions[method]
 
         state.form
         .transform((form) => {
             form.display_id = Slug(form.name, '_')
             return form;
-        })
-        .post(route('accounts.store'), {
+        }).submit(action.method, action.url, {
             onSuccess: ({ data }) => {
                 emit('close')
                 state.form.reset();

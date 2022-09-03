@@ -31,28 +31,6 @@
                                 @click="$inertia.visit('/notifications')"
                              />
 
-                            <!-- Teams Dropdown -->
-                            <div class="relative ml-3">
-                                <LogerDropdown
-                                    v-if="$page.props.jetstream.hasTeamFeatures && $page.props.user.current_team"
-                                    :label="$page.props.user.current_team.name"
-                                    :disabled="!$page.props.jetstream.hasTeamFeatures"
-                                    :items="teamMenuItems"
-                                >
-                                    <template #switch-teams>
-                                        <div v-for="team in $page.props.user.all_teams" :key="team.id">
-                                            <form @submit.prevent="switchToTeam(team)">
-                                                <JetDropdownLink as="button">
-                                                    <div class="flex items-center">
-                                                        <svg v-if="team.id == $page.props.user.current_team_id" class="w-5 h-5 mr-2 text-green-400" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                                        <div>{{ team.name }}</div>
-                                                    </div>
-                                                </JetDropdownLink>
-                                            </form>
-                                        </div>
-                                    </template>
-                                </LogerDropdown>
-                            </div>
 
                             <!-- Settings Dropdown -->
                             <div class="relative ml-3">
