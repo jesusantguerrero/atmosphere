@@ -126,7 +126,7 @@
         .transform((form) => {
             form.display_id = Slug(form.name, '_')
             return form;
-        }).submit(action.method, action.url, {
+        }).submit(action.method, action.url(), {
             onSuccess: ({ data }) => {
                 emit('close')
                 state.form.reset();
