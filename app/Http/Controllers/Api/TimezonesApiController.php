@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Meal;
 use DateTimeZone;
 use Illuminate\Http\Request;
 

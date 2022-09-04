@@ -3,18 +3,17 @@
         <div class="py-6 space-y-4">
             <div
                 class="flex justify-between w-full grid-cols-4 px-5 py-5 border rounded-lg cursor-pointer text-body bg-base-lvl-3 hover:bg-base-lvl-2"
-                @click="$emit('click', meal)"
                 v-for="meal in meals"
                 :key="meal.id"
                 :class="{'bg-primary-300 text-white': isSelected(meal)}"
             >
-                <div > {{ meal.name }} </div>
+                <div  @click="$emit('click', meal)" class="hover:text-primary transition"> {{ meal.name }} </div>
                 <div class="flex items-center space-x-2 text-right">
                     <div class="flex items-center space-x-1 font-bold">
                         <div v-for="tag in meal.labels" :style="{color: tag.color}">
                             #{{ tag.name  }}
                         </div>
-                        <LogerApiSelect
+                        <LogerApiSimpleSelect
                             v-model="label.label_id"
                             v-model:label="label.name"
                             class="w-24"
@@ -40,6 +39,7 @@
     import { AtBadge } from "atmosphere-ui";
     import LogerApiSelect from "@/Components/organisms/LogerApiSelect.vue";
     import { reactive } from "vue";
+    import LogerApiSimpleSelect from "./organisms/LogerApiSimpleSelect.vue";
 
     const props = defineProps({
         meals: {

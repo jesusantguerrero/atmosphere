@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Label;
+use App\Domains\AppCore\Models\Label;
 
 class LabelApiController extends BaseController
 {

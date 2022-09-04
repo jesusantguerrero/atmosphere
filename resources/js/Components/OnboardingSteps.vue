@@ -5,8 +5,13 @@
         <i :class="icon" />
     </header>
     <div v-if="!isCollapsed" class="space-y-2">
-        <div v-for="step in steps" class="border cursor-pointer group flex flex-nowrap space-x-4 bg-base-lvl-3 rounded-md p-4 shadow-xl">
-            <div class="h-10 w-10 border-slate-300 transition-all group-hover:border-primary group-hover:text-primary text-slate-300 justify-center rounded-md border flex items-center">
+        <div v-for="step in steps"
+            class="border cursor-pointer group flex flex-nowrap space-x-4 bg-base-lvl-3 rounded-md p-4 shadow-xl"
+            :key="step.name"
+            >
+            <div class="h-10 w-10  transition-all group-hover:border-primary group-hover:text-primary justify-center rounded-md border flex items-center"
+                :class="[!step.complete ? 'text-primary border-primary shadow-md shadow-primary/20' : 'border-slate-300 text-slate-300']"
+                >
                 <i :class="step.icon" />
             </div>
             <div class="ml-4 w-full">
