@@ -4,7 +4,7 @@
     class="relative text-body-1"
 >
     <i class="mr-1 fa fa-bell" />
-    <div v-if="notifications.length" class="absolute bottom-0 right-0 w-4 h-4 text-xs text-white bg-error rounded-full shadow-md">
+    <div v-if="notifications > 0" class="absolute bottom-0 right-0 w-4 h-4 text-xs text-white bg-error rounded-full shadow-md">
         {{ notifications }}
     </div>
 </LogerTabButton>

@@ -1,5 +1,5 @@
 <template>
- <AtButton class="mt-4 border  font-bold rounded-md" :class="[typeClasses]">
+ <AtButton class="mt-4 border transition font-bold rounded-md" :class="[typeClasses]">
     <slot />
  </AtButton>
 </template>
@@ -11,7 +11,7 @@ import { AtButton } from "atmosphere-ui";
 
 const types = {
     primary: "bg-primary text-white",
-    inverse: "border-primary bg-primary/10 text-primary"
+    inverse: "border-primary bg-primary/10 text-primary hover:bg-primary hover:text-white"
 }
 
 const props = defineProps({

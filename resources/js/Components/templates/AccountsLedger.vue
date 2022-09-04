@@ -11,11 +11,17 @@
                 :account="account"
                 :is-selected="isSelectedAccount(account.id)"
                 @click="Inertia.visit(`/finance/transactions?filter[account_id]=${account.id}`)"
+                @edit="onEdit(account)"
             />
        </Draggable>
     </div>
 
-    <AccountModal v-if="isAccountModalOpen" :show="isAccountModalOpen" @close="isAccountModalOpen = false"/>
+    <AccountModal
+        v-if="isAccountModalOpen"
+        :show="isAccountModalOpen"
+        :form-data="accountToEdit"
+        @close="isAccountModalOpen = false"
+    />
   </div>
 </template>
 
@@ -44,9 +50,16 @@ const props = defineProps({
 const emit = defineEmits(['reordered'])
 
 const isAccountModalOpen = ref(false);
+const accountToEdit = ref({})
+
 const openAccountModal = () => {
   isAccountModalOpen.value = true;
 };
+
+const onEdit = (account) =>  {
+    accountToEdit.value = account;
+    openAccountModal();
+}
 
 const saveReorder = () => {
     const items = props.accounts.map((item, index) => ({
@@ -56,8 +69,4 @@ const saveReorder = () => {
     emit("reordered", items)
 }
 
-const draggableRef = ref()
-// onMounted(() => {
-//     autoAnimate(draggableRef.value) // thats it!
-// })
 </script>
