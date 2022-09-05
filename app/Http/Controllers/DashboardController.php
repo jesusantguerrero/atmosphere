@@ -16,6 +16,7 @@ class DashboardController {
         $request = request();
         $startDate = $request->query('startDate', Carbon::now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->query('endDate', Carbon::now()->endOfMonth()->format('Y-m-d'));
+        $team = $request->user()->currentTeam;
         $teamId = $request->user()->current_team_id;
 
         $budget = BudgetMonth::getMonthAssignments($teamId, $startDate);
@@ -32,6 +33,21 @@ class DashboardController {
             "budgetTotal" => $budget->sum('budgeted'),
             "transactionTotal" => $transactionsTotal,
             "revenue" => ReportHelper::generateExpensesByPeriod($teamId),
+            'onboarding' => function () use ($team) {
+                $onboarding =  $team->onboarding();
+                return $onboarding->inProgress() ? [
+                    "percentage" => $onboarding->percentageCompleted(),
+                    "steps" => $onboarding->steps()->map(function($step) {
+                        return ["title" => $step->title,
+                        "cta" => $step->cta,
+                        "link" => $step->link,
+                        "description" => $step->description,
+                        "icon" => $step->icon,
+                        "complete" => $step->complete(),
+                    ];
+                    })
+                ] : [];
+            },
         ]);
     }
 }

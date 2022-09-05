@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Domains\Integration\Models\Automation;
 use App\Jobs\ProcessGmail;
 use App\Libraries\GoogleService;
-use App\Models\Integrations\Automation;
-use Illuminate\Support\Facades\Artisan;
 
 class AutomationController extends BaseController
 {
@@ -28,18 +27,6 @@ class AutomationController extends BaseController
             $service = $automation->recipe->name;
             GoogleService::$service($automation->id, true);
             return ["done" => $automation];
-        } else {
-            $automations = Automation::where([
-                "automation_recipe_id" => 1
-            ])->get();
-
-            if (count($automations)) {
-                foreach ($automations as $automation) {
-                    ProcessGmail::dispatch($automation);
-                }
-            }
-
-            return $automations;
         }
     }
 

@@ -14,9 +14,9 @@
                     <AtInput rounded type="number" v-model="ingredient.quantity" class="border border-none rounded-t-none rounded-b-none text-body bg-base border-base-deep-1" />
                 </AtField>
                 <AtField class="w-full px-4" label="Name">
-                    <LogerApiSelect
+                    <LogerApiSimpleSelect
                         v-model="form.ingredients[index]"
-                        v-model:label="ingredient.name"
+                        v-model:label="form.ingredients[index].name"
                         class="w-full"
                         tag
                         custom-label="name"
@@ -43,7 +43,7 @@
     import { useForm } from "@inertiajs/inertia-vue3"
     import { AtField, AtInput, AtButton } from "atmosphere-ui"
     import { nextTick } from '@vue/runtime-core'
-    import LogerApiSelect from "./organisms/LogerApiSelect.vue";
+    import LogerApiSimpleSelect from "./organisms/LogerApiSimpleSelect.vue";
 
     defineEmits(['close']);
     const props = defineProps({

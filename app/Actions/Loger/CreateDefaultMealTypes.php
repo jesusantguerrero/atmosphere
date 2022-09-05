@@ -2,7 +2,7 @@
 
 namespace App\Actions\Loger;
 
-use App\Models\MealType;
+use App\Domains\Meal\Models\MealType;
 
 class CreateDefaultMealTypes
 {

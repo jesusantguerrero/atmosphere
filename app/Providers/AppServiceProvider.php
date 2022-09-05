@@ -3,7 +3,6 @@
 namespace App\Providers;
 
 use App\Models\Team;
-use App\Models\User;
 use Illuminate\Support\ServiceProvider;
 use Spatie\Onboard\Facades\Onboard;
 
@@ -36,6 +35,7 @@ class AppServiceProvider extends ServiceProvider
         ])
         ->cta('Resend confirmation')
         ->completeIf(function (Team $model) {
+
             return (bool) $model->owner->email_verified_at;
         });
 
@@ -49,9 +49,9 @@ class AppServiceProvider extends ServiceProvider
                 'name' => 'addAccounts',
 
             ])
-            ->completeIf(function (Team $team) {
-            return $team->accounts->count() > 0;
-        });
+            ->completeIf(function (Team $model) {
+                return $model->accounts->count() > 0;
+            });
 
         Onboard::addStep('Step 3: Add budget categories')
             ->link('/budgets')
@@ -61,9 +61,9 @@ class AppServiceProvider extends ServiceProvider
                 'name' => 'AddCategories',
                 'description' => 'Structure your budgets with category groups and categories',
             ])
-            ->completeIf(function (Team $team) {
-            return $team->accounts->count() > 0;
-        });
+            ->completeIf(function (Team $model) {
+                return $model->budgetCategories->count() > 0;
+            });
 
         Onboard::addStep('Step 4: Add meal plan')
             ->link('/meal-planner')
@@ -73,8 +73,8 @@ class AppServiceProvider extends ServiceProvider
                 'name' => 'AddMealPlan',
                 'description' => 'Organize your meals',
             ])
-            ->completeIf(function (Team $team) {
-            return $team->meals->count() > 0;
-        });
+            ->completeIf(function (Team $model) {
+                return $model->meals->count() > 0;
+            });
     }
 }

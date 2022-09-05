@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Domains\AppCore\Models\Category;
 use App\Models\Setting;
 use App\Domains\Meal\Models\Meal;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -54,6 +55,10 @@ class Team extends JetstreamTeam implements Onboardable
 
     public function accounts() {
         return $this->hasMany(Account::class);
+    }
+
+    public function budgetCategories() {
+        return $this->hasMany(Category::class)->where('resource_type', 'transactions');
     }
 
     public function meals() {

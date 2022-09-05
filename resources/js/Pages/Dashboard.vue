@@ -32,7 +32,7 @@
 
             </div>
             <div class="md:w-3/12 space-y-4">
-                <OnboardingSteps :steps="onboarding" />
+                <OnboardingSteps :steps="onboarding.steps" :percentage="onboarding.percentage" />
                 <div class="space-y-5 pb-10">
                     <SectionTitle type="secondary"> Menu for today</SectionTitle>
                     <div class="px-4 py-2 space-y-4 rounded-md shadow-xl cursor-pointer min-h-min bg-base-lvl-3">

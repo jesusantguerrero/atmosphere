@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Product;
+use App\Domains\Meal\Models\Product;
 
 class IngredientApiController extends BaseController
 {
