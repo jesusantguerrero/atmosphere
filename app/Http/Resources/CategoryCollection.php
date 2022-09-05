@@ -21,6 +21,6 @@ class CategoryCollection extends JsonResource
 
         $month = $startDate ?? date('Y-m-01');
         $normalArray = parent::toArray($request);
-        return array_merge($this->getBudgetInfo($month), $normalArray, [ 'month' => $month ]);
+        return array_merge($normalArray, [ 'month' => $month ], $this->getBudgetInfo($month));
     }
 }
