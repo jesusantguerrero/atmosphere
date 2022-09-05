@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Domains\Transaction\Models\Transaction;
+use App\Domains\Transaction\Services\TransactionService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Laravel\Jetstream\Jetstream;
@@ -38,7 +39,7 @@ class FinanceTrendController extends Controller {
         $teamId = $request->user()->current_team_id;
 
         return [
-            'data' => Transaction::getCategoryExpensesGroup($teamId, $startDate, $endDate),
+            'data' => TransactionService::getCategoryExpensesGroup($teamId, $startDate, $endDate),
             'metaData' => [
                 'title' => 'Category Group Trends',
             ]
@@ -52,7 +53,7 @@ class FinanceTrendController extends Controller {
 
         $teamId = $request->user()->current_team_id;
 
-        $data  = Transaction::getCategoryExpenses($teamId, $startDate, $endDate, null, $filters['parent_id'] ?? null);
+        $data  = TransactionService::getCategoryExpenses($teamId, $startDate, $endDate, null, $filters['parent_id'] ?? null);
         $parentName = $data[0]?->parent_name ? $data[0]?->parent_name . " - " : null;
         return [
             'data' => $data,
@@ -72,7 +73,7 @@ class FinanceTrendController extends Controller {
         $teamId = $request->user()->current_team_id;
 
         return [
-            'data' => Transaction::getNetWorth($teamId, $startDate, $endDate),
+            'data' => TransactionService::getNetWorth($teamId, $startDate, $endDate),
             'metaData' => [
                 'name' => 'netWorth',
                 'title' => 'Net Worth',
