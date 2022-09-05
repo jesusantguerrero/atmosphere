@@ -165,7 +165,7 @@ npm run dev
 🎉 And that's it! You will now be able to visit your URL and see your Atmosphere application up and running.
 
 ## License
-[MIT license](https://opensource.org/licenses/MIT).
+[BSD-3 license](https://github.com/jesusantguerrero/atmosphere/blob/master/LICENSE).
 
 ## Author
 Jesus Guerrero
