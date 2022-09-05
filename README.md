@@ -1,22 +1,64 @@
-## About Loger [codename: Atmosphere] (Work in progress)
+# Loger 🏡
 
-Loger (House in french) helps to manage my family chores. Things like Meal Planner, Home Finance, House Projects & Relationships plans.
+<h3 align="center">
+    The Digital Home Management Software
+</h3>
 
-Features:
-- Meal Planner
-- Random Meal 
-- Monthly Budget
-- Scheduled Payments Reminders
-- Subscriptions
-- Transactions
+<!-- <p align="center">
+	<strong>
+		<a href="https://loger.neatlancer.com/">Website</a>
+		•
+		<a href="https://loger.neatlancer.com">Docs</a>
+		•
+		<a href="https://loger.neatlancer.com">Demo</a>
+	</strong>
+</p> -->
+> Status: Alpha
+codename: Atmosphere
+## About Loger
 
-## Demo
+Loger (House in french) as family managing home is almost like being president of a company, there's a lot of things going on and that you have to keep in mind things like **budget**, **expenses**, **subscriptions** to keep your financial habits healthy managing goals like **emergency fund** or planning your **meals** and have a grocery list generated with the things you need well, you get the point, all are part of things that we have to deal with but we do it on our minds use different software and then give up. Loger aims to be a central point to manage all that an more.
 
-<a href="https://cloud.digitalocean.com/apps/new?repo=https://github.com/jesusantguerrero/atmosphere/tree/staging" target="_blank"><img src="https://www.deploytodo.com/do-btn-blue.svg" width="240" alt="Deploy to DO"></a>
+## ✨Features:
+
+Loger is organized in "concerns" by the moment it have 4
+
+* ### 💵 Finance:
+    - Monthly Budget
+    - Accounts
+    - Transactions
+    - Statistics/Net Worth
+    - Scheduled Transactions*
+
+* ### 🍗 Meal Planner
+    - Recipes   
+    - Ingredients
+    - Meal Planner
+    - Random Meal Generator
+    - Menus*
+
+* ### 👨‍👩‍👧 Relationship**
+    I don't want to automate/digitalize the humanity of a relationship here but save reminders of activities that would strengthen it like:
+
+    - Interesting movies to watch
+    - Goals/Projects like travels and activities 
+
+* ### 🏡Home/Family Projects**
+    There are things that need an action but not immediately, maybe we just need to save then to take it to the budget in the next months or three months whatever.
+
+    - New furniture
+    - House Repairs/Improvements
+    - Events and activities
+
+
+>  (*) Feature is planned but not finished yet
+(**) Section is considered but not planned still in research
+
+<!-- ## Demo
+
+<a href="https://cloud.digitalocean.com/apps/new?repo=https://github.com/jesusantguerrero/atmosphere/tree/staging" target="_blank"><img src="https://www.deploytodo.com/do-btn-blue.svg" width="240" alt="Deploy to DO"></a> -->
 
 ## Showcase
-
-![Landing](/public/images/landing.png)
 
 Dashboard Expanded 
 ![Dashboard](/public/images/full-sized-dashboard.png)
@@ -33,10 +75,15 @@ Finance Overview
 Budget
 ![Budget](/public/images/budget.png)
 
+## Motivation
+- This was an Idea initially considered as a part of a 12x12 SaaS challenge.
+- I married and needed something like this to keep my things organized and planned.
+- Financial software had fixed categories, bank sync didn't work in my country or just. worked more like expense tracker than budget (Except YNAB).
+- I didn't want to have multiple apps to manage things of the same context and need a relation (Budgeting app, calendars, meal planner, custom notion template).
+
 
 ## Technical Stuff
-Loger is a Monolith app using laravel 8, jetstream, intertia, vue3, Tailwindcss and some hand crafted packages [Atmosphere UI](https://github.com/insane-code/journal), [Journal](https://github.com/insane-code/journal), [Tresurer](https://github.com/jesusantguerrero/insane-treasurer), and others.
-
+Loger is a Monolith app using laravel 9, jetstream, inertia, vue3, Tailwindcss and some hand crafted packages [Atmosphere UI](https://github.com/jesusantguerrero/atmosphere-ui), [Journal](https://github.com/insane-code/journal), and others.
 
 
 | Prerequisite                                          | Version     |
@@ -119,3 +166,8 @@ npm run dev
 
 ## License
 [MIT license](https://opensource.org/licenses/MIT).
+
+## Author
+Jesus Guerrero
+- website: [jesusantguerrero.com](https://jesusantguerrero.com)
+- twitter: [@jesusntguerrero](https://twitter.com/jesusntguerrero) 
