@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Domains\Integration\Actions\BHDAlert;
+use App\Domains\Integration\Actions\BHDNotification;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Transaction;
@@ -103,44 +105,18 @@ class AutomationServices extends Seeder
                 'components' => [
                     [
                         'label' => 'Parse Alert',
-                        'name' => 'parseAlert',
-                        'entity' => 'App/Actions/Integrations/BHD',
+                        'name' => 'handle',
+                        'entity' => 'App/Domains/Integrations/Actions/BHDAlert',
                         'description' => 'Parse an email alert',
-                        'config' => json_encode([
-                            'product'=> [
-                                'type' => 'string',
-                                'required' => true
-                            ],
-                            'date' => [
-                                'type' => 'date',
-                                'label' => 'Date',
+                        'config' => json_encode(BHDAlert::getSchema()),
 
-                            ],
-                            'currency_code' => [
-                                'type' => 'string',
-                                'label' => 'currency_code',
-                                'required' => true
-                            ],
-                            'amount' => [
-                                'type' => 'money',
-                                'label' => 'Amount',
-                                'required' => true
-                            ],
-                            'seller' => [
-                                'type' => 'string',
-                                'label' => 'Seller',
-                                'required' => true
-                            ],
-                            'status' => [
-                                'type' => 'options',
-                                'options' => ['aprobada']
-                            ],
-                            'type' => [
-                                'type' => 'options',
-                                'options' => ['compra'],
-                                'required' => true
-                            ]
-                        ]),
+                    ],
+                    [
+                        'label' => 'Parse Notification',
+                        'name' => 'handle',
+                        'entity' => 'App/Domains/Integrations/Actions/BHDNotification',
+                        'description' => 'Parse an email alert',
+                        'config' => json_encode(BHDNotification::getSchema()),
 
                     ]
                 ]
@@ -242,7 +218,6 @@ class AutomationServices extends Seeder
                         "accepts_config" => true,
                     ],
                 ]
-
             ]
         ];
         foreach ($services as $serviceName => $service) {

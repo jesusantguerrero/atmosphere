@@ -6,17 +6,29 @@ use App\Domains\Transaction\Models\Transaction;
 
 class YNABService
 {
-    public static function getMoney(array $row)  {
-        $CODES = [
-            'RD' => 'DOP',
-            'USD' => 'USD',
+    const CODES = [
+        'RD' => 'DOP',
+        'USD' => 'USD',
+        'DOP' => 'DOP'
+    ];
+
+    public static function extractMoneyCurrency($amountWithCurrency, $symbol = "$") {
+        $amount = explode($symbol, $amountWithCurrency);
+
+        return (object) [
+            "amount" => (int) str_replace(',','', $amount[1]),
+            "currencyCode" => self::CODES[$amount[0]] ?? 'USD'
         ];
-        $inflow = explode('$', $row['inflow']);
-        $outflow = explode('$', $row['outflow']);
+    }
+
+    public static function getMoney(array $row)  {
+
+        $inflow = self::extractMoneyCurrency($row['inflow']);
+        $outflow = self::extractMoneyCurrency($row['outflow']);
         $amounts = (object) [
-            'inflow' => (double) $inflow[1],
-            'outflow' => (double) $outflow[1],
-            'currency_code' => $CODES[$inflow[0]] ?? 'USD',
+            'inflow' => (double) $inflow->amount,
+            'outflow' => (double) $outflow->amount,
+            'currency_code' => $inflow->currencyCode,
         ];
 
         $direction = $amounts->inflow > $amounts->outflow ? 'inflow' : 'outflow';
