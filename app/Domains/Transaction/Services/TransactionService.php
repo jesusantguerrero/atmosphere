@@ -4,6 +4,8 @@ namespace App\Domains\Transaction\Services;
 
 use App\Domains\Transaction\Imports\TransactionsImport;
 use App\Domains\Transaction\Models\Transaction;
+use Brick\Math\RoundingMode;
+use Brick\Money\Money;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -168,10 +170,17 @@ class TransactionService {
 
         $income = self::getIncomeByPayeeInPeriod($teamId, $startDate, $endDate);
         $incomeGroup = $income->groupBy('date');
-        $incomeCategories = $income->unique('id');
+        $incomeCategories = $income->unique('id')->sortBy('index_field')->values();
+
+        $expensesCategoriesGroup = $expenses->sortBy('index_field')->mapToGroups(function($item) {
+            return ["{$item->group_name}:{$item->name}" => $item];
+        });
+
+
 
         return
         [
+            "dateUnits" => $expensesGroup->keys(),
             "incomeCategories" => $incomeCategories,
             "incomes" => $incomeGroup->map(function ($monthItems) {
                 return [
@@ -180,13 +189,21 @@ class TransactionService {
                     'total' => $monthItems->sum('total')
                 ];
             }),
-            "expenseCategories" => $expensesCategories,
-            "expenses"=> $expensesGroup->map(function ($monthItems) {
-                return [
-                    'date' => $monthItems->first()->date,
-                    'data' => $monthItems->sortBy('index_field')->values()->all(),
-                    'total' => $monthItems->sum('total')
-                ];
+            "expenseCategories" => $expensesCategories->groupBy('group_name'),
+            "expenses"=> $expensesCategoriesGroup->map(function ($monthItems) {
+                return array_merge([
+                    'id' => $monthItems->first()->id,
+                    'group_id' => $monthItems->first()->group_id,
+                    'name' => $monthItems->first()->name,
+                    'group_name' => $monthItems->first()->group_name,
+                    'index_field' => $monthItems->first()->index_field,
+                    'avg' => Money::of($monthItems->avg('total'), 'USD', null, RoundingMode::HALF_EVEN)->getAmount(),
+                    'total' => Money::of($monthItems->sum('total'), 'USD', null, RoundingMode::HALF_EVEN)->getAmount()
+                    ],
+                    $monthItems->mapWithKeys(function($item) {
+                        return [$item->date => $item->total];
+                    })->toArray(),
+                );
             })
         ];
     }

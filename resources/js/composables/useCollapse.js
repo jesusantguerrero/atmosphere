@@ -3,7 +3,6 @@ import { computed, onMounted, ref } from "vue";
 
 
 export const useCollapse = (element, collapsed = false) => {
-
     const isCollapsed = ref(collapsed);
     const toggleCollapse = () => {
         isCollapsed.value = !isCollapsed.value
@@ -14,7 +13,11 @@ export const useCollapse = (element, collapsed = false) => {
     })
 
     onMounted(() => {
-        autoAnimate(element.value)
+        try {
+            autoAnimate(element.value)
+        } catch (err) {
+            console.log(err)
+        }
     })
 
     return {
