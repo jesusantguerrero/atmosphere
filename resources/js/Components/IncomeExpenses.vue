@@ -18,13 +18,15 @@
         <Collapse class="mt-4" title="Expenses" title-class="text-error font-bold">
             <template #content>
                 <section class="mt-2">
-                    <Collapse v-for="(expense, expenseGroupName) in data.expenseCategories" :title="expenseGroupName" title-class="font-bold" :key="expenseGroupName" class="mt-2">
+                    <Collapse v-for="(expense, expenseGroupName) in data.expenseCategories" :title="expenseGroupName" title-class="font-bold bg-base-lvl-2 py-1 rounded-md px-2" :key="expenseGroupName" class="mt-2" :gap="false">
                         <template #content>
-                            <div v-for="category in expense" :key="category.id" class="flex space-x-2">
+                            <div v-for="category in expense" :key="category.id" class="flex space-x-2 group hover:bg-primary/5">
                                 <TableCell
                                     v-for="col in cols"
                                     :key="col.field"
-                                    class="w-full"
+                                    class="w-full px-2 py-2 cursor-pointer hover:font-bold hover:text-primary transition"
+                                    :class="{'group-hover:text-primary': col.field == 'name'}"
+                                    :title="col.label"
                                     :col="col"
                                     :value="data.expenses[`${expenseGroupName}:${category.name}`][col.field]"
                                 />

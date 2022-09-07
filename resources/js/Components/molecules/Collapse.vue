@@ -6,7 +6,7 @@
             {{ title }}
         </slot>
     </header>
-    <section v-if="!isCollapsed" class="pl-4">
+    <section v-if="!isCollapsed" :class="{'pl-4': gap}">
         <slot name="content" />
     </section>
 </article>
@@ -22,6 +22,10 @@ defineProps({
     },
     titleClass: {
         type: String
+    },
+    gap: {
+        type: Boolean,
+        default: true
     }
 });
 
