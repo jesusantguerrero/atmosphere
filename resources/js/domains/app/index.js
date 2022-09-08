@@ -25,7 +25,7 @@ export const appMenu =  [
     {
         icon: 'fas fa-heart',
         label: 'Relationship',
-        to: '/relationship',
+        to: '/relationships',
         as: Link
     },
     {
