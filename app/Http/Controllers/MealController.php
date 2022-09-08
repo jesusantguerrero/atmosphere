@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Domains\AppCore\Models\Planner;
 use App\Domains\Meal\Models\Meal;
 use App\Domains\Meal\Models\MealType;
+use App\Domains\Meal\Services\MealService;
 use App\Http\Resources\MealResource;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
@@ -50,25 +51,9 @@ class MealController extends InertiaController
         $resource->saveIngredients($postData['ingredients']);
     }
 
-    public function addPlan(Request $request) {
+    public function addPlan(Request $request, MealService $mealService) {
         $postData = $this->getPostData($request);
-        foreach ($postData['meals'] as $mealData) {
-            if (isset($mealData['id']) && $mealData['id'] !== 'new') {
-                $meal = Meal::find($mealData['id']);
-            } else if (isset($mealData['name'])) {
-                $meal = Meal::create([
-                    'name' => $mealData['name'],
-                    'meal_type_id' => $mealData['meal_type_id'],
-                    'team_id' => $request->user()->current_team_id,
-                    'user_id' => $request->user()->id
-                ]);
-            }
-            Planner::create(array_merge($postData ,[
-                'dateable_type' => Meal::class,
-                'dateable_id' => $meal->id,
-                'date' => Carbon::parse($postData['date'])->setTimezone('UTC')->toDateTimeString()
-            ]));
-        }
+        $mealService->addPlan($postData);
 
         return Redirect::back();
     }
