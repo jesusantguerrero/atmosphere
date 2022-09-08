@@ -1,12 +1,14 @@
 <template>
 <article ref="incomeRef">
     <header class="cursor-pointer" :class="titleClass" @click="toggleCollapse()">
-        <i :class="icon" class="mr-2"/>
-        <slot name="title">
-            {{ title }}
+        <slot name="header" :icon="icon" :is-collapsed="isCollapsed">
+            <i :class="icon" class="mr-2"/>
+            <slot name="title">
+                {{ title }}
+            </slot>
         </slot>
     </header>
-    <section v-if="!isCollapsed" :class="{'pl-4': gap}">
+    <section v-if="!isCollapsed" :class="[gap && 'pl-4', contentClass]">
         <slot name="content" />
     </section>
 </article>
@@ -26,7 +28,10 @@ defineProps({
     gap: {
         type: Boolean,
         default: true
-    }
+    },
+    contentClass: {
+        type: String
+    },
 });
 
 const incomeRef = ref();

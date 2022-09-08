@@ -167,27 +167,32 @@ class TransactionService {
         $expenses = self::getInPeriod($teamId, $startDate, $endDate);
         $expensesGroup = $expenses->groupBy('date');
         $expensesCategories = $expenses->unique('id');
-
-        $income = self::getIncomeByPayeeInPeriod($teamId, $startDate, $endDate);
-        $incomeGroup = $income->groupBy('date');
-        $incomeCategories = $income->unique('id')->sortBy('index_field')->values();
-
         $expensesCategoriesGroup = $expenses->sortBy('index_field')->mapToGroups(function($item) {
             return ["{$item->group_name}:{$item->name}" => $item];
         });
 
+        $income = self::getIncomeByPayeeInPeriod($teamId, $startDate, $endDate);
+        $incomeCategories = $income->unique('id')->sortBy('index_field')->values();
+        $incomeCategoriesGroup = $income->sortBy('index_field')->mapToGroups(function($item) {
+            return [$item->name => $item];
+        });
 
 
         return
         [
             "dateUnits" => $expensesGroup->keys(),
             "incomeCategories" => $incomeCategories,
-            "incomes" => $incomeGroup->map(function ($monthItems) {
-                return [
-                    'date' => $monthItems->first()->date,
-                    'data' => $monthItems->sortBy('index_field')->values()->all(),
-                    'total' => $monthItems->sum('total')
-                ];
+            "incomes" => $incomeCategoriesGroup->map(function ($monthItems) {
+                return array_merge([
+                    'id' => $monthItems->first()->id,
+                    'name' => $monthItems->first()->name,
+                    'avg' => Money::of($monthItems->avg('total'), 'USD', null, RoundingMode::HALF_EVEN)->getAmount(),
+                    'total' => Money::of($monthItems->sum('total'), 'USD', null, RoundingMode::HALF_EVEN)->getAmount()
+                    ],
+                    $monthItems->mapWithKeys(function($item) {
+                        return [$item->date => $item->total];
+                    })->toArray(),
+                );
             }),
             "expenseCategories" => $expensesCategories->groupBy('group_name'),
             "expenses"=> $expensesCategoriesGroup->map(function ($monthItems) {
