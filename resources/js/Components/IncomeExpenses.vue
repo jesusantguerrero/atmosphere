@@ -1,5 +1,5 @@
 <template>
-    <section class="px-4 py-2 space">
+    <section class="px-4 py-2 divide-y">
         <header class="flex mt-4 bg-base px-4 py-2">
             <div v-for="col in cols" :key="col.field" class="w-full font-bold capitalize" :class="col.class">
                 {{ col.label || col.field }}
@@ -8,12 +8,12 @@
 
         <Collapse
             title="Income"
-            title-class="text-success font-bold bg-base-lvl-1 hover:bg-base px-2 py-2"
+            title-class="text-success font-bold bg-base-lvl-1 hover:bg-base p-2"
             content-class="pb-4"
             :gap="false"
         >
             <template #content>
-                <div v-for="income in data.incomeCategories" :key="income.id" class="font-bold flex space-x-2 group hover:bg-primary/5">
+                <div v-for="income in data.incomeCategories" :key="income.id" class="flex space-x-2 group hover:bg-primary/5">
                     <TableCell
                         v-for="col in cols"
                         :key="col.field"
@@ -29,7 +29,7 @@
 
         <Collapse
             title="Expenses"
-            title-class="text-error font-bold bg-base-lvl-2 hover:bg-base-lvl-1 px-2 py-2"
+            title-class="text-error font-bold bg-base-lvl-1 hover:bg-base p-2"
             content-class="pb-4"
             :gap="false"
         >
@@ -79,12 +79,12 @@ const cols = computed(() => {
     return [
         {
             field: "name",
-            class: "font-bold"
+            class: "font-bold text-sm"
         },
         ...props.data.dateUnits.map((item) => ({
             field: item,
             label: formatMonth(item),
-            class: "text-right",
+            class: "text-right text-sm",
             render: (value) => {
                 return formatMoney(value || 0)
             }
@@ -92,14 +92,14 @@ const cols = computed(() => {
         {
             field: "avg",
             label: "AVG",
-            class: "text-right",
+            class: "text-right text-sm",
             render: (value) => {
                 return formatMoney(value || 0)
             }
         }, {
             field: "total",
             label: "Total",
-            class: "text-right",
+            class: "text-right text-sm",
             render: (value) => {
                 return formatMoney(value || 0)
             }
