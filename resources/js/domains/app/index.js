@@ -2,7 +2,7 @@ import { Link } from "@inertiajs/inertia-vue3"
 
 export const appMenu =  [
     {
-        icon: 'home',
+        icon: 'fa fa-home',
         name: 'home',
         label: 'Home',
         to: '/dashboard',
