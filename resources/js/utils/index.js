@@ -1,5 +1,4 @@
-import { format, startOfDay } from "date-fns"
-import { Inertia } from "@inertiajs/inertia";
+import { format, parseISO, startOfDay } from "date-fns"
 
 export const targetTypes = [
     {
@@ -95,3 +94,7 @@ export const getDateFromIso = (isoDateString) => {
 }
 
 export const generateRandomColor = () => `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+
+export const formatMonth = (dateString) => {
+    return format(parseISO(dateString), 'MMMM')
+}

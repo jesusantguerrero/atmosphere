@@ -4,6 +4,9 @@ namespace App\Domains\Transaction\Services;
 
 use App\Domains\Transaction\Imports\TransactionsImport;
 use App\Domains\Transaction\Models\Transaction;
+use Brick\Math\RoundingMode;
+use Brick\Money\Money;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class TransactionService {
@@ -38,40 +41,6 @@ class TransactionService {
             ->forAccount($accountId)
             ->with(['mainLine', 'lines', 'category', 'mainLine.account', 'category.account'])
             ->get();
-    }
-
-    public function getNetWorthMonth($teamId, $endDate) {
-        return $this->model::where("transactions.date", "<=", $endDate)
-        ->where([
-            'transactions.team_id' => $teamId,
-            'transactions.status' => 'verified'
-        ])
-        ->join('accounts', 'transactions.account_id', '=', 'accounts.id')
-        ->selectRaw("sum(CASE WHEN transactions.direction = 'WITHDRAW' THEN total * -1 ELSE total * 1 END) as total, accounts.balance_type")
-        ->groupBy('accounts.balance_type')
-        ->get();
-    }
-
-    public static function getNetWorth($teamId, $startDate, $endDate) {
-        return DB::select("
-        with data (month_date, total, direction, balance_type) AS (
-            SELECT LAST_DAY(transactions.date) as month_date, total, direction, accounts.balance_type
-            FROM transactions
-            inner JOIN accounts on transactions.account_id=accounts.id
-            AND transactions.STATUS = 'verified'
-            AND transactions.team_id = :teamId
-            AND balance_type IS NOT null
-          )
-          SELECT month_date,
-          sum(sum(CASE WHEN balance_type = 'debit' THEN (CASE WHEN direction = 'withdraw' THEN total * -1 ELSE total * 1 END) END)) over (ORDER BY month_date) as assets,
-          sum(sum(CASE WHEN balance_type = 'credit' THEN (CASE WHEN direction = 'withdraw' THEN total * -1 ELSE total * 1 END) END)) over (ORDER BY month_date) as debts
-          FROM DATA
-          GROUP BY month_date
-          ORDER BY month_date
-          LIMIT 12;
-        ",[
-            'teamId' => $teamId
-        ]);
     }
 
     public static function getExpenses($teamId, $startDate, $endDate) {
@@ -154,5 +123,126 @@ class TransactionService {
             "startDate" => $importedData[0]->min('date'),
             "endDate" => $importedData[0]->max('date')
         ];
+    }
+
+    // Trends
+    public function getNetWorthMonth($teamId, $endDate) {
+        return $this->model::where("transactions.date", "<=", $endDate)
+        ->where([
+            'transactions.team_id' => $teamId,
+            'transactions.status' => 'verified'
+        ])
+        ->join('accounts', 'transactions.account_id', '=', 'accounts.id')
+        ->selectRaw("sum(CASE WHEN transactions.direction = 'WITHDRAW' THEN total * -1 ELSE total * 1 END) as total, accounts.balance_type")
+        ->groupBy('accounts.balance_type')
+        ->get();
+    }
+
+    public static function getNetWorth($teamId, $startDate, $endDate) {
+        return DB::select("
+        with data (month_date, total, direction, balance_type) AS (
+            SELECT LAST_DAY(transactions.date) as month_date, total, direction, accounts.balance_type
+            FROM transactions
+            inner JOIN accounts on transactions.account_id=accounts.id
+            AND transactions.STATUS = 'verified'
+            AND transactions.team_id = :teamId
+            AND balance_type IS NOT null
+          )
+          SELECT month_date,
+          sum(sum(CASE WHEN balance_type = 'debit' THEN (CASE WHEN direction = 'withdraw' THEN total * -1 ELSE total * 1 END) END)) over (ORDER BY month_date) as assets,
+          sum(sum(CASE WHEN balance_type = 'credit' THEN (CASE WHEN direction = 'withdraw' THEN total * -1 ELSE total * 1 END) END)) over (ORDER BY month_date) as debts
+          FROM DATA
+          GROUP BY month_date
+          ORDER BY month_date
+          LIMIT 12;
+        ",[
+            'teamId' => $teamId
+        ]);
+    }
+
+    public static function getIncomeVsExpenses($teamId, $timeUnitDiff = 2, $timeUnit = 'month', $type = 'expenses') {
+        $endDate = Carbon::now()->endOfMonth()->format('Y-m-d');
+        $startDate = Carbon::now()->subMonth($timeUnitDiff)->startOfMonth()->format('Y-m-d');
+
+        $expenses = self::getInPeriod($teamId, $startDate, $endDate);
+        $expensesGroup = $expenses->groupBy('date');
+        $expensesCategories = $expenses->unique('id');
+        $expensesCategoriesGroup = $expenses->sortBy('index_field')->mapToGroups(function($item) {
+            return ["{$item->group_name}:{$item->name}" => $item];
+        });
+
+        $income = self::getIncomeByPayeeInPeriod($teamId, $startDate, $endDate);
+        $incomeCategories = $income->unique('id')->sortBy('index_field')->values();
+        $incomeCategoriesGroup = $income->sortBy('index_field')->mapToGroups(function($item) {
+            return [$item->name => $item];
+        });
+
+
+        return
+        [
+            "dateUnits" => $expensesGroup->keys(),
+            "incomeCategories" => $incomeCategories,
+            "incomes" => $incomeCategoriesGroup->map(function ($monthItems) {
+                return array_merge([
+                    'id' => $monthItems->first()->id,
+                    'name' => $monthItems->first()->name,
+                    'avg' => Money::of($monthItems->avg('total'), 'USD', null, RoundingMode::HALF_EVEN)->getAmount(),
+                    'total' => Money::of($monthItems->sum('total'), 'USD', null, RoundingMode::HALF_EVEN)->getAmount()
+                    ],
+                    $monthItems->mapWithKeys(function($item) {
+                        return [$item->date => $item->total];
+                    })->toArray(),
+                );
+            }),
+            "expenseCategories" => $expensesCategories->groupBy('group_name'),
+            "expenses"=> $expensesCategoriesGroup->map(function ($monthItems) {
+                return array_merge([
+                    'id' => $monthItems->first()->id,
+                    'group_id' => $monthItems->first()->group_id,
+                    'name' => $monthItems->first()->name,
+                    'group_name' => $monthItems->first()->group_name,
+                    'index_field' => $monthItems->first()->index_field,
+                    'avg' => Money::of($monthItems->avg('total'), 'USD', null, RoundingMode::HALF_EVEN)->getAmount(),
+                    'total' => Money::of($monthItems->sum('total'), 'USD', null, RoundingMode::HALF_EVEN)->getAmount()
+                    ],
+                    $monthItems->mapWithKeys(function($item) {
+                        return [$item->date => $item->total];
+                    })->toArray(),
+                );
+            })
+        ];
+    }
+
+    public static function getInPeriod($teamId, $startDate, $endDate) {
+        return DB::table('categories')
+        ->selectRaw('sum(COALESCE(total,0)) as total, date_format(transactions.date, "%Y-%m-01") as date, categories.name, categories.id, pc.id group_id, pc.name group_name, concat(pc.index, ".", categories.index) index_field')
+        ->where([
+            'categories.team_id' => $teamId,
+            'categories.resource_type' => 'transactions',
+            'transactions.direction' => Transaction::DIRECTION_CREDIT,
+            'transactions.status' => 'verified'
+        ])->whereNotNull('categories.parent_id')
+        ->where('pc.display_id', '!=', 'inflow')
+        ->whereBetween('transactions.date', [$startDate, $endDate])
+        ->groupByRaw('categories.id, date_format(transactions.date, "%Y-%m-01")')
+        ->orderByRaw('date_format(transactions.date, "%Y-%m-01"), concat(pc.index,"." ,categories.index)')
+        ->leftJoin('transactions', 'transactions.transaction_category_id', '=', 'categories.id')
+        ->join(DB::raw('categories pc'), 'pc.id', '=', 'categories.parent_id')
+        ->get();
+    }
+
+    public static function getIncomeByPayeeInPeriod($teamId, $startDate, $endDate) {
+        return DB::table('payees')
+        ->selectRaw('sum(COALESCE(total,0)) as total, date_format(transactions.date, "%Y-%m-01") as date, payees.name, payees.id')
+        ->where([
+            'payees.team_id' => $teamId,
+            'transactions.direction' => Transaction::DIRECTION_DEBIT,
+            'transactions.status' => 'verified'
+        ])
+        ->whereBetween('transactions.date', [$startDate, $endDate])
+        ->groupByRaw('payees.id, date_format(transactions.date, "%Y-%m-01")')
+        ->orderByRaw('date_format(transactions.date, "%Y-%m-01"), payees.name')
+        ->join('transactions', 'transactions.payee_id', '=', 'payees.id')
+        ->get();
     }
 }

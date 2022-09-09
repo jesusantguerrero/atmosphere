@@ -12,11 +12,11 @@
             controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
             next-mode="month"
           /> -->
-          <div>
-            <AtButton class="rounded-md text-primary w-32"
-              >Print</AtButton
-            >
-          </div>
+          <!-- <div>
+            <AtButton class="rounded-md text-primary w-32" @click="onPrint">
+                Print
+            </AtButton>
+          </div> -->
         </template>
       </FinanceSectionNav>
     </template>
@@ -63,6 +63,7 @@ import AppLayout from "@/Layouts/AppLayout.vue";
 import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
 import DonutChart from "@/Components/organisms/DonutChart.vue";
 import ChartNetWorth from "../../Components/ChartNetworth.vue";
+import IncomeExpenses from "../../Components/IncomeExpenses.vue";
 import SectionCard from "@/Components/molecules/SectionCard.vue";
 import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
 
@@ -112,17 +113,23 @@ const trends = [
         link: '/trends/net-worth'
     },
     {
-        name: 'Income v Expenses'
+        name: 'Income v Expenses',
+        link: '/trends/income-expenses'
     }
 ]
 
 const components = {
     groups: DonutChart,
     categories: DonutChart,
-    netWorth: ChartNetWorth
+    netWorth: ChartNetWorth,
+    incomeExpenses: IncomeExpenses
 }
 
 const trendComponent = computed(() => {
     return components[props.metaData.name] || DonutChart
 })
+
+const onPrint = () => {
+    print();
+}
 </script>

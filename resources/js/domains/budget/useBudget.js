@@ -1,9 +1,12 @@
+import { DOP } from "@dinero.js/currencies";
 import ExactMath from "exact-math";
 import { cloneDeep } from "lodash";
 import { computed, ref, watch } from "vue";
+import { useMoneyMath } from "./useMoneyMath";
 
 export const useBudget = (budgets) => {
     const overspentCategories = ref([])
+    const { add } = useMoneyMath(DOP)
     const budget = computed(() => {
         overspentCategories.value = [];
         const cloned = cloneDeep(budgets.value)
@@ -12,6 +15,7 @@ export const useBudget = (budgets) => {
                 acc.budgeted = ExactMath.add(acc.budgeted, category.budgeted || 0)
                 acc.activity =  ExactMath.add(acc.activity, category.activity || 0)
                 acc.available = ExactMath.add(acc.available, category.available || 0)
+
                 if (Number(category.available) < 0 && item.name !== 'Inflow') {
                     overspentCategories.value.push(category);
                     category.hasOverspent = true;
@@ -23,6 +27,7 @@ export const useBudget = (budgets) => {
                 activity: 0,
                 available: 0
             });
+
             item.budgeted = totals.budgeted;
             item.activity = totals.activity;
             item.available = totals.available;

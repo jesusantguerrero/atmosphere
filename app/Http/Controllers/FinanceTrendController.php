@@ -81,6 +81,20 @@ class FinanceTrendController extends Controller {
         ];
     }
 
+    public function incomeExpenses() {
+        $queryParams = request()->query();
+        $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
+        // [$startDate, $endDate] = $this->getFilterDates($filters);
+        $teamId = request()->user()->current_team_id;
+        return [
+            'data' => TransactionService::getIncomeVsExpenses($teamId, 3),
+            'metaData' => [
+                'name' => 'incomeExpenses',
+                'title' => 'Income vs Expenses',
+            ]
+        ];
+    }
+
     private Function getFilterDates($filters) {
         $dates = isset($filters['date']) ? explode("~", $filters['date']) : [
             Carbon::now()->startOfMonth()->format('Y-m-d'),

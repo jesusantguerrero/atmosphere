@@ -1,13 +1,11 @@
 <template>
-    <div class="px-5 text-left border-b bg-base-lvl-3 rounded-md shadow-xl pt-8" :class="{'flex': !full }">
-        <AtField label="Name" :errors="errors" field="name">
-            <AtInput v-model="category.name" />
-        </AtField>
-
-        <!-- <AtField label="Icon" :errors="errors" field="icon">
-            <AtInput v-model="category.icon" />
-            <IconPicker />
-        </AtField> -->
+    <section class="px-5 text-left border-b bg-base-lvl-3 rounded-md shadow-xl pt-2" :class="{'flex': !full }">
+        <header class="mb-8 flex justify-between items-center mt-2">
+            <AtInput v-model="category.name" class="border-transparent hover:text-primary hover:border-primary cursor-pointer" rounded />
+            <AtButton class="block h-full text-red-500" @click="$emit('delete')">
+                <i class="fa fa-trash"></i>
+            </AtButton>
+        </header>
 
         <AtField label="Target Type">
             <NSelect
@@ -54,12 +52,11 @@
 
         <div class="flex justify-between mb-4 mt-4">
             <div class="flex font-bold">
-                <at-button class="block h-full text-red-500" @click="$emit('delete')"> Delete </at-button>
                 <at-button class="block h-full text-gray-500 " @click="$emit('cancel')"> Cancel </at-button>
             </div>
             <at-button class="block h-full text-white bg-primary rounded-md" @click="submit()"> Save </at-button>
         </div>
-    </div>
+    </section>
 </template>
 
 <script setup>

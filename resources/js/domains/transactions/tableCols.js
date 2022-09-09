@@ -1,5 +1,5 @@
 import formatMoney from "@/utils/formatMoney";
-import { format, parseISO } from "date-fns"
+import { format, isAfter, parseISO, startOfDay } from "date-fns"
 import { h } from "vue"
 import IconTransfer from "@/Components/icons/IconTransfer.vue";
 
@@ -14,7 +14,9 @@ export const tableCols = [
         name: "date",
         width: 200,
         render(row) {
-            return format(parseISO(row.date), "dd MMM, yyyy")
+            const date = parseISO(row.date)
+            const hasPassed = isAfter(startOfDay(date), startOfDay(new Date()))
+            return h('div', {class: hasPassed ? 'text-danger' : 'text-info cursor-pointer'} ,format(date, "dd MMM, yyyy"))
         }
     },
     {
@@ -50,6 +52,11 @@ export const tableCols = [
         label: "Amount",
         name: "total",
         type: "custom"
+    },
+    {
+        label: "Status",
+        name: "status",
+        width: 200,
     },
     {
         label: "",

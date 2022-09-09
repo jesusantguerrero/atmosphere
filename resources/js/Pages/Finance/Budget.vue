@@ -22,14 +22,13 @@
         </template>
       </FinanceSectionNav>
     </template>
-    <FinanceTemplate :accounts="accounts">
+    <FinanceTemplate :accounts="accounts" :panel-size="panelSize">
 
       <!-- Budget to assign -->
       <BalanceAssign
         class="rounded-t-md mt-5"
         :class="{'rounded-b-md shadow-md': !overspentCategories.length}"
         :value="readyToAssign.balance"
-        :formatter="formatMoney"
         :category="readyToAssign"
       />
 
@@ -40,7 +39,6 @@
         </span>
         <AtButton class="text-primary/80 bg-white rounded-md font-bold" @click="toggleOverspent">View categories</AtButton>
       </div>
-
 
       <div class="mx-auto mt-8 rounded-lg text-body bg-base max-w-7xl">
             <BudgetGroupForm
@@ -93,20 +91,16 @@
       </div>
 
       <template #panel>
-          <section
-            class="text-center w-full"
+        <BudgetItemForm
+            class="mt-5"
             v-if="selectedBudget"
-          >
-            <BudgetItemForm
-              class="mt-5"
-              full
-              :category="selectedBudget"
-              :item="selectedBudget.budget"
-              @saved="onBudgetItemSaved"
-              @deleted="deleteBudget"
-              @cancel="selectedBudget = null"
-            />
-          </section>
+            full
+            :category="selectedBudget"
+            :item="selectedBudget.budget"
+            @saved="onBudgetItemSaved"
+            @deleted="deleteBudget"
+            @cancel="selectedBudget = null"
+        />
       </template>
     </FinanceTemplate>
   </AppLayout>
@@ -132,7 +126,6 @@ import BalanceAssign from "@/Components/atoms/BalanceAssign.vue";
 
 import { useServerSearch } from "./useServerSearch";
 import { useBudget } from "@/domains/budget";
-import formatMoney from "@/utils/formatMoney";
 import { createBudgetCategory } from "@/domains/budget/createBudgetCategory";
 
 const props = defineProps({
@@ -177,6 +170,14 @@ const state = reactive({
   }),
 });
 
+const { categoryForm, selectedBudget } = toRefs(state);
+
+const groupById = (items) =>
+  items?.reduce((items, item) => {
+    items[item.id] = item;
+    return items;
+  }, {});
+
 const deleteBudget = (budget) => {
   Inertia.delete(route("budgets.destroy", budget), {
     onSuccess: () => {
@@ -191,13 +192,6 @@ const saveBudgetCategory = (parentId, callback) => {
     }
 };
 
-const { categoryForm, selectedBudget } = toRefs(state);
-const groupById = (items) =>
-  items?.reduce((items, item) => {
-    items[item.id] = item;
-    return items;
-  }, {});
-
 const saveReorder = (categories) => {
   const items = categories.map((item, index) => ({
     id: item.id,
@@ -208,4 +202,8 @@ const saveReorder = (categories) => {
   const savedItems = groupById(items);
   axios.patch("/api/categories/", { data: savedItems });
 };
+
+const panelSize = computed(() => {
+    return selectedBudget.value ? 'large' : 'small'
+})
 </script>

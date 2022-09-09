@@ -4,18 +4,20 @@
             <slot />
         </div>
 
-        <div class="hidden md:w-2/12 md:block">
-            <slot name="panel">
-                <SectionTitle class="flex items-center pl-5 mt-5" type="secondary">
-                    <span>
-                        Budget Accounts
-                    </span>
-                    <LogerTabButton class="flex items-center ml-2 text-primary" @click="isImportModalOpen=!isImportModalOpen" title="import">
-                        <IconImport />
-                    </LogerTabButton>
-                </SectionTitle>
-                <AccountsLedger :accounts="accounts" @reordered="saveReorder" class="mt-5" />
-            </slot>
+        <div class="hidden md:block relative h-screen px-2" :class="panelStyles">
+            <section>
+                <slot name="panel">
+                    <SectionTitle class="flex items-center pl-5 mt-5" type="secondary">
+                        <span>
+                            Budget Accounts
+                        </span>
+                        <LogerTabButton class="flex items-center ml-2 text-primary" @click="isImportModalOpen=!isImportModalOpen" title="import">
+                            <IconImport />
+                        </LogerTabButton>
+                    </SectionTitle>
+                    <AccountsLedger :accounts="accounts" @reordered="saveReorder" class="mt-5" />
+                </slot>
+            </section>
         </div>
 
         <ImportResourceModal v-model:show="isImportModalOpen" />
@@ -23,11 +25,12 @@
 </template>
 
 <script setup>
-    import { provide, reactive, ref} from 'vue';
+    import { provide, reactive, ref, computed } from 'vue';
     import AccountsLedger from "@/Components/templates/AccountsLedger.vue";
     import SectionTitle from "@/Components/atoms/SectionTitle.vue";
     import TransactionModal from "@/Components/TransactionModal.vue"
     import { useSelect } from '@/utils/useSelects';
+    import { PANEL_SIZES } from '@/utils/constants';
     import IconImport from '@/Components/icons/IconImport.vue';
     import LogerTabButton from '@/Components/atoms/LogerTabButton.vue';
     import ImportResourceModal from '@/Components/ImportResourceModal.vue';
@@ -50,12 +53,17 @@
             default() {
                 return []
             }
+        },
+        panelSize: {
+            type: String,
+            validator(value) {
+                return Object.keys(PANEL_SIZES).includes(value)
+            }
         }
     });
 
     // import modal related
     const isImportModalOpen = ref(false)
-
 
     function saveReorder(items) {
         const savedItems =  items?.reduce((accounts, account) => {
@@ -64,4 +72,11 @@
         }, {})
         axios.patch('/api/accounts/', { accounts: savedItems })
     }
+
+    // Styling
+    const panelStyles = computed(() => {
+        const sizes = PANEL_SIZES[props.panelSize] || PANEL_SIZES.small;
+        return [sizes];
+    })
+
 </script>

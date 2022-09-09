@@ -40,11 +40,13 @@
 <script setup>
     import { useForm } from "@inertiajs/inertia-vue3";
     import { Inertia } from "@inertiajs/inertia";
+    import ExactMath from "exact-math";
     import { computed, inject, ref } from "vue"
     import { NPopover, NSelect } from "naive-ui";
     import { AtField, AtButton } from "atmosphere-ui";
     import { format, startOfMonth } from "date-fns";
-    import ExactMath from "exact-math";
+
+    import formatMoney from "@/utils/formatMoney";
 
     const props = defineProps({
         value: {
@@ -52,11 +54,7 @@
         },
         formatter: {
             type: Function,
-            default() {
-                return (value) => {
-                    return value
-                }
-            }
+            default: formatMoney
         },
         category: {
             type: Object,

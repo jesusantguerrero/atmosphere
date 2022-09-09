@@ -1,7 +1,13 @@
 <template>
   <div class="w-full comparison-card">
     <div class="pb-10 px-5 rounded-lg">
-      <h5 class="card-title text-left p-4 font-bold">{{ title }}</h5>
+      <h5 class="card-title text-left p-4 font-bold">
+        <LogerTabButton v-if="selectedDate" @click="selectedDate=null">
+            <i class="fa fa-arrow-left"></i>
+        </LogerTabButton>
+        {{ title }}
+        <span v-if="selectedDate" class="capitalize text-primary">{{ formatMonth(selectedDate) }}</span>
+      </h5>
       <div class="card-text">
         <div class="comparison-header px-10 text-body-1/50 space-x-2 divide-x divide-dashed divide-opacity-20 divide-body-1 bg-base-lvl-2 mb-2">
           <div
@@ -31,12 +37,14 @@
 </template>
 
 <script setup>
-import formatMoney from "@/utils/formatMoney";
-import { format, parseISO } from "date-fns";
 import { computed, reactive, ref } from "vue";
 
 import LogerChart from "./organisms/LogerChart.vue";
 import NumberHider from "./molecules/NumberHider.vue";
+import LogerTabButton from "./atoms/LogerTabButton.vue";
+
+import { formatMonth } from "@/utils";
+import formatMoney from "@/utils/formatMoney";
 
 const props = defineProps({
     title: {
@@ -51,10 +59,6 @@ const props = defineProps({
       required: true
     },
 });
-
-const formatMonth = (dateString) => {
-    return format(parseISO(dateString), 'MMMM')
-}
 
 const selectedDate = ref()
 const currentSeries = computed(() => {
@@ -83,7 +87,6 @@ const state = reactive({
     },
     series: currentSeries
 });
-
 
 </script>
 

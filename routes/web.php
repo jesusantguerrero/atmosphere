@@ -22,8 +22,9 @@ use App\Http\Controllers\IntegrationController;
 use App\Http\Controllers\Jetstream\TeamInvitationController;
 use App\Http\Controllers\MealController;
 use App\Http\Controllers\MealPlannerController;
+use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\RelationshipController;
 use App\Http\Controllers\System\NotificationController;
-use App\Http\Controllers\TransactionDraftController;
 use Freesgen\Atmosphere\Http\Controllers\SettingsController;
 use Freesgen\Atmosphere\Http\OnboardingController;
 use Illuminate\Support\Facades\Route;
@@ -130,6 +131,12 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
 
     Route::get('/trends', [FinanceTrendController::class, 'index'])->name('finance.trends');
     Route::get('/trends/{name}', [FinanceTrendController::class, 'index'])->name('finance.trend-section');
+
+    /**************************************************************************************
+     *                               Extras Section
+    ***************************************************************************************/
+    Route::get('/projects', ProjectController::class);
+    Route::get('/relationships', RelationshipController::class);
 });
 
 

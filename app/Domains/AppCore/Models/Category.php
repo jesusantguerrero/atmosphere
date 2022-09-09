@@ -6,6 +6,7 @@ use App\Domains\Budget\Models\Budget;
 use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Transaction\Models\Transaction;
 use App\Events\BudgetAssigned;
+use Brick\Money\Money;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Category as CoreCategory;
 
@@ -56,7 +57,7 @@ class Category extends CoreCategory
         $budgeted = $monthBudget ? $monthBudget->budgeted : 0;
         $monthBalance = $this->getMonthBalance($yearMonth);
         $oldAvailable = $this->getOldAvailable($yearMonth);
-        $available = $budgeted + $oldAvailable + $monthBalance;
+        $available = Money::of($budgeted, 'USD')->plus($oldAvailable)->plus($monthBalance)->getAmount()->toFloat();
 
         return [
             'budgeted' => $budgeted,
