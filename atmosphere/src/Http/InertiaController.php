@@ -61,7 +61,7 @@ class InertiaController extends BaseController {
     }
 
     public function update(Request $request, int $id) {
-        $resource = $this->model::find($id);
+        $resource = $this->model::findOrFail($id);
         $postData = $request->post();
         $resource->update($postData);
         $this->afterSave($postData, $resource);
@@ -73,7 +73,7 @@ class InertiaController extends BaseController {
     }
 
     public function destroy(Request $request, int $id) {
-        $resource = $this->model::find($id);
+        $resource = $this->model::findOrFail($id);
         if ($this->validateDelete($request, $resource)) {
             $resource->delete();
             return Redirect::back();
