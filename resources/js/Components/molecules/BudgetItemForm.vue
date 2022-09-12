@@ -1,7 +1,8 @@
 <template>
-    <section class="px-5 text-left border-b bg-base-lvl-3 rounded-md shadow-xl pt-2" :class="{'flex': !full }">
-        <header class="mb-8 flex justify-between items-center mt-2">
-            <AtInput v-model="category.name" class="border-transparent hover:text-primary hover:border-primary cursor-pointer" rounded />
+    <section class="px-5 pt-2 text-left border-b rounded-md shadow-xl bg-base-lvl-3" :class="{'flex': !full }">
+        <header class="flex items-center justify-between mt-2 mb-8">
+            <ColorSelector v-model="category.color" />
+            <AtInput v-model="category.name" class="border-transparent cursor-pointer hover:text-primary hover:border-primary" rounded />
             <AtButton class="block h-full text-red-500" @click="$emit('delete')">
                 <i class="fa fa-trash"></i>
             </AtButton>
@@ -28,7 +29,7 @@
                 v-model="form.frequency"
                 :options="state.frequencies"
                 class="text-lg"
-                selected-class="bg-primary text-white"
+                selected-class="text-white bg-primary"
             />
 
             <AtField
@@ -50,11 +51,11 @@
             </AtField>
         </section>
 
-        <div class="flex justify-between mb-4 mt-4">
+        <div class="flex justify-between mt-4 mb-4">
             <div class="flex font-bold">
                 <at-button class="block h-full text-gray-500 " @click="$emit('cancel')"> Cancel </at-button>
             </div>
-            <at-button class="block h-full text-white bg-primary rounded-md" @click="submit()"> Save </at-button>
+            <at-button class="block h-full text-white rounded-md bg-primary" @click="submit()"> Save </at-button>
         </div>
     </section>
 </template>
@@ -65,9 +66,10 @@
     import { useDatePager } from "vueuse-temporals"
     import { NSelect } from "naive-ui"
     import { useForm } from '@inertiajs/inertia-vue3';
-    import { monthDays, WEEK_DAYS, FREQUENCY_TYPE } from "@/utils"
+    import { monthDays, WEEK_DAYS, FREQUENCY_TYPE, generateRandomColor } from "@/utils"
     import { makeOptions } from "@/utils/naiveui";
     import { format } from 'date-fns';
+    import ColorSelector from './ColorSelector.vue';
     // import IconPicker from '../IconPicker.vue';
 
     const props = defineProps({
@@ -98,7 +100,8 @@
         form: useForm({
             category_id: null,
             parent_id: null,
-            name: '',
+            color: generateRandomColor(),
+            name: props.category.name,
             amount: 0,
             assigned: 0,
             target_type: '',
