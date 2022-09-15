@@ -22,7 +22,7 @@ class Category extends CoreCategory
 
     public function transactions()
     {
-        return $this->hasMany(Transaction::class, 'transaction_category_id');
+        return $this->hasMany(Transaction::class, 'category_id');
     }
 
     public function subCategories() {

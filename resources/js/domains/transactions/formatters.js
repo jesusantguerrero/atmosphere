@@ -13,7 +13,7 @@ export const transactionDBToTransaction = (transactions) => {
 
 export const categoryDBToTransaction = (transactions) => {
     return transactions.map(transaction => ({
-        id: transaction.transaction_category_id || v4(),
+        id: transaction.category_id || v4(),
         date: transaction.date || '',
         title: transaction.name,
         subtitle: transaction?.account?.name ? `${transaction.account?.name} -> ${transaction.category?.name}` : '',

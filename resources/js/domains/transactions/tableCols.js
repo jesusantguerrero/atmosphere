@@ -25,7 +25,12 @@ export const tableCols = [
         width: 400,
         class: 'w-full',
         render(row) {
-            return row.payee?.name || h('div', { class: "flex justify-between items-center text-body-1"} , [h('div', `Transfer: ${row.category.name}`), h(IconTransfer, { class: 'fa fa-right-left'})])
+            try {
+                return row.payee?.name || h('div', { class: "flex justify-between items-center text-body-1"} , [h('div', `Transfer: ${row.category?.name}`), h(IconTransfer, { class: 'fa fa-right-left'})])
+            } catch(e) {
+                console.log(e)
+                return ''
+            }
         }
     },
     {

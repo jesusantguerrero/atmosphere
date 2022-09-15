@@ -30,19 +30,25 @@ class TransactionsImport extends ImportConcern
         ]);
 
         $isTransfer = str_contains($row['payee'], 'Transfer :');
+        $direction = $money->direction;
         if (!$isTransfer && $row['category_group']) {
             $categoryGroupId = Category::findOrCreateByName($this->session, $row['category_group']);
             $transactionCategoryId = Category::findOrCreateByName($this->session, $row['category'], $categoryGroupId);
             $payee = Payee::findOrCreateByName($this->session, $row['payee'] ?? 'General Provider');
             $payeeId = $payee->id;
-            $categoryId = $payee->account_id;
+            $counterAccountId = $payee->account_id;
         } else {
             $transfers = explode('Transfer :', $row['payee']);
             $transfer = trim($transfers[1] ?? $transfers[0]);
+            $counterAccountId = Account::guessAccount($this->session, [$transfer]);
             $categoryGroupId = null;
             $transactionCategoryId = null;
             $payeeId = null;
-            $categoryId = Account::guessAccount($this->session, [$transfer]);
+            [
+                $accountId,
+                $counterAccountId,
+                $direction
+            ] = YNABService::fixTransfer($accountId, $counterAccountId, $money->direction);
         }
         $row['team_id'] = $this->session['team_id'];
         $row['user_id'] = $this->session['user_id'];
@@ -51,10 +57,10 @@ class TransactionsImport extends ImportConcern
         $row['date'] = Carbon::parse($row['date'])->format('Y-m-d');
         $row['currency_code'] = $money->currencyCode;
         $row['transaction_category_group_id'] = $categoryGroupId;
-        $row['transaction_category_id'] = $transactionCategoryId;
-        $row['category_id'] = $categoryId;
-        $row['description'] = $row['memo'] ?? $row['account'];
-        $row['direction'] = $money->direction;
+        $row['category_id'] = $transactionCategoryId;
+        $row['counter_account_id'] = $counterAccountId;
+        $row['description'] = $row['memo'] ?? '';
+        $row['direction'] = $direction;
         $row['total'] = $money->amount;
         $row['items'] = [];
         $row['metaData'] = [

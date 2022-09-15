@@ -33,9 +33,9 @@ class CreateBudgetTransactionMovement
         $type = $transaction->direction == Transaction::DIRECTION_CREDIT ? -1 : 1;
         $amount = $transaction->total * $type;
         $month = substr($transaction->date, 0, 7) . "-01";
-        if ($transaction->transaction_category_id) {
+        if ($transaction->category_id) {
             BudgetMonth::updateOrCreate([
-                'category_id' => $transaction->transaction_category_id,
+                'category_id' => $transaction->category_id,
                 'team_id' => $transaction->team_id,
                 'name' => $month,
                 'month' => $month,

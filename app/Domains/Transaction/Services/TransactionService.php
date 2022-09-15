@@ -68,16 +68,16 @@ class TransactionService {
             'direction' => Transaction::DIRECTION_CREDIT,
             'transactions.status' => 'verified'
         ])
-        ->whereNotNull('transaction_category_id')
+        ->whereNotNull('category_id')
         ->getByMonth($startDate, $endDate, false);
 
         if ($parentId) {
             $builder->where("categories.parent_id", $parentId);
         }
 
-        return $builder->groupBy('transaction_category_id')
-        ->select(DB::raw('sum(total) as total, transaction_category_id, categories.name, categories.parent_id, group.name as parent_name'))
-        ->join('categories', 'categories.id', 'transaction_category_id')
+        return $builder->groupBy('category_id')
+        ->select(DB::raw('sum(total) as total, category_id, categories.name, categories.parent_id, group.name as parent_name'))
+        ->join('categories', 'categories.id', 'category_id')
         ->leftJoin('categories as group', 'group.id', 'categories.parent_id')
         ->orderBy('total', 'desc')
         ->limit($limit)
@@ -90,12 +90,12 @@ class TransactionService {
             'direction' => Transaction::DIRECTION_CREDIT,
             'transactions.status' => 'verified'
         ])
-        ->whereNotNull('transaction_category_id')
+        ->whereNotNull('category_id')
         ->getByMonth($startDate, $endDate, false);
 
         return $builder
         ->select(DB::raw('sum(total) as total, catGroup.name, catGroup.id'))
-        ->join('categories', 'categories.id', 'transaction_category_id')
+        ->join('categories', 'categories.id', 'category_id')
         ->join(DB::raw('categories catGroup'),  'catGroup.id', 'categories.parent_id')
         ->orderBy('total', 'desc')
         ->groupBy('categories.parent_id')
@@ -226,7 +226,7 @@ class TransactionService {
         ->whereBetween('transactions.date', [$startDate, $endDate])
         ->groupByRaw('categories.id, date_format(transactions.date, "%Y-%m-01")')
         ->orderByRaw('date_format(transactions.date, "%Y-%m-01"), concat(pc.index,"." ,categories.index)')
-        ->leftJoin('transactions', 'transactions.transaction_category_id', '=', 'categories.id')
+        ->leftJoin('transactions', 'transactions.category_id', '=', 'categories.id')
         ->join(DB::raw('categories pc'), 'pc.id', '=', 'categories.parent_id')
         ->get();
     }

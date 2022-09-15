@@ -34,7 +34,7 @@
                                     <LogerInput v-model="form.description" />
                                 </AtField>
 
-                                 <AtField label="Account" class="w-4/12">
+                                 <AtField :label="accountLabel" class="w-4/12">
                                     <NSelect
                                         filterable
                                         clearable
@@ -51,6 +51,7 @@
                               <AtField
                                     label="Payee"
                                     class="w-5/12"
+                                    v-if="!isTransfer"
                                 >
                                     <LogerApiSimpleSelect
                                         v-model="form.payee_id"
@@ -62,13 +63,13 @@
                                         endpoint="/api/payees"
                                     />
                                 </AtField>
-                                <AtField label="Category" class="w-full">
+                                <AtField :label="categoryLabel" class="w-full">
                                     <NSelect
                                         filterable
                                         clearable
                                         tag
                                         size="large"
-                                        v-model:value="form.transaction_category_id"
+                                        v-model:value="form[categoryField]"
                                         @update:value="createCategory"
                                         :default-expand-all="true"
                                         :options="categoryAccounts"
@@ -153,7 +154,7 @@
 
         <div class="px-6 py-4 space-x-3 text-right bg-base">
             <AtButton @click="close" rounded class="h-10 text-body"> Cancel </AtButton>
-            <AtButton class="text-white bg-primary h-10" @click="submit" rounded> Save </AtButton>
+            <AtButton class="h-10 text-white bg-primary" @click="submit" rounded> Save </AtButton>
         </div>
     </modal>
 </template>
@@ -198,17 +199,21 @@
     });
 
     const emit = defineEmits(['close', 'saved'])
-    const state = reactive({
-        transactionTypes :[{
+
+    const transactionTypes = [{
             value: 'DEPOSIT',
-            label: 'Income'
+            label: 'Income',
         }, {
             value: 'WITHDRAW',
             label: 'Expense'
         }, {
             value: 'ENTRY',
-            label: 'Transaction'
-        }],
+            label: 'Transaction',
+            accountLabel: '',
+            categoryLabel: ''
+    }];
+
+    const state = reactive({
         frequencyLabel: 'every',
         schedule_settings: {
             end_date: null,
@@ -229,16 +234,30 @@
             date: null,
             description: '',
             direction: 'WITHDRAW',
-            transaction_category_id: null,
+            category_id: null,
+            counter_account_id: null,
             account_id: null,
             display_id: '',
             total: 0,
         }),
     })
+    const isTransfer = computed(() => {
+        return state.form.direction == 'ENTRY';
+    })
+
+    const accountLabel = computed(() => {
+        return !isTransfer.value ? 'Account' : 'Source'
+    });
+    const categoryLabel = computed(() => {
+        return !isTransfer.value ? 'Category' : 'Destination'
+    })
+
+    const categoryField = computed(() => {
+        return isTransfer.value ? 'counter_account_id' : 'category_id'
+    })
 
     const categoryOptions = inject('categoryOptions', [])
     const accountsOptions = inject('accountsOptions', [])
-
 
     const categoryAccounts = computed(() => {
         return state.form.direction == 'ENTRY' ? accountsOptions : categoryOptions;
@@ -309,5 +328,5 @@
         emit('update:recurrence', isRecurrence.value)
     }
 
-    const { form, schedule_settings, transactionTypes } = toRefs(state)
+    const { form, schedule_settings } = toRefs(state)
 </script>
