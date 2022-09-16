@@ -1,5 +1,5 @@
 <template>
- <AtButton class="mt-4 border transition font-bold rounded-md" :class="[typeClasses]">
+ <AtButton class="border transition font-bold rounded-md" :class="[typeClasses]">
     <slot />
  </AtButton>
 </template>
@@ -9,20 +9,21 @@
 import { computed } from 'vue';
 import { AtButton } from "atmosphere-ui";
 
-const types = {
+const variants = {
     primary: "bg-primary text-white",
+    secondary: "bg-secondary text-white",
     inverse: "border-primary bg-primary/10 text-primary hover:bg-primary hover:text-white"
 }
 
 const props = defineProps({
-    type: {
+    variant: {
         type: String,
         default: "primary"
     }
 })
 
 const typeClasses = computed(() => {
-    return types[props.type] || types['primary']
+    return variants[props.variant] || variants.primary
 })
 </script>
 

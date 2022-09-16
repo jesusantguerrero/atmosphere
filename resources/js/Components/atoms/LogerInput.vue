@@ -7,7 +7,11 @@
     ref="input"
     :model-value="modelValue"
     @update:model-value="$emit('update:model-value', $event)"
-/>
+>
+    <template v-slot:prefix v-if="$slots.prefix">
+        <slot name="prefix" />
+    </template>
+</AtInput>
 </template>
 
 <script setup>

@@ -2,7 +2,7 @@
     <modal :show="show" :max-width="maxWidth" :closeable="closeable" v-slot:default="{ close }" @close="$emit('update:show', false)">
         <div class="pb-4 bg-base-lvl-3 sm:p-6 sm:pb-4 text-body">
             <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                <div class="grid grid-cols-3 overflow-hidden text-lg rounded-lg">
+                <div class="grid grid-cols-2 overflow-hidden text-lg rounded-lg" v-if="!isTransfer">
                     <div
                         v-for="type in transactionTypes"
                         :key="type.value"
@@ -50,7 +50,7 @@
                             <div class="flex space-x-3">
                               <AtField
                                     label="Payee"
-                                    class="w-5/12"
+                                    class="w-4/12"
                                     v-if="!isTransfer"
                                 >
                                     <LogerApiSimpleSelect
@@ -77,15 +77,22 @@
                                 </AtField>
                                 <AtField
                                     label="Amount"
-                                    class="w-4/12"
+                                    class="w-5/12"
                                 >
-                                    <LogerInput type="number" v-model="form.total" />
+                                    <LogerInput :number-format="true" v-model="form.total">
+                                        <template #prefix>
+                                            <span class="flex items-center pl-2">
+                                                RD$
+                                            </span>
+                                        </template>
+                                    </LogerInput>
                                 </AtField>
                             </div>
                         </div>
 
-                        <div>
-                            <button @click="toggleRecurrence"> Set recurrence </button>
+                        <div class="flex space-x-2">
+                            <AtFieldCheck v-model="isRecurrence" label="Set recurrence" />
+                            <AtFieldCheck v-model="form.is_transfer" label="is Transfer" />
                         </div>
 
                         <div v-if="isRecurrence">
@@ -164,11 +171,12 @@
     import { reactive, toRefs, watch, computed, inject, ref } from 'vue'
     import Modal from '@/Jetstream/Modal.vue'
     import { useForm } from "@inertiajs/inertia-vue3"
-    import { AtField, AtButton } from "atmosphere-ui"
+    import { AtField, AtButton, AtFieldCheck } from "atmosphere-ui"
     import { NSelect, NDatePicker } from "naive-ui";
     import LogerInput from "@/Components/atoms/LogerInput.vue"
     import axios from 'axios'
     import LogerApiSimpleSelect from './organisms/LogerApiSimpleSelect.vue'
+import { TRANSACTION_DIRECTIONS } from '@/domains/transactions'
 
     const props = defineProps({
             show: {
@@ -206,12 +214,8 @@
         }, {
             value: 'WITHDRAW',
             label: 'Expense'
-        }, {
-            value: 'ENTRY',
-            label: 'Transaction',
-            accountLabel: '',
-            categoryLabel: ''
-    }];
+        }
+    ];
 
     const state = reactive({
         frequencyLabel: 'every',
@@ -239,10 +243,11 @@
             account_id: null,
             display_id: '',
             total: 0,
+            is_transfer: false
         }),
     })
     const isTransfer = computed(() => {
-        return state.form.direction == 'ENTRY';
+        return state.form.is_transfer;
     })
 
     const accountLabel = computed(() => {
@@ -302,6 +307,7 @@
             total: form.total,
             date:  format(new Date(form.date), 'yyyy-MM-dd'),
             status: 'verified',
+            direction: form.is_transfer ? TRANSACTION_DIRECTIONS.WITHDRAW : form.direction,
             ...state.schedule_settings
         }))
         .submit(action.method, action.url(), {
