@@ -26,11 +26,6 @@ class InertiaController extends BaseController {
         $resourceName = $this->resourceName ?? $this->model->getTable();
         $resources = $this->parser($this->getModelQuery($request));
 
-        // return json_encode( array_merge([
-        //     $resourceName => $this->parser($this->getModelQuery($request)),
-        //     "serverSearchOptions" => $this->getServerParams()
-        // ], $this->getIndexProps($request, $resources)));
-
         return Inertia::render($this->templates['index'],
         array_merge([
             $resourceName => $this->parser($this->getModelQuery($request)),
