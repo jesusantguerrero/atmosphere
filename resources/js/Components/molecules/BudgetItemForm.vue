@@ -21,7 +21,13 @@
         </AtField>
 
         <AtField label="Amount" errors="errors" field="amount">
-            <AtInput type="number" v-model="form.amount" />
+            <AtInput type="number" v-model="form.amount">
+                <template #suffix>
+                    <NDropdown trigger="click" :options="options" key-field="name" :on-select="handleOptions" >
+                        <LogerTabButton> <i class="fa fa-ellipsis-v"></i></LogerTabButton>
+                    </NDropdown>
+                </template>
+            </AtInput>
         </AtField>
 
         <section v-if="form.target_type == 'spending'">
@@ -64,12 +70,13 @@
     import {  reactive, toRefs, watch, computed } from 'vue';
     import { AtButton, AtField, AtInput, AtErrorBag, AtButtonGroup } from "atmosphere-ui";
     import { useDatePager } from "vueuse-temporals"
-    import { NSelect } from "naive-ui"
+    import { NSelect , NDropdown} from "naive-ui"
     import { useForm } from '@inertiajs/inertia-vue3';
     import { monthDays, WEEK_DAYS, FREQUENCY_TYPE, generateRandomColor } from "@/utils"
     import { makeOptions } from "@/utils/naiveui";
     import { format } from 'date-fns';
     import ColorSelector from './ColorSelector.vue';
+    import LogerTabButton from '../atoms/LogerTabButton.vue';
     // import IconPicker from '../IconPicker.vue';
 
     const props = defineProps({
@@ -219,4 +226,41 @@
     })
 
     const { form, targetTypes, frequencies } = toRefs(state);
+
+
+const options = [{
+    name: 'setAssigned',
+    label: 'Set Assigned'
+},
+{
+    name: 'setAvailable',
+    label: 'Set Available'
+},
+{
+    name: 'clear',
+    label: 'Clear'
+}]
+
+const setAmount = (amount) => {
+    state.form.amount = amount;
+}
+
+const clear = () => {
+    form.value.amount = 0
+}
+
+const handleOptions = (option) => {
+    switch(option) {
+        case 'setAssigned':
+            setAmount(props.category.budgeted)
+            break;
+        case 'setAvailable':
+            console.log(props.category)
+            setAmount(props.category.available)
+            break;
+        default:
+            clear()
+            break;
+    }
+}
 </script>

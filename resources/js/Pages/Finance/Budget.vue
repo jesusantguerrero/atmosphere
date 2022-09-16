@@ -43,7 +43,7 @@
       <div class="mx-auto mt-8 rounded-lg text-body bg-base max-w-7xl">
             <BudgetGroupForm
                 v-model="categoryForm.name"
-                class="shadow-md rounded-md"
+                class="shadow-md rounded-md overflow-hidden"
                 @save="saveBudgetCategory()"
             />
 
