@@ -31,6 +31,9 @@ class TransactionResource extends JsonResource
             'status' => $this->status,
             'mainLine' => $this->mainLine,
             'schedule' => $this->schedule,
+            'linked' => $this->whenLoaded('linked', function() {
+                return $this->linked->toArray();
+            })
         ];
     }
 }

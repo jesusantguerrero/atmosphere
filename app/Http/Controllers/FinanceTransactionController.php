@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Domains\AppCore\Models\Planner;
-use App\Domains\Transaction\Imports\TransactionsImport;
+use App\Domains\Transaction\Actions\FindLinkedTransactions;
 use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Transaction\Resources\TransactionResource;
 use App\Domains\Transaction\Services\TransactionService;
@@ -97,6 +97,21 @@ class FinanceTransactionController extends InertiaController {
             $transaction->schedule->update(['date' => $nextDate->getStart()->format('Y-m-d')]);
         }
 
+
+        return redirect()->back();
+    }
+
+    // linked transactions
+    public function findLinked(Transaction $transaction) {
+        (new FindLinkedTransactions(
+            $transaction->team_id,
+            $transaction->user_id,
+            [
+                "id" => $transaction->id,
+                "date" => $transaction->date,
+                "total" => $transaction->total
+            ]
+        ))->handle();
 
         return redirect()->back();
     }
