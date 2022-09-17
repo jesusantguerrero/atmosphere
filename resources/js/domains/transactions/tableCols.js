@@ -30,7 +30,11 @@ export const tableCols = [
         class: 'w-full',
         render(row) {
             try {
-                return row.payee?.name || h('div', { class: "flex justify-between items-center text-body-1"} , [h('div', `Transfer: ${row.category?.name}`), h(IconTransfer, { class: 'fa fa-right-left'})])
+                const children = () => [
+                    h('div', `Transfer: ${row.category?.name}`), 
+                    h(IconTransfer, { class: 'fa fa-right-left'})
+                ];
+                return row.payee?.name || h('div', { class: "flex justify-between items-center text-body-1"}, children )
             } catch(e) {
                 console.log(e)
                 return ''
@@ -78,7 +82,7 @@ export const tableCols = [
                 planned: 'warning',
                 verified: 'success',
             }
-            return h(AtBadge, { type: statusColors[row.status]}, row.status)
+            return () => h(AtBadge, { type: statusColors[row.status]}, () => row.status)
         }
     },
     {

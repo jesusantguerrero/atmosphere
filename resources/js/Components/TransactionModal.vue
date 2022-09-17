@@ -171,12 +171,12 @@
     import { reactive, toRefs, watch, computed, inject, ref } from 'vue'
     import Modal from '@/Jetstream/Modal.vue'
     import { useForm } from "@inertiajs/inertia-vue3"
-    import { AtField, AtButton, AtFieldCheck } from "atmosphere-ui"
+    import { AtField, AtButton, AtFieldCheck, AtInput } from "atmosphere-ui"
     import { NSelect, NDatePicker } from "naive-ui";
     import LogerInput from "@/Components/atoms/LogerInput.vue"
     import axios from 'axios'
     import LogerApiSimpleSelect from './organisms/LogerApiSimpleSelect.vue'
-import { TRANSACTION_DIRECTIONS } from '@/domains/transactions'
+    import { TRANSACTION_DIRECTIONS } from '@/domains/transactions'
 
     const props = defineProps({
             show: {

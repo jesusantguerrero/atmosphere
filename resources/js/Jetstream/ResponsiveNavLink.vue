@@ -11,6 +11,7 @@
 </template>
 
 <script setup>
+import { Link } from "@inertiajs/inertia-vue3"
 import { computed } from 'vue';
 
 const props = defineProps(["active", "href", "as"]);

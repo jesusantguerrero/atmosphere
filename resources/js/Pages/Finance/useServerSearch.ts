@@ -64,16 +64,17 @@ export const getRelationshipsParams = (relationships: string) => {
 }
 
 export const updateSearch = (state: ISearchState) => {
+    console.log(state);
     let params = [
         filterParams('date', state.filters, state.dates),
-        // getRelationshipsParams(state.relationships)
+        getRelationshipsParams(state.relationships)
     ];
 
     const urlParams = params.filter(value => value?.trim()).join("&");
-
+    console.log(urlParams)
     const finalUrl = `${window.location.pathname}?${urlParams}`
     if (finalUrl != window.location.toString()) {
-        Inertia.visit(`${window.location.pathname}?${params}`, {
+        Inertia.visit(finalUrl, {
             preserveState: true,
         })
     }

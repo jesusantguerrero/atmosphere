@@ -15,9 +15,9 @@ import LogerTabButton from '../atoms/LogerTabButton.vue';
 
 defineProps({
     notifications: {
-        type: Array,
+        type: Number,
         default() {
-            return []
+            return 0
         }
     }
 })

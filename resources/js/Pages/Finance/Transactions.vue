@@ -54,8 +54,10 @@ const { openTransferModal } = useTransactionModal();
 
 const props = defineProps({
   transactions: {
-    type: Array,
-    default: () => [],
+    type: Object,
+    default: () => ({
+        data: []
+    }),
   },
   accounts: {
     type: Array,

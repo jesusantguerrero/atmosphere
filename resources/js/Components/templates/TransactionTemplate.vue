@@ -28,7 +28,7 @@
                     :on-select="(optionName) => handleOptions(optionName, row)"
                     @click.stop
                 >
-                <button class="hover:bg-base-lvl-3 px-2"> <i class="fa fa-ellipsis-v"></i></button>
+                    <button class="hover:bg-base-lvl-3 px-2"> <i class="fa fa-ellipsis-v"></i></button>
                 </NDropdown>
                 </div>
             </template>

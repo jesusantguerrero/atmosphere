@@ -18,3 +18,5 @@ yarn-error.log
 /packages/**
 rr
 .rr.yaml
+.env.testing
+public/build
