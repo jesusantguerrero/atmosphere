@@ -11,7 +11,13 @@
               controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
               next-mode="month"
             />
-            <DraftButtons v-if="isDraft" />
+            <AtButton class="flex items-center h-10 space-x-2 text-primary" 
+             @click="pageState.relationships='linked'">
+                <i class="block mr-2 fa fa-filter"></i>
+            </AtButton>
+            <DraftButtons
+                v-if="isDraft"
+            />
           </div>
         </template>
       </FinanceSectionNav>
@@ -20,6 +26,7 @@
       <TransactionTemplate
         :transactions="transactions.data"
         :server-search-options="serverSearchOptions"
+        @findLinked="findLinked"
         @removed="removeTransaction"
         @edit="handleEdit"
       />
@@ -29,7 +36,7 @@
 
 <script setup>
 import { NSelect } from "naive-ui";
-import { AtDatePager } from "atmosphere-ui";
+import { AtDatePager, AtButton } from "atmosphere-ui";
 import { computed, toRefs, provide} from "vue";
 import { Inertia } from "@inertiajs/inertia";
 
@@ -84,6 +91,14 @@ const isDraft = computed(() => {
 
 const removeTransaction = (transaction) => {
     Inertia.delete(`/transactions/${transaction.id}`, {
+        onSuccess() {
+            Inertia.reload()
+        }
+    })
+}
+
+const findLinked = (transaction) => {
+    Inertia.patch(`/transactions/${transaction.id}/linked`, {
         onSuccess() {
             Inertia.reload()
         }

@@ -11,12 +11,20 @@
                     {{ formatMoney(row.total, row.currency_code) }}
                 </div>
             </template>
+
+            <template v-slot:description="{ scope: { row } }">
+                <span class="capitalize text-xs">
+                    {{ row.description }}
+                    {{ row.linked }}
+                </span>
+            </template>
+
             <template v-slot:actions="{ scope: { row } }">
                <div>
                  <NDropdown
                     trigger="click"
                     key-field="name"
-                    :options="options"
+                    :options="options(row)"
                     :on-select="(optionName) => handleOptions(optionName, row)"
                     @click.stop
                 >
@@ -66,20 +74,25 @@
         isTransferModalOpen.value = true;
     }
 
-    const options = computed(() => {
+    const options = (row) => {
         const defaultOptions = [
             {
-            name: "edit",
-            label: "Edit",
+                name: "edit",
+                label: "Edit",
             },
             {
-            name: "removed",
-            label: "Remove",
+                name: "removed",
+                label: "Remove",
             },
+            {
+                name: 'findLinked',
+                label: 'Find Linked',
+                hide: row.status != 'draft'
+            }
         ];
 
-    return defaultOptions.filter(option => !option.hide)
-    });
+        return defaultOptions.filter(option => !option.hide)
+    };
 
     const handleOptions = (option, transaction) => {
         emit(option, transaction);

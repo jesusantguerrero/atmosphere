@@ -6,30 +6,46 @@
     v-slot:default="{ close }"
     @close="emitClose"
   >
-    <NSelect v-model:value="selectedResource" :options="options" />
-    <div class="pb-4 bg-base-lvl-1 sm:p-6 sm:pb-4 text-body">
+    <header class="bg-base-lvl-3 px-6 py-2 font-bold flex items-center">
+        <LogerTabButton @click="selectedResource=''" v-if="selectedResource">
+            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--ic" width="32" height="32" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path fill="currentColor" d="M14.71 6.71a.996.996 0 0 0-1.41 0L8.71 11.3a.996.996 0 0 0 0 1.41l4.59 4.59a.996.996 0 1 0 1.41-1.41L10.83 12l3.88-3.88c.39-.39.38-1.03 0-1.41z"></path></svg>
+        </LogerTabButton>
+        <span class="py-4">
+            Import Transactions
+        </span>
+    </header>
+
+    <section class="pb-4 bg-base-lvl-3 sm:p-6 sm:pb-4 text-body">
+      <TabSelector
+        v-model="selectedResource"
+        :options="options"
+        v-if="!selectedResource"
+      />
       <ImportHolder
+        v-else
         ref="importHolderRef"
         @uploaded="emitClose"
         :endpoint="selectedResource"
       />
-    </div>
+    </section>
 
-    <div class="px-6 py-4 space-x-3 text-right bg-base">
+    <footer class="px-6 py-4 space-x-3 text-right bg-base" >
       <AtButton type="secondary" @click="close" rounded class="h-10"> Cancel </AtButton>
-      <AtButton class="text-white bg-primary h-10" @click="submit" rounded>
+      <AtButton class="text-white bg-primary h-10" @click="submit" rounded :disabled="!selectedResource">
         Import
       </AtButton>
-    </div>
+    </footer>
   </modal>
 </template>
 
 <script setup>
+import { ref } from "vue";
+import { AtButton } from "atmosphere-ui";
+
 import Modal from "@/Jetstream/Modal.vue";
 import ImportHolder from "@/Components/organisms/ImportHolder.vue";
-import { AtButton} from "atmosphere-ui";
-import { NSelect } from "naive-ui"
-import { ref } from "vue";
+import TabSelector from "./TabSelector.vue";
+import LogerTabButton from "./atoms/LogerTabButton.vue";
 
 defineProps({
   show: {
@@ -54,13 +70,16 @@ const emitClose = () => {
   emit("update:show", false);
 };
 
-const options = [{
-    value: '/budgets/import',
-    label: 'Budget'
-}, {
-    value: '/finance/import',
-    label: 'Transactions'
-}]
+const options = [
+  {
+    value: "/budgets/import",
+    label: "Budget",
+  },
+  {
+    value: "/finance/import",
+    label: "Transactions",
+  },
+];
 
-const selectedResource = ref(options[1].value)
+const selectedResource = ref("");
 </script>
