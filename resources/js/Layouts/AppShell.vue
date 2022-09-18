@@ -18,7 +18,7 @@
 <script setup>
 defineProps({
     navClass: {
-        type: String
+        type: [String, Object]
     },
     isExpanded: {
         type: Boolean,

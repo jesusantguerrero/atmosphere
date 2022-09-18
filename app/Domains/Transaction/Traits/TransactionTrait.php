@@ -44,11 +44,11 @@ trait TransactionTrait {
             'transactions.direction' => Transaction::DIRECTION_CREDIT,
             'transactions.status' => 'verified'
         ])
-        ->whereNotNull('transaction_category_id');
+        ->whereNotNull('category_id');
     }
 
     public function scopeForAccount($query, $accountId) {
-        return $query->where('account_id', $accountId);
+        return $query->where(DB::raw("(account_id = $accountId)"));
     }
 }
 

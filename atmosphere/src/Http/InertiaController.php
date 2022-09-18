@@ -26,11 +26,6 @@ class InertiaController extends BaseController {
         $resourceName = $this->resourceName ?? $this->model->getTable();
         $resources = $this->parser($this->getModelQuery($request));
 
-        // return json_encode( array_merge([
-        //     $resourceName => $this->parser($this->getModelQuery($request)),
-        //     "serverSearchOptions" => $this->getServerParams()
-        // ], $this->getIndexProps($request, $resources)));
-
         return Inertia::render($this->templates['index'],
         array_merge([
             $resourceName => $this->parser($this->getModelQuery($request)),
@@ -61,7 +56,7 @@ class InertiaController extends BaseController {
     }
 
     public function update(Request $request, int $id) {
-        $resource = $this->model::find($id);
+        $resource = $this->model::findOrFail($id);
         $postData = $request->post();
         $resource->update($postData);
         $this->afterSave($postData, $resource);
@@ -73,7 +68,7 @@ class InertiaController extends BaseController {
     }
 
     public function destroy(Request $request, int $id) {
-        $resource = $this->model::find($id);
+        $resource = $this->model::findOrFail($id);
         if ($this->validateDelete($request, $resource)) {
             $resource->delete();
             return Redirect::back();

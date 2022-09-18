@@ -60,4 +60,13 @@ class FinanceController extends InertiaController {
             })->take(4),
         ]);
     }
+
+    public function watchList() {
+        return Jetstream::inertia()->render(request(), 'Finance/WatchList', [
+            "data" => [
+                ["name" => "Essentials"],
+                ["name" => "Drinks"]
+            ]
+        ]);
+    }
 }

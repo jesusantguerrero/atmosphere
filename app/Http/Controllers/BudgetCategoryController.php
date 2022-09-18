@@ -48,7 +48,7 @@ class BudgetCategoryController extends InertiaController
 
     protected function validateDelete(Request $request, $resource)
     {
-        $transactions = Transaction::where('transaction_category_id', $resource->id)->count();
+        $transactions = Transaction::where('category_id', $resource->id)->count();
         $budgetMovements = BudgetMovement::where('destination_category_id', $resource->id)
         ->orWhere('source_category_id', $resource->id)->count();
         if ($transactions > 0 || $budgetMovements > 0 || $resource->subCategories->count() > 0) {

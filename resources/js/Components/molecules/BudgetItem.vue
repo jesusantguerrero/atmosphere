@@ -17,6 +17,7 @@
     </div>
     <div class="flex items-center space-x-2 text-right flex-nowrap min-w-fit">
         <BalanceInput :value="item.available" :formatter="formatMoney" :category="item" />
+        <BudgetTransaction :data="item.budget"  :category="item" v-if="item.available" />
         <NDropdown trigger="click" :options="options" key-field="name" :on-select="handleOptions" >
             <LogerTabButton> <i class="fa fa-ellipsis-v"></i></LogerTabButton>
         </NDropdown>
@@ -36,6 +37,7 @@ import LogerTabButton from "@/Components/atoms/LogerTabButton.vue";
 import LogerInput from '../atoms/LogerInput.vue';
 import formatMoney from "@/utils/formatMoney";
 import autoAnimate from '@formkit/auto-animate';
+import BudgetTransaction from '../atoms/BudgetTransaction.vue';
 
 const props = defineProps({
     item: {

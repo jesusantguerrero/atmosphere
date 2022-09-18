@@ -54,7 +54,7 @@ class CreateStartingBalance
                 'date' => Carbon::now()->format('Y-m-d H:i:s'),
                 'currency_code' => $account->currency_code ?? "DOP",
                 'transaction_category_group_id' => $categoryGroupId,
-                'transaction_category_id' => $transactionCategoryId,
+                'category_id' => $transactionCategoryId,
                 'category_id' => $payee->account_id,
                 'description' => 'Starting Balance',
                 'direction' => $isDeposit ? Transaction::DIRECTION_DEBIT : Transaction::DIRECTION_CREDIT,

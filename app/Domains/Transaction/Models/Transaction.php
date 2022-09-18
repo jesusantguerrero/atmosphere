@@ -21,6 +21,10 @@ class Transaction extends CoreTransaction
         return $this->hasOneThrough(Category::class, Category::class, 'parent_id', 'parent_id');
     }
 
+    public function linked() {
+        return $this->hasMany(LinkedTransaction::class);
+    }
+
     public function copy($data = []) {
         $transactionNew = Self::create(array_merge($this->toArray(), $data));
         foreach ($this->lines as $line) {

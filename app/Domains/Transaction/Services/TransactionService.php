@@ -68,16 +68,16 @@ class TransactionService {
             'direction' => Transaction::DIRECTION_CREDIT,
             'transactions.status' => 'verified'
         ])
-        ->whereNotNull('transaction_category_id')
+        ->whereNotNull('category_id')
         ->getByMonth($startDate, $endDate, false);
 
         if ($parentId) {
             $builder->where("categories.parent_id", $parentId);
         }
 
-        return $builder->groupBy('transaction_category_id')
-        ->select(DB::raw('sum(total) as total, transaction_category_id, categories.name, categories.parent_id, group.name as parent_name'))
-        ->join('categories', 'categories.id', 'transaction_category_id')
+        return $builder->groupBy('category_id')
+        ->select(DB::raw('sum(total) as total, category_id, categories.name, categories.parent_id, group.name as parent_name'))
+        ->join('categories', 'categories.id', 'category_id')
         ->leftJoin('categories as group', 'group.id', 'categories.parent_id')
         ->orderBy('total', 'desc')
         ->limit($limit)
@@ -90,12 +90,12 @@ class TransactionService {
             'direction' => Transaction::DIRECTION_CREDIT,
             'transactions.status' => 'verified'
         ])
-        ->whereNotNull('transaction_category_id')
+        ->whereNotNull('category_id')
         ->getByMonth($startDate, $endDate, false);
 
         return $builder
         ->select(DB::raw('sum(total) as total, catGroup.name, catGroup.id'))
-        ->join('categories', 'categories.id', 'transaction_category_id')
+        ->join('categories', 'categories.id', 'category_id')
         ->join(DB::raw('categories catGroup'),  'catGroup.id', 'categories.parent_id')
         ->orderBy('total', 'desc')
         ->groupBy('categories.parent_id')
@@ -140,17 +140,18 @@ class TransactionService {
 
     public static function getNetWorth($teamId, $startDate, $endDate) {
         return DB::select("
-        with data (month_date, total, direction, balance_type) AS (
-            SELECT LAST_DAY(transactions.date) as month_date, total, direction, accounts.balance_type
-            FROM transactions
-            inner JOIN accounts on transactions.account_id=accounts.id
-            AND transactions.STATUS = 'verified'
-            AND transactions.team_id = :teamId
+        with data (month_date, total, balance_type) AS (
+            SELECT LAST_DAY(t.date) as month_date, tl.amount * tl.type, accounts.balance_type
+            FROM transaction_lines tl
+            inner JOIN transactions t on tl.transaction_id = t.id
+            inner JOIN accounts on tl.account_id=accounts.id
+            where t.STATUS = 'verified'
+            AND t.team_id = :teamId
             AND balance_type IS NOT null
           )
           SELECT month_date,
-          sum(sum(CASE WHEN balance_type = 'debit' THEN (CASE WHEN direction = 'withdraw' THEN total * -1 ELSE total * 1 END) END)) over (ORDER BY month_date) as assets,
-          sum(sum(CASE WHEN balance_type = 'credit' THEN (CASE WHEN direction = 'withdraw' THEN total * -1 ELSE total * 1 END) END)) over (ORDER BY month_date) as debts
+          sum(sum(CASE WHEN balance_type = 'debit' THEN (total) END)) over (ORDER BY month_date) as assets,
+          sum(sum(CASE WHEN balance_type = 'credit' THEN (total) END)) over (ORDER BY month_date) as debts
           FROM DATA
           GROUP BY month_date
           ORDER BY month_date
@@ -226,7 +227,7 @@ class TransactionService {
         ->whereBetween('transactions.date', [$startDate, $endDate])
         ->groupByRaw('categories.id, date_format(transactions.date, "%Y-%m-01")')
         ->orderByRaw('date_format(transactions.date, "%Y-%m-01"), concat(pc.index,"." ,categories.index)')
-        ->leftJoin('transactions', 'transactions.transaction_category_id', '=', 'categories.id')
+        ->leftJoin('transactions', 'transactions.category_id', '=', 'categories.id')
         ->join(DB::raw('categories pc'), 'pc.id', '=', 'categories.parent_id')
         ->get();
     }

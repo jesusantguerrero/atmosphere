@@ -1,7 +1,6 @@
-import { getDateFromIso } from "@/utils";
 import { Inertia } from "@inertiajs/inertia";
-import { format, startOfDay } from "date-fns";
-import { computed, reactive, Ref, watch }  from "vue"
+import { format } from "date-fns";
+import { reactive, Ref, watch }  from "vue"
 
 interface IServerSearchData {
     filters: Record<string, string>
@@ -19,8 +18,8 @@ interface IServerSearchOptions {
 }
 
 interface IDateSpan {
-    startDate: Date,
-    endDate?: Date
+    startDate: Date|string,
+    endDate?: Date|string
 }
 
 interface ISearchState {
@@ -56,20 +55,26 @@ export const filterParams = (mainDateField, externalFilters: Record<string, stri
     return filters.join("&");
 }
 
-export const groupParams = (groupValue) => {
+export const getGroupParams = (groupValue:string) => {
     return `group=${groupValue}`;
-  }
+}
+
+export const getRelationshipsParams = (relationships: string) => {
+    return relationships && `relationships=${relationships}`
+}
 
 export const updateSearch = (state: ISearchState) => {
+    console.log(state);
     let params = [
-        filterParams('date', state.filters, state.dates)
+        filterParams('date', state.filters, state.dates),
+        getRelationshipsParams(state.relationships)
     ];
 
-    const urlParams = params.filter(value => value).join("&");
-
+    const urlParams = params.filter(value => value?.trim()).join("&");
+    console.log(urlParams)
     const finalUrl = `${window.location.pathname}?${urlParams}`
     if (finalUrl != window.location.toString()) {
-        Inertia.visit(`${window.location.pathname}?${params}`, {
+        Inertia.visit(finalUrl, {
             preserveState: true,
         })
     }
@@ -77,7 +82,7 @@ export const updateSearch = (state: ISearchState) => {
 
 export const useServerSearch = (serverSearchData: Ref<IServerSearchData>, options: IServerSearchOptions = {}) => {
     const dates = parseDateFilters(serverSearchData)
-    const state = reactive({
+    const state = reactive<ISearchState>({
         filters: {
             ...serverSearchData.value.filters,
             date: null

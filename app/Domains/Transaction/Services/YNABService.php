@@ -16,7 +16,7 @@ class YNABService
         $amount = explode($symbol, $amountWithCurrency);
 
         return (object) [
-            "amount" => (int) str_replace(',','', $amount[1]),
+            "amount" => (double) str_replace(',','', $amount[1]),
             "currencyCode" => self::CODES[$amount[0]] ?? 'USD'
         ];
     }
@@ -38,5 +38,12 @@ class YNABService
             'direction' => $direction == 'inflow' ? Transaction::DIRECTION_DEBIT : Transaction::DIRECTION_CREDIT,
             'amount' => $amounts->$direction,
        ];
+    }
+
+    public static function fixTransfer(int $accountId, $counterAccountId, string $direction) {
+        if ($direction == Transaction::DIRECTION_CREDIT) {
+            return [$accountId, $counterAccountId, $direction];
+        }
+        return [$counterAccountId, $accountId, Transaction::DIRECTION_CREDIT];
     }
 }

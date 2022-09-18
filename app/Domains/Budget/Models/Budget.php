@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 class Budget extends Model
 {
     use HasFactory;
-    protected $fillable = ['team_id', 'user_id', 'amount', 'name', 'target_type', 'frequency', 'frequency_date', 'frequency_week_day', 'frequency_month_date'];
+    protected $fillable = ['team_id', 'user_id', 'color', 'amount', 'name', 'target_type', 'frequency', 'frequency_date', 'frequency_week_day', 'frequency_month_date'];
 
     public function getExpensesByPeriod($startDate, $endDate = null) {
         return DB::table('transaction_lines')

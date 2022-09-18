@@ -2,11 +2,16 @@
 <AtInput
     type="text"
     class="bg-base-lvl-2/80 text-base-200 border-base hover:ring-primary rounded-sm"
-    v-bind="$attrs" required
+    v-bind="$attrs"
+    required
     ref="input"
     :model-value="modelValue"
     @update:model-value="$emit('update:model-value', $event)"
-/>
+>
+    <template v-slot:prefix v-if="$slots.prefix">
+        <slot name="prefix" />
+    </template>
+</AtInput>
 </template>
 
 <script setup>

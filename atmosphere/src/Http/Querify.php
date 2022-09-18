@@ -29,9 +29,10 @@ trait Querify
         $this->whereRaw = $this->getSearch($search);
         $this->getRelationships($relationships);
         $this->getSorts($sorts);
-
+        $this->getFilters($filters);
+        
         $this->serverParams = [
-            'filters' => $this->getFilters($filters),
+            'filters' => $filters,
             'limit' => $limit,
             'search' => $search,
             'sorts' => $sorts,

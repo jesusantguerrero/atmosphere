@@ -11,10 +11,12 @@
                             controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
                             next-mode="week"
                         />
-                        <AtButton class="w-64 h-10 text-white bg-primary/80" @click="openRandomModal()" rounded> Random Meal </AtButton>
-                        <AtButton class="h-10 text-white w-52 bg-transparent/30" @click="toggleMode()" rounded>
+                        <LogerButton variant="inverse" class="w-64 h-10" @click="openRandomModal()">
+                            Random Meal
+                        </LogerButton>
+                        <LogerButton class="h-10 w-52" variant="secondary" @click="toggleMode()">
                             {{ state.toggleBtnText }}
-                        </AtButton>
+                        </LogerButton>
                     </div>
                 </template>
             </MealSectionNav>
@@ -65,6 +67,7 @@
     import MealTemplate from "@/Components/templates/MealTemplate.vue";
     import MealSectionNav from "@/Components/templates/MealSectionNav.vue";
     import MealTypeCell from "@/Components/molecules/MealTypeCell.vue";
+import LogerButton from "@/Components/atoms/LogerButton.vue";
 
     const pageProps = usePage().props;
 
