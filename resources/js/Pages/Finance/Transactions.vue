@@ -11,10 +11,18 @@
               controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
               next-mode="month"
             />
-            <AtButton class="flex items-center h-10 space-x-2 text-primary" 
-             @click="pageState.relationships='linked'">
-                <i class="block mr-2 fa fa-filter"></i>
-            </AtButton>
+            <FiltersPopover
+                :options="{
+                    filters: {
+                        status: ['draft','verified']
+                    },
+                    relationships: ['linked']
+                }"
+                @onFilterChanged="pageState.filters=$event"
+                @onRelationshipsChanged="pageState.relationships=$event"
+            >
+                <i class="block mr-2 fa fa-filter" />
+            </FiltersPopover>
             <DraftButtons
                 v-if="isDraft"
             />

@@ -81,7 +81,7 @@
                         v-for="item in itemGroup.subCategories"
                         :key="`${item.id}-${item.budgeted}`"
                         :item="item"
-                        @click="selectedBudget = item"
+                        @edit="selectedBudget = item"
                       />
                     </Draggable>
                   </div>

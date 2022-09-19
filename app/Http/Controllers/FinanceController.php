@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Domains\Transaction\Models\Transaction;
+use App\Domains\Transaction\Models\Watchlist;
 use App\Domains\Transaction\Services\TransactionService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -62,11 +63,40 @@ class FinanceController extends InertiaController {
     }
 
     public function watchList() {
+        $teamId = request()->user()->current_team_id;
+        $queryParams = request()->query();
+        $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
+        [$startDate, $endDate] = $this->getFilterDates($filters);
+
+        $watchlist = [
+            [
+                "name" => 'Essentials',
+                "type" => "categories",
+                "input" => [4, 14, 25]
+            ],
+            [
+                "name" => 'Subscriptions',
+                "type" => "categories",
+                "input" => [22, 23]
+            ],
+            // [
+            //     "name" => 'Carolina',
+            //     "type" => "payee",
+            //     "input" => []
+            // ],
+            // [
+            //     "name" => 'tags',
+            //     'type' => 'tags',
+            //     'input' => []
+            // ]
+        ];
+
         return Jetstream::inertia()->render(request(), 'Finance/WatchList', [
-            "data" => [
-                ["name" => "Essentials"],
-                ["name" => "Drinks"]
-            ]
+            "data" => array_map(function($item) use ($teamId) {
+                return array_merge($item, [
+                    "data" => Watchlist::getData($teamId, $item)
+                ]);
+            }, $watchlist)
         ]);
     }
 }

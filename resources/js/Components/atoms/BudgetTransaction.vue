@@ -7,7 +7,8 @@
         title="Execute transaction"
         v-if="spendingAmount"
     >
-        <IconBolt class="group-hover:text-yellow-500" /> {{ spendingAmount }}
+        <IconBolt class="group-hover:text-yellow-500" />
+        {{ formatMoney(spendingAmount) }}
     </span>
 </div>
 </template>
@@ -23,6 +24,7 @@
 
     import { format, startOfMonth } from "date-fns";
     import { useTransactionModal } from "@/domains/transactions";
+    import formatMoney from "@/utils/formatMoney";
 
     const props = defineProps({
         data: {

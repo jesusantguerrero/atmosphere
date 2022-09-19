@@ -8,7 +8,7 @@
             <IconDrag class="handle" />
         </div>
         <div ref="inputContainer">
-            <h4> {{ item.name }} </h4>
+            <h4 class="cursor-pointer" @click="$emit('edit')">  {{ item.name }} </h4>
             <span v-if="!isEditing" @click="toggleEditing" class="border border-transparent px-4 rounded-md hover:border-slate-400 cursor-pointer py-2.5 inline-block transition hover:text-primary">
                 {{ budgeted }}
             </span>
