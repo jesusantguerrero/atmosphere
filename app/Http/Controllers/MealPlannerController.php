@@ -28,7 +28,7 @@ class MealPlannerController extends InertiaController
     function getIngredients($plans) {
         $ingredients = [];
         foreach ($plans as $plan) {
-            $mealIngredients = $plan->dateable->ingredients;
+            $mealIngredients = $plan->dateable?->ingredients;
             if ($mealIngredients && count($mealIngredients)) {
                 foreach ($mealIngredients as $product) {
                     if (array_key_exists($product->name, $ingredients)) {
