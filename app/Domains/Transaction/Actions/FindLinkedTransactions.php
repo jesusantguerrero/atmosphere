@@ -5,7 +5,6 @@ namespace App\Domains\Transaction\Actions;
 use App\Domains\Transaction\Models\LinkedTransaction;
 use App\Domains\Transaction\Models\Transaction;
 use Exception;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class FindLinkedTransactions {

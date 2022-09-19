@@ -32,4 +32,19 @@ class Transaction extends CoreTransaction
         }
         return $transactionNew;
     }
+
+    public static function matchedFor($teamId, $searchParams) {
+        return Transaction::select('id')->where([
+            'team_id' => $teamId,
+            'total' => $searchParams['total'],
+            'status' => Transaction::STATUS_VERIFIED
+        ])
+        ->whereRaw("date >= SUBDATE(?, interval ? DAY) and date <= ADDDATE(?, INTERVAL ? DAY)",
+        [
+            $searchParams['date'],
+            $searchParams['datesBefore'] ?? 1,
+            $searchParams['date'],
+            $searchParams['datesAfter'] ?? 1,
+        ])->get();
+    }
 }
