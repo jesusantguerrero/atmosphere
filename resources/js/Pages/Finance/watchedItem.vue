@@ -3,13 +3,13 @@
         <h4 class="p-4"> {{ item.name }} </h4>
         <section class="grid grid-cols-2 p-4">
             <div>
-                <h5>This Month</h5>
-                <h4>$181</h4>
+                <h5 class="font-bold">This Month</h5>
+                <h4>{{ formatMoney(item.data.month.total) }}</h4>
                 <small>spent so far</small>
             </div>
             <div>
-                <h5>This Month</h5>
-                <h4>$181</h4>
+                <h5 class="font-bold">Prev Month</h5>
+                <h4>{{ formatMoney(item.data.prevMonth.total) }}</h4>
                 <small>spent so far</small>
             </div>
         </section>
@@ -32,6 +32,8 @@
 </template>
 
 <script setup>
+   import formatMoney from '@/utils/formatMoney';
+
     defineProps({
         item: {
             type: Object,
