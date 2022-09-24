@@ -8,7 +8,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Transaction;
 
-class AutomationServices extends Seeder
+class AutomationSeeder extends Seeder
 {
     /**
      * Run the database seeds.

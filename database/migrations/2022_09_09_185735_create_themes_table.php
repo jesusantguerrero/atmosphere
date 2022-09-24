@@ -16,7 +16,8 @@ return new class extends Migration
         Schema::create('themes', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->enum('theme_root', ['light', 'dark']);
+            $table->string('label');
+            $table->enum('base', ['light', 'dark']);
             $table->json('config');
             $table->timestamps();
         });

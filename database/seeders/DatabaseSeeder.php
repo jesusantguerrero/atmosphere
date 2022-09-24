@@ -14,10 +14,11 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         $this->call([
-            AutomationServices::class,
+            AutomationSeeder::class,
             CountriesTableSeeder::class,
             TimeZonesTableSeeder::class,
-            LanguagesTableSeeder::class
+            LanguagesTableSeeder::class,
+            ThemeSeeder::class
         ]);
     }
 }
