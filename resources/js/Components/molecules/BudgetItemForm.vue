@@ -4,7 +4,7 @@
             <AtInput v-model="category.name" class="border-transparent cursor-pointer hover:text-primary hover:border-primary" rounded>
                 <template #prefix>
                     <div class=" px-1 flex items-center justify-center">
-                        <ColorSelector v-model="category.color" />
+                        <ColorSelector v-model="form.color" />
                     </div>
                 </template>
             </AtInput>
@@ -189,17 +189,19 @@
         }
     })
 
-    watch(() =>
-        props.item,
-        () => {
-            if (props.item) {
+    watch(
+        () => props.item,
+        (item) => {
+            if (item) {
+                state.form.reset()
                 Object.keys(state.form.data()).forEach(key => {
-                    state.form[key] = props.item[key] || state.form[key]
+                    state.form[key] = item[key] || state.form[key]
                 })
             } else {
                 state.form.reset()
             }
-    }), { deep: true, immediate: true }
+        },
+        { deep: true, immediate: true });
 
     const submit = () => {
         const methods = {

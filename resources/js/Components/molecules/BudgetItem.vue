@@ -10,9 +10,9 @@
         <div ref="inputContainer">
             <h4 class="cursor-pointer" @click="$emit('edit')">  {{ item.name }} </h4>
             <span v-if="!isEditing" @click="toggleEditing" class="border border-transparent px-4 rounded-md hover:border-slate-400 cursor-pointer py-2.5 inline-block transition hover:text-primary">
-                {{ budgeted }}
+                {{ formatMoney(budgeted) }}
             </span>
-            <LogerInput v-model="budgeted" @blur="onAssignBudget" v-else ref="input" />
+            <LogerInput v-model="budgeted" @blur="onAssignBudget" :number-format="true" v-else ref="input" />
         </div>
     </div>
     <div class="flex items-center space-x-2 text-right flex-nowrap min-w-fit">

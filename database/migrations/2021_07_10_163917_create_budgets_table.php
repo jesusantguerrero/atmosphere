@@ -33,7 +33,6 @@ class CreateBudgetsTable extends Migration
             $table->integer('frequency_interval')->nullable();
             $table->string('frequency_interval_unit')->nullable();
             $table->integer('frequency_month_date')->nullable();
-            $table->date('frequency_date')->nullable();
             $table->string('frequency_week_day')->nullable();
             $table->text('note')->nullable();
             $table->enum('status', [

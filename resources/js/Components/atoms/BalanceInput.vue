@@ -3,7 +3,7 @@
     <NPopover trigger="manual" placement="bottom"  @update:show="handleUpdateShow" :show="showPopover">
         <template #trigger>
             <span
-                class="px-5 py-1 cursor-pointer rounded-3xl text-body-1"
+                class="px-5 py-1 inline-block cursor-pointer rounded-3xl text-body-1 min-w-max"
                 :class="badgeClass"
                 @click="toggle"
             >

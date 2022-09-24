@@ -27,13 +27,13 @@
       <!-- Budget to assign -->
       <BalanceAssign
         class="rounded-t-md mt-5"
-        :class="{'rounded-b-md shadow-md': !overspentCategories.length}"
+        :class="{'rounded-b-md shadow-md': !isOverspentFilterShown}"
         :value="readyToAssign.balance"
         :category="readyToAssign"
       />
 
       <!-- Overspent notice -->
-      <div v-if="overspentCategories.length" class="bg-primary/40 items-center rounded-b-2xl justify-between text-white px-2 py-2 flex">
+      <div v-if="isOverspentFilterShown" class="bg-primary/40 items-center rounded-b-md justify-between text-white px-2 py-2 flex">
         <span>
             {{ overspentCategories.length }} overspent categories
         </span>
@@ -154,6 +154,9 @@ const {state: pageState }= useServerSearch(serverSearchOptions);
 
 const { budgets } = toRefs(props);
 const { readyToAssign, visibleCategories, overspentCategories, toggleOverspent, overspentFilter } = useBudget(budgets);
+const isOverspentFilterShown = computed(() => {
+    return overspentFilter.value || overspentCategories.value > 0
+})
 
 const state = reactive({
   isModalOpen: false,
