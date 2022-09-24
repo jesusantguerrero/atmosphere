@@ -11,6 +11,19 @@ use Illuminate\Support\Facades\DB;
 
 class Watchlist extends Model
 {
+
+    private $id;
+    private $team_id;
+    private $user_id;
+    private $input = [];
+    private $type = '';
+    private $target = '';
+
+    const TYPE_PAYEE = 'payees';
+    const TYPE_CATEGORY = 'categories';
+    const TYPE_CATEGORY_GROUP = 'categoryGroups';
+    const TYPE_LABELS = 'labels';
+
     public static function getData($teamId, $listData, $startDate = null, $endDate = null) {
         $endDate = Carbon::now()->endOfMonth()->format('Y-m-d');
         $startDate = Carbon::now()->startOfMonth()->format('Y-m-d');
@@ -26,12 +39,22 @@ class Watchlist extends Model
     }
 
     public static function expensesInRange($teamId, $startDate, $endDate, $listData) {
+        $filterType = $listData['type'];
+
         return Transaction::byTeam($teamId)
         ->verified()
         ->expenses()
         ->inDateFrame($startDate, $endDate)
         ->select(DB::raw('SUM(total) as total, currency_code'))
-        ->categories($listData['input'])
+        ->$filterType($listData['input'])
         ->first();
+    }
+
+    public function transactions() {
+
+    }
+
+    public function projected() {
+
     }
 }

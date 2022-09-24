@@ -54,6 +54,10 @@ trait TransactionTrait {
     public function scopeCategories($query, array $categories) {
         return $query->whereIn("category_id", $categories);
     }
+
+    public function scopePayees($query, array $payees) {
+        return $query->whereIn("payee_id", $payees);
+    }
 }
 
 

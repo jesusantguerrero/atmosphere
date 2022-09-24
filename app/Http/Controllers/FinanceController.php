@@ -72,18 +72,18 @@ class FinanceController extends InertiaController {
             [
                 "name" => 'Essentials',
                 "type" => "categories",
-                "input" => [4, 14, 25]
+                "input" => [4,8, 10, 14,19, 28, 25]
             ],
             [
                 "name" => 'Subscriptions',
                 "type" => "categories",
-                "input" => [22, 23]
+                "input" => [22, 23, 11]
             ],
-            // [
-            //     "name" => 'Carolina',
-            //     "type" => "payee",
-            //     "input" => []
-            // ],
+            [
+                "name" => 'True Family Expenses',
+                "type" => "payees",
+                "input" => [2, 4, 11]
+            ],
             // [
             //     "name" => 'tags',
             //     'type' => 'tags',

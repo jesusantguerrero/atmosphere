@@ -9,7 +9,12 @@
 {
     label: 'Budget',
     url: '/budgets'
-}, {
+},
+{
+    label: 'Watchlist',
+    url: '/finance/watchlist'
+},
+ {
     label: 'Trends',
     url: '/trends'
 }]">
