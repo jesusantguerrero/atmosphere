@@ -11,9 +11,9 @@
             next-mode="month"
           />
           <div>
-            <AtButton class="text-white rounded-md bg-primary w-48">
+            <LogerButton  variant="inverse">
                 Import Transactions
-            </AtButton>
+            </LogerButton>
           </div>
         </template>
       </FinanceSectionNav>
@@ -130,8 +130,9 @@ import SectionCard from "@/Components/molecules/SectionCard.vue";
 import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
 import { useSelect } from "@/utils/useSelects";
 import formatMoney from "@/utils/formatMoney";
-import { useServerSearch } from "./useServerSearch";
+import { useServerSearch } from "@/composables/useServerSearch";
 import CategoryTrendsPreview from "@/Components/finance/CategoryTrendsPreview.vue";
+import LogerButton from "@/Components/atoms/LogerButton.vue";
 
 const { serverSearchOptions } = toRefs(props);
 const {state: pageState} = useServerSearch(serverSearchOptions);

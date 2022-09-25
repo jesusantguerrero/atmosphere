@@ -15,9 +15,7 @@
               controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
               next-mode="month"
             />
-            <AtButton class="text-white rounded-md w-72 bg-primary"
-              >Import Transactions</AtButton
-            >
+            <LogerButton variant="inverse">Import Budget</LogerButton>
           </div>
         </template>
       </FinanceSectionNav>
@@ -123,8 +121,9 @@ import BudgetGroupItem from "@/Components/molecules/BudgetGroupItem.vue";
 import BudgetItem from "@/Components/molecules/BudgetItem.vue";
 import BudgetGroupForm from "@/Components/molecules/BudgetGroupForm.vue";
 import BalanceAssign from "@/Components/atoms/BalanceAssign.vue";
+import LogerButton from "@/Components/atoms/LogerButton.vue";
 
-import { useServerSearch } from "./useServerSearch";
+import { useServerSearch } from "@/composables/useServerSearch";
 import { useBudget } from "@/domains/budget";
 import { createBudgetCategory } from "@/domains/budget/createBudgetCategory";
 
@@ -155,7 +154,7 @@ const {state: pageState }= useServerSearch(serverSearchOptions);
 const { budgets } = toRefs(props);
 const { readyToAssign, visibleCategories, overspentCategories, toggleOverspent, overspentFilter } = useBudget(budgets);
 const isOverspentFilterShown = computed(() => {
-    return overspentFilter.value || overspentCategories.value > 0
+    return overspentFilter.value || overspentCategories.value.length > 0
 })
 
 const state = reactive({

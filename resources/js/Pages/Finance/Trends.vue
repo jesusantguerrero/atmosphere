@@ -44,7 +44,7 @@
 
       <template #panel>
             <div class="divide-y-2">
-                <Link :href="trend.link" v-for="trend in trends" class="block py-4 px-2 hover:bg-base-lvl-3 cursor-pointer">
+                <Link :href="trend.link" v-for="trend in trends" :key="trend.name" class="block py-4 px-2 hover:bg-base-lvl-3 cursor-pointer">
                     {{ trend.name }}
                 </Link>
             </div>
@@ -62,12 +62,12 @@ import { Link } from "@inertiajs/inertia-vue3";
 import AppLayout from "@/Layouts/AppLayout.vue";
 import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
 import DonutChart from "@/Components/organisms/DonutChart.vue";
-import ChartNetWorth from "../../Components/ChartNetworth.vue";
-import IncomeExpenses from "../../Components/IncomeExpenses.vue";
+import ChartNetWorth from "@/Components/ChartNetworth.vue";
+import IncomeExpenses from "@/Components/IncomeExpenses.vue";
 import SectionCard from "@/Components/molecules/SectionCard.vue";
 import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
 
-import { useServerSearch } from "./useServerSearch";
+import { useServerSearch } from "@/composables/useServerSearch";
 
 const props = defineProps({
   user: {

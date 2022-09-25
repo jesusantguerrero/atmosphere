@@ -11,8 +11,6 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class BudgetMonthController extends Controller
 {
-
-
     public function assign(Request $request, $categoryId, $month)
     {
         $category = Category::find($categoryId);

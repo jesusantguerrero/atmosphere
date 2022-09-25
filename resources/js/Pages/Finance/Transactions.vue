@@ -11,6 +11,9 @@
               controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
               next-mode="month"
             />
+            <LogerButton  variant="inverse">
+                Import Transactions
+            </LogerButton>
             <FiltersPopover
                 :options="{
                     filters: {
@@ -53,10 +56,11 @@ import TransactionSearch from "@/Components/templates/TransactionSearch.vue";
 import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
 import TransactionTemplate from "@/Components/templates/TransactionTemplate.vue";
 import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
+import DraftButtons from "@/Components/DraftButtons.vue";
+import LogerButton from "@/Components/atoms/LogerButton.vue";
 
 import { useTransactionModal } from "@/domains/transactions";
-import { useServerSearch } from "./useServerSearch";
-import DraftButtons from "./DraftButtons.vue";
+import { useServerSearch } from "@/composables/useServerSearch";
 
 const { openTransferModal } = useTransactionModal();
 
