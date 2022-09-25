@@ -11,40 +11,52 @@
             next-mode="month"
           />
           <div>
-            <AtButton class="w-48 text-white rounded-md bg-primary">
-                Add WatchList
-            </AtButton>
+            <LogerButton variant="inverse" @click="isModalOpen=!isModalOpen"> Add WatchList </LogerButton>
           </div>
         </template>
       </FinanceSectionNav>
     </template>
 
     <FinanceTemplate title="Finance" :accounts="accounts" ref="financeTemplateRef">
-      <section class="w-full">
+      <article class="w-full">
         <header class="mt-5">
-            <SectionTitle type="secondary">May </SectionTitle>
+          <SectionTitle type="secondary">May </SectionTitle>
         </header>
 
         <section class="grid grid-cols-2 gap-4 mt-4">
-            <WatchedItem v-for="watchedItem in data" :key="watchedItem.name" :item="watchedItem" />
+          <WatchedItem
+            v-for="watchedItem in data"
+            :key="watchedItem.name"
+            :item="watchedItem"
+          />
         </section>
-      </section>
+      </article>
+
+      <WatchlistModal
+        v-if="isModalOpen"
+        v-model:show="isModalOpen"
+        :form-data="resourceToEdit"
+      />
     </FinanceTemplate>
   </AppLayout>
 </template>
 
 <script setup>
-import { toRefs } from "vue";
+import { ref, toRefs } from "vue";
 import { AtButton, AtDatePager } from "atmosphere-ui";
+
 import AppLayout from "@/Layouts/AppLayout.vue";
 import SectionTitle from "@/Components/atoms/SectionTitle.vue";
 import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
 import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
-import { useServerSearch } from "./useServerSearch";
-import WatchedItem from "./watchedItem.vue";
+import WatchedItem from "@/Components/WatchedItem.vue";
+import LogerButton from "@/Components/atoms/LogerButton.vue";
+import WatchlistModal from "@/Components/WatchlistModal.vue";
+
+import { useServerSearch } from "@/composables/useServerSearch";
 
 const { serverSearchOptions } = toRefs(props);
-const {state: pageState} = useServerSearch(serverSearchOptions);
+const { state: pageState } = useServerSearch(serverSearchOptions);
 
 const props = defineProps({
   user: {
@@ -55,7 +67,7 @@ const props = defineProps({
     type: Array,
     default() {
       return [];
-    }
+    },
   },
   categories: {
     type: Array,
@@ -75,4 +87,6 @@ const props = defineProps({
   },
 });
 
+const isModalOpen = ref(false);
+const resourceToEdit = ref(null);
 </script>

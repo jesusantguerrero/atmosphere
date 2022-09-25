@@ -2,9 +2,6 @@
 
 namespace App\Domains\Transaction\Models;
 
-use App\Domains\AppCore\Models\Planner;
-use Insane\Journal\Models\Core\Category;
-use App\Domains\Transaction\Traits\TransactionTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -21,8 +18,19 @@ class Watchlist extends Model
 
     const TYPE_PAYEE = 'payees';
     const TYPE_CATEGORY = 'categories';
-    const TYPE_CATEGORY_GROUP = 'categoryGroups';
+    const TYPE_CATEGORY_GROUP = 'groups';
     const TYPE_LABELS = 'labels';
+
+    protected $fillable = ['team_id', 'user_id', 'name', 'input', 'type', 'target'];
+
+     /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array
+    */
+    protected $casts = [
+        'input' => 'array',
+    ];
 
     public static function getData($teamId, $listData, $startDate = null, $endDate = null) {
         $endDate = Carbon::now()->endOfMonth()->format('Y-m-d');

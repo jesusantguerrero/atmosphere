@@ -2,13 +2,13 @@
 
 namespace Freesgen\Atmosphere\Http;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 trait Querify
 {
 
     private $modelQuery;
-    private $whereRaw;
     private $request;
     protected $authorizedUser = true;
     protected $authorizedTeam = true;
@@ -26,11 +26,11 @@ trait Querify
         $filters = $queryParams['filter'] ?? [];
 
         $this->modelQuery = $this->model::query();
-        $this->whereRaw = $this->getSearch($search);
         $this->getRelationships($relationships);
         $this->getSorts($sorts);
         $this->getFilters($filters);
-        
+        $this->getSearch($search);
+
         $this->serverParams = [
             'filters' => $filters,
             'limit' => $limit,
@@ -49,6 +49,10 @@ trait Querify
 
         if ($this->authorizedUser) {
            $this->modelQuery->where(["user_id" => $request->user()->id]);
+        }
+
+        if ($this->whereRaw) {
+            $this->modelQuery->where(DB::raw($this->whereRaw));
         }
 
         if ($this->authorizedTeam) {
@@ -74,7 +78,7 @@ trait Querify
                 $whereRaw .= " or $field like '%$search%'";
             }
         }
-
+        $this->whereRaw = $whereRaw;
         return $whereRaw;
     }
 
