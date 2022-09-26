@@ -123,6 +123,7 @@ import {
   transactionDBToTransaction,
   plannedDBToTransaction,
   categoryDBToTransaction,
+getVariances,
 } from "@/domains/transactions";
 import BudgetProgress from "@/Components/molecules/BudgetProgress.vue";
 import DonutChart from "@/Components/organisms/DonutChart.vue";
@@ -210,13 +211,6 @@ const props = defineProps({
 const { categoryOptions: transformCategoryOptions } = useSelect();
 transformCategoryOptions(props.categories, "accounts", "categoryOptions");
 transformCategoryOptions(props.accounts, "accounts", "accountsOptions");
-const getVariances = (current, last) => {
-  if (last === 0) {
-    return 0;
-  }
-  const variance = ((current - last) / last) * 100;
-  return variance.toFixed(2);
-};
 
 const incomeVariance = computed(() => {
   return getVariances(props.income, props.lastMonthIncome);

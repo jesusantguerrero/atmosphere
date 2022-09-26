@@ -38,10 +38,10 @@
                     <div class="px-4 py-2 space-y-4 rounded-md shadow-xl cursor-pointer min-h-min bg-base-lvl-3">
                         <template v-if="meals.data.length">
                             <div v-for="plannedMeal in meals.data" :key="plannedMeal.id">
-                                <h4 class="font-bold text-body-1">
+                                <h4 class="font-bold text-body-1 capitalize">
                                     {{ plannedMeal.name }}
                                 </h4>
-                                <small class="text-primary">{{ plannedMeal.mealTypeName }}</small>
+                                <small class="text-primary capitalize">{{ plannedMeal.mealTypeName }}</small>
                             </div>
                         </template>
                         <div v-else class="py-1.5 text-center">

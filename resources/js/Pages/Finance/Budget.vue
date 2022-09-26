@@ -188,6 +188,10 @@ const deleteBudget = (budget) => {
   });
 };
 
+const onBudgetItemSaved = () => {
+
+}
+
 const saveBudgetCategory = (parentId, callback) => {
     if (!categoryForm.value.processing) {
         createBudgetCategory(state.categoryForm, parentId, callback);

@@ -2,9 +2,6 @@
 <SectionNav :sections="[{
     label: 'Overview',
     url: '/finance'
-}, {
-    label: 'Transactions',
-    url: '/finance/transactions'
 },
 {
     label: 'Budget',
@@ -13,6 +10,10 @@
 {
     label: 'Watchlist',
     url: '/finance/watchlist'
+},
+{
+    label: 'Transactions',
+    url: '/finance/transactions'
 },
  {
     label: 'Trends',

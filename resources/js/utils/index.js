@@ -1,4 +1,5 @@
 import { format, parseISO, startOfDay } from "date-fns"
+export * from "./formatMoney";
 
 export const targetTypes = [
     {
@@ -96,5 +97,14 @@ export const getDateFromIso = (isoDateString) => {
 export const generateRandomColor = () => `#${Math.floor(Math.random() * 16777215).toString(16)}`;
 
 export const formatMonth = (dateString) => {
-    return format(parseISO(dateString), 'MMMM')
+    try {
+        return format(parseISO(dateString), 'MMMM')
+    } catch (err) {
+        return dateString
+    }
 }
+
+export const formatDate = (dateISOString, placeholder) => {
+    if (!dateISOString && placeholder) return placeholder;
+    return dateISOString && format(parseISO(dateISOString + "T00:00:00"), "MMM dd, yyyy");
+};

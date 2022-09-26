@@ -20,10 +20,10 @@
     <FinanceTemplate title="Finance" :accounts="accounts" ref="financeTemplateRef">
       <article class="w-full">
         <header class="mt-5">
-          <SectionTitle type="secondary">May </SectionTitle>
+          <SectionTitle type="secondary"> {{ formatMonth(pageState.dates.startDate) }} </SectionTitle>
         </header>
 
-        <section class="grid grid-cols-2 gap-4 mt-4">
+        <section class="grid grid-cols-3 gap-4 mt-4">
           <WatchedItem
             v-for="watchedItem in data"
             :key="watchedItem.name"
@@ -54,6 +54,7 @@ import LogerButton from "@/Components/atoms/LogerButton.vue";
 import WatchlistModal from "@/Components/WatchlistModal.vue";
 
 import { useServerSearch } from "@/composables/useServerSearch";
+import { formatMonth } from "@/utils";
 
 const { serverSearchOptions } = toRefs(props);
 const { state: pageState } = useServerSearch(serverSearchOptions);

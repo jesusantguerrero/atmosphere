@@ -53,7 +53,7 @@ class Watchlist extends Model
         ->verified()
         ->expenses()
         ->inDateFrame($startDate, $endDate)
-        ->select(DB::raw('SUM(total) as total, currency_code'))
+        ->select(DB::raw('SUM(total) as total, currency_code, count(id) as transactionsCount, max(date) as lastTransactionDate'))
         ->$filterType($listData['input'])
         ->first();
     }
