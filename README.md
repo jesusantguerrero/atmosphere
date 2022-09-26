@@ -14,33 +14,41 @@
 	</strong>
 </p> -->
 > Status: Alpha
-codename: Atmosphere
+
+> Codename: Atmosphere
 ## About Loger
 
-Loger (House in french) as family managing home is almost like being president of a company, there's a lot of things going on and that you have to keep in mind things like **budget**, **expenses**, **subscriptions** to keep your financial habits healthy managing goals like **emergency fund** or planning your **meals** and have a grocery list generated with the things you need well, you get the point, all are part of things that we have to deal with but we do it on our minds use different software and then give up. Loger aims to be a central point to manage all that an more.
+Loger (House in french) as family managing home is almost like being CEO 
+of a company. There's a lot of things going on and that you have to keep in mind.
+Things like **budget**, **expenses**, **subscriptions** to keep healthy financial habits 
+managing goals/savings like **emergency fund** or planning your next vacations or Christmas;
+having a **Meal Plan**, grocery list generated with the things you need... well, you get the point.
+
+All the things mentioned above are part of our family/personal routine. We do it in our minds or paper
+or if you are like me with different software. Loger aims to be a central point to manage all that an more.
 
 ## ✨Features:
 
 Loger is organized in "concerns" by the moment it have 4
 
 * ### 💵 Finance:
-    - Monthly Budget
-    - Accounts
-    - Transactions
-    - Statistics/Net Worth
-    - Scheduled Transactions*
+    - [x] Monthly Budget
+    - [x] Watchlists
+    - [x] Accounts
+    - [x] Transactions
+    - [x] Statistics/Net Worth
+    - [ ] Scheduled Transactions*
 
 * ### 🍗 Meal Planner
-    - Recipes   
-    - Ingredients
-    - Meal Planner
-    - Random Meal Generator
-    - Menus*
+    - [x] Recipes   
+    - [x] Ingredients
+    - [x] Meal Planner
+    - [x] Random Meal Generator
+    - [ ] Menus*
 
 * ### 👨‍👩‍👧 Relationship**
     I don't want to automate/digitalize the humanity of a relationship here but save reminders of activities that would strengthen it like:
 
-    - Interesting movies to watch
     - Goals/Projects like travels and activities 
 
 * ### 🏡Home/Family Projects**
