@@ -1,5 +1,5 @@
 <template>
- <AtButton class="border transition font-bold rounded-md" :class="[typeClasses]">
+ <AtButton class="border transition font-bold rounded-md min-w-max inline-block" :class="[typeClasses]">
     <slot />
  </AtButton>
 </template>

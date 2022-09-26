@@ -3,7 +3,9 @@
 namespace Freesgen\Atmosphere\Http;
 
 use App\Http\Controllers\Controller as BaseController;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Redirect;
@@ -77,7 +79,7 @@ class InertiaController extends BaseController {
         }
     }
 
-    protected function getIndexProps(Request $request) {
+    protected function getIndexProps(Request $request, Collection|ResourceCollection $resources): array {
         return [];
     }
 

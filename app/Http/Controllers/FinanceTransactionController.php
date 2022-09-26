@@ -40,7 +40,7 @@ class FinanceTransactionController extends InertiaController {
         ];
     }
 
-    public function getIndexProps(Request $request, $accountId = null) {
+    public function getIndexProps(Request $request, $accountId = null): array {
         return  [
             "sectionTitle" => "Finance Transactions",
         ];

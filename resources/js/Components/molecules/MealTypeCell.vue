@@ -13,6 +13,7 @@
         tag
         custom-label="name"
         track-id="id"
+        :bordered="false"
         :placeholder="`Add ${mealType.name}`"
         endpoint="/api/recipes"
       />

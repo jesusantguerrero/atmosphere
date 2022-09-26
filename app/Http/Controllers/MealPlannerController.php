@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Domains\AppCore\Models\Planner;
 use App\Domains\Meal\Models\Meal;
 use App\Domains\Meal\Models\MealType;
+use App\Domains\Meal\Services\MealService;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
 
@@ -25,45 +26,22 @@ class MealPlannerController extends InertiaController
         $this->resourceName = "mealPlans";
     }
 
-    function getIngredients($plans) {
-        $ingredients = [];
-        foreach ($plans as $plan) {
-            $mealIngredients = $plan->dateable->ingredients;
-            if ($mealIngredients && count($mealIngredients)) {
-                foreach ($mealIngredients as $product) {
-                    if (array_key_exists($product->name, $ingredients)) {
-                        $ingredients[$product->name] = array_merge($ingredients[$product->name], [
-                            'quantity' => $ingredients[$product->name]['quantity']++
-                        ]);
-                    } else {
-                        $ingredients[$product->name] = [
-                            'quantity' => $product->quantity,
-                            'unit' => $product->unit
-                        ];
-                    }
-                }
-            }
-        }
-
-        return $ingredients;
-    }
-
-    protected function getIndexProps(Request $request, $resource = null)
+    protected function getIndexProps(Request $request, $resources = null): array
     {
         $mode = $queryParams['mode'] ?? '';
         $teamId = Auth()->user()->current_team_id;
 
         return [
+            'mealTypes' => MealType::where('team_id', $teamId)->get(),
             'mode' => $mode,
-            'ingredients' => function () use ($resource) {
-                return $this->getIngredients($resource);
+            'ingredients' => function () use ($resources) {
+                return MealService::getIngredients($resources);
             },
             'meals' => function () use ($request) {
                 return Meal::where([
                     'team_id' => $request->user()->current_team_id
                 ])->get();
             },
-            'mealTypes' => MealType::where('team_id', $teamId)->get()
         ];
     }
 }

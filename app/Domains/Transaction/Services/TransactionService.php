@@ -178,17 +178,21 @@ class TransactionService {
             return [$item->name => $item];
         });
 
+        $dates = $expensesGroup->keys();
+        $datesCount = count($dates);
 
         return
         [
-            "dateUnits" => $expensesGroup->keys(),
+            "dateUnits" => $dates,
             "incomeCategories" => $incomeCategories,
-            "incomes" => $incomeCategoriesGroup->map(function ($monthItems) {
+            "incomes" => $incomeCategoriesGroup->map(function ($monthItems) use ($datesCount) {
+                $total = $monthItems->sum('total');
                 return array_merge([
                     'id' => $monthItems->first()->id,
                     'name' => $monthItems->first()->name,
-                    'avg' => Money::of($monthItems->avg('total'), 'USD', null, RoundingMode::HALF_EVEN)->getAmount(),
-                    'total' => Money::of($monthItems->sum('total'), 'USD', null, RoundingMode::HALF_EVEN)->getAmount()
+                    'avg' => Money::of($total, 'USD', null, RoundingMode::HALF_EVEN)
+                    ->dividedBy($datesCount, RoundingMode::HALF_EVEN)->getAmount(),
+                    'total' => Money::of($total, 'USD', null, RoundingMode::HALF_EVEN)->getAmount()
                     ],
                     $monthItems->mapWithKeys(function($item) {
                         return [$item->date => $item->total];
@@ -196,15 +200,17 @@ class TransactionService {
                 );
             }),
             "expenseCategories" => $expensesCategories->groupBy('group_name'),
-            "expenses"=> $expensesCategoriesGroup->map(function ($monthItems) {
+            "expenses"=> $expensesCategoriesGroup->map(function ($monthItems) use ($datesCount) {
+                $total = $monthItems->sum('total');
                 return array_merge([
                     'id' => $monthItems->first()->id,
                     'group_id' => $monthItems->first()->group_id,
                     'name' => $monthItems->first()->name,
                     'group_name' => $monthItems->first()->group_name,
                     'index_field' => $monthItems->first()->index_field,
-                    'avg' => Money::of($monthItems->avg('total'), 'USD', null, RoundingMode::HALF_EVEN)->getAmount(),
-                    'total' => Money::of($monthItems->sum('total'), 'USD', null, RoundingMode::HALF_EVEN)->getAmount()
+                    'avg' => Money::of($total, 'USD', null, RoundingMode::HALF_EVEN)
+                    ->dividedBy($datesCount, RoundingMode::HALF_EVEN)->getAmount(),
+                    'total' => Money::of($total, 'USD', null, RoundingMode::HALF_EVEN)->getAmount()
                     ],
                     $monthItems->mapWithKeys(function($item) {
                         return [$item->date => $item->total];

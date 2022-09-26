@@ -30,20 +30,15 @@ class BudgetCategoryController extends InertiaController
         $this->includes = ['subCategories', 'subCategories.budget', 'subCategories.budgets'];
         $this->filters = [
             'parent_id' => '$null',
-            'resource_type' => 'transactions'
+            'resource_type' => 'transactions',
+            'data' => date('Y-m-01')
         ];
+        $this->resourceName= "budgets";
     }
 
-    protected function getIndexProps(Request $request)
+    protected function parser($results)
     {
-        $queryParams = $request->query() ?? [];
-        $queryParams['limit'] = $queryParams['limit'] ?? 50;
-        $queryParams['date'] = $queryParams['date'] ?? date('Y-m-01');
-        $budget = CategoryGroupCollection::collection($this->getModelQuery($request));
-
-        return [
-            'budgets' => $budget
-        ];
+        return CategoryGroupCollection::collection($results);
     }
 
     protected function validateDelete(Request $request, $resource)

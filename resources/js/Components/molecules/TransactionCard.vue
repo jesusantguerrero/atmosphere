@@ -62,11 +62,10 @@
 <script setup>
 import { computed } from "vue";
 import { NProgress, NDropdown } from "naive-ui";
-import formatMoney from "../../utils/formatMoney";
 import NumberHider from "./NumberHider.vue";
-import { parseISO, format } from "date-fns";
 import LogerTabButton from "../atoms/LogerTabButton.vue";
 
+import { formatDate, formatMoney } from "@/utils";
 
 const props = defineProps({
   title: String,
@@ -94,10 +93,6 @@ const handleSelect = () => {
   if (props.allowSelect) {
     emit("selected");
   }
-};
-
-const formatDate = (dateISOString) => {
-  return dateISOString && format(parseISO(dateISOString + "T00:00:00"), "MMM dd, yyyy");
 };
 
 const options = computed(() => {

@@ -5,7 +5,6 @@ namespace App\Domains\Transaction\Actions;
 use App\Domains\Transaction\Models\LinkedTransaction;
 use App\Domains\Transaction\Models\Transaction;
 use Exception;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class FindLinkedTransactions {
@@ -19,18 +18,10 @@ class FindLinkedTransactions {
     ) {}
 
     public function handle() {
-        $transactions = Transaction::select('id')->where([
-            'team_id' => $this->teamId,
+        $transactions = Transaction::matchedFor($this->teamId,[
             'total' => $this->transactionData['total'],
-            'status' => Transaction::STATUS_VERIFIED
-        ])
-        ->whereRaw("date >= SUBDATE(?, interval ? DAY) and date <= ADDDATE(?, INTERVAL ? DAY)",
-        [
-            $this->transactionData['date'],
-            self::DATE_BEFORE,
-            $this->transactionData['date'],
-            self::DATE_AFTER
-        ])->get();
+            'date' => $this->transactionData['date'],
+        ]);
 
         if (count($transactions)) {
             foreach ($transactions as $transaction) {

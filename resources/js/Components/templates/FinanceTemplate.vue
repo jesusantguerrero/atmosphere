@@ -1,11 +1,11 @@
 <template>
-    <div class="flex pb-20 pt-16 mx-auto space-x-2 max-w-screen-2xl">
+    <div class="flex pb-20 pt-16 mx-auto space-x-2 max-w-screen-2xl relative">
         <div class="w-full pr-5 md:w-10/12 md:pl-8">
             <slot />
         </div>
 
         <div class="hidden md:block relative h-screen px-2" :class="panelStyles">
-            <section>
+            <section class="fixed">
                 <slot name="panel">
                     <SectionTitle class="flex items-center pl-5 mt-5" type="secondary">
                         <span>

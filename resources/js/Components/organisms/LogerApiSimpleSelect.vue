@@ -24,7 +24,7 @@
 <script setup>
 import { NSelect } from "naive-ui";
 import { ref } from "vue";
-import { debounce } from "lodash";
+import { debounce, orderBy } from "lodash";
 
 const props = defineProps({
     modelValue: {
@@ -63,7 +63,7 @@ const resultParser = (apiOptions, query) => {
     let includeCustom = true;
     const originalMap = apiOptions.map(option => {
         const optionLabel = props.customLabel ? option[props.customLabel] : option.label;
-        if (includeCustom && optionLabel.includes(query)) includeCustom = false;
+        if (includeCustom && optionLabel.toLowerCase().includes(query)) includeCustom = false;
         return {
             label: optionLabel,
             value: props.trackId ? option[props.trackId] : option.id
@@ -86,8 +86,8 @@ const handleSearch = debounce((query) => {
         return;
     }
     isLoading.value = true
-    window.axios.get(`${props.endpoint}?q=${query}`).then(({ data }) => {
-        options.value = resultParser(data?.data || data, query);
+    window.axios.get(`${props.endpoint}?search=${query}`).then(({ data }) => {
+        options.value = resultParser(data?.data || data, query.toLowerCase());
         isLoading.value = false
     })
 }, 200)

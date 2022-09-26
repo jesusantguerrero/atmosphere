@@ -13,12 +13,13 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('themes', function (Blueprint $table) {
+        Schema::create('watchlists', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('team_id');
+            $table->foreignId('user_id');
             $table->string('name');
-            $table->string('label');
-            $table->enum('base', ['light', 'dark']);
-            $table->json('config');
+            $table->enum('type', ['categories', 'payees', 'tags', 'groups']);
+            $table->json('input')->nullable();
             $table->timestamps();
         });
     }
@@ -30,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('themes');
+        Schema::dropIfExists('watchlists');
     }
 };

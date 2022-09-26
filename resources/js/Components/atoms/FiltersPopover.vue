@@ -2,42 +2,14 @@
 <div class="w-full text-right">
     <NPopover trigger="manual" placement="bottom"  @update:show="handleUpdateShow" :show="showPopover">
         <template #trigger>
-            <span
-                class="px-5 py-1 inline-block cursor-pointer rounded-3xl text-body-1 min-w-max"
-                :class="badgeClass"
-                @click="toggle"
+            <button
+                class="px-5 py-1 cursor-pointer rounded-3xl text-body-1"
             >
-                {{ formatter(value) }}
-            </span>
+                <slot />
+            </button>
         </template>
         <div>
-            <AtField label="Move">
-                <LogerInput v-model="form.amount" />
-            </AtField>
-            <AtField label="To" v-if="status == BALANCE_STATUS.available">
-                <NSelect
-                    filterable
-                    clearable
-                    size="large"
-                    v-model:value="form.destination_category_id"
-                    :default-expand-all="true"
-                    :options="categoryOptions"
-                />
-            </AtField>
-             <AtField label="From" v-else>
-                <NSelect
-                    filterable
-                    clearable
-                    size="large"
-                    v-model:value="form.source_category_id"
-                    :default-expand-all="true"
-                    :options="categoryOptions"
-                />
-            </AtField>
-            <div class="flex space-x-2 justify-end items-center">
-                <AtButton class="text-body-1" @click="clear">Cancel</AtButton>
-                <AtButton class="bg-success text-white rounded-md" @click="onAssignBudget()"> Save</AtButton>
-            </div>
+            
         </div>
     </NPopover>
 </div>
@@ -50,7 +22,7 @@
     import { AtField, AtButton } from "atmosphere-ui";
 
     import LogerInput from "./LogerInput.vue";
-import { format, startOfMonth } from "date-fns";
+    import { format, startOfMonth } from "date-fns";
 
     const props = defineProps({
         value: {

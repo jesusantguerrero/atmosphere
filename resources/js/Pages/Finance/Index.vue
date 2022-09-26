@@ -11,9 +11,9 @@
             next-mode="month"
           />
           <div>
-            <AtButton class="text-white rounded-md bg-primary w-48">
+            <LogerButton  variant="inverse">
                 Import Transactions
-            </AtButton>
+            </LogerButton>
           </div>
         </template>
       </FinanceSectionNav>
@@ -123,6 +123,7 @@ import {
   transactionDBToTransaction,
   plannedDBToTransaction,
   categoryDBToTransaction,
+getVariances,
 } from "@/domains/transactions";
 import BudgetProgress from "@/Components/molecules/BudgetProgress.vue";
 import DonutChart from "@/Components/organisms/DonutChart.vue";
@@ -130,8 +131,9 @@ import SectionCard from "@/Components/molecules/SectionCard.vue";
 import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
 import { useSelect } from "@/utils/useSelects";
 import formatMoney from "@/utils/formatMoney";
-import { useServerSearch } from "./useServerSearch";
+import { useServerSearch } from "@/composables/useServerSearch";
 import CategoryTrendsPreview from "@/Components/finance/CategoryTrendsPreview.vue";
+import LogerButton from "@/Components/atoms/LogerButton.vue";
 
 const { serverSearchOptions } = toRefs(props);
 const {state: pageState} = useServerSearch(serverSearchOptions);
@@ -209,13 +211,6 @@ const props = defineProps({
 const { categoryOptions: transformCategoryOptions } = useSelect();
 transformCategoryOptions(props.categories, "accounts", "categoryOptions");
 transformCategoryOptions(props.accounts, "accounts", "accountsOptions");
-const getVariances = (current, last) => {
-  if (last === 0) {
-    return 0;
-  }
-  const variance = ((current - last) / last) * 100;
-  return variance.toFixed(2);
-};
 
 const incomeVariance = computed(() => {
   return getVariances(props.income, props.lastMonthIncome);

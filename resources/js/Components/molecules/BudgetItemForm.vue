@@ -1,8 +1,13 @@
 <template>
     <section class="px-5 pt-2 text-left border-b rounded-md shadow-xl bg-base-lvl-3" :class="{'flex': !full }">
-        <header class="flex items-center justify-between mt-2 mb-8">
-            <ColorSelector v-model="category.color" />
-            <AtInput v-model="category.name" class="border-transparent cursor-pointer hover:text-primary hover:border-primary" rounded />
+        <header class="flex items-center justify-between mt-2 mb-2">
+            <AtInput v-model="category.name" class="border-transparent cursor-pointer hover:text-primary hover:border-primary" rounded>
+                <template #prefix>
+                    <div class=" px-1 flex items-center justify-center">
+                        <ColorSelector v-model="form.color" />
+                    </div>
+                </template>
+            </AtInput>
             <AtButton class="block h-full text-red-500" @click="$emit('delete')">
                 <i class="fa fa-trash"></i>
             </AtButton>
@@ -21,7 +26,12 @@
         </AtField>
 
         <AtField label="Amount" errors="errors" field="amount">
-            <AtInput type="number" v-model="form.amount">
+            <AtInput :number-format="true" v-model="form.amount">
+                <template #prefix>
+                    <span class="flex items-center pl-2">
+                        RD$
+                    </span>
+                </template>
                 <template #suffix>
                     <NDropdown trigger="click" :options="options" key-field="name" :on-select="handleOptions" >
                         <LogerTabButton> <i class="fa fa-ellipsis-v"></i></LogerTabButton>
@@ -34,7 +44,7 @@
             <AtButtonGroup
                 v-model="form.frequency"
                 :options="state.frequencies"
-                class="text-lg"
+                class="text-sm"
                 selected-class="text-white bg-primary"
             />
 
@@ -179,17 +189,19 @@
         }
     })
 
-    watch(() =>
-        props.item,
-        () => {
-            if (props.item) {
+    watch(
+        () => props.item,
+        (item) => {
+            if (item) {
+                state.form.reset()
                 Object.keys(state.form.data()).forEach(key => {
-                    state.form[key] = props.item[key] || state.form[key]
+                    state.form[key] = item[key] || state.form[key]
                 })
             } else {
                 state.form.reset()
             }
-    }), { deep: true, immediate: true }
+        },
+        { deep: true, immediate: true });
 
     const submit = () => {
         const methods = {
@@ -206,11 +218,7 @@
         state.form.transform((data) => ({
             ...data,
             parent_id: data.parent_id || state.parentId,
-        }))[endpoint.method](endpoint.url, {
-            onSuccess: () => {
-                state.form.reset();
-            }
-        })
+        }))[endpoint.method](endpoint.url)
     }
 
     const { selectedSpan } =  useDatePager({

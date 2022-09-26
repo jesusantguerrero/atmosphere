@@ -1,4 +1,4 @@
-const formatMoney = (value, symbol = "DOP") => {
+export const formatMoney = (value, symbol = "DOP") => {
     try {
         return new Intl.NumberFormat("en-US", {
           style: "currency",
@@ -9,4 +9,5 @@ const formatMoney = (value, symbol = "DOP") => {
         return value;
     }
 }
+
 export default formatMoney;

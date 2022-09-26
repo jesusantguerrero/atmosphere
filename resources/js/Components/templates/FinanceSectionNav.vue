@@ -2,14 +2,20 @@
 <SectionNav :sections="[{
     label: 'Overview',
     url: '/finance'
-}, {
-    label: 'Transactions',
-    url: '/finance/transactions'
 },
 {
     label: 'Budget',
     url: '/budgets'
-}, {
+},
+{
+    label: 'Watchlist',
+    url: '/finance/watchlist'
+},
+{
+    label: 'Transactions',
+    url: '/finance/transactions'
+},
+ {
     label: 'Trends',
     url: '/trends'
 }]">

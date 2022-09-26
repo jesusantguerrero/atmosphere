@@ -3,8 +3,10 @@
         "resources/lang"
     ],
     "cSpell.words": [
+        "composables",
         "Dinero",
         "Loger",
-        "Remotr"
+        "Remotr",
+        "watchlist"
     ]
 }

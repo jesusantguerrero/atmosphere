@@ -1,6 +1,6 @@
 <template>
 <article>
-    <header class="flex justify-between py-2 px-4">
+    <header class="flex justify-between py-2 px-4 text-body-1/80">
         <div class="flex items-center space-x-2">
             <div class="cursor-grab">
                 <IconDrag class="handle" />
@@ -8,8 +8,13 @@
             <LogerTabButton @click="isExpanded=!isExpanded">
                 <i class="fa" :class="toggleIcon" />
             </LogerTabButton>
-            <div>
-                <h4> {{ item.name }}</h4>
+            <div class="flex items-center">
+                <h4 class="relative font-bold">
+                    {{ item.name }}
+                    <div
+                        v-if="item.hasOverspent"
+                        class="absolute -top-1 -right-2 h-2 w-2 bg-error rounded-full ring ring-error/20 animate-pulse" />
+                </h4>
             </div>
         </div>
         <div class="flex items-center space-x-2">

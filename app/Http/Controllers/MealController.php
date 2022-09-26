@@ -27,22 +27,22 @@ class MealController extends InertiaController
             'name' => 'required'
         ];
         $this->includes = ['ingredients', 'mealType'];
-        $this->filters = [];
+        $this->filters = [
+            'date' => date('Y-m-01')
+        ];
     }
 
-    protected function getIndexProps(Request $request)
-    {
-        $queryParams = $request->query() ?? [];
-        $queryParams['limit'] = $queryParams['limit'] ?? 50;
-        $queryParams['date'] = $queryParams['date'] ?? date('Y-m-01');
-        $teamId = $request->user()->current_team_id;
+    protected function parser($resources) {
+        return MealResource::collection($resources);
+    }
 
+    protected function getIndexProps(Request $request, $resources): array
+    {
         return [
             "mealTypes" => MealType::where([
-                "team_id" => $teamId,
-                "user_id" => $request->user()->id
+                "team_id" => $request->user()->current_team_id,
+                "user_id" => $request->user()->current_team_id
             ])->get(),
-            "meals" => MealResource::collection($this->getModelQuery($request))
         ];
     }
 

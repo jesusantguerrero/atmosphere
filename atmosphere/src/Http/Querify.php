@@ -2,6 +2,7 @@
 
 namespace Freesgen\Atmosphere\Http;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 trait Querify
@@ -26,11 +27,11 @@ trait Querify
         $filters = $queryParams['filter'] ?? [];
 
         $this->modelQuery = $this->model::query();
-        $this->whereRaw = $this->getSearch($search);
         $this->getRelationships($relationships);
         $this->getSorts($sorts);
         $this->getFilters($filters);
-        
+        $this->getSearch($search);
+
         $this->serverParams = [
             'filters' => $filters,
             'limit' => $limit,
@@ -51,6 +52,10 @@ trait Querify
            $this->modelQuery->where(["user_id" => $request->user()->id]);
         }
 
+        if ($this->whereRaw) {
+            $this->modelQuery->where(DB::raw($this->whereRaw));
+        }
+
         if ($this->authorizedTeam) {
             $this->modelQuery->where(["team_id" => $request->user()->current_team_id]);
          }
@@ -64,6 +69,8 @@ trait Querify
 
     private function getSearch($search)
     {
+
+        if (!$search) return '';
         $whereRaw = '';
          // handle search
          foreach ($this->searchable as $field) {
@@ -74,7 +81,7 @@ trait Querify
                 $whereRaw .= " or $field like '%$search%'";
             }
         }
-
+        $this->whereRaw = $whereRaw;
         return $whereRaw;
     }
 

@@ -50,6 +50,14 @@ trait TransactionTrait {
     public function scopeForAccount($query, $accountId) {
         return $query->where(DB::raw("(account_id = $accountId)"));
     }
+
+    public function scopeCategories($query, array $categories) {
+        return $query->whereIn("category_id", $categories);
+    }
+
+    public function scopePayees($query, array $payees) {
+        return $query->whereIn("payee_id", $payees);
+    }
 }
 
 

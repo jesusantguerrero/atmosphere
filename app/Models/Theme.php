@@ -8,4 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class Theme extends Model
 {
     use HasFactory;
+    const DARK = "DARK";
+    CONST LIGHT = "LIGHT";
 }

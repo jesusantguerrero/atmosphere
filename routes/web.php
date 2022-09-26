@@ -16,6 +16,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\FinanceTransactionController;
 use App\Http\Controllers\FinanceTrendController;
+use App\Http\Controllers\FinanceWatchlistController;
 use App\Http\Controllers\GoalController;
 use App\Http\Controllers\IngredientController;
 use App\Http\Controllers\IntegrationController;
@@ -118,7 +119,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     // Finance dashboard related routes
     Route::controller(FinanceController::class)->group(function () {
         Route::get('/finance', 'index')->name('finance');
-        Route::get('/finance/watchlist', 'watchList')->name('finance.watchlist');
+        Route::resource('/finance/watchlist', FinanceWatchlistController::class);
     });
 
     Route::controller(FinanceTransactionController::class)->group(function() {
