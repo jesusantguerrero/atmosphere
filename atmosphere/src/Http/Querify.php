@@ -9,6 +9,7 @@ trait Querify
 {
 
     private $modelQuery;
+    private $whereRaw;
     private $request;
     protected $authorizedUser = true;
     protected $authorizedTeam = true;
@@ -68,6 +69,8 @@ trait Querify
 
     private function getSearch($search)
     {
+
+        if (!$search) return '';
         $whereRaw = '';
          // handle search
          foreach ($this->searchable as $field) {
