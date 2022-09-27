@@ -44,6 +44,10 @@ trait Querify
           $extendFunction($this->modelQuery, $queryParams);
         }
 
+        if ($this->whereRaw) {
+            $this->modelQuery->whereRaw($this->whereRaw);
+        }
+
         if ($id) {
           return $this->modelQuery->where(["id" => $id])->get();
         }
@@ -52,9 +56,6 @@ trait Querify
            $this->modelQuery->where(["user_id" => $request->user()->id]);
         }
 
-        if ($this->whereRaw) {
-            $this->modelQuery->where(DB::raw($this->whereRaw));
-        }
 
         if ($this->authorizedTeam) {
             $this->modelQuery->where(["team_id" => $request->user()->current_team_id]);

@@ -1,35 +1,41 @@
 <template>
-    <main class="min-h-screen bg-base-lvl-3 home-container" v-auto-animate :class="{expanded: isExpanded}">
-        <nav class="border-b border-base-lvl-3 app-header bg-base-lvl-3" :class="navClass">
-            <slot name="navigation" />
-        </nav>
-        <article class="app-content">
-            <aside class="app-side-container">
-                <slot name="aside" />
-            </aside>
+  <main
+    class="min-h-screen bg-base-lvl-3 home-container"
+    v-auto-animate
+    :class="{ expanded: isExpanded }"
+  >
+    <nav class="border-b border-base-lvl-3 app-header md:pl-{var(--app)} bg-base-lvl-3" :class="navClass">
+      <slot name="navigation" />
+    </nav>
 
-            <section class="app-content__inner ic-scroller bg-base">
-               <slot name="main-section" />
-            </section>
-        </article>
-    </main>
+    <article class="app-content">
+      <aside class="app-side-container">
+        <slot name="aside" />
+      </aside>
+
+      <section class="app-content__inner ic-scroller bg-base">
+        <slot name="main-section" />
+      </section>
+    </article>
+  </main>
 </template>
 
 <script setup>
 defineProps({
-    navClass: {
-        type: [String, Object]
-    },
-    isExpanded: {
-        type: Boolean,
-        default: true
-    }
-})
+  navClass: {
+    type: [String, Object],
+  },
+  isExpanded: {
+    type: Boolean,
+    default: true,
+  },
+});
 </script>
 
 <style lang="scss">
-body, html {
-    background-color: #1E293B;
+body,
+html {
+  background-color: #1e293b;
 }
 .home-container {
   position: relative;
@@ -38,16 +44,22 @@ body, html {
   --app-side-width: 80px;
 
   &.expanded {
-    --app-side-width: 230px
+    --app-side-width: 230px;
   }
 }
 
 .app-header {
-    width: 100%;
-    top: 0;
-    position: fixed;
-    z-index: 1000;
-    padding-left: var(--app-side-width);
+  width: 100%;
+  top: 0;
+  position: fixed;
+  z-index: 1000;
+}
+
+@screen lg {
+    .app-header {
+      padding-left: var(--app-side-width);
+    }
+
 }
 
 .app-side-container {
@@ -64,7 +76,7 @@ body, html {
   grid-template-columns: var(--app-side-width) minmax(0, 1fr);
   position: relative;
   height: 100vh;
-  transition: all ease .3s;
+  transition: all ease 0.3s;
 
   &__inner {
     width: 100%;
@@ -120,9 +132,9 @@ body, html {
   .app-content {
     height: auto;
     &__inner {
-        grid-column-start: 1;
-        grid-column-end: 3;
-        padding-bottom: 40px;
+      grid-column-start: 1;
+      grid-column-end: 3;
+      padding-bottom: 40px;
     }
   }
 
@@ -156,33 +168,32 @@ body, html {
 }
 
 .ic-scroller {
-    &::-webkit-scrollbar-thumb {
-        background-color: transparentize($color: #000000, $amount: 0.7);
-        border-radius: 4px;
+  &::-webkit-scrollbar-thumb {
+    background-color: transparentize($color: #000000, $amount: 0.7);
+    border-radius: 4px;
 
-        &:hover {
-            background-color: transparentize($color: #000000, $amount: 0.7);
-        }
+    &:hover {
+      background-color: transparentize($color: #000000, $amount: 0.7);
     }
+  }
 
+  &::-webkit-scrollbar {
+    background-color: transparent;
+    width: 8px;
+    height: 10px;
+  }
+
+  &-slim {
+    transition: all ease 0.3s;
     &::-webkit-scrollbar {
-        background-color: transparent;
-        width: 8px;
-        height: 10px;
+      height: 0;
     }
 
-    &-slim {
-        transition: all ease .3s;
-        &::-webkit-scrollbar {
-            height: 0;
-        }
-
-        &:hover {
-            &::-webkit-scrollbar {
-                height: 3px;
-            }
-        }
+    &:hover {
+      &::-webkit-scrollbar {
+        height: 3px;
+      }
     }
+  }
 }
 </style>
-

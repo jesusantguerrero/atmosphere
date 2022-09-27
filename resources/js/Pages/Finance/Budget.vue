@@ -8,6 +8,14 @@
       <FinanceSectionNav>
         <template #actions>
           <div class="flex items-center space-x-2">
+            <!-- Overspent notice -->
+            <AtButton
+              v-if="isOverspentFilterShown"
+              @click="toggleOverspent"
+              class="bg-primary/40 items-center min-w-fit rounded-md space-x-2 flex justify-between text-white flex"
+            >
+              <span> View {{ overspentCategories.length }} overspent categories </span>
+            </AtButton>
             <AtDatePager
               class="w-full h-12 border-none bg-base-lvl-1 text-body"
               v-model:startDate="pageState.dates.startDate"
@@ -21,83 +29,86 @@
       </FinanceSectionNav>
     </template>
     <FinanceTemplate :accounts="accounts" :panel-size="panelSize">
-
       <!-- Budget to assign -->
       <BalanceAssign
         class="rounded-t-md mt-5"
-        :class="{'rounded-b-md shadow-md': !isOverspentFilterShown}"
+        :class="{ 'rounded-b-md shadow-md': !isOverspentFilterShown }"
         :value="readyToAssign.balance"
         :category="readyToAssign"
-      />
-
-      <!-- Overspent notice -->
-      <div v-if="isOverspentFilterShown" class="bg-primary/40 items-center rounded-b-md justify-between text-white px-2 py-2 flex">
-        <span>
-            {{ overspentCategories.length }} overspent categories
-        </span>
-        <AtButton class="text-primary/80 bg-white rounded-md font-bold" @click="toggleOverspent">View categories</AtButton>
-      </div>
+      >
+        <template #activity>
+          <section class="w-full text-center">
+            <h4>{{ formatMoney(readyToAssign.activity) }}</h4>
+            <p>Activity</p>
+          </section>
+        </template>
+        <template #target>
+          <section class="w-full text-center">
+            <p>Target</p>
+          </section>
+        </template>
+      </BalanceAssign>
 
       <div class="mx-auto mt-8 rounded-lg text-body bg-base max-w-7xl">
-            <BudgetGroupForm
-                v-model="categoryForm.name"
-                class="shadow-md rounded-md overflow-hidden"
-                @save="saveBudgetCategory()"
-            />
+        <BudgetGroupForm
+          v-model="categoryForm.name"
+          class="shadow-md rounded-md overflow-hidden"
+          @save="saveBudgetCategory()"
+        />
 
-            <Draggable
-              class="w-full mt-4 space-y-2 dragArea list-group"
-              :list="visibleCategories"
-              handle=".handle"
-              @end="saveReorder(visibleCategories)"
-            >
-              <BudgetGroupItem
-                v-for="itemGroup in visibleCategories"
-                :key="itemGroup.id"
-                :item="itemGroup"
-                :force-expanded="overspentFilter"
-                class="bg-base-lvl-3 shadow-md"
-              >
-                <template v-slot:content="{ isExpanded, isAdding, toggleAdding }">
-                  <div class="bg-base-lvl-3">
-                    <div v-if="isAdding" class="pt-2">
-                      <LogerInput
-                        placeholder="Add subcategory"
-                        v-model="state.categoryForm.name"
-                        @keydown.enter.ctrl="saveBudgetCategory(itemGroup.id, toggleAdding)"
-                      />
-                    </div>
-                    <Draggable
-                      v-if="isExpanded"
-                      class="py-2 space-y-2"
-                      :list="itemGroup.subCategories"
-                      handle=".handle"
-                      @end="saveReorder(itemGroup.subCategories)"
-                    >
-                      <BudgetItem
-                        class="bg-base-lvl-2 border-base-lvl-3"
-                        v-for="item in itemGroup.subCategories"
-                        :key="`${item.id}-${item.budgeted}`"
-                        :item="item"
-                        @edit="selectedBudget = item"
-                      />
-                    </Draggable>
-                  </div>
-                </template>
-              </BudgetGroupItem>
-            </Draggable>
+        <Draggable
+          class="w-full mt-4 space-y-2 dragArea list-group"
+          :list="visibleCategories"
+          handle=".handle"
+          @end="saveReorder(visibleCategories)"
+        >
+          <BudgetGroupItem
+            v-for="itemGroup in visibleCategories"
+            :key="itemGroup.id"
+            :item="itemGroup"
+            :force-expanded="overspentFilter"
+            class="bg-base-lvl-3 shadow-md"
+          >
+            <template v-slot:content="{ isExpanded, isAdding, toggleAdding }">
+              <div class="bg-base-lvl-3">
+                <div v-if="isAdding" class="pt-2">
+                  <LogerInput
+                    placeholder="Add subcategory"
+                    v-model="state.categoryForm.name"
+                    @keydown.enter.ctrl="saveBudgetCategory(itemGroup.id, toggleAdding)"
+                  />
+                </div>
+                <Draggable
+                  v-if="isExpanded"
+                  class="py-2 space-y-2"
+                  :list="itemGroup.subCategories"
+                  handle=".handle"
+                  @end="saveReorder(itemGroup.subCategories)"
+                >
+                  <BudgetItem
+                    class="bg-base-lvl-2 border-base-lvl-3"
+                    v-for="item in itemGroup.subCategories"
+                    :key="`${item.id}-${item.budgeted}`"
+                    :item="item"
+                    @edit="selectedBudget = item"
+                  />
+                </Draggable>
+              </div>
+            </template>
+          </BudgetGroupItem>
+        </Draggable>
       </div>
 
       <template #panel>
         <BudgetItemForm
-            class="mt-5"
-            v-if="selectedBudget"
-            full
-            :category="selectedBudget"
-            :item="selectedBudget.budget"
-            @saved="onBudgetItemSaved"
-            @deleted="deleteBudget"
-            @cancel="selectedBudget = null"
+          class="mt-5 mr-4"
+          v-if="selectedBudget"
+          full
+          :category="selectedBudget"
+          :item="selectedBudget.budget"
+          @saved="onBudgetItemSaved"
+          @deleted="deleteBudget"
+          @cancel="selectedBudget = null"
         />
       </template>
     </FinanceTemplate>
@@ -113,19 +124,20 @@ import { VueDraggableNext as Draggable } from "vue-draggable-next";
 
 import AppLayout from "@/Layouts/AppLayout.vue";
 import { useSelect } from "@/utils/useSelects";
-import BudgetItemForm from "@/Components/molecules/BudgetItemForm.vue";
+import BudgetItemForm from "@/Components/organisms/BudgetDetailForm.vue";
 import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
 import LogerInput from "@/Components/atoms/LogerInput.vue";
 import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
 import BudgetGroupItem from "@/Components/molecules/BudgetGroupItem.vue";
 import BudgetItem from "@/Components/molecules/BudgetItem.vue";
 import BudgetGroupForm from "@/Components/molecules/BudgetGroupForm.vue";
-import BalanceAssign from "@/Components/atoms/BalanceAssign.vue";
+import BalanceAssign from "@/Components/organisms/BalanceAssign.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 
 import { useServerSearch } from "@/composables/useServerSearch";
 import { useBudget } from "@/domains/budget";
 import { createBudgetCategory } from "@/domains/budget/createBudgetCategory";
+import { formatMoney } from "@/utils";
 
 const props = defineProps({
   budgets: {
@@ -144,18 +156,24 @@ const props = defineProps({
   },
   serverSearchOptions: {
     type: Object,
-    default: () => ({})
+    default: () => ({}),
   },
 });
 
 const { serverSearchOptions } = toRefs(props);
-const {state: pageState }= useServerSearch(serverSearchOptions);
+const { state: pageState } = useServerSearch(serverSearchOptions);
 
 const { budgets } = toRefs(props);
-const { readyToAssign, visibleCategories, overspentCategories, toggleOverspent, overspentFilter } = useBudget(budgets);
+const {
+  readyToAssign,
+  visibleCategories,
+  overspentCategories,
+  toggleOverspent,
+  overspentFilter,
+} = useBudget(budgets);
 const isOverspentFilterShown = computed(() => {
-    return overspentFilter.value || overspentCategories.value.length > 0
-})
+  return overspentFilter.value || overspentCategories.value.length > 0;
+});
 
 const state = reactive({
   isModalOpen: false,
@@ -188,14 +206,12 @@ const deleteBudget = (budget) => {
   });
 };
 
-const onBudgetItemSaved = () => {
-
-}
+const onBudgetItemSaved = () => {};
 
 const saveBudgetCategory = (parentId, callback) => {
-    if (!categoryForm.value.processing) {
-        createBudgetCategory(state.categoryForm, parentId, callback);
-    }
+  if (!categoryForm.value.processing) {
+    createBudgetCategory(state.categoryForm, parentId, callback);
+  }
 };
 
 const saveReorder = (categories) => {
@@ -210,6 +226,6 @@ const saveReorder = (categories) => {
 };
 
 const panelSize = computed(() => {
-    return selectedBudget.value ? 'large' : 'small'
-})
+  return selectedBudget.value ? "large" : "small";
+});
 </script>

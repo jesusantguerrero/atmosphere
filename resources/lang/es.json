@@ -1,0 +1,23 @@
+{
+    "appName": "Loger",
+    "Home": "Inicio",
+    "Meal Planner": "Planificador",
+    "Finance": "Finanzas",
+    "Relationship": "Relación",
+    "Home Projects": "Proyectos",
+    "Current Expenses": "Gastos Actuales",
+    "Monthly Budget": "Presupuesto Mensual",
+    "Expenses summary": "Resumen de gastos",
+    "Menu for today": "Menu para hoy",
+    "No meals": "No hay comidas",
+    "Go to planner": "Planificar comidas",
+    "Validate your email address": "Valida tu correo electronico",
+    "Create your accounts": "Crea tus cuentas",
+    "Structure your budgets with category groups and categories": "Planifica tu presupuesto con grupos y categorias",
+    "Plan your meals": "Planifica tus comidas",
+    "dashboard": {
+        "welcome": "Bienvenido a @:appName",
+        "currentExpenses": "Gastos actuales",
+        "monthlyBudget": "Presupuesto Mensual"
+    }
+}

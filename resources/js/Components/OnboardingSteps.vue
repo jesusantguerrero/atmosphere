@@ -31,6 +31,7 @@ import { ref } from 'vue';
 import SectionTitle from '@/Components/atoms/SectionTitle.vue';
 import { useCollapse } from '@/composables/useCollapse';
 import { Link } from '@inertiajs/inertia-vue3';
+
 defineProps({
     steps: {
         type: Array,

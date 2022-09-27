@@ -38,6 +38,7 @@ class FinanceController extends InertiaController {
         $planned = (new TransactionService())->getPlanned($teamId);
 
         $transactions = TransactionService::getExpenses($teamId, $startDate, $endDate);
+        $transactionsTotal = TransactionService::getExpensesTotal($teamId, $startDate, $endDate);
         $expensesByCategory = TransactionService::getCategoryExpenses($teamId, $startDate, $endDate, 4);
         $expensesByCategoryGroup = TransactionService::getCategoryExpensesGroup($teamId, $startDate, $endDate);
         $lastMonthExpenses= TransactionService::getExpenses($teamId, $lastMonthStartDate, $lastMonthEndDate)->sum('total');
@@ -51,7 +52,7 @@ class FinanceController extends InertiaController {
             "budgetTotal" => $budgetTotal,
             "expensesByCategory" => $expensesByCategory,
             "expensesByCategoryGroup" => $expensesByCategoryGroup,
-            "transactionTotal" => $transactions->sum('total'),
+            "transactionTotal" => $transactionsTotal->total,
             "lastMonthExpenses" => $lastMonthExpenses,
             "income" => $income,
             "savings" => $savings,

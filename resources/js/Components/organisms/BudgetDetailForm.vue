@@ -1,77 +1,36 @@
 <template>
-    <section class="px-5 pt-2 text-left border-b rounded-md shadow-xl bg-base-lvl-3" :class="{'flex': !full }">
+    <section class="px-5 pt-2 text-left border-b rounded-md space-y-4 shadow-xl bg-base-lvl-3 pb-4" :class="{'flex': !full }">
         <header class="flex items-center justify-between mt-2 mb-2">
-            <AtInput v-model="category.name" class="border-transparent cursor-pointer hover:text-primary hover:border-primary" rounded>
+            <AtInput 
+                v-model="category.name" 
+                class="border-transparent cursor-pointer hover:text-primary hover:border-primary" 
+                rounded
+            >
                 <template #prefix>
                     <div class=" px-1 flex items-center justify-center">
                         <ColorSelector v-model="form.color" />
                     </div>
                 </template>
             </AtInput>
-            <AtButton class="block h-full text-red-500" @click="$emit('delete')">
-                <i class="fa fa-trash"></i>
-            </AtButton>
         </header>
 
-        <AtField label="Target Type">
-            <NSelect
-                filterable
-                clearable
-                size="large"
-                v-model:value="form.target_type"
-                :default-expand-all="true"
-                :options="state.targetTypes"
-            />
-            <AtErrorBag v-if="errors" :errors="errors" field="account_id" />
-        </AtField>
+        <BudgetTargetForm 
+            :parent-id="parentId"
+            :category="category"
+            :item="item"
+            @delete="$emit('delete')"
+        />
 
-        <AtField label="Amount" errors="errors" field="amount">
-            <AtInput :number-format="true" v-model="form.amount">
-                <template #prefix>
-                    <span class="flex items-center pl-2">
-                        RD$
-                    </span>
-                </template>
-                <template #suffix>
-                    <NDropdown trigger="click" :options="options" key-field="name" :on-select="handleOptions" >
-                        <LogerTabButton> <i class="fa fa-ellipsis-v"></i></LogerTabButton>
-                    </NDropdown>
-                </template>
-            </AtInput>
-        </AtField>
+        <div>
+            Auto-Assign
+        </div>
 
-        <section v-if="form.target_type == 'spending'">
-            <AtButtonGroup
-                v-model="form.frequency"
-                :options="state.frequencies"
-                class="text-sm"
-                selected-class="text-white bg-primary"
-            />
+        <div>
+            Available Balance
+        </div>
 
-            <AtField
-                label="Every"
-                v-if="['MONTHLY', 'WEEKLY'].includes(form.frequency)"
-                :errors="errors" :field="frequencyUnit.field">
-                <NSelect
-                    filterable
-                    clearable
-                    size="large"
-                    v-model:value="form[frequencyUnit.field]"
-                    :default-expand-all="true"
-                    :options="frequencyUnit.options"
-                />
-
-                <div class="flex mt-2 space-x-2">
-                    <div v-for="instance in monthInstanceCount" class="w-full h-2 bg-primary" :key="instance" />
-                </div>
-            </AtField>
-        </section>
-
-        <div class="flex justify-between mt-4 mb-4">
-            <div class="flex font-bold">
-                <at-button class="block h-full text-gray-500 " @click="$emit('cancel')"> Cancel </at-button>
-            </div>
-            <at-button class="block h-full text-white rounded-md bg-primary" @click="submit()"> Save </at-button>
+        <div>
+            Notes
         </div>
     </section>
 </template>
@@ -82,11 +41,14 @@
     import { useDatePager } from "vueuse-temporals"
     import { NSelect , NDropdown} from "naive-ui"
     import { useForm } from '@inertiajs/inertia-vue3';
+    import { format } from 'date-fns';
+    
+    import ColorSelector from '../molecules/ColorSelector.vue';
+    import LogerTabButton from '../atoms/LogerTabButton.vue';
+    import BudgetTargetForm from '../molecules/BudgetTargetForm.vue';
+    
     import { monthDays, WEEK_DAYS, FREQUENCY_TYPE, generateRandomColor } from "@/utils"
     import { makeOptions } from "@/utils/naiveui";
-    import { format } from 'date-fns';
-    import ColorSelector from './ColorSelector.vue';
-    import LogerTabButton from '../atoms/LogerTabButton.vue';
     // import IconPicker from '../IconPicker.vue';
 
     const props = defineProps({
@@ -236,39 +198,5 @@
     const { form, targetTypes, frequencies } = toRefs(state);
 
 
-const options = [{
-    name: 'setAssigned',
-    label: 'Set Assigned'
-},
-{
-    name: 'setAvailable',
-    label: 'Set Available'
-},
-{
-    name: 'clear',
-    label: 'Clear'
-}]
 
-const setAmount = (amount) => {
-    state.form.amount = amount;
-}
-
-const clear = () => {
-    form.value.amount = 0
-}
-
-const handleOptions = (option) => {
-    switch(option) {
-        case 'setAssigned':
-            setAmount(props.category.budgeted)
-            break;
-        case 'setAvailable':
-            console.log(props.category)
-            setAmount(props.category.available)
-            break;
-        default:
-            clear()
-            break;
-    }
-}
 </script>

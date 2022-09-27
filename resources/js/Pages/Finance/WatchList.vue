@@ -23,11 +23,11 @@
           <SectionTitle type="secondary"> {{ formatMonth(pageState.dates.startDate) }} </SectionTitle>
         </header>
 
-        <section class="grid grid-cols-3 gap-4 mt-4">
-          <WatchedItem
-            v-for="watchedItem in data"
-            :key="watchedItem.name"
-            :item="watchedItem"
+        <section class="grid lg:grid-cols-3 gap-4 mt-4">
+          <WatchlistCard
+            v-for="item in data"
+            :key="item.name"
+            :item="item"
           />
         </section>
       </article>
@@ -49,8 +49,8 @@ import AppLayout from "@/Layouts/AppLayout.vue";
 import SectionTitle from "@/Components/atoms/SectionTitle.vue";
 import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
 import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
-import WatchedItem from "@/Components/WatchedItem.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
+import WatchlistCard from "@/Components/WatchlistCard.vue";
 import WatchlistModal from "@/Components/WatchlistModal.vue";
 
 import { useServerSearch } from "@/composables/useServerSearch";
