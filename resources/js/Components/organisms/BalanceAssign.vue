@@ -1,39 +1,47 @@
 <template>
     <section
-        class="px-5 py-1 cursor-pointer text-body-1 flex justify-between"
+        class="cursor-pointer text-body-1 divide-y-2"
         :class="badgeClass"
         @click="toggle"
     >
-        <article class="flex flex-col h-10 justify-center">
-            <p> {{ formatter(value) }} </p>
-            <small v-if="isOverspent">
-                You assigned more than you have
+        <article class="py-4 flex flex-col justify-center items-center mx-auto">
+            <h4 class="text-lg font-bold "> {{ formatter(value) }} </h4>
+            <small>
+                {{ description }}
             </small>
+            
+            <NPopover v-if="isOverspent" trigger="manual" placement="bottom"  @update:show="handleUpdateShow" :show="showPopover">
+                <template #trigger>
+                    <AtButton class="rounded-md bg-white/80">
+                        Fix this
+                    </AtButton>
+                </template>
+                <div>
+                    <AtField label="From">
+                        <NSelect
+                            filterable
+                            clearable
+                            size="large"
+                            v-model:value="form.source_category_id"
+                            :default-expand-all="true"
+                            :options="categoryOptions"
+                        />
+                    </AtField>
+                    <div class="flex space-x-2 justify-end items-center">
+                        <AtButton class="text-body-1" @click="clear">Cancel</AtButton>
+                        <AtButton class="bg-success text-white rounded-md" @click="onAssignBudget()"> Save</AtButton>
+                    </div>
+                </div>
+            </NPopover>
         </article>
-
-        <NPopover v-if="isOverspent" trigger="manual" placement="bottom"  @update:show="handleUpdateShow" :show="showPopover">
-        <template #trigger>
-            <AtButton class="rounded-md bg-white/80">
-                Fix this
-            </AtButton>
-        </template>
-        <div>
-             <AtField label="From">
-                <NSelect
-                    filterable
-                    clearable
-                    size="large"
-                    v-model:value="form.source_category_id"
-                    :default-expand-all="true"
-                    :options="categoryOptions"
-                />
-            </AtField>
-            <div class="flex space-x-2 justify-end items-center">
-                <AtButton class="text-body-1" @click="clear">Cancel</AtButton>
-                <AtButton class="bg-success text-white rounded-md" @click="onAssignBudget()"> Save</AtButton>
-            </div>
-        </div>
-    </NPopover>
+        <article class="grid py-2 grid-cols-2 divide-x-2">
+            <section>
+                <slot name="activity" />
+            </section>
+            <section>
+                <slot name="target" />
+            </section>
+        </article>
     </section>
 </template>
 
@@ -71,21 +79,35 @@
     }
 
     const BALANCE_STATUS = {
-        overspent: 'overspent',
-        available: 'available',
-        empty: 'empty'
+        overspent: {
+            name: 'overspent',
+            description: 'You assigned more than you have'
+        },
+        available: {
+            name: 'available',
+            description: 'To budget'
+        },
+        empty: {
+            name: 'empty',
+            description: 'All money assigned'
+        }
     }
 
     const status = computed(() => {
         if (props.value > 0) {
-            return BALANCE_STATUS.available
+            return BALANCE_STATUS.available.name
         } else if (props.value < 0) {
-            return BALANCE_STATUS.overspent
-        }
+            return BALANCE_STATUS.overspent.name
+        } 
+        return BALANCE_STATUS.empty.name
     })
 
     const isOverspent = computed(() => {
-        return status.value == BALANCE_STATUS.overspent
+        return status.value == BALANCE_STATUS.overspent.name
+    })
+
+    const description = computed(() => {
+        return BALANCE_STATUS[status.value].description
     })
 
     const badgeClass = computed(() => {

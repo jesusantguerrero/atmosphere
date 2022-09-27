@@ -1,10 +1,10 @@
 <template>
-    <div class="flex pb-20 pt-16 mx-auto space-x-2 max-w-screen-2xl relative">
-        <div class="w-full pr-5 md:w-10/12 md:pl-8">
+    <article class="flex pb-20 pt-16 mx-auto space-x-2 max-w-screen-2xl relative">
+        <main class="w-full pr-5 md:w-10/12 md:pl-8">
             <slot />
-        </div>
+        </main>
 
-        <div class="hidden md:block relative h-screen px-2" :class="panelStyles">
+        <aside class="hidden md:block relative h-screen px-2 overflow-auto" :class="panelStyles">
             <section class="fixed">
                 <slot name="panel">
                     <SectionTitle class="flex items-center pl-5 mt-5" type="secondary">
@@ -18,10 +18,10 @@
                     <AccountsLedger :accounts="accounts" @reordered="saveReorder" class="mt-5" />
                 </slot>
             </section>
-        </div>
+        </aside>
 
         <ImportResourceModal v-model:show="isImportModalOpen" />
-    </div>
+    </article>
 </template>
 
 <script setup>

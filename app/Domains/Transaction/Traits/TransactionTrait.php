@@ -47,6 +47,13 @@ trait TransactionTrait {
         ->whereNotNull('category_id');
     }
 
+    public function scopeBalance($query) {
+        return $query->where([
+            'transactions.status' => 'verified'
+        ])
+        ->whereNotNull('category_id');
+    }
+
     public function scopeForAccount($query, $accountId) {
         return $query->where(DB::raw("(account_id = $accountId)"));
     }

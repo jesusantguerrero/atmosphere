@@ -75,11 +75,17 @@ export const useBudget = (budgets) => {
         const budgeted = outflow.value.reduce((acc, category) => {
             return ExactMath.add(category.budgeted, acc || 0)
         }, 0)
+
+        const activity = outflow.value.reduce((acc, category) => {
+            return ExactMath.add(category.activity, acc || 0)
+        }, 0)
+
         const balance = ExactMath.sub(inflow.value?.activity | 0, budgeted || 0)
         const category = inflow.value?.subCategories[0] ?? {}
         return {
             balance,
-            ...category
+            ...category,
+            activity,
         }
     })
 

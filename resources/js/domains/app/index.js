@@ -1,45 +1,50 @@
 import { Link } from "@inertiajs/inertia-vue3"
 
-export const appMenu =  [
-    {
-        icon: 'fa fa-home',
-        name: 'home',
-        label: 'Home',
-        to: '/dashboard',
-        as: Link
-    },
-    {
-        icon: 'far fa-calendar-alt',
-        label: 'Meal Planer',
-        name: 'mealPlanner',
-        to: '/meal-planner',
-        as: Link
-    },
-    {
-        icon: 'fas fa-dollar-sign',
-        label: 'Finance',
-        name: 'finance',
-        to: '/finance',
-        as: Link
-    },
-    {
-        icon: 'fas fa-heart',
-        label: 'Relationship',
-        to: '/relationships',
-        as: Link
-    },
-    {
-        icon: 'fas fa-home',
-        label: 'Home Projects',
-        to: '/projects',
-        as: Link
+export const useAppMenu = t => {
+    const appMenu =  [
+        {
+            icon: 'fa fa-home',
+            name: 'home',
+            label: t('Home'),
+            to: '/dashboard',
+            as: Link
+        },
+        {
+            icon: 'far fa-calendar-alt',
+            label: t('Meal Planner'),
+            name: 'mealPlanner',
+            to: '/meal-planner',
+            as: Link
+        },
+        {
+            icon: 'fas fa-dollar-sign',
+            label: t('Finance'),
+            name: 'finance',
+            to: '/finance',
+            as: Link
+        },
+        {
+            icon: 'fas fa-heart',
+            label: t('Relationship'),
+            to: '/relationships',
+            as: Link
+        },
+        {
+            icon: 'fas fa-home',
+            label: t('Home Projects'),
+            to: '/projects',
+            as: Link
+        }
+    ];
+
+    return {
+        appMenu
     }
-]
+}
 
 export const DEFAULT_TIMEZONE = "UTC";
 
 export const defaultDateFormats = ['dd MMM, yyyy', 'dd.MM.yyyy', 'MM/dd/yyyy', 'yyyy.MM.dd']
-
 
 export const mapTeamFormServer = (team, prefix="team_") => {
     const regPrefix = new RegExp(prefix);

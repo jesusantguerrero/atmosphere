@@ -3,13 +3,13 @@
         <AppShell :is-expanded="isExpanded" :nav-class="{'shadow-md': !$slots.header }">
             <template #navigation>
                 <!-- Primary Navigation Menu -->
-                <div class="pr-4 mx-auto sm:pr-6 lg:pr-8 text-body">
+                <div class="pr-4 mx-auto sm:pr-6 lg:pr-8 text-body-1/80">
                     <div class="flex items-center justify-between h-16">
                         <div class="flex items-center">
                             <LogerTabButton @click="$emit('back')" v-if="showBackButton">
-                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--ic" width="32" height="32" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path fill="currentColor" d="M14.71 6.71a.996.996 0 0 0-1.41 0L8.71 11.3a.996.996 0 0 0 0 1.41l4.59 4.59a.996.996 0 1 0 1.41-1.41L10.83 12l3.88-3.88c.39-.39.38-1.03 0-1.41z"></path></svg>
+                               <IconBack />
                             </LogerTabButton>
-                            <h4 :class="[showBackButton ? 'ml-2' : 'ml-6']">
+                            <h4 :class="[showBackButton ? 'lg:ml-2' : 'lg:ml-6']" class="text-lg font-bold">
                                 {{ sectionTitle }}
                             </h4>
                         </div>
@@ -193,13 +193,13 @@
 
             <template #main-section>
                 <!-- Page Heading -->
-                <header v-if="$slots.header" :class="[isExpanded ? 'pr-56' : 'pr-20']" class="w-full fixed z-30 mb-8 shadow-md overflow-hidden border-b bg-base-lvl-3 border-base-deep-1">
-                    <slot name="header"></slot>
+                <header v-if="$slots.header" :class="[isExpanded ? 'lg:pr-56' : 'lg:pr-20']" class="w-full fixed z-30 mb-8 shadow-md overflow-hidden border-b bg-base-lvl-3 border-base-deep-1">
+                    <slot name="header" />
                 </header>
                 <!-- Page Content -->
                 <article class="overflow-hidden overflow-y-auto ic-scroller">
                     <JetBanner />
-                    <slot></slot>
+                    <slot />
                     <!-- <NavigationBottom :menu-items="menu" /> -->
                 </article>
             </template>
@@ -214,6 +214,7 @@
     import { Inertia } from '@inertiajs/inertia'
     import { AtSide, AtButton } from "atmosphere-ui"
     import { useLocalStorage } from "@vueuse/core"
+    import { useI18n } from 'vue-i18n'
 
     import JetBanner from '@/Jetstream/Banner.vue'
     import JetDropdown from '@/Jetstream/Dropdown.vue'
@@ -227,7 +228,7 @@
     import AppIcon from '@/Components/AppIcon.vue'
     import AppGlobals from './AppGlobals.vue'
 
-    import { appMenu } from '@/domains/app'
+    import { useAppMenu } from '@/domains/app'
     import { Link, usePage } from '@inertiajs/inertia-vue3'
     import { useSelect } from '@/utils/useSelects'
     import { useTransactionModal } from '@/domains/transactions'
@@ -247,17 +248,19 @@
         },
     })
 
+    const { t } = useI18n();
+    const { appMenu } = useAppMenu(t)
     const currentMenu = computed(() => {
         return props.isOnboarding ? [{
             icon: 'home',
             name: 'onboarding',
-            label: 'Setup',
+            label: t('Setup'),
             to: '/onboarding',
             as: Link
         }, {
             icon: 'users',
             name: 'userProfile',
-            label: 'User Profile',
+            label: t('User Profile'),
             to: '/user/profile',
             as: Link
         }] : appMenu

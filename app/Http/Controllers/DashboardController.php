@@ -28,7 +28,6 @@ class DashboardController {
 
         return Inertia::render('Dashboard', [
             "sectionTitle" => "Dashboard",
-            "strings" => __('dashboard'),
             "meals" => PlannedMealResource::collection($plannedMeals),
             "budgetTotal" => $budget->sum('budgeted'),
             "transactionTotal" => $transactionsTotal,
