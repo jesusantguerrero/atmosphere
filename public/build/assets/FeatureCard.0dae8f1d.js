@@ -1,1 +1,0 @@
-import{_ as r}from"./_plugin-vue_export-helper.cdc0426e.js";import{o,c as t,k as s}from"./app.ed3e752b.js";const a={},n={class:"w-full py-5 transition-all bg-white border-2 rounded-md shadow-md cursor-pointer hover:shadow-lg hover:border-green-400"};function d(e,c){return o(),t("div",n,[s(e.$slots,"default")])}const _=r(a,[["render",d]]);export{_ as default};
