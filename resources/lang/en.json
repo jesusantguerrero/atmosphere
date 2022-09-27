@@ -1,0 +1,8 @@
+{
+    "appName": "Loger",
+    "dashboard": {
+        "welcome": "Welcome to @:appName",
+        "currentExpenses": "Current Expenses",
+        "monthlyBudget": "Monthly Budget"
+    }
+}

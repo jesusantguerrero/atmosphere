@@ -53,6 +53,7 @@ class HandleInertiaRequests extends Middleware
                     'location' => $request->url(),
                 ]);
             },
+            "locale" => app()->getLocale(),
             'accountDetailTypes' => AccountDetailType::all(),
             'trialEndsAt' => $team ? $team->trial_ends_at : null,
             'unreadNotifications' => function() use ($user) {
