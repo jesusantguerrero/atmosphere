@@ -228,9 +228,7 @@
         }
     }
 
-    const { selectedSpan } =  useDatePager({
-        nextMode: 'month'
-    })
+    const { selectedSpan } =  useDatePager({nextMode: 'month'})
 
     const monthInstanceCount = computed(() => {
         return state.form.frequency == FREQUENCY_TYPE.WEEKLY &&

@@ -59,9 +59,7 @@ class TransactionService {
     }
 
     public static function getExpensesTotal($teamId, $startDate, $endDate) {
-        $selectTotal = self::transactionsTotalSum;
         return Transaction::byTeam($teamId)
-        ->select(DB::raw($selectTotal))
         ->balance()
         ->whereNot('categories.name', Category::READY_TO_ASSIGN)
         ->join('categories', 'categories.id', 'transactions.category_id')

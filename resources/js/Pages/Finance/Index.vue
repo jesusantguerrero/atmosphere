@@ -42,10 +42,10 @@
                   :value="formatMoney(savings)"
                   :subtitle="`Total: ${formatMoney(savings)}`"
                 />
-                 <BudgetProgress
+                <BudgetProgress
                     :goal="budgetTotal"
                     :current="transactionTotal"
-                    class="border-t"
+                    class="border-t h-8 rounded-b-lg"
                 />
               </div>
               <FinanceVarianceCard

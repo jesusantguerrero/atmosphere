@@ -34,7 +34,7 @@
                 </div>
             </NPopover>
         </article>
-        <article class="grid py-2 grid-cols-2 divide-x-2">
+        <article class="grid grid-cols-2 divide-x-2 overflow-hidden">
             <section>
                 <slot name="activity" />
             </section>

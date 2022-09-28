@@ -4,12 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Domains\AppCore\Models\Planner;
 use App\Domains\Budget\Models\BudgetMonth;
-use App\Domains\Transaction\Models\Transaction;
+use App\Domains\Transaction\Services\ReportService;
 use App\Domains\Transaction\Services\TransactionService;
 use App\Http\Resources\PlannedMealResource;
 use Carbon\Carbon;
 use Inertia\Inertia;
-use Insane\Journal\Helpers\ReportHelper;
 
 class DashboardController {
     public function __invoke() {
@@ -31,7 +30,7 @@ class DashboardController {
             "meals" => PlannedMealResource::collection($plannedMeals),
             "budgetTotal" => $budget->sum('budgeted'),
             "transactionTotal" => $transactionsTotal,
-            "revenue" => ReportHelper::generateExpensesByPeriod($teamId),
+            "revenue" => ReportService::generateExpensesByPeriod($teamId),
             'onboarding' => function () use ($team) {
                 $onboarding =  $team->onboarding();
                 return $onboarding->inProgress() ? [

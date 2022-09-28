@@ -1,5 +1,5 @@
 import { Inertia } from "@inertiajs/inertia";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { reactive, Ref, watch }  from "vue"
 
 interface IServerSearchData {
@@ -18,8 +18,8 @@ interface IServerSearchOptions {
 }
 
 interface IDateSpan {
-    startDate: Date|string,
-    endDate?: Date|string
+    startDate: Date,
+    endDate?: Date
 }
 
 interface ISearchState {
@@ -64,14 +64,12 @@ export const getRelationshipsParams = (relationships: string) => {
 }
 
 export const updateSearch = (state: ISearchState) => {
-    console.log(state);
     let params = [
         filterParams('date', state.filters, state.dates),
         getRelationshipsParams(state.relationships)
     ];
 
     const urlParams = params.filter(value => value?.trim()).join("&");
-    console.log(urlParams)
     const finalUrl = `${window.location.pathname}?${urlParams}`
     if (finalUrl != window.location.toString()) {
         Inertia.visit(finalUrl, {
@@ -116,8 +114,8 @@ export const useServerSearch = (serverSearchData: Ref<IServerSearchData>, option
         const dates = options?.value.filters?.date ? options.value.filters.date.split('~') : [null, null]
 
         return {
-            startDate: dates[0],
-            endDate: dates[1] ?? null
+            startDate: parseISO(dates[0]),
+            endDate: dates.length == 2 ? parseISO(dates[1]) : null
         }
     }
 
