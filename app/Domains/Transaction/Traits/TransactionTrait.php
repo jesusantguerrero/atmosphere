@@ -2,6 +2,7 @@
 
 namespace App\Domains\Transaction\Traits;
 
+use App\Domains\AppCore\Models\Category;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Transaction;
 
@@ -48,10 +49,15 @@ trait TransactionTrait {
     }
 
     public function scopeBalance($query) {
+        $transactionsTotalSum = "ABS(sum(CASE
+        WHEN transactions.direction = 'WITHDRAW'
+        THEN transactions.total * -1
+        ELSE transactions.total * 1 END)) as total";
         return $query->where([
             'transactions.status' => 'verified'
         ])
-        ->whereNotNull('category_id');
+        ->whereNotNull('category_id')
+        ->selectRaw($transactionsTotalSum);
     }
 
     public function scopeForAccount($query, $accountId) {
@@ -60,6 +66,11 @@ trait TransactionTrait {
 
     public function scopeCategories($query, array $categories) {
         return $query->whereIn("category_id", $categories);
+    }
+
+    public function scopeExpenseCategories($query) {
+        return  $query->whereNot('categories.name', Category::READY_TO_ASSIGN)
+        ->join('categories', 'transactions.category_id', '=', 'categories.id');
     }
 
     public function scopePayees($query, array $payees) {
