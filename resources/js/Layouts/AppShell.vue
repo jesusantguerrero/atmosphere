@@ -41,7 +41,7 @@ html {
   position: relative;
   height: 100vh;
 
-  --app-side-width: 80px;
+  --app-side-width: 64px;
 
   &.expanded {
     --app-side-width: 230px;
