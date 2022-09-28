@@ -52,12 +52,12 @@ Loger is organized in "concerns" by the moment it have 4
     - Goals/Projects like travels and activities 
 
 * ### 🏡Home/Family Projects**
-    There are things that need an action but not immediately, maybe we just need to save then to take it to the budget in the next months or three months whatever.
-
-    - New furniture
-    - House Repairs/Improvements
-    - Events and activities
-
+    - [ ] Chores
+    - [ ] Ocurrence Checks
+    - [ ] Plans (Events and activities / Repairs / ETC)
+        - [ ] Quick Create Budget from plans
+        - [ ] Quikc Create Transactions from plans? 
+    - [ ] Equipment 
 
 >  (*) Feature is planned but not finished yet
 (**) Section is considered but not planned still in research
