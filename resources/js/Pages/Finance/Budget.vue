@@ -37,15 +37,22 @@
         :category="readyToAssign"
       >
         <template #activity>
-          <section class="w-full text-center">
+          <section class="w-full flex-col justify-center  py-2 flex items-center">
             <h4>{{ formatMoney(readyToAssign.activity) }}</h4>
-            <p>Activity</p>
-          </section>
-        </template>
-        <template #target>
-          <section class="w-full text-center">
-            <p>Target</p>
-          </section>
+            <p class="font-bold">Activity</p>
+        </section>
+    </template>
+    <template #target>
+        <BudgetProgress class="w-full text-center h-14"
+            :goal="readyToAssign.monthlyGoals.target"
+            :current="readyToAssign.monthlyGoals.balance"
+            :progress-class="['bg-body-1/5', 'bg-body-1/5']"
+        >
+            <section>
+                <h4>{{ formatMoney(readyToAssign.monthlyGoals.balance) }}</h4>
+                <p class="font-bold">Monthly Goals Progress</p>
+            </section>
+        </BudgetProgress>
         </template>
       </BalanceAssign>
 
@@ -133,6 +140,7 @@ import BudgetItem from "@/Components/molecules/BudgetItem.vue";
 import BudgetGroupForm from "@/Components/molecules/BudgetGroupForm.vue";
 import BalanceAssign from "@/Components/organisms/BalanceAssign.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
+import BudgetProgress from "@/Components/molecules/BudgetProgress.vue";
 
 import { useServerSearch } from "@/composables/useServerSearch";
 import { useBudget } from "@/domains/budget";

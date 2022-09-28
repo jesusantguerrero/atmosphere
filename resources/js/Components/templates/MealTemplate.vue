@@ -8,6 +8,7 @@
       <article class="flex space-x-4">
         <div
           v-for="mealType in pageProps.mealTypes"
+          :key="mealType.id"
           class="cursor-pointer font-bold text-white border-primary transition rounded-md bg-primary/80 h-20 w-full flex flex-col items-center justify-center"
         >
           <h4 class="capitalize">

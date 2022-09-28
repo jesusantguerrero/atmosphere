@@ -19,9 +19,12 @@ export const useMoneyMath = (currency = USD) => {
             let result = money.add(amount1.toString(), amount2.toString())
             return result
         } catch (e) {
-            debugger
             return amount1 + amount2
         }
+    }
+
+    const isBiggerThan = ()=> {
+        money
     }
 
     return {

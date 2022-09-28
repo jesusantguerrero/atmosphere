@@ -1,40 +1,32 @@
-import { DOP } from "@dinero.js/currencies";
 import ExactMath from "exact-math";
 import { cloneDeep } from "lodash";
 import { computed, ref, watch } from "vue";
-import { useMoneyMath } from "./useMoneyMath";
+import { getCategoriesTotals, getGroupTotals } from './index';
+
 
 export const useBudget = (budgets) => {
     const overspentCategories = ref([])
-    const { add } = useMoneyMath(DOP)
+    const overAssignedCategories = ref([])
     const budget = computed(() => {
         overspentCategories.value = [];
+        overAssignedCategories.value = [];
         const cloned = cloneDeep(budgets.value)
-        return cloned.data.map(item => {
-            const totals = Object.values(item.subCategories).reduce((acc, category) => {
-                acc.budgeted = ExactMath.add(acc.budgeted, category.budgeted || 0)
-                acc.activity =  ExactMath.add(acc.activity, category.activity || 0)
-                acc.available = ExactMath.add(acc.available, category.available || 0)
 
-                if (Number(category.available) < 0 && item.name !== 'Inflow') {
-                    overspentCategories.value.push(category);
-                    category.hasOverspent = true;
-                    acc.hasOverspent = true;
+        return cloned.data.map(item => {
+            const totals = getCategoriesTotals(item.subCategories, {
+                onOverspent(category) {
+                    overspentCategories.value.push(category)
+                },
+                onOverAssigned(category) {
+                    overAssignedCategories.value.push(category)
                 }
-                return acc;
-            }, {
-                budgeted: 0,
-                activity: 0,
-                available: 0
             });
 
-            item.budgeted = totals.budgeted;
-            item.activity = totals.activity;
-            item.available = totals.available;
-            item.hasOverspent = totals.hasOverspent;
-            return item
+            return {
+                ...item,
+                ...totals
+            }
         });
-
     });
 
     const overspentFilter = ref(false)
@@ -56,7 +48,7 @@ export const useBudget = (budgets) => {
                 conditions = conditions && categoryGroup.hasOverspent
             }
             if (conditions) {
-                categoryGroup.subCategories = categoryGroup.subCategories.filter(subCategory => overspentFilter.value ? subCategory.hasOverspent : true)
+                categoryGroup.subCategories = categoryGroup.subCategories?.filter(subCategory => overspentFilter.value ? subCategory.hasOverspent : true)
                 groups.push(categoryGroup)
             }
             return groups
@@ -72,20 +64,14 @@ export const useBudget = (budgets) => {
     })
 
     const readyToAssign = computed(() => {
-        const budgeted = outflow.value.reduce((acc, category) => {
-            return ExactMath.add(category.budgeted, acc || 0)
-        }, 0)
-
-        const activity = outflow.value.reduce((acc, category) => {
-            return ExactMath.add(category.activity, acc || 0)
-        }, 0)
-
-        const balance = ExactMath.sub(inflow.value?.activity | 0, budgeted || 0)
+        const budgetTotals = getGroupTotals(outflow.value)
+        const balance = ExactMath.sub(inflow.value?.activity | 0, budgetTotals.budgeted || 0)
         const category = inflow.value?.subCategories[0] ?? {}
+
         return {
             balance,
             ...category,
-            activity,
+            ...budgetTotals,
         }
     })
 
@@ -94,7 +80,7 @@ export const useBudget = (budgets) => {
         budgetState: outflow,
         visibleCategories,
         overspentCategories,
-        toggleOverspent,
-        overspentFilter
+        overspentFilter,
+        toggleOverspent
     }
 }

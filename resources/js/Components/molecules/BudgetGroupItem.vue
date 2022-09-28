@@ -12,8 +12,9 @@
                 <h4 class="relative font-bold">
                     {{ item.name }}
                     <div
-                        v-if="item.hasOverspent"
-                        class="absolute -top-1 -right-2 h-2 w-2 bg-error rounded-full ring ring-error/20 animate-pulse" />
+                        v-if="item.hasOverspent || item.hasOverAssigned || item.hasUnderfunded"
+                        class="absolute -top-1 -right-2 h-2 w-2 bg-error rounded-full ring ring-error/20 animate-pulse" 
+                    />
                 </h4>
             </div>
         </div>
@@ -31,7 +32,7 @@
         </div>
     </header>
     <section class="pl-4 border-l-4 border-primary bg-base-lvl-3" ref="dropdown">
-            <slot v-if="isExpanded || isAdding" :isExpanded="isExpanded" :toggleAdding="toggleAdding" :isAdding="isAdding" name="content"/>
+        <slot v-if="isExpanded || isAdding" :isExpanded="isExpanded" :toggleAdding="toggleAdding" :isAdding="isAdding" name="content"/>
     </section>
 </article>
 </template>
