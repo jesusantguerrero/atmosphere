@@ -1,10 +1,12 @@
 <template>
-    <div class="px-4 py-3 rounded-lg shadow-md bg-base-lvl-1">
+    <div class="px-4 py-3 rounded-lg shadow-md bg-base-lvl-3">
         <div class="flex justify-between">
-            <h4 class="text-2xl font-bold text-body"> Get random meal</h4>
-            <at-button class="text-white bg-primary rounded-full" @click="getRandomMeal" :disabled="state.isLoading"> <i class="fa fa-sync"></i></at-button>
+            <h4 class="font-bold text-body"> Random meal</h4>
+            <LogerButton variant="inverse" class="rounded-full" @click="getRandomMeal" :disabled="state.isLoading"> 
+                <i class="fa fa-sync" :class="[state.isLoading ? 'fa-spin' : '']"></i>
+            </LogerButton>
         </div>
-        <div class="h-20 text-lg text-center text-gray-100">
+        <div class="h-10 text-lg text-center text-secondary">
             {{ state.mealName  }}
             <div v-if="state.isLoading"> <i class="fa fa-spin fa-spinner"></i></div>
         </div>
@@ -15,6 +17,7 @@
 import { AtButton } from "atmosphere-ui"
 import { reactive, computed } from 'vue'
 import axios from 'axios'
+import LogerButton from "./atoms/LogerButton.vue";
 const props = defineProps({
         show: {
             default: false
