@@ -45,7 +45,7 @@
                 <BudgetProgress
                     :goal="budgetTotal"
                     :current="transactionTotal"
-                    class="border-t h-8 rounded-b-lg"
+                    class="border-t h-8 rounded-b-lg text-white"
                 />
               </div>
               <FinanceVarianceCard

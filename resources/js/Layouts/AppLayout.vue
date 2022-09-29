@@ -169,18 +169,19 @@
 
             <template #aside>
                 <AtSide
-                    class="border-r shadow-md text-body border-base-lvl-1 bg-base-lvl-3 app-side"
+                    class="border-r shadow-md text-body border-base-lvl-1 bg-base-lvl-3"
                     title="Loger"
                     v-model:isExpanded="isExpanded"
                     :menu="currentMenu"
+                    :header-menu="headerMenu"
                     :current-path="currentPath"
                     icon-class="text-gray-400 hover:text-primary transition"
-                    item-class="block w-full px-5 py-1.5 mb-2 font-bold text-gray-400 rounded-md text-md hover:text-primary hover:bg-base-lvl-1"
+                    item-class="w-54 px-5 py-1.5 mb-2 font-bold text-gray-400 rounded-md text-md hover:text-primary hover:bg-base-lvl-1"
                     item-active-class="text-primary bg-base-lvl-1"
                     is-expandable
                 >
                     <template #brand>
-                        <div class="flex">
+                        <div class="flex w-full" :class="isExpanded ? 'pl-5' :'justify-center'">
                             <AppIcon />
                             <div class="text-left pl-5" v-if="isExpanded">
                                 <h1 class="text-3xl text-primary font-brand">Loger.</h1>
@@ -249,7 +250,7 @@
     })
 
     const { t } = useI18n();
-    const { appMenu } = useAppMenu(t)
+    const { appMenu, headerMenu } = useAppMenu(t)
     const currentMenu = computed(() => {
         return props.isOnboarding ? [{
             icon: 'home',
