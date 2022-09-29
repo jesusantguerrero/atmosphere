@@ -173,6 +173,7 @@
                     title="Loger"
                     v-model:isExpanded="isExpanded"
                     :menu="currentMenu"
+                    :header-menu="headerMenu"
                     :current-path="currentPath"
                     icon-class="text-gray-400 hover:text-primary transition"
                     item-class="w-54 px-5 py-1.5 mb-2 font-bold text-gray-400 rounded-md text-md hover:text-primary hover:bg-base-lvl-1"
@@ -249,7 +250,7 @@
     })
 
     const { t } = useI18n();
-    const { appMenu } = useAppMenu(t)
+    const { appMenu, headerMenu } = useAppMenu(t)
     const currentMenu = computed(() => {
         return props.isOnboarding ? [{
             icon: 'home',

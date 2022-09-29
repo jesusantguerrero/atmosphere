@@ -40,7 +40,7 @@ class SettingsController extends InertiaController
         return Inertia::render("Settings/".ucfirst($name), array_merge([
             "settingData" => Setting::getBySection($teamId, $name),
             "{$this->teamNickname}Data" => $businessData
-        ], $this->getSectionProps($name)));
+        ], []));
     }
 
     /**
