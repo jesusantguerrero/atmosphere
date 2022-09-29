@@ -21,7 +21,7 @@ export const getCategoriesTotals = (categories, config = {
         acc.activity =  ExactMath.add(acc.activity, category.activity || 0)
         acc.available = ExactMath.add(acc.available, category.available || 0)
 
-        if (Number(category.available) < 0 && item.name !== 'Inflow') {
+        if (Number(category.available) < 0 && category.name !== 'Inflow') {
             config.onOverspent(category);
             category.budgeted
             acc.hasOverspent = true;
