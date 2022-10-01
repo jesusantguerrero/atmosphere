@@ -8,17 +8,17 @@ use Illuminate\Database\Eloquent\Model;
 class Automation extends Model
 {
     use HasFactory;
-    protected $fillable = ['team_id', 'user_id', 'integration_id', 'name', 'description', 'entity', 'sentence', 'track'];
+    protected $fillable = ['team_id', 'user_id', 'trigger_id', 'integration_id', 'name', 'description', 'entity', 'sentence', 'track'];
     public function recipe() {
         return $this->belongsTo('App\Models\Daily\AutomationRecipe', 'automation_recipe_id', 'id');
     }
 
     public function tasks() {
-        return $this->hasMany(AutomationTaskAction::class)->orderBy('order');
+        return $this->hasMany(AutomationTaskAction::class, 'automation_id', 'id')->orderBy('order');
     }
 
-    public function trigger() {
-        return $this->hasOne(AutomationTaskAction::class)->where('task_type', 'trigger');
+    public function triggerTask() {
+        return $this->hasOne(AutomationTask::class, 'id', 'trigger_id');
     }
 
     public function saveTasks($tasks) {
@@ -38,13 +38,5 @@ class Automation extends Model
                 "values" => json_encode($task['values']),
             ]);
         }
-    }
-
-    public function dispatch() {
-        echo "starting $this->name with $this->id \n";
-        $trigger = $this->tasks()->first();
-        $entity = $trigger->entity;
-        $action = $trigger->name;
-        $entity::$action($this);
     }
 }

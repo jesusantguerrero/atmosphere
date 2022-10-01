@@ -20,7 +20,7 @@
                             :options="serviceOptions"
                         />
                     </AtField>
-                    <AtField label="Integration">
+                    <AtField label="Integration" v-if="isExternalService">
                         <n-select
                             filterable
                             clearable
@@ -41,7 +41,7 @@
                         />
                     </AtField>
                     <div v-if="automationType=='manual'|| form.recipe">
-                        <div v-for="(task, index) in form.tasks">
+                        <div v-for="(task, index) in form.tasks" :key="task">
                             <AtField label="Automation Task" >
                                 <n-select
                                     filterable
@@ -52,7 +52,7 @@
                                 />
                             </AtField>
                             <div v-if="task.config" class="ml-5">
-                                <AtField :label="field.label||field.title||fieldName" v-for="(field, fieldName) in task.config">
+                                <AtField :label="field.label||field.title||fieldName" v-for="(field, fieldName) in task.config" :key="fieldName">
                                     <n-select
                                         v-if="field.type=='select'"
                                         filterable
@@ -95,7 +95,6 @@ import { NSelect } from "naive-ui";
 import { computed, nextTick, ref } from 'vue';
 import { AtButton as Button } from 'atmosphere-ui';
 import Modal from '@/Jetstream/Modal.vue'
-
 
 const props = defineProps({
     show: {
@@ -149,6 +148,10 @@ const form = useForm({
     tasks: [],
 });
 
+const isExternalService = computed(() => {
+    return form.service?.type == 'external'
+});
+
 const automationType = ref('manual');
 const selectType = (type) => {
     automationType.value = type;
@@ -179,8 +182,10 @@ const addComponent = () => {
 const setTask = (index, taskId) => {
     nextTick(() => {
         const newTask = form.tasks[index];
-        const taskDefinition = props.tasks.find(task => task.id == taskId);
-        const config = JSON.parse(taskDefinition.config || {});
+        const taskDefinition = props.tasks.find(task => {
+            return task.id === taskId
+        });
+        const config = JSON.parse(taskDefinition?.config || '{}') ?? {};
         form.tasks[index] = {
             ...newTask,
             automation_task_id: taskId,
@@ -192,6 +197,7 @@ const setTask = (index, taskId) => {
                 return values;
             }, {})
         };
+        console.log(form.tasks[index], "Aqui estamos")
     })
 }
 
@@ -275,6 +281,7 @@ const hasInput = (inputName) => {
 
 const prepareForm = () => {
     const formData = { ...form.data() };
+    debugger
     formData.name = formData.name || formData.tasks.map(task => task.name).join(' ');
     formData.description = formData.description || formData.tasks.map(task => task.label).join(' ');
     formData.sentence = formData.sentence || formData.tasks.map(task => task.label).join(' ');

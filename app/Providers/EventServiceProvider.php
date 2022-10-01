@@ -2,8 +2,11 @@
 
 namespace App\Providers;
 
+use App\Events\AutomationEvent;
 use App\Events\BudgetAssigned;
+use App\Events\MealPlanLiked;
 use App\Listeners\AcceptInvitation;
+use App\Listeners\AutomationListener;
 use App\Listeners\CreateBudgetMovement;
 use App\Listeners\CreateBudgetCategory;
 use App\Listeners\CreateBudgetTransactionMovement;
@@ -45,6 +48,9 @@ class EventServiceProvider extends ServiceProvider
         TeamMemberAdded::class => [
             AcceptInvitation::class
         ],
+        AutomationEvent::class => [
+            AutomationListener::class
+        ]
     ];
 
     /**

@@ -17,6 +17,7 @@ class AutomationServices extends Migration
             $table->id();
             $table->string('name');
             $table->string('label');
+            $table->string('type')->default('internal');
             $table->text('entity');
             $table->text('description');
             $table->text('logo');
