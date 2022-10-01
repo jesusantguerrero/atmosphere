@@ -14,11 +14,11 @@ class Automation extends Model
     }
 
     public function tasks() {
-        return $this->hasMany(AutomationTaskAction::class)->orderBy('order');
+        return $this->hasMany(AutomationTaskAction::class, 'automation_id', 'id')->orderBy('order');
     }
 
-    public function trigger() {
-        return $this->hasOne(AutomationTaskAction::class)->where('task_type', 'trigger');
+    public function triggerTask() {
+        return $this->hasOne(AutomationTask::class, 'id', 'trigger_id');
     }
 
     public function saveTasks($tasks) {
@@ -38,13 +38,5 @@ class Automation extends Model
                 "values" => json_encode($task['values']),
             ]);
         }
-    }
-
-    public function dispatch() {
-        echo "starting $this->name with $this->id \n";
-        $trigger = $this->tasks()->first();
-        $entity = $trigger->entity;
-        $action = $trigger->name;
-        $entity::$action($this);
     }
 }

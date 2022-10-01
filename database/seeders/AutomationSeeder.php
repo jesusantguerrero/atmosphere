@@ -96,6 +96,7 @@ class AutomationSeeder extends Seeder
                         "accepts_config" => true,
                     ]
                 ],
+                "type" => 'external',
             ],
             'BHD' => [
                 'name' => 'BHD',
@@ -119,7 +120,9 @@ class AutomationSeeder extends Seeder
                         'config' => json_encode(BHDNotification::getSchema()),
 
                     ]
-                ]
+                ],
+                "type" => "internal"
+
             ],
             'transactions' => [
                 'name' => 'BHD',
@@ -217,6 +220,96 @@ class AutomationSeeder extends Seeder
                         ]),
                         "accepts_config" => true,
                     ],
+                ],
+                "type" => "internal"
+            ],
+            'mealPlanner' => [
+                'name' => 'Meal Planner',
+                'logo' => '/images/meal-planner.png',
+                'entity' => 'App\Actions\Integrations\MealPlanner',
+                'description' => 'Meal Plans',
+                "fields" =>  [
+                    'account_id' => [
+                    'type' => 'id',
+                    'required' => true
+                    ],
+                    'date' => [
+                        'type' => 'date',
+                        'required' => true
+                    ],
+                    'currency_code' => [
+                        'type' => 'string'
+                    ],
+                    'category_id' => [
+                        'type' => 'string',
+                        'required' => true
+                    ],
+                    'description' => [
+                        'type' => 'string',
+                        'required' => false
+                    ],
+                    'direction' => [
+                        'type' => 'labels',
+                        'options' => [Transaction::DIRECTION_CREDIT, Transaction::DIRECTION_DEBIT],
+                    ],
+                    'total' => [
+                        'type' => 'money',
+                        'required' => true
+                    ],
+                    'items' => [
+                        'type' => 'array',
+                        'required' => false
+                    ],
+                    'metaData' => [
+                        'type' => 'json',
+                        'required' => false
+                    ]
+                ],
+                "actions" => [
+                    [
+                        'name' => 'liked',
+                        'label' => 'Meal Plan Liked',
+                        'entity' => 'App\Actions\Integrations\Meal',
+                        'description' => 'When a meal plan is liked',
+                        'config' => json_encode([
+                            'meal_id' => [
+                                'type' => 'id',
+                                'required' => true,
+                                'template'
+                            ],
+                            'date' => [
+                                'type' => 'date',
+                                'required' => true,
+                                'template' => ''
+                            ],
+                        ]),
+                        "accepts_config" => true,
+                    ],
+                    [
+                        'name' => 'create',
+                        'label' => 'Create Meal Entry',
+                        'entity' => 'App\Actions\Integrations\Meal',
+                        'description' => 'Create a new Meal Plan entry',
+                        'config' => json_encode([
+                            'meal_id' => [
+                                'type' => 'id',
+                                'required' => true,
+                                'template'
+                            ],
+                            'date' => [
+                                'type' => 'date',
+                                'required' => true,
+                                'template' => ''
+                            ],
+                        ]),
+                        "accepts_config" => true,
+                    ],
+                ],
+                "type" => "internal"
+            ],
+            "occurrenceChecks" => [
+                "actions" => [
+
                 ]
             ]
         ];

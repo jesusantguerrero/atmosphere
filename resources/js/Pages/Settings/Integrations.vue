@@ -3,17 +3,17 @@
         <template #header>
             <SettingsSectionNav>
                 <template #actions>
-                    <AtButton class="text-white bg-primary"
+                    <LogerButton variant="inverse" class="text-white bg-primary"
                         @click="openAutomationModal"
                     >
                         Add Automation
-                    </AtButton>
+                    </LogerButton>
                 </template>
             </SettingsSectionNav>
         </template>
-        <div class="py-12 pt-32 h-auto mx-auto max-w-7xl sm:px-6 lg:px-8">
+        <div class="py-12 pt-32 h-auto mx-auto space-y-4 max-w-7xl sm:px-6 lg:px-8">
             <div
-                v-for="service in services" :key="service.id"
+                v-for="service in externalServices" :key="service.id"
                 @click="handleCommand(service)"
                 class="flex px-5 py-3 bg-base-lvl-3 rounded-md shadow-xl cursor-pointer">
             <div>
@@ -68,12 +68,13 @@
 </template>
 
 <script setup>
-import { nextTick, reactive } from "vue";
+import { computed, nextTick, reactive } from "vue";
 import { Inertia } from '@inertiajs/inertia';
 import { AtButton } from "atmosphere-ui";
 import AppLayout from "@/Layouts/AppLayout.vue";
 import AutomationModal from '@/Components/AutomationModal.vue';
 import SettingsSectionNav from "@/Components/templates/SettingsSectionNav.vue";
+import LogerButton from "@/Components/atoms/LogerButton.vue";
 
 const props = defineProps({
     services: {
@@ -141,6 +142,10 @@ const handleCommand = (service) => {
             break;
     }
 }
+
+const externalServices = computed(() => {
+    return props.services.filter(service => service.type == 'external');
+})
 
 const google = (scopeName, service) => {
     gapi.load("auth2", () => {

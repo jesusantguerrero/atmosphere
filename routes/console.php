@@ -1,8 +1,8 @@
 <?php
 
+use App\Domains\Integration\Models\Automation;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
-use App\Models\Integrations\Automation;
 
 /*
 |--------------------------------------------------------------------------

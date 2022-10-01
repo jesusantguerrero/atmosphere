@@ -41,6 +41,27 @@ class MealService {
         }
     }
 
+    public static function scheduleMealOnDate($mealId, $date, $payload) {
+        $meal = Meal::find($mealId);
+
+        $plan = MealPlan::create([
+            'date' => Carbon::parse($date)->setTimezone('UTC')->toDateTimeString(),
+            'meal_type_id' => $payload['meal_type_id'],
+            'team_id' => $meal->team_id,
+            'user_id' => $meal->user_id,
+            'meal_id' => $meal->id,
+            'name' => $meal->name
+        ]);
+
+        Planner::create([
+            'dateable_type' => MealPlan::class,
+            'dateable_id' => $plan->id,
+            'date' => $plan->date,
+            'team_id' => $plan->team_id,
+            'user_id' => $plan->user_id
+        ]);
+    }
+
     public static function getIngredients($plans) {
         $ingredients = [];
         foreach ($plans as $plan) {

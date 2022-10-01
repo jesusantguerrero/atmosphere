@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Domains\AppCore\Models\Planner;
+use App\Domains\Integration\Services\LogerAutomationService;
 use App\Domains\Meal\Models\Meal;
 use App\Domains\Meal\Models\MealType;
 use App\Domains\Meal\Services\MealService;
+use App\Events\AutomationEvent;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
 
@@ -43,5 +45,17 @@ class MealPlannerController extends InertiaController
                 ])->get();
             },
         ];
+    }
+
+    protected function afterSave($postData, $resource): void
+    {
+        if ($resource->isDirty('is_liked') && $resource->is_liked) {
+            $mealPlanData = [
+                "meal_id" => $resource->dateable->meal_id,
+                "meal_type_id" => $resource->dateable->meal_type_id,
+                "date" => $resource->date
+            ];
+            AutomationEvent::dispatch($resource->team_id, LogerAutomationService::MEAL_PLAN_LIKED, $mealPlanData);
+        }
     }
 }

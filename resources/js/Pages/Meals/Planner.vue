@@ -34,12 +34,13 @@
                         {{ getDayName(day) }}
 
                         <div class="flex items-center mt-2 space-x-2">
-                            <div v-for="mealType in pageProps.mealTypes" class="w-full">
+                            <div v-for="mealType in pageProps.mealTypes" class="w-full" :key="`${mealType.id}-${day}`">
                                 <MealTypeCell
                                     v-model="recipe"
                                     :planned-meal="getDayMeals(day, mealType.id)"
                                     :meal-type="mealType"
                                     @submit="addPlan"
+                                    @toggle-like="onToggleLike"
                                 />
                             </div>
                         </div>
@@ -67,7 +68,7 @@
     import MealTemplate from "@/Components/templates/MealTemplate.vue";
     import MealSectionNav from "@/Components/templates/MealSectionNav.vue";
     import MealTypeCell from "@/Components/molecules/MealTypeCell.vue";
-import LogerButton from "@/Components/atoms/LogerButton.vue";
+    import LogerButton from "@/Components/atoms/LogerButton.vue";
 
     const pageProps = usePage().props;
 
@@ -155,6 +156,17 @@ import LogerButton from "@/Components/atoms/LogerButton.vue";
                 form.id = "";
                 form.name = ""
                 form.reset()
+            }
+        })
+    }
+
+    const onToggleLike = (plannedMeal) => {
+        plannedMeal.is_liked = !Boolean(plannedMeal.is_liked);
+        Inertia.put(route('meal-planner.update', plannedMeal), plannedMeal, {
+            onSuccess() {
+                Inertia.reload({
+                    preserveScroll: true,
+                })
             }
         })
     }
