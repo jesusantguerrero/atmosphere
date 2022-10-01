@@ -19,7 +19,7 @@ class Automation extends Migration
             $table->foreignId('team_id');
             $table->foreignId('automatable_id')->nullable();
             $table->foreignId('automation_recipe_id')->nullable();
-            $table->foreignId('integration_id');
+            $table->foreignId('integration_id')->nullable();
             $table->foreignId('trigger_id');
             $table->text('automatable_type')->nullable();
             $table->string('name');

@@ -15,10 +15,10 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             AutomationSeeder::class,
-            CountriesTableSeeder::class,
-            TimeZonesTableSeeder::class,
-            LanguagesTableSeeder::class,
-            ThemeSeeder::class
+            // CountriesTableSeeder::class,
+            // TimeZonesTableSeeder::class,
+            // LanguagesTableSeeder::class,
+            // ThemeSeeder::class
         ]);
     }
 }
