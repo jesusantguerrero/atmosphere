@@ -24,7 +24,7 @@
         <MealTemplate class="mx-auto">
             <div class="pb-20 space-x-2">
                 <div v-if="state.isGroceryList" class="py-5 overflow-hidden border rounded-md bg-base-lvl-1">
-                    <div v-for="(ingredient, name) in ingredients" class="px-5 cursor-pointer text-primary bg-base-lvl-1">
+                    <div v-for="(ingredient, name) in ingredients" :key="ingredient.id" class="px-5 cursor-pointer text-primary bg-base-lvl-1">
                         {{name }} ({{ ingredient.quantity }}) {{ ingredient.unit }}
                     </div>
                 </div>
@@ -41,6 +41,7 @@
                                     :meal-type="mealType"
                                     @submit="addPlan"
                                     @toggle-like="onToggleLike"
+                                    @removed="onRemoved"
                                 />
                             </div>
                         </div>
@@ -163,6 +164,17 @@
     const onToggleLike = (plannedMeal) => {
         plannedMeal.is_liked = !Boolean(plannedMeal.is_liked);
         Inertia.put(route('meal-planner.update', plannedMeal), plannedMeal, {
+            onSuccess() {
+                Inertia.reload({
+                    preserveScroll: true,
+                })
+            }
+        })
+    }
+
+    const onRemoved = (plannedMeal) => {
+        plannedMeal.is_liked = !Boolean(plannedMeal.is_liked);
+        Inertia.delete(route('meal-planner.destroy', plannedMeal), plannedMeal, {
             onSuccess() {
                 Inertia.reload({
                     preserveScroll: true,

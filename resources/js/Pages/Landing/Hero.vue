@@ -12,7 +12,7 @@
     <header class="relative w-full px-10 pb-16 antialiased bg-gray-900 select-none md:pb-0 md:px-0">
         <AtSiteHeader
             title="Loger"
-            brand-class="font-brand"
+            brand-class="font-brand text-white"
             :links="state.links"
             link-class="text-white hover:text-pink-500"
             dot-class="text-pink-400"

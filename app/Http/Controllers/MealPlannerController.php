@@ -46,16 +46,4 @@ class MealPlannerController extends InertiaController
             },
         ];
     }
-
-    protected function afterSave($postData, $resource): void
-    {
-        if ($resource->isDirty('is_liked') && $resource->is_liked) {
-            $mealPlanData = [
-                "meal_id" => $resource->dateable->meal_id,
-                "meal_type_id" => $resource->dateable->meal_type_id,
-                "date" => $resource->date
-            ];
-            AutomationEvent::dispatch($resource->team_id, LogerAutomationService::MEAL_PLAN_LIKED, $mealPlanData);
-        }
-    }
 }

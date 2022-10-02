@@ -37,7 +37,7 @@
         "@vitejs/plugin-vue": "^3.0.1",
         "@vue/server-renderer": "^3.2.37",
         "@vueuse/core": "^8.9.4",
-        "atmosphere-ui": "^0.7.11",
+        "atmosphere-ui": "^1.0.0-beta",
         "autoprefixer": "^10.4.7",
         "axios": "^0.27.2",
         "date-fns": "^2.22.1",
