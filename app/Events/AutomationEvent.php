@@ -14,6 +14,9 @@ class AutomationEvent
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
+    public $teamId;
+    public $eventData;
+    public $eventName;
     /**
      * Create a new event instance.
      *

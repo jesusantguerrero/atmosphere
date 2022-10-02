@@ -25,6 +25,7 @@ class CreatePlannerTable extends Migration
             $table->text('ical')->nullable();
             $table->date('date');
             $table->date('end_date');
+            $table->boolean('is_liked')->default(false);
             $table->boolean('automatic')->default(false);
             $table->timestamps();
         });

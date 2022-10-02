@@ -3,13 +3,18 @@
     class="meal-cell border border-dashed border-primary rounded-md px-5 py-2 w-ful flex overflow-visible mb-4"
     :class="[plannedMeal ? 'bg-base-lvl-2' : 'bg-base-lvl-3']"
   >
-    <div class="px-5 py-2 group bg-base-lvl-2 font-bold justify-between text-primary w-full  flex" v-if="plannedMeal">
-        <span>
+    <div class="px-2 py-2 group bg-base-lvl-2 font-bold justify-between text-primary w-full  flex" v-if="plannedMeal">
+        <span class="capitalize">
             {{ plannedMeal.dateable.name }}
         </span>
-        <div class="transition flex space-x-2">
-            <AtButton class="hidden transition group-hover:inline-block" @click="onLiked">Remove</AtButton>
-            <AtButton class="group-hover:text-red-500" @click="onLiked">Like</AtButton>
+        <div class="transition flex space-x-2 items-center text-xl">
+            <AtButton class="hidden transition my-0 text-body-1/80 hover:text-error/80 group-hover:inline-block" @click="emitCellEvent('removed')">
+                <IconClose />
+            </AtButton>
+            <AtButton class="group-hover:text-red-500" @click="emitCellEvent('toggle-like')">
+                <IconHeart v-if="plannedMeal.is_liked" />
+                <IconHeartOutline v-else />
+            </AtButton>
         </div>
     </div>
     <div class="flex w-full overflow-visible" v-else>
@@ -33,6 +38,10 @@
 import { reactive } from "vue";
 import LogerTabButton from "@/Components/atoms/LogerTabButton.vue";
 import LogerApiSimpleSelect from "../organisms/LogerApiSimpleSelect.vue";
+import IconClose from "../icons/IconClose.vue";
+import IconHeart from "../icons/IconHeart.vue";
+import IconHeartOutline from "../icons/IconHeartOutline.vue";
+import LogerButton from "../atoms/LogerButton.vue";
 
 const props = defineProps({
   plannedMeal: {
@@ -55,8 +64,8 @@ const submit = (name, value) => {
   emit("submit", {...recipe, meal_type_id: props.mealType.id });
 };
 
-const onLiked = () => {
-    emit('toggle-like', props.plannedMeal)
+const emitCellEvent = (eventName) => {
+    emit(eventName, props.plannedMeal)
 }
 </script>
 
