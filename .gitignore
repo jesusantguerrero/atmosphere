@@ -20,3 +20,5 @@ rr
 .rr.yaml
 .env.testing
 public/build
+Modules/*
+!Modules/.gitkeep
