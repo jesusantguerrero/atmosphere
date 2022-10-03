@@ -19,7 +19,7 @@ class IngredientApiController extends BaseController
     {
         $postData = request()->post();
         $product = $this->model->find($id);
-        if ($postData['label_id'] !== 'new') {
+        if ($postData['label_id'] !== "new::{$postData['name']}") {
             $label = $product->labels()->find($postData['label_id']);
         } else {
             $label = $product->labels()->create([

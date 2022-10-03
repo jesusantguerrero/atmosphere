@@ -2,15 +2,15 @@
     <div>
         <div class="py-6 space-y-4">
             <div
-                class="flex justify-between w-full grid-cols-4 px-5 py-5 border rounded-lg cursor-pointer text-body bg-base-lvl-3 hover:bg-base-lvl-2"
+                class="flex justify-between w-full grid-cols-4 py-2 px-4 shadow-md items-center border rounded-lg cursor-pointer text-body bg-base-lvl-3 hover:bg-base-lvl-2"
                 v-for="meal in meals"
                 :key="meal.id"
                 :class="{'bg-primary-300 text-white': isSelected(meal)}"
             >
-                <div  @click="$emit('click', meal)" class="hover:text-primary transition"> {{ meal.name }} </div>
+                <div  @click="$emit('click', meal)" class="hover:text-primary transition capitalize"> {{ meal.name }} </div>
                 <div class="flex items-center space-x-2 text-right">
                     <div class="flex items-center space-x-1 font-bold">
-                        <div v-for="tag in meal.labels" :style="{color: tag.color}">
+                        <div v-for="tag in meal.labels" :style="{color: tag.color}" :key="tag.id">
                             #{{ tag.name  }}
                         </div>
                         <LogerApiSimpleSelect
@@ -26,9 +26,9 @@
                         />
                     </div>
                     <AtBadge type="primary"> Available </AtBadge>
-                    <AtButton type="secondary">
+                    <button type="secondary">
                         <i class="fa fa-trash"></i>
-                    </AtButton>
+                    </button>
                 </div>
             </div>
         </div>

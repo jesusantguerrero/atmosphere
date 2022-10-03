@@ -73,7 +73,7 @@ const resultParser = (apiOptions, query) => {
     const custom = includeCustom ? [
             {
                 label: query,
-                value: 'new'
+                value: `new::${query}`
             }
     ]: [];
 
@@ -93,7 +93,9 @@ const handleSearch = debounce((query) => {
 }, 200)
 
 const emitInput = (optionId) => {
+    const option = options.value.find(option => option.value == optionId)
     emit('update:modelValue', optionId)
-    emit('update:label', options.value.find(option => option.value == optionId)?.label)
+    emit('update:value', option)
+    emit('update:label', option?.label)
 }
 </script>

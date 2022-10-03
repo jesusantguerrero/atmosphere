@@ -119,7 +119,6 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     // Finance dashboard related routes
     Route::controller(FinanceController::class)->group(function () {
         Route::get('/finance', 'index')->name('finance');
-        Route::resource('/finance/watchlist', FinanceWatchlistController::class);
     });
 
     Route::controller(FinanceTransactionController::class)->group(function() {

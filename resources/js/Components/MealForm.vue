@@ -3,38 +3,19 @@
         <AtField
             label="Title"
         >
-            <AtInput v-model="form.name" rounded class="border text-body bg-base border-base-deep-1" />
+            <LogerInput v-model="form.name" rounded />
         </AtField>
 
         <AtField
             label="Ingredients"
         >
-            <div class="flex px-2 py-2 overflow-hidden rounded-md bg-base-lvl-1" v-for="(ingredient, index) in form.ingredients" :key="ingredient.id">
-                <AtField class="px-4" label="Qty">
-                    <AtInput rounded type="number" v-model="ingredient.quantity" class="border border-none rounded-t-none rounded-b-none text-body bg-base border-base-deep-1" />
-                </AtField>
-                <AtField class="w-full px-4" label="Name">
-                    <LogerApiSimpleSelect
-                        v-model="form.ingredients[index]"
-                        v-model:label="form.ingredients[index].name"
-                        class="w-full"
-                        tag
-                        custom-label="name"
-                        track-id="id"
-                        placeholder="Add ingredient"
-                        endpoint="/api/ingredients"
-                        @update:label="checkIngredients(index, $event)"
-                    />
-                </AtField>
-                <AtField class="px-4" label="Unit">
-                    <AtInput rounded v-model="ingredient.unit" class="border border-none rounded-t-none rounded-b-none text-body bg-base border-base-deep-1"/>
-                </AtField>
-                <AtField label="Actions">
-                    <AtButton type="danger" class="items-center h-10" rounded @click="removeIngredient(index)">
-                        <i class="fa fa-trash"></i>
-                    </AtButton>
-                </AtField>
-            </div>
+            <MealFormLine v-for="(ingredient, index) in form.ingredients"
+                :key="`${ingredient.id}-${index}`"
+                :meal="meal"
+                :index="index"
+                :ingredient="ingredient"
+                @check="checkIngredients(index, $event)"
+            />
         </AtField>
     </div>
 </template>
@@ -44,6 +25,8 @@
     import { AtField, AtInput, AtButton } from "atmosphere-ui"
     import { nextTick } from '@vue/runtime-core'
     import LogerApiSimpleSelect from "./organisms/LogerApiSimpleSelect.vue";
+import LogerInput from "./atoms/LogerInput.vue";
+import MealFormLine from "./MealFormLine.vue";
 
     defineEmits(['close']);
     const props = defineProps({

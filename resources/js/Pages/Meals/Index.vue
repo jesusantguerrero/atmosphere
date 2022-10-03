@@ -21,7 +21,7 @@
 <script setup>
     import { AtButton } from "atmosphere-ui";
     import AppLayout from '@/Layouts/AppLayout.vue';
-    import MealSection from '@/Components/Meal.vue';
+    import MealSection from '@/Components/MealSection.vue';
     import { computed } from "vue";
     import MealTemplate from "@/Components/templates/MealTemplate.vue";
     import MealSectionNav from "@/Components/templates/MealSectionNav.vue";

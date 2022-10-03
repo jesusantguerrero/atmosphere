@@ -22,7 +22,7 @@ class Meal extends Model
     public function saveIngredients($items) {
         Ingredient::query()->where('meal_id', $this->id)->delete();
         foreach ($items as $item) {
-            if (isset($item['product_id']) && $item['product_id'] !== 'new') {
+            if (isset($item['product_id']) && $item['product_id'] !== "new::{$item['name']}") {
                 $product = Product::find($item['id']);
             } else if (isset($item['name'])) {
                 $product = Product::create([
