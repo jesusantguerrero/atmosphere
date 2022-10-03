@@ -37,7 +37,7 @@
     import Modal from '@/Jetstream/Modal.vue'
     import { AtField, AtInput, AtButton } from "atmosphere-ui"
     import { reactive, toRefs } from '@vue/reactivity'
-    import Meal from './Meal.vue'
+    import Meal from './MealSection.vue'
     import { watch } from '@vue/runtime-core'
     import axios from 'axios'
 

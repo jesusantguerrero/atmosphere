@@ -14,6 +14,7 @@
             <MealForm
                 ref="mealForm"
                 :meal="meals"
+                class="bg-base-lvl-3 rounded-md px-4 py-2"
             />
         </MealTemplate>
     </AppLayout>

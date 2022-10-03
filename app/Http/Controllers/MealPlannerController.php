@@ -30,14 +30,14 @@ class MealPlannerController extends InertiaController
 
     protected function getIndexProps(Request $request, $resources = null): array
     {
-        $mode = $queryParams['mode'] ?? '';
+        $mode = $request->query('mode') ?? '';
         $teamId = Auth()->user()->current_team_id;
 
         return [
             'mealTypes' => MealType::where('team_id', $teamId)->get(),
             'mode' => $mode,
-            'ingredients' => function () use ($resources) {
-                return MealService::getIngredients($resources);
+            'ingredients' => function () use ($resources, $mode) {
+                return $mode ? MealService::getIngredients($resources) : [];
             },
             'meals' => function () use ($request) {
                 return Meal::where([

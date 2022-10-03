@@ -10,7 +10,7 @@ use Illuminate\Support\Carbon;
 class MealService {
     public function addPlan($mealsData) {
         foreach ($mealsData['meals'] as $mealData) {
-            if (isset($mealData['id']) && $mealData['id'] !== 'new') {
+            if (isset($mealData['id']) && $mealData['id'] !== "new::{$mealData['name']}") {
                 $meal = Meal::find($mealData['id']);
             } else if (isset($mealData['name'])) {
                 $meal = Meal::create([
@@ -65,7 +65,7 @@ class MealService {
     public static function getIngredients($plans) {
         $ingredients = [];
         foreach ($plans as $plan) {
-            $mealIngredients = $plan->dateable?->ingredients;
+            $mealIngredients = $plan->dateable?->meal->ingredients;
             if ($mealIngredients && count($mealIngredients)) {
                 foreach ($mealIngredients as $product) {
                     if (array_key_exists($product->name, $ingredients)) {
