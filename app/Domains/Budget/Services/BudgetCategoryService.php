@@ -35,4 +35,13 @@ class BudgetCategoryService {
         ->join('budgets', 'budgets.category_id', 'budget_months.category_id')
         ->sum(DB::raw("budgeted + activity"));
     }
+
+    public static function getNextBudgetItems($teamId) {
+        return DB::query()
+        ->whereIn('budgets.target_type', ['spending'])
+        ->where('frequency', 'monthly')
+        ->whereRaw("concat(date_format(now(), '%Y-%m'), '-', frequency_month_date) >= now()")
+        ->from('budgets')
+        ->get();
+    }
 }

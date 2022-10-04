@@ -1,17 +1,21 @@
 <template>
-    <div class="h-32 w-full relative rounded-md flex items-end  justify-center border-dashed border border-primary cursor-pointer hover:bg-base-lvl-2 transition" role="button" @click="openFileSelector" relative>
-        <div class="w-full h-full absolute z-20 px-5 py-2 bg-transparent flex flex-col items-center justify-center">
+    <div class="relative flex items-end justify-center w-full h-32 transition border border-dashed rounded-md cursor-pointer border-primary hover:bg-base-lvl-2" role="button"
+        @click="openFileSelector" relative
+        @ondrop="onDrop"
+    >
+        <div class="absolute z-20 flex flex-col items-center justify-center w-full h-full px-5 py-2 bg-transparent">
             <input name="fileInput" type="file" ref="fileInputRef" class="hidden" @change="setFile" />
-            <label for="fileInput" class="cursor-pointer text-base-300 font-bold text-sm">
+            <label for="fileInput" class="text-sm font-bold cursor-pointer text-base-300">
                 {{ filePlaceholderText }}
             </label>
-            or
-            <LogerButton variant="inverse"> Browse </LogerButton>
+            <div v-if="!formData.file" class="mt-2">
+                or
+                <LogerButton variant="inverse"> Browse </LogerButton>
+            </div>
         </div>
-        <div class="absolute h-full flex z-10 bg-primary/30 w-full" :style="progressStyle" />
+        <div class="absolute z-10 flex w-full h-full bg-primary/30" :style="progressStyle" />
         <small v-if="formData.hasErrors" class="text-red-300">  {{ formData.errors.file }}</small>
     </div>
-
 </template>
 
 <script setup>
@@ -59,7 +63,7 @@ const processImport = async () => {
     return
   }
 
-  Inertia.post(props.endpoint, formData.data(), {
+  formData.post(props.endpoint, formData.data(), {
     onSuccess() {
         emit('uploaded')
         clearFile()

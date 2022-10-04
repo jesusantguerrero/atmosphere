@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Domains\AppCore\Models\Planner;
 use App\Domains\Budget\Models\BudgetMonth;
+use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Domains\Transaction\Services\ReportService;
 use App\Domains\Transaction\Services\TransactionService;
 use App\Http\Resources\PlannedMealResource;
@@ -24,6 +25,8 @@ class DashboardController {
             'team_id' => $teamId,
             'date' => date('Y-m-d')
         ])->with(['dateable', 'dateable.mealType'])->get();
+
+        $nextPayments = BudgetCategoryService::getNextBudgetItems($teamId);
 
         return Inertia::render('Dashboard', [
             "sectionTitle" => "Dashboard",
@@ -46,6 +49,7 @@ class DashboardController {
                     })
                 ] : [];
             },
+            "nextPayments" => $nextPayments
         ]);
     }
 }
