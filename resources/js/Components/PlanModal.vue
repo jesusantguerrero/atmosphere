@@ -50,7 +50,7 @@
     import { AtInput, AtButton } from "atmosphere-ui"
     import { startOfDay } from 'date-fns'
     import {  watch, ref, computed } from 'vue'
-    import Meal from './Meal.vue'
+    import Meal from './MealSection.vue'
 
     const emit = defineEmits(['close'])
     const props = defineProps({

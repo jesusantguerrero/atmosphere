@@ -15,8 +15,8 @@
                         </div>
 
                         <div class="hidden space-x-2 sm:flex sm:items-center sm:ml-6">
-                            <AtButton class="text-sm flex space-x-2 px-2 items-center text-white bg-primary" rounded @click="openTransferModal()" v-if="!isOnboarding">
-                                <div class="rounded-md bg-white/40 px-1 items-center justify-center flex py-1">
+                            <AtButton class="flex items-center px-2 space-x-2 text-sm text-white bg-primary" rounded @click="openTransferModal()" v-if="!isOnboarding">
+                                <div class="flex items-center justify-center px-1 py-1 rounded-md bg-white/40">
                                     <i class="fa fa-exchange-alt"></i>
                                 </div>
                                 <span>
@@ -175,17 +175,19 @@
                     :menu="currentMenu"
                     :header-menu="headerMenu"
                     :current-path="currentPath"
-                    icon-class="text-gray-400 hover:text-primary transition"
+                    icon-class="text-gray-400 transition hover:text-primary"
                     item-class="w-54 px-5 py-1.5 mb-2 font-bold text-gray-400 rounded-md text-md hover:text-primary hover:bg-base-lvl-1"
                     item-active-class="text-primary bg-base-lvl-1"
                     is-expandable
                 >
                     <template #brand>
-                        <div class="flex w-full" :class="isExpanded ? 'pl-5' :'justify-center'">
-                            <AppIcon />
-                            <div class="text-left pl-5" v-if="isExpanded">
-                                <h1 class="text-3xl text-primary font-brand">Loger.</h1>
-                                <small class="text-xs">Digital Home</small>
+                        <div class="flex w-full pl-0 mx-auto" :class="isExpanded ? 'pl-5' :'justify-center'">
+                            <div class="mx-auto text-center " v-if="!isExpanded">
+                                <img src="/logotype.png" :style="{height: '32px'}" class="mx-auto"/>
+                            </div>
+                            <div class="mx-auto text-center " v-else>
+                                <img src="/logo.png" :style="{height: '32px'}" class="mx-auto"/>
+                                <small class="text-xs">The Digital Home</small>
                             </div>
                         </div>
                     </template>
@@ -194,7 +196,7 @@
 
             <template #main-section>
                 <!-- Page Heading -->
-                <header v-if="$slots.header" :class="[isExpanded ? 'lg:pr-56' : 'lg:pr-20']" class="w-full fixed z-30 mb-8 shadow-md overflow-hidden border-b bg-base-lvl-3 border-base-deep-1">
+                <header v-if="$slots.header" :class="[isExpanded ? 'lg:pr-56' : 'lg:pr-20']" class="fixed z-30 w-full mb-8 overflow-hidden border-b shadow-md bg-base-lvl-3 border-base-deep-1">
                     <slot name="header" />
                 </header>
                 <!-- Page Content -->
