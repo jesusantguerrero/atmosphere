@@ -197,7 +197,6 @@ const setTask = (index, taskId) => {
                 return values;
             }, {})
         };
-        console.log(form.tasks[index], "Aqui estamos")
     })
 }
 

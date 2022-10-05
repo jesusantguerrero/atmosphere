@@ -25,6 +25,7 @@
                             </AtButton>
 
                             <PrivacyToggle v-model="isPrivacyMode" v-if="!isOnboarding" />
+                            <span> {{ formatMoney($page.props.balance) }}</span>
 
                             <AppNotificationBell
                                 :notifications="$page.props.unreadNotifications"
@@ -236,6 +237,7 @@
     import { useSelect } from '@/utils/useSelects'
     import { useTransactionModal } from '@/domains/transactions'
     import AppNotificationBell from '../Components/molecules/AppNotificationBell.vue'
+    import { formatMoney } from '@/utils'
 
     const { openTransferModal } = useTransactionModal()
     const props = defineProps({

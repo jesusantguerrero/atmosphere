@@ -22,13 +22,6 @@
     <body class="font-sans antialiased">
         @inertia
         <script>
-                console.log("aqui estamos")
-         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                console.log("aqui estamos")
-                navigator.serviceWorker.register('/sw.js');
-            });
-        }
         </script>
     </body>
 </html>

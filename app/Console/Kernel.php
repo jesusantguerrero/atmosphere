@@ -25,9 +25,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $automations = Automation::all();
-        foreach ($automations as $automation) {
-            $schedule->command("automation:trigger  {$automation->id}")->everyMinute()->runInBackground();
+        $scheduleTime = config('app.schedule_time');
+
+        $schedule->command("automation:check")->everyFiveMinutes()->runInBackground();
+        if (config('app.demo')) {
+            $schedule->command("demo-data:seed")->dailyAt($scheduleTime);
         }
     }
 

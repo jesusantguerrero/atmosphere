@@ -18,7 +18,6 @@ class DashboardController {
         $endDate = $request->query('endDate', Carbon::now()->endOfMonth()->format('Y-m-d'));
         $team = $request->user()->currentTeam;
         $teamId = $request->user()->current_team_id;
-
         $budget = BudgetMonth::getMonthAssignments($teamId, $startDate);
         $transactionsTotal = TransactionService::getExpensesTotal($teamId, $startDate, $endDate);
         $plannedMeals = Planner::where([

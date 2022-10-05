@@ -6,15 +6,22 @@ use App\Domains\AppCore\Models\Planner;
 use Insane\Journal\Models\Core\Category;
 use Insane\Journal\Models\Core\Transaction as CoreTransaction;
 use App\Domains\Transaction\Traits\TransactionTrait;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Transaction extends CoreTransaction
 {
-    const STATUS_PLANNED = 'planned';
-    protected $with = ['schedule'];
+    use HasFactory;
     use TransactionTrait;
 
+    const STATUS_PLANNED = 'planned';
+    protected $with = ['schedule'];
+
     public function schedule() {
-        return $this->morphOne(Planner::class, 'dateable', 'dateable_type', 'dateable_id', );
+        return $this->morphOne(Planner::class, 'dateable', 'dateable_type', 'dateable_id');
+    }
+
+    public function team() {
+        return $this->belongsTo(Team::class);
     }
 
     public function categoryGroup() {
@@ -46,5 +53,15 @@ class Transaction extends CoreTransaction
             $searchParams['date'],
             $searchParams['datesAfter'] ?? 1,
         ])->get();
+    }
+
+    /**
+     * Create a new factory instance for the model.
+     *
+     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     */
+    protected static function newFactory()
+    {
+        return \Database\Factories\TransactionFactory::new();
     }
 }
