@@ -5,8 +5,12 @@ namespace App\Models;
 use App\Domains\AppCore\Models\Category;
 use App\Models\Setting;
 use App\Domains\Meal\Models\Meal;
+use App\Domains\Transaction\Models\Transaction;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Account;
+use Insane\Journal\Models\Core\Payee;
+use Insane\Journal\Models\Core\TransactionLine;
 use Laravel\Jetstream\Events\TeamCreated;
 use Laravel\Jetstream\Events\TeamDeleted;
 use Laravel\Jetstream\Events\TeamUpdated;
@@ -57,11 +61,41 @@ class Team extends JetstreamTeam implements Onboardable
         return $this->hasMany(Account::class);
     }
 
+    public function budgetAccounts() {
+        return $this->hasMany(Account::class)->whereIn('account_detail_type_id',[1,2,4,5]);
+    }
+
     public function budgetCategories() {
-        return $this->hasMany(Category::class)->where('resource_type', 'transactions');
+        return $this->hasMany(Category::class)
+        ->where('resource_type', 'transactions')
+        ->whereNotNull('parent_id');
+    }
+
+    public function categoryGroups() {
+        return $this->hasMany(Category::class)->where([
+            'resource_type' => 'transactions'
+        ])->whereNull('parent_id');
+    }
+
+    public function payees() {
+        return $this->hasMany(Payee::class);
     }
 
     public function meals() {
         return $this->hasMany(Meal::class);
+    }
+
+    /**
+     * Get account balance.
+     *
+     * @return string
+     */
+    public function balance()
+    {
+        return (double) Transaction::byTeam($this->id)
+        ->verified()
+        ->balance()
+        ->first()
+        ->total;
     }
 }

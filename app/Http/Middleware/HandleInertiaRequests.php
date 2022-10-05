@@ -59,6 +59,7 @@ class HandleInertiaRequests extends Middleware
             'unreadNotifications' => function() use ($user) {
                 return $user ? $user->unreadNotifications->count() : 0;
             },
+            "balance" => $team ? $team->balance() : 0,
             "accounts" => $team ? CoreAccount::getByDetailTypes($team->id) : [],
             "categories" => $team ? Category::where([
                 'categories.team_id' => $team->id,

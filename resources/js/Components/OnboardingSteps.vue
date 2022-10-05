@@ -1,21 +1,21 @@
 <template>
-<div class="space-y-2 rounded border border-transparent"  ref="collapsable" :class="{'bg-base-lvl-3 shadow-xl border-base rounded border': isCollapsed}">
-    <header class="px-4 py-2 flex justify-between cursor-pointer" @click="toggleCollapse()">
+<div class="space-y-2 border border-transparent rounded bg-base-lvl-3 "  ref="collapsable" :class="{'shadow-xl border-base rounded border': isCollapsed}">
+    <header class="flex items-center justify-between px-4 py-2 cursor-pointer" @click="toggleCollapse()">
         <SectionTitle type="secondary"> Onboarding </SectionTitle>
         <i :class="icon" />
     </header>
     <div v-if="!isCollapsed" class="space-y-2">
         <div v-for="step in steps"
-            class="border cursor-pointer group flex flex-nowrap space-x-4 bg-base-lvl-3 rounded-md p-4 shadow-xl"
+            class="flex p-4 space-x-4 border rounded-md cursor-pointer border-base-lvl-3/80 group flex-nowrap bg-base-lvl-3"
             :key="step.name"
             >
-            <div class="h-10 w-10  transition-all group-hover:border-primary group-hover:text-primary justify-center rounded-md border flex items-center"
-                :class="[!step.complete ? 'text-primary border-primary shadow-md shadow-primary/20' : 'border-slate-300 text-slate-300']"
+            <div class="flex items-center justify-center w-10 h-10 transition-all border rounded-md group-hover:border-primary group-hover:text-primary"
+                :class="[!step.complete ? 'text-primary border-primary  shadow-primary/20' : 'border-slate-300 text-slate-300']"
                 >
                 <i :class="step.icon" />
             </div>
-            <div class="ml-4 w-full">
-                <h1 class="text-body-1 font-bold"> {{ step.label }}</h1>
+            <div class="w-full ml-4">
+                <h1 class="font-bold text-body-1"> {{ step.label }}</h1>
                 <p class="text-body">
                     {{ step.description }}
                 </p>

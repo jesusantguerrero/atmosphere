@@ -1,21 +1,26 @@
 <template>
-    <article class="flex pb-20 pt-16 mx-auto space-x-2 max-w-screen-2xl relative">
+    <article class="relative flex pt-16 pb-20 mx-auto space-x-2 max-w-screen-2xl">
         <main class="w-full pr-5 md:w-10/12 md:pl-8">
             <slot />
         </main>
 
-        <aside class="hidden md:block relative h-screen px-2 overflow-auto" :class="panelStyles">
+        <aside class="relative hidden h-screen px-2 overflow-auto md:block" :class="panelStyles">
             <section class="fixed">
                 <slot name="panel">
-                    <SectionTitle class="flex items-center pl-5 mt-5" type="secondary">
+                    <SectionTitle class="flex items-center justify-between pl-5 mt-5" type="secondary">
                         <span>
-                            Budget Accounts
+                            Accounts
                         </span>
                         <LogerTabButton class="flex items-center ml-2 text-primary" @click="isImportModalOpen=!isImportModalOpen" title="import">
+                            {{ formatMoney(budgetAccountsTotal) }}
                             <IconImport />
                         </LogerTabButton>
                     </SectionTitle>
-                    <AccountsLedger :accounts="accounts" @reordered="saveReorder" class="mt-5" />
+                    <AccountsLedger
+                        :accounts="accounts"
+                        @reordered="saveReorder"
+                        class="mt-5"
+                    />
                 </slot>
             </section>
         </aside>
@@ -35,6 +40,9 @@
     import LogerTabButton from '@/Components/atoms/LogerTabButton.vue';
     import ImportResourceModal from '@/Components/ImportResourceModal.vue';
     import { useTransactionModal } from '@/domains/transactions';
+    import exactMathNode from 'exact-math';
+    import { formatMoney } from '@/utils';
+
 
     const { openTransferModal, isOpen: isTransferModalOpen } = useTransactionModal()
 
@@ -79,4 +87,10 @@
         return [sizes];
     })
 
+
+    const budgetAccountsTotal =  computed(() => {
+        return props.accounts.reduce((total, account) => {
+            return exactMathNode.add(total, account?.balance)
+        }, 0)
+    })
 </script>

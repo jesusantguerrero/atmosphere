@@ -6,18 +6,25 @@ use App\Domains\Budget\Models\Budget;
 use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Transaction\Models\Transaction;
 use App\Events\BudgetAssigned;
+use App\Models\Team;
 use Brick\Money\Money;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Category as CoreCategory;
 
 class Category extends CoreCategory
 {
+    use HasFactory;
     const READY_TO_ASSIGN = "Ready to Assign";
     const INFLOW = "Inflow";
     protected $with = ['budget'];
 
     public function budget() {
         return $this->hasOne(Budget::class);
+    }
+
+    public function team() {
+        return $this->belongsTo(Team::class);
     }
 
     public function transactions()
@@ -110,5 +117,15 @@ class Category extends CoreCategory
         ->whereRaw("date_format(month, '%Y-%m') < '$yearMonth'")
         ->from('budget_months')
         ->sum(DB::raw("budgeted + activity"));
+    }
+
+    /**
+     * Create a new factory instance for the model.
+     *
+     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     */
+    protected static function newFactory()
+    {
+        return \Database\Factories\CategoryFactory::new();
     }
 }

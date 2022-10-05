@@ -123,6 +123,12 @@ return [
 
     'cipher' => 'AES-256-CBC',
 
+    /***
+     * Loger things
+     */
+
+     'demo' => env('APP_DEMO', false),
+
     /*
     |--------------------------------------------------------------------------
     | Autoloaded Service Providers
