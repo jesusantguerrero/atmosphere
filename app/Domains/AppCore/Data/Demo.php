@@ -76,7 +76,12 @@ class Demo
 
         for ($i=0; $i < $this->count; $i++) {
             $this->items[] = function () use ($attrs, $faker) {
-                $category = $this->team->budgetCategories()->whereNotNull('parent_id')->get()->random(1)->first();
+                $category = $this->team->budgetCategories()
+                ->whereNotNull('parent_id')
+                ->whereNot('display_id', Category::READY_TO_ASSIGN)
+                ->get()
+                ->random(1)
+                ->first();
                 $account = $this->team->budgetAccounts()->get()->random(1)->first();
                 $payee = $this->team->payees()->get()->random(1)->first();
 

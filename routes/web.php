@@ -16,7 +16,6 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\FinanceTransactionController;
 use App\Http\Controllers\FinanceTrendController;
-use App\Http\Controllers\FinanceWatchlistController;
 use App\Http\Controllers\GoalController;
 use App\Http\Controllers\IngredientController;
 use App\Http\Controllers\IntegrationController;
