@@ -29,6 +29,7 @@ class BudgetMonth extends Model
             'name' => $data['name'],
             'category_id' => $data['destination_category_id'] ?? $data['category_id'],
         ], [
+            "user_id" => $data['user_id'],
             'budgeted' => $data['budgeted'] ?? 0,
             'activity' => $data['activity'] ?? 0,
         ]);
@@ -42,6 +43,7 @@ class BudgetMonth extends Model
             'name' => $data['name'],
             'category_id' => $data['destination_category_id'] ?? $data['category_id'],
         ], [
+            "user_id" => $data['user_id'],
             'budgeted' => DB::raw("budgeted + {$data['budgeted']}"),
             'activity' => DB::raw("activity + {$data['activity']}"),
         ]);

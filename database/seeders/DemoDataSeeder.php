@@ -100,6 +100,7 @@ class DemoDataSeeder extends Seeder
             'total' => 40000,
             'payee_id' => $payees[0]->id,
             'direction' => Transaction::DIRECTION_DEBIT,
+            'category_id' => Category::findOrCreateByName($userSession, Category::READY_TO_ASSIGN),
             'date' => $faker->dateTimeBetween($month->startOfMonth(), $month->endOfMonth())->format('Y-m-d H:i:s')
         ])
         ->createTransactions();
@@ -119,10 +120,10 @@ class DemoDataSeeder extends Seeder
 
     public function down() {
         $user = User::where('email','demo@example.com')->first();
-        if ($team = Team::where('user_id', $user->id)->first()) {
+        if ($user && $team = Team::where('user_id', $user->id)->first()) {
             (new Demo($team))->removeSampleData();
             $team->delete();
+            $user->delete();
         }
-        $user->delete();
     }
 }

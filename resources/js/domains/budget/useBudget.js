@@ -65,6 +65,7 @@ export const useBudget = (budgets) => {
 
     const readyToAssign = computed(() => {
         const budgetTotals = getGroupTotals(outflow.value)
+        console.log(inflow.value?.activity | 0, budgetTotals.budgeted || 0 , "Balance")
         const balance = ExactMath.sub(inflow.value?.activity | 0, budgetTotals.budgeted || 0)
         const category = inflow.value?.subCategories[0] ?? {}
 

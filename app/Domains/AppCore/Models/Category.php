@@ -51,6 +51,7 @@ class Category extends CoreCategory
             'month' => $month,
             'name' => $month,
         ], [
+            'user_id' => $this->user_id,
             'budgeted' => $shouldAggregate ? DB::raw("budgeted + $amount") : $amount,
         ]);
 
