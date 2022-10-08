@@ -1,5 +1,5 @@
 <template>
-<div class="space-y-2 border border-transparent rounded bg-base-lvl-3 "  ref="collapsable" :class="{'shadow-xl border-base rounded border': isCollapsed}">
+<div class="space-y-2 border border-transparent rounded bg-base-lvl-3 shadow-xl"  ref="collapsable" :class="{'pb-4': isCollapsed}">
     <header class="flex items-center justify-between px-4 py-2 cursor-pointer" @click="toggleCollapse()">
         <SectionTitle type="secondary"> Onboarding </SectionTitle>
         <i :class="icon" />

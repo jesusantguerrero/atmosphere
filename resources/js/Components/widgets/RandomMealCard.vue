@@ -10,7 +10,6 @@
                 <i class="fa fa-sync" :class="[state.isLoading ? 'fa-spin' : '']"></i>
             </LogerButton>
         </div>
-
     </div>
 </template>
 
@@ -18,7 +17,8 @@
 import { AtButton } from "atmosphere-ui"
 import { reactive, computed } from 'vue'
 import axios from 'axios'
-import LogerButton from "./atoms/LogerButton.vue";
+import LogerButton from "@/Components/atoms/LogerButton.vue";
+
 const props = defineProps({
         show: {
             default: false
