@@ -96,15 +96,23 @@ export const getDateFromIso = (isoDateString) => {
 
 export const generateRandomColor = () => `#${Math.floor(Math.random() * 16777215).toString(16)}`;
 
-export const formatMonth = (dateString) => {
+export enum MonthTypeFormat {
+    short = 'MMM',
+    long = 'MMMM'
+}
+export const formatMonth = (dateString: string | Date, type: MonthTypeFormat = MonthTypeFormat.short ) => {
     try {
-        return format(parseISO(dateString), 'MMMM')
+        if (typeof dateString == 'string') {
+            return format(parseISO(dateString), type)
+        } else {
+            return format(dateString, type)
+        }
     } catch (err) {
         return dateString
     }
 }
 
-export const formatDate = (dateISOString, placeholder) => {
+export const formatDate = (dateISOString: string, placeholder: string) => {
     if (!dateISOString && placeholder) return placeholder;
     return dateISOString && format(parseISO(dateISOString + "T00:00:00"), "MMM dd, yyyy");
 };
