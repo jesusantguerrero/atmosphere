@@ -25,21 +25,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-
-        Onboard::addStep('Step 1: confirm your email')
-        ->link('/user/profile')
-        ->attributes([
-            'icon' => 'fas fa-envelope-open-text',
-            'name' => 'confirmEmail',
-            'description' => 'Validate your email address',
-        ])
-        ->cta('Resend confirmation')
-        ->completeIf(function (Team $model) {
-
-            return (bool) $model->owner->email_verified_at;
-        });
-
-        Onboard::addStep('Step 2: Add accounts')
+        Onboard::addStep('Step 1: Add accounts')
             ->link('/finance')
             ->cta('Go to accounts')
             ->attributes([
@@ -53,7 +39,7 @@ class AppServiceProvider extends ServiceProvider
                 return $model->accounts->count() > 0;
             });
 
-        Onboard::addStep('Step 3: Add budget categories')
+        Onboard::addStep('Step 2: Add budget categories')
             ->link('/budgets')
             ->cta('Go to finance/budget')
             ->attributes([
@@ -65,7 +51,7 @@ class AppServiceProvider extends ServiceProvider
                 return $model->budgetCategories->count() > 0;
             });
 
-        Onboard::addStep('Step 4: Add meal plan')
+        Onboard::addStep('Step 3: Add meal plan')
             ->link('/meal-planner')
             ->cta('Go to meal/plan')
             ->attributes([
