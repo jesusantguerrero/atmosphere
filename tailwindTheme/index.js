@@ -30,7 +30,7 @@ module.exports = {
         "base-lvl-2": colors.slate[50],
         "base-lvl-3": colors.white,
         info: "#3D68F5",
-        success: "#79E7AE",
+        success: "#00C875",
         warning: "#D39E17",
         error: "#F61909",
         "body": colors.gray[900],

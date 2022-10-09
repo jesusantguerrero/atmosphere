@@ -63,6 +63,6 @@ class MealController extends InertiaController
             'team_id' => $request->user()->current_team_id
         ])->get();
 
-        return count($meals) ? $meals->random(): null;
+        return count($meals) ? $meals->random(): 'Noting to show';
     }
 }

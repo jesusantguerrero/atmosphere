@@ -32,7 +32,7 @@
                 </div>
 
             </div>
-            <div class="space-y-4 md:w-3/12 py-4">
+            <div class="space-y-4 md:w-3/12 py-6">
                 <ClimateWidget />
                 <OnboardingSteps :steps="onboarding.steps" :percentage="onboarding.percentage" class="mt-5" />
                 <MealWidget :meals="meals.data" />

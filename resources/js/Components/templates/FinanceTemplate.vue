@@ -5,7 +5,7 @@
         </main>
 
         <aside class="relative hidden h-screen px-2 overflow-auto md:block" :class="panelStyles">
-            <section class="fixed">
+            <section class="fixed aside-content">
                 <slot name="panel">
                     <SectionTitle class="flex items-center justify-between pl-5 mt-5" type="secondary">
                         <span>
@@ -94,3 +94,12 @@
         }, 0)
     })
 </script>
+
+
+<style lang="scss" scoped>
+.aside-content {
+    width: -webkit-fill-available;
+    padding-right: 8px;
+}
+
+</style>

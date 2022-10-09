@@ -1,15 +1,15 @@
 <template>
     <section
-        class="cursor-pointer text-body-1 divide-y-2"
-        :class="badgeClass"
+        class="cursor-pointer text-body-1 divide-y-2 border shadow-md overflow-hidden rounded-md"
+        :class="theme.default"
         @click="toggle"
     >
-        <article class="py-4 flex flex-col justify-center items-center mx-auto">
+        <article class="py-4 flex flex-col justify-center items-center mx-auto" :class="badgeClass">
             <h4 class="text-lg font-bold "> {{ formatter(value) }} </h4>
             <small>
-                {{ description }}
+                {{ description }} {{ status }}
             </small>
-            
+
             <NPopover v-if="isOverspent" trigger="manual" placement="bottom"  @update:show="handleUpdateShow" :show="showPopover">
                 <template #trigger>
                     <AtButton class="rounded-md bg-white/80">
@@ -71,7 +71,7 @@
     })
 
     const theme = {
-        good: 'bg-success',
+        good: 'bg-success/80 text-white',
         danger: 'bg-error/50',
         needs: 'bg-warning',
         overspend: 'bg-warning',
@@ -98,7 +98,7 @@
             return BALANCE_STATUS.available.name
         } else if (props.value < 0) {
             return BALANCE_STATUS.overspent.name
-        } 
+        }
         return BALANCE_STATUS.empty.name
     })
 
@@ -112,9 +112,9 @@
 
     const badgeClass = computed(() => {
         let themeColor = theme.default
-        if (status.value === BALANCE_STATUS.available) {
+        if (status.value === BALANCE_STATUS.available.name) {
             themeColor = theme.good
-        } else if (status.value === BALANCE_STATUS.overspent) {
+        } else if (status.value === BALANCE_STATUS.overspent.name) {
             themeColor = theme.danger
         }
         return [themeColor]

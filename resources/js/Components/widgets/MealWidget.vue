@@ -1,8 +1,10 @@
 <template>
-    <div class="pb-10 space-y-5">
-        <SectionTitle type="secondary"> {{ t('Menu for today') }}</SectionTitle>
-        <RandomMealCard />
-        <div class="px-4 py-2 space-y-4 rounded-md shadow-xl cursor-pointer min-h-min bg-base-lvl-3">
+    <div class="pb-10">
+        <RandomMealCard class="rounded-b-none border-b mt-4" />
+        <div class="px-4 py-2 space-y-4 rounded-b-md shadow-xl cursor-pointer min-h-min bg-base-lvl-3">
+            <div class="text-center">
+                <SectionTitle type="secondary"> {{ t('Menu for today') }}</SectionTitle>
+            </div>
             <template v-if="meals.length">
                 <div v-for="plannedMeal in meals" :key="plannedMeal.id">
                     <h4 class="font-bold capitalize text-body-1">
@@ -12,6 +14,7 @@
                 </div>
             </template>
             <div v-else class="py-1.5 text-center">
+
                 <h4 class="py-1 text-2xl font-bold text-body-1"> {{t('No meals') }} </h4>
                 <LogerButton variant="inverse">{{ t('Go to planner')}}</LogerButton>
             </div>
