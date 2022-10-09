@@ -4,6 +4,22 @@
       <FinanceSectionNav>
         <template #actions>
           <div class="flex items-center w-full space-x-2">
+            <LogerDropdown
+                label="Status"
+                :items="{
+                    status: {
+                        label: 'Status',
+                        sections: {
+                            draft: {
+                                label: 'Drafts'
+                            },
+                            verified: {
+                                label: 'Verified'
+                            }
+                        }
+                        }
+                    }"
+            />
             <AtDatePager
               class="w-full h-12 border-none bg-base-lvl-1 text-body"
               v-model:startDate="pageState.dates.startDate"
@@ -14,18 +30,6 @@
             <LogerButton  variant="inverse">
                 Import Transactions
             </LogerButton>
-            <FiltersPopover
-                :options="{
-                    filters: {
-                        status: ['draft','verified']
-                    },
-                    relationships: ['linked']
-                }"
-                @onFilterChanged="pageState.filters=$event"
-                @onRelationshipsChanged="pageState.relationships=$event"
-            >
-                <i class="block mr-2 fa fa-filter" />
-            </FiltersPopover>
             <DraftButtons
                 v-if="isDraft"
             />
@@ -61,6 +65,7 @@ import LogerButton from "@/Components/atoms/LogerButton.vue";
 
 import { useTransactionModal } from "@/domains/transactions";
 import { useServerSearch } from "@/composables/useServerSearch";
+import LogerDropdown from "@/Components/molecules/LogerDropdown.vue";
 
 const { openTransferModal } = useTransactionModal();
 

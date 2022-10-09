@@ -25,7 +25,7 @@
                             </AtButton>
 
                             <PrivacyToggle v-model="isPrivacyMode" v-if="!isOnboarding" />
-                            <span> {{ formatMoney($page.props.balance) }}</span>
+                            <!-- <span> {{ formatMoney($page.props.balance) }}</span> -->
 
                             <AppNotificationBell
                                 :notifications="$page.props.unreadNotifications"
@@ -226,7 +226,6 @@
     import JetResponsiveNavLink from '@/Jetstream/ResponsiveNavLink.vue'
     import PrivacyToggle from '@/Components/molecules/PrivacyToggle.vue'
     import LogerTabButton from '@/Components/atoms/LogerTabButton.vue'
-    import LogerDropdown from '@/Components/molecules/LogerDropdown.vue'
     import { darkThemeOverrides } from '@/utils/naiveui'
     import AppShell from './AppShell.vue'
     import AppIcon from '@/Components/AppIcon.vue'
