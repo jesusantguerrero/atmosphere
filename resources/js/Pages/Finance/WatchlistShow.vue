@@ -20,15 +20,21 @@
     <FinanceTemplate title="Finance" :accounts="accounts" ref="financeTemplateRef">
       <article class="w-full">
         <header class="mt-5">
-          <SectionTitle type="secondary"> {{ formatMonth(pageState.dates.startDate, MonthTypeFormat.long) }} </SectionTitle>
+          <SectionTitle type="secondary"> {{ resource.name }} : {{ formatMonth(pageState.dates.startDate, MonthTypeFormat.long) }} </SectionTitle>
         </header>
 
-        <section class="grid lg:grid-cols-3 gap-4 mt-4">
-          <WatchlistCard
-            v-for="item in data"
-            :key="item.name"
-            :item="item"
-          />
+        <section class="mt-4">
+          <header>
+            <h4 class="font-bold text-4xl">{{ formatMoney(50000) }}</h4>
+          </header>
+          <section class="py-8">
+            <ChartComparison
+                class="w-full mt-4 mb-10 overflow-hidden bg-white rounded-lg shadow-xl"
+                :title="`${resource.name} Report`"
+                ref="ComparisonRevenue"
+                :data="{}"
+            />
+          </section>
         </section>
       </article>
 
@@ -37,6 +43,20 @@
         v-model:show="isModalOpen"
         :form-data="resourceToEdit"
       />
+
+      <template #panel>
+        <section class="fixed">
+            <SectionTitle class="flex items-center justify-between pl-5 mt-5" type="secondary">
+                <span>
+                    Transactions
+                </span>
+                <LogerTabButton class="flex items-center ml-2 text-primary" @click="isImportModalOpen=!isImportModalOpen" title="import">
+                    {{ formatMoney(budgetAccountsTotal) }}
+                    <IconImport />
+                </LogerTabButton>
+            </SectionTitle>
+        </section>
+      </template>
     </FinanceTemplate>
   </AppLayout>
 </template>
@@ -54,7 +74,10 @@ import WatchlistCard from "@/Components/WatchlistCard.vue";
 import WatchlistModal from "@/Components/WatchlistModal.vue";
 
 import { useServerSearch } from "@/composables/useServerSearch";
-import { formatMonth, MonthTypeFormat } from "@/utils";
+import { formatMoney, formatMonth, MonthTypeFormat } from "@/utils";
+import IconImport from "@/Components/icons/IconImport.vue";
+import LogerTabButton from "@/Components/atoms/LogerTabButton.vue";
+import ChartComparison from "@/Components/ChartComparison.vue";
 
 const { serverSearchOptions } = toRefs(props);
 const { state: pageState } = useServerSearch(serverSearchOptions);
@@ -64,10 +87,10 @@ const props = defineProps({
     type: Object,
     required: true,
   },
-  data: {
-    type: Array,
+  resource: {
+    type: Object,
     default() {
-      return [];
+      return {};
     },
   },
   categories: {

@@ -14,16 +14,16 @@
 
         <template #content>
             <div class="w-60" v-if="!disabled">
-                <template v-for="(item, itemKey) in items">
-                    <div class="block px-4 py-2 text-xs text-body-1">
+                <template v-for="(item, itemKey) in items" :key="itemKey">
+                    <div class="block px-4 py-2 text-xs text-body-1" >
                         {{ item.label }}
                     </div>
 
                     <!-- Team Settings -->
                     <slot :name="kebabCase(itemKey)">
                         <div>
-                            <JetDropdownLink :href="url" v-for="([label, url, condition ]) in item.sections">
-                                {{ label }}
+                            <JetDropdownLink :href="section.url" v-for="(section, key) in item.sections" :key="key">
+                                {{ section.label }}
                             </JetDropdownLink>
                         </div>
                     </slot>
@@ -47,6 +47,9 @@ defineProps({
     label: {
         type: String,
         required: true
+    },
+    disabled: {
+        type: Boolean
     }
 })
 

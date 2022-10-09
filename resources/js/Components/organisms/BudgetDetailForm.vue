@@ -1,9 +1,9 @@
 <template>
     <section class="px-5 pt-2 text-left border-b rounded-md space-y-4 shadow-xl bg-base-lvl-3 pb-4" :class="{'flex': !full }">
         <header class="flex items-center justify-between mt-2 mb-2">
-            <AtInput 
-                v-model="category.name" 
-                class="border-transparent cursor-pointer hover:text-primary hover:border-primary" 
+            <AtInput
+                v-model="category.name"
+                class="border-transparent cursor-pointer hover:text-primary hover:border-primary"
                 rounded
             >
                 <template #prefix>
@@ -14,7 +14,7 @@
             </AtInput>
         </header>
 
-        <BudgetTargetForm 
+        <BudgetTargetForm
             :parent-id="parentId"
             :category="category"
             :item="item"
@@ -42,20 +42,16 @@
     import { NSelect , NDropdown} from "naive-ui"
     import { useForm } from '@inertiajs/inertia-vue3';
     import { format } from 'date-fns';
-    
+
     import ColorSelector from '../molecules/ColorSelector.vue';
     import LogerTabButton from '../atoms/LogerTabButton.vue';
     import BudgetTargetForm from '../molecules/BudgetTargetForm.vue';
-    
-    import { monthDays, WEEK_DAYS, FREQUENCY_TYPE, generateRandomColor } from "@/utils"
+
+    import { monthDays, WEEK_DAYS, FREQUENCY_TYPE, generateRandomColor, recurrenceTypes } from "@/utils"
     import { makeOptions } from "@/utils/naiveui";
-    // import IconPicker from '../IconPicker.vue';
+    import { targetTypes } from '@/domains/budget';
 
     const props = defineProps({
-        isAddingGroup: {
-            type: Boolean,
-            default: false
-        },
         parentId: {
             type: Number,
             default: null
@@ -74,9 +70,7 @@
         }
     });
 
-    const state = reactive({
-        isAddingGroup: false,
-        form: useForm({
+    const form = useForm({
             category_id: null,
             parent_id: null,
             color: generateRandomColor(),
@@ -90,49 +84,6 @@
             frequency_date: null,
             frequency_interval: 0,
             frequency_interval_unit: 0,
-        }),
-        targetTypes: [
-            {
-                value: 'spending',
-                label: 'Spending',
-                description: `For groceries, holidays, vacations
-                Fund up to an amount with the ability to spend from it along the way
-                `,
-
-            }, {
-                value: 'saving_balance',
-                label: 'Saving Balance',
-                description: `down payments, emergency fund
-                Save this amount over time and maintain the balance by replenishing any money spent
-                `
-            }, {
-                value: 'savings_monthly',
-                label: 'Savings Monthly',
-                description: `For saving goals with unknown targets
-                Contribute this amount every month until you disable this target
-                `
-            }, {
-                value: 'debt_monthly_payment',
-                label: 'Debt Monthly Payment',
-                description: `Use for: Mortgage, student loans, auto loans, etc
-                Budget for payments until you are debt free
-                `
-            }
-        ],
-        frequencies: [
-            {
-                value: 'MONTHLY',
-                label: 'Monthly'
-            },
-            {
-                value: 'WEEKLY',
-                label: 'Weekly'
-            },
-            {
-                value: 'DATE',
-                label: 'By Date'
-            }
-        ]
     })
 
     const frequencyUnit = computed(() => {
@@ -147,7 +98,7 @@
             }
         }
         return {
-           ...names[state.form.frequency],
+           ...names[recurrenceTypes],
         }
     })
 
@@ -155,12 +106,12 @@
         () => props.item,
         (item) => {
             if (item) {
-                state.form.reset()
-                Object.keys(state.form.data()).forEach(key => {
-                    state.form[key] = item[key] || state.form[key]
+                form.reset()
+                Object.keys(form.data()).forEach(key => {
+                    form[key] = item[key] || form[key]
                 })
             } else {
-                state.form.reset()
+                form.reset()
             }
         },
         { deep: true, immediate: true });
@@ -177,9 +128,9 @@
             }
         }
         const endpoint = methods[props.item?.id ? 'update' : 'save']
-        state.form.transform((data) => ({
+        form.transform((data) => ({
             ...data,
-            parent_id: data.parent_id || state.parentId,
+            parent_id: data.parent_id || props.parentId,
         }))[endpoint.method](endpoint.url)
     }
 
@@ -188,15 +139,10 @@
     })
 
     const monthInstanceCount = computed(() => {
-        return state.form.frequency == FREQUENCY_TYPE.WEEKLY &&
+        return form.frequency == FREQUENCY_TYPE.WEEKLY &&
         selectedSpan.value.filter(
             day => {
                 return format(day, 'iiiiii').toLowerCase() == state.form?.frequency_week_day?.toLowerCase()
             })
     })
-
-    const { form, targetTypes, frequencies } = toRefs(state);
-
-
-
 </script>
