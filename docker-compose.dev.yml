@@ -21,7 +21,7 @@ services:
       - db
       - redis
   db:
-    image: mysql:5.7
+    image: mariadb:10.8.4
     container_name: loger-db
     restart: always
     ports:
@@ -86,3 +86,6 @@ services:
 volumes:
   loger_db:
     driver: local
+networks:
+  loger:
+    driver: bridge

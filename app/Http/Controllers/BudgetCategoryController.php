@@ -13,8 +13,8 @@ use Illuminate\Validation\Rule;
 
 class BudgetCategoryController extends InertiaController
 {
-    protected $autorizedUser = false;
-    protected $autorizedTeam = true;
+    protected $authorizedUser = false;
+    protected $authorizedTeam = true;
 
     public function __construct(Category $category)
     {

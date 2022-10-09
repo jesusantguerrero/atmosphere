@@ -4,18 +4,11 @@
     "description": "The Laravel Framework.",
     "keywords": ["framework", "laravel"],
     "license": "MIT",
-    "repositories": [
-        {
-            "type": "path",
-            "url": "./atmosphere"
-        }
-    ],
     "require": {
         "php": "^8.1.0",
         "brick/money": "^0.6.0",
         "doctrine/dbal": "^3.3",
         "ernysans/laraworld": "^1.0",
-        "freesgen/atmosphere": "dev-master",
         "guzzlehttp/guzzle": "^7.0.2",
         "inertiajs/inertia-laravel": "^0.6.3",
         "insane/journal": "^0.4.0",
@@ -45,6 +38,7 @@
         "psr-4": {
             "App\\": "app/",
             "Modules\\": "Modules/",
+            "Freesgen\\Atmosphere\\": "atmosphere/src",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
         }
@@ -73,7 +67,10 @@
     },
     "extra": {
         "laravel": {
-            "dont-discover": []
+            "dont-discover": [],
+            "providers": [
+                "Freesgen\\Atmosphere\\AtmosphereServiceProvider"
+            ]
         }
     },
     "config": {

@@ -17,8 +17,13 @@
     ],
     "autoload": {
         "psr-4": {
-            "Freesgen\\Atmosphere\\": "src/"
+            "Freesgen\\Atmosphere\\": "/"
         }
+    },
+    "require": {
+        "php": "^8.1.0",
+        "inertiajs/inertia-laravel": "^0.6.3",
+        "laravel/jetstream": "^2.3"
     },
     "config": {
         "preferred-install": "dist",
@@ -29,10 +34,7 @@
         "laravel": {
             "providers": [
                 "Freesgen\\Atmosphere\\AtmosphereServiceProvider"
-            ],
-            "aliases": {
-                "Atmosphere": "Freesgen\\Atmosphere\\Facades\\Atmosphere"
-            }
+            ]
         }
     }
 }
