@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('ingredients', function (Blueprint $table) {
-            $table->foreignId('product_id')->after('user_id');
+            $table->foreignId('product_id')->nullable()->after('user_id');
         });
 
 

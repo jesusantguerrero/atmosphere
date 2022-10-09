@@ -17,7 +17,7 @@
             class="comparison-header__item justify-center w-full items-center flex-col flex  previous-period cursor-pointer hover:text-body/80"
             >
             <h6 class="period-title">{{ header.label }}</h6>
-            <span class="period-value">
+            <span class="period-value text-xs mt-2">
                 <NumberHider />
                 {{ formatMoney(header.value) }}
             </span>

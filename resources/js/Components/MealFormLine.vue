@@ -4,8 +4,12 @@
             <LogerInput bordered rounded type="number" v-model="ingredient.quantity" />
         </AtField>
         <AtField class="w-full px-4" label="Name">
+            <div v-if="ingredient.product_id" class="capitalize">
+                {{ ingredient.name }}
+            </div>
             <LogerApiSimpleSelect
-                v-model="ingredient"
+                v-else
+                v-model="ingredient.product_id"
                 v-model:label="ingredient.name"
                 class="w-full"
                 tag

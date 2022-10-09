@@ -1,9 +1,9 @@
 <template>
-<SectionCard
-    section-title="Trends preview"
+<WidgetTitleCard
+    title="Trends preview"
     :action="{
-    label: 'Go to Trends',
-    iconClass: 'fa fa-chevron-right',
+        label: 'Go to Trends',
+        iconClass: 'fa fa-chevron-right',
     }"
     @action="Inertia.visit('/trends')"
 >
@@ -21,7 +21,7 @@
             value="total"
         />
     </article>
-</SectionCard>
+</WidgetTitleCard>
 
 </template>
 
@@ -29,6 +29,7 @@
 import DonutChart from '../organisms/DonutChart.vue';
 import SectionCard from '../molecules/SectionCard.vue';
 import { computed, ref } from 'vue';
+import WidgetTitleCard from '../molecules/WidgetTitleCard.vue';
 
 const props = defineProps({
     groupData: {

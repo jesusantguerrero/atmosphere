@@ -16,9 +16,11 @@ export const useBudget = (budgets) => {
             const totals = getCategoriesTotals(item.subCategories, {
                 onOverspent(category) {
                     overspentCategories.value.push(category)
+                    category.hasOverspent = true;
                 },
                 onOverAssigned(category) {
                     overAssignedCategories.value.push(category)
+                    category.overAssigned = true;
                 }
             });
 
@@ -48,9 +50,12 @@ export const useBudget = (budgets) => {
                 conditions = conditions && categoryGroup.hasOverspent
             }
             if (conditions) {
-                categoryGroup.subCategories = categoryGroup.subCategories?.filter(subCategory => overspentFilter.value ? subCategory.hasOverspent : true)
+                categoryGroup.subCategories = categoryGroup.subCategories?.filter(
+                    subCategory => overspentFilter.value ? subCategory.hasOverspent : true
+                )
                 groups.push(categoryGroup)
             }
+
             return groups
         }, [])
     }

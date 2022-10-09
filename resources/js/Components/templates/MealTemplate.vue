@@ -1,9 +1,8 @@
 <template>
-  <section class="pl-6 pb-20 pt-16 max-w-screen-2xl">
+  <section class="relative px-8 pt-16 pb-20 mx-auto max-w-screen-2xl">
     <header class="" v-if="showMealTypes">
       <article class="flex w-full justify-between mb-2">
         <SectionTitle> Meals </SectionTitle>
-        <LogerTabButton class="font-bold">Add Meal</LogerTabButton>
       </article>
       <article class="flex space-x-4">
         <div

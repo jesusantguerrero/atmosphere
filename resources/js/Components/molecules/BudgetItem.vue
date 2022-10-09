@@ -8,17 +8,20 @@
             <IconDrag class="handle" />
         </div>
         <div ref="inputContainer">
-            <h4 class="cursor-pointer" @click="$emit('edit')">  
-                {{ item.name }} 
+            <h4 class="cursor-pointer" @click="$emit('edit')">
+                {{ item.name }}
                 <div
                     v-if="item.hasOverspent || item.hasOverAssigned || item.hasUnderfunded"
-                    class="absolute -top-1 -right-2 h-2 w-2 bg-error rounded-full ring ring-error/20 animate-pulse" 
+                    class="absolute -top-1 -right-2 h-2 w-2 bg-error rounded-full ring ring-error/20 animate-pulse"
                 />
             </h4>
-            <span v-if="!isEditing" @click="toggleEditing" class="border border-transparent px-4 rounded-md hover:border-slate-400 cursor-pointer py-2.5 inline-block transition hover:text-primary">
-                {{ formatMoney(budgeted) }}
-            </span>
-            <LogerInput v-model="budgeted" @blur="onAssignBudget" :number-format="true" v-else ref="input" />
+            <div class="flex items-center" title="Money Assigned">
+                <IconAllocated class="text-lg text-success" />
+                <span v-if="!isEditing" @click="toggleEditing" class="border border-transparent px-4 rounded-md hover:border-slate-400 cursor-pointer py-2.5 inline-block transition hover:text-primary">
+                    {{ formatMoney(budgeted) }}
+                </span>
+                <LogerInput v-model="budgeted" @blur="onAssignBudget" :number-format="true" v-else ref="input" />
+            </div>
         </div>
     </div>
     <div class="flex items-center space-x-2 text-right flex-nowrap min-w-fit">
@@ -44,6 +47,7 @@ import LogerInput from '../atoms/LogerInput.vue';
 import formatMoney from "@/utils/formatMoney";
 import autoAnimate from '@formkit/auto-animate';
 import BudgetTransaction from '../atoms/BudgetTransaction.vue';
+import IconAllocated from '../icons/IconAllocated.vue';
 
 const props = defineProps({
     item: {

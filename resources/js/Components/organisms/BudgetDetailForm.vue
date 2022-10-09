@@ -12,6 +12,9 @@
                     </div>
                 </template>
             </AtInput>
+            <LogerTabButton @click="$emit('close')">
+                <IconClose />
+            </LogerTabButton>
         </header>
 
         <BudgetTargetForm
@@ -50,6 +53,7 @@
     import { monthDays, WEEK_DAYS, FREQUENCY_TYPE, generateRandomColor, recurrenceTypes } from "@/utils"
     import { makeOptions } from "@/utils/naiveui";
     import { targetTypes } from '@/domains/budget';
+    import IconClose from '../icons/IconClose.vue';
 
     const props = defineProps({
         parentId: {

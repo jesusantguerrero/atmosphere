@@ -20,21 +20,22 @@
                         :data="props.revenue"
                     />
 
-                    <div
-                        class="w-4/12 mt-4 mb-10 overflow-hidden bg-white shadow-xl sm:rounded-lg"
-                    >
-                        <h4 class="p-4 font-bold">Next Payments</h4>
-                        <div class="payment" v-for="payment in nextPayments" :key="payment.id">
-                            {{ payment.name }}
-                        </div>
-                    </div>
-
+                    <NextPaymentsWidget
+                        v-if="onboarding.steps"
+                        class="w-4/12"
+                        :payments="nextPayments"
+                    />
                 </div>
 
             </div>
-            <div class="space-y-4 md:w-3/12 py-4">
+            <div class="space-y-4 md:w-3/12 py-6">
                 <ClimateWidget />
-                <OnboardingSteps :steps="onboarding.steps" :percentage="onboarding.percentage" class="mt-5" />
+                <OnboardingSteps :steps="onboarding.steps" :percentage="onboarding.percentage" class="mt-5" v-if="onboarding.steps" />
+                <NextPaymentsWidget
+                    v-else
+                    class="w-full"
+                    :payments="nextPayments"
+                />
                 <MealWidget :meals="meals.data" />
             </div>
         </div>
@@ -60,7 +61,8 @@
     import { useSelect } from '@/utils/useSelects';
     import { transactionDBToTransaction } from "@/domains/transactions";
     import MealWidget from "@/Components/widgets/MealWidget.vue";
-import ClimateWidget from "../Components/widgets/ClimateWidget.vue";
+    import ClimateWidget from "../Components/widgets/ClimateWidget.vue";
+    import NextPaymentsWidget from "@/Components/widgets/NextPaymentsWidget.vue";
 
     const props = defineProps({
         revenue: {

@@ -6,7 +6,7 @@
     </header>
     <div v-if="!isCollapsed" class="space-y-2">
         <div v-for="step in steps"
-            class="flex p-4 space-x-4 border rounded-md cursor-pointer border-base-lvl-3/80 group flex-nowrap bg-base-lvl-3"
+            class="flex px-4 py-1.5 space-x-4 border rounded-md cursor-pointer border-base-lvl-3/80 group flex-nowrap bg-base-lvl-3"
             :key="step.name"
             >
             <div class="flex items-center justify-center w-10 h-10 transition-all border rounded-md group-hover:border-primary group-hover:text-primary"

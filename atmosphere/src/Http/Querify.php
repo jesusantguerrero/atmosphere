@@ -56,7 +56,6 @@ trait Querify
            $this->modelQuery->where(["user_id" => $request->user()->id]);
         }
 
-
         if ($this->authorizedTeam) {
             $this->modelQuery->where(["team_id" => $request->user()->current_team_id]);
          }

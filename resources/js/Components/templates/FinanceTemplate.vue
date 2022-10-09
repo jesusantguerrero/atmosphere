@@ -5,21 +5,20 @@
         </main>
 
         <aside class="relative hidden h-screen px-2 overflow-auto md:block" :class="panelStyles">
-            <section class="fixed">
+            <section class="fixed aside-content">
                 <slot name="panel">
-                    <SectionTitle class="flex items-center justify-between pl-5 mt-5" type="secondary">
-                        <span>
-                            Accounts
-                        </span>
-                        <LogerTabButton class="flex items-center ml-2 text-primary" @click="isImportModalOpen=!isImportModalOpen" title="import">
-                            {{ formatMoney(budgetAccountsTotal) }}
-                            <IconImport />
-                        </LogerTabButton>
-                    </SectionTitle>
+                    <WidgetCard title="Accounts" class="mt-4">
+                        <template #subtitle>
+                            <LogerTabButton class="flex items-center ml-2 text-primary" @click="isImportModalOpen=!isImportModalOpen" title="import">
+                                {{ formatMoney(budgetAccountsTotal) }}
+                                <IconImport />
+                            </LogerTabButton>
+                        </template>
+                    </WidgetCard>
                     <AccountsLedger
                         :accounts="accounts"
                         @reordered="saveReorder"
-                        class="mt-5"
+                        class="px-4 py-2 space-y-4 mt-4 rounded-md shadow-xl cursor-pointer min-h-min bg-base-lvl-3"
                     />
                 </slot>
             </section>
@@ -42,6 +41,7 @@
     import { useTransactionModal } from '@/domains/transactions';
     import exactMathNode from 'exact-math';
     import { formatMoney } from '@/utils';
+import WidgetCard from '../molecules/WidgetCard.vue';
 
 
     const { openTransferModal, isOpen: isTransferModalOpen } = useTransactionModal()
@@ -94,3 +94,12 @@
         }, 0)
     })
 </script>
+
+
+<style lang="scss" scoped>
+.aside-content {
+    width: -webkit-fill-available;
+    padding-right: 32px;
+}
+
+</style>

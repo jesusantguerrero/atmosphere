@@ -1,9 +1,9 @@
 <template>
-<div class="w-full text-right">
+<div class="w-full text-right" title="Money Available">
     <NPopover trigger="manual" placement="bottom"  @update:show="handleUpdateShow" :show="showPopover">
         <template #trigger>
             <span
-                class="px-5 py-1 inline-block cursor-pointer rounded-3xl text-body-1 min-w-max"
+                class="px-5 py-1 inline-block cursor-pointer rounded-3xl font-bold min-w-max"
                 :class="badgeClass"
                 @click="toggle"
             >
@@ -71,10 +71,10 @@ import { format, startOfMonth } from "date-fns";
     })
 
     const theme = {
-        good: 'bg-success',
-        danger: 'bg-danger',
-        needs: 'bg-warning',
-        overspend: 'bg-warning',
+        good: 'text-success bg-base-lvl-2 hover:bg-base-lvl-3',
+        danger: 'text-danger',
+        needs: 'text-warning',
+        overspend: 'text-warning',
         default: 'bg-base-lvl-3'
     }
 

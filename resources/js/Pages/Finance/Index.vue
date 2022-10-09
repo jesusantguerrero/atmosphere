@@ -20,89 +20,82 @@
     </template>
 
     <FinanceTemplate title="Finance" :accounts="accounts" ref="financeTemplateRef">
-      <section>
-        <div class="flex flex-wrap md:flex-nowrap md:space-x-8">
-          <div class="w-full md:w-7/12">
-            <div class="mt-5">
-              <SectionTitle type="secondary">Summary</SectionTitle>
-            </div>
+      <section class="grid grid-cols-2 gap-12 mt-4">
+            <WidgetTitleCard title="Summary" class="w-full">
             <div
-              class="flex justify-between px-4 py-5 mt-3 space-x-4 overflow-hidden border shadow-sm flex-nowrap border-base bg-base-lvl-3 rounded-xl"
+                class="flex justify-between px-4 py-5 mt-3 space-x-4 overflow-hidden flex-nowrap"
             >
-              <div class="w-full mx-auto space-y-2">
-                <FinanceCard
-                  class="text-body-1 bg-base-lvl-1"
-                  title="Income"
-                  :value="formatMoney(income)"
-                  :subtitle="`Last Month: ${incomeVariance}%`"
-                />
-                <FinanceCard
-                  class="text-body-1 bg-base-lvl-1"
-                  title="Savings"
-                  :value="formatMoney(savings)"
-                  :subtitle="`Total: ${formatMoney(savings)}`"
-                />
-                <BudgetProgress
-                    :goal="budgetTotal"
-                    :current="transactionTotal"
-                    class="border-t h-8 rounded-b-lg text-white"
-                />
-              </div>
-              <FinanceVarianceCard
-                class="w-full"
-                title="Expenses"
-                variance-title="Last month"
-                :value="formatMoney(transactionTotal)"
-                :variance="expenseVariance"
-                @click="$inertia.visit('/finance/transactions')"
+            <div class="w-full mx-auto space-y-2">
+              <FinanceCard
+                class="text-body-1 bg-base-lvl-1"
+                title="Income"
+                :value="formatMoney(income)"
+                :subtitle="`Last Month: ${incomeVariance}%`"
+              />
+              <FinanceCard
+                class="text-body-1 bg-base-lvl-1"
+                title="Savings"
+                :value="formatMoney(savings)"
+                :subtitle="`Total: ${formatMoney(savings)}`"
+              />
+              <BudgetProgress
+                  :goal="budgetTotal"
+                  :current="transactionTotal"
+                  class="border-t h-8 rounded-b-lg text-white"
               />
             </div>
+            <FinanceVarianceCard
+              class="w-full"
+              title="Expenses"
+              variance-title="Last month"
+              :value="formatMoney(transactionTotal)"
+              :variance="expenseVariance"
+              @click="$inertia.visit('/finance/transactions')"
+            />
           </div>
-          <div class="hidden md:block md:w-5/12">
-            <TransactionsTable
-              table-label="Planned Transactions"
-              class="pt-3 mt-5"
-              table-class="overflow-auto text-sm rounded-t-lg shadow-md bg-base-lvl-3 p-2 border"
-              :transactions="planned"
-              :parser="plannedDBToTransaction"
-              @edit="handleEdit"
-            >
-              <template #action>
-                <AtButton
-                  class="flex items-center text-primary"
-                  @click="Inertia.visit('/transactions?filter[status]=planned')"
-                >
-                  <span> See scheduled</span>
-                  <i class="ml-2 fa fa-chevron-right"></i>
-                </AtButton>
-              </template>
-            </TransactionsTable>
-          </div>
-        </div>
-        <div class="flex flex-wrap mt-5 md:flex-nowrap md:space-x-8">
-          <div class="w-full md:w-7/12">
+            </WidgetTitleCard>
+
+            <WidgetTitleCard title="Planned Transactions" class="hidden md:block">
+                <TransactionsTable
+                    class="w-full"
+                  table-class="overflow-auto text-sm rounded-t-lg shadow-md bg-base-lvl-3 p-2 w-full"
+                  :transactions="planned"
+                  :parser="plannedDBToTransaction"
+                  @edit="handleEdit"
+                />
+
+                <template #action>
+                    <AtButton
+                      class="flex items-center text-primary"
+                      @click="Inertia.visit('/transactions?filter[status]=planned')"
+                    >
+                      <span> See scheduled</span>
+                      <i class="ml-2 fa fa-chevron-right"></i>
+                    </AtButton>
+                </template>
+            </WidgetTitleCard>
+
             <CategoryTrendsPreview
+                class="w-full"
                 :category-data="topCategories"
                 :group-data="expensesByCategoryGroup"
             />
-          </div>
-          <div class="w-full md:w-5/12">
-            <TransactionsTable
-              table-label="Transactions"
-              class="pt-3 mt-5"
-              table-class="overflow-auto text-sm rounded-t-lg shadow-md bg-base-lvl-3 p-2 border"
-              :transactions="transactions"
-              :parser="transactionDBToTransaction"
-              @edit="''"
-            >
-              <template #action>
-                <at-button class="text-primary" @click="''"
-                  ><i class="fa fa-plus"></i> Add transaction</at-button
-                >
-              </template>
-            </TransactionsTable>
-          </div>
-        </div>
+
+            <WidgetTitleCard title="Transactions" class="w-full">
+                <TransactionsTable
+                    class="w-full"
+                table-class="overflow-auto text-sm"
+                :transactions="transactions"
+                :parser="transactionDBToTransaction"
+                @edit="''"
+                />
+
+                <template #action>
+                    <at-button class="text-primary" @click="''"
+                    ><i class="fa fa-plus"></i> Add transaction</at-button
+                    >
+                </template>
+            </WidgetTitleCard>
       </section>
     </FinanceTemplate>
   </AppLayout>
@@ -134,6 +127,7 @@ import formatMoney from "@/utils/formatMoney";
 import { useServerSearch } from "@/composables/useServerSearch";
 import CategoryTrendsPreview from "@/Components/finance/CategoryTrendsPreview.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
+import WidgetTitleCard from "@/Components/molecules/WidgetTitleCard.vue";
 
 const { serverSearchOptions } = toRefs(props);
 const {state: pageState} = useServerSearch(serverSearchOptions);

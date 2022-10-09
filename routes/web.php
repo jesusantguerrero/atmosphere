@@ -46,11 +46,11 @@ if (config('app.env') == 'production') {
     URL::forceScheme('https');
 }
 
-Route::get('/', fn () => Inertia::render('Landing/Index'));
-
 Route::resource('onboarding', OnboardingController::class)->middleware(['auth:sanctum', 'atmosphere.unteamed', 'verified']);
 
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
+    Route::get('/', fn () => Inertia::render('Dashboard'));
+
     /**
      *  Jetstream & Settings Section
      */

@@ -107,7 +107,7 @@
       </div>
 
       <template #panel>
-        <BudgetItemForm
+        <BudgetDetailForm
           class="mt-5 mr-4"
           v-if="selectedBudget"
           full
@@ -116,7 +116,13 @@
           @saved="onBudgetItemSaved"
           @deleted="deleteBudget"
           @cancel="selectedBudget = null"
+          @close="selectedBudget = null"
         />
+        <div v-else class="w-full mt-4">
+          <ExpenseIncome />
+          <QuickBudget class="mt-4" />
+          <QuickBudgetMore class="mt-4" />
+        </div>
       </template>
     </FinanceTemplate>
   </AppLayout>
@@ -131,7 +137,7 @@ import { VueDraggableNext as Draggable } from "vue-draggable-next";
 
 import AppLayout from "@/Layouts/AppLayout.vue";
 import { useSelect } from "@/utils/useSelects";
-import BudgetItemForm from "@/Components/organisms/BudgetDetailForm.vue";
+import BudgetDetailForm from "@/Components/organisms/BudgetDetailForm.vue";
 import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
 import LogerInput from "@/Components/atoms/LogerInput.vue";
 import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
@@ -146,6 +152,11 @@ import { useServerSearch } from "@/composables/useServerSearch";
 import { useBudget } from "@/domains/budget";
 import { createBudgetCategory } from "@/domains/budget/createBudgetCategory";
 import { formatMoney } from "@/utils";
+import OnboardingSteps from "@/Components/widgets/OnboardingSteps.vue";
+import ClimateWidget from "@/Components/widgets/ClimateWidget.vue";
+import ExpenseIncome from "../../Components/widgets/ExpenseIncome.vue";
+import QuickBudget from "../../Components/widgets/QuickBudget.vue";
+import QuickBudgetMore from "../../Components/widgets/QuickBudgetMore.vue";
 
 const props = defineProps({
   budgets: {
