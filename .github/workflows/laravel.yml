@@ -38,8 +38,21 @@ jobs:
     - name: Install Composer
       run: composer test
 
+    - name: Build fronted
+      env:
+        APP_URL: ${{ secrets.DO_APP_URL }}
+        ASSET_URL: ${{ secrets.DO_APP_URL }}
+      run: npm install ; npm run build
+
     - name: Execute tests (Unit and Feature tests) via PHPUnit
       env:
         DB_CONNECTION: sqlite
         DB_DATABASE: database/database.sqlite
       run: php artisan test
+
+    - name: Push to staging environment
+      run: git config --global user.name 'github-actions[bot]';
+           git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com';
+           git remote set-url origin ${{ secrets.DO_REPO_URL }};
+           git commit -am "Automated report";
+           git push origin HEAD:main -f
