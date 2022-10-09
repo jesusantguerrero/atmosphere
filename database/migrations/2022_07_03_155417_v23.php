@@ -14,8 +14,8 @@ return new class extends Migration
     public function up()
     {
         Schema::table('budget_months', function (Blueprint $table) {
-            $table->foreignId('team_id')->after('id');
-            $table->foreignId('user_id')->after('team_id');
+            $table->foreignId('team_id')->nullable()->after('id');
+            $table->foreignId('user_id')->nullable()->after('team_id');
         });
     }
     /**

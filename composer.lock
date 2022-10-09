@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f84ba0ff625339b559e659835dd00468",
+    "content-hash": "7f931dc3b4442bff678c6115d2ea8585",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -1707,16 +1707,16 @@
         },
         {
             "name": "insane/journal",
-            "version": "dev-master",
+            "version": "v0.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/insane-code/journal.git",
-                "reference": "eb158f74d980876f0d883d19f91fd44cd86176d7"
+                "reference": "b08bba6f2b62c994b19050bec58919febe3dfb6b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/insane-code/journal/zipball/eb158f74d980876f0d883d19f91fd44cd86176d7",
-                "reference": "eb158f74d980876f0d883d19f91fd44cd86176d7",
+                "url": "https://api.github.com/repos/insane-code/journal/zipball/b08bba6f2b62c994b19050bec58919febe3dfb6b",
+                "reference": "b08bba6f2b62c994b19050bec58919febe3dfb6b",
                 "shasum": ""
             },
             "require-dev": {
@@ -1728,7 +1728,6 @@
                 "phpunit/phpunit": "^7.4@dev",
                 "symfony/thanks": "^1.0"
             },
-            "default-branch": true,
             "type": "library",
             "extra": {
                 "laravel": {
@@ -1762,9 +1761,9 @@
             ],
             "support": {
                 "issues": "https://github.com/insane-code/journal/issues",
-                "source": "https://github.com/insane-code/journal/tree/v0.3.6"
+                "source": "https://github.com/insane-code/journal/tree/v0.4.0"
             },
-            "time": "2022-09-03T20:53:57+00:00"
+            "time": "2022-10-09T05:24:01+00:00"
         },
         {
             "name": "jaybizzle/crawler-detect",
@@ -10111,7 +10110,6 @@
     "minimum-stability": "dev",
     "stability-flags": {
         "freesgen/atmosphere": 20,
-        "insane/journal": 20,
         "insane/remotr": 20
     },
     "prefer-stable": true,
