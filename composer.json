@@ -32,13 +32,14 @@
         "tightenco/ziggy": "^1.4.3"
     },
     "require-dev": {
-        "spatie/laravel-ignition": "^1.0",
+        "brianium/paratest": "^6.6",
         "fakerphp/faker": "^1.9.1",
+        "insane/remotr": "dev-main",
         "laravel/sail": "^1.0.1",
         "mockery/mockery": "^1.4.2",
         "nunomaduro/collision": "^6.0",
         "phpunit/phpunit": "^9.3.3",
-        "insane/remotr": "dev-main"
+        "spatie/laravel-ignition": "^1.0"
     },
     "autoload": {
         "psr-4": {
@@ -63,6 +64,11 @@
         ],
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi"
+        ],
+        "test": [
+            "composer install --prefer-dist --no-interaction --no-scripts --no-progress --no-ansi",
+            "composer dump-autoload",
+            "composer install --prefer-dist --no-interaction --no-scripts --no-suggest --no-progress --no-ansi"
         ]
     },
     "extra": {
