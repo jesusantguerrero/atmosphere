@@ -1,24 +1,21 @@
 <template>
-  <section class="space-y-2 border border-transparent rounded bg-base-lvl-3 p-4 shadow-xl">
-    <header class="flex justify-between items-center">
-      <SectionTitle>{{ state.name }}</SectionTitle>
-      <span class="text-secondary font-bold text-sm">{{ today }}</span>
-    </header>
-    <article class="flex">
-      <img :src="image" alt="weather-image" />
-      <section>
-        <h4 class="text-secondary font-bold text-4xl relative">28<span class="text-sm absolute">Cº</span></h4>
-        <p class="text-body-1/80">{{ description }}</p>
-      </section>
-    </article>
-  </section>
+  <WidgetCard
+    :title="state.name"
+    :subtitle="today"
+    :value-description="description"
+    >
+        <template #leftTitle>
+            <img :src="image" alt="weather-image" />
+        </template>
+        <h4 class="text-secondary font-bold text-4xl relative">{{ state.main.temp }}<span class="text-sm absolute">Cº</span></h4>
+  </WidgetCard>
 </template>
 
 <script setup>
-import SectionTitle from "@/Components/atoms/SectionTitle.vue";
 import { useLocalStorage } from "@vueuse/core";
 import { addMinutes, format } from "date-fns";
 import { onMounted, reactive, computed } from "vue";
+import WidgetCard from "../molecules/WidgetCard.vue";
 const endpoint = import.meta.env.VITE_WEATHER_ENDPOINT;
 
 const state = useLocalStorage('loger::climate', {
