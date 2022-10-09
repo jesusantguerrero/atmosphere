@@ -1,6 +1,7 @@
 <template>
   <section
-    class="space-y-2 border border-transparent rounded bg-base-lvl-3 p-4 shadow-xl"
+    class="space-y-2 border border-transparent rounded bg-base-lvl-3 p-4"
+    :class="cardShadow"
   >
     <header class="flex justify-between items-center">
       <SectionTitle>{{ title }}</SectionTitle>

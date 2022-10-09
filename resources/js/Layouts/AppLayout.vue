@@ -1,6 +1,6 @@
 <template>
     <NConfigProvider>
-        <AppShell :is-expanded="isExpanded" :nav-class="{'shadow-md': !$slots.header }">
+        <AppShell :is-expanded="isExpanded" :nav-class="{[panelShadow]: !$slots.header }">
             <template #navigation>
                 <!-- Primary Navigation Menu -->
                 <div class="pr-4 mx-auto sm:pr-6 lg:pr-8 text-body-1/80">
@@ -170,8 +170,9 @@
 
             <template #aside>
                 <AtSide
-                    class="border-r shadow-md text-body border-base-lvl-1 bg-base-lvl-3"
+                    class="border-r text-body border-base-lvl-1 bg-base-lvl-3"
                     title="Loger"
+                    :class="panelShadow"
                     v-model:isExpanded="isExpanded"
                     :menu="currentMenu"
                     :header-menu="headerMenu"

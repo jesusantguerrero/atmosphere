@@ -40,6 +40,12 @@ createInertiaApp({
         .mixin({
             methods: {
                 t: (...param) => i18n.global.t(...param)
+            },
+            data() {
+                return {
+                    panelShadow: 'shadow-sm',
+                    cardShadow: 'shadow-xs',
+                }
             }
         })
         .mount(el);

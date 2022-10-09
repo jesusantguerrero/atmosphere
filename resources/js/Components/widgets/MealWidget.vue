@@ -1,7 +1,7 @@
 <template>
-    <div class="pb-10">
+    <div class="pb-10"  :class="cardShadow">
         <RandomMealCard class="rounded-b-none border-b mt-4" />
-        <div class="px-4 py-2 space-y-4 rounded-b-md shadow-xl cursor-pointer min-h-min bg-base-lvl-3">
+        <div class="px-4 py-2 space-y-4 rounded-b-md cursor-pointer min-h-min bg-base-lvl-3">
             <div class="text-center">
                 <SectionTitle type="secondary"> {{ t('Menu for today') }}</SectionTitle>
             </div>

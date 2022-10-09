@@ -14,7 +14,8 @@
 
                 <div class="flex space-x-4">
                     <ChartComparison
-                        class="w-full mt-4 mb-10 overflow-hidden bg-white rounded-lg shadow-xl"
+                        class="w-full mt-4 mb-10 overflow-hidden bg-white rounded-lg"
+                        :class="[cardShadow]"
                         :title="t('Expenses summary')"
                         ref="ComparisonRevenue"
                         :data="props.revenue"
