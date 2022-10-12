@@ -32,7 +32,7 @@
       <!-- Budget to assign -->
       <BalanceAssign
         class="rounded-t-md mt-5"
-        :class="{ 'rounded-b-md shadow-md': !isOverspentFilterShown }"
+        :class="[cardShadow, !isOverspentFilterShown && 'rounded-b-md']"
         :value="readyToAssign.balance"
         :category="readyToAssign"
       >
@@ -59,7 +59,8 @@
       <div class="mx-auto mt-8 rounded-lg text-body bg-base max-w-7xl">
         <BudgetGroupForm
           v-model="categoryForm.name"
-          class="shadow-md rounded-md overflow-hidden"
+          class="rounded-md overflow-hidden"
+          :class="[cardShadow]"
           @save="saveBudgetCategory()"
         />
 
@@ -74,7 +75,8 @@
             :key="itemGroup.id"
             :item="itemGroup"
             :force-expanded="overspentFilter"
-            class="bg-base-lvl-3 shadow-md"
+            :class="[cardShadow]"
+            class="bg-base-lvl-3"
           >
             <template v-slot:content="{ isExpanded, isAdding, toggleAdding }">
               <div class="bg-base-lvl-3">

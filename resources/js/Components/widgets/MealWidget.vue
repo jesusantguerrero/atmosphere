@@ -30,7 +30,9 @@ import LogerButton from '@/Components/atoms/LogerButton.vue';
 defineProps({
     meals: {
         type: Array,
-        required: true
+        default() {
+            return []
+        }
     }
 })
 </script>

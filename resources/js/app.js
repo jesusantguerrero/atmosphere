@@ -43,8 +43,8 @@ createInertiaApp({
             },
             data() {
                 return {
-                    panelShadow: 'shadow-sm',
-                    cardShadow: 'shadow-xs',
+                    panelShadow: 'shadow-none',
+                    cardShadow: 'shadow-none',
                 }
             }
         })

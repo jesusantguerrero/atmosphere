@@ -170,7 +170,7 @@
 
             <template #aside>
                 <AtSide
-                    class="border-r text-body border-base-lvl-1 bg-base-lvl-3"
+                    class="text-bold bg-base-lvl-3 border-none shadow-none"
                     title="Loger"
                     :class="panelShadow"
                     v-model:isExpanded="isExpanded"
@@ -178,8 +178,8 @@
                     :header-menu="headerMenu"
                     :current-path="currentPath"
                     icon-class="text-gray-400 transition hover:text-primary"
-                    item-class="w-54 px-5 py-1.5 mb-2 font-bold text-gray-400 rounded-md text-md hover:text-primary hover:bg-base-lvl-1"
-                    item-active-class="text-primary bg-base-lvl-1"
+                    item-class="w-54 px-5 py-2 font-bold text-gray-400 text-md hover:text-primary hover:bg-base-lvl-1"
+                    item-active-class="text-primary bg-base-lvl-1 border-r-2 border-primary"
                     is-expandable
                 >
                     <template #brand>
@@ -198,7 +198,7 @@
 
             <template #main-section>
                 <!-- Page Heading -->
-                <header v-if="$slots.header" :class="[isExpanded ? 'lg:pr-56' : 'lg:pr-20']" class="fixed z-30 w-full mb-8 overflow-hidden border-b shadow-md bg-base-lvl-3 border-base-deep-1">
+                <header v-if="$slots.header" :class="[isExpanded ? 'lg:pr-56' : 'lg:pr-20', panelShadow]" class="fixed z-30 w-full mb-8 overflow-hidden border-b bg-base-lvl-3 base-deep-1">
                     <slot name="header" />
                 </header>
                 <!-- Page Content -->

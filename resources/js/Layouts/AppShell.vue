@@ -13,7 +13,7 @@
         <slot name="aside" />
       </aside>
 
-      <section class="app-content__inner ic-scroller bg-base">
+      <section class="app-content__inner ic-scroller bg-base border">
         <slot name="main-section" />
       </section>
     </article>

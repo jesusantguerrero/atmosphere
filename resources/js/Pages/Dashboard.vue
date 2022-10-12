@@ -37,7 +37,7 @@
                     class="w-full"
                     :payments="nextPayments"
                 />
-                <MealWidget :meals="meals.data" />
+                <MealWidget :meals="meals?.data" />
             </div>
         </div>
     </AppLayout>
