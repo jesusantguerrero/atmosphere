@@ -22,37 +22,37 @@
     <FinanceTemplate title="Finance" :accounts="accounts" ref="financeTemplateRef">
       <section class="grid grid-cols-2 gap-12 mt-4">
             <WidgetTitleCard title="Summary" class="w-full">
-            <div
-                class="flex justify-between px-4 py-5 mt-3 space-x-4 overflow-hidden flex-nowrap"
-            >
-            <div class="w-full mx-auto space-y-2">
-              <FinanceCard
-                class="text-body-1 bg-base-lvl-1"
-                title="Income"
-                :value="formatMoney(income)"
-                :subtitle="`Last Month: ${incomeVariance}%`"
-              />
-              <FinanceCard
-                class="text-body-1 bg-base-lvl-1"
-                title="Savings"
-                :value="formatMoney(savings)"
-                :subtitle="`Total: ${formatMoney(savings)}`"
-              />
-              <BudgetProgress
-                  :goal="budgetTotal"
-                  :current="transactionTotal"
-                  class="border-t h-8 rounded-b-lg text-white"
-              />
-            </div>
-            <FinanceVarianceCard
-              class="w-full"
-              title="Expenses"
-              variance-title="Last month"
-              :value="formatMoney(transactionTotal)"
-              :variance="expenseVariance"
-              @click="$inertia.visit('/finance/transactions')"
-            />
-          </div>
+                <div
+                    class="flex justify-between space-x-4 overflow-hidden flex-nowrap"
+                >
+                    <div class="w-full mx-auto space-y-2">
+                        <FinanceCard
+                            class="text-body-1 bg-base-lvl-1"
+                            title="Income"
+                            :value="formatMoney(income)"
+                            :subtitle="`${lastMonthName}: ${incomeVariance}%`"
+                        />
+                        <FinanceCard
+                            class="text-body-1 bg-base-lvl-1"
+                            title="Savings"
+                            :value="formatMoney(savings)"
+                            :subtitle="`Total: ${formatMoney(savings)}`"
+                        />
+                        <BudgetProgress
+                            :goal="budgetTotal"
+                            :current="transactionTotal"
+                            class="border-t h-8 rounded-b-lg text-white"
+                        />
+                    </div>
+                    <FinanceVarianceCard
+                        class="w-full"
+                        title="Expenses"
+                        :variance-title="lastMonthName"
+                        :value="formatMoney(transactionTotal)"
+                        :variance="expenseVariance"
+                        @click="$inertia.visit('/finance/transactions')"
+                    />
+                </div>
             </WidgetTitleCard>
 
             <WidgetTitleCard title="Planned Transactions" class="hidden md:block">
@@ -128,6 +128,7 @@ import { useServerSearch } from "@/composables/useServerSearch";
 import CategoryTrendsPreview from "@/Components/finance/CategoryTrendsPreview.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 import WidgetTitleCard from "@/Components/molecules/WidgetTitleCard.vue";
+import { format, subMonths } from "date-fns";
 
 const { serverSearchOptions } = toRefs(props);
 const {state: pageState} = useServerSearch(serverSearchOptions);
@@ -206,6 +207,13 @@ const { categoryOptions: transformCategoryOptions } = useSelect();
 transformCategoryOptions(props.categories, "accounts", "categoryOptions");
 transformCategoryOptions(props.accounts, "accounts", "accountsOptions");
 
+const lastMonthName = computed(() => {
+    try {
+        return format(subMonths(pageState.dates.startDate, 1), 'MMM');
+    } catch (e) {
+        return 'LM'
+    }
+})
 const incomeVariance = computed(() => {
   return getVariances(props.income, props.lastMonthIncome);
 });

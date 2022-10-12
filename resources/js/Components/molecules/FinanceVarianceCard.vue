@@ -4,7 +4,7 @@
         <h4> {{ title }} </h4>
         <span><i class="fa fa-cogs"></i></span>
     </header>
-    <div class="mt-2 text-2xl font-bold relative">
+    <div class="mt-2 text-lg font-bold relative">
         <NumberHider />
         {{ value }}
     </div>
