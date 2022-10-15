@@ -15,7 +15,7 @@ const props = defineProps({
 });
 const textColor = computed(() => {
     const types = {
-        default: "text-accent",
+        default: "text-primary",
         primary: "text-primary",
         secondary: "text-secondary",
     };

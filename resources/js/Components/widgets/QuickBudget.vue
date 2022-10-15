@@ -1,5 +1,5 @@
 <template>
-  <section class="space-y-2 border border-transparent rounded bg-base-lvl-3 p-4 shadow-xl">
+  <section class="space-y-2 border border-transparent rounded bg-base-lvl-3 p-4" :class="[cardShadow]">
     <header class="flex justify-between items-center">
       <SectionTitle>Quick Budgets</SectionTitle>
       <span class="text-secondary font-bold text-sm"></span>

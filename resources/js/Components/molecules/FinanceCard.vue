@@ -6,7 +6,7 @@
         </div>
         <div class="w-full ml-5 text-right">
             <p class="font-bold">{{ title }}</p>
-            <span class="w-full overflow-hidden text-sm text-right flex-block overflow-ellipsis flex-nowrap"> {{ subtitle }}</span>
+            <span class="w-full overflow-hidden text-sm text-right block overflow-ellipsis min-w-full"> {{ subtitle }}</span>
         </div>
     </div>
 </template>

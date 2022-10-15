@@ -1,5 +1,5 @@
 <template>
-  <AppLayout title="Spending Watchlist">
+  <AppLayout :title="sectionTitle">
     <template #header>
       <FinanceSectionNav>
         <template #actions>
@@ -19,10 +19,6 @@
 
     <FinanceTemplate title="Finance" :accounts="accounts" ref="financeTemplateRef">
       <article class="w-full">
-        <header class="mt-5">
-          <SectionTitle type="secondary"> {{ formatMonth(pageState.dates.startDate, MonthTypeFormat.long) }} </SectionTitle>
-        </header>
-
         <section class="grid lg:grid-cols-3 gap-4 mt-4">
           <WatchlistCard
             v-for="item in data"
@@ -42,7 +38,7 @@
 </template>
 
 <script setup>
-import { ref, toRefs } from "vue";
+import { ref, toRefs, computed } from "vue";
 import { AtButton, AtDatePager } from "atmosphere-ui";
 
 import AppLayout from "@/Layouts/AppLayout.vue";
@@ -88,6 +84,9 @@ const props = defineProps({
   },
 });
 
+const sectionTitle = computed(() => {
+    return "Spending watchlist for " + formatMonth(pageState.dates.startDate, MonthTypeFormat.long);
+})
 const isModalOpen = ref(false);
 const resourceToEdit = ref(null);
 </script>

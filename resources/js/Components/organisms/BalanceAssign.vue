@@ -1,6 +1,6 @@
 <template>
     <section
-        class="cursor-pointer text-body-1 divide-y-2 border shadow-md overflow-hidden rounded-md"
+        class="cursor-pointer text-body-1 divide-y-2 border overflow-hidden rounded-md"
         :class="theme.default"
         @click="toggle"
     >

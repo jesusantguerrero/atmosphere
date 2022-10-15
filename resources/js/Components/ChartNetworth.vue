@@ -80,7 +80,7 @@ const state = reactive({
         id: item.month_date
     })),
     options: {
-        colors: ["#8a00d4", "#80CDFE"],
+        colors: ["#7B77D1", "#F37EA1"],
     },
     series: currentSeries
 });

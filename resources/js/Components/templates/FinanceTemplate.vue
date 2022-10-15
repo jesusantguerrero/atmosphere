@@ -18,7 +18,8 @@
                     <AccountsLedger
                         :accounts="accounts"
                         @reordered="saveReorder"
-                        class="px-4 py-2 space-y-4 mt-4 rounded-md shadow-xl cursor-pointer min-h-min bg-base-lvl-3"
+                        :class="[cardShadow]"
+                        class="px-4 py-2 space-y-4 mt-4 rounded-md cursor-pointer min-h-min bg-base-lvl-3"
                     />
                 </slot>
             </section>

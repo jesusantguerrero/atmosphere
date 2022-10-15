@@ -1,5 +1,5 @@
 <template>
-    <div class="flex items-center justify-between px-4 py-3 rounded-lg shadow-md bg-base-lvl-3">
+    <div class="flex items-center justify-between px-4 py-3 rounded-lg bg-base-lvl-3">
         <div class="flex items-center h-10 text-lg text-center capitalize text-secondary">
             <span>
                 {{ state.label }}
