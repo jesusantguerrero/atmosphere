@@ -12,9 +12,17 @@
             <AtButton
               v-if="isOverspentFilterShown"
               @click="toggleOverspent"
-              class="bg-primary/40 items-center min-w-fit rounded-md space-x-2 flex justify-between text-white flex"
+              class="items-center min-w-fit rounded-md space-x-2 justify-between flex"
+              :class="[overspentFilter ? 'bg-primary text-white' : 'text-primary']"
             >
-              <span> View {{ overspentCategories.length }} overspent categories </span>
+              <span class="relative">
+                  {{ overspentCategories.length }} Overspent categories
+                  <PointAlert v-if="!overspentFilter" />
+
+                </span>
+                <div class="text-white text-sm rounded-full bg-white/20 p-0.5">
+                    <IconClose />
+                </div>
             </AtButton>
             <AtDatePager
               class="w-full h-12 border-none bg-base-lvl-1 text-body"
@@ -138,7 +146,6 @@ import { AtButton, AtDatePager } from "atmosphere-ui";
 import { VueDraggableNext as Draggable } from "vue-draggable-next";
 
 import AppLayout from "@/Layouts/AppLayout.vue";
-import { useSelect } from "@/utils/useSelects";
 import BudgetDetailForm from "@/Components/organisms/BudgetDetailForm.vue";
 import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
 import LogerInput from "@/Components/atoms/LogerInput.vue";
@@ -149,16 +156,19 @@ import BudgetGroupForm from "@/Components/molecules/BudgetGroupForm.vue";
 import BalanceAssign from "@/Components/organisms/BalanceAssign.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 import BudgetProgress from "@/Components/molecules/BudgetProgress.vue";
+import OnboardingSteps from "@/Components/widgets/OnboardingSteps.vue";
+import ClimateWidget from "@/Components/widgets/ClimateWidget.vue";
+import ExpenseIncome from "@/Components/widgets/ExpenseIncome.vue";
+import QuickBudget from "@/Components/widgets/QuickBudget.vue";
+import QuickBudgetMore from "@/Components/widgets/QuickBudgetMore.vue";
+import PointAlert from "@/Components/atoms/PointAlert.vue";
+import IconClose from "@/Components/icons/IconClose.vue";
 
 import { useServerSearch } from "@/composables/useServerSearch";
 import { useBudget } from "@/domains/budget";
 import { createBudgetCategory } from "@/domains/budget/createBudgetCategory";
+import { useSelect } from "@/utils/useSelects";
 import { formatMoney } from "@/utils";
-import OnboardingSteps from "@/Components/widgets/OnboardingSteps.vue";
-import ClimateWidget from "@/Components/widgets/ClimateWidget.vue";
-import ExpenseIncome from "../../Components/widgets/ExpenseIncome.vue";
-import QuickBudget from "../../Components/widgets/QuickBudget.vue";
-import QuickBudgetMore from "../../Components/widgets/QuickBudgetMore.vue";
 
 const props = defineProps({
   budgets: {

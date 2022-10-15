@@ -10,9 +10,8 @@
         <div ref="inputContainer">
             <h4 class="cursor-pointer" @click="$emit('edit')">
                 {{ item.name }}
-                <div
+                <PointAlert
                     v-if="item.hasOverspent || item.hasOverAssigned || item.hasUnderfunded"
-                    class="absolute -top-1 -right-2 h-2 w-2 bg-error rounded-full ring ring-error/20 animate-pulse"
                 />
             </h4>
             <div class="flex items-center" title="Money Assigned">
@@ -48,6 +47,7 @@ import formatMoney from "@/utils/formatMoney";
 import autoAnimate from '@formkit/auto-animate';
 import BudgetTransaction from '../atoms/BudgetTransaction.vue';
 import IconAllocated from '../icons/IconAllocated.vue';
+import PointAlert from '../atoms/PointAlert.vue';
 
 const props = defineProps({
     item: {

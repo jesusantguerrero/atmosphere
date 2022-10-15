@@ -11,7 +11,7 @@ class IngredientController extends InertiaController
     {
         $this->model = $ingredient;
         $this->templates = [
-            "index" => 'Ingredients/Index',
+            "index" => 'Meals/Ingredients',
             "create" => 'Ingredients/Form',
             "edit" => 'Ingredients/Form',
         ];

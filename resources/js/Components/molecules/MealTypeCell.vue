@@ -54,7 +54,7 @@ const props = defineProps({
 });
 
 const recipe = reactive({
-  id: "",
+  id: null,
   name: "",
 });
 
