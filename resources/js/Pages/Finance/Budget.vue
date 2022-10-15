@@ -12,7 +12,7 @@
             <AtButton
               v-if="isOverspentFilterShown"
               @click="toggleOverspent"
-              class="items-center min-w-fit rounded-md space-x-2 justify-between flex"
+              class="items-center min-w-fit rounded-md space-x-2 justify-between flex group"
               :class="[overspentFilter ? 'bg-primary text-white' : 'text-primary']"
             >
               <span class="relative">
@@ -20,7 +20,7 @@
                   <PointAlert v-if="!overspentFilter" />
 
                 </span>
-                <div class="text-white text-sm rounded-full bg-white/20 p-0.5">
+                <div class="text-white text-sm rounded-full group-hover:bg-white/20 p-0.5">
                     <IconClose />
                 </div>
             </AtButton>

@@ -3,15 +3,13 @@
     <template #header>
       <FinanceSectionNav>
         <template #actions>
-          <!-- <AtDatePager
-            class="w-full h-12 border-none bg-base-lvl-1 text-body"
-            v-model="pageState.date"
-            v-model:dateSpan="pageState.dateSpan"
-            v-model:startDate="pageState.searchOptions.date.startDate"
-            v-model:endDate="pageState.searchOptions.date.endDate"
-            controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
-            next-mode="month"
-          /> -->
+            <AtDatePager
+                class="w-full h-12 border-none bg-base-lvl-1 text-body"
+                v-model:startDate="pageState.dates.startDate"
+                v-model:endDate="pageState.dates.endDate"
+                controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
+                next-mode="month"
+            />
           <!-- <div>
             <AtButton class="rounded-md text-primary w-32" @click="onPrint">
                 Print
@@ -25,19 +23,15 @@
       <section>
         <div class="flex flex-wrap mt-5 md:flex-nowrap md:space-x-8">
           <div class="w-full md:w-full">
-            <SectionCard
-              :section-title="metaData.title"
-            >
-                <component :is="trendComponent"
-                    style="background: white; width: 100%"
-                    :series="data"
-                    :data="data"
-                    @clicked="handleSelection"
-                    label="name"
-                    value="total"
-                    :legend="false"
-                />
-            </SectionCard>
+            <component :is="trendComponent"
+                style="background: white; width: 100%"
+                :series="data"
+                :data="data"
+                @clicked="handleSelection"
+                label="name"
+                value="total"
+                :legend="false"
+            />
           </div>
         </div>
       </section>
