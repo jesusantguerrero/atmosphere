@@ -13,7 +13,7 @@
         </template>
 
         <template #content>
-            <div class="w-60" v-if="!disabled">
+            <div class="w-60">
                 <template v-for="(item, itemKey) in items" :key="itemKey">
                     <div class="block px-4 py-2 text-xs text-body-1" >
                         {{ item.label }}
@@ -41,7 +41,7 @@ import { kebabCase } from 'lodash';
 
 defineProps({
     items: {
-        type: Array,
+        type: Object,
         required: true
     },
     label: {

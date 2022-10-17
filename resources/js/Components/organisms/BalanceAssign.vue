@@ -7,12 +7,12 @@
         <article class="py-4 flex flex-col justify-center items-center mx-auto" :class="badgeClass">
             <h4 class="text-lg font-bold "> {{ formatter(value) }} </h4>
             <small>
-                {{ description }} {{ status }}
+                {{ description }}
             </small>
 
             <NPopover v-if="isOverspent" trigger="manual" placement="bottom"  @update:show="handleUpdateShow" :show="showPopover">
                 <template #trigger>
-                    <AtButton class="rounded-md bg-white/80">
+                    <AtButton class="rounded-md bg-black/30 text-white">
                         Fix this
                     </AtButton>
                 </template>
@@ -72,7 +72,7 @@
 
     const theme = {
         good: 'bg-success/80 text-white',
-        danger: 'bg-error/50',
+        danger: 'bg-primary text-white',
         needs: 'bg-warning',
         overspend: 'bg-warning',
         default: 'bg-base-lvl-3'

@@ -4,20 +4,31 @@
     "description": "The Laravel Framework.",
     "keywords": ["framework", "laravel"],
     "license": "MIT",
+    "repositories": [
+        {
+          "url": "../packages/journal",
+          "type": "path",
+          "options": {
+                "symlink": true
+            }
+        }
+    ],
     "require": {
         "php": "^8.1.0",
         "brick/money": "^0.6.0",
         "doctrine/dbal": "^3.3",
         "ernysans/laraworld": "^1.0",
+        "google/apiclient": "^2.12",
         "guzzlehttp/guzzle": "^7.0.2",
         "inertiajs/inertia-laravel": "^0.6.3",
-        "insane/journal": "^0.4.0",
+        "insane/journal": "dev-master",
         "laravel/framework": "^9.19",
         "laravel/jetstream": "^2.3",
         "laravel/sanctum": "^2.8",
         "laravel/tinker": "^2.7",
         "maatwebsite/excel": "^3.1",
         "nwidart/laravel-modules": "^9.0",
+        "php-mime-mail-parser/php-mime-mail-parser": "^7.1",
         "phpoffice/phpspreadsheet": "^1.22",
         "simshaun/recurr": "^4.0",
         "spatie/laravel-onboard": "^2.3",
@@ -50,6 +61,7 @@
     },
     "scripts": {
         "post-autoload-dump": [
+            "Google\\Task\\Composer::cleanup",
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"
         ],
@@ -71,7 +83,11 @@
             "providers": [
                 "Freesgen\\Atmosphere\\AtmosphereServiceProvider"
             ]
-        }
+        },
+        "google/apiclient-services": [
+            "Gmail",
+            "Calendar"
+        ]
     },
     "config": {
         "optimize-autoloader": true,

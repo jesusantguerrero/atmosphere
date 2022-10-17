@@ -3,8 +3,11 @@
 namespace App\Providers;
 
 use App\Models\Team;
+use App\Models\User;
 use App\Policies\TeamPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Gate;
+use Insane\Journal\Models\Core\Account;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -26,6 +29,8 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
-        //
+        Gate::define('delete-account', function (User $user, Account $account) {
+            return $user->id == $account->user_id;
+        });
     }
 }

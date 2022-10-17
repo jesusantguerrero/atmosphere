@@ -1,6 +1,6 @@
 <template>
     <NConfigProvider>
-        <AppShell :is-expanded="isExpanded" :nav-class="{[panelShadow]: !$slots.header }">
+        <AppShell :is-expanded="isExpanded" :nav-class="[!$slots.header && `${panelShadow} border-b`]">
             <template #navigation>
                 <!-- Primary Navigation Menu -->
                 <div class="pr-4 mx-auto sm:pr-6 lg:pr-8 text-body-1/80">
@@ -188,8 +188,7 @@
                                 <img src="/logotype.png" :style="{height: '32px'}" class="mx-auto"/>
                             </div>
                             <div class="mx-auto text-center " v-else>
-                                <img src="/logo.png" :style="{height: '32px'}" class="mx-auto"/>
-                                <small class="text-xs">The Digital Home</small>
+                                <AppIcon />
                             </div>
                         </div>
                     </template>
@@ -198,7 +197,7 @@
 
             <template #main-section>
                 <!-- Page Heading -->
-                <header v-if="$slots.header" :class="[isExpanded ? 'lg:pr-56' : 'lg:pr-20', panelShadow]" class="fixed z-30 w-full mb-8 overflow-hidden border-b bg-base-lvl-3 base-deep-1">
+                <header v-if="$slots.header" :class="[isExpanded ? 'lg:pr-56' : 'lg:pr-20', panelShadow]" class="fixed z-30 w-full overflow-hidden border-b bg-base-lvl-3 base-deep-1">
                     <slot name="header" />
                 </header>
                 <!-- Page Content -->
@@ -315,5 +314,7 @@
     const { categoryOptions: transformCategoryOptions } = useSelect()
     transformCategoryOptions(pageProps.value.categories, 'sub_categories', 'categoryOptions');
     transformCategoryOptions(pageProps.value.accounts, 'accounts', 'accountsOptions');
+
+    // useLogerConfig()
 </script>
 

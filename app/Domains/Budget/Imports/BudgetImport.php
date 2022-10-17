@@ -31,7 +31,7 @@ class BudgetImport extends ImportConcern
         $money = floatval(preg_replace('/[^-\d\.]/', '', $currencyValue));
         $amounts = (object) [
             'money' => (double) $money,
-            'currency_code' => $CODES[$inflow[0]],
+            'currency_code' => $CODES[$inflow[0]] ?? 'USD',
         ];
 
 

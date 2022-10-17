@@ -11,7 +11,7 @@ use Symfony\Component\DomCrawler\Crawler;
 
 class BHDNotification implements MailToTransaction
 {
-    public function handle(Automation $automation, mixed $mail, int $index): TransactionDataDTO
+    public function handle(Automation $automation, mixed $mail, int $index = 0): TransactionDataDTO
     {
 
         $body = new Crawler($mail['message']);

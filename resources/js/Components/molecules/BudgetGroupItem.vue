@@ -19,8 +19,8 @@
         </div>
         <div class="flex items-center space-x-2">
             <p>
-                {{ formatMoney(item.activity) }} of
-                {{ formatMoney(item.budgeted) }}
+                <MoneyPresenter :value="item.activity" /> of
+                <MoneyPresenter :value="item.budgeted" />
             </p>
             <LogerTabButton @click="toggleAdding">
                 <i class="fa fa-plus" />
@@ -48,6 +48,7 @@ import LogerTabButton from "@/Components/atoms/LogerTabButton.vue";
 import formatMoney from "@/utils/formatMoney";
 import { Inertia } from "@inertiajs/inertia";
 import PointAlert from "../atoms/PointAlert.vue";
+import MoneyPresenter from "./MoneyPresenter.vue";
 
 const emit = defineEmits(['removed'])
 

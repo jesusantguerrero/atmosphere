@@ -14,7 +14,8 @@ class BudgetCategoryService {
 
     public function addTarget($postData) {
         return $this->model->budget()->create(array_merge($postData, [
-            "name" => $this->model->name ?? $this->model->display_id
+            "name" => $this->model->name ?? $this->model->display_id,
+            "team_id" => $this->model->team_id
         ]));
     }
 

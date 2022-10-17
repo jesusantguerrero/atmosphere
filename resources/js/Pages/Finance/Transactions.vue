@@ -4,22 +4,9 @@
       <FinanceSectionNav>
         <template #actions>
           <div class="flex items-center w-full space-x-2">
-            <LogerDropdown
-                label="Status"
-                :items="{
-                    status: {
-                        label: 'Status',
-                        sections: {
-                            draft: {
-                                label: 'Drafts'
-                            },
-                            verified: {
-                                label: 'Verified'
-                            }
-                        }
-                        }
-                    }"
-            />
+            <LogerButton variant="inverse" class="" v-for="(item, statusName) in transactionStatus" :key="statusName" @click="$inertia.visit(item.value)">
+                {{ item.label }}
+            </LogerButton>
             <AtDatePager
               class="w-full h-12 border-none bg-base-lvl-1 text-body"
               v-model:startDate="pageState.dates.startDate"
@@ -128,5 +115,21 @@ const handleEdit = (transaction) => {
     openTransferModal({
         transactionData: transaction
     })
+}
+
+
+const transactionStatus = {
+    draft: {
+        label: 'Drafts',
+        value: '/finance/transactions?filter[status]=draft&relationships=linked'
+    },
+    verified: {
+        label: 'Verified',
+        value: '/finance/transactions?filter[status]=drafts'
+    },
+    scheduled: {
+        label: 'Scheduled',
+        value: '/finance/transactions?filter[status]=scheduled'
+    }
 }
 </script>

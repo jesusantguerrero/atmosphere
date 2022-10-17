@@ -46,19 +46,19 @@
       >
         <template #activity>
           <section class="w-full flex-col justify-center  py-2 flex items-center">
-            <h4>{{ formatMoney(readyToAssign.activity) }}</h4>
-            <p class="font-bold">Activity</p>
+            <h4 class="text-secondary font-bold">{{ formatMoney(readyToAssign.activity) }}</h4>
+            <p class="font-bold text-body-1/80">Activity</p>
         </section>
     </template>
     <template #target>
         <BudgetProgress class="w-full text-center h-14"
             :goal="readyToAssign.monthlyGoals.target"
             :current="readyToAssign.monthlyGoals.balance"
-            :progress-class="['bg-body-1/5', 'bg-body-1/5']"
+            :progress-class="['bg-secondary/10', 'bg-secondary/5']"
         >
-            <section>
-                <h4>{{ formatMoney(readyToAssign.monthlyGoals.balance) }}</h4>
-                <p class="font-bold">Monthly Goals Progress</p>
+            <section class="font-bold">
+                <h4 class="text-secondary">{{ formatMoney(readyToAssign.monthlyGoals.balance) }}</h4>
+                <p class="font-bold text-body-1/80">Monthly Goals Progress</p>
             </section>
         </BudgetProgress>
         </template>

@@ -43,7 +43,7 @@
                     </div>
 
                     <div class="text-right automations">
-                        {{ service.automations.length }}
+                        {{ service?.automations.length }}
                     </div>
 
                     <div class="text-right options">options</div>
@@ -147,46 +147,21 @@ const externalServices = computed(() => {
     return props.services.filter(service => service.type == 'external');
 })
 
-const google = (scopeName, service) => {
-    gapi.load("auth2", () => {
-        gapi.auth2
-            .init({
-                apiKey: process.env.MIX_GOOGLE_APP_KEY,
-                clientId: process.env.MIX_GOOGLE_CLIENT_ID,
-                accessType: "offline",
-                scope: `profile https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/calendar.readonly`,
-                discoveryDocs: [
-                    "https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest",
-                    "https://sheets.googleapis.com/discovery/rest?version=v4"
-                ]
-            })
-            .then(async () => {
-                const authInstance = gapi.auth2.getAuthInstance();
-                const user = authInstance.currentUser.get();
-                if (!user.getAuthResponse().session_state) {
-                    await authInstance.signIn();
-                }
-                const profile = user.getBasicProfile();
-                await authInstance
-                    .grantOfflineAccess({
-                        authuser: user.getAuthResponse().session_state.extraQueryParams.authuser
-                    })
-                    .then(({ code }) => {
-                        const credentials = {
-                            code,
-                            service_id: service.id,
-                            service_name: service.name,
-                            user: profile.getEmail()
-                        };
-                        axios.post('/services/google', { credentials }).then(() => {
-                            Inertia.get(`/integrations`, {
-                                only: ["integrations"],
-                                preserveState: true
-                            });
-                        });
-                    })
-            })
-    });
+const google = () => {
+    const service = props.services.find(service => service.name = "Google");
+    const credentials = {
+        service_id: service.id,
+        service_name: service.name,
+    };
+    axios({
+        url: "/services/google",
+        method: "post",
+        data: {
+            credentials
+        }
+    }).then(({ data }) => {
+        location.href = data
+    })
 }
 </script>
 

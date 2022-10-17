@@ -14,11 +14,11 @@ class Automation extends Model
     }
 
     public function tasks() {
-        return $this->hasMany(AutomationTaskAction::class, 'automation_id', 'id')->orderBy('order');
+        return $this->hasMany(AutomationTaskAction::class)->orderBy('order');
     }
 
     public function triggerTask() {
-        return $this->hasOne(AutomationTask::class, 'id', 'trigger_id');
+        return $this->hasOne(AutomationTaskAction::class)->where('task_type', 'trigger')->latest();
     }
 
     public function saveTasks($tasks) {

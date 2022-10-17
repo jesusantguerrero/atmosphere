@@ -65,7 +65,7 @@ class MealService {
     public static function getIngredients($plans) {
         $ingredients = [];
         foreach ($plans as $plan) {
-            $mealIngredients = $plan->dateable?->meal->ingredients;
+            $mealIngredients = $plan->dateable?->meal?->ingredients;
             if ($mealIngredients && count($mealIngredients)) {
                 foreach ($mealIngredients as $product) {
                     if (array_key_exists($product->name, $ingredients)) {

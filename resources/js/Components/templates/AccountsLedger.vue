@@ -11,7 +11,7 @@
                 :account="account"
                 :is-selected="isSelectedAccount(account.id)"
                 @click="Inertia.visit(`/finance/transactions?filter[account_id]=${account.id}`)"
-                @edit="onEdit(account)"
+                @edit="openAccountModal(account)"
             />
        </Draggable>
     </div>
@@ -52,14 +52,10 @@ const emit = defineEmits(['reordered'])
 const isAccountModalOpen = ref(false);
 const accountToEdit = ref({})
 
-const openAccountModal = () => {
-  isAccountModalOpen.value = true;
-};
-
-const onEdit = (account) =>  {
+const openAccountModal = (account = {}) => {
     accountToEdit.value = account;
-    openAccountModal();
-}
+    isAccountModalOpen.value = true;
+};
 
 const saveReorder = () => {
     const items = props.accounts.map((item, index) => ({

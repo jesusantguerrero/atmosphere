@@ -24,6 +24,7 @@ use App\Http\Controllers\MealController;
 use App\Http\Controllers\MealPlannerController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\RelationshipController;
+use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\System\NotificationController;
 use Freesgen\Atmosphere\Http\Controllers\SettingsController;
 use Freesgen\Atmosphere\Http\OnboardingController;
@@ -48,8 +49,11 @@ if (config('app.env') == 'production') {
 
 Route::resource('onboarding', OnboardingController::class)->middleware(['auth:sanctum', 'atmosphere.unteamed', 'verified']);
 
+// Automation Services
+Route::get('/services/accept-oauth', [ServiceController::class, 'acceptOauth']);
+
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
-    Route::get('/', fn () => Inertia::render('Dashboard'));
+    Route::get('/', fn () => redirect("/dashboard"));
 
     /**
      *  Jetstream & Settings Section
@@ -137,6 +141,10 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     ***************************************************************************************/
     Route::get('/projects', ProjectController::class);
     Route::get('/relationships', RelationshipController::class);
+
+     // Automation Services
+     Route::post('/services/google', [ServiceController::class, 'google']);
+     Route::get('/services/messages', [ServiceController::class, 'getMessages']);
 });
 
 

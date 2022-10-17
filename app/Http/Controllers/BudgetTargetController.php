@@ -18,10 +18,12 @@ class BudgetTargetController extends Controller
     public function update(Category $category, Budget $target)
     {
         $postData = request()->post();
-        $target->update($postData, [
+        $target->update(array_merge(
+            $postData, [
+            "team_id" => request()->user()->current_team_id,
             "name" => $category->name,
             "category_id" => $target->category_id
-        ]);
+        ]));
         return redirect()->back();
     }
 }

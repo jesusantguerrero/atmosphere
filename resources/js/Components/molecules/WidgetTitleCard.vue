@@ -5,10 +5,14 @@
                 <slot name="title"> {{ title }}</slot>
             </h1>
             <div class="space-x-2">
-                <AtButton class="text-sm text-primary" rounded @click="$inertia.visit(route('budgets.index'))">
-                    <i class="fa fa-wallet"></i>
-                    Edit budget
-                </AtButton>
+                <slot name="action" v-if="action || $slots.action">
+                    <AtButton v-if="action" class="text-sm text-primary" rounded @click="$emit('action')">
+                        <span>
+                            {{ action.label }}
+                        </span>
+                        <i class="ml-2" :class="action.iconClass" v-if="action.iconClass" />
+                    </AtButton>
+                </slot>
             </div>
         </div>
         <div class="flex py-3">

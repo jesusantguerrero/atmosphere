@@ -3,7 +3,8 @@
 namespace App\Domains\Integration\Actions;
 
 use App\Domains\Integration\Models\Automation;
-use App\Libraries\GoogleService;
+use App\Domains\Integration\Services\GoogleService;
+use Google\Service\Gmail as ServiceGmail;
 use Illuminate\Support\Facades\Log;
 use PhpMimeMailParser\Parser as EmailParser;
 
@@ -15,15 +16,14 @@ class Gmail
      * @param  Automation  $automation
      * @return void
      */
-    public static function received(Automation $automation)
+    public static function received(Automation $automation, $lastData = null, $task = null, $previousTask = null, $trigger = null)
     {
         $maxResults = 50;
         $track = json_decode($automation->track, true);
         $trackId = $track['historyId'] ?? 0;
-        $trigger = $automation->trigger()->first();
         $config = json_decode($trigger->values);
         $client = GoogleService::getClient($automation->integration_id);
-        $service = new Gmail($client);
+        $service = new ServiceGmail($client);
         $condition = isset($config->conditionType) && $config->value ? "$config->conditionType($config->value)" : "";
         if (!$condition) {
             $condition = $config->value ?? "";
@@ -54,6 +54,7 @@ class Gmail
                         $automation->track = json_encode($mail);
                         $automation->save();
                     }
+                    echo $mail['subject'];
 
                     $mail['message'] = $body;
                     $payload = $mail;

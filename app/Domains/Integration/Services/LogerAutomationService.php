@@ -10,6 +10,7 @@ use App\Domains\Integration\Actions\Gmail;
 use App\Domains\Integration\Actions\MealPlanAutomation;
 use App\Domains\Integration\Actions\OccurrenceCheckAutomation;
 use App\Domains\Integration\Models\AutomationTask;
+use App\Domains\Transaction\Services\BHDService;
 use Illuminate\Support\Facades\DB;
 
 class LogerAutomationService {
@@ -29,6 +30,9 @@ class LogerAutomationService {
             $entity = $task->entity;
             $action = $task->name;
             $lastData = $entity::$action($automation, $lastData, $task, $previousTask, $trigger);
+            if (!$lastData) {
+                break;
+            }
             $previousTask = $task;
         }
     }

@@ -1,5 +1,5 @@
 <?php
-namespace App\Domains\Integrations\Services;
+namespace App\Domains\Integration\Services;
 
 use App\Domains\Integration\Models\Integration;
 use Exception;
@@ -16,6 +16,8 @@ class GoogleService
         ]);
         $client->addScope([
             Gmail::GMAIL_READONLY,
+            Calendar::CALENDAR_READONLY,
+            Calendar::CALENDAR_EVENTS_READONLY
         ]);
         $client->setRedirectUri(config('app.url') . "/services/accept-oauth");
         $client->setAccessType('offline');
@@ -46,13 +48,10 @@ class GoogleService
                 'team_id' => $user->current_team_id,
                 'name' => 'Google'
             ])->first();
-            $googleUser = $client->verifyIdToken($tokenResponse["id_token"]);
-            if ($googleUser['email'] == $user->email) {
-                $integration->token = json_encode($tokenResponse);
-                $integration->save();
-                return;
-            }
-            throw new Exception("Error obtaining the token" . $googleUser['email']);
+
+            $integration->token = json_encode($tokenResponse);
+            $integration->save();
+            return;
         } else if ($integrationId) {
             $integration = Integration::find($integrationId);
             $integration->token = json_encode($data->access_token);
@@ -72,7 +71,6 @@ class GoogleService
         $client->setAccessToken($accessToken);
 
         if ($client->isAccessTokenExpired()) {
-            dd($accessToken);
             if ($refreshToken = $client->getRefreshToken()) {
                 $tokenResponse = $client->fetchAccessTokenWithRefreshToken($refreshToken);
                 self::setTokens((object) [
@@ -97,6 +95,4 @@ class GoogleService
             "hash" => $user->email
         ]);
     }
-
-
 }

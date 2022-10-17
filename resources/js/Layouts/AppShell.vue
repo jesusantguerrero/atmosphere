@@ -4,7 +4,7 @@
     v-auto-animate
     :class="{ expanded: isExpanded }"
   >
-    <nav class="border-b border-base-lvl-3 app-header md:pl-{var(--app)} bg-base-lvl-3" :class="navClass">
+    <nav class="app-header md:pl-{var(--app)} bg-base-lvl-3 border-b" :class="navClass">
       <slot name="navigation" />
     </nav>
 
@@ -81,7 +81,8 @@ html {
   &__inner {
     width: 100%;
     grid-column-start: 2;
-    padding: 65px 0;
+    padding: 64px 0;
+    padding-top: 63px;
     padding-bottom: 0;
     position: relative;
     max-height: 100%;
