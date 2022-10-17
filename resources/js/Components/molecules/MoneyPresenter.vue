@@ -1,5 +1,5 @@
 <template>
-    <span class="relative inline-block">
+    <span class="relative inline-block" :class="{'font-bold': bold}">
         <NumberHider />
         {{ formatMoney(value) }}
     </span>
@@ -12,6 +12,9 @@ import NumberHider from './NumberHider.vue';
 defineProps({
     value: {
         type: Number
+    },
+    bold: {
+        type: Boolean,
     }
 })
 </script>

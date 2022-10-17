@@ -180,7 +180,7 @@
     import axios from 'axios'
     import LogerApiSimpleSelect from './organisms/LogerApiSimpleSelect.vue'
     import { TRANSACTION_DIRECTIONS } from '@/domains/transactions'
-import LogerTabButton from './atoms/LogerTabButton.vue'
+    import LogerTabButton from './atoms/LogerTabButton.vue'
 
     const props = defineProps({
             show: {

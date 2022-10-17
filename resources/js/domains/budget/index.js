@@ -10,6 +10,10 @@ export const isSpendingTarget = budgetMetaData => {
     return budgetMetaData.target_type == 'spending'
 }
 
+export const isSavingBalance = budgetMetaData => {
+    return budgetMetaData.target_type == 'saving_balance'
+}
+
 export const targetTypes = [
     {
         value: 'spending',
@@ -39,6 +43,20 @@ export const targetTypes = [
     }
 ];
 
+export const budgetFrequencies = [
+    {
+      value: "MONTHLY",
+      label: "Monthly",
+    },
+    {
+      value: "WEEKLY",
+      label: "Weekly",
+    },
+    {
+      value: "DATE",
+      label: "By Date",
+    },
+];
 export const getCategoriesTotals = (categories, config = {
     onOverspent: () => {},
     onOverAssigned: () => {},
