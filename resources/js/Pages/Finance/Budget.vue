@@ -46,7 +46,9 @@
       >
         <template #activity>
           <section class="w-full flex-col justify-center  py-2 flex items-center">
-            <h4 class="text-secondary font-bold">{{ formatMoney(readyToAssign.activity) }}</h4>
+            <h4 class="text-secondary font-bold">
+                <MoneyPresenter :value="readyToAssign.activity" />
+            </h4>
             <p class="font-bold text-body-1/80">Activity</p>
         </section>
     </template>
@@ -57,7 +59,9 @@
             :progress-class="['bg-secondary/10', 'bg-secondary/5']"
         >
             <section class="font-bold">
-                <h4 class="text-secondary">{{ formatMoney(readyToAssign.monthlyGoals.balance) }}</h4>
+                <h4 class="text-secondary">
+                    <MoneyPresenter :value="readyToAssign.monthlyGoals.balance" />
+                </h4>
                 <p class="font-bold text-body-1/80">Monthly Goals Progress</p>
             </section>
         </BudgetProgress>
@@ -129,9 +133,8 @@
           @close="selectedBudget = null"
         />
         <div v-else class="w-full mt-4">
-          <ExpenseIncome />
+          <ExpenseIncome :expenses="readyToAssign.activity" :income="readyToAssign.inflow" />
           <QuickBudget class="mt-4" />
-          <QuickBudgetMore class="mt-4" />
         </div>
       </template>
     </FinanceTemplate>
@@ -169,6 +172,7 @@ import { useBudget } from "@/domains/budget";
 import { createBudgetCategory } from "@/domains/budget/createBudgetCategory";
 import { useSelect } from "@/utils/useSelects";
 import { formatMoney } from "@/utils";
+import MoneyPresenter from "@/Components/molecules/MoneyPresenter.vue";
 
 const props = defineProps({
   budgets: {
