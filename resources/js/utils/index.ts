@@ -16,7 +16,7 @@ export const recurrenceTypes = [
     }
 ]
 
-const toOrdinals = (num) => {
+export const toOrdinals = (num) => {
     const suffixes = new Map([
         ['one', 'st'],
         ['two', 'nd'],

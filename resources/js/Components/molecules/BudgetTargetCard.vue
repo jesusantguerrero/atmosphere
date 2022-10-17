@@ -12,7 +12,7 @@
     <BudgetProgress
         class="h-1.5 rounded-sm"
         :goal="item.amount"
-        :current="category.available"
+        :current="currentAmount"
         :progress-class="[progressClass, 'bg-secondary/5']"
         :show-labels="false"
     >
@@ -55,7 +55,7 @@
 
 <script setup>
 import { isSpendingTarget } from "@/domains/budget";
-import { formatDate, formatMonth } from "@/utils";
+import { formatDate, formatMonth, toOrdinals } from "@/utils";
 import { differenceInCalendarMonths, format, parseISO } from "date-fns";
 import { computed } from "vue";
 import BudgetProgress from "./BudgetProgress.vue";
@@ -78,6 +78,8 @@ const emit = defineEmits(["edit"]);
 const targetDate = computed(() => {
     if (props.item.frequency_month_date == -1) {
         return 'End of month';
+    } else if (props.item.frequency_month_date) {
+        return `The ${toOrdinals(props.item.frequency_month_date)}`
     }
     return formatDate(props.item.frequency_date)
 })
@@ -95,8 +97,15 @@ const monthlyContribution = computed(() => {
     }
 })
 
+const currentAmount = computed(() => {
+    if (isSpendingTarget(props.item)) {
+        return props.category.available || props.category.budgeted
+    } else {
+        return props.category.available;
+    }
+})
 const monthlyTargetDiff = computed(() => {
-    return monthlyContribution.value - props.category.available;
+    return monthlyContribution.value - currentAmount.value;
 })
 
 const isOnTrack = computed(() => monthlyTargetDiff.value <= 0)

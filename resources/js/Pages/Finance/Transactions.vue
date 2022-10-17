@@ -125,7 +125,7 @@ const transactionStatus = {
     },
     verified: {
         label: 'Verified',
-        value: '/finance/transactions?filter[status]=drafts'
+        value: '/finance/transactions?'
     },
     scheduled: {
         label: 'Scheduled',

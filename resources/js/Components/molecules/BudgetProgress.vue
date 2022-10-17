@@ -47,7 +47,7 @@ const props = defineProps({
 })
 
 const progress = computed(() => {
-    let progressValue = ExactMath.mul(ExactMath.div(props.current, props.goal), 100) || 0
+    let progressValue = ExactMath.mul(ExactMath.div(props.current, props.goal) || 0, 100) || 0
     progressValue = Number.isFinite(progressValue) ? progressValue : 0
     return Math.round((progressValue + Number.EPSILON) * 100) / 100
 })
