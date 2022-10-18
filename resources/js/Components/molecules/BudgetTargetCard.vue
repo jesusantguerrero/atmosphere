@@ -38,17 +38,9 @@
             </span>
         </div>
 
-        <p class="flex justify-between">Total Needed
-            <MoneyPresenter bold :value="item.amount" />
-        </p>
-        <p class="flex justify-between">
-            {{ fundedLabel }}
-            <MoneyPresenter bold :value="category.available" />
-        </p>
-        <p class="flex justify-between">
-            To go
-            <MoneyPresenter bold :value="item.amount - category.available" />
-        </p>
+        <BudgetMoneyLine title="Total needed" :value="item.amount" />
+        <BudgetMoneyLine :title="fundedLabel" :value="category.available" />
+        <BudgetMoneyLine title="To go" :value="item.amount - category.available" />
     </footer>
 </div>
 </template>
@@ -60,6 +52,7 @@ import { differenceInCalendarMonths, format, parseISO } from "date-fns";
 import { computed } from "vue";
 import BudgetProgress from "./BudgetProgress.vue";
 import MoneyPresenter from "./MoneyPresenter.vue";
+import BudgetMoneyLine from "./BudgetMoneyLine.vue";
 // import IconPicker from '../IconPicker.vue';
 
 const props = defineProps({

@@ -111,7 +111,7 @@
                     v-for="item in itemGroup.subCategories"
                     :key="`${item.id}-${item.budgeted}`"
                     :item="item"
-                    @edit="selectedBudget = item"
+                    @edit="setSelectedBudget(item.id, itemGroup.id)"
                   />
                 </Draggable>
               </div>
@@ -129,8 +129,8 @@
           :item="selectedBudget.budget"
           @saved="onBudgetItemSaved"
           @deleted="deleteBudget"
-          @cancel="selectedBudget = null"
-          @close="selectedBudget = null"
+          @cancel="setSelectedBudget()"
+          @close="setSelectedBudget()"
         />
         <div v-else class="w-full mt-4">
           <ExpenseIncome :expenses="readyToAssign.activity" :income="readyToAssign.inflow" />
@@ -205,6 +205,8 @@ const {
   overspentCategories,
   toggleOverspent,
   overspentFilter,
+  setSelectedBudget,
+  selectedBudget
 } = useBudget(budgets);
 const isOverspentFilterShown = computed(() => {
   return overspentFilter.value || overspentCategories.value.length > 0;
@@ -213,7 +215,6 @@ const isOverspentFilterShown = computed(() => {
 const state = reactive({
   isModalOpen: false,
   isAddingGroup: true,
-  selectedBudget: null,
   budgetTotal: computed(() => {
     return 0; // sumMoney(props.budgets.data.map(item => item.amount));
   }),
@@ -225,7 +226,7 @@ const state = reactive({
   }),
 });
 
-const { categoryForm, selectedBudget } = toRefs(state);
+const { categoryForm } = toRefs(state);
 
 const groupById = (items) =>
   items?.reduce((items, item) => {
