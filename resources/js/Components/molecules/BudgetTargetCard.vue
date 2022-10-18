@@ -92,7 +92,8 @@ const monthlyContribution = computed(() => {
 
 const currentAmount = computed(() => {
     if (isSpendingTarget(props.item)) {
-        return props.category.available || props.category.budgeted
+        const { available, budgeted } = props.category;
+        return available > budgeted ? available : budgeted
     } else {
         return props.category.available;
     }

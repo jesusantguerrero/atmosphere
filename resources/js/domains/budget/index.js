@@ -67,6 +67,7 @@ export const getCategoriesTotals = (categories, config = {
         acc.budgeted = ExactMath.add(acc.budgeted, category.budgeted || 0)
         acc.activity =  ExactMath.add(acc.activity, category.activity || 0)
         acc.available = ExactMath.add(acc.available, category.available || 0)
+        acc.prevMonthLeftOver = ExactMath.add(acc.prevMonthLeftOver, category.prevMonthLeftOver || 0)
 
         if (Number(category.available) < 0 && category.name !== 'Inflow') {
             config.onOverspent(category);
@@ -96,6 +97,7 @@ export const getCategoriesTotals = (categories, config = {
         budgeted: 0,
         activity: 0,
         available: 0,
+        prevMonthLeftOver: 0,
         monthlyGoals: {
             target: 0,
             balance: 0
@@ -107,12 +109,14 @@ export const getGroupTotals = (groups) => {
     return groups.reduce((acc, group) => {
         acc.budgeted = ExactMath.add(group.budgeted, acc.budgeted || 0)
         acc.activity = ExactMath.add(group.activity, acc.activity || 0)
+        acc.prevMonthLeftOver = ExactMath.add(group.prevMonthLeftOver, acc.prevMonthLeftOver)
         acc.monthlyGoals.target = ExactMath.add(acc.monthlyGoals.target, group.monthlyGoals.target)
         acc.monthlyGoals.balance = ExactMath.add(acc.monthlyGoals.balance, group.monthlyGoals.balance)
         return acc;
     }, {
         budgeted: 0,
         activity: 0,
+        prevMonthLeftOver: 0,
         monthlyGoals: {
             target: 0,
             balance: 0

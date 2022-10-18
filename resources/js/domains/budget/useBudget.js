@@ -74,17 +74,18 @@ export const useBudget = (budgets) => {
 
     const readyToAssign = computed(() => {
         const budgetTotals = getGroupTotals(outflow.value)
-        const balance = ExactMath.sub(inflow.value?.activity | 0, budgetTotals.budgeted || 0)
         const category = inflow.value?.subCategories[0] ?? {}
+        const balance = category?.activity - budgetTotals.budgeted
 
         return {
             balance,
             inflow: inflow.value.activity,
-            ...category,
+            toAssign: category,
             ...budgetTotals,
         }
     })
 
+    // Budget selection
     const selectedBudgetIds = reactive({
         id: null,
         groupId: null

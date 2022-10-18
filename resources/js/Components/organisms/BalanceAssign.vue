@@ -6,6 +6,12 @@
     >
         <article class="py-4 flex flex-col justify-center items-center mx-auto" :class="badgeClass">
             <h4 class="text-lg font-bold "> {{ formatter(value) }} </h4>
+
+            <div class="text-center">
+                <p>Inflow: Ready to assign transactions in Month: {{ category.activity }}</p>
+                <p>Assigned in month: {{ toAssign.budgeted }}</p>
+                <p>TBB: {{ category.activity - toAssign.budgeted }}</p>
+            </div>
             <small>
                 {{ description }}
             </small>
@@ -65,6 +71,10 @@
             default: formatMoney
         },
         category: {
+            type: Object,
+            required: true
+        },
+        toAssign: {
             type: Object,
             required: true
         }

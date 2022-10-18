@@ -42,7 +42,8 @@
         class="rounded-t-md mt-5"
         :class="[cardShadow, !isOverspentFilterShown && 'rounded-b-md']"
         :value="readyToAssign.balance"
-        :category="readyToAssign"
+        :category="readyToAssign.toAssign"
+        :to-assign="readyToAssign"
       >
         <template #activity>
           <section class="w-full flex-col justify-center  py-2 flex items-center">

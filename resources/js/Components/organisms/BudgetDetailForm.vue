@@ -30,7 +30,7 @@
 
         <div>
             Available Balance
-            <BudgetMoneyLine title="Left Over from last month" :value="category.oldAvailable" />
+            <BudgetMoneyLine title="Left Over from last month" :value="category.prevMonthLeftOver" />
             <BudgetMoneyLine title="Assigned this month" :value="category.budgeted" />
             <BudgetMoneyLine title="Cash expending" :value="category.activity" />
             <BudgetMoneyLine title="Credit expending" :value="category.activity" />
