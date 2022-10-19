@@ -37,7 +37,7 @@ import autoAnimate from "@formkit/auto-animate"
 
 const selectedAccountId = inject('selectedAccountId', null);
 const isSelectedAccount = (accountId) => {
-  return Number(selectedAccountId) === accountId;
+  return Number(selectedAccountId?.value) === accountId;
 };
 
 const props = defineProps({

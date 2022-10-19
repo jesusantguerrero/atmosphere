@@ -84,14 +84,10 @@ const props = defineProps({
   },
 });
 
-const { serverSearchOptions } = toRefs(props);
+const { serverSearchOptions, accountId } = toRefs(props);
 const {state: pageState, executeSearch } = useServerSearch(serverSearchOptions)
 
-const selectedAccountId = computed(() => {
-    return serverSearchOptions.value.filters?.account_id;
-})
-
-provide('selectedAccountId', selectedAccountId.value)
+provide('selectedAccountId', accountId)
 
 const isDraft = computed(() => {
     return serverSearchOptions.value.filters?.status == "draft";

@@ -1,7 +1,7 @@
 <template>
   <div
-    class="flex justify-between px-2 py-2 overflow-hidden rounded-md cursor-pointer hover:bg-base-lvl-3 group"
-    :class="{ 'bg-base-lvl-3': isSelected }"
+    class="flex justify-between px-2 py-2 overflow-hidden rounded-md cursor-pointer hover:bg-base group"
+    :class="{ 'bg-base': isSelected }"
     v-bind="$attrs"
     v-on="$attrs"
     :title="account.balance"

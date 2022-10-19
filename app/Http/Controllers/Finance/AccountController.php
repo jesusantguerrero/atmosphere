@@ -29,6 +29,7 @@ class AccountController extends InertiaController {
     public function show(Account $account) {
         return Inertia::render($this->templates['show'], [
             "sectionTitle" => $account->name,
+            'accountId' => $account->id,
             'resource' => $account,
             'transactions' => $account->transactionLines
         ]);
