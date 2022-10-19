@@ -2,10 +2,9 @@
 
 namespace Freesgen\Atmosphere\Http;
 
-use App\Domains\Integration\Models\Automation;
-use App\Domains\Integrations\Services\AutomationService;
 use App\Http\Controllers\Controller as BaseController;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Http\Response;

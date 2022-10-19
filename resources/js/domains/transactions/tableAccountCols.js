@@ -1,16 +1,14 @@
-import formatMoney from "@/utils/formatMoney";
 import { format, isAfter, parseISO, startOfDay } from "date-fns"
 import { h } from "vue"
 import IconTransfer from "@/Components/icons/IconTransfer.vue";
 import { AtBadge } from "atmosphere-ui"
-import { messageDark } from "naive-ui";
 
 const TRANSACTION_TYPES = {
     WITHDRAW: 'outflow',
     DEPOSIT: 'inflow'
 }
 
-export const tableCols = [
+export const tableAccountCols = [
     {
         label: "Date",
         name: "date",
@@ -30,11 +28,12 @@ export const tableCols = [
         class: 'w-full',
         render(row) {
             try {
+                const account = row.account_id == row.account_from.id ? row.account_to : row.account_from
                 const children = () => [
-                    h('div', `Transfer: ${row.counterAccount?.name}`),
+                    h('div', { class: 'font-bold'}, `${account?.name}`),
                     h(IconTransfer, { class: 'fa fa-right-left'})
                 ];
-                return row.payee?.name ?? h('div', { class: "flex justify-between items-center text-body-1 h-4"}, children )
+                return row.payee?.name ?? h('div', { class: "flex justify-between items-center text-body-1 h-4"}, children() )
             } catch(e) {
                 return ''
             }

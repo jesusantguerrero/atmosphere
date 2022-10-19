@@ -32,6 +32,7 @@
         "phpoffice/phpspreadsheet": "^1.22",
         "simshaun/recurr": "^4.0",
         "spatie/laravel-onboard": "^2.3",
+        "staudenmeir/belongs-to-through": "^2.5",
         "symfony/dom-crawler": "^6.0",
         "tightenco/ziggy": "^1.4.3"
     },

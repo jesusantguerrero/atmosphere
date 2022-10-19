@@ -1,7 +1,7 @@
 <template>
     <div class="pb-20 mt-5 bg-base-lvl-3">
         <CustomTable
-            :cols="tableCols"
+            :cols="cols"
             :show-prepend="true"
             :table-data="transactions"
             @edit="handleEdit"
@@ -57,6 +57,12 @@
         title: {
             type: String,
             default: 's'
+        },
+        cols: {
+            type: Array,
+            default() {
+                return tableCols
+            }
         }
     })
 

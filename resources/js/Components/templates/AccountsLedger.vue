@@ -10,7 +10,7 @@
                 :key="account.id"
                 :account="account"
                 :is-selected="isSelectedAccount(account.id)"
-                @click="Inertia.visit(`/finance/transactions?filter[account_id]=${account.id}`)"
+                @click="Inertia.visit(`/finance/accounts/${account.id}`)"
                 @edit="openAccountModal(account)"
             />
        </Draggable>

@@ -269,7 +269,7 @@
     const accountsOptions = inject('accountsOptions', [])
 
     const categoryAccounts = computed(() => {
-        return state.form.direction == 'ENTRY' ? accountsOptions : categoryOptions;
+        return isTransfer.value ? accountsOptions : categoryOptions;
     })
 
     const close = () =>  {
