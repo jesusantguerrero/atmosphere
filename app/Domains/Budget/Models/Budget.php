@@ -25,6 +25,18 @@ class Budget extends Model
         ->get()[0]->total;
     }
 
+    public static function getNextTargets($teamId) {
+        return DB::query()
+        ->whereIn('budgets.target_type', ['spending'])
+        ->where([
+            'frequency' => 'monthly',
+            'budgets.team_id' => $teamId
+        ])
+        ->whereRaw("concat(date_format(now(), '%Y-%m'), '-', frequency_month_date) >= now()")
+        ->from('budgets')
+        ->get();
+    }
+
     public static function dashboardParser($budget, $startDate, $endDate = null) {
         return [
             "title" => $budget->name,

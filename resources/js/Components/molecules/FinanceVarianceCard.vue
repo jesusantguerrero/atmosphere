@@ -8,27 +8,39 @@
         <NumberHider />
         {{ value }}
     </div>
-    <div class="px-5 py-2 mt-4 bg-gray-700 bg-opacity-25 rounded-3xl"> {{ varianceTitle }}:
-    <span class="font-bold">{{ variance }}%</span></div>
+    <div class="px-5 py-2 mt-4 text-xs bg-gray-700 bg-opacity-25 rounded-3xl" ref="varianceRef">
+        {{ varianceTitle }}:
+        <span class="font-bold">{{ lastMonthValue }}</span>
+    </div>
 </div>
 </template>
 
 <script setup>
-   import NumberHider from '@/Components/molecules/NumberHider.vue';
+    import NumberHider from '@/Components/molecules/NumberHider.vue';
+    import { useElementHover } from "@vueuse/core"
+    import { computed, ref } from 'vue';
 
-    defineProps({
-         value: {
-             type: String,
-         },
-         title: {
-             type: String,
-         },
-         varianceTitle: {
-             type: String,
-         },
-         variance: {
+    const props = defineProps({
+        value: {
             type: String,
+        },
+        title: {
+            type: String,
+        },
+        varianceTitle: {
+            type: String,
+        },
+        variance: {
+            type: String,
+        },
+        varianceAmount: {
+            type: [String, Number]
+        }
+    });
 
-         }
-    })
+    const varianceRef = ref();
+    const isHovered = useElementHover(varianceRef)
+    const lastMonthValue = computed(() => {
+        return !isHovered.value ? `${props.variance}%` : props.varianceAmount;
+    });
 </script>

@@ -21,12 +21,10 @@
     <div class="w-full mt-4">
       <slot />
     </div>
-
-    <ImportResourceModal v-model:show="isImportModalOpen" />
   </section>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { provide, reactive, ref } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
 import SectionTitle from "@/Components/atoms/SectionTitle.vue";

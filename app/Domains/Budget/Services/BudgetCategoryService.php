@@ -3,6 +3,7 @@
 namespace App\Domains\Budget\Services;
 
 use App\Domains\AppCore\Models\Category;
+use App\Domains\Budget\Models\Budget;
 use Illuminate\Support\Facades\DB;
 
 class BudgetCategoryService {
@@ -38,14 +39,6 @@ class BudgetCategoryService {
     }
 
     public static function getNextBudgetItems($teamId) {
-        return DB::query()
-        ->whereIn('budgets.target_type', ['spending'])
-        ->where([
-            'frequency' => 'monthly',
-            'budgets.team_id' => $teamId
-        ])
-        ->whereRaw("concat(date_format(now(), '%Y-%m'), '-', frequency_month_date) >= now()")
-        ->from('budgets')
-        ->get();
+       Budget::getNextTargets($teamId);
     }
 }

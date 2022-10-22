@@ -9,7 +9,7 @@
                 <slot name="panel">
                     <WidgetCard title="Accounts" class="mt-4">
                         <template #subtitle>
-                            <LogerTabButton class="flex items-center ml-2 text-primary" @click="isImportModalOpen=!isImportModalOpen" title="import">
+                            <LogerTabButton class="flex items-center ml-2 text-primary" @click="toggleImportModal()" title="import">
                                 {{ formatMoney(budgetAccountsTotal) }}
                                 <IconImport />
                             </LogerTabButton>
@@ -24,8 +24,6 @@
                 </slot>
             </section>
         </aside>
-
-        <ImportResourceModal v-model:show="isImportModalOpen" />
     </article>
 </template>
 
@@ -42,10 +40,12 @@
     import { useTransactionModal } from '@/domains/transactions';
     import exactMathNode from 'exact-math';
     import { formatMoney } from '@/utils';
-import WidgetCard from '../molecules/WidgetCard.vue';
+    import WidgetCard from '../molecules/WidgetCard.vue';
+    import { useImportModal } from '@/domains/transactions/useImportModal';
 
 
-    const { openTransferModal, isOpen: isTransferModalOpen } = useTransactionModal()
+    const { openTransferModal, isOpen: isTransferModalOpen } = useTransactionModal();
+    const { isOpen: isImportModalOpen, toggleModal: toggleImportModal } = useImportModal();
 
     const props = defineProps({
         title: {
@@ -70,9 +70,6 @@ import WidgetCard from '../molecules/WidgetCard.vue';
             }
         }
     });
-
-    // import modal related
-    const isImportModalOpen = ref(false)
 
     function saveReorder(items) {
         const savedItems =  items?.reduce((accounts, account) => {

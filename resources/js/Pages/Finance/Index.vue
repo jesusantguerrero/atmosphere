@@ -23,7 +23,7 @@
       <section class="grid grid-cols-2 gap-12 mt-4">
             <WidgetTitleCard title="Summary" class="w-full">
                 <div
-                    class="flex justify-between space-x-4 overflow-hidden flex-nowrap"
+                    class="flex justify-between space-x-4 overflow-hidden flex-nowrap w-full"
                 >
                     <div class="w-full mx-auto space-y-2">
                         <FinanceCard
@@ -50,6 +50,7 @@
                         :variance-title="lastMonthName"
                         :value="formatMoney(transactionTotal)"
                         :variance="expenseVariance"
+                        :variance-amount="formatMoney(lastMonthExpenses)"
                         @click="$inertia.visit('/finance/transactions')"
                     />
                 </div>
