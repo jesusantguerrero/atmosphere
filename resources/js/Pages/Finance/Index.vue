@@ -126,7 +126,7 @@ import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
 import { useSelect } from "@/utils/useSelects";
 import formatMoney from "@/utils/formatMoney";
 import { useServerSearch } from "@/composables/useServerSearch";
-import CategoryTrendsPreview from "@/Components/finance/CategoryTrendsPreview.vue";
+import CategoryTrendsPreview from "@/Components/Modules/finance/CategoryTrendsPreview.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 import WidgetTitleCard from "@/Components/molecules/WidgetTitleCard.vue";
 import { format, subMonths } from "date-fns";

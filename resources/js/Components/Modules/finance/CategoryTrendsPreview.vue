@@ -26,10 +26,11 @@
 </template>
 
 <script setup>
-import DonutChart from '../organisms/DonutChart.vue';
-import SectionCard from '../molecules/SectionCard.vue';
 import { computed, ref } from 'vue';
-import WidgetTitleCard from '../molecules/WidgetTitleCard.vue';
+
+import DonutChart from '@/Components/organisms/DonutChart.vue';
+import SectionCard from '@/Components/molecules/SectionCard.vue';
+import WidgetTitleCard from '@/Components/molecules/WidgetTitleCard.vue';
 
 const props = defineProps({
     groupData: {

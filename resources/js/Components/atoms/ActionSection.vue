@@ -14,6 +14,6 @@
 </template>
 
 <script setup>
-    import JetSectionTitle from './SectionTitle.vue'
+    import JetSectionTitle from './SectionCardTitle.vue'
     defineProps(['title', 'description'])
 </script>

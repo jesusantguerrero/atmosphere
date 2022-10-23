@@ -1,7 +1,7 @@
 # Beta
 ## General
 - [ ] Accept a isActiveFunction for items | atmosphere-ui
-- [ ] Unify Support, About and Help Center
+- [x] Unify Support, About and Help Center
 - [ ] Clean up settings
 
 ## Transactions

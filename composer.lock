@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "231ef410ab9f84d19facca68a2296060",
+    "content-hash": "5a060abe3caed5cfb8127e82173e240e",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -460,23 +460,23 @@
         },
         {
             "name": "doctrine/dbal",
-            "version": "3.4.5",
+            "version": "3.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/dbal.git",
-                "reference": "a5a58773109c0abb13e658c8ccd92aeec8d07f9e"
+                "reference": "b66f55c7037402d9f522f19d86841e71c09f0195"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/dbal/zipball/a5a58773109c0abb13e658c8ccd92aeec8d07f9e",
-                "reference": "a5a58773109c0abb13e658c8ccd92aeec8d07f9e",
+                "url": "https://api.github.com/repos/doctrine/dbal/zipball/b66f55c7037402d9f522f19d86841e71c09f0195",
+                "reference": "b66f55c7037402d9f522f19d86841e71c09f0195",
                 "shasum": ""
             },
             "require": {
                 "composer-runtime-api": "^2",
                 "doctrine/cache": "^1.11|^2.0",
                 "doctrine/deprecations": "^0.5.3|^1",
-                "doctrine/event-manager": "^1.0",
+                "doctrine/event-manager": "^1|^2",
                 "php": "^7.4 || ^8.0",
                 "psr/cache": "^1|^2|^3",
                 "psr/log": "^1|^2|^3"
@@ -484,14 +484,14 @@
             "require-dev": {
                 "doctrine/coding-standard": "10.0.0",
                 "jetbrains/phpstorm-stubs": "2022.2",
-                "phpstan/phpstan": "1.8.3",
-                "phpstan/phpstan-strict-rules": "^1.3",
-                "phpunit/phpunit": "9.5.24",
+                "phpstan/phpstan": "1.8.10",
+                "phpstan/phpstan-strict-rules": "^1.4",
+                "phpunit/phpunit": "9.5.25",
                 "psalm/plugin-phpunit": "0.17.0",
                 "squizlabs/php_codesniffer": "3.7.1",
                 "symfony/cache": "^5.4|^6.0",
                 "symfony/console": "^4.4|^5.4|^6.0",
-                "vimeo/psalm": "4.27.0"
+                "vimeo/psalm": "4.29.0"
             },
             "suggest": {
                 "symfony/console": "For helpful console commands such as SQL execution and import of files."
@@ -551,7 +551,7 @@
             ],
             "support": {
                 "issues": "https://github.com/doctrine/dbal/issues",
-                "source": "https://github.com/doctrine/dbal/tree/3.4.5"
+                "source": "https://github.com/doctrine/dbal/tree/3.5.0"
             },
             "funding": [
                 {
@@ -567,7 +567,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-09-23T17:48:57+00:00"
+            "time": "2022-10-22T14:33:42+00:00"
         },
         {
             "name": "doctrine/deprecations",
@@ -614,30 +614,29 @@
         },
         {
             "name": "doctrine/event-manager",
-            "version": "1.2.0",
+            "version": "2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/event-manager.git",
-                "reference": "95aa4cb529f1e96576f3fda9f5705ada4056a520"
+                "reference": "750671534e0241a7c50ea5b43f67e23eb5c96f32"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/event-manager/zipball/95aa4cb529f1e96576f3fda9f5705ada4056a520",
-                "reference": "95aa4cb529f1e96576f3fda9f5705ada4056a520",
+                "url": "https://api.github.com/repos/doctrine/event-manager/zipball/750671534e0241a7c50ea5b43f67e23eb5c96f32",
+                "reference": "750671534e0241a7c50ea5b43f67e23eb5c96f32",
                 "shasum": ""
             },
             "require": {
-                "doctrine/deprecations": "^0.5.3 || ^1",
-                "php": "^7.1 || ^8.0"
+                "php": "^8.1"
             },
             "conflict": {
                 "doctrine/common": "<2.9"
             },
             "require-dev": {
-                "doctrine/coding-standard": "^9 || ^10",
-                "phpstan/phpstan": "~1.4.10 || ^1.8.8",
-                "phpunit/phpunit": "^7.5 || ^8.5 || ^9.5",
-                "vimeo/psalm": "^4.24"
+                "doctrine/coding-standard": "^10",
+                "phpstan/phpstan": "^1.8.8",
+                "phpunit/phpunit": "^9.5",
+                "vimeo/psalm": "^4.28"
             },
             "type": "library",
             "autoload": {
@@ -686,7 +685,7 @@
             ],
             "support": {
                 "issues": "https://github.com/doctrine/event-manager/issues",
-                "source": "https://github.com/doctrine/event-manager/tree/1.2.0"
+                "source": "https://github.com/doctrine/event-manager/tree/2.0.0"
             },
             "funding": [
                 {
@@ -702,27 +701,27 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-10-12T20:51:15+00:00"
+            "time": "2022-10-12T20:59:15+00:00"
         },
         {
             "name": "doctrine/inflector",
-            "version": "2.0.5",
+            "version": "2.0.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/inflector.git",
-                "reference": "ade2b3bbfb776f27f0558e26eed43b5d9fe1b392"
+                "reference": "d9d313a36c872fd6ee06d9a6cbcf713eaa40f024"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/inflector/zipball/ade2b3bbfb776f27f0558e26eed43b5d9fe1b392",
-                "reference": "ade2b3bbfb776f27f0558e26eed43b5d9fe1b392",
+                "url": "https://api.github.com/repos/doctrine/inflector/zipball/d9d313a36c872fd6ee06d9a6cbcf713eaa40f024",
+                "reference": "d9d313a36c872fd6ee06d9a6cbcf713eaa40f024",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.2 || ^8.0"
             },
             "require-dev": {
-                "doctrine/coding-standard": "^9",
+                "doctrine/coding-standard": "^10",
                 "phpstan/phpstan": "^1.8",
                 "phpstan/phpstan-phpunit": "^1.1",
                 "phpstan/phpstan-strict-rules": "^1.3",
@@ -777,7 +776,7 @@
             ],
             "support": {
                 "issues": "https://github.com/doctrine/inflector/issues",
-                "source": "https://github.com/doctrine/inflector/tree/2.0.5"
+                "source": "https://github.com/doctrine/inflector/tree/2.0.6"
             },
             "funding": [
                 {
@@ -793,7 +792,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-09-07T09:01:28+00:00"
+            "time": "2022-10-20T09:10:12+00:00"
         },
         {
             "name": "doctrine/lexer",
@@ -1194,6 +1193,59 @@
                 "source": "https://github.com/firebase/php-jwt/tree/v6.3.0"
             },
             "time": "2022-07-15T16:48:45+00:00"
+        },
+        {
+            "name": "freesgen/atmosphere",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "./atmosphere",
+                "reference": "6ca6648d39a4c89f18fd69bcf0f7958f10d5e31d"
+            },
+            "require": {
+                "inertiajs/inertia-laravel": "^0.6.3",
+                "laravel/jetstream": "^2.3",
+                "php": "^8.1.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Freesgen\\Atmosphere\\AtmosphereServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Freesgen\\Atmosphere\\": "/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jesus Guerrero",
+                    "email": "jesusant.guerrero@gmail.com"
+                }
+            ],
+            "description": "Atmosphere is a SaaS and Starter Kit for Jetstream/Inertia",
+            "homepage": "https://atmosphere.neatlancer.com",
+            "keywords": [
+                "SaaS",
+                "Starter Kit",
+                "inertia",
+                "jetstream",
+                "laravel"
+            ],
+            "support": {
+                "issues": "https://neatlancer.com/forums",
+                "source": "https://neatlancer.com"
+            },
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         },
         {
             "name": "fruitcake/php-cors",
@@ -1903,10 +1955,16 @@
         {
             "name": "insane/journal",
             "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/insane-code/journal.git",
+                "reference": "c42a3551bf7dfa49f43ff543b1c176c297872250"
+            },
             "dist": {
-                "type": "path",
-                "url": "../packages/journal",
-                "reference": "77c8d2cd07896bd82af2f41ad3e318f0b8a8f739"
+                "type": "zip",
+                "url": "https://api.github.com/repos/insane-code/journal/zipball/c42a3551bf7dfa49f43ff543b1c176c297872250",
+                "reference": "c42a3551bf7dfa49f43ff543b1c176c297872250",
+                "shasum": ""
             },
             "require": {
                 "staudenmeir/belongs-to-through": "^2.5"
@@ -1920,6 +1978,7 @@
                 "phpunit/phpunit": "^7.4@dev",
                 "symfony/thanks": "^1.0"
             },
+            "default-branch": true,
             "type": "library",
             "extra": {
                 "laravel": {
@@ -1936,19 +1995,7 @@
                     "Insane\\Journal\\": "src/"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "Insane\\Journal\\Tests\\": "tests/"
-                }
-            },
-            "scripts": {
-                "test": [
-                    "vendor/bin/phpunit"
-                ],
-                "test-coverage": [
-                    "vendor/bin/phpunit --coverage-html coverage"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -1960,13 +2007,14 @@
             ],
             "description": "Accounting module for atmosphere and laravel",
             "keywords": [
-                "accounting",
+                "Accounting",
                 "invoicing"
             ],
-            "transport-options": {
-                "symlink": true,
-                "relative": true
-            }
+            "support": {
+                "issues": "https://github.com/insane-code/journal/issues",
+                "source": "https://github.com/insane-code/journal/tree/master"
+            },
+            "time": "2022-10-19T21:27:08+00:00"
         },
         {
             "name": "jaybizzle/crawler-detect",
@@ -2168,16 +2216,16 @@
         },
         {
             "name": "laravel/framework",
-            "version": "v9.36.3",
+            "version": "v9.36.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/framework.git",
-                "reference": "80ba0561b3682b96743e1c152fde0698bbdb2412"
+                "reference": "15ce569fd93124e8e2257c24e3ed85b9ef9951d6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/framework/zipball/80ba0561b3682b96743e1c152fde0698bbdb2412",
-                "reference": "80ba0561b3682b96743e1c152fde0698bbdb2412",
+                "url": "https://api.github.com/repos/laravel/framework/zipball/15ce569fd93124e8e2257c24e3ed85b9ef9951d6",
+                "reference": "15ce569fd93124e8e2257c24e3ed85b9ef9951d6",
                 "shasum": ""
             },
             "require": {
@@ -2189,7 +2237,7 @@
                 "fruitcake/php-cors": "^1.2",
                 "laravel/serializable-closure": "^1.2.2",
                 "league/commonmark": "^2.2",
-                "league/flysystem": "^3.0.16",
+                "league/flysystem": "^3.8.0",
                 "monolog/monolog": "^2.0",
                 "nesbot/carbon": "^2.62.1",
                 "nunomaduro/termwind": "^1.13",
@@ -2350,7 +2398,7 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
-            "time": "2022-10-19T13:23:53+00:00"
+            "time": "2022-10-20T16:11:03+00:00"
         },
         {
             "name": "laravel/jetstream",
@@ -2805,16 +2853,16 @@
         },
         {
             "name": "league/flysystem",
-            "version": "3.9.0",
+            "version": "3.10.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/flysystem.git",
-                "reference": "60f3760352fe08e918bc3b1acae4e91af092ebe1"
+                "reference": "9857d7208a94fc63c7bf09caf223280e59ac7274"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/flysystem/zipball/60f3760352fe08e918bc3b1acae4e91af092ebe1",
-                "reference": "60f3760352fe08e918bc3b1acae4e91af092ebe1",
+                "url": "https://api.github.com/repos/thephpleague/flysystem/zipball/9857d7208a94fc63c7bf09caf223280e59ac7274",
+                "reference": "9857d7208a94fc63c7bf09caf223280e59ac7274",
                 "shasum": ""
             },
             "require": {
@@ -2830,7 +2878,7 @@
             },
             "require-dev": {
                 "async-aws/s3": "^1.5",
-                "async-aws/simple-s3": "^1.0",
+                "async-aws/simple-s3": "^1.1",
                 "aws/aws-sdk-php": "^3.198.1",
                 "composer/semver": "^3.0",
                 "ext-fileinfo": "*",
@@ -2876,7 +2924,7 @@
             ],
             "support": {
                 "issues": "https://github.com/thephpleague/flysystem/issues",
-                "source": "https://github.com/thephpleague/flysystem/tree/3.9.0"
+                "source": "https://github.com/thephpleague/flysystem/tree/3.10.1"
             },
             "funding": [
                 {
@@ -2892,7 +2940,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-10-18T21:02:43+00:00"
+            "time": "2022-10-21T18:57:47+00:00"
         },
         {
             "name": "league/mime-type-detection",
@@ -10793,6 +10841,7 @@
     "minimum-stability": "dev",
     "stability-flags": {
         "insane/journal": 20,
+        "freesgen/atmosphere": 20,
         "insane/remotr": 20
     },
     "prefer-stable": true,
@@ -10801,5 +10850,5 @@
         "php": "^8.1.0"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.0.0"
+    "plugin-api-version": "2.3.0"
 }

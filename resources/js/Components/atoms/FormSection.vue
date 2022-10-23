@@ -23,7 +23,7 @@
 </template>
 
 <script>
-    import JetSectionTitle from './SectionTitle.vue'
+    import JetSectionTitle from './SectionCardTitle.vue'
 
     export default {
         props: {
