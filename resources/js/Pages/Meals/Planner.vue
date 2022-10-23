@@ -23,8 +23,8 @@
         </template>
         <MealTemplate class="mx-auto">
             <div class="pb-20 space-x-2">
-                <div v-if="state.isGroceryList" class="py-5 overflow-hidden border rounded-md bg-base-lvl-1">
-                    <div v-for="(ingredient, name) in ingredients" :key="ingredient.id" class="px-5 cursor-pointer text-primary bg-base-lvl-1">
+                <div v-if="state.isGroceryList" class="py-5 overflow-hidden border rounded-md bg-base-lvl-3">
+                    <div v-for="(ingredient, name) in ingredients" :key="ingredient.id" class="px-5 cursor-pointer text-primary">
                         {{name }} ({{ ingredient.quantity }}) {{ ingredient.unit }}
                     </div>
                 </div>
@@ -62,7 +62,7 @@
     import { format, startOfDay } from "date-fns";
     import { AtButton, AtDatePager } from "atmosphere-ui";
     import { useForm, usePage } from "@inertiajs/inertia-vue3";
-    import AppLayout from '@/Layouts/AppLayout.vue';
+    import AppLayout from '@/Components/templates/AppLayout.vue';
     import { Inertia } from '@inertiajs/inertia';
     import { computed, reactive } from "vue";
     import RandomMealModal from '@/Components/RandomMealModal.vue';

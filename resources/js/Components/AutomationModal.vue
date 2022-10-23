@@ -15,9 +15,9 @@
                         <n-select
                             filterable
                             clearable
-                            v-model:value="form.service"
                             :default-expand-all="true"
                             :options="serviceOptions"
+                            @update:value="setService"
                         />
                     </AtField>
                     <AtField label="Integration" v-if="isExternalService">
@@ -94,7 +94,7 @@ import { AtField, AtButton, AtInput } from 'atmosphere-ui';
 import { NSelect } from "naive-ui";
 import { computed, nextTick, ref } from 'vue';
 import { AtButton as Button } from 'atmosphere-ui';
-import Modal from '@/Jetstream/Modal.vue'
+import Modal from '@/Components/atoms/Modal.vue'
 
 const props = defineProps({
     show: {
@@ -147,6 +147,10 @@ const form = useForm({
     integration: null,
     tasks: [],
 });
+
+const setService = (value, option) => {
+    form.service = props.services.find(service => service.id == option.value);
+}
 
 const isExternalService = computed(() => {
     return form.service?.type == 'external'

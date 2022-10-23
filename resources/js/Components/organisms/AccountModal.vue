@@ -38,9 +38,12 @@
             </div>
         </div>
 
-        <div class="px-6 py-4 space-x-3 text-right bg-base-lvl-2">
-            <AtButton type="secondary" @click="close" rounded> Cancel </AtButton>
-            <AtButton class="text-white bg-primary" @click="submit" rounded> Save </AtButton>
+        <div class="px-6 py-4 space-x-3 space-between bg-base-lvl-2 flex w-full">
+            <AtButton type="secondary" class="text-danger" @click="remove" rounded> Delete </AtButton>
+            <div class="flex items-center justify-end w-full space-x-2">
+                <AtButton type="secondary" @click="close" rounded> Cancel </AtButton>
+                <AtButton class="text-white bg-primary" @click="submit" rounded> Save </AtButton>
+            </div>
         </div>
     </modal>
 </template>
@@ -52,7 +55,7 @@
     import { AtField, AtButton } from "atmosphere-ui"
     import Slug from "slug";
 
-    import Modal from '@/Jetstream/Modal.vue'
+    import Modal from '@/Components/atoms/Modal.vue'
     import LogerInput from '@/Components/atoms/LogerInput.vue'
 
     import { makeOptions } from '@/utils/naiveui'
@@ -85,7 +88,7 @@
             opening_balance: 0
         }),
         accountDisplayId: computed(() => {
-            return Slug(state.form.name, '_')
+            return state.form.name && Slug(state.form.name, '_')
         })
     })
 
@@ -132,6 +135,17 @@
                 state.form.reset();
             },
         })
+    }
+
+    const remove = () => {
+        if (confirm('Are you sure you want to delete this account?')) {
+            state.form.delete(route('accounts.destroy', state.form), {
+                onSuccess() {
+                    emit('close')
+                    state.form.reset()
+                }
+            })
+        }
     }
 
     const detailTypes = usePage().props.value.accountDetailTypes

@@ -51,7 +51,7 @@
     import { Inertia } from "@inertiajs/inertia";
     import { useI18n } from 'vue-i18n'
 
-    import AppLayout from '@/Layouts/AppLayout.vue'
+    import AppLayout from '@/Components/templates/AppLayout.vue'
     import BudgetTracker from "@/Components/organisms/BudgetTracker.vue";
     import TransactionsTable from "@/Components/organisms/TransactionsTable.vue";
     import SectionTitle from "@/Components/atoms/SectionTitle.vue";

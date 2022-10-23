@@ -60,7 +60,7 @@ const props = defineProps({
     }
 });
 
-const emit = defineEmits(['removed'])
+const emit = defineEmits(['removed', 'edit'])
 const budgeted = ref(props.item.budgeted);
 
 const onAssignBudget = () => {

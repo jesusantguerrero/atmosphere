@@ -4,34 +4,25 @@
       <FinanceSectionNav>
         <template #actions>
           <div class="flex items-center w-full space-x-2">
-            <LogerDropdown
-                label="Status"
-                :items="{
-                    status: {
-                        label: 'Status',
-                        sections: {
-                            draft: {
-                                label: 'Drafts'
-                            },
-                            verified: {
-                                label: 'Verified'
-                            }
-                        }
-                        }
-                    }"
+            <DraftButtons
+                v-if="isDraft"
             />
+            <div class="flex text-white rounded-md bg-primary border border-primary min-w-max overflow-hidden">
+                <button
+                    v-for="(item, statusName) in transactionStatus"
+                    class="px-2 py-1.5 flex items-center border border-transparent hover:bg-accent"
+                    :class="{'bg-white text-primary border-primary hover:text-white': isFilterSelected(statusName)}"
+                    :key="statusName"
+                    @click="$inertia.visit(item.value)">
+                    {{ item.label }}
+                </button>
+            </div>
             <AtDatePager
               class="w-full h-12 border-none bg-base-lvl-1 text-body"
               v-model:startDate="pageState.dates.startDate"
               v-model:endDate="pageState.dates.endDate"
               controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
               next-mode="month"
-            />
-            <LogerButton  variant="inverse">
-                Import Transactions
-            </LogerButton>
-            <DraftButtons
-                v-if="isDraft"
             />
           </div>
         </template>
@@ -55,7 +46,7 @@ import { AtDatePager, AtButton } from "atmosphere-ui";
 import { computed, toRefs, provide} from "vue";
 import { Inertia } from "@inertiajs/inertia";
 
-import AppLayout from "@/Layouts/AppLayout.vue";
+import AppLayout from "@/Components/templates/AppLayout.vue";
 import TransactionSearch from "@/Components/templates/TransactionSearch.vue";
 import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
 import TransactionTemplate from "@/Components/templates/TransactionTemplate.vue";
@@ -128,5 +119,25 @@ const handleEdit = (transaction) => {
     openTransferModal({
         transactionData: transaction
     })
+}
+
+
+const transactionStatus = {
+    draft: {
+        label: 'Drafts',
+        value: '/finance/transactions?filter[status]=draft&relationships=linked'
+    },
+    verified: {
+        label: 'Verified',
+        value: '/finance/transactions?'
+    },
+    scheduled: {
+        label: 'Scheduled',
+        value: '/finance/transactions?filter[status]=scheduled'
+    }
+}
+const isFilterSelected = (filterValue) => {
+    const currentStatus = serverSearchOptions.value.filters?.status || 'verified';
+    return currentStatus == filterValue;
 }
 </script>

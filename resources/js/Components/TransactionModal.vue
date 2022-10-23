@@ -172,7 +172,7 @@
 <script setup>
     import { format } from 'date-fns'
     import { reactive, toRefs, watch, computed, inject, ref } from 'vue'
-    import Modal from '@/Jetstream/Modal.vue'
+    import Modal from '@/Components/atoms/Modal.vue'
     import { useForm } from "@inertiajs/inertia-vue3"
     import { AtField, AtButton, AtFieldCheck, AtInput } from "atmosphere-ui"
     import { NSelect, NDatePicker } from "naive-ui";
@@ -180,7 +180,7 @@
     import axios from 'axios'
     import LogerApiSimpleSelect from './organisms/LogerApiSimpleSelect.vue'
     import { TRANSACTION_DIRECTIONS } from '@/domains/transactions'
-import LogerTabButton from './atoms/LogerTabButton.vue'
+    import LogerTabButton from './atoms/LogerTabButton.vue'
 
     const props = defineProps({
             show: {
@@ -269,7 +269,7 @@ import LogerTabButton from './atoms/LogerTabButton.vue'
     const accountsOptions = inject('accountsOptions', [])
 
     const categoryAccounts = computed(() => {
-        return state.form.direction == 'ENTRY' ? accountsOptions : categoryOptions;
+        return isTransfer.value ? accountsOptions : categoryOptions;
     })
 
     const close = () =>  {

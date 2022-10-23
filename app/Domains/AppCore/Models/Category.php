@@ -64,14 +64,14 @@ class Category extends CoreCategory
         $monthBudget = $this->budgets->where('month', $month)->first();
         $budgeted = $monthBudget ? $monthBudget->budgeted : 0;
         $monthBalance = $this->getMonthBalance($yearMonth);
-        $oldAvailable = $this->getOldAvailable($yearMonth);
-        $available = Money::of($budgeted, 'USD')->plus($oldAvailable)->plus($monthBalance)->getAmount()->toFloat();
+        $prevMonthLeftOver = $this->getPrevMonthLeftOver($yearMonth);
+        $available = Money::of($budgeted, 'USD')->plus($prevMonthLeftOver)->plus($monthBalance)->getAmount()->toFloat();
 
         return [
             'budgeted' => $budgeted,
             'activity' => $monthBalance,
             'available' => $available,
-            'oldAvailable' => $oldAvailable
+            'prevMonthLeftOver' => $prevMonthLeftOver
         ];
     }
 
@@ -108,7 +108,7 @@ class Category extends CoreCategory
      *
      * @return string
      */
-    public function getOldAvailable($yearMonth)
+    public function getPrevMonthLeftOver($yearMonth)
     {
        return DB::query()
        ->select('*')

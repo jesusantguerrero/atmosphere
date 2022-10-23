@@ -65,7 +65,7 @@
 import { ref, toRefs } from "vue";
 import { AtButton, AtDatePager } from "atmosphere-ui";
 
-import AppLayout from "@/Layouts/AppLayout.vue";
+import AppLayout from "@/Components/templates/AppLayout.vue";
 import SectionTitle from "@/Components/atoms/SectionTitle.vue";
 import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
 import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";

@@ -13,6 +13,7 @@ use App\Http\Controllers\BudgetCategoryController;
 use App\Http\Controllers\BudgetMonthController;
 use App\Http\Controllers\BudgetTargetController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Finance\AccountController;
 use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\FinanceTransactionController;
 use App\Http\Controllers\FinanceTrendController;
@@ -24,6 +25,7 @@ use App\Http\Controllers\MealController;
 use App\Http\Controllers\MealPlannerController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\RelationshipController;
+use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\System\NotificationController;
 use Freesgen\Atmosphere\Http\Controllers\SettingsController;
 use Freesgen\Atmosphere\Http\OnboardingController;
@@ -48,8 +50,11 @@ if (config('app.env') == 'production') {
 
 Route::resource('onboarding', OnboardingController::class)->middleware(['auth:sanctum', 'atmosphere.unteamed', 'verified']);
 
+// Automation Services
+Route::get('/services/accept-oauth', [ServiceController::class, 'acceptOauth']);
+
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
-    Route::get('/', fn () => Inertia::render('Dashboard'));
+    Route::get('/', fn () => redirect("/dashboard"));
 
     /**
      *  Jetstream & Settings Section
@@ -104,22 +109,24 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     Route::resource('/budgets', BudgetCategoryController::class);
     Route::controller(BudgetTargetController::class)->group(function() {
         Route::post('/budgets/{category}/targets/', 'store')->name("budget.target.store");
-        Route::put('/budgets/{category}/targets/{target}', 'update')->name("budget.target.update");
+        Route::put('/budgets/{category}/targets/{budgetTarget}', 'update')->name("budget.target.update");
     });
     Route::controller(BudgetMonthController::class)->group(function () {
         Route::post('/budgets/{categoryId}/months/{month}', 'assign')->name("budget.assignment");
         Route::post('/budgets/import', 'import')->name('budget.import');
     });
 
-    Route::controller(GoalController::class)->group(function () {
-        Route::resource('/goals', GoalController::class);
-    });
+
 
     // Finance dashboard related routes
     Route::controller(FinanceController::class)->group(function () {
         Route::get('/finance', 'index')->name('finance');
     });
 
+    // Accounts
+    Route::resource('/finance/accounts', AccountController::class);
+
+    // Transactions
     Route::controller(FinanceTransactionController::class)->group(function() {
         Route::get('/finance/transactions', 'index')->name('finance.transactions');
         Route::get('/finance/{accountId}/transactions', 'index')->name('finance.account.transactions');
@@ -137,6 +144,10 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     ***************************************************************************************/
     Route::get('/projects', ProjectController::class);
     Route::get('/relationships', RelationshipController::class);
+
+     // Automation Services
+     Route::post('/services/google', [ServiceController::class, 'google']);
+     Route::get('/services/messages', [ServiceController::class, 'getMessages']);
 });
 
 

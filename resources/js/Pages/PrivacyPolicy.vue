@@ -14,7 +14,7 @@
 </template>
 
 <script setup>
-import JetAuthenticationCardLogo from '@/Jetstream/AuthenticationCardLogo.vue'
+import JetAuthenticationCardLogo from '@/Components/atoms/AuthenticationCardLogo.vue'
 
 defineProps(['policy']);
 

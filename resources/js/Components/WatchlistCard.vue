@@ -7,29 +7,34 @@
       </p>
     </h4>
     <section class="p-4">
-      <div class="rounded-md bg-body-1/5 px-4 py-2">
+      <div class="rounded-md bg-secondary/10 px-4 py-2">
         <h5 class="text-body-1/80">This Month</h5>
-        <h4>{{ formatMoney(item.data.month.total) }}</h4>
+        <h4 class="font-bold text-secondary">{{ formatMoney(item.data.month.total) }}</h4>
       </div>
       <div class="flex justify-between text-xs space-x-2">
-        <div class="px-5 py-2 mt-4 bg-body-1/5 w-full bg-opacity-25 rounded-md">
-          Last month:
-          <span class="font-bold">{{ lastMonthVariance }}%</span>
+        <div class="px-5 py-2 mt-4 bg-secondary/10 w-full bg-opacity-25 rounded-md">
+            <span class="text-body-1/80">
+                Last month:
+            </span>
+          <span class="font-bold text-secondary">{{ lastMonthVariance }}%</span>
         </div>
-        <div class="px-5 py-2 mt-4 bg-body-1/5 w-full bg-opacity-25 rounded-md">
-          Target:
-          <span class="font-bold">{{ formatMoney(item.data.month.target || 0) }}</span>
+        <div class="px-5 py-2 mt-4 bg-secondary/10 w-full bg-opacity-25 rounded-md">
+            <span class="text-body-1/80">
+                Target:
+
+            </span>
+          <span class="font-bold text-secondary">{{ formatMoney(item.data.month.target || 0) }}</span>
         </div>
       </div>
     </section>
-    <section class="grid grid-cols-2 p-4 pb-2 bg-primary text-white">
+    <section class="grid grid-cols-2 p-4 pb-2 bg-primary text-white mx-4 rounded-xl">
       <div class="text-center">
         <h4>{{ formatDate(item.data.month.lastTransactionDate, '--')}}</h4>
-        <span>Last transaction date</span>
+        <span class="text-xs">Last transaction date</span>
       </div>
       <div class="text-center">
         <h4>{{ item.data.month.transactionsCount || 0 }}</h4>
-        <span>Transactions</span>
+        <span class="text-xs">Transactions</span>
       </div>
     </section>
     <footer class="text-primary px-4 pt-2 pb-4">

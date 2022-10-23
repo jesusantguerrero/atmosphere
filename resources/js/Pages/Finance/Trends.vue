@@ -53,7 +53,7 @@ import { Inertia } from "@inertiajs/inertia";
 import { AtButton, AtDatePager } from "atmosphere-ui";
 import { Link } from "@inertiajs/inertia-vue3";
 
-import AppLayout from "@/Layouts/AppLayout.vue";
+import AppLayout from "@/Components/templates/AppLayout.vue";
 import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
 import DonutChart from "@/Components/organisms/DonutChart.vue";
 import ChartNetWorth from "@/Components/ChartNetworth.vue";

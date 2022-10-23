@@ -30,6 +30,10 @@
 
         <div>
             Available Balance
+            <BudgetMoneyLine title="Left Over from last month" :value="category.prevMonthLeftOver" />
+            <BudgetMoneyLine title="Assigned this month" :value="category.budgeted" />
+            <BudgetMoneyLine title="Cash expending" :value="category.activity" />
+            <BudgetMoneyLine title="Credit expending" :value="category.activity" />
         </div>
 
         <div>
@@ -54,6 +58,7 @@
     import { makeOptions } from "@/utils/naiveui";
     import { targetTypes } from '@/domains/budget';
     import IconClose from '../icons/IconClose.vue';
+import BudgetMoneyLine from '../molecules/BudgetMoneyLine.vue';
 
     const props = defineProps({
         parentId: {

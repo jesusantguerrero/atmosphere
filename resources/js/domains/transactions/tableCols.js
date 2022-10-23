@@ -3,7 +3,7 @@ import { format, isAfter, parseISO, startOfDay } from "date-fns"
 import { h } from "vue"
 import IconTransfer from "@/Components/icons/IconTransfer.vue";
 import { AtBadge } from "atmosphere-ui"
-
+import { messageDark } from "naive-ui";
 
 const TRANSACTION_TYPES = {
     WITHDRAW: 'outflow',
@@ -31,21 +31,20 @@ export const tableCols = [
         render(row) {
             try {
                 const children = () => [
-                    h('div', `Transfer: ${row.category?.name}`), 
+                    h('div', `Transfer: ${row.counterAccount?.name}`),
                     h(IconTransfer, { class: 'fa fa-right-left'})
                 ];
-                return row.payee?.name || h('div', { class: "flex justify-between items-center text-body-1"}, children )
+                return row.payee?.name ?? h('div', { class: "flex justify-between items-center text-body-1 h-4"}, children )
             } catch(e) {
-                console.log(e)
                 return ''
             }
         }
     },
     {
         label: "Category",
-        name: "transactionCategory",
+        name: "category",
         render(row) {
-            return row.transactionCategory?.name
+            return row.category?.name
         }
     },
     {

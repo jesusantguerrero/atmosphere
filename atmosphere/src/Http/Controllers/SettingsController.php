@@ -73,7 +73,7 @@ class SettingsController extends InertiaController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show(Request $request, string $id)
+    public function show(Request $request, string|int $id)
     {
        return $this->section($request, $id);
     }

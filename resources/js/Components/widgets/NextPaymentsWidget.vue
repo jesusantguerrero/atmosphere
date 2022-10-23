@@ -4,13 +4,19 @@
     :class="cardShadow"
 >
     <h4 class="p-4 font-bold">Next Payments</h4>
-    <div class="payment" v-for="payment in payments" :key="payment.id">
-        {{ payment.name }}
-    </div>
+    <section class="space-y-2">
+        <NextPaymentItem
+            v-for="payment in payments"
+            :key="payment.id"
+            :payment="payment"
+        />
+    </section>
 </div>
 </template>
 
 <script setup>
+import NextPaymentItem from './NextPaymentItem.vue';
+
 defineProps({
     payments: {
         type: Array,

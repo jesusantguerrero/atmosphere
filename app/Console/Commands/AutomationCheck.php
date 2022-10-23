@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Domains\Integration\Models\Automation;
+use App\Domains\Integration\Services\LogerAutomationService;
 use Illuminate\Console\Command;
 
 class AutomationCheck extends Command
@@ -27,6 +29,9 @@ class AutomationCheck extends Command
      */
     public function handle()
     {
-        return 0;
+        $automations = Automation::whereNotNull('is_background')->get();
+        foreach ($automations as $automation) {
+            LogerAutomationService::run($automation);
+        }
     }
 }

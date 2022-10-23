@@ -36,10 +36,10 @@
 </template>
 
 <script>
-    import JetActionSection from '@/Jetstream/ActionSection.vue'
-    import JetConfirmationModal from '@/Jetstream/ConfirmationModal.vue'
-    import JetDangerButton from '@/Jetstream/DangerButton.vue'
-    import JetSecondaryButton from '@/Jetstream/SecondaryButton.vue'
+    import JetActionSection from '@/Components/atoms/ActionSection.vue'
+    import JetConfirmationModal from '@/Components/atoms/ConfirmationModal.vue'
+    import JetDangerButton from '@/Components/atoms/DangerButton.vue'
+    import JetSecondaryButton from '@/Components/atoms/SecondaryButton.vue'
 
     export default {
         props: ['team'],

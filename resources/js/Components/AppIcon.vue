@@ -1,5 +1,6 @@
 <template>
-<div class="font-brand border border-dashed bg-primary border-primary w-8 h-8 flex justify-center items-center text-base-lvl-3 rounded-lg text-2xl">
-    L.
+<div>
+    <img src="/logo.png" :style="{height: '32px'}" class="mx-auto"/>
+    <small class="text-xs text-body-1/80 font-brand">The Digital Home</small>
 </div>
 </template>

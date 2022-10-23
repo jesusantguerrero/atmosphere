@@ -6,13 +6,18 @@
     >
         <article class="py-4 flex flex-col justify-center items-center mx-auto" :class="badgeClass">
             <h4 class="text-lg font-bold "> {{ formatter(value) }} </h4>
+
+            <div class="text-center">
+                <p>Inflow: Ready to assign transactions in Month: <MoneyPresenter :value="category.activity"/> </p>
+                <p>Assigned in month: <MoneyPresenter :value="toAssign.budgeted" /> </p>
+            </div>
             <small>
-                {{ description }} {{ status }}
+                {{ description }}
             </small>
 
             <NPopover v-if="isOverspent" trigger="manual" placement="bottom"  @update:show="handleUpdateShow" :show="showPopover">
                 <template #trigger>
-                    <AtButton class="rounded-md bg-white/80">
+                    <AtButton class="rounded-md bg-black/30 text-white">
                         Fix this
                     </AtButton>
                 </template>
@@ -55,6 +60,7 @@
     import { format, startOfMonth } from "date-fns";
 
     import formatMoney from "@/utils/formatMoney";
+import MoneyPresenter from "../molecules/MoneyPresenter.vue";
 
     const props = defineProps({
         value: {
@@ -67,12 +73,16 @@
         category: {
             type: Object,
             required: true
+        },
+        toAssign: {
+            type: Object,
+            required: true
         }
     })
 
     const theme = {
         good: 'bg-success/80 text-white',
-        danger: 'bg-error/50',
+        danger: 'bg-primary text-white',
         needs: 'bg-warning',
         overspend: 'bg-warning',
         default: 'bg-base-lvl-3'

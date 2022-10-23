@@ -36,22 +36,7 @@ class BudgetCategoryController extends InertiaController
         $this->resourceName= "budgets";
     }
 
-    protected function parser($results)
-    {
-        return CategoryGroupCollection::collection($results);
-    }
-
-    protected function validateDelete(Request $request, $resource)
-    {
-        $transactions = Transaction::where('category_id', $resource->id)->count();
-        $budgetMovements = BudgetMovement::where('destination_category_id', $resource->id)
-        ->orWhere('source_category_id', $resource->id)->count();
-        if ($transactions > 0 || $budgetMovements > 0 || $resource->subCategories->count() > 0) {
-            return false;
-        }
-        return true;
-    }
-
+    // Category Budget targets 
     public function addCategoryBudget(Request $request, $categoryId)
     {
         $category = Category::find($categoryId);
@@ -79,6 +64,24 @@ class BudgetCategoryController extends InertiaController
         $monthBalance = $category->assignBudget($month, $postData);
         BudgetMovement::registerMovement($monthBalance, $postData);
         return Redirect::back();
+    }
+
+    // Parsing and formatting
+    protected function parser($results)
+    {
+        return CategoryGroupCollection::collection($results);
+    }
+
+    // Validations
+    protected function validateDelete(Request $request, $resource)
+    {
+        $transactions = Transaction::where('category_id', $resource->id)->count();
+        $budgetMovements = BudgetMovement::where('destination_category_id', $resource->id)
+        ->orWhere('source_category_id', $resource->id)->count();
+        if ($transactions > 0 || $budgetMovements > 0 || $resource->subCategories->count() > 0) {
+            return false;
+        }
+        return true;
     }
 
     protected function getValidationRules($postData)

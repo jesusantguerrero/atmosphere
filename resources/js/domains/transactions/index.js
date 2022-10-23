@@ -1,5 +1,6 @@
 export * from "./formatters"
 export * from "./tableCols"
+export * from "./tableAccountCols"
 export * from "./useTransactionModal"
 
 export const TRANSACTION_DIRECTIONS = {

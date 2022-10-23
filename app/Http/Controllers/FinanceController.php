@@ -62,42 +62,4 @@ class FinanceController extends InertiaController {
             })->take(4),
         ]);
     }
-
-    public function watchList() {
-        $teamId = request()->user()->current_team_id;
-        $queryParams = request()->query();
-        $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
-        [$startDate, $endDate] = $this->getFilterDates($filters);
-
-        $watchlist = [
-            [
-                "name" => 'Essentials',
-                "type" => "categories",
-                "input" => [4,8, 10, 14,19, 28, 25]
-            ],
-            [
-                "name" => 'Subscriptions',
-                "type" => "categories",
-                "input" => [22, 23, 11]
-            ],
-            [
-                "name" => 'True Family Expenses',
-                "type" => "payees",
-                "input" => [2, 4, 11]
-            ],
-            // [
-            //     "name" => 'tags',
-            //     'type' => 'tags',
-            //     'input' => []
-            // ]
-        ];
-
-        return Jetstream::inertia()->render(request(), 'Finance/WatchList', [
-            "data" => array_map(function($item) use ($teamId) {
-                return array_merge($item, [
-                    "data" => Watchlist::getData($teamId, $item)
-                ]);
-            }, $watchlist)
-        ]);
-    }
 }

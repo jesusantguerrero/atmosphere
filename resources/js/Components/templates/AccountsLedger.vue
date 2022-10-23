@@ -10,8 +10,8 @@
                 :key="account.id"
                 :account="account"
                 :is-selected="isSelectedAccount(account.id)"
-                @click="Inertia.visit(`/finance/transactions?filter[account_id]=${account.id}`)"
-                @edit="onEdit(account)"
+                @click="Inertia.visit(`/finance/accounts/${account.id}`)"
+                @edit="openAccountModal(account)"
             />
        </Draggable>
     </div>
@@ -37,7 +37,7 @@ import autoAnimate from "@formkit/auto-animate"
 
 const selectedAccountId = inject('selectedAccountId', null);
 const isSelectedAccount = (accountId) => {
-  return Number(selectedAccountId) === accountId;
+  return Number(selectedAccountId?.value) === accountId;
 };
 
 const props = defineProps({
@@ -52,14 +52,10 @@ const emit = defineEmits(['reordered'])
 const isAccountModalOpen = ref(false);
 const accountToEdit = ref({})
 
-const openAccountModal = () => {
-  isAccountModalOpen.value = true;
-};
-
-const onEdit = (account) =>  {
+const openAccountModal = (account = {}) => {
     accountToEdit.value = account;
-    openAccountModal();
-}
+    isAccountModalOpen.value = true;
+};
 
 const saveReorder = () => {
     const items = props.accounts.map((item, index) => ({

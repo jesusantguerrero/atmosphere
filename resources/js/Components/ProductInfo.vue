@@ -2,11 +2,8 @@
     <article class="about-screen space-y-4">
         <section class="rounded-md bg-white p-4 w-full">
             <header class="items-center mx-auto flex flex-col">
-                <h4 class="flex font-brand ml-2 items-center cursor-pointer"> 
+                <h4 class="flex font-brand ml-2 items-center cursor-pointer">
                     <AppIcon />
-                    <span class="logo text-body-1 transition text-4xl ml-2">
-                        Loger.
-                    </span>
                 </h4>
                 <div class="block-container mt-2">
                     <p class="app-version"><span>{{appVersion}}</span></p>
@@ -69,25 +66,25 @@ defineProps({
         @apply text-xl font-bold;
     }
 </style>
-    
+
 <style lang="scss" scoped>
     h1 {
         @apply text-lg;
         color: red;
     }
-    
+
     .about-screen {
       width: 100%;
       text-align: center;
       overflow-y: auto;
-    
+
         .block-container {
             display: flex;
             justify-content: center;
             width: 100%;
         }
 
-    
+
        .logo {
             &:hover {
                 color: dodgerblue;
@@ -96,16 +93,16 @@ defineProps({
                     transform: rotate(35deg); }
             }
         }
-    
+
     }
-    
+
       .about-screen .app-version {
         font-size: 24px;
         font-weight: bolder;
         color: #ccc; }
         .about-screen .app-version:hover {
           color: #999; }
-    
+
     .about-nav {
         button:first-child {
             border-radius: 4px 0 0 4px;
@@ -120,19 +117,19 @@ defineProps({
             @apply bg-gray-500 border-gray-500 text-gray-100;
         }
     }
-    
+
     .about-screen .information-container {
         text-align: left;
         width: 100%;
         padding: 20px 100px;
     }
-    
+
     .about-screen .logos {
         margin-top: 70px;
     }
-    
+
     .about-screen .logos img {
         width: 120px;
     }
     </style>
-    
+

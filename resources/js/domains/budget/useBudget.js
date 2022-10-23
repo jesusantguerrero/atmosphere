@@ -1,16 +1,18 @@
 import ExactMath from "exact-math";
-import { cloneDeep } from "lodash";
-import { computed, ref, watch } from "vue";
+import { cloneDeep, flatten } from "lodash";
+import { computed, ref, watch, reactive } from "vue";
 import { getCategoriesTotals, getGroupTotals } from './index';
 
 
 export const useBudget = (budgets) => {
     const overspentCategories = ref([])
     const overAssignedCategories = ref([])
+    const categories = ref([]);
     const budget = computed(() => {
+        const cloned = cloneDeep(budgets.value)
         overspentCategories.value = [];
         overAssignedCategories.value = [];
-        const cloned = cloneDeep(budgets.value)
+        categories.value = [];
 
         return cloned.data.map(item => {
             const totals = getCategoriesTotals(item.subCategories, {
@@ -23,6 +25,8 @@ export const useBudget = (budgets) => {
                     category.overAssigned = true;
                 }
             });
+
+            categories.value = [...categories.value, ...item.subCategories]
 
             return {
                 ...item,
@@ -70,15 +74,32 @@ export const useBudget = (budgets) => {
 
     const readyToAssign = computed(() => {
         const budgetTotals = getGroupTotals(outflow.value)
-        console.log(inflow.value?.activity | 0, budgetTotals.budgeted || 0 , "Balance")
-        const balance = ExactMath.sub(inflow.value?.activity | 0, budgetTotals.budgeted || 0)
         const category = inflow.value?.subCategories[0] ?? {}
+        const balance = category?.activity - budgetTotals.budgeted
 
         return {
             balance,
-            ...category,
+            inflow: inflow.value.activity,
+            toAssign: category,
             ...budgetTotals,
         }
+    })
+
+    // Budget selection
+    const selectedBudgetIds = reactive({
+        id: null,
+        groupId: null
+    })
+
+    const setSelectedBudget = (categoryId = null, groupId = null) => {
+        selectedBudgetIds.id = categoryId;
+        selectedBudgetIds.groupId = groupId;
+    }
+
+    const selectedBudget = computed(() => {
+        return selectedBudgetIds.id
+        ? categories.value.find(cat => cat.id == selectedBudgetIds.id)
+        : null;
     })
 
     return {
@@ -87,6 +108,8 @@ export const useBudget = (budgets) => {
         visibleCategories,
         overspentCategories,
         overspentFilter,
-        toggleOverspent
+        toggleOverspent,
+        setSelectedBudget,
+        selectedBudget
     }
 }

@@ -5,7 +5,7 @@
         </template>
 
         <div>
-            <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
+            <div class="max-w-7xl mx-auto pt-16 pb-20 sm:px-6 lg:px-8">
                 <UpdateTeamNameForm :team="team" :permissions="permissions" />
 
                 <TeamMemberManager class="mt-10 sm:mt-0"
@@ -25,9 +25,9 @@
 
 <script>
     import TeamMemberManager from './TeamMemberManager.vue'
-    import AppLayout from '@/Layouts/AppLayout.vue'
+    import AppLayout from '@/Components/templates/AppLayout.vue'
     import DeleteTeamForm from './DeleteTeamForm.vue'
-    import JetSectionBorder from '@/Jetstream/SectionBorder.vue'
+    import JetSectionBorder from '@/Components/atoms/SectionBorder.vue'
     import UpdateTeamNameForm from './UpdateTeamNameForm.vue'
 import SettingsSectionNav from '@/Components/templates/SettingsSectionNav.vue'
 

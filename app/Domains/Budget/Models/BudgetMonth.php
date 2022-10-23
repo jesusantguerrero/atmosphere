@@ -49,4 +49,14 @@ class BudgetMonth extends Model
         ]);
         return $month;
     }
+
+    public static function getSavingBalance($teamId, $endMonth) {
+        return DB::query()
+        ->whereIn('budgets.target_type', ['saving_balance'])
+        ->whereRaw("date_format(month, '%Y-%m') <= '$endMonth'")
+        ->where('budgets.team_id', $teamId)
+        ->from('budget_months')
+        ->join('budgets', 'budgets.category_id', 'budget_months.category_id')
+        ->sum(DB::raw("budgeted + activity"));
+    }
 }

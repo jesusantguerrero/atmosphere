@@ -1,1 +1,0 @@
-import{r as n,q as r,E as u,ae as c}from"./app.cefd7668.js";const p=(e,o=!1)=>{const a=n(o),s=()=>{a.value=!a.value},l=r(()=>a.value?"fas fa-angle-down":"fas fa-angle-up");return u(()=>{try{c(e.value)}catch(t){console.log(t)}}),{isCollapsed:a,toggleCollapse:s,icon:l}};export{p as u};

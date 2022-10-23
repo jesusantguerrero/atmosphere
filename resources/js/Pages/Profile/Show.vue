@@ -5,7 +5,7 @@
         </template>
 
         <div>
-            <div class="max-w-7xl mx-auto space-y-5 [&>*]:pt-5 divide-y py-10 sm:px-6 lg:px-8">
+            <div class="max-w-7xl mx-auto space-y-5 [&>*]:pt-5 divide-y pt-16 pb-20 sm:px-6 lg:px-8">
                 <UpdateProfileInformationForm
                     v-if="pageProps.jetstream.canUpdateProfileInformation"
                     :user="pageProps.user"
@@ -36,7 +36,7 @@
 </template>
 
 <script setup>
-    import AppLayout from '@/Layouts/AppLayout.vue'
+    import AppLayout from '@/Components/templates/AppLayout.vue'
     import { usePage } from '@inertiajs/inertia-vue3'
     import DeleteUserForm from './DeleteUserForm.vue'
     import LogoutOtherBrowserSessionsForm from './LogoutOtherBrowserSessionsForm.vue'

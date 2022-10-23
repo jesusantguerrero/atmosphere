@@ -44,7 +44,7 @@
 <script setup>
     import { AtButton } from "atmosphere-ui";
     import { NProgress } from "naive-ui"
-    import AppLayout from '@/Layouts/AppLayout.vue';
+    import AppLayout from '@/Components/templates/AppLayout.vue';
     import formatMoney from '@/utils/formatMoney';
 
     const getPercentage = (actual, target) => {

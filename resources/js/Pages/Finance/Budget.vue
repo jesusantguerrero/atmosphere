@@ -38,27 +38,36 @@
     </template>
     <FinanceTemplate :accounts="accounts" :panel-size="panelSize">
       <!-- Budget to assign -->
+      <MessageBox
+        title="This is your budget."
+        content="Create new category groups and categories and organize them to suit your needs"
+      />
       <BalanceAssign
         class="rounded-t-md mt-5"
         :class="[cardShadow, !isOverspentFilterShown && 'rounded-b-md']"
         :value="readyToAssign.balance"
-        :category="readyToAssign"
+        :category="readyToAssign.toAssign"
+        :to-assign="readyToAssign"
       >
         <template #activity>
           <section class="w-full flex-col justify-center  py-2 flex items-center">
-            <h4>{{ formatMoney(readyToAssign.activity) }}</h4>
-            <p class="font-bold">Activity</p>
+            <h4 class="text-secondary font-bold">
+                <MoneyPresenter :value="readyToAssign.activity" />
+            </h4>
+            <p class="font-bold text-body-1/80">Activity</p>
         </section>
     </template>
     <template #target>
         <BudgetProgress class="w-full text-center h-14"
             :goal="readyToAssign.monthlyGoals.target"
             :current="readyToAssign.monthlyGoals.balance"
-            :progress-class="['bg-body-1/5', 'bg-body-1/5']"
+            :progress-class="['bg-secondary/10', 'bg-secondary/5']"
         >
-            <section>
-                <h4>{{ formatMoney(readyToAssign.monthlyGoals.balance) }}</h4>
-                <p class="font-bold">Monthly Goals Progress</p>
+            <section class="font-bold">
+                <h4 class="text-secondary">
+                    <MoneyPresenter :value="readyToAssign.monthlyGoals.balance" />
+                </h4>
+                <p class="font-bold text-body-1/80">Monthly Goals Progress</p>
             </section>
         </BudgetProgress>
         </template>
@@ -107,7 +116,7 @@
                     v-for="item in itemGroup.subCategories"
                     :key="`${item.id}-${item.budgeted}`"
                     :item="item"
-                    @edit="selectedBudget = item"
+                    @edit="setSelectedBudget(item.id, itemGroup.id)"
                   />
                 </Draggable>
               </div>
@@ -125,13 +134,12 @@
           :item="selectedBudget.budget"
           @saved="onBudgetItemSaved"
           @deleted="deleteBudget"
-          @cancel="selectedBudget = null"
-          @close="selectedBudget = null"
+          @cancel="setSelectedBudget()"
+          @close="setSelectedBudget()"
         />
         <div v-else class="w-full mt-4">
-          <ExpenseIncome />
+          <ExpenseIncome :expenses="readyToAssign.activity" :income="readyToAssign.inflow" />
           <QuickBudget class="mt-4" />
-          <QuickBudgetMore class="mt-4" />
         </div>
       </template>
     </FinanceTemplate>
@@ -145,7 +153,7 @@ import { useForm } from "@inertiajs/inertia-vue3";
 import { AtButton, AtDatePager } from "atmosphere-ui";
 import { VueDraggableNext as Draggable } from "vue-draggable-next";
 
-import AppLayout from "@/Layouts/AppLayout.vue";
+import AppLayout from "@/Components/templates/AppLayout.vue";
 import BudgetDetailForm from "@/Components/organisms/BudgetDetailForm.vue";
 import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
 import LogerInput from "@/Components/atoms/LogerInput.vue";
@@ -169,6 +177,8 @@ import { useBudget } from "@/domains/budget";
 import { createBudgetCategory } from "@/domains/budget/createBudgetCategory";
 import { useSelect } from "@/utils/useSelects";
 import { formatMoney } from "@/utils";
+import MoneyPresenter from "@/Components/molecules/MoneyPresenter.vue";
+import MessageBox from "@/Components/organisms/MessageBox.vue";
 
 const props = defineProps({
   budgets: {
@@ -201,6 +211,8 @@ const {
   overspentCategories,
   toggleOverspent,
   overspentFilter,
+  setSelectedBudget,
+  selectedBudget
 } = useBudget(budgets);
 const isOverspentFilterShown = computed(() => {
   return overspentFilter.value || overspentCategories.value.length > 0;
@@ -209,7 +221,6 @@ const isOverspentFilterShown = computed(() => {
 const state = reactive({
   isModalOpen: false,
   isAddingGroup: true,
-  selectedBudget: null,
   budgetTotal: computed(() => {
     return 0; // sumMoney(props.budgets.data.map(item => item.amount));
   }),
@@ -221,7 +232,7 @@ const state = reactive({
   }),
 });
 
-const { categoryForm, selectedBudget } = toRefs(state);
+const { categoryForm } = toRefs(state);
 
 const groupById = (items) =>
   items?.reduce((items, item) => {

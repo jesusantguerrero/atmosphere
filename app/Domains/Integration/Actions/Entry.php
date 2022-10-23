@@ -31,8 +31,8 @@ class Entry
 
         $accountName = FormulaHelper::parseFormula($taskData->account_id, $payload);
         $categoryName = FormulaHelper::parseFormula($taskData->category_id, $payload);
-        $accountId = Account::guessAccount($automation, [$accountName]);
-        $categoryId = Account::guessAccount($automation, [$categoryName]);
+        $accountId = Account::guessAccount($automation, [$accountName ?? "General"]);
+        $categoryId = Account::guessAccount($automation, [$categoryName ?? "Unknown"]);
 
         $transaction = Transaction::createTransaction([
             'team_id' => $automation->team_id,

@@ -23,7 +23,7 @@
       <section class="grid grid-cols-2 gap-12 mt-4">
             <WidgetTitleCard title="Summary" class="w-full">
                 <div
-                    class="flex justify-between space-x-4 overflow-hidden flex-nowrap"
+                    class="flex justify-between space-x-4 overflow-hidden flex-nowrap w-full"
                 >
                     <div class="w-full mx-auto space-y-2">
                         <FinanceCard
@@ -50,6 +50,7 @@
                         :variance-title="lastMonthName"
                         :value="formatMoney(transactionTotal)"
                         :variance="expenseVariance"
+                        :variance-amount="formatMoney(lastMonthExpenses)"
                         @click="$inertia.visit('/finance/transactions')"
                     />
                 </div>
@@ -105,7 +106,7 @@
 import { computed, ref, toRefs } from "vue";
 import { Inertia } from "@inertiajs/inertia";
 import { AtButton, AtDatePager } from "atmosphere-ui";
-import AppLayout from "@/Layouts/AppLayout.vue";
+import AppLayout from "@/Components/templates/AppLayout.vue";
 import FinanceCard from "@/Components/molecules/FinanceCard.vue";
 import FinanceVarianceCard from "@/Components/molecules/FinanceVarianceCard.vue";
 import TransactionsTable from "@/Components/organisms/TransactionsTable.vue";
@@ -125,7 +126,7 @@ import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
 import { useSelect } from "@/utils/useSelects";
 import formatMoney from "@/utils/formatMoney";
 import { useServerSearch } from "@/composables/useServerSearch";
-import CategoryTrendsPreview from "@/Components/finance/CategoryTrendsPreview.vue";
+import CategoryTrendsPreview from "@/Components/Modules/finance/CategoryTrendsPreview.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 import WidgetTitleCard from "@/Components/molecules/WidgetTitleCard.vue";
 import { format, subMonths } from "date-fns";

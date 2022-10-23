@@ -249,15 +249,15 @@
 </template>
 
 <script setup>
-    import JetActionMessage from '@/Jetstream/ActionMessage.vue'
-    import JetActionSection from '@/Jetstream/ActionSection.vue'
-    import JetButton from '@/Jetstream/Button.vue'
-    import JetConfirmationModal from '@/Jetstream/ConfirmationModal.vue'
-    import JetDangerButton from '@/Jetstream/DangerButton.vue'
-    import JetDialogModal from '@/Jetstream/DialogModal.vue'
-    import JetFormSection from '@/Jetstream/FormSection.vue'
-    import JetSecondaryButton from '@/Jetstream/SecondaryButton.vue'
-    import JetSectionBorder from '@/Jetstream/SectionBorder.vue'
+    import JetActionMessage from '@/Components/atoms/ActionMessage.vue'
+    import JetActionSection from '@/Components/atoms/ActionSection.vue'
+    import JetButton from '@/Components/atoms/Button.vue'
+    import JetConfirmationModal from '@/Components/atoms/ConfirmationModal.vue'
+    import JetDangerButton from '@/Components/atoms/DangerButton.vue'
+    import JetDialogModal from '@/Components/atoms/DialogModal.vue'
+    import JetFormSection from '@/Components/atoms/FormSection.vue'
+    import JetSecondaryButton from '@/Components/atoms/SecondaryButton.vue'
+    import JetSectionBorder from '@/Components/atoms/SectionBorder.vue'
     import LogerInput from '@/Components/atoms/LogerInput.vue'
     import { AtField, AtButton } from "atmosphere-ui"
     import { useForm } from '@inertiajs/inertia-vue3'
