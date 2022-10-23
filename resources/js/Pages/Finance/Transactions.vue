@@ -4,9 +4,19 @@
       <FinanceSectionNav>
         <template #actions>
           <div class="flex items-center w-full space-x-2">
-            <LogerButton variant="inverse" class="" v-for="(item, statusName) in transactionStatus" :key="statusName" @click="$inertia.visit(item.value)">
-                {{ item.label }}
-            </LogerButton>
+            <DraftButtons
+                v-if="isDraft"
+            />
+            <div class="flex text-white rounded-md bg-primary border border-primary min-w-max overflow-hidden">
+                <button
+                    v-for="(item, statusName) in transactionStatus"
+                    class="px-2 py-1.5 flex items-center border border-transparent hover:bg-accent"
+                    :class="{'bg-white text-primary border-primary hover:text-white': isFilterSelected(statusName)}"
+                    :key="statusName"
+                    @click="$inertia.visit(item.value)">
+                    {{ item.label }}
+                </button>
+            </div>
             <AtDatePager
               class="w-full h-12 border-none bg-base-lvl-1 text-body"
               v-model:startDate="pageState.dates.startDate"
@@ -17,9 +27,6 @@
             <LogerButton  variant="inverse">
                 Import Transactions
             </LogerButton>
-            <DraftButtons
-                v-if="isDraft"
-            />
           </div>
         </template>
       </FinanceSectionNav>
@@ -131,5 +138,9 @@ const transactionStatus = {
         label: 'Scheduled',
         value: '/finance/transactions?filter[status]=scheduled'
     }
+}
+const isFilterSelected = (filterValue) => {
+    const currentStatus = serverSearchOptions.value.filters?.status || 'verified';
+    return currentStatus == filterValue;
 }
 </script>

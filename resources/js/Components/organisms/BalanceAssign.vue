@@ -8,9 +8,8 @@
             <h4 class="text-lg font-bold "> {{ formatter(value) }} </h4>
 
             <div class="text-center">
-                <p>Inflow: Ready to assign transactions in Month: {{ category.activity }}</p>
-                <p>Assigned in month: {{ toAssign.budgeted }}</p>
-                <p>TBB: {{ category.activity - toAssign.budgeted }}</p>
+                <p>Inflow: Ready to assign transactions in Month: <MoneyPresenter :value="category.activity"/> </p>
+                <p>Assigned in month: <MoneyPresenter :value="toAssign.budgeted" /> </p>
             </div>
             <small>
                 {{ description }}
@@ -61,6 +60,7 @@
     import { format, startOfMonth } from "date-fns";
 
     import formatMoney from "@/utils/formatMoney";
+import MoneyPresenter from "../molecules/MoneyPresenter.vue";
 
     const props = defineProps({
         value: {

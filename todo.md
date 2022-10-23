@@ -5,7 +5,7 @@
 - [ ] Clean up settings
 
 ## Transactions
-- [ ] Get active filter in transactions
+- [x] Get active filter in transactions
 - [x] Transfers in both sides
 - [ ] Define watchlist side
 - [ ] Define watchlist show
