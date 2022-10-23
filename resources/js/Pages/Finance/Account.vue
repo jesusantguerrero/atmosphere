@@ -43,7 +43,7 @@ import { AtDatePager, AtButton } from "atmosphere-ui";
 import { computed, toRefs, provide} from "vue";
 import { Inertia } from "@inertiajs/inertia";
 
-import AppLayout from "@/Layouts/AppLayout.vue";
+import AppLayout from "@/Components/templates/AppLayout.vue";
 import TransactionSearch from "@/Components/templates/TransactionSearch.vue";
 import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
 import TransactionTemplate from "@/Components/templates/TransactionTemplate.vue";

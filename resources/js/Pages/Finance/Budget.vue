@@ -38,6 +38,10 @@
     </template>
     <FinanceTemplate :accounts="accounts" :panel-size="panelSize">
       <!-- Budget to assign -->
+      <MessageBox
+        title="This is your budget."
+        content="Create new category groups and categories and organize them to suit your needs"
+      />
       <BalanceAssign
         class="rounded-t-md mt-5"
         :class="[cardShadow, !isOverspentFilterShown && 'rounded-b-md']"
@@ -149,7 +153,7 @@ import { useForm } from "@inertiajs/inertia-vue3";
 import { AtButton, AtDatePager } from "atmosphere-ui";
 import { VueDraggableNext as Draggable } from "vue-draggable-next";
 
-import AppLayout from "@/Layouts/AppLayout.vue";
+import AppLayout from "@/Components/templates/AppLayout.vue";
 import BudgetDetailForm from "@/Components/organisms/BudgetDetailForm.vue";
 import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
 import LogerInput from "@/Components/atoms/LogerInput.vue";
@@ -174,6 +178,7 @@ import { createBudgetCategory } from "@/domains/budget/createBudgetCategory";
 import { useSelect } from "@/utils/useSelects";
 import { formatMoney } from "@/utils";
 import MoneyPresenter from "@/Components/molecules/MoneyPresenter.vue";
+import MessageBox from "@/Components/organisms/MessageBox.vue";
 
 const props = defineProps({
   budgets: {

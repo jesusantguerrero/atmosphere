@@ -62,7 +62,7 @@
     import { format, startOfDay } from "date-fns";
     import { AtButton, AtDatePager } from "atmosphere-ui";
     import { useForm, usePage } from "@inertiajs/inertia-vue3";
-    import AppLayout from '@/Layouts/AppLayout.vue';
+    import AppLayout from '@/Components/templates/AppLayout.vue';
     import { Inertia } from '@inertiajs/inertia';
     import { computed, reactive } from "vue";
     import RandomMealModal from '@/Components/RandomMealModal.vue';

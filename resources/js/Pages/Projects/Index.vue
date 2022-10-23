@@ -13,7 +13,7 @@
           <div class="h-92 p-10 bg-base-lvl-3 text-body-1 font-bold  flex flex-col items-center justify-center rounded-md max-w-7xl mx-auto">
             <h4>
                 Coming soon
-            </h4> 
+            </h4>
             <div class="space-y-4">
                 <div>
                   Name - Last Occurrence Date - Current Count - Last Days Passed - AVG Days
@@ -48,9 +48,9 @@
                             - Add an automation action to add a new entry with params
                         </li>
                     </ul>
-                    
+
                 </div>
-            </div> 
+            </div>
           </div>
       </div>
     </AppLayout>
@@ -58,7 +58,7 @@
 
 <script setup>
 
-import AppLayout from '@/Layouts/AppLayout.vue';
+import AppLayout from '@/Components/templates/AppLayout.vue';
 import HouseSectionNav from '@/Components/templates/HouseSectionNav.vue';
 import LogerButton from '@/Components/atoms/LogerButton.vue';
 </script>

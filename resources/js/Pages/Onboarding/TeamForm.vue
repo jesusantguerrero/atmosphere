@@ -57,7 +57,7 @@ import { useForm } from '@inertiajs/inertia-vue3';
 import { format } from "date-fns";
 
 import AcceptInvitation from "./AcceptInvitation.vue";
-import AppLayout from "@/Layouts/AppLayout.vue";
+import AppLayout from "@/Components/templates/AppLayout.vue";
 import LogerInput from "@/Components/atoms/LogerInput.vue";
 import LogerApiSelect from "@/Components/organisms/LogerApiSelect.vue";
 

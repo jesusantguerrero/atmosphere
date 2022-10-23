@@ -17,7 +17,7 @@
 
 <script>
     import ApiTokenManager from './ApiTokenManager.vue'
-    import AppLayout from '@/Layouts/AppLayout.vue'
+    import AppLayout from '@/Components/templates/AppLayout.vue'
 import SettingsSectionNav from '@/Components/templates/SettingsSectionNav.vue'
 
     export default {

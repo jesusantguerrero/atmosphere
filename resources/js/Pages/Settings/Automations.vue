@@ -78,7 +78,7 @@
 import { nextTick, reactive } from "vue";
 import { Inertia } from '@inertiajs/inertia';
 import { AtButton } from "atmosphere-ui";
-import AppLayout from "@/Layouts/AppLayout.vue";
+import AppLayout from "@/Components/templates/AppLayout.vue";
 import AutomationModal from '@/Components/AutomationModal.vue';
 import SettingsSectionNav from "@/Components/templates/SettingsSectionNav.vue";
 

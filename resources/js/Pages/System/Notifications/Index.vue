@@ -42,7 +42,7 @@
     import { reactive, toRefs } from 'vue'
     import { AtButton } from "atmosphere-ui"
 
-    import AppLayout from '@/Layouts/AppLayout.vue'
+    import AppLayout from '@/Components/templates/AppLayout.vue'
     import CustomTable from "@/Components/atoms/CustomTable.vue";
 
     import cols from "./cols"

@@ -9,7 +9,7 @@
                 <i class="fa" :class="toggleIcon" />
             </LogerTabButton>
             <div class="flex items-center">
-                <h4 class="relative font-bold">
+                <h4 class="relative font-bold text-primary font-bold">
                     {{ item.name }}
                     <PointAlert
                         v-if="item.hasOverspent || item.hasOverAssigned || item.hasUnderfunded"

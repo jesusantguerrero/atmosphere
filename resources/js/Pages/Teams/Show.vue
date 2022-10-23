@@ -25,7 +25,7 @@
 
 <script>
     import TeamMemberManager from './TeamMemberManager.vue'
-    import AppLayout from '@/Layouts/AppLayout.vue'
+    import AppLayout from '@/Components/templates/AppLayout.vue'
     import DeleteTeamForm from './DeleteTeamForm.vue'
     import JetSectionBorder from '@/Jetstream/SectionBorder.vue'
     import UpdateTeamNameForm from './UpdateTeamNameForm.vue'

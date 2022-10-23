@@ -219,6 +219,7 @@
     import { AtSide, AtButton } from "atmosphere-ui"
     import { useLocalStorage } from "@vueuse/core"
     import { useI18n } from 'vue-i18n'
+    import { Link, usePage } from '@inertiajs/inertia-vue3'
 
     import JetBanner from '@/Jetstream/Banner.vue'
     import JetDropdown from '@/Jetstream/Dropdown.vue'
@@ -226,16 +227,15 @@
     import JetResponsiveNavLink from '@/Jetstream/ResponsiveNavLink.vue'
     import PrivacyToggle from '@/Components/molecules/PrivacyToggle.vue'
     import LogerTabButton from '@/Components/atoms/LogerTabButton.vue'
-    import { darkThemeOverrides } from '@/utils/naiveui'
     import AppShell from './AppShell.vue'
     import AppIcon from '@/Components/AppIcon.vue'
     import AppGlobals from './AppGlobals.vue'
+    import AppNotificationBell from '@/Components/molecules/AppNotificationBell.vue'
 
     import { useAppMenu } from '@/domains/app'
-    import { Link, usePage } from '@inertiajs/inertia-vue3'
     import { useSelect } from '@/utils/useSelects'
+    import { darkThemeOverrides } from '@/utils/naiveui'
     import { useTransactionModal } from '@/domains/transactions'
-    import AppNotificationBell from '../Components/molecules/AppNotificationBell.vue'
     import { formatMoney } from '@/utils'
 
     const { openTransferModal } = useTransactionModal()

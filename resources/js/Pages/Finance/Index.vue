@@ -106,7 +106,7 @@
 import { computed, ref, toRefs } from "vue";
 import { Inertia } from "@inertiajs/inertia";
 import { AtButton, AtDatePager } from "atmosphere-ui";
-import AppLayout from "@/Layouts/AppLayout.vue";
+import AppLayout from "@/Components/templates/AppLayout.vue";
 import FinanceCard from "@/Components/molecules/FinanceCard.vue";
 import FinanceVarianceCard from "@/Components/molecules/FinanceVarianceCard.vue";
 import TransactionsTable from "@/Components/organisms/TransactionsTable.vue";

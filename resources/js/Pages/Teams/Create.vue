@@ -15,6 +15,6 @@
 </template>
 
 <script setup>
-    import AppLayout from '@/Layouts/AppLayout.vue'
+    import AppLayout from '@/Components/templates/AppLayout.vue'
     import CreateTeamForm from './CreateTeamForm.vue'
 </script>
