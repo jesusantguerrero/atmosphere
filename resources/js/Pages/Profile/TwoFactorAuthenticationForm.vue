@@ -77,11 +77,11 @@
 </template>
 
 <script setup>
-    import JetActionSection from '@/Jetstream/ActionSection.vue'
-    import JetButton from '@/Jetstream/Button.vue'
-    import JetConfirmsPassword from '@/Jetstream/ConfirmsPassword.vue'
-    import JetDangerButton from '@/Jetstream/DangerButton.vue'
-    import JetSecondaryButton from '@/Jetstream/SecondaryButton.vue'
+    import JetActionSection from '@/Components/atoms/ActionSection.vue'
+    import JetButton from '@/Components/atoms/Button.vue'
+    import JetConfirmsPassword from '@/Components/atoms/ConfirmsPassword.vue'
+    import JetDangerButton from '@/Components/atoms/DangerButton.vue'
+    import JetSecondaryButton from '@/Components/atoms/SecondaryButton.vue'
     import { Inertia } from '@inertiajs/inertia'
     import { usePage } from '@inertiajs/inertia-vue3'
     import { computed, reactive } from 'vue'

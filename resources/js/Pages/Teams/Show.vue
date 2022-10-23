@@ -27,7 +27,7 @@
     import TeamMemberManager from './TeamMemberManager.vue'
     import AppLayout from '@/Components/templates/AppLayout.vue'
     import DeleteTeamForm from './DeleteTeamForm.vue'
-    import JetSectionBorder from '@/Jetstream/SectionBorder.vue'
+    import JetSectionBorder from '@/Components/atoms/SectionBorder.vue'
     import UpdateTeamNameForm from './UpdateTeamNameForm.vue'
 import SettingsSectionNav from '@/Components/templates/SettingsSectionNav.vue'
 

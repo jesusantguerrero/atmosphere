@@ -23,9 +23,9 @@
 </template>
 
 <script setup>
-    import JetActionMessage from '@/Jetstream/ActionMessage.vue'
-    import JetButton from '@/Jetstream/Button.vue'
-    import JetFormSection from '@/Jetstream/FormSection.vue'
+    import JetActionMessage from '@/Components/atoms/ActionMessage.vue'
+    import JetButton from '@/Components/atoms/Button.vue'
+    import JetFormSection from '@/Components/atoms/FormSection.vue'
     import { useForm } from '@inertiajs/inertia-vue3'
     import { AtField, AtButton } from "atmosphere-ui"
     import LogerInput from '@/Components/atoms/LogerInput.vue'

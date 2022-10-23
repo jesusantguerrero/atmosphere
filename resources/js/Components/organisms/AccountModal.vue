@@ -55,7 +55,7 @@
     import { AtField, AtButton } from "atmosphere-ui"
     import Slug from "slug";
 
-    import Modal from '@/Jetstream/Modal.vue'
+    import Modal from '@/Components/atoms/Modal.vue'
     import LogerInput from '@/Components/atoms/LogerInput.vue'
 
     import { makeOptions } from '@/utils/naiveui'

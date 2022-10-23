@@ -73,7 +73,7 @@ import { AtButton, AtField } from "atmosphere-ui";
 import { useForm } from "@inertiajs/inertia-vue3";
 import { NSelect } from "naive-ui";
 
-import Modal from "@/Jetstream/Modal.vue";
+import Modal from "@/Components/atoms/Modal.vue";
 import ImportHolder from "@/Components/organisms/ImportHolder.vue";
 import TabSelector from "./TabSelector.vue";
 import LogerTabButton from "./atoms/LogerTabButton.vue";

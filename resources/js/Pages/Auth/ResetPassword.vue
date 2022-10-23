@@ -32,12 +32,12 @@
 </template>
 
 <script>
-    import JetAuthenticationCard from '@/Jetstream/AuthenticationCard.vue'
-    import JetAuthenticationCardLogo from '@/Jetstream/AuthenticationCardLogo.vue'
-    import JetButton from '@/Jetstream/Button.vue'
-    import JetInput from '@/Jetstream/Input.vue'
-    import JetLabel from '@/Jetstream/Label.vue'
-    import JetValidationErrors from '@/Jetstream/ValidationErrors.vue'
+    import JetAuthenticationCard from '@/Components/atoms/AuthenticationCard.vue'
+    import JetAuthenticationCardLogo from '@/Components/atoms/AuthenticationCardLogo.vue'
+    import JetButton from '@/Components/atoms/Button.vue'
+    import JetInput from '@/Components/atoms/Input.vue'
+    import JetLabel from '@/Components/atoms/Label.vue'
+    import JetValidationErrors from '@/Components/atoms/ValidationErrors.vue'
 
     export default {
         components: {

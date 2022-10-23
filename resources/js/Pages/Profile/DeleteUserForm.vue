@@ -46,12 +46,12 @@
 </template>
 
 <script>
-    import JetActionSection from '@/Jetstream/ActionSection.vue'
-    import JetDialogModal from '@/Jetstream/DialogModal.vue'
-    import JetDangerButton from '@/Jetstream/DangerButton.vue'
-    import JetInput from '@/Jetstream/Input.vue'
-    import JetInputError from '@/Jetstream/InputError.vue'
-    import JetSecondaryButton from '@/Jetstream/SecondaryButton.vue'
+    import JetActionSection from '@/Components/atoms/ActionSection.vue'
+    import JetDialogModal from '@/Components/atoms/DialogModal.vue'
+    import JetDangerButton from '@/Components/atoms/DangerButton.vue'
+    import JetInput from '@/Components/atoms/Input.vue'
+    import JetInputError from '@/Components/atoms/InputError.vue'
+    import JetSecondaryButton from '@/Components/atoms/SecondaryButton.vue'
 
     export default {
         components: {

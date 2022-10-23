@@ -35,8 +35,8 @@
 </template>
 
 <script setup>
-import JetDropdown from '@/Jetstream/Dropdown.vue'
-import JetDropdownLink from '@/Jetstream/DropdownLink.vue'
+import JetDropdown from '@/Components/atoms/Dropdown.vue'
+import JetDropdownLink from '@/Components/atoms/DropdownLink.vue'
 import { kebabCase } from 'lodash';
 
 defineProps({

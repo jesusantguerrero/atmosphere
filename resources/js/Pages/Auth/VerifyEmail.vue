@@ -25,9 +25,9 @@
 </template>
 
 <script setup>
-    import JetAuthenticationCard from '@/Jetstream/AuthenticationCard.vue'
-    import JetAuthenticationCardLogo from '@/Jetstream/AuthenticationCardLogo.vue'
-    import JetButton from '@/Jetstream/Button.vue'
+    import JetAuthenticationCard from '@/Components/atoms/AuthenticationCard.vue'
+    import JetAuthenticationCardLogo from '@/Components/atoms/AuthenticationCardLogo.vue'
+    import JetButton from '@/Components/atoms/Button.vue'
     import { Link, useForm } from "@inertiajs/inertia-vue3"
     import { computed } from 'vue';
 

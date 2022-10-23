@@ -94,7 +94,7 @@ import { AtField, AtButton, AtInput } from 'atmosphere-ui';
 import { NSelect } from "naive-ui";
 import { computed, nextTick, ref } from 'vue';
 import { AtButton as Button } from 'atmosphere-ui';
-import Modal from '@/Jetstream/Modal.vue'
+import Modal from '@/Components/atoms/Modal.vue'
 
 const props = defineProps({
     show: {
