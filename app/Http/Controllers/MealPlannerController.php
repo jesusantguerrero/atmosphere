@@ -3,11 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Domains\AppCore\Models\Planner;
-use App\Domains\Integration\Services\LogerAutomationService;
 use App\Domains\Meal\Models\Meal;
 use App\Domains\Meal\Models\MealType;
 use App\Domains\Meal\Services\MealService;
-use App\Events\AutomationEvent;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
 

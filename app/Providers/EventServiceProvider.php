@@ -4,7 +4,6 @@ namespace App\Providers;
 
 use App\Events\AutomationEvent;
 use App\Events\BudgetAssigned;
-use App\Events\MealPlanLiked;
 use App\Listeners\AcceptInvitation;
 use App\Listeners\AutomationListener;
 use App\Listeners\CreateBudgetMovement;
@@ -12,6 +11,7 @@ use App\Listeners\CreateBudgetCategory;
 use App\Listeners\CreateBudgetTransactionMovement;
 use App\Listeners\CreateStartingBalance;
 use App\Listeners\CreateTeamSettings;
+use App\Listeners\HandleTransactionCreated;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -43,7 +43,8 @@ class EventServiceProvider extends ServiceProvider
             CreateStartingBalance::class
         ],
         TransactionCreated::class => [
-            CreateBudgetTransactionMovement::class
+            CreateBudgetTransactionMovement::class,
+            HandleTransactionCreated::class
         ],
         TeamMemberAdded::class => [
             AcceptInvitation::class

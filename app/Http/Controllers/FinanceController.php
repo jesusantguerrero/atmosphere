@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Domains\Transaction\Models\Transaction;
-use App\Domains\Transaction\Models\Watchlist;
 use App\Domains\Transaction\Services\TransactionService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -31,7 +30,7 @@ class FinanceController extends InertiaController {
         [$startDate, $endDate] = $this->getFilterDates($filters);
 
         $lastMonthStartDate = Carbon::createFromFormat(self::DateFormat, $startDate)->subMonth()->startOfMonth()->format(self::DateFormat);
-        $lastMonthEndDate = Carbon::createFromFormat(self::DateFormat, $endDate)->subMonth()->endOfMonth()->format(self::DateFormat);
+        $lastMonthEndDate = Carbon::createFromFormat(self::DateFormat, $startDate)->subMonth()->endOfMonth()->format(self::DateFormat);
 
         $budgetTotal = BudgetMonth::getMonthAssignmentTotal($teamId, $startDate);
 
@@ -41,7 +40,7 @@ class FinanceController extends InertiaController {
         $transactionsTotal = TransactionService::getExpensesTotal($teamId, $startDate, $endDate);
         $expensesByCategory = TransactionService::getCategoryExpenses($teamId, $startDate, $endDate, 4);
         $expensesByCategoryGroup = TransactionService::getCategoryExpensesGroup($teamId, $startDate, $endDate);
-        $lastMonthExpenses= TransactionService::getExpenses($teamId, $lastMonthStartDate, $lastMonthEndDate)->sum('total');
+        $lastMonthExpenses = TransactionService::getExpensesTotal($teamId, $lastMonthStartDate, $lastMonthEndDate);
         $income = TransactionService::getIncome( $teamId, $startDate, $endDate);
         $lastMonthIncome = TransactionService::getIncome( $teamId, $lastMonthStartDate, $lastMonthEndDate);
         $savings = BudgetCategoryService::getSavings($teamId, $startDate, $endDate);
@@ -53,7 +52,7 @@ class FinanceController extends InertiaController {
             "expensesByCategory" => $expensesByCategory,
             "expensesByCategoryGroup" => $expensesByCategoryGroup,
             "transactionTotal" => $transactionsTotal->total,
-            "lastMonthExpenses" => $lastMonthExpenses,
+            "lastMonthExpenses" => $lastMonthExpenses->total,
             "income" => $income,
             "savings" => $savings,
             "lastMonthIncome" => $lastMonthIncome,

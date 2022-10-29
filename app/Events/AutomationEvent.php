@@ -22,7 +22,7 @@ class AutomationEvent
      *
      * @return void
      */
-    public function __construct($teamId, $eventName, $eventData)
+    public function __construct($teamId, $eventName, $eventData = [])
     {
         $this->teamId = $teamId;
         $this->eventName = $eventName;

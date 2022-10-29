@@ -10,11 +10,11 @@ class AutomationTask extends Model
 {
     use HasFactory;
 
-    public static function createTask($serviceId, $task, $service) {
+    public static function createTask($serviceId, $task, $service, $type) {
         DB::table('automation_tasks')->insert([
             'name' => $task['name'],
             'label' => $task['label'],
-            'task_type' => 'action',
+            'task_type' => $type,
             'entity' => $service['entity'],
             'description' => $task['description'],
             'automation_service_id' => $serviceId,

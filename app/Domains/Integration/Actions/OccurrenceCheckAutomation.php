@@ -2,6 +2,8 @@
 
 namespace App\Domains\Integration\Actions;
 
+use App\Domains\Housing\Actions\RegisterOccurrence;
+use App\Domains\Housing\Models\OccurrenceCheck;
 use App\Domains\Integration\Models\Automation;
 use App\Domains\Integration\Models\AutomationTask;
 use App\Domains\Integration\Models\AutomationTaskAction;
@@ -20,11 +22,16 @@ class OccurrenceCheckAutomation
         mixed $payload,
         AutomationTaskAction $task = null,
         AutomationTaskAction $previousTask = null,
-        AutomationTask $trigger = null
+        AutomationTaskAction $trigger = null
     )
     {
         $taskData = json_decode($task->values);
-        return [];
+        $occurrence = (new RegisterOccurrence())->add(
+            $payload['team_id'],
+            $taskData->name,
+            $payload['date']
+        );
+        return $occurrence;
     }
 
 
