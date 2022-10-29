@@ -14,7 +14,6 @@
 </template>
 
 <script setup>
-import { AtButton } from "atmosphere-ui"
 import { reactive, computed } from 'vue'
 import axios from 'axios'
 import LogerButton from "@/Components/atoms/LogerButton.vue";

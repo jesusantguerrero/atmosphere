@@ -3,7 +3,7 @@
     <NPopover trigger="manual" placement="bottom"  @update:show="handleUpdateShow" :show="showPopover">
         <template #trigger>
             <span
-                class="px-5 py-1 inline-block cursor-pointer rounded-3xl font-bold min-w-max"
+                class="inline-block px-5 py-1 font-bold cursor-pointer rounded-3xl min-w-max"
                 :class="badgeClass"
                 @click="toggle"
             >
@@ -34,9 +34,9 @@
                     :options="categoryOptions"
                 />
             </AtField>
-            <div class="flex space-x-2 justify-end items-center">
+            <div class="flex items-center justify-end space-x-2">
                 <AtButton class="text-body-1" @click="clear">Cancel</AtButton>
-                <AtButton class="bg-success text-white rounded-md" @click="onAssignBudget()"> Save</AtButton>
+                <AtButton class="text-white rounded-md bg-success" @click="onAssignBudget()"> Save</AtButton>
             </div>
         </div>
     </NPopover>
@@ -50,7 +50,7 @@
     import { AtField, AtButton } from "atmosphere-ui";
 
     import LogerInput from "./LogerInput.vue";
-import { format, startOfMonth } from "date-fns";
+    import { format, startOfMonth } from "date-fns";
 
     const props = defineProps({
         value: {
