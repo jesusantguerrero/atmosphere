@@ -1,19 +1,19 @@
 <template>
 <SectionNav :sections="[{
     label: 'Overview',
-    url: '/projects'
+    url: '/housing'
 },
 {
     label: 'Chores',
-    url: '/house/chores'
+    url: '/housing/chores'
 },
 {
     label: 'Occurrence Checks',
-    url: '/house/checks'
+    url: '/housing/occurrence'
 },
 {
     label: 'Tasks',
-    url: '/house/tasks'
+    url: '/housing/tasks'
 },
  {
     label: 'Equipment',

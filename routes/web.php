@@ -1,5 +1,7 @@
 <?php
 
+use App\Domains\Integration\Services\LogerAutomationService;
+use App\Events\AutomationEvent;
 use App\Http\Controllers\Api\AccountApiController;
 use App\Http\Controllers\Api\AutomationController;
 use App\Http\Controllers\Api\CategoryApiController;
@@ -18,12 +20,13 @@ use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\FinanceTransactionController;
 use App\Http\Controllers\FinanceTrendController;
 use App\Http\Controllers\GoalController;
+use App\Http\Controllers\Housing\OccurrenceController;
+use App\Http\Controllers\Housing\ProjectController;
 use App\Http\Controllers\IngredientController;
 use App\Http\Controllers\IntegrationController;
 use App\Http\Controllers\Jetstream\TeamInvitationController;
 use App\Http\Controllers\MealController;
 use App\Http\Controllers\MealPlannerController;
-use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\RelationshipController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\System\NotificationController;
@@ -142,12 +145,25 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     /**************************************************************************************
      *                               Extras Section
     ***************************************************************************************/
-    Route::get('/projects', ProjectController::class);
+    Route::get('/housing', ProjectController::class);
+    Route::resource('/housing/occurrence', OccurrenceController::class);
+    Route::controller(OccurrenceController::class)->group(function () {
+        Route::post('/housing/occurrence/{occurrence}/instances', 'addInstance');
+        Route::delete('/housing/occurrence/{occurrence}/instances', 'removeLastInstance');
+    });
+
     Route::get('/relationships', RelationshipController::class);
 
-     // Automation Services
-     Route::post('/services/google', [ServiceController::class, 'google']);
-     Route::get('/services/messages', [ServiceController::class, 'getMessages']);
+    // Automation Services
+    Route::post('/services/google', [ServiceController::class, 'google']);
+    Route::get('/services/messages', [ServiceController::class, 'getMessages']);
+
+    Route::get('/housing/test/',function () {
+        AutomationEvent::dispatch(
+            auth()->user()->current_team_id,
+            LogerAutomationService::TRANSACTION_OCCURRENCE,
+        );
+    });
 });
 
 

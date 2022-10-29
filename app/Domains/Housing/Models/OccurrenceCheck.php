@@ -2,6 +2,7 @@
 
 namespace App\Domains\Housing\Models;
 
+use App\Domains\Transaction\Models\Transaction;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -18,4 +19,15 @@ class OccurrenceCheck extends Model
         'occurrence_count',
         'log'
     ];
+
+    static function getLinkedModels() {
+        return [
+            Transaction::class => [
+                'key' => Transaction::class,
+                'label' => 'Transactions',
+                'subtypes' => ['label', 'group', 'category', 'payee']
+            ]
+        ];
+    }
+
 }

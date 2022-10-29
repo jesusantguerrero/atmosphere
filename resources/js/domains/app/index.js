@@ -32,7 +32,7 @@ export const useAppMenu = t => {
         {
             icon: 'fas fa-home',
             label: t('Home Projects'),
-            to: '/projects',
+            to: '/housing',
             as: Link
         }
     ];
@@ -64,7 +64,7 @@ export const useAppMenu = t => {
             to: '/settings',
             as: Link
         },
-    ]; 
+    ];
 
     return {
         appMenu,

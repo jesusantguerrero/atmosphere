@@ -18,11 +18,11 @@ class RegisterOccurrence
         ])->first();
 
         if ($occurrence && $occurrence->last_date !== $date) {
-            $lastDuration = $this->getDaysDifference($occurrence->last_date, $date);
+            $lastDuration = $occurrence->last_date ? $this->getDaysDifference($occurrence->last_date, $date) : 0;
             $totalDays = $occurrence->total_days + $lastDuration;
             $occurrenceCount = $occurrence->occurrence_count + 1;
             $avg = $totalDays / $occurrenceCount;
-            $log = json_decode($occurrence->log);
+            $log = json_decode($occurrence->log) ?? [];
             $log[] = $date;
 
             $occurrence->update([
@@ -44,6 +44,32 @@ class RegisterOccurrence
                 'log' => json_encode([])
             ]);
 
+        }
+    }
+
+    public function remove(int $id, string $date = null)
+    {
+        $occurrence = OccurrenceCheck::find($id);
+
+        if ($occurrence && $occurrence->last_date) {
+            $log = json_decode($occurrence->log, true);
+            array_pop($log);
+            $previousLastDate = count($log) > 1 ? $log[count($log) - 2]: null;
+            $lastDate = $log[count($log) - 1];
+
+            $lastDuration = $previousLastDate ? $this->getDaysDifference($lastDate, $previousLastDate) : 0;
+            $totalDays = $occurrence->total_days - $occurrence->previous_days_count;
+            $occurrenceCount = $occurrence->occurrence_count - 1;
+            $avg = $totalDays / $occurrenceCount;
+
+            $occurrence->update([
+                'last_date' => $lastDate,
+                'previous_days_count' => $lastDuration,
+                'total_days' => $totalDays,
+                'avg_days_passed' => $avg,
+                'occurrence_count' => $occurrenceCount,
+                'log' => json_encode($log)
+            ]);
         }
     }
 
