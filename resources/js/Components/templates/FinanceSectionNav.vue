@@ -1,32 +1,18 @@
 <template>
-<SectionNav :sections="[{
-    label: 'Overview',
-    url: '/finance'
-},
-{
-    label: 'Budget',
-    url: '/budgets'
-},
-{
-    label: 'Watchlist',
-    url: '/finance/watchlist'
-},
-{
-    label: 'Transactions',
-    url: '/finance/transactions'
-},
- {
-    label: 'Trends',
-    url: '/trends'
-}]">
+<SectionNav :sections="menu">
     <template #actions>
         <slot name="actions" />
     </template>
 </SectionNav>
 </template>
 
-
 <script setup>
 import SectionNav from "@/Components/molecules/SectionNav.vue";
+import { getSectionMenu, MODULES } from "@/domains/app";
+import { computed } from "vue";
+
+const menu = computed(() => {
+    return getSectionMenu(MODULES.FINANCE)
+})
 
 </script>

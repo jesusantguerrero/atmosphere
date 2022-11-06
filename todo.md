@@ -2,7 +2,7 @@
 ## General
 - [ ] Accept a isActiveFunction for items | atmosphere-ui
 - [x] Unify Support, About and Help Center
-- [ ] Clean up settings
+- [x] Clean up settings
 
 ## Transactions
 - [x] Get active filter in transactions
@@ -14,6 +14,7 @@
 - [x] Make import transfer modal available Globally
 
 ## Home Projects
-- [ ] Start Occurrence Checks | later beta-2
+- [x] Start Occurrence Checks
+- [x] Start Occurrence Automation | later beta-2
 - [ ] Chores | later beta-3
 - [ ] Add sunday module | later beta-3

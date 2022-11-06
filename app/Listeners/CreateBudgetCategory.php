@@ -3,6 +3,7 @@
 namespace App\Listeners;
 
 use App\Domains\AppCore\Models\Category;
+use App\Domains\Budget\Models\Budget;
 use Insane\Journal\Models\Core\AccountDetailType;
 use Insane\Journal\Events\AccountCreated;
 

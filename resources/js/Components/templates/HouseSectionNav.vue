@@ -1,24 +1,5 @@
 <template>
-<SectionNav :sections="[{
-    label: 'Overview',
-    url: '/housing'
-},
-{
-    label: 'Chores',
-    url: '/housing/chores'
-},
-{
-    label: 'Occurrence Checks',
-    url: '/housing/occurrence'
-},
-{
-    label: 'Tasks',
-    url: '/housing/tasks'
-},
- {
-    label: 'Equipment',
-    url: '/equipment'
-}]">
+<SectionNav :sections="getSectionMenu(MODULES.HOUSING)">
     <template #actions>
         <slot name="actions" />
     </template>
@@ -28,5 +9,6 @@
 
 <script setup>
 import SectionNav from "@/Components/molecules/SectionNav.vue";
+import { getSectionMenu, MODULES } from "@/domains/app";
 
 </script>

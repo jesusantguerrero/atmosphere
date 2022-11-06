@@ -15,7 +15,7 @@ use App\Http\Controllers\BudgetCategoryController;
 use App\Http\Controllers\BudgetMonthController;
 use App\Http\Controllers\BudgetTargetController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\Finance\AccountController;
+use App\Http\Controllers\Finance\FinanceAccountController;
 use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\FinanceTransactionController;
 use App\Http\Controllers\FinanceTrendController;
@@ -107,6 +107,10 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
    /**************************************************************************************
      *                               Finance Section
     ***************************************************************************************/
+    // Finance dashboard related routes
+    Route::controller(FinanceController::class)->group(function () {
+        Route::get('/finance', 'index')->name('finance');
+    });
 
     // Budgeting & Goals routes
     Route::resource('/budgets', BudgetCategoryController::class);
@@ -119,26 +123,20 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
         Route::post('/budgets/import', 'import')->name('budget.import');
     });
 
-
-
-    // Finance dashboard related routes
-    Route::controller(FinanceController::class)->group(function () {
-        Route::get('/finance', 'index')->name('finance');
-    });
-
     // Accounts
-    Route::resource('/finance/accounts', AccountController::class);
+    Route::resource('/finance/accounts', FinanceAccountController::class, [
+        "as" => "finance"
+    ]);
 
     // Transactions
     Route::controller(FinanceTransactionController::class)->group(function() {
         Route::get('/finance/transactions', 'index')->name('finance.transactions');
-        Route::get('/finance/{accountId}/transactions', 'index')->name('finance.account.transactions');
         Route::post('/finance/import', 'import')->name('finance.import');
-
-        Route::patch('/planned-transactions/{id}/mark-as-paid', 'markPlannedAsPaid')->name("transactions.mark-as-paid");
-        Route::post('/planned-transactions', 'addPlanned')->name("budget.planned-transaction");
+        Route::patch('/finance/transactions/{id}/mark-as-paid', 'markPlannedAsPaid')->name("transactions.mark-as-paid");
+        Route::post('/finance/transactions', 'addPlanned')->name("transactions.store-planned");
     });
 
+    // Trends
     Route::get('/trends', [FinanceTrendController::class, 'index'])->name('finance.trends');
     Route::get('/trends/{name}', [FinanceTrendController::class, 'index'])->name('finance.trend-section');
 

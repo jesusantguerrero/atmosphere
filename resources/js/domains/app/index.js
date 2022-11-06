@@ -1,4 +1,5 @@
 import { Link } from "@inertiajs/inertia-vue3"
+export * from "./menus";
 
 export const useAppMenu = t => {
     const appMenu =  [
@@ -14,14 +15,20 @@ export const useAppMenu = t => {
             label: t('Meal Planner'),
             name: 'mealPlanner',
             to: '/meal-planner',
-            as: Link
+            as: Link,
+            isActiveFunction(url, currentPath) {
+                return /meal-planner|meals|ingredients/.test(currentPath)
+            }
         },
         {
             icon: 'fas fa-dollar-sign',
             label: t('Finance'),
             name: 'finance',
             to: '/finance',
-            as: Link
+            as: Link,
+            isActiveFunction(url, currentPath) {
+               return /finance|budgets|trends/.test(currentPath)
+            }
         },
         {
             icon: 'fas fa-heart',
@@ -35,7 +42,7 @@ export const useAppMenu = t => {
             to: '/housing',
             as: Link
         }
-    ];
+    ].filter(item => !item.hidden);
 
     const headerMenu =  [
         {

@@ -10,7 +10,7 @@
             </HouseSectionNav>
       </template>
       <div class="pt-16 pb-20 pl-6 max-w-screen-2xl">
-          <div class="flex flex-col items-center justify-center p-10 mx-auto font-bold rounded-md h-92 bg-base-lvl-3 text-body-1 max-w-7xl">
+          <div class="flex flex-col items-center justify-center p-10 mx-auto mt-4 font-bold rounded-md h-92 bg-base-lvl-3 text-body-1 max-w-7xl">
             <h4>
                 Coming soon
             </h4>

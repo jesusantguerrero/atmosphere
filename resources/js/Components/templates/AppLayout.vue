@@ -15,12 +15,12 @@
                         </div>
 
                         <div class="hidden space-x-2 sm:flex sm:items-center sm:ml-6">
-                            <AtButton class="flex items-center px-2 space-x-2 text-sm text-white bg-primary" rounded @click="openTransferModal()" v-if="!isOnboarding">
+                            <AtButton class="flex items-center px-2 space-x-2 text-sm text-white bg-primary" rounded @click="" v-if="!isOnboarding">
                                 <div class="flex items-center justify-center px-1 py-1 rounded-md bg-white/40">
                                     <i class="fa fa-exchange-alt"></i>
                                 </div>
                                 <span>
-                                    Add transaction
+                                    Create
                                 </span>
                             </AtButton>
 
@@ -32,50 +32,15 @@
                                 @click="$inertia.visit('/notifications')"
                              />
 
-
                             <!-- Settings Dropdown -->
                             <div class="relative ml-3">
-                                <JetDropdown align="right" width="48">
-                                    <template #trigger>
-                                        <button v-if="$page.props.jetstream.managesProfilePhotos" class="flex text-sm transition border-2 border-transparent rounded-full focus:outline-none focus:border-gray-300 active:slate-600" >
-                                            <img class="object-cover w-8 h-8 rounded-full" :src="$page.props.user.profile_photo_url" :alt="$page.props.user.name" />
-                                        </button>
-
-                                        <span v-else class="inline-flex rounded-md">
-                                            <button type="button" class="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 transition border border-transparent rounded-md text-body hover:text-gray-100 hover:bg-base-lvl-1 focus:outline-none focus:bg-base-lvl-2">
-                                                {{ $page.props.user.name }}
-
-                                                <svg class="ml-2 -mr-0.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                                </svg>
-                                            </button>
-                                        </span>
-                                    </template>
-
-                                    <template #content>
-                                        <!-- Account Management -->
-                                        <div class="block px-4 py-2 text-xs text-gray-400">
-                                            Manage Account
-                                        </div>
-
-                                        <jet-dropdown-link :href="route('profile.show')">
-                                            Profile
-                                        </jet-dropdown-link>
-
-                                        <jet-dropdown-link :href="route('api-tokens.index')" v-if="$page.props.jetstream.hasApiFeatures">
-                                            API Tokens
-                                        </jet-dropdown-link>
-
-                                        <div class="border-t border-gray-100"></div>
-
-                                        <!-- Authentication -->
-                                        <form @submit.prevent="logout">
-                                            <jet-dropdown-link as="button">
-                                                Log Out
-                                            </jet-dropdown-link>
-                                        </form>
-                                    </template>
-                                </JetDropdown>
+                                <AppUserMenu
+                                    :has-image="$page.props.jetstream.managesProfilePhotos"
+                                    :image-url="$page.props.user.profile_photo_url"
+                                    :user="$page.props.user"
+                                    :has-api-features="$page.props.jetstream.hasApiFeatures"
+                                    @logout="logout()"
+                                />
                             </div>
                         </div>
 
@@ -170,7 +135,7 @@
 
             <template #aside>
                 <AtSide
-                    class="text-bold bg-base-lvl-3 border-none shadow-none"
+                    class="border-none shadow-none text-bold bg-base-lvl-3"
                     title="Loger"
                     :class="panelShadow"
                     v-model:isExpanded="isExpanded"
@@ -178,8 +143,8 @@
                     :header-menu="headerMenu"
                     :current-path="currentPath"
                     icon-class="text-gray-400 transition hover:text-primary"
-                    item-class="w-54 px-5 py-2 font-bold text-gray-400 text-md hover:text-primary hover:bg-base-lvl-1"
-                    item-active-class="text-primary bg-base-lvl-1 border-r-2 border-primary"
+                    item-class="px-5 py-2 font-bold text-gray-400 w-54 text-md hover:text-primary hover:bg-base-lvl-1"
+                    item-active-class="border-r-2 text-primary bg-base-lvl-1 border-primary"
                     is-expandable
                 >
                     <template #brand>
@@ -231,6 +196,7 @@
     import AppIcon from '@/Components/AppIcon.vue'
     import AppGlobals from './AppGlobals.vue'
     import AppNotificationBell from '@/Components/molecules/AppNotificationBell.vue'
+    import AppUserMenu from '@/Components/AppUserMenu.vue'
 
     import { useAppMenu } from '@/domains/app'
     import { useSelect } from '@/utils/useSelects'
