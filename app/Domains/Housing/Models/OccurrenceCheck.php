@@ -11,13 +11,23 @@ class OccurrenceCheck extends Model
     use HasFactory;
     protected $fillable = [
         'team_id',
+        'user_id',
         'name',
         'last_date',
         'previous_days_count',
         'total_days',
         'avg_days_passed',
         'occurrence_count',
-        'log'
+        'log',
+        'type',
+        'conditions',
+        'notify_on_avg',
+        'notify_on_last_count',
+        'is_active'
+    ];
+
+    protected $casts = [
+        'conditions' => 'array'
     ];
 
     static function getLinkedModels() {
@@ -29,5 +39,4 @@ class OccurrenceCheck extends Model
             ]
         ];
     }
-
 }

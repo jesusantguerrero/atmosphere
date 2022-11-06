@@ -2,24 +2,26 @@
     <teleport to="body">
         <transition leave-active-class="duration-200">
             <div v-show="show" class="fixed inset-0 px-4 py-6 overflow-y-auto custom-modal sm:px-0" scroll-region>
-                <transition enter-active-class="duration-300 ease-out"
-                        enter-from-class="opacity-0"
-                        enter-to-class="opacity-100"
-                        leave-active-class="duration-200 ease-in"
-                        leave-from-class="opacity-100"
-                        leave-to-class="opacity-0">
+                <transition
+                    enter-active-class="duration-300 ease-out"
+                    enter-from-class="opacity-0"
+                    enter-to-class="opacity-100"
+                    leave-active-class="duration-200 ease-in"
+                    leave-from-class="opacity-100"
+                    leave-to-class="opacity-0">
                     <div v-show="show" class="fixed inset-0 transition-all transform" @click="close">
                         <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
                     </div>
                 </transition>
 
-                <transition enter-active-class="duration-300 ease-out"
-                        enter-from-class="translate-y-4 opacity-0 sm:translate-y-0 sm:scale-95"
-                        enter-to-class="translate-y-0 opacity-100 sm:scale-100"
-                        leave-active-class="duration-200 ease-in"
-                        leave-from-class="translate-y-0 opacity-100 sm:scale-100"
-                        leave-to-class="translate-y-4 opacity-0 sm:translate-y-0 sm:scale-95">
-                    <div v-show="show" class="mb-6 overflow-hidden transition-all transform bg-base-lvl-1 rounded-lg shadow-xl sm:w-full sm:mx-auto" :class="maxWidthClass">
+                <transition
+                    enter-active-class="duration-300 ease-out"
+                    enter-from-class="translate-y-4 opacity-0 sm:translate-y-0 sm:scale-95"
+                    enter-to-class="translate-y-0 opacity-100 sm:scale-100"
+                    leave-active-class="duration-200 ease-in"
+                    leave-from-class="translate-y-0 opacity-100 sm:scale-100"
+                    leave-to-class="translate-y-4 opacity-0 sm:translate-y-0 sm:scale-95">
+                    <div v-show="show" class="mb-6 overflow-hidden transition-all transform bg-base-lvl-3 rounded-lg shadow-xl sm:w-full sm:mx-auto" :class="maxWidthClass">
                         <slot v-if="show" :close="close" />
                     </div>
                 </transition>
@@ -34,15 +36,15 @@ import { computed, onMounted, onUnmounted, watch } from "vue";
 const emit = defineEmits(['close'])
 
 const props = defineProps({
-            show: {
-                default: false
-            },
-            maxWidth: {
-                default: '2xl'
-            },
-            closeable: {
-                default: true
-            },
+    show: {
+        default: false
+    },
+    maxWidth: {
+        default: '2xl'
+    },
+    closeable: {
+        default: true
+    },
 });
 
 watch(props.show, (show) => {
@@ -56,7 +58,6 @@ watch(props.show, (show) => {
 })
 
 const close = () => {
-    console.log('close')
     if (props.closeable) {
         emit('close')
     }

@@ -50,4 +50,8 @@ class OccurrenceController extends InertiaController
 
         return redirect()->back();
     }
+
+    public function automationPreview(OccurrenceCheck $occurrence) {
+        return $occurrence->automationPreview();
+    }
 }

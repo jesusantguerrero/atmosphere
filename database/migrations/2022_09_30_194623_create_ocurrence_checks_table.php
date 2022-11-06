@@ -28,6 +28,8 @@ return new class extends Migration
             $table->boolean('notify_on_last_count')->default(false);;
             $table->boolean('is_active')->default(false);
             $table->json('log')->nullable();
+            $table->string('type')->nullable();
+            $table->json('conditions')->nullable();
             $table->timestamps();
             $table->index(['team_id', 'name']);
         });

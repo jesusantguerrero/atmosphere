@@ -4,9 +4,6 @@ namespace App\Domains\Housing\Actions;
 
 use App\Domains\Housing\Models\OccurrenceCheck;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Validation\ValidationException;
-use Insane\Journal\Contracts\DeleteAccounts;
 
 class RegisterOccurrence
 {

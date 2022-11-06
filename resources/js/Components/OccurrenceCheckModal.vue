@@ -15,68 +15,43 @@
         </span>
     </header>
 
-    <section class="pb-4 bg-base-lvl-3 sm:p-6 sm:pb-4 text-body">
-      <section
-        ref="importHolderRef"
-      >
-        <AtField label="Name">
-            <LogerInput v-model="form.name" />
-        </AtField>
+    <article class="pb-4 pt-0 bg-base-lvl-3 sm:pt-0 sm:pb-4 text-body">
+        <SectionNav v-model="activeTab" :sections="tabs" />
+        <section class="content sm:px-6">
+            <section v-if="activeTab == 'information'">
+                <AtField label="Name">
+                    <LogerInput v-model="form.name" />
+                </AtField>
 
-        <AtField label="Linked To">
-            <LogerInput v-model="form.linked_to" />
-        </AtField>
-
-        <AtField label="Linked by">
-            <LogerInput v-model="form.linked_by" />
-        </AtField>
-
-        <div class="flex-col space-y-2">
-            <AtFieldCheck v-model="form.notify_on_avg" label="Notify on AVG" />
-            <AtFieldCheck v-model="form.notify_on_last_count" label="Notify on last count" />
-            <AtFieldCheck v-model="form.is_active" label="Active" />
-        </div>
-
-        <AtField
-            label="Payees"
-            v-if="isType('payees')"
-        >
-            <LogerApiSimpleSelect
-                v-model="form.input"
-                v-model:label="form.payee_label"
-                :multiple="true"
-                custom-label="name"
-                track-id="id"
-                placeholder="Choose payees"
-                endpoint="/api/payees"
-            />
-        </AtField>
-
-        <AtField label="Categories"  v-if="isType('categories')">
-            <NSelect
-                filterable
-                clearable
-                size="large"
-                :multiple="true"
-                v-model:value="form.input"
-                :default-expand-all="true"
-                :options="categoryOptions"
-            />
-        </AtField>
-      </section>
-    </section>
+                <div class="flex-col space-y-2">
+                    <AtFieldCheck v-model="form.notify_on_avg" label="Notify on AVG" />
+                    <AtFieldCheck v-model="form.notify_on_last_count" label="Notify on last count" />
+                    <AtFieldCheck v-model="form.is_active" label="Active" />
+                </div>
+            </section>
+            <section class="space-y-4 pt-4" v-if="activeTab == 'rule'">
+                <ConditionDescription label="Description" v-model="form.conditions.description" />
+                <ConditionSelect
+                    label="Categories"
+                    v-model="form.conditions.categories"
+                    :options="categoryOptions"
+                    multiple
+                />
+            </section>
+        </section>
+    </article>
 
     <footer class="px-6 py-4 space-x-3 text-right bg-base" >
       <AtButton type="secondary" @click="close" rounded class="h-10"> Cancel </AtButton>
-      <LogerButton variant="inverse" @click="submit" :disabled="!form.type">
-        Create
+      <LogerButton variant="inverse" @click="submit" :disabled="!form.name">
+        {{ submitLabel }}
       </LogerButton>
     </footer>
   </modal>
 </template>
 
 <script setup>
-import { ref, inject } from "vue";
+import { ref, inject, watch, computed } from "vue";
 import { AtButton, AtField, AtFieldCheck } from "atmosphere-ui";
 import { useForm } from "@inertiajs/inertia-vue3";
 import { NSelect } from "naive-ui";
@@ -88,8 +63,11 @@ import LogerTabButton from "./atoms/LogerTabButton.vue";
 import LogerButton from "./atoms/LogerButton.vue";
 import LogerInput from "./atoms/LogerInput.vue";
 import LogerApiSimpleSelect from "./organisms/LogerApiSimpleSelect.vue";
+import ConditionDescription from '@/Components/templates/ConditionDescription.vue';
+import ConditionSelect from '@/Components/templates/ConditionSelect.vue';
+import SectionNav from '@/Components/molecules/SectionNav.vue';
 
-defineProps({
+const props = defineProps({
   show: {
     default: false,
   },
@@ -99,51 +77,92 @@ defineProps({
   closeable: {
     default: true,
   },
+  formData: {
+    type: Object,
+    default: () => ({})
+  }
 });
 
 const emit = defineEmits(["update:show"]);
 
 const form = useForm({
+    id: null,
     name: '',
-    type: '',
-    input: []
+    type: 'transactions',
+    conditions: {
+        description: [{
+            operator: '',
+            value: ''
+        }],
+        categories: null,
+        payees: '',
+        labels: '',
+        accounts: ''
+    },
+    notify_on_avg: true,
+    notify_on_last_count: true,
+    is_active: true
 });
+
+watch(
+    () => props.formData,
+    (formData) => {
+        Object.keys(form.data()).forEach((field) => {
+        if (field == 'date') {
+            form[field] = new Date(formData[field])
+        } else if (formData[field]) {
+            form[field] = formData[field]
+        }
+    })
+}, { deep: true, immediate: true })
 
 const emitClose = () => {
   emit("update:show", false);
 };
 
+const isEditing = computed(() => props.formData && props.formData.id);
+const submitLabel = computed(() => isEditing.value ? 'Update' : 'Create');
+
 const submit = () => {
-  form.submit('post', route('occurrence.store'), {
-    onSuccess() {
-        emitClose();
-        emit('saved', form.data())
-    }
-  });
+  const method = props.formData.id ? 'put' : 'post'
+  if (!isEditing.value) {
+      form.submit(method, route('occurrence.store'), {
+        onSuccess() {
+            emitClose();
+            emit('saved', form.data())
+        }
+      });
+  } else {
+    update()
+  }
 };
 
-const options = [
-  {
-    value: "categories",
-    label: "Category",
-  },
-  {
-    value: "groups",
-    label: "Category Group",
-  },
-  {
-    value: "payees",
-    label: "Payee",
-  },
-  {
-    value: "tags",
-    label: "Tag",
-  },
-];
+const update = () => {
+    const url = `/housing/occurrence/${props.formData.id}`
+    form.put(url, {
+            onSuccess() {
+                emitClose();
+                emit('saved', form.data())
+            },
+        }
+    )
+}
 
 const categoryOptions = inject('categoryOptions', [])
 
-const isType = (typeName) => {
-    return  form.type == typeName
-}
+const activeTab = ref('information');
+const tabs = [{
+        label:'Information',
+        value: 'information'
+    },
+    {
+        label: 'Rule',
+        value: 'rule'
+    },
+    {
+        label: 'Preview',
+        value: 'preview'
+    }
+];
+
 </script>

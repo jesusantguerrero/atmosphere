@@ -10,7 +10,7 @@
             </HouseSectionNav>
       </template>
       <div class="pt-16 pb-20 pl-6 max-w-screen-2xl">
-          <div class="flex flex-col items-center justify-center p-10 mx-auto font-bold rounded-md h-92 bg-base-lvl-3 text-body-1 max-w-7xl">
+          <div class="flex flex-col items-center justify-center py-10 mx-auto mt-4 font-bold rounded-md h-92 bg-base-lvl-3 text-body-1 max-w-7xl">
             <div class="space-y-4">
                 <CustomTable
                     :cols="cols"
@@ -19,13 +19,13 @@
                 >
                     <template v-slot:actions="{ scope: { row } }">
                         <div class="flex justify-end">
-                            <div class="flex space-x-1">
+                            <div class="flex h-8 overflow-hidden border rounded-lg border-primary">
                                 <Button
-                                class="w-6 h-6 text-white border rounded-full border-primary bg-primary"
-                                @click="addInstance(row.id)">
+                                    class="flex items-center p-4 text-white bg-primary"
+                                    @click="addInstance(row.id)">
                                     +
                                 </Button>
-                                <Button class="w-6 h-6 border rounded-full text-primary border-primary"
+                                <Button class="flex items-center p-4 text-primary "
                                 @click="removeLastInstance(row.id)"
                                 >
                                     -
@@ -52,21 +52,23 @@
         v-model:show="isModalOpen"
         :form-data="resourceToEdit"
         @saved="onSaved"
+        @close="resourceToEdit=null"
       />
     </AppLayout>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, reactive } from 'vue';
 import { NDropdown } from 'naive-ui';
+import { Inertia } from '@inertiajs/inertia';
 
 import AppLayout from '@/Components/templates/AppLayout.vue';
 import HouseSectionNav from '@/Components/templates/HouseSectionNav.vue';
 import LogerButton from '@/Components/atoms/LogerButton.vue';
 import CustomTable from '@/Components/atoms/CustomTable.vue';
 import OccurrenceCheckModal from '@/Components/OccurrenceCheckModal.vue';
+
 import { occurrenceCols as cols } from '@/domains/housing/occurrenceCols';
-import { Inertia } from '@inertiajs/inertia';
 
 defineProps({
     occurrence: {
@@ -78,7 +80,7 @@ defineProps({
 })
 
 const isModalOpen = ref(false);
-const resourceToEdit = ref(null);
+const resourceToEdit = ref({});
 
 const onSaved = () => {
     Inertia.reload()
