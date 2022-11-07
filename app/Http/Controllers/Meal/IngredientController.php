@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Meal;
 
 use App\Domains\Meal\Models\Product;
 use Freesgen\Atmosphere\Http\InertiaController;

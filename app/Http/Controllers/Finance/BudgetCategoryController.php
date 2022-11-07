@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Finance;
 
 use App\Domains\AppCore\Models\Category;
 use App\Domains\Budget\Models\BudgetMovement;
@@ -36,7 +36,7 @@ class BudgetCategoryController extends InertiaController
         $this->resourceName= "budgets";
     }
 
-    // Category Budget targets 
+    // Category Budget targets
     public function addCategoryBudget(Request $request, $categoryId)
     {
         $category = Category::find($categoryId);

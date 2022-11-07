@@ -2,6 +2,9 @@
 
 use App\Domains\Integration\Services\LogerAutomationService;
 use App\Events\AutomationEvent;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\URL;
+
 use App\Http\Controllers\Api\AccountApiController;
 use App\Http\Controllers\Api\AutomationController;
 use App\Http\Controllers\Api\CategoryApiController;
@@ -11,30 +14,34 @@ use App\Http\Controllers\Api\LabelApiController;
 use App\Http\Controllers\Api\PayeeApiController;
 use App\Http\Controllers\Api\RecipeApiController;
 use App\Http\Controllers\Api\TimezonesApiController;
-use App\Http\Controllers\BudgetCategoryController;
-use App\Http\Controllers\BudgetMonthController;
-use App\Http\Controllers\BudgetTargetController;
+
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\Finance\FinanceAccountController;
-use App\Http\Controllers\FinanceController;
-use App\Http\Controllers\FinanceTransactionController;
-use App\Http\Controllers\FinanceTrendController;
-use App\Http\Controllers\GoalController;
-use App\Http\Controllers\Housing\OccurrenceController;
-use App\Http\Controllers\Housing\ProjectController;
-use App\Http\Controllers\IngredientController;
+use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\IntegrationController;
 use App\Http\Controllers\Jetstream\TeamInvitationController;
-use App\Http\Controllers\MealController;
-use App\Http\Controllers\MealPlannerController;
+
+use App\Http\Controllers\Finance\BudgetCategoryController;
+use App\Http\Controllers\Finance\BudgetMonthController;
+use App\Http\Controllers\Finance\BudgetTargetController;
+use App\Http\Controllers\Finance\FinanceAccountController;
+use App\Http\Controllers\Finance\FinanceController;
+use App\Http\Controllers\Finance\FinanceTransactionController;
+use App\Http\Controllers\Finance\FinanceTrendController;
+
+use App\Http\Controllers\Meal\IngredientController;
+use App\Http\Controllers\Meal\MealController;
+use App\Http\Controllers\Meal\MealPlannerController;
+
 use App\Http\Controllers\RelationshipController;
-use App\Http\Controllers\ServiceController;
+
+use App\Http\Controllers\Housing\OccurrenceController;
+use App\Http\Controllers\Housing\ProjectController;
+
+
 use App\Http\Controllers\System\NotificationController;
+
 use Freesgen\Atmosphere\Http\Controllers\SettingsController;
 use Freesgen\Atmosphere\Http\OnboardingController;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\URL;
-use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------

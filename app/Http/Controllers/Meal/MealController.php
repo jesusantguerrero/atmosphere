@@ -1,15 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Meal;
 
-use App\Domains\AppCore\Models\Planner;
 use App\Domains\Meal\Models\Meal;
 use App\Domains\Meal\Models\MealType;
 use App\Domains\Meal\Services\MealService;
 use App\Http\Resources\MealResource;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Redirect;
 
 class MealController extends InertiaController

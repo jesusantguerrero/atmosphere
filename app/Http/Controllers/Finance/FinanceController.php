@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Finance;
 
 use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Budget\Services\BudgetCategoryService;

@@ -2,14 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Domains\Integration\Models\AutomationRecipe;
-use App\Domains\Integration\Models\AutomationService;
-use App\Domains\Integration\Models\AutomationTask;
-use App\Domains\Integration\Models\Integration;
 use App\Domains\Integration\Services\GoogleService;
 use Exception;
 use Illuminate\Http\Request;
-use Laravel\Jetstream\Jetstream;
 
 class ServiceController {
     public function google(Request $request)
