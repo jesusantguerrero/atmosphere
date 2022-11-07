@@ -4,11 +4,13 @@ namespace App\Providers;
 
 use App\Events\AutomationEvent;
 use App\Events\BudgetAssigned;
+use App\Events\OccurrenceCreated;
 use App\Listeners\AcceptInvitation;
 use App\Listeners\AutomationListener;
 use App\Listeners\CreateBudgetMovement;
 use App\Listeners\CreateBudgetCategory;
 use App\Listeners\CreateBudgetTransactionMovement;
+use App\Listeners\CreateOccurrenceAutomation;
 use App\Listeners\CreateStartingBalance;
 use App\Listeners\CreateTeamSettings;
 use App\Listeners\HandleTransactionCreated;
@@ -35,9 +37,10 @@ class EventServiceProvider extends ServiceProvider
             CreateTeamAccounts::class,
             CreateTeamSettings::class
         ],
-        BudgetAssigned::class => [
-            CreateBudgetMovement::class
+        TeamMemberAdded::class => [
+            AcceptInvitation::class
         ],
+        // Journal Events
         AccountCreated::class => [
             CreateBudgetCategory::class,
             CreateStartingBalance::class
@@ -46,11 +49,15 @@ class EventServiceProvider extends ServiceProvider
             CreateBudgetTransactionMovement::class,
             HandleTransactionCreated::class
         ],
-        TeamMemberAdded::class => [
-            AcceptInvitation::class
-        ],
+        // App events
         AutomationEvent::class => [
             AutomationListener::class
+        ],
+        BudgetAssigned::class => [
+            CreateBudgetMovement::class
+        ],
+        OccurrenceCreated::class => [
+            CreateOccurrenceAutomation::class
         ]
     ];
 

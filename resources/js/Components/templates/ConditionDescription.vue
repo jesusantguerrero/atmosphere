@@ -31,8 +31,8 @@
 </template>
 
 <script setup>
-import { AtFieldCheck } from "atmosphere-ui";
 import { reactive } from "vue";
+import { AtFieldCheck } from "atmosphere-ui";
 import { NSelect } from "naive-ui";
 
 import LogerInput from "@/Components/atoms/LogerInput.vue";
@@ -59,7 +59,7 @@ const options = [{
 }]
 
 const state = reactive({
-    isActive: false
+    isActive: hasValues(props.modelValue)
 })
 
 const form = reactive({
@@ -83,5 +83,9 @@ const remove = (index) => {
 
 const isLast = (index) => {
     return index != 0 && index == form.conditions.length - 1
+}
+
+function hasValues(conditions) {
+    return conditions.some(condition => condition.value);
 }
 </script>

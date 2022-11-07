@@ -3,7 +3,10 @@
 namespace App\Domains\Housing\Actions;
 
 use App\Domains\Housing\Models\OccurrenceCheck;
+use App\Domains\Transaction\Actions\SearchTransactions;
+use Illuminate\Log\Logger;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class RegisterOccurrence
 {
@@ -19,7 +22,7 @@ class RegisterOccurrence
             $totalDays = $occurrence->total_days + $lastDuration;
             $occurrenceCount = $occurrence->occurrence_count + 1;
             $avg = $totalDays / $occurrenceCount;
-            $log = json_decode($occurrence->log) ?? [];
+            $log = $occurrence->log ?? [];
             $log[] = $date;
 
             $occurrence->update([
@@ -28,7 +31,7 @@ class RegisterOccurrence
                 'total_days' => $totalDays,
                 'avg_days_passed' => $avg,
                 'occurrence_count' => $occurrenceCount,
-                'log' => json_encode($log)
+                'log' => $log
             ]);
         } else if (!$occurrence) {
             OccurrenceCheck::create([
@@ -38,7 +41,7 @@ class RegisterOccurrence
                 'previous_days_count' => 0,
                 'total_days' => 0,
                 'avg_days_passed' => 0,
-                'log' => json_encode([])
+                'log' => []
             ]);
 
         }
@@ -67,6 +70,22 @@ class RegisterOccurrence
                 'occurrence_count' => $occurrenceCount,
                 'log' => json_encode($log)
             ]);
+        }
+    }
+
+    public function load(OccurrenceCheck $occurrence) {
+        $transactions = (new SearchTransactions())->handle($occurrence->conditions);
+        foreach ($transactions as $transaction) {
+            try {
+                (new RegisterOccurrence())->add(
+                    $transaction->team_id,
+                    $occurrence->name,
+                    $transaction->date
+                );
+            } catch (\Exception $e) {
+                Log::error($e->getMessage());
+                continue;
+            }
         }
     }
 

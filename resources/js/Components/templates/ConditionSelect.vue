@@ -28,7 +28,7 @@ import { AtFieldCheck } from "atmosphere-ui";
 import { reactive } from "vue";
 import { NSelect } from "naive-ui";
 
-defineProps({
+const props = defineProps({
     label: {
         type: String
     },
@@ -49,13 +49,6 @@ defineProps({
 })
 
 const state = reactive({
-    isActive: false
-})
-
-const form = reactive({
-    conditions: [{
-        operator: '',
-        value: ''
-    }]
-})
+    isActive: !!props.modelValue?.length
+});
 </script>

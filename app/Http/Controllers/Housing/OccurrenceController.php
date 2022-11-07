@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Housing;
 
 use App\Domains\Housing\Actions\RegisterOccurrence;
 use App\Domains\Housing\Models\OccurrenceCheck;
+use App\Domains\Transaction\Actions\SearchTransactions;
 use Carbon\Carbon;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
@@ -51,7 +52,11 @@ class OccurrenceController extends InertiaController
         return redirect()->back();
     }
 
-    public function automationPreview(OccurrenceCheck $occurrence) {
-        return $occurrence->automationPreview();
+    public function automationPreview(OccurrenceCheck $occurrence, SearchTransactions $search) {
+        return $search->handle($occurrence->conditions);
+    }
+
+    public function automationLoad(OccurrenceCheck $occurrence, RegisterOccurrence $registerer) {
+        return $registerer->load($occurrence);
     }
 }

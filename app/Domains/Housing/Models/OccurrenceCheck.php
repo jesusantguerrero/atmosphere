@@ -3,6 +3,7 @@
 namespace App\Domains\Housing\Models;
 
 use App\Domains\Transaction\Models\Transaction;
+use App\Events\OccurrenceCreated;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -27,8 +28,15 @@ class OccurrenceCheck extends Model
     ];
 
     protected $casts = [
-        'conditions' => 'array'
+        'conditions' => 'array',
+        'log' => 'array'
     ];
+
+    protected static function booted() {
+        static::created(function($newOccurrence) {
+            OccurrenceCreated::dispatch($newOccurrence);
+        });
+    }
 
     static function getLinkedModels() {
         return [

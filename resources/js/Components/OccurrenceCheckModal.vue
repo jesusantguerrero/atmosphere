@@ -33,11 +33,12 @@
                 <ConditionDescription label="Description" v-model="form.conditions.description" />
                 <ConditionSelect
                     label="Categories"
-                    v-model="form.conditions.categories"
+                    v-model="form.conditions.category_id"
                     :options="categoryOptions"
                     multiple
                 />
             </section>
+            <OccurrencePreview v-if="activeTab == 'preview'" :occurrence-id="form.id" :conditions="form.conditions" />
         </section>
     </article>
 
@@ -59,6 +60,7 @@ import { NSelect } from "naive-ui";
 import Modal from "@/Components/atoms/Modal.vue";
 import ImportHolder from "@/Components/organisms/ImportHolder.vue";
 import TabSelector from "./TabSelector.vue";
+import OccurrencePreview from "./OccurrencePreview.vue";
 import LogerTabButton from "./atoms/LogerTabButton.vue";
 import LogerButton from "./atoms/LogerButton.vue";
 import LogerInput from "./atoms/LogerInput.vue";
@@ -94,14 +96,15 @@ const form = useForm({
             operator: '',
             value: ''
         }],
-        categories: null,
-        payees: '',
+        category_id: null,
+        payee_id: '',
         labels: '',
-        accounts: ''
+        account_id: ''
     },
     notify_on_avg: true,
     notify_on_last_count: true,
-    is_active: true
+    is_active: true,
+    log: []
 });
 
 watch(
