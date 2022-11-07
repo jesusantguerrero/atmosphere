@@ -53,7 +53,7 @@ Loger is organized in "concerns" by the moment it have 4
 
 * ### 🏡Home/Family Projects**
     - [ ] Chores
-    - [ ] Ocurrence Checks
+    - [x] Occurrence Checks
     - [ ] Plans (Events and activities / Repairs / ETC)
         - [ ] Quick Create Budget from plans
         - [ ] Quikc Create Transactions from plans? 
