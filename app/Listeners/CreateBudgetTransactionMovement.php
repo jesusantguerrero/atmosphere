@@ -12,16 +12,6 @@ use Insane\Journal\Events\TransactionCreated;
 class CreateBudgetTransactionMovement
 {
     /**
-     * Create the event listener.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-
-    }
-
-    /**
      * Handle the event.
      *
      * @param  object  $event
@@ -43,6 +33,5 @@ class CreateBudgetTransactionMovement
                 'activity' => DB::raw("activity + $amount")
             ]);
         }
-
     }
 }

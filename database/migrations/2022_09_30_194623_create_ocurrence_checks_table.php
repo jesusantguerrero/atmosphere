@@ -20,13 +20,16 @@ return new class extends Migration
             $table->string('name');
             $table->string('label');
             $table->date('last_date')->nullable();
-            $table->integer('current_days_count')->default(0);
+            $table->integer('occurrence_count')->default(0);
+            $table->integer('total_days')->default(0);
             $table->integer('previous_days_count')->default(0);
             $table->integer('avg_days_passed')->default(0);
             $table->boolean('notify_on_avg')->default(false);
             $table->boolean('notify_on_last_count')->default(false);;
             $table->boolean('is_active')->default(false);
-            $table->json('input')->nullable();
+            $table->json('log')->nullable();
+            $table->string('type')->nullable();
+            $table->json('conditions')->nullable();
             $table->timestamps();
             $table->index(['team_id', 'name']);
         });

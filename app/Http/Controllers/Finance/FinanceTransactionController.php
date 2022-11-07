@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Finance;
 
 use App\Domains\AppCore\Models\Planner;
 use App\Domains\Transaction\Actions\FindLinkedTransactions;

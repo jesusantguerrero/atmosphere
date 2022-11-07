@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\DB;
 class LogerAutomationService {
 
     const MEAL_PLAN_LIKED = 'mealPlanLiked';
+    const TRANSACTION_CREATED = 'transactionCreated';
+    const TRANSACTION_OCCURRENCE = 'transactionsFetch';
 
     public static function run(Automation $automation, $eventData = null) {
         echo "starting $automation->name with $automation->id \n";
@@ -45,7 +47,8 @@ class LogerAutomationService {
                     AutomationTask::createTask(
                         $serviceId,
                         $task,
-                        $service
+                        $service,
+                        $taskType
                     );
                 }
             }

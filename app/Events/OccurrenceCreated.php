@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\Domains\Housing\Models\OccurrenceCheck;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -10,23 +11,18 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class AutomationEvent
+class OccurrenceCreated
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $teamId;
-    public $eventData;
-    public $eventName;
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct($teamId, $eventName, $eventData = [])
+    public function __construct(OccurrenceCheck $occurrence)
     {
-        $this->teamId = $teamId;
-        $this->eventName = $eventName;
-        $this->eventData = $eventData;
+        $this->occurrence = $occurrence;
     }
 
     /**

@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Finance;
 
 use App\Domains\AppCore\Models\Category;
 use App\Domains\Budget\Models\Budget;
 use App\Domains\Budget\Services\BudgetCategoryService;
+use App\Http\Controllers\Controller;
 
 class BudgetTargetController extends Controller
 {

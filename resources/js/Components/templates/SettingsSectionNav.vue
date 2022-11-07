@@ -16,16 +16,9 @@
         label: 'Integrations',
         url: '/integrations'
     },
-    {
-        label: 'Personalization',
-        url: '/integrations'
-    },
-    {
-        label: 'Personalization',
-        url: '/integrations'
-    },]">
+    ]">
     <template #actions>
-        <slot name="actions"> <div class="py-4 w-1"></div> </slot>
+        <slot name="actions"> <div class="w-1 py-4"></div> </slot>
     </template>
 </SectionNav>
 </template>
@@ -33,5 +26,4 @@
 
 <script setup>
 import SectionNav from "@/Components/molecules/SectionNav.vue";
-
 </script>

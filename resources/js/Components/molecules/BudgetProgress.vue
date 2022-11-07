@@ -22,7 +22,6 @@
 
 <script setup>
 import formatMoney from '@/utils/formatMoney';
-import ExactMath from 'exact-math';
 import { computed } from 'vue';
 
 const props = defineProps({
@@ -47,7 +46,7 @@ const props = defineProps({
 })
 
 const progress = computed(() => {
-    let progressValue = ExactMath.mul(ExactMath.div(props.current || 0, props.goal || 0) || 0, 100) || 0
+    let progressValue = (props.current || 0 / props.goal || 0) || 0 * 100
     progressValue = Number.isFinite(progressValue) ? progressValue : 0
     return Math.round((progressValue + Number.EPSILON) * 100) / 100
 })

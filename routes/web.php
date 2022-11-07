@@ -1,5 +1,10 @@
 <?php
 
+use App\Domains\Integration\Services\LogerAutomationService;
+use App\Events\AutomationEvent;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\URL;
+
 use App\Http\Controllers\Api\AccountApiController;
 use App\Http\Controllers\Api\AutomationController;
 use App\Http\Controllers\Api\CategoryApiController;
@@ -9,29 +14,34 @@ use App\Http\Controllers\Api\LabelApiController;
 use App\Http\Controllers\Api\PayeeApiController;
 use App\Http\Controllers\Api\RecipeApiController;
 use App\Http\Controllers\Api\TimezonesApiController;
-use App\Http\Controllers\BudgetCategoryController;
-use App\Http\Controllers\BudgetMonthController;
-use App\Http\Controllers\BudgetTargetController;
+
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\Finance\AccountController;
-use App\Http\Controllers\FinanceController;
-use App\Http\Controllers\FinanceTransactionController;
-use App\Http\Controllers\FinanceTrendController;
-use App\Http\Controllers\GoalController;
-use App\Http\Controllers\IngredientController;
+use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\IntegrationController;
 use App\Http\Controllers\Jetstream\TeamInvitationController;
-use App\Http\Controllers\MealController;
-use App\Http\Controllers\MealPlannerController;
-use App\Http\Controllers\ProjectController;
+
+use App\Http\Controllers\Finance\BudgetCategoryController;
+use App\Http\Controllers\Finance\BudgetMonthController;
+use App\Http\Controllers\Finance\BudgetTargetController;
+use App\Http\Controllers\Finance\FinanceAccountController;
+use App\Http\Controllers\Finance\FinanceController;
+use App\Http\Controllers\Finance\FinanceTransactionController;
+use App\Http\Controllers\Finance\FinanceTrendController;
+
+use App\Http\Controllers\Meal\IngredientController;
+use App\Http\Controllers\Meal\MealController;
+use App\Http\Controllers\Meal\MealPlannerController;
+
 use App\Http\Controllers\RelationshipController;
-use App\Http\Controllers\ServiceController;
+
+use App\Http\Controllers\Housing\OccurrenceController;
+use App\Http\Controllers\Housing\ProjectController;
+
+
 use App\Http\Controllers\System\NotificationController;
+
 use Freesgen\Atmosphere\Http\Controllers\SettingsController;
 use Freesgen\Atmosphere\Http\OnboardingController;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\URL;
-use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------
@@ -104,6 +114,10 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
    /**************************************************************************************
      *                               Finance Section
     ***************************************************************************************/
+    // Finance dashboard related routes
+    Route::controller(FinanceController::class)->group(function () {
+        Route::get('/finance', 'index')->name('finance');
+    });
 
     // Budgeting & Goals routes
     Route::resource('/budgets', BudgetCategoryController::class);
@@ -116,38 +130,47 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
         Route::post('/budgets/import', 'import')->name('budget.import');
     });
 
-
-
-    // Finance dashboard related routes
-    Route::controller(FinanceController::class)->group(function () {
-        Route::get('/finance', 'index')->name('finance');
-    });
-
     // Accounts
-    Route::resource('/finance/accounts', AccountController::class);
+    Route::resource('/finance/accounts', FinanceAccountController::class, [
+        "as" => "finance"
+    ]);
 
     // Transactions
     Route::controller(FinanceTransactionController::class)->group(function() {
         Route::get('/finance/transactions', 'index')->name('finance.transactions');
-        Route::get('/finance/{accountId}/transactions', 'index')->name('finance.account.transactions');
         Route::post('/finance/import', 'import')->name('finance.import');
-
-        Route::patch('/planned-transactions/{id}/mark-as-paid', 'markPlannedAsPaid')->name("transactions.mark-as-paid");
-        Route::post('/planned-transactions', 'addPlanned')->name("budget.planned-transaction");
+        Route::patch('/finance/transactions/{id}/mark-as-paid', 'markPlannedAsPaid')->name("transactions.mark-as-paid");
+        Route::post('/finance/transactions', 'addPlanned')->name("transactions.store-planned");
     });
 
+    // Trends
     Route::get('/trends', [FinanceTrendController::class, 'index'])->name('finance.trends');
     Route::get('/trends/{name}', [FinanceTrendController::class, 'index'])->name('finance.trend-section');
 
     /**************************************************************************************
      *                               Extras Section
     ***************************************************************************************/
-    Route::get('/projects', ProjectController::class);
+    Route::get('/housing', ProjectController::class);
+    Route::resource('/housing/occurrence', OccurrenceController::class);
+    Route::controller(OccurrenceController::class)->group(function () {
+        Route::post('/housing/occurrence/{occurrence}/instances', 'addInstance');
+        Route::delete('/housing/occurrence/{occurrence}/instances', 'removeLastInstance');
+        Route::get('/housing/occurrence/{occurrence}/preview', 'automationPreview');
+        Route::post('/housing/occurrence/{occurrence}/load', 'automationLoad');
+    });
+
     Route::get('/relationships', RelationshipController::class);
 
-     // Automation Services
-     Route::post('/services/google', [ServiceController::class, 'google']);
-     Route::get('/services/messages', [ServiceController::class, 'getMessages']);
+    // Automation Services
+    Route::post('/services/google', [ServiceController::class, 'google']);
+    Route::get('/services/messages', [ServiceController::class, 'getMessages']);
+
+    Route::get('/housing/test/',function () {
+        AutomationEvent::dispatch(
+            auth()->user()->current_team_id,
+            LogerAutomationService::TRANSACTION_OCCURRENCE,
+        );
+    });
 });
 
 

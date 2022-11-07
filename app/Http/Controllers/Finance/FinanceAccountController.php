@@ -7,7 +7,7 @@ use Freesgen\Atmosphere\Http\Querify;
 use Inertia\Inertia;
 use Insane\Journal\Models\Core\Account;
 
-class AccountController extends InertiaController {
+class FinanceAccountController extends InertiaController {
     use Querify;
     const DateFormat = 'Y-m-d';
 

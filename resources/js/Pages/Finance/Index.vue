@@ -85,10 +85,10 @@
             <WidgetTitleCard title="Transactions" class="w-full">
                 <TransactionsTable
                     class="w-full"
-                table-class="overflow-auto text-sm"
-                :transactions="transactions"
-                :parser="transactionDBToTransaction"
-                @edit="''"
+                    table-class="overflow-auto text-sm"
+                    :transactions="transactions"
+                    :parser="transactionDBToTransaction"
+                    @edit="''"
                 />
 
                 <template #action>

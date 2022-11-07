@@ -2,7 +2,6 @@
 
 namespace App\Domains\Meal\Models;
 
-use App\Events\AutomationEvent;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 

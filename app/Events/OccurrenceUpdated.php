@@ -10,23 +10,18 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class AutomationEvent
+class OccurrenceUpdated
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $teamId;
-    public $eventData;
-    public $eventName;
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct($teamId, $eventName, $eventData = [])
+    public function __construct()
     {
-        $this->teamId = $teamId;
-        $this->eventName = $eventName;
-        $this->eventData = $eventData;
+        //
     }
 
     /**

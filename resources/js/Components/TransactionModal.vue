@@ -172,15 +172,16 @@
 <script setup>
     import { format } from 'date-fns'
     import { reactive, toRefs, watch, computed, inject, ref } from 'vue'
-    import Modal from '@/Components/atoms/Modal.vue'
     import { useForm } from "@inertiajs/inertia-vue3"
     import { AtField, AtButton, AtFieldCheck, AtInput } from "atmosphere-ui"
     import { NSelect, NDatePicker } from "naive-ui";
+
+    import Modal from '@/Components/atoms/Modal.vue'
     import LogerInput from "@/Components/atoms/LogerInput.vue"
-    import axios from 'axios'
-    import LogerApiSimpleSelect from './organisms/LogerApiSimpleSelect.vue'
+    import LogerApiSimpleSelect from '@/Components/organisms/LogerApiSimpleSelect.vue'
+    import LogerTabButton from '@/Components/atoms/LogerTabButton.vue'
+
     import { TRANSACTION_DIRECTIONS } from '@/domains/transactions'
-    import LogerTabButton from './atoms/LogerTabButton.vue'
 
     const props = defineProps({
             show: {
@@ -291,11 +292,11 @@
             recurrence: {
                 save: {
                     method: 'post',
-                    url: () => route('budget.planned-transaction'),
+                    url: () => route('transactions.store-planned'),
                 },
                 update: {
                     method: 'update',
-                    url: () => route('budget.planned-transaction'),
+                    url: () => route('transactions.store-planned'),
                 }
             }
 

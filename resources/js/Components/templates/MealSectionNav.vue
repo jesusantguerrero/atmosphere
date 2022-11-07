@@ -1,19 +1,5 @@
 <template>
-<SectionNav :sections="[
-    {
-        label: 'Planner',
-        url: '/meal-planner'
-    }, {
-        label: 'Recipes',
-        url: '/meals'
-    }, 
-    {
-        label: 'Ingredients',
-        url: '/ingredients'
-    }, {
-        label: 'Menus',
-        url: '/meals/menus'
-    }]">
+<SectionNav :sections="getSectionMenu(MODULES.MEAL)">
     <template #actions>
         <slot name="actions" />
     </template>
@@ -23,5 +9,5 @@
 
 <script setup>
 import SectionNav from "@/Components/molecules/SectionNav.vue";
-
+import { getSectionMenu, MODULES } from "@/domains/app";
 </script>

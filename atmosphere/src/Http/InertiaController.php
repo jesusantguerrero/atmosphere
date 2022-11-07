@@ -25,7 +25,7 @@ class InertiaController extends BaseController {
     protected $responseType = "inertia";
     protected $resourceName;
 
-    public function index(Request $request) {
+    protected function index(Request $request) {
         $resourceName = $this->resourceName ?? $this->model->getTable();
         $resources = $this->parser($this->getModelQuery($request));
 

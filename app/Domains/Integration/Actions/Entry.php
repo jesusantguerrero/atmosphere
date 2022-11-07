@@ -4,11 +4,14 @@ namespace App\Domains\Integration\Actions;
 
 use App\Domains\Integration\Models\Automation;
 use App\Domains\Integration\Models\AutomationTaskAction;
+use App\Domains\Transaction\Models\Transaction as ModelsTransaction;
 use App\Helpers\FormulaHelper;
 use App\Models\User;
 use App\Notifications\EntryGenerated;
+use Illuminate\Support\Facades\Log;
 use Insane\Journal\Models\Core\Account;
 use Insane\Journal\Models\Core\Transaction;
+use Illuminate\Support\Str;
 
 class Entry
 {
@@ -19,7 +22,7 @@ class Entry
      * @param  Google_Calendar_Events  $calendarEvents
      * @return void
      */
-    public static function create(
+    public static function createTransaction(
         Automation $automation,
         mixed $payload,
         AutomationTaskAction $task,
@@ -53,6 +56,61 @@ class Entry
         ]);
         User::find($automation->user_id)->notify(new EntryGenerated($transaction));
         return $transaction;
+    }
+
+    public static function transactionCreated(
+        Automation $automation,
+        mixed $payload,
+        AutomationTaskAction $task,
+        AutomationTaskAction $previousTask,
+        AutomationTaskAction $trigger
+    ) {
+        $config = json_decode($trigger->values);
+        if (Str::contains($payload['description'], $config->value)) {
+            return $payload;
+        }
+    }
+
+    /**
+     * Validate and create a new team for the given user.
+     *
+     * @param  Automation  $automation
+     * @return void
+     */
+    public static function transactionsFetch(
+        Automation $automation,
+        mixed $payload,
+        AutomationTaskAction $task,
+        mixed $previousTask = null,
+        AutomationTaskAction $trigger = null
+    )
+    {
+        $config = json_decode($trigger->values);
+        $track = json_decode($automation->track, true);
+        $trackId = $track['lastId'] ?? 0;
+        $transactions = ModelsTransaction::where('description', 'like' ,"%$config->value%")->orderBy('date')->get();
+        foreach ($transactions as $transaction) {
+            $tasks = $automation->tasks;
+            $previousTask = $tasks->first();
+            $payload = $transaction->toArray();
+            foreach ($tasks as $taskIndex => $task) {
+                if ($taskIndex !== 0) {
+                    $action = $task->name;
+                    $actionEntity = $task->entity;
+                    try {
+                        $payload = $actionEntity::$action($automation, $payload, $task, $previousTask, $trigger);
+                        $previousTask = $task;
+                    } catch (\Exception $e) {
+                        print_r($e->getMessage());
+                        Log::error($e->getMessage(), $transaction->toArray());
+                        continue;
+                    }
+                }
+            }
+            $track['lastId'] = $transaction->id;
+        }
+        $automation->track = json_encode($track);
+        $automation->save();
     }
 
     public static function fieldConfig() {
