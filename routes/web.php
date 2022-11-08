@@ -1,7 +1,7 @@
 <?php
 
-use App\Domains\Integration\Services\LogerAutomationService;
-use App\Events\AutomationEvent;
+use App\Domains\Housing\Contracts\OccurrenceNotifyTypes;
+use App\Domains\Housing\Models\OccurrenceCheck;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
 
@@ -165,11 +165,14 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     Route::post('/services/google', [ServiceController::class, 'google']);
     Route::get('/services/messages', [ServiceController::class, 'getMessages']);
 
-    Route::get('/housing/test/',function () {
-        AutomationEvent::dispatch(
-            auth()->user()->current_team_id,
-            LogerAutomationService::TRANSACTION_OCCURRENCE,
-        );
+    Route::get('/housing/test',function () {
+        $occurrencesOnLast = OccurrenceCheck::getForNotificationType(OccurrenceNotifyTypes::LAST);
+        $occurrencesOnAvg = OccurrenceCheck::getForNotificationType(OccurrenceNotifyTypes::AVG);
+
+        return [
+            $occurrencesOnAvg,
+            $occurrencesOnLast
+        ];
     });
 });
 

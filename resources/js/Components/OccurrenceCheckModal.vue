@@ -16,7 +16,7 @@
     </header>
 
     <article class="pb-4 pt-0 bg-base-lvl-3 sm:pt-0 sm:pb-4 text-body">
-        <SectionNav v-model="activeTab" :sections="tabs" />
+        <SectionNav v-model="activeTab" :sections="tabs" class="px-4"/>
         <section class="content sm:px-6">
             <section v-if="activeTab == 'information'">
                 <AtField label="Name">

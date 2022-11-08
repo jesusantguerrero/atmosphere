@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Housing;
 use App\Domains\Housing\Actions\RegisterOccurrence;
 use App\Domains\Housing\Models\OccurrenceCheck;
 use App\Domains\Transaction\Actions\SearchTransactions;
-use Carbon\Carbon;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Collection;
