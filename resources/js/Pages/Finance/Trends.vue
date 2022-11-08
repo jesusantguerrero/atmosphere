@@ -3,6 +3,16 @@
     <template #header>
       <FinanceSectionNav>
         <template #actions>
+            <div class="flex text-white rounded-md bg-primary border border-primary min-w-max overflow-hidden">
+                <button
+                    v-for="(item, statusName) in cashflowEntities"
+                    class="px-2 py-1.5 flex items-center border border-transparent hover:bg-accent"
+                    :class="{'bg-white text-primary border-primary hover:text-white': isFilterSelected(statusName)}"
+                    :key="statusName"
+                    @click="$inertia.visit(item.value)">
+                    {{ item.label }}
+                </button>
+            </div>
             <AtDatePager
                 class="w-full h-12 border-none bg-base-lvl-1 text-body"
                 v-model:startDate="pageState.dates.startDate"
@@ -95,7 +105,7 @@ const handleSelection = (index) => {
 
 const trends = [
     {
-        name: 'Category Group Trends',
+        name: 'Cashflow',
         link: '/trends'
     },
     {
@@ -125,5 +135,25 @@ const trendComponent = computed(() => {
 
 const onPrint = () => {
     print();
+}
+
+
+const cashflowEntities = {
+    groups: {
+        label: 'Groups',
+        value: '/trends/groups'
+    },
+    categories: {
+        label: 'Categories',
+        value: '/trends/categories'
+    },
+    payees: {
+        label: 'Payees',
+        value: '/trends/payees'
+    }
+}
+const isFilterSelected = (filterValue) => {
+    const currentStatus = location.pathname;
+    return currentStatus.includes(filterValue);
 }
 </script>

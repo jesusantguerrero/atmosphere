@@ -3,8 +3,8 @@
     class="meal-cell border border-dashed border-primary rounded-md px-5 py-2 w-ful flex overflow-visible mb-4"
     :class="[plannedMeal ? 'bg-base-lvl-2' : 'bg-base-lvl-3']"
   >
-    <div class="px-2 py-2 group bg-base-lvl-2 font-bold justify-between text-primary w-full  flex" v-if="plannedMeal">
-        <span class="capitalize">
+    <div class="px-2 py-2 group bg-base-lvl-2 font-bold justify-between text-primary w-full flex" v-if="plannedMeal">
+        <span class="capitalize text-ellipsis inline-block">
             {{ plannedMeal.dateable.name }}
         </span>
         <div class="transition flex space-x-2 items-center text-xl">

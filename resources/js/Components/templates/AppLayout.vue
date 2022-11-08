@@ -142,18 +142,20 @@
                     :menu="currentMenu"
                     :header-menu="headerMenu"
                     :current-path="currentPath"
+                    brand-container-class="py-2"
+                    nav-container-class="pt-1 space-y-2 border-t px-2"
                     icon-class="text-gray-400 transition hover:text-primary"
-                    item-class="px-5 py-2 font-bold text-gray-400 w-54 text-md hover:text-primary hover:bg-base-lvl-1"
-                    item-active-class="border-r-2 text-primary bg-base-lvl-1 border-primary"
+                    item-class="px-5 py-[0.80rem] rounded-md font-bold text-gray-400 w-54 hover:text-primary hover:bg-base-lvl-1"
+                    item-active-class="text-primary bg-base-lvl-1/70"
                     is-expandable
                 >
                     <template #brand>
-                        <div class="flex w-full pl-0 mx-auto" :class="isExpanded ? 'pl-5' :'justify-center'">
+                        <div class="flex w-full pl-0 mx-auto mb-0" :class="isExpanded ? 'pl-5' :'justify-center'">
                             <div class="mx-auto text-center " v-if="!isExpanded">
-                                <img src="/logotype.png" :style="{height: '32px'}" class="mx-auto"/>
+                                <img src="/logotype.png" :style="{height: '24px'}" class="mx-auto"/>
                             </div>
                             <div class="mx-auto text-center " v-else>
-                                <AppIcon />
+                                <AppIcon size="medium" />
                             </div>
                         </div>
                     </template>
@@ -169,7 +171,6 @@
                 <article class="overflow-hidden overflow-y-auto ic-scroller">
                     <JetBanner />
                     <slot />
-                    <!-- <NavigationBottom :menu-items="menu" /> -->
                 </article>
             </template>
         </AppShell>
