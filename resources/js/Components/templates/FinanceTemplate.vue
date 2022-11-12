@@ -44,7 +44,7 @@
     import { useImportModal } from '@/domains/transactions/useImportModal';
 
 
-    const { openTransferModal, isOpen: isTransferModalOpen } = useTransactionModal();
+    const { openTransactionModal, isOpen: isTransferModalOpen } = useTransactionModal();
     const { isOpen: isImportModalOpen, toggleModal: toggleImportModal } = useImportModal();
 
     const props = defineProps({

@@ -3,46 +3,49 @@ import { reactive, toRefs } from "vue"
 /**
  *
  */
-export const transferModalState = reactive({
+export const transactionModalState = reactive({
     isOpen: false,
     transactionData: null,
+    mode: 'EXPENSE',
     recurrence: false,
     automatic: false,
 })
 
 /**
  * useTransactionModal - get controls and state of transaction modal
- * @returns {{ toggleTransferModal: Function, openTransferModal: Function, closeTransferModal: Function, isOpen: Boolean }}
+ * @returns {{ toggleTransactionModal: Function, openTransactionModal: Function, closeTransactionModal: Function, isOpen: Boolean }}
  */
 export const useTransactionModal = () => {
-    const closeTransferModal = () => {
-        transferModalState.isOpen = false
-        transferModalState.automatic = false
-        transferModalState.transactionData = null
-        transferModalState.recurrence = false
+    const closeTransactionModal = () => {
+        transactionModalState.isOpen = false
+        transactionModalState.automatic = false
+        transactionModalState.transactionData = null
+        transactionModalState.mode = 'EXPENSE'
+        transactionModalState.recurrence = false
     }
 
-    const openTransferModal = (config = {}) => {
-        transferModalState.automatic = config.automatic ?? false
-        transferModalState.transactionData = config.transactionData ?? null
-        transferModalState.recurrence = config.recurrence ?? false
-        transferModalState.isOpen = true
+    const openTransactionModal = (config = {}) => {
+        transactionModalState.automatic = config.automatic ?? false
+        transactionModalState.transactionData = config.transactionData ?? null
+        transactionModalState.recurrence = config.recurrence ?? false
+        transactionModalState.mode = config.mode ?? 'EXPENSE'
+        transactionModalState.isOpen = true
     }
 
-    const toggleTransferModal = (config) => {
-        if (transferModalState.isOpen)  {
-            closeTransferModal()
+    const toggleTransactionModal = (config) => {
+        if (transactionModalState.isOpen)  {
+            closeTransactionModal()
         } else {
-            openTransferModal(config)
+            openTransactionModal(config)
         }
     }
 
-    const { isOpen } = toRefs(transferModalState)
+    const { isOpen } = toRefs(transactionModalState)
 
     return {
-        toggleTransferModal,
-        openTransferModal,
-        closeTransferModal,
+        toggleTransactionModal,
+        openTransactionModal,
+        closeTransactionModal,
         isOpen,
     }
 }

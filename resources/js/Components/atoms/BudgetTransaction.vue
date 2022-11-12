@@ -86,10 +86,10 @@
         destination_category_id: null,
     });
 
-    const { openTransferModal } = useTransactionModal()
+    const { openTransactionModal } = useTransactionModal()
     const onAssignBudget = () => {
         if (BALANCE_STATUS.available || Number(props.category.budgeted) !== Number(form.amount)) {
-            openTransferModal({
+            openTransactionModal({
                 transactionData: {
                     date: new Date(),
                     direction: 'WITHDRAW',

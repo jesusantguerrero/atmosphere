@@ -15,17 +15,9 @@
                         </div>
 
                         <div class="hidden space-x-2 sm:flex sm:items-center sm:ml-6">
-                            <AtButton class="flex items-center px-2 space-x-2 text-sm text-white bg-primary" rounded @click="" v-if="!isOnboarding">
-                                <div class="flex items-center justify-center px-1 py-1 rounded-md bg-white/40">
-                                    <i class="fa fa-exchange-alt"></i>
-                                </div>
-                                <span>
-                                    Create
-                                </span>
-                            </AtButton>
+                            <TransactionAddButton />
 
                             <PrivacyToggle v-model="isPrivacyMode" v-if="!isOnboarding" />
-                            <!-- <span> {{ formatMoney($page.props.balance) }}</span> -->
 
                             <AppNotificationBell
                                 :notifications="$page.props.unreadNotifications"
@@ -188,8 +180,6 @@
     import { Link, usePage } from '@inertiajs/inertia-vue3'
 
     import JetBanner from '@/Components/atoms/Banner.vue'
-    import JetDropdown from '@/Components/atoms/Dropdown.vue'
-    import JetDropdownLink from '@/Components/atoms/DropdownLink.vue'
     import JetResponsiveNavLink from '@/Components/atoms/ResponsiveNavLink.vue'
     import PrivacyToggle from '@/Components/molecules/PrivacyToggle.vue'
     import LogerTabButton from '@/Components/atoms/LogerTabButton.vue'
@@ -204,8 +194,9 @@
     import { darkThemeOverrides } from '@/utils/naiveui'
     import { useTransactionModal } from '@/domains/transactions'
     import { formatMoney } from '@/utils'
+    import TransactionAddButton from './TransactionAddButton.vue'
 
-    const { openTransferModal } = useTransactionModal()
+
     const props = defineProps({
         title: {
             type: String

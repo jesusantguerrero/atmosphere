@@ -56,7 +56,7 @@ import { useTransactionModal } from "@/domains/transactions";
 import { useServerSearch } from "@/composables/useServerSearch";
 import { tableAccountCols } from '@/domains/transactions';
 
-const { openTransferModal } = useTransactionModal();
+const { openTransactionModal } = useTransactionModal();
 
 const props = defineProps({
   transactions: {
@@ -110,7 +110,7 @@ const findLinked = (transaction) => {
 }
 
 const handleEdit = (transaction) => {
-    openTransferModal({
+    openTransactionModal({
         transactionData: transaction
     })
 }

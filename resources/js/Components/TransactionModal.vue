@@ -2,7 +2,7 @@
     <modal :show="show" :max-width="maxWidth" :closeable="closeable" v-slot:default="{ close }" @close="$emit('update:show', false)">
         <div class="pb-4 bg-base-lvl-3 sm:p-6 sm:pb-4 text-body">
             <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                <div class="grid grid-cols-2 overflow-hidden text-lg rounded-lg" v-if="!isTransfer">
+                <div class="grid grid-cols-3 overflow-hidden text-lg rounded-lg">
                     <div
                         v-for="type in transactionTypes"
                         :key="type.value"
@@ -92,7 +92,6 @@
 
                         <div class="flex space-x-2">
                             <AtFieldCheck v-model="isRecurrence" label="Set recurrence" />
-                            <AtFieldCheck v-model="form.is_transfer" label="is Transfer" />
                         </div>
 
                         <div v-if="isRecurrence">
@@ -208,6 +207,10 @@
             transactionData: {
                 type: Object,
                 default: () => ({})
+            },
+            mode: {
+                type: String,
+                default: 'income'
             }
     });
 
@@ -219,6 +222,9 @@
         }, {
             value: 'WITHDRAW',
             label: 'Expense'
+        }, {
+            value: 'TRANSFER',
+            label: 'Transfer'
         }
     ];
 
@@ -251,6 +257,17 @@
             is_transfer: false
         }),
     })
+
+    watch(
+        () => state.form.direction, 
+        (direction) => {
+            if (direction?.toLowerCase() == 'transfer') {
+                state.form.is_transfer = true
+            } else {
+                state.form.is_transfer = false;
+            }
+        }
+    )
     const isTransfer = computed(() => {
         return state.form.is_transfer;
     })
@@ -322,16 +339,20 @@
             },
         })
     }
-
-    watch(() => props.transactionData, (newValue) => {
+    watch(() => props.transactionData, () => {
+        const newValue = { ...props.transactionData }
         Object.keys(state.form.data()).forEach((field) => {
-            if (field == 'date') {
+            if (field == 'date' && newValue[field]) {
                 state.form[field] = new Date(newValue[field])
             } else {
-                state.form[field] = newValue[field]
+                state.form[field] = newValue[field] || state.form[field]
             }
         })
-    }, { deep: true })
+    }, { deep : true });
+
+    watch(() => props.show, (show) => {
+        state.form.direction = props.mode?.toUpperCase() ?? 'EXPENSE';
+    })
 
     const isRecurrence = ref(props.recurrence);
     const toggleRecurrence = () => {

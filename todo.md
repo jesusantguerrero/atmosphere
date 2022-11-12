@@ -1,8 +1,14 @@
 # Beta
 ## General
-- [ ] Accept a isActiveFunction for items | atmosphere-ui
+- [x] Accept a isActiveFunction for items | atmosphere-ui
 - [x] Unify Support, About and Help Center
 - [x] Clean up settings
+- [x] Add dropdown with create: Income, Expense, Import Budget, Import Transactions
+- [ ] Logic to force refresh weather
+- [ ] This month vs last month line chart
+- [ ] Fix or hide net-worth chart
+- [ ] Separate budget by target
+- [ ] Accounts Page
 
 ## Transactions
 - [x] Get active filter in transactions
