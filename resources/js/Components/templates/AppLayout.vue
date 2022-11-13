@@ -15,17 +15,9 @@
                         </div>
 
                         <div class="hidden space-x-2 sm:flex sm:items-center sm:ml-6">
-                            <AtButton class="flex items-center px-2 space-x-2 text-sm text-white bg-primary" rounded @click="" v-if="!isOnboarding">
-                                <div class="flex items-center justify-center px-1 py-1 rounded-md bg-white/40">
-                                    <i class="fa fa-exchange-alt"></i>
-                                </div>
-                                <span>
-                                    Create
-                                </span>
-                            </AtButton>
+                            <TransactionAddButton />
 
                             <PrivacyToggle v-model="isPrivacyMode" v-if="!isOnboarding" />
-                            <!-- <span> {{ formatMoney($page.props.balance) }}</span> -->
 
                             <AppNotificationBell
                                 :notifications="$page.props.unreadNotifications"
@@ -142,18 +134,20 @@
                     :menu="currentMenu"
                     :header-menu="headerMenu"
                     :current-path="currentPath"
+                    brand-container-class="py-2"
+                    nav-container-class="pt-1 space-y-2 border-t px-2"
                     icon-class="text-gray-400 transition hover:text-primary"
-                    item-class="px-5 py-2 font-bold text-gray-400 w-54 text-md hover:text-primary hover:bg-base-lvl-1"
-                    item-active-class="border-r-2 text-primary bg-base-lvl-1 border-primary"
+                    item-class="px-5 py-[0.80rem] rounded-md font-bold text-gray-400 w-54 hover:text-primary hover:bg-base-lvl-1"
+                    item-active-class="text-primary bg-base-lvl-1/70"
                     is-expandable
                 >
                     <template #brand>
-                        <div class="flex w-full pl-0 mx-auto" :class="isExpanded ? 'pl-5' :'justify-center'">
+                        <div class="flex w-full pl-0 mx-auto mb-0" :class="isExpanded ? 'pl-5' :'justify-center'">
                             <div class="mx-auto text-center " v-if="!isExpanded">
-                                <img src="/logotype.png" :style="{height: '32px'}" class="mx-auto"/>
+                                <img src="/logotype.png" :style="{height: '24px'}" class="mx-auto"/>
                             </div>
                             <div class="mx-auto text-center " v-else>
-                                <AppIcon />
+                                <AppIcon size="medium" />
                             </div>
                         </div>
                     </template>
@@ -169,7 +163,6 @@
                 <article class="overflow-hidden overflow-y-auto ic-scroller">
                     <JetBanner />
                     <slot />
-                    <!-- <NavigationBottom :menu-items="menu" /> -->
                 </article>
             </template>
         </AppShell>
@@ -187,8 +180,6 @@
     import { Link, usePage } from '@inertiajs/inertia-vue3'
 
     import JetBanner from '@/Components/atoms/Banner.vue'
-    import JetDropdown from '@/Components/atoms/Dropdown.vue'
-    import JetDropdownLink from '@/Components/atoms/DropdownLink.vue'
     import JetResponsiveNavLink from '@/Components/atoms/ResponsiveNavLink.vue'
     import PrivacyToggle from '@/Components/molecules/PrivacyToggle.vue'
     import LogerTabButton from '@/Components/atoms/LogerTabButton.vue'
@@ -203,8 +194,9 @@
     import { darkThemeOverrides } from '@/utils/naiveui'
     import { useTransactionModal } from '@/domains/transactions'
     import { formatMoney } from '@/utils'
+    import TransactionAddButton from './TransactionAddButton.vue'
 
-    const { openTransferModal } = useTransactionModal()
+
     const props = defineProps({
         title: {
             type: String

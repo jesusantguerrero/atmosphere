@@ -52,7 +52,7 @@ class RegisterOccurrence
         $occurrence = OccurrenceCheck::find($id);
 
         if ($occurrence && $occurrence->last_date) {
-            $log = json_decode($occurrence->log, true);
+            $log = $occurrence->log;
             array_pop($log);
             $previousLastDate = count($log) > 1 ? $log[count($log) - 2]: null;
             $lastDate = $log[count($log) - 1];

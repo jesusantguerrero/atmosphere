@@ -73,7 +73,7 @@ class TransactionService {
             'transactions.status' => 'verified'
         ])
         ->whereNotNull('category_id')
-        ->whereNot('categories.name', Category::INFLOW)
+        ->whereNot('categories.name', Category::READY_TO_ASSIGN)
         ->getByMonth($startDate, $endDate, false);
 
         if ($parentId) {
@@ -84,7 +84,7 @@ class TransactionService {
         ->select(DB::raw("ABS(sum(CASE
         WHEN transactions.direction = 'WITHDRAW'
         THEN total * -1
-        ELSE total * 1 END)) as total, 
+        ELSE total * 1 END)) as total,
         category_id, categories.name, categories.parent_id, group.name as parent_name"))
         ->join('categories', 'categories.id', 'category_id')
         ->leftJoin('categories as group', 'group.id', 'categories.parent_id')

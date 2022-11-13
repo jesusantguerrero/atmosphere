@@ -5,7 +5,8 @@ export * from "./useTransactionModal"
 
 export const TRANSACTION_DIRECTIONS = {
     WITHDRAW: 'WITHDRAW',
-    DEPOSIT: 'DEPOSIT'
+    DEPOSIT: 'DEPOSIT',
+    TRANSFER: 'TRANSFER'
 }
 
 export const getVariances = (current = 0, last = 0) => {
