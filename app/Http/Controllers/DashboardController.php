@@ -32,7 +32,7 @@ class DashboardController {
             "meals" => PlannedMealResource::collection($plannedMeals),
             "budgetTotal" => $budget->sum('budgeted'),
             "transactionTotal" => $transactionsTotal,
-            "revenue" => ReportService::generateExpensesByPeriod($teamId),
+            "revenue" => ReportService::generateCurrentPreviousReport($teamId, 'month', 1),
             'onboarding' => function () use ($team) {
                 $onboarding =  $team->onboarding();
                 return $onboarding->inProgress() ? [

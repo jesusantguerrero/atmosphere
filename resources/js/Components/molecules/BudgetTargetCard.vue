@@ -85,7 +85,6 @@ const monthlyContribution = computed(() => {
     if (isSpendingTarget(props.item)) {
         return  props.item.amount
     } else {
-        console.log( instancesLeft())
         return props.item.amount / instancesLeft();
     }
 })

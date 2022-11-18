@@ -4,11 +4,11 @@
 - [x] Unify Support, About and Help Center
 - [x] Clean up settings
 - [x] Add dropdown with create: Income, Expense, Import Budget, Import Transactions
-- [ ] Logic to force refresh weather
-- [ ] This month vs last month line chart
-- [ ] Fix or hide net-worth chart
-- [ ] Separate budget by target
-- [ ] Accounts Page
+- [x] Logic to force refresh weather
+- [x] Fix or hide net-worth chart
+- [ ] This month vs last month line chart | later beta-2
+- [ ] Separate budget by target | later beta-2
+- [ ] Accounts Page | later beta-2
 
 ## Transactions
 - [x] Get active filter in transactions
@@ -21,6 +21,6 @@
 
 ## Home Projects
 - [x] Start Occurrence Checks
-- [x] Start Occurrence Automation | later beta-2
+- [x] Start Occurrence Automation
 - [ ] Chores | later beta-3
 - [ ] Add sunday module | later beta-3

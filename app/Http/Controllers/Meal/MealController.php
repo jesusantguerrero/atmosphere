@@ -46,7 +46,9 @@ class MealController extends InertiaController
 
     protected function afterSave($postData, $resource): void
     {
-        $resource->saveIngredients($postData['ingredients']);
+        if ( isset($postData['ingredients'])) {
+            $resource->saveIngredients($postData['ingredients']);
+        }
     }
 
     public function addPlan(Request $request, MealService $mealService) {

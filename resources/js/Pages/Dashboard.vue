@@ -13,7 +13,7 @@
                 />
 
                 <div class="flex space-x-4">
-                    <ChartComparison
+                    <ChartCurrentVsPrevious
                         class="w-full mt-4 mb-10 overflow-hidden bg-white rounded-lg"
                         :class="[cardShadow]"
                         :title="t('Expenses summary')"
@@ -30,7 +30,7 @@
 
             </div>
             <div class="space-y-4 md:w-3/12 py-6">
-                <ClimateWidget />
+                <WeatherWidget />
                 <OnboardingSteps :steps="onboarding.steps" :percentage="onboarding.percentage" class="mt-5" v-if="onboarding.steps" />
                 <NextPaymentsWidget
                     v-else
@@ -56,14 +56,15 @@
     import TransactionsTable from "@/Components/organisms/TransactionsTable.vue";
     import SectionTitle from "@/Components/atoms/SectionTitle.vue";
     import OnboardingSteps from "@/Components/widgets/OnboardingSteps.vue";
-    import ChartComparison from "@/Components/ChartComparison.vue";
+    import ChartComparison from "@/Components/widgets/ChartComparison.vue";
     import LogerButton from "@/Components/atoms/LogerButton.vue";
+    import MealWidget from "@/Components/widgets/MealWidget.vue";
+    import WeatherWidget from "../Components/widgets/WeatherWidget.vue";
+    import NextPaymentsWidget from "@/Components/widgets/NextPaymentsWidget.vue";
 
     import { useSelect } from '@/utils/useSelects';
     import { transactionDBToTransaction } from "@/domains/transactions";
-    import MealWidget from "@/Components/widgets/MealWidget.vue";
-    import ClimateWidget from "../Components/widgets/ClimateWidget.vue";
-    import NextPaymentsWidget from "@/Components/widgets/NextPaymentsWidget.vue";
+    import ChartCurrentVsPrevious from "@/Components/widgets/ChartCurrentVsPrevious.vue";
 
     const props = defineProps({
         revenue: {

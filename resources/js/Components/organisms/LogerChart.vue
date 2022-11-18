@@ -5,6 +5,7 @@
 <script setup>
 import { generateRandomColor } from "@/utils";
 import { Chart, registerables } from "chart.js";
+import { borderColor } from "tailwindcss/defaultTheme";
 import { computed } from "vue";
 import { LineChart, BarChart } from "vue-chart-3";
 
@@ -62,7 +63,8 @@ const chartData = computed(() => {
         label: item.name,
         data: item.data,
         fill: true,
-        backgroundColor: props.options.colors[index]
+        backgroundColor: props.options.colors[index],
+        borderColor: props.options.borderColors[index]
     })),
   };
 });

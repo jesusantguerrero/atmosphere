@@ -18,6 +18,7 @@ class MealResource extends JsonResource
             "id" => $this->id,
             "name" => $this->name,
             "notes" =>$this->notes,
+            "is_liked" =>$this->is_liked,
             "meal_type_id" => $this->meal_type_id,
             "meal_type" => $this->mealType?->name,
             "menu_id" => $this->menu_id,

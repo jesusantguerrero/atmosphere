@@ -4,7 +4,11 @@
     :class="cardShadow"
   >
     <header class="flex justify-between items-center">
-      <SectionTitle>{{ title }}</SectionTitle>
+        <SectionTitle>
+            <slot name="title">
+                {{ title }}
+            </slot>
+        </SectionTitle>
       <section class="text-secondary font-bold text-sm">
         <slot name="subtitle">
           {{ subtitle }}

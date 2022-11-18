@@ -7,16 +7,11 @@
             <DraftButtons
                 v-if="isDraft"
             />
-            <div class="flex text-white rounded-md bg-primary border border-primary min-w-max overflow-hidden">
-                <button
-                    v-for="(item, statusName) in transactionStatus"
-                    class="px-2 py-1.5 flex items-center border border-transparent hover:bg-accent"
-                    :class="{'bg-white text-primary border-primary hover:text-white': isFilterSelected(statusName)}"
-                    :key="statusName"
-                    @click="$inertia.visit(item.value)">
-                    {{ item.label }}
-                </button>
-            </div>
+            <StatusButtons
+                v-model="currentStatus"
+                :statuses="transactionStatus"
+                @change="$inertia.visit($event)"
+            />
             <AtDatePager
               class="w-full h-12 border-none bg-base-lvl-1 text-body"
               v-model:startDate="pageState.dates.startDate"
@@ -43,7 +38,7 @@
 <script setup>
 import { NSelect } from "naive-ui";
 import { AtDatePager, AtButton } from "atmosphere-ui";
-import { computed, toRefs, provide} from "vue";
+import { computed, toRefs, provide, ref} from "vue";
 import { Inertia } from "@inertiajs/inertia";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
@@ -57,6 +52,7 @@ import LogerButton from "@/Components/atoms/LogerButton.vue";
 import { useTransactionModal } from "@/domains/transactions";
 import { useServerSearch } from "@/composables/useServerSearch";
 import LogerDropdown from "@/Components/molecules/LogerDropdown.vue";
+import StatusButtons from "@/Components/molecules/StatusButtons.vue";
 
 const { openTransactionModal } = useTransactionModal();
 
@@ -123,10 +119,6 @@ const handleEdit = (transaction) => {
 
 
 const transactionStatus = {
-    draft: {
-        label: 'Drafts',
-        value: '/finance/transactions?filter[status]=draft&relationships=linked'
-    },
     verified: {
         label: 'Verified',
         value: '/finance/transactions?'
@@ -134,10 +126,12 @@ const transactionStatus = {
     scheduled: {
         label: 'Scheduled',
         value: '/finance/transactions?filter[status]=scheduled'
-    }
+    },
+    draft: {
+        label: 'Drafts',
+        value: '/finance/transactions?filter[status]=draft&relationships=linked'
+    },
 }
-const isFilterSelected = (filterValue) => {
-    const currentStatus = serverSearchOptions.value.filters?.status || 'verified';
-    return currentStatus == filterValue;
-}
+
+const currentStatus = ref(serverSearchOptions.value.filters?.status || 'verified');
 </script>

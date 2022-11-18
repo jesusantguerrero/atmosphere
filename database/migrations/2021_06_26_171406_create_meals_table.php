@@ -19,6 +19,7 @@ class CreateMealsTable extends Migration
             $table->foreignId('user_id');
             $table->foreignId('menu_id')->nullable();
             $table->string('name');
+            $table->boolean('is_liked')->default(false);
             $table->timestamps();
         });
     }

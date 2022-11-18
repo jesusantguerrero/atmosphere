@@ -4,10 +4,17 @@
     :subtitle="today"
     :value-description="description"
     >
+        <template #title>
+            <div class="group cursor-pointer transition" @click="fetchWeatherInfo()">
+                {{ state.name }} <small class="group-hover:inline-block hidden">Update</small> 
+            </div>
+        </template>
         <template #leftTitle>
             <img :src="image" alt="weather-image" />
         </template>
-        <h4 class="text-secondary font-bold text-4xl relative">{{ state.main.temp }}<span class="text-sm absolute">Cº</span></h4>
+        <h4 class="text-secondary font-bold text-4xl relative">
+            {{ state.main.temp }} <span class="text-sm absolute">Cº</span>
+        </h4>
   </WidgetCard>
 </template>
 
@@ -52,16 +59,20 @@ const getWeather = ({ coords: { latitude, longitude } }) => {
   return fetch(endpoint + params).then((res) => res.json());
 };
 
-onMounted(() => {
-  if (state.value.expireTime < new Date()) {
-      navigator.geolocation.getCurrentPosition(async (position) => {
+const fetchWeatherInfo = () => {
+    navigator.geolocation.getCurrentPosition(async (position) => {
         try {
           const response = await getWeather(position);
           setWeatherData(response);
         } catch (err) {
           console.log(err);
         }
-      });
+    });
+}
+
+onMounted(() => {
+  if (state.value.expireTime < new Date()) {
+    fetchWeatherInfo()
   }
 });
 </script>

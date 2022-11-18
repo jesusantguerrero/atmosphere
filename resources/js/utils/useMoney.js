@@ -14,7 +14,6 @@ export function useMoney() {
 
     const sumMoney = (array) => {
         const sum = array.reduce((total, decimalString) => {
-            console.log(decimalString);
             return add(total, toMoney(decimalString))
         }, toMoney('0.00'))
         return toDecimalString(sum)

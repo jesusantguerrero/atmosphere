@@ -9,7 +9,7 @@ use Insane\Journal\Models\Product\Product;
 class Meal extends Model
 {
     use HasFactory;
-    protected $fillable = ['team_id','user_id','name', 'meal_type_id', 'menu_id', 'notes'];
+    protected $fillable = ['team_id','user_id','name', 'meal_type_id', 'menu_id', 'notes', 'is_liked'];
 
     public function ingredients() {
         return $this->hasMany(Ingredient::class);
@@ -23,7 +23,7 @@ class Meal extends Model
         Ingredient::query()->where('meal_id', $this->id)->delete();
         foreach ($items as $item) {
             if (isset($item['product_id']) && $item['product_id'] !== "new::{$item['name']}") {
-                $product = Product::find($item['id']);
+                $product = Product::find($item['product_id']);
             } else if (isset($item['name'])) {
                 $product = Product::create([
                     'name' => $item['name'],

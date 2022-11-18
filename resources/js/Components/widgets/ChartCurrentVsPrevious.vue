@@ -9,25 +9,11 @@
         <span v-if="selectedDate" class="capitalize text-primary">{{ formatMonth(selectedDate) }}</span>
       </h5>
       <div class="card-text">
-        <div class="comparison-header px-10 text-body-1/50 space-x-2 divide-x divide-dashed divide-opacity-20 divide-body-1 bg-base-lvl-2 mb-2">
-          <div
-            v-for="header in state.headers"
-            :key="header.id"
-            @click="selectedDate = header.id"
-            class="comparison-header__item justify-center w-full items-center flex-col flex  previous-period cursor-pointer hover:text-body/80"
-            >
-            <h6 class="period-title">{{ header.label }}</h6>
-            <span class="period-value text-xs mt-2">
-                <NumberHider />
-                {{ formatMoney(header.value) }}
-            </span>
-          </div>
-        </div>
         <LogerChart
             style="height:300px; background: white; width: 100%"
             label="name"
-            type="bar"
-            :labels="currentSeries[0].labels"
+            type="line"
+            :labels="state.headers.labels"
             :options="state.options"
             :series="state.series"
         />
@@ -39,9 +25,9 @@
 <script setup>
 import { computed, reactive, ref } from "vue";
 
-import LogerChart from "./organisms/LogerChart.vue";
-import NumberHider from "./molecules/NumberHider.vue";
-import LogerTabButton from "./atoms/LogerTabButton.vue";
+import LogerChart from "@/Components/organisms/LogerChart.vue";
+import NumberHider from "@/Components/molecules/NumberHider.vue";
+import LogerTabButton from "@/Components/atoms/LogerTabButton.vue";
 
 import { formatMonth } from "@/utils";
 import formatMoney from "@/utils/formatMoney";
@@ -60,30 +46,24 @@ const props = defineProps({
     },
 });
 
-const selectedDate = ref()
 const currentSeries = computed(() => {
-    const generalSeries = [{
-        name: 'Expenses',
-        data: Object.values(props.data).map(item => item.total),
-        labels: Object.keys(props.data).map(formatMonth)
-    }]
-    const dateSeries = selectedDate.value ? [{
-        name: formatMonth(selectedDate.value),
-        data: props.data[selectedDate.value].data.map(item => item.total),
-        labels: props.data[selectedDate.value].data.map(item => item.name)
-    }] : []
-
-    return selectedDate.value ? dateSeries : generalSeries;
+    return Object.entries(props.data).map(([monthName, monthData]) => {
+        return {
+            name: formatMonth(monthName),
+            data: monthData.data.map(item => item.total),
+            labels: Object.keys(monthData).map(month => formatMonth(month))
+        }
+    })
 })
 
 const state = reactive({
-    headers: Object.entries(props.data).map(([dateString, item]) => ({
-        label: formatMonth(dateString),
-        value: item.total,
-        id: dateString
-    })),
+    headers: {
+        labels: [...Array(32).keys()].slice(1),
+    },
     options: {
-        colors: ["#7B77D1", "#80CDFE"],
+        colors: ["#7B77D120", "#80CDFE20"],
+        borderColors: ["#7B77D1", "#80CDFE"],
+        tension: 0.1
     },
     series: currentSeries
 });
