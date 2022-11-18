@@ -22,7 +22,7 @@ class RegisterOccurrence
             $totalDays = $occurrence->total_days + $lastDuration;
             $occurrenceCount = $occurrence->occurrence_count + 1;
             $avg = $totalDays / $occurrenceCount;
-            $log = $occurrence->log ?? [];
+            $log = (array) $occurrence->log ?? [];
             $log[] = $date;
 
             $occurrence->update([

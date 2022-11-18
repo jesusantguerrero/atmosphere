@@ -40,15 +40,33 @@ class ReportService {
     $endDate = Carbon::now()->endOfMonth()->format('Y-m-d');
     $startDate = Carbon::now()->subMonth($timeUnitDiff)->startOfMonth()->format('Y-m-d');
 
-    $results = self::getExpensesByPeriod($teamId, $startDate, $endDate);
+    $results = self::getExpensesByCategoriesInPeriod($teamId, $startDate, $endDate);
     $resultGroup = $results->groupBy('date');
 
     return $resultGroup->map(function ($monthItems) {
       return [
         'date' => $monthItems->first()->date,
-        'data' => $monthItems->sortByDesc('total')->values()->all(),
+        'data' => $monthItems->sortByDesc('total')->values(),
         'total' => $monthItems->sum('total')
       ];
+    }, $resultGroup)->sortBy('date');
+  }
+
+  public static function generateCurrentPreviousReport($teamId, $timeUnit = 'month', $timeUnitDiff = 2 , $type = 'expenses') {
+    $endDate = Carbon::now()->endOfMonth()->format('Y-m-d');
+    $startDate = Carbon::now()->subMonth($timeUnitDiff)->startOfMonth()->format('Y-m-d');
+
+    $results = self::getExpensesInPeriod($teamId, $startDate, $endDate);
+    $resultGroup = $results->groupBy('month');
+
+    return $resultGroup->map(function ($monthItems) {
+        [$year, $month] = explode('-', $monthItems->first()->month);
+
+        return [
+            'date' => $monthItems->first()->date,
+            'data' => DateMapperService::mapInDays($monthItems->groupBy('date')->toArray(), $month, $year),
+            'total' => $monthItems->sum('total')
+        ];
     }, $resultGroup)->sortBy('date');
   }
 
@@ -75,7 +93,7 @@ class ReportService {
     ->get();
   }
 
-  public static function getExpensesByPeriod($teamId, $startDate, $endDate) {
+  public static function getExpensesByCategoriesInPeriod($teamId, $startDate, $endDate) {
     return Transaction::byTeam($teamId)
     ->balance()
     ->inDateFrame($startDate, $endDate)
@@ -83,6 +101,17 @@ class ReportService {
     ->selectRaw('date_format(transactions.date, "%Y-%m-01") as date, categories.name, categories.id')
     ->groupByRaw('date_format(transactions.date, "%Y-%m"), categories.id')
     ->orderBy('date')
+    ->get();
+  }
+
+  public static function getExpensesInPeriod($teamId, $startDate, $endDate) {
+    return Transaction::byTeam($teamId)
+    ->balance()
+    ->inDateFrame($startDate, $endDate)
+    ->expenseCategories()
+    ->selectRaw('date_format(transactions.date, "%Y-%m-%d") as date, date_format(transactions.date, "%Y-%m") as month')
+    ->groupByRaw('date_format(transactions.date, "%Y-%m"), transactions.date')
+    ->orderByDesc('date')
     ->get();
   }
 
@@ -94,20 +123,6 @@ class ReportService {
     ->selectRaw('sum(amount * type)  as total')
     ->get();
   }
-
-  public function mapInMonths($data, $year) {
-    $months = [1, 2, 3,4,5,6,7,8,9,10,11, 12];
-    return array_map(function ($month) use ($data, $year) {
-        $index = array_search($month, array_column($data, 'months'));
-
-        return  $index !== false ? $data[$index] : [
-            "year" => $year,
-            "months" => $month,
-            "total" =>  0
-        ];
-    }, $months);
-  }
-
 
   public function nextInvoices($teamId) {
    return DB::table('invoices')

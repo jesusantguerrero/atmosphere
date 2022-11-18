@@ -23,7 +23,7 @@ class Meal extends Model
         Ingredient::query()->where('meal_id', $this->id)->delete();
         foreach ($items as $item) {
             if (isset($item['product_id']) && $item['product_id'] !== "new::{$item['name']}") {
-                $product = Product::find($item['id']);
+                $product = Product::find($item['product_id']);
             } else if (isset($item['name'])) {
                 $product = Product::create([
                     'name' => $item['name'],
