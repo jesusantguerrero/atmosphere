@@ -61,8 +61,8 @@ const state = reactive({
         labels: [...Array(32).keys()].slice(1),
     },
     options: {
-        colors: ["#7B77D120", "#80CDFE20"],
-        borderColors: ["#7B77D1", "#80CDFE"],
+        colors: ["#7B77D120", "#F598B420"],
+        borderColors: ["#7B77D1", "#F598B4"],
         tension: 0.1
     },
     series: currentSeries

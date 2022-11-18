@@ -16,7 +16,7 @@
                     <ChartCurrentVsPrevious
                         class="w-full mt-4 mb-10 overflow-hidden bg-white rounded-lg"
                         :class="[cardShadow]"
-                        :title="t('Expenses summary')"
+                        :title="t('This month vs last month')"
                         ref="ComparisonRevenue"
                         :data="props.revenue"
                     />
