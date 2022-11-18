@@ -3,6 +3,11 @@
         <template #header>
             <MealSectionNav>
                 <template #actions>
+                    <StatusButtons
+                        v-model="currentStatus"
+                        :statuses="mealStatus"
+                        @change="$inertia.visit($event)"
+                    />
                    <div>
                         <AtButton class="items-center h-10 text-white bg-primary" rounded @click="$inertia.visit(route('meals.create'))"> New Meal</AtButton>
                     </div>
@@ -13,6 +18,7 @@
             <MealSection
                 :meals="recipes"
                 @click="$inertia.visit(route('meals.edit', $event))"
+                @toggle-like="onToggleLike"
             />
         </MealTemplate>
     </AppLayout>
@@ -20,20 +26,53 @@
 
 <script setup>
     import { AtButton } from "atmosphere-ui";
+    import { Inertia } from "@inertiajs/inertia";
+    import { computed, ref } from "vue";
+
     import AppLayout from '@/Components/templates/AppLayout.vue';
     import MealSection from '@/Components/MealSection.vue';
-    import { computed } from "vue";
     import MealTemplate from "@/Components/templates/MealTemplate.vue";
     import MealSectionNav from "@/Components/templates/MealSectionNav.vue";
+    import StatusButtons from "@/Components/molecules/StatusButtons.vue";
 
     const props = defineProps({
         meals: {
             type: Array,
             required: true
-        }
+        },
+        serverSearchOptions: {
+            type: Object,
+            default: () => ({}),
+        },
     });
 
     const recipes = computed(() => {
         return props.meals?.data ?? []
     })
+
+    const onToggleLike = (meal) => {
+        meal.is_liked = !Boolean(meal.is_liked);
+        Inertia.put(route('meals.update', meal), {
+            is_liked: meal.is_liked,
+        }, {
+            onSuccess() {
+                Inertia.reload({
+                    preserveScroll: true,
+                })
+            }
+        })
+    }
+
+    const mealStatus = {
+        all: {
+            label: 'All meals',
+            value: '/meals'
+        },
+        1: {
+            label: 'Favorites',
+            value: '/meals?filter[is_liked]=1'
+        },
+    }
+
+    const currentStatus = ref(props.serverSearchOptions.filters?.is_liked || 'all');
 </script>

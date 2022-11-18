@@ -72,9 +72,8 @@ const options = computed(() => ({
     },
     onClick: (e, ...args) => {
         const chart = chartRef.value.chartInstance
-        console.log(chart.tooltip.dataPoints)
         const index = chart.tooltip.dataPoints[0].dataIndex;
-       emit('clicked', index)
+        emit('clicked', index)
 
     }
 }));

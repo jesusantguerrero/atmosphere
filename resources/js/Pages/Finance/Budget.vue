@@ -165,7 +165,7 @@ import BalanceAssign from "@/Components/organisms/BalanceAssign.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 import BudgetProgress from "@/Components/molecules/BudgetProgress.vue";
 import OnboardingSteps from "@/Components/widgets/OnboardingSteps.vue";
-import ClimateWidget from "@/Components/widgets/ClimateWidget.vue";
+import ClimateWidget from "@/Components/widgets/WeatherWidget.vue";
 import ExpenseIncome from "@/Components/widgets/ExpenseIncome.vue";
 import QuickBudget from "@/Components/widgets/QuickBudget.vue";
 import QuickBudgetMore from "@/Components/widgets/QuickBudgetMore.vue";

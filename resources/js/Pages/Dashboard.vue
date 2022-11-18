@@ -30,7 +30,7 @@
 
             </div>
             <div class="space-y-4 md:w-3/12 py-6">
-                <ClimateWidget />
+                <WeatherWidget />
                 <OnboardingSteps :steps="onboarding.steps" :percentage="onboarding.percentage" class="mt-5" v-if="onboarding.steps" />
                 <NextPaymentsWidget
                     v-else
@@ -62,7 +62,7 @@
     import { useSelect } from '@/utils/useSelects';
     import { transactionDBToTransaction } from "@/domains/transactions";
     import MealWidget from "@/Components/widgets/MealWidget.vue";
-    import ClimateWidget from "../Components/widgets/ClimateWidget.vue";
+    import WeatherWidget from "../Components/widgets/WeatherWidget.vue";
     import NextPaymentsWidget from "@/Components/widgets/NextPaymentsWidget.vue";
 
     const props = defineProps({

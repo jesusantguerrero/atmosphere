@@ -270,7 +270,6 @@ const handleOptions = (option) => {
       setAmount(props.category.budgeted);
       break;
     case "setAvailable":
-      console.log(props.category);
       setAmount(props.category.available);
       break;
     default:

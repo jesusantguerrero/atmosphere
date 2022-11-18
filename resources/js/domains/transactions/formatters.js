@@ -24,7 +24,6 @@ export const categoryDBToTransaction = (transactions) => {
 }
 
 export const plannedDBToTransaction = (transactions) => {
-    console.log(transactions, "data")
     return transactions.map(transaction => ({
         id: transaction.id,
         date: transaction.date,
