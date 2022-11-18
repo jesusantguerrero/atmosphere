@@ -9,7 +9,7 @@ use Insane\Journal\Models\Product\Product;
 class Meal extends Model
 {
     use HasFactory;
-    protected $fillable = ['team_id','user_id','name', 'meal_type_id', 'menu_id', 'notes'];
+    protected $fillable = ['team_id','user_id','name', 'meal_type_id', 'menu_id', 'notes', 'is_liked'];
 
     public function ingredients() {
         return $this->hasMany(Ingredient::class);
