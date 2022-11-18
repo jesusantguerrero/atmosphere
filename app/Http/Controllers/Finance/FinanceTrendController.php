@@ -13,9 +13,9 @@ class FinanceTrendController extends Controller {
     use Querify;
     const DateFormat = 'Y-m-d';
     const sections  = [
-        'groups' => 'groupTrends',
-        'categories' => 'categoryTrends',
-        'payees' => 'payees',
+        'groups' => 'group',
+        'categories' => 'category',
+        'payees' => 'payee',
         'net-worth' => 'NetWorth',
         'income-expenses' => 'IncomeExpenses',
     ];
@@ -31,7 +31,7 @@ class FinanceTrendController extends Controller {
         ], $data));
     }
 
-    public function groupTrends(Request $request) {
+    public function group(Request $request) {
         $queryParams = $request->query();
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
         [$startDate, $endDate] = $this->getFilterDates($filters);
@@ -46,7 +46,7 @@ class FinanceTrendController extends Controller {
         ];
     }
 
-    public function categoryTrends(Request $request) {
+    public function category(Request $request) {
         $queryParams = $request->query();
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
         [$startDate, $endDate] = $this->getFilterDates($filters);
@@ -61,6 +61,23 @@ class FinanceTrendController extends Controller {
                 'title' => $parentName . 'Category Trends',
                 'parent_id' => $data[0]?->parent_id ?? null,
                 'parent_name' => $data[0]?->parent_name ?? null,
+            ]
+        ];
+    }
+
+    public function payee(Request $request) {
+        $queryParams = $request->query();
+        $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
+        [$startDate, $endDate] = $this->getFilterDates($filters);
+
+        $teamId = $request->user()->current_team_id;
+
+        $data  = TransactionService::getIncomeByPayeeInPeriod($teamId, $startDate, $endDate);
+        
+        return [
+            'data' => $data,
+            'metaData' => [
+                'title' => 'Payee Trends',
             ]
         ];
     }

@@ -108,14 +108,14 @@ const trends = [
         name: 'Cashflow',
         link: '/trends'
     },
-    {
-        name: 'Category Trends',
-        link: '/trends/categories'
-    },
-    {
-        name: 'Net Worth',
-        link: '/trends/net-worth'
-    },
+    // {
+    //     name: 'Category Trends',
+    //     link: '/trends/categories'
+    // },
+    // {
+    //     name: 'Net Worth',
+    //     link: '/trends/net-worth'
+    // },
     {
         name: 'Income v Expenses',
         link: '/trends/income-expenses'
