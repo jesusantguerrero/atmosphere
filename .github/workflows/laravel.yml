@@ -74,7 +74,6 @@ jobs:
           echo "Deploy to staging server"
           git config --global user.email "<>"
           git config --global user.name "Action Bot"
-          git remote add live ${{ secrets.DO_REPO_URL }}
           git checkout -b $branch_name
           git push live $branch_name:master -f
           echo "deployed to prod-staging"
