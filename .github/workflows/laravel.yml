@@ -66,7 +66,7 @@ jobs:
         run: git remote add live ${{ secrets.DO_REPO_URL }}
 
       - name: Deploy with git
-        run: git push live master
+        run: git push live ${{ $GITHUB_REF }}:master
 
       - name: Update Composer PHP
         uses: appleboy/ssh-action@master
