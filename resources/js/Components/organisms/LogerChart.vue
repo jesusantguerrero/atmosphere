@@ -1,11 +1,13 @@
 <template>
-  <component :is="chartComponent" :chartData="chartData" :options="options" />
+  <component
+    :is="chartComponent"
+    :chartData="chartData"
+    :options="options"
+  />
 </template>
 
 <script setup>
-import { generateRandomColor } from "@/utils";
 import { Chart, registerables } from "chart.js";
-import { borderColor } from "tailwindcss/defaultTheme";
 import { computed } from "vue";
 import { LineChart, BarChart } from "vue-chart-3";
 
@@ -64,7 +66,8 @@ const chartData = computed(() => {
         data: item.data,
         fill: true,
         backgroundColor: props.options.colors[index],
-        borderColor: props.options.borderColors[index]
+        ...(props.options.borderColors && {borderColor: props.options.borderColors[index]}),
+        ...item,
     })),
   };
 });
@@ -72,13 +75,14 @@ const chartData = computed(() => {
 const options = computed(() => ({
   plugins: {
     title: {
-      display: props.title,
+      display: !!props.title,
       text: props.title,
     },
   },
   layout: {
     padding: 20,
   },
+  ...props.options
 }));
 
 Chart.register(...registerables);

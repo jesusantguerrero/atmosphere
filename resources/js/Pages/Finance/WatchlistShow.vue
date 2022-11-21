@@ -25,7 +25,7 @@
 
         <section class="mt-4">
           <header>
-            <h4 class="font-bold text-4xl">{{ formatMoney(50000) }}</h4>
+            <h4 class="text-4xl font-bold">{{ formatMoney(50000) }}</h4>
           </header>
           <section class="py-8">
             <ChartComparison
@@ -77,7 +77,7 @@ import { useServerSearch } from "@/composables/useServerSearch";
 import { formatMoney, formatMonth, MonthTypeFormat } from "@/utils";
 import IconImport from "@/Components/icons/IconImport.vue";
 import LogerTabButton from "@/Components/atoms/LogerTabButton.vue";
-import ChartComparison from "@/Components/ChartComparison.vue";
+import ChartComparison from "@/Components/widgets//ChartComparison.vue";
 
 const { serverSearchOptions } = toRefs(props);
 const { state: pageState } = useServerSearch(serverSearchOptions);

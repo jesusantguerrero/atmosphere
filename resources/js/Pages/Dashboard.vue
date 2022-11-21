@@ -10,13 +10,24 @@
                     :message="t('dashboard.welcome')"
                     :username="user.name"
                     @section-click="selected=$event"
-                />
-
-                <div class="flex space-x-4">
+                >
                     <ChartCurrentVsPrevious
+                        v-if="selected=='expenses'"
                         class="w-full mt-4 mb-10 overflow-hidden bg-white rounded-lg"
                         :class="[cardShadow]"
-                        :title="t('Expenses summary')"
+                        :title="t('This month vs last month')"
+                        ref="ComparisonRevenue"
+                        :data="props.expenses"
+                    />
+                </BudgetTracker>
+
+                <div class="flex space-x-4">
+
+
+                    <ChartComparison
+                        class="w-full mt-4 mb-10 overflow-hidden bg-white rounded-lg"
+                        :class="[cardShadow]"
+                        :title="t('Spending summary')"
                         ref="ComparisonRevenue"
                         :data="props.revenue"
                     />
@@ -29,7 +40,7 @@
                 </div>
 
             </div>
-            <div class="space-y-4 md:w-3/12 py-6">
+            <div class="py-6 space-y-4 md:w-3/12">
                 <WeatherWidget />
                 <OnboardingSteps :steps="onboarding.steps" :percentage="onboarding.percentage" class="mt-5" v-if="onboarding.steps" />
                 <NextPaymentsWidget
@@ -57,17 +68,30 @@
     import SectionTitle from "@/Components/atoms/SectionTitle.vue";
     import OnboardingSteps from "@/Components/widgets/OnboardingSteps.vue";
     import ChartComparison from "@/Components/widgets/ChartComparison.vue";
+    import ChartCurrentVsPrevious from "@/Components/widgets/ChartCurrentVsPrevious.vue";
     import LogerButton from "@/Components/atoms/LogerButton.vue";
     import MealWidget from "@/Components/widgets/MealWidget.vue";
-    import WeatherWidget from "../Components/widgets/WeatherWidget.vue";
+    import WeatherWidget from "@/Components/widgets/WeatherWidget.vue";
     import NextPaymentsWidget from "@/Components/widgets/NextPaymentsWidget.vue";
 
     import { useSelect } from '@/utils/useSelects';
     import { transactionDBToTransaction } from "@/domains/transactions";
-    import ChartCurrentVsPrevious from "@/Components/widgets/ChartCurrentVsPrevious.vue";
 
     const props = defineProps({
         revenue: {
+            type: Object,
+            default() {
+                return {
+                    previousYear: {
+                        values: []
+                    },
+                    currentYear: {
+                        values: []
+                    }
+                }
+            }
+        },
+        expenses: {
             type: Object,
             default() {
                 return {
