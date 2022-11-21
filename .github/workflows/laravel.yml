@@ -56,7 +56,7 @@ jobs:
       - name: Install SSH Key
         uses: shimataro/ssh-key-action@v2
         with:
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          key: ${{ secrets.DO_DOPLET_SECRET }}
           known_hosts: unnecessary
 
       - name: Adding Known Hosts
