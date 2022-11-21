@@ -49,3 +49,32 @@ jobs:
         DB_CONNECTION: sqlite
         DB_DATABASE: database/database.sqlite
       run: php artisan test
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install SSH Key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: unnecessary
+
+      - name: Adding Known Hosts
+        run: ssh-keyscan -H ${{ secrets.SSH_HOST }}  >> ~/.ssh/known_hosts
+        
+      - name: Store live name
+        run: git remote add live ${{ secrets.DO_REPO_URL }}
+
+      - name: Deploy with git
+        run: git push live master
+
+      - name: Update Composer PHP
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.DO_DOPLET_SECRET }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd /var/www/loger.com
+            composer update --ignore-platform-reqs
