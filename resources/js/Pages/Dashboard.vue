@@ -10,13 +10,24 @@
                     :message="t('dashboard.welcome')"
                     :username="user.name"
                     @section-click="selected=$event"
-                />
-
-                <div class="flex space-x-4">
+                >
                     <ChartCurrentVsPrevious
+                        v-if="selected=='expenses'"
                         class="w-full mt-4 mb-10 overflow-hidden bg-white rounded-lg"
                         :class="[cardShadow]"
                         :title="t('This month vs last month')"
+                        ref="ComparisonRevenue"
+                        :data="props.expenses"
+                    />
+                </BudgetTracker>
+
+                <div class="flex space-x-4">
+
+
+                    <ChartComparison
+                        class="w-full mt-4 mb-10 overflow-hidden bg-white rounded-lg"
+                        :class="[cardShadow]"
+                        :title="t('Spending summary')"
                         ref="ComparisonRevenue"
                         :data="props.revenue"
                     />
@@ -29,7 +40,7 @@
                 </div>
 
             </div>
-            <div class="space-y-4 md:w-3/12 py-6">
+            <div class="py-6 space-y-4 md:w-3/12">
                 <WeatherWidget />
                 <OnboardingSteps :steps="onboarding.steps" :percentage="onboarding.percentage" class="mt-5" v-if="onboarding.steps" />
                 <NextPaymentsWidget
@@ -68,6 +79,19 @@
 
     const props = defineProps({
         revenue: {
+            type: Object,
+            default() {
+                return {
+                    previousYear: {
+                        values: []
+                    },
+                    currentYear: {
+                        values: []
+                    }
+                }
+            }
+        },
+        expenses: {
             type: Object,
             default() {
                 return {

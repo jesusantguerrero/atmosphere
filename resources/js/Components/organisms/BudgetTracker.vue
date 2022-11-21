@@ -21,7 +21,7 @@
             >
                 <h4 class="text-body">{{ section.label }}</h4>
                 <SectionTitle class="flex flex-col mt-2 space-y-2" v-if="isMultiple(section.value)">
-                    <span class="relative w-72" v-for="currency in section.value">
+                    <span class="relative w-72" v-for="currency in section.value" :key="currency">
                         <NumberHider />
                         {{ formatMoney(currency.total, currency.currency_code) }}
                     </span>

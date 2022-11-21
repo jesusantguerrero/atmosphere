@@ -1,7 +1,7 @@
 <template>
   <div class="w-full comparison-card">
-    <div class="pb-10 px-5 rounded-lg">
-      <h5 class="card-title text-left p-4 font-bold">
+    <div class="px-5 pb-10 rounded-lg">
+      <h5 class="p-4 font-bold text-left card-title">
         <LogerTabButton v-if="selectedDate" @click="selectedDate=null">
             <i class="fa fa-arrow-left"></i>
         </LogerTabButton>
@@ -29,7 +29,7 @@ import LogerChart from "@/Components/organisms/LogerChart.vue";
 import NumberHider from "@/Components/molecules/NumberHider.vue";
 import LogerTabButton from "@/Components/atoms/LogerTabButton.vue";
 
-import { formatMonth } from "@/utils";
+import { formatMonth, isCurrentMonth } from "@/utils";
 import formatMoney from "@/utils/formatMoney";
 
 const props = defineProps({
@@ -47,11 +47,15 @@ const props = defineProps({
 });
 
 const currentSeries = computed(() => {
-    return Object.entries(props.data).map(([monthName, monthData]) => {
+    return Object.entries(props.data).map(([dateString, monthData]) => {
         return {
-            name: formatMonth(monthName),
+            name: formatMonth(dateString),
             data: monthData.data.map(item => item.total),
-            labels: Object.keys(monthData).map(month => formatMonth(month))
+            labels: Object.keys(monthData).map(month => formatMonth(month)),
+            tension: 0,
+            fill: false,
+            ...(!isCurrentMonth(dateString) && {borderDash: [5, 5]}),
+            ...(isCurrentMonth(dateString) && {fill: true }),
         }
     })
 })
@@ -63,7 +67,24 @@ const state = reactive({
     options: {
         colors: ["#7B77D120", "#F598B420"],
         borderColors: ["#7B77D1", "#F598B4"],
-        tension: 0.1
+        tension: 0,
+        plugins: {
+            legend: {
+                display: false,
+            },
+            title: {
+                display: false,
+            },
+        },
+        scales: {
+            x: {
+                ticks: {
+                    callback: function(val, index) {
+                        return index % 3 === 0 ? 'Day ' + this.getLabelForValue(val) : ''
+                    }
+                }
+            }
+        }
     },
     series: currentSeries
 });
