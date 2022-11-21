@@ -15,7 +15,7 @@
         </span>
     </header>
 
-    <article class="pb-4 pt-0 bg-base-lvl-3 sm:pt-0 sm:pb-4 text-body">
+    <article class="pt-0 pb-4 bg-base-lvl-3 sm:pt-0 sm:pb-4 text-body">
         <SectionNav v-model="activeTab" :sections="tabs" class="px-4"/>
         <section class="content sm:px-6">
             <section v-if="activeTab == 'information'">
@@ -29,7 +29,7 @@
                     <AtFieldCheck v-model="form.is_active" label="Active" />
                 </div>
             </section>
-            <section class="space-y-4 pt-4" v-if="activeTab == 'rule'">
+            <section class="pt-4 space-y-4" v-if="activeTab == 'rule'">
                 <ConditionDescription label="Description" v-model="form.conditions.description" />
                 <ConditionSelect
                     label="Categories"
@@ -113,7 +113,7 @@ watch(
         Object.keys(form.data()).forEach((field) => {
         if (field == 'date') {
             form[field] = new Date(formData[field])
-        } else if (formData[field]) {
+        } else if (formData && formData[field]) {
             form[field] = formData[field]
         }
     })
