@@ -74,7 +74,6 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.DO_DOPLET_SECRET }}
-          port: ${{ secrets.SSH_PORT }}
           script: |
             cd /var/www/loger.com
             composer update --ignore-platform-reqs
