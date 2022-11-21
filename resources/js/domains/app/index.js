@@ -40,7 +40,10 @@ export const useAppMenu = t => {
             icon: 'fas fa-home',
             label: t('Home Projects'),
             to: '/housing',
-            as: Link
+            as: Link,
+            isActiveFunction(url, currentPath) {
+                return /housing/.test(currentPath)
+             }
         }
     ].filter(item => !item.hidden);
 

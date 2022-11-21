@@ -1,11 +1,13 @@
 <template>
-  <component :is="chartComponent" :chartData="chartData" :options="options" />
+  <component
+    :is="chartComponent"
+    :chartData="chartData"
+    :options="options"
+  />
 </template>
 
 <script setup>
-import { generateRandomColor } from "@/utils";
 import { Chart, registerables } from "chart.js";
-import { borderColor } from "tailwindcss/defaultTheme";
 import { computed } from "vue";
 import { LineChart, BarChart } from "vue-chart-3";
 

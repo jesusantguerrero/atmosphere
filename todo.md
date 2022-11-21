@@ -6,18 +6,18 @@
 - [x] Add dropdown with create: Income, Expense, Import Budget, Import Transactions
 - [x] Logic to force refresh weather
 - [x] Fix or hide net-worth chart
-- [ ] This month vs last month line chart | later beta-2
+- [x] This month vs last month line chart
 - [ ] Separate budget by target | later beta-2
 - [ ] Accounts Page | later beta-2
 
-## Transactions
+## Finance
 - [x] Get active filter in transactions
 - [x] Transfers in both sides
 - [x] Define watchlist side
+- [x] Make import transfer modal available Globally
 - [ ] Define watchlist show | later beta-2
 - [ ] Define Category show | later beta-2
 - [ ] Payees View | later beta-2
-- [x] Make import transfer modal available Globally
 
 ## Home Projects
 - [x] Start Occurrence Checks
