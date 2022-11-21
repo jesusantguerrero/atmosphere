@@ -135,20 +135,20 @@
                     :header-menu="headerMenu"
                     :current-path="currentPath"
                     brand-container-class="py-2"
-                    nav-container-class="pt-1 space-y-2 border-t px-2"
+                    nav-container-class="px-2 pt-1 space-y-2 border-t"
                     icon-class="text-gray-400 transition hover:text-primary"
                     item-class="px-5 py-[0.80rem] rounded-md font-bold text-gray-400 w-54 hover:text-primary hover:bg-base-lvl-1"
                     item-active-class="text-primary bg-base-lvl-1/70"
                     is-expandable
                 >
                     <template #brand>
-                        <div class="flex w-full pl-0 mx-auto mb-0" :class="isExpanded ? 'pl-5' :'justify-center'">
-                            <div class="mx-auto text-center " v-if="!isExpanded">
+                        <div class="flex w-full h-full pl-0 mx-auto mb-0" :class="isExpanded ? 'pl-5' :'justify-center'">
+                            <Link href="/dashboard" class="pt-3 mx-auto text-center" v-if="!isExpanded">
                                 <img src="/logotype.png" :style="{height: '24px'}" class="mx-auto"/>
-                            </div>
-                            <div class="mx-auto text-center " v-else>
+                            </Link>
+                            <Link href="/dashboard" class="mx-auto text-center " v-else>
                                 <AppIcon size="medium" />
-                            </div>
+                            </Link>
                         </div>
                     </template>
                 </AtSide>

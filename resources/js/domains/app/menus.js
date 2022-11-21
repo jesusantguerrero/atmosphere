@@ -15,7 +15,7 @@ const menus = {
     },
     {
         label: 'Chores',
-        url: '/housing/shores'
+        url: '/housing/chores'
     },
     {
         label: 'Occurrence Checks',
@@ -27,7 +27,7 @@ const menus = {
     },
     {
         label: 'Equipment',
-        url: '/housing/equipment'
+        url: '/housing/equipments'
     }],
     [MODULES.MEAL]: [
         {

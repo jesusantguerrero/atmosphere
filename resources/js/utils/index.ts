@@ -1,4 +1,5 @@
 import { format, parseISO, startOfDay } from "date-fns"
+import { differenceInMonths } from "date-fns/esm";
 export * from "./formatMoney";
 
 export const recurrenceTypes = [
@@ -87,3 +88,8 @@ export const formatDate = (dateISOString: string, placeholder?: string, formatSt
     if (!dateISOString && placeholder) return placeholder;
     return dateISOString && format(parseISO(dateISOString + "T00:00:00"), formatString);
 };
+
+
+export const isCurrentMonth = (dateString: string) => {
+    return !differenceInMonths(new Date(), parseISO(dateString));
+}
