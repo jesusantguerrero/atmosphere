@@ -1,4 +1,4 @@
-name: Laravel
+name: Laravel App Deployment
 
 on:
   push:
@@ -77,7 +77,7 @@ jobs:
       - name: Adding Known Hosts
         run: ssh-keyscan -H ${{ secrets.SSH_HOST }}  >> ~/.ssh/known_hosts
 
-      - name: Download math result for job 1
+      - name: Download frontend build
         uses: actions/download-artifact@v3
 
         with:
@@ -94,6 +94,7 @@ jobs:
           git config --global user.email "<>"
           git config --global user.name "Action Bot"
           git checkout -b $branch_name
+          git status
           git add .
           git commit -m "deploy: build"
           git push live $branch_name:master -f
