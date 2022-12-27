@@ -1,0 +1,10 @@
+<br />
+<b>Warning</b>:  require(C:\laragon\www\atmosphere\vendor\composer/../inertiajs/inertia-laravel/helpers.php): Failed to open stream: No such file or directory in <b>C:\laragon\www\atmosphere\vendor\composer\autoload_real.php</b> on line <b>55</b><br />
+<br />
+<b>Fatal error</b>:  Uncaught Error: Failed opening required 'C:\laragon\www\atmosphere\vendor\composer/../inertiajs/inertia-laravel/helpers.php' (include_path='.;C:/laragon/etc/php/pear') in C:\laragon\www\atmosphere\vendor\composer\autoload_real.php:55
+Stack trace:
+#0 C:\laragon\www\atmosphere\vendor\composer\autoload_real.php(38): composerRequirefae36d4d50d48f4477c0e95a3facc2fb('98caa11a197f651...', 'C:\\laragon\\www\\...')
+#1 C:\laragon\www\atmosphere\vendor\autoload.php(25): ComposerAutoloaderInitfae36d4d50d48f4477c0e95a3facc2fb::getLoader()
+#2 C:\laragon\www\atmosphere\public\index.php(34): require('C:\\laragon\\www\\...')
+#3 {main}
+  thrown in <b>C:\laragon\www\atmosphere\vendor\composer\autoload_real.php</b> on line <b>55</b><br />
