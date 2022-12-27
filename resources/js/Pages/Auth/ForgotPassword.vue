@@ -39,6 +39,6 @@
     })
 
     function submit() {
-        this.form.post(this.route('password.email'))
+        form.post(route('password.email'))
     }
 </script>

@@ -32,6 +32,10 @@ class Category extends CoreCategory
         return $this->hasMany(Transaction::class, 'category_id');
     }
 
+    public function group() {
+        return $this->belongsTo(self::class, 'parent_id');
+    }
+
     public function subCategories() {
         return $this->hasMany(self::class, 'parent_id', 'id')->orderBy('index');
     }

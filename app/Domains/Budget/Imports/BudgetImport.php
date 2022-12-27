@@ -10,8 +10,6 @@ use Insane\Journal\Models\Core\Category;
 
 class BudgetImport extends ImportConcern
 {
-
-
     /**
     * @param array $row
     *

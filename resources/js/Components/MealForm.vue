@@ -17,6 +17,31 @@
                 @check="checkIngredients(index, $event)"
             />
         </AtField>
+        <AtField
+            label="Tags"
+        >
+            <LogerInput v-model="form.name" rounded />
+        </AtField>
+        <AtField
+            label="Link"
+        >
+            <LogerInput v-model="form.name" rounded />
+        </AtField>
+        <AtField
+            label="Dish"
+        >
+            <LogerInput v-model="form.name" rounded />
+        </AtField>
+        <AtField
+            label="Time"
+        >
+            <LogerInput v-model="form.name" rounded />
+        </AtField>
+        <AtField
+            label="Times Planned"
+        >
+            <LogerInput v-model="form.name" rounded />
+        </AtField>
     </div>
 </template>
 

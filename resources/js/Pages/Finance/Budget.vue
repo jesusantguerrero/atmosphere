@@ -31,7 +31,12 @@
               controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
               next-mode="month"
             />
-            <LogerButton variant="inverse">Import Budget</LogerButton>
+            <LogerButton variant="inverse">Import</LogerButton>
+            <LogerButton variant="inverse">
+                <a :href="route('budget.export')" class="block w-full" target="_blank">
+                    Export
+                </a>
+            </LogerButton>
           </div>
         </template>
       </FinanceSectionNav>
@@ -164,19 +169,14 @@ import BudgetGroupForm from "@/Components/molecules/BudgetGroupForm.vue";
 import BalanceAssign from "@/Components/organisms/BalanceAssign.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 import BudgetProgress from "@/Components/molecules/BudgetProgress.vue";
-import OnboardingSteps from "@/Components/widgets/OnboardingSteps.vue";
-import ClimateWidget from "@/Components/widgets/WeatherWidget.vue";
 import ExpenseIncome from "@/Components/widgets/ExpenseIncome.vue";
 import QuickBudget from "@/Components/widgets/QuickBudget.vue";
-import QuickBudgetMore from "@/Components/widgets/QuickBudgetMore.vue";
 import PointAlert from "@/Components/atoms/PointAlert.vue";
 import IconClose from "@/Components/icons/IconClose.vue";
 
 import { useServerSearch } from "@/composables/useServerSearch";
 import { useBudget } from "@/domains/budget";
 import { createBudgetCategory } from "@/domains/budget/createBudgetCategory";
-import { useSelect } from "@/utils/useSelects";
-import { formatMoney } from "@/utils";
 import MoneyPresenter from "@/Components/molecules/MoneyPresenter.vue";
 import MessageBox from "@/Components/organisms/MessageBox.vue";
 
@@ -270,4 +270,8 @@ const saveReorder = (categories) => {
 const panelSize = computed(() => {
   return selectedBudget.value ? "large" : "small";
 });
+
+const onExport = () => {
+    axios.get(route('budget.export'));
+}
 </script>

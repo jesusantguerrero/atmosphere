@@ -8,7 +8,7 @@
         "prod": "vite build",
         "build": "vite build",
         "local:setup": "php artisan migrate:fresh --force && php artisan db:seed && php artisan journal:set-accounts",
-        "local:demo": "php artisan demo-data:seed",
+        "local:demo": "php artisan demo:seed",
         "docker:build": "docker compose build",
         "docker:up-dev": "docker compose -f docker-compose.dev.yml up -d",
         "docker:down-dev": "docker compose -f docker-compose.dev.yml down",
@@ -25,7 +25,8 @@
         "docker:dev": "npm run docker:up-dev && npm run docker:install && npm run docker:migrate && npm run docker:seed && npm run docker:set-accounts",
         "deploy": "git push live master",
         "docker:setup": "npm run docker:up && npm run docker:install && npm run docker:migrate && npm run docker:seed && npm run docker:set-accounts",
-        "start": "npm run docker:up"
+        "start": "npm run docker:up",
+        "test:e2e": "cypress open"
     },
     "devDependencies": {
         "@dinero.js/currencies": "^2.0.0-alpha.4",
@@ -41,6 +42,7 @@
         "atmosphere-ui": "^1.0.3-beta",
         "autoprefixer": "^10.4.7",
         "axios": "^0.27.2",
+        "cypress": "^11.1.0",
         "date-fns": "^2.22.1",
         "dinero.js": "^2.0.0-alpha.8",
         "eslint": "^8.22.0",

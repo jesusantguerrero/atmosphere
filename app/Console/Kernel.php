@@ -30,7 +30,7 @@ class Kernel extends ConsoleKernel
         $schedule->command("automation:check")->everyFiveMinutes()->runInBackground();
         $schedule->command('loger:occurrence-reminders')->daily()->runInBackground();
         if (config('app.demo')) {
-            $schedule->command("demo-data:seed")->dailyAt($scheduleTime);
+            $schedule->command("demo:seed")->dailyAt($scheduleTime);
         }
     }
 
