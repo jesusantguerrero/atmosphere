@@ -127,7 +127,8 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     });
     Route::controller(BudgetMonthController::class)->group(function () {
         Route::post('/budgets/{categoryId}/months/{month}', 'assign')->name("budget.assignment");
-        Route::post('/budgets/import', 'import')->name('budget.import');
+        Route::post('/budgets-import', 'import')->name('budget.import');
+        Route::get('/budgets-export', 'export')->name('budget.export');
     });
 
     // Accounts

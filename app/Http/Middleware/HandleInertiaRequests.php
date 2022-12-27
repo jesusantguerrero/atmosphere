@@ -42,7 +42,6 @@ class HandleInertiaRequests extends Middleware
     {
         $user = $request->user();
         $team = $user ? $user->currentTeam : null;
-        $accounts = $team ? CoreAccount::getByDetailTypes($team->id) : [];
         // dd($accounts->toArray());
         return array_merge(parent::share($request), [
             'auth' => [

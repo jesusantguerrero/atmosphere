@@ -1,13 +1,13 @@
 <template>
     <AtAuthBox>
         <AtAuthForm
-            v-model:isLoading="form.processing"
-            :initial-values="form"
-            :config="formConfig"
             app-name="Loger"
             mode="register"
             btn-class="mb-2 font-bold border-2 border-primary rounded-md bg-gradient-to-br from-purple-400 to-primary hover:bg-primary"
             link-class="text-primary hover:text-primary"
+            v-model:isLoading="form.processing"
+            :initial-values="form"
+            :config="formConfig"
             :errors="form.errors"
             @submit="submit"
             @home-pressed="onHomePressed"

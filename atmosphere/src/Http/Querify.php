@@ -2,7 +2,6 @@
 
 namespace Freesgen\Atmosphere\Http;
 
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 trait Querify

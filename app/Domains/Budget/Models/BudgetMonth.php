@@ -2,6 +2,7 @@
 
 namespace App\Domains\Budget\Models;
 
+use App\Domains\AppCore\Models\Category;
 use DateTime;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,6 +12,10 @@ class BudgetMonth extends Model
 {
     use HasFactory;
     protected $fillable = ['team_id', 'user_id', 'category_id', 'month', 'name', 'budgeted', 'activity' , 'available'];
+
+    public function category() {
+        return $this->belongsTo(Category::class);
+    }
 
     public static function getMonthAssignments($teamId, $date) {
         $yearMonth = (new DateTime($date))->format('Y-m'). "-01";

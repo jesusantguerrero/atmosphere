@@ -12,7 +12,7 @@ class DemoData extends Command
      *
      * @var string
      */
-    protected $signature = 'demo-data:seed';
+    protected $signature = 'demo:seed';
 
     /**
      * The console command description.
