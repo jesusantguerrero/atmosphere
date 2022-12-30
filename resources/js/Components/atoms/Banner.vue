@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div :class="show && activeClass">
     <div
       :class="{ 'bg-indigo-500': style == 'success', 'bg-red-700': style == 'danger' }"
       v-if="show && message"
@@ -85,22 +85,24 @@
   </div>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      show: true,
-    };
-  },
+<script setup>
+import { ref, computed } from "vue";
+import { usePage } from "@inertiajs/inertia-vue3"
 
-  computed: {
-    style() {
-      return this.$page.props.jetstream.flash?.bannerStyle || "success";
-    },
+defineProps({
+    activeClass: {
+        type: String
+    }
+})
 
-    message() {
-      return this.$page.props.jetstream.flash?.banner || "";
-    },
-  },
-};
+const show = ref(false);
+
+const pageProps = usePage().props;
+const style = computed(() => {
+    return pageProps.value.jetstream.flash?.bannerStyle || "success";
+})
+
+const message = computed(() => {
+    return pageProps.value.jetstream.flash?.banner || "";
+})
 </script>
