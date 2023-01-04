@@ -79,72 +79,78 @@
       </BalanceAssign>
 
       <div class="mx-auto mt-8 rounded-lg text-body bg-base max-w-7xl">
-        <BudgetGroupForm
-          v-model="categoryForm.name"
-          class="rounded-md overflow-hidden"
-          :class="[cardShadow]"
-          @save="saveBudgetCategory()"
-        />
 
-        <Draggable
-          class="w-full mt-4 space-y-2 dragArea list-group"
-          :list="visibleCategories"
-          handle=".handle"
-          @end="saveReorder(visibleCategories)"
-        >
-          <BudgetGroupItem
-            v-for="itemGroup in visibleCategories"
-            :key="itemGroup.id"
-            :item="itemGroup"
-            :force-expanded="overspentFilter"
-            :class="[cardShadow]"
-            class="bg-base-lvl-3"
-          >
-            <template v-slot:content="{ isExpanded, isAdding, toggleAdding }">
-              <div class="bg-base-lvl-3">
-                <div v-if="isAdding" class="pt-2">
-                  <LogerInput
-                    placeholder="Add subcategory"
-                    v-model="state.categoryForm.name"
-                    @keydown.enter.ctrl="saveBudgetCategory(itemGroup.id, toggleAdding)"
-                  />
-                </div>
-                <Draggable
-                  v-if="isExpanded"
-                  class="py-2 space-y-2"
-                  :list="itemGroup.subCategories"
-                  handle=".handle"
-                  @end="saveReorder(itemGroup.subCategories)"
-                >
-                  <BudgetItem
-                    class="bg-base-lvl-2 border-base-lvl-3"
-                    v-for="item in itemGroup.subCategories"
-                    :key="`${item.id}-${item.budgeted}`"
-                    :item="item"
-                    @edit="setSelectedBudget(item.id, itemGroup.id)"
-                  />
-                </Draggable>
-              </div>
-            </template>
-          </BudgetGroupItem>
-        </Draggable>
+        <BudgetDetailForm
+        class="mt-5 mr-4"
+        v-if="selectedBudget"
+        full
+        :category="selectedBudget"
+        :item="selectedBudget.budget"
+        @saved="onBudgetItemSaved"
+        @deleted="deleteBudget"
+        @cancel="setSelectedBudget()"
+        @close="setSelectedBudget()"
+      />
+      <div v-else class="w-full mt-4">
+
+        <QuickBudget class="mt-4" />
       </div>
 
-      <template #panel>
-        <BudgetDetailForm
-          class="mt-5 mr-4"
-          v-if="selectedBudget"
-          full
-          :category="selectedBudget"
-          :item="selectedBudget.budget"
-          @saved="onBudgetItemSaved"
-          @deleted="deleteBudget"
-          @cancel="setSelectedBudget()"
-          @close="setSelectedBudget()"
-        />
-        <div v-else class="w-full mt-4">
-          <ExpenseIncome :expenses="readyToAssign.activity" :income="readyToAssign.inflow" />
-          <QuickBudget class="mt-4" />
+      </div>
+
+      <template #panel class="">
+        <div class="budget-right-panel ">
+            <BudgetGroupForm
+                v-model="categoryForm.name"
+                class="rounded-md overflow-hidden"
+                :class="[cardShadow]"
+                @save="saveBudgetCategory()"
+            />
+            <Draggable
+              class="w-full space-y-2 dragArea list-group overflow-auto ic-scroller"
+              :list="visibleCategories"
+              handle=".handle"
+              @end="saveReorder(visibleCategories)"
+            >
+              <BudgetGroupItem
+                v-for="itemGroup in visibleCategories"
+                :key="itemGroup.id"
+                :item="itemGroup"
+                :force-expanded="overspentFilter"
+                :class="[cardShadow]"
+                class="bg-base-lvl-3"
+              >
+                <template v-slot:content="{ isExpanded, isAdding, toggleAdding }">
+                  <div class="bg-base-lvl-3">
+                    <div v-if="isAdding" class="pt-2">
+                      <LogerInput
+                        placeholder="Add subcategory"
+                        v-model="state.categoryForm.name"
+                        @keydown.enter.ctrl="saveBudgetCategory(itemGroup.id, toggleAdding)"
+                      />
+                    </div>
+
+                    <Draggable
+                      v-if="isExpanded"
+                      class="py-2 space-y-2"
+                      :list="itemGroup.subCategories"
+                      handle=".handle"
+                      @end="saveReorder(itemGroup.subCategories)"
+                    >
+                      <BudgetItem
+                        class="bg-base-lvl-2 border-base-lvl-3"
+                        v-for="item in itemGroup.subCategories"
+                        :key="`${item.id}-${item.budgeted}`"
+                        :item="item"
+                        @edit="setSelectedBudget(item.id, itemGroup.id)"
+                      />
+                    </Draggable>
+
+                </div>
+            </template>
+        </BudgetGroupItem>
+            </Draggable>
+            <ExpenseIncome :expenses="readyToAssign.activity" :income="readyToAssign.inflow" />
         </div>
       </template>
     </FinanceTemplate>
@@ -268,10 +274,18 @@ const saveReorder = (categories) => {
 };
 
 const panelSize = computed(() => {
-  return selectedBudget.value ? "large" : "small";
+  return !selectedBudget.value ? "large" : "small";
 });
 
 const onExport = () => {
     axios.get(route('budget.export'));
 }
 </script>
+
+<style>
+.budget-right-panel {
+    display: grid;
+    grid-template-rows: 50px calc(100vh - 420px) 150px;
+    gap: 8px;
+}
+</style>

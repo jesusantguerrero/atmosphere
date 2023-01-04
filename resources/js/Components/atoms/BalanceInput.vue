@@ -2,13 +2,16 @@
 <div class="w-full text-right" title="Money Available">
     <NPopover trigger="manual" placement="bottom"  @update:show="handleUpdateShow" :show="showPopover">
         <template #trigger>
-            <span
-                class="inline-block px-5 py-1 font-bold cursor-pointer rounded-3xl min-w-max"
+            <div
+                class="inline-flex flex-nowrap items-center py-1 font-bold cursor-pointer rounded-3xl min-w-max"
                 :class="badgeClass"
                 @click="toggle"
             >
-                {{ formatter(value) }}
-            </span>
+                <span>
+                    {{ formatter(value) }}
+                </span>
+                <slot name="suffix" />
+            </div>
         </template>
         <div>
             <AtField label="Move">

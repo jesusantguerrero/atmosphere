@@ -2,14 +2,11 @@
 <article>
     <header class="flex justify-between py-2 px-4 text-body-1/80">
         <div class="flex items-center space-x-2">
-            <div class="cursor-grab">
-                <IconDrag class="handle" />
-            </div>
             <LogerTabButton @click="isExpanded=!isExpanded">
                 <i class="fa" :class="toggleIcon" />
             </LogerTabButton>
             <div class="flex items-center">
-                <h4 class="relative font-bold text-primary font-bold">
+                <h4 class="relative text-primary font-bold handle">
                     {{ item.name }}
                     <PointAlert
                         v-if="item.hasOverspent || item.hasOverAssigned || item.hasUnderfunded"
@@ -18,14 +15,24 @@
             </div>
         </div>
         <div class="flex items-center space-x-2">
-            <p>
-                <MoneyPresenter :value="item.activity" /> of
-                <MoneyPresenter :value="item.budgeted" />
-            </p>
-            <LogerTabButton @click="toggleAdding">
-                <i class="fa fa-plus" />
-            </LogerTabButton>
-            <NDropdown trigger="click" :options="options" key-field="name" :on-select="handleOptions" >
+                <!-- <MoneyPresenter :value="item.activity" /> of -->
+                <!-- <MoneyPresenter :value="item.budgeted" /> -->
+            <BudgetProgress
+                :current="Math.abs(item.activity)"
+                :goal="item.budgeted"
+                class="h-1.5 rounded-sm w-14"
+                :progress-class="['bg-success', 'bg-secondary/5']"
+            >
+            <template v-slot:after="{ progress }">
+                {{ progress }}%
+            </template>
+            </BudgetProgress>
+            <NDropdown
+                trigger="click"
+                key-field="name"
+                :options="options"
+                :on-select="handleOptions"
+            >
                 <LogerTabButton> <i class="fa fa-ellipsis-v"></i></LogerTabButton>
             </NDropdown>
         </div>
@@ -44,11 +51,10 @@ import { NDropdown } from "naive-ui";
 
 import IconDrag from "../icons/IconDrag.vue";
 import LogerTabButton from "@/Components/atoms/LogerTabButton.vue";
-
-import formatMoney from "@/utils/formatMoney";
 import { Inertia } from "@inertiajs/inertia";
 import PointAlert from "../atoms/PointAlert.vue";
 import MoneyPresenter from "./MoneyPresenter.vue";
+import BudgetProgress from "./BudgetProgress.vue";
 
 const emit = defineEmits(['removed'])
 
@@ -80,6 +86,10 @@ onMounted(() => {
 })
 
 const options = [{
+    name: 'add',
+    label: 'Add subcategory'
+},{
+
     name: 'delete',
     label: 'Delete'
 }]
@@ -103,6 +113,8 @@ const handleOptions = (option) => {
         case 'delete':
             removeCategory()
             break;
+        case 'add':
+            toggleAdding()
         default:
             break;
     }
