@@ -1,15 +1,16 @@
 <template>
   <component
     :is="chartComponent"
-    :chartData="chartData"
+    :data="chartData"
     :options="options"
   />
 </template>
 
 <script setup>
+import { computed, watch } from "vue";
 import { Chart, registerables } from "chart.js";
-import { computed } from "vue";
-import { LineChart, BarChart } from "vue-chart-3";
+import { Line, Bar } from "vue-chartjs";
+import { formatMoney } from "@/utils";
 
 const props = defineProps({
     type: {
@@ -47,11 +48,14 @@ const props = defineProps({
         type: String,
         default: "left",
     },
+    hasHiddenValues: {
+        type: Boolean,
+    }
 });
 
 const types = {
-    bar: BarChart,
-    line: LineChart
+    bar: Bar,
+    line: Line
 };
 
 const chartComponent = computed(() => {
@@ -82,8 +86,20 @@ const options = computed(() => ({
   layout: {
     padding: 20,
   },
+  scales: {
+    y: {
+        ticks: {
+            callback(value, index, ticks) {
+                return props.hasHiddenValues ? '' : formatMoney(value)
+            }
+        }
+    }
+  },
   ...props.options
 }));
 
 Chart.register(...registerables);
+watch(() => props.hasHiddenValues, () => {
+}, { deep: true })
+
 </script>

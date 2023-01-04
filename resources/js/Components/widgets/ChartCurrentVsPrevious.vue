@@ -23,14 +23,12 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref } from "vue";
+import { computed, reactive } from "vue";
 
 import LogerChart from "@/Components/organisms/LogerChart.vue";
-import NumberHider from "@/Components/molecules/NumberHider.vue";
 import LogerTabButton from "@/Components/atoms/LogerTabButton.vue";
 
 import { formatMonth, isCurrentMonth } from "@/utils";
-import formatMoney from "@/utils/formatMoney";
 
 const props = defineProps({
     title: {

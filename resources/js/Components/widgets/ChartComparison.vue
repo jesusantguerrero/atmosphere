@@ -30,6 +30,7 @@
             :labels="currentSeries[0].labels"
             :options="state.options"
             :series="state.series"
+            :has-hidden-values="hasHiddenValues"
         />
       </div>
     </div>
@@ -37,7 +38,8 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref } from "vue";
+import { computed, h, reactive, ref, inject } from "vue";
+
 
 import LogerChart from "@/Components/organisms/LogerChart.vue";
 import NumberHider from "@/Components/molecules/NumberHider.vue";
@@ -76,6 +78,7 @@ const currentSeries = computed(() => {
     return selectedDate.value ? dateSeries : generalSeries;
 })
 
+const hasHiddenValues = inject('hasHiddenValues')
 const state = reactive({
     headers: Object.entries(props.data).map(([dateString, item]) => ({
         label: formatMonth(dateString),
@@ -84,6 +87,7 @@ const state = reactive({
     })),
     options: {
         colors: ["#7B77D1", "#80CDFE"],
+        hasHiddenValues: hasHiddenValues.value
     },
     series: currentSeries
 });

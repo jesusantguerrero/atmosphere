@@ -9,7 +9,7 @@
                 <slot name="panel">
                     <WidgetCard title="Accounts" class="mt-4">
                         <template #subtitle>
-                            <LogerTabButton class="flex items-center ml-2 text-primary" @click="toggleImportModal()" title="import">
+                            <LogerTabButton class="flex items-center text-primary" @click="toggleImportModal()" title="import">
                                 {{ formatMoney(budgetAccountsTotal) }}
                                 <IconImport />
                             </LogerTabButton>

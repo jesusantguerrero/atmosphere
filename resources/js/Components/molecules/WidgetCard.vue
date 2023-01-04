@@ -1,19 +1,19 @@
 <template>
   <section
-    class="space-y-2 border border-transparent rounded bg-base-lvl-3 p-4"
+    class="space-y-2 border border-transparent rounded bg-base-lvl-3 p-4 overflow-hidden"
     :class="cardShadow"
   >
-    <header class="flex justify-between items-center">
+    <header class="flex justify-between items-center flex-wrap">
         <SectionTitle>
             <slot name="title">
                 {{ title }}
             </slot>
         </SectionTitle>
-      <section class="text-secondary font-bold text-sm">
-        <slot name="subtitle">
-          {{ subtitle }}
-        </slot>
-      </section>
+        <section class="text-secondary font-bold text-sm">
+            <slot name="subtitle">
+            {{ subtitle }}
+            </slot>
+        </section>
     </header>
     <article class="flex">
       <div>

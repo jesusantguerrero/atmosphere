@@ -23,7 +23,7 @@
       <section class="grid grid-cols-2 gap-12 mt-4">
             <WidgetTitleCard title="Summary" class="w-full">
                 <div
-                    class="flex justify-between space-x-4 overflow-hidden flex-nowrap w-full"
+                    class="flex justify-between lg:space-x-4 overflow-hidden lg:flex-nowrap flex-wrap w-full"
                 >
                     <div class="w-full mx-auto space-y-2">
                         <FinanceCard
@@ -58,7 +58,7 @@
 
             <WidgetTitleCard title="Planned Transactions" class="hidden md:block">
                 <TransactionsTable
-                    class="w-full"
+                  class="w-full"
                   table-class="overflow-auto text-sm rounded-t-lg shadow-md bg-base-lvl-3 p-2 w-full"
                   :transactions="planned"
                   :parser="plannedDBToTransaction"
