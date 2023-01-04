@@ -72,7 +72,7 @@ const emitClose = () => {
 
 const options = [
   {
-    value: "/budgets/import",
+    value: route("budget.import"),
     label: "Budget",
   },
   {

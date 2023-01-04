@@ -161,7 +161,7 @@
                 </header>
                 <!-- Page Content -->
                 <article class="overflow-hidden overflow-y-auto ic-scroller">
-                    <JetBanner />
+                    <JetBanner active-class="mt-14" />
                     <slot />
                 </article>
             </template>
@@ -172,9 +172,9 @@
 
 <script setup>
     import { provide, ref, computed } from 'vue'
-    import { darkTheme, NConfigProvider } from 'naive-ui'
+    import { NConfigProvider } from 'naive-ui'
     import { Inertia } from '@inertiajs/inertia'
-    import { AtSide, AtButton } from "atmosphere-ui"
+    import { AtSide } from "atmosphere-ui"
     import { useLocalStorage } from "@vueuse/core"
     import { useI18n } from 'vue-i18n'
     import { Link, usePage } from '@inertiajs/inertia-vue3'
@@ -191,11 +191,7 @@
 
     import { useAppMenu } from '@/domains/app'
     import { useSelect } from '@/utils/useSelects'
-    import { darkThemeOverrides } from '@/utils/naiveui'
-    import { useTransactionModal } from '@/domains/transactions'
-    import { formatMoney } from '@/utils'
     import TransactionAddButton from './TransactionAddButton.vue'
-
 
     const props = defineProps({
         title: {

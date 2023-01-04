@@ -1,28 +1,24 @@
 <template>
-<div class="w-full text-right" @click="onAssignBudget()">
     <span
-        class="px-5 py-1 cursor-pointer rounded-3xl text-body-1 flex items-center group"
-        :class="badgeClass"
-        @click="toggle"
+        class="py-1 cursor-pointer rounded-3xl text-body-1 flex items-center group"
+        :class="[badgeClass, iconOnly ? 'px-2' : 'w-full text-right px-5']"
+        @click.stop="onAssignBudget()"
         title="Execute transaction"
         v-if="spendingAmount"
     >
         <IconBolt class="group-hover:text-yellow-500" />
-        {{ formatMoney(spendingAmount) }}
-    </span>
-</div>
+        <span v-if="!iconOnly">
+            {{ formatMoney(spendingAmount) }}
+        </span>
+</span>
 </template>
 
 <script setup>
     import { useForm } from "@inertiajs/inertia-vue3";
-    import { computed, inject, ref } from "vue"
-    import { NPopover, NSelect } from "naive-ui";
-    import { AtField, AtButton } from "atmosphere-ui";
+    import { computed } from "vue"
 
-    import LogerInput from "./LogerInput.vue";
     import IconBolt from "../icons/IconBolt.vue";
 
-    import { format, startOfMonth } from "date-fns";
     import { useTransactionModal } from "@/domains/transactions";
     import formatMoney from "@/utils/formatMoney";
 
@@ -41,6 +37,9 @@
         category: {
             type: Object,
             required: true
+        },
+        iconOnly: {
+            type: Boolean,
         }
     })
 
@@ -80,6 +79,7 @@
         if (!props.data) return 0;
         return props.data.target_type.includes('spending') ? props.data?.amount : 0
     })
+
     const form = useForm({
         amount: Math.abs(spendingAmount.value),
         source_category_id: null,
@@ -100,6 +100,4 @@
 
         }
     }
-
-    const accountOptions = inject('accountsOptions', [])
 </script>

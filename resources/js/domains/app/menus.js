@@ -50,7 +50,7 @@ const menus = {
         url: '/finance'
     },
     {
-        label: 'Budget',
+        label: 'Budget & Goals',
         url: '/budgets'
     },
     {

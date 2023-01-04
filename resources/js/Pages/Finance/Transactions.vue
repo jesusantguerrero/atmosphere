@@ -7,6 +7,9 @@
             <DraftButtons
                 v-if="isDraft"
             />
+            <LogerButton variant="inverse">
+                Add transaction
+            </LogerButton>
             <StatusButtons
                 v-model="currentStatus"
                 :statuses="transactionStatus"

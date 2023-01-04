@@ -94,7 +94,7 @@ const isDraft = computed(() => {
 });
 
 const removeTransaction = (transaction) => {
-    Inertia.delete(`/transactions/${transaction.id}`, {
+    Inertia.delete(`/transactions/${transaction.transaction_id}`, {
         onSuccess() {
             Inertia.reload()
         }

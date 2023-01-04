@@ -1,13 +1,12 @@
 <template>
-  <DoughnutChart ref="chartRef" :chartData="chartData" :options="options" />
+  <DoughnutChart ref="chartRef" :data="chartData" :options="options" />
 </template>
 
 <script setup>
 import { generateRandomColor } from "@/utils";
 import { Chart, registerables } from "chart.js";
-import { getRelativePosition } from "chart.js/helpers";
 import { computed, ref } from "vue";
-import { DoughnutChart } from "vue-chart-3";
+import { Doughnut as DoughnutChart } from "vue-chartjs";
 Chart.register(...registerables);
 
 const props = defineProps({

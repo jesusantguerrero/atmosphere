@@ -24,8 +24,19 @@
         </div>
     </div>
     <div class="flex items-center space-x-2 text-right flex-nowrap min-w-fit">
-        <BalanceInput :value="item.available" :formatter="formatMoney" :category="item" />
-        <BudgetTransaction :data="item.budget"  :category="item" v-if="item.available" />
+        <BalanceInput
+            :value="item.available"
+            :formatter="formatMoney"
+            :category="item"
+        >
+            <template #suffix v-if="item.available">
+                <BudgetTransaction
+                    :data="item.budget"
+                    :category="item"
+                    icon-only
+                />
+            </template>
+        </BalanceInput>
         <NDropdown trigger="click" :options="options" key-field="name" :on-select="handleOptions" >
             <LogerTabButton> <i class="fa fa-ellipsis-v"></i></LogerTabButton>
         </NDropdown>

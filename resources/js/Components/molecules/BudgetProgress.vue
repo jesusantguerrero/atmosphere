@@ -46,7 +46,7 @@ const props = defineProps({
 })
 
 const progress = computed(() => {
-    let progressValue = (props.current || 0 / props.goal || 0) || 0 * 100
+    let progressValue = ((props.current || 0) / (props.goal || 0)) || 0 * 100
     progressValue = Number.isFinite(progressValue) ? progressValue : 0
     return Math.round((progressValue + Number.EPSILON) * 100) / 100
 })
