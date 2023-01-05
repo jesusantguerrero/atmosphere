@@ -22,7 +22,7 @@
         "guzzlehttp/guzzle": "^7.0.2",
         "inertiajs/inertia-laravel": "^0.6.3",
         "insane/journal": "dev-master",
-        "freesgen/atmosphere": "dev-master",
+        "freesgen/atmosphere": "dev-main",
         "laravel/framework": "^9.19",
         "laravel/jetstream": "^2.3",
         "laravel/sanctum": "^2.8",
