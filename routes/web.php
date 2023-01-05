@@ -139,6 +139,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     // Transactions
     Route::controller(FinanceTransactionController::class)->group(function() {
         Route::get('/finance/transactions', 'index')->name('finance.transactions');
+        Route::get('/finance/transactions/{state}', 'getByState')->name('finance.transactions.states');
         Route::post('/finance/import', 'import')->name('finance.import');
         Route::patch('/finance/transactions/{id}/mark-as-paid', 'markPlannedAsPaid')->name("transactions.mark-as-paid");
         Route::post('/finance/transactions', 'addPlanned')->name("transactions.store-planned");

@@ -40,6 +40,11 @@ class FinanceTransactionController extends InertiaController {
         ];
     }
 
+    public function getByState(Request $request, $state = 'verified') {
+        $this->filters['status'] = $state;
+        return $this->index($request);
+    }
+
     public function getIndexProps(Request $request, $accountId = null): array {
         return  [
             "sectionTitle" => "Finance Transactions",
