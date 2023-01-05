@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b02ebebb65ecd257fa141dd2d0cdcb84",
+    "content-hash": "6a7790eaa4610785db9a22dd4eb53e84",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -1278,17 +1278,24 @@
         },
         {
             "name": "freesgen/atmosphere",
-            "version": "dev-master",
+            "version": "dev-main",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/jesusantguerrero/atmosphere-core.git",
+                "reference": "82cdbb6ed9266d286111f38854281b3c873205ba"
+            },
             "dist": {
-                "type": "path",
-                "url": "./atmosphere",
-                "reference": "565297f18453b381d9de4cccdb91b6c310904fc3"
+                "type": "zip",
+                "url": "https://api.github.com/repos/jesusantguerrero/atmosphere-core/zipball/82cdbb6ed9266d286111f38854281b3c873205ba",
+                "reference": "82cdbb6ed9266d286111f38854281b3c873205ba",
+                "shasum": ""
             },
             "require": {
                 "inertiajs/inertia-laravel": "^0.6.3",
                 "laravel/jetstream": "^2.3",
                 "php": "^8.1.0"
             },
+            "default-branch": true,
             "type": "library",
             "extra": {
                 "laravel": {
@@ -1299,9 +1306,10 @@
             },
             "autoload": {
                 "psr-4": {
-                    "Freesgen\\Atmosphere\\": "/"
+                    "Freesgen\\Atmosphere\\": "src/"
                 }
             },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -1314,20 +1322,17 @@
             "description": "Atmosphere is a SaaS and Starter Kit for Jetstream/Inertia",
             "homepage": "https://atmosphere.neatlancer.com",
             "keywords": [
-                "SaaS",
-                "Starter Kit",
                 "inertia",
                 "jetstream",
-                "laravel"
+                "laravel",
+                "saas",
+                "starter kit"
             ],
             "support": {
                 "issues": "https://neatlancer.com/forums",
                 "source": "https://neatlancer.com"
             },
-            "transport-options": {
-                "symlink": true,
-                "relative": true
-            }
+            "time": "2023-01-05T14:05:08+00:00"
         },
         {
             "name": "fruitcake/php-cors",
