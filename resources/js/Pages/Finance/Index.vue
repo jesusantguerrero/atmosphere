@@ -20,7 +20,7 @@
     </template>
 
     <FinanceTemplate title="Finance" :accounts="accounts" ref="financeTemplateRef">
-      <section class="grid grid-cols-2 gap-12 mt-4">
+      <section class="grid md:grid-cols-2 gap-12 mt-4">
             <WidgetTitleCard title="Summary" class="w-full">
                 <div
                     class="flex justify-between lg:space-x-4 overflow-hidden lg:flex-nowrap flex-wrap w-full"

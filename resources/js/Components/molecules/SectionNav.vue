@@ -1,14 +1,15 @@
 <template>
-<div class="flex justify-between w-full pr-8">
+<div class="flex justify-between w-full pr-8 overflow-auto md:overflow-hidden">
     <SubmenuTab
         v-for="section in sections"
         @click="handleClick(section)"
         :is-selected="isSelected(section)"
         :key="section.url"
+        class="text-xs md:text-md"
     >
         {{ section.label }}
     </SubmenuTab>
-    <div class="space-x-2 flex py-1 justify-end items-center ml-auto">
+    <div class="hidden space-x-2 text-xs md:flex py-1 justify-end items-center ml-auto">
        <slot name="actions" />
     </div>
 </div>

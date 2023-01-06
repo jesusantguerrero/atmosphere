@@ -27,7 +27,8 @@
       </FinanceSectionNav>
     </template>
     <FinanceTemplate title="Transactions" :accounts="accounts">
-      <TransactionTemplate
+      <component
+        :is="listComponent"
         :transactions="transactions.data"
         :server-search-options="serverSearchOptions"
         @findLinked="findLinked"
@@ -39,10 +40,10 @@
 </template>
 
 <script setup>
-import { NSelect } from "naive-ui";
-import { AtDatePager, AtButton } from "atmosphere-ui";
+import { AtDatePager } from "atmosphere-ui";
 import { computed, toRefs, provide, ref} from "vue";
 import { Inertia } from "@inertiajs/inertia";
+import { useBreakpoints, breakpointsTailwind } from "@vueuse/core";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import TransactionSearch from "@/Components/templates/TransactionSearch.vue";
@@ -54,7 +55,6 @@ import LogerButton from "@/Components/atoms/LogerButton.vue";
 
 import { useTransactionModal } from "@/domains/transactions";
 import { useServerSearch } from "@/composables/useServerSearch";
-import LogerDropdown from "@/Components/molecules/LogerDropdown.vue";
 import StatusButtons from "@/Components/molecules/StatusButtons.vue";
 
 const { openTransactionModal } = useTransactionModal();
@@ -86,11 +86,16 @@ const props = defineProps({
 });
 
 const { serverSearchOptions } = toRefs(props);
-const {state: pageState, executeSearch } = useServerSearch(serverSearchOptions)
-
+const {state: pageState } = useServerSearch(serverSearchOptions)
 const selectedAccountId = computed(() => {
     return serverSearchOptions.value.filters?.account_id;
 })
+
+const { isSmaller } = useBreakpoints(breakpointsTailwind)
+const listComponent = computed(() => {
+    return isSmaller('md') ? TransactionSearch : TransactionTemplate;
+});
+
 
 provide('selectedAccountId', selectedAccountId.value)
 
@@ -135,6 +140,5 @@ const transactionStatus = {
         value: '/finance/transactions?filter[status]=draft&relationships=linked'
     },
 }
-
 const currentStatus = ref(serverSearchOptions.value.filters?.status || 'verified');
 </script>

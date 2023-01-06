@@ -15,14 +15,13 @@
           <input type="checkbox" :checked="isSelected" @change="handleSelect()" />
         </div>
         <div
-          class="flex items-center justify-center w-20 px-5 py-3 font-bold text-center transition-all rounded-md bg-base-lvl-3 group-hover:bg-primary group-hover:text-white group-body-1"
+          class="md:flex items-center hidden justify-center w-20 px-5 py-3 font-bold text-center transition-all rounded-md bg-base-lvl-3 group-hover:bg-primary group-hover:text-white group-body-1"
         >
           {{ title.slice(0, 1) }}
         </div>
         <div>
           <h4 class="font-bold">{{ title }}</h4>
           <small class="text-sm"> {{ subtitle }}</small>
-          <small class="block text-sm"> {{ formatDate(date) }}</small>
         </div>
       </div>
       <div class="flex space-x-5">
@@ -34,7 +33,7 @@
               >({{ formatMoney(expenses, currencyCode) }})</span
             >
           </h4>
-          <small class="text-sm"> {{ status }}</small>
+          <small class="block text-sm"> {{ formatDate(date) }}</small>
         </div>
         <NDropdown
             v-if="hasOptions"
