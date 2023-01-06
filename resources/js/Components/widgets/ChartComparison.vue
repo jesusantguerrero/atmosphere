@@ -9,13 +9,13 @@
         <span v-if="selectedDate" class="capitalize text-primary">{{ formatMonth(selectedDate) }}</span>
       </h5>
       <div class="card-text">
-        <div class="comparison-header px-10 text-body-1/50 space-x-2 divide-x divide-dashed divide-opacity-20 divide-body-1 bg-base-lvl-2 mb-2">
+        <div class="comparison-header w-full md:flex md:px-10 text-body-1/50 md:space-x-2 md:divide-x md:divide-y-0 divide-y divide-dashed divide-opacity-20 divide-body-1 bg-base-lvl-2 mb-2">
           <div
             v-for="header in state.headers"
             :key="header.id"
             @click="selectedDate = header.id"
-            class="comparison-header__item justify-center w-full items-center flex-col flex  previous-period cursor-pointer hover:text-body/80"
-            >
+            class="comparison-header__item justify-between px-4 md:py-6 py-2 md:justify-center w-full items-center md:flex-col flex  previous-period cursor-pointer hover:text-body/80"
+          >
             <h6 class="period-title">{{ header.label }}</h6>
             <span class="period-value text-xs mt-2">
                 <NumberHider />
@@ -24,7 +24,8 @@
           </div>
         </div>
         <LogerChart
-            style="height:300px; background: white; width: 100%"
+            class="bg-white"
+            style="height:300px; width: 100%"
             label="name"
             type="bar"
             :labels="currentSeries[0].labels"
@@ -100,14 +101,9 @@ const state = reactive({
 }
 
 .comparison-header {
-  display: flex;
   width: 100%;
-  height: 90px;
 
   &__item {
-    width: 50%;
-    padding: 20px 0;
-
     .period-value {
       position: relative;
       font-size: 18px;
