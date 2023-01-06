@@ -2,11 +2,14 @@
 <article>
     <header class="flex justify-between py-2 px-4 text-body-1/80">
         <div class="flex items-center space-x-2">
-            <LogerTabButton @click="isExpanded=!isExpanded">
+            <div class="cursor-grab" v-if="isMobile && allowDrag">
+                <IconDrag class="handle" />
+            </div>
+            <LogerTabButton @click="isExpanded=!isExpanded" v-else>
                 <i class="fa" :class="toggleIcon" />
             </LogerTabButton>
             <div class="flex items-center">
-                <h4 class="relative text-primary font-bold handle">
+                <h4 class="relative text-primary font-bold cursor-grab" :class="{'handle': !isMobile }">
                     {{ item.name }}
                     <PointAlert
                         v-if="item.hasOverspent || item.hasOverAssigned || item.hasUnderfunded"
@@ -53,7 +56,6 @@ import IconDrag from "../icons/IconDrag.vue";
 import LogerTabButton from "@/Components/atoms/LogerTabButton.vue";
 import { Inertia } from "@inertiajs/inertia";
 import PointAlert from "../atoms/PointAlert.vue";
-import MoneyPresenter from "./MoneyPresenter.vue";
 import BudgetProgress from "./BudgetProgress.vue";
 
 const emit = defineEmits(['removed'])
@@ -66,6 +68,12 @@ const props = defineProps({
     forceExpanded: {
         type: Boolean,
         default: false
+    },
+    isMobile: {
+        type: Boolean,
+    },
+    allowDrag: {
+        type: Boolean,
     }
 })
 

@@ -12,12 +12,13 @@
         @end="saveReorder(visibleCategories)"
     >
         <BudgetGroupItem
-        v-for="itemGroup in visibleCategories"
-        :key="itemGroup.id"
-        :item="itemGroup"
-        :force-expanded="filters.overspent"
-        :class="[cardShadow]"
-        class="bg-base-lvl-3"
+            v-for="itemGroup in visibleCategories"
+            :key="itemGroup.id"
+            :item="itemGroup"
+            :force-expanded="filters.overspent"
+            :class="[cardShadow]"
+            :is-mobile="isMobile"
+            class="bg-base-lvl-3"
         >
         <template v-slot:content="{ isExpanded, isAdding, toggleAdding }">
             <div class="bg-base-lvl-3">
@@ -37,11 +38,13 @@
                 @end="saveReorder(itemGroup.subCategories)"
             >
                 <BudgetItem
-                class="bg-base-lvl-2 border-base-lvl-3"
-                v-for="item in itemGroup.subCategories"
-                :key="`${item.id}-${item.budgeted}`"
-                :item="item"
-                @edit="setSelectedBudget(item.id, itemGroup.id)"
+                    class="bg-base-lvl-2 border-base-lvl-3"
+                    v-for="item in itemGroup.subCategories"
+                    :key="`${item.id}-${item.budgeted}`"
+                    :item="item"
+                    :is-mobile="isMobile"
+                    @open="$inertia.visit(`/budgets/${item.id}`)"
+                    @edit="setSelectedBudget(item.id, itemGroup.id)"
                 />
             </Draggable>
 
@@ -55,6 +58,7 @@
 import {  toRefs } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
 import { VueDraggableNext as Draggable } from "vue-draggable-next";
+import { useBreakpoints, breakpointsTailwind } from "@vueuse/core";
 
 import LogerInput from "@/Components/atoms/LogerInput.vue";
 import BudgetGroupItem from "@/Components/molecules/BudgetGroupItem.vue";
@@ -70,6 +74,9 @@ const props = defineProps({
     required: true,
   }
 });
+
+const { isSmaller } = useBreakpoints(breakpointsTailwind)
+const isMobile = isSmaller('md');
 
 const { budgets } = toRefs(props);
 const {

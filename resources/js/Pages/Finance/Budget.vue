@@ -1,6 +1,6 @@
 <template>
   <AppLayout
-    title="Budget Settings"
+    :title="sectionTitle"
     @back="$inertia.visit(route('finance'))"
     :show-back-button="true"
   >
@@ -48,11 +48,11 @@
         content="Create new category groups and categories and organize them to suit your needs"
       />
         <BalanceAssign
-        class="rounded-t-md mt-5"
-        :class="[cardShadow, !visibleFilters.overspent && 'rounded-b-md']"
-        :value="readyToAssign.balance"
-        :category="readyToAssign.toAssign"
-        :to-assign="readyToAssign"
+            class="rounded-t-md mt-5"
+            :class="[cardShadow, !visibleFilters.overspent && 'rounded-b-md']"
+            :value="readyToAssign.balance"
+            :category="readyToAssign.toAssign"
+            :to-assign="readyToAssign"
       >
         <template #activity>
           <section class="w-full flex-col justify-center  py-2 flex items-center">
@@ -81,7 +81,7 @@
         <section class="mx-auto mt-8 rounded-lg text-body bg-base max-w-7xl">
             <BudgetDetailForm
                 class="mt-5 mr-4"
-                v-if="selectedBudget"
+                v-if="selectedBudget && showCategoriesInMain"
                 full
                 :category="selectedBudget"
                 :item="selectedBudget.budget"
@@ -92,17 +92,27 @@
             />
 
             <article v-else class="w-full mt-4 space-y-4">
-                <QuickBudget class="mt-4" />
                 <section class="space-y-4">
-                    <BudgetCategories :budgets="budgets" v-if="showCategoriesInMain" />
+                    <BudgetCategories :budgets="budgets" />
                 </section>
             </article>
 
         </section>
 
         <template #panel class="">
-            <div class="budget-right-panel ">
-                <BudgetCategories :budgets="budgets" v-if="!showCategoriesInMain"/>
+            <div class="mt-4 space-y-4">
+                <BudgetDetailForm
+                    class="mt-5"
+                    v-if="selectedBudget && !showCategoriesInMain"
+                    full
+                    :category="selectedBudget"
+                    :item="selectedBudget.budget"
+                    @saved="onBudgetItemSaved"
+                    @deleted="deleteBudget"
+                    @cancel="setSelectedBudget()"
+                    @close="setSelectedBudget()"
+                />
+                <!-- <BudgetCategories :budgets="budgets" v-if="!showCategoriesInMain"/> -->
                 <ExpenseIncome :expenses="readyToAssign.activity" :income="readyToAssign.inflow" />
             </div>
         </template>
@@ -133,6 +143,7 @@ import { useBudget } from "@/domains/budget";
 import MoneyPresenter from "@/Components/molecules/MoneyPresenter.vue";
 import MessageBox from "@/Components/organisms/MessageBox.vue";
 import BudgetCategories from "./Partials/BudgetCategories.vue";
+import { formatMonth } from "@/utils";
 
 const props = defineProps({
   budgets: {
@@ -157,6 +168,9 @@ const props = defineProps({
 
 const { serverSearchOptions } = toRefs(props);
 const { state: pageState } = useServerSearch(serverSearchOptions);
+const sectionTitle = computed(() => {
+    return `Budget for ${formatMonth(pageState.dates.startDate, 'MMMM yyyy')}`
+})
 
 const { budgets } = toRefs(props);
 const {

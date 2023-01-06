@@ -17,19 +17,17 @@
                         :class="[cardShadow]"
                         :title="t('This month vs last month')"
                         ref="ComparisonRevenue"
-                        :data="props.expenses"
+                        :data="expenses"
                     />
                 </BudgetTracker>
 
                 <div class="flex space-x-4">
-
-
                     <ChartComparison
                         class="w-full mt-4 mb-10 overflow-hidden bg-white rounded-lg"
                         :class="[cardShadow]"
                         :title="t('Spending summary')"
                         ref="ComparisonRevenue"
-                        :data="props.revenue"
+                        :data="revenue"
                     />
 
                     <NextPaymentsWidget

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Finance;
 use App\Domains\AppCore\Models\Category;
 use App\Domains\Budget\Models\BudgetMovement;
 use App\Domains\Transaction\Models\Transaction;
+use App\Domains\Transaction\Services\ReportService;
 use App\Http\Resources\CategoryGroupCollection;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
@@ -20,7 +21,9 @@ class BudgetCategoryController extends InertiaController
     {
         $this->model = $category;
         $this->templates = [
-            "index" => 'Finance/Budget'
+            "index" => 'Finance/Budget',
+            "edit" => 'Finance/BudgetCategory',
+            "show" => 'Finance/BudgetCategory'
         ];
         $this->searchable = ['name'];
         $this->validationRules = [
@@ -34,6 +37,38 @@ class BudgetCategoryController extends InertiaController
             'data' => date('Y-m-01')
         ];
         $this->resourceName= "budgets";
+    }
+
+    public function show(int $categoryId) {
+        $queryParams = request()->query();
+        $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
+        [$startDate, $endDate] = $this->getFilterDates($filters);
+        $category = Category::with(['budget'])->find($categoryId);
+        $statStartDate = now()->subMonth(3)->startOfMonth()->format('Y-m-d');
+
+        $stats = ReportService::getExpensesByCategoriesInPeriod(
+            $category->team_id,
+            $statStartDate,
+            $endDate,
+            [$category->id]
+        )->groupBy('date')->map(function ($monthItems) {
+            return [
+                'date' => $monthItems->first()->date,
+                'total' => $monthItems->sum('total')
+            ];
+        })->sortBy('date');
+
+
+        return inertia($this->templates['show'], [
+            "sectionTitle" => $category->name,
+            'categoryId' => $category->id,
+            'resource' => $category,
+            'transactions' => $category->transactionLines()->whereBetween('date', [
+                $startDate,
+                $endDate,
+            ])->get(),
+            "stats" => $stats
+        ]);
     }
 
     // Category Budget targets

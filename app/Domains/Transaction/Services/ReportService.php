@@ -93,11 +93,11 @@ class ReportService {
     ->get();
   }
 
-  public static function getExpensesByCategoriesInPeriod($teamId, $startDate, $endDate) {
+  public static function getExpensesByCategoriesInPeriod($teamId, $startDate, $endDate, $categories = null) {
     return Transaction::byTeam($teamId)
     ->balance()
     ->inDateFrame($startDate, $endDate)
-    ->expenseCategories()
+    ->expenseCategories($categories)
     ->selectRaw('date_format(transactions.date, "%Y-%m-01") as date, categories.name, categories.id')
     ->groupByRaw('date_format(transactions.date, "%Y-%m"), categories.id')
     ->orderBy('date')

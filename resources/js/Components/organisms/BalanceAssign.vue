@@ -4,41 +4,45 @@
         :class="theme.default"
         @click="toggle"
     >
-        <article class="py-4 flex flex-col justify-center items-center mx-auto" :class="badgeClass">
-            <h4 class="text-lg font-bold "> {{ formatter(value) }} </h4>
-
-            <div class="text-center">
+        <NPopover>
+            <template #trigger>
+                <article class="py-4 flex flex-col justify-center items-center mx-auto" :class="badgeClass">
+                    <h4 class="text-lg font-bold "> {{ formatter(value) }} </h4>
+                    <small>
+                        {{ description }}
+                    </small>
+        
+                    <NPopover v-if="isOverspent" trigger="manual" placement="bottom"  @update:show="handleUpdateShow" :show="showPopover">
+                        <template #trigger>
+                            <AtButton class="rounded-md bg-black/30 text-white">
+                                Fix this
+                            </AtButton>
+                        </template>
+                        <div>
+                            <AtField label="From">
+                                <NSelect
+                                    filterable
+                                    clearable
+                                    size="large"
+                                    v-model:value="form.source_category_id"
+                                    :default-expand-all="true"
+                                    :options="categoryOptions"
+                                />
+                            </AtField>
+                            <div class="flex space-x-2 justify-end items-center">
+                                <AtButton class="text-body-1" @click="clear">Cancel</AtButton>
+                                <AtButton class="bg-success text-white rounded-md" @click="onAssignBudget()"> Save</AtButton>
+                            </div>
+                        </div>
+                    </NPopover>
+                </article>
+            </template>
+            <section class="text-center">
                 <p>Inflow: Ready to assign transactions in Month: <MoneyPresenter :value="category.activity"/> </p>
                 <p>Assigned in month: <MoneyPresenter :value="toAssign.budgeted" /> </p>
-            </div>
-            <small>
-                {{ description }}
-            </small>
+            </section>
+        </NPopover>
 
-            <NPopover v-if="isOverspent" trigger="manual" placement="bottom"  @update:show="handleUpdateShow" :show="showPopover">
-                <template #trigger>
-                    <AtButton class="rounded-md bg-black/30 text-white">
-                        Fix this
-                    </AtButton>
-                </template>
-                <div>
-                    <AtField label="From">
-                        <NSelect
-                            filterable
-                            clearable
-                            size="large"
-                            v-model:value="form.source_category_id"
-                            :default-expand-all="true"
-                            :options="categoryOptions"
-                        />
-                    </AtField>
-                    <div class="flex space-x-2 justify-end items-center">
-                        <AtButton class="text-body-1" @click="clear">Cancel</AtButton>
-                        <AtButton class="bg-success text-white rounded-md" @click="onAssignBudget()"> Save</AtButton>
-                    </div>
-                </div>
-            </NPopover>
-        </article>
         <article class="grid grid-cols-2 divide-x-2 overflow-hidden">
             <section>
                 <slot name="activity" />
