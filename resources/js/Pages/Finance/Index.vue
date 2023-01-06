@@ -92,9 +92,9 @@
                 />
 
                 <template #action>
-                    <at-button class="text-primary" @click="''"
-                    ><i class="fa fa-plus"></i> Add transaction</at-button
-                    >
+                    <button class="text-primary" @click="''">
+                        <i class="fa fa-plus"></i> Add transaction
+                    </button>
                 </template>
             </WidgetTitleCard>
       </section>

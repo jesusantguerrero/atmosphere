@@ -15,7 +15,7 @@
         v-for="itemGroup in visibleCategories"
         :key="itemGroup.id"
         :item="itemGroup"
-        :force-expanded="overspentFilter"
+        :force-expanded="filters.overspent"
         :class="[cardShadow]"
         class="bg-base-lvl-3"
         >
@@ -52,8 +52,7 @@
 </template>
 
 <script setup>
-import { computed, reactive, toRefs } from "vue";
-import { Inertia } from "@inertiajs/inertia";
+import {  toRefs } from "vue";
 import { useForm } from "@inertiajs/inertia-vue3";
 import { VueDraggableNext as Draggable } from "vue-draggable-next";
 
@@ -74,18 +73,10 @@ const props = defineProps({
 
 const { budgets } = toRefs(props);
 const {
-  readyToAssign,
   visibleCategories,
-  overspentCategories,
-  toggleOverspent,
-  overspentFilter,
+  filters,
   setSelectedBudget,
-  selectedBudget
 } = useBudget(budgets);
-
-const isOverspentFilterShown = computed(() => {
-  return overspentFilter.value || overspentCategories.value.length > 0;
-});
 
 const categoryForm = useForm({
     account_id: null,
@@ -98,7 +89,7 @@ const groupById = (items) =>
   items?.reduce((items, item) => {
     items[item.id] = item;
     return items;
-  }, {});
+}, {});
 
 
 const saveBudgetCategory = (parentId, callback) => {
@@ -117,16 +108,4 @@ const saveReorder = (categories) => {
   const savedItems = groupById(items);
   axios.patch("/api/categories/", { data: savedItems });
 };
-
-const onExport = () => {
-    axios.get(route('budget.export'));
-}
 </script>
-
-<style>
-.budget-right-panel {
-    display: grid;
-    grid-template-rows: 50px calc(100vh - 420px) 150px;
-    gap: 8px;
-}
-</style>

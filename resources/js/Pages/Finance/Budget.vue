@@ -47,7 +47,7 @@
         title="This is your budget."
         content="Create new category groups and categories and organize them to suit your needs"
       />
-      <BalanceAssign
+        <BalanceAssign
         class="rounded-t-md mt-5"
         :class="[cardShadow, !visibleFilters.overspent && 'rounded-b-md']"
         :value="readyToAssign.balance"
@@ -60,53 +60,52 @@
                 <MoneyPresenter :value="readyToAssign.activity" />
             </h4>
             <p class="font-bold text-body-1/80">Activity</p>
+          </section>
+        </template>
+        <template #target>
+            <BudgetProgress class="w-full text-center h-14"
+                :goal="readyToAssign.monthlyGoals.target"
+                :current="readyToAssign.monthlyGoals.balance"
+                :progress-class="['bg-secondary/10', 'bg-secondary/5']"
+            >
+                <section class="font-bold">
+                    <h4 class="text-secondary">
+                        <MoneyPresenter :value="readyToAssign.monthlyGoals.balance" />
+                    </h4>
+                    <p class="font-bold text-body-1/80">Monthly Goals Progress</p>
+                </section>
+            </BudgetProgress>
+        </template>
+        </BalanceAssign>
+
+        <section class="mx-auto mt-8 rounded-lg text-body bg-base max-w-7xl">
+            <BudgetDetailForm
+                class="mt-5 mr-4"
+                v-if="selectedBudget"
+                full
+                :category="selectedBudget"
+                :item="selectedBudget.budget"
+                @saved="onBudgetItemSaved"
+                @deleted="deleteBudget"
+                @cancel="setSelectedBudget()"
+                @close="setSelectedBudget()"
+            />
+
+            <article v-else class="w-full mt-4 space-y-4">
+                <QuickBudget class="mt-4" />
+                <section class="space-y-4">
+                    <BudgetCategories :budgets="budgets" v-if="showCategoriesInMain" />
+                </section>
+            </article>
+
         </section>
-    </template>
-    <template #target>
-        <BudgetProgress class="w-full text-center h-14"
-            :goal="readyToAssign.monthlyGoals.target"
-            :current="readyToAssign.monthlyGoals.balance"
-            :progress-class="['bg-secondary/10', 'bg-secondary/5']"
-        >
-            <section class="font-bold">
-                <h4 class="text-secondary">
-                    <MoneyPresenter :value="readyToAssign.monthlyGoals.balance" />
-                </h4>
-                <p class="font-bold text-body-1/80">Monthly Goals Progress</p>
-            </section>
-        </BudgetProgress>
-    </template>
 
-      </BalanceAssign>
-
-      <section class="mx-auto mt-8 rounded-lg text-body bg-base max-w-7xl">
-        <BudgetDetailForm
-            class="mt-5 mr-4"
-            v-if="selectedBudget"
-            full
-            :category="selectedBudget"
-            :item="selectedBudget.budget"
-            @saved="onBudgetItemSaved"
-            @deleted="deleteBudget"
-            @cancel="setSelectedBudget()"
-            @close="setSelectedBudget()"
-        />
-
-        <article v-else class="w-full mt-4 space-y-4">
-            <QuickBudget class="mt-4" />
-            <section class="space-y-4">
-                <BudgetCategories :budgets="budgets" v-if="showCategoriesInMain" />
-            </section>
-        </article>
-
-      </section>
-
-      <template #panel class="">
-        <div class="budget-right-panel ">
-            <BudgetCategories :budgets="budgets" v-if="!showCategoriesInMain"/>
-            <ExpenseIncome :expenses="readyToAssign.activity" :income="readyToAssign.inflow" />
-        </div>
-      </template>
+        <template #panel class="">
+            <div class="budget-right-panel ">
+                <BudgetCategories :budgets="budgets" v-if="!showCategoriesInMain"/>
+                <ExpenseIncome :expenses="readyToAssign.activity" :income="readyToAssign.inflow" />
+            </div>
+        </template>
     </FinanceTemplate>
   </AppLayout>
 </template>

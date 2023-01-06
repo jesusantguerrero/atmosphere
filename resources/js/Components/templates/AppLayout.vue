@@ -3,7 +3,7 @@
         <AppShell :is-expanded="isExpanded" :nav-class="[!$slots.header && `${panelShadow} border-b`]">
             <template #navigation>
                 <!-- Primary Navigation Menu -->
-                <div class="pr-4 mx-auto sm:pr-6 lg:pr-8 text-body-1/80">
+                <div class="px-5 mx-auto sm:pr-6 lg:pr-8 text-body-1/80">
                     <div class="flex items-center justify-between h-16">
                         <div class="flex items-center">
                             <LogerTabButton @click="$emit('back')" v-if="showBackButton">
@@ -14,8 +14,8 @@
                             </h4>
                         </div>
 
-                        <div class="hidden space-x-2 sm:flex sm:items-center sm:ml-6">
-                            <TransactionAddButton />
+                        <div class="space-x-2 flex sm:items-center sm:ml-6">
+                            <TransactionAddButton class="hidden md:inline-block" />
 
                             <PrivacyToggle v-model="isPrivacyMode" v-if="!isOnboarding" />
 
@@ -34,16 +34,6 @@
                                     @logout="logout()"
                                 />
                             </div>
-                        </div>
-
-                        <!-- Hamburger -->
-                        <div class="flex items-center -mr-2 sm:hidden">
-                            <button @click="showingNavigationDropdown = ! showingNavigationDropdown" class="inline-flex items-center justify-center p-2 text-gray-400 transition rounded-md hover:text-body hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-body">
-                                <svg class="w-6 h-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                                    <path :class="{'hidden': showingNavigationDropdown, 'inline-flex': ! showingNavigationDropdown }" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                                    <path :class="{'hidden': ! showingNavigationDropdown, 'inline-flex': showingNavigationDropdown }" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
                         </div>
                     </div>
                 </div>
