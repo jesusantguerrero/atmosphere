@@ -1,10 +1,10 @@
 <template>
   <section class="relative px-8 pt-16 pb-20 mx-auto max-w-screen-2xl">
-    <header class="" v-if="showMealTypes">
+    <header class="" v-if="showMealTypes && pageProps.mealTypes">
       <article class="flex w-full justify-between mb-2">
         <SectionTitle> Meals </SectionTitle>
       </article>
-      <article class="flex space-x-4">
+      <article class="grid grid-cols-2 gap-2 md:flex md:space-x-4">
         <div
           v-for="mealType in pageProps.mealTypes"
           :key="mealType.id"

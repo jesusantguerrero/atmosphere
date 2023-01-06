@@ -33,7 +33,7 @@
                     <div v-for="day in state.dateSpan" :key="day" @click="openDayInModal(day)" class="px-5 py-4 cursor-pointer bg-base-lvl-3">
                         {{ getDayName(day) }}
 
-                        <div class="flex items-center mt-2 space-x-2">
+                        <div class="md:flex items-center mt-2 md:space-x-2">
                             <div v-for="mealType in pageProps.mealTypes" class="w-full" :key="`${mealType.id}-${day}`">
                                 <MealTypeCell
                                     v-model="recipe"
