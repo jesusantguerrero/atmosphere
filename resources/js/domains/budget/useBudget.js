@@ -40,7 +40,7 @@ export const BudgetState = reactive({
 
         return {
             balance,
-            inflow: BudgetState.inflow.activity,
+            inflow: BudgetState.inflow?.activity,
             toAssign: category,
             ...budgetTotals,
         }
@@ -52,7 +52,6 @@ const getBudget = (budgetRawData) => {
     const overAssignedCategories = []
     let categories = [];
     let budgetData = cloneDeep(budgetRawData)
-    console.log(budgetData);
 
     budgetData = budgetData.map(item => {
         const totals = getCategoriesTotals(item.subCategories, {

@@ -75,10 +75,11 @@
                 <p class="font-bold text-body-1/80">Monthly Goals Progress</p>
             </section>
         </BudgetProgress>
-        </template>
+    </template>
+
       </BalanceAssign>
 
-      <div class="mx-auto mt-8 rounded-lg text-body bg-base max-w-7xl">
+      <section class="mx-auto mt-8 rounded-lg text-body bg-base max-w-7xl">
         <BudgetDetailForm
             class="mt-5 mr-4"
             v-if="selectedBudget"
@@ -91,12 +92,14 @@
             @close="setSelectedBudget()"
         />
 
-        <div v-else class="w-full mt-4">
+        <article v-else class="w-full mt-4 space-y-4">
             <QuickBudget class="mt-4" />
-            <BudgetCategories :budgets="budgets" v-if="showCategoriesInMain" />
-        </div>
+            <section class="space-y-4">
+                <BudgetCategories :budgets="budgets" v-if="showCategoriesInMain" />
+            </section>
+        </article>
 
-      </div>
+      </section>
 
       <template #panel class="">
         <div class="budget-right-panel ">
