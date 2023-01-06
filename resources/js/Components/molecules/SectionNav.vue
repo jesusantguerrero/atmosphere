@@ -5,7 +5,7 @@
         @click="handleClick(section)"
         :is-selected="isSelected(section)"
         :key="section.url"
-        class="text-xs md:text-md"
+        class="text-xs md:text-md w-full text-center"
     >
         {{ section.label }}
     </SubmenuTab>

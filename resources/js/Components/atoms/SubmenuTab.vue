@@ -1,7 +1,7 @@
 <template>
   <button
     type="button"
-    class="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-body transition border-b-2 border-transparent hover:bg-base-lvl-2 hover:text-body/80 focus:outline-none"
+    class="text-center justify-center after:inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-body transition border-b-2 border-transparent hover:bg-base-lvl-2 hover:text-body/80 focus:outline-none"
     :class="[...tabClasses, isSelected && 'border-b-2 border-primary text-primary']"
     v-bind="$attrs"
   >
