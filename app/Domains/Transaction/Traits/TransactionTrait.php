@@ -68,9 +68,14 @@ trait TransactionTrait {
         return $query->whereIn("category_id", $categories);
     }
 
-    public function scopeExpenseCategories($query) {
-        return  $query->whereNot('categories.name', Category::READY_TO_ASSIGN)
+    public function scopeExpenseCategories($query, array $categories = null) {
+        $query->whereNot('categories.name', Category::READY_TO_ASSIGN)
         ->join('categories', 'transactions.category_id', '=', 'categories.id');
+
+        if ($categories) {
+            $query->whereIn("category_id", $categories);
+        }
+        return $query;
     }
 
     public function scopePayees($query, array $payees) {

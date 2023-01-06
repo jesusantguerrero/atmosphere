@@ -8,8 +8,11 @@
             <IconDrag class="handle" />
         </div>
         <div ref="inputContainer">
-            <h4 class="cursor-pointer" @click="$emit('edit')">
-                {{ item.name }}
+            <h4 class="cursor-pointer flex" @click="$emit('open')">
+                <span class="items-center text-body-1">
+                    {{ item.name }}
+                    <i class="fa fa-cog" @click.stop="$emit('edit')"></i>
+                </span>
                 <PointAlert
                     v-if="item.hasOverspent || item.hasOverAssigned || item.hasUnderfunded"
                 />

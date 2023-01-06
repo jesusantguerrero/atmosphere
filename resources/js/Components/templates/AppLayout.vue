@@ -3,20 +3,19 @@
         <AppShell :is-expanded="isExpanded" :nav-class="[!$slots.header && `${panelShadow} border-b`]">
             <template #navigation>
                 <!-- Primary Navigation Menu -->
-                <div class="px-5 mx-auto sm:pr-6 lg:pr-8 text-body-1/80">
+                <div class="px-2 mx-auto sm:pr-6 lg:pr-8 text-body-1/80">
                     <div class="flex items-center justify-between h-16">
                         <div class="flex items-center">
                             <LogerTabButton @click="$emit('back')" v-if="showBackButton">
                                <IconBack />
                             </LogerTabButton>
-                            <h4 :class="[showBackButton ? 'lg:ml-2' : 'lg:ml-6']" class="text-lg font-bold">
+                            <h4 :class="[showBackButton ? 'lg:ml-2' : 'lg:ml-6']" class="text-xs font-bold">
                                 {{ sectionTitle }}
                             </h4>
                         </div>
 
                         <div class="space-x-2 flex sm:items-center sm:ml-6">
                             <TransactionAddButton class="hidden md:inline-block" />
-
                             <PrivacyToggle v-model="isPrivacyMode" v-if="!isOnboarding" />
 
                             <AppNotificationBell
@@ -184,6 +183,7 @@
     import { useAppMenu } from '@/domains/app'
     import { useSelect } from '@/utils/useSelects'
     import TransactionAddButton from './TransactionAddButton.vue'
+import IconBack from '../icons/IconBack.vue'
 
     const props = defineProps({
         title: {

@@ -11,6 +11,7 @@ use Brick\Money\Money;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Category as CoreCategory;
+use Insane\Journal\Models\Core\TransactionLine;
 
 class Category extends CoreCategory
 {
@@ -30,6 +31,11 @@ class Category extends CoreCategory
     public function transactions()
     {
         return $this->hasMany(Transaction::class, 'category_id');
+    }
+
+    public function transactionLines()
+    {
+        return $this->hasMany(TransactionLine::class, 'category_id');
     }
 
     public function group() {

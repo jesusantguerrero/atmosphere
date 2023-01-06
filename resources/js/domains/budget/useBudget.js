@@ -23,7 +23,7 @@ export const BudgetState = reactive({
 
     selectedBudget: computed(() => {
         return BudgetState.selectedBudgetIds.id
-        ? categories.value.find(cat => cat.id == BudgetState.selectedBudgetIds.id)
+        ? BudgetState.categories.find(cat => cat.id == BudgetState.selectedBudgetIds.id)
         : null;
     }),
     // Balance
