@@ -160,10 +160,11 @@
                     <slot name="header" />
                 </header>
                 <!-- Page Content -->
-                <article class="overflow-hidden overflow-y-auto ic-scroller">
+                <main class="overflow-hidden overflow-y-auto ic-scroller">
                     <JetBanner active-class="mt-14" />
                     <slot />
-                </article>
+                </main>
+                <MobileMenuBar :menu="mobileMenu" />
             </template>
         </AppShell>
         <AppGlobals />
@@ -188,6 +189,7 @@
     import AppGlobals from './AppGlobals.vue'
     import AppNotificationBell from '@/Components/molecules/AppNotificationBell.vue'
     import AppUserMenu from '@/Components/AppUserMenu.vue'
+    import MobileMenuBar from '@/Components/mobile/MobileMenuBar.vue'
 
     import { useAppMenu } from '@/domains/app'
     import { useSelect } from '@/utils/useSelects'
@@ -207,7 +209,7 @@
     })
 
     const { t } = useI18n();
-    const { appMenu, headerMenu } = useAppMenu(t)
+    const { appMenu, headerMenu, mobileMenu } = useAppMenu(t)
     const currentMenu = computed(() => {
         return props.isOnboarding ? [{
             icon: 'home',
@@ -222,7 +224,7 @@
             to: '/user/profile',
             as: Link
         }] : appMenu
-    })
+    });
 
     const pageProps = usePage().props
     const sectionTitle = computed(() => {

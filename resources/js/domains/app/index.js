@@ -1,4 +1,6 @@
+import IconTransferVue from "@/Components/icons/IconTransfer.vue";
 import { Link } from "@inertiajs/inertia-vue3"
+import { cloneDeep } from "lodash";
 export * from "./menus";
 
 export const useAppMenu = t => {
@@ -12,7 +14,7 @@ export const useAppMenu = t => {
         },
         {
             icon: 'far fa-calendar-alt',
-            label: t('Meal Planner'),
+            label: t('Meals'),
             name: 'mealPlanner',
             to: '/meal-planner',
             as: Link,
@@ -34,11 +36,12 @@ export const useAppMenu = t => {
             icon: 'fas fa-heart',
             label: t('Relationship'),
             to: '/relationships',
+            hidden: true,
             as: Link
         },
         {
             icon: 'fas fa-home',
-            label: t('Home Projects'),
+            label: t('Housing'),
             to: '/housing',
             as: Link,
             isActiveFunction(url, currentPath) {
@@ -46,6 +49,14 @@ export const useAppMenu = t => {
              }
         }
     ].filter(item => !item.hidden);
+
+    let mobileMenu = cloneDeep(appMenu)
+    mobileMenu.splice(2, null, {
+        name: 'add',
+        label: 'Add',
+        icon: IconTransferVue,
+        action: 'addTask'
+    });
 
     const headerMenu =  [
         {
@@ -78,6 +89,7 @@ export const useAppMenu = t => {
 
     return {
         appMenu,
+        mobileMenu,
         headerMenu
     }
 }
