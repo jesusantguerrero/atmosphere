@@ -1,9 +1,7 @@
-import formatMoney from "@/utils/formatMoney";
 import { format, isAfter, parseISO, startOfDay } from "date-fns"
 import { h } from "vue"
 import IconTransfer from "@/Components/icons/IconTransfer.vue";
 import { AtBadge } from "atmosphere-ui"
-import { messageDark } from "naive-ui";
 
 const TRANSACTION_TYPES = {
     WITHDRAW: 'outflow',
@@ -68,21 +66,6 @@ export const tableCols = [
         type: "custom",
         class: 'text-right',
         headerClass: 'text-right',
-    },
-    {
-        label: "Status",
-        name: "status",
-        width: 200,
-        class: 'py-1 flex items-center justify-center',
-        headerClass: 'text-center',
-        render(row) {
-            const statusColors = {
-                draft: 'secondary',
-                planned: 'warning',
-                verified: 'success',
-            }
-            return () => h(AtBadge, { type: statusColors[row.status]}, () => row.status)
-        }
     },
     {
         label: "",

@@ -1,13 +1,7 @@
 <template>
-    <AppLayout>
-        <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center mb-10 border-4 border-white bg-gray-50 rounded-md py-2">
-                <div class="px-5 text-gray-600 font-bold">
-                    Notifications
-                </div>
-            </div>
-
-            <div class="w-full bg-base-lvl-3 rounded-md px-4">
+    <AppLayout title="Notifications">
+        <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8 px-2">
+            <div class="w-full bg-base-lvl-3 rounded-md">
                 <CustomTable
                     ref="AtTable"
                     :config="tableConfig"
@@ -39,7 +33,7 @@
 
 <script setup>
     import { Link } from '@inertiajs/inertia-vue3';
-    import { reactive, toRefs } from 'vue'
+    import { reactive } from 'vue'
     import { AtButton } from "atmosphere-ui"
 
     import AppLayout from '@/Components/templates/AppLayout.vue'

@@ -1,6 +1,6 @@
 <template>
     <div class="px-5 py-3 transition border divide-y rounded-lg divide-base border-base bg-base-lvl-3" :class="cardShadow">
-        <div class="items-center pb-2 md:justify-between md:flex">
+        <div class="items-center pb-2 justify-between flex">
             <h1 class="font-bold text-body">
                 <slot name="title"> {{ title }}</slot>
             </h1>
