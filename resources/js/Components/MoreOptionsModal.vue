@@ -24,11 +24,7 @@
 </template>
 
 <script setup>
-    import {  AtButton } from "atmosphere-ui"
-
     import Modal from '@/Components/atoms/Modal.vue'
-    import LogerTabButton from '@/Components/atoms/LogerTabButton.vue'
-
 
     const props = defineProps({
             show: {
@@ -68,18 +64,17 @@
     const emit = defineEmits(['close', 'saved'])
 
     const options = [
-        'Upgrade now',
-        'Categories',
+        'Profile',
+        'Api Tokens',
+        'Accounts',
         'Labels',
-        'Scheduled transactions',
-        'Main Currency',
-        'Automation',
+        'Imports',
+        'Exports',
+        'Support',
+        'About',
         'Help Center',
-        'Contact support',
         'Terms and policies',
-        'Advanced',
-        'Export',
-        'Language',
-        'Delete Account'
+        'Settings',
+        'Logout'
     ]
 </script>
