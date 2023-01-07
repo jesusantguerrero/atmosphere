@@ -1,7 +1,9 @@
 <template>
     <Link :href="item.to||item.url" v-if="item.to||item.url"
-    class="inline-block h-full w-full transition-all" v-auto-animate>
+    v-ripple
+    class="inline-block h-full w-full transition-all overflow-hidden" v-auto-animate>
         <div class="flex flex-col items-center justify-center text-white  h-full w-full"
+
         :class="{'text-primary': isExact}">
             <div class="flex items-center justify-center text-lg">
                 <component :is="item.icon" v-if="isComponent(item.icon)" class="text-xl custom-icon" />

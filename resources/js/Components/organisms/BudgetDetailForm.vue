@@ -8,7 +8,10 @@
             >
                 <template #prefix>
                     <div class=" px-1 flex items-center justify-center">
-                        <ColorSelector v-model="form.color" />
+                        <ColorSelector 
+                            v-model="category.color"
+                            @update:modelValue="onBlur(category)"
+                        />
                     </div>
                 </template>
             </AtInput>
@@ -24,7 +27,7 @@
             @delete="$emit('delete')"
         />
 
-        <div>
+        <div v-if="false">
             Auto-Assign
         </div>
 
@@ -36,29 +39,25 @@
             <BudgetMoneyLine title="Credit expending" :value="category.activity" />
         </div>
 
-        <div>
+        <div v-if="false">
             Notes
         </div>
     </section>
 </template>
 
 <script setup>
-    import {  reactive, toRefs, watch, computed } from 'vue';
-    import { AtButton, AtField, AtInput, AtErrorBag, AtButtonGroup } from "atmosphere-ui";
-    import { useDatePager } from "vueuse-temporals"
-    import { NSelect , NDropdown} from "naive-ui"
+    import { watch } from 'vue';
+    import { AtInput } from "atmosphere-ui";
     import { useForm } from '@inertiajs/inertia-vue3';
-    import { format } from 'date-fns';
 
     import ColorSelector from '../molecules/ColorSelector.vue';
     import LogerTabButton from '../atoms/LogerTabButton.vue';
     import BudgetTargetForm from '../molecules/BudgetTargetForm.vue';
 
-    import { monthDays, WEEK_DAYS, FREQUENCY_TYPE, generateRandomColor, recurrenceTypes } from "@/utils"
-    import { makeOptions } from "@/utils/naiveui";
-    import { targetTypes } from '@/domains/budget';
+    import { generateRandomColor } from "@/utils"
     import IconClose from '../icons/IconClose.vue';
-import BudgetMoneyLine from '../molecules/BudgetMoneyLine.vue';
+    import BudgetMoneyLine from '../molecules/BudgetMoneyLine.vue';
+    import { Inertia } from '@inertiajs/inertia';
 
     const props = defineProps({
         parentId: {
@@ -79,36 +78,22 @@ import BudgetMoneyLine from '../molecules/BudgetMoneyLine.vue';
         }
     });
 
-    const form = useForm({
-            category_id: null,
-            parent_id: null,
-            color: generateRandomColor(),
-            name: props.category.name,
-            amount: 0,
-            assigned: 0,
-            target_type: '',
-            frequency: 'MONTHLY',
-            frequency_month_date: null,
-            frequency_week_day: null,
-            frequency_date: null,
-            frequency_interval: 0,
-            frequency_interval_unit: 0,
-    })
+    const emit = defineEmits(['update:category'])
 
-    const frequencyUnit = computed(() => {
-        const names = {
-            MONTHLY: {
-                field: 'frequency_month_date',
-                options: monthDays()
-            },
-            WEEKLY: {
-                field: 'frequency_week_day',
-                options: makeOptions(WEEK_DAYS)
-            }
-        }
-        return {
-           ...names[recurrenceTypes],
-        }
+    const form = useForm({
+        category_id: null,
+        parent_id: null,
+        color: props.category.color || generateRandomColor(),
+        name: props.category.name,
+        amount: 0,
+        assigned: 0,
+        target_type: '',
+        frequency: 'MONTHLY',
+        frequency_month_date: null,
+        frequency_week_day: null,
+        frequency_date: null,
+        frequency_interval: 0,
+        frequency_interval_unit: 0,
     })
 
     watch(
@@ -125,33 +110,11 @@ import BudgetMoneyLine from '../molecules/BudgetMoneyLine.vue';
         },
         { deep: true, immediate: true });
 
-    const submit = () => {
-        const methods = {
-            update: {
-                method: 'put',
-                url: props.item?.id && `/budgets/${props.category.id}/targets/${props.item.id}`
-            },
-            save: {
-                method: 'post',
-                url: `/budgets/${props.category.id}/targets`
-            }
-        }
-        const endpoint = methods[props.item?.id ? 'update' : 'save']
-        form.transform((data) => ({
-            ...data,
-            parent_id: data.parent_id || props.parentId,
-        }))[endpoint.method](endpoint.url)
+    
+    const onBlur = (category) => {
+        axios.put(`/categories/${props.category.id}?json=true`, category)
+        .then(() => {
+            emit('update:category', category)
+        })
     }
-
-    const { selectedSpan } =  useDatePager({
-        nextMode: 'month'
-    })
-
-    const monthInstanceCount = computed(() => {
-        return form.frequency == FREQUENCY_TYPE.WEEKLY &&
-        selectedSpan.value.filter(
-            day => {
-                return format(day, 'iiiiii').toLowerCase() == state.form?.frequency_week_day?.toLowerCase()
-            })
-    })
 </script>

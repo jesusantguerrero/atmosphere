@@ -2,193 +2,193 @@
     <modal
         :show="show"
         :max-width="maxWidth"
+        :full-height="fullHeight"
         :closeable="closeable"
         v-slot:default="{ close }"
-        @close="$emit('update:show', false)">
-            <div class="pb-4 bg-base-lvl-3 sm:p-6 sm:pb-4 text-body">
-                <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                    <div class="grid grid-cols-3 overflow-hidden text-lg rounded-lg">
-                        <div
-                            v-for="type in transactionTypes"
-                            :key="type.value"
-                            :options="transactionTypes"
-                            @click="form.direction = type.value"
-                            class="py-1 font-bold text-center cursor-pointer"
-                            :class="[form.direction == type.value ? 'bg-primary hover:bg-primary text-white' : 'hover:bg-base-lvl-3 text-body bg-base-lvl-2']"
-                        >
-                            {{ type.label }}
-                        </div>
-                    </div>
+        @close="$emit('update:show', false)"
+    >
+        <div class="pb-4 bg-base-lvl-3 sm:p-6 sm:pb-4 text-body flex-1">
+            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                <TransactionTypesPicker
+                    v-if="!fullHeight"
+                    v-model="form.direction"
+                />
+                <header v-else class="font-bold border-b pb-4 text-lg">
+                    Create a transaction
+                </header>
 
-                    <div class="mt-2">
-                        <slot name="content">
-                            <div>
-                                <header class="flex justify-between">
-                                    <CategoryPicker
-                                        class="w-full"
-                                        v-model="form[categoryField]"
-                                        v-model:isPickerOpen="isPickerOpen"
-                                        :placeholder="`Choose ${categoryLabel}`"
-                                        :options="categoryOptions"
+                <div class="mt-2">
+                    <slot name="content">
+                        <div>
+                            <header v-if="fullHeight" class="flex justify-between py-3 px-4">
+                                <CategoryPicker
+                                    class="w-full"
+                                    v-model="form[categoryField]"
+                                    v-model:isPickerOpen="isPickerOpen"
+                                    :placeholder="`Choose ${categoryLabel}`"
+                                    :options="categoryOptions"
+                                />
+
+                                <AtField v-if="!isPickerOpen">
+                                    <LogerInput :number-format="true" v-model="form.total">
+                                        <template #prefix>
+                                            <span class="flex items-center pl-2">
+                                                RD$
+                                            </span>
+                                        </template>
+                                    </LogerInput>
+                                </AtField>
+                            </header>
+
+                            <div class="md:flex md:space-x-2 md:px-0 px-4">
+                                <AtField label="Date" class="md:w-3/12 md:block flex w-full justify-between">
+                                    <NDatePicker
+                                        v-model:value="form.date"
+                                        type="date"
+                                        size="large"
+                                        class="w-48 md:w-full"
                                     />
+                                </AtField>
 
-                                    <AtField v-if="!isPickerOpen">
-                                        <LogerInput :number-format="true" v-model="form.total">
-                                            <template #prefix>
-                                                <span class="flex items-center pl-2">
-                                                    RD$
-                                                </span>
-                                            </template>
-                                        </LogerInput>
-                                    </AtField>
-                                </header>
-
-                                <div class="md:flex md:space-x-2">
-                                    <AtField label="Date" class="md:w-3/12">
-                                        <NDatePicker
-                                            v-model:value="form.date"
-                                            type="date"
-                                            size="large"
-                                        />
-                                    </AtField>
-
-                                    <AtField
-                                        label="Description"
-                                        class="md:w-5/12"
-                                    >
-                                        <LogerInput v-model="form.description" />
-                                    </AtField>
-
-                                    <AtField :label="accountLabel" class="md:w-4/12">
-                                        <NSelect
-                                            filterable
-                                            clearable
-                                            tag
-                                            size="large"
-                                            v-model:value="form.account_id"
-                                            @update:value="createCategory"
-                                            :default-expand-all="true"
-                                            :options="accountsOptions"
-                                        />
-                                    </AtField>
-                                </div>
-                                <div class="md:flex md:space-x-3">
                                 <AtField
-                                        label="Payee"
-                                        class="md:w-4/12"
-                                        v-if="!isTransfer"
-                                    >
-                                        <LogerApiSimpleSelect
-                                            v-model="form.payee_id"
-                                            v-model:label="form.payee_label"
-                                            tag
-                                            custom-label="name"
-                                            track-id="id"
-                                            placeholder="Add a payee"
-                                            endpoint="/api/payees"
-                                        />
-                                    </AtField>
-                                    <AtField :label="categoryLabel" class="hidden md:block md:w-full">
-                                        <NSelect
-                                            filterable
-                                            clearable
-                                            tag
-                                            size="large"
-                                            v-model:value="form[categoryField]"
-                                            @update:value="createCategory"
-                                            :default-expand-all="true"
-                                            :options="categoryAccounts"
-                                        />
-                                    </AtField>
-                                    <AtField
-                                        label="Amount"
-                                        class="hidden md:block md:w-5/12"
-                                    >
-                                        <LogerInput :number-format="true" v-model="form.total">
-                                            <template #prefix>
-                                                <span class="flex items-center pl-2">
-                                                    RD$
-                                                </span>
-                                            </template>
-                                        </LogerInput>
-                                    </AtField>
-                                </div>
-                            </div>
+                                    label="Description"
+                                    class="md:w-5/12 flex w-full md:block md:space-x-0 justify-between"
+                                >
+                                    <LogerInput v-model="form.description" class="w-48 md:w-full" />
+                                </AtField>
 
-                            <div class="flex space-x-2">
-                                <AtFieldCheck v-model="isRecurrence" label="Set recurrence" />
+                                <AtField :label="accountLabel" class="md:w-4/12 md:block md:space-x-0 flex w-full justify-between space-x-4">
+                                    <NSelect
+                                        filterable
+                                        clearable
+                                        tag
+                                        size="large"
+                                        class="w-48 md:w-full"
+                                        v-model:value="form.account_id"
+                                        @update:value="createCategory"
+                                        :default-expand-all="true"
+                                        :options="accountsOptions"
+                                    />
+                                </AtField>
                             </div>
+                            <div class="md:flex md:space-x-3 md:px-0 px-4">
+                                <AtField
+                                    label="Payee"
+                                    class="md:w-4/12 md:block md:space-x-0 flex justify-between"
+                                    v-if="!isTransfer"
+                                >
+                                    <LogerApiSimpleSelect
+                                        v-model="form.payee_id"
+                                        v-model:label="form.payee_label"
+                                        tag
+                                        custom-label="name"
+                                        track-id="id"
+                                        placeholder="Add a payee"
+                                        endpoint="/api/payees"
+                                        class="w-48 md:w-full"
+                                    />
+                                </AtField>
+                                <AtField :label="categoryLabel" class="hidden md:block md:w-full">
+                                    <NSelect
+                                        filterable
+                                        clearable
+                                        tag
+                                        size="large"
+                                        v-model:value="form[categoryField]"
+                                        @update:value="createCategory"
+                                        :default-expand-all="true"
+                                        :options="categoryAccounts"
+                                    />
+                                </AtField>
+                                <AtField
+                                    label="Amount"
+                                    class="hidden md:block md:w-5/12"
+                                >
+                                    <LogerInput :number-format="true" v-model="form.total">
+                                        <template #prefix>
+                                            <span class="flex items-center pl-2">
+                                                RD$
+                                            </span>
+                                        </template>
+                                    </LogerInput>
+                                </AtField>
+                            </div>
+                        </div>
 
-                            <div v-if="isRecurrence">
-                                <div class="flex">
-                                    <AtField label="Repeat this transaction" class="w-full">
-                                    <n-select
-                                        v-model:value="schedule_settings.frequency"
-                                        :options="[
-                                            {
-                                                value: 'WEEKLY',
-                                                label: 'Weekly'
-                                            },
-                                            {
-                                                value: 'MONTHLY',
-                                                label: 'Monthly'
-                                            }
-                                        ]"
+                        <div class="flex space-x-2">
+                            <AtFieldCheck v-model="isRecurrence" label="Set recurrence" />
+                        </div>
+
+                        <div v-if="isRecurrence">
+                            <div class="flex">
+                                <AtField label="Repeat this transaction" class="w-full">
+                                <n-select
+                                    v-model:value="schedule_settings.frequency"
+                                    :options="[
+                                        {
+                                            value: 'WEEKLY',
+                                            label: 'Weekly'
+                                        },
+                                        {
+                                            value: 'MONTHLY',
+                                            label: 'Monthly'
+                                        }
+                                    ]"
+                                />
+                                </AtField>
+                                <AtField :label="frequencyLabel">
+                                    <AtInput
+                                        type="number"
+                                        v-model="schedule_settings.repeat_on_day_of_month"
                                     />
-                                    </AtField>
-                                    <AtField :label="frequencyLabel">
-                                        <AtInput
-                                            type="number"
-                                            v-model="schedule_settings.repeat_on_day_of_month"
-                                        />
-                                    </AtField>
-                                </div>
-                                <div class="flex">
-                                    <AtField label="Ends" class="w-full">
-                                    <n-select
-                                        v-model:value="schedule_settings.end_type"
-                                        :options="[
-                                            {
-                                                value: 'NEVER',
-                                                label: 'Never'
-                                            },
-                                            {
-                                                value: 'DATE',
-                                                label: 'At'
-                                            },
-                                            {
-                                                value: 'COUNT',
-                                                label: 'After'
-                                            }
-                                        ]"
-                                    />
-                                    </AtField>
-                                    <AtField label="Date" v-if="schedule_settings.end_type == 'DATE'">
-                                        <n-date-picker
-                                            v-model:value="schedule_settings.end_date"
-                                            size="lg"
-                                        />
-                                    </AtField>
-                                    <AtField label="Instances" v-if="schedule_settings.end_type == 'COUNT'">
-                                        <AtInput
-                                            type="number"
-                                            v-model="schedule_settings.count"
-                                        />
-                                    </AtField>
-                                </div>
+                                </AtField>
                             </div>
-                        </slot>
-                    </div>
+                            <div class="flex">
+                                <AtField label="Ends" class="w-full">
+                                <n-select
+                                    v-model:value="schedule_settings.end_type"
+                                    :options="[
+                                        {
+                                            value: 'NEVER',
+                                            label: 'Never'
+                                        },
+                                        {
+                                            value: 'DATE',
+                                            label: 'At'
+                                        },
+                                        {
+                                            value: 'COUNT',
+                                            label: 'After'
+                                        }
+                                    ]"
+                                />
+                                </AtField>
+                                <AtField label="Date" v-if="schedule_settings.end_type == 'DATE'">
+                                    <n-date-picker
+                                        v-model:value="schedule_settings.end_date"
+                                        size="lg"
+                                    />
+                                </AtField>
+                                <AtField label="Instances" v-if="schedule_settings.end_type == 'COUNT'">
+                                    <AtInput
+                                        type="number"
+                                        v-model="schedule_settings.count"
+                                    />
+                                </AtField>
+                            </div>
+                        </div>
+                    </slot>
                 </div>
             </div>
+        </div>
 
-            <footer class="px-6 py-4 space-x-3 items-center justify-between flex w-full bg-base-lvl-2">
-                <LogerTabButton class="bg-base rounded"> Use template</LogerTabButton>
-                <div>
-                    <AtButton @click="close" rounded class="h-10 text-body"> Cancel </AtButton>
-                    <AtButton class="h-10 text-white bg-primary" :disabled="!form.total" @click="submit" rounded> Save </AtButton>
-                </div>
-            </footer>
+        <footer class="px-6 py-4 space-x-3 items-center justify-between flex w-full bg-base-lvl-2">
+            <LogerTabButton class="bg-base rounded"> Use template</LogerTabButton>
+            <div>
+                <AtButton @click="close" rounded class="h-10 text-body"> Cancel </AtButton>
+                <AtButton class="h-10 text-white bg-primary" :disabled="!form.total" @click="submit" rounded> Save </AtButton>
+            </div>
+        </footer>
     </modal>
 </template>
 
@@ -203,10 +203,10 @@
     import LogerInput from "@/Components/atoms/LogerInput.vue"
     import LogerApiSimpleSelect from '@/Components/organisms/LogerApiSimpleSelect.vue'
     import LogerTabButton from '@/Components/atoms/LogerTabButton.vue'
+    import CategoryPicker from './mobile/CategoryPicker.vue';
+    import TransactionTypesPicker from './TransactionTypesPicker.vue';
 
     import { TRANSACTION_DIRECTIONS } from '@/domains/transactions'
-    import CategoryItem from './mobile/CategoryItem.vue';
-    import CategoryPicker from './mobile/CategoryPicker.vue';
 
     const props = defineProps({
             show: {
@@ -237,6 +237,9 @@
             mode: {
                 type: String,
                 default: 'income'
+            },
+            fullHeight: {
+                type: Boolean
             }
     });
 

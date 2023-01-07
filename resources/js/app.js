@@ -12,6 +12,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import VueMultiselect from 'vue-multiselect'
 import { autoAnimatePlugin } from '@formkit/auto-animate/vue'
 import { createPinia } from 'pinia';
+import { vRipple } from './utils/vRipple';
 
 const localesMessages = Object.fromEntries(
     Object.entries(
@@ -28,7 +29,7 @@ const pinia = createPinia();
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
     resolve: (name) => resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue')),
-    setup({ el, app, props, plugin }) {
+    async setup({ el, app, props, plugin }) {
         const i18n = createI18n({
             locale: props.initialPage.props.locale,
             fallbackLocale: 'en',
@@ -39,6 +40,9 @@ createInertiaApp({
         const t = (...param) => i18n.global.t(...param)
         window.t = t
 
+        const { registerSW } = await import('virtual:pwa-register')
+        registerSW({ immediate: true })
+
         createApp({ render: () => h(app, props)})
         .use(plugin)
         .use(i18n)
@@ -46,6 +50,7 @@ createInertiaApp({
         .use(ZiggyVue, Ziggy)
         .use(autoAnimatePlugin)
         .component('Multiselect', VueMultiselect)
+        .directive('ripple', vRipple)
         .mixin({
             methods: {
                 t

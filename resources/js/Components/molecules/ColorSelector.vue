@@ -2,7 +2,7 @@
 <div>
     <NPopover trigger="click">
         <template #trigger>
-            <div class="w-4 h-4 rounded-sm cursor-pointer" :style="{backgroundColor: currentColor }" />
+            <div class="w-4 h-4 rounded-sm cursor-pointer" :style="styleColor" />
         </template>
         <div class="grid grid-cols-5 gap-1">
             <div
@@ -49,6 +49,12 @@
     ]
 
     const currentColor = computed(() => {
-        return props.modelValue || colors[0]
+        return props.modelValue || colors[0];
+    })
+
+    const styleColor = computed(() => {
+        return { 
+            backgroundColor:  props.modelValue || colors[0] 
+        }
     })
 </script>

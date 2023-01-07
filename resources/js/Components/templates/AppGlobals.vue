@@ -3,6 +3,7 @@
     v-model:show="isOpen"
     v-bind="transactionModalState"
     :max-width="modalMaxWidth"
+    :full-height="context.isMobile"
     @saved="onTransactionSaved"
 />
 <ImportResourceModal
