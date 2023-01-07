@@ -1,5 +1,9 @@
 <template>
     <AppLayout>
+        <template #title v-if="contextStore.isMobile">
+            <AppIcon size="medium" class="ml-2" />
+        </template>
+
         <div class="px-5 mx-auto mt-5 space-y-10 md:space-y-0 md:space-x-10 md:flex max-w-screen-2xl sm:px-6 lg:px-8">
             <div class="md:w-9/12">
                 <BudgetTracker
@@ -53,27 +57,19 @@
 </template>
 
 <script setup>
-    import { AtButton } from "atmosphere-ui";
-    import { reactive, ref } from 'vue';
-    import { groupBy } from "lodash";
-    import { parseISO, format } from "date-fns";
-    import { Inertia } from "@inertiajs/inertia";
-    import { useI18n } from 'vue-i18n'
+    import { ref } from 'vue';
 
     import AppLayout from '@/Components/templates/AppLayout.vue'
     import BudgetTracker from "@/Components/organisms/BudgetTracker.vue";
-    import TransactionsTable from "@/Components/organisms/TransactionsTable.vue";
-    import SectionTitle from "@/Components/atoms/SectionTitle.vue";
     import OnboardingSteps from "@/Components/widgets/OnboardingSteps.vue";
     import ChartComparison from "@/Components/widgets/ChartComparison.vue";
     import ChartCurrentVsPrevious from "@/Components/widgets/ChartCurrentVsPrevious.vue";
-    import LogerButton from "@/Components/atoms/LogerButton.vue";
     import MealWidget from "@/Components/widgets/MealWidget.vue";
     import WeatherWidget from "@/Components/widgets/WeatherWidget.vue";
     import NextPaymentsWidget from "@/Components/widgets/NextPaymentsWidget.vue";
 
-    import { useSelect } from '@/utils/useSelects';
-    import { transactionDBToTransaction } from "@/domains/transactions";
+    import { useAppContextStore } from '@/store';
+import AppIcon from '@/Components/AppIcon.vue';
 
     const props = defineProps({
         revenue: {
@@ -103,7 +99,7 @@
             }
         },
         meals: {
-            type: Array,
+            type: Object,
             required: true,
         },
         user: {
@@ -143,12 +139,10 @@
             }
         }
     });
+    const contextStore = useAppContextStore()
 
     const selected = ref(null);
-    const { t } = useI18n()
 
     const budgetTrackerRef = ref();
-    const handleEdit = (transaction) => {
-        budgetTrackerRef.setTransaction(transaction)
-    }
+
 </script>

@@ -1,7 +1,7 @@
 <template>
     <teleport to="body">
         <transition leave-active-class="duration-200">
-            <div v-show="show" class="fixed inset-0 px-4 py-6 overflow-y-auto custom-modal sm:px-0" scroll-region>
+            <div v-show="show" class="fixed inset-0 overflow-y-auto custom-modal sm:px-0" scroll-region :class="containerClass">
                 <transition
                     enter-active-class="duration-300 ease-out"
                     enter-from-class="opacity-0"
@@ -21,7 +21,7 @@
                     leave-active-class="duration-200 ease-in"
                     leave-from-class="translate-y-0 opacity-100 sm:scale-100"
                     leave-to-class="translate-y-4 opacity-0 sm:translate-y-0 sm:scale-95">
-                    <div v-show="show" class="mb-6 overflow-hidden transition-all transform bg-base-lvl-3 rounded-lg shadow-xl sm:w-full sm:mx-auto" :class="maxWidthClass">
+                    <div v-show="show" class="md:mb-6 overflow-hidden transition-all transform fixed bottom-0 md:relative bg-base-lvl-3 rounded-lg shadow-xl sm:w-full sm:mx-auto" :class="maxWidthClass">
                         <slot v-if="show" :close="close" />
                     </div>
                 </transition>
@@ -45,9 +45,15 @@ const props = defineProps({
     closeable: {
         default: true
     },
+    isOpen: {
+        type: Boolean
+    },
+    automatic: {
+        type: Boolean
+    }
 });
 
-watch(props.show, (show) => {
+watch(() => props.show, (show) => {
   if (show) {
         document.body.style.overflow = 'hidden'
     } else {
@@ -79,7 +85,24 @@ const maxWidthClass = computed(() => {
         'lg': 'sm:max-w-lg',
         'xl': 'sm:max-w-xl',
         '2xl': 'sm:max-w-2xl',
-    }[props.maxWidth]
+        'mobile': 'w-full',
+    }[props.maxWidth || '2xl']
+})
+
+const containerClass = computed(() => {
+    return {
+        'sm': 'px-4 py-6',
+        'md': 'px-4 py-6',
+        'lg': 'px-4 py-6',
+        'xl': 'px-4 py-6',
+        '2xl': 'px-4 py-6',
+        'mobile': 'w-full',
+    }[props.maxWidth || '2xl']
+})
+
+
+const classes = computed(() => {
+
 })
 </script>
 

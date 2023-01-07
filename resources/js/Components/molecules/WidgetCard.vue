@@ -50,7 +50,7 @@ defineProps({
     type: [String, Number],
   },
   valueDescription: {
-    type: String,
+    type: [String, Number],
   },
 });
 </script>

@@ -11,6 +11,7 @@ import { ZiggyVue } from '../../vendor/tightenco/ziggy/dist/vue.m';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import VueMultiselect from 'vue-multiselect'
 import { autoAnimatePlugin } from '@formkit/auto-animate/vue'
+import { createPinia } from 'pinia';
 
 const localesMessages = Object.fromEntries(
     Object.entries(
@@ -21,6 +22,8 @@ const localesMessages = Object.fromEntries(
       }),
 )
 
+
+const pinia = createPinia();
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
@@ -33,15 +36,19 @@ createInertiaApp({
             legacy: false,
         })
 
+        const t = (...param) => i18n.global.t(...param)
+        window.t = t
+
         createApp({ render: () => h(app, props)})
         .use(plugin)
         .use(i18n)
+        .use(pinia)
         .use(ZiggyVue, Ziggy)
         .use(autoAnimatePlugin)
         .component('Multiselect', VueMultiselect)
         .mixin({
             methods: {
-                t: (...param) => i18n.global.t(...param)
+                t
             },
             data() {
                 return {

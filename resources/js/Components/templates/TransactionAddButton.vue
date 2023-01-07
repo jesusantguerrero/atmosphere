@@ -1,7 +1,7 @@
 <template>
     <JetDropdown align="right" width="48">
         <template #trigger>
-            <AtButton class="flex items-center px-2 space-x-2 text-sm text-white bg-primary" rounded @click="" v-if="!isOnboarding">
+            <AtButton class="flex items-center px-2 space-x-2 text-sm text-white bg-primary" rounded @click="">
                 <div class="flex items-center justify-center px-1 py-1 rounded-md">
                     <i class="fa fa-plus"></i>
                 </div>
@@ -32,7 +32,7 @@
     import { AtButton } from 'atmosphere-ui';
     import JetDropdown from '@/Components/atoms/Dropdown.vue'
     import LogerTabButton from '@/Components/atoms/LogerTabButton.vue';
-    
+
     import { TRANSACTION_DIRECTIONS,  useTransactionModal } from '@/domains/transactions';
     const  { DEPOSIT, WITHDRAW, TRANSFER } = TRANSACTION_DIRECTIONS;
     const { openTransactionModal } = useTransactionModal();

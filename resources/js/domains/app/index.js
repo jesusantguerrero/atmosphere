@@ -55,7 +55,7 @@ export const useAppMenu = t => {
         name: 'add',
         label: 'Add',
         icon: IconTransferVue,
-        action: 'addTask'
+        action: 'openTransactionModal'
     });
 
     const headerMenu =  [

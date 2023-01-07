@@ -9,13 +9,15 @@
                             <LogerTabButton @click="$emit('back')" v-if="showBackButton">
                                <IconBack />
                             </LogerTabButton>
-                            <h4 :class="[showBackButton ? 'lg:ml-2' : 'lg:ml-6']" class="text-xs font-bold">
-                                {{ sectionTitle }}
-                            </h4>
+                            <slot name="title">
+                                <h4 :class="[showBackButton ? 'lg:ml-2' : 'lg:ml-6']" class="text-xs font-bold">
+                                    {{ sectionTitle }}
+                                </h4>
+                            </slot>
                         </div>
 
                         <div class="space-x-2 flex sm:items-center sm:ml-6">
-                            <TransactionAddButton class="hidden md:inline-block" />
+                            <TransactionAddButton class="hidden md:inline-block" v-if="!isOnboarding" />
                             <PrivacyToggle v-model="isPrivacyMode" v-if="!isOnboarding" />
 
                             <AppNotificationBell
@@ -153,7 +155,7 @@
                     <JetBanner active-class="mt-14" />
                     <slot />
                 </main>
-                <MobileMenuBar :menu="mobileMenu" />
+                <MobileMenuBar :menu="mobileMenu" @action="handleActions" />
             </template>
         </AppShell>
         <AppGlobals />
@@ -161,12 +163,11 @@
 </template>
 
 <script setup>
-    import { provide, ref, computed } from 'vue'
+    import { provide, ref, computed, watch } from 'vue'
     import { NConfigProvider } from 'naive-ui'
     import { Inertia } from '@inertiajs/inertia'
     import { AtSide } from "atmosphere-ui"
     import { useLocalStorage } from "@vueuse/core"
-    import { useI18n } from 'vue-i18n'
     import { Link, usePage } from '@inertiajs/inertia-vue3'
 
     import JetBanner from '@/Components/atoms/Banner.vue'
@@ -179,11 +180,13 @@
     import AppNotificationBell from '@/Components/molecules/AppNotificationBell.vue'
     import AppUserMenu from '@/Components/AppUserMenu.vue'
     import MobileMenuBar from '@/Components/mobile/MobileMenuBar.vue'
+    import TransactionAddButton from './TransactionAddButton.vue'
+    import IconBack from '../icons/IconBack.vue'
 
     import { useAppMenu } from '@/domains/app'
     import { useSelect } from '@/utils/useSelects'
-    import TransactionAddButton from './TransactionAddButton.vue'
-import IconBack from '../icons/IconBack.vue'
+    import { useAppContextStore } from '@/store'
+import { useTransactionModal } from '@/domains/transactions'
 
     const props = defineProps({
         title: {
@@ -198,7 +201,6 @@ import IconBack from '../icons/IconBack.vue'
         },
     })
 
-    const { t } = useI18n();
     const { appMenu, headerMenu, mobileMenu } = useAppMenu(t)
     const currentMenu = computed(() => {
         return props.isOnboarding ? [{
@@ -234,27 +236,25 @@ import IconBack from '../icons/IconBack.vue'
         })
     }
 
-    const teamMenuItems = computed(() => {
-        return {
-            manageTeam: {
-                label: "Manage Team",
-                sections: [
-                    ["Team Settings", route('teams.show', pageProps.value.user.current_team)],
-                    [ "Create New Team", route('teams.create'), pageProps.value.jetstream.canCreateTeams]
-                ],
-            },
-            switchTeams: {
-                label: "Switch Teams",
-                sections: []
-            }
-        }
-    })
-
     const currentPath = computed(() => {
         return document?.location?.pathname
     })
     const isExpanded = useLocalStorage('isMenuExpanded', true);
     const logout = () => Inertia.post(route('logout'));
+
+    //
+    const store = useAppContextStore()
+    watch(
+        () => store.isMobile,
+        (isMobileSize) => {
+            if (!isMobileSize) {
+                console.log('aqui estamos')
+                store.enterFullscreen()
+            } else {
+                store.exitFullscreen()
+            }
+        }
+    )
 
     //  categories
     const { categoryOptions: transformCategoryOptions } = useSelect()
@@ -262,5 +262,15 @@ import IconBack from '../icons/IconBack.vue'
     transformCategoryOptions(pageProps.value.accounts, 'accounts', 'accountsOptions');
 
     // useLogerConfig()
+    const { openTransactionModal } = useTransactionModal()
+    const handleActions = (action) => {
+        const actions = {
+            'openTransactionModal': {
+                handler: openTransactionModal
+            }
+        }
+
+        actions[action]?.handler()
+    }
 </script>
 
