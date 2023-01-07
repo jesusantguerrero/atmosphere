@@ -83,7 +83,7 @@
                 class="mt-5 mr-4"
                 v-if="selectedBudget && showCategoriesInMain"
                 full
-                :category="selectedBudget"
+                v-model:category="selectedBudget"
                 :item="selectedBudget.budget"
                 @saved="onBudgetItemSaved"
                 @deleted="deleteBudget"

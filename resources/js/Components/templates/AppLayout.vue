@@ -242,20 +242,6 @@ import { useTransactionModal } from '@/domains/transactions'
     const isExpanded = useLocalStorage('isMenuExpanded', true);
     const logout = () => Inertia.post(route('logout'));
 
-    //
-    const store = useAppContextStore()
-    watch(
-        () => store.isMobile,
-        (isMobileSize) => {
-            if (!isMobileSize) {
-                console.log('aqui estamos')
-                store.enterFullscreen()
-            } else {
-                store.exitFullscreen()
-            }
-        }
-    )
-
     //  categories
     const { categoryOptions: transformCategoryOptions } = useSelect()
     transformCategoryOptions(pageProps.value.categories, 'sub_categories', 'categoryOptions');

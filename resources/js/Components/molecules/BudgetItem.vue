@@ -9,9 +9,11 @@
         </div>
         <div ref="inputContainer">
             <h4 class="cursor-pointer flex" @click="$emit('open')">
-                <span class="items-center text-body-1">
-                    {{ item.name }}
-                    <i class="fa fa-cog" @click.stop="$emit('edit')"></i>
+                <span class="items-center text-body-1 font-bold">
+                    <span :style="{ color: item.color }">
+                        {{ item.name }}
+                    </span> 
+                    <i class="fa fa-cog ml-2" @click.stop="$emit('edit')"></i>
                 </span>
                 <PointAlert
                     v-if="item.hasOverspent || item.hasOverAssigned || item.hasUnderfunded"

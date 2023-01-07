@@ -1,43 +1,52 @@
 <template>
     <section>
-        <header class="px-4">
+        <header>
             <CategoryItem
                 :label="pickerPlaceholder.label"
+                :icon-class="pickerPlaceholder.iconClass"
+                :color="pickerPlaceholder.color"
                 @click="isOpen=!isOpen"
             />
         </header>
-        <article v-if="isOpen">
-            <header class="flex w-full justify-between items-center">
-                <h4 class="text-lg text-body-1 font-bold">Transaction Category</h4>
-                <div>
-                    <LogerTabButton icon="fa fa-cogs" />
-                    <LogerTabButton icon="fa fa-check"/>
-                </div>
-            </header>
-            <section class="w-full grid grid-cols-4 gap-2 h-56 overflow-auto ic-scroller">
-                <template v-if="selectedGroup">
-                    <button @click="selectedGroup=null">
-                        Back
+        <Modal
+            :show="isOpen"
+            max-width="mobile"
+            :closeable="true"
+            @close="isOpen=false"
+        >
+            <article >
+                <header class="flex w-full justify-between items-center py-4 px-4">
+                    <button @click="selectedGroup=null" v-if="selectedGroup">
+                        <IconBack />
                     </button>
-                    <CategoryItem
-                        v-for="category in selectedGroup[childrenKey]"
-                        :label="category.label"
-                        :color="category.color"
-                        :icon="category.icon"
-                        @click="setCategory(category)"
-                    />
-                </template>
-                <template v-else>
-                    <CategoryItem
-                        v-for="category in options"
-                        :label="category.label"
-                        :color="category.color"
-                        :icon="category.icon"
-                        @click="selectedGroup=category"
-                    />
-                </template>
-            </section>
-        </article>
+                    <h4 class="text-lg text-body-1 font-bold">Transaction Category</h4>
+                    <div>
+                        <LogerTabButton icon="fa fa-cogs" />
+                        <LogerTabButton icon="fa fa-check"/>
+                    </div>
+                </header>
+                <section class="w-full grid grid-cols-3 sm:grid-cols-4 gap-1 overflow-auto pb-10">
+                    <template v-if="selectedGroup">
+                        <CategoryItem
+                            v-for="category in selectedGroup[childrenKey]"
+                            :label="category.label"
+                            :color="category.color"
+                            :icon="category.icon"
+                            @click="setCategory(category)"
+                        />
+                    </template>
+                    <template v-else>
+                        <CategoryItem
+                            v-for="category in options"
+                            :label="category.label"
+                            :color="category.color"
+                            :icon="category.icon"
+                            @click="selectedGroup=category"
+                        />
+                    </template>
+                </section>
+            </article>
+        </Modal>
     </section>
 </template>
 
@@ -45,6 +54,8 @@
 import { ref, computed, watch } from 'vue';
 import LogerTabButton from '../atoms/LogerTabButton.vue';
 import CategoryItem from './CategoryItem.vue';
+import Modal from '../atoms/Modal.vue';
+import IconBack from '../icons/IconBack.vue';
 
 const props = defineProps({
     options: {
@@ -85,6 +96,7 @@ const pickerPlaceholder = computed(() => {
     return selectedCategory.value ?? {
         label: props.placeholder,
         icon: '',
+        iconClass: 'fa fa-tags'
     }
 })
 </script>
