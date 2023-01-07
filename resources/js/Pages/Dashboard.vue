@@ -1,7 +1,7 @@
 <template>
     <AppLayout>
         <template #title v-if="contextStore.isMobile">
-
+            <AppIcon size="medium" class="ml-2" />
         </template>
 
         <div class="px-5 mx-auto mt-5 space-y-10 md:space-y-0 md:space-x-10 md:flex max-w-screen-2xl sm:px-6 lg:px-8">
@@ -69,6 +69,7 @@
     import NextPaymentsWidget from "@/Components/widgets/NextPaymentsWidget.vue";
 
     import { useAppContextStore } from '@/store';
+import AppIcon from '@/Components/AppIcon.vue';
 
     const props = defineProps({
         revenue: {

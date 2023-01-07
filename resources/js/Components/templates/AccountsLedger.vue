@@ -33,7 +33,6 @@ import AccountItem from "@/Components/atoms/AccountItem.vue";
 import LogerTabButton from "@/Components/atoms/LogerTabButton.vue";
 import AccountModal from "@/Components/organisms/AccountModal.vue";
 import { VueDraggableNext as Draggable } from "vue-draggable-next"
-import autoAnimate from "@formkit/auto-animate"
 
 const selectedAccountId = inject('selectedAccountId', null);
 const isSelectedAccount = (accountId) => {

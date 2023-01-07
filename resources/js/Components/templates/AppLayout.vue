@@ -9,9 +9,11 @@
                             <LogerTabButton @click="$emit('back')" v-if="showBackButton">
                                <IconBack />
                             </LogerTabButton>
-                            <h4 :class="[showBackButton ? 'lg:ml-2' : 'lg:ml-6']" class="text-xs font-bold">
-                                {{ sectionTitle }}
-                            </h4>
+                            <slot name="title">
+                                <h4 :class="[showBackButton ? 'lg:ml-2' : 'lg:ml-6']" class="text-xs font-bold">
+                                    {{ sectionTitle }}
+                                </h4>
+                            </slot>
                         </div>
 
                         <div class="space-x-2 flex sm:items-center sm:ml-6">
