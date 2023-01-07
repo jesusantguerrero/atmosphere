@@ -44,7 +44,6 @@ import { computed, ref } from "vue";
 import { useI18n } from 'vue-i18n'
 
 import SectionTitle from "@/Components/atoms/SectionTitle.vue";
-import TransactionModal from "@/Components/TransactionModal.vue"
 import NumberHider from "@/Components/molecules/NumberHider.vue";
 
 import formatMoney from "@/utils/formatMoney"
@@ -59,7 +58,7 @@ const props = defineProps({
         type: Number
     },
     expenses: {
-        type: Array
+        type: [Number, String]
     },
     message: {
         default: "Welcome to Loger"

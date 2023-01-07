@@ -5,9 +5,6 @@ export const MODULES = {
     RELATIONSHIP: 'relationship'
 }
 
-
-
-
 const menus = {
     [MODULES.HOUSING]: [{
         label: 'Overview',

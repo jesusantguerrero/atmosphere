@@ -14,7 +14,7 @@
                 </div>
             </Link>
             <div v-else class="relative mx-auto">
-                <ButtonCircle class="mx-auto -translate-y-7">
+                <ButtonCircle class="mx-auto -translate-y-7" @click="$emit('action', item.action)">
                     <component :is="item.icon" v-if="item.icon" />
                 </ButtonCircle>
             </div>

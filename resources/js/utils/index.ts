@@ -1,6 +1,7 @@
 import { format, parseISO, startOfDay } from "date-fns"
 import { differenceInMonths } from "date-fns/esm";
 export * from "./formatMoney";
+export * from "./isMobile";
 
 export const recurrenceTypes = [
     {
