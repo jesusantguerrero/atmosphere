@@ -20,14 +20,6 @@
                 </div>
             </div>
         </div>
-
-        <footer class="px-6 py-4 space-x-3 items-center justify-between flex w-full bg-base-lvl-2">
-            <LogerTabButton class="bg-base rounded"> Use template</LogerTabButton>
-            <div>
-                <AtButton @click="close" rounded class="h-10 text-body"> Cancel </AtButton>
-                <AtButton class="h-10 text-white bg-primary" @click="submit" rounded> Save </AtButton>
-            </div>
-        </footer>
     </modal>
 </template>
 
