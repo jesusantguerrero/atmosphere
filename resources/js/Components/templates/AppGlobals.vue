@@ -6,6 +6,12 @@
     :full-height="context.isMobile"
     @saved="onTransactionSaved"
 />
+
+<MoreOptionsModal
+    v-model:show="context.isMoreOptionsModalOpen"
+    :max-width="modalMaxWidth"
+    v-if="context.isMobile"
+/>
 <ImportResourceModal
     v-model:show="isImportModalOpen"
 />
@@ -19,7 +25,7 @@ import ImportResourceModal from '@/Components/ImportResourceModal.vue';
 import { useAppContextStore } from '@/store';
 import { computed } from 'vue';
 import { Inertia } from '@inertiajs/inertia';
-
+import MoreOptionsModal from '../MoreOptionsModal.vue';
 
 const { isOpen, closeTransactionModal } = useTransactionModal()
 const onTransactionSaved = () => {
@@ -30,7 +36,6 @@ const context = useAppContextStore()
 const modalMaxWidth = computed(() => {
     return context.isMobile ? 'mobile' : null;
 })
-
 
 const { isOpen: isImportModalOpen } = useImportModal()
 </script>

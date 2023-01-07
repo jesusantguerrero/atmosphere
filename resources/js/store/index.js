@@ -7,6 +7,12 @@ export const useAppContextStore = defineStore('context', () => {
     const isMobile = ref(getIsMobile())
     const { width } = useWindowSize()
 
+    const isMoreOptionsModalOpen = ref(false)
+    const toggleOptionsModal = (isOpen = null) => {
+        const state = isOpen ?? !isMoreOptionsModalOpen.value
+        isMoreOptionsModalOpen.value = state
+    }
+
     watch(width, () => {
         isMobile.value = getIsMobile()
     })
@@ -23,6 +29,9 @@ export const useAppContextStore = defineStore('context', () => {
     })
     return {
         isMobile,
+        // Modals
+        isMoreOptionsModalOpen,
+        toggleOptionsModal,
         // full screen
         toggleFullscreen: toggle,
         enterFullscreen: enter,
