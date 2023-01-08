@@ -1,13 +1,14 @@
 <template>
-    <article class="relative flex pt-16 pb-20 mx-auto space-x-2 max-w-screen-2xl">
+    <article class="relative flex-col-reverse w-full md:flex-row flex pt-16 pb-20 mx-auto md:space-x-2 md:max-w-screen-2xl">
         <main class="w-full md:pr-5 md:w-10/12 md:pl-8">
             <slot />
         </main>
 
-        <aside class="relative hidden h-screen px-2 overflow-auto md:block" :class="panelStyles">
-            <section class="fixed aside-content">
+        <aside class="relative h-screen w-full md:px-2 overflow-auto md:block" :class="panelStyles">
+            <section class="md:fixed aside-content px-2 md:pr-8">
+                <slot name="prepend-panel" />
                 <slot name="panel">
-                    <WidgetCard title="Accounts" class="mt-4">
+                    <WidgetCard title="Accounts" class="mt-4 rounded-t-md">
                         <template #subtitle>
                             <LogerTabButton class="flex items-center text-primary" @click="toggleImportModal()" title="import">
                                 {{ formatMoney(budgetAccountsTotal) }}
@@ -19,7 +20,7 @@
                         :accounts="accounts"
                         @reordered="saveReorder"
                         :class="[cardShadow]"
-                        class="px-4 py-2 space-y-4 mt-4 rounded-md cursor-pointer min-h-min bg-base-lvl-3"
+                        class="px-4 py-2 space-y-4 md:mt-4 rounded-b-md md:rounded-md cursor-pointer min-h-min bg-base-lvl-3"
                     />
                 </slot>
             </section>
@@ -33,15 +34,12 @@
     import { PANEL_SIZES } from '@/utils/constants';
     import IconImport from '@/Components/icons/IconImport.vue';
     import LogerTabButton from '@/Components/atoms/LogerTabButton.vue';
-    import { useTransactionModal } from '@/domains/transactions';
     import exactMathNode from 'exact-math';
     import { formatMoney } from '@/utils';
     import WidgetCard from '../molecules/WidgetCard.vue';
     import { useImportModal } from '@/domains/transactions/useImportModal';
 
-
-    const { openTransactionModal, isOpen: isTransferModalOpen } = useTransactionModal();
-    const { isOpen: isImportModalOpen, toggleModal: toggleImportModal } = useImportModal();
+    const { toggleModal: toggleImportModal } = useImportModal();
 
     const props = defineProps({
         title: {
@@ -64,6 +62,9 @@
             validator(value) {
                 return Object.keys(PANEL_SIZES).includes(value)
             }
+        },
+        forceShowPanel: {
+            type: Boolean,
         }
     });
 
@@ -78,7 +79,8 @@
     // Styling
     const panelStyles = computed(() => {
         const sizes = PANEL_SIZES[props.panelSize] || PANEL_SIZES.small;
-        return [sizes];
+        const visible = !props.forceShowPanel && 'hidden';
+        return [sizes, visible];
     })
 
 
@@ -93,7 +95,6 @@
 <style lang="scss" scoped>
 .aside-content {
     width: -webkit-fill-available;
-    padding-right: 32px;
 }
 
 </style>

@@ -15,6 +15,12 @@
         <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
         <!-- Scripts -->
         <script src="https://apis.google.com/js/api.js" defer></script>
+        {{-- @laravelPWA --}}
+        <meta name="description" content="My Awesome App description">
+        <link rel="icon" href="/favicon.ico">
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
+        <link rel="mask-icon" href="/mask-icon.svg" color="#FFFFFF">
+        <meta name="theme-color" content="#ffffff">
         @routes
         @vite('resources/js/app.js')
         @inertiaHead

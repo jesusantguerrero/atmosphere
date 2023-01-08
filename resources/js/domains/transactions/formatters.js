@@ -11,6 +11,18 @@ export const transactionDBToTransaction = (transactions) => {
     }))
 }
 
+export const fromDBToAllAccounts = (transactions) => {
+    return transactions.map(transaction => ({
+        id: transaction.id || v4(),
+        title: transaction.description,
+        subtitle: transaction.category?.name,
+        value: transaction.total,
+        valueSubtitle: transaction.account?.name,
+        status: 'VERIFIED',
+        currencyCode: transaction.currency_code,
+    }))
+}
+
 export const categoryDBToTransaction = (transactions) => {
     return transactions.map(transaction => ({
         id: transaction.category_id || v4(),

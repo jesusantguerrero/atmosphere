@@ -16,7 +16,7 @@ export const useCollapse = (element, collapsed = false) => {
         try {
             autoAnimate(element.value)
         } catch (err) {
-            console.log(err)
+            console.error(err)
         }
     })
 

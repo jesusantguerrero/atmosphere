@@ -1,5 +1,5 @@
 <template>
-  <AppLayout @back="$inertia.visit(route('finance'))" :show-back-button="true">
+  <AppLayout @back="$inertia.visit('/finance/transactions')" :show-back-button="true">
     <template #header>
       <FinanceSectionNav>
         <template #actions>
@@ -25,7 +25,8 @@
       </FinanceSectionNav>
     </template>
     <FinanceTemplate title="Transactions" :accounts="accounts">
-      <TransactionTemplate
+      <Component
+        :is="listComponent"
         :cols="tableAccountCols"
         :transactions="transactions"
         :server-search-options="serverSearchOptions"
@@ -38,8 +39,7 @@
 </template>
 
 <script setup>
-import { NSelect } from "naive-ui";
-import { AtDatePager, AtButton } from "atmosphere-ui";
+import { AtDatePager } from "atmosphere-ui";
 import { computed, toRefs, provide} from "vue";
 import { Inertia } from "@inertiajs/inertia";
 
@@ -50,11 +50,11 @@ import TransactionTemplate from "@/Components/templates/TransactionTemplate.vue"
 import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
 import DraftButtons from "@/Components/DraftButtons.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
-import LogerDropdown from "@/Components/molecules/LogerDropdown.vue";
 
 import { useTransactionModal } from "@/domains/transactions";
 import { useServerSearch } from "@/composables/useServerSearch";
 import { tableAccountCols } from '@/domains/transactions';
+import { useAppContextStore } from "@/store";
 
 const { openTransactionModal } = useTransactionModal();
 
@@ -86,8 +86,12 @@ const props = defineProps({
 
 const { serverSearchOptions, accountId } = toRefs(props);
 const {state: pageState, executeSearch } = useServerSearch(serverSearchOptions)
-
 provide('selectedAccountId', accountId)
+
+const context = useAppContextStore()
+const listComponent = computed(() => {
+    return context.isMobile ? TransactionSearch : TransactionTemplate;
+});
 
 const isDraft = computed(() => {
     return serverSearchOptions.value.filters?.status == "draft";

@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Jobs\ProcessGmail;
-use App\Libraries\GoogleService;
 use Insane\Journal\Models\Core\Payee;
 
 class PayeeApiController extends BaseController
@@ -12,6 +10,7 @@ class PayeeApiController extends BaseController
     {
         $this->model = new Payee();
         $this->searchable = ['name'];
+        $this->sorts = ['name'];
         $this->validationRules = [];
     }
 }

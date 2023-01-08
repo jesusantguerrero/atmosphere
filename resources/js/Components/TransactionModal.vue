@@ -362,8 +362,8 @@
             ...state.schedule_settings
         }))
         .submit(action.method, action.url(), {
-            onBefore(data) {
-                if (!data.data.get('total')) {
+            onBefore(evt) {
+                if (!evt.data.total) {
                     alert('The balance should be more than 0')
                 }
             },

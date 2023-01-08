@@ -21,7 +21,6 @@ export const useAppContextStore = defineStore('context', () => {
     const { isFullscreen, enter, exit, toggle } = useFullscreen()
     watch(isMobile, (isMobileSize) => {
         if (!isMobileSize) {
-            console.log('aqui estamos')
             enter()
         } else {
             exit()

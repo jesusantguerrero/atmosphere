@@ -1,5 +1,5 @@
 <template>
-  <AppLayout @back="$inertia.visit(route('finance'))" :show-back-button="true">
+  <AppLayout :title="sectionTitle" @back="handleBackButton" :show-back-button="true">
     <template #header>
       <FinanceSectionNav>
         <template #actions>
@@ -26,15 +26,29 @@
         </template>
       </FinanceSectionNav>
     </template>
-    <FinanceTemplate title="Transactions" :accounts="accounts">
-      <component
-        :is="listComponent"
-        :transactions="transactions.data"
-        :server-search-options="serverSearchOptions"
-        @findLinked="findLinked"
-        @removed="removeTransaction"
-        @edit="handleEdit"
-      />
+
+    <FinanceTemplate title="Transactions" 
+        :accounts="accounts" 
+        :force-show-panel="!showTransactionTable"
+       
+    >
+        <template #prepend-panel v-if="context.isMobile">
+            <button v-ripple class="w-full py-3 font-bold text-body-1 bg-base-lvl-3 flex justify-between px-4 items-center" @click="showAllTransactions=true"> 
+                All accounts 
+                <IconBack class="transform rotate-180" />
+            </button>
+        </template>
+
+        <component
+            v-if="showTransactionTable"
+            :is="listComponent"
+            :transactions="transactions.data"
+            :server-search-options="serverSearchOptions"
+            all-accounts
+            @findLinked="findLinked"
+            @removed="removeTransaction"
+            @edit="handleEdit"
+        />
     </FinanceTemplate>
   </AppLayout>
 </template>
@@ -43,7 +57,6 @@
 import { AtDatePager } from "atmosphere-ui";
 import { computed, toRefs, provide, ref} from "vue";
 import { Inertia } from "@inertiajs/inertia";
-import { useBreakpoints, breakpointsTailwind } from "@vueuse/core";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import TransactionSearch from "@/Components/templates/TransactionSearch.vue";
@@ -56,8 +69,8 @@ import LogerButton from "@/Components/atoms/LogerButton.vue";
 import { useTransactionModal } from "@/domains/transactions";
 import { useServerSearch } from "@/composables/useServerSearch";
 import StatusButtons from "@/Components/molecules/StatusButtons.vue";
-
-const { openTransactionModal } = useTransactionModal();
+import { useAppContextStore } from "@/store";
+import IconBack from "@/Components/icons/IconBack.vue";
 
 const props = defineProps({
   transactions: {
@@ -85,16 +98,35 @@ const props = defineProps({
   },
 });
 
+// mobile
+const context = useAppContextStore()
+const showAllTransactions = ref(false);
+const showTransactionTable = computed(() => {
+    return context.isMobile ? showAllTransactions.value : true;
+})
+const listComponent = computed(() => {
+    return context.isMobile ? TransactionSearch : TransactionTemplate;
+});
+const sectionTitle = computed(() => {
+    if (context.isMobile) {
+        return showTransactionTable.value ? 'All transactions': "Accounts";
+    }
+    return "Transactions"
+})
+
+const handleBackButton = () => {
+    if (context.isMobile && showTransactionTable.value) {
+        showAllTransactions.value = false;
+        return
+    }
+    return Inertia.visit(route('finance'))
+}
+
 const { serverSearchOptions } = toRefs(props);
 const {state: pageState } = useServerSearch(serverSearchOptions)
 const selectedAccountId = computed(() => {
     return serverSearchOptions.value.filters?.account_id;
 })
-
-const { isSmaller } = useBreakpoints(breakpointsTailwind)
-const listComponent = computed(() => {
-    return isSmaller('md') ? TransactionSearch : TransactionTemplate;
-});
 
 
 provide('selectedAccountId', selectedAccountId.value)
@@ -119,12 +151,12 @@ const findLinked = (transaction) => {
     })
 }
 
+const { openTransactionModal } = useTransactionModal();
 const handleEdit = (transaction) => {
     openTransactionModal({
         transactionData: transaction
     })
 }
-
 
 const transactionStatus = {
     verified: {
