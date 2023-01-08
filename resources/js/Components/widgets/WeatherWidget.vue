@@ -65,7 +65,7 @@ const fetchWeatherInfo = () => {
           const response = await getWeather(position);
           setWeatherData(response);
         } catch (err) {
-          console.log(err);
+          console.error(err);
         }
     });
 }

@@ -33,7 +33,9 @@
               >({{ formatMoney(expenses, currencyCode) }})</span
             >
           </h4>
-          <small class="block text-sm"> {{ formatDate(date) }}</small>
+          <small class="block text-sm"> 
+            {{ date ? formatDate(date) : valueSubtitle }}
+        </small>
         </div>
         <NDropdown
             v-if="hasOptions"
@@ -62,7 +64,6 @@
 import { computed } from "vue";
 import { NProgress, NDropdown } from "naive-ui";
 import NumberHider from "./NumberHider.vue";
-import LogerTabButton from "../atoms/LogerTabButton.vue";
 
 import { formatDate, formatMoney } from "@/utils";
 
@@ -71,6 +72,7 @@ const props = defineProps({
   subtitle: String,
   date: String,
   value: String,
+  valueSubtitle: String,
   currencyCode: String,
   status: String,
   markAsPaid: Boolean,

@@ -1,15 +1,15 @@
 <template>
-  <div class="pb-20 mt-5">
+  <div class="pb-20">
     <TransactionsTable
       table-label=""
-      class="pt-3 mt-5"
-      table-class="overflow-auto bg-base-lvl-1 border rounded-lg shadow-md mt-5"
+      table-class="overflow-auto bg-base-lvl-1 border rounded-lg shadow-md"
       allow-select
       show-sum
       allow-remove
       allow-edit
+      :all-accounts="allAccounts"
       :transactions="transactions"
-      :parser="transactionDBToTransaction"
+      :parser="parser"
       @edit="handleEdit"
       @removed="removeTransaction"
     />
@@ -17,11 +17,10 @@
 </template>
 
 <script setup>
-import { reactive, ref, watch } from "vue";
+import { reactive, ref } from "vue";
 import { Inertia } from "@inertiajs/inertia";
 import TransactionsTable from "@/Components/organisms/TransactionsTable.vue";
-import TransactionModal from "../TransactionModal.vue";
-import { transactionDBToTransaction } from "@/domains/transactions";
+import { fromDBToAllAccounts, transactionDBToTransaction } from "@/domains/transactions";
 
 const props = defineProps({
   transactions: {
@@ -36,6 +35,9 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  allAccounts: {
+    type: Boolean
+  }
 });
 
 const isTransferModalOpen = ref(false);
@@ -66,4 +68,6 @@ const removeTransaction = (transaction) => {
         })
     }
 }
+
+const parser = props.allAccounts ? fromDBToAllAccounts : transactionDBToTransaction;
 </script>

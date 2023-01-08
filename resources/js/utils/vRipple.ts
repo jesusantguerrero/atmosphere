@@ -3,7 +3,6 @@ export const vRipple = {
         el.addEventListener('click', (evt) => {
             const { offsetLeft, offsetTop } = el;
             const {clientY, clientX } = evt;
-            console.log({ clientX, offsetLeft});
             const ripples = document.createElement('span');
             const x = clientX - offsetLeft;
             const y = clientY - offsetTop;
