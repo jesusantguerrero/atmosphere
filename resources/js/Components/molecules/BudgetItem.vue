@@ -16,7 +16,7 @@
                     <i class="fa fa-cog ml-2" @click.stop="$emit('edit')"></i>
                 </span>
                 <PointAlert
-                    v-if="item.hasOverspent || item.hasOverAssigned || item.hasUnderfunded"
+                    v-if="item.hasOverspent || item.hasOverAssigned || item.hasUnderFunded"
                 />
             </h4>
             <div class="flex items-center" title="Money Assigned">
