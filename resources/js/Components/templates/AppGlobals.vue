@@ -5,6 +5,7 @@
     :max-width="modalMaxWidth"
     :full-height="context.isMobile"
     @saved="onTransactionSaved"
+    @close="onTransactionSaved"
 />
 
 <MoreOptionsModal
