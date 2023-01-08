@@ -19,6 +19,7 @@
     <AccountModal
         v-if="isAccountModalOpen"
         :show="isAccountModalOpen"
+        :max-width="modalMaxWidth"
         :form-data="accountToEdit"
         @close="isAccountModalOpen = false"
     />
@@ -26,13 +27,13 @@
 </template>
 
 <script setup>
-import { onMounted, ref, inject } from "vue";
+import { ref, inject, computed } from "vue";
 import { Inertia } from "@inertiajs/inertia";
-import { usePage } from "@inertiajs/inertia-vue3";
 import AccountItem from "@/Components/atoms/AccountItem.vue";
 import LogerTabButton from "@/Components/atoms/LogerTabButton.vue";
 import AccountModal from "@/Components/organisms/AccountModal.vue";
 import { VueDraggableNext as Draggable } from "vue-draggable-next"
+import { useAppContextStore } from "@/store";
 
 const selectedAccountId = inject('selectedAccountId', null);
 const isSelectedAccount = (accountId) => {
@@ -64,4 +65,8 @@ const saveReorder = () => {
     emit("reordered", items)
 }
 
+const context = useAppContextStore()
+const modalMaxWidth = computed(() => {
+    return context.isMobile ? 'mobile' : null;
+})
 </script>

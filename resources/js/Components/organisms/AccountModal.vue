@@ -1,19 +1,22 @@
 <template>
     <modal :show="show" :max-width="maxWidth" :closeable="closeable" @close="close">
-        <div class="px-4 pt-5 pb-4 bg-base-lvl-3 sm:p-6 sm:pb-4 text-body">
-            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                <h3 class="text-lg">
-                    <slot name="title">{{ modalTitle }}</slot>
-                </h3>
+        <div class="pb-4 bg-base-lvl-3 sm:p-6 sm:pb-4 text-body">
+            <div class="text-center sm:mt-0 sm:ml-4 sm:text-left">
+                <header class="py-3 border-b">
+                    <h3 class="text-lg font-bold">
+                        <slot name="title">{{ modalTitle }}</slot>
+                    </h3>
+                </header>
 
-                <div class="mt-2">
+                <div class="mt-2 px-4 pt-5">
                     <slot name="content">
                         <div>
-                            <AtField label="Detail Type" class="w-full">
+                            <AtField label="Detail Type" class="md:space-x-0 flex w-full justify-between space-x-4">
                                 <NSelect
                                     filterable
                                     clearable
                                     tag
+                                    class="w-48 md:w-full"
                                     v-model:value="form.account_detail_type_id"
                                     :default-expand-all="true"
                                     :options="detailOptions"
@@ -22,15 +25,17 @@
 
                             <AtField
                                 label="Account Label"
+                                class="md:space-x-0 flex w-full justify-between space-x-4"
                             >
-                                <LogerInput v-model="form.name" />
+                                <LogerInput v-model="form.name"  class="w-48 md:w-full" />
                             </AtField>
 
                             <AtField
                                 label="Opening Balance"
+                                class="md:space-x-0 flex w-full justify-between space-x-4"
                                 v-if="!form.id"
                             >
-                                <LogerInput v-model="form.opening_balance" type="number" />
+                                <LogerInput v-model="form.opening_balance" type="number"  class="w-48 md:w-full" />
                             </AtField>
                         </div>
                     </slot>
@@ -38,11 +43,11 @@
             </div>
         </div>
 
-        <div class="px-6 py-4 space-x-3 space-between bg-base-lvl-2 flex w-full">
-            <AtButton type="secondary" class="text-danger" @click="remove" rounded> Delete </AtButton>
-            <div class="flex items-center justify-end w-full space-x-2">
-                <AtButton type="secondary" @click="close" rounded> Cancel </AtButton>
-                <AtButton class="text-white bg-primary" @click="submit" rounded> Save </AtButton>
+        <div class="px-6 py-4 md:space-x-3 space-between bg-base-lvl-2 flex w-full">
+            <AtButton type="secondary" class="text-danger hidden md:block" @click="remove" rounded> Delete </AtButton>
+            <div class="flex items-center justify-end w-full md:space-x-2">
+                <AtButton type="secondary" class="hidden md:block" @click="close" rounded> Cancel </AtButton>
+                <AtButton class="text-white w-full bg-primary" @click="submit" rounded> Save </AtButton>
             </div>
         </div>
     </modal>
