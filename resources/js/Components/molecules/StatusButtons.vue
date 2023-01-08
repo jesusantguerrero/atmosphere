@@ -5,7 +5,7 @@
             class="px-2 py-1.5 flex items-center border border-transparent hover:bg-primary/5"
             :class="{'text-white bg-primary border border-primary hover:text-primary': isSelected(statusName)}"
             :key="statusName"
-            @click="$emit('change', item.value)">
+            @click="$emit('change', item.value || statusName)">
                 {{ item.label }}
         </button>
     </section>

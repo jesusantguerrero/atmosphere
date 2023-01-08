@@ -1,19 +1,25 @@
-import { cloneDeep, flatten } from "lodash";
-import { computed, ref, watch, reactive, toRefs } from "vue";
+import { cloneDeep } from "lodash";
+import { computed, watch, reactive, toRefs, nextTick } from "vue";
 import { getCategoriesTotals, getGroupTotals } from './index';
 
 export const BudgetState = reactive({
     data: [],
     categories: [],
     visibleCategories: [],
-    overSpentCategories: [],
-    overAssignedCategories: [],
     // Filters
     filters: {
         overspent: false,
+        funded: false,
+        underFunded: false,
+    },
+    filterGroups: {
+        overSpent: [],
+        overAssigned: [],
+        funded: [],
+        underFunded: [],
     },
     visibleFilters: {
-        overspent: computed(() => BudgetState.filters.overspent || BudgetState.overSpentCategories.length > 0)
+        overspent: computed(() => BudgetState.filters.overspent || BudgetState.filterGroups.overSpent.length > 0)
     },
     // Budget selection
     selectedBudgetIds: {
@@ -48,19 +54,31 @@ export const BudgetState = reactive({
 });
 
 const getBudget = (budgetRawData) => {
-    const overSpentCategories = []
-    const overAssignedCategories = []
+    const filters = {
+        overSpent: [],
+        overAssigned: [],
+        funded: [],
+        underFunded: []
+    }
     let categories = [];
     let budgetData = cloneDeep(budgetRawData)
 
     budgetData = budgetData.map(item => {
         const totals = getCategoriesTotals(item.subCategories, {
             onOverspent(category) {
-                overSpentCategories.push(category)
+                filters.overSpent.push(category)
                 category.hasOverspent = true;
             },
+            onFunded(category) {
+                filters.funded.push(category)
+                category.hasFunded = true;
+            },
+            onUnderFunded(category) {
+                filters.underFunded.push(category)
+                category.hasUnderFunded = true;
+            },
             onOverAssigned(category) {
-                overAssignedCategories.push(category)
+                filters.overAssigned.push(category)
                 category.overAssigned = true;
             }
         });
@@ -74,55 +92,67 @@ const getBudget = (budgetRawData) => {
     });
 
     return {
-        overSpentCategories,
-        overAssignedCategories,
+        filterGroups: filters,
         categories,
         budgetData,
     }
 }
 
-const setBudgetState = ({  overSpentCategories, overAssignedCategories, categories, budgetData}) => {
-    BudgetState.data = budgetData;
-    BudgetState.overSpentCategories = overSpentCategories;
-    BudgetState.overAssignedCategories = overAssignedCategories;
-    BudgetState.categories = categories;
+const setBudgetState = ({ filterGroups, categories, budgetData}) => {
+    BudgetState.data = cloneDeep(budgetData);
+    if (filterGroups) {
+        BudgetState.filterGroups = filterGroups;
+    }
+    if (categories) {
+        BudgetState.categories = cloneDeep(categories);
+    }
 }
 export const useBudget = (budgets) => {
     if (budgets) {
         watch(() => budgets.value, (budgetServerData) => {
             setBudgetState(getBudget(budgetServerData.data));
-            BudgetState.visibleCategories = getVisibleCategories(BudgetState.data, BudgetState.filters.overspent);
+            BudgetState.visibleCategories = getVisibleCategories(BudgetState.data);
         }, { immediate: true, deep: true })
     }
-
-    const toggleOverspent = () => {
-        BudgetState.filters.overspent = !BudgetState.filters.overspent
-        BudgetState.visibleCategories = getVisibleCategories(BudgetState.data, BudgetState.filters.overspent)
+    
+    const toggleFilter = (filterName) => {
+        Object.entries(BudgetState.filters).forEach(([filter, value]) => {
+            BudgetState.filters[filter] = filterName == filter ? !value : false ;
+        })
+        const visibleFilter = Object.keys(BudgetState.filters).find(name => BudgetState.filters[name])
+        BudgetState.visibleCategories = getVisibleCategories(BudgetState.data, visibleFilter)
     }
 
     return {
         ...toRefs(BudgetState),
         budgetState: BudgetState.outflow,
-        toggleOverspent,
+        toggleFilter,
         setSelectedBudget,
     }
 }
 
-function getVisibleCategories(budgetData, isOverSpentFilterActive) {
-    return budgetData.reduce((groups, categoryGroup) => {
-        let conditions = categoryGroup.name != 'Inflow'
-        if (isOverSpentFilterActive) {
-            conditions = conditions && categoryGroup.hasOverspent
-        }
-        if (conditions) {
-            categoryGroup.subCategories = categoryGroup.subCategories?.filter(
-                subCategory => isOverSpentFilterActive ? subCategory.hasOverspent : true
-            )
-            groups.push(categoryGroup)
-        }
+const filterConditions = {
+    overspent: (category) =>  category.hasOverspent,
+    funded: (category) =>  category.hasFunded,
+    underFunded: (category) =>  category.hasUnderFunded,
+}
 
+const evaluateFilterCondition  = (category, filterName) => {
+    return !filterName ? true : filterConditions[filterName](category);
+}
+
+function getVisibleCategories(budgetData, filterName) {
+    const data = cloneDeep(budgetData);
+    const visibleGroups = data.reduce((groups, group) => {
+        const groupHasFilter = group.name != 'Inflow' && evaluateFilterCondition(group, filterName)
+        if (groupHasFilter) {
+            group.subCategories = group.subCategories?.filter(subCategory => filterName ? evaluateFilterCondition(subCategory, filterName) : true)
+            groups.push(group)
+        }
         return groups
     }, [])
+
+    return visibleGroups;
 }
 
 const setSelectedBudget = (categoryId = null, groupId = null) => {

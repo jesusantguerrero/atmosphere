@@ -11,19 +11,26 @@
             <!-- Overspent notice -->
             <AtButton
               v-if="visibleFilters.overspent"
-              @click="toggleOverspent"
+              @click="toggleFilter('overspent')"
               class="items-center min-w-fit rounded-md space-x-2 justify-between flex group"
               :class="[filters.overspent ? 'bg-primary text-white' : 'text-primary']"
             >
-              <span class="relative">
-                  {{ overSpentCategories.length }} Overspent categories
+                <span class="relative">
+                  {{ filterGroups.overSpent.length }} Overspent categories
                   <PointAlert v-if="!filters.overspent" />
 
                 </span>
+               
                 <div class="text-white text-sm rounded-full group-hover:bg-white/20 p-0.5">
                     <IconClose />
                 </div>
             </AtButton>
+            <StatusButtons
+                :modelValue="currentStatus"
+                :statuses="budgetStatus"
+                @change="toggleFilter"
+            />
+            {{ filterGroups.underFunded.length }}
             <AtDatePager
               class="w-full h-12 border-none bg-base-lvl-1 text-body"
               v-model:startDate="pageState.dates.startDate"
@@ -121,7 +128,7 @@
 </template>
 
 <script setup>
-import { computed, toRefs } from "vue";
+import { computed, toRefs, unref } from "vue";
 import { Inertia } from "@inertiajs/inertia";
 import { AtButton, AtDatePager } from "atmosphere-ui";
 import { useBreakpoints, breakpointsTailwind } from "@vueuse/core";
@@ -134,7 +141,6 @@ import BalanceAssign from "@/Components/organisms/BalanceAssign.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 import BudgetProgress from "@/Components/molecules/BudgetProgress.vue";
 import ExpenseIncome from "@/Components/widgets/ExpenseIncome.vue";
-import QuickBudget from "@/Components/widgets/QuickBudget.vue";
 import PointAlert from "@/Components/atoms/PointAlert.vue";
 import IconClose from "@/Components/icons/IconClose.vue";
 
@@ -144,6 +150,7 @@ import MoneyPresenter from "@/Components/molecules/MoneyPresenter.vue";
 import MessageBox from "@/Components/organisms/MessageBox.vue";
 import BudgetCategories from "./Partials/BudgetCategories.vue";
 import { formatMonth } from "@/utils";
+import StatusButtons from "@/Components/molecules/StatusButtons.vue";
 
 const props = defineProps({
   budgets: {
@@ -175,10 +182,10 @@ const sectionTitle = computed(() => {
 const { budgets } = toRefs(props);
 const {
   readyToAssign,
-  overSpentCategories,
-  toggleOverspent,
+  filterGroups,
   filters,
   visibleFilters,
+  toggleFilter,
   setSelectedBudget,
   selectedBudget,
 } = useBudget();
@@ -189,6 +196,18 @@ const panelSize = computed(() => {
 const { isSmaller } = useBreakpoints(breakpointsTailwind)
 const showCategoriesInMain = isSmaller('md');
 
+//  budget filters 
+const budgetStatus = {
+    funded: {
+        label: 'funded',
+    },
+    underFunded: {
+        label: 'Not funded',
+    },
+}
+
+
+const currentStatus = computed(() => Object.keys(filters.value).find(key => filters.value[key]));
 
 //  Budget Form
 const deleteBudget = (budget) => {
