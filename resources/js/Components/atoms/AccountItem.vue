@@ -19,12 +19,12 @@
       </p>
     </div>
     <div>
-      <LogerTabButton
+      <LogerButtonTab
         class="h-full flex items-center justify-center px-0.5 rounded-md hover:text-primary hover:bg-base-lvl-2"
         @click.stop="$emit('edit')"
       >
         <i class="fa fa-edit"></i>
-      </LogerTabButton>
+      </LogerButtonTab>
     </div>
   </div>
 </template>
@@ -34,7 +34,7 @@ import formatMoney from "@/utils/formatMoney";
 
 import NumberHider from "@/Components/molecules/NumberHider.vue";
 import IconDrag from "../icons/IconDrag.vue";
-import LogerTabButton from "./LogerTabButton.vue";
+import LogerButtonTab from "./LogerButtonTab.vue";
 
 defineProps({
   account: {

@@ -16,7 +16,7 @@ export const useAppMenu = t => {
             icon: 'far fa-calendar-alt',
             label: t('Meals'),
             name: 'mealPlanner',
-            to: '/meal-planner',
+            to: '/meals/overview',
             as: Link,
             isActiveFunction(url, currentPath) {
                 return /meal-planner|meals|ingredients/.test(currentPath)

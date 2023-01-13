@@ -50,10 +50,10 @@
                 <span>
                     Transactions
                 </span>
-                <LogerTabButton class="flex items-center ml-2 text-primary" @click="isImportModalOpen=!isImportModalOpen" title="import">
+                <LogerButtonTab class="flex items-center ml-2 text-primary" @click="isImportModalOpen=!isImportModalOpen" title="import">
                     {{ formatMoney(budgetAccountsTotal) }}
                     <IconImport />
-                </LogerTabButton>
+                </LogerButtonTab>
             </SectionTitle>
         </section>
       </template>
@@ -76,7 +76,7 @@ import WatchlistModal from "@/Components/WatchlistModal.vue";
 import { useServerSearch } from "@/composables/useServerSearch";
 import { formatMoney, formatMonth, MonthTypeFormat } from "@/utils";
 import IconImport from "@/Components/icons/IconImport.vue";
-import LogerTabButton from "@/Components/atoms/LogerTabButton.vue";
+import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 import ChartComparison from "@/Components/widgets//ChartComparison.vue";
 
 const { serverSearchOptions } = toRefs(props);

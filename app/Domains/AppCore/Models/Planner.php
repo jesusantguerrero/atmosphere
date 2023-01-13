@@ -2,14 +2,19 @@
 
 namespace App\Domains\AppCore\Models;
 
+use App\Concerns\SupportsDateFrame;
 use App\Domains\Integration\Services\LogerAutomationService;
 use App\Events\AutomationEvent;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Laravel\Jetstream\HasTeams;
 
 class Planner extends Model
 {
     use HasFactory;
+    use SupportsDateFrame;
+    use HasTeams;
+
     protected $fillable = ['team_id', 'user_id','dateable_id', 'dateable_type' ,'date', 'frequency', 'automatic', 'is_liked'];
 
     /**

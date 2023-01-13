@@ -28,6 +28,10 @@ const menus = {
     }],
     [MODULES.MEAL]: [
         {
+            label: 'Overview',
+            url: '/meals/overview'
+        },
+        {
             label: 'Planner',
             url: '/meal-planner'
         }, {

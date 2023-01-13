@@ -19,12 +19,12 @@
                     size="large"
                 />
                 <LogerInput v-model="condition.value" @blur="updateValue" />
-                <LogerTabButton class="rounded-md" @click="remove(index)" v-if="isLast(index)">
+                <LogerButtonTab class="rounded-md" @click="remove(index)" v-if="isLast(index)">
                     -
-                </LogerTabButton>
-                <LogerTabButton class="rounded-md" @click="add">
+                </LogerButtonTab>
+                <LogerButtonTab class="rounded-md" @click="add">
                     +
-                </LogerTabButton>
+                </LogerButtonTab>
             </div>
         </section>
     </article>
@@ -36,7 +36,7 @@ import { AtFieldCheck } from "atmosphere-ui";
 import { NSelect } from "naive-ui";
 
 import LogerInput from "@/Components/atoms/LogerInput.vue";
-import LogerTabButton from "@/Components/atoms/LogerTabButton.vue";
+import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 
 const props = defineProps({
     label: {

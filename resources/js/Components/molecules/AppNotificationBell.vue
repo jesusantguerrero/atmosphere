@@ -1,18 +1,17 @@
 <template>
-<LogerTabButton
+<LogerButtonCircle
     type="button"
-    class="relative text-body-1/80"
 >
-        <IconBell class="text-xl" />
+    <IconBell class="text-md" />
     <div v-if="notifications > 0" class="absolute bottom-0 right-0 w-4 h-4 text-xs text-white bg-error rounded-full shadow-md">
         {{ notifications }}
     </div>
-</LogerTabButton>
+</LogerButtonCircle>
 </template>
 
 <script setup>
-import LogerTabButton from '../atoms/LogerTabButton.vue';
-import IconBell from '../icons/IconBell.vue';
+import LogerButtonCircle from '@/Components/atoms/LogerButtonCircle.vue';
+import IconBell from '@/Components/icons/IconBell.vue';
 
 defineProps({
     notifications: {

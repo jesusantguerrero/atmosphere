@@ -5,7 +5,7 @@
   >
     <div class="px-2 py-2 group bg-base-lvl-2 font-bold justify-between text-primary w-full flex" v-if="plannedMeal">
         <span class="capitalize text-ellipsis inline-block">
-            {{ plannedMeal.dateable.name }}
+            {{ plannedMeal.dateable?.name ?? plannedMeal.name }}
         </span>
         <div class="transition flex space-x-2 items-center text-xl">
             <AtButton class="hidden transition my-0 text-body-1/80 hover:text-error/80 group-hover:inline-block" @click="emitCellEvent('removed')">
@@ -29,19 +29,18 @@
         :placeholder="`Add ${mealType.name}`"
         endpoint="/api/recipes"
       />
-      <LogerTabButton @click="submit" v-if="recipe.id">Save</LogerTabButton>
+      <LogerButtonTab @click="submit" v-if="recipe.id">Save</LogerButtonTab>
     </div>
   </div>
 </template>
 
 <script setup>
 import { reactive } from "vue";
-import LogerTabButton from "@/Components/atoms/LogerTabButton.vue";
+import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 import LogerApiSimpleSelect from "../organisms/LogerApiSimpleSelect.vue";
 import IconClose from "../icons/IconClose.vue";
 import IconHeart from "../icons/IconHeart.vue";
 import IconHeartOutline from "../icons/IconHeartOutline.vue";
-import LogerButton from "../atoms/LogerButton.vue";
 
 const props = defineProps({
   plannedMeal: {

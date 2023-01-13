@@ -36,9 +36,9 @@
                         @update:label="$emit('tag-selected', label, meal)"
                     />
                 </div>
-                <LogerTabButton type="secondary">
+                <LogerButtonTab type="secondary">
                     <i class="fa fa-trash"></i>
-                </LogerTabButton>
+                </LogerButtonTab>
             </div>
         </article>
     </section>
@@ -50,7 +50,7 @@
 
     import LogerApiSelect from "@/Components/organisms/LogerApiSelect.vue";
     import LogerApiSimpleSelect from "./organisms/LogerApiSimpleSelect.vue";
-    import LogerTabButton from "./atoms/LogerTabButton.vue";
+    import LogerButtonTab from "./atoms/LogerButtonTab.vue";
     import IconHeart from "./icons/IconHeart.vue";
     import IconHeartOutline from "./icons/IconHeartOutline.vue";
 
