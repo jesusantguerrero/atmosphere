@@ -38,7 +38,6 @@ class MealController extends InertiaController
         $request = request();
         $startDate = $request->query('startDate', Carbon::now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->query('endDate', Carbon::now()->endOfMonth()->format('Y-m-d'));
-        $team = $request->user()->currentTeam;
         $teamId = $request->user()->current_team_id;
 
         $plannedMeals = Planner::where([
@@ -46,8 +45,19 @@ class MealController extends InertiaController
             'date' => date('Y-m-d')
         ])->with(['dateable', 'dateable.mealType'])->get();
 
+        $weekPlan = Planner::whereTeamId($teamId)
+        ->inDateFrame($startDate, $endDate)
+        ->with(['dateable', 'dateable.mealType'])
+        ->get();
+
         return inertia('Meals/Overview', [
             "sectionTitle" => "Meal overview",
+            "mostLikedMeals" => Meal::where([
+                "team_id" => $teamId
+            ])->limit(3)->get(),
+            'ingredients' => function () use ($weekPlan) {
+                return MealService::getIngredients($weekPlan);
+            },
             "mealTypes" => MealType::where([
                 "team_id" => $request->user()->current_team_id,
                 "user_id" => $request->user()->current_team_id

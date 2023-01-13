@@ -4,12 +4,17 @@
             <div class="h-full w-1/2 bg-white opacity-30" />
             <i :class="iconClass" v-if="iconClass" class="text-white font-bold" />
         </section>
-        <p class="mt-2 flex flex-wrap w-full text-center justify-center"> {{ label }}</p>
+        <p class="mt-2 flex w-full text-center justify-center" ref="titleRef"
+            :class="[wrap ? 'flex-wrap' : 'flex-nowrap']"
+        > {{ title }}</p>
     </button>
 </template>
 
 <script setup>
-defineProps({
+import { useElementBounding } from '@vueuse/core';
+import { ref, computed } from 'vue';
+
+const props = defineProps({
     label: {
         type: String,
         default: 'Choose Category'
@@ -26,6 +31,16 @@ defineProps({
     },
     colorClass: {
         default: 'group-hover:bg-base-lvl-2 bg-gray-400'
+    },
+    wrap: {
+        type: Boolean
     }
+})
+const titleRef = ref(null)
+const { width } = useElementBounding(titleRef)
+
+const title = computed(() => {
+    const chars = Math.floor(width.value / 3.5);
+    return props.label.length > chars ? props.label.slice(0, props.label.length - chars) + ' ...' : props.label
 })
 </script>
