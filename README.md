@@ -1,21 +1,27 @@
-# Loger 🏡
+<p align="center">
+  <a href="https://loger.neatlancer.com" target="_blank" rel="noopener noreferrer">
+    <img width="160" height="100" src="./public/logo.svg" alt="Loger logo">
+  </a>
+  <sup><em>alpha</em></sup></
+</p>
 
 <h3 align="center">
     The Digital Home Management Software
 </h3>
 
-<!-- <p align="center">
+ <p align="center">
 	<strong>
-		<a href="https://loger.neatlancer.com/">Website</a>
+		<a href="https://loger.vercel.app/" target="_blank">Website</a>
 		•
-		<a href="https://loger.neatlancer.com">Docs</a>
+		<a href="https://loger.vercel.app/docs" target="_blank">Docs</a>
 		•
-		<a href="https://loger.neatlancer.com">Demo</a>
+		<a href="https://loger.neatlancer.com" target="_blank">Demo</a>
 	</strong>
-</p> -->
-> Status: Alpha
+</p>
 
-> Codename: Atmosphere
+
+![image](https://user-images.githubusercontent.com/17421742/212417292-19f319c5-1cf4-48a8-ba40-1e9b040e820f.png)
+
 ## About Loger
 
 Loger (House in french) as family managing home is almost like being CEO 
@@ -68,20 +74,22 @@ Loger is organized in "concerns" by the moment it have 4
 
 ## Showcase
 
-Dashboard Expanded 
-![Dashboard](/public/images/full-sized-dashboard.png)
+### Dashboard 
+![Dashboard](https://user-images.githubusercontent.com/17421742/212417292-19f319c5-1cf4-48a8-ba40-1e9b040e820f.png)
 
-Dashboard
-![Dashboard](/public/images/dashboard-small-menu.png)
+### Meals
+![Meals Section](https://user-images.githubusercontent.com/17421742/212419093-5c589843-4f2d-4058-b2e6-165c8d9ceaa5.png)
 
-Meal Planner
-![Meal Planner](/public/images/meal-planner.png)
 
-Finance Overview
-![Finance Overview](/public/images/finance-overview.png)
+### Finance Overview
+![Finance Overview](https://user-images.githubusercontent.com/17421742/212419763-90dab10b-3c48-46cd-ba79-6e1cc155980f.png)
 
-Budget
-![Budget](/public/images/budget.png)
+### Budget & Goals
+![Budget & Goals](https://user-images.githubusercontent.com/17421742/212420274-1c361875-916d-4cd0-9c94-69b6d1c850b7.png)
+
+### Housing
+![image](https://user-images.githubusercontent.com/17421742/212420956-322378e0-d491-4259-ba93-8a6f68dec803.png)
+
 
 ## Motivation
 - This was an Idea initially considered as a part of a 12x12 SaaS challenge.
