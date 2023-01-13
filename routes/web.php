@@ -15,10 +15,10 @@ use App\Http\Controllers\Api\PayeeApiController;
 use App\Http\Controllers\Api\RecipeApiController;
 use App\Http\Controllers\Api\TimezonesApiController;
 
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ServiceController;
-use App\Http\Controllers\IntegrationController;
-use App\Http\Controllers\Jetstream\TeamInvitationController;
+use App\Http\Controllers\System\DashboardController;
+use App\Http\Controllers\System\ServiceController;
+use App\Http\Controllers\System\IntegrationController;
+use App\Http\Controllers\System\TeamInvitationController;
 
 use App\Http\Controllers\Finance\BudgetCategoryController;
 use App\Http\Controllers\Finance\BudgetMonthController;
@@ -32,7 +32,7 @@ use App\Http\Controllers\Meal\IngredientController;
 use App\Http\Controllers\Meal\MealController;
 use App\Http\Controllers\Meal\MealPlannerController;
 
-use App\Http\Controllers\RelationshipController;
+use App\Http\Controllers\Relationship\RelationshipController;
 
 use App\Http\Controllers\Housing\OccurrenceController;
 use App\Http\Controllers\Housing\ProjectController;
@@ -99,6 +99,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     ***************************************************************************************/
 
     //  Meal related routes
+    Route::get('/meals/overview', MealController::class);
     Route::controller(MealController::class)->group(function () {
         Route::resource('/meals', MealController::class);
         Route::post('/meals/add-plan','addPlan')->name('meals.addPlan');

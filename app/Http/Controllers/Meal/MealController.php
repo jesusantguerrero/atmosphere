@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\Meal;
 
+use App\Domains\AppCore\Models\Planner;
 use App\Domains\Meal\Models\Meal;
 use App\Domains\Meal\Models\MealType;
 use App\Domains\Meal\Services\MealService;
 use App\Http\Resources\MealResource;
+use App\Http\Resources\PlannedMealResource;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Redirect;
 
 class MealController extends InertiaController
@@ -28,6 +31,29 @@ class MealController extends InertiaController
         $this->filters = [
             'date' => date('Y-m-01')
         ];
+    }
+
+    public function __invoke()
+    {
+        $request = request();
+        $startDate = $request->query('startDate', Carbon::now()->startOfMonth()->format('Y-m-d'));
+        $endDate = $request->query('endDate', Carbon::now()->endOfMonth()->format('Y-m-d'));
+        $team = $request->user()->currentTeam;
+        $teamId = $request->user()->current_team_id;
+
+        $plannedMeals = Planner::where([
+            'team_id' => $teamId,
+            'date' => date('Y-m-d')
+        ])->with(['dateable', 'dateable.mealType'])->get();
+
+        return inertia('Meals/Overview', [
+            "sectionTitle" => "Meal overview",
+            "mealTypes" => MealType::where([
+                "team_id" => $request->user()->current_team_id,
+                "user_id" => $request->user()->current_team_id
+            ])->get(),
+            "meals" => PlannedMealResource::collection($plannedMeals),
+        ]);
     }
 
     protected function parser($resources) {

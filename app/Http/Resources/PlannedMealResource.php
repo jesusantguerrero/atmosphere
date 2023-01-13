@@ -19,6 +19,9 @@ class PlannedMealResource extends JsonResource
             'mealId' => $this->dateable->id,
             'name' => $this->dateable->name,
             'mealTypeName' => $this->dateable->mealType?->name,
+            'is_liked' => $this->is_liked,
+            'is_meal_liked' => $this->dateable->is_liked,
+            'mealTypeId' => $this->dateable->mealType?->id,
             'date' => $this->date,
         ];
     }

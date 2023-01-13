@@ -1,12 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Jetstream;
+namespace App\Http\Controllers\System;
 
 use App\Actions\Jetstream\InviteTeamMember;
 use App\Models\TeamInvitation;
 use Illuminate\Http\Request;
 use Laravel\Jetstream\Features;
-use Laravel\Jetstream\Jetstream;
 
 class TeamInvitationController {
     /**
@@ -80,5 +79,4 @@ class TeamInvitationController {
         $invitation->delete();
         return back(303);
     }
-
 }

@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\System;
 
 use App\Domains\Integration\Models\AutomationRecipe;
 use App\Domains\Integration\Models\AutomationService;
 use App\Domains\Integration\Models\AutomationTask;
 use App\Domains\Integration\Models\Integration;
-use App\Libraries\GoogleService;
+use App\Domains\Integration\Services\GoogleService;
 use Illuminate\Http\Request;
 use Laravel\Jetstream\Jetstream;
 

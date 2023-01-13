@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\System;
 
 use App\Domains\AppCore\Models\Planner;
 use App\Domains\Budget\Models\BudgetMonth;
@@ -27,7 +27,7 @@ class DashboardController {
 
         $nextPayments = BudgetCategoryService::getNextBudgetItems($teamId);
 
-        return Inertia::render('Dashboard', [
+        return inertia('Dashboard', [
             "sectionTitle" => "Dashboard",
             "meals" => PlannedMealResource::collection($plannedMeals),
             "budgetTotal" => $budget->sum('budgeted'),
