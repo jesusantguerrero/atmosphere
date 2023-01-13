@@ -183,7 +183,7 @@
         </div>
 
         <footer class="px-6 py-4 space-x-3 items-center justify-between flex w-full bg-base-lvl-2">
-            <LogerTabButton class="bg-base rounded"> Use template</LogerTabButton>
+            <LogerButtonTab class="bg-base rounded"> Use template</LogerButtonTab>
             <div>
                 <AtButton @click="close" rounded class="h-10 text-body"> Cancel </AtButton>
                 <AtButton class="h-10 text-white bg-primary" :disabled="!form.total" @click="submit" rounded> Save </AtButton>
@@ -202,7 +202,7 @@
     import Modal from '@/Components/atoms/Modal.vue'
     import LogerInput from "@/Components/atoms/LogerInput.vue"
     import LogerApiSimpleSelect from '@/Components/organisms/LogerApiSimpleSelect.vue'
-    import LogerTabButton from '@/Components/atoms/LogerTabButton.vue'
+    import LogerButtonTab from '@/Components/atoms/LogerButtonTab.vue'
     import CategoryPicker from './mobile/CategoryPicker.vue';
     import TransactionTypesPicker from './TransactionTypesPicker.vue';
 

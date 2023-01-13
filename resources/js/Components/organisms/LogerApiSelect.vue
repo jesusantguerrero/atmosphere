@@ -65,9 +65,4 @@ const handleSearch = debounce((query) => {
         isLoading.value = false
     })
 }, 200)
-
-const emitInput = (optionId) => {
-    emit('update:modelValue', optionId)
-    emit('update:label', options.value.find(option => option.value == optionId)?.label)
-}
 </script>

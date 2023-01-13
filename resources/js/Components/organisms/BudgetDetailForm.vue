@@ -8,16 +8,16 @@
             >
                 <template #prefix>
                     <div class=" px-1 flex items-center justify-center">
-                        <ColorSelector 
+                        <ColorSelector
                             v-model="category.color"
                             @update:modelValue="onBlur(category)"
                         />
                     </div>
                 </template>
             </AtInput>
-            <LogerTabButton @click="$emit('close')">
+            <LogerButtonTab @click="$emit('close')">
                 <IconClose />
-            </LogerTabButton>
+            </LogerButtonTab>
         </header>
 
         <BudgetTargetForm
@@ -51,7 +51,7 @@
     import { useForm } from '@inertiajs/inertia-vue3';
 
     import ColorSelector from '../molecules/ColorSelector.vue';
-    import LogerTabButton from '../atoms/LogerTabButton.vue';
+    import LogerButtonTab from '../atoms/LogerButtonTab.vue';
     import BudgetTargetForm from '../molecules/BudgetTargetForm.vue';
 
     import { generateRandomColor } from "@/utils"
@@ -110,7 +110,7 @@
         },
         { deep: true, immediate: true });
 
-    
+
     const onBlur = (category) => {
         axios.put(`/categories/${props.category.id}?json=true`, category)
         .then(() => {

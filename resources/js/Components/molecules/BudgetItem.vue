@@ -12,7 +12,7 @@
                 <span class="items-center text-body-1 font-bold">
                     <span :style="{ color: item.color }">
                         {{ item.name }}
-                    </span> 
+                    </span>
                     <i class="fa fa-cog ml-2" @click.stop="$emit('edit')"></i>
                 </span>
                 <PointAlert
@@ -43,7 +43,7 @@
             </template>
         </BalanceInput>
         <NDropdown trigger="click" :options="options" key-field="name" :on-select="handleOptions" >
-            <LogerTabButton> <i class="fa fa-ellipsis-v"></i></LogerTabButton>
+            <LogerButtonTab> <i class="fa fa-ellipsis-v"></i></LogerButtonTab>
         </NDropdown>
     </div>
 </div>
@@ -57,7 +57,7 @@ import { NDropdown } from 'naive-ui';
 
 import IconDrag from '../icons/IconDrag.vue';
 import BalanceInput from "@/Components/atoms/BalanceInput.vue";
-import LogerTabButton from "@/Components/atoms/LogerTabButton.vue";
+import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 import LogerInput from '../atoms/LogerInput.vue';
 import formatMoney from "@/utils/formatMoney";
 import autoAnimate from '@formkit/auto-animate';

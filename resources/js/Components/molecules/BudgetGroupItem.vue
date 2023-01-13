@@ -5,9 +5,9 @@
             <div class="cursor-grab" v-if="isMobile && allowDrag">
                 <IconDrag class="handle" />
             </div>
-            <LogerTabButton @click="isExpanded=!isExpanded" v-else>
+            <LogerButtonTab @click="isExpanded=!isExpanded" v-else>
                 <i class="fa" :class="toggleIcon" />
-            </LogerTabButton>
+            </LogerButtonTab>
             <div class="flex items-center">
                 <h4 class="relative text-primary font-bold cursor-grab" :class="{'handle': !isMobile }">
                     {{ item.name }}
@@ -36,7 +36,7 @@
                 :options="options"
                 :on-select="handleOptions"
             >
-                <LogerTabButton> <i class="fa fa-ellipsis-v"></i></LogerTabButton>
+                <LogerButtonTab> <i class="fa fa-ellipsis-v"></i></LogerButtonTab>
             </NDropdown>
         </div>
     </header>
@@ -53,7 +53,7 @@ import autoAnimate from "@formkit/auto-animate"
 import { NDropdown } from "naive-ui";
 
 import IconDrag from "../icons/IconDrag.vue";
-import LogerTabButton from "@/Components/atoms/LogerTabButton.vue";
+import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 import { Inertia } from "@inertiajs/inertia";
 import PointAlert from "../atoms/PointAlert.vue";
 import BudgetProgress from "./BudgetProgress.vue";

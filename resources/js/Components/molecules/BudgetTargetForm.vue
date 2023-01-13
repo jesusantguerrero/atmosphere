@@ -1,6 +1,6 @@
 <template>
   <section class="text-left border-b rounded-md bg-base-lvl-3 pb-4" v-auto-animate>
-    <LogerTabButton
+    <LogerButtonTab
       @click="state.isEditing = true"
       v-if="!state.isEditing && !state.hasTarget"
       class="bg-body-1/5 py-2 px-2 rounded-md text-body-1 w-full flex items-center"
@@ -9,7 +9,7 @@
         <IconTarget />
       </span>
       Set target
-    </LogerTabButton>
+    </LogerButtonTab>
 
     <div v-else-if="state.isEditing">
       <AtField label="Target Type">
@@ -36,7 +36,7 @@
               key-field="name"
               :on-select="handleOptions"
             >
-              <LogerTabButton> <i class="fa fa-ellipsis-v"></i></LogerTabButton>
+              <LogerButtonTab> <i class="fa fa-ellipsis-v"></i></LogerButtonTab>
             </NDropdown>
           </template>
         </AtInput>
@@ -112,7 +112,7 @@ import { monthDays, WEEK_DAYS, FREQUENCY_TYPE, generateRandomColor, formatMonth 
 import { makeOptions } from "@/utils/naiveui";
 import { format } from "date-fns";
 import ColorSelector from "./ColorSelector.vue";
-import LogerTabButton from "../atoms/LogerTabButton.vue";
+import LogerButtonTab from "../atoms/LogerButtonTab.vue";
 import IconTarget from "../icons/IconTarget.vue";
 import { budgetFrequencies, isSavingBalance, targetTypes } from "@/domains/budget";
 import BudgetTargetCard from "./BudgetTargetCard.vue";

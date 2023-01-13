@@ -10,24 +10,24 @@
                 developer="Jesus Guerrero"
             >
                 <main class="w-full divide-y flex flex-col">
-                    <LogerTabButton class="w-full text-center font-bold">
+                    <LogerButtonTab class="w-full text-center font-bold">
                         Get Started
-                    </LogerTabButton>
-                    <LogerTabButton class="w-full text-center font-bold">
+                    </LogerButtonTab>
+                    <LogerButtonTab class="w-full text-center font-bold">
                         Documentation
-                    </LogerTabButton>
-                    <LogerTabButton class="w-full text-center font-bold">
+                    </LogerButtonTab>
+                    <LogerButtonTab class="w-full text-center font-bold">
                         Release Notes
-                    </LogerTabButton>
-                    <LogerTabButton class="w-full text-center font-bold">
+                    </LogerButtonTab>
+                    <LogerButtonTab class="w-full text-center font-bold">
                         Video Tutorials
-                    </LogerTabButton>
-                    <LogerTabButton class="w-full text-center font-bold">
+                    </LogerButtonTab>
+                    <LogerButtonTab class="w-full text-center font-bold">
                         Feature Request
-                    </LogerTabButton>
-                    <LogerTabButton class="w-full text-center font-bold">
+                    </LogerButtonTab>
+                    <LogerButtonTab class="w-full text-center font-bold">
                         Report an issue
-                    </LogerTabButton>
+                    </LogerButtonTab>
                 </main>
             </ProductInfo>
         </article>
@@ -42,7 +42,7 @@ import AppLayout from "@/Components/templates/AppLayout.vue";
 import AutomationModal from '@/Components/AutomationModal.vue';
 import SettingsSectionNav from "@/Components/templates/SettingsSectionNav.vue";
 import AppIcon from "@/Components/AppIcon.vue";
-import LogerTabButton from "@/Components/atoms/LogerTabButton.vue";
+import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 import ProductInfo from "@/Components/ProductInfo.vue";
 
 const props = defineProps({

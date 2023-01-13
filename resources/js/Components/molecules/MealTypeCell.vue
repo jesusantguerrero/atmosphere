@@ -29,14 +29,14 @@
         :placeholder="`Add ${mealType.name}`"
         endpoint="/api/recipes"
       />
-      <LogerTabButton @click="submit" v-if="recipe.id">Save</LogerTabButton>
+      <LogerButtonTab @click="submit" v-if="recipe.id">Save</LogerButtonTab>
     </div>
   </div>
 </template>
 
 <script setup>
 import { reactive } from "vue";
-import LogerTabButton from "@/Components/atoms/LogerTabButton.vue";
+import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 import LogerApiSimpleSelect from "../organisms/LogerApiSimpleSelect.vue";
 import IconClose from "../icons/IconClose.vue";
 import IconHeart from "../icons/IconHeart.vue";

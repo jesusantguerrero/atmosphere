@@ -2,9 +2,9 @@
   <div class="w-full comparison-card">
     <div class="pb-10 px-5 rounded-lg">
       <h5 class="card-title text-left p-4 font-bold">
-        <LogerTabButton v-if="selectedDate" @click="selectedDate=null">
+        <LogerButtonTab v-if="selectedDate" @click="selectedDate=null">
             <i class="fa fa-arrow-left"></i>
-        </LogerTabButton>
+        </LogerButtonTab>
         {{ title }}
         <span v-if="selectedDate" class="capitalize text-primary">{{ formatMonth(selectedDate) }}</span>
       </h5>
@@ -44,7 +44,7 @@ import { computed, h, reactive, ref, inject } from "vue";
 
 import LogerChart from "@/Components/organisms/LogerChart.vue";
 import NumberHider from "@/Components/molecules/NumberHider.vue";
-import LogerTabButton from "@/Components/atoms/LogerTabButton.vue";
+import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 
 import { formatMonth } from "@/utils";
 import formatMoney from "@/utils/formatMoney";

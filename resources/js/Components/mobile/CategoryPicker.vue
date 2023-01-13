@@ -21,8 +21,8 @@
                     </button>
                     <h4 class="text-lg text-body-1 font-bold">Transaction Category</h4>
                     <div>
-                        <LogerTabButton icon="fa fa-cogs" />
-                        <LogerTabButton icon="fa fa-check"/>
+                        <LogerButtonTab icon="fa fa-cogs" />
+                        <LogerButtonTab icon="fa fa-check"/>
                     </div>
                 </header>
                 <section class="w-full grid grid-cols-3 sm:grid-cols-4 gap-1 overflow-auto pb-10">
@@ -52,7 +52,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
-import LogerTabButton from '../atoms/LogerTabButton.vue';
+import LogerButtonTab from '../atoms/LogerButtonTab.vue';
 import CategoryItem from './CategoryItem.vue';
 import Modal from '../atoms/Modal.vue';
 import IconBack from '../icons/IconBack.vue';

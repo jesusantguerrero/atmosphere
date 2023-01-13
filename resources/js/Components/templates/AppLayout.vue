@@ -6,9 +6,9 @@
                 <div class="px-2 mx-auto sm:pr-6 lg:pr-8 text-body-1/80">
                     <div class="flex items-center justify-between h-16">
                         <div class="flex items-center">
-                            <LogerTabButton @click="$emit('back')" v-if="showBackButton">
+                            <LogerButtonTab @click="$emit('back')" v-if="showBackButton">
                                <IconBack />
-                            </LogerTabButton>
+                            </LogerButtonTab>
                             <slot name="title">
                                 <h4 :class="[showBackButton ? 'lg:ml-2' : 'lg:ml-6']" class="text-xs font-bold">
                                     {{ sectionTitle }}
@@ -17,9 +17,9 @@
                         </div>
 
                         <div class="space-x-2 flex sm:items-center sm:ml-6">
-                            <TransactionAddButton class="hidden md:inline-block" v-if="!isOnboarding" />
-                            <PrivacyToggle v-model="isPrivacyMode" v-if="!isOnboarding" />
+                            <TransactionAddButton class="hidden md:inline-block mr-4" v-if="!isOnboarding" />
 
+                            <PrivacyToggle v-model="isPrivacyMode" v-if="!isOnboarding" />
                             <AppNotificationBell
                                 :notifications="$page.props.unreadNotifications"
                                 @click="$inertia.visit('/notifications')"
@@ -173,7 +173,7 @@
     import JetBanner from '@/Components/atoms/Banner.vue'
     import JetResponsiveNavLink from '@/Components/atoms/ResponsiveNavLink.vue'
     import PrivacyToggle from '@/Components/molecules/PrivacyToggle.vue'
-    import LogerTabButton from '@/Components/atoms/LogerTabButton.vue'
+    import LogerButtonTab from '@/Components/atoms/LogerButtonTab.vue'
     import AppShell from './AppShell.vue'
     import AppIcon from '@/Components/AppIcon.vue'
     import AppGlobals from './AppGlobals.vue'

@@ -29,7 +29,7 @@ import { provide, reactive, ref } from "vue";
 import { usePage } from "@inertiajs/inertia-vue3";
 import SectionTitle from "@/Components/atoms/SectionTitle.vue";
 import TransactionModal from "@/Components/TransactionModal.vue";
-import LogerTabButton from "@/Components/atoms/LogerTabButton.vue";
+import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 import ImportResourceModal from "@/Components/ImportResourceModal.vue";
 
 const pageProps = usePage().props;

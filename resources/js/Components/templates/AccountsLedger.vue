@@ -1,9 +1,9 @@
 <template>
   <div class="px-5 border-l border-base-lvl-1 text-body-1">
     <div class="space-y-2">
-      <LogerTabButton class="w-full bg-base-lvl-3" icon="fa-plus" @click="openAccountModal()">
+      <LogerButtonTab class="w-full bg-base-lvl-3" icon="fa-plus" @click="openAccountModal()">
         Add Account
-      </LogerTabButton>
+      </LogerButtonTab>
        <Draggable class="w-full space-y-1 dragArea list-group" ref="draggableRef" :list="accounts" handle=".handle"  @end="saveReorder" tag="div">
             <AccountItem
                 v-for="account in accounts"
@@ -30,7 +30,7 @@
 import { ref, inject, computed } from "vue";
 import { Inertia } from "@inertiajs/inertia";
 import AccountItem from "@/Components/atoms/AccountItem.vue";
-import LogerTabButton from "@/Components/atoms/LogerTabButton.vue";
+import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 import AccountModal from "@/Components/organisms/AccountModal.vue";
 import { VueDraggableNext as Draggable } from "vue-draggable-next"
 import { useAppContextStore } from "@/store";

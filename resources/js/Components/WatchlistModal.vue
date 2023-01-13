@@ -7,9 +7,9 @@
     @close="emitClose"
   >
     <header class="bg-base-lvl-3 px-6 py-2 font-bold flex items-center">
-        <LogerTabButton @click="selectedResource=''" v-if="selectedResource">
+        <LogerButtonTab @click="selectedResource=''" v-if="selectedResource">
             <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--ic" width="32" height="32" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path fill="currentColor" d="M14.71 6.71a.996.996 0 0 0-1.41 0L8.71 11.3a.996.996 0 0 0 0 1.41l4.59 4.59a.996.996 0 1 0 1.41-1.41L10.83 12l3.88-3.88c.39-.39.38-1.03 0-1.41z"></path></svg>
-        </LogerTabButton>
+        </LogerButtonTab>
         <span class="py-4">
             Create Watchlist
         </span>
@@ -76,7 +76,7 @@ import { NSelect } from "naive-ui";
 import Modal from "@/Components/atoms/Modal.vue";
 import ImportHolder from "@/Components/organisms/ImportHolder.vue";
 import TabSelector from "./TabSelector.vue";
-import LogerTabButton from "./atoms/LogerTabButton.vue";
+import LogerButtonTab from "./atoms/LogerButtonTab.vue";
 import LogerButton from "./atoms/LogerButton.vue";
 import LogerInput from "./atoms/LogerInput.vue";
 import LogerApiSimpleSelect from "./organisms/LogerApiSimpleSelect.vue";
