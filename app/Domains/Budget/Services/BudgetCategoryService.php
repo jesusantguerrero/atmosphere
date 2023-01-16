@@ -4,6 +4,7 @@ namespace App\Domains\Budget\Services;
 
 use App\Domains\AppCore\Models\Category;
 use App\Domains\Budget\Models\BudgetTarget;
+use App\Helpers\RequestQueryHelper;
 use Illuminate\Support\Facades\DB;
 
 class BudgetCategoryService {
@@ -41,4 +42,16 @@ class BudgetCategoryService {
     public static function getNextBudgetItems($teamId) {
        BudgetTarget::getNextTargets($teamId);
     }
+
+
+    public static function withBudgetInfo(Category $category) {
+        $queryParams = request()->query();
+        $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
+        [ $startDate ] = RequestQueryHelper::getFilterDates($filters);
+
+        $month = $startDate ?? date('Y-m-01');
+        return array_merge($category->toArray(), [ 'month' => $month ], $category->getBudgetInfo($month));
+    }
 }
+
+
