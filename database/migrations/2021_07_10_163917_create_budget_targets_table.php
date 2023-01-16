@@ -13,7 +13,7 @@ class CreateBudgetsTable extends Migration
      */
     public function up()
     {
-        Schema::create('budgets', function (Blueprint $table) {
+        Schema::create('budget_targets', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->index();
             $table->foreignId('team_id')->index();
@@ -52,6 +52,6 @@ class CreateBudgetsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('budgets');
+        Schema::dropIfExists('budget_targets');
     }
 }

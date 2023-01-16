@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
-class Budget extends Model
+class BudgetTarget extends Model
 {
     use HasFactory;
     protected $fillable = ['team_id', 'user_id', 'color', 'amount', 'name', 'target_type', 'frequency', 'frequency_date', 'frequency_week_day', 'frequency_month_date'];
@@ -27,13 +27,13 @@ class Budget extends Model
 
     public static function getNextTargets($teamId) {
         return DB::query()
-        ->whereIn('budgets.target_type', ['spending'])
+        ->whereIn('budget_targets.target_type', ['spending'])
         ->where([
             'frequency' => 'monthly',
-            'budgets.team_id' => $teamId
+            'budget_targets.team_id' => $teamId
         ])
         ->whereRaw("concat(date_format(now(), '%Y-%m'), '-', frequency_month_date) >= now()")
-        ->from('budgets')
+        ->from('budget_targets')
         ->get();
     }
 

@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Finance;
 
 use App\Domains\AppCore\Models\Category;
 use App\Domains\Budget\Models\BudgetMovement;
+use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Transaction\Services\ReportService;
+use App\Http\Resources\CategoryCollection;
 use App\Http\Resources\CategoryGroupCollection;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
@@ -58,12 +60,14 @@ class BudgetCategoryController extends InertiaController
             ];
         })->sortBy('date');
 
-
         return inertia($this->templates['show'], [
             "sectionTitle" => $category->name,
             'categoryId' => $category->id,
-            'resource' => $category,
-            'transactions' => $category->transactionLines()->whereBetween('date', [
+            'resource' => BudgetCategoryService::withBudgetInfo($category),
+            'transactions' => $category->resource_type_id ? $category->creditLines()->whereBetween('date', [
+                $startDate,
+                $endDate,
+            ])->get() : $category->transactionLines()->whereBetween('date', [
                 $startDate,
                 $endDate,
             ])->get(),

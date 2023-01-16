@@ -2,7 +2,7 @@
 
 namespace App\Domains\AppCore\Models;
 
-use App\Domains\Budget\Models\Budget;
+use App\Domains\Budget\Models\BudgetTarget;
 use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Transaction\Models\Transaction;
 use App\Events\BudgetAssigned;
@@ -21,7 +21,7 @@ class Category extends CoreCategory
     protected $with = ['budget'];
 
     public function budget() {
-        return $this->hasOne(Budget::class);
+        return $this->hasOne(BudgetTarget::class);
     }
 
     public function team() {
@@ -36,6 +36,11 @@ class Category extends CoreCategory
     public function transactionLines()
     {
         return $this->hasMany(TransactionLine::class, 'category_id');
+    }
+
+    public function creditLines()
+    {
+        return $this->hasMany(TransactionLine::class, 'account_id',  'resource_type_id');
     }
 
     public function group() {
@@ -103,14 +108,21 @@ class Category extends CoreCategory
      */
     public function getMonthBalance($yearMonth)
     {
-       return $this->transactions()
-        ->verified()
-        ->whereRaw(DB::raw("date_format(transactions.date, '%Y-%m') = '$yearMonth'"))
-        ->sum(DB::raw("CASE
-            WHEN transactions.direction = 'WITHDRAW'
-            THEN total * -1
-            ELSE total * 1 END"
-        ));
+        if (!$this->resource_type_id) {
+            return $this->transactions()
+            ->verified()
+            ->whereRaw(DB::raw("date_format(transactions.date, '%Y-%m') = '$yearMonth'"))
+            ->sum(DB::raw(
+                "CASE
+                    WHEN transactions.direction = 'WITHDRAW'
+                    THEN total * -1
+                    ELSE total * 1 END"
+            ));
+        } else {
+            return $this->creditLines()
+            ->whereRaw("date_format(date, '%Y-%m') = '$yearMonth'")
+            ->sum(DB::raw("amount * type"));
+        }
     }
 
     /**
@@ -120,14 +132,15 @@ class Category extends CoreCategory
      */
     public function getPrevMonthLeftOver($yearMonth)
     {
-       return DB::query()
-       ->select('*')
-       ->where([
-           'category_id' => $this->id,
-        ])
-        ->whereRaw("date_format(month, '%Y-%m') < '$yearMonth'")
-        ->from('budget_months')
-        ->sum(DB::raw("budgeted + activity"));
+        return DB::query()
+        ->select('*')
+        ->where([
+            'category_id' => $this->id,
+            ])
+            ->whereRaw("date_format(month, '%Y-%m') < '$yearMonth'")
+            ->from('budget_months')
+            ->sum(DB::raw("budgeted + activity"));
+
     }
 
     /**

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Finance;
 
 use App\Domains\AppCore\Models\Category;
-use App\Domains\Budget\Models\Budget;
+use App\Domains\Budget\Models\BudgetTarget;
 use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Http\Controllers\Controller;
 
@@ -16,10 +16,10 @@ class BudgetTargetController extends Controller
         return redirect()->back();
     }
 
-    public function update(Category $category, Budget $budgetTarget)
+    public function update(Category $category, BudgetTarget $budgetTarget)
     {
         $postData = request()->post();
-        $ready = $budgetTarget->update(array_merge(
+        $budgetTarget->update(array_merge(
             $postData, [
             "team_id" => request()->user()->current_team_id,
             "name" => $category->name,
