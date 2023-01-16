@@ -3,7 +3,7 @@
 namespace App\Domains\Budget\Services;
 
 use App\Domains\AppCore\Models\Category;
-use App\Domains\Budget\Models\Budget;
+use App\Domains\Budget\Models\BudgetTarget;
 use Illuminate\Support\Facades\DB;
 
 class BudgetCategoryService {
@@ -31,14 +31,14 @@ class BudgetCategoryService {
         $endMonth = substr((string) $endDate, 0, 7);
 
         return DB::query()
-        ->whereIn('budgets.target_type', ['saving_balance'])
+        ->whereIn('budget_targets.target_type', ['saving_balance'])
         ->whereRaw("date_format(month, '%Y-%m') <= '$endMonth'")
         ->from('budget_months')
-        ->join('budgets', 'budgets.category_id', 'budget_months.category_id')
+        ->join('budget_targets', 'budget_targets.category_id', 'budget_months.category_id')
         ->sum(DB::raw("budgeted + activity"));
     }
 
     public static function getNextBudgetItems($teamId) {
-       Budget::getNextTargets($teamId);
+       BudgetTarget::getNextTargets($teamId);
     }
 }

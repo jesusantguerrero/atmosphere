@@ -16,9 +16,9 @@
                             </slot>
                         </div>
 
-                        <div class="space-x-2 flex sm:items-center sm:ml-6">
-                            <TransactionAddButton class="hidden md:inline-block mr-4" v-if="!isOnboarding" />
-
+                        <div class="flex space-x-2 sm:items-center sm:ml-6">
+                            <TransactionAddButton class="hidden mr-4 md:inline-block" v-if="!isOnboarding" />
+                            <WatchlistButton class="hidden mr-4 md:inline-block" v-if="!isOnboarding" />
                             <PrivacyToggle v-model="isPrivacyMode" v-if="!isOnboarding" />
                             <AppNotificationBell
                                 :notifications="$page.props.unreadNotifications"
@@ -187,6 +187,7 @@
     import { useSelect } from '@/utils/useSelects'
     import { useAppContextStore } from '@/store'
 import { useTransactionModal } from '@/domains/transactions'
+import WatchlistButton from './WatchlistButton.vue'
 
     const props = defineProps({
         title: {

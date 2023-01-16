@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Freesgen\Atmosphere\Http\Querify;
+use Illuminate\Support\Carbon;
 
 abstract class BaseController extends Controller
 {
@@ -28,11 +29,22 @@ abstract class BaseController extends Controller
     {
         $queryParams = $request->query() ?? [];
         $queryParams['limit'] = $queryParams['limit'] ?? 50;
+        $results = $this->getModelQuery($request);
+        return $this->parser($results);
+    }
 
-        return $this->getModelQuery($request);
+    protected function parser($results) {
+        return $results;
     }
 
 
+    protected function getFilterDates($filters = [], $subCount=0) {
+        $dates = isset($filters['date']) ? explode("~", $filters['date']) : [
+            Carbon::now()->subMonths($subCount)->startOfMonth()->format('Y-m-d'),
+            Carbon::now()->endOfMonth()->format('Y-m-d')
+        ];
+        return $dates;
+    }
 
     /**
      * Store a newly created resource in storage.

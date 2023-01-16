@@ -2,7 +2,7 @@
 
 namespace App\Domains\AppCore\Models;
 
-use App\Domains\Budget\Models\Budget;
+use App\Domains\Budget\Models\BudgetTarget;
 use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Transaction\Models\Transaction;
 use App\Events\BudgetAssigned;
@@ -21,7 +21,7 @@ class Category extends CoreCategory
     protected $with = ['budget'];
 
     public function budget() {
-        return $this->hasOne(Budget::class);
+        return $this->hasOne(BudgetTarget::class);
     }
 
     public function team() {
