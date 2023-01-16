@@ -3,7 +3,7 @@
 namespace App\Domains\Budget\Services;
 
 use App\Domains\AppCore\Models\Category;
-use App\Domains\Budget\Models\Budget;
+use App\Domains\Budget\Models\BudgetTarget;
 use Illuminate\Support\Facades\DB;
 
 class BudgetCategoryService {
@@ -39,6 +39,6 @@ class BudgetCategoryService {
     }
 
     public static function getNextBudgetItems($teamId) {
-       Budget::getNextTargets($teamId);
+       BudgetTarget::getNextTargets($teamId);
     }
 }

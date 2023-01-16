@@ -16,7 +16,7 @@
     </template>
 
     <div
-      class="px-5 mt-12 mx-auto space-y-10 md:space-y-0 md:space-x-10 md:flex max-w-screen-2xl sm:px-6 lg:px-8"
+      class="px-5 mx-auto mt-12 space-y-10 md:space-y-0 md:space-x-10 md:flex max-w-screen-2xl sm:px-6 lg:px-8"
     >
       <div class="md:w-9/12">
         <WelcomeCard
@@ -26,7 +26,7 @@
             <div
               v-for="mealType in pageProps.mealTypes"
               :key="mealType.id"
-              class="cursor-pointer font-bold text-white border-primary transition rounded-md bg-primary/80 h-20 w-full flex flex-col items-center justify-center"
+              class="flex flex-col items-center justify-center w-full h-20 font-bold text-white transition rounded-md cursor-pointer border-primary bg-primary/80"
             >
               <h4 class="capitalize">
                 {{ mealType.name }}
@@ -36,12 +36,12 @@
           </article>
         </WelcomeCard>
 
-        <div class="space-y-4 mt-4">
+        <div class="mt-4 space-y-4">
             <ChoppingListForm
             :ingredients="ingredients"
             >
             <template #prepend>
-                <div class="rounded-md  font-bold bg-primary/40 text-body-1/80 py-2 px-4">
+                <div class="px-4 py-2 font-bold rounded-md bg-primary/10 text-primary">
                     This are the things you'll need this week according to your planning
                 </div>
             </template>
@@ -50,7 +50,7 @@
         </div>
       </div>
       <div class="py-6 space-y-4 md:w-3/12">
-        <div class="rounded-md bg-white px-2 py-2">
+        <div class="px-2 py-2 bg-white rounded-md">
             <SectionTitle type="secondary" class="text-center">
                 Most liked meals
             </SectionTitle>
