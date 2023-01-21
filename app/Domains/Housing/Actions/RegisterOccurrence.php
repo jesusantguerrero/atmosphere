@@ -4,7 +4,6 @@ namespace App\Domains\Housing\Actions;
 
 use App\Domains\Housing\Models\OccurrenceCheck;
 use App\Domains\Transaction\Actions\SearchTransactions;
-use Illuminate\Log\Logger;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 
@@ -74,6 +73,22 @@ class RegisterOccurrence
     }
 
     public function load(OccurrenceCheck $occurrence) {
+        $transactions = (new SearchTransactions())->handle($occurrence->conditions);
+        foreach ($transactions as $transaction) {
+            try {
+                (new RegisterOccurrence())->add(
+                    $transaction->team_id,
+                    $occurrence->name,
+                    $transaction->date
+                );
+            } catch (\Exception $e) {
+                Log::error($e->getMessage());
+                continue;
+            }
+        }
+    }
+
+    public function sync(OccurrenceCheck $occurrence) {
         $transactions = (new SearchTransactions())->handle($occurrence->conditions);
         foreach ($transactions as $transaction) {
             try {

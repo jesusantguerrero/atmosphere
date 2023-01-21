@@ -1,7 +1,5 @@
 <?php
 
-use App\Domains\Housing\Contracts\OccurrenceNotifyTypes;
-use App\Domains\Housing\Models\OccurrenceCheck;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
 
@@ -34,9 +32,6 @@ use App\Http\Controllers\Meal\MealPlannerController;
 
 use App\Http\Controllers\Relationship\RelationshipController;
 
-use App\Http\Controllers\Housing\OccurrenceController;
-use App\Http\Controllers\Housing\ProjectController;
-
 
 use App\Http\Controllers\System\NotificationController;
 
@@ -62,6 +57,8 @@ Route::resource('onboarding', OnboardingController::class)->middleware(['auth:sa
 
 // Automation Services
 Route::get('/services/accept-oauth', [ServiceController::class, 'acceptOauth']);
+
+Route::group([], app_path('/Domains/Housing/routes.php'));
 
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
     Route::get('/', fn () => redirect("/dashboard"));
@@ -153,30 +150,11 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     /**************************************************************************************
      *                               Extras Section
     ***************************************************************************************/
-    Route::get('/housing', ProjectController::class);
-    Route::resource('/housing/occurrence', OccurrenceController::class);
-    Route::controller(OccurrenceController::class)->group(function () {
-        Route::post('/housing/occurrence/{occurrence}/instances', 'addInstance');
-        Route::delete('/housing/occurrence/{occurrence}/instances', 'removeLastInstance');
-        Route::get('/housing/occurrence/{occurrence}/preview', 'automationPreview');
-        Route::post('/housing/occurrence/{occurrence}/load', 'automationLoad');
-    });
 
     Route::get('/relationships', RelationshipController::class);
-
     // Automation Services
     Route::post('/services/google', [ServiceController::class, 'google']);
     Route::get('/services/messages', [ServiceController::class, 'getMessages']);
-
-    Route::get('/housing/test',function () {
-        $occurrencesOnLast = OccurrenceCheck::getForNotificationType(OccurrenceNotifyTypes::LAST);
-        $occurrencesOnAvg = OccurrenceCheck::getForNotificationType(OccurrenceNotifyTypes::AVG);
-
-        return [
-            $occurrencesOnAvg,
-            $occurrencesOnLast
-        ];
-    });
 });
 
 

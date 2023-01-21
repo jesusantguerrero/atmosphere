@@ -3,8 +3,15 @@
         <template #header>
             <HouseSectionNav>
                   <template #actions>
-                      <div>
-                          <LogerButton variant="inverse" @click="isModalOpen = !isModalOpen"> Add Check </LogerButton>
+                      <div class="flex space-x-2">
+                        <LogerButton variant="neutral" class="flex" :href="route('occurrences.export')"  target="_blank" as="a">
+                            <IMdiFile />
+                            Export
+                        </LogerButton>
+                        <LogerButton variant="secondary" class="flex" @click="isModalOpen = !isModalOpen">
+                            <IMdiPlus />
+                            Add Check
+                        </LogerButton>
                       </div>
                   </template>
             </HouseSectionNav>
@@ -110,6 +117,13 @@ const defaultOptions = {
         name: "edit",
         label: "Edit",
         handle: handleEdit
+    },
+    sync: {
+        name: 'sync',
+        label: 'Sync',
+        handle(resource) {
+            Inertia.post(`/housing/occurrence/${resource.id}/sync`)
+        }
     },
     removed: {
         name: "removed",

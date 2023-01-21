@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\Housing;
+namespace App\Domains\Housing\Http\Controllers;
 
 use App\Domains\Housing\Actions\RegisterOccurrence;
+use App\Domains\Housing\Exports\OccurrenceExport;
 use App\Domains\Housing\Models\OccurrenceCheck;
 use App\Domains\Transaction\Actions\SearchTransactions;
 use Freesgen\Atmosphere\Http\InertiaController;
@@ -10,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Support\Carbon as SupportCarbon;
+use Maatwebsite\Excel\Facades\Excel;
 
 class OccurrenceController extends InertiaController
 {
@@ -57,5 +59,14 @@ class OccurrenceController extends InertiaController
 
     public function automationLoad(OccurrenceCheck $occurrence, RegisterOccurrence $registerer) {
         return $registerer->load($occurrence);
+    }
+
+    public function sync(OccurrenceCheck $occurrence, RegisterOccurrence $registerer) {
+        return $registerer->sync($occurrence);
+    }
+
+    public function export() {
+        $dataToExport = new OccurrenceExport(OccurrenceCheck::where('team_id', request()->user()->current_team_id)->get()->toArray());
+        return Excel::download($dataToExport, 'occurrences.xlsx');
     }
 }

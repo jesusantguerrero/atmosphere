@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Housing;
+namespace App\Domains\Housing\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Laravel\Jetstream\Jetstream;

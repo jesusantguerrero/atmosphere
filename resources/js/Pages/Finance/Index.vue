@@ -20,10 +20,10 @@
     </template>
 
     <FinanceTemplate title="Finance" :accounts="accounts" ref="financeTemplateRef">
-      <section class="grid md:grid-cols-2 gap-12 mt-4">
+      <section class="grid gap-12 mt-4 md:grid-cols-2">
             <WidgetTitleCard title="Summary" class="w-full">
                 <div
-                    class="flex justify-between lg:space-x-4 overflow-hidden lg:flex-nowrap flex-wrap w-full"
+                    class="flex flex-wrap justify-between w-full overflow-hidden lg:space-x-4 lg:flex-nowrap"
                 >
                     <div class="w-full mx-auto space-y-2">
                         <FinanceCard
@@ -41,7 +41,7 @@
                         <BudgetProgress
                             :goal="budgetTotal"
                             :current="transactionTotal"
-                            class="border-t h-8 rounded-b-lg text-white"
+                            class="h-8 text-white border-t rounded-b-lg"
                         />
                     </div>
                     <FinanceVarianceCard
@@ -59,7 +59,7 @@
             <WidgetTitleCard title="Planned Transactions" class="hidden md:block">
                 <TransactionsTable
                   class="w-full"
-                  table-class="overflow-auto text-sm rounded-t-lg shadow-md bg-base-lvl-3 p-2 w-full"
+                  table-class="w-full p-2 overflow-auto text-sm rounded-t-lg shadow-md bg-base-lvl-3"
                   :transactions="planned"
                   :parser="plannedDBToTransaction"
                   @edit="handleEdit"
@@ -132,7 +132,7 @@ import WidgetTitleCard from "@/Components/molecules/WidgetTitleCard.vue";
 import { format, subMonths } from "date-fns";
 
 const { serverSearchOptions } = toRefs(props);
-const {state: pageState} = useServerSearch(serverSearchOptions);
+const { state: pageState } = useServerSearch(serverSearchOptions);
 
 const props = defineProps({
   user: {
