@@ -3,7 +3,7 @@ import formatMoney from "../../utils/formatMoney";
 import { AtButton } from 'atmosphere-ui';
 import { h } from "vue"
 import { format, startOfMonth } from "date-fns";
-import { Inertia } from "@inertiajs/inertia";
+import { router } from "@inertiajs/vue3";
 import BalanceInput from "@/Components/atoms/BalanceInput.vue";
 import { createBudgetCategory } from "./createBudgetCategory";
 
@@ -65,7 +65,7 @@ export const budgetCols = (state) =>  {
                 },
                 onBlur: (e) => {
                     const month = format(startOfMonth(new Date()), 'yyyy-MM-dd');
-                    Inertia.post(`/budgets/${row.id}/months/${month}`, {
+                    router.post(`/budgets/${row.id}/months/${month}`, {
                         id: row.id,
                         budgeted: row.budgeted
                     }, {

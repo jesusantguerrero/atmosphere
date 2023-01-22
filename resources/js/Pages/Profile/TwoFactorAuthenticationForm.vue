@@ -82,8 +82,8 @@
     import JetConfirmsPassword from '@/Components/atoms/ConfirmsPassword.vue'
     import JetDangerButton from '@/Components/atoms/DangerButton.vue'
     import JetSecondaryButton from '@/Components/atoms/SecondaryButton.vue'
-    import { Inertia } from '@inertiajs/inertia'
-    import { usePage } from '@inertiajs/inertia-vue3'
+    import { router } from '@inertiajs/vue3'
+    import { usePage } from '@inertiajs/vue3'
     import { computed, reactive } from 'vue'
 
     const state = reactive({
@@ -97,7 +97,7 @@
     const enableTwoFactorAuthentication = () => {
         state.enabling = true
 
-        Inertia.post('/user/two-factor-authentication', {}, {
+        router.post('/user/two-factor-authentication', {}, {
             preserveScroll: true,
             onSuccess: () => Promise.all([
                 showQrCode(),
@@ -131,7 +131,7 @@
     const disableTwoFactorAuthentication = () => {
         state.disabling = true
 
-        Inertia.delete('/user/two-factor-authentication', {
+        router.delete('/user/two-factor-authentication', {
             preserveScroll: true,
             onSuccess: () => (state.disabling = false),
         })
@@ -139,7 +139,7 @@
 
     const pageProps = usePage().props;
     const twoFactorEnabled = computed(() => {
-        return ! state.enabling && pageProps.value.user.two_factor_enabled
+        return ! state.enabling && pageProps.user.two_factor_enabled
     })
     const titleLabel = computed(() => {
         return twoFactorEnabled.value ? "You have enabled two factor authentication." : " You have not enabled two factor authentication."

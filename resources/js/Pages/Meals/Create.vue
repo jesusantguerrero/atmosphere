@@ -1,5 +1,5 @@
 <template>
-    <AppLayout :title="mealFormLabel" :show-back-button="true" @back="$inertia.visit('/meal-planner')">
+    <AppLayout :title="mealFormLabel" :show-back-button="true" @back="$router.visit('/meal-planner')">
         <template #header>
               <MealSectionNav>
                     <template #actions>
@@ -14,7 +14,7 @@
             <MealForm
                 ref="mealForm"
                 :meal="meals"
-                class="bg-base-lvl-3 rounded-md px-4 py-2"
+                class="px-4 py-2 rounded-md bg-base-lvl-3"
             />
         </MealTemplate>
     </AppLayout>

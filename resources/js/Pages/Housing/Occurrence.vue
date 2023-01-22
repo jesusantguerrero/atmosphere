@@ -3,8 +3,15 @@
         <template #header>
             <HouseSectionNav>
                   <template #actions>
-                      <div>
-                          <LogerButton variant="inverse" @click="isModalOpen = !isModalOpen"> Add Check </LogerButton>
+                      <div class="flex space-x-2">
+                        <LogerButton variant="neutral" class="flex" :href="route('occurrences.export')"  target="_blank" as="a">
+                            <IMdiFile />
+                            Export
+                        </LogerButton>
+                        <LogerButton variant="secondary" class="flex" @click="isModalOpen = !isModalOpen">
+                            <IMdiPlus />
+                            Add Check
+                        </LogerButton>
                       </div>
                   </template>
             </HouseSectionNav>
@@ -60,7 +67,7 @@
 <script setup>
 import { ref, reactive } from 'vue';
 import { NDropdown } from 'naive-ui';
-import { Inertia } from '@inertiajs/inertia';
+import { router } from '@inertiajs/vue3';
 
 import AppLayout from '@/Components/templates/AppLayout.vue';
 import HouseSectionNav from '@/Components/templates/HouseSectionNav.vue';
@@ -83,20 +90,20 @@ const isModalOpen = ref(false);
 const resourceToEdit = ref({});
 
 const onSaved = () => {
-    Inertia.reload()
+    router.reload()
 }
 
 const addInstance = (id) => {
-    Inertia.post(`/housing/occurrence/${id}/instances`)
+    router.post(`/housing/occurrence/${id}/instances`)
 }
 
 const removeLastInstance = (id) => {
-    Inertia.delete(`/housing/occurrence/${id}/instances`)
+    router.delete(`/housing/occurrence/${id}/instances`)
 }
 
 const handleDelete = (resource) => {
     if (confirm(`Are you sure you want to delete this check ${resource.name}?`)) {
-        Inertia.delete(`/housing/occurrence/${resource.id}`)
+        router.delete(`/housing/occurrence/${resource.id}`)
     }
 }
 
@@ -110,6 +117,13 @@ const defaultOptions = {
         name: "edit",
         label: "Edit",
         handle: handleEdit
+    },
+    sync: {
+        name: 'sync',
+        label: 'Sync',
+        handle(resource) {
+            router.post(`/housing/occurrence/${resource.id}/sync`)
+        }
     },
     removed: {
         name: "removed",

@@ -11,7 +11,7 @@
                 </div>
 
                 <div>
-                    <AtButton class="text-white bg-primary" @click="$inertia.visit(route('goals.create'))">
+                    <AtButton class="text-white bg-primary" @click="$router.visit(route('goals.create'))">
                         Create goal
                     </AtButton>
                 </div>

@@ -27,7 +27,7 @@
 
 <script setup>
 
-import { useForm } from "@inertiajs/inertia-vue3";
+import { useForm } from "@inertiajs/vue3";
 import { AtButton } from "atmosphere-ui"
 
 defineProps({
@@ -38,13 +38,13 @@ defineProps({
 })
 
  function acceptTeamInvitation(invitation) {
-    useForm().patch(route('team-invitations.accept-internal', invitation), {
+    useForm({}).patch(route('team-invitations.accept-internal', invitation), {
         preserveScroll: true,
     });
 }
 
  function rejectTeamInvitation(invitation) {
-    useForm().delete(route('team-invitations.reject', invitation), {
+    useForm({}).delete(route('team-invitations.reject', invitation), {
         preserveScroll: true,
     });
 }

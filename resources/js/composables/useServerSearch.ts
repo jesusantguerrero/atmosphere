@@ -1,4 +1,4 @@
-import { Inertia } from "@inertiajs/inertia";
+import { router } from "@inertiajs/vue3";
 import { format, parseISO } from "date-fns";
 import { reactive, Ref, watch }  from "vue"
 
@@ -72,7 +72,7 @@ export const updateSearch = (state: ISearchState) => {
     const urlParams = params.filter(value => value?.trim()).join("&");
     const finalUrl = `${window.location.pathname}?${urlParams}`
     if (finalUrl != window.location.toString()) {
-        Inertia.visit(finalUrl, {
+        router.visit(finalUrl, {
             preserveState: true,
         })
     }

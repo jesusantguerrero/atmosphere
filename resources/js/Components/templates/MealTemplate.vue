@@ -26,7 +26,7 @@
 
 <script setup>
 import { provide, reactive, ref } from "vue";
-import { usePage } from "@inertiajs/inertia-vue3";
+import { usePage } from "@inertiajs/vue3";
 import SectionTitle from "@/Components/atoms/SectionTitle.vue";
 import TransactionModal from "@/Components/TransactionModal.vue";
 import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";

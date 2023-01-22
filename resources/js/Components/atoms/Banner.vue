@@ -4,9 +4,9 @@
       :class="{ 'bg-indigo-500': style == 'success', 'bg-red-700': style == 'danger' }"
       v-if="show && message"
     >
-      <div class="max-w-screen-xl mx-auto py-2 px-3 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between flex-wrap">
-          <div class="w-0 flex-1 flex items-center min-w-0">
+      <div class="max-w-screen-xl px-3 py-2 mx-auto sm:px-6 lg:px-8">
+        <div class="flex flex-wrap items-center justify-between">
+          <div class="flex items-center flex-1 w-0 min-w-0">
             <span
               class="flex p-2 rounded-lg"
               :class="{
@@ -15,7 +15,7 @@
               }"
             >
               <svg
-                class="h-5 w-5 text-white"
+                class="w-5 h-5 text-white"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -31,7 +31,7 @@
               </svg>
 
               <svg
-                class="h-5 w-5 text-white"
+                class="w-5 h-5 text-white"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -47,7 +47,7 @@
               </svg>
             </span>
 
-            <p class="ml-3 font-medium text-sm text-white truncate">
+            <p class="ml-3 text-sm font-medium text-white truncate">
               {{ message }}
             </p>
           </div>
@@ -55,7 +55,7 @@
           <div class="flex-shrink-0 sm:ml-3">
             <button
               type="button"
-              class="-mr-1 flex p-2 rounded-md focus:outline-none sm:-mr-2 transition"
+              class="flex p-2 -mr-1 transition rounded-md focus:outline-none sm:-mr-2"
               :class="{
                 'hover:bg-indigo-600 focus:bg-indigo-600': style == 'success',
                 'hover:bg-red-600 focus:bg-red-600': style == 'danger',
@@ -64,7 +64,7 @@
               @click.prevent="show = false"
             >
               <svg
-                class="h-5 w-5 text-white"
+                class="w-5 h-5 text-white"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -87,7 +87,7 @@
 
 <script setup>
 import { ref, computed } from "vue";
-import { usePage } from "@inertiajs/inertia-vue3"
+import { usePage } from "@inertiajs/vue3"
 
 defineProps({
     activeClass: {
@@ -99,10 +99,10 @@ const show = ref(false);
 
 const pageProps = usePage().props;
 const style = computed(() => {
-    return pageProps.value.jetstream.flash?.bannerStyle || "success";
+    return pageProps.jetstream.flash?.bannerStyle || "success";
 })
 
 const message = computed(() => {
-    return pageProps.value.jetstream.flash?.banner || "";
+    return pageProps.jetstream.flash?.banner || "";
 })
 </script>

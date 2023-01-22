@@ -10,7 +10,7 @@
                 :key="account.id"
                 :account="account"
                 :is-selected="isSelectedAccount(account.id)"
-                @click="Inertia.visit(`/finance/accounts/${account.id}`)"
+                @click="router.visit(`/finance/accounts/${account.id}`)"
                 @edit="openAccountModal(account)"
             />
        </Draggable>
@@ -28,7 +28,7 @@
 
 <script setup>
 import { ref, inject, computed } from "vue";
-import { Inertia } from "@inertiajs/inertia";
+import { router } from "@inertiajs/vue3";
 import AccountItem from "@/Components/atoms/AccountItem.vue";
 import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 import AccountModal from "@/Components/organisms/AccountModal.vue";

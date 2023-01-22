@@ -22,7 +22,7 @@
                     Are you sure you want to delete your account? Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.
 
                     <div class="mt-4">
-                        <jet-input type="password" class="mt-1 block w-3/4" placeholder="Password"
+                        <jet-input type="password" class="block w-3/4 mt-1" placeholder="Password"
                                     ref="password"
                                     v-model="form.password"
                                     @keyup.enter="deleteUser" />
@@ -52,6 +52,7 @@
     import JetInput from '@/Components/atoms/Input.vue'
     import JetInputError from '@/Components/atoms/InputError.vue'
     import JetSecondaryButton from '@/Components/atoms/SecondaryButton.vue'
+import { useForm } from '@inertiajs/vue3'
 
     export default {
         components: {
@@ -67,7 +68,7 @@
             return {
                 confirmingUserDeletion: false,
 
-                form: this.$inertia.form({
+                form: useForm({
                     password: '',
                 })
             }

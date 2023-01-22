@@ -13,7 +13,7 @@
         <form @submit.prevent="submit">
             <div>
                 <jet-label for="password" value="Password" />
-                <jet-input id="password" type="password" class="mt-1 block w-full" v-model="form.password" required autocomplete="current-password" autofocus />
+                <jet-input id="password" type="password" class="block w-full mt-1" v-model="form.password" required autocomplete="current-password" autofocus />
             </div>
 
             <div class="flex justify-end mt-4">
@@ -32,6 +32,7 @@
     import JetInput from '@/Components/atoms/Input.vue'
     import JetLabel from '@/Components/atoms/Label.vue'
     import JetValidationErrors from '@/Components/atoms/ValidationErrors.vue'
+import { useForm } from '@inertiajs/vue3'
 
     export default {
         components: {
@@ -45,7 +46,7 @@
 
         data() {
             return {
-                form: this.$inertia.form({
+                form: useForm({
                     password: '',
                 })
             }

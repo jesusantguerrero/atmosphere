@@ -54,7 +54,7 @@
 </template>
 
 <script setup>
-    import { useForm, usePage } from "@inertiajs/inertia-vue3"
+    import { useForm, usePage } from "@inertiajs/vue3"
     import { reactive, toRefs, computed, watch } from 'vue'
     import { NSelect } from "naive-ui";
     import { AtField, AtButton } from "atmosphere-ui"

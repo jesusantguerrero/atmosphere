@@ -1,10 +1,10 @@
 <template>
-    <AppLayout title="Recipes" :show-back-button="true" @back="$inertia.visit('/meal-planner')">
+    <AppLayout title="Recipes" :show-back-button="true" @back="$router.visit('/meal-planner')">
         <template #header>
             <MealSectionNav>
                 <template #actions>
                    <div>
-                        <AtButton class="items-center h-10 text-white bg-primary" rounded @click="$inertia.visit(route('meals.create'))"> New Meal</AtButton>
+                        <AtButton class="items-center h-10 text-white bg-primary" rounded @click="$router.visit(route('meals.create'))"> New Meal</AtButton>
                     </div>
                 </template>
             </MealSectionNav>

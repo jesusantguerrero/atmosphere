@@ -40,6 +40,7 @@
     import JetConfirmationModal from '@/Components/atoms/ConfirmationModal.vue'
     import JetDangerButton from '@/Components/atoms/DangerButton.vue'
     import JetSecondaryButton from '@/Components/atoms/SecondaryButton.vue'
+    import { useForm } from '@inertiajs/vue3'
 
     export default {
         props: ['team'],
@@ -55,8 +56,7 @@
             return {
                 confirmingTeamDeletion: false,
                 deleting: false,
-
-                form: this.$inertia.form()
+                form: useForm({})
             }
         },
 

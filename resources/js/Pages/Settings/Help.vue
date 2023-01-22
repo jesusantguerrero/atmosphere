@@ -36,7 +36,7 @@
 
 <script setup>
 import { nextTick, reactive } from "vue";
-import { Inertia } from '@inertiajs/inertia';
+import { router } from '@inertiajs/vue3';
 import { AtButton } from "atmosphere-ui";
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import AutomationModal from '@/Components/AutomationModal.vue';
@@ -94,7 +94,7 @@ const openAutomationModal = (board, stage) => {
 const onItemSaved = () => {
     nextTick(() => {
         state.isAutomationModalOpen = false;
-        Inertia.reload(`/integrations`, {
+        router.eload(`/integrations`, {
             only: ["integrations"],
             preserveState: true
         });
@@ -144,7 +144,7 @@ const google = (scopeName, service) => {
                             user: profile.getEmail()
                         };
                         axios.post('/services/google', { credentials }).then(() => {
-                            Inertia.get(`/integrations`, {
+                            router.et(`/integrations`, {
                                 only: ["integrations"],
                                 preserveState: true
                             });

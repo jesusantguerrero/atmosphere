@@ -14,7 +14,7 @@
             </label>
             <div v-if="!formData.file" class="mt-2">
                 or
-                <button class="text-primary underline underline-offset-2"> Browse in your computer</button>
+                <button class="underline text-primary underline-offset-2"> Browse in your computer</button>
             </div>
         </div>
         <div class="absolute z-10 flex w-full h-full bg-primary/30" :style="progressStyle" />
@@ -23,9 +23,8 @@
 </template>
 
 <script setup>
-import { useForm } from "@inertiajs/inertia-vue3";
+import { useForm } from "@inertiajs/vue3";
 import { computed, ref } from "vue";
-import LogerButton from "../atoms/LogerButton.vue";
 import { useDropZone } from "@vueuse/core";
 
 const props = defineProps({
@@ -79,6 +78,10 @@ const clearFile = () => {
 const processImport = async () => {
   if (!formData.file) {
     formData.setError('file', "You have to submit a file")
+    return
+  }
+
+  if (formData.processing) {
     return
   }
 

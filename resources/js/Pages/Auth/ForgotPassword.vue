@@ -28,7 +28,7 @@
 
 <script setup>
     import { AtAuthBox, AtAuthForm, AtField, AtInput } from "atmosphere-ui";
-    import { useForm, Link } from "@inertiajs/inertia-vue3";
+    import { useForm, Link } from "@inertiajs/vue3";
 
     defineProps({
         status: String

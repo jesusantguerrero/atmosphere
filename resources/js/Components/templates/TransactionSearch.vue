@@ -2,7 +2,7 @@
   <div class="pb-20">
     <TransactionsTable
       table-label=""
-      table-class="overflow-auto bg-base-lvl-1 border rounded-lg shadow-md"
+      table-class="overflow-auto border rounded-lg shadow-md bg-base-lvl-1"
       allow-select
       show-sum
       allow-remove
@@ -18,7 +18,7 @@
 
 <script setup>
 import { reactive, ref } from "vue";
-import { Inertia } from "@inertiajs/inertia";
+import { router } from "@inertiajs/vue3";
 import TransactionsTable from "@/Components/organisms/TransactionsTable.vue";
 import { fromDBToAllAccounts, transactionDBToTransaction } from "@/domains/transactions";
 
@@ -54,16 +54,16 @@ const handleEdit = (transaction) => {
 
 const importTransaction = () => {
   const file = document.querySelector('input[type="file"]').files[0];
-  Inertia.post("/financial/import", {
+  router.post("/financial/import", {
     file,
   });
 };
 
 const removeTransaction = (transaction) => {
     if (confirm("Are you sure you want to remove this transaction?")) {
-        Inertia.delete(`/transactions/${transaction.id}`, {
+        router.delete(`/transactions/${transaction.id}`, {
             onSuccess() {
-                Inertia.reload();
+                router.reload();
             }
         })
     }

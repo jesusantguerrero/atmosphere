@@ -3,13 +3,13 @@
     <template #header>
       <FinanceSectionNav>
         <template #actions>
-            <div class="flex text-white rounded-md bg-primary border border-primary min-w-max overflow-hidden">
+            <div class="flex overflow-hidden text-white border rounded-md bg-primary border-primary min-w-max">
                 <button
                     v-for="(item, statusName) in cashflowEntities"
                     class="px-2 py-1.5 flex items-center border border-transparent hover:bg-accent"
                     :class="{'bg-white text-primary border-primary hover:text-white': isFilterSelected(statusName)}"
                     :key="statusName"
-                    @click="$inertia.visit(item.value)">
+                    @click="$router.visit(item.value)">
                     {{ item.label }}
                 </button>
             </div>
@@ -21,7 +21,7 @@
                 next-mode="month"
             />
           <!-- <div>
-            <AtButton class="rounded-md text-primary w-32" @click="onPrint">
+            <AtButton class="w-32 rounded-md text-primary" @click="onPrint">
                 Print
             </AtButton>
           </div> -->
@@ -48,7 +48,7 @@
 
       <template #panel>
             <div class="divide-y-2">
-                <Link :href="trend.link" v-for="trend in trends" :key="trend.name" class="block py-4 px-2 hover:bg-base-lvl-3 cursor-pointer">
+                <Link :href="trend.link" v-for="trend in trends" :key="trend.name" class="block px-2 py-4 cursor-pointer hover:bg-base-lvl-3">
                     {{ trend.name }}
                 </Link>
             </div>
@@ -59,9 +59,8 @@
 
 <script setup>
 import { computed, toRefs } from "vue";
-import { Inertia } from "@inertiajs/inertia";
 import { AtButton, AtDatePager } from "atmosphere-ui";
-import { Link } from "@inertiajs/inertia-vue3";
+import { Link, router } from "@inertiajs/vue3";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
@@ -99,7 +98,7 @@ const {state: pageState, executeSearch }= useServerSearch(serverSearchOptions);
 const handleSelection = (index) => {
     const parent = props.data[index]
     if (!props.metaData.parent_name) {
-        Inertia.visit(`/trends/categories?filter[parent_id]=${parent.id}`)
+        router.visit(`/trends/categories?filter[parent_id]=${parent.id}`)
     }
 }
 

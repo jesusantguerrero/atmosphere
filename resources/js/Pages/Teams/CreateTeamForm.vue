@@ -13,11 +13,11 @@
                 <jet-label value="Team Owner" />
 
                 <div class="flex items-center mt-2">
-                    <img class="w-12 h-12 rounded-full object-cover" :src="$page.props.user.profile_photo_url" :alt="$page.props.user.name">
+                    <img class="object-cover w-12 h-12 rounded-full" :src="$page.props.user.profile_photo_url" :alt="$page.props.user.name">
 
                     <div class="ml-4 leading-tight">
                         <div>{{ $page.props.user.name }}</div>
-                        <div class="text-gray-700 text-sm">{{ $page.props.user.email }}</div>
+                        <div class="text-sm text-gray-700">{{ $page.props.user.email }}</div>
                     </div>
                 </div>
             </div>
@@ -43,10 +43,10 @@
     import JetInput from '@/Components/atoms/Input.vue'
     import JetInputError from '@/Components/atoms/InputError.vue'
     import JetLabel from '@/Components/atoms/Label.vue'
-    import { Inertia } from '@inertiajs/inertia'
+    import { router } from '@inertiajs/vue3'
     import TeamForm from '../Onboarding/TeamForm.vue'
 
-    const form = Inertia.form({
+    const form = router.form({
         name: '',
     });
 

@@ -16,7 +16,7 @@
 </template>
 
 <script setup>
-    import { useForm } from "@inertiajs/inertia-vue3";
+    import { useForm } from "@inertiajs/vue3";
     import { computed, inject, ref } from "vue"
     import { NPopover, NSelect } from "naive-ui";
     import { AtField, AtButton } from "atmosphere-ui";

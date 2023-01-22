@@ -1,7 +1,7 @@
 <template>
   <AppLayout
     :title="sectionTitle"
-    @back="$inertia.visit(route('finance'))"
+    @back="$router.visit(route('finance'))"
     :show-back-button="true"
   >
     <template #header>
@@ -12,7 +12,7 @@
             <AtButton
               v-if="visibleFilters.overspent"
               @click="toggleFilter('overspent')"
-              class="items-center min-w-fit rounded-md space-x-2 justify-between flex group"
+              class="flex items-center justify-between space-x-2 rounded-md min-w-fit group"
               :class="[filters.overspent ? 'bg-primary text-white' : 'text-primary']"
             >
                 <span class="relative">
@@ -55,15 +55,15 @@
         content="Create new category groups and categories and organize them to suit your needs"
       />
         <BalanceAssign
-            class="rounded-t-md mt-5"
+            class="mt-5 rounded-t-md"
             :class="[cardShadow, !visibleFilters.overspent && 'rounded-b-md']"
             :value="readyToAssign.balance"
             :category="readyToAssign.toAssign"
             :to-assign="readyToAssign"
       >
         <template #activity>
-          <section class="w-full flex-col justify-center  py-2 flex items-center">
-            <h4 class="text-secondary font-bold">
+          <section class="flex flex-col items-center justify-center w-full py-2">
+            <h4 class="font-bold text-secondary">
                 <MoneyPresenter :value="readyToAssign.activity" />
             </h4>
             <p class="font-bold text-body-1/80">Activity</p>
@@ -128,8 +128,8 @@
 </template>
 
 <script setup>
-import { computed, toRefs, unref } from "vue";
-import { Inertia } from "@inertiajs/inertia";
+import { computed, toRefs} from "vue";
+import { router} from "@inertiajs/vue3";
 import { AtButton, AtDatePager } from "atmosphere-ui";
 import { useBreakpoints, breakpointsTailwind } from "@vueuse/core";
 
@@ -211,9 +211,9 @@ const currentStatus = computed(() => Object.keys(filters.value).find(key => filt
 
 //  Budget Form
 const deleteBudget = (budget) => {
-  Inertia.delete(route("budgets.destroy", budget), {
+  router.delete(route("budgets.destroy", budget), {
     onSuccess: () => {
-      Inertia.reload(["budgets"]);
+      router.reload(["budgets"]);
     },
   });
 };

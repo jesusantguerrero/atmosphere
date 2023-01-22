@@ -55,8 +55,8 @@
 </template>
 
 <script setup>
-    import { useForm } from "@inertiajs/inertia-vue3";
-    import { Inertia } from "@inertiajs/inertia";
+    import { useForm } from "@inertiajs/vue3";
+    import { router } from "@inertiajs/vue3";
     import ExactMath from "exact-math";
     import { computed, inject, ref } from "vue"
     import { NPopover, NSelect } from "naive-ui";
@@ -151,7 +151,7 @@ import MoneyPresenter from "../molecules/MoneyPresenter.vue";
                 'type': 'movement'
             })).post(`/budgets/${props.category.id}/months/${month}`, {
                 onSuccess() {
-                    Inertia.reload({
+                    router.reload({
                         preserveScroll: true,
                     })
                 }

@@ -9,17 +9,17 @@
         <form @submit.prevent="submit">
             <div>
                 <jet-label for="email" value="Email" />
-                <jet-input id="email" type="email" class="mt-1 block w-full" v-model="form.email" required autofocus />
+                <jet-input id="email" type="email" class="block w-full mt-1" v-model="form.email" required autofocus />
             </div>
 
             <div class="mt-4">
                 <jet-label for="password" value="Password" />
-                <jet-input id="password" type="password" class="mt-1 block w-full" v-model="form.password" required autocomplete="new-password" />
+                <jet-input id="password" type="password" class="block w-full mt-1" v-model="form.password" required autocomplete="new-password" />
             </div>
 
             <div class="mt-4">
                 <jet-label for="password_confirmation" value="Confirm Password" />
-                <jet-input id="password_confirmation" type="password" class="mt-1 block w-full" v-model="form.password_confirmation" required autocomplete="new-password" />
+                <jet-input id="password_confirmation" type="password" class="block w-full mt-1" v-model="form.password_confirmation" required autocomplete="new-password" />
             </div>
 
             <div class="flex items-center justify-end mt-4">
@@ -38,6 +38,7 @@
     import JetInput from '@/Components/atoms/Input.vue'
     import JetLabel from '@/Components/atoms/Label.vue'
     import JetValidationErrors from '@/Components/atoms/ValidationErrors.vue'
+import { useForm } from '@inertiajs/inertia-vue3'
 
     export default {
         components: {
@@ -56,7 +57,7 @@
 
         data() {
             return {
-                form: this.$inertia.form({
+                form: useForm({
                     token: this.token,
                     email: this.email,
                     password: '',

@@ -54,7 +54,7 @@ import { NDropdown } from "naive-ui";
 
 import IconDrag from "../icons/IconDrag.vue";
 import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
-import { Inertia } from "@inertiajs/inertia";
+import { router } from "@inertiajs/vue3";
 import PointAlert from "../atoms/PointAlert.vue";
 import BudgetProgress from "./BudgetProgress.vue";
 
@@ -104,10 +104,10 @@ const options = [{
 
 const removeCategory = () => {
     if (confirm("Are you sure you want to remove this category group?")) {
-        Inertia.delete(`budgets/${props.item.id}`, {
+        router.delete(`budgets/${props.item.id}`, {
             onSuccess() {
                 emit('removed', props.item.id)
-                Inertia.reload({
+                router.reload({
                     only: ['budgets'],
                     preserveScroll: true,
                 })

@@ -89,7 +89,7 @@
    </modal>
 </template>
 <script setup>
-import { useForm } from '@inertiajs/inertia-vue3';
+import { useForm } from '@inertiajs/vue3';
 import { AtField, AtButton, AtInput } from 'atmosphere-ui';
 import { NSelect } from "naive-ui";
 import { computed, nextTick, ref } from 'vue';

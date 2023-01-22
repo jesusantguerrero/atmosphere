@@ -6,10 +6,10 @@
                 <StatusButtons
                     v-model="currentStatus"
                     :statuses="mealStatus"
-                    @change="$inertia.visit($event)"
+                    @change="$router.visit($event)"
                 />
                <div>
-                    <LogerButton variant="inverse" @click="$inertia.visit(route('meals.create'))"> New Meal</LogerButton>
+                    <LogerButton variant="inverse" @click="$router.visit(route('meals.create'))"> New Meal</LogerButton>
                 </div>
             </template>
         </MealSectionNav>
@@ -102,7 +102,7 @@ import SectionTitle from "@/Components/atoms/SectionTitle.vue";
 import CategoryItem from "@/Components/mobile/CategoryItem.vue";
 import WelcomeCard from "@/Components/organisms/WelcomeCard.vue";
 
-import { usePage } from "@inertiajs/inertia-vue3";
+import { usePage } from "@inertiajs/vue3";
 import { addPlan } from "./utils";
 import ChoppingListForm from "./Partials/ChoppingListForm.vue";
 

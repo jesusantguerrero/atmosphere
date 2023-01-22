@@ -37,7 +37,7 @@
 
 <script setup>
     import AppLayout from '@/Components/templates/AppLayout.vue'
-    import { usePage } from '@inertiajs/inertia-vue3'
+    import { usePage } from '@inertiajs/vue3'
     import DeleteUserForm from './DeleteUserForm.vue'
     import LogoutOtherBrowserSessionsForm from './LogoutOtherBrowserSessionsForm.vue'
     import TwoFactorAuthenticationForm from './TwoFactorAuthenticationForm.vue'

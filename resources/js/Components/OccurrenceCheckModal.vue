@@ -54,7 +54,7 @@
 <script setup>
 import { ref, inject, watch, computed } from "vue";
 import { AtButton, AtField, AtFieldCheck } from "atmosphere-ui";
-import { useForm } from "@inertiajs/inertia-vue3";
+import { useForm } from "@inertiajs/vue3";
 import { NSelect } from "naive-ui";
 
 import Modal from "@/Components/atoms/Modal.vue";

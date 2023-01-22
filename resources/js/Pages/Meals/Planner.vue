@@ -61,9 +61,9 @@
 <script setup>
     import { format, startOfDay } from "date-fns";
     import { AtButton, AtDatePager } from "atmosphere-ui";
-    import { useForm, usePage } from "@inertiajs/inertia-vue3";
+    import { useForm, usePage } from "@inertiajs/vue3";
     import AppLayout from '@/Components/templates/AppLayout.vue';
-    import { Inertia } from '@inertiajs/inertia';
+    import { router } from '@inertiajs/vue3';
     import { computed, reactive } from "vue";
     import RandomMealModal from '@/Components/RandomMealModal.vue';
     import MealTemplate from "@/Components/templates/MealTemplate.vue";
@@ -133,7 +133,7 @@
     }
 
     const toggleMode = () => {
-        Inertia.visit(`/meal-planner?${getMode(true)}`);
+        router.visit(`/meal-planner?${getMode(true)}`);
     }
 
     const openDayInModal = (day) => {
@@ -163,9 +163,9 @@
 
     const onToggleLike = (plannedMeal) => {
         plannedMeal.is_liked = !Boolean(plannedMeal.is_liked);
-        Inertia.put(route('meal-planner.update', plannedMeal), plannedMeal, {
+        router.put(route('meal-planner.update', plannedMeal), plannedMeal, {
             onSuccess() {
-                Inertia.reload({
+                router.reload({
                     preserveScroll: true,
                 })
             }
@@ -174,9 +174,9 @@
 
     const onRemoved = (plannedMeal) => {
         plannedMeal.is_liked = !Boolean(plannedMeal.is_liked);
-        Inertia.delete(route('meal-planner.destroy', plannedMeal), plannedMeal, {
+        router.delete(route('meal-planner.destroy', plannedMeal), plannedMeal, {
             onSuccess() {
-                Inertia.reload({
+                router.reload({
                     preserveScroll: true,
                 })
             }

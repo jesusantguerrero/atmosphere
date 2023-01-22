@@ -22,7 +22,7 @@
                             <PrivacyToggle v-model="isPrivacyMode" v-if="!isOnboarding" />
                             <AppNotificationBell
                                 :notifications="$page.props.unreadNotifications"
-                                @click="$inertia.visit('/notifications')"
+                                @click="$router.visit('/notifications')"
                              />
 
                             <!-- Settings Dropdown -->
@@ -165,10 +165,10 @@
 <script setup>
     import { provide, ref, computed, watch } from 'vue'
     import { NConfigProvider } from 'naive-ui'
-    import { Inertia } from '@inertiajs/inertia'
+    import { router } from '@inertiajs/vue3'
     import { AtSide } from "atmosphere-ui"
     import { useLocalStorage } from "@vueuse/core"
-    import { Link, usePage } from '@inertiajs/inertia-vue3'
+    import { Link, usePage } from '@inertiajs/vue3'
 
     import JetBanner from '@/Components/atoms/Banner.vue'
     import JetResponsiveNavLink from '@/Components/atoms/ResponsiveNavLink.vue'
@@ -221,7 +221,7 @@ import WatchlistButton from './WatchlistButton.vue'
 
     const pageProps = usePage().props
     const sectionTitle = computed(() => {
-        return props.title || pageProps.value.sectionTitle
+        return props.title || pageProps.sectionTitle
     })
 
     const isPrivacyMode = useLocalStorage('hasHiddenValues', false)
@@ -230,7 +230,7 @@ import WatchlistButton from './WatchlistButton.vue'
     // routing
     const showingNavigationDropdown = ref(false)
     const switchToTeam = (team) => {
-        Inertia.put(route('current-team.update'), {
+        router.put(route('current-team.update'), {
             'team_id': team.id
         }, {
             preserveState: false
@@ -241,12 +241,12 @@ import WatchlistButton from './WatchlistButton.vue'
         return document?.location?.pathname
     })
     const isExpanded = useLocalStorage('isMenuExpanded', true);
-    const logout = () => Inertia.post(route('logout'));
+    const logout = () => router.post(route('logout'));
 
     //  categories
     const { categoryOptions: transformCategoryOptions } = useSelect()
-    transformCategoryOptions(pageProps.value.categories, 'sub_categories', 'categoryOptions');
-    transformCategoryOptions(pageProps.value.accounts, 'accounts', 'accountsOptions');
+    transformCategoryOptions(pageProps.categories, 'sub_categories', 'categoryOptions');
+    transformCategoryOptions(pageProps.accounts, 'accounts', 'accountsOptions');
 
     // useLogerConfig()
     const { openTransactionModal } = useTransactionModal()

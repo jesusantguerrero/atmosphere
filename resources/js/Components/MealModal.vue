@@ -37,7 +37,7 @@
 
 <script>
     import Modal from '@/Components/atoms/Modal.vue'
-    import { useForm } from "@inertiajs/inertia-vue3"
+    import { useForm } from "@inertiajs/vue3"
     import { AtField, AtInput, AtButton } from "atmosphere-ui"
     import { reactive, toRefs } from '@vue/reactivity'
 

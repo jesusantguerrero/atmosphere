@@ -21,8 +21,8 @@
 
 <script setup>
     import { AtAuthBox, AtAuthForm } from "atmosphere-ui";
-    import { Inertia } from "@inertiajs/inertia";
-    import { useForm, Link } from "@inertiajs/inertia-vue3";
+    import { router } from "@inertiajs/vue3";
+    import { useForm, Link } from "@inertiajs/vue3";
 
     defineProps({
         canResetPassword: Boolean,
@@ -36,11 +36,11 @@
     })
 
     const onHomePressed = () => {
-        Inertia.visit('/');
+        router.visit('/');
     }
 
     const onLinkPressed = () => {
-        Inertia.visit('register');
+        router.visit('register');
     }
 
     const submit = (formData) => {
