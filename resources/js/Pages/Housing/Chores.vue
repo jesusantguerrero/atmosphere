@@ -66,7 +66,7 @@ import LogerButton from '@/Components/atoms/LogerButton.vue';
 import CustomTable from '@/Components/atoms/CustomTable.vue';
 import OccurrenceCheckModal from '@/Components/OccurrenceCheckModal.vue';
 import { occurrenceCols as cols } from '@/domains/housing/occurrenceCols';
-import { Inertia } from '@inertiajs/inertia';
+import { router } from '@inertiajs/vue3';
 
 defineProps({
     occurrence: {
@@ -81,20 +81,20 @@ const isModalOpen = ref(false);
 const resourceToEdit = ref(null);
 
 const onSaved = () => {
-    Inertia.reload()
+    router.reload()
 }
 
 const addInstance = (id) => {
-    Inertia.post(`/housing/occurrence/${id}/instances`)
+    router.post(`/housing/occurrence/${id}/instances`)
 }
 
 const removeLastInstance = (id) => {
-    Inertia.delete(`/housing/occurrence/${id}/instances`)
+    router.delete(`/housing/occurrence/${id}/instances`)
 }
 
 const handleDelete = (resource) => {
     if (confirm(`Are you sure you want to delete this check ${resource.name}?`)) {
-        Inertia.delete(`/housing/occurrence/${resource.id}`)
+        router.delete(`/housing/occurrence/${resource.id}`)
     }
 }
 

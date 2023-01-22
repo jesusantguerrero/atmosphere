@@ -13,7 +13,7 @@
 
 <script setup>
 import { AtButton } from "atmosphere-ui";
-import { Inertia } from "@inertiajs/inertia";
+import { router } from "@inertiajs/vue3";
 
 
 const runAutomation = () => {
@@ -27,27 +27,27 @@ const runAutomation = () => {
 }
 
 const removeAllDrafts = () => {
-    Inertia.post('/transactions/remove-all-drafts')
+    router.post('/transactions/remove-all-drafts')
         .then(response => {
-            Inertia.reload()
+            router.reload()
         })
 }
 
 const approveTransactionAll = (transaction) => {
-    Inertia.post(`/transactions/approve-all-drafts`).then(() => {
-        Inertia.reload();
+    router.post(`/transactions/approve-all-drafts`).then(() => {
+        router.reload();
     })
 }
 
 const approveTransaction = (transaction) => {
-    Inertia.post(`/transactions/${transaction.id}/approve`).then(() => {
-        Inertia.reload();
+    router.post(`/transactions/${transaction.id}/approve`).then(() => {
+        router.reload();
     })
 }
 
 const removeTransaction = (transaction) => {
-    Inertia.delete(`/transactions/${transaction.id}`).then(() => {
-        Inertia.reload();
+    router.delete(`/transactions/${transaction.id}`).then(() => {
+        router.reload();
     })
 }
 </script>

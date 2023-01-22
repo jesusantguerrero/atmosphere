@@ -33,7 +33,7 @@
 
 <script setup>
 import SubmenuTab from '@/Components/atoms/SubmenuTab.vue';
-import { Inertia } from '@inertiajs/inertia';
+import { router } from '@inertiajs/vue3';
 import { computed } from "vue"
 import { useBreakpoints, breakpointsTailwind } from "@vueuse/core"
 import { NDropdown } from 'naive-ui';
@@ -61,7 +61,7 @@ const isSelected = (section) => {
 
 const handleClick = (section) => {
     if (section?.url) {
-        Inertia.visit(section.url)
+        router.visit(section.url)
     } else {
         emit('update:modelValue', section?.value)
     }
@@ -81,7 +81,7 @@ const options = computed(() => {
 
 const handleOptionClick = (url) => {
     if (url.includes('/')) {
-        Inertia.visit(url)
+        router.visit(url)
     } else {
         emit('update:modelValue', url)
     }

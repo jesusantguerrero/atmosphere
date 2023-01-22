@@ -32,7 +32,7 @@
 </template>
 
 <script setup>
-    import { Link } from '@inertiajs/inertia-vue3';
+    import { Link } from '@inertiajs/vue3';
     import { reactive } from 'vue'
     import { AtButton } from "atmosphere-ui"
 
@@ -40,7 +40,7 @@
     import CustomTable from "@/Components/atoms/CustomTable.vue";
 
     import cols from "./cols"
-    import { Inertia } from '@inertiajs/inertia';
+    import { router } from '@inertiajs/vue3';
 
     const props = defineProps({
             notifications: {
@@ -68,7 +68,7 @@
     });
 
     const markAsRead = (notification) => {
-        Inertia.patch(`/notifications/${notification.id}`, {
+        router.patch(`/notifications/${notification.id}`, {
             read_at: new Date()
         })
     }

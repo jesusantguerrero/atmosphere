@@ -25,12 +25,12 @@ import { useImportModal } from '@/domains/transactions/useImportModal';
 import ImportResourceModal from '@/Components/ImportResourceModal.vue';
 import { useAppContextStore } from '@/store';
 import { computed } from 'vue';
-import { Inertia } from '@inertiajs/inertia';
+import { router } from '@inertiajs/vue3';
 import MoreOptionsModal from '../MoreOptionsModal.vue';
 
 const { isOpen, closeTransactionModal } = useTransactionModal()
 const onTransactionSaved = () => {
-    Inertia.reload()
+    router.reload()
     closeTransactionModal();
 }
 const context = useAppContextStore()

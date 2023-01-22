@@ -67,7 +67,7 @@
 <script setup>
 import { ref, reactive } from 'vue';
 import { NDropdown } from 'naive-ui';
-import { Inertia } from '@inertiajs/inertia';
+import { router } from '@inertiajs/vue3';
 
 import AppLayout from '@/Components/templates/AppLayout.vue';
 import HouseSectionNav from '@/Components/templates/HouseSectionNav.vue';
@@ -90,20 +90,20 @@ const isModalOpen = ref(false);
 const resourceToEdit = ref({});
 
 const onSaved = () => {
-    Inertia.reload()
+    router.reload()
 }
 
 const addInstance = (id) => {
-    Inertia.post(`/housing/occurrence/${id}/instances`)
+    router.post(`/housing/occurrence/${id}/instances`)
 }
 
 const removeLastInstance = (id) => {
-    Inertia.delete(`/housing/occurrence/${id}/instances`)
+    router.delete(`/housing/occurrence/${id}/instances`)
 }
 
 const handleDelete = (resource) => {
     if (confirm(`Are you sure you want to delete this check ${resource.name}?`)) {
-        Inertia.delete(`/housing/occurrence/${resource.id}`)
+        router.delete(`/housing/occurrence/${resource.id}`)
     }
 }
 
@@ -122,7 +122,7 @@ const defaultOptions = {
         name: 'sync',
         label: 'Sync',
         handle(resource) {
-            Inertia.post(`/housing/occurrence/${resource.id}/sync`)
+            router.post(`/housing/occurrence/${resource.id}/sync`)
         }
     },
     removed: {

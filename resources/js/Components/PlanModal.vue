@@ -46,7 +46,7 @@
 
 <script setup>
     import Modal from '@/Components/atoms/Modal.vue'
-    import { useForm } from "@inertiajs/inertia-vue3"
+    import { useForm } from "@inertiajs/vue3"
     import { AtInput, AtButton } from "atmosphere-ui"
     import { startOfDay } from 'date-fns'
     import {  watch, ref, computed } from 'vue'

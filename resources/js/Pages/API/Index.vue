@@ -4,7 +4,7 @@
             <SettingsSectionNav />
         </template>
 
-        <div class="max-w-7xl mx-auto pt-16 pb-20 sm:px-6 lg:px-8">
+        <div class="pt-16 pb-20 mx-auto max-w-7xl sm:px-6 lg:px-8">
             <ApiTokenManager
                 :tokens="tokens"
                 :available-permissions="availablePermissions"
@@ -17,7 +17,7 @@
 <script>
     import ApiTokenManager from './ApiTokenManager.vue'
     import AppLayout from '@/Components/templates/AppLayout.vue'
-import SettingsSectionNav from '@/Components/templates/SettingsSectionNav.vue'
+    import SettingsSectionNav from '@/Components/templates/SettingsSectionNav.vue'
 
     export default {
         props: [
@@ -27,9 +27,9 @@ import SettingsSectionNav from '@/Components/templates/SettingsSectionNav.vue'
         ],
 
         components: {
-    ApiTokenManager,
-    AppLayout,
-    SettingsSectionNav
-},
+            ApiTokenManager,
+            AppLayout,
+            SettingsSectionNav
+        },
     }
 </script>

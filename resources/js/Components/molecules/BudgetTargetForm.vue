@@ -107,7 +107,7 @@ import { reactive, toRefs, watch, computed } from "vue";
 import { AtButton, AtField, AtInput, AtErrorBag, AtButtonGroup } from "atmosphere-ui";
 import { useDatePager } from "vueuse-temporals";
 import { NSelect, NDropdown, NDatePicker } from "naive-ui";
-import { useForm } from "@inertiajs/inertia-vue3";
+import { useForm } from "@inertiajs/vue3";
 import { monthDays, WEEK_DAYS, FREQUENCY_TYPE, generateRandomColor, formatMonth } from "@/utils";
 import { makeOptions } from "@/utils/naiveui";
 import { format } from "date-fns";

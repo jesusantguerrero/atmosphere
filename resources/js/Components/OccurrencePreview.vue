@@ -1,6 +1,6 @@
 <template>
 <article>
-    <Header class="py-1 flex justify-between">
+    <Header class="flex justify-between py-1">
         <span>
             Transactions ({{ transactions.length }})
         </span>
@@ -8,7 +8,7 @@
             Load
         </LogerButton>
     </Header>
-    <section class="h-96 overflow-auto ic-scroller">
+    <section class="overflow-auto h-96 ic-scroller">
         <TransactionsTable
             class="w-full"
             table-class="overflow-auto text-sm"
@@ -25,7 +25,7 @@ import { onMounted, ref } from 'vue';
 import TransactionsTable from './organisms/TransactionsTable.vue';
 import { transactionDBToTransaction } from '@/domains/transactions';
 import LogerButton from './atoms/LogerButton.vue';
-import { Inertia } from '@inertiajs/inertia';
+import { router } from '@inertiajs/vue3';
 
 const props = defineProps({
     occurrenceId: {
@@ -49,7 +49,7 @@ onMounted(async () => {
 
 const load = () => {
     axios.post(`/housing/occurrence/${props.occurrenceId}/load`).then(() => {
-        Inertia.reload();
+        router.reload();
     })
 }
 </script>

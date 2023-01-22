@@ -13,7 +13,7 @@
             <StatusButtons
                 v-model="currentStatus"
                 :statuses="transactionStatus"
-                @change="$inertia.visit($event)"
+                @change="$router.visit($event)"
             />
             <AtDatePager
               class="w-full h-12 border-none bg-base-lvl-1 text-body"
@@ -56,7 +56,7 @@
 <script setup>
 import { AtDatePager } from "atmosphere-ui";
 import { computed, toRefs, provide, ref} from "vue";
-import { Inertia } from "@inertiajs/inertia";
+import { router } from "@inertiajs/vue3";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import TransactionSearch from "@/Components/templates/TransactionSearch.vue";
@@ -119,7 +119,7 @@ const handleBackButton = () => {
         showAllTransactions.value = false;
         return
     }
-    return Inertia.visit(route('finance'))
+    return router.visit(route('finance'))
 }
 
 const { serverSearchOptions } = toRefs(props);
@@ -136,17 +136,17 @@ const isDraft = computed(() => {
 });
 
 const removeTransaction = (transaction) => {
-    Inertia.delete(`/transactions/${transaction.id}`, {
+    router.delete(`/transactions/${transaction.id}`, {
         onSuccess() {
-            Inertia.reload()
+            router.reload()
         }
     })
 }
 
 const findLinked = (transaction) => {
-    Inertia.patch(`/transactions/${transaction.id}/linked`, {
+    router.patch(`/transactions/${transaction.id}/linked`, {
         onSuccess() {
-            Inertia.reload()
+            router.reload()
         }
     })
 }

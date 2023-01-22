@@ -46,7 +46,7 @@
 </template>
 
 <script setup>
-    import { useForm } from "@inertiajs/inertia-vue3"
+    import { useForm } from "@inertiajs/vue3"
     import { AtField, AtInput, AtButton } from "atmosphere-ui"
     import { nextTick } from '@vue/runtime-core'
     import LogerApiSimpleSelect from "./organisms/LogerApiSimpleSelect.vue";

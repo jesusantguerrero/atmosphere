@@ -159,8 +159,8 @@
     import JetSecondaryButton from '@/Components/atoms/SecondaryButton.vue'
     import JetSectionBorder from '@/Components/atoms/SectionBorder.vue'
     import { ref } from 'vue'
-    import { Inertia } from '@inertiajs/inertia'
-    import { useForm } from '@inertiajs/inertia-vue3'
+    import { router } from '@inertiajs/vue3'
+    import { useForm } from '@inertiajs/vue3'
     import { AtField, AtButton } from "atmosphere-ui"
     import LogerInput from '@/Components/atoms/LogerInput.vue'
 
@@ -180,7 +180,7 @@
         permissions: []
     });
 
-    const deleteApiTokenForm = useForm();
+    const deleteApiTokenForm = useForm({});
 
     const displayingToken = ref(false);
     const managingPermissionsFor = ref(null);

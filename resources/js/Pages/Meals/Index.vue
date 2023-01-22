@@ -1,15 +1,15 @@
 <template>
-    <AppLayout title="Recipes" :show-back-button="true" @back="$inertia.visit('/meal-planner')">
+    <AppLayout title="Recipes" :show-back-button="true" @back="$router.visit('/meal-planner')">
         <template #header>
             <MealSectionNav>
                 <template #actions>
                     <StatusButtons
                         v-model="currentStatus"
                         :statuses="mealStatus"
-                        @change="$inertia.visit($event)"
+                        @change="$router.visit($event)"
                     />
                    <div>
-                        <AtButton class="items-center h-10 text-white bg-primary" rounded @click="$inertia.visit(route('meals.create'))"> New Meal</AtButton>
+                        <AtButton class="items-center h-10 text-white bg-primary" rounded @click="$router.visit(route('meals.create'))"> New Meal</AtButton>
                     </div>
                 </template>
             </MealSectionNav>
@@ -17,7 +17,7 @@
         <MealTemplate class="mx-auto">
             <MealSection
                 :meals="recipes"
-                @click="$inertia.visit(route('meals.edit', $event))"
+                @click="$router.visit(route('meals.edit', $event))"
                 @toggle-like="onToggleLike"
             />
         </MealTemplate>
@@ -26,7 +26,7 @@
 
 <script setup>
     import { AtButton } from "atmosphere-ui";
-    import { Inertia } from "@inertiajs/inertia";
+    import { router } from "@inertiajs/vue3";
     import { computed, ref } from "vue";
 
     import AppLayout from '@/Components/templates/AppLayout.vue';
@@ -52,11 +52,11 @@
 
     const onToggleLike = (meal) => {
         meal.is_liked = !Boolean(meal.is_liked);
-        Inertia.put(route('meals.update', meal), {
+        router.put(route('meals.update', meal), {
             is_liked: meal.is_liked,
         }, {
             onSuccess() {
-                Inertia.reload({
+                router.reload({
                     preserveScroll: true,
                 })
             }

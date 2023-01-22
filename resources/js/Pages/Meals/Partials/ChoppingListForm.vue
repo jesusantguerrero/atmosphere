@@ -42,7 +42,7 @@
 
 <script setup>
 import LogerButton from '@/Components/atoms/LogerButton.vue';
-import { useForm } from '@inertiajs/inertia-vue3';
+import { useForm } from '@inertiajs/vue3';
 
 const props = defineProps({
     ingredients: {

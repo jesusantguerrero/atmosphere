@@ -16,12 +16,12 @@
 
                 <!-- Current Profile Photo -->
                 <div class="mt-2" v-show="! photoPreview">
-                    <img :src="user.profile_photo_url" :alt="user.name" class="rounded-full h-20 w-20 object-cover">
+                    <img :src="user.profile_photo_url" :alt="user.name" class="object-cover w-20 h-20 rounded-full">
                 </div>
 
                 <!-- New Profile Photo Preview -->
                 <div class="mt-2" v-show="photoPreview">
-                    <span class="block rounded-full w-20 h-20"
+                    <span class="block w-20 h-20 rounded-full"
                           :style="'background-size: cover; background-repeat: no-repeat; background-position: center center; background-image: url(\'' + photoPreview + '\');'">
                     </span>
                 </div>
@@ -79,6 +79,7 @@
     import JetSecondaryButton from '@/Components/atoms/SecondaryButton.vue'
     import { AtField } from "atmosphere-ui"
     import LogerInput from '@/Components/atoms/LogerInput.vue'
+    import { useForm } from '@inertiajs/vue3'
 
     export default {
         components: {
@@ -97,7 +98,7 @@
 
         data() {
             return {
-                form: this.$inertia.form({
+                form: useForm({
                     _method: 'PUT',
                     name: this.user.name,
                     email: this.user.email,
@@ -136,7 +137,7 @@
             },
 
             deletePhoto() {
-                this.$inertia.delete(route('current-user-photo.destroy'), {
+                this.$router.elete(route('current-user-photo.destroy'), {
                     preserveScroll: true,
                     onSuccess: () => {
                         this.photoPreview = null;

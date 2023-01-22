@@ -1,4 +1,4 @@
-import { Inertia } from "@inertiajs/inertia";
+import { router } from "@inertiajs/vue3";
 import { nextTick } from "vue";
 
 export const createBudgetCategory = (categoryForm, parentCategoryId = null, callback) => {
@@ -8,7 +8,7 @@ export const createBudgetCategory = (categoryForm, parentCategoryId = null, call
         parent_id: parentCategoryId
     })).post("/budgets", {
         onSuccess() {
-            Inertia.reload({
+            router.reload({
                 preserveScroll: true
             })
             categoryForm.reset();

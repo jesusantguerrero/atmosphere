@@ -11,11 +11,11 @@
                 </template>
             </SettingsSectionNav>
         </template>
-        <div class="py-12 pt-32 h-auto mx-auto space-y-4 max-w-7xl sm:px-6 lg:px-8">
+        <div class="h-auto py-12 pt-32 mx-auto space-y-4 max-w-7xl sm:px-6 lg:px-8">
             <div
                 v-for="service in externalServices" :key="service.id"
                 @click="handleCommand(service)"
-                class="flex px-5 py-3 bg-base-lvl-3 rounded-md shadow-xl cursor-pointer">
+                class="flex px-5 py-3 rounded-md shadow-xl cursor-pointer bg-base-lvl-3">
             <div>
                 <img :src="service.logo" class="w-9" />
             </div>
@@ -29,7 +29,7 @@
 
             <div class="w-full integrations-form">
                 <div
-                    class="grid grid-cols-3 px-5 py-3 my-2 font-bold text-gray-500 bg-base-lvl-1 cursor-pointer app-service__item"
+                    class="grid grid-cols-3 px-5 py-3 my-2 font-bold text-gray-500 cursor-pointer bg-base-lvl-1 app-service__item"
                     v-for="service in integrations"
                     :key="service.id"
                 >
@@ -69,7 +69,7 @@
 
 <script setup>
 import { computed, nextTick, reactive } from "vue";
-import { Inertia } from '@inertiajs/inertia';
+import { router } from '@inertiajs/vue3';
 import { AtButton } from "atmosphere-ui";
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import AutomationModal from '@/Components/AutomationModal.vue';
@@ -125,7 +125,7 @@ const openAutomationModal = (board, stage) => {
 const onItemSaved = () => {
     nextTick(() => {
         state.isAutomationModalOpen = false;
-        Inertia.reload(`/integrations`, {
+        router.reload(`/integrations`, {
             only: ["integrations"],
             preserveState: true
         });

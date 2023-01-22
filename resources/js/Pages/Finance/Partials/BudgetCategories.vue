@@ -43,7 +43,7 @@
                     :key="`${item.id}-${item.budgeted}`"
                     :item="item"
                     :is-mobile="isMobile"
-                    @open="$inertia.visit(`/budgets/${item.id}`)"
+                    @open="$router.visit(`/budgets/${item.id}`)"
                     @edit="setSelectedBudget(item.id, itemGroup.id)"
                 />
             </Draggable>
@@ -56,7 +56,7 @@
 
 <script setup>
 import {  toRefs } from "vue";
-import { useForm } from "@inertiajs/inertia-vue3";
+import { useForm } from "@inertiajs/vue3";
 import { VueDraggableNext as Draggable } from "vue-draggable-next";
 import { useBreakpoints, breakpointsTailwind } from "@vueuse/core";
 

@@ -29,7 +29,7 @@
 
 <script setup>
 import { Inertia } from "@inertiajs/inertia";
-import { useForm, Link } from "@inertiajs/inertia-vue3";
+import { useForm, Link } from "@inertiajs/vue3";
 import { AtAuthBox, AtAuthForm, AtInput, AtField } from "atmosphere-ui";
 import { computed, onMounted, ref } from "vue";
 
@@ -43,10 +43,10 @@ const form = useForm({
 });
 
 const onHomePressed = () => {
-    Inertia.visit('/');
+    router.visit('/');
 }
 const onLinkPressed = () => {
-    Inertia.visit('login');
+    router.visit('login');
 }
 
 const submit = (formData) => {

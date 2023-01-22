@@ -7,7 +7,7 @@
                 {{ message }} <span class="text-primary">{{ username }}</span>
             </h1>
             <div class="space-x-2">
-                <AtButton class="text-sm text-primary" rounded @click="$inertia.visit(route('budgets.index'))">
+                <AtButton class="text-sm text-primary" rounded @click="$router.visit(route('budgets.index'))">
                     <i class="fa fa-wallet"></i>
                     Edit budget
                 </AtButton>

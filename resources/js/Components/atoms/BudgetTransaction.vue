@@ -14,7 +14,7 @@
 </template>
 
 <script setup>
-    import { useForm } from "@inertiajs/inertia-vue3";
+    import { useForm } from "@inertiajs/vue3";
     import { computed } from "vue"
 
     import IconBolt from "../icons/IconBolt.vue";

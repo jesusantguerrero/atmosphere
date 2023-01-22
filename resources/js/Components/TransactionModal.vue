@@ -195,7 +195,7 @@
 <script setup>
     import { format } from 'date-fns'
     import { reactive, toRefs, watch, computed, inject, ref } from 'vue'
-    import { useForm } from "@inertiajs/inertia-vue3"
+    import { useForm } from "@inertiajs/vue3"
     import { AtField, AtButton, AtFieldCheck, AtInput } from "atmosphere-ui"
     import { NSelect, NDatePicker } from "naive-ui";
 

@@ -52,7 +52,7 @@
 <script setup>
 import { format, startOfMonth } from 'date-fns';
 import { ref, nextTick, onMounted } from 'vue';
-import { Inertia } from '@inertiajs/inertia';
+import { router } from '@inertiajs/vue3';
 import { NDropdown } from 'naive-ui';
 
 import IconDrag from '../icons/IconDrag.vue';
@@ -82,7 +82,7 @@ const budgeted = ref(props.item.budgeted);
 const onAssignBudget = () => {
     if (Number(props.item.budgeted) !== Number(budgeted.value)) {
         const month = format(startOfMonth(new Date()), 'yyyy-MM-dd');
-        Inertia.post(`/budgets/${props.item.id}/months/${month}`, {
+        router.post(`/budgets/${props.item.id}/months/${month}`, {
             id: props.item.id,
             budgeted: Number(budgeted.value)
         }, {
@@ -103,10 +103,10 @@ const options = [{
 
 const removeCategory = () => {
     if (confirm("Are you sure you want to remove this category?")) {
-        Inertia.delete(`budgets/${props.item.id}`, {
+        router.delete(`budgets/${props.item.id}`, {
             onSuccess() {
                 emit('removed', props.item.id)
-                Inertia.reload({
+                router.reload({
                     only: ['budgets'],
                     preserveScroll: true,
                 })

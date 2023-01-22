@@ -5,15 +5,15 @@
         </template>
 
         <div>
-            <div class="max-w-7xl mx-auto pt-16 pb-20 sm:px-6 lg:px-8">
+            <div class="pt-16 pb-20 mx-auto max-w-7xl sm:px-6 lg:px-8">
                 <UpdateTeamNameForm :team="team" :permissions="permissions" />
 
                 <TeamMemberManager class="mt-10 sm:mt-0"
-                            :team="team"
-                            :available-roles="availableRoles"
-                            :user-permissions="permissions" />
+                    :team="team"
+                    :available-roles="availableRoles"
+                    :user-permissions="permissions" />
 
-                <template v-if="permissions.canDeleteTeam && ! team.personal_team">
+                <template v-if="permissions?.canDeleteTeam && ! team.personal_team">
                     <JetSectionBorder />
 
                     <DeleteTeamForm class="mt-10 sm:mt-0" :team="team" />
@@ -23,28 +23,17 @@
     </AppLayout>
 </template>
 
-<script>
+<script setup>
     import TeamMemberManager from './TeamMemberManager.vue'
     import AppLayout from '@/Components/templates/AppLayout.vue'
     import DeleteTeamForm from './DeleteTeamForm.vue'
     import JetSectionBorder from '@/Components/atoms/SectionBorder.vue'
     import UpdateTeamNameForm from './UpdateTeamNameForm.vue'
-import SettingsSectionNav from '@/Components/templates/SettingsSectionNav.vue'
+    import SettingsSectionNav from '@/Components/templates/SettingsSectionNav.vue'
 
-    export default {
-        props: [
-            'team',
-            'availableRoles',
-            'permissions',
-        ],
-
-        components: {
-    AppLayout,
-    DeleteTeamForm,
-    JetSectionBorder,
-    TeamMemberManager,
-    UpdateTeamNameForm,
-    SettingsSectionNav
-},
-    }
+    const props = defineProps({
+        team: Object,
+        availableRoles: Array,
+        userPermissions: Object,
+    });
 </script>

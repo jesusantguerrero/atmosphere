@@ -48,7 +48,7 @@
 <script setup>
     import { watch } from 'vue';
     import { AtInput } from "atmosphere-ui";
-    import { useForm } from '@inertiajs/inertia-vue3';
+    import { useForm } from '@inertiajs/vue3';
 
     import ColorSelector from '../molecules/ColorSelector.vue';
     import LogerButtonTab from '../atoms/LogerButtonTab.vue';
@@ -57,7 +57,7 @@
     import { generateRandomColor } from "@/utils"
     import IconClose from '../icons/IconClose.vue';
     import BudgetMoneyLine from '../molecules/BudgetMoneyLine.vue';
-    import { Inertia } from '@inertiajs/inertia';
+    import { router } from '@inertiajs/vue3';
 
     const props = defineProps({
         parentId: {

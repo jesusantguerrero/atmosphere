@@ -1,9 +1,9 @@
-import { Inertia } from "@inertiajs/inertia";
+import { router } from "@inertiajs/vue3";
 import { startOfDay } from "date-fns";
 
 export const addPlan = (recipe) => {
     if (!recipe.id && !recipe.name) return
-    Inertia.post(route('meals.addPlan'), {
+    router.post(route('meals.addPlan'), {
         date: startOfDay(new Date()),
         meals: [recipe]
     });

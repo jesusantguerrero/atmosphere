@@ -30,7 +30,7 @@
                             <div class="text-xs text-gray-500">
                                 {{ session.ip_address }},
 
-                                <span class="text-green-500 font-semibold" v-if="session.is_current_device">This device</span>
+                                <span class="font-semibold text-green-500" v-if="session.is_current_device">This device</span>
                                 <span v-else>Last active {{ session.last_active }}</span>
                             </div>
                         </div>
@@ -58,7 +58,7 @@
                     Please enter your password to confirm you would like to log out of your other browser sessions across all of your devices.
 
                     <div class="mt-4">
-                        <jet-input type="password" class="mt-1 block w-3/4" placeholder="Password"
+                        <jet-input type="password" class="block w-3/4 mt-1" placeholder="Password"
                                     ref="password"
                                     v-model="form.password"
                                     @keyup.enter="logoutOtherBrowserSessions" />
@@ -89,6 +89,7 @@
     import JetInput from '@/Components/atoms/Input.vue'
     import JetInputError from '@/Components/atoms/InputError.vue'
     import JetSecondaryButton from '@/Components/atoms/SecondaryButton.vue'
+import { useForm } from '@inertiajs/vue3'
 
     export default {
         props: ['sessions'],
@@ -107,7 +108,7 @@
             return {
                 confirmingLogout: false,
 
-                form: this.$inertia.form({
+                form: useForm({
                     password: '',
                 })
             }

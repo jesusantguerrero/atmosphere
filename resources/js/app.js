@@ -5,8 +5,7 @@ import "vue-multiselect/dist/vue-multiselect.css"
 // Import modules...
 import { createApp, h } from 'vue';
 import { createI18n } from 'vue-i18n';
-import { createInertiaApp } from '@inertiajs/inertia-vue3';
-import { InertiaProgress } from '@inertiajs/progress';
+import { createInertiaApp } from '@inertiajs/vue3';;
 import { ZiggyVue } from '../../vendor/tightenco/ziggy/dist/vue.m';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import VueMultiselect from 'vue-multiselect'
@@ -27,9 +26,9 @@ const localesMessages = Object.fromEntries(
 const pinia = createPinia();
 
 createInertiaApp({
-    title: (title) => `${title} - ${appName}`,
+    title: (title) => `${title}`,
     resolve: (name) => resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue')),
-    async setup({ el, app, props, plugin }) {
+    async setup({ el, App, props, plugin }) {
         const i18n = createI18n({
             locale: props.initialPage.props.locale,
             fallbackLocale: 'en',
@@ -43,7 +42,11 @@ createInertiaApp({
         const { registerSW } = await import('virtual:pwa-register')
         registerSW({ immediate: true })
 
-        createApp({ render: () => h(app, props)})
+        createApp({
+            progress: {
+              color: '#29d',
+            },
+            render: () => h(App, props)})
         .use(plugin)
         .use(i18n)
         .use(pinia)
@@ -65,5 +68,3 @@ createInertiaApp({
         .mount(el);
     }
 });
-
-InertiaProgress.init({ color: '#4B5563' });

@@ -5,7 +5,7 @@
         label: 'Go to Trends',
         iconClass: 'fa fa-chevron-right',
     }"
-    @action="Inertia.visit('/trends')"
+    @action="router.visit('/trends')"
 >
     <article class="w-full">
         <header class="flex items-center justify-between">

@@ -28,7 +28,7 @@
     import JetAuthenticationCard from '@/Components/atoms/AuthenticationCard.vue'
     import JetAuthenticationCardLogo from '@/Components/atoms/AuthenticationCardLogo.vue'
     import JetButton from '@/Components/atoms/Button.vue'
-    import { Link, useForm } from "@inertiajs/inertia-vue3"
+    import { Link, useForm } from "@inertiajs/vue3"
     import { computed } from 'vue';
 
     const props = defineProps({

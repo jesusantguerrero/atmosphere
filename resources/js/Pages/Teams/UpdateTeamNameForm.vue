@@ -10,7 +10,7 @@
             />
         </template>
 
-        <template #actions v-if="permissions.canUpdateTeam">
+        <template #actions v-if="permissions?.canUpdateTeam">
             <JetActionMessage :on="form.recentlySuccessful" class="mr-3">
                 Saved.
             </JetActionMessage>
@@ -26,7 +26,7 @@
     import JetActionMessage from '@/Components/atoms/ActionMessage.vue'
     import JetButton from '@/Components/atoms/Button.vue'
     import JetFormSection from '@/Components/atoms/FormSection.vue'
-    import { useForm } from '@inertiajs/inertia-vue3'
+    import { useForm } from '@inertiajs/vue3'
     import { AtField, AtButton } from "atmosphere-ui"
     import LogerInput from '@/Components/atoms/LogerInput.vue'
     import TeamForm from '../Onboarding/TeamForm.vue'

@@ -42,7 +42,7 @@ import { AtButton, AtField} from "atmosphere-ui";
 import { computed, reactive } from "vue";
 import { uniq } from "lodash"
 import AppLayout from "@/Components/templates/AppLayout.vue";
-import { useForm } from '@inertiajs/inertia-vue3';
+import { useForm } from '@inertiajs/vue3';
 import LogerInput from "@/Components/atoms/LogerInput.vue";
 import { format } from "date-fns";
 import TeamForm from "./TeamForm.vue";

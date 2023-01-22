@@ -51,7 +51,7 @@
                         :value="formatMoney(transactionTotal)"
                         :variance="expenseVariance"
                         :variance-amount="formatMoney(lastMonthExpenses)"
-                        @click="$inertia.visit('/finance/transactions')"
+                        @click="$router.visit('/finance/transactions')"
                     />
                 </div>
             </WidgetTitleCard>
@@ -68,7 +68,7 @@
                 <template #action>
                     <AtButton
                       class="flex items-center text-primary"
-                      @click="Inertia.visit('/transactions?filter[status]=planned')"
+                      @click="router.visit('/transactions?filter[status]=planned')"
                     >
                       <span> See scheduled</span>
                       <i class="ml-2 fa fa-chevron-right"></i>
@@ -104,7 +104,7 @@
 
 <script setup>
 import { computed, ref, toRefs } from "vue";
-import { Inertia } from "@inertiajs/inertia";
+import { router } from "@inertiajs/vue3";
 import { AtButton, AtDatePager } from "atmosphere-ui";
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import FinanceCard from "@/Components/molecules/FinanceCard.vue";
