@@ -28,7 +28,7 @@ export const categoryDBToTransaction = (transactions) => {
         id: transaction.category_id || v4(),
         date: transaction.date || '',
         title: transaction.name,
-        subtitle: transaction?.account?.name ? `${transaction.account?.name} -> ${transaction.category?.name}` : '',
+        subtitle: transaction?.account?.name ? `${transaction.account?.name} -> ${transaction.category?.name} hello` : '',
         value: transaction.total,
         status: 'VERIFIED',
         currencyCode: transaction.currency_code,

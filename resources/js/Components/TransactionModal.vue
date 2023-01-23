@@ -56,11 +56,13 @@
                 </AtField>
               </div>
 
-              <TransactionItems :items="form.items" :is-transfer="isTransfer" />
-            </div>
-
-            <div class="flex space-x-2">
-              <AtFieldCheck v-model="isRecurrence" label="Set recurrence" />
+              <TransactionItems
+                ref="gridSplitsRef"
+                :items="state.splits"
+                :is-transfer="isTransfer"
+                :categories="categoryOptions"
+                :accounts="accountOptions"
+              />
             </div>
 
             <div v-if="isRecurrence">
@@ -123,15 +125,15 @@
     <footer
       class="px-6 py-4 space-x-3 items-center justify-between flex w-full bg-base-lvl-2"
     >
-      <LogerButtonTab class="bg-base rounded"> Use template</LogerButtonTab>
+      <section class="flex">
+        <LogerButtonTab class="bg-base rounded"> Use template</LogerButtonTab>
+        <div class="flex space-x-2">
+          <AtFieldCheck v-model="isRecurrence" label="Set recurrence" />
+        </div>
+      </section>
       <div>
         <AtButton @click="close" rounded class="h-10 text-body"> Cancel </AtButton>
-        <AtButton
-          class="h-10 text-white bg-primary"
-          :disabled="!form.total"
-          @click="submit"
-          rounded
-        >
+        <AtButton class="h-10 text-white bg-primary" @click="submit" rounded>
           Save
         </AtButton>
       </div>
@@ -154,6 +156,7 @@ import TransactionTypesPicker from "./TransactionTypesPicker.vue";
 import TransactionItems from "./TransactionItems.vue";
 
 import { TRANSACTION_DIRECTIONS } from "@/domains/transactions";
+import { cloneDeep } from "lodash";
 
 const props = defineProps({
   show: {
@@ -206,18 +209,20 @@ const state = reactive({
     start_date: null,
     timezone_id: "America/Santo_Domingo",
   },
+  splits: [],
   form: useForm({
     name: "",
     payee_id: "",
     payee_label: "",
-    date: null,
+    date: new Date(),
+    is_transfer: false,
     description: "",
     direction: "WITHDRAW",
     category_id: null,
     counter_account_id: null,
     account_id: null,
     total: 0,
-    is_transfer: false,
+    has_splits: false,
   }),
 });
 
@@ -235,9 +240,6 @@ const isTransfer = computed(() => {
   return state.form.is_transfer;
 });
 
-const accountLabel = computed(() => {
-  return !isTransfer.value ? "Account" : "Source";
-});
 const categoryLabel = computed(() => {
   return !isTransfer.value ? "Category" : "Destination";
 });
@@ -247,16 +249,9 @@ const categoryField = computed(() => {
 });
 
 const categoryOptions = inject("categoryOptions", []);
-const accountsOptions = inject("accountsOptions", []);
+const accountOptions = inject("accountsOptions", []);
 
-const categoryAccounts = computed(() => {
-  return isTransfer.value ? accountsOptions : categoryOptions;
-});
-
-const close = () => {
-  emit("close");
-};
-
+const gridSplitsRef = ref();
 const submit = () => {
   const actions = {
     transaction: {
@@ -283,17 +278,40 @@ const submit = () => {
   const method = props.transactionData && props.transactionData.id ? "update" : "save";
   const actionType = isRecurrence.value ? "recurrence" : "transaction";
   const action = actions[actionType][method];
+  const splits = gridSplitsRef.value.getSplits();
+
+  if (!splits.every((split) => split.amount)) {
+    alert("Every split most have an amount");
+    return;
+  }
 
   state.form
-    .transform((form) => ({
-      ...form,
-      resource_type_id: "MANUAL",
-      total: form.total,
-      date: format(new Date(form.date), "yyyy-MM-dd"),
-      status: "verified",
-      direction: form.is_transfer ? TRANSACTION_DIRECTIONS.WITHDRAW : form.direction,
-      ...state.schedule_settings,
-    }))
+    .transform((form) => {
+      const data = {
+        ...cloneDeep(form),
+        resource_type_id: "MANUAL",
+        total: form.total,
+        date: format(new Date(form.date), "yyyy-MM-dd"),
+        status: "verified",
+        direction: form.is_transfer ? TRANSACTION_DIRECTIONS.WITHDRAW : form.direction,
+        ...state.schedule_settings,
+      };
+
+      data.category_id = splits[0].category_id;
+      data.payee_id = splits[0].payee_id;
+      data.counter_account_id = splits[0].counter_account_id;
+      data.account_id = splits[0].account_id;
+      data.total = splits[0].amount;
+      data.has_splits = false;
+
+      if (splits.length > 1) {
+        data.items = splits;
+        data.has_splits = true;
+        data.description = "Split with multiple categories";
+      }
+
+      return data;
+    })
     .submit(action.method, action.url(), {
       onBefore(evt) {
         if (!evt.data.total) {
@@ -318,6 +336,7 @@ watch(
         state.form[field] = newValue[field] || state.form[field];
       }
     });
+    state.splits = props.transactionData?.splits ?? [];
   },
   { deep: true }
 );
@@ -333,21 +352,4 @@ const isRecurrence = ref(props.recurrence);
 const { form, schedule_settings } = toRefs(state);
 
 const isPickerOpen = ref(false);
-
-const splits = reactive([]);
-const addSplit = () => {
-  splits.push({
-    payee_id: "",
-    payee_label: "",
-    date: null,
-    description: "",
-    direction: "WITHDRAW",
-    category_id: null,
-    counter_account_id: null,
-    account_id: null,
-    total: 0,
-  });
-};
-
-addSplit();
 </script>

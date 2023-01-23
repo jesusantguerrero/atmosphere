@@ -1,14 +1,14 @@
 import { format, isAfter, parseISO, startOfDay } from "date-fns"
 import { h } from "vue"
 import IconTransfer from "@/Components/icons/IconTransfer.vue";
-import { AtBadge } from "atmosphere-ui"
+import { Link } from "@inertiajs/vue3";
 
 const TRANSACTION_TYPES = {
     WITHDRAW: 'outflow',
     DEPOSIT: 'inflow'
 }
 
-export const tableAccountCols = [
+export const tableAccountCols = (accountId) => [
     {
         label: "Date",
         name: "date",
@@ -28,9 +28,9 @@ export const tableAccountCols = [
         class: 'w-full',
         render(row) {
             try {
-                const account = row.account_id == row.account_from.id ? row.account_to : row.account_from
+                const account = row.account_id === accountId ? row.counter_account : row.account
                 const children = () => [
-                    h('div', { class: 'font-bold'}, `${account?.name}`),
+                    h(Link, { class: 'font-bold underline text-secondary', href: `/finance/accounts/${account.id}`}, `${account?.name}`),
                     h(IconTransfer, { class: 'fa fa-right-left'})
                 ];
                 return row.payee?.name ?? h('div', { class: "flex justify-between items-center text-body-1 h-4"}, children() )
@@ -67,21 +67,6 @@ export const tableAccountCols = [
         type: "custom",
         class: 'text-right',
         headerClass: 'text-right',
-    },
-    {
-        label: "Status",
-        name: "status",
-        width: 200,
-        class: 'py-1 flex items-center justify-center',
-        headerClass: 'text-center',
-        render(row) {
-            const statusColors = {
-                draft: 'secondary',
-                planned: 'warning',
-                verified: 'success',
-            }
-            return () => h(AtBadge, { type: statusColors[row.status]}, () => row.status)
-        }
     },
     {
         label: "",

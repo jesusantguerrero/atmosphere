@@ -25,7 +25,7 @@ class TransactionService {
             return $this->model::verified()
             ->where('team_id', $teamId)
             ->inDateFrame($options['startDate'], $options['endDate'])
-            ->with(['mainLine', 'lines', 'category', 'mainLine.account', 'category.account'])
+            ->with(['mainLine', 'lines', 'counterLine', 'mainLine.account', 'counterLine.account'])
             ->get();
     }
 
@@ -45,7 +45,7 @@ class TransactionService {
             ->where('team_id', $teamId)
             ->inDateFrame($options['startDate'], $options['endDate'])
             ->forAccount($accountId)
-            ->with(['mainLine', 'lines', 'category', 'mainLine.account', 'category.account'])
+            ->with(['mainLine', 'lines', 'counterLine', 'mainLine.account', 'counterLine.account'])
             ->get();
     }
 
@@ -82,10 +82,14 @@ class TransactionService {
 
         return $builder->groupBy('category_id')
         ->select(DB::raw("ABS(sum(CASE
-        WHEN transactions.direction = 'WITHDRAW'
-        THEN total * -1
-        ELSE total * 1 END)) as total,
-        category_id, categories.name, categories.parent_id, group.name as parent_name"))
+            WHEN transactions.direction = 'WITHDRAW'
+            THEN total * -1
+            ELSE total * 1 END)) as total,
+            category_id, 
+            categories.name, 
+            categories.parent_id, 
+            group.name as parent_name
+        "))
         ->join('categories', 'categories.id', 'category_id')
         ->leftJoin('categories as group', 'group.id', 'categories.parent_id')
         ->orderBy('total', 'desc')
