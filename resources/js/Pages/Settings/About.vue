@@ -3,7 +3,7 @@
         <template #header>
             <SettingsSectionNav />
         </template>
-        <div class="py-12 pt-32 h-auto mx-auto max-w-7xl sm:px-6 lg:px-8 space-y-4">
+        <div class="h-auto py-12 pt-32 mx-auto space-y-4 max-w-7xl sm:px-6 lg:px-8">
             <ProductInfo
                 app-version="1.0.0"
                 :sections="state.sections"
@@ -14,12 +14,9 @@
 </template>
 
 <script setup>
-import { nextTick, reactive } from "vue";
-port { AtButton } from "atmosphere-ui";
+import { reactive } from "vue";
 import AppLayout from "@/Components/templates/AppLayout.vue";
-import AutomationModal from '@/Components/AutomationModal.vue';
 import SettingsSectionNav from "@/Components/templates/SettingsSectionNav.vue";
-import AppIcon from "@/Components/AppIcon.vue";
 import ProductInfo from "@/Components/ProductInfo.vue";
 
 const props = defineProps({
