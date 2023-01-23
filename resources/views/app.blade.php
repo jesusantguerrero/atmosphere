@@ -24,6 +24,7 @@
         @routes
         @vite('resources/js/app.js')
         @inertiaHead
+        @paddleJS
     </head>
     <body class="font-sans antialiased">
         @inertia

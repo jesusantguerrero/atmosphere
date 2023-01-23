@@ -7,20 +7,21 @@ use App\Models\Setting;
 use App\Domains\Meal\Models\Meal;
 use App\Domains\Transaction\Models\Transaction;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Account;
 use Insane\Journal\Models\Core\Payee;
-use Insane\Journal\Models\Core\TransactionLine;
 use Laravel\Jetstream\Events\TeamCreated;
 use Laravel\Jetstream\Events\TeamDeleted;
 use Laravel\Jetstream\Events\TeamUpdated;
 use Laravel\Jetstream\Team as JetstreamTeam;
 use Spatie\Onboard\Concerns\Onboardable;
 use Spatie\Onboard\Concerns\GetsOnboarded;
+use Laravel\Paddle\Billable;
 class Team extends JetstreamTeam implements Onboardable
 {
     use HasFactory;
     use GetsOnboarded;
+    use Billable;
+
     protected $with = ['settings'];
 
     /**

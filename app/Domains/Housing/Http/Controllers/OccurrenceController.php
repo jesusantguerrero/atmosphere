@@ -28,7 +28,7 @@ class OccurrenceController extends InertiaController
         $this->authorizedTeam = true;
     }
 
-    protected function getIndexProps(Request $request, Collection|ResourceCollection $resources): array
+    protected function getIndexProps(Request $request, $resources = null): array
     {
         return [
             'linkedTypes' => OccurrenceCheck::getLinkedModels()
