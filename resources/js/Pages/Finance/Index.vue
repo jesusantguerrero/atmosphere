@@ -103,25 +103,21 @@
 </template>
 
 <script setup>
-import { computed, ref, toRefs } from "vue";
+import { computed, toRefs } from "vue";
 import { router } from "@inertiajs/vue3";
 import { AtButton, AtDatePager } from "atmosphere-ui";
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import FinanceCard from "@/Components/molecules/FinanceCard.vue";
 import FinanceVarianceCard from "@/Components/molecules/FinanceVarianceCard.vue";
 import TransactionsTable from "@/Components/organisms/TransactionsTable.vue";
-import SectionTitle from "@/Components/atoms/SectionTitle.vue";
 import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
 import {
-  useTransactionModal,
-  transactionDBToTransaction,
-  plannedDBToTransaction,
-  categoryDBToTransaction,
-getVariances,
+    transactionDBToTransaction,
+    plannedDBToTransaction,
+    getVariances,
+useTransactionModal,
 } from "@/domains/transactions";
 import BudgetProgress from "@/Components/molecules/BudgetProgress.vue";
-import DonutChart from "@/Components/organisms/DonutChart.vue";
-import SectionCard from "@/Components/molecules/SectionCard.vue";
 import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
 import { useSelect } from "@/utils/useSelects";
 import formatMoney from "@/utils/formatMoney";
@@ -158,26 +154,26 @@ const props = defineProps({
     },
   },
   budgetTotal: {
-    type: Number,
+    type: [Number, String],
     default: 0,
   },
   income: {
-    type: Number,
+    type: [Number, String],
     default: 0,
   },
   savings: {
-    type: Number,
+    type: [Number, String],
   },
   lastMonthIncome: {
-    type: Number,
+    type: [Number, String],
     default: 0,
   },
   transactionTotal: {
-    type: Number,
+    type: [Number, String],
     default: 0,
   },
   lastMonthExpenses: {
-    type: Number,
+    type: [Number, String],
     default: 0,
   },
   transactions: {
@@ -224,4 +220,11 @@ const expenseVariance = computed(() => {
 });
 
 const topCategories = props.expensesByCategory.slice(0, 4);
+
+const { openTransactionModal } = useTransactionModal();
+const handleEdit = (transaction) => {
+    openTransactionModal({
+        transactionData: transaction
+    })
+}
 </script>

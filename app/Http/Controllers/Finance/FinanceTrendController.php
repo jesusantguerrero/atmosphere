@@ -73,7 +73,7 @@ class FinanceTrendController extends Controller {
         $teamId = $request->user()->current_team_id;
 
         $data  = TransactionService::getIncomeByPayeeInPeriod($teamId, $startDate, $endDate);
-        
+
         return [
             'data' => $data,
             'metaData' => [

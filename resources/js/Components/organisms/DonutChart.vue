@@ -1,12 +1,17 @@
 <template>
-  <DoughnutChart ref="chartRef" :data="chartData" :options="options" />
+  <div>
+    <div :style="{ height: '550px', width: '550px' }" class="mx-auto">
+      <DoughnutChart ref="chartRef" :data="chartData" :options="options" />
+    </div>
+  </div>
 </template>
 
 <script setup>
 import { generateRandomColor } from "@/utils";
 import { Chart, registerables } from "chart.js";
-import { computed, ref } from "vue";
+import { computed, ref, toRefs } from "vue";
 import { Doughnut as DoughnutChart } from "vue-chartjs";
+
 Chart.register(...registerables);
 
 const props = defineProps({
@@ -24,7 +29,7 @@ const props = defineProps({
   },
   legend: {
     type: Boolean,
-    default: true
+    default: true,
   },
   legendPosition: {
     type: String,
@@ -39,41 +44,43 @@ const props = defineProps({
   },
 });
 
+const emit = defineEmits("clicked");
 
-const emit = defineEmits('clicked')
+const { series } = toRefs(props);
+
 const chartData = computed(() => {
   return {
-    labels: props.series.map((item) => item[props.label]),
+    labels: series.value.map((item) => item[props.label]),
     datasets: [
       {
-        data: props.series.map((item) => item[props.value]),
-        backgroundColor: props.series.map(() => generateRandomColor()),
+        data: series.value.map((item) => item[props.value]),
+        backgroundColor: series.value.map((item) => item.color || generateRandomColor()),
         borderJoinStyle: "mittr",
       },
     ],
   };
 });
 
-
-const chartRef = ref()
+const chartRef = ref();
 const options = computed(() => ({
-    plugins: {
-        ...(props.legend && { legend: {
+  plugins: {
+    ...(props.legend && {
+      legend: {
         position: props.legendPosition,
-        }}),
-        title: {
-        display: props.title,
-        text: props.title,
-        },
+      },
+    }),
+    title: {
+      display: props.title,
+      text: props.title,
     },
-    layout: {
-        padding: 20,
-    },
-    onClick: (e, ...args) => {
-        const chart = chartRef.value.chartInstance
-        const index = chart.tooltip.dataPoints[0].dataIndex;
-        emit('clicked', index)
-
-    }
+  },
+  layout: {
+    padding: 20,
+  },
+  onClick: (e, ...args) => {
+    const chart = chartRef.value.chartInstance;
+    const index = chart.tooltip.dataPoints[0].dataIndex;
+    emit("clicked", index);
+  },
 }));
 </script>

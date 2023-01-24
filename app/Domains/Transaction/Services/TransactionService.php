@@ -16,6 +16,8 @@ class TransactionService {
     THEN transactions.total * -1
     ELSE transactions.total * 1 END)) as total";
 
+    protected $model;
+
     function __construct()
     {
         $this->model = new Transaction();
@@ -85,9 +87,9 @@ class TransactionService {
             WHEN transactions.direction = 'WITHDRAW'
             THEN total * -1
             ELSE total * 1 END)) as total,
-            category_id, 
-            categories.name, 
-            categories.parent_id, 
+            category_id,
+            categories.name,
+            categories.parent_id,
             group.name as parent_name
         "))
         ->join('categories', 'categories.id', 'category_id')
@@ -98,19 +100,17 @@ class TransactionService {
     }
 
     public static function getCategoryExpensesGroup($teamId, $startDate, $endDate, $limit = null) {
-        $builder = Transaction::where([
+        return Transaction::where([
             'transactions.team_id' => $teamId,
             'transactions.status' => 'verified'
         ])
         ->whereNotNull('category_id')
         ->whereNot('catGroup.name', Category::INFLOW)
-        ->getByMonth($startDate, $endDate, false);
-
-        return $builder
+        ->getByMonth($startDate, $endDate, false, null)
         ->select(DB::raw("ABS(sum(CASE
-        WHEN transactions.direction = 'WITHDRAW'
-        THEN total * -1
-        ELSE total * 1 END)) as total, catGroup.name, catGroup.id"))
+            WHEN transactions.direction = 'WITHDRAW'
+            THEN total * -1
+            ELSE total * 1 END)) as total, catGroup.name, catGroup.id"))
         ->join('categories', 'categories.id', 'category_id')
         ->join(DB::raw('categories catGroup'),  'catGroup.id', 'categories.parent_id')
         ->orderBy('total', 'desc')

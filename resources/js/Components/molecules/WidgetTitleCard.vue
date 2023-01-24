@@ -1,6 +1,6 @@
 <template>
     <div class="px-5 py-3 transition border divide-y rounded-lg divide-base border-base bg-base-lvl-3" :class="cardShadow">
-        <div class="items-center pb-2 justify-between flex">
+        <div class="flex items-center justify-between pb-2">
             <h1 class="font-bold text-body">
                 <slot name="title"> {{ title }}</slot>
             </h1>
@@ -23,14 +23,14 @@
 
 <script setup>
 import { AtButton } from "atmosphere-ui";
-import { computed, ref } from "vue";
-
-import SectionTitle from "@/Components/atoms/SectionTitle.vue";;
 
 const props = defineProps({
     title: {
         type: String,
         required: true
     },
+    action: {
+        type: Object,
+    }
 })
 </script>
