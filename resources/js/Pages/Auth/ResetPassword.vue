@@ -38,7 +38,7 @@
     import JetInput from '@/Components/atoms/Input.vue'
     import JetLabel from '@/Components/atoms/Label.vue'
     import JetValidationErrors from '@/Components/atoms/ValidationErrors.vue'
-import { useForm } from '@inertiajs/inertia-vue3'
+    import { useForm } from '@inertiajs/vue3'
 
     export default {
         components: {
