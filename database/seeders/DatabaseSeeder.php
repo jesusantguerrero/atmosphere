@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Artisan;
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,10 +16,11 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             AutomationSeeder::class,
-            // CountriesTableSeeder::class,
-            // TimeZonesTableSeeder::class,
-            // LanguagesTableSeeder::class,
-            // ThemeSeeder::class
+            CountriesTableSeeder::class,
+            TimeZonesTableSeeder::class,
+            LanguagesTableSeeder::class,
+            ThemeSeeder::class
         ]);
+        Artisan::call('journal:set-accounts');
     }
 }

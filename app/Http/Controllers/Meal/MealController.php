@@ -70,7 +70,7 @@ class MealController extends InertiaController
         return MealResource::collection($resources);
     }
 
-    protected function getIndexProps(Request $request, $resources): array
+    protected function getIndexProps(Request $request, $resources = null): array
     {
         return [
             "mealTypes" => MealType::where([

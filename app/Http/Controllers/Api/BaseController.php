@@ -59,7 +59,7 @@ abstract class BaseController extends Controller
         $data['user_id'] = $request->user()->id;
         $data['team_id'] = $request->user()->current_team_id;
         $resource = $this->model::create($data);
-        $this->afterSave($data, $resource);
+
         return [
             "message" => $this->createdMessage,
             "data" => $resource

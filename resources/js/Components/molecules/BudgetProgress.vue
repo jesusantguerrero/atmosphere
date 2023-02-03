@@ -26,10 +26,10 @@ import { computed } from 'vue';
 
 const props = defineProps({
     goal: {
-        type: Number
+        type: [Number, String],
     },
     current: {
-        type: Number,
+        type: [Number, String],
         default: 0
     },
     progressClass: {

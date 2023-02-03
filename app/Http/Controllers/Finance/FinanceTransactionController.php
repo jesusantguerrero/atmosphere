@@ -28,9 +28,9 @@ class FinanceTransactionController extends InertiaController {
             'mainLine',
             'lines',
             'category',
-            'transactionCategory',
+            'counterAccount',
             'mainLine.account',
-            'category.account'
+            'counterLine.account'
         ];
         $this->appends = [];
         $dates = $this->getFilterDates();

@@ -14,7 +14,6 @@ class Transaction extends CoreTransaction
     use TransactionTrait;
 
     const STATUS_PLANNED = 'planned';
-    protected $with = ['schedule'];
 
     public function schedule() {
         return $this->morphOne(Planner::class, 'dateable', 'dateable_type', 'dateable_id');

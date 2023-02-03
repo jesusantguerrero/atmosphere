@@ -29,7 +29,6 @@
 import { computed, ref } from 'vue';
 
 import DonutChart from '@/Components/organisms/DonutChart.vue';
-import SectionCard from '@/Components/molecules/SectionCard.vue';
 import WidgetTitleCard from '@/Components/molecules/WidgetTitleCard.vue';
 
 const props = defineProps({
@@ -55,6 +54,7 @@ const toggleType = () => {
 const typeData = computed(() => {
     return isGroup.value ? props.groupData : props.categoryData;
 })
+
 
 const typeLabel = computed(() => {
     return isGroup.value ? 'Category Group' : 'Categories';

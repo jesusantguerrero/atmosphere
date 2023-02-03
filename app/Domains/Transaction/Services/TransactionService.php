@@ -9,12 +9,15 @@ use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Insane\Journal\Models\Core\AccountDetailType;
 
 class TransactionService {
     const transactionsTotalSum = "ABS(sum(CASE
     WHEN transactions.direction = 'WITHDRAW'
     THEN transactions.total * -1
     ELSE transactions.total * 1 END)) as total";
+
+    protected $model;
 
     function __construct()
     {
@@ -25,7 +28,7 @@ class TransactionService {
             return $this->model::verified()
             ->where('team_id', $teamId)
             ->inDateFrame($options['startDate'], $options['endDate'])
-            ->with(['mainLine', 'lines', 'category', 'mainLine.account', 'category.account'])
+            ->with(['mainLine', 'lines', 'counterLine', 'mainLine.account', 'counterLine.account'])
             ->get();
     }
 
@@ -45,7 +48,7 @@ class TransactionService {
             ->where('team_id', $teamId)
             ->inDateFrame($options['startDate'], $options['endDate'])
             ->forAccount($accountId)
-            ->with(['mainLine', 'lines', 'category', 'mainLine.account', 'category.account'])
+            ->with(['mainLine', 'lines', 'counterLine', 'mainLine.account', 'counterLine.account'])
             ->get();
     }
 
@@ -82,10 +85,14 @@ class TransactionService {
 
         return $builder->groupBy('category_id')
         ->select(DB::raw("ABS(sum(CASE
-        WHEN transactions.direction = 'WITHDRAW'
-        THEN total * -1
-        ELSE total * 1 END)) as total,
-        category_id, categories.name, categories.parent_id, group.name as parent_name"))
+            WHEN transactions.direction = 'WITHDRAW'
+            THEN total * -1
+            ELSE total * 1 END)) as total,
+            category_id,
+            categories.name,
+            categories.parent_id,
+            group.name as parent_name
+        "))
         ->join('categories', 'categories.id', 'category_id')
         ->leftJoin('categories as group', 'group.id', 'categories.parent_id')
         ->orderBy('total', 'desc')
@@ -94,19 +101,17 @@ class TransactionService {
     }
 
     public static function getCategoryExpensesGroup($teamId, $startDate, $endDate, $limit = null) {
-        $builder = Transaction::where([
+        return Transaction::where([
             'transactions.team_id' => $teamId,
             'transactions.status' => 'verified'
         ])
         ->whereNotNull('category_id')
         ->whereNot('catGroup.name', Category::INFLOW)
-        ->getByMonth($startDate, $endDate, false);
-
-        return $builder
+        ->getByMonth($startDate, $endDate, false, null)
         ->select(DB::raw("ABS(sum(CASE
-        WHEN transactions.direction = 'WITHDRAW'
-        THEN total * -1
-        ELSE total * 1 END)) as total, catGroup.name, catGroup.id"))
+            WHEN transactions.direction = 'WITHDRAW'
+            THEN total * -1
+            ELSE total * 1 END)) as total, catGroup.name, catGroup.id"))
         ->join('categories', 'categories.id', 'category_id')
         ->join(DB::raw('categories catGroup'),  'catGroup.id', 'categories.parent_id')
         ->orderBy('total', 'desc')
@@ -152,24 +157,27 @@ class TransactionService {
 
     public static function getNetWorth($teamId, $startDate, $endDate) {
         return DB::select("
-        with data (month_date, total, balance_type) AS (
-            SELECT LAST_DAY(t.date) as month_date, tl.amount * tl.type, accounts.balance_type
+         with data (month_date, total, type, balance_type, detail_type) AS (
+            SELECT LAST_DAY(tl.date) as month_date, tl.amount * tl.type, tl.type, accounts.balance_type, adt.name
             FROM transaction_lines tl
-            inner JOIN transactions t on tl.transaction_id = t.id
-            inner JOIN accounts on tl.account_id=accounts.id
-            where t.STATUS = 'verified'
-            AND t.team_id = :teamId
+            INNER JOIN transactions t on tl.transaction_id = t.id
+            INNER JOIN accounts on tl.account_id = accounts.id
+            INNER JOIN account_detail_types adt on adt.id = accounts.account_detail_type_id
+            WHERE t.STATUS = 'verified'
+            AND adt.name IN ('cash', 'cash_on_hand', 'bank', 'savings', 'credit_card')
+            AND tl.team_id = :teamId
             AND balance_type IS NOT null
-          )
+         )
           SELECT month_date,
-          sum(sum(CASE WHEN balance_type = 'debit' THEN (total) END)) over (ORDER BY month_date) as assets,
-          sum(sum(CASE WHEN balance_type = 'credit' THEN (total) END)) over (ORDER BY month_date) as debts
+          SUM(SUM(CASE WHEN balance_type = 'debit' THEN total ELSE 0 END)) over (ORDER BY month_date) as assets,
+          SUM(SUM(CASE WHEN balance_type = 'credit' THEN total ELSE 0 END)) over (ORDER BY month_date) as debts
           FROM DATA
           GROUP BY month_date
           ORDER BY month_date
           LIMIT 12;
         ",[
-            'teamId' => $teamId
+            'teamId' => $teamId,
+            // 'detailTypes' => implode(',', AccountDetailType::ALL)
         ]);
     }
 

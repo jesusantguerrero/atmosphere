@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('budgets', function (Blueprint $table) {
+        Schema::table('budget_targets', function (Blueprint $table) {
             $table->date('frequency_date')->nullable()->after('frequency_week_day');
             $table->index('target_type');
             $table->index('status');
@@ -33,7 +33,7 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('budgets', function (Blueprint $table) {
+        Schema::table('budget_targets', function (Blueprint $table) {
             $table->dropColumn('frequency_date');
             $table->dropIndex('target_type');
             $table->dropIndex('status');

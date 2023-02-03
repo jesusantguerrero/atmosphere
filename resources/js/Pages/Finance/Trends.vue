@@ -20,20 +20,16 @@
                 controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
                 next-mode="month"
             />
-          <!-- <div>
-            <AtButton class="w-32 rounded-md text-primary" @click="onPrint">
-                Print
-            </AtButton>
-          </div> -->
         </template>
       </FinanceSectionNav>
     </template>
 
-    <FinanceTemplate title="Finance" :accounts="accounts" ref="financeTemplateRef">
+    <FinanceTemplate title="Finance" ref="financeTemplateRef">
       <section>
         <div class="flex flex-wrap mt-5 md:flex-nowrap md:space-x-8">
           <div class="w-full md:w-full">
-            <component :is="trendComponent"
+            <component
+                :is="trendComponent"
                 style="background: white; width: 100%"
                 :series="data"
                 :data="data"
@@ -59,7 +55,7 @@
 
 <script setup>
 import { computed, toRefs } from "vue";
-import { AtButton, AtDatePager } from "atmosphere-ui";
+import { AtDatePager } from "atmosphere-ui";
 import { Link, router } from "@inertiajs/vue3";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
@@ -67,7 +63,6 @@ import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
 import DonutChart from "@/Components/organisms/DonutChart.vue";
 import ChartNetWorth from "@/Components/ChartNetworth.vue";
 import IncomeExpenses from "@/Components/IncomeExpenses.vue";
-import SectionCard from "@/Components/molecules/SectionCard.vue";
 import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
 
 import { useServerSearch } from "@/composables/useServerSearch";
@@ -107,19 +102,20 @@ const trends = [
         name: 'Cashflow',
         link: '/trends'
     },
-    // {
-    //     name: 'Category Trends',
-    //     link: '/trends/categories'
-    // },
-    // {
-    //     name: 'Net Worth',
-    //     link: '/trends/net-worth'
-    // },
+    {
+        name: 'Category Trends',
+        link: '/trends/categories'
+    },
+    {
+        name: 'Net Worth',
+        link: '/trends/net-worth'
+    },
     {
         name: 'Income v Expenses',
         link: '/trends/income-expenses'
     }
 ]
+
 
 const components = {
     groups: DonutChart,
@@ -135,7 +131,6 @@ const trendComponent = computed(() => {
 const onPrint = () => {
     print();
 }
-
 
 const cashflowEntities = {
     groups: {

@@ -1,6 +1,6 @@
 <template>
     <section class="px-4 py-2 divide-y">
-        <header class="flex mt-4 bg-base px-4 py-2">
+        <header class="flex px-4 py-2 mt-4 bg-base">
             <div v-for="col in cols" :key="col.field" class="w-full font-bold capitalize" :class="col.class">
                 {{ col.label || col.field }}
             </div>
@@ -8,7 +8,7 @@
 
         <Collapse
             title="Income"
-            title-class="text-success font-bold bg-base-lvl-1 hover:bg-base p-2"
+            title-class="p-2 font-bold text-success bg-base-lvl-1 hover:bg-base"
             content-class="pb-4"
             :gap="false"
         >
@@ -17,8 +17,8 @@
                     <TableCell
                         v-for="col in cols"
                         :key="col.field"
-                        class="w-full px-2 py-2 cursor-pointer hover:font-bold hover:text-primary transition"
-                        :class="{'group-hover:text-primary': col.field == 'name'}"
+                        class="w-full px-2 py-2 transition cursor-pointer hover:font-bold hover:text-primary"
+                        :class="{'group-hover:text-primary text-secondary pl-4': col.field == 'name'}"
                         :title="col.label"
                         :col="col"
                         :value="data.incomes[income.name][col.field]"
@@ -29,20 +29,20 @@
 
         <Collapse
             title="Expenses"
-            title-class="text-error font-bold bg-base-lvl-1 hover:bg-base p-2"
+            title-class="p-2 font-bold text-error bg-base-lvl-1 hover:bg-base"
             content-class="pb-4"
             :gap="false"
         >
             <template #content>
                 <section class="mt-2">
-                    <Collapse v-for="(expense, expenseGroupName) in data.expenseCategories" :title="expenseGroupName" title-class="font-bold bg-base-lvl-2 py-1 rounded-md px-2" :key="expenseGroupName" class="mt-2" :gap="false">
+                    <Collapse v-for="(expense, expenseGroupName) in data.expenseCategories" :title="expenseGroupName" title-class="px-2 py-1 font-bold rounded-md text-primary bg-base-lvl-2" :key="expenseGroupName" class="mt-2" :gap="false">
                         <template #content>
                             <div v-for="category in expense" :key="category.id" class="flex space-x-2 group hover:bg-primary/5">
                                 <TableCell
                                     v-for="col in cols"
                                     :key="col.field"
-                                    class="w-full px-2 py-2 cursor-pointer hover:font-bold hover:text-primary transition"
-                                    :class="{'group-hover:text-primary': col.field == 'name'}"
+                                    class="w-full px-2 py-2 transition cursor-pointer hover:font-bold hover:text-primary"
+                                    :class="{'group-hover:text-primary text-secondary/80 pl-6': col.field == 'name'}"
                                     :title="col.label"
                                     :col="col"
                                     :value="data.expenses[`${expenseGroupName}:${category.name}`][col.field]"

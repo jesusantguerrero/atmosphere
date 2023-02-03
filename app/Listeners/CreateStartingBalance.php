@@ -55,7 +55,7 @@ class CreateStartingBalance
                 'currency_code' => $account->currency_code ?? "DOP",
                 'transaction_category_group_id' => $categoryGroupId,
                 'category_id' => $transactionCategoryId,
-                'category_id' => $payee->account_id,
+                'counter_account_id' => $payee->account_id,
                 'description' => 'Starting Balance',
                 'direction' => $isDeposit ? Transaction::DIRECTION_DEBIT : Transaction::DIRECTION_CREDIT,
                 'total' => $amount,
@@ -68,7 +68,7 @@ class CreateStartingBalance
                 ])
             ]);
 
-            $transaction = Transaction::createTransaction($formData);
+            Transaction::createTransaction($formData);
         }
     }
 }

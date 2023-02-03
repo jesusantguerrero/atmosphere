@@ -20,18 +20,18 @@ class FinanceAccountController extends InertiaController {
         ];
         $this->searchable = ["id", "date"];
         $this->includes = [
-            'transactions',
-            'transactionLines'
+            'transactions'
         ];
         $this->appends = [];
     }
 
     public function show(Account $account) {
+
         return Inertia::render($this->templates['show'], [
             "sectionTitle" => $account->name,
             'accountId' => $account->id,
             'resource' => $account,
-            'transactions' => $account->transactionLines
+            'transactions' => $account->transactionSplits()
         ]);
     }
 }

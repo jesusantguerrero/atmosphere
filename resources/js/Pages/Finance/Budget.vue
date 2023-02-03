@@ -30,7 +30,6 @@
                 :statuses="budgetStatus"
                 @change="toggleFilter"
             />
-            {{ filterGroups.underFunded.length }}
             <AtDatePager
               class="w-full h-12 border-none bg-base-lvl-1 text-body"
               v-model:startDate="pageState.dates.startDate"
