@@ -28,8 +28,7 @@
 </template>
 
 <script setup>
-import { Inertia } from "@inertiajs/inertia";
-import { useForm, Link } from "@inertiajs/vue3";
+import { useForm, Link, router } from "@inertiajs/vue3";
 import { AtAuthBox, AtAuthForm, AtInput, AtField } from "atmosphere-ui";
 import { computed, onMounted, ref } from "vue";
 
