@@ -68,7 +68,7 @@ class CreateStartingBalance
                 ])
             ]);
 
-            $transaction = Transaction::createTransaction($formData);
+            Transaction::createTransaction($formData);
         }
     }
 }
