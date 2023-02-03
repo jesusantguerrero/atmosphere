@@ -18,10 +18,12 @@ return [
             "name" => "Inflow",
             "description" => "To be budgeted",
             "depth" => 1,
+            "type" => 1,
             "childs" => [
                 [
                     "resource_type" => "transactions",
                     "display_id" => "ready_to_assign",
+                    "type" => 1,
                     "name" => "Ready to Assign",
                     "Description" => "Money expecting assignment",
                     "depth" => 1,
