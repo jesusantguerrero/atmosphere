@@ -1,28 +1,28 @@
 <template>
   <AppLayout>
     <template #header>
-        <MealSectionNav>
-            <template #actions>
-                <StatusButtons
-                    v-model="currentStatus"
-                    :statuses="mealStatus"
-                    @change="$router.visit($event)"
-                />
-               <div>
-                    <LogerButton variant="inverse" @click="$router.visit(route('meals.create'))"> New Meal</LogerButton>
-                </div>
-            </template>
-        </MealSectionNav>
+      <MealSectionNav>
+        <template #actions>
+          <StatusButtons
+            v-model="currentStatus"
+            :statuses="mealStatus"
+            @change="router.visit($event)"
+          />
+          <div>
+            <LogerButton variant="inverse" @click="router.visit(route('meals.create'))">
+              New Meal</LogerButton
+            >
+          </div>
+        </template>
+      </MealSectionNav>
     </template>
 
     <div
       class="px-5 mx-auto mt-12 space-y-10 md:space-y-0 md:space-x-10 md:flex max-w-screen-2xl sm:px-6 lg:px-8"
     >
       <div class="md:w-9/12">
-        <WelcomeCard
-          class="mt-5"
-        >
-        <article class="grid grid-cols-2 gap-2 md:flex md:space-x-4">
+        <WelcomeCard class="mt-5">
+          <article class="grid grid-cols-2 gap-2 md:flex md:space-x-4">
             <div
               v-for="mealType in pageProps.mealTypes"
               :key="mealType.id"
@@ -37,31 +37,31 @@
         </WelcomeCard>
 
         <div class="mt-4 space-y-4">
-            <ChoppingListForm
-            :ingredients="ingredients"
-            >
+          <ChoppingListForm :ingredients="ingredients">
             <template #prepend>
-                <div class="px-4 py-2 font-bold rounded-md bg-primary/10 text-primary">
-                    This are the things you'll need this week according to your planning
-                </div>
+              <div class="px-4 py-2 font-bold rounded-md bg-primary/10 text-primary">
+                This are the things you'll need this week according to your planning
+              </div>
             </template>
-
-            </ChoppingListForm>
+          </ChoppingListForm>
         </div>
       </div>
       <div class="py-6 space-y-4 md:w-3/12">
         <div class="px-2 py-2 bg-white rounded-md">
-            <SectionTitle type="secondary" class="text-center">
-                Most liked meals
-            </SectionTitle>
-            <section class="flex mt-4">
-            <CategoryItem class="capitalize" wrap v-for="mealType in mostLikedMeals"
-                :label="mealType.name"
+          <SectionTitle type="secondary" class="text-center">
+            Most liked meals
+          </SectionTitle>
+          <section class="flex mt-4">
+            <CategoryItem
+              class="capitalize"
+              wrap
+              v-for="mealType in mostLikedMeals"
+              :label="mealType.name"
             />
-            </section>
+          </section>
         </div>
         <MealWidget :meals="pageProps.mealTypes">
-          <div class="mt-2 ">
+          <div class="mt-2">
             <div
               v-for="mealType in pageProps.mealTypes"
               class="w-full"
@@ -77,13 +77,13 @@
               />
             </div>
 
-            <SectionTitle type="secondary" class="text-center">
-                Tomorrow
-            </SectionTitle>
+            <SectionTitle type="secondary" class="text-center"> Tomorrow </SectionTitle>
             <section class="flex mt-4">
-                <CategoryItem wrap v-for="mealType in pageProps.mealTypes"
-                    :label="`Add ${mealType.name}`"
-                />
+              <CategoryItem
+                wrap
+                v-for="mealType in pageProps.mealTypes"
+                :label="`Add ${mealType.name}`"
+              />
             </section>
           </div>
         </MealWidget>
@@ -102,7 +102,7 @@ import SectionTitle from "@/Components/atoms/SectionTitle.vue";
 import CategoryItem from "@/Components/mobile/CategoryItem.vue";
 import WelcomeCard from "@/Components/organisms/WelcomeCard.vue";
 
-import { usePage } from "@inertiajs/vue3";
+import { usePage, router } from "@inertiajs/vue3";
 import { addPlan } from "./utils";
 import ChoppingListForm from "./Partials/ChoppingListForm.vue";
 
@@ -112,10 +112,10 @@ const props = defineProps({
     required: true,
   },
   mostLikedMeals: {
-    type: Array
+    type: Array,
   },
   ingredients: {
-    type: Array
+    type: Array,
   },
   user: {
     type: Object,
@@ -143,5 +143,4 @@ const getMealByType = (mealTypeId) => {
     return mealPlan.mealTypeId == mealTypeId;
   });
 };
-
 </script>

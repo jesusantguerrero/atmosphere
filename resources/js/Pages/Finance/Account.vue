@@ -1,5 +1,5 @@
 <template>
-  <AppLayout @back="$router.visit('/finance/transactions')" :show-back-button="true">
+  <AppLayout @back="router.visit('/finance/transactions')" :show-back-button="true">
     <template #header>
       <FinanceSectionNav>
         <template #actions>
@@ -9,7 +9,7 @@
               class=""
               v-for="(item, statusName) in transactionStatus"
               :key="statusName"
-              @click="$router.visit(item.value)"
+              @click="router.visit(item.value)"
             >
               {{ item.label }}
             </LogerButton>

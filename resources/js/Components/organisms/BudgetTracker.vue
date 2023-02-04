@@ -1,87 +1,97 @@
 <template>
-    <div class="px-5 py-3 transition border divide-y rounded-lg divide-base border-base bg-base-lvl-3"
-        :class="[cardShadow]"
-    >
-        <div class="items-center pb-2 md:justify-between md:flex">
-            <h1 class="font-bold text-body">
-                {{ message }} <span class="text-primary">{{ username }}</span>
-            </h1>
-            <div class="space-x-2">
-                <AtButton class="text-sm text-primary" rounded @click="$router.visit(route('budgets.index'))">
-                    <i class="fa fa-wallet"></i>
-                    Edit budget
-                </AtButton>
-            </div>
-        </div>
-        <div class="flex py-3">
-            <div class="w-full transition cursor-pointer hover:opacity-75"
-                @click="$emit('section-click', sectionName)"
-                :key="sectionName"
-                v-for="(section, sectionName) in sections"
-            >
-                <h4 class="text-body">{{ section.label }}</h4>
-                <SectionTitle class="flex flex-col mt-2 space-y-2" v-if="isMultiple(section.value)">
-                    <span class="relative w-72" v-for="currency in section.value" :key="currency">
-                        <NumberHider />
-                        {{ formatMoney(currency.total, currency.currency_code) }}
-                    </span>
-                </SectionTitle>
-                <SectionTitle class="mt-2" v-else>
-                    <span class="relative w-72">
-                        <NumberHider />
-                        {{ formatMoney(section.value) }}
-                    </span>
-                </SectionTitle>
-            </div>
-        </div>
-        <slot></slot>
+  <div
+    class="px-5 py-3 transition border divide-y rounded-lg divide-base border-base bg-base-lvl-3"
+    :class="[cardShadow]"
+  >
+    <div class="items-center pb-2 md:justify-between md:flex">
+      <h1 class="font-bold text-body">
+        {{ message }} <span class="text-primary">{{ username }}</span>
+      </h1>
+      <div class="space-x-2">
+        <AtButton
+          class="text-sm text-primary"
+          rounded
+          @click="router.visit(route('budgets.index'))"
+        >
+          <i class="fa fa-wallet"></i>
+          Edit budget
+        </AtButton>
+      </div>
     </div>
+    <div class="flex py-3">
+      <div
+        class="w-full transition cursor-pointer hover:opacity-75"
+        @click="$emit('section-click', sectionName)"
+        :key="sectionName"
+        v-for="(section, sectionName) in sections"
+      >
+        <h4 class="text-body">{{ section.label }}</h4>
+        <SectionTitle
+          class="flex flex-col mt-2 space-y-2"
+          v-if="isMultiple(section.value)"
+        >
+          <span class="relative w-72" v-for="currency in section.value" :key="currency">
+            <NumberHider />
+            {{ formatMoney(currency.total, currency.currency_code) }}
+          </span>
+        </SectionTitle>
+        <SectionTitle class="mt-2" v-else>
+          <span class="relative w-72">
+            <NumberHider />
+            {{ formatMoney(section.value) }}
+          </span>
+        </SectionTitle>
+      </div>
+    </div>
+    <slot></slot>
+  </div>
 </template>
 
 <script setup>
 import { AtButton } from "atmosphere-ui";
 import { computed, ref } from "vue";
-import { useI18n } from 'vue-i18n'
+import { useI18n } from "vue-i18n";
+import { router } from "@inertiajs/vue3";
 
 import SectionTitle from "@/Components/atoms/SectionTitle.vue";
 import NumberHider from "@/Components/molecules/NumberHider.vue";
 
-import formatMoney from "@/utils/formatMoney"
+import formatMoney from "@/utils/formatMoney";
 import { useTransactionModal } from "@/domains/transactions";
 
 const props = defineProps({
-    username: {
-        type: String,
-        required: true
-    },
-    budget: {
-        type: Number
-    },
-    expenses: {
-        type: [Number, String]
-    },
-    message: {
-        default: "Welcome to Loger"
-    }
-})
+  username: {
+    type: String,
+    required: true,
+  },
+  budget: {
+    type: Number,
+  },
+  expenses: {
+    type: [Number, String],
+  },
+  message: {
+    default: "Welcome to Loger",
+  },
+});
 
-const { t } = useI18n()
-const { isOpen: isTransferModalOpen } = useTransactionModal()
+const { t } = useI18n();
+const { isOpen: isTransferModalOpen } = useTransactionModal();
 
 const openedTransaction = ref(null);
 
 const sections = computed(() => ({
-    expenses: {
-        label: t('Current Expenses'),
-        value: props.expenses
-    },
-    budget: {
-        label: t('Monthly Budget'),
-        value: props.budget
-    }
+  expenses: {
+    label: t("Current Expenses"),
+    value: props.expenses,
+  },
+  budget: {
+    label: t("Monthly Budget"),
+    value: props.budget,
+  },
 }));
 
 const isMultiple = (value) => {
-    return Array.isArray(value)
-}
+  return Array.isArray(value);
+};
 </script>

@@ -51,7 +51,7 @@
                         :value="formatMoney(transactionTotal)"
                         :variance="expenseVariance"
                         :variance-amount="formatMoney(lastMonthExpenses)"
-                        @click="$router.visit('/finance/transactions')"
+                        @click="router.visit('/finance/transactions')"
                     />
                 </div>
             </WidgetTitleCard>

@@ -1,6 +1,7 @@
 import { router } from "@inertiajs/vue3";
 import { format, parseISO } from "date-fns";
-import { reactive, Ref, watch }  from "vue"
+import { debounce } from "lodash";
+import { reactive, ref, Ref, unref, watch }  from "vue"
 
 interface IServerSearchData {
     filters: Record<string, string>
@@ -78,45 +79,55 @@ export const updateSearch = (state: ISearchState) => {
     }
 }
 
-export const useServerSearch = (serverSearchData: Ref<IServerSearchData>, options: IServerSearchOptions = {}) => {
+export const parseDateFilters = (options: IServerSearchData) => {
+    const dates = options?.filters?.date ? options.filters.date.split('~') : [null, null]
+
+    return {
+        startDate: parseISO(dates[0]),
+        endDate: dates.length == 2 ? parseISO(dates[1]) : null
+    }
+}
+
+const serverToState = (serverSearchData) => {
     const dates = parseDateFilters(serverSearchData)
-    const state = reactive<ISearchState>({
+    return {
         filters: {
-            ...serverSearchData.value.filters,
+            ...serverSearchData.filters,
             date: null
         },
         dates: {
             startDate: dates.startDate,
             endDate: dates.endDate,
         },
-        sorts: serverSearchData.value.sorts,
-        limit: serverSearchData.value.limit,
-        relationships: serverSearchData.value.relationships,
-        search: serverSearchData.value.search,
-        page: serverSearchData.value.page
-    });
+        sorts: serverSearchData.sorts,
+        limit: serverSearchData.limit,
+        relationships: serverSearchData.relationships,
+        search: serverSearchData.search,
+        page: serverSearchData.page
+    }
+}
+
+export const useServerSearch = (serverSearchData: Ref<IServerSearchData>, options: IServerSearchOptions = {}) => {
+    const state = reactive<ISearchState>(serverToState(serverSearchData.value));
+    const lastState = ref(serverToState(serverSearchData.value));
+    console.log("here");
+
 
     if (!options.manual) {
         watch(
             () => state,
-            () => {
-                updateSearch(state);
-            },
-            { deep: true }
+            debounce((newState) => {
+                if (JSON.stringify(newState) !== JSON.stringify(lastState.value)) {
+                    lastState.value = serverToState(serverSearchData.value);
+                    updateSearch(state);
+                }
+            }, 200),
+            { deep: true}
         );
     }
 
     const executeSearch = () => {
         updateSearch(state);
-    }
-
-    function parseDateFilters(options: Ref<IServerSearchData>) {
-        const dates = options?.value.filters?.date ? options.value.filters.date.split('~') : [null, null]
-
-        return {
-            startDate: parseISO(dates[0]),
-            endDate: dates.length == 2 ? parseISO(dates[1]) : null
-        }
     }
 
     return {

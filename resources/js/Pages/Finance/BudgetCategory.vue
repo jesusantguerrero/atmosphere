@@ -1,5 +1,5 @@
 <template>
-  <AppLayout @back="$router.visit('/budgets')" :show-back-button="true">
+  <AppLayout @back="router.visit('/budgets')" :show-back-button="true">
     <template #header>
       <FinanceSectionNav>
         <template #actions>

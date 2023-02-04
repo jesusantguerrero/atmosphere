@@ -79,7 +79,7 @@
     import JetSecondaryButton from '@/Components/atoms/SecondaryButton.vue'
     import { AtField } from "atmosphere-ui"
     import LogerInput from '@/Components/atoms/LogerInput.vue'
-    import { useForm } from '@inertiajs/vue3'
+    import { useForm, router } from '@inertiajs/vue3'
 
     export default {
         components: {
@@ -137,7 +137,7 @@
             },
 
             deletePhoto() {
-                this.$router.elete(route('current-user-photo.destroy'), {
+                router.delete(route('current-user-photo.destroy'), {
                     preserveScroll: true,
                     onSuccess: () => {
                         this.photoPreview = null;

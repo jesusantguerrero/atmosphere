@@ -22,7 +22,7 @@
                             <PrivacyToggle v-model="isPrivacyMode" v-if="!isOnboarding" />
                             <AppNotificationBell
                                 :notifications="$page.props.unreadNotifications"
-                                @click="$router.visit('/notifications')"
+                                @click="router.visit('/notifications')"
                              />
 
                             <!-- Settings Dropdown -->
