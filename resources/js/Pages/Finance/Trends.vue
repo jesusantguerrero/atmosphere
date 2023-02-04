@@ -9,7 +9,7 @@
                     class="px-2 py-1.5 flex items-center border border-transparent hover:bg-accent"
                     :class="{'bg-white text-primary border-primary hover:text-white': isFilterSelected(statusName)}"
                     :key="statusName"
-                    @click="$router.visit(item.value)">
+                    @click="router.visit(item.value)">
                     {{ item.label }}
                 </button>
             </div>

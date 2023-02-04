@@ -1,7 +1,7 @@
 <template>
   <AppLayout
     :title="sectionTitle"
-    @back="$router.visit(route('finance'))"
+    @back="router.visit(route('finance'))"
     :show-back-button="true"
   >
     <template #header>
@@ -15,20 +15,19 @@
               class="flex items-center justify-between space-x-2 rounded-md min-w-fit group"
               :class="[filters.overspent ? 'bg-primary text-white' : 'text-primary']"
             >
-                <span class="relative">
-                  {{ filterGroups.overSpent.length }} Overspent categories
-                  <PointAlert v-if="!filters.overspent" />
+              <span class="relative">
+                {{ filterGroups.overSpent.length }} Overspent categories
+                <PointAlert v-if="!filters.overspent" />
+              </span>
 
-                </span>
-               
-                <div class="text-white text-sm rounded-full group-hover:bg-white/20 p-0.5">
-                    <IconClose />
-                </div>
+              <div class="text-white text-sm rounded-full group-hover:bg-white/20 p-0.5">
+                <IconClose />
+              </div>
             </AtButton>
             <StatusButtons
-                :modelValue="currentStatus"
-                :statuses="budgetStatus"
-                @change="toggleFilter"
+              :modelValue="currentStatus"
+              :statuses="budgetStatus"
+              @change="toggleFilter"
             />
             <AtDatePager
               class="w-full h-12 border-none bg-base-lvl-1 text-body"
@@ -39,9 +38,9 @@
             />
             <LogerButton variant="inverse">Import</LogerButton>
             <LogerButton variant="inverse">
-                <a :href="route('budget.export')" class="block w-full" target="_blank">
-                    Export
-                </a>
+              <a :href="route('budget.export')" class="block w-full" target="_blank">
+                Export
+              </a>
             </LogerButton>
           </div>
         </template>
@@ -53,82 +52,85 @@
         title="This is your budget."
         content="Create new category groups and categories and organize them to suit your needs"
       />
-        <BalanceAssign
-            class="mt-5 rounded-t-md"
-            :class="[cardShadow, !visibleFilters.overspent && 'rounded-b-md']"
-            :value="readyToAssign.balance"
-            :category="readyToAssign.toAssign"
-            :to-assign="readyToAssign"
+      <BalanceAssign
+        class="mt-5 rounded-t-md"
+        :class="[cardShadow, !visibleFilters.overspent && 'rounded-b-md']"
+        :value="readyToAssign.balance"
+        :category="readyToAssign.toAssign"
+        :to-assign="readyToAssign"
       >
         <template #activity>
           <section class="flex flex-col items-center justify-center w-full py-2">
             <h4 class="font-bold text-secondary">
-                <MoneyPresenter :value="readyToAssign.activity" />
+              <MoneyPresenter :value="readyToAssign.activity" />
             </h4>
             <p class="font-bold text-body-1/80">Activity</p>
           </section>
         </template>
         <template #target>
-            <BudgetProgress class="w-full text-center h-14"
-                :goal="readyToAssign.monthlyGoals.target"
-                :current="readyToAssign.monthlyGoals.balance"
-                :progress-class="['bg-secondary/10', 'bg-secondary/5']"
-            >
-                <section class="font-bold">
-                    <h4 class="text-secondary">
-                        <MoneyPresenter :value="readyToAssign.monthlyGoals.balance" />
-                    </h4>
-                    <p class="font-bold text-body-1/80">Monthly Goals Progress</p>
-                </section>
-            </BudgetProgress>
+          <BudgetProgress
+            class="w-full text-center h-14"
+            :goal="readyToAssign.monthlyGoals.target"
+            :current="readyToAssign.monthlyGoals.balance"
+            :progress-class="['bg-secondary/10', 'bg-secondary/5']"
+          >
+            <section class="font-bold">
+              <h4 class="text-secondary">
+                <MoneyPresenter :value="readyToAssign.monthlyGoals.balance" />
+              </h4>
+              <p class="font-bold text-body-1/80">Monthly Goals Progress</p>
+            </section>
+          </BudgetProgress>
         </template>
-        </BalanceAssign>
+      </BalanceAssign>
 
-        <section class="mx-auto mt-8 rounded-lg text-body bg-base max-w-7xl">
-            <BudgetDetailForm
-                class="mt-5 mr-4"
-                v-if="selectedBudget && showCategoriesInMain"
-                full
-                v-model:category="selectedBudget"
-                :item="selectedBudget.budget"
-                @saved="onBudgetItemSaved"
-                @deleted="deleteBudget"
-                @cancel="setSelectedBudget()"
-                @close="setSelectedBudget()"
-            />
+      <section class="mx-auto mt-8 rounded-lg text-body bg-base max-w-7xl">
+        <BudgetDetailForm
+          class="mt-5 mr-4"
+          v-if="selectedBudget && showCategoriesInMain"
+          full
+          v-model:category="selectedBudget"
+          :item="selectedBudget.budget"
+          @saved="onBudgetItemSaved"
+          @deleted="deleteBudget"
+          @cancel="setSelectedBudget()"
+          @close="setSelectedBudget()"
+        />
 
-            <article v-else class="w-full mt-4 space-y-4">
-                <section class="space-y-4">
-                    <BudgetCategories :budgets="budgets" />
-                </section>
-            </article>
+        <article v-else class="w-full mt-4 space-y-4">
+          <section class="space-y-4">
+            <BudgetCategories :budgets="budgets" />
+          </section>
+        </article>
+      </section>
 
-        </section>
-
-        <template #panel class="">
-            <div class="mt-4 space-y-4">
-                <BudgetDetailForm
-                    class="mt-5"
-                    v-if="selectedBudget && !showCategoriesInMain"
-                    full
-                    :category="selectedBudget"
-                    :item="selectedBudget.budget"
-                    @saved="onBudgetItemSaved"
-                    @deleted="deleteBudget"
-                    @cancel="setSelectedBudget()"
-                    @close="setSelectedBudget()"
-                />
-                <!-- <BudgetCategories :budgets="budgets" v-if="!showCategoriesInMain"/> -->
-                <ExpenseIncome :expenses="readyToAssign.activity" :income="readyToAssign.inflow" />
-            </div>
-        </template>
+      <template #panel class="">
+        <div class="mt-4 space-y-4">
+          <BudgetDetailForm
+            class="mt-5"
+            v-if="selectedBudget && !showCategoriesInMain"
+            full
+            :category="selectedBudget"
+            :item="selectedBudget.budget"
+            @saved="onBudgetItemSaved"
+            @deleted="deleteBudget"
+            @cancel="setSelectedBudget()"
+            @close="setSelectedBudget()"
+          />
+          <!-- <BudgetCategories :budgets="budgets" v-if="!showCategoriesInMain"/> -->
+          <ExpenseIncome
+            :expenses="readyToAssign.activity"
+            :income="readyToAssign.inflow"
+          />
+        </div>
+      </template>
     </FinanceTemplate>
   </AppLayout>
 </template>
 
 <script setup>
-import { computed, toRefs} from "vue";
-import { router} from "@inertiajs/vue3";
+import { computed, toRefs } from "vue";
+import { router } from "@inertiajs/vue3";
 import { AtButton, AtDatePager } from "atmosphere-ui";
 import { useBreakpoints, breakpointsTailwind } from "@vueuse/core";
 
@@ -175,8 +177,8 @@ const props = defineProps({
 const { serverSearchOptions } = toRefs(props);
 const { state: pageState } = useServerSearch(serverSearchOptions);
 const sectionTitle = computed(() => {
-    return `Budget for ${formatMonth(pageState.dates.startDate, 'MMMM yyyy')}`
-})
+  return `Budget for ${formatMonth(pageState.dates.startDate, "MMMM yyyy")}`;
+});
 
 const { budgets } = toRefs(props);
 const {
@@ -192,21 +194,22 @@ const panelSize = computed(() => {
   return !selectedBudget.value ? "large" : "small";
 });
 
-const { isSmaller } = useBreakpoints(breakpointsTailwind)
-const showCategoriesInMain = isSmaller('md');
+const { isSmaller } = useBreakpoints(breakpointsTailwind);
+const showCategoriesInMain = isSmaller("md");
 
-//  budget filters 
+//  budget filters
 const budgetStatus = {
-    funded: {
-        label: 'funded',
-    },
-    underFunded: {
-        label: 'Not funded',
-    },
-}
+  funded: {
+    label: "funded",
+  },
+  underFunded: {
+    label: "Not funded",
+  },
+};
 
-
-const currentStatus = computed(() => Object.keys(filters.value).find(key => filters.value[key]));
+const currentStatus = computed(() =>
+  Object.keys(filters.value).find((key) => filters.value[key])
+);
 
 //  Budget Form
 const deleteBudget = (budget) => {
@@ -221,8 +224,8 @@ const onBudgetItemSaved = () => {};
 
 <style>
 .budget-right-panel {
-    display: grid;
-    grid-template-rows: 50px calc(100vh - 420px) 150px;
-    gap: 8px;
+  display: grid;
+  grid-template-rows: 50px calc(100vh - 420px) 150px;
+  gap: 8px;
 }
 </style>

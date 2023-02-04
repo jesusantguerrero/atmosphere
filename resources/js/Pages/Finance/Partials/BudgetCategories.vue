@@ -43,7 +43,7 @@
                     :key="`${item.id}-${item.budgeted}`"
                     :item="item"
                     :is-mobile="isMobile"
-                    @open="$router.visit(`/budgets/${item.id}`)"
+                    @open="router.visit(`/budgets/${item.id}`)"
                     @edit="setSelectedBudget(item.id, itemGroup.id)"
                 />
             </Draggable>
