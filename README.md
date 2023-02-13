@@ -24,14 +24,9 @@
 
 ## About Loger
 
-Loger (House in french) as family managing home is almost like being CEO 
-of a company. There's a lot of things going on and that you have to keep in mind.
-Things like **budget**, **expenses**, **subscriptions** to keep healthy financial habits 
-managing goals/savings like **emergency fund** or planning your next vacations or Christmas;
-having a **Meal Plan**, grocery list generated with the things you need... well, you get the point.
+Loger (House in french) as a family managing home is almost like being CEO of a company. There are a lot of things going on that you have to keep in mind. Things like budgeting, expenses, subscriptions to keep healthy financial habits managing goals/savings like an emergency fund or planning your next vacation or Christmas; having a Meal Plan, grocery list generated with the things you need... well, you get the point.
 
-All the things mentioned above are part of our family/personal routine. We do it in our minds or paper
-or if you are like me with different software. Loger aims to be a central point to manage all that an more.
+All the things mentioned above are part of our family/personal routine. We do it in our minds or paper or if you are like me with different software. Loger aims to be a central point to manage all that an more.
 
 ## ✨Features:
 
