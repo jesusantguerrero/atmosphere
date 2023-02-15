@@ -42,7 +42,7 @@
         </section>
     </article>
 
-    <footer class="px-6 py-4 space-x-3 text-right bg-base" >
+    <footer class="px-6 py-4 space-x-3 text-right bg-base flex justify-end" >
       <AtButton type="secondary" @click="close" rounded class="h-10"> Cancel </AtButton>
       <LogerButton variant="inverse" @click="submit" :disabled="!form.name">
         {{ submitLabel }}
@@ -55,16 +55,12 @@
 import { ref, inject, watch, computed } from "vue";
 import { AtButton, AtField, AtFieldCheck } from "atmosphere-ui";
 import { useForm } from "@inertiajs/vue3";
-import { NSelect } from "naive-ui";
 
 import Modal from "@/Components/atoms/Modal.vue";
-import ImportHolder from "@/Components/organisms/ImportHolder.vue";
-import TabSelector from "./TabSelector.vue";
 import OccurrencePreview from "./OccurrencePreview.vue";
 import LogerButtonTab from "./atoms/LogerButtonTab.vue";
 import LogerButton from "./atoms/LogerButton.vue";
 import LogerInput from "./atoms/LogerInput.vue";
-import LogerApiSimpleSelect from "./organisms/LogerApiSimpleSelect.vue";
 import ConditionDescription from '@/Components/templates/ConditionDescription.vue';
 import ConditionSelect from '@/Components/templates/ConditionSelect.vue';
 import SectionNav from '@/Components/molecules/SectionNav.vue';
@@ -133,6 +129,7 @@ const submit = () => {
         onSuccess() {
             emitClose();
             emit('saved', form.data())
+            form.reset()
         }
       });
   } else {
@@ -146,6 +143,7 @@ const update = () => {
             onSuccess() {
                 emitClose();
                 emit('saved', form.data())
+                form.reset()
             },
         }
     )

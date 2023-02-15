@@ -1,9 +1,7 @@
 <template>
-  <div>
-    <div :style="{ height: '550px', width: '550px' }" class="mx-auto">
+    <div :style="{width: '100%'}">
       <DoughnutChart ref="chartRef" :data="chartData" :options="options" />
     </div>
-  </div>
 </template>
 
 <script setup>

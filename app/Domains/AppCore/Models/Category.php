@@ -78,7 +78,7 @@ class Category extends CoreCategory
         $yearMonth = substr((string) $month, 0, 7);
         $monthBudget = $this->budgets->where('month', $month)->first();
         $budgeted = $monthBudget ? $monthBudget->budgeted : 0;
-        $monthBalance = $this->getMonthBalance($yearMonth);
+        $monthBalance = (double) $this->getMonthBalance($yearMonth)->balance;
         $prevMonthLeftOver = $this->getPrevMonthLeftOver($yearMonth);
         $available = Money::of($budgeted, 'USD')->plus($prevMonthLeftOver)->plus($monthBalance)->getAmount()->toFloat();
 
@@ -111,13 +111,12 @@ class Category extends CoreCategory
         if (!$this->resource_type_id) {
             return $this->transactions()
             ->verified()
-            ->whereRaw(DB::raw("date_format(transactions.date, '%Y-%m') = '$yearMonth'"))
-            ->sum(DB::raw(
-                "CASE
-                    WHEN transactions.direction = 'WITHDRAW'
-                    THEN total * -1
-                    ELSE total * 1 END"
-            ));
+            ->whereRaw("date_format(transactions.date, '%Y-%m') = '$yearMonth'")
+            ->selectRaw("SUM(CASE
+                WHEN transactions.direction = 'WITHDRAW'
+                THEN total * -1
+                ELSE total * 1 END) as balance"
+            )->first();
         } else {
             return $this->creditLines()
             ->whereRaw("date_format(date, '%Y-%m') = '$yearMonth'")

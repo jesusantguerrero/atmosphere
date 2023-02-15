@@ -28,7 +28,7 @@
             </div>
         </div>
 
-        <div class="px-6 py-4 space-x-3 text-right bg-base-lvl-1">
+        <div class="px-6 py-4 space-x-3 text-right bg-base-lvl-1 flex justify-end">
             <AtButton type="secondary" rounded @click="close"> Cancel </AtButton>
             <AtButton class="text-white bg-primary" rounded @click="submit"> Save </AtButton>
         </div>
