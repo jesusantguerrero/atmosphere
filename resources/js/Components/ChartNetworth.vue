@@ -3,15 +3,15 @@
     <div class="pb-10 px-5 rounded-lg">
       <h5 class="card-title text-left p-4 font-bold">{{ title }}</h5>
       <div class="card-text">
-        <div class="comparison-header px-10 text-body-1/50 space-x-2 divide-x divide-dashed divide-opacity-20 divide-body-1 bg-base-lvl-2 mb-2">
+        <div class="comparison-header ic-scroller h-32 overflow-auto px-10 text-body-1/50 space-x-2 divide-x divide-dashed divide-opacity-20 divide-body-1 bg-base-lvl-2 mb-2">
           <div
             v-for="header in state.headers"
             :key="header.id"
             @click="selectedDate = header.id"
-            class="comparison-header__item justify-center w-full items-center flex-col flex  previous-period cursor-pointer hover:text-body/80"
+            class="comparison-header__item min-w-max px-6 justify-center w-full items-center flex-col flex  previous-period cursor-pointer hover:text-body/80"
             >
             <h6 class="period-title">{{ header.label }}</h6>
-            <span class="period-value" v-for="(value, index) in header.value">
+            <span class="period-value text-sm" v-for="(value, index) in header.value">
                 <div
                     class="absolute -left-4 top-2 h-2 w-2 rounded-full"
                     :style="{backgroundColor: state.options.colors[index]}"
@@ -96,15 +96,12 @@ const state = reactive({
 .comparison-header {
   display: flex;
   width: 100%;
-  height: 90px;
 
   &__item {
     width: 50%;
-    padding: 20px 0;
 
     .period-value {
       position: relative;
-      font-size: 18px;
       font-weight: bolder;
     }
   }

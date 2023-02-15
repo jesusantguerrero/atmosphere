@@ -29,7 +29,7 @@
       />
     </section>
 
-    <footer class="px-6 py-4 space-x-3 text-right bg-base" >
+    <footer class="px-6 py-4 space-x-3 text-right flex bg-base" >
       <AtButton type="secondary" @click="close" rounded class="h-10"> Cancel </AtButton>
       <AtButton class="text-white bg-primary h-10" @click="submit" rounded :disabled="!selectedResource">
         Import
