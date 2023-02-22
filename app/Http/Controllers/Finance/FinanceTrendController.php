@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Finance;
 
+use App\Domains\Transaction\Services\ReportService;
 use App\Domains\Transaction\Services\TransactionService;
 use App\Http\Controllers\Controller;
 use Carbon\Carbon;
@@ -18,6 +19,7 @@ class FinanceTrendController extends Controller {
         'payees' => 'payee',
         'net-worth' => 'NetWorth',
         'income-expenses' => 'IncomeExpenses',
+        'income-expenses-graph' => 'IncomeExpensesGraph',
     ];
 
     public function index(Request $request, $sectionName = 'groups') {
@@ -108,6 +110,23 @@ class FinanceTrendController extends Controller {
             'metaData' => [
                 'name' => 'incomeExpenses',
                 'title' => 'Income vs Expenses',
+            ]
+        ];
+    }
+
+    public function incomeExpensesGraph() {
+        $queryParams = request()->query();
+        $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
+        [$startDate, $endDate] = $this->getFilterDates($filters);
+        $teamId = request()->user()->current_team_id;
+        return [
+            'data' => ReportService::generateExpensesByPeriod($teamId, 'month', 12),
+            'metaData' => [
+                'name' => 'incomeExpensesGraph',
+                'title' => 'Income vs Expenses',
+                "props" => [
+                    "headerTemplate" => 'grid',
+                ]
             ]
         ];
     }

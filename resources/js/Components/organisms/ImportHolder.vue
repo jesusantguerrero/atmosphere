@@ -71,7 +71,9 @@ const setFile = (evt) => {
 }
 
 const clearFile = () => {
-    fileInputRef.value.value = null
+    if (fileInputRef.value && fileInputRef.value?.value) {
+        fileInputRef.value.value = null
+    }
     formData.file = null
 }
 

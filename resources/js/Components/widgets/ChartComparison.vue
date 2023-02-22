@@ -8,8 +8,10 @@
         {{ title }}
         <span v-if="selectedDate" class="capitalize text-primary">{{ formatMonth(selectedDate) }}</span>
       </h5>
-      <div class="card-text">
-        <div class="comparison-header w-full md:flex md:px-10 text-body-1/50 md:space-x-2 md:divide-x md:divide-y-0 divide-y divide-dashed divide-opacity-20 divide-body-1 bg-base-lvl-2 mb-2">
+      <div class="card-text" >
+        <div
+            :class="[headerTemplate == 'grid' ? 'md:grid md:grid-cols-4' : 'md:flex']"
+            class="comparison-header w-full  md:px-10 text-body-1/50 md:space-x-2 md:divide-x md:divide-y-0 divide-y divide-dashed divide-opacity-20 divide-body-1 bg-base-lvl-2 mb-2">
           <div
             v-for="header in state.headers"
             :key="header.id"
@@ -52,6 +54,13 @@ import formatMoney from "@/utils/formatMoney";
 const props = defineProps({
     title: {
         type: String
+    },
+    hideHeader: {
+        type: Boolean
+    },
+    headerTemplate: {
+        type: String,
+        default: 'row'
     },
     type: {
       type: String,
