@@ -34,6 +34,7 @@
                 :series="data"
                 :data="data"
                 @clicked="handleSelection"
+                v-bind="metaData.props"
                 label="name"
                 value="total"
                 :legend="false"
@@ -66,6 +67,7 @@ import IncomeExpenses from "@/Components/IncomeExpenses.vue";
 import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
 
 import { useServerSearch } from "@/composables/useServerSearch";
+import ChartComparison from "@/Components/widgets/ChartComparison.vue";
 
 const props = defineProps({
   user: {
@@ -113,6 +115,10 @@ const trends = [
     {
         name: 'Income v Expenses',
         link: '/trends/income-expenses'
+    },
+    {
+        name: 'Income vs Expenses Graph',
+        link: '/trends/income-expenses-graph'
     }
 ]
 
@@ -121,16 +127,13 @@ const components = {
     groups: DonutChart,
     categories: DonutChart,
     netWorth: ChartNetWorth,
-    incomeExpenses: IncomeExpenses
+    incomeExpenses: IncomeExpenses,
+    incomeExpensesGraph:  ChartComparison
 }
 
 const trendComponent = computed(() => {
     return components[props.metaData.name] || DonutChart
 })
-
-const onPrint = () => {
-    print();
-}
 
 const cashflowEntities = {
     groups: {
