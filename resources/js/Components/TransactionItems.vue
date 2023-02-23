@@ -56,11 +56,11 @@
           />
         </AtField>
         <AtField label="Amount" class="hidden md:block md:w-5/12">
-          <LogerInput :number-format="true" v-model="split.amount">
+          <InputMoney :number-format="true" v-model="split.amount">
             <template #prefix>
               <span class="flex items-center pl-2"> RD$ </span>
             </template>
-          </LogerInput>
+          </InputMoney>
         </AtField>
       </div>
     </div>
@@ -72,11 +72,12 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, toRefs, computed, inject } from "vue";
+import { reactive, computed, inject } from "vue";
 import { AtField } from "atmosphere-ui";
 import { NSelect } from "naive-ui";
 
 import LogerInput from "@/Components/atoms/LogerInput.vue";
+import InputMoney from "@/Components/atoms/InputMoney.vue";
 import LogerApiSimpleSelect from "@/Components/organisms/LogerApiSimpleSelect.vue";
 import LogerButton from "./atoms/LogerButton.vue";
 
@@ -143,7 +144,6 @@ const removeSplit = (index: number) => {
 };
 
 if (!props.items.length) {
-  debugger;
   addSplit();
 }
 
