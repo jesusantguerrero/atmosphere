@@ -68,7 +68,7 @@
             <div v-if="isRecurrence">
               <div class="flex">
                 <AtField label="Repeat this transaction" class="w-full">
-                  <n-select
+                  <NSelect
                     v-model:value="schedule_settings.frequency"
                     :options="[
                       {
@@ -110,7 +110,7 @@
                   />
                 </AtField>
                 <AtField label="Date" v-if="schedule_settings.end_type == 'DATE'">
-                  <n-date-picker v-model:value="schedule_settings.end_date" size="lg" />
+                  <NDatePicker v-model:value="schedule_settings.end_date" size="lg" />
                 </AtField>
                 <AtField label="Instances" v-if="schedule_settings.end_type == 'COUNT'">
                   <AtInput type="number" v-model="schedule_settings.count" />
