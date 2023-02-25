@@ -41,7 +41,7 @@ abstract class Factory extends FactoriesFactory {
 
     public function setUser(): void
     {
-        $this->user = User::where('email', 'demo@example.com')->first();
+        $this->user = User::where('email', 'demo@loger.com')->first();
     }
 
     public function setTeam(): void

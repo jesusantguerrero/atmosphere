@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use Database\Seeders\DemoDataSeeder;
 use Illuminate\Console\Command;
 
-class DemoData extends Command
+class DemoSeed extends Command
 {
     /**
      * The name and signature of the console command.
