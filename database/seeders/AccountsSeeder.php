@@ -26,7 +26,7 @@ class AccountsSeeder extends Seeder
 
     private function create()
     {
-        $user = User::where('email', 'demo@example.com')->get();
+        $user = User::where('email', 'demo@loger.com')->get();
 
 
     }

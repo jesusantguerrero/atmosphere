@@ -27,7 +27,7 @@ class DemoDataSeeder extends Seeder
 
         $count =  10;
         $payees = [];
-        $user = User::factory(['email' => 'demo@example.com'])->withPersonalTeam()->create();
+        $user = User::factory(['email' => 'demo@loger.com'])->withPersonalTeam()->create();
         $team = Team::where('user_id', $user->id)->first();
         $demoData = new Demo($team);
         $faker = \Faker\Factory::create();
@@ -119,7 +119,7 @@ class DemoDataSeeder extends Seeder
     }
 
     public function down() {
-        $user = User::where('email','demo@example.com')->first();
+        $user = User::where('email','demo@loger.com')->first();
         if ($user && $team = Team::where('user_id', $user->id)->first()) {
             (new Demo($team))->removeSampleData();
             $team->delete();

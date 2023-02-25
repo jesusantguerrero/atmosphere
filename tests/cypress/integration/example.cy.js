@@ -11,7 +11,7 @@ describe('Example Test', () => {
 
     it('Authenticated is redirected to dashboard', () => {
         cy.visit('/')
-        cy.get('input[data-testid=input-email').type('demo@example.com')
+        cy.get('input[data-testid=input-email').type('demo@loger.com')
         cy.get('input[data-testid=input-password').type('password')
         cy.get('input[data-testid=btn-submit').click()
 
