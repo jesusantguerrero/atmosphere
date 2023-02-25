@@ -27,27 +27,34 @@ const runAutomation = () => {
 }
 
 const removeAllDrafts = () => {
-    router.post('/transactions/remove-all-drafts')
-        .then(response => {
-            router.reload()
-        })
+    router.post('/transactions/remove-all-drafts', {
+        onSuccess() {
+            router.reload();
+        }
+    })
 }
 
 const approveTransactionAll = (transaction) => {
-    router.post(`/transactions/approve-all-drafts`).then(() => {
-        router.reload();
+    router.post(`/transactions/approve-all-drafts`, {
+        onSuccess() {
+            router.reload();
+        }
     })
 }
 
 const approveTransaction = (transaction) => {
-    router.post(`/transactions/${transaction.id}/approve`).then(() => {
-        router.reload();
+    router.post(`/transactions/${transaction.id}/approve`, {
+        onSuccess() {
+            router.reload();
+        }
     })
 }
 
 const removeTransaction = (transaction) => {
-    router.delete(`/transactions/${transaction.id}`).then(() => {
-        router.reload();
+    router.delete(`/transactions/${transaction.id}`, {
+        onSuccess() {
+            router.reload();
+        }
     })
 }
 </script>

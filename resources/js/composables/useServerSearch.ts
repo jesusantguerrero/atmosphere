@@ -110,8 +110,6 @@ const serverToState = (serverSearchData) => {
 export const useServerSearch = (serverSearchData: Ref<IServerSearchData>, options: IServerSearchOptions = {}) => {
     const state = reactive<ISearchState>(serverToState(serverSearchData.value));
     const lastState = ref(serverToState(serverSearchData.value));
-    console.log("here");
-
 
     if (!options.manual) {
         watch(

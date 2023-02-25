@@ -100,7 +100,7 @@ const isDraft = computed(() => {
 });
 
 const removeTransaction = (transaction) => {
-  router.delete(`/transactions/${transaction.transaction_id}`, {
+  router.delete(`/transactions/${transaction.id}`, {
     onSuccess() {
       router.reload();
     },

@@ -15,6 +15,7 @@
               class="w-full h-12 border-none bg-base-lvl-1 text-body"
               v-model:startDate="pageState.dates.startDate"
               v-model:endDate="pageState.dates.endDate"
+              @update:dateSpan="handleChange"
               controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
               next-mode="month"
             />
@@ -55,7 +56,7 @@
 
 <script setup>
 import { AtDatePager } from "atmosphere-ui";
-import { computed, toRefs, provide, ref } from "vue";
+import { computed, toRefs, provide, ref, nextTick } from "vue";
 import { router } from "@inertiajs/vue3";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
@@ -71,6 +72,7 @@ import { useServerSearch } from "@/composables/useServerSearch";
 import StatusButtons from "@/Components/molecules/StatusButtons.vue";
 import { useAppContextStore } from "@/store";
 import IconBack from "@/Components/icons/IconBack.vue";
+import { debounce } from "lodash";
 
 const props = defineProps({
   transactions: {
@@ -124,8 +126,14 @@ const handleBackButton = () => {
 
 const { serverSearchOptions } = toRefs(props);
 const { state: pageState, executeSearch } = useServerSearch(serverSearchOptions, {
-  manual: false,
+  manual: true,
 });
+
+const handleChange = () => {
+    nextTick(debounce(() => {
+        executeSearch()
+    }))
+}
 
 const selectedAccountId = computed(() => {
   return serverSearchOptions.value.filters?.account_id;
