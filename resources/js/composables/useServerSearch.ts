@@ -1,7 +1,7 @@
 import { router } from "@inertiajs/vue3";
 import { format, parseISO } from "date-fns";
 import { debounce } from "lodash";
-import { reactive, ref, Ref, unref, watch }  from "vue"
+import { nextTick, reactive, ref, Ref, unref, watch }  from "vue"
 
 interface IServerSearchData {
     filters: Record<string, string>
@@ -92,7 +92,7 @@ const serverToState = (serverSearchData) => {
     const dates = parseDateFilters(serverSearchData)
     return {
         filters: {
-            ...serverSearchData.filters,
+            ...(serverSearchData?.filters ?? {}),
             date: null
         },
         dates: {
@@ -107,7 +107,7 @@ const serverToState = (serverSearchData) => {
     }
 }
 
-export const useServerSearch = (serverSearchData: Ref<IServerSearchData>, options: IServerSearchOptions = {}) => {
+export const useServerSearch = (serverSearchData: Ref<IServerSearchData> , options: IServerSearchOptions = {}) => {
     const state = reactive<ISearchState>(serverToState(serverSearchData.value));
     const lastState = ref(serverToState(serverSearchData.value));
 
@@ -124,12 +124,19 @@ export const useServerSearch = (serverSearchData: Ref<IServerSearchData>, option
         );
     }
 
-    const executeSearch = () => {
-        updateSearch(state);
+    const executeSearch = (withDelay = false) => {
+        if (withDelay) {
+            updateSearch(state);
+        } else {
+            nextTick(debounce(() => {
+                executeSearch()
+            }, 200))
+        }
     }
 
     return {
         state,
-        executeSearch
+        executeSearch,
+        executeSearchWithDelay: executeSearch.bind(null, true)
     }
 }

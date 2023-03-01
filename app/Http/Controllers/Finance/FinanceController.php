@@ -59,6 +59,9 @@ class FinanceController extends InertiaController {
             "transactions" => $transactions->map(function ($transaction) {
                 return Transaction::parser($transaction);
             })->take(4),
+            "serverSearchOptions" => [
+                "filters" => $filters
+            ]
         ]);
     }
 }

@@ -17,6 +17,7 @@
                 class="w-full h-12 border-none bg-base-lvl-1 text-body"
                 v-model:startDate="pageState.dates.startDate"
                 v-model:endDate="pageState.dates.endDate"
+                @change="executeSearchWithDelay()"
                 controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
                 next-mode="month"
             />
@@ -90,7 +91,9 @@ const props = defineProps({
 });
 
 const { serverSearchOptions } = toRefs(props);
-const {state: pageState, executeSearch }= useServerSearch(serverSearchOptions);
+const {state: pageState, executeSearchWithDelay } = useServerSearch(serverSearchOptions, {
+    manual: true
+});
 
 const handleSelection = (index) => {
     const parent = props.data[index]

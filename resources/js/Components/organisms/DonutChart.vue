@@ -1,12 +1,12 @@
 <template>
-    <div :style="{width: '100%'}">
+    <div>
       <DoughnutChart ref="chartRef" :data="chartData" :options="options" />
     </div>
 </template>
 
 <script setup>
 import { generateRandomColor } from "@/utils";
-import { Chart, registerables } from "chart.js";
+import { Chart, registerables } from "chart.js/auto";
 import { computed, ref, toRefs } from "vue";
 import { Doughnut as DoughnutChart } from "vue-chartjs";
 
