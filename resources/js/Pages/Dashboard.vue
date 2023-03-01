@@ -33,12 +33,6 @@
                         ref="ComparisonRevenue"
                         :data="revenue"
                     />
-
-                    <NextPaymentsWidget
-                        v-if="onboarding.steps"
-                        class="w-4/12"
-                        :payments="nextPayments"
-                    />
                 </div>
 
             </div>

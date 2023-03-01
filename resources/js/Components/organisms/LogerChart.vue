@@ -91,7 +91,7 @@ const options = computed(() => ({
     y: {
         ticks: {
             callback(value, index, ticks) {
-                return props.hasHiddenValues ? '' : formatMoney(value)
+                return props.hasHiddenValues ? '--' : formatMoney(value)
             }
         }
     }
@@ -101,6 +101,9 @@ const options = computed(() => ({
 
 const chartRef = ref()
 Chart.register(...registerables);
+if (Chart.overrides[props.type].plugins) {
+    Chart.overrides[props.type].plugins.legend.display = false
+}
 watch(() => props.hasHiddenValues, () => {
     chartRef.value.chart.options = options.value
     chartRef.value.chart.update()

@@ -11,6 +11,7 @@ import { computed, ref, toRefs } from "vue";
 import { Doughnut as DoughnutChart } from "vue-chartjs";
 
 Chart.register(...registerables);
+Chart.overrides['doughnut'].plugins.legend.display = false
 
 const props = defineProps({
   series: {
