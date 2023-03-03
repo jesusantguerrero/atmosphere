@@ -43,6 +43,7 @@ jobs:
         APP_URL: ${{ secrets.DO_APP_URL }}
         ASSET_URL: ${{ secrets.DO_APP_URL }}
         APP_DEMO: true
+        VITE_APP_DEMO: true
       run: npm install ; npm run build
 
     - name: Archive production artifacts
