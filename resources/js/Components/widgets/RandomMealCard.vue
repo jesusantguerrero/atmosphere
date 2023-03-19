@@ -38,7 +38,8 @@ const props = defineProps({
             default: new Date()
         },
         title: {
-            type: String
+            type: String,
+            default: 'Get random meal'
         }
 });
 
@@ -52,7 +53,7 @@ const state = reactive({
     }),
     label: computed(() => {
         if (state.isLoading) return "Loading..."
-       return state.mealName ?? 'Get random meal'
+       return state.mealName ?? props.title
     })
 });
 

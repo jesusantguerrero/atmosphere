@@ -3,10 +3,11 @@
         <section class="rounded-full overflow-hidden relative h-14 w-14 border-2" :class="colorClass" :style="{backgroundColor: color}">
             <div class="h-full w-1/2 bg-white opacity-30" />
             <i :class="iconClass" v-if="iconClass" class="text-white font-bold" />
+            <span class="absolute text-white w-full h-full top-0 left-0 flex items-center justify-center font-bold"> {{ value }}</span>
         </section>
         <p class="mt-2 flex w-full text-center justify-center" ref="titleRef"
             :class="[wrap ? 'flex-wrap' : 'flex-nowrap']"
-        > {{ title }}</p>
+        > {{ title }} </p>
     </button>
 </template>
 
@@ -18,6 +19,9 @@ const props = defineProps({
     label: {
         type: String,
         default: 'Choose Category'
+    },
+    value: {
+        type: String
     },
     color: {
 
