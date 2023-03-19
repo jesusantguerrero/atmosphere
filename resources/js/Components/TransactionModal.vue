@@ -142,7 +142,7 @@
 </template>
 
 <script setup>
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { reactive, toRefs, watch, computed, inject, ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
 import { AtField, AtButton, AtFieldCheck, AtInput } from "atmosphere-ui";
@@ -236,6 +236,7 @@ watch(
     }
   }
 );
+
 const isTransfer = computed(() => {
   return state.form.is_transfer;
 });
@@ -331,12 +332,25 @@ watch(
     const newValue = { ...props.transactionData };
     Object.keys(state.form.data()).forEach((field) => {
       if (field == "date" && newValue[field]) {
-        state.form[field] = new Date(newValue[field]);
+        const date = newValue[field]
+        state.form[field] = parseISO(date);
       } else {
         state.form[field] = newValue[field] || state.form[field];
       }
     });
-    state.splits = props.transactionData?.splits ?? [];
+
+    state.splits = newValue.has_splits ? props.transactionData?.splits : [
+        {
+            payee_id: newValue.payee_id,
+            payee_label: newValue.payee?.name,
+            category_id: newValue.category_id,
+            category: newValue.category,
+            counter_account_id: null,
+            account_id: newValue.account_id,
+            account: newValue.account,
+            amount: newValue.total,
+        }
+    ];
   },
   { deep: true }
 );

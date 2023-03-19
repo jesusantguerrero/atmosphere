@@ -76,7 +76,6 @@ import { reactive, computed, inject } from "vue";
 import { AtField } from "atmosphere-ui";
 import { NSelect } from "naive-ui";
 
-import LogerInput from "@/Components/atoms/LogerInput.vue";
 import InputMoney from "@/Components/atoms/InputMoney.vue";
 import LogerApiSimpleSelect from "@/Components/organisms/LogerApiSimpleSelect.vue";
 import LogerButton from "./atoms/LogerButton.vue";

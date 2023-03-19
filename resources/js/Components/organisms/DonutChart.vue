@@ -1,6 +1,9 @@
 <template>
-    <div>
+    <div class="relative">
       <DoughnutChart ref="chartRef" :data="chartData" :options="options" />
+      <div class="absolute">
+        {{ total }}
+      </div>
     </div>
 </template>
 
