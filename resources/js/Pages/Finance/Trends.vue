@@ -17,6 +17,7 @@
                 class="w-full h-12 border-none bg-base-lvl-1 text-body"
                 v-model:startDate="pageState.dates.startDate"
                 v-model:endDate="pageState.dates.endDate"
+                @change="executeSearchWithDelay()"
                 controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
                 next-mode="month"
             />
@@ -26,8 +27,8 @@
 
     <FinanceTemplate title="Finance" ref="financeTemplateRef">
       <section>
-        <div class="flex flex-wrap mt-5 md:flex-nowrap md:space-x-8">
-          <div class="w-full md:w-full">
+        <div class="flex flex-wrap items-center justify-center bg-base-lvl-3 mt-5 md:flex-nowrap md:space-x-8">
+          <div class="w-full relative">
             <component
                 :is="trendComponent"
                 style="background: white; width: 100%"
@@ -35,6 +36,7 @@
                 :data="data"
                 @clicked="handleSelection"
                 v-bind="metaData.props"
+                :title="metaData.title"
                 label="name"
                 value="total"
                 :legend="false"
@@ -61,10 +63,10 @@ import { Link, router } from "@inertiajs/vue3";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
-import DonutChart from "@/Components/organisms/DonutChart.vue";
 import ChartNetWorth from "@/Components/ChartNetworth.vue";
 import IncomeExpenses from "@/Components/IncomeExpenses.vue";
 import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
+import ExpenseChartWidget from "@/Components/widgets/ExpenseChartWidget.vue";
 
 import { useServerSearch } from "@/composables/useServerSearch";
 import ChartComparison from "@/Components/widgets/ChartComparison.vue";
@@ -90,7 +92,9 @@ const props = defineProps({
 });
 
 const { serverSearchOptions } = toRefs(props);
-const {state: pageState, executeSearch }= useServerSearch(serverSearchOptions);
+const {state: pageState, executeSearchWithDelay } = useServerSearch(serverSearchOptions, {
+    manual: true
+});
 
 const handleSelection = (index) => {
     const parent = props.data[index]
@@ -124,15 +128,15 @@ const trends = [
 
 
 const components = {
-    groups: DonutChart,
-    categories: DonutChart,
+    groups: ExpenseChartWidget,
+    categories: ExpenseChartWidget,
     netWorth: ChartNetWorth,
     incomeExpenses: IncomeExpenses,
     incomeExpensesGraph:  ChartComparison
 }
 
 const trendComponent = computed(() => {
-    return components[props.metaData.name] || DonutChart
+    return components[props.metaData.name] || ExpenseChartWidget
 })
 
 const cashflowEntities = {

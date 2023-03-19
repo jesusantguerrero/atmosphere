@@ -7,6 +7,7 @@
             class="w-full h-12 border-none bg-base-lvl-1 text-body"
             v-model:startDate="pageState.dates.startDate"
             v-model:endDate="pageState.dates.endDate"
+            @change="executeSearchWithDelay"
             controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
             next-mode="month"
           />
@@ -127,8 +128,7 @@ import LogerButton from "@/Components/atoms/LogerButton.vue";
 import WidgetTitleCard from "@/Components/molecules/WidgetTitleCard.vue";
 import { format, subMonths } from "date-fns";
 
-const { serverSearchOptions } = toRefs(props);
-const { state: pageState } = useServerSearch(serverSearchOptions);
+
 
 const props = defineProps({
   user: {
@@ -198,6 +198,11 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+});
+
+const { serverSearchOptions } = toRefs(props);
+const { state: pageState, executeSearchWithDelay } = useServerSearch(serverSearchOptions, {
+    manual: true
 });
 
 const { categoryOptions: transformCategoryOptions } = useSelect();

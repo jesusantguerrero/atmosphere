@@ -3,11 +3,12 @@
     :is="chartComponent"
     :data="chartData"
     :options="options"
+    ref="chartRef"
   />
 </template>
 
 <script setup>
-import { computed, watch } from "vue";
+import { computed, watch, ref } from "vue";
 import { Chart, registerables } from "chart.js";
 import { Line, Bar } from "vue-chartjs";
 import { formatMoney } from "@/utils";
@@ -90,7 +91,7 @@ const options = computed(() => ({
     y: {
         ticks: {
             callback(value, index, ticks) {
-                return props.hasHiddenValues ? '' : formatMoney(value)
+                return props.hasHiddenValues ? '--' : formatMoney(value)
             }
         }
     }
@@ -98,8 +99,14 @@ const options = computed(() => ({
   ...props.options
 }));
 
+const chartRef = ref()
 Chart.register(...registerables);
+if (Chart.overrides[props.type].plugins) {
+    Chart.overrides[props.type].plugins.legend.display = false
+}
 watch(() => props.hasHiddenValues, () => {
+    chartRef.value.chart.options = options.value
+    chartRef.value.chart.update()
 }, { deep: true })
 
 </script>

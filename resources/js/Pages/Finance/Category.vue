@@ -1,51 +1,37 @@
 <template>
-  <AppLayout :title="sectionTitle" @back="handleBackButton" :show-back-button="true">
+  <AppLayout @back="router.visit('/finance/transactions')" :show-back-button="true">
     <template #header>
       <FinanceSectionNav>
         <template #actions>
           <div class="flex items-center w-full space-x-2">
-            <DraftButtons v-if="isDraft" />
-            <LogerButton variant="inverse"> Add transaction </LogerButton>
-            <StatusButtons
-              v-model="currentStatus"
-              :statuses="transactionStatus"
-              @change="router.visit($event)"
-            />
+            <LogerButton
+              variant="inverse"
+              class=""
+              v-for="(item, statusName) in transactionStatus"
+              :key="statusName"
+              @click="router.visit(item.value)"
+            >
+              {{ item.label }}
+            </LogerButton>
             <AtDatePager
               class="w-full h-12 border-none bg-base-lvl-1 text-body"
               v-model:startDate="pageState.dates.startDate"
               v-model:endDate="pageState.dates.endDate"
-              @update:dateSpan="handleChange"
               controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
               next-mode="month"
             />
+            <LogerButton variant="inverse"> Import Transactions </LogerButton>
+            <DraftButtons v-if="isDraft" />
           </div>
         </template>
       </FinanceSectionNav>
     </template>
-
-    <FinanceTemplate
-      title="Transactions"
-      :accounts="accounts"
-      :force-show-panel="!showTransactionTable"
-    >
-      <template #prepend-panel v-if="context.isMobile">
-        <button
-          v-ripple
-          class="w-full py-3 font-bold text-body-1 bg-base-lvl-3 flex justify-between px-4 items-center"
-          @click="showAllTransactions = true"
-        >
-          All accounts
-          <IconBack class="transform rotate-180" />
-        </button>
-      </template>
-
-      <component
-        v-if="showTransactionTable"
+    <FinanceTemplate title="Transactions" :accounts="accounts">
+      <Component
         :is="listComponent"
-        :transactions="transactions.data"
+        :cols="tableAccountCols(props.accountId)"
+        :transactions="transactions"
         :server-search-options="serverSearchOptions"
-        all-accounts
         @findLinked="findLinked"
         @removed="removeTransaction"
         @edit="handleEdit"
@@ -56,7 +42,7 @@
 
 <script setup>
 import { AtDatePager } from "atmosphere-ui";
-import { computed, toRefs, provide, ref, nextTick } from "vue";
+import { computed, toRefs, provide } from "vue";
 import { router } from "@inertiajs/vue3";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
@@ -69,10 +55,10 @@ import LogerButton from "@/Components/atoms/LogerButton.vue";
 
 import { useTransactionModal } from "@/domains/transactions";
 import { useServerSearch } from "@/composables/useServerSearch";
-import StatusButtons from "@/Components/molecules/StatusButtons.vue";
+import { tableAccountCols } from "@/domains/transactions";
 import { useAppContextStore } from "@/store";
-import IconBack from "@/Components/icons/IconBack.vue";
-import { debounce } from "lodash";
+
+const { openTransactionModal } = useTransactionModal();
 
 const props = defineProps({
   transactions: {
@@ -100,46 +86,16 @@ const props = defineProps({
   },
 });
 
-// mobile
-const context = useAppContextStore();
-const showAllTransactions = ref(false);
-const showTransactionTable = computed(() => {
-  return context.isMobile ? showAllTransactions.value : true;
+const { serverSearchOptions, accountId } = toRefs(props);
+const { state: pageState, executeSearch } = useServerSearch(serverSearchOptions, {
+    manual: true
 });
+provide("selectedAccountId", accountId);
+
+const context = useAppContextStore();
 const listComponent = computed(() => {
   return context.isMobile ? TransactionSearch : TransactionTemplate;
 });
-const sectionTitle = computed(() => {
-  if (context.isMobile) {
-    return showTransactionTable.value ? "All transactions" : "Accounts";
-  }
-  return "Transactions";
-});
-
-const handleBackButton = () => {
-  if (context.isMobile && showTransactionTable.value) {
-    showAllTransactions.value = false;
-    return;
-  }
-  return router.visit(route("finance"));
-};
-
-const { serverSearchOptions } = toRefs(props);
-const { state: pageState, executeSearch } = useServerSearch(serverSearchOptions, {
-  manual: true,
-});
-
-const handleChange = () => {
-    nextTick(debounce(() => {
-        executeSearch()
-    }))
-}
-
-const selectedAccountId = computed(() => {
-  return serverSearchOptions.value.filters?.account_id;
-});
-
-provide("selectedAccountId", selectedAccountId.value);
 
 const isDraft = computed(() => {
   return serverSearchOptions.value.filters?.status == "draft";
@@ -161,7 +117,6 @@ const findLinked = (transaction) => {
   });
 };
 
-const { openTransactionModal } = useTransactionModal();
 const handleEdit = (transaction) => {
   openTransactionModal({
     transactionData: transaction,
@@ -169,6 +124,10 @@ const handleEdit = (transaction) => {
 };
 
 const transactionStatus = {
+  draft: {
+    label: "Drafts",
+    value: "/finance/transactions?filter[status]=draft&relationships=linked",
+  },
   verified: {
     label: "Verified",
     value: "/finance/transactions?",
@@ -177,10 +136,5 @@ const transactionStatus = {
     label: "Scheduled",
     value: "/finance/transactions?filter[status]=scheduled",
   },
-  draft: {
-    label: "Drafts",
-    value: "/finance/transactions?filter[status]=draft&relationships=linked",
-  },
 };
-const currentStatus = ref(serverSearchOptions.value.filters?.status || "verified");
 </script>

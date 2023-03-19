@@ -1,16 +1,20 @@
 <template>
-    <div :style="{width: '100%'}">
+    <div class="relative">
       <DoughnutChart ref="chartRef" :data="chartData" :options="options" />
+      <div class="absolute">
+        {{ total }}
+      </div>
     </div>
 </template>
 
 <script setup>
 import { generateRandomColor } from "@/utils";
-import { Chart, registerables } from "chart.js";
+import { Chart, registerables } from "chart.js/auto";
 import { computed, ref, toRefs } from "vue";
 import { Doughnut as DoughnutChart } from "vue-chartjs";
 
 Chart.register(...registerables);
+Chart.overrides['doughnut'].plugins.legend.display = false
 
 const props = defineProps({
   series: {

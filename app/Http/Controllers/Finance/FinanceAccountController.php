@@ -26,12 +26,15 @@ class FinanceAccountController extends InertiaController {
     }
 
     public function show(Account $account) {
+        $queryParams = request()->query();
+        $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
+        [$startDate, $endDate] = $this->getFilterDates($filters);
 
         return Inertia::render($this->templates['show'], [
             "sectionTitle" => $account->name,
             'accountId' => $account->id,
             'resource' => $account,
-            'transactions' => $account->transactionSplits()
+            'transactions' => $account->transactionSplits(25, $startDate, $endDate)
         ]);
     }
 }

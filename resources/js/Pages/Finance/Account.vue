@@ -87,7 +87,10 @@ const props = defineProps({
 });
 
 const { serverSearchOptions, accountId } = toRefs(props);
-const { state: pageState, executeSearch } = useServerSearch(serverSearchOptions);
+const { state: pageState, executeSearch } = useServerSearch(serverSearchOptions, {
+    manual: true
+});
+
 provide("selectedAccountId", accountId);
 
 const context = useAppContextStore();
@@ -100,7 +103,7 @@ const isDraft = computed(() => {
 });
 
 const removeTransaction = (transaction) => {
-  router.delete(`/transactions/${transaction.transaction_id}`, {
+  router.delete(`/transactions/${transaction.id}`, {
     onSuccess() {
       router.reload();
     },

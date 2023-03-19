@@ -23,6 +23,7 @@ use App\Http\Controllers\Finance\BudgetMonthController;
 use App\Http\Controllers\Finance\BudgetTargetController;
 use App\Http\Controllers\Finance\FinanceAccountController;
 use App\Http\Controllers\Finance\FinanceController;
+use App\Http\Controllers\Finance\FinanceLinesController;
 use App\Http\Controllers\Finance\FinanceTransactionController;
 use App\Http\Controllers\Finance\FinanceTrendController;
 
@@ -131,6 +132,10 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
 
     // Accounts
     Route::resource('/finance/accounts', FinanceAccountController::class, [
+        "as" => "finance"
+    ]);
+
+    Route::resource('/finance/lines', FinanceLinesController::class, [
         "as" => "finance"
     ]);
 

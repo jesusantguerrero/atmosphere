@@ -27,13 +27,13 @@ class Kernel extends ConsoleKernel
     {
         $scheduleTime = config('app.schedule_time');
 
-        $schedule->command("automation:check")->everyFiveMinutes()->runInBackground();
+        $schedule->command("automation:check")->everyMinute()->runInBackground();
         $schedule->command('loger:occurrence-reminders')->daily()->runInBackground();
         if (config('app.demo')) {
             if ($scheduleTime) {
-                $schedule->command("demo:seed")->dailyAt($scheduleTime)->runInBackground();
+                $schedule->command("demo:setup")->dailyAt($scheduleTime)->runInBackground();
             } else {
-                $schedule->command("demo:seed")->everyTwoHours()->runInBackground();
+                $schedule->command("demo:setup")->everyTwoHours()->runInBackground();
             }
         }
     }
