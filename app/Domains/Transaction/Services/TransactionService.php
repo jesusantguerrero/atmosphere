@@ -9,7 +9,7 @@ use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Insane\Journal\Models\Core\AccountDetailType;
+use Insane\Journal\Models\Core\TransactionLine;
 
 class TransactionService {
     const transactionsTotalSum = "ABS(sum(CASE
@@ -101,23 +101,31 @@ class TransactionService {
     }
 
     public static function getCategoryExpensesGroup($teamId, $startDate, $endDate, $limit = null) {
-        return Transaction::where([
-            'transactions.team_id' => $teamId,
+        $totals = DB::table('transaction_lines')->where([
+            'transaction_lines.team_id' => $teamId,
             'transactions.status' => 'verified'
         ])
-        ->whereNotNull('category_id')
+        ->whereNotNull('transaction_lines.category_id')
         ->whereNot('catGroup.name', Category::INFLOW)
-        ->getByMonth($startDate, $endDate, false, null)
-        ->select(DB::raw("ABS(sum(CASE
-            WHEN transactions.direction = 'WITHDRAW'
-            THEN total * -1
-            ELSE total * 1 END)) as total, catGroup.name, catGroup.id"))
-        ->join('categories', 'categories.id', 'category_id')
+        ->whereBetween('transactions.date', [$startDate, $endDate])
+        ->select(DB::raw("
+            ABS(sum(transaction_lines.amount * transaction_lines.type)) as total,
+            catGroup.name,
+            catGroup.id,
+            group_concat(concat(transaction_lines.id, ':',accounts.name, ':', transactions.date, ':', payees.name, ':', transaction_lines.concept, ':', amount * transaction_lines.type)) as details
+            ",
+        ))
+        ->join('transactions', 'transactions.id', 'transaction_id')
+        ->join('accounts', 'accounts.id', 'transaction_lines.account_id')
+        ->join('categories', 'categories.id', 'transaction_lines.category_id')
+        ->join('payees', 'payees.id', 'transaction_lines.payee_id')
         ->join(DB::raw('categories catGroup'),  'catGroup.id', 'categories.parent_id')
-        ->orderBy('total', 'desc')
+        ->orderBy('transactions.date', 'desc')
         ->groupBy('categories.parent_id')
         ->limit($limit)
         ->get();
+
+        return $totals->sortByDesc('total')->values()->all();
     }
 
     public static function getIncome($teamId, $startDate, $endDate) {
@@ -270,6 +278,26 @@ class TransactionService {
         ->groupByRaw('payees.id, date_format(transactions.date, "%Y-%m-01")')
         ->orderByRaw('date_format(transactions.date, "%Y-%m-01"), payees.name')
         ->join('transactions', 'transactions.payee_id', '=', 'payees.id')
+        ->get();
+    }
+
+    public static function getSplits($teamId, $options) {
+        return Transaction::query()
+        ->where('team_id', $teamId)
+        ->whereHas('lines', function ($query) use ($options) {
+            if (isset($options['categoryId'])) {
+                $query->where('category_id', $options['categoryId']);
+            }
+            if (isset($options['groupId'])) {
+                $query->whereHas('category', function ($query) use ($options) {
+                    $query->where('parent_id', $options['groupId']);
+                });
+            }
+        })
+        ->with(['splits','payee', 'category', 'splits.payee','account', 'counterAccount'])
+        ->orderByDesc('date')
+        ->whereBetween('date', [$options['startDate'], $options['endDate']])
+        ->limit($options['limit'])
         ->get();
     }
 }

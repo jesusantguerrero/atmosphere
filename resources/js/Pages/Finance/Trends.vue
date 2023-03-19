@@ -28,7 +28,7 @@
     <FinanceTemplate title="Finance" ref="financeTemplateRef">
       <section>
         <div class="flex flex-wrap items-center justify-center bg-base-lvl-3 mt-5 md:flex-nowrap md:space-x-8">
-          <div class="w-[500px] relative">
+          <div class="w-full relative">
             <component
                 :is="trendComponent"
                 style="background: white; width: 100%"
@@ -41,11 +41,6 @@
                 value="total"
                 :legend="false"
             />
-          </div>
-          <div>
-            <p v-for="item in data">
-                {{ item.name }} : {{  formatMoney(item.total) }}
-            </p>
           </div>
         </div>
       </section>
@@ -75,7 +70,6 @@ import ExpenseChartWidget from "@/Components/widgets/ExpenseChartWidget.vue";
 
 import { useServerSearch } from "@/composables/useServerSearch";
 import ChartComparison from "@/Components/widgets/ChartComparison.vue";
-import { formatMoney } from "@/utils";
 
 const props = defineProps({
   user: {

@@ -7,7 +7,6 @@ use App\Domains\Transaction\Services\TransactionService;
 use App\Http\Controllers\Controller;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Laravel\Jetstream\Jetstream;
 use Freesgen\Atmosphere\Http\Querify;
 
 class FinanceTrendController extends Controller {
@@ -28,9 +27,12 @@ class FinanceTrendController extends Controller {
         $section = self::sections[$sectionName];
         $data = $this->$section($request);
 
-        return Jetstream::inertia()->render($request, 'Finance/Trends', array_merge([
-            "serverSearchOptions" => $filters
-        ], $data));
+        return inertia('Finance/Trends',
+            array_merge([
+                "serverSearchOptions" => $filters
+            ],
+            $data
+        ));
     }
 
     public function group(Request $request) {

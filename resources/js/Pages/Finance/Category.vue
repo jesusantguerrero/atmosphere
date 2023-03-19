@@ -90,7 +90,6 @@ const { serverSearchOptions, accountId } = toRefs(props);
 const { state: pageState, executeSearch } = useServerSearch(serverSearchOptions, {
     manual: true
 });
-
 provide("selectedAccountId", accountId);
 
 const context = useAppContextStore();
