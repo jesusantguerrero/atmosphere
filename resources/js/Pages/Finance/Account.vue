@@ -87,9 +87,7 @@ const props = defineProps({
 });
 
 const { serverSearchOptions, accountId } = toRefs(props);
-const { state: pageState, executeSearch } = useServerSearch(serverSearchOptions, {
-    manual: true
-});
+const { state: pageState, executeSearch } = useServerSearch(serverSearchOptions);
 
 provide("selectedAccountId", accountId);
 

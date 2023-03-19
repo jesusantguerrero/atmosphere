@@ -2,13 +2,15 @@
 
 namespace App\Domains\Housing\Http\Controllers;
 
+use App\Domains\Housing\Models\OccurrenceCheck;
 use App\Http\Controllers\Controller;
-use Laravel\Jetstream\Jetstream;
 
 class ProjectController extends Controller
 {
     public function __invoke()
     {
-        return Jetstream::inertia()->render(request(), 'Housing/Index');
+        return inertia('Housing/Index', [
+            "checks" => OccurrenceCheck::where('team_id', auth()->user()->current_team_id)->limit(4)->get()
+        ]);
     }
 }
