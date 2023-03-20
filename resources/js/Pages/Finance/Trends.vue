@@ -32,9 +32,10 @@
             <component
                 :is="trendComponent"
                 style="background: white; width: 100%"
+                :type="section"
                 :series="data"
                 :data="data"
-                @clicked="handleSelection"
+                @selected="handleSelection"
                 v-bind="metaData.props"
                 :title="metaData.title"
                 label="name"
@@ -89,6 +90,9 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  section: {
+    type: String
+  }
 });
 
 const { serverSearchOptions } = toRefs(props);
