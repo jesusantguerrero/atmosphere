@@ -78,32 +78,32 @@ const getCategoryLink = (item) => {
                 </h5>
             </section>
         </section>
-        <div class="space-y-1">
-            <NPopover v-for="item in data" trigger="click">
-                <template #trigger>
-                    <p class="w-full flex justify-between px-4 cursor-pointer">
-                        <span class="font-bold">
-                            {{ item.name }}:
-                        </span>
-                        <Link
-                        class="ml-4 hover:underline group items-center hover:text-primary flex"
-                        :href="getCategoryLink(item)">
-                            {{  formatMoney(item.total) }}
-                            <IMdiLink class="ml-1 group-hover:visible invisible" />
-                        </Link>
-                    </p>
-                </template>
-                <div class="">
-                    <NDataTable
-                      :columns="Object.keys(parseDetails(item.details)[0]).map(item => ({
-                        key: item,
-                        title: capitalize(item)
-                      }))"
-                      :data="parseDetails(item.details)"
-                    />
-                </div>
-            </NPopover>
-          </div>
+            <div class="space-y-1">
+                <NPopover v-for="item in data" trigger="click">
+                    <template #trigger>
+                        <p class="w-full flex justify-between px-4 cursor-pointer">
+                            <span class="font-bold">
+                                {{ item.name }}:
+                            </span>
+                            <Link
+                            class="ml-4 hover:underline group items-center hover:text-primary flex"
+                            :href="getCategoryLink(item)">
+                                {{  formatMoney(item.total) }}
+                                <IMdiLink class="ml-1 group-hover:visible invisible" />
+                            </Link>
+                        </p>
+                    </template>
+                    <div class="">
+                        <NDataTable
+                            :columns="Object.keys(parseDetails(item.details)[0]).map(item => ({
+                            key: item,
+                            title: capitalize(item)
+                            }))"
+                            :data="parseDetails(item.details)"
+                        />
+                    </div>
+                </NPopover>
+            </div>
     </article>
 
 </template>

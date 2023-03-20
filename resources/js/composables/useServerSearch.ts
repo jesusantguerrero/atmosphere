@@ -125,7 +125,7 @@ export const useServerSearch = (serverSearchData: Ref<IServerSearchData> , optio
     }
 
     const executeSearch = (withDelay = false) => {
-        if (withDelay) {
+        if (!withDelay) {
             updateSearch(state);
         } else {
             nextTick(debounce(() => {
