@@ -80,8 +80,8 @@ const options = computed(() => ({
     padding: 20,
   },
   onClick: (e, ...args) => {
-    const chart = chartRef.value.chartInstance;
-    const index = chart.tooltip.dataPoints[0].dataIndex;
+    const chart = chartRef.value.chartInstance || args[1];
+    const index = chart?.tooltip.dataPoints[0].dataIndex;
     emit("clicked", index);
   },
 }));

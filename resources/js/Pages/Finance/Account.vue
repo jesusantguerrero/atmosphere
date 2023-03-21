@@ -27,6 +27,12 @@
       </FinanceSectionNav>
     </template>
     <FinanceTemplate title="Transactions" :accounts="accounts">
+        <div class="flex space-x-4 mt-4">
+            <AtBackgroundIconCard class="w-full text-body-1 cursor-pointer bg-base-lvl-3"
+                v-for="stat in stats"
+                :value="formatMoney(stat)"
+            />
+        </div>
       <Component
         :is="listComponent"
         :cols="tableAccountCols(props.accountId)"
@@ -41,7 +47,7 @@
 </template>
 
 <script setup>
-import { AtDatePager } from "atmosphere-ui";
+import { AtBackgroundIconCard, AtDatePager } from "atmosphere-ui";
 import { computed, toRefs, provide } from "vue";
 import { router } from "@inertiajs/vue3";
 
@@ -57,11 +63,18 @@ import { useTransactionModal } from "@/domains/transactions";
 import { useServerSearch } from "@/composables/useServerSearch";
 import { tableAccountCols } from "@/domains/transactions";
 import { useAppContextStore } from "@/store";
+import { formatMoney } from "@/utils";
 
 const { openTransactionModal } = useTransactionModal();
 
 const props = defineProps({
   transactions: {
+    type: Object,
+    default: () => ({
+      data: [],
+    }),
+  },
+  stats: {
     type: Object,
     default: () => ({
       data: [],
@@ -87,7 +100,7 @@ const props = defineProps({
 });
 
 const { serverSearchOptions, accountId } = toRefs(props);
-const { state: pageState, executeSearch } = useServerSearch(serverSearchOptions);
+const { state: pageState } = useServerSearch(serverSearchOptions);
 
 provide("selectedAccountId", accountId);
 

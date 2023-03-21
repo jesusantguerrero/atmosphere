@@ -124,6 +124,23 @@ class ReportService {
     ->get();
   }
 
+  public function getAccountStats($accountId, $startDate, $endDate) {
+    return DB::table('transaction_lines')
+        ->where('account_id', $accountId)
+        ->whereBetween('date', [$startDate,$endDate,])->select(DB::raw("
+        sum(amount * type) total,
+        sum(
+            CASE
+            WHEN type = -1 THEN amount
+            ELSE 0
+        END) credit,
+        sum(
+            CASE
+            WHEN type = 1 THEN amount
+            ELSE 0
+        END) debit"))->first();
+  }
+
   public function nextInvoices($teamId) {
    return DB::table('invoices')
     ->selectRaw('clients.names contact, clients.id contact_id, invoices.debt, invoices.due_date, invoices.id id, invoices.concept')

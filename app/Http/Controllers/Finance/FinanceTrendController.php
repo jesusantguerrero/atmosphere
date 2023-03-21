@@ -29,7 +29,8 @@ class FinanceTrendController extends Controller {
 
         return inertia('Finance/Trends',
             array_merge([
-                "serverSearchOptions" => $filters
+                "serverSearchOptions" => $filters,
+                "section" => $sectionName,
             ],
             $data
         ));
@@ -59,6 +60,7 @@ class FinanceTrendController extends Controller {
 
         $data  = TransactionService::getCategoryExpenses($teamId, $startDate, $endDate, null, $filters['parent_id'] ?? null);
         $parentName = $data[0]?->parent_name ? $data[0]?->parent_name . " - " : null;
+
         return [
             'data' => $data,
             'metaData' => [

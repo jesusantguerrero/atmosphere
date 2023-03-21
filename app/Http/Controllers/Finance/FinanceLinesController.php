@@ -36,14 +36,17 @@ class FinanceLinesController extends InertiaController {
         $groupId = request()->query('group_id') ?? null;
 
 
-        $category = Category::find($categoryId || $groupId);
-        $splits = TransactionService::getSplits(auth()->user()->current_team_id, [
-            "categoryId" => $categoryId,
-            "groupId" => $groupId,
-            "limit" => 25,
-            "startDate" => $startDate,
-            "endDate" => $endDate
-        ]);
+        $category = Category::find($categoryId ?? $groupId);
+        $splits = TransactionService::getSplits(
+            auth()->user()->current_team_id,
+            [
+                "categoryId" => $categoryId,
+                "groupId" => $groupId,
+                "limit" => 25,
+                "startDate" => $startDate,
+                "endDate" => $endDate
+            ]
+        );
 
         return inertia($this->templates['show'], [
             "sectionTitle" => $category?->name,

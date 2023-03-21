@@ -5,14 +5,20 @@ import exactMath from "exact-math";
 import { formatMoney } from "@/utils";
 import { NDataTable, NPopover } from "naive-ui";
 import { router } from "@inertiajs/core";
+import { Link } from "@inertiajs/vue3";
 
 const props = defineProps<{
   data: Record<string, number>[];
   componentProps: Record<string, string>;
-  title?: string
+  title?: string;
+  type: string;
 }>();
 
-const handleSelection = () => {};
+const emit = defineEmits(['selected']);
+
+const handleSelection = (item: Record<string, string | number>) => {
+    emit('selected', item)
+};
 
 const total = computed(() => {
   return props.data.reduce((total: number, item: Record<string, number>) => {
@@ -25,7 +31,7 @@ const total = computed(() => {
 });
 
 const parseDetails = (details) => {
-    return details.split(',')
+    return !details ? null : details.split('|')
     .map((row) => {
         const rowData = row.split(':');
         return {
@@ -37,6 +43,16 @@ const parseDetails = (details) => {
             amount: rowData[5],
         }
     })
+}
+
+const getCategoryLink = (item) => {
+    const types = {
+        categories: 'category_id',
+        groups: 'group_id'
+    }
+    const itemField = types[props.type] ?? types.groups;
+    const currentSearch = location.search.replace('?', '&');
+    return `/finance/lines?${itemField}=${item.id || item.category_id}${currentSearch}`;
 }
 </script>
 
@@ -62,30 +78,32 @@ const parseDetails = (details) => {
                 </h5>
             </section>
         </section>
-        <div class="space-y-1">
-            <NPopover v-for="item in data" trigger="click">
-                <template #trigger>
-                    <p class="w-full flex justify-between px-4 cursor-pointer">
-                        <span class="font-bold">
-                            {{ item.name }}:
-                        </span>
-                        <span class="ml-4 hover:underline group items-center hover:text-primary flex" @click="router.visit(`/finance/lines?group_id=${item.id}`)">
-                            {{  formatMoney(item.total) }}
-                            <IMdiLink class="ml-1 group-hover:visible invisible" />
-                        </span>
-                    </p>
-                </template>
-                <div class="">
-                    <NDataTable
-                      :columns="Object.keys(parseDetails(item.details)[0]).map(item => ({
-                        key: item,
-                        title: capitalize(item)
-                      }))"
-                      :data="parseDetails(item.details)"
-                    />
-                </div>
-            </NPopover>
-          </div>
+            <div class="space-y-1">
+                <NPopover v-for="item in data" trigger="click">
+                    <template #trigger>
+                        <p class="w-full flex justify-between px-4 cursor-pointer">
+                            <span class="font-bold">
+                                {{ item.name }}:
+                            </span>
+                            <Link
+                            class="ml-4 hover:underline group items-center hover:text-primary flex"
+                            :href="getCategoryLink(item)">
+                                {{  formatMoney(item.total) }}
+                                <IMdiLink class="ml-1 group-hover:visible invisible" />
+                            </Link>
+                        </p>
+                    </template>
+                    <div class="">
+                        <NDataTable
+                            :columns="Object.keys(parseDetails(item.details)[0]).map(item => ({
+                            key: item,
+                            title: capitalize(item)
+                            }))"
+                            :data="parseDetails(item.details)"
+                        />
+                    </div>
+                </NPopover>
+            </div>
     </article>
 
 </template>

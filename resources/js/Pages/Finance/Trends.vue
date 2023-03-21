@@ -3,6 +3,44 @@
     <template #header>
       <FinanceSectionNav>
         <template #actions>
+            <AtDatePager
+                class="w-full h-12 border-none bg-base-lvl-1 text-body"
+                v-model:startDate="pageState.dates.startDate"
+                v-model:endDate="pageState.dates.endDate"
+                @change="executeSearchWithDelay(500)"
+                controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
+                next-mode="month"
+            />
+        </template>
+      </FinanceSectionNav>
+    </template>
+
+    <FinanceTemplate title="Finance" ref="financeTemplateRef">
+        <WidgetTitleCard
+            title="Trends preview"
+            class="mt-5"
+            :action="{
+                label: 'Go to Trends',
+                iconClass: 'fa fa-chevron-right',
+            }"
+            @action="router.visit('/trends')"
+        >
+        <section class="relative flex flex-wrap items-center justify-center w-full bg-base-lvl-3 md:flex-nowrap md:space-x-8">
+            <component
+                :is="trendComponent"
+                style="background: white; width: 100%"
+                :type="section"
+                :series="data"
+                :data="data"
+                @selected="handleSelection"
+                v-bind="metaData.props"
+                :title="metaData.title"
+                label="name"
+                value="total"
+                :legend="false"
+            />
+        </section>
+        <template #afterActions>
             <div class="flex overflow-hidden text-white border rounded-md bg-primary border-primary min-w-max">
                 <button
                     v-for="(item, statusName) in cashflowEntities"
@@ -13,44 +51,23 @@
                     {{ item.label }}
                 </button>
             </div>
-            <AtDatePager
-                class="w-full h-12 border-none bg-base-lvl-1 text-body"
-                v-model:startDate="pageState.dates.startDate"
-                v-model:endDate="pageState.dates.endDate"
-                @change="executeSearchWithDelay()"
-                controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
-                next-mode="month"
-            />
         </template>
-      </FinanceSectionNav>
-    </template>
-
-    <FinanceTemplate title="Finance" ref="financeTemplateRef">
-      <section>
-        <div class="flex flex-wrap items-center justify-center bg-base-lvl-3 mt-5 md:flex-nowrap md:space-x-8">
-          <div class="w-full relative">
-            <component
-                :is="trendComponent"
-                style="background: white; width: 100%"
-                :series="data"
-                :data="data"
-                @clicked="handleSelection"
-                v-bind="metaData.props"
-                :title="metaData.title"
-                label="name"
-                value="total"
-                :legend="false"
-            />
-          </div>
-        </div>
-      </section>
+      </WidgetTitleCard>
 
       <template #panel>
-            <div class="divide-y-2">
-                <Link :href="trend.link" v-for="trend in trends" :key="trend.name" class="block px-2 py-4 cursor-pointer hover:bg-base-lvl-3">
-                    {{ trend.name }}
-                </Link>
-            </div>
+            <Collapse
+                title="Reports"
+                title-class="p-2 mt-6 font-bold rounded-md bg-base-lvl-3 text-body-1 bg-base-lvl-1 "
+                content-class="pb-4 bg-base-lvl-3"
+            >
+                <template #content>
+                    <div class="divide-y divide-base-lvl-2 bg-base-lvl-3">
+                        <Link :href="trend.link" v-for="trend in trends" :key="trend.name" class="block px-2 py-4 cursor-pointer hover:bg-base-lvl-2">
+                            {{ trend.name }}
+                        </Link>
+                    </div>
+                </template>
+            </Collapse>
       </template>
     </FinanceTemplate>
   </AppLayout>
@@ -70,6 +87,8 @@ import ExpenseChartWidget from "@/Components/widgets/ExpenseChartWidget.vue";
 
 import { useServerSearch } from "@/composables/useServerSearch";
 import ChartComparison from "@/Components/widgets/ChartComparison.vue";
+import WidgetTitleCard from "@/Components/molecules/WidgetTitleCard.vue";
+import Collapse from "@/Components/molecules/Collapse.vue";
 
 const props = defineProps({
   user: {
@@ -89,6 +108,9 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  section: {
+    type: String
+  }
 });
 
 const { serverSearchOptions } = toRefs(props);

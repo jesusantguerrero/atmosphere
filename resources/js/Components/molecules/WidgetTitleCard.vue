@@ -4,7 +4,9 @@
             <h1 class="font-bold text-body">
                 <slot name="title"> {{ title }}</slot>
             </h1>
-            <div class="space-x-2">
+            <div class="space-x-2 flex items-center">
+                <slot name="beforeActions" />
+
                 <slot name="action" v-if="action || $slots.action">
                     <AtButton v-if="action" class="text-sm text-primary" rounded @click="$emit('action')">
                         <span>
@@ -13,6 +15,7 @@
                         <i class="ml-2" :class="action.iconClass" v-if="action.iconClass" />
                     </AtButton>
                 </slot>
+                <slot name="afterActions" />
             </div>
         </div>
         <div class="flex py-3">

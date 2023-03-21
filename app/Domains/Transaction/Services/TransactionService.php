@@ -112,7 +112,7 @@ class TransactionService {
             ABS(sum(transaction_lines.amount * transaction_lines.type)) as total,
             catGroup.name,
             catGroup.id,
-            group_concat(concat(transaction_lines.id, ':',accounts.name, ':', transactions.date, ':', payees.name, ':', transaction_lines.concept, ':', amount * transaction_lines.type)) as details
+            group_concat(concat(transaction_lines.id, ':',accounts.name, ':', transactions.date, ':', payees.name, ':', transaction_lines.concept, ':', amount * transaction_lines.type) SEPARATOR '|') as details
             ",
         ))
         ->join('transactions', 'transactions.id', 'transaction_id')
@@ -281,12 +281,21 @@ class TransactionService {
         ->get();
     }
 
+    // splits
+
     public static function getSplits($teamId, $options) {
+        return self::getBareSplits($teamId, $options)->get();
+    }
+
+    public static function getBareSplits($teamId, $options) {
         return Transaction::query()
         ->where('team_id', $teamId)
         ->whereHas('lines', function ($query) use ($options) {
             if (isset($options['categoryId'])) {
                 $query->where('category_id', $options['categoryId']);
+            }
+            if (isset($options['accountId'])) {
+                $query->where('account_id', $options['accountId']);
             }
             if (isset($options['groupId'])) {
                 $query->whereHas('category', function ($query) use ($options) {
@@ -294,10 +303,9 @@ class TransactionService {
                 });
             }
         })
-        ->with(['splits','payee', 'category', 'splits.payee','account', 'counterAccount'])
+        ->with(['splits', 'payee', 'category', 'splits.payee','account', 'counterAccount'])
         ->orderByDesc('date')
         ->whereBetween('date', [$options['startDate'], $options['endDate']])
-        ->limit($options['limit'])
-        ->get();
+        ->when($options['limit'], fn ($query) => $query->limit($options['limit']));
     }
 }
