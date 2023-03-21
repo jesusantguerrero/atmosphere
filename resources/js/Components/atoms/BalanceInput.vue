@@ -1,59 +1,13 @@
-<template>
-<div class="w-full text-right" title="Money Available">
-    <NPopover trigger="manual" placement="bottom"  @update:show="handleUpdateShow" :show="showPopover">
-        <template #trigger>
-            <div
-                class="inline-flex flex-nowrap items-center py-1 font-bold cursor-pointer rounded-3xl min-w-max"
-                :class="badgeClass"
-                @click="toggle"
-            >
-                <span>
-                    {{ formatter(value) }}
-                </span>
-                <slot name="suffix" />
-            </div>
-        </template>
-        <div>
-            <AtField label="Move">
-                <LogerInput v-model="form.amount" />
-            </AtField>
-            <AtField label="To" v-if="status == BALANCE_STATUS.available">
-                <NSelect
-                    filterable
-                    clearable
-                    size="large"
-                    v-model:value="form.destination_category_id"
-                    :default-expand-all="true"
-                    :options="categoryOptions"
-                />
-            </AtField>
-             <AtField label="From" v-else>
-                <NSelect
-                    filterable
-                    clearable
-                    size="large"
-                    v-model:value="form.source_category_id"
-                    :default-expand-all="true"
-                    :options="categoryOptions"
-                />
-            </AtField>
-            <div class="flex items-center justify-end space-x-2">
-                <AtButton class="text-body-1" @click="clear">Cancel</AtButton>
-                <AtButton class="text-white rounded-md bg-success" @click="onAssignBudget()"> Save</AtButton>
-            </div>
-        </div>
-    </NPopover>
-</div>
-</template>
-
-<script setup>
+<script lang="ts" setup>
     import { useForm } from "@inertiajs/vue3";
-    import { computed, inject, ref } from "vue"
-    import { NPopover, NSelect } from "naive-ui";
+    import { computed, h, inject, ref } from "vue"
+    import { NPopover, NSelect, SelectRenderLabel } from "naive-ui";
     import { AtField, AtButton } from "atmosphere-ui";
 
     import LogerInput from "./LogerInput.vue";
     import { format, startOfMonth } from "date-fns";
+    import { formatMoney } from "@/utils";
+import Multiselect from "vue-multiselect";
 
     const props = defineProps({
         value: {
@@ -119,6 +73,7 @@
                 ...data,
                 budgeted: BALANCE_STATUS.available ? data.amount : props.category.budgeted + data.amount,
                 [field]: props.category.id,
+                source_category_id: data.source_category_id?.value,
                 type: 'movement'
             })).post(`/budgets/${props.category.id}/months/${month}`, {
                 preserveState: true,
@@ -127,8 +82,21 @@
         }
     }
 
-    const categoryOptions = inject('categoryOptions', [])
-
+    const categories = inject('categories', ref({ data: []}))
+    const categoryOptions = computed(() => {
+        console.log(categories.value.data);
+        return categories.value.data?.map(item => ({
+            value: item.id,
+            key: item.id,
+            label: item.name,
+            type: 'group',
+            children: item.subCategories.map(category => ({
+                value: category.id,
+                label: category.name,
+                available: category.available,
+            }))
+        }))
+    })
 
     const showPopover = ref(false)
     const clear = () => {
@@ -139,3 +107,61 @@
         showPopover.value = !showPopover.value
     }
 </script>
+
+<template>
+<div class="w-full text-right" title="Money Available">
+    <NPopover trigger="manual" placement="bottom"  @update:show="handleUpdateShow" :show="showPopover">
+        <template #trigger>
+            <div
+                class="inline-flex items-center py-1 font-bold cursor-pointer flex-nowrap rounded-3xl min-w-max"
+                :class="badgeClass"
+                @click="toggle"
+            >
+                <span>
+                    {{ formatter(value) }}
+                </span>
+                <slot name="suffix" />
+            </div>
+        </template>
+        <div class="w-72 md:w-96">
+            <AtField label="Move">
+                <LogerInput v-model="form.amount" />
+            </AtField>
+            <AtField label="To" v-if="status == BALANCE_STATUS.available">
+                <NSelect
+                    filterable
+                    clearable
+                    size="large"
+                    v-model:value="form.destination_category_id"
+                    :default-expand-all="true"
+                    :options="categoryOptions"
+                />
+            </AtField>
+             <AtField label="From" v-else>
+                <Multiselect
+                    v-model="form.source_category_id"
+                    :options="categoryOptions"
+                    group-values="children"
+                    group-label="label"
+                    placeholder="Type to search"
+                    track-by="value"
+                    label="label"
+                    select-label=""
+                >
+                    <template v-slot:option="{ option }">
+                        <div class="flex justify-between text-sm group md:text-base">
+                            <span class="">{{ option.label || option.$groupLabel }}</span>
+                            <span class="text-success group-hover:text-white" v-if="option.available">{{ formatMoney(option.available) }}</span>
+                        </div>
+                  </template>
+                </Multiselect>
+            </AtField>
+            <div class="flex items-center justify-end space-x-2">
+                <AtButton class="text-body-1" @click="clear">Cancel</AtButton>
+                <AtButton class="text-white rounded-md bg-success" @click="onAssignBudget()"> Save</AtButton>
+            </div>
+        </div>
+    </NPopover>
+</div>
+</template>
+

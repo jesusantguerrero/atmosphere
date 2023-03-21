@@ -1,60 +1,4 @@
-<template>
-    <section
-        class="cursor-pointer text-body-1 divide-y-2 border overflow-hidden rounded-md"
-        :class="theme.default"
-        @click="toggle"
-    >
-        <NPopover>
-            <template #trigger>
-                <article class="py-4 flex flex-col justify-center items-center mx-auto" :class="badgeClass">
-                    <h4 class="text-lg font-bold "> {{ formatter(value) }} </h4>
-                    <small>
-                        {{ description }}
-                    </small>
-        
-                    <NPopover v-if="isOverspent" trigger="manual" placement="bottom"  @update:show="handleUpdateShow" :show="showPopover">
-                        <template #trigger>
-                            <AtButton class="rounded-md bg-black/30 text-white">
-                                Fix this
-                            </AtButton>
-                        </template>
-                        <div>
-                            <AtField label="From">
-                                <NSelect
-                                    filterable
-                                    clearable
-                                    size="large"
-                                    v-model:value="form.source_category_id"
-                                    :default-expand-all="true"
-                                    :options="categoryOptions"
-                                />
-                            </AtField>
-                            <div class="flex space-x-2 justify-end items-center">
-                                <AtButton class="text-body-1" @click="clear">Cancel</AtButton>
-                                <AtButton class="bg-success text-white rounded-md" @click="onAssignBudget()"> Save</AtButton>
-                            </div>
-                        </div>
-                    </NPopover>
-                </article>
-            </template>
-            <section class="text-center">
-                <p>Inflow: Ready to assign transactions in Month: <MoneyPresenter :value="category.activity"/> </p>
-                <p>Assigned in month: <MoneyPresenter :value="toAssign.budgeted" /> </p>
-            </section>
-        </NPopover>
-
-        <article class="grid grid-cols-2 divide-x-2 overflow-hidden">
-            <section>
-                <slot name="activity" />
-            </section>
-            <section>
-                <slot name="target" />
-            </section>
-        </article>
-    </section>
-</template>
-
-<script setup>
+<script lang="ts" setup>
     import { useForm } from "@inertiajs/vue3";
     import { router } from "@inertiajs/vue3";
     import ExactMath from "exact-math";
@@ -65,6 +9,7 @@
 
     import formatMoney from "@/utils/formatMoney";
 import MoneyPresenter from "../molecules/MoneyPresenter.vue";
+import Multiselect from "vue-multiselect";
 
     const props = defineProps({
         value: {
@@ -148,6 +93,7 @@ import MoneyPresenter from "../molecules/MoneyPresenter.vue";
                 ...data,
                 budgeted: Math.abs(props.value),
                 [field]: props.category.id,
+                source_category_id: data.source_category_id?.value,
                 'type': 'movement'
             })).post(`/budgets/${props.category.id}/months/${month}`, {
                 onSuccess() {
@@ -159,8 +105,21 @@ import MoneyPresenter from "../molecules/MoneyPresenter.vue";
         }
     }
 
-    const categoryOptions = inject('categoryOptions', [])
-
+    const categories = inject('categories', ref({ data: []}))
+    const categoryOptions = computed(() => {
+        console.log(categories.value.data);
+        return categories.value.data?.map(item => ({
+            value: item.id,
+            key: item.id,
+            label: item.name,
+            type: 'group',
+            children: item.subCategories.map(category => ({
+                value: category.id,
+                label: category.name,
+                available: category.available,
+            }))
+        }))
+    })
 
     const showPopover = ref(false)
     const clear = () => {
@@ -171,3 +130,68 @@ import MoneyPresenter from "../molecules/MoneyPresenter.vue";
         showPopover.value = !showPopover.value
     }
 </script>
+
+<template>
+    <section
+        class="overflow-hidden border divide-y-2 rounded-md cursor-pointer text-body-1"
+        :class="theme.default"
+        @click="toggle"
+    >
+        <NPopover>
+            <template #trigger>
+                <article class="flex flex-col items-center justify-center py-4 mx-auto" :class="badgeClass">
+                    <h4 class="text-lg font-bold "> {{ formatter(value) }} </h4>
+                    <small>
+                        {{ description }}
+                    </small>
+
+                    <NPopover v-if="isOverspent" trigger="manual" placement="bottom"  @update:show="handleUpdateShow" :show="showPopover">
+                        <template #trigger>
+                            <AtButton class="text-white rounded-md bg-black/30">
+                                Fix this
+                            </AtButton>
+                        </template>
+                        <div class="w-72 md:w-96">
+                            <AtField label="From">
+                                <Multiselect
+                                    v-model="form.source_category_id"
+                                    :options="categoryOptions"
+                                    group-values="children"
+                                    group-label="label"
+                                    placeholder="Type to search"
+                                    track-by="value"
+                                    label="label"
+                                    select-label=""
+                                >
+                                    <template v-slot:option="{ option }">
+                                        <div class="flex justify-between text-sm group md:text-base">
+                                            <span class="">{{ option.label || option.$groupLabel }}</span>
+                                            <span class="text-success group-hover:text-white" v-if="option.available">{{ formatMoney(option.available) }}</span>
+                                        </div>
+                                </template>
+                                </Multiselect>
+                            </AtField>
+                            <div class="flex items-center justify-end space-x-2">
+                                <AtButton class="text-body-1" @click="clear">Cancel</AtButton>
+                                <AtButton class="text-white rounded-md bg-success" @click="onAssignBudget()"> Save</AtButton>
+                            </div>
+                        </div>
+                    </NPopover>
+                </article>
+            </template>
+            <section class="text-center">
+                <p>Inflow: Ready to assign transactions in Month: <MoneyPresenter :value="category.activity"/> </p>
+                <p>Assigned in month: <MoneyPresenter :value="toAssign.budgeted" /> </p>
+            </section>
+        </NPopover>
+
+        <article class="grid grid-cols-2 overflow-hidden divide-x-2">
+            <section>
+                <slot name="activity" />
+            </section>
+            <section>
+                <slot name="target" />
+            </section>
+        </article>
+    </section>
+</template>

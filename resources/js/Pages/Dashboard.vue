@@ -38,7 +38,12 @@
             </div>
             <div class="py-6 space-y-4 md:w-3/12">
                 <WeatherWidget />
-                <OnboardingSteps :steps="onboarding.steps" :percentage="onboarding.percentage" class="mt-5" v-if="onboarding.steps" />
+                <OnboardingSteps
+                    v-if="onboarding.steps"
+                    class="mt-5"
+                    :steps="onboarding.steps"
+                    :percentage="onboarding.percentage"
+                />
                 <NextPaymentsWidget
                     v-else
                     class="w-full"

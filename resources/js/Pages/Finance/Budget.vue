@@ -33,6 +33,7 @@
               class="w-full h-12 border-none bg-base-lvl-1 text-body"
               v-model:startDate="pageState.dates.startDate"
               v-model:endDate="pageState.dates.endDate"
+              @change="executeSearchWithDelay()"
               controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
               next-mode="month"
             />
@@ -129,7 +130,7 @@
 </template>
 
 <script setup>
-import { computed, toRefs } from "vue";
+import { computed, provide, toRefs } from "vue";
 import { router } from "@inertiajs/vue3";
 import { AtButton, AtDatePager } from "atmosphere-ui";
 import { useBreakpoints, breakpointsTailwind } from "@vueuse/core";
@@ -175,7 +176,9 @@ const props = defineProps({
 });
 
 const { serverSearchOptions } = toRefs(props);
-const { state: pageState } = useServerSearch(serverSearchOptions);
+const { state: pageState, executeSearchWithDelay } = useServerSearch(serverSearchOptions, {
+    manual: true
+});
 const sectionTitle = computed(() => {
   return `Budget for ${formatMonth(pageState.dates.startDate, "MMMM yyyy")}`;
 });
@@ -210,6 +213,8 @@ const budgetStatus = {
 const currentStatus = computed(() =>
   Object.keys(filters.value).find((key) => filters.value[key])
 );
+
+provide('categories', budgets);
 
 //  Budget Form
 const deleteBudget = (budget) => {

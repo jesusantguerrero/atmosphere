@@ -7,17 +7,17 @@
     v-slot:default="{ close }"
     @close="$emit('update:show', false)"
   >
-    <div class="pb-4 bg-base-lvl-3 sm:p-6 sm:pb-4 text-body flex-1">
+    <div class="flex-1 pb-4 bg-base-lvl-3 sm:p-6 sm:pb-4 text-body">
       <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-        <TransactionTypesPicker v-if="!fullHeight" v-model="form.direction" />
-        <header v-else class="font-bold border-b pb-4 text-lg">
-          Create a transaction
+        <header v-if="fullHeight" class="pb-4 text-lg font-bold border-b">
+              Create a transaction
         </header>
+        <TransactionTypesPicker  v-model="form.direction" />
 
         <div class="mt-2">
           <slot name="content">
             <div>
-              <header v-if="fullHeight" class="flex justify-between py-3 px-4">
+              <header v-if="fullHeight" class="flex justify-between px-4 py-3">
                 <CategoryPicker
                   class="w-full"
                   v-model="form[categoryField]"
@@ -35,10 +35,10 @@
                 </AtField>
               </header>
 
-              <div class="md:flex md:space-x-2 md:px-0 px-4">
+              <div class="px-4 md:flex md:space-x-2 md:px-0">
                 <AtField
                   label="Date"
-                  class="md:w-4/12 md:block flex w-full justify-between"
+                  class="flex justify-between w-full md:w-4/12 md:block"
                 >
                   <NDatePicker
                     v-model:value="form.date"
@@ -50,7 +50,7 @@
 
                 <AtField
                   label="Description"
-                  class="md:w-8/12 flex w-full md:block md:space-x-0 justify-between"
+                  class="flex justify-between w-full md:w-8/12 md:block md:space-x-0"
                 >
                   <LogerInput v-model="form.description" class="w-48 md:w-full" />
                 </AtField>
@@ -123,15 +123,15 @@
     </div>
 
     <footer
-      class="px-6 py-4 space-x-3 items-center justify-between flex w-full bg-base-lvl-2"
+      class="flex items-center justify-between w-full px-6 py-4 space-x-3 bg-base-lvl-2"
     >
       <section class="flex">
-        <LogerButtonTab class="bg-base rounded"> Use template</LogerButtonTab>
-        <div class="flex space-x-2">
+        <LogerButtonTab class="hidden rounded bg-base"> Use template</LogerButtonTab>
+        <div class="flex hidden space-x-2">
           <AtFieldCheck v-model="isRecurrence" label="Set recurrence" />
         </div>
       </section>
-      <div>
+      <div class="flex">
         <AtButton @click="close" rounded class="h-10 text-body"> Cancel </AtButton>
         <AtButton class="h-10 text-white bg-primary" @click="submit" rounded>
           Save
