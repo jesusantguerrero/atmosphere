@@ -68,6 +68,27 @@
                     </div>
                 </template>
             </Collapse>
+
+            <Collapse
+                title="Report Summary"
+                title-class="p-2 mt-6 font-bold rounded-md bg-base-lvl-3 text-body-1 bg-base-lvl-1 "
+                content-class="pb-4 bg-base-lvl-3"
+            >
+                <template #content>
+                    <article class="divide-y divide-base-lvl-2 bg-base-lvl-3">
+                        <ExpenseIncome
+                            title="Total Spending"
+                            :value="5000"
+                            subtitle="This period"
+                        />
+                        <ExpenseIncome
+                            title="Average Spending"
+                            :value="5000"
+                            subtitle="Per month"
+                        />
+                    </article>
+                </template>
+            </Collapse>
       </template>
     </FinanceTemplate>
   </AppLayout>
@@ -89,6 +110,7 @@ import { useServerSearch } from "@/composables/useServerSearch";
 import ChartComparison from "@/Components/widgets/ChartComparison.vue";
 import WidgetTitleCard from "@/Components/molecules/WidgetTitleCard.vue";
 import Collapse from "@/Components/molecules/Collapse.vue";
+import ExpenseIncome from "@/Components/widgets/ExpenseIncome.vue";
 
 const props = defineProps({
   user: {

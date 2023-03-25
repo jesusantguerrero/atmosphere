@@ -118,10 +118,18 @@
             @cancel="setSelectedBudget()"
             @close="setSelectedBudget()"
           />
-          <!-- <BudgetCategories :budgets="budgets" v-if="!showCategoriesInMain"/> -->
+
           <ExpenseIncome
-            :expenses="readyToAssign.activity"
-            :income="readyToAssign.inflow"
+            :value="readyToAssign.inflow + readyToAssign.activity"
+            :footer-stats="[{
+                label: 'Income',
+                value: readyToAssign.inflow ,
+                class: 'text-success'
+            }, {
+                label: 'Expense',
+                value: readyToAssign.activity,
+                class: 'text-error'
+            }]"
           />
         </div>
       </template>

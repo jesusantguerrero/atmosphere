@@ -1,14 +1,13 @@
 <template>
   <div class="w-full comparison-card">
-    <div class="pb-10 px-5 rounded-lg">
-      <h5 class="card-title text-left p-4 font-bold">{{ title }}</h5>
-      <div class="card-text">
-        <div class="comparison-header ic-scroller h-32 overflow-auto px-10 text-body-1/50 space-x-2 divide-x divide-dashed divide-opacity-20 divide-body-1 bg-base-lvl-2 mb-2">
-          <div
-            v-for="header in state.headers"
-            :key="header.id"
-            @click="selectedDate = header.id"
-            class="comparison-header__item min-w-max px-6 justify-center w-full items-center flex-col flex  previous-period cursor-pointer hover:text-body/80"
+    <div class="pb-10 rounded-lg">
+      <div class="card-text" >
+        <ChartHeaderScroller item-class="comparison-header__item">
+            <section
+                v-for="header in state.headers"
+                :key="header.id"
+                @click="selectedDate = header.id"
+                class="comparison-header__item select-none  snap-center min-w-max px-6 justify-center w-full items-center flex-col flex  previous-period cursor-pointer hover:text-body/80"
             >
             <h6 class="period-title">{{ header.label }}</h6>
             <span class="period-value text-sm" v-for="(value, index) in header.value">
@@ -19,8 +18,8 @@
                 <NumberHider />
                 {{ formatMoney(value) }}
             </span>
-          </div>
-        </div>
+        </section>
+        </ChartHeaderScroller>
         <LogerChart
             label="name"
             type="bar"
@@ -39,6 +38,7 @@ import { format, parseISO } from "date-fns";
 import { computed, reactive, ref } from "vue";
 
 import LogerChart from "./organisms/LogerChart.vue";
+import ChartHeaderScroller from "./ChartHeaderScroller.vue";
 import NumberHider from "./molecules/NumberHider.vue";
 
 const props = defineProps({
