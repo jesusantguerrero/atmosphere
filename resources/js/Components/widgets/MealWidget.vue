@@ -16,7 +16,7 @@
             <div v-else class="py-1.5 text-center">
 
                 <h4 class="py-1 text-2xl font-bold text-body-1"> {{t('No meals') }} </h4>
-                <LogerButton variant="inverse">{{ t('Go to planner')}}</LogerButton>
+                <LogerButton variant="inverse" class="mx-auto">{{ t('Go to planner')}}</LogerButton>
             </div>
         </div>
     </div>
