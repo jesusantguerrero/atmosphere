@@ -71,29 +71,30 @@ class TransactionService {
     }
 
     public static function getCategoryExpenses($teamId, $startDate, $endDate, $limit = null, $parentId = null) {
-        $builder = Transaction::where([
-            'transactions.team_id' => $teamId,
+        $DIRECTION_FACTOR = -1;
+        $builder = DB::table('transaction_lines')->where([
+            'transaction_lines.team_id' => $teamId,
             'transactions.status' => 'verified'
         ])
-        ->whereNotNull('category_id')
+        ->whereNotNull('transaction_lines.category_id')
         ->whereNot('categories.name', Category::READY_TO_ASSIGN)
-        ->getByMonth($startDate, $endDate, false);
+        ->whereBetween('transactions.date', [$startDate, $endDate]);
 
         if ($parentId) {
             $builder->where("categories.parent_id", $parentId);
         }
 
-        return $builder->groupBy('category_id')
-        ->select(DB::raw("ABS(sum(CASE
-            WHEN transactions.direction = 'WITHDRAW'
-            THEN total * -1
-            ELSE total * 1 END)) as total,
-            category_id,
+        return $builder->groupBy('transaction_lines.category_id')
+        ->selectRaw("sum(transaction_lines.amount * transaction_lines.type * ?) as total,
+            transaction_lines.category_id,
             categories.name,
             categories.parent_id,
             group.name as parent_name
-        "))
-        ->join('categories', 'categories.id', 'category_id')
+        ", [
+             $DIRECTION_FACTOR
+        ])
+        ->join('transactions', 'transactions.id', 'transaction_id')
+        ->join('categories', 'categories.id', 'transaction_lines.category_id')
         ->leftJoin('categories as group', 'group.id', 'categories.parent_id')
         ->orderBy('total', 'desc')
         ->limit($limit)
