@@ -3,7 +3,7 @@
         class="w-full px-5 py-4 space-y-5 bg-white rounded-md"
     >
         <AtField class="space-y-2" label="Budget Name">
-            <LogerInput placeholder="Team Name" v-model="formData.name" required />
+            <LogerInput placeholder="Eg. Family" v-model="formData.name" required />
         </AtField>
 
         <AtField label="Timezone">

@@ -7,7 +7,6 @@ use App\Domains\Budget\Models\BudgetMovement;
 use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Transaction\Services\ReportService;
-use App\Http\Resources\CategoryCollection;
 use App\Http\Resources\CategoryGroupCollection;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;

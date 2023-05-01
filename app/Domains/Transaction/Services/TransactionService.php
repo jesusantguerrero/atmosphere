@@ -5,6 +5,7 @@ namespace App\Domains\Transaction\Services;
 use App\Domains\AppCore\Models\Category;
 use App\Domains\Transaction\Imports\TransactionsImport;
 use App\Domains\Transaction\Models\Transaction;
+use App\Jobs\CreateTransactionFromImport;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Illuminate\Support\Carbon;
@@ -137,18 +138,10 @@ class TransactionService {
         ->sum('total');
     }
 
-    public static function importAndSave($user, $file) {
-        $importedData = (new TransactionsImport($user))->toCollection($file);
+    public static function importAndSave($user, $filePath) {
 
-        foreach ($importedData[0]->toArray() as $transaction) {
-            Transaction::createTransaction($transaction);
-        }
-
-        return (object) [
-            "total" => count($importedData),
-            "startDate" => $importedData[0]->min('date'),
-            "endDate" => $importedData[0]->max('date')
-        ];
+        (new TransactionsImport($user))->queue($filePath);
+        unlink($filePath);
     }
 
     // Trends
