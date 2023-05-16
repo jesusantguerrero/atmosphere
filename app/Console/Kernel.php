@@ -31,9 +31,9 @@ class Kernel extends ConsoleKernel
         $schedule->command('loger:occurrence-reminders')->daily()->runInBackground();
         if (config('app.demo')) {
             if ($scheduleTime) {
-                $schedule->command("demo:setup")->dailyAt($scheduleTime)->runInBackground();
+                $schedule->command("demo:reset")->dailyAt($scheduleTime)->runInBackground();
             } else {
-                $schedule->command("demo:setup")->everyTwoHours()->runInBackground();
+                $schedule->command("demo:reset")->everyTwoHours()->runInBackground();
             }
         }
     }

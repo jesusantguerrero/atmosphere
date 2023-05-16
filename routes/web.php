@@ -19,6 +19,7 @@ use App\Http\Controllers\System\IntegrationController;
 use App\Http\Controllers\System\TeamInvitationController;
 
 use App\Http\Controllers\Finance\BudgetCategoryController;
+use App\Http\Controllers\Finance\BudgetController;
 use App\Http\Controllers\Finance\BudgetMonthController;
 use App\Http\Controllers\Finance\BudgetTargetController;
 use App\Http\Controllers\Finance\FinanceAccountController;
@@ -119,6 +120,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     });
 
     // Budgeting & Goals routes
+    // Route::get('/budgets', [BudgetController::class, 'index']);
     Route::resource('/budgets', BudgetCategoryController::class);
     Route::controller(BudgetTargetController::class)->group(function() {
         Route::post('/budgets/{category}/targets/', 'store')->name("budget.target.store");

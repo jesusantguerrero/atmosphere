@@ -16,9 +16,9 @@ class TransactionsImported extends Notification
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(protected string $url)
     {
-        //
+
     }
 
     /**
@@ -44,7 +44,7 @@ class TransactionsImported extends Notification
         return [
             'message' => "New transactions has been imported, go to drafts to approve them!",
             'cta' => 'Approve new transactions',
-            'link' => 'transactions?filter[status]=draft'
+            'link' => $this->url
         ];
     }
 }

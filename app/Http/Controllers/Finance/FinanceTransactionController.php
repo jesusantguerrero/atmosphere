@@ -57,12 +57,13 @@ class FinanceTransactionController extends InertiaController {
 
     public function import(Request $request) {
         $user = $request->user();
-        $results = TransactionService::importAndSave($user, request()->file('file'));
+        $file = request()->file('file')->store('temp');
+        $path = storage_path('app'). '/' . $file;
 
-        $user->notify(new TransactionsImported());
-        $url = "/finance/transactions?filter[status]=draft&filter[date]=$results->startDate~$results->endDate";
-        return redirect($url)->with('flash', [
-            'banner' => "Successfully Imported $results->total transactions"
+        $results = TransactionService::importAndSave($user, $path);
+
+        return back()->with('flash', [
+            'banner' => "You will notified once the import is completed"
         ]);
     }
 

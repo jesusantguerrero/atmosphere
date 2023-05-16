@@ -3,6 +3,8 @@
     <template #header>
       <FinanceSectionNav>
         <template #actions>
+            <span>All categories</span>
+            <span>All accounts</span>
             <AtDatePager
                 class="w-full h-12 border-none bg-base-lvl-1 text-body"
                 v-model:startDate="pageState.dates.startDate"
