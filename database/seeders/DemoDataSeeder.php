@@ -15,20 +15,18 @@ use Insane\Journal\Models\Core\Payee;
 
 class DemoDataSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     *
-     * @return void
-     */
-    public function run()
+
+    public function run($user = null, $team = null)
     {
         Model::reguard();
-        $this->down();
+        if (!$user && !$team) {
+            $this->down();
+        }
 
-        $count =  10;
         $payees = [];
-        $user = User::factory(['email' => 'demo@loger.com'])->withPersonalTeam()->create();
-        $team = Team::where('user_id', $user->id)->first();
+        $user = $user ?? User::factory(['email' => 'demo@loger.com'])->withPersonalTeam()->create();
+        $team = $team ?? Team::where('user_id', $user->id)->first();
+
         $demoData = new Demo($team);
         $faker = \Faker\Factory::create();
 
@@ -75,24 +73,6 @@ class DemoDataSeeder extends Seeder
             ]);
             $bar->advance();
         }
-
-
-        // previous month
-        // $previousMonth = now()->subMonth(1);
-        // $demoData->count(2)->transactions([
-        //     'total' => 4000,
-        //     'payee_id' => $payees[0]->id,
-        //     'direction' => Transaction::DIRECTION_DEBIT,
-        //     'date' => $faker->dateTimeBetween($previousMonth->startOfMonth(), $previousMonth->endOfMonth())->format('Y-m-d H:i:s')
-        // ])
-        // ->createTransactions();
-        // $bar->advance();
-
-        // $demoData->count(20)->transactions([
-        //     'direction' => Transaction::DIRECTION_CREDIT,
-        //     'date' => $faker->dateTimeBetween($previousMonth->startOfMonth(), $previousMonth->endOfMonth())->format('Y-m-d H:i:s')
-        // ])->createTransactions();
-        // $bar->advance();
 
         // current month
         $month = now();
