@@ -132,8 +132,15 @@
         </div>
       </section>
       <div class="flex">
-        <AtButton @click="close" rounded class="h-10 text-body"> Cancel </AtButton>
-        <AtButton class="h-10 text-white bg-primary" @click="submit" rounded>
+        <AtButton @click="close" rounded class="h-10 text-body" :disabled="form.processing">
+            Cancel
+        </AtButton>
+        <AtButton
+            class="h-10 text-white bg-primary"
+            :processing="form.processing"
+            :disabled="form.processing"
+            @click="submit" rounded
+        >
           Save
         </AtButton>
       </div>
@@ -295,6 +302,7 @@ const submit = () => {
         date: format(new Date(form.date), "yyyy-MM-dd"),
         status: "verified",
         direction: form.is_transfer ? TRANSACTION_DIRECTIONS.WITHDRAW : form.direction,
+        category_id: form.is_transfer ? null : form.category_id,
         ...state.schedule_settings,
       };
 

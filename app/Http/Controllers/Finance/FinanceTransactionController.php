@@ -7,11 +7,9 @@ use App\Domains\Transaction\Actions\FindLinkedTransactions;
 use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Transaction\Resources\TransactionResource;
 use App\Domains\Transaction\Services\TransactionService;
-use App\Notifications\TransactionsImported;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
 use Freesgen\Atmosphere\Http\Querify;
-
 class FinanceTransactionController extends InertiaController {
     use Querify;
     const DateFormat = 'Y-m-d';
