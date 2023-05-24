@@ -1,6 +1,6 @@
 <template>
     <span
-        class="py-1 cursor-pointer rounded-3xl text-body-1 flex items-center group"
+        class="flex items-center py-1 cursor-pointer rounded-3xl text-body-1 group"
         :class="[badgeClass, iconOnly ? 'px-2' : 'w-full text-right px-5']"
         @click.stop="onAssignBudget()"
         title="Execute transaction"
@@ -91,7 +91,6 @@
         if (BALANCE_STATUS.available || Number(props.category.budgeted) !== Number(form.amount)) {
             openTransactionModal({
                 transactionData: {
-                    date: new Date(),
                     direction: 'WITHDRAW',
                    'category_id': props.category.id,
                    total: Math.abs(spendingAmount.value)
