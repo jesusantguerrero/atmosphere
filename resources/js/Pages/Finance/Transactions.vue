@@ -15,7 +15,7 @@
               class="w-full h-12 border-none bg-base-lvl-1 text-body"
               v-model:startDate="pageState.dates.startDate"
               v-model:endDate="pageState.dates.endDate"
-              @update:dateSpan="handleChange"
+              @change="executeSearchWithDelay(500)"
               controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
               next-mode="month"
             />
@@ -32,7 +32,7 @@
       <template #prepend-panel v-if="context.isMobile">
         <button
           v-ripple
-          class="w-full py-3 font-bold text-body-1 bg-base-lvl-3 flex justify-between px-4 items-center"
+          class="flex items-center justify-between w-full px-4 py-3 font-bold text-body-1 bg-base-lvl-3"
           @click="showAllTransactions = true"
         >
           All accounts
@@ -125,13 +125,13 @@ const handleBackButton = () => {
 };
 
 const { serverSearchOptions } = toRefs(props);
-const { state: pageState, executeSearch } = useServerSearch(serverSearchOptions, {
+const { state: pageState, executeSearchWithDelay } = useServerSearch(serverSearchOptions, {
   manual: true,
 });
 
 const handleChange = () => {
     nextTick(debounce(() => {
-        executeSearch()
+        executeSearchWithDelay()
     }))
 }
 

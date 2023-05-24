@@ -8,10 +8,10 @@
                     </h3>
                 </header>
 
-                <div class="mt-2 px-4 pt-5">
+                <div class="px-4 pt-5 mt-2">
                     <slot name="content">
                         <div>
-                            <AtField label="Detail Type" class="md:space-x-0 flex w-full justify-between space-x-4">
+                            <AtField label="Detail Type" class="flex justify-between w-full space-x-4 md:space-x-0">
                                 <NSelect
                                     filterable
                                     clearable
@@ -25,14 +25,14 @@
 
                             <AtField
                                 label="Account Label"
-                                class="md:space-x-0 flex w-full justify-between space-x-4"
+                                class="flex justify-between w-full space-x-4 md:space-x-0"
                             >
                                 <LogerInput v-model="form.name"  class="w-48 md:w-full" />
                             </AtField>
 
                             <AtField
                                 label="Opening Balance"
-                                class="md:space-x-0 flex w-full justify-between space-x-4"
+                                class="flex justify-between w-full space-x-4 md:space-x-0"
                                 v-if="!form.id"
                             >
                                 <LogerInput v-model="form.opening_balance" type="number"  class="w-48 md:w-full" />
@@ -43,11 +43,11 @@
             </div>
         </div>
 
-        <div class="px-6 py-4 md:space-x-3 space-between bg-base-lvl-2 flex w-full">
-            <AtButton type="secondary" class="text-danger hidden md:block" @click="remove" rounded> Delete </AtButton>
+        <div class="flex w-full px-6 py-4 md:space-x-3 space-between bg-base-lvl-2">
+            <AtButton type="secondary" class="hidden text-danger md:block" @click="remove" rounded> Delete </AtButton>
             <div class="flex items-center justify-end w-full md:space-x-2">
                 <AtButton type="secondary" class="hidden md:block" @click="close" rounded> Cancel </AtButton>
-                <AtButton class="text-white w-full bg-primary" @click="submit" rounded> Save </AtButton>
+                <AtButton class="w-full text-white bg-primary" @click="submit" rounded> Save </AtButton>
             </div>
         </div>
     </modal>
@@ -153,7 +153,7 @@
         }
     }
 
-    const detailTypes = usePage().props.value.accountDetailTypes
+    const detailTypes = usePage().props.accountDetailTypes
     const detailOptions = makeOptions(detailTypes, ['id', 'label'])
 
     const { form } = toRefs(state)
