@@ -6,7 +6,7 @@
     v-slot:default="{ close }"
     @close="emitClose"
   >
-    <header class="bg-base-lvl-3 px-2 py-2 font-bold flex items-center">
+    <header class="flex items-center px-2 py-2 font-bold bg-base-lvl-3">
       <button class="pl-0" @click="selectedResource = ''" v-if="form.type">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -61,7 +61,7 @@
       </section>
     </section>
 
-    <footer class="px-6 flex justify-end w-full py-4 space-x-3 text-right bg-base">
+    <footer class="flex justify-end w-full px-6 py-4 space-x-3 text-right bg-base">
       <AtButton type="secondary" @click="close" rounded class="h-10"> Cancel </AtButton>
       <LogerButton variant="inverse" @click="submit" :disabled="!form.type">
         Create
@@ -109,7 +109,7 @@ const emitClose = () => {
 };
 
 const submit = () => {
-  form.submit("post", route("finance.watchlist.store"), {
+  form.submit("post", route("watchlist.store"), {
     onSuccess: emitClose,
   });
 };

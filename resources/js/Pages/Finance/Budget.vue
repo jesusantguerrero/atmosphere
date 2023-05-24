@@ -47,6 +47,7 @@
         </template>
       </FinanceSectionNav>
     </template>
+
     <FinanceTemplate :accounts="accounts" :panel-size="panelSize">
       <!-- Budget to assign -->
       <MessageBox
@@ -86,19 +87,9 @@
       </BalanceAssign>
 
       <section class="mx-auto mt-8 rounded-lg text-body bg-base max-w-7xl">
-        <BudgetDetailForm
-          class="mt-5 mr-4"
-          v-if="selectedBudget && showCategoriesInMain"
-          full
-          v-model:category="selectedBudget"
-          :item="selectedBudget.budget"
-          @saved="onBudgetItemSaved"
-          @deleted="deleteBudget"
-          @cancel="setSelectedBudget()"
-          @close="setSelectedBudget()"
-        />
 
-        <article v-else class="w-full mt-4 space-y-4">
+
+        <article class="w-full mt-4 space-y-4">
           <section class="space-y-4">
             <BudgetCategories :budgets="budgets" />
           </section>
@@ -134,6 +125,23 @@
         </div>
       </template>
     </FinanceTemplate>
+
+    <modal
+        :show="selectedBudget && showCategoriesInMain"
+        max-width="mobile"
+        :closeable="true"
+        @close="setSelectedBudget()"
+    >
+        <BudgetDetailForm
+            full
+            v-model:category="selectedBudget"
+            :item="selectedBudget.budget"
+            @saved="onBudgetItemSaved"
+            @deleted="deleteBudget"
+            @cancel="setSelectedBudget()"
+            @close="setSelectedBudget()"
+        />
+    </modal>
   </AppLayout>
 </template>
 
@@ -143,6 +151,7 @@ import { router } from "@inertiajs/vue3";
 import { AtButton, AtDatePager } from "atmosphere-ui";
 import { useBreakpoints, breakpointsTailwind } from "@vueuse/core";
 
+import Modal from '@/Components/atoms/Modal.vue'
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import BudgetDetailForm from "@/Components/organisms/BudgetDetailForm.vue";
 import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
