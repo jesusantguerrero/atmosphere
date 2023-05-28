@@ -97,13 +97,6 @@ const props = defineProps({
     type: Boolean,
   },
 });
-
-const emit = defineEmits(["close", "saved"]);
-
-const state = reactive({
-  frequencyLabel: "every",
-});
-
 const accountLabel = computed(() => {
   return !props.isTransfer ? "Account" : "Source";
 });
@@ -125,8 +118,7 @@ const categoryAccounts = computed(() => {
 const splits = reactive(props.items ?? []);
 const hasSplits = computed(() => splits.length > 1);
 
-const addSplit = () => {
-  splits.push({
+const defaultRow = {
     payee_id: "",
     payee_label: "",
     date: null,
@@ -135,7 +127,10 @@ const addSplit = () => {
     counter_account_id: null,
     account_id: null,
     amount: 0,
-  });
+};
+
+const addSplit = () => {
+  splits.push({...defaultRow});
 };
 
 const removeSplit = (index: number) => {
@@ -150,5 +145,8 @@ defineExpose({
   getSplits() {
     return splits;
   },
+  reset() {
+    splits.splice(0, splits.length, {...defaultRow})
+  }
 });
 </script>
