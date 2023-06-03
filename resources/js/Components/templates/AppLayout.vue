@@ -1,3 +1,102 @@
+<script setup lang="ts">
+    import { provide, ref, computed } from 'vue'
+    import { NConfigProvider } from 'naive-ui'
+    import { router } from '@inertiajs/vue3'
+    import { AtSide } from "atmosphere-ui"
+    import { useLocalStorage } from "@vueuse/core"
+    import { Link, usePage } from '@inertiajs/vue3'
+
+    import JetBanner from '@/Components/atoms/Banner.vue'
+    import JetResponsiveNavLink from '@/Components/atoms/ResponsiveNavLink.vue'
+    import PrivacyToggle from '@/Components/molecules/PrivacyToggle.vue'
+    import LogerButtonTab from '@/Components/atoms/LogerButtonTab.vue'
+    import AppShell from './AppShell.vue'
+    import AppIcon from '@/Components/AppIcon.vue'
+    import AppGlobals from './AppGlobals.vue'
+    import AppNotificationBell from '@/Components/molecules/AppNotificationBell.vue'
+    import AppUserMenu from '@/Components/AppUserMenu.vue'
+    import MobileMenuBar from '@/Components/mobile/MobileMenuBar.vue'
+    import TransactionAddButton from './TransactionAddButton.vue'
+    import TransactionQuickButton from './TransactionQuickButton.vue'
+    import IconBack from '../icons/IconBack.vue'
+    import WatchlistButton from './WatchlistButton.vue'
+
+    import { useAppMenu } from '@/domains/app'
+    import { useSelect } from '@/utils/useSelects'
+    import { useTransactionModal } from '@/domains/transactions'
+
+    const props = defineProps({
+        title: {
+            type: String
+        },
+        showBackButton: {
+            type: Boolean,
+        },
+        isOnboarding: {
+            type: Boolean,
+            default: false
+        },
+    })
+
+    const { appMenu, headerMenu, mobileMenu } = useAppMenu(t)
+    const currentMenu = computed(() => {
+        return props.isOnboarding ? [{
+            icon: 'home',
+            name: 'onboarding',
+            label: t('Setup'),
+            to: '/onboarding',
+            as: Link
+        }, {
+            icon: 'users',
+            name: 'userProfile',
+            label: t('User Profile'),
+            to: '/user/profile',
+            as: Link
+        }] : appMenu
+    });
+
+    const pageProps = usePage().props
+    const sectionTitle = computed(() => {
+        return props.title || pageProps.sectionTitle
+    })
+
+    const isPrivacyMode = useLocalStorage('hasHiddenValues', false)
+    provide('hasHiddenValues', isPrivacyMode)
+
+    // routing
+    const showingNavigationDropdown = ref(false)
+    const switchToTeam = (team) => {
+        router.put(route('current-team.update'), {
+            'team_id': team.id
+        }, {
+            preserveState: false
+        })
+    }
+
+    const currentPath = computed(() => {
+        return document?.location?.pathname
+    })
+    const isExpanded = useLocalStorage('isMenuExpanded', true);
+    const logout = () => router.post(route('logout'));
+
+    //  categories
+    const { categoryOptions: transformCategoryOptions } = useSelect()
+    transformCategoryOptions(pageProps.categories, 'sub_categories', 'categoryOptions');
+    transformCategoryOptions(pageProps.accounts, 'accounts', 'accountsOptions');
+
+    // useLogerConfig()
+    const { openTransactionModal } = useTransactionModal()
+    const handleActions = (action) => {
+        const actions = {
+            'openTransactionModal': {
+                handler: openTransactionModal
+            }
+        }
+
+        actions[action]?.handler()
+    }
+</script>
+
 <template>
     <NConfigProvider>
         <AppShell :is-expanded="isExpanded" :nav-class="[!$slots.header && `${panelShadow} border-b`]">
@@ -18,6 +117,7 @@
 
                         <div class="flex space-x-2 sm:items-center sm:ml-6">
                             <TransactionAddButton class="hidden mr-4 md:inline-block" v-if="!isOnboarding" />
+                            <TransactionQuickButton class="hidden mr-4 md:inline-block" v-if="!isOnboarding" />
                             <WatchlistButton class="hidden mr-4 md:inline-block" v-if="!isOnboarding" />
                             <PrivacyToggle v-model="isPrivacyMode" v-if="!isOnboarding" />
                             <AppNotificationBell
@@ -109,103 +209,5 @@
     </NConfigProvider>
 </template>
 
-<script setup>
-    import { provide, ref, computed, watch } from 'vue'
-    import { NConfigProvider } from 'naive-ui'
-    import { router } from '@inertiajs/vue3'
-    import { AtSide } from "atmosphere-ui"
-    import { useLocalStorage } from "@vueuse/core"
-    import { Link, usePage } from '@inertiajs/vue3'
 
-    import JetBanner from '@/Components/atoms/Banner.vue'
-    import JetResponsiveNavLink from '@/Components/atoms/ResponsiveNavLink.vue'
-    import PrivacyToggle from '@/Components/molecules/PrivacyToggle.vue'
-    import LogerButtonTab from '@/Components/atoms/LogerButtonTab.vue'
-    import AppShell from './AppShell.vue'
-    import AppIcon from '@/Components/AppIcon.vue'
-    import AppGlobals from './AppGlobals.vue'
-    import AppNotificationBell from '@/Components/molecules/AppNotificationBell.vue'
-    import AppUserMenu from '@/Components/AppUserMenu.vue'
-    import MobileMenuBar from '@/Components/mobile/MobileMenuBar.vue'
-    import TransactionAddButton from './TransactionAddButton.vue'
-    import IconBack from '../icons/IconBack.vue'
-    import WatchlistButton from './WatchlistButton.vue'
-    import LogerDropdown from '../molecules/LogerDropdown.vue'
-
-    import { useAppMenu } from '@/domains/app'
-    import { useSelect } from '@/utils/useSelects'
-    import { useAppContextStore } from '@/store'
-    import { useTransactionModal } from '@/domains/transactions'
-
-    const props = defineProps({
-        title: {
-            type: String
-        },
-        showBackButton: {
-            type: Boolean,
-        },
-        isOnboarding: {
-            type: Boolean,
-            default: false
-        },
-    })
-
-    const { appMenu, headerMenu, mobileMenu } = useAppMenu(t)
-    const currentMenu = computed(() => {
-        return props.isOnboarding ? [{
-            icon: 'home',
-            name: 'onboarding',
-            label: t('Setup'),
-            to: '/onboarding',
-            as: Link
-        }, {
-            icon: 'users',
-            name: 'userProfile',
-            label: t('User Profile'),
-            to: '/user/profile',
-            as: Link
-        }] : appMenu
-    });
-
-    const pageProps = usePage().props
-    const sectionTitle = computed(() => {
-        return props.title || pageProps.sectionTitle
-    })
-
-    const isPrivacyMode = useLocalStorage('hasHiddenValues', false)
-    provide('hasHiddenValues', isPrivacyMode)
-
-    // routing
-    const showingNavigationDropdown = ref(false)
-    const switchToTeam = (team) => {
-        router.put(route('current-team.update'), {
-            'team_id': team.id
-        }, {
-            preserveState: false
-        })
-    }
-
-    const currentPath = computed(() => {
-        return document?.location?.pathname
-    })
-    const isExpanded = useLocalStorage('isMenuExpanded', true);
-    const logout = () => router.post(route('logout'));
-
-    //  categories
-    const { categoryOptions: transformCategoryOptions } = useSelect()
-    transformCategoryOptions(pageProps.categories, 'sub_categories', 'categoryOptions');
-    transformCategoryOptions(pageProps.accounts, 'accounts', 'accountsOptions');
-
-    // useLogerConfig()
-    const { openTransactionModal } = useTransactionModal()
-    const handleActions = (action) => {
-        const actions = {
-            'openTransactionModal': {
-                handler: openTransactionModal
-            }
-        }
-
-        actions[action]?.handler()
-    }
-</script>
 
