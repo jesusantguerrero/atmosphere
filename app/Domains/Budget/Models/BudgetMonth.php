@@ -6,6 +6,7 @@ use App\Domains\AppCore\Models\Category;
 use DateTime;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class BudgetMonth extends Model
@@ -53,6 +54,13 @@ class BudgetMonth extends Model
             'activity' => DB::raw("activity + {$data['activity']}"),
         ]);
         return $month;
+    }
+
+    public function updateActivity() {
+        $monthDate = Carbon::createFromFormat("Y-m-d", $this->month);
+        $this->update([
+            'activity' => $this->category->getMonthBalance($monthDate->format('Y-m'))->balance,
+        ]);
     }
 
     public static function getSavingBalance($teamId, $endMonth) {

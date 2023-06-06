@@ -36,7 +36,9 @@
               @change="executeSearchWithDelay()"
               controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
               next-mode="month"
-            />
+            >
+                {{ formatMonth(pageState.dates.startDate, 'MMMM') }}
+            </AtDatePager>
             <LogerButton variant="inverse">Import</LogerButton>
             <LogerButton variant="inverse">
               <a :href="route('budget.export')" class="block w-full" target="_blank">
@@ -196,6 +198,9 @@ const { serverSearchOptions } = toRefs(props);
 const { state: pageState, executeSearchWithDelay } = useServerSearch(serverSearchOptions, {
     manual: true
 });
+provide('pageState', pageState);
+
+
 const sectionTitle = computed(() => {
   return `Budget for ${formatMonth(pageState.dates.startDate, "MMMM yyyy")}`;
 });

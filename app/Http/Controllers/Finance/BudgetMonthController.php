@@ -7,9 +7,9 @@ use App\Domains\Budget\Exports\BudgetExport;
 use App\Domains\Budget\Imports\BudgetImport;
 use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Budget\Models\BudgetMovement;
+use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -21,6 +21,13 @@ class BudgetMonthController extends Controller
         $postData = $request->post();
         $monthBalance = $category->assignBudget($month, $postData);
         BudgetMovement::registerMovement($monthBalance, $postData);
+        return Redirect::back();
+    }
+
+    public function updateActivity(BudgetCategoryService $service, $categoryId, $month)
+    {
+        $category = Category::find($categoryId);
+        $service->updateActivity($category, $month);
         return Redirect::back();
     }
 

@@ -109,13 +109,10 @@ class Category extends CoreCategory
     public function getMonthBalance($yearMonth)
     {
         if (!$this->resource_type_id) {
-            return $this->transactions()
-            ->verified()
-            ->whereRaw("date_format(transactions.date, '%Y-%m') = '$yearMonth'")
-            ->selectRaw("SUM(CASE
-                WHEN transactions.direction = 'WITHDRAW'
-                THEN total * -1
-                ELSE total * 1 END) as balance"
+            return $this->transactionLines()
+            ->whereHas('transaction', fn ($q) => $q->where('status', Transaction::STATUS_VERIFIED))
+            ->whereRaw("date_format(transaction_lines.date, '%Y-%m') = '$yearMonth'")
+            ->selectRaw("SUM(amount * type) as balance"
             )->first();
         } else {
             return $this->creditLines()

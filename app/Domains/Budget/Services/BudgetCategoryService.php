@@ -3,8 +3,10 @@
 namespace App\Domains\Budget\Services;
 
 use App\Domains\AppCore\Models\Category;
+use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Budget\Models\BudgetTarget;
 use App\Helpers\RequestQueryHelper;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class BudgetCategoryService {
@@ -51,6 +53,23 @@ class BudgetCategoryService {
 
         $month = $startDate ?? date('Y-m-01');
         return array_merge($category->toArray(), [ 'month' => $month ], $category->getBudgetInfo($month));
+    }
+
+    public function updateActivity(Category $category, string $month) {
+        $monthDate = Carbon::createFromFormat("Y-m-d", $month);
+        $activity = $category->getMonthBalance($monthDate->format('Y-m'))?->balance;
+
+        BudgetMonth::updateOrCreate([
+            'category_id' => $category->id,
+            'team_id' => $category->team_id,
+            'month' => $month,
+            'name' => $month,
+        ], [
+            'user_id' => $category->user_id,
+            'activity' => $activity
+        ]);
+
+        echo "{$category->name} updated to {$activity}" . PHP_EOL;
     }
 }
 
