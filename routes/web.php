@@ -19,7 +19,6 @@ use App\Http\Controllers\System\IntegrationController;
 use App\Http\Controllers\System\TeamInvitationController;
 
 use App\Http\Controllers\Finance\BudgetCategoryController;
-use App\Http\Controllers\Finance\BudgetController;
 use App\Http\Controllers\Finance\BudgetMonthController;
 use App\Http\Controllers\Finance\BudgetTargetController;
 use App\Http\Controllers\Finance\FinanceAccountController;
@@ -128,6 +127,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     });
     Route::controller(BudgetMonthController::class)->group(function () {
         Route::post('/budgets/{categoryId}/months/{month}', 'assign')->name("budget.assignment");
+        Route::put('/budgets/{categoryId}/months/{month}', 'updateActivity')->name("budget.update-activity");
         Route::post('/budgets-import', 'import')->name('budget.import');
         Route::get('/budgets-export', 'export')->name('budget.export');
     });

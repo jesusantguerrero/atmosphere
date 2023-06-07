@@ -24,9 +24,9 @@
             <div class="bg-base-lvl-3">
             <div v-if="isAdding" class="pt-2">
                 <LogerInput
-                placeholder="Add subcategory"
-                v-model="categoryForm.name"
-                @keydown.enter.ctrl="saveBudgetCategory(itemGroup.id, toggleAdding)"
+                    placeholder="Add subcategory"
+                    v-model="categoryForm.name"
+                    @keydown.enter.ctrl="saveBudgetCategory(itemGroup.id, toggleAdding)"
                 />
             </div>
 
@@ -100,7 +100,7 @@ const groupById = (items) =>
 
 
 const saveBudgetCategory = (parentId, callback) => {
-  if (!categoryForm.value.processing) {
+  if (!categoryForm.processing) {
     createBudgetCategory(categoryForm, parentId, callback);
   }
 };

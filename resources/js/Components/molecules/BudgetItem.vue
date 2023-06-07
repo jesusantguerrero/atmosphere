@@ -8,12 +8,12 @@
             <IconDrag class="handle" />
         </div>
         <div ref="inputContainer">
-            <h4 class="cursor-pointer flex" @click="$emit('open')">
-                <span class="items-center text-body-1 font-bold">
+            <h4 class="flex cursor-pointer" @click="$emit('open')">
+                <span class="items-center font-bold text-body-1">
                     <span :style="{ color: item.color }">
                         {{ item.name }}
                     </span>
-                    <i class="fa fa-cog ml-2" @click.stop="$emit('edit')"></i>
+                    <i class="ml-2 fa fa-cog" @click.stop="$emit('edit')"></i>
                 </span>
                 <PointAlert
                     v-if="item.hasOverspent || item.hasOverAssigned || item.hasUnderFunded"
@@ -51,7 +51,7 @@
 
 <script setup>
 import { format, startOfMonth } from 'date-fns';
-import { ref, nextTick, onMounted } from 'vue';
+import { ref, nextTick, onMounted, inject } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { NDropdown } from 'naive-ui';
 
@@ -99,6 +99,9 @@ const options = [{
 }, {
     name: 'hide',
     label: 'Hide'
+}, {
+    name: 'updateActivity',
+    label: 'Update Activity'
 }]
 
 const removeCategory = () => {
@@ -115,10 +118,27 @@ const removeCategory = () => {
     }
 }
 
+const pageState = inject('pageState', {});
+const updateActivity = () => {
+    const month = format(startOfMonth(pageState.dates.endDate), 'yyyy-MM-dd');
+
+    router.put(`budgets/${props.item.id}/months/${month}`, {
+        onSuccess() {
+            router.reload({
+                only: ['budgets'],
+                preserveScroll: true,
+            })
+        }
+    })
+}
+
 const handleOptions = (option) => {
     switch(option) {
         case 'delete':
             removeCategory()
+            break;
+        case 'updateActivity':
+            updateActivity()
             break;
         default:
             break;
