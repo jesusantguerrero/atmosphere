@@ -29,8 +29,13 @@
               :statuses="budgetStatus"
               @change="toggleFilter"
             />
+
+            <LogerButton variant="inverse" @click="goToday">
+                Today
+            </LogerButton>
             <AtDatePager
               class="w-full h-12 border-none bg-base-lvl-1 text-body"
+              v-model="pageState.dates.startDate"
               v-model:startDate="pageState.dates.startDate"
               v-model:endDate="pageState.dates.endDate"
               @change="executeSearchWithDelay()"
@@ -39,12 +44,6 @@
             >
                 {{ formatMonth(pageState.dates.startDate, 'MMMM') }}
             </AtDatePager>
-            <LogerButton variant="inverse">Import</LogerButton>
-            <LogerButton variant="inverse">
-              <a :href="route('budget.export')" class="block w-full" target="_blank">
-                Export
-              </a>
-            </LogerButton>
           </div>
         </template>
       </FinanceSectionNav>
@@ -172,6 +171,7 @@ import MessageBox from "@/Components/organisms/MessageBox.vue";
 import BudgetCategories from "./Partials/BudgetCategories.vue";
 import { formatMonth } from "@/utils";
 import StatusButtons from "@/Components/molecules/StatusButtons.vue";
+import { startOfMonth } from "date-fns";
 
 const props = defineProps({
   budgets: {
@@ -202,7 +202,7 @@ provide('pageState', pageState);
 
 
 const sectionTitle = computed(() => {
-  return `Budget for ${formatMonth(pageState.dates.startDate, "MMMM yyyy")}`;
+  return `${formatMonth(pageState.dates.startDate, "MMMM yyyy")}`;
 });
 
 const { budgets } = toRefs(props);
@@ -247,6 +247,11 @@ const deleteBudget = (budget) => {
   });
 };
 const onBudgetItemSaved = () => {};
+
+const goToday = () => {
+    pageState.dates.startDate = startOfMonth(new Date());
+    executeSearchWithDelay()
+}
 </script>
 
 <style>
