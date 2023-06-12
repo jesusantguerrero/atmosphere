@@ -203,18 +203,18 @@ watch(
       }
     });
 
-    if ( isTransfer.value) {
+    if (isTransfer.value) {
         state.form.direction = TRANSACTION_DIRECTIONS.TRANSFER;
     }
 
     state.splits = newValue.has_splits ? props.transactionData?.splits : [
         {
-            payee_id: newValue.payee_id,
+            payee_id: newValue.payee_id ?? newValue.payee?.id,
             payee_label: newValue.payee?.name,
-            category_id: newValue.category_id,
+            category_id: newValue.category_id ?? newValue.category?.id,
             category: newValue.category,
             counter_account_id: null,
-            account_id: newValue.account_id,
+            account_id: newValue.account_id ?? newValue.account?.id,
             account: newValue.account,
             amount: newValue.total,
         }

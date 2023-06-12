@@ -23,8 +23,8 @@
 
 <script setup>
 import { NSelect } from "naive-ui";
-import { ref } from "vue";
-import { debounce, orderBy } from "lodash";
+import { ref, onMounted } from "vue";
+import { debounce } from "lodash";
 
 const props = defineProps({
     modelValue: {
@@ -46,6 +46,9 @@ const props = defineProps({
     trackId: {
         type: String
     },
+    label: {
+        type: String
+    }
 })
 const emit = defineEmits(['update:modelValue', 'update:label'])
 
@@ -55,15 +58,16 @@ const isLoading = ref(false);
 
 const optionParser = (option) => {
     if (!option) return option
-    const optionLabel = props.customLabel && option ? option[props.customLabel] : option.label;
-    return optionLabel
+    return option;
+    return props.customLabel && option ? option[props.customLabel] : option.label;
 }
 
 const resultParser = (apiOptions, query) => {
     let includeCustom = true;
     const originalMap = apiOptions.map(option => {
         const optionLabel = props.customLabel ? option[props.customLabel] : option.label;
-        if (includeCustom && optionLabel.toLowerCase().includes(query)) includeCustom = false;
+        if (includeCustom && query && optionLabel.toLowerCase().includes(query)) includeCustom = false;
+
         return {
             label: optionLabel,
             value: props.trackId ? option[props.trackId] : option.id
@@ -71,10 +75,10 @@ const resultParser = (apiOptions, query) => {
     })
 
     const custom = includeCustom ? [
-            {
-                label: query,
-                value: `new::${query}`
-            }
+        {
+            label: query,
+            value: `new::${query}`
+        }
     ]: [];
 
     return [...custom, ...originalMap]
@@ -98,4 +102,14 @@ const emitInput = (optionId) => {
     emit('update:value', option)
     emit('update:label', option?.label)
 }
+
+onMounted(() => {
+    if (props.modelValue) {
+        window.axios.get(`${props.endpoint}/${props.modelValue}`).then(({ data }) => {
+            options.value = resultParser([data?.data || data]).filter( value => value.label );
+            emitInput(props.modelValue)
+            isLoading.value = false
+        })
+    }
+})
 </script>
