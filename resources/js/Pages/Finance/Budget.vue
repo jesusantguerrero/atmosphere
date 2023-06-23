@@ -33,7 +33,10 @@
             <LogerButton variant="inverse" @click="goToday">
                 Today
             </LogerButton>
+
+            <!--
             <AtDatePager
+              v-if="pageState.dates?.startDate"
               class="w-full h-12 border-none bg-base-lvl-1 text-body"
               v-model="pageState.dates.startDate"
               v-model:startDate="pageState.dates.startDate"
@@ -43,13 +46,13 @@
               next-mode="month"
             >
                 {{ formatMonth(pageState.dates.startDate, 'MMMM') }}
-            </AtDatePager>
+            </AtDatePager> -->
           </div>
         </template>
       </FinanceSectionNav>
     </template>
 
-    <FinanceTemplate :accounts="accounts" :panel-size="panelSize">
+ <FinanceTemplate :accounts="accounts" :panel-size="panelSize">
       <!-- Budget to assign -->
       <MessageBox
         title="This is your budget."
@@ -126,7 +129,6 @@
         </div>
       </template>
     </FinanceTemplate>
-
     <modal
         :show="selectedBudget && showCategoriesInMain"
         max-width="mobile"
@@ -215,6 +217,7 @@ const {
   setSelectedBudget,
   selectedBudget,
 } = useBudget();
+
 const panelSize = computed(() => {
   return !selectedBudget.value ? "large" : "small";
 });
