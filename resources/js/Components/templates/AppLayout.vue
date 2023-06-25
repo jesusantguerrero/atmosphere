@@ -2,7 +2,7 @@
     import { provide, ref, computed } from 'vue'
     import { NConfigProvider } from 'naive-ui'
     import { router } from '@inertiajs/vue3'
-    import { AtSide } from "atmosphere-ui"
+    import { AtSide, AtTeamSelect } from "atmosphere-ui"
     import { useLocalStorage } from "@vueuse/core"
     import { Link, usePage } from '@inertiajs/vue3'
 
@@ -117,13 +117,23 @@
 
                         <div class="flex space-x-2 sm:items-center sm:ml-6">
                             <TransactionAddButton class="hidden mr-4 md:inline-block" v-if="!isOnboarding" />
-                            <TransactionQuickButton class="hidden mr-4 md:inline-block" v-if="!isOnboarding" />
+                            <!-- <TransactionQuickButton class="hidden mr-4 md:inline-block" v-if="!isOnboarding" /> -->
                             <WatchlistButton class="hidden mr-4 md:inline-block" v-if="!isOnboarding" />
                             <PrivacyToggle v-model="isPrivacyMode" v-if="!isOnboarding" />
                             <AppNotificationBell
                                 :notifications="$page.props.unreadNotifications"
                                 @click="router.visit('/notifications')"
                              />
+
+                             <AtTeamSelect
+                                :has-team-features="$page.props.jetstream.hasTeamFeatures"
+                                :can-create-teams="$page.props.jetstream.canCreateTeams"
+                                :current-team="$page.props.user.current_team"
+                                :teams="$page.props.user.all_teams"
+                                @switch-team="switchToTeam"
+                                @create="route('teams.create')"
+                                resource-name="Budget"
+                            />
 
                             <!-- Settings Dropdown -->
                             <div class="relative ml-3">

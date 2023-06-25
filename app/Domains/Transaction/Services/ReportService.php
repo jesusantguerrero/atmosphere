@@ -141,6 +141,62 @@ class ReportService {
         END) debit"))->first();
   }
 
+  public function yearSummary($teamId, $year) {
+    $date = Carbon::createFromFormat('Y', $year);
+    $startDate = $date->startOfYear()->format('Y-m-d');
+    $endDate = $date->endOfYear()->format('Y-m-d');
+
+    $qIncome = DB::table('transactions')
+    ->where(DB::raw('YEAR(transactions.date)'), '=', $year)
+    ->where([
+        'transactions.team_id' => $teamId,
+        'direction' => Transaction::DIRECTION_DEBIT,
+        'status' => 'verified'
+    ])
+    ->whereNotNull('category_id');
+
+    $earned = $qIncome->sum('total');
+
+    $topIncome = $qIncome->orderByDesc('total')
+    ->take(4)->get();
+
+    $topPayers = $qIncome->selectRaw('sum(total) total, payees.name payeeName')
+    ->groupBy('payee_id')
+    ->orderByDesc('total')
+    ->join('payees', 'transactions.payee_id', '=', 'payees.id')
+    ->take(4)
+    ->get();
+
+
+    $topPayees = TransactionService::getPayeeMovementsInPeriod($teamId, $startDate, $endDate, Transaction::DIRECTION_CREDIT)
+    ->take(4)
+    ->orderByRaw('total desc')
+    ->get();
+
+
+    $topExpense = DB::table('transactions')
+    ->where(DB::raw('YEAR(transactions.date)'), '=', $year)
+    ->where([
+        'transactions.team_id' => $teamId,
+        'direction' => Transaction::DIRECTION_CREDIT,
+        'status' => 'verified'
+    ])
+    ->whereNotNull('category_id')
+    ->orderByDesc('total')
+    ->take(4)->get();
+
+    $data = [
+        "earned" => $earned,
+        "earnedAvg" => $earned / 12, 
+        "topPayers" => $topPayers,
+        "topPayees" => $topPayees,
+        "topExpense" => $topExpense,
+        "topIncome" => $topIncome
+    ];
+
+    return $data;
+  }
+
   public function nextInvoices($teamId) {
    return DB::table('invoices')
     ->selectRaw('clients.names contact, clients.id contact_id, invoices.debt, invoices.due_date, invoices.id id, invoices.concept')

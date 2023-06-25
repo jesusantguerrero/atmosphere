@@ -1,9 +1,9 @@
 <template>
 <div class="w-full">
-    <header class="justify-between flex w-full mb-8">
-        <h4 class="text-primary font-bold text-lg">
-            Target
-            <p> {{item.target_type}} </p>
+    <header class="flex justify-between w-full mb-8">
+        <h4 class="text-lg font-bold text-primary">
+            Target:
+            <p> {{ item.target_type }} </p>
         </h4>
         <button class="text-secondary" @click="$emit('edit')">
             Edit target
@@ -17,11 +17,11 @@
         :show-labels="false"
     >
     <template #before>
-        <header class="mb-1 font-bold">{{ item.amount }} by {{ targetDate }}</header>
+        <header class="mb-1 font-bold">{{  formatMoney(item.amount) }} by {{ targetDate }}</header>
     </template>
 
     <template v-slot:after="{ progress }">
-        <div class="justify-between w-full flex mt-1">
+        <div class="flex justify-between w-full mt-1">
             <span>{{ progress}}% Funded </span>
             <span> Started {{ formatMonth(item.created_at, 'MMMM, yyyy') }}</span>
         </div>
@@ -29,7 +29,7 @@
     </BudgetProgress>
 
     <footer class="mt-4">
-        <div class=" border-2 rounded-md py-2 px-5 my-4" :class="dividerClass">
+        <div class="px-5 py-2 my-4 border-2 rounded-md " :class="dividerClass">
             <span v-if="!isOnTrack">
                 Assign <MoneyPresenter :value="monthlyTargetDiff" /> more to reach your target
             </span>
@@ -47,7 +47,7 @@
 
 <script setup>
 import { isSpendingTarget } from "@/domains/budget";
-import { formatDate, formatMonth, toOrdinals } from "@/utils";
+import { formatDate, formatMoney, formatMonth, toOrdinals } from "@/utils";
 import { differenceInCalendarMonths, format, parseISO } from "date-fns";
 import { computed } from "vue";
 import BudgetProgress from "./BudgetProgress.vue";

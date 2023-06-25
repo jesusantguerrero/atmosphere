@@ -181,6 +181,7 @@ const onSubmit = (addAnother = false) => {
       onSuccess: () => {
         state.form.reset();
         gridSplitsRef.value.reset();
+        debugger
         if (!addAnother) {
             emit("close");
         }
@@ -387,7 +388,7 @@ const isPickerOpen = ref(false);
             class="h-10 text-white bg-primary"
             :processing="form.processing"
             :disabled="form.processing"
-            @click="onSubmit" rounded
+            @click="onSubmit()" rounded
         >
           Save
         </AtButton>

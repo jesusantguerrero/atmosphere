@@ -1,7 +1,7 @@
 <template>
   <div class="w-full comparison-card">
-    <div class="pb-10 px-5 rounded-lg">
-      <h5 class="card-title text-left p-4 font-bold">
+    <div class="px-5 pb-10 rounded-lg">
+      <h5 class="p-4 font-bold text-left card-title">
         <LogerButtonTab v-if="selectedDate" @click="selectedDate=null">
             <i class="fa fa-arrow-left"></i>
         </LogerButtonTab>
@@ -11,15 +11,15 @@
       <div class="card-text" >
         <div
             :class="[headerTemplate == 'grid' ? 'md:grid md:grid-cols-4' : 'md:flex']"
-            class="comparison-header w-full  md:px-10 text-body-1/50 md:space-x-2 md:divide-x md:divide-y-0 divide-y divide-dashed divide-opacity-20 divide-body-1 bg-base-lvl-2 mb-2">
+            class="w-full mb-2 divide-y comparison-header md:px-10 text-body-1/50 md:space-x-2 md:divide-x md:divide-y-0 divide-dashed divide-opacity-20 divide-body-1 bg-base-lvl-2">
           <div
             v-for="header in state.headers"
             :key="header.id"
             @click="selectedDate = header.id"
-            class="comparison-header__item justify-between px-4 md:py-6 py-2 md:justify-center w-full items-center md:flex-col flex  previous-period cursor-pointer hover:text-body/80"
+            class="flex items-center justify-between w-full px-4 py-2 cursor-pointer comparison-header__item md:py-6 md:justify-center md:flex-col previous-period hover:text-body/80"
           >
             <h6 class="period-title">{{ header.label }}</h6>
-            <span class="period-value text-xs mt-2">
+            <span class="mt-2 text-xs period-value">
                 <NumberHider />
                 {{ formatMoney(header.value) }}
             </span>
@@ -41,7 +41,7 @@
 </template>
 
 <script setup>
-import { computed, h, reactive, ref, inject } from "vue";
+import { computed, reactive, ref, inject } from "vue";
 
 
 import LogerChart from "@/Components/organisms/LogerChart.vue";

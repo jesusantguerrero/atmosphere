@@ -31,7 +31,7 @@ export const getCategoriesTotals = (categories, config = {
             const factor = getFrequencyMonthFactor(budgetTarget, budgetTarget.month)
             const monthlyTarget = ExactMath.mul(budgetTarget.amount, factor)
             const budgetedAmount = parseFloat(category.budgeted);
-            
+
             if (budgetedAmount > monthlyTarget) {
                 config.onOverAssigned(category)
                 categoryTotals.hasOverAssigned = true;

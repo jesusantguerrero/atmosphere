@@ -5,11 +5,11 @@
                   <template #actions>
                       <div class="flex space-x-2">
                         <LogerButton variant="neutral" class="flex" :href="route('occurrences.export')"  target="_blank" as="a">
-                            <IMdiFile />
+                            <IMdiFile  class="mr-2" />
                             Export
                         </LogerButton>
-                        <LogerButton variant="secondary" class="flex" @click="isModalOpen = !isModalOpen">
-                            <IMdiPlus />
+                        <LogerButton variant="secondary"  class="flex" @click="isModalOpen = !isModalOpen">
+                            <IMdiPlus class="mr-2"/>
                             Add Check
                         </LogerButton>
                       </div>

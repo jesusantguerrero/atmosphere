@@ -275,6 +275,26 @@ class TransactionService {
         ->get();
     }
 
+    public static function getPayeeMovementsInPeriod($teamId, $startDate, $endDate, $direction = Transaction::DIRECTION_DEBIT) {
+        $query = DB::table('payees')
+        ->selectRaw('sum(COALESCE(total,0)) as total, payees.name, payees.id')
+        ->where([
+            'payees.team_id' => $teamId,
+            'transaction_lines.type' => Transaction::DIRECTION_DEBIT == $direction ? 1 : -1,
+            'transactions.status' => 'verified'
+        ]);
+
+        if ($direction == Transaction::DIRECTION_CREDIT) {
+            $query->whereNot('direction', Transaction::DIRECTION_DEBIT);
+        }
+        
+        return $query->whereBetween('transactions.date', [$startDate, $endDate])
+        ->groupByRaw('payees.id')
+        // ->orderByRaw('total')
+        ->join('transaction_lines', 'transaction_lines.payee_id', '=', 'payees.id')
+        ->join('transactions', 'transaction_lines.transaction_id', '=', 'transactions.id');
+    }
+
     // splits
 
     public static function getSplits($teamId, $options) {
