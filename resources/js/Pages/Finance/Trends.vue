@@ -110,6 +110,7 @@ import ExpenseChartWidget from "@/Components/widgets/ExpenseChartWidget.vue";
 
 import { useServerSearch } from "@/composables/useServerSearch";
 import ChartComparison from "@/Components/widgets/ChartComparison.vue";
+import YearSummary from "@/Components/widgets/YearSummary.vue";
 import WidgetTitleCard from "@/Components/molecules/WidgetTitleCard.vue";
 import Collapse from "@/Components/molecules/Collapse.vue";
 import ExpenseIncome from "@/Components/widgets/ExpenseIncome.vue";
@@ -169,6 +170,10 @@ const trends = [
     {
         name: 'Income vs Expenses Graph',
         link: '/trends/income-expenses-graph'
+    },
+    {
+        name: 'Year summary',
+        link: '/trends/year-summary'
     }
 ]
 
@@ -178,7 +183,8 @@ const components = {
     categories: ExpenseChartWidget,
     netWorth: ChartNetWorth,
     incomeExpenses: IncomeExpenses,
-    incomeExpensesGraph:  ChartComparison
+    incomeExpensesGraph:  ChartComparison,
+    yearSummary: YearSummary
 }
 
 const trendComponent = computed(() => {

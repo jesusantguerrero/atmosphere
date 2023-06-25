@@ -19,7 +19,13 @@ class FinanceTrendController extends Controller {
         'net-worth' => 'NetWorth',
         'income-expenses' => 'IncomeExpenses',
         'income-expenses-graph' => 'IncomeExpensesGraph',
+        'year-summary' => 'yearSummary',
     ];
+
+    public function __construct(private ReportService $reportService)
+    {
+        
+    }
 
     public function index(Request $request, $sectionName = 'groups') {
         $queryParams = $request->query();
@@ -131,6 +137,21 @@ class FinanceTrendController extends Controller {
                 "props" => [
                     "headerTemplate" => 'grid',
                 ]
+            ]
+        ];
+    }
+
+    public function yearSummary() {
+        // $queryParams = request()->query();
+        // $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
+        // [$startDate, $endDate] = $this->getFilterDates($filters);
+        $teamId = request()->user()->current_team_id;
+
+        return [
+            'data' => $this->reportService->yearSummary($teamId, now()->subYear(1)->format('Y')),
+            'metaData' => [
+                'name' => 'yearSummary',
+                'title' => 'Results of the year'
             ]
         ];
     }

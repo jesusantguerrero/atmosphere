@@ -1,5 +1,5 @@
 import { cloneDeep } from "lodash";
-import { computed, watch, reactive, toRefs, nextTick } from "vue";
+import { computed, watch, reactive, toRefs } from "vue";
 import { getCategoriesTotals, getGroupTotals } from './index';
 
 export const BudgetState = reactive({
@@ -37,7 +37,7 @@ export const BudgetState = reactive({
         return BudgetState.data.find((category) => category.name == 'Inflow')
     }),
     outflow: computed(() => {
-        return BudgetState.data.filter((category) => category.name != 'Inflow')
+        return BudgetState.data?.filter((category) => category.name != 'Inflow')
     }),
     readyToAssign: computed(() => {
         const budgetTotals = getGroupTotals(BudgetState.outflow)
@@ -63,7 +63,7 @@ const getBudget = (budgetRawData) => {
     let categories = [];
     let budgetData = cloneDeep(budgetRawData)
 
-    budgetData = budgetData.map(item => {
+    budgetData = budgetData?.map(item => {
         const totals = getCategoriesTotals(item.subCategories, {
             onOverspent(category) {
                 filters.overSpent.push(category)
@@ -114,7 +114,7 @@ export const useBudget = (budgets) => {
             BudgetState.visibleCategories = getVisibleCategories(BudgetState.data);
         }, { immediate: true, deep: true })
     }
-    
+
     const toggleFilter = (filterName) => {
         Object.entries(BudgetState.filters).forEach(([filter, value]) => {
             BudgetState.filters[filter] = filterName == filter ? !value : false ;

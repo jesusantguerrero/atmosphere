@@ -4,12 +4,15 @@ namespace App\Http\Controllers\Finance;
 
 use App\Domains\AppCore\Models\Planner;
 use App\Domains\Transaction\Actions\FindLinkedTransactions;
+use App\Domains\Transaction\Exports\TransactionExport;
 use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Transaction\Resources\TransactionResource;
 use App\Domains\Transaction\Services\TransactionService;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
 use Freesgen\Atmosphere\Http\Querify;
+use Maatwebsite\Excel\Facades\Excel;
+
 class FinanceTransactionController extends InertiaController {
     use Querify;
     const DateFormat = 'Y-m-d';
@@ -58,7 +61,7 @@ class FinanceTransactionController extends InertiaController {
         $file = request()->file('file')->store('temp');
         $path = storage_path('app'). '/' . $file;
 
-        $results = TransactionService::importAndSave($user, $path);
+        TransactionService::importAndSave($user, $path);
 
         return back()->with('flash', [
             'banner' => "You will notified once the import is completed"
@@ -103,6 +106,13 @@ class FinanceTransactionController extends InertiaController {
 
 
         return redirect()->back();
+    }
+
+
+    public function export() {
+        $dataToExport = new TransactionExport(Transaction::where('team_id', request()->user()->current_team_id)->get()->toArray());
+        $today = now()->format('Y-m-d');
+        return Excel::download($dataToExport, "transactions_as_of_{$today}.xlsx");
     }
 
     // linked transactions

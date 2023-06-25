@@ -3,9 +3,9 @@
     <div
       v-for="(split, index) in splits"
       :key="index"
-      class="rounded-md even:bg-base-lvl-2 -mx-4 px-4"
+      class="px-4 -mx-4 rounded-md even:bg-base-lvl-2"
     >
-      <header class="flex justify-between -mb-4 pt-2" v-if="hasSplits">
+      <header class="flex justify-between pt-2 -mb-4" v-if="hasSplits">
         <h4 class="font-bold">Split ({{ index + 1 }}/{{ splits.length }})</h4>
         <button @click="removeSplit(index)">
           <IMdiTrash />
@@ -14,7 +14,7 @@
       <AtField
         :label="accountLabel"
         v-if="!index"
-        class="md:w-full md:my-0 md:block md:space-x-0 flex w-full justify-between space-x-4 md:-mt-4"
+        class="flex justify-between w-full space-x-4 md:w-full md:my-0 md:block md:space-x-0 md:-mt-4"
       >
         <NSelect
           filterable
@@ -27,10 +27,10 @@
           :options="accountsOptions"
         />
       </AtField>
-      <div class="md:flex md:space-x-3 md:px-0 px-4 md:-mt-4">
+      <div class="px-4 md:flex md:space-x-3 md:px-0 md:-mt-4">
         <AtField
           label="Payee"
-          class="md:w-4/12 md:block md:space-x-0 flex justify-between"
+          class="flex justify-between md:w-4/12 md:block md:space-x-0"
           v-if="!isTransfer"
         >
           <LogerApiSimpleSelect
@@ -64,7 +64,7 @@
         </AtField>
       </div>
     </div>
-    <LogerButton variant="neutral" @click="addSplit()">
+    <LogerButton variant="neutral" @click="addSplit()" v-if="!isTransfer">
       <IMdiCallSplit />
       Add split
     </LogerButton>

@@ -1,5 +1,5 @@
 <template>
-    <section class="px-5 pt-2 text-left border-b rounded-md space-y-4 shadow-xl bg-base-lvl-3 pb-4" :class="{'flex': !full }">
+    <section class="px-5 pt-2 pb-4 space-y-4 text-left border-b rounded-md shadow-xl bg-base-lvl-3" :class="{'flex': !full }">
         <header class="flex items-center justify-between mt-2 mb-2">
             <AtInput
                 v-model="category.name"
@@ -7,7 +7,7 @@
                 rounded
             >
                 <template #prefix>
-                    <div class=" px-1 flex items-center justify-center">
+                    <div class="flex items-center justify-center px-1 ">
                         <ColorSelector
                             v-model="category.color"
                             @update:modelValue="onBlur(category)"
@@ -112,7 +112,7 @@
 
 
     const onBlur = (category) => {
-        axios.put(`/categories/${props.category.id}?json=true`, category)
+        axios.put(`/budgets/${props.category.id}?json=true`, category)
         .then(() => {
             emit('update:category', category)
         })

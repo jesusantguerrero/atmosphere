@@ -98,11 +98,11 @@ const serverToState = (serverSearchData) => {
             startDate: dates.startDate,
             endDate: dates.endDate,
         },
-        sorts: serverSearchData.sorts,
-        limit: serverSearchData.limit,
-        relationships: serverSearchData.relationships,
-        search: serverSearchData.search,
-        page: serverSearchData.page
+        sorts: serverSearchData?.sorts,
+        limit: serverSearchData?.limit,
+        relationships: serverSearchData?.relationships,
+        search: serverSearchData?.search,
+        page: serverSearchData?.page
     }
 }
 
