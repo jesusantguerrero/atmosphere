@@ -1,0 +1,1 @@
+import{r as n,ak as r}from"./isMobile-3d69cdae.js";import{s as e}from"./AppLayout.vue_vue_type_script_setup_true_lang-87835da0.js";var o=864e5;function D(s,i){n(2,arguments);var t=e(s),a=e(i),f=t.getTime()-r(t),m=a.getTime()-r(a);return Math.round((f-m)/o)}export{D as d};
