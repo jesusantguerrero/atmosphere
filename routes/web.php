@@ -170,7 +170,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
  *                                  API Section
  ***************************************************************************************/
 
-Route::middleware(['auth:sanctum'])->prefix('/api')->group(function () {
+Route::middleware(['auth:sanctum'])->prefix('/api')->name('api.')->group(function () {
     //timezones
     Route::get('/timezones', [TimezonesApiController::class, 'index']);
     // currencies
@@ -181,7 +181,7 @@ Route::middleware(['auth:sanctum'])->prefix('/api')->group(function () {
     Route::delete('/v2/team-invitations/{invitation}', [TeamInvitationController::class, 'reject'])->name('team-invitations.reject');
 });
 
-Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('/api')->group(function () {
+Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('/api')->name('api.')->group(function () {
     //  automation routes
     Route::controller(AutomationController::class)->group(function () {
         Route::apiResource('automation', AutomationController::class);
