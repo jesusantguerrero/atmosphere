@@ -34,11 +34,10 @@
                 Today
             </LogerButton>
 
-            <!--
+            
             <AtDatePager
               v-if="pageState.dates?.startDate"
               class="w-full h-12 border-none bg-base-lvl-1 text-body"
-              v-model="pageState.dates.startDate"
               v-model:startDate="pageState.dates.startDate"
               v-model:endDate="pageState.dates.endDate"
               @change="executeSearchWithDelay()"
@@ -46,7 +45,7 @@
               next-mode="month"
             >
                 {{ formatMonth(pageState.dates.startDate, 'MMMM') }}
-            </AtDatePager> -->
+            </AtDatePager>
           </div>
         </template>
       </FinanceSectionNav>
@@ -200,6 +199,7 @@ const { serverSearchOptions } = toRefs(props);
 const { state: pageState, executeSearchWithDelay } = useServerSearch(serverSearchOptions, {
     manual: true
 });
+
 provide('pageState', pageState);
 
 

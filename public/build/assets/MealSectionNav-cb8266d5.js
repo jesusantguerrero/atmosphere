@@ -1,0 +1,1 @@
+import{_ as t}from"./SectionNav-7e8b141c.js";import{o as e,c as a,w as n,q as r,u as s}from"./app-fc313f38.js";import{g as c,M as i}from"./index-975c57c9.js";const l={__name:"MealSectionNav",setup(_){return(o,m)=>(e(),a(t,{sections:s(c)(s(i).MEAL)},{actions:n(()=>[r(o.$slots,"actions")]),_:3},8,["sections"]))}};export{l as _};

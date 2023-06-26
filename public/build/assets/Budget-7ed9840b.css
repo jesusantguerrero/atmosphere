@@ -1,0 +1,1 @@
+.budget-right-panel{display:grid;grid-template-rows:50px calc(100vh - 420px) 150px;gap:8px}

@@ -1,0 +1,1 @@
+import{r as s,t as a}from"./isMobile-3d69cdae.js";import{a as n}from"./AppLayout.vue_vue_type_script_setup_true_lang-87835da0.js";function u(r,t){s(2,arguments);var o=a(t);return n(r,-o)}export{u as s};
