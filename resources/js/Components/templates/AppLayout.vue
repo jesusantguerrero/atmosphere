@@ -1,5 +1,5 @@
 <script setup lang="ts">
-    import { provide, ref, computed } from 'vue'
+    import { provide, ref, computed, onMounted } from 'vue'
     import { NConfigProvider } from 'naive-ui'
     import { router } from '@inertiajs/vue3'
     import { AtSide, AtTeamSelect } from "atmosphere-ui"
@@ -24,6 +24,7 @@
     import { useAppMenu } from '@/domains/app'
     import { useSelect } from '@/utils/useSelects'
     import { useTransactionModal } from '@/domains/transactions'
+    import { useOnMessage } from '@/composables/useFirebase'
 
     const props = defineProps({
         title: {
@@ -95,6 +96,13 @@
 
         actions[action]?.handler()
     }
+
+    onMounted(() => {
+        useOnMessage((payload) => {
+            console.log(payload, "Mi mensaje favorito")
+        })
+    })
+
 </script>
 
 <template>

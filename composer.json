@@ -14,6 +14,7 @@
         "guzzlehttp/guzzle": "^7.0.2",
         "inertiajs/inertia-laravel": "^0.6.3",
         "insane/journal": "dev-master",
+        "kreait/laravel-firebase": "^5.2",
         "laravel/cashier-paddle": "^1.8",
         "laravel/framework": "^10.0",
         "laravel/jetstream": "^2.3",
@@ -29,6 +30,15 @@
         "symfony/dom-crawler": "^6.0",
         "tightenco/ziggy": "^1.5.0"
     },
+    "repositories": [
+        {
+          "url": "../packages/journal",
+          "type": "path",
+          "options": {
+                "symlink": true
+            }
+        }
+    ],
     "require-dev": {
         "brianium/paratest": "^7.0",
         "fakerphp/faker": "^1.9.1",

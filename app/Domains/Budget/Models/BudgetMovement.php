@@ -28,7 +28,7 @@ class BudgetMovement extends Model
 
         if (isset($form['type']) && $form['type'] == 'movement') {
             $amount = $form['budgeted'];
-            $sourceId = $form['source_category_id'];
+            $sourceId = $form['source_category_id'] ??  $monthBudget->category_id;
             $destinationId = $form['destination_category_id'];
         } else {
             $amount = $form['budgeted'] - $categoryBalance;

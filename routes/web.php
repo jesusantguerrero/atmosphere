@@ -35,7 +35,7 @@ use App\Http\Controllers\Relationship\RelationshipController;
 
 
 use App\Http\Controllers\System\NotificationController;
-
+use App\Http\Controllers\System\UserDeviceController;
 use Freesgen\Atmosphere\Http\Controllers\SettingsController;
 use Freesgen\Atmosphere\Http\OnboardingController;
 
@@ -159,6 +159,8 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
      *                               Extras Section
     ***************************************************************************************/
 
+    Route::post('/users/{user}/devices', [UserDeviceController::class, 'store']);
+    Route::get('/users/{user}/devices', [UserDeviceController::class, 'index']);
     Route::get('/relationships', RelationshipController::class);
     // Automation Services
     Route::post('/services/google', [ServiceController::class, 'google']);

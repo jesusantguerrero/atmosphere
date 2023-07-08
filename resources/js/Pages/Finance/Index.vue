@@ -21,7 +21,7 @@
     </template>
 
     <FinanceTemplate title="Finance" :accounts="accounts" ref="financeTemplateRef">
-      <section class="grid gap-12 mt-4 md:grid-cols-2">
+      <section class="mt-4 space-y-4">
             <WidgetTitleCard title="Summary" class="w-full">
                 <div
                     class="flex flex-wrap justify-between w-full overflow-hidden lg:space-x-4 lg:flex-nowrap"
@@ -57,33 +57,36 @@
                 </div>
             </WidgetTitleCard>
 
-            <WidgetTitleCard title="Planned Transactions" class="hidden md:block">
-                <TransactionsTable
-                  class="w-full"
-                  table-class="w-full p-2 overflow-auto text-sm rounded-t-lg shadow-md bg-base-lvl-3"
-                  :transactions="planned"
-                  :parser="plannedDBToTransaction"
-                  @edit="handleEdit"
+            <section class="grid grid-cols-2 gap-2">
+                <WidgetTitleCard title="Planned Transactions" class="hidden md:block">
+                    <TransactionsTable
+                      class="w-full"
+                      table-class="w-full p-2 overflow-auto text-sm rounded-t-lg shadow-md bg-base-lvl-3"
+                      :transactions="planned"
+                      :parser="plannedDBToTransaction"
+                      @edit="handleEdit"
+                    />
+
+                    <template #action>
+                        <AtButton
+                          class="flex items-center text-primary"
+                          @click="router.visit('/transactions?filter[status]=planned')"
+                        >
+                          <span> See scheduled</span>
+                          <i class="ml-2 fa fa-chevron-right"></i>
+                        </AtButton>
+                    </template>
+                </WidgetTitleCard>
+
+
+                <CategoryTrendsPreview
+                    class="w-full"
+                    :category-data="topCategories"
+                    :group-data="expensesByCategoryGroup"
                 />
+            </section>
 
-                <template #action>
-                    <AtButton
-                      class="flex items-center text-primary"
-                      @click="router.visit('/transactions?filter[status]=planned')"
-                    >
-                      <span> See scheduled</span>
-                      <i class="ml-2 fa fa-chevron-right"></i>
-                    </AtButton>
-                </template>
-            </WidgetTitleCard>
-
-            <CategoryTrendsPreview
-                class="w-full"
-                :category-data="topCategories"
-                :group-data="expensesByCategoryGroup"
-            />
-
-            <WidgetTitleCard title="Transactions" class="w-full">
+            <WidgetTitleCard title="Transaction history" class="w-full">
                 <TransactionsTable
                     class="w-full"
                     table-class="overflow-auto text-sm"

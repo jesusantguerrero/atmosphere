@@ -2,7 +2,7 @@
   <AtAuthBox>
     <AtAuthForm
       app-name="Loger"
-      btn-class="mb-2 font-bold border-2 border-primary rounded-md bg-gradient-to-br from-purple-400 to-primary hover:bg-primary"
+      btn-class="mb-2 font-bold border-2 rounded-md border-primary bg-gradient-to-br from-purple-400 to-primary hover:bg-primary"
       link-class="text-primary hover:text-primary"
       v-model:isLoading="form.processing"
       :initial-values="form"
@@ -18,7 +18,7 @@
       </template>
       <template #prependInput v-if="isDemo">
         <DemoInstructions
-          class="rounded-md mt-6 text-center py-2 px-5 bg-black bg-opacity-25 text-sm font-sans"
+          class="px-5 py-2 mt-6 font-sans text-sm text-center bg-black bg-opacity-25 rounded-md"
         />
       </template>
     </AtAuthForm>
@@ -30,7 +30,6 @@ import { AtAuthBox, AtAuthForm } from "atmosphere-ui";
 import { router } from "@inertiajs/vue3";
 import { useForm, Link } from "@inertiajs/vue3";
 import DemoInstructions from "./Partials/DemoInstructions.vue";
-import ApplicationLogo from "@/Components/atoms/ApplicationLogo.vue";
 import AppIcon from "@/Components/AppIcon.vue";
 import { isDemo } from "@/utils/constants";
 

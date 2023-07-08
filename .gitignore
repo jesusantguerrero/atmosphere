@@ -9,7 +9,7 @@
 .env.test
 .env.backup
 .phpunit.result.cache
-credentials.json
+credentials*.json
 docker-compose.override.yml
 Homestead.json
 Homestead.yaml
