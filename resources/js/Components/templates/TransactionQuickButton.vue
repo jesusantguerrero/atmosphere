@@ -9,11 +9,11 @@
         </template>
 
         <div class="py-1 w-96">
-            <BudgetGroupForm 
-                v-model="transactionCommand" 
-                mode="edit" 
-                @save="onSave" 
-                :show-cancel="false" 
+            <BudgetGroupForm
+                v-model="transactionCommand"
+                mode="edit"
+                @save="onSave"
+                :show-cancel="false"
                 placeholder=""
             />
             <span>
@@ -44,7 +44,6 @@
     const store = useTransactionStore()
     const onSave = () => {
         const match = transactionCommand.value.match(PATTERN);
-        debugger
         // Extract the variables from the captured groups
         let date = match[1]?.split('/') ?? [];
         const categoryName = match[2] || '';
@@ -62,7 +61,7 @@
             date: date ?? new Date(),
             categoryName,
             accountName,
-            amount: Number(amount ?? 0), 
+            amount: Number(amount ?? 0),
             counterAccountName
         })
 

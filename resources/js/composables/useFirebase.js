@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
+import { getAnalytics } from "firebase/analytics";
 import CONFIG from "../config/";
 
 const firebaseConfig = {
@@ -15,6 +16,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig)
 const messaging = getMessaging(app)
+const analytics = getAnalytics(app);
 
 function requestPermission() {
     console.log('Requesting permission...');
@@ -47,4 +49,9 @@ export const useOnMessage = (onMessaged) => {
         console.log(payload)
         onMessaged && onMessaged(payload)
     })
+}
+
+
+export const useAnalytics = () => {
+   analytics
 }

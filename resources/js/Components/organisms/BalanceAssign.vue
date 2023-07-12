@@ -94,7 +94,6 @@ import Multiselect from "vue-multiselect";
     const onAssignBudget = () => {
         if (Number(props.value) !== 0) {
             const month = format(startOfMonth(pageState?.dates?.endDate), 'yyyy-MM-dd');
-            debugger
 
             const field = status.value == BALANCE_STATUS.available ? 'source_category_id' : 'destination_category_id'
             form.transform(data => ({

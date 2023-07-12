@@ -1,1 +1,0 @@
-import{f as n,p as r,m as u,P as c}from"./app-fc313f38.js";const p=(e,o=!1)=>{const a=n(o),s=()=>{a.value=!a.value},l=r(()=>a.value?"fas fa-angle-down":"fas fa-angle-up");return u(()=>{try{c(e.value)}catch(t){console.error(t)}}),{isCollapsed:a,toggleCollapse:s,icon:l}};export{p as u};
