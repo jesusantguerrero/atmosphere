@@ -181,7 +181,6 @@ const onSubmit = (addAnother = false) => {
       onSuccess: () => {
         state.form.reset();
         gridSplitsRef.value.reset();
-        debugger
         if (!addAnother) {
             emit("close");
         }

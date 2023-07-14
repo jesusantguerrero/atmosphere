@@ -1,0 +1,1 @@
+import{_ as t}from"./SectionNav-dd96bdd5.js";import{o as e,c as a,w as n,s as r,u as s}from"./app-114b751b.js";import{g as c,M as i}from"./useFirebase-fe12e715.js";const l={__name:"MealSectionNav",setup(_){return(o,m)=>(e(),a(t,{sections:s(c)(s(i).MEAL)},{actions:n(()=>[r(o.$slots,"actions")]),_:3},8,["sections"]))}};export{l as _};

@@ -10,26 +10,31 @@
                 :available-permissions="availablePermissions"
                 :default-permissions="defaultPermissions"
             />
+
+            <section>
+                <button @click="allowMessages()">Allow Message</button>
+            </section>
         </div>
     </AppLayout>
 </template>
 
-<script>
+<script setup lang="ts">
     import ApiTokenManager from './ApiTokenManager.vue'
     import AppLayout from '@/Components/templates/AppLayout.vue'
     import SettingsSectionNav from '@/Components/templates/SettingsSectionNav.vue'
+    import { useMessaging } from "@/composables/useFirebase";
+    import { router } from '@inertiajs/vue3';
 
-    export default {
-        props: [
-            'tokens',
-            'availablePermissions',
-            'defaultPermissions',
-        ],
+    const props = defineProps([
+        'tokens',
+        'availablePermissions',
+        'defaultPermissions',
+        'user'
+    ])
 
-        components: {
-            ApiTokenManager,
-            AppLayout,
-            SettingsSectionNav
-        },
+    const allowMessages = () => {
+        useMessaging((deviceToken) => {
+            router.post(`/users/${props.user.id}/devices`, {deviceToken})
+        })
     }
 </script>

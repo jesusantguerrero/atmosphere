@@ -284,7 +284,6 @@ const hasInput = (inputName) => {
 
 const prepareForm = () => {
     const formData = { ...form.data() };
-    debugger
     formData.name = formData.name || formData.tasks.map(task => task.name).join(' ');
     formData.description = formData.description || formData.tasks.map(task => task.label).join(' ');
     formData.sentence = formData.sentence || formData.tasks.map(task => task.label).join(' ');

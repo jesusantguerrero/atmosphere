@@ -81,7 +81,8 @@ const budgeted = ref(props.item.budgeted);
 
 const onAssignBudget = () => {
     if (Number(props.item.budgeted) !== Number(budgeted.value)) {
-        const month = format(startOfMonth(new Date()), 'yyyy-MM-dd');
+        const month = format(startOfMonth(pageState.dates.endDate), 'yyyy-MM-dd');
+
         router.post(`/budgets/${props.item.id}/months/${month}`, {
             id: props.item.id,
             budgeted: Number(budgeted.value)

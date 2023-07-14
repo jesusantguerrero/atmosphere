@@ -23,6 +23,10 @@ export default defineConfig({
         VitePWA({
             registerType: 'autoUpdate',
             includeAssets: ['favicon.svg', 'safari-pinned-tab.svg'],
+            outDir: 'public',
+            devOptions: {
+                enabled: true
+            },
             manifest: {
               name: 'Loger',
               short_name: 'Loger',

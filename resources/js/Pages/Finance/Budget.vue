@@ -34,7 +34,7 @@
                 Today
             </LogerButton>
 
-            
+
             <AtDatePager
               v-if="pageState.dates?.startDate"
               class="w-full h-12 border-none bg-base-lvl-1 text-body"

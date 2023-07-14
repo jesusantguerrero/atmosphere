@@ -35,7 +35,7 @@ use App\Http\Controllers\Relationship\RelationshipController;
 
 
 use App\Http\Controllers\System\NotificationController;
-
+use App\Http\Controllers\System\UserDeviceController;
 use Freesgen\Atmosphere\Http\Controllers\SettingsController;
 use Freesgen\Atmosphere\Http\OnboardingController;
 
@@ -159,6 +159,8 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
      *                               Extras Section
     ***************************************************************************************/
 
+    Route::post('/users/{user}/devices', [UserDeviceController::class, 'store']);
+    Route::get('/users/{user}/devices', [UserDeviceController::class, 'index']);
     Route::get('/relationships', RelationshipController::class);
     // Automation Services
     Route::post('/services/google', [ServiceController::class, 'google']);
@@ -170,7 +172,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
  *                                  API Section
  ***************************************************************************************/
 
-Route::middleware(['auth:sanctum'])->prefix('/api')->group(function () {
+Route::middleware(['auth:sanctum'])->prefix('/api')->name('api.')->group(function () {
     //timezones
     Route::get('/timezones', [TimezonesApiController::class, 'index']);
     // currencies
@@ -181,7 +183,7 @@ Route::middleware(['auth:sanctum'])->prefix('/api')->group(function () {
     Route::delete('/v2/team-invitations/{invitation}', [TeamInvitationController::class, 'reject'])->name('team-invitations.reject');
 });
 
-Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('/api')->group(function () {
+Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('/api')->name('api.')->group(function () {
     //  automation routes
     Route::controller(AutomationController::class)->group(function () {
         Route::apiResource('automation', AutomationController::class);

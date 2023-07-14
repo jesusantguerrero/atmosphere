@@ -1,1 +1,0 @@
-import{o as e,e as o,b as t}from"./app-fc313f38.js";const n={viewBox:"0 0 24 24",width:"1.2em",height:"1.2em"},s=t("path",{fill:"currentColor",d:"M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2Z"},null,-1),c=[s];function h(_,r){return e(),o("svg",n,c)}const a={name:"mdi-plus",render:h};export{a as _};

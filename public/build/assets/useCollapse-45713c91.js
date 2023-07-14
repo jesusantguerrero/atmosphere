@@ -1,0 +1,1 @@
+import{r as t,q as n,p as u,P as c}from"./app-114b751b.js";const f=(e,o=!1)=>{const a=t(o),s=()=>{a.value=!a.value},l=n(()=>a.value?"fas fa-angle-down":"fas fa-angle-up");return u(()=>{try{c(e.value)}catch(r){console.error(r)}}),{isCollapsed:a,toggleCollapse:s,icon:l}};export{f as u};
