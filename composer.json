@@ -30,15 +30,6 @@
         "symfony/dom-crawler": "^6.0",
         "tightenco/ziggy": "^1.5.0"
     },
-    "repositories": [
-        {
-          "url": "../packages/journal",
-          "type": "path",
-          "options": {
-                "symlink": true
-            }
-        }
-    ],
     "require-dev": {
         "brianium/paratest": "^7.0",
         "fakerphp/faker": "^1.9.1",

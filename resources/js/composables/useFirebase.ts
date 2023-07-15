@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
 import { getAnalytics } from "firebase/analytics";
-import CONFIG from "../config/";
+import CONFIG from "../config";
 
 const firebaseConfig = {
     apiKey: CONFIG.FIREBASE_API_KEY,
