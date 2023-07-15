@@ -3,23 +3,25 @@
 namespace App\Listeners;
 
 use App\Domains\Housing\Actions\RegisterOccurrence;
+use App\Domains\Housing\Models\OccurrenceCheck;
 use App\Events\OccurrenceCreated;
+use App\Jobs\RunTeamChecks;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
+use Insane\Journal\Events\TransactionCreated;
 
-class CreateOccurrenceAutomation
+class CheckOccurrence
 {
+
     /**
      * Handle the event.
      *
      * @param  object  $event
      * @return void
      */
-    public function handle(OccurrenceCreated $event)
+    public function handle(TransactionCreated $event)
     {
-        $occurrence = $event->occurrence;
-        if ($occurrence->condition) {
-            $occurrence = (new RegisterOccurrence())->load($occurrence);
-        }
+        $transaction = $event->transaction;
+        RunTeamChecks::dispatch($transaction->team_id);
     }
 }

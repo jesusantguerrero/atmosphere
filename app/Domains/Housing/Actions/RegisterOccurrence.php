@@ -90,6 +90,7 @@ class RegisterOccurrence
 
     public function sync(OccurrenceCheck $occurrence) {
         $transactions = (new SearchTransactions())->handle($occurrence->conditions);
+
         foreach ($transactions as $transaction) {
             try {
                 (new RegisterOccurrence())->add(

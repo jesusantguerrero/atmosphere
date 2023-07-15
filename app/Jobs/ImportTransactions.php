@@ -6,7 +6,6 @@ use App\Domains\Transaction\Services\TransactionService;
 use App\Models\User;
 use App\Notifications\TransactionsImported;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -19,7 +18,7 @@ class ImportTransactions implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(public User $user, public mixed $file )
+    public function __construct(private User $user, private mixed $file )
     {
         //
     }
@@ -32,6 +31,6 @@ class ImportTransactions implements ShouldQueue
         $results = TransactionService::importAndSave($this->user, $this->file);
 
         $url = "/finance/transactions?filter[status]=draft&filter[date]=$results->startDate~$results->endDate";
-        $user->notify(new TransactionsImported($url));
+        $this->user->notify(new TransactionsImported($url));
     }
 }

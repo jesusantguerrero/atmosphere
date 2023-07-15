@@ -1,3 +1,85 @@
+<script setup>
+import { ref, reactive } from 'vue';
+import { NDropdown } from 'naive-ui';
+import { router, useForm } from '@inertiajs/vue3';
+
+import AppLayout from '@/Components/templates/AppLayout.vue';
+import HouseSectionNav from '@/Components/templates/HouseSectionNav.vue';
+import LogerButton from '@/Components/atoms/LogerButton.vue';
+import CustomTable from '@/Components/atoms/CustomTable.vue';
+import OccurrenceCheckModal from '@/Components/OccurrenceCheckModal.vue';
+
+import { occurrenceCols as cols } from '@/domains/housing/occurrenceCols';
+
+defineProps({
+    occurrence: {
+        type: Array,
+        default() {
+            return []
+        }
+    }
+})
+
+const isModalOpen = ref(false);
+const resourceToEdit = ref({});
+
+const onSaved = () => {
+    router.reload()
+}
+
+const addInstance = (id) => {
+    router.post(`/housing/occurrence/${id}/instances`)
+}
+
+const removeLastInstance = (id) => {
+    router.delete(`/housing/occurrence/${id}/instances`)
+}
+
+const handleDelete = (resource) => {
+    if (confirm(`Are you sure you want to delete this check ${resource.name}?`)) {
+        router.delete(`/housing/occurrence/${resource.id}`)
+    }
+}
+
+const syncForm = useForm({})
+const syncAll = () => {
+    syncForm.post(`/housing/occurrence/sync-all`)
+}
+
+const handleEdit = (resource) => {
+    resourceToEdit.value = resource;
+    isModalOpen.value = true;
+}
+
+const defaultOptions = {
+    edit: {
+        name: "edit",
+        label: "Edit",
+        handle: handleEdit
+    },
+    sync: {
+        name: 'sync',
+        label: 'Sync',
+        handle(resource) {
+            router.post(`/housing/occurrence/${resource.id}/sync`)
+        }
+    },
+    removed: {
+        name: "removed",
+        label: "Remove",
+        handle: handleDelete
+    }
+}
+
+const options = (row) => {
+    return Object.values(defaultOptions).filter(option => !option.hide)
+};
+
+const handleOptions = (option, transaction) => {
+    defaultOptions[option].handle(transaction)
+};
+</script>
+
 <template>
     <AppLayout title="Occurrence Checks">
         <template #header>
@@ -11,6 +93,10 @@
                         <LogerButton variant="secondary"  class="flex" @click="isModalOpen = !isModalOpen">
                             <IMdiPlus class="mr-2"/>
                             Add Check
+                        </LogerButton>
+                        <LogerButton variant="secondary"  class="flex" @click="syncAll()">
+                            <IMdiSync class="mr-2" :class="{'animate-spin': syncForm.processing }" />
+                            Sync
                         </LogerButton>
                       </div>
                   </template>
@@ -64,92 +150,4 @@
     </AppLayout>
 </template>
 
-<script setup>
-import { ref, reactive } from 'vue';
-import { NDropdown } from 'naive-ui';
-import { router } from '@inertiajs/vue3';
 
-import AppLayout from '@/Components/templates/AppLayout.vue';
-import HouseSectionNav from '@/Components/templates/HouseSectionNav.vue';
-import LogerButton from '@/Components/atoms/LogerButton.vue';
-import CustomTable from '@/Components/atoms/CustomTable.vue';
-import OccurrenceCheckModal from '@/Components/OccurrenceCheckModal.vue';
-
-import { occurrenceCols as cols } from '@/domains/housing/occurrenceCols';
-
-defineProps({
-    occurrence: {
-        type: Array,
-        default() {
-            return []
-        }
-    }
-})
-
-const isModalOpen = ref(false);
-const resourceToEdit = ref({});
-
-const onSaved = () => {
-    router.reload()
-}
-
-const addInstance = (id) => {
-    router.post(`/housing/occurrence/${id}/instances`)
-}
-
-const removeLastInstance = (id) => {
-    router.delete(`/housing/occurrence/${id}/instances`)
-}
-
-const handleDelete = (resource) => {
-    if (confirm(`Are you sure you want to delete this check ${resource.name}?`)) {
-        router.delete(`/housing/occurrence/${resource.id}`)
-    }
-}
-
-const handleEdit = (resource) => {
-    resourceToEdit.value = resource;
-    isModalOpen.value = true;
-}
-
-const defaultOptions = {
-    edit: {
-        name: "edit",
-        label: "Edit",
-        handle: handleEdit
-    },
-    sync: {
-        name: 'sync',
-        label: 'Sync',
-        handle(resource) {
-            router.post(`/housing/occurrence/${resource.id}/sync`)
-        }
-    },
-    removed: {
-        name: "removed",
-        label: "Remove",
-        handle: handleDelete
-    }
-}
-
-const options = (row) => {
-    return Object.values(defaultOptions).filter(option => !option.hide)
-};
-
-const handleOptions = (option, transaction) => {
-    defaultOptions[option].handle(transaction)
-};
-</script>
-
-
-<!--
-    As a user I can link occurrences to a transactions
-
-    A) - When I link a transaction and occurrence check I must select the subtype ?)
-    [by Category, Category Group, Payee, Description]
-
-    B) After a occurrence with a transaction linked is added two automations area added:
-
-    1- transactionsFetched - create occurrence
-    2 - transactionCreated - create occurrence
- -->

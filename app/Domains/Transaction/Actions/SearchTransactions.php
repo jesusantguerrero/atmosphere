@@ -43,7 +43,9 @@ class SearchTransactions {
             'contains' => 'LIKE',
             'is' => '='
         ];
+
         foreach ($condition as $param) {
+            if (!$param['operator'] || !$param['value']) continue;
             $operator = $operators[$param['operator']];
             $value = $operator == 'LIKE' ? "%{$param['value']}%" : $param['value'];
             $this->modelQuery->where($field, $operator, $value);

@@ -20,6 +20,7 @@ declare module 'vue' {
     IMdiPlus: typeof import('~icons/mdi/plus')['default']
     IMdiStar: typeof import('~icons/mdi/star')['default']
     IMdiStarOutline: typeof import('~icons/mdi/star-outline')['default']
+    IMdiSync: typeof import('~icons/mdi/sync')['default']
     IMdiTrash: typeof import('~icons/mdi/trash')['default']
   }
 }
