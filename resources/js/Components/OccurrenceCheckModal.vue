@@ -123,7 +123,7 @@ const isEditing = computed(() => props.formData && props.formData.id);
 const submitLabel = computed(() => isEditing.value ? 'Update' : 'Create');
 
 const submit = () => {
-  const method = props.formData.id ? 'put' : 'post'
+  const method = props.formData?.id ? 'put' : 'post'
   if (!isEditing.value) {
       form.submit(method, route('occurrence.store'), {
         onSuccess() {
