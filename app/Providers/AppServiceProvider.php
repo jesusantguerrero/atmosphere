@@ -2,7 +2,10 @@
 
 namespace App\Providers;
 
+use App\Domains\Housing\Actions\RegisterOccurrence;
+use App\Jobs\RunTeamChecks;
 use App\Models\Team;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 use Spatie\Onboard\Facades\Onboard;
 
@@ -25,6 +28,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+
+        $this->app->bindMethod([RunTeamChecks::class, 'handle'], function (RunTeamChecks $job, Application $app) {
+            return $job->handle($app->make(RegisterOccurrence::class));
+        });
+
         Onboard::addStep('Step 1: Add accounts')
             ->link('/finance')
             ->cta('Go to accounts')
@@ -62,5 +70,7 @@ class AppServiceProvider extends ServiceProvider
             ->completeIf(function (Team $model) {
                 return $model->meals->count() > 0;
             });
+
+
     }
 }

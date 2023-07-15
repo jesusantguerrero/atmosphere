@@ -10,12 +10,14 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
     Route::get('/housing', ProjectController::class);
     Route::resource('/housing/occurrence', OccurrenceController::class);
+
     Route::controller(OccurrenceController::class)->group(function () {
         Route::post('/housing/occurrence/{occurrence}/instances', 'addInstance');
         Route::delete('/housing/occurrence/{occurrence}/instances', 'removeLastInstance');
         Route::get('/housing/occurrence/{occurrence}/preview', 'automationPreview');
         Route::post('/housing/occurrence/{occurrence}/load', 'automationLoad');
         Route::post('/housing/occurrence/{occurrence}/sync', 'sync');
+        Route::post('/housing/occurrence/sync-all', 'syncAll');
         Route::get('housing/occurrence-export', 'export')->name('occurrences.export');
     });
 

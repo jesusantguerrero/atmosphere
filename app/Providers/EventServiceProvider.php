@@ -7,6 +7,7 @@ use App\Events\BudgetAssigned;
 use App\Events\OccurrenceCreated;
 use App\Listeners\AcceptInvitation;
 use App\Listeners\AutomationListener;
+use App\Listeners\CheckOccurrence;
 use App\Listeners\CreateBudgetMovement;
 use App\Listeners\CreateBudgetCategory;
 use App\Listeners\CreateBudgetTransactionMovement;
@@ -47,7 +48,8 @@ class EventServiceProvider extends ServiceProvider
         ],
         TransactionCreated::class => [
             CreateBudgetTransactionMovement::class,
-            HandleTransactionCreated::class
+            HandleTransactionCreated::class,
+            CheckOccurrence::class
         ],
         // App events
         AutomationEvent::class => [
