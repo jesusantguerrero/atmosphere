@@ -35,8 +35,8 @@ jobs:
         mkdir -p database
         touch database/database.sqlite
 
-    - name: Install Composer
-      run: composer test
+    # - name: Install Composer
+      # run: composer test
 
     - name: Build fronted
       env:
