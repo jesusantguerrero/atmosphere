@@ -42,7 +42,6 @@ class MakeOccurrenceReminders extends Command
     public function sendNotifications($occurrences) {
         foreach ($occurrences as $occurrence) {
             User::find($occurrence->user_id)->notify(new OccurrenceAlert($occurrence));
-
         }
     }
 }
