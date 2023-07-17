@@ -211,7 +211,7 @@ const state = reactive({
 watch(state.searchOptions, throttle(() => {
     let query = pickBy(state.searchOptions);
     query = Object.keys(query).length ?  '?' + new URLSearchParams(pickBy(state.searchOptions)) : '';
-    router.replace(`/boards/${props.board.id}${query}`)
+    // router.replace(`/boards/${props.board.id}${query}`)
 }, 200),{
     deep: true,
     immediate: true
@@ -260,7 +260,7 @@ const viewsKeys = computed(() => {
 
 const selectedItems = computed(() => {
     return props.board.stages.reduce((selectedItems, stage) => {
-        selectedItems.push(...stage.items.filter(item => item.selected))
+        selectedItems.push(...stage.items?.filter(item => item.selected) ?? [])
         return selectedItems
     }, [])
 });

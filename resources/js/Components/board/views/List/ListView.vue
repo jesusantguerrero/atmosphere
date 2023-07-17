@@ -260,7 +260,7 @@ watch(props.selectedItems, () => {
 });
 
 const visibleFields = computed(() => {
-  return props.board.fields.filter((field) => !field.hide);
+  return props.board.fields?.filter((field) => !field.hide) ?? [];
 });
 
 const tableSize = computed(() => {
