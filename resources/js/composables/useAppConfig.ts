@@ -11,7 +11,11 @@ const AppSettings = reactive({
 export const useAppConfig = () => {
 
     const formatAppDate = (value: string) => {
-        return formatDate(value);
+        try {
+            return formatDate(value);
+        } catch (e) {
+            return value;
+        }
     }
 
     const formatAppMoney = (value: string, currencyCode = AppSettings.primary_currency_code) => {

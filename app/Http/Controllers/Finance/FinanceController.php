@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Finance;
 use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Domains\Transaction\Models\Transaction;
+use App\Domains\Transaction\Services\PlannedTransactionService;
 use App\Domains\Transaction\Services\TransactionService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -17,7 +18,7 @@ class FinanceController extends InertiaController {
     const DateFormat = 'Y-m-d';
 
 
-    public function __construct(Transaction $transaction)
+    public function __construct(Transaction $transaction, private TransactionService $service, private PlannedTransactionService $plannedService)
     {
         $this->model = $transaction;
 
@@ -34,8 +35,6 @@ class FinanceController extends InertiaController {
 
         $budgetTotal = BudgetMonth::getMonthAssignmentTotal($teamId, $startDate);
 
-        $planned = (new TransactionService())->getPlanned($teamId);
-
         $transactions = TransactionService::getExpenses($teamId, $startDate, $endDate);
         $transactionsTotal = TransactionService::getExpensesTotal($teamId, $startDate, $endDate);
         $expensesByCategory = TransactionService::getCategoryExpenses($teamId, $startDate, $endDate, 4);
@@ -47,7 +46,7 @@ class FinanceController extends InertiaController {
 
         return Jetstream::inertia()->render($request, 'Finance/Index', [
             "sectionTitle" => "Finance",
-            "planned" => $planned,
+            "planned" => $this->plannedService->getPlanned($teamId),
             "budgetTotal" => $budgetTotal,
             "expensesByCategory" => $expensesByCategory,
             "expensesByCategoryGroup" => $expensesByCategoryGroup,

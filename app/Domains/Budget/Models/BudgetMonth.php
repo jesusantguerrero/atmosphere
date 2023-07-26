@@ -23,9 +23,17 @@ class BudgetMonth extends Model
         return self::where('team_id', $teamId)->where('month', $yearMonth)->get();
     }
 
-    public static function getMonthAssignmentTotal($teamId, $date, $field="budgeted") {
+    public static function getMonthAssignmentTotal($teamId, $date, $field = "budgeted") {
         $yearMonth = (new DateTime($date))->format('Y-m'). "-01";
-        return self::where('team_id', $teamId)->where('month', $yearMonth)->sum($field);
+        $balance = self::where('budget_months.team_id', $teamId)
+        ->where('month', $yearMonth)
+        ->orderByDesc("budgeted")
+        ->join('categories', fn ($q) =>
+            $q->on('categories.id', 'category_id')->whereNot('categories.name', Category::READY_TO_ASSIGN)
+        )
+        ->where('budgeted', '>' , 0)
+        ->sum($field);
+        return $balance;
     }
 
     public static function createBudget($data, $startingBalance = true) {

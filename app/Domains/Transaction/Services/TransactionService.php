@@ -5,12 +5,10 @@ namespace App\Domains\Transaction\Services;
 use App\Domains\AppCore\Models\Category;
 use App\Domains\Transaction\Imports\TransactionsImport;
 use App\Domains\Transaction\Models\Transaction;
-use App\Jobs\CreateTransactionFromImport;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Insane\Journal\Models\Core\TransactionLine;
 
 class TransactionService {
     const transactionsTotalSum = "ABS(sum(CASE
@@ -31,17 +29,6 @@ class TransactionService {
             ->inDateFrame($options['startDate'], $options['endDate'])
             ->with(['mainLine', 'lines', 'counterLine', 'mainLine.account', 'counterLine.account'])
             ->get();
-    }
-
-    public function getPlanned($teamId) {
-        return Transaction::where([
-            'team_id' => $teamId,
-        ])
-        ->planned()
-        ->get()
-        ->map(function ($transaction) {
-            return Transaction::parser($transaction);
-        });
     }
 
     public function getForAccount($accountId, $teamId,  $options) {
@@ -287,7 +274,7 @@ class TransactionService {
         if ($direction == Transaction::DIRECTION_CREDIT) {
             $query->whereNot('direction', Transaction::DIRECTION_DEBIT);
         }
-        
+
         return $query->whereBetween('transactions.date', [$startDate, $endDate])
         ->groupByRaw('payees.id')
         // ->orderByRaw('total')

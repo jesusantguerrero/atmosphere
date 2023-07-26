@@ -25,6 +25,7 @@
         "php-mime-mail-parser/php-mime-mail-parser": "^7.1",
         "phpoffice/phpspreadsheet": "^1.27",
         "simshaun/recurr": "^5.0",
+        "spatie/laravel-data": "^3.7",
         "spatie/laravel-onboard": "^2.4",
         "staudenmeir/belongs-to-through": "^2.5",
         "symfony/dom-crawler": "^6.0",
