@@ -87,7 +87,12 @@ export const formatMonth = (dateString: string | Date, type: MonthTypeFormat = M
 
 export const formatDate = (dateISOString: string, placeholder?: string, formatString = "MMM dd, yyyy") => {
     if (!dateISOString && placeholder) return placeholder;
-    return dateISOString && format(parseISO(dateISOString + "T00:00:00"), formatString);
+    try {
+        return dateISOString && format(parseISO(dateISOString + "T00:00:00"), formatString);
+    }
+    catch (e) {
+        return dateISOString;
+    }
 };
 
 

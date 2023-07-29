@@ -306,10 +306,11 @@ const isPickerOpen = ref(false);
             </div>
 
             <div v-if="isRecurrence">
-              <div class="flex">
+              <div class="flex space-x-2">
                 <AtField label="Repeat this transaction" class="w-full">
                   <NSelect
-                    v-model:value="schedule_settings.frequency"
+                    v-model:value="state.schedule_settings.frequency"
+                    size="large"
                     :options="[
                       {
                         value: 'WEEKLY',
@@ -322,17 +323,17 @@ const isPickerOpen = ref(false);
                     ]"
                   />
                 </AtField>
-                <AtField :label="frequencyLabel">
+                <AtField :label="state.frequencyLabel" class="capitalize">
                   <AtInput
                     type="number"
-                    v-model="schedule_settings.repeat_on_day_of_month"
+                    v-model="state.schedule_settings.repeat_on_day_of_month"
                   />
                 </AtField>
               </div>
               <div class="flex">
                 <AtField label="Ends" class="w-full">
-                  <n-select
-                    v-model:value="schedule_settings.end_type"
+                  <NSelect
+                    v-model:value="state.schedule_settings.end_type"
                     :options="[
                       {
                         value: 'NEVER',
@@ -349,11 +350,11 @@ const isPickerOpen = ref(false);
                     ]"
                   />
                 </AtField>
-                <AtField label="Date" v-if="schedule_settings.end_type == 'DATE'">
-                  <NDatePicker v-model:value="schedule_settings.end_date" size="lg" />
+                <AtField label="Date" v-if="state.schedule_settings.end_type == 'DATE'">
+                  <NDatePicker v-model:value="state.schedule_settings.end_date" size="lg" />
                 </AtField>
-                <AtField label="Instances" v-if="schedule_settings.end_type == 'COUNT'">
-                  <AtInput type="number" v-model="schedule_settings.count" />
+                <AtField label="Instances" v-if="state.schedule_settings.end_type == 'COUNT'">
+                  <AtInput type="number" v-model="state.schedule_settings.count" />
                 </AtField>
               </div>
             </div>
@@ -367,7 +368,7 @@ const isPickerOpen = ref(false);
     >
       <section class="flex">
         <LogerButtonTab class="hidden rounded bg-base"> Use template</LogerButtonTab>
-        <div class="flex hidden space-x-2">
+        <div class="flex space-x-2">
           <AtFieldCheck v-model="isRecurrence" label="Set recurrence" />
         </div>
       </section>

@@ -1,6 +1,6 @@
 <template>
   <div
-    class="transition text-slate-body group"
+    class="transition text-slate-body group capitalize"
     :class="[
       allowSelect &&
         'cursor-pointer hover:bg-base-lvl-3 border-2 border-transparent hover:border-primary',
@@ -33,7 +33,7 @@
               >({{ formatMoney(expenses, currencyCode) }})</span
             >
           </h4>
-          <small class="block text-sm"> 
+          <small class="block text-sm">
             {{ date ? formatDate(date) : valueSubtitle }}
         </small>
         </div>

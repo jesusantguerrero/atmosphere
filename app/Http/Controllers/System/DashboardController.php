@@ -18,7 +18,7 @@ class DashboardController {
         $endDate = $request->query('endDate', Carbon::now()->endOfMonth()->format('Y-m-d'));
         $team = $request->user()->currentTeam;
         $teamId = $request->user()->current_team_id;
-        $budget = BudgetMonth::getMonthAssignments($teamId, $startDate);
+        $budget = BudgetMonth::getMonthAssignmentTotal($teamId, $startDate);
         $transactionsTotal = TransactionService::getExpensesTotal($teamId, $startDate, $endDate);
         $plannedMeals = Planner::where([
             'team_id' => $teamId,
@@ -30,7 +30,7 @@ class DashboardController {
         return inertia('Dashboard', [
             "sectionTitle" => "Dashboard",
             "meals" => PlannedMealResource::collection($plannedMeals),
-            "budgetTotal" => $budget->sum('budgeted'),
+            "budgetTotal" => $budget,
             "transactionTotal" => $transactionsTotal,
             "expenses" => ReportService::generateCurrentPreviousReport($teamId, 'month', 1),
             "revenue" => ReportService::generateExpensesByPeriod($teamId),

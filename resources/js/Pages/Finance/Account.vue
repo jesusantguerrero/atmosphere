@@ -1,51 +1,3 @@
-<template>
-  <AppLayout @back="router.visit('/finance/transactions')" :show-back-button="true">
-    <template #header>
-      <FinanceSectionNav>
-        <template #actions>
-          <div class="flex items-center w-full space-x-2">
-            <LogerButton
-              variant="inverse"
-              class=""
-              v-for="(item, statusName) in transactionStatus"
-              :key="statusName"
-              @click="router.visit(item.value)"
-            >
-              {{ item.label }}
-            </LogerButton>
-            <AtDatePager
-              class="w-full h-12 border-none bg-base-lvl-1 text-body"
-              v-model:startDate="pageState.dates.startDate"
-              v-model:endDate="pageState.dates.endDate"
-              controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
-              next-mode="month"
-            />
-            <LogerButton variant="inverse"> Import Transactions </LogerButton>
-            <DraftButtons v-if="isDraft" />
-          </div>
-        </template>
-      </FinanceSectionNav>
-    </template>
-    <FinanceTemplate title="Transactions" :accounts="accounts">
-        <div class="flex space-x-4 mt-4">
-            <AtBackgroundIconCard class="w-full text-body-1 cursor-pointer bg-base-lvl-3"
-                v-for="stat in stats"
-                :value="formatMoney(stat)"
-            />
-        </div>
-      <Component
-        :is="listComponent"
-        :cols="tableAccountCols(props.accountId)"
-        :transactions="transactions"
-        :server-search-options="serverSearchOptions"
-        @findLinked="findLinked"
-        @removed="removeTransaction"
-        @edit="handleEdit"
-      />
-    </FinanceTemplate>
-  </AppLayout>
-</template>
-
 <script setup>
 import { AtBackgroundIconCard, AtDatePager } from "atmosphere-ui";
 import { computed, toRefs, provide } from "vue";
@@ -99,10 +51,14 @@ const props = defineProps({
   },
 });
 
-const { serverSearchOptions, accountId } = toRefs(props);
+const { serverSearchOptions, accountId, accounts } = toRefs(props);
 const { state: pageState } = useServerSearch(serverSearchOptions);
 
 provide("selectedAccountId", accountId);
+
+const selectedAccount = computed(() => {
+  return accounts.value.find((account) => account.id === accountId.value);
+});
 
 const context = useAppContextStore();
 const listComponent = computed(() => {
@@ -149,4 +105,67 @@ const transactionStatus = {
     value: "/finance/transactions?filter[status]=scheduled",
   },
 };
+
+const reconciliation = () => {
+  const current = prompt("Whats your current amount?");
+  const total = selectedAccount.value?.balance - current;
+  openTransactionModal({
+    mode: "Deposit",
+    transactionData: {
+      category_id: "",
+      total: total,
+    },
+  });
+};
 </script>
+
+<template>
+  <AppLayout @back="router.visit('/finance/transactions')" :show-back-button="true">
+    <template #header>
+      <FinanceSectionNav>
+        <template #actions>
+          <div class="flex items-center w-full space-x-2">
+            <LogerButton
+              variant="inverse"
+              class=""
+              v-for="(item, statusName) in transactionStatus"
+              :key="statusName"
+              @click="router.visit(item.value)"
+            >
+              {{ item.label }}
+            </LogerButton>
+            <AtDatePager
+              class="w-full h-12 border-none bg-base-lvl-1 text-body"
+              v-model:startDate="pageState.dates.startDate"
+              v-model:endDate="pageState.dates.endDate"
+              controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
+              next-mode="month"
+            />
+            <LogerButton variant="inverse" @click="reconciliation()">
+              Reconciliation
+            </LogerButton>
+            <DraftButtons v-if="isDraft" />
+          </div>
+        </template>
+      </FinanceSectionNav>
+    </template>
+    <FinanceTemplate title="Transactions" :accounts="accounts">
+      <div class="flex space-x-4 mt-4">
+        <AtBackgroundIconCard
+          class="w-full text-body-1 cursor-pointer bg-base-lvl-3"
+          v-for="stat in stats"
+          :value="formatMoney(stat)"
+        />
+      </div>
+      <Component
+        :is="listComponent"
+        :cols="tableAccountCols(props.accountId)"
+        :transactions="transactions"
+        :server-search-options="serverSearchOptions"
+        @findLinked="findLinked"
+        @removed="removeTransaction"
+        @edit="handleEdit"
+      />
+    </FinanceTemplate>
+  </AppLayout>
+</template>

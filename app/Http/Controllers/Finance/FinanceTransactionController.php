@@ -7,6 +7,7 @@ use App\Domains\Transaction\Actions\FindLinkedTransactions;
 use App\Domains\Transaction\Exports\TransactionExport;
 use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Transaction\Resources\TransactionResource;
+use App\Domains\Transaction\Services\PlannedTransactionService;
 use App\Domains\Transaction\Services\TransactionService;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
@@ -17,7 +18,7 @@ class FinanceTransactionController extends InertiaController {
     use Querify;
     const DateFormat = 'Y-m-d';
 
-    public function __construct(Transaction $transaction)
+    public function __construct(Transaction $transaction, private PlannedTransactionService $plannedService)
     {
         $this->model = $transaction;
         $this->templates = [
@@ -69,16 +70,7 @@ class FinanceTransactionController extends InertiaController {
     }
 
     public function addPlanned(Request $request) {
-        $postData = $this->getPostData($request);
-        $postData['status'] = Transaction::STATUS_PLANNED;
-        $transaction = Transaction::create($postData);
-        $transaction->createLines($postData['items'] ?? []);
-
-        Planner::create(array_merge($postData ,[
-            'dateable_type' => Transaction::class,
-            'dateable_id' => $transaction['id'],
-        ]));
-
+        $this->plannedService($this->getPostData($request));
         return redirect()->back();
     }
 
@@ -107,7 +99,6 @@ class FinanceTransactionController extends InertiaController {
 
         return redirect()->back();
     }
-
 
     public function export() {
         $dataToExport = new TransactionExport(Transaction::where('team_id', request()->user()->current_team_id)->get()->toArray());
