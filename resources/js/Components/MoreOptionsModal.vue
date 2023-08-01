@@ -9,16 +9,15 @@
   >
     <div class="pb-4 bg-base-lvl-3 sm:p-6 sm:pb-4 text-body flex-1">
       <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-        <header class="font-bold border-b pb-4 text-lg">{{ title }}</header>
+        <header class="font-bold border-b pb-4 text-lg">More Options</header>
 
         <div class="mt-2 space-y-2">
           <button
             v-ripple
             class="w-full py-2 font-bold capitalize hover:bg-base-lvl-2 overflow-hidden"
-            v-for="(action, actionName) in actions"
-            @click="$emit('action', actionName)"
+            v-for="option in options"
           >
-            {{ $t(action?.label) }}
+            {{ option }}
           </button>
         </div>
       </div>
@@ -61,12 +60,6 @@ const props = defineProps({
   },
   fullHeight: {
     type: Boolean,
-  },
-  title: {
-    type: String,
-  },
-  actions: {
-    type: Array,
   },
 });
 

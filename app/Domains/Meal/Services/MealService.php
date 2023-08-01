@@ -41,6 +41,14 @@ class MealService {
         }
     }
 
+    public function getMealSchedule(int $teamId) {
+        return Planner::where([
+            'team_id' => $teamId,
+            'date' => date('Y-m-d'),
+            'dateable_type' => MealPlan::class
+        ])->with(['dateable', 'dateable.mealType'])->get();
+    }
+
     public static function scheduleMealOnDate($mealId, $date, $payload) {
         $meal = Meal::find($mealId);
 
@@ -84,4 +92,6 @@ class MealService {
 
         return $ingredients;
     }
+
+
 }

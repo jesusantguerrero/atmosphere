@@ -17,7 +17,6 @@
     import AppUserMenu from '@/Components/AppUserMenu.vue'
     import MobileMenuBar from '@/Components/mobile/MobileMenuBar.vue'
     import TransactionAddButton from './TransactionAddButton.vue'
-    import TransactionQuickButton from './TransactionQuickButton.vue'
     import IconBack from '../icons/IconBack.vue'
     import WatchlistButton from './WatchlistButton.vue'
 
