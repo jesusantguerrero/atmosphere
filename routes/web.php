@@ -60,6 +60,7 @@ Route::resource('onboarding', OnboardingController::class)->middleware(['auth:sa
 Route::get('/services/accept-oauth', [ServiceController::class, 'acceptOauth']);
 
 Route::group([], app_path('/Domains/Housing/routes.php'));
+Route::group([], app_path('/Domains/LogerProfile/routes.php'));
 
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
     Route::get('/', fn () => redirect("/dashboard"));
