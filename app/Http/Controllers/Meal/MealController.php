@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Redirect;
 
 class MealController extends InertiaController
 {
-    public function __construct(Meal $meal)
+    public function __construct(Meal $meal, private MealService $mealService)
     {
         $this->model = $meal;
         $this->templates = [
@@ -40,15 +40,8 @@ class MealController extends InertiaController
         $endDate = $request->query('endDate', Carbon::now()->endOfMonth()->format('Y-m-d'));
         $teamId = $request->user()->current_team_id;
 
-        $plannedMeals = Planner::where([
-            'team_id' => $teamId,
-            'date' => date('Y-m-d')
-        ])->with(['dateable', 'dateable.mealType'])->get();
-
-        $weekPlan = Planner::whereTeamId($teamId)
-        ->inDateFrame($startDate, $endDate)
-        ->with(['dateable', 'dateable.mealType'])
-        ->get();
+        $plannedMeals = $this->mealService->getMealSchedule($teamId, date('Y-m-d'));
+        $weekPlan = $this->mealService->getMealScheduleInFrame($teamId, $startDate, $endDate);
 
         return inertia('Meals/Overview', [
             "sectionTitle" => "Meal overview",

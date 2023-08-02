@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\System;
 
-use App\Domains\AppCore\Models\Planner;
 use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Domains\Meal\Services\MealService;
@@ -10,7 +9,6 @@ use App\Domains\Transaction\Services\ReportService;
 use App\Domains\Transaction\Services\TransactionService;
 use App\Http\Resources\PlannedMealResource;
 use Carbon\Carbon;
-use Inertia\Inertia;
 
 class DashboardController {
     public function __construct(private MealService $mealService)
