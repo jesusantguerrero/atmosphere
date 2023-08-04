@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref } from 'vue';
 import { NDropdown } from 'naive-ui';
 import { router, useForm } from '@inertiajs/vue3';
 
