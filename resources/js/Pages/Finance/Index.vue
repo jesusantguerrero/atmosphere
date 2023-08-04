@@ -64,7 +64,9 @@
                       table-class="w-full p-2 overflow-auto text-sm rounded-t-lg shadow-md bg-base-lvl-3"
                       :transactions="planned"
                       :parser="plannedDBToTransaction"
+                      :allow-remove="true"
                       @edit="handleEdit"
+                      @removed="removeTransaction"
                     />
 
                     <template #action>
@@ -119,7 +121,8 @@ import {
     transactionDBToTransaction,
     plannedDBToTransaction,
     getVariances,
-useTransactionModal,
+    useTransactionModal,
+    removeTransaction
 } from "@/domains/transactions";
 import BudgetProgress from "@/Components/molecules/BudgetProgress.vue";
 import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";

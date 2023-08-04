@@ -47,6 +47,15 @@ export const useAppMenu = t => {
             isActiveFunction(url, currentPath) {
                 return /housing/.test(currentPath)
              }
+        },
+        {
+            icon: 'fas fa-home',
+            label: t('Profiles'),
+            to: '/loger-profiles',
+            as: Link,
+            isActiveFunction(url, currentPath) {
+                return /loger-profiles/.test(currentPath)
+             }
         }
     ].filter(item => !item.hidden);
 

@@ -41,6 +41,22 @@ class MealService {
         }
     }
 
+    public function getMealSchedule(int $teamId) {
+        return Planner::where([
+            'team_id' => $teamId,
+            'date' => date('Y-m-d'),
+            'dateable_type' => MealPlan::class
+        ])->with(['dateable', 'dateable.mealType'])->get();
+    }
+
+    public function getMealScheduleInFrame(int $teamId, $startDate, $endDate) {
+        return Planner::whereTeamId($teamId)
+        ->where(['dateable_type' => MealPlan::class])
+        ->inDateFrame($startDate, $endDate)
+        ->with(['dateable', 'dateable.mealType'])
+        ->get();
+    }
+
     public static function scheduleMealOnDate($mealId, $date, $payload) {
         $meal = Meal::find($mealId);
 
@@ -84,4 +100,6 @@ class MealService {
 
         return $ingredients;
     }
+
+
 }

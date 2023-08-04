@@ -2,16 +2,19 @@
 
 namespace App\Http\Controllers\System;
 
-use App\Domains\AppCore\Models\Planner;
 use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Budget\Services\BudgetCategoryService;
+use App\Domains\Meal\Services\MealService;
 use App\Domains\Transaction\Services\ReportService;
 use App\Domains\Transaction\Services\TransactionService;
 use App\Http\Resources\PlannedMealResource;
 use Carbon\Carbon;
-use Inertia\Inertia;
 
 class DashboardController {
+    public function __construct(private MealService $mealService)
+    {
+
+    }
     public function __invoke() {
         $request = request();
         $startDate = $request->query('startDate', Carbon::now()->startOfMonth()->format('Y-m-d'));
@@ -20,10 +23,7 @@ class DashboardController {
         $teamId = $request->user()->current_team_id;
         $budget = BudgetMonth::getMonthAssignmentTotal($teamId, $startDate);
         $transactionsTotal = TransactionService::getExpensesTotal($teamId, $startDate, $endDate);
-        $plannedMeals = Planner::where([
-            'team_id' => $teamId,
-            'date' => date('Y-m-d')
-        ])->with(['dateable', 'dateable.mealType'])->get();
+        $plannedMeals = $this->mealService->getMealSchedule($teamId);
 
         $nextPayments = BudgetCategoryService::getNextBudgetItems($teamId);
 
