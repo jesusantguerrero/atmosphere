@@ -2,6 +2,7 @@ import { initializeApp } from "firebase/app";
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
 import { getAnalytics } from "firebase/analytics";
 import CONFIG from "../config";
+import { reactive } from "vue";
 
 const firebaseConfig = {
     apiKey: CONFIG.FIREBASE_API_KEY,
@@ -14,10 +15,22 @@ const firebaseConfig = {
     appId: CONFIG.FIREBASE_APP_ID,
 }
 
-const app = initializeApp(firebaseConfig)
-const messaging = getMessaging(app)
-const analytics = getAnalytics(app);
+const firebase = reactive({
+    app: null,
+    messaging: null,
+    analytics: null
+})
 
+
+const init = () => {
+    try {
+       firebase.app = initializeApp(firebaseConfig)
+        firebase.messaging = getMessaging(firebase.app)
+        firebase.analytics = getAnalytics(firebase.app);
+    } catch (e) {
+
+    }
+}
 function requestPermission() {
     console.log('Requesting permission...');
     Notification.requestPermission().then((permission) => {
@@ -27,7 +40,7 @@ function requestPermission() {
 }
 
 export const useMessaging = (onTokenGenerated) => {
-    getToken(messaging, { vapidKey: CONFIG.FIREBASE_VAPID_KEY })
+    getToken(firebase.messaging, { vapidKey: CONFIG.FIREBASE_VAPID_KEY })
     .then((currentToken) => {
         if (currentToken) {
             // Send the token to your server and update the UI if necessary
@@ -40,12 +53,12 @@ export const useMessaging = (onTokenGenerated) => {
         // ...
     });
 
-    return messaging;
+    return firebase.messaging;
 }
 
 export const useOnMessage = (onMessaged) => {
-    console.log("Running" , messaging, app)
-    onMessage(messaging, (payload) => {
+    console.log("Running" , firebase.messaging, firebase.app)
+    onMessage(firebase.messaging, (payload) => {
         console.log(payload)
         onMessaged && onMessaged(payload)
     })
