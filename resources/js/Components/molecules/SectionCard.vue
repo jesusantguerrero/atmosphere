@@ -20,27 +20,21 @@
 </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import SectionTitle from "@/Components/atoms/SectionTitle.vue";
+// @ts-expect-error: no definitions
 import { AtButton } from "atmosphere-ui";
 
-defineProps({
-    classes: {
-        type: String,
-        default: 'mt-1'
-    },
-    cardClass: {
-        type: String,
-        default: 'mt-2 bg-base-lvl-3 border border-base rounded-lg shadow-md'
-    },
-    sectionTitle: {
-        type: String,
-        default: ''
-    },
-    action: {
-        type: [Object, null]
-    }
-})
+const {
+    classes = 'mt-1',
+    cardClass = 'mt-2 bg-base-lvl-3 border border-base rounded-lg shadow-md',
+    sectionTitle = ''
+} = defineProps<{
+    classes: string;
+    cardClass: string;
+    sectionTitle?: string;
+    action?: Record<string, any>|null
+}>()
 
 defineEmits(['action'])
 </script>
