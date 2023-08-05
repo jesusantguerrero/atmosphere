@@ -1,83 +1,86 @@
-<template>
-<div class="flex px-4 py-2 space-between">
-    <div class="flex items-center w-full space-x-4">
-        <button v-if="showDelete" class="text-gray-400 transition cursor-pointer hover:text-red-400 focus:outline-none" @click="$emit('deleted', $event)">
-            <i class="fa fa-trash"></i>
-        </button>
-        <div class="mr-4 cursor-grab">
-            <IconDrag class="handle" />
-        </div>
-        <div ref="inputContainer">
-            <h4 class="flex cursor-pointer" @click="$emit('open')">
-                <span class="items-center font-bold text-body-1">
-                    <span :style="{ color: item.color }">
-                        {{ item.name }}
-                    </span>
-                    <i class="ml-2 fa fa-cog" @click.stop="$emit('edit')"></i>
-                </span>
-                <PointAlert
-                    v-if="item.hasOverspent || item.hasOverAssigned || item.hasUnderFunded"
-                />
-            </h4>
-            <div class="flex items-center" title="Money Assigned">
-                <IconAllocated class="text-lg text-success" />
-                <span v-if="!isEditing" @click="toggleEditing" class="border border-transparent px-4 rounded-md hover:border-slate-400 cursor-pointer py-2.5 inline-block transition hover:text-primary">
-                    {{ formatMoney(budgeted) }}
-                </span>
-                <LogerInput v-model="budgeted" @blur="onAssignBudget" :number-format="true" v-else ref="input" />
-            </div>
-        </div>
-    </div>
-    <div class="flex items-center space-x-2 text-right flex-nowrap min-w-fit">
-        <BalanceInput
-            :value="item.available"
-            :formatter="formatMoney"
-            :category="item"
-        >
-            <template #suffix v-if="item.available">
-                <BudgetTransaction
-                    :data="item.budget"
-                    :category="item"
-                    icon-only
-                />
-            </template>
-        </BalanceInput>
-        <NDropdown trigger="click" :options="options" key-field="name" :on-select="handleOptions" >
-            <LogerButtonTab> <i class="fa fa-ellipsis-v"></i></LogerButtonTab>
-        </NDropdown>
-    </div>
-</div>
-</template>
-
-<script setup>
+<script setup lang="ts">
 import { format, startOfMonth } from 'date-fns';
 import { ref, nextTick, onMounted, inject } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { NDropdown } from 'naive-ui';
 
-import IconDrag from '../icons/IconDrag.vue';
+import IconDrag from '@/Components/icons/IconDrag.vue';
 import BalanceInput from "@/Components/atoms/BalanceInput.vue";
 import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
-import LogerInput from '../atoms/LogerInput.vue';
-import formatMoney from "@/utils/formatMoney";
-import autoAnimate from '@formkit/auto-animate';
-import BudgetTransaction from '../atoms/BudgetTransaction.vue';
-import IconAllocated from '../icons/IconAllocated.vue';
-import PointAlert from '../atoms/PointAlert.vue';
+import LogerInput from '@/Components/atoms/LogerInput.vue';
+import BudgetTransaction from '@/Components/atoms/BudgetTransaction.vue';
+import IconAllocated from '@/Components/icons/IconAllocated.vue';
+import PointAlert from '@/Components/atoms/PointAlert.vue';
 
-const props = defineProps({
-    item: {
-        type: Object,
-        required: true
-    },
-    showDelete: {
-        type: Boolean,
-        required: false,
-    }
-});
+import { BudgetItem } from '@/Modules/finance/budget';
+import autoAnimate from '@formkit/auto-animate';
+import formatMoney from "@/utils/formatMoney";
+import { getBudgetTarget } from '@/domains/budget/budgetTotals';
+import { computed } from 'vue';
+
+
+const props = defineProps<{
+    item: BudgetItem;
+    showDelete: boolean;
+}>();
 
 const emit = defineEmits(['removed', 'edit'])
 const budgeted = ref(props.item.budgeted);
+
+const budgetTarget = computed(() => {
+    return props.item.budget ? getBudgetTarget(props.item.budget) : 0;
+})
+
+const lastMonthAmount = computed(() => {
+    return props.item.budgets?.at(2)?.budgeted ?? 0
+})
+
+const assignOptions = computed(() => {
+    return [{
+        name: "setTarget",
+        label: `Set Target (${formatMoney(budgetTarget.value)})`,
+    },
+    {
+        name: "underFundedTarget",
+        label: `Set underfunded (${formatMoney(budgetTarget.value - props.item.available)})`,
+    },
+    {
+        name: "setLastMonth",
+        label: `Set last amount (${formatMoney(lastMonthAmount.value)})`,
+    },
+    {
+        name: "clear",
+        label: "Clear",
+    }]
+});
+
+const setAmount = (amount: number) => {
+    budgeted.value = amount;
+};
+
+const clear = () => {
+//   form.value.amount = 0;
+};
+
+const handleAssignOptions = (option: string) => {
+    const targetAmount = getBudgetTarget(props.item.budget);
+
+    switch (option) {
+    case "setTarget":
+      setAmount(targetAmount);
+      break;
+    case "underFundedTarget":
+      setAmount(targetAmount - props.item.available);
+      break;
+    case "setLastMonth":
+      setAmount(lastMonthAmount.value);
+      break;
+    default:
+      setAmount(0);
+      break;
+  }
+  onAssignBudget()
+};
 
 const onAssignBudget = () => {
     if (Number(props.item.budgeted) !== Number(budgeted.value)) {
@@ -162,3 +165,73 @@ onMounted(() => {
     autoAnimate(inputContainer.value)
 })
 </script>
+
+
+<template>
+<div class="flex px-4 py-2 space-between">
+    <div class="flex items-center w-full space-x-4">
+        <button v-if="showDelete" class="text-gray-400 transition cursor-pointer hover:text-red-400 focus:outline-none" @click="$emit('deleted', $event)">
+            <i class="fa fa-trash"></i>
+        </button>
+        <div class="mr-4 cursor-grab">
+            <IconDrag class="handle" />
+        </div>
+        <div ref="inputContainer">
+            <h4 class="flex cursor-pointer" @click="$emit('open')">
+                <span class="items-center font-bold text-body-1">
+                    <span :style="{ color: item.color }">
+                        {{ item.name }}
+                    </span>
+                    <i class="ml-2 fa fa-cog" @click.stop="$emit('edit')"></i>
+                </span>
+                <PointAlert
+                    v-if="item.hasOverspent || item.hasOverAssigned || item.hasUnderFunded"
+                />
+            </h4>
+            <div class="flex items-center" title="Money Assigned">
+                <LogerInput
+                    ref="input"
+                    class="opacity-100 cursor-text"
+                    v-model="budgeted"
+                    :number-format="true"
+                    @blur="onAssignBudget"
+                    @click="toggleEditing"
+                >
+                    <template #prefix>
+                        <IconAllocated class="text-lg text-success" />
+                    </template>
+                    <template #suffix>
+                        <NDropdown
+                            trigger="click"
+                            :options="assignOptions"
+                            key-field="name"
+                            :on-select="handleAssignOptions"
+                        >
+                            <LogerButtonTab> <i class="fa fa-ellipsis-v"></i></LogerButtonTab>
+                      </NDropdown>
+                    </template>
+                </LogerInput>
+            </div>
+        </div>
+    </div>
+    <div class="flex items-center space-x-2 text-right flex-nowrap min-w-fit">
+        <BalanceInput
+            :value="item.available"
+            :formatter="formatMoney"
+            :category="item"
+        >
+            <template #suffix v-if="item.available">
+                <BudgetTransaction
+                    :data="item.budget"
+                    :category="item"
+                    icon-only
+                />
+            </template>
+        </BalanceInput>
+        <NDropdown trigger="click" :options="options" key-field="name" :on-select="handleOptions" >
+            <LogerButtonTab> <i class="fa fa-ellipsis-v"></i></LogerButtonTab>
+        </NDropdown>
+    </div>
+</div>
+</template>
+

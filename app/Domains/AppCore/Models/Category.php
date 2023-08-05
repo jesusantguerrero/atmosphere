@@ -55,6 +55,10 @@ class Category extends CoreCategory
         return $this->hasMany(BudgetMonth::class)->orderBy('month', 'desc');
     }
 
+    public function lastMonthBudget() {
+        return $this->hasMany(BudgetMonth::class)->orderBy('month', 'desc')->limit(1);
+    }
+
     public function assignBudget(string $month, mixed $postData) {
         $amount = (double) $postData['budgeted'];
         $type = $postData['type'] ?? 'budgeted';
@@ -104,7 +108,7 @@ class Category extends CoreCategory
     /**
      * Get the current balance.
      *
-     * @return string
+     * @return Object
      */
     public function getMonthBalance($yearMonth)
     {

@@ -57,8 +57,7 @@ export const useMessaging = (onTokenGenerated) => {
 }
 
 export const useOnMessage = (onMessaged) => {
-    console.log("Running" , firebase.messaging, firebase.app)
-    onMessage(firebase.messaging, (payload) => {
+    firebase.messaging && onMessage(firebase.messaging, (payload) => {
         console.log(payload)
         onMessaged && onMessaged(payload)
     })

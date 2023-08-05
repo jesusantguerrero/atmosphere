@@ -66,7 +66,7 @@ class BudgetCategoryService {
             'name' => $month,
         ], [
             'user_id' => $category->user_id,
-            'activity' => $activity
+            'activity' => $activity ?? 0,
         ]);
 
         echo "{$category->name} updated to {$activity}" . PHP_EOL;
