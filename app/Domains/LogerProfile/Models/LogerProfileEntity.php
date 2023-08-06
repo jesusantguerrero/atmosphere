@@ -13,8 +13,8 @@ class LogerProfileEntity extends Model
         "team_id",
         "profile_id",
         "name",
-        "profile_entity_type",
-        "profile_entity_id",
+        "entity_type",
+        "entity_id",
     ];
 
     protected $with = ['entity'];

@@ -12,6 +12,10 @@ import { ref, onMounted, computed } from 'vue';
 import { router } from "@inertiajs/vue3";
 import OccurrenceCard from '@/Components/Modules/occurrence/OccurrenceCard.vue';
 import { IOccurrenceCheck } from '@/Components/Modules/occurrence/models';
+import WidgetTitleCard from '@/Components/molecules/WidgetTitleCard.vue';
+import { ITransaction } from '@/Components/Modules/finance/models/transactions';
+import TransactionsTable from '@/Components/organisms/TransactionsTable.vue';
+import { transactionDBToTransaction } from '@/domains/transactions';
 
 
 const { entities } = defineProps<{
@@ -51,8 +55,16 @@ onMounted(() => {
 
 const occurrenceChecks = computed(() => {
     return entities.reduce((checks: IOccurrenceCheck[], entity: any) => {
-        if (entity.entity.last_date) {
+        if (entity.entity?.last_date) {
             checks.push(entity.entity as IOccurrenceCheck);
+        }
+        return checks;
+    }, []);
+})
+const transactions = computed(() => {
+    return entities.reduce((checks: ITransaction[], entity: any) => {
+        if (entity.entity?.transactions && entity.entity) {
+            checks.push(...entity.entity.transactions);
         }
         return checks;
     }, []);
@@ -79,11 +91,26 @@ const occurrenceChecks = computed(() => {
             <WelcomeCard class="mt-5" :message="profile.name">
                 <section class="flex flex-col items-center mx-auto ">
                     <img :src="profile.image_url" />
-                    <section>
+                    <section class="w-full">
                         <p v-if="areEntitiesLoading"> ...loading</p>
-                        <p v-else>
-                            <OccurrenceCard :checks="occurrenceChecks" />
-                        </p>
+                        <section v-else class="w-full">
+                            <OccurrenceCard :checks="occurrenceChecks" class="mx-auto" />
+                            <WidgetTitleCard title="Transaction history" class="w-full">
+                                <TransactionsTable
+                                    class="w-full"
+                                    table-class="overflow-auto text-sm"
+                                    :transactions="transactions"
+                                    :parser="transactionDBToTransaction"
+                                    @edit="''"
+                                />
+
+                                <template #action>
+                                    <button class="text-primary" @click="''">
+                                        <i class="fa fa-plus"></i> Add transaction
+                                    </button>
+                                </template>
+                            </WidgetTitleCard>
+                        </section>
                     </section>
                 </section>
             </WelcomeCard>

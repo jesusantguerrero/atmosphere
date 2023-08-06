@@ -1,10 +1,27 @@
+
+<script setup lang="ts">
+// @ts-expect-error: no definitions
+import { AtButton } from "atmosphere-ui";
+
+defineProps({
+    title: {
+        type: String,
+        required: true
+    },
+    action: {
+        type: Object,
+    }
+})
+</script>
+
+
 <template>
     <div class="px-5 py-3 transition border divide-y rounded-lg divide-base border-base bg-base-lvl-3" :class="cardShadow">
         <div class="flex items-center justify-between pb-2">
             <h1 class="font-bold text-body">
                 <slot name="title"> {{ title }}</slot>
             </h1>
-            <div class="space-x-2 flex items-center">
+            <div class="flex items-center space-x-2">
                 <slot name="beforeActions" />
 
                 <slot name="action" v-if="action || $slots.action">
@@ -23,17 +40,3 @@
         </div>
     </div>
 </template>
-
-<script setup>
-import { AtButton } from "atmosphere-ui";
-
-const props = defineProps({
-    title: {
-        type: String,
-        required: true
-    },
-    action: {
-        type: Object,
-    }
-})
-</script>

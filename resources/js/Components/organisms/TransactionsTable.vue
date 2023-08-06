@@ -7,6 +7,7 @@ import TransactionCard from "@/Components/molecules/TransactionCard.vue";
 import SectionCard from '@/Components/molecules/SectionCard.vue';
 
 import formatMoney from "@/utils/formatMoney";
+import { ITransaction } from '../Modules/finance/models/transactions';
 
 const {
     classes = "mt-1",
@@ -35,11 +36,6 @@ const transactionsParsed = computed(() => {
 
 const selectedItems: number[] = reactive<number[]>([]);
 
-interface ITransaction {
-    id: number;
-    title: string;
-    currencyCode: string;
-}
 const isSelected = (transaction: ITransaction) => {
     // @ts-expect-error: includes inst available they said
     return selectedItems?.includes(transaction.id || transaction.title);

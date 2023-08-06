@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Domains\AppCore\Models\Category;
 use App\Domains\Housing\Models\OccurrenceCheck;
 use App\Domains\LogerProfile\Data\ProfileEntityData;
 use App\Domains\LogerProfile\Services\LogerProfileService;
@@ -35,9 +36,9 @@ class TestProfileEntity extends Command
                 2,
                 2,
                 2,
-                OccurrenceCheck::class,
-                4,
-                "Gasolina",
+                Category::class,
+                205,
+                "Car maintenance",
                 null,
                 null
             )
