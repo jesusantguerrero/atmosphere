@@ -1,3 +1,71 @@
+<script setup lang="ts">
+import { ref, inject } from "vue";
+import { AtButton, AtField } from "atmosphere-ui";
+import { useForm } from "@inertiajs/vue3";
+import { NSelect } from "naive-ui";
+
+import Modal from "@/Components/atoms/Modal.vue";
+import TabSelector from "./TabSelector.vue";
+import LogerButton from "./atoms/LogerButton.vue";
+import LogerInput from "./atoms/LogerInput.vue";
+import LogerApiSimpleSelect from "./organisms/LogerApiSimpleSelect.vue";
+
+defineProps({
+  show: {
+    default: false,
+  },
+  maxWidth: {
+    default: "2xl",
+  },
+  closeable: {
+    default: true,
+  },
+});
+
+const emit = defineEmits(["update:show"]);
+
+const form = useForm({
+  name: "",
+  type: "",
+  input: [],
+});
+
+const emitClose = () => {
+  emit("update:show", false);
+};
+
+const submit = () => {
+  form.submit("post", route("watchlist.store"), {
+    onSuccess: emitClose,
+  });
+};
+
+const options = [
+  {
+    value: "categories",
+    label: "Category",
+  },
+  {
+    value: "groups",
+    label: "Category Group",
+  },
+  {
+    value: "payees",
+    label: "Payee",
+  },
+  {
+    value: "tags",
+    label: "Tag",
+  },
+];
+
+const categoryOptions = inject("categoryOptions", []);
+
+const isType = (typeName) => {
+  return form.type == typeName;
+};
+</script>
+
 <template>
   <modal
     :show="show"
@@ -70,72 +138,4 @@
   </modal>
 </template>
 
-<script setup>
-import { ref, inject } from "vue";
-import { AtButton, AtField } from "atmosphere-ui";
-import { useForm } from "@inertiajs/vue3";
-import { NSelect } from "naive-ui";
 
-import Modal from "@/Components/atoms/Modal.vue";
-import ImportHolder from "@/Components/organisms/ImportHolder.vue";
-import TabSelector from "./TabSelector.vue";
-import LogerButtonTab from "./atoms/LogerButtonTab.vue";
-import LogerButton from "./atoms/LogerButton.vue";
-import LogerInput from "./atoms/LogerInput.vue";
-import LogerApiSimpleSelect from "./organisms/LogerApiSimpleSelect.vue";
-
-defineProps({
-  show: {
-    default: false,
-  },
-  maxWidth: {
-    default: "2xl",
-  },
-  closeable: {
-    default: true,
-  },
-});
-
-const emit = defineEmits(["update:show"]);
-
-const form = useForm({
-  name: "",
-  type: "",
-  input: [],
-});
-
-const emitClose = () => {
-  emit("update:show", false);
-};
-
-const submit = () => {
-  form.submit("post", route("watchlist.store"), {
-    onSuccess: emitClose,
-  });
-};
-
-const options = [
-  {
-    value: "categories",
-    label: "Category",
-  },
-  {
-    value: "groups",
-    label: "Category Group",
-  },
-  {
-    value: "payees",
-    label: "Payee",
-  },
-  {
-    value: "tags",
-    label: "Tag",
-  },
-];
-
-const categoryOptions = inject("categoryOptions", []);
-
-const isType = (typeName) => {
-  return form.type == typeName;
-};
-</script>
