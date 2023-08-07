@@ -30,7 +30,10 @@ class Category extends CoreCategory
 
     public function transactions()
     {
-        return $this->hasMany(Transaction::class, 'category_id');
+        return $this->hasMany(Transaction::class, 'category_id')
+        ->orderBy('date', 'desc')
+        ->verified()
+        ->limit(10);
     }
 
     public function transactionLines()

@@ -1,29 +1,14 @@
 <script setup lang="ts">
-// @ts-expect-error: no definitions
-import { AtButton } from "atmosphere-ui";
-import { router } from "@inertiajs/vue3";
-import {inject } from "vue";
+import { inject } from "vue";
 
-defineProps({
-  username: {
-    type: String,
-    required: true,
-  },
-  budget: {
-    type: Number,
-  },
-  expenses: {
-    type: [Number, String],
-  },
-  message: {
-    default: "Welcome to Loger",
-  },
-});
+const {
+    message = 'Welcome to Loger'
+ } = defineProps<{
+    username?: string;
+    message: string;
+}>();
 
 const cardShadow = inject("cardShadow", '')
-
-// @ts-expect-error: error
-const goToIndex = () => router.visit(route('budgets.index'))
 </script>
 
 <template>
@@ -36,14 +21,7 @@ const goToIndex = () => router.visit(route('budgets.index'))
         {{ message }} <span class="text-primary">{{ username }}</span>
       </h1>
       <div class="space-x-2">
-        <AtButton
-          class="text-sm text-primary"
-          rounded
-          @click="goToIndex"
-        >
-          <i class="fa fa-wallet"></i>
-          Edit budget
-        </AtButton>
+        <slot name="action" />
       </div>
     </div>
     <slot></slot>

@@ -1,6 +1,7 @@
 <?php
 
 use App\Domains\LogerProfile\Http\Controllers\LogerProfileController;
+use App\Domains\LogerProfile\Http\Controllers\LogerProfileEntityController;
 use Illuminate\Support\Facades\Route;
 
 

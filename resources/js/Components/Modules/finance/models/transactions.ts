@@ -3,3 +3,9 @@ export interface ITransaction {
     title: string;
     currencyCode: string;
 }
+
+export interface ICategory {
+    id?: number;
+    name: string;
+    color: string;
+}

@@ -21,7 +21,7 @@ class LogerProfileEntityController extends Controller
 
     public function store(int $profileId, LogerProfileService $profileService) {
         $profileService->addProfileEntity(
-            ProfileEntityData::from(
+            ProfileEntityData::forVue(
                 array_merge($this->getPostData(), [
                     "profile_id" => $profileId
                 ])

@@ -1,33 +1,27 @@
 <script setup lang="ts">
-import { ref, inject } from "vue";
+import { inject } from "vue";
 import { AtButton, AtField } from "atmosphere-ui";
 import { useForm } from "@inertiajs/vue3";
 import { NSelect } from "naive-ui";
 
 import Modal from "@/Components/atoms/Modal.vue";
-import TabSelector from "./TabSelector.vue";
 import LogerButton from "./atoms/LogerButton.vue";
 import LogerInput from "./atoms/LogerInput.vue";
 import LogerApiSimpleSelect from "./organisms/LogerApiSimpleSelect.vue";
 
-defineProps({
-  show: {
-    default: false,
-  },
-  maxWidth: {
-    default: "2xl",
-  },
-  closeable: {
-    default: true,
-  },
-});
+const { maxWidth = '2xl', closeable = true, profileId }  = defineProps<{
+  show: boolean;
+  maxWidth: string;
+  closeable: boolean;
+  profileId: number;
+}>();
 
 const emit = defineEmits(["update:show"]);
 
 const form = useForm({
   name: "",
-  type: "",
-  input: [],
+  entity_type: "",
+  entity_id: null,
 });
 
 const emitClose = () => {
@@ -35,14 +29,16 @@ const emitClose = () => {
 };
 
 const submit = () => {
-  form.submit("post", route("watchlist.store"), {
+  form.transform((data) => ({
+    ...data
+  })).submit("post", `/loger-profiles/${profileId}/entities`, {
     onSuccess: emitClose,
   });
 };
 
 const options = [
   {
-    value: "categories",
+    value: "category",
     label: "Category",
   },
   {
@@ -61,8 +57,8 @@ const options = [
 
 const categoryOptions = inject("categoryOptions", []);
 
-const isType = (typeName) => {
-  return form.type == typeName;
+const isType = (typeName: string) => {
+  return form.entity_type == typeName;
 };
 </script>
 
@@ -75,37 +71,26 @@ const isType = (typeName) => {
     @close="emitClose"
   >
     <header class="flex items-center px-2 py-2 pl-6 font-bold bg-base-lvl-3">
-      <button class="pl-0" @click="form.type = ''" v-if="form.type">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          xmlns:xlink="http://www.w3.org/1999/xlink"
-          aria-hidden="true"
-          role="img"
-          class="iconify iconify--ic"
-          width="32"
-          height="32"
-          preserveAspectRatio="xMidYMid meet"
-          viewBox="0 0 24 24"
-        >
-          <path
-            fill="currentColor"
-            d="M14.71 6.71a.996.996 0 0 0-1.41 0L8.71 11.3a.996.996 0 0 0 0 1.41l4.59 4.59a.996.996 0 1 0 1.41-1.41L10.83 12l3.88-3.88c.39-.39.38-1.03 0-1.41z"
-          ></path>
-        </svg>
-      </button>
-      <span class="py-4"> Create Watchlist </span>
+      <span class="py-4"> Link entity </span>
     </header>
 
     <section class="pb-4 bg-base-lvl-3 sm:p-6 sm:pb-4 text-body">
-      <TabSelector v-model="form.type" :options="options" v-if="!form.type" />
-      <section v-else ref="importHolderRef">
-        <AtField label="Name">
-          <LogerInput v-model="form.name" />
-        </AtField>
-
+      <AtField label="Name">
+        <LogerInput v-model="form.name" />
+      </AtField>
+      <Multiselect
+            v-model="form.Type"
+            @update:model-value="form.entity_type = $event.value"
+            :options="options"
+            placeholder="Type to search"
+            track-by="value"
+            label="label"
+            select-label=""
+       />
+      <section>
         <AtField label="Payees" v-if="isType('payees')">
           <LogerApiSimpleSelect
-            v-model="form.input"
+            v-model="form.entity_id"
             v-model:label="form.payee_label"
             :multiple="true"
             custom-label="name"
@@ -115,13 +100,12 @@ const isType = (typeName) => {
           />
         </AtField>
 
-        <AtField label="Categories" v-if="isType('categories')">
+        <AtField label="Category" v-if="isType('category')">
           <NSelect
             filterable
             clearable
             size="large"
-            :multiple="true"
-            v-model:value="form.input"
+            v-model:value="form.entity_id"
             :default-expand-all="true"
             :options="categoryOptions"
           />
@@ -131,11 +115,9 @@ const isType = (typeName) => {
 
     <footer class="flex justify-end w-full px-6 py-4 space-x-3 text-right bg-base">
       <AtButton type="secondary" @click="close" rounded class="h-10"> Cancel </AtButton>
-      <LogerButton variant="inverse" @click="submit" :disabled="!form.type">
+      <LogerButton variant="inverse" @click="submit" :disabled="!form.entity_type">
         Create
       </LogerButton>
     </footer>
   </modal>
 </template>
-
-

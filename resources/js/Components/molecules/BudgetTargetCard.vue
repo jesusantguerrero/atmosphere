@@ -5,7 +5,7 @@
             Target:
             <p> {{ item.target_type }} </p>
         </h4>
-        <button class="text-secondary" @click="$emit('edit')">
+        <button class="text-secondary" @click="$emit('edit')" v-if="editable">
             Edit target
         </button>
     </header>
@@ -46,28 +46,23 @@
 </template>
 
 <script setup lang="ts">
-import { useDatePager } from "vueuse-temporals";
-
 import { isSpendingTarget } from "@/domains/budget";
-import { FREQUENCY_TYPE, formatDate, formatMoney, formatMonth, toOrdinals } from "@/utils";
-import { differenceInCalendarMonths, format, parseISO } from "date-fns";
+import { formatDate, formatMoney, formatMonth, toOrdinals } from "@/utils";
+import { differenceInCalendarMonths, parseISO } from "date-fns";
 import { computed } from "vue";
 import BudgetProgress from "./BudgetProgress.vue";
 import MoneyPresenter from "./MoneyPresenter.vue";
 import BudgetMoneyLine from "./BudgetMoneyLine.vue";
 import { getBudgetTarget } from "@/domains/budget/budgetTotals";
+import { ICategory } from "../Modules/finance/models/transactions";
+import { BudgetTarget } from "../Modules/finance/models/budget";
 // import IconPicker from '../IconPicker.vue';
 
-const props = defineProps({
-  category: {
-    type: Object,
-    required: true,
-  },
-  item: {
-    type: Object,
-    default: () => {},
-  },
-});
+const props = defineProps<{
+    category: ICategory;
+    item: BudgetTarget;
+    editable: boolean;
+}>();
 
 defineEmits(["edit"]);
 
