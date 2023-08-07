@@ -1,3 +1,20 @@
+<script lang="ts" setup>
+
+import AppLayout from '@/Components/templates/AppLayout.vue';
+import HouseSectionNav from '@/Components/templates/HouseSectionNav.vue';
+import LogerButton from '@/Components/atoms/LogerButton.vue';
+import WelcomeCard from '@/Components/organisms/WelcomeCard.vue';
+import OccurrenceCard from '@/Components/Modules/occurrence/OccurrenceCard.vue';
+import CategoryItem from '@/Components/mobile/CategoryItem.vue';
+import SectionTitle from '@/Components/atoms/SectionTitle.vue';
+import MealTypeCell from '@/Components/molecules/MealTypeCell.vue';
+import ChoreWidget from '@/Components/widgets/ChoreWidget.vue';
+
+defineProps<{
+    checks: IOccurrenceCheck
+}>()
+</script>
+
 <template>
     <AppLayout title="Home Projects">
         <template #header>
@@ -39,20 +56,7 @@
         </div>
       </div>
       <div class="py-6 space-y-4 md:w-3/12">
-        <div class="px-2 py-2 bg-white rounded-md">
-          <SectionTitle type="secondary" class="text-center font-bold">
-            Occurrence Checks
-          </SectionTitle>
-          <section class="flex mt-4">
-            <CategoryItem
-              class="capitalize"
-              wrap
-              v-for="occurrence in checks"
-              :label="occurrence.name"
-              :value="getDayDiff(occurrence.last_date)"
-            />
-          </section>
-        </div>
+        <OccurrenceCard :checks="checks" />
         <ChoreWidget :chores="[]">
           <div class="mt-2">
             <div
@@ -81,25 +85,3 @@
     </div>
     </AppLayout>
 </template>
-
-<script lang="ts" setup>
-
-import AppLayout from '@/Components/templates/AppLayout.vue';
-import HouseSectionNav from '@/Components/templates/HouseSectionNav.vue';
-import LogerButton from '@/Components/atoms/LogerButton.vue';
-import WelcomeCard from '@/Components/organisms/WelcomeCard.vue';
-import CategoryItem from '@/Components/mobile/CategoryItem.vue';
-import { differenceInCalendarDays, parseISO } from 'date-fns';
-import SectionTitle from '@/Components/atoms/SectionTitle.vue';
-import MealWidget from '@/Components/widgets/MealWidget.vue';
-import MealTypeCell from '@/Components/molecules/MealTypeCell.vue';
-import ChoreWidget from '@/Components/widgets/ChoreWidget.vue';
-
-defineProps<{
-    checks: Record<string, string>
-}>()
-
-const getDayDiff = (lastDay: string) => {
-    return differenceInCalendarDays(new Date(), parseISO(lastDay));
-}
-</script>

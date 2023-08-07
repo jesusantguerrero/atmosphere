@@ -65,6 +65,7 @@
                       :transactions="planned"
                       :parser="plannedDBToTransaction"
                       :allow-remove="true"
+                      :hide-accounts="true"
                       @edit="handleEdit"
                       @removed="removeTransaction"
                     />

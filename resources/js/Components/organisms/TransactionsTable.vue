@@ -1,3 +1,83 @@
+<script setup lang="ts">
+import { computed, reactive } from 'vue';
+// @ts-expect-error: no definition
+import ExactMath from "exact-math";
+
+import TransactionCard from "@/Components/molecules/TransactionCard.vue";
+import SectionCard from '@/Components/molecules/SectionCard.vue';
+
+import formatMoney from "@/utils/formatMoney";
+import { ITransaction } from '../Modules/finance/models/transactions';
+
+const {
+    classes = "mt-1",
+    tableClass = "mt-2 bg-base-lvl-1 border border-base-deep-1 rounded-lg shadow-md",
+    transactions = [],
+    parser = null,
+    allowSelect
+} = defineProps<{
+    classes: string;
+    tableClass: string;
+    tableLabel?: string;
+    transactions: any[];
+    parser: Function | null;
+    showSum?: boolean;
+    allowMarkAsPaid: boolean;
+    allowMarkAsApproved: boolean;
+    allowRemove: boolean;
+    allowSelect: boolean;
+    allowEdit: boolean
+}>()
+
+const emit = defineEmits(['update:selected', 'edit', 'paid-clicked', 'approved', 'removed']);
+const transactionsParsed = computed(() => {
+    return !parser ? transactions : parser(transactions);
+})
+
+const selectedItems: number[] = reactive<number[]>([]);
+
+const isSelected = (transaction: ITransaction) => {
+    // @ts-expect-error: includes inst available they said
+    return selectedItems?.includes(transaction.id || transaction.title);
+}
+
+const handleSelect = (transaction: ITransaction) => {
+    if (allowSelect) {
+        const id: number| string = transaction.id || transaction.title;
+        if (isSelected(transaction)) {
+            selectedItems.splice(selectedItems.indexOf(id), 1);
+        } else {
+            selectedItems.push(id);
+        }
+    }
+    emit('update:selected', selectedItems);
+}
+
+const selectedSum = computed(() => {
+    return calculateSum(selectedItems as ITransaction);
+})
+
+const totalSum = computed(() => {
+    return calculateSum(transactionsParsed.value.map((transaction: ITransaction) => transaction.id));
+})
+
+const calculateSum = (items: ITransaction[]) => {
+     return items.reduce((sum: Record<string, number>, id: number|string) => {
+        const transaction = transactionsParsed.value.find(
+            (transaction: ITransaction) => transaction.id === id || transaction.title === id);
+            if (transaction) {
+            if (sum[transaction.currencyCode]) {
+                sum[transaction.currencyCode] = ExactMath.add(sum[transaction.currencyCode],  transaction.value);
+            } else {
+                sum[transaction.currencyCode] = ExactMath.add(0, transaction.value);
+            }
+        }
+        return sum;
+    }, {
+
+    });
+}
+</script>
 
 <template>
 <SectionCard :classes="classes" :section-title="tableLabel" :card-class="tableClass">
@@ -45,106 +125,4 @@
 </SectionCard>
 </template>
 
-<script setup>
-import { computed, reactive } from 'vue';
-import ExactMath from "exact-math";
-import formatMoney from "@/utils/formatMoney";
-import TransactionCard from "../molecules/TransactionCard.vue";
-import SectionCard from '../molecules/SectionCard.vue';
 
-const props = defineProps({
-    classes: {
-        type: String,
-        default: 'mt-1'
-    },
-    tableClass: {
-        type: String,
-        default: 'mt-2 bg-base-lvl-1 border border-base-deep-1 rounded-lg shadow-md'
-    },
-    tableLabel: {
-        type: String,
-        default: ''
-    },
-    transactions: {
-        type: Array,
-        default() {
-            return []
-        }
-    },
-    parser: {
-        type: [Function, null],
-        default: null
-    },
-    showSum: {
-        type: Boolean,
-        default: false
-    },
-    allowMarkAsPaid: {
-        type: Boolean,
-        default: false
-    },
-    allowMarkAsApproved: {
-        type: Boolean,
-        default: false
-    },
-    allowRemove: {
-        type: Boolean,
-        default: false
-    },
-    allowSelect: {
-        type: Boolean,
-        default: false
-    },
-    allowEdit: {
-        type: Boolean,
-        default: false
-    }
-})
-
-const emit = defineEmits(['update:selected', 'edit', 'paid-clicked', 'approved', 'removed']);
-const transactionsParsed = computed(() => {
-    return !props.parser ? props.transactions : props.parser(props.transactions);
-})
-
-const selectedItems = reactive([]);
-
-const isSelected = (transaction) => {
-    return selectedItems.includes(transaction.id || transaction.title);
-}
-
-const handleSelect = (transaction) => {
-    if (props.allowSelect) {
-        const id = transaction.id || transaction.title;
-        if (isSelected(transaction)) {
-            selectedItems.splice(selectedItems.indexOf(id), 1);
-        } else {
-            selectedItems.push(id);
-        }
-    }
-    emit('update:selected', selectedItems);
-}
-
-const selectedSum = computed(() => {
-    return calculateSum(selectedItems);
-})
-
-const totalSum = computed(() => {
-    return calculateSum(transactionsParsed.value.map(transaction => transaction.id));
-})
-
-const calculateSum = (items) => {
-     return items.reduce((sum, id) => {
-        const transaction = transactionsParsed.value.find(transaction => transaction.id === id || transaction.title === id);
-        if (transaction) {
-            if (sum[transaction.currencyCode]) {
-                sum[transaction.currencyCode] = ExactMath.add(sum[transaction.currencyCode],  transaction.value);
-            } else {
-                sum[transaction.currencyCode] = ExactMath.add(0, transaction.value);
-            }
-        }
-        return sum;
-    }, {
-
-    });
-}
-</script>

@@ -5,24 +5,24 @@
             Target:
             <p> {{ item.target_type }} </p>
         </h4>
-        <button class="text-secondary" @click="$emit('edit')">
+        <button class="text-secondary" @click="$emit('edit')" v-if="editable">
             Edit target
         </button>
     </header>
     <BudgetProgress
         class="h-1.5 rounded-sm"
-        :goal="item.amount"
+        :goal="targetAmount"
         :current="currentAmount"
         :progress-class="[progressClass, 'bg-secondary/5']"
         :show-labels="false"
     >
     <template #before>
-        <header class="mb-1 font-bold">{{  formatMoney(item.amount) }} by {{ targetDate }}</header>
+        <header class="mb-1 font-bold">{{ formatMoney(targetAmount) }} by {{ targetDate }}</header>
     </template>
 
     <template v-slot:after="{ progress }">
         <div class="flex justify-between w-full mt-1">
-            <span>{{ progress}}% Funded </span>
+            <span>{{ progress}}% Funded ({{ formatMoney(currentAmount) }})</span>
             <span> Started {{ formatMonth(item.created_at, 'MMMM, yyyy') }}</span>
         </div>
     </template>
@@ -45,28 +45,26 @@
 </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { isSpendingTarget } from "@/domains/budget";
 import { formatDate, formatMoney, formatMonth, toOrdinals } from "@/utils";
-import { differenceInCalendarMonths, format, parseISO } from "date-fns";
+import { differenceInCalendarMonths, parseISO } from "date-fns";
 import { computed } from "vue";
 import BudgetProgress from "./BudgetProgress.vue";
 import MoneyPresenter from "./MoneyPresenter.vue";
 import BudgetMoneyLine from "./BudgetMoneyLine.vue";
+import { getBudgetTarget } from "@/domains/budget/budgetTotals";
+import { ICategory } from "../Modules/finance/models/transactions";
+import { BudgetTarget } from "../Modules/finance/models/budget";
 // import IconPicker from '../IconPicker.vue';
 
-const props = defineProps({
-  category: {
-    type: Object,
-    required: true,
-  },
-  item: {
-    type: Object,
-    default: () => {},
-  },
-});
+const props = defineProps<{
+    category: ICategory;
+    item: BudgetTarget;
+    editable: boolean;
+}>();
 
-const emit = defineEmits(["edit"]);
+defineEmits(["edit"]);
 
 const targetDate = computed(() => {
     if (props.item.frequency_month_date == -1) {
@@ -92,6 +90,7 @@ const monthlyContribution = computed(() => {
 const currentAmount = computed(() => {
     if (isSpendingTarget(props.item)) {
         const { available, budgeted } = props.category;
+        console.log(available, budgeted, props.item, props.category)
         return available > budgeted ? available : budgeted
     } else {
         return props.category.available;
@@ -112,4 +111,8 @@ const dividerClass = computed(() => {
 })
 
 const fundedLabel = computed(() => isSpendingTarget(props.item) ? 'Funded' : 'Saved')
+
+const targetAmount = computed(() => {
+    return getBudgetTarget(props.item)
+})
 </script>

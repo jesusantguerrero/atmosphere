@@ -1,12 +1,6 @@
-<template>
- <component :is="as" class="flex items-center font-bold transition border rounded-md min-w-max" :class="[typeClasses]">
-    <slot />
- </component>
-</template>
-
-
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue';
+// @ts-expect-error: no definitions
 import { AtButton } from "atmosphere-ui";
 
 const variants = {
@@ -31,4 +25,11 @@ const typeClasses = computed(() => {
     return variants[props.variant] || variants.primary
 })
 </script>
+
+<template>
+ <component :is="as" class="flex items-center font-bold transition border rounded-md min-w-max" :class="[typeClasses]">
+    <slot />
+ </component>
+</template>
+
 

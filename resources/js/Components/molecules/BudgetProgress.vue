@@ -1,26 +1,5 @@
 
-<template>
-<div>
-    <slot  name="before" :progress="progress" />
-</div>
-
-<div v-bind="$attrs" class="relative w-full overflow-hidden" :class="progressClass[1]">
-    <div class="absolute z-20 flex items-center justify-center w-full h-full">
-        <slot>
-            <div v-if="showLabels">
-                {{ progress }} % of {{ formatMoney(goal) }}
-            </div>
-        </slot>
-    </div>
-    <div class="absolute z-10 flex w-full h-full" :class="progressClass[0]" :style="progressStyle" />
-</div>
-
-<div>
-    <slot  name="after" :progress="progress" />
-</div>
-</template>
-
-<script setup>
+<script setup lang="ts">
 import formatMoney from '@/utils/formatMoney';
 import { computed } from 'vue';
 
@@ -46,8 +25,9 @@ const props = defineProps({
 })
 
 const progress = computed(() => {
-    let progressValue = ((props.current || 0) / (props.goal || 0) || 0) * 100;
-  progressValue = Number.isFinite(progressValue) ? progressValue : 0;
+    let progressValue = ((parseFloat(props.current || 0)) / (parseFloat(props.goal || 0)) || 0) * 100;
+    progressValue = Number.isFinite(progressValue) ? progressValue : 0;
+
   return Math.round((progressValue + Number.EPSILON) * 100) / 100;
 })
 
@@ -57,3 +37,25 @@ const progressStyle = computed(() => {
     }
 })
 </script>
+
+
+<template>
+<div>
+    <slot  name="before" :progress="progress" />
+</div>
+
+<div v-bind="$attrs" class="relative w-full overflow-hidden" :class="progressClass[1]">
+    <div class="absolute z-20 flex items-center justify-center w-full h-full">
+        <slot>
+            <div v-if="showLabels">
+                {{ progress }} % of {{ formatMoney(goal) }}
+            </div>
+        </slot>
+    </div>
+    <div class="absolute z-10 flex w-full h-full" :class="progressClass[0]" :style="progressStyle" />
+</div>
+
+<div>
+    <slot  name="after" :progress="progress" />
+</div>
+</template>

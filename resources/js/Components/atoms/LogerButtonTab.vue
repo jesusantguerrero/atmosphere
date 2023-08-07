@@ -1,18 +1,5 @@
-<template>
-  <button
-    type="button"
-    class="inline-flex items-center px-2 py-2 text-sm font-medium leading-4 text-body transition border border-transparent rounded-md hover:bg-base-lvl-2 hover:text-body/80 focus:outline-none"
-    :class="tabClasses"
-    v-bind="$attrs"
-  >
-    <slot name="icon">
-        <i class="fa mr-2" :class="icon" v-if="icon" />
-    </slot>
-    <slot />
-  </button>
-</template>
 
-<script setup>
+<script setup lang="ts">
 import { computed } from "vue";
 
 const props = defineProps({
@@ -34,3 +21,18 @@ const tabClasses = computed(() => {
   return [activeStateClass, shape];
 });
 </script>
+
+
+<template>
+  <button
+    type="button"
+    class="inline-flex items-center px-2 py-2 text-sm font-medium leading-4 transition border border-transparent rounded-md text-body hover:bg-base-lvl-2 hover:text-body/80 focus:outline-none"
+    :class="tabClasses"
+    v-bind="$attrs"
+  >
+    <slot name="icon">
+        <i class="mr-2 fa" :class="icon" v-if="icon" />
+    </slot>
+    <slot />
+  </button>
+</template>

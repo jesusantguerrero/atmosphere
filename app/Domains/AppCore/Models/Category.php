@@ -18,7 +18,7 @@ class Category extends CoreCategory
     use HasFactory;
     const READY_TO_ASSIGN = "Ready to Assign";
     const INFLOW = "Inflow";
-    protected $with = ['budget'];
+    protected $with = ['budget', 'transactions'];
 
     public function budget() {
         return $this->hasOne(BudgetTarget::class);
@@ -30,7 +30,10 @@ class Category extends CoreCategory
 
     public function transactions()
     {
-        return $this->hasMany(Transaction::class, 'category_id');
+        return $this->hasMany(Transaction::class, 'category_id')
+        ->orderBy('date', 'desc')
+        ->verified()
+        ->limit(10);
     }
 
     public function transactionLines()
@@ -53,6 +56,10 @@ class Category extends CoreCategory
 
     public function budgets() {
         return $this->hasMany(BudgetMonth::class)->orderBy('month', 'desc');
+    }
+
+    public function lastMonthBudget() {
+        return $this->hasMany(BudgetMonth::class)->orderBy('month', 'desc')->limit(1);
     }
 
     public function assignBudget(string $month, mixed $postData) {
@@ -104,7 +111,7 @@ class Category extends CoreCategory
     /**
      * Get the current balance.
      *
-     * @return string
+     * @return Object
      */
     public function getMonthBalance($yearMonth)
     {

@@ -1,17 +1,4 @@
-<template>
-    <button class="w-32 flex items-center justify-center flex-col group">
-        <section class="rounded-full overflow-hidden relative h-14 w-14 border-2" :class="colorClass" :style="{backgroundColor: color}">
-            <div class="h-full w-1/2 bg-white opacity-30" />
-            <i :class="iconClass" v-if="iconClass" class="text-white font-bold" />
-            <span class="absolute text-white w-full h-full top-0 left-0 flex items-center justify-center font-bold"> {{ value }}</span>
-        </section>
-        <p class="mt-2 flex w-full text-center justify-center" ref="titleRef"
-            :class="[wrap ? 'flex-wrap' : 'flex-nowrap']"
-        > {{ title }} </p>
-    </button>
-</template>
-
-<script setup>
+<script setup lang="ts">
 import { useElementBounding } from '@vueuse/core';
 import { ref, computed } from 'vue';
 
@@ -21,7 +8,7 @@ const props = defineProps({
         default: 'Choose Category'
     },
     value: {
-        type: String
+        type: [String, Number]
     },
     color: {
 
@@ -48,3 +35,19 @@ const title = computed(() => {
     return props.label.length > chars ? props.label.slice(0, props.label.length - chars) + ' ...' : props.label
 })
 </script>
+
+<template>
+    <button class="flex flex-col items-center justify-center w-32 group">
+        <section
+        class="relative overflow-hidden border-2 rounded-full h-14 w-14"
+        :class="colorClass"
+        :style="{backgroundColor: color}">
+            <div class="w-1/2 h-full bg-white opacity-30" />
+            <i :class="iconClass" v-if="iconClass" class="font-bold text-white" />
+            <span class="absolute top-0 left-0 flex items-center justify-center w-full h-full font-bold text-white"> {{ value }}</span>
+        </section>
+        <p class="flex justify-center w-full mt-2 text-center" ref="titleRef"
+            :class="[wrap ? 'flex-wrap' : 'flex-nowrap']"
+        > {{ title }} </p>
+    </button>
+</template>

@@ -1,9 +1,9 @@
 <template>
-  <section class="text-left border-b rounded-md bg-base-lvl-3 pb-4" v-auto-animate>
+  <section class="pb-4 text-left border-b rounded-md bg-base-lvl-3" v-auto-animate>
     <LogerButtonTab
       @click="state.isEditing = true"
       v-if="!state.isEditing && !state.hasTarget"
-      class="bg-body-1/5 py-2 px-2 rounded-md text-body-1 w-full flex items-center"
+      class="flex items-center w-full px-2 py-2 rounded-md bg-body-1/5 text-body-1"
     >
       <span class="mr-2">
         <IconTarget />
@@ -75,13 +75,13 @@
         </AtField>
       </section>
 
-        <AtField label="Date" class="w-full" v-if="isSavingBalance(form)">
-            <NDatePicker
-                type="date"
-                size="large"
-                @update:value="form.frequency_date=$event"
-            />
-        </AtField>
+      <AtField label="Date" class="w-full" v-if="isSavingBalance(form)">
+        <NDatePicker
+          type="date"
+          size="large"
+          @update:value="form.frequency_date = $event"
+        />
+      </AtField>
 
       <div class="flex justify-between mt-4">
         <div class="flex font-bold">
@@ -98,44 +98,41 @@
       </div>
     </div>
 
-    <BudgetTargetCard :item="item" :category="category" class="w-full" v-else @edit="state.isEditing = true" />
+    <BudgetTargetCard
+      :item="item"
+      :category="category"
+      :editable="editable"
+      class="w-full"
+      v-else
+      @edit="state.isEditing = true"
+    />
   </section>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { reactive, toRefs, watch, computed } from "vue";
 import { AtButton, AtField, AtInput, AtErrorBag, AtButtonGroup } from "atmosphere-ui";
 import { useDatePager } from "vueuse-temporals";
 import { NSelect, NDropdown, NDatePicker } from "naive-ui";
 import { useForm } from "@inertiajs/vue3";
-import { monthDays, WEEK_DAYS, FREQUENCY_TYPE, generateRandomColor, formatMonth } from "@/utils";
+import { monthDays, WEEK_DAYS, FREQUENCY_TYPE, generateRandomColor } from "@/utils";
 import { makeOptions } from "@/utils/naiveui";
 import { format } from "date-fns";
-import ColorSelector from "./ColorSelector.vue";
-import LogerButtonTab from "../atoms/LogerButtonTab.vue";
-import IconTarget from "../icons/IconTarget.vue";
+import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
+import IconTarget from "@/Components/icons/IconTarget.vue";
 import { budgetFrequencies, isSavingBalance, targetTypes } from "@/domains/budget";
 import BudgetTargetCard from "./BudgetTargetCard.vue";
+import { BudgetTarget } from "../Modules/finance/models/budget";
+import { ICategory } from "../Modules/finance/models/transactions";
 // import IconPicker from '../IconPicker.vue';
 
-const props = defineProps({
-  parentId: {
-    type: Number,
-    default: null,
-  },
-  full: {
-    type: Boolean,
-    default: false,
-  },
-  category: {
-    type: Object,
-    required: true,
-  },
-  item: {
-    type: Object,
-    default: () => {},
-  },
-});
+const props = defineProps<{
+  parentId: number;
+  full: boolean;
+  category: ICategory;
+  editable: boolean;
+  item: BudgetTarget;
+}>();
 
 const emit = defineEmits(["cancel", "deleted"]);
 
@@ -170,6 +167,7 @@ const frequencyUnit = computed(() => {
       options: makeOptions(WEEK_DAYS),
     },
   };
+
   return {
     ...names[state.form.frequency],
   };
@@ -207,22 +205,23 @@ const onSubmit = () => {
   state.form
     .transform((data) => ({
       ...data,
-      frequency_date: data.frequency_date && format(new Date(data.frequency_date), 'yyyy-MM-dd'),
+      frequency_date:
+        data.frequency_date && format(new Date(data.frequency_date), "yyyy-MM-dd"),
       parent_id: data.parent_id || state.parentId,
     }))
     [endpoint.method](endpoint.url, {
       preserveScroll: true,
       onSuccess() {
         state.isEditing = false;
-      }
+      },
     });
 };
 
 const onCancel = () => {
-    state.isEditing = false;
-    if (state.hasTarget) {
-        emit("cancel");
-    }
+  state.isEditing = false;
+  if (state.hasTarget) {
+    emit("cancel");
+  }
 };
 
 const { selectedSpan } = useDatePager({ nextMode: "month" });
@@ -256,7 +255,7 @@ const options = [
   },
 ];
 
-const setAmount = (amount) => {
+const setAmount = (amount: number) => {
   state.form.amount = amount;
 };
 
@@ -264,7 +263,7 @@ const clear = () => {
   form.value.amount = 0;
 };
 
-const handleOptions = (option) => {
+const handleOptions = (option: string) => {
   switch (option) {
     case "setAssigned":
       setAmount(props.category.budgeted);

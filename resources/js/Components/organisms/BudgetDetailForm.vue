@@ -1,90 +1,32 @@
-<template>
-    <section class="px-5 pt-2 pb-4 space-y-4 text-left border-b rounded-md shadow-xl bg-base-lvl-3" :class="{'flex': !full }">
-        <header class="flex items-center justify-between mt-2 mb-2">
-            <AtInput
-                v-model="category.name"
-                class="border-transparent cursor-pointer hover:text-primary hover:border-primary"
-                rounded
-            >
-                <template #prefix>
-                    <div class="flex items-center justify-center px-1 ">
-                        <ColorSelector
-                            v-model="category.color"
-                            @update:modelValue="onBlur(category)"
-                        />
-                    </div>
-                </template>
-            </AtInput>
-            <LogerButtonTab @click="$emit('close')">
-                <IconClose />
-            </LogerButtonTab>
-        </header>
-
-        <BudgetTargetForm
-            :parent-id="parentId"
-            :category="category"
-            :item="item"
-            @delete="$emit('delete')"
-        />
-
-        <div v-if="false">
-            Auto-Assign
-        </div>
-
-        <div>
-            Available Balance
-            <BudgetMoneyLine title="Left Over from last month" :value="category.prevMonthLeftOver" />
-            <BudgetMoneyLine title="Assigned this month" :value="category.budgeted" />
-            <BudgetMoneyLine title="Cash expending" :value="category.activity" />
-            <BudgetMoneyLine title="Credit expending" :value="category.activity" />
-        </div>
-
-        <div v-if="false">
-            Notes
-        </div>
-    </section>
-</template>
-
-<script setup>
+<script setup lang="ts">
     import { watch } from 'vue';
     import { AtInput } from "atmosphere-ui";
     import { useForm } from '@inertiajs/vue3';
 
-    import ColorSelector from '../molecules/ColorSelector.vue';
-    import LogerButtonTab from '../atoms/LogerButtonTab.vue';
-    import BudgetTargetForm from '../molecules/BudgetTargetForm.vue';
+    import ColorSelector from '@/Components/molecules/ColorSelector.vue';
+    import LogerButtonTab from '@/Components/atoms/LogerButtonTab.vue';
+    import BudgetTargetForm from '@/Components/molecules/BudgetTargetForm.vue';
+    import BudgetMoneyLine from '@/Components/molecules/BudgetMoneyLine.vue';
+    import IconClose from '@/Components/icons/IconClose.vue';
 
     import { generateRandomColor } from "@/utils"
-    import IconClose from '../icons/IconClose.vue';
-    import BudgetMoneyLine from '../molecules/BudgetMoneyLine.vue';
-    import { router } from '@inertiajs/vue3';
 
-    const props = defineProps({
-        parentId: {
-            type: Number,
-            default: null
-        },
-        full: {
-            type: Boolean,
-            default: false
-        },
-        category: {
-            type: Object,
-            required: true
-        },
-        item: {
-            type: Object,
-            default: () => {}
-        }
-    });
+    const { hideDetails = true , category , item , editable = true } = defineProps<{
+        parentId: number;
+        full: boolean;
+        category: ICategory,
+        item: Record<string, string>,
+        hideDetails: boolean,
+        editable: boolean;
+    }>();
 
     const emit = defineEmits(['update:category'])
 
     const form = useForm({
         category_id: null,
         parent_id: null,
-        color: props.category.color || generateRandomColor(),
-        name: props.category.name,
+        color: category.color || generateRandomColor(),
+        name: category.name,
         amount: 0,
         assigned: 0,
         target_type: '',
@@ -97,12 +39,13 @@
     })
 
     watch(
-        () => props.item,
-        (item) => {
-            if (item) {
+        () => item,
+        (currentItem) => {
+            if (currentItem) {
                 form.reset()
                 Object.keys(form.data()).forEach(key => {
-                    form[key] = item[key] || form[key]
+                    // @ts-ignore: trust me
+                    form[key] = currentItem[key] || form[key]
                 })
             } else {
                 form.reset()
@@ -111,10 +54,61 @@
         { deep: true, immediate: true });
 
 
-    const onBlur = (category) => {
-        axios.put(`/budgets/${props.category.id}?json=true`, category)
+    const onBlur = (categoryItem: ICategory) => {
+        window.axios.put(`/budgets/${category.id}?json=true`, categoryItem)
         .then(() => {
-            emit('update:category', category)
+            emit('update:category', categoryItem)
         })
     }
 </script>
+
+
+<template>
+    <section class="px-5 pt-2 pb-4 space-y-4 text-left border-b rounded-md shadow-xl bg-base-lvl-3" :class="{'flex': !full }">
+        <header class="flex items-center justify-between mt-2 mb-2">
+            <AtInput
+                v-model="category.name"
+                class="border-transparent cursor-pointer "
+                rounded
+                :class="{'hover:text-primary hover:border-primary': editable}"
+                :disabled="!editable"
+            >
+                <template #prefix>
+                    <div class="flex items-center justify-center px-1 ">
+                        <ColorSelector
+                            v-model="category.color"
+                            @update:modelValue="onBlur(category)"
+                        />
+                    </div>
+                </template>
+            </AtInput>
+            <LogerButtonTab @click="$emit('close')" v-if="editable">
+                <IconClose />
+            </LogerButtonTab>
+        </header>
+
+        <BudgetTargetForm
+            :parent-id="parentId"
+            :category="category"
+            :item="item"
+            :editable="editable"
+            @delete="$emit('delete')"
+        />
+
+        <div v-if="false">
+            Auto-Assign
+        </div>
+
+        <div v-if="!hideDetails">
+            Available Balance
+            <BudgetMoneyLine title="Left Over from last month" :value="category.prevMonthLeftOver" />
+            <BudgetMoneyLine title="Assigned this month" :value="category.budgeted" />
+            <BudgetMoneyLine title="Cash expending" :value="category.activity" />
+            <BudgetMoneyLine title="Credit expending" :value="category.activity" />
+        </div>
+
+        <div v-if="false">
+            Notes
+        </div>
+    </section>
+</template>

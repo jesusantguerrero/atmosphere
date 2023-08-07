@@ -1,5 +1,9 @@
+import { format } from 'date-fns';
+import { FREQUENCY_TYPE } from './../../utils/index';
 import ExactMath from "exact-math";
 import { getFrequencyMonthFactor } from "./getFrequencyMonthFactor";
+import { BudgetTarget } from "../../Components/Modules/finance/models/budget";
+import { useDatePager } from "vueuse-temporals";
 
 export const isSpendingTarget = budgetMetaData => {
     return budgetMetaData.target_type == 'spending'
@@ -77,4 +81,30 @@ export const getGroupTotals = (groups) => {
             balance: 0
         }
     })
+}
+
+
+
+const getMonthInstanceCount = (frequency: string, weekDay: string, date = new Date()) => {
+
+    const { selectedSpan } = useDatePager({ nextMode: 'month' });
+    let timesMultiplier = 1
+    try {
+        timesMultiplier = frequency == FREQUENCY_TYPE.WEEKLY ?
+        selectedSpan.value.filter((day: Date) => {
+            return (
+              format(day, "iiiiii").toLowerCase() ==
+              weekDay?.toLowerCase()
+            );
+          })?.length: 1
+    } catch (e) {
+        console.log(selectedSpan, e);
+    }
+
+  return timesMultiplier
+};
+
+export const getBudgetTarget = (budgetTarget: BudgetTarget, date?: Date) => {
+    const monthInstanceCount = getMonthInstanceCount(budgetTarget.frequency, budgetTarget.frequency_week_day, date)
+    return budgetTarget.amount * monthInstanceCount
 }

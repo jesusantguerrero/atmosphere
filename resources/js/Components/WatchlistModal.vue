@@ -6,8 +6,8 @@
     v-slot:default="{ close }"
     @close="emitClose"
   >
-    <header class="flex items-center px-2 py-2 font-bold bg-base-lvl-3">
-      <button class="pl-0" @click="selectedResource = ''" v-if="form.type">
+    <header class="flex items-center px-2 py-2 pl-6 font-bold bg-base-lvl-3">
+      <button class="pl-0" @click="form.type = ''" v-if="form.type">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           xmlns:xlink="http://www.w3.org/1999/xlink"
