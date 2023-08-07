@@ -7,8 +7,8 @@ export const useAppMenu = t => {
     const appMenu =  [
         {
             icon: 'fa fa-home',
-            name: 'home',
-            label: t('Home'),
+            name: 'Dashboard',
+            label: t('Dashboard'),
             to: '/dashboard',
             as: Link
         },
@@ -49,7 +49,7 @@ export const useAppMenu = t => {
              }
         },
         {
-            icon: 'fas fa-home',
+            icon: 'fas fa-users',
             label: t('Profiles'),
             to: '/loger-profiles',
             as: Link,
