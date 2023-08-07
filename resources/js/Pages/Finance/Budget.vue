@@ -214,6 +214,7 @@ const goToday = () => {
             full
             :category="selectedBudget"
             :item="selectedBudget.budget"
+            :editable="true"
             @saved="onBudgetItemSaved"
             @deleted="deleteBudget"
             @cancel="setSelectedBudget()"

@@ -10,6 +10,7 @@
     import IconClose from '@/Components/icons/IconClose.vue';
 
     import { generateRandomColor } from "@/utils"
+    import { ICategory } from '../Modules/finance/models/transactions';
 
     const { hideDetails = true , category , item , editable = true } = defineProps<{
         parentId: number;
@@ -55,10 +56,12 @@
 
 
     const onBlur = (categoryItem: ICategory) => {
-        window.axios.put(`/budgets/${category.id}?json=true`, categoryItem)
-        .then(() => {
-            emit('update:category', categoryItem)
-        })
+        if (category.id) {
+            window.axios.put(`/budgets/${category.id}?json=true`, categoryItem)
+            .then(() => {
+                emit('update:category', categoryItem)
+            })
+        }
     }
 </script>
 
@@ -68,6 +71,7 @@
         <header class="flex items-center justify-between mt-2 mb-2">
             <AtInput
                 v-model="category.name"
+                @blur="onBlur(category)"
                 class="border-transparent cursor-pointer "
                 rounded
                 :class="{'hover:text-primary hover:border-primary': editable}"
@@ -79,6 +83,7 @@
                             v-model="category.color"
                             @update:modelValue="onBlur(category)"
                         />
+                        {{  category.id }}
                     </div>
                 </template>
             </AtInput>
