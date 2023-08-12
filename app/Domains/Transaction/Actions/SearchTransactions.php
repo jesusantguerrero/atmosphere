@@ -35,7 +35,9 @@ class SearchTransactions {
             }
         }
 
-        return $this->modelQuery->orderBy('date')->get();
+        return $this->modelQuery->orderBy('date')->where([
+            "status" => Transaction::STATUS_VERIFIED
+        ])->get();
     }
 
     public function gettext($condition, $field) {
