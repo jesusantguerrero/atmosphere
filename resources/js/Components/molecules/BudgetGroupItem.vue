@@ -57,6 +57,7 @@ import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 import { router } from "@inertiajs/vue3";
 import PointAlert from "../atoms/PointAlert.vue";
 import BudgetProgress from "./BudgetProgress.vue";
+import { getCategoryLink } from "../Modules/finance/models/transactions";
 
 const emit = defineEmits(['removed'])
 
@@ -116,18 +117,6 @@ const removeCategory = () => {
             }
         })
     }
-}
-
-
-const getCategoryLink = (itemId: number, type: 'categories' | 'groups' ) => {
-    const types = {
-        categories: 'category_id',
-        groups: 'group_id'
-    }
-
-    const itemField = types[type] ?? types.groups;
-    const currentSearch = location.search.replace('?', '&');
-    return `/finance/lines?${itemField}=${itemId}${currentSearch}`;
 }
 
 const handleOptions = (option: any) => {

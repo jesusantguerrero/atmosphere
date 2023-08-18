@@ -16,3 +16,14 @@ export interface ICategory {
     name: string;
     color: string;
 }
+
+export const getCategoryLink = (itemId: number, type: 'categories' | 'groups' ) => {
+    const types = {
+        categories: 'category_id',
+        groups: 'group_id'
+    }
+
+    const itemField = types[type] ?? types.groups;
+    const currentSearch = location.search.replace('?', '&');
+    return `/finance/lines?${itemField}=${itemId}${currentSearch}`;
+}

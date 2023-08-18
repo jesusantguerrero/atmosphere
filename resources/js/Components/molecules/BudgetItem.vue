@@ -17,6 +17,7 @@ import autoAnimate from '@formkit/auto-animate';
 import formatMoney from "@/utils/formatMoney";
 import { getBudgetTarget } from '@/domains/budget/budgetTotals';
 import { computed } from 'vue';
+import { getCategoryLink } from '../Modules/finance/models/transactions';
 
 
 const props = defineProps<{
@@ -106,6 +107,9 @@ const options = [{
 }, {
     name: 'updateActivity',
     label: 'Update Activity'
+}, {
+    name: 'transactions',
+    label: 'Transactions'
 }]
 
 const removeCategory = () => {
@@ -136,7 +140,7 @@ const updateActivity = () => {
     })
 }
 
-const handleOptions = (option) => {
+const handleOptions = (option: string) => {
     switch(option) {
         case 'delete':
             removeCategory()
@@ -144,6 +148,9 @@ const handleOptions = (option) => {
         case 'updateActivity':
             updateActivity()
             break;
+        case 'transactions':
+            const link = getCategoryLink(props.item.id, 'categories');
+            router.visit(link)
         default:
             break;
     }
