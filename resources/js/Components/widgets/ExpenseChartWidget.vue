@@ -1,17 +1,16 @@
 <script lang="ts" setup>
-import { capitalize, computed } from "vue";
+import { computed } from "vue";
 import DonutChart from "../organisms/DonutChart.vue";
 import exactMath from "exact-math";
 import { formatMoney } from "@/utils";
-import { NDataTable, NPopover } from "naive-ui";
-import { router } from "@inertiajs/core";
-import { Link } from "@inertiajs/vue3";
+
+import ExpenseChartWidgetRow from "./ExpenseChartWidgetRow.vue";
 
 const props = defineProps<{
   data: Record<string, number>[];
   componentProps: Record<string, string>;
   title?: string;
-  type: string;
+  type: 'categories' | 'groups';
 }>();
 
 const emit = defineEmits(['selected']);
@@ -30,30 +29,7 @@ const total = computed(() => {
   }, 0);
 });
 
-const parseDetails = (details) => {
-    return !details ? null : details.split('|')
-    .map((row) => {
-        const rowData = row.split(':');
-        return {
-            id: rowData[0],
-            accountName: rowData[1],
-            date: rowData[2],
-            payeeName: rowData[3],
-            concept: rowData[4],
-            amount: rowData[5],
-        }
-    })
-}
 
-const getCategoryLink = (item) => {
-    const types = {
-        categories: 'category_id',
-        groups: 'group_id'
-    }
-    const itemField = types[props.type] ?? types.groups;
-    const currentSearch = location.search.replace('?', '&');
-    return `/finance/lines?${itemField}=${item.id || item.category_id}${currentSearch}`;
-}
 </script>
 
 <template>
@@ -69,7 +45,7 @@ const getCategoryLink = (item) => {
               value="total"
               :legend="false"
             />
-            <section class="absolute text-center top-1/2 left-44  text-primary font-bold">
+            <section class="absolute font-bold text-center top-1/2 left-44 text-primary">
                 <h4>
                     {{  title  }}
                 </h4>
@@ -79,30 +55,12 @@ const getCategoryLink = (item) => {
             </section>
         </section>
             <div class="space-y-1">
-                <NPopover v-for="item in data" trigger="click">
-                    <template #trigger>
-                        <p class="w-full flex justify-between px-4 cursor-pointer">
-                            <span class="font-bold">
-                                {{ item.name }}:
-                            </span>
-                            <Link
-                            class="ml-4 hover:underline group items-center hover:text-primary flex"
-                            :href="getCategoryLink(item)">
-                                {{  formatMoney(item.total) }}
-                                <IMdiLink class="ml-1 group-hover:visible invisible" />
-                            </Link>
-                        </p>
-                    </template>
-                    <div class="">
-                        <NDataTable
-                            :columns="Object.keys(parseDetails(item.details)[0]).map(item => ({
-                            key: item,
-                            title: capitalize(item)
-                            }))"
-                            :data="parseDetails(item.details)"
-                        />
-                    </div>
-                </NPopover>
+                <ExpenseChartWidgetRow
+                    v-for="item in data"
+                    :item="item"
+                    :type="type"
+                    :key="item.id"
+                />
             </div>
     </article>
 
