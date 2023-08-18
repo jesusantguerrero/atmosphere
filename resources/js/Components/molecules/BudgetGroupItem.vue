@@ -1,6 +1,6 @@
 <template>
 <article>
-    <header class="flex justify-between py-2 px-4 text-body-1/80">
+    <header class="flex justify-between px-4 py-2 text-body-1/80">
         <div class="flex items-center space-x-2">
             <div class="cursor-grab" v-if="isMobile && allowDrag">
                 <IconDrag class="handle" />
@@ -9,7 +9,7 @@
                 <i class="fa" :class="toggleIcon" />
             </LogerButtonTab>
             <div class="flex items-center">
-                <h4 class="relative text-primary font-bold cursor-grab" :class="{'handle': !isMobile }">
+                <h4 class="relative font-bold text-primary cursor-grab" :class="{'handle': !isMobile }">
                     {{ item.name }}
                     <PointAlert
                         v-if="item.hasOverspent || item.hasOverAssigned || item.hasUnderfunded"
@@ -46,7 +46,7 @@
 </article>
 </template>
 
-<script setup>
+<script setup lang="ts">
 
 import { computed, ref, onMounted, watchEffect }  from "vue";
 import autoAnimate from "@formkit/auto-animate"
@@ -96,10 +96,12 @@ onMounted(() => {
 const options = [{
     name: 'add',
     label: 'Add subcategory'
-},{
-
+}, {
     name: 'delete',
     label: 'Delete'
+}, {
+    name: 'transactions',
+    label: 'Transactionss'
 }]
 
 const removeCategory = () => {
@@ -116,13 +118,28 @@ const removeCategory = () => {
     }
 }
 
-const handleOptions = (option) => {
+
+const getCategoryLink = (itemId: number, type: 'categories' | 'groups' ) => {
+    const types = {
+        categories: 'category_id',
+        groups: 'group_id'
+    }
+
+    const itemField = types[type] ?? types.groups;
+    const currentSearch = location.search.replace('?', '&');
+    return `/finance/lines?${itemField}=${itemId}${currentSearch}`;
+}
+
+const handleOptions = (option: any) => {
     switch(option) {
         case 'delete':
             removeCategory()
             break;
         case 'add':
             toggleAdding()
+        case 'transactions':
+            const link = getCategoryLink(props.item.id, 'groups');
+            router.visit(link)
         default:
             break;
     }
