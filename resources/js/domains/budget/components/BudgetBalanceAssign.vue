@@ -1,15 +1,16 @@
 <script lang="ts" setup>
     import { useForm } from "@inertiajs/vue3";
     import { router } from "@inertiajs/vue3";
-    import ExactMath from "exact-math";
     import { computed, inject, ref } from "vue"
-    import { NPopover, NSelect } from "naive-ui";
+    import { NPopover, } from "naive-ui";
+    // @ts-ignore
     import { AtField, AtButton } from "atmosphere-ui";
     import { format, startOfMonth } from "date-fns";
+    import Multiselect from "vue-multiselect";
 
+    import MoneyPresenter from "@/Components/molecules/MoneyPresenter.vue";
+    
     import formatMoney from "@/utils/formatMoney";
-import MoneyPresenter from "../molecules/MoneyPresenter.vue";
-import Multiselect from "vue-multiselect";
 
     const props = defineProps({
         value: {

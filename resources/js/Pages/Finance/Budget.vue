@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, provide, toRefs } from "vue";
 import { router } from "@inertiajs/vue3";
+// @ts-ignore
 import { AtButton, AtDatePager } from "atmosphere-ui";
 import { useBreakpoints, breakpointsTailwind } from "@vueuse/core";
 import { startOfMonth } from "date-fns";
@@ -15,7 +16,7 @@ import ExpenseIncome from "@/Components/widgets/ExpenseIncome.vue";
 import PointAlert from "@/Components/atoms/PointAlert.vue";
 import IconClose from "@/Components/icons/IconClose.vue";
 
-import BalanceAssign from "@/Components/organisms/BalanceAssign.vue";
+import BalanceAssign from "@/domains/budget/components/BudgetBalanceAssign.vue";
 import BudgetDetailForm from "@/domains/budget/components/BudgetDetailForm.vue";
 import BudgetProgress from "@/domains/budget/components/BudgetProgress.vue";
 
@@ -209,7 +210,7 @@ const goToday = () => {
       </section>
 
       <template #panel class="">
-        <div class="mt-4 space-y-4">
+        <div class="space-y-4 ">
           <BudgetDetailForm
             class="mt-5"
             v-if="selectedBudget && !showCategoriesInMain"

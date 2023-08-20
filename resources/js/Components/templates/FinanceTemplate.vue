@@ -28,17 +28,20 @@
     </article>
 </template>
 
-<script setup>
+<script setup lang="ts">
     import { computed } from 'vue';
+    // @ts-ignore
+    import exactMathNode from 'exact-math';
+    
     import AccountsLedger from "@/Components/templates/AccountsLedger.vue";
-    import { PANEL_SIZES } from '@/utils/constants';
     import IconImport from '@/Components/icons/IconImport.vue';
     import LogerButtonTab from '@/Components/atoms/LogerButtonTab.vue';
-    import exactMathNode from 'exact-math';
-    import { formatMoney } from '@/utils';
-    import WidgetCard from '../molecules/WidgetCard.vue';
+    import WidgetCard from '@/Components/molecules/WidgetCard.vue';
+    import MoneyPresenter from '@/Components/molecules/MoneyPresenter.vue';
+    
     import { useImportModal } from '@/domains/transactions/useImportModal';
-import MoneyPresenter from '../molecules/MoneyPresenter.vue';
+    import { PANEL_SIZES } from '@/utils/constants';
+import { IAccount } from '@/domains/transactions/models/transactions';
 
     const { toggleModal: toggleImportModal } = useImportModal();
 
@@ -84,7 +87,6 @@ import MoneyPresenter from '../molecules/MoneyPresenter.vue';
         return [sizes, visible];
     })
 
-
     const budgetAccountsTotal =  computed(() => {
         return props.accounts.reduce((total, account) => {
             return exactMathNode.add(total, account?.balance)
@@ -97,5 +99,4 @@ import MoneyPresenter from '../molecules/MoneyPresenter.vue';
 .aside-content {
     width: -webkit-fill-available;
 }
-
 </style>

@@ -1,23 +1,4 @@
-<template>
-<div>
-    <NPopover trigger="click">
-        <template #trigger>
-            <div class="w-4 h-4 rounded-sm cursor-pointer" :style="styleColor" />
-        </template>
-        <div class="grid grid-cols-5 gap-1">
-            <div
-                v-for="color in colors"
-                class="w-4 h-4 border border-transparent rounded-sm cursor-pointer hover:border-slate-400"
-                :style="{backgroundColor: color }"
-                :key="color"
-                @click="$emit('update:modelValue', color)"
-            />
-        </div>
-    </NPopover>
-</div>
-</template>
-
-<script setup>
+<script setup lang="ts">
     import { NPopover } from "naive-ui"
     import { computed } from "vue";
 
@@ -58,3 +39,22 @@
         }
     })
 </script>
+
+<template>
+<div>
+    <NPopover trigger="click">
+        <template #trigger>
+            <div class="w-4 h-4 rounded-sm cursor-pointer" :style="styleColor" />
+        </template>
+        <div class="grid grid-cols-5 gap-1">
+            <div
+                v-for="color in colors"
+                class="w-4 h-4 border border-transparent rounded-sm cursor-pointer hover:border-slate-400"
+                :style="{backgroundColor: color }"
+                :key="color"
+                @click="$emit('update:modelValue', color)"
+            />
+        </div>
+    </NPopover>
+</div>
+</template>

@@ -16,6 +16,12 @@ export interface ICategory {
     name: string;
     color: string;
 }
+export interface IAccount {
+    id: number;
+    name: string;
+    color: string;
+    balance: number;
+}
 
 export const getCategoryLink = (itemId: number, type: 'categories' | 'groups' ) => {
     const types = {

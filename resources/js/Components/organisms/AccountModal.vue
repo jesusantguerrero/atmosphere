@@ -1,59 +1,4 @@
-<template>
-    <modal :show="show" :max-width="maxWidth" :closeable="closeable" @close="close">
-        <div class="pb-4 bg-base-lvl-3 sm:p-6 sm:pb-4 text-body">
-            <div class="text-center sm:mt-0 sm:ml-4 sm:text-left">
-                <header class="py-3 border-b">
-                    <h3 class="text-lg font-bold">
-                        <slot name="title">{{ modalTitle }}</slot>
-                    </h3>
-                </header>
-
-                <div class="px-4 pt-5 mt-2">
-                    <slot name="content">
-                        <div>
-                            <AtField label="Detail Type" class="flex justify-between w-full space-x-4 md:space-x-0">
-                                <NSelect
-                                    filterable
-                                    clearable
-                                    tag
-                                    class="w-48 md:w-full"
-                                    v-model:value="form.account_detail_type_id"
-                                    :default-expand-all="true"
-                                    :options="detailOptions"
-                                />
-                            </AtField>
-
-                            <AtField
-                                label="Account Label"
-                                class="flex justify-between w-full space-x-4 md:space-x-0"
-                            >
-                                <LogerInput v-model="form.name"  class="w-48 md:w-full" />
-                            </AtField>
-
-                            <AtField
-                                label="Opening Balance"
-                                class="flex justify-between w-full space-x-4 md:space-x-0"
-                                v-if="!form.id"
-                            >
-                                <LogerInput v-model="form.opening_balance" type="number"  class="w-48 md:w-full" />
-                            </AtField>
-                        </div>
-                    </slot>
-                </div>
-            </div>
-        </div>
-
-        <div class="flex w-full px-6 py-4 md:space-x-3 space-between bg-base-lvl-2">
-            <AtButton type="secondary" class="hidden text-danger md:block" @click="remove" rounded> Delete </AtButton>
-            <div class="flex items-center justify-end w-full md:space-x-2">
-                <AtButton type="secondary" class="hidden md:block" @click="close" rounded> Cancel </AtButton>
-                <AtButton class="w-full text-white bg-primary" @click="submit" rounded> Save </AtButton>
-            </div>
-        </div>
-    </modal>
-</template>
-
-<script setup>
+<script setup lang="ts">
     import { useForm, usePage } from "@inertiajs/vue3"
     import { reactive, toRefs, computed, watch } from 'vue'
     import { NSelect } from "naive-ui";
@@ -158,3 +103,60 @@
 
     const { form } = toRefs(state)
 </script>
+
+<template>
+    <modal :show="show" :max-width="maxWidth" :closeable="closeable" @close="close">
+        <div class="pb-4 bg-base-lvl-3 sm:p-6 sm:pb-4 text-body">
+            <div class="text-center sm:mt-0 sm:ml-4 sm:text-left">
+                <header class="py-3 border-b">
+                    <h3 class="text-lg font-bold">
+                        <slot name="title">{{ modalTitle }}</slot>
+                    </h3>
+                </header>
+
+                <div class="px-4 pt-5 mt-2">
+                    <slot name="content">
+                        <div>
+                            <AtField label="Detail Type" class="flex justify-between w-full space-x-4 md:space-x-0">
+                                <NSelect
+                                    filterable
+                                    clearable
+                                    tag
+                                    class="w-48 md:w-full"
+                                    v-model:value="form.account_detail_type_id"
+                                    :default-expand-all="true"
+                                    :options="detailOptions"
+                                />
+                            </AtField>
+
+                            <AtField
+                                label="Account Label"
+                                class="flex justify-between w-full space-x-4 md:space-x-0"
+                            >
+                                <LogerInput v-model="form.name"  class="w-48 md:w-full" />
+                            </AtField>
+
+                            <AtField
+                                label="Opening Balance"
+                                class="flex justify-between w-full space-x-4 md:space-x-0"
+                                v-if="!form.id"
+                            >
+                                <LogerInput v-model="form.opening_balance" type="number"  class="w-48 md:w-full" />
+                            </AtField>
+                        </div>
+                    </slot>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex w-full px-6 py-4 md:space-x-3 space-between bg-base-lvl-2">
+            <AtButton type="secondary" class="hidden text-danger md:block" @click="remove" rounded> Delete </AtButton>
+            <div class="flex items-center justify-end w-full md:space-x-2">
+                <AtButton type="secondary" class="hidden md:block" @click="close" rounded> Cancel </AtButton>
+                <AtButton class="w-full text-white bg-primary" @click="submit" rounded> Save </AtButton>
+            </div>
+        </div>
+    </modal>
+</template>
+
+

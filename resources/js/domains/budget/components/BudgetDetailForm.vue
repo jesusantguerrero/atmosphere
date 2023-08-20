@@ -1,17 +1,20 @@
 <script setup lang="ts">
-    import { watch } from 'vue';
+    import { watch , ref } from 'vue';
+    // @ts-ignore
     import { AtInput } from "atmosphere-ui";
     import { useForm } from '@inertiajs/vue3';
 
     import ColorSelector from '@/Components/molecules/ColorSelector.vue';
     import LogerButtonTab from '@/Components/atoms/LogerButtonTab.vue';
     import IconClose from '@/Components/icons/IconClose.vue';
+    import SectionNav from '@/Components/molecules/SectionNav.vue';
 
     import BudgetTargetForm from './BudgetTargetForm.vue';
     import BudgetMoneyLine from './BudgetMoneyLine.vue';
+    import BudgetCategoryTransactions from './BudgetCategoryTransactions.vue';
 
     import { generateRandomColor } from "@/utils"
-    import { ICategory } from '../Modules/finance/models/transactions';
+    import { ICategory } from '@/Modules/transactions/models/transactions';
 
     const { hideDetails = true , category , item , editable = true } = defineProps<{
         parentId: number;
@@ -64,6 +67,17 @@
             })
         }
     }
+
+    const activeTab = ref('monthDetail');
+    const tabs = [{
+            label:'Month Detail',
+            value: 'monthDetail'
+        },
+        {
+            label: 'Transactions',
+            value: 'transactions'
+        }
+    ];
 </script>
 
 
@@ -105,16 +119,18 @@
             Auto-Assign
         </div>
 
-        <div v-if="!hideDetails">
-            Available Balance
-            <BudgetMoneyLine title="Left Over from last month" :value="category.prevMonthLeftOver" />
-            <BudgetMoneyLine title="Assigned this month" :value="category.budgeted" />
-            <BudgetMoneyLine title="Cash expending" :value="category.activity" />
-            <BudgetMoneyLine title="Credit expending" :value="category.activity" />
-        </div>
 
-        <div v-if="false">
-            Notes
-        </div>
+        <section v-if="!hideDetails">
+            <SectionNav v-model="activeTab" :sections="tabs" />
+            <section v-if="activeTab == 'monthDetail'">
+                Available Balance
+                <BudgetMoneyLine title="Left Over from last month" :value="category.prevMonthLeftOver" />
+                <BudgetMoneyLine title="Assigned this month" :value="category.budgeted" />
+                <BudgetMoneyLine title="Cash expending" :value="category.activity" />
+                <BudgetMoneyLine title="Credit expending" :value="category.activity" />
+            </section>
+    
+            <BudgetCategoryTransactions :category-id="category.id" v-else />
+          </section>
     </section>
 </template>

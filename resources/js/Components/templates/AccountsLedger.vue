@@ -1,3 +1,49 @@
+
+<script setup lang="ts">
+import { ref, inject, computed, Ref } from "vue";
+import { router } from "@inertiajs/vue3";
+import { VueDraggableNext as Draggable } from "vue-draggable-next"
+
+import AccountModal from "@/Components/organisms/AccountModal.vue";
+import AccountItem from "@/Components/atoms/AccountItem.vue";
+import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
+
+import { useAppContextStore } from "@/store";
+import { IAccount } from "@/domains/transactions/models/transactions";
+
+const selectedAccountId = inject<Ref<number|null>>('selectedAccountId', ref(null));
+const isSelectedAccount = (accountId: number) => {
+  return Number(selectedAccountId?.value) === accountId;
+};
+
+const props = defineProps<{
+    accounts: IAccount[]
+}>();
+
+const emit = defineEmits(['reordered'])
+
+const isAccountModalOpen = ref(false);
+const accountToEdit = ref({})
+
+const openAccountModal = (account = {}) => {
+    accountToEdit.value = account;
+    isAccountModalOpen.value = true;
+};
+
+const saveReorder = () => {
+    const items = props.accounts.map((item, index: number) => ({
+        ...item,
+        index
+    }));
+    emit("reordered", items)
+}
+
+const context = useAppContextStore()
+const modalMaxWidth = computed(() => {
+    return context.isMobile ? 'mobile' : undefined;
+})
+</script>
+
 <template>
   <div class="px-5 border-l border-base-lvl-1 text-body-1">
     <div class="space-y-2">
@@ -25,48 +71,3 @@
     />
   </div>
 </template>
-
-<script setup>
-import { ref, inject, computed } from "vue";
-import { router } from "@inertiajs/vue3";
-import AccountItem from "@/Components/atoms/AccountItem.vue";
-import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
-import AccountModal from "@/Components/organisms/AccountModal.vue";
-import { VueDraggableNext as Draggable } from "vue-draggable-next"
-import { useAppContextStore } from "@/store";
-
-const selectedAccountId = inject('selectedAccountId', null);
-const isSelectedAccount = (accountId) => {
-  return Number(selectedAccountId?.value) === accountId;
-};
-
-const props = defineProps({
-  accounts: {
-    type: Array,
-    default: () => [],
-  },
-});
-
-const emit = defineEmits(['reordered'])
-
-const isAccountModalOpen = ref(false);
-const accountToEdit = ref({})
-
-const openAccountModal = (account = {}) => {
-    accountToEdit.value = account;
-    isAccountModalOpen.value = true;
-};
-
-const saveReorder = () => {
-    const items = props.accounts.map((item, index) => ({
-        ...item,
-        index
-    }));
-    emit("reordered", items)
-}
-
-const context = useAppContextStore()
-const modalMaxWidth = computed(() => {
-    return context.isMobile ? 'mobile' : null;
-})
-</script>
