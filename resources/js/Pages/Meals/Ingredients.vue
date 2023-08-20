@@ -1,3 +1,35 @@
+<script setup lang="ts">
+import { AtButton } from "atmosphere-ui";
+import { computed } from "vue";
+import { router } from "@inertiajs/vue3";
+
+import AppLayout from "@/Components/templates/AppLayout.vue";
+
+import MealSection from "@/domains/meal/components/MealSection.vue";
+import MealTemplate from "@/domains/meal/components/MealTemplate.vue";
+import MealSectionNav from "@/domains/meal/components/MealSectionNav.vue";
+
+import { generateRandomColor } from "@/utils";
+
+const props = defineProps({
+  products: {
+    type: Array,
+    required: true,
+  },
+});
+
+const productData = computed(() => {
+  return props.products ?? [];
+});
+
+const assignProductLabel = (label: Record<string, string>, product: Record<string, string>) => {
+  axios.post(`/api/ingredients/${product.id}/labels`, {
+    ...label,
+    color: generateRandomColor(),
+  });
+};
+</script>
+
 <template>
   <AppLayout
     title="Recipes"
@@ -25,33 +57,4 @@
   </AppLayout>
 </template>
 
-<script setup>
-import { AtButton } from "atmosphere-ui";
-import { computed } from "vue";
-import { router } from "@inertiajs/vue3";
 
-import AppLayout from "@/Components/templates/AppLayout.vue";
-import MealSection from "@/Components/MealSection.vue";
-import MealTemplate from "@/Components/templates/MealTemplate.vue";
-import MealSectionNav from "@/Components/templates/MealSectionNav.vue";
-
-import { generateRandomColor } from "@/utils";
-
-const props = defineProps({
-  products: {
-    type: Array,
-    required: true,
-  },
-});
-
-const productData = computed(() => {
-  return props.products ?? [];
-});
-
-const assignProductLabel = (label, product) => {
-  axios.post(`/api/ingredients/${product.id}/labels`, {
-    ...label,
-    color: generateRandomColor(),
-  });
-};
-</script>

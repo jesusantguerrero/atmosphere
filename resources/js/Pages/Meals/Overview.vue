@@ -1,3 +1,58 @@
+<script setup lang="ts">
+import { usePage, router } from "@inertiajs/vue3";
+
+import WelcomeCard from "@/Components/organisms/WelcomeCard.vue";
+import AppLayout from "@/Components/templates/AppLayout.vue";
+import SectionTitle from "@/Components/atoms/SectionTitle.vue";
+import LogerButton from "@/Components/atoms/LogerButton.vue";
+import ChoppingListForm from "./Partials/ChoppingListForm.vue";
+
+import CategoryItem from "@/Components/mobile/CategoryItem.vue";
+import MealWidget from "@/domains/meal/components/MealWidget.vue";
+import MealTypeCell from "@/domains/meal/components/MealTypeCell.vue";
+import MealSectionNav from "@/domains/meal/components/MealSectionNav.vue";
+
+import { addPlan } from "./utils";
+
+const props = defineProps({
+  meals: {
+    type: Object,
+    required: true,
+  },
+  mostLikedMeals: {
+    type: Array,
+  },
+  ingredients: {
+    type: Array,
+  },
+  user: {
+    type: Object,
+    required: true,
+  },
+
+  categories: {
+    type: Array,
+    default() {
+      return [];
+    },
+  },
+  accounts: {
+    type: Array,
+    default() {
+      return [];
+    },
+  },
+});
+
+const pageProps = usePage().props;
+
+const getMealByType = (mealTypeId) => {
+  return props.meals.data.find((mealPlan) => {
+    return mealPlan.mealTypeId == mealTypeId;
+  });
+};
+</script>
+
 <template>
   <AppLayout>
     <template #header>
@@ -82,7 +137,7 @@
               <CategoryItem
                 wrap
                 v-for="mealType in pageProps.mealTypes"
-                :label="`Add ${mealType.name}`"
+                :label="`${mealType.name}`"
               />
             </section>
           </div>
@@ -91,56 +146,3 @@
     </div>
   </AppLayout>
 </template>
-
-<script setup>
-import AppLayout from "@/Components/templates/AppLayout.vue";
-import MealWidget from "@/Components/widgets/MealWidget.vue";
-import MealTypeCell from "@/Components/molecules/MealTypeCell.vue";
-import MealSectionNav from "@/Components/templates/MealSectionNav.vue";
-import LogerButton from "@/Components/atoms/LogerButton.vue";
-import SectionTitle from "@/Components/atoms/SectionTitle.vue";
-import CategoryItem from "@/Components/mobile/CategoryItem.vue";
-import WelcomeCard from "@/Components/organisms/WelcomeCard.vue";
-
-import { usePage, router } from "@inertiajs/vue3";
-import { addPlan } from "./utils";
-import ChoppingListForm from "./Partials/ChoppingListForm.vue";
-
-const props = defineProps({
-  meals: {
-    type: Object,
-    required: true,
-  },
-  mostLikedMeals: {
-    type: Array,
-  },
-  ingredients: {
-    type: Array,
-  },
-  user: {
-    type: Object,
-    required: true,
-  },
-
-  categories: {
-    type: Array,
-    default() {
-      return [];
-    },
-  },
-  accounts: {
-    type: Array,
-    default() {
-      return [];
-    },
-  },
-});
-
-const pageProps = usePage().props;
-
-const getMealByType = (mealTypeId) => {
-  return props.meals.data.find((mealPlan) => {
-    return mealPlan.mealTypeId == mealTypeId;
-  });
-};
-</script>

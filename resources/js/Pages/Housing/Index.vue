@@ -76,7 +76,7 @@ defineProps<{
               <CategoryItem
                 wrap
                 v-for="mealType in [{ id: 1, name: 'Hola'}]"
-                :label="`Add ${mealType.name}`"
+                :label="`${mealType.name}`"
               />
             </section>
           </div>

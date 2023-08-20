@@ -1,7 +1,46 @@
+<script setup lang="ts">
+    // @ts-ignore
+    import { AtButton } from "atmosphere-ui";
+    import { reactive } from "vue";
+
+    import LogerApiSimpleSelect from "@/Components/organisms/LogerApiSimpleSelect.vue";
+    import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
+    import IconHeart from "@/Components/icons/IconHeart.vue";
+    import IconHeartOutline from "@/Components/icons/IconHeartOutline.vue";
+
+    interface Label {
+        id: number;
+        name: string;
+        color: string;
+    }
+    
+    interface Meal {
+        id: number;
+        name: string;
+        is_liked: boolean;
+        labels: Label[]
+    }
+
+    const props = defineProps<{
+        meals: Meal[];
+        selected: Meal[]
+    }>();
+
+    const label = reactive({
+        label_id: "",
+        name: ""
+    })
+
+    const isSelected = (meal: Meal) => {
+        return !!props.selected
+        ?.find(selectedMeal => selectedMeal.id == meal.id)
+    }
+</script>
+
 <template>
     <section class="py-6 space-y-4">
         <article
-            class="flex justify-between w-full grid-cols-4 py-2 px-2 shadow-md items-center border rounded-lg cursor-pointer text-body bg-base-lvl-3 hover:bg-base-lvl-2"
+            class="flex items-center justify-between w-full grid-cols-4 px-2 py-2 border rounded-lg shadow-md cursor-pointer text-body bg-base-lvl-3 hover:bg-base-lvl-2"
             v-for="meal in meals"
             :key="meal.id"
             :class="{'bg-primary-300 text-white': isSelected(meal)}"
@@ -12,7 +51,7 @@
                     <IconHeartOutline v-else />
                 </AtButton>
 
-                <span @click="$emit('click', meal)" class="hover:text-primary transition capitalize">
+                <span @click="$emit('click', meal)" class="capitalize transition hover:text-primary">
 
                     {{ meal.name }}
                 </span>
@@ -43,36 +82,3 @@
         </article>
     </section>
 </template>
-
-<script setup>
-    import { AtBadge, AtButton } from "atmosphere-ui";
-    import { reactive } from "vue";
-
-    import LogerApiSelect from "@/Components/organisms/LogerApiSelect.vue";
-    import LogerApiSimpleSelect from "./organisms/LogerApiSimpleSelect.vue";
-    import LogerButtonTab from "./atoms/LogerButtonTab.vue";
-    import IconHeart from "./icons/IconHeart.vue";
-    import IconHeartOutline from "./icons/IconHeartOutline.vue";
-
-    const props = defineProps({
-        meals: {
-            type: Array,
-            required: true
-        },
-        selected: {
-            type: Array,
-            default() {
-                return []
-            }
-        }
-    });
-
-    const label = reactive({
-        label_id: "",
-        name: ""
-    })
-
-    const isSelected = (meal) => {
-        return props.selected.map(selectedMeal => selectedMeal.id).includes(meal.id)
-    }
-</script>

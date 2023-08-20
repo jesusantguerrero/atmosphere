@@ -1,57 +1,10 @@
-<template>
-    <div class="text-body">
-        <AtField
-            label="Title"
-        >
-            <LogerInput v-model="form.name" rounded />
-        </AtField>
-
-        <AtField
-            label="Ingredients"
-        >
-            <MealFormLine v-for="(ingredient, index) in form.ingredients"
-                :key="`${ingredient.id}-${index}`"
-                :meal="meal"
-                :index="index"
-                :ingredient="ingredient"
-                @check="checkIngredients(index, $event)"
-            />
-        </AtField>
-        <AtField
-            label="Tags"
-        >
-            <LogerInput v-model="form.name" rounded />
-        </AtField>
-        <AtField
-            label="Link"
-        >
-            <LogerInput v-model="form.name" rounded />
-        </AtField>
-        <AtField
-            label="Dish"
-        >
-            <LogerInput v-model="form.name" rounded />
-        </AtField>
-        <AtField
-            label="Time"
-        >
-            <LogerInput v-model="form.name" rounded />
-        </AtField>
-        <AtField
-            label="Times Planned"
-        >
-            <LogerInput v-model="form.name" rounded />
-        </AtField>
-    </div>
-</template>
-
-<script setup>
+<script setup lang="ts">
     import { useForm } from "@inertiajs/vue3"
     import { AtField, AtInput, AtButton } from "atmosphere-ui"
     import { nextTick } from '@vue/runtime-core'
-    import LogerApiSimpleSelect from "./organisms/LogerApiSimpleSelect.vue";
-import LogerInput from "./atoms/LogerInput.vue";
-import MealFormLine from "./MealFormLine.vue";
+    import LogerApiSimpleSelect from "@/Components/organisms/LogerApiSimpleSelect.vue";
+    import LogerInput from "@/Components/atoms/LogerInput.vue";
+    import MealFormLine from "./MealFormLine.vue";
 
     defineEmits(['close']);
     const props = defineProps({
@@ -113,3 +66,50 @@ import MealFormLine from "./MealFormLine.vue";
         submit,
     })
 </script>
+
+<template>
+    <div class="text-body">
+        <AtField
+            label="Title"
+        >
+            <LogerInput v-model="form.name" rounded />
+        </AtField>
+
+        <AtField
+            label="Ingredients"
+        >
+            <MealFormLine v-for="(ingredient, index) in form.ingredients"
+                :key="`${ingredient.id}-${index}`"
+                :meal="meal"
+                :index="index"
+                :ingredient="ingredient"
+                @check="checkIngredients(index, $event)"
+            />
+        </AtField>
+        <AtField
+            label="Tags"
+        >
+            <LogerInput v-model="form.name" rounded />
+        </AtField>
+        <AtField
+            label="Link"
+        >
+            <LogerInput v-model="form.name" rounded />
+        </AtField>
+        <AtField
+            label="Dish"
+        >
+            <LogerInput v-model="form.name" rounded />
+        </AtField>
+        <AtField
+            label="Time"
+        >
+            <LogerInput v-model="form.name" rounded />
+        </AtField>
+        <AtField
+            label="Times Planned"
+        >
+            <LogerInput v-model="form.name" rounded />
+        </AtField>
+    </div>
+</template>

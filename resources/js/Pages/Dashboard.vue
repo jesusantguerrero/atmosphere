@@ -6,10 +6,11 @@
     import OnboardingSteps from "@/Components/widgets/OnboardingSteps.vue";
     import ChartComparison from "@/Components/widgets/ChartComparison.vue";
     import ChartCurrentVsPrevious from "@/Components/widgets/ChartCurrentVsPrevious.vue";
-    import MealWidget from "@/Components/widgets/MealWidget.vue";
     import WeatherWidget from "@/Components/widgets/WeatherWidget.vue";
     import NextPaymentsWidget from "@/Components/widgets/NextPaymentsWidget.vue";
-
+    
+    import MealWidget from "@/domains/meal/components/MealWidget.vue";
+    
     import { useAppContextStore } from '@/store';
     import AppIcon from '@/Components/AppIcon.vue';
 

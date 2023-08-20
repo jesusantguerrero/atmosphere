@@ -1,3 +1,27 @@
+<script setup lang="ts">
+    import { AtField, AtButton } from "atmosphere-ui"
+
+    import LogerInput from "@/Components/atoms/LogerInput.vue";
+    import LogerApiSimpleSelect from "@/Components/organisms/LogerApiSimpleSelect.vue";
+
+    defineEmits(['close']);
+    defineProps({
+        meal: {
+            type: Object,
+            default: () => ({
+                name: '',
+            }),
+        },
+        ingredient: {
+            type: Object,
+            required: true,
+        },
+        index: {
+            type: Number
+        }
+    });
+</script>
+
 <template>
     <div class="flex px-2 py-2 overflow-hidden rounded-md bg-base-lvl-3">
         <AtField class="px-4" label="Qty">
@@ -31,27 +55,4 @@
     </div>
 </template>
 
-<script setup>
-    import { useForm } from "@inertiajs/vue3"
-    import { AtField, AtInput, AtButton } from "atmosphere-ui"
-    import { nextTick } from '@vue/runtime-core'
-    import LogerApiSimpleSelect from "./organisms/LogerApiSimpleSelect.vue";
-    import LogerInput from "./atoms/LogerInput.vue";
 
-    defineEmits(['close']);
-    const props = defineProps({
-        meal: {
-            type: Object,
-            default: () => ({
-                name: '',
-            }),
-        },
-        ingredient: {
-            type: Object,
-            required: true,
-        },
-        index: {
-            type: Number
-        }
-    });
-</script>

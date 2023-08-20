@@ -1,68 +1,42 @@
-<template>
-<NSelect
-    :value="optionParser(modelValue)"
-    filterable
-    clearable
-    remote
-    size="large"
-    :placeholder="placeholder"
-    :options="options"
-    :loading="isLoading"
-    v-bind="$attrs"
-    :render-label="renderLabel"
-    :clear-filter-after-select="false"
-    @update:value="emitInput"
-    @search="handleSearch"
->
-    <template #action>
-      <slot name="action" />
-    </template>
-</NSelect>
-</template>
 
-
-<script setup>
+<script setup lang="ts">
 import { NSelect } from "naive-ui";
 import { ref, onMounted } from "vue";
 import { debounce } from "lodash";
+import { RenderLabel } from "naive-ui/es/_internal/select-menu/src/interface";
 
-const props = defineProps({
-    modelValue: {
-        type: [Object]
-    },
-    endpoint: {
-        type: String
-    },
-    placeholder: {
-        type: String
-    },
-    allowCreate: {
-        type: Boolean
-    },
-    customLabel: {
-        type: String,
-        default: "label"
-    },
-    trackId: {
-        type: String
-    },
-    label: {
-        type: String
-    }
+const props = withDefaults(defineProps<{
+    modelValue: string | null;
+    endpoint: string;
+    placeholder?: string;
+    allowCreate?: boolean;
+    customLabel: string;
+    renderLabel?: RenderLabel;
+    trackId: string;
+    label: string;
+}>(), {
+    customLabel: "label",
 })
-const emit = defineEmits(['update:modelValue', 'update:label'])
 
-const options = ref([]);
+const emit = defineEmits(['update:modelValue', 'update:label', 'update:value'])
+
+const options = ref<{
+    label: string;
+    value: string;
+}[]>([]);
 const isLoading = ref(false);
 
 
-const optionParser = (option) => {
+const optionParser = (option: string | Record<string, string>) => {
     if (!option) return option
-    return option;
+
+    if (typeof option == 'string') {
+        return option;
+    }
     return props.customLabel && option ? option[props.customLabel] : option.label;
 }
 
-const resultParser = (apiOptions, query) => {
+const resultParser = (apiOptions: Record<string, string>[], query: string = "") => {
     let includeCustom = true;
     const originalMap = apiOptions.map(option => {
         const optionLabel = props.customLabel ? option[props.customLabel] : option.label;
@@ -96,7 +70,7 @@ const handleSearch = debounce((query) => {
     })
 }, 200)
 
-const emitInput = (optionId) => {
+const emitInput = (optionId: string) => {
     const option = options.value.find(option => option.value == optionId)
     emit('update:modelValue', optionId)
     emit('update:value', option)
@@ -106,10 +80,33 @@ const emitInput = (optionId) => {
 onMounted(() => {
     if (props.modelValue) {
         window.axios.get(`${props.endpoint}/${props.modelValue}`).then(({ data }) => {
-            options.value = resultParser([data?.data || data]).filter( value => value.label );
+            options.value = resultParser([data?.data || data])
+            .filter( value => value.label );
             emitInput(props.modelValue)
             isLoading.value = false
         })
     }
 })
 </script>
+
+<template>
+<NSelect
+    :value="optionParser(modelValue)"
+    filterable
+    clearable
+    remote
+    size="large"
+    :placeholder="placeholder"
+    :options="options"
+    :loading="isLoading"
+    v-bind="$attrs"
+    :render-label="renderLabel"
+    :clear-filter-after-select="false"
+    @update:value="emitInput"
+    @search="handleSearch"
+>
+    <template #action>
+      <slot name="action" />
+    </template>
+</NSelect>
+</template>
