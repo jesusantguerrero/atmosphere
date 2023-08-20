@@ -1,50 +1,15 @@
-<template>
-    <jet-form-section @submitted="createTeam">
-        <template #title>
-            Team Details
-        </template>
+<script setup lang="ts">
+    import { router } from '@inertiajs/vue3'
+    import { AtField } from "atmosphere-ui";
 
-        <template #description>
-            Create a new team to collaborate with others on projects.
-        </template>
-
-        <template #form>
-            <div class="col-span-6">
-                <jet-label value="Team Owner" />
-
-                <div class="flex items-center mt-2">
-                    <img class="object-cover w-12 h-12 rounded-full" :src="$page.props.user.profile_photo_url" :alt="$page.props.user.name">
-
-                    <div class="ml-4 leading-tight">
-                        <div>{{ $page.props.user.name }}</div>
-                        <div class="text-sm text-gray-700">{{ $page.props.user.email }}</div>
-                    </div>
-                </div>
-            </div>
-
-            <TeamForm
-                :timezones="timezones"
-                :currencies="currencies"
-                :formDate="form"
-            />
-        </template>
-
-        <template #actions>
-            <jet-button :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                Create
-            </jet-button>
-        </template>
-    </jet-form-section>
-</template>
-
-<script setup>
     import JetButton from '@/Components/atoms/Button.vue'
     import JetFormSection from '@/Components/atoms/FormSection.vue'
     import JetInput from '@/Components/atoms/Input.vue'
     import JetInputError from '@/Components/atoms/InputError.vue'
     import JetLabel from '@/Components/atoms/Label.vue'
-    import { router } from '@inertiajs/vue3'
     import TeamForm from '../Onboarding/TeamForm.vue'
+    import LogerButton from '@/Components/atoms/LogerButton.vue'
+    import ProfilePicture from './ProfilePicture.vue'
 
     const form = router.form({
         name: '',
@@ -57,3 +22,38 @@
         });
     }
 </script>
+
+
+<template>
+    <JetFormSection @submitted="createTeam">
+        <template #title>
+            Space Details
+        </template>
+
+        <template #description>
+            Create a new team to collaborate with others on projects.
+        </template>
+
+        <template #form>
+            <AtField label="Space Owner">
+                <ProfilePicture
+                    :photoUrl="$page.props.user.profile_photo_url"
+                    :userName="$page.props.user.name"
+                    :email="$page.props.user.email"
+                />
+            </AtField>
+
+            <TeamForm
+                :timezones="timezones"
+                :currencies="currencies"
+                :formData="form"
+            />
+        </template>
+
+        <template #actions>
+            <LogerButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+                Create
+            </LogerButton>
+        </template>
+    </JetFormSection>
+</template>

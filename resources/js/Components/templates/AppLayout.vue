@@ -138,7 +138,7 @@
                                 :current-team="$page.props.user.current_team"
                                 :teams="$page.props.user.all_teams"
                                 @switch-team="switchToTeam"
-                                @create="route('teams.create')"
+                                @create="router.visit(route('teams.create'))"
                                 resource-name="Budget"
                             />
 
