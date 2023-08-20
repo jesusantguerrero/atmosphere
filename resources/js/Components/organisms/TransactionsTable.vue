@@ -126,3 +126,4 @@ const calculateSum = (items: ITransaction[]) => {
 </template>
 
 
+../../domains/transactions/models/transactions

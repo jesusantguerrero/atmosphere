@@ -82,3 +82,4 @@ const detailColumn = computed(() => {
         </div>
     </NPopover>
 </template>
+../../domains/transactions/models/transactions

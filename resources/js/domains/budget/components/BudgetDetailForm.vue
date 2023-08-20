@@ -5,9 +5,10 @@
 
     import ColorSelector from '@/Components/molecules/ColorSelector.vue';
     import LogerButtonTab from '@/Components/atoms/LogerButtonTab.vue';
-    import BudgetTargetForm from '@/Components/molecules/BudgetTargetForm.vue';
-    import BudgetMoneyLine from '@/Components/molecules/BudgetMoneyLine.vue';
     import IconClose from '@/Components/icons/IconClose.vue';
+
+    import BudgetTargetForm from './BudgetTargetForm.vue';
+    import BudgetMoneyLine from './BudgetMoneyLine.vue';
 
     import { generateRandomColor } from "@/utils"
     import { ICategory } from '../Modules/finance/models/transactions';

@@ -3,6 +3,7 @@ import { format, startOfMonth } from 'date-fns';
 import { ref, nextTick, onMounted, inject } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { NDropdown } from 'naive-ui';
+import { computed } from 'vue';
 
 import IconDrag from '@/Components/icons/IconDrag.vue';
 import IconAllocated from '@/Components/icons/IconAllocated.vue';
@@ -12,28 +13,29 @@ import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 import LogerInput from '@/Components/atoms/LogerInput.vue';
 import PointAlert from '@/Components/atoms/PointAlert.vue';
 
-import { BudgetItem } from '@/Modules/finance/budget';
+import { BudgetCategory } from '@/domains/budget/models/budget';
 import autoAnimate from '@formkit/auto-animate';
+
 import formatMoney from "@/utils/formatMoney";
 import { getBudgetTarget } from '@/domains/budget/budgetTotals';
-import { computed } from 'vue';
-import { getCategoryLink } from '../Modules/finance/models/transactions';
+import { getCategoryLink } from '@/domains/transactions/models/transactions';
 
 
 const props = defineProps<{
-    item: BudgetItem;
+    item: BudgetCategory;
     showDelete: boolean;
 }>();
 
 const emit = defineEmits(['removed', 'edit'])
-const budgeted = ref(props.item.budgeted);
+const budgeted = ref<number>(props.item.budgeted);
 
 const budgetTarget = computed(() => {
     return props.item.budget ? getBudgetTarget(props.item.budget) : 0;
 })
 
 const lastMonthAmount = computed(() => {
-    return props.item.budgets?.at(2)?.budgeted ?? 0
+    // @ts-ignore: 
+    return props.item.budgets?.at?.(2)?.budgeted ?? 0
 })
 
 const assignOptions = computed(() => {
@@ -57,10 +59,6 @@ const assignOptions = computed(() => {
 
 const setAmount = (amount: number) => {
     budgeted.value = amount;
-};
-
-const clear = () => {
-//   form.value.amount = 0;
 };
 
 const handleAssignOptions = (option: string) => {

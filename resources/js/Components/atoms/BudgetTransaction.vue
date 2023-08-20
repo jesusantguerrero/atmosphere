@@ -1,23 +1,8 @@
-<template>
-    <span
-        class="flex items-center py-1 cursor-pointer rounded-3xl text-body-1 group"
-        :class="[badgeClass, iconOnly ? 'px-2' : 'w-full text-right px-5']"
-        @click.stop="onAssignBudget()"
-        title="Execute transaction"
-        v-if="spendingAmount"
-    >
-        <IconBolt class="group-hover:text-yellow-500" />
-        <span v-if="!iconOnly">
-            {{ formatMoney(spendingAmount) }}
-        </span>
-</span>
-</template>
-
-<script setup>
+<script setup lang="ts">
     import { useForm } from "@inertiajs/vue3";
     import { computed } from "vue"
 
-    import IconBolt from "../icons/IconBolt.vue";
+    import IconBolt from "@/Components/icons/IconBolt.vue";
 
     import { useTransactionModal } from "@/domains/transactions";
     import formatMoney from "@/utils/formatMoney";
@@ -29,7 +14,7 @@
         formatter: {
             type: Function,
             default() {
-                return (value) => {
+                return (value: string) => {
                     return value
                 }
             }
@@ -100,3 +85,18 @@
         }
     }
 </script>
+
+<template>
+    <span
+        class="flex items-center py-1 cursor-pointer rounded-3xl text-body-1 group"
+        :class="[badgeClass, iconOnly ? 'px-2' : 'w-full text-right px-5']"
+        @click.stop="onAssignBudget()"
+        title="Execute transaction"
+        v-if="spendingAmount"
+    >
+        <IconBolt class="group-hover:text-yellow-500" />
+        <span v-if="!iconOnly">
+            {{ formatMoney(spendingAmount) }}
+        </span>
+</span>
+</template>

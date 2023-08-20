@@ -1,3 +1,140 @@
+
+<script setup lang="ts">
+import { computed, toRefs } from "vue";
+import { router } from "@inertiajs/vue3";
+import { format, subMonths } from "date-fns";
+// @ts-ignore
+import { AtButton, AtDatePager } from "atmosphere-ui";
+
+import AppLayout from "@/Components/templates/AppLayout.vue";
+import LogerButton from "@/Components/atoms/LogerButton.vue";
+import WidgetTitleCard from "@/Components/molecules/WidgetTitleCard.vue";
+
+import FinanceCard from "@/Components/molecules/FinanceCard.vue";
+import FinanceVarianceCard from "@/Components/molecules/FinanceVarianceCard.vue";
+import TransactionsTable from "@/Components/organisms/TransactionsTable.vue";
+import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
+import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
+import CategoryTrendsPreview from "@/domains/transactions/components/CategoryTrendsPreview.vue";
+import BudgetProgress from "@/domains/budget/components/BudgetProgress.vue";
+
+import { useServerSearch } from "@/composables/useServerSearch";
+import {
+    transactionDBToTransaction,
+    plannedDBToTransaction,
+    getVariances,
+    useTransactionModal,
+    removeTransaction
+} from "@/domains/transactions";
+import { useSelect } from "@/utils/useSelects";
+import formatMoney from "@/utils/formatMoney";
+
+
+
+const props = defineProps({
+  user: {
+    type: Object,
+    required: true,
+  },
+  planned: {
+    type: Array,
+    default() {
+      return [];
+    },
+  },
+  expensesByCategory: {
+    type: Array,
+    default() {
+      return [];
+    },
+  },
+  expensesByCategoryGroup: {
+    type: Array,
+    default() {
+      return [];
+    },
+  },
+  budgetTotal: {
+    type: [Number, String],
+    default: 0,
+  },
+  income: {
+    type: [Number, String],
+    default: 0,
+  },
+  savings: {
+    type: [Number, String],
+  },
+  lastMonthIncome: {
+    type: [Number, String],
+    default: 0,
+  },
+  transactionTotal: {
+    type: [Number, String],
+    default: 0,
+  },
+  lastMonthExpenses: {
+    type: [Number, String],
+    default: 0,
+  },
+  transactions: {
+    type: Array,
+    default() {
+      return [];
+    },
+  },
+  categories: {
+    type: Array,
+    default() {
+      return [];
+    },
+  },
+  accounts: {
+    type: Array,
+    default() {
+      return [];
+    },
+  },
+  serverSearchOptions: {
+    type: Object,
+    default: () => ({}),
+  },
+});
+
+const { serverSearchOptions } = toRefs(props);
+const { state: pageState, executeSearchWithDelay } = useServerSearch(serverSearchOptions, {
+    manual: true
+});
+
+const { categoryOptions: transformCategoryOptions } = useSelect();
+transformCategoryOptions(props.categories, "accounts", "categoryOptions");
+transformCategoryOptions(props.accounts, "accounts", "accountsOptions");
+
+const lastMonthName = computed(() => {
+    try {
+        return format(subMonths(pageState.dates.startDate, 1), 'MMM');
+    } catch (e) {
+        return 'LM'
+    }
+})
+const incomeVariance = computed(() => {
+  return getVariances(props.income, props.lastMonthIncome);
+});
+
+const expenseVariance = computed(() => {
+  return getVariances(props.transactionTotal, props.lastMonthExpenses) || 0;
+});
+
+const topCategories = props.expensesByCategory.slice(0, 4);
+
+const { openTransactionModal } = useTransactionModal();
+const handleEdit = (transaction) => {
+    openTransactionModal({
+        transactionData: transaction
+    })
+}
+</script>
+
 <template>
   <AppLayout>
     <template #header>
@@ -109,134 +246,3 @@
   </AppLayout>
 </template>
 
-<script setup>
-import { computed, toRefs } from "vue";
-import { router } from "@inertiajs/vue3";
-import { AtButton, AtDatePager } from "atmosphere-ui";
-import AppLayout from "@/Components/templates/AppLayout.vue";
-import FinanceCard from "@/Components/molecules/FinanceCard.vue";
-import FinanceVarianceCard from "@/Components/molecules/FinanceVarianceCard.vue";
-import TransactionsTable from "@/Components/organisms/TransactionsTable.vue";
-import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
-import {
-    transactionDBToTransaction,
-    plannedDBToTransaction,
-    getVariances,
-    useTransactionModal,
-    removeTransaction
-} from "@/domains/transactions";
-import BudgetProgress from "@/Components/molecules/BudgetProgress.vue";
-import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
-import { useSelect } from "@/utils/useSelects";
-import formatMoney from "@/utils/formatMoney";
-import { useServerSearch } from "@/composables/useServerSearch";
-import CategoryTrendsPreview from "@/Components/Modules/finance/CategoryTrendsPreview.vue";
-import LogerButton from "@/Components/atoms/LogerButton.vue";
-import WidgetTitleCard from "@/Components/molecules/WidgetTitleCard.vue";
-import { format, subMonths } from "date-fns";
-
-
-
-const props = defineProps({
-  user: {
-    type: Object,
-    required: true,
-  },
-  planned: {
-    type: Array,
-    default() {
-      return [];
-    },
-  },
-  expensesByCategory: {
-    type: Array,
-    default() {
-      return [];
-    },
-  },
-  expensesByCategoryGroup: {
-    type: Array,
-    default() {
-      return [];
-    },
-  },
-  budgetTotal: {
-    type: [Number, String],
-    default: 0,
-  },
-  income: {
-    type: [Number, String],
-    default: 0,
-  },
-  savings: {
-    type: [Number, String],
-  },
-  lastMonthIncome: {
-    type: [Number, String],
-    default: 0,
-  },
-  transactionTotal: {
-    type: [Number, String],
-    default: 0,
-  },
-  lastMonthExpenses: {
-    type: [Number, String],
-    default: 0,
-  },
-  transactions: {
-    type: Array,
-    default() {
-      return [];
-    },
-  },
-  categories: {
-    type: Array,
-    default() {
-      return [];
-    },
-  },
-  accounts: {
-    type: Array,
-    default() {
-      return [];
-    },
-  },
-  serverSearchOptions: {
-    type: Object,
-    default: () => ({}),
-  },
-});
-
-const { serverSearchOptions } = toRefs(props);
-const { state: pageState, executeSearchWithDelay } = useServerSearch(serverSearchOptions, {
-    manual: true
-});
-
-const { categoryOptions: transformCategoryOptions } = useSelect();
-transformCategoryOptions(props.categories, "accounts", "categoryOptions");
-transformCategoryOptions(props.accounts, "accounts", "accountsOptions");
-
-const lastMonthName = computed(() => {
-    try {
-        return format(subMonths(pageState.dates.startDate, 1), 'MMM');
-    } catch (e) {
-        return 'LM'
-    }
-})
-const incomeVariance = computed(() => {
-  return getVariances(props.income, props.lastMonthIncome);
-});
-
-const expenseVariance = computed(() => {
-  return getVariances(props.transactionTotal, props.lastMonthExpenses) || 0;
-});
-
-const topCategories = props.expensesByCategory.slice(0, 4);
-
-const { openTransactionModal } = useTransactionModal();
-const handleEdit = (transaction) => {
-    openTransactionModal({
-        transactionData: transaction
-    })
-}
-</script>

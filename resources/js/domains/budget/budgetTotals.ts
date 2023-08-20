@@ -1,22 +1,23 @@
 import { format } from 'date-fns';
 import { FREQUENCY_TYPE } from './../../utils/index';
+// @ts-ignore
 import ExactMath from "exact-math";
 import { getFrequencyMonthFactor } from "./getFrequencyMonthFactor";
-import { BudgetTarget } from "../../Components/Modules/finance/models/budget";
+import { BudgetTarget } from "./models/budget";
 import { useDatePager } from "vueuse-temporals";
 
-export const isSpendingTarget = budgetMetaData => {
+export const isSpendingTarget = (budgetMetaData: Record<string, any>) => {
     return budgetMetaData.target_type == 'spending'
 }
 
-export const isSavingBalance = budgetMetaData => {
+export const isSavingBalance = (budgetMetaData: Record<string, any>) => {
     return budgetMetaData.target_type == 'saving_balance'
 }
-export const getCategoriesTotals = (categories, config = {
-    onOverspent: () => {},
-    onOverAssigned: () => {},
-    onUnderFunded: () => {},
-    onFunded: () => {}
+export const getCategoriesTotals = (categories: Record<string, any>, config = {
+    onOverspent: (category: Record<string, any>) => {},
+    onOverAssigned: (category: Record<string, any>) => {},
+    onUnderFunded: (category: Record<string, any>) => {},
+    onFunded: (category: Record<string, any>) => {}
 }) => {
     return Object.values(categories).reduce((categoryTotals, category) => {
         const { budget: budgetTarget } = category;
@@ -64,8 +65,8 @@ export const getCategoriesTotals = (categories, config = {
     })
 }
 
-export const getGroupTotals = (groups) => {
-    return groups.reduce((groupTotals, group) => {
+export const getGroupTotals = (groups: Record<string, any>) => {
+    return groups.reduce((groupTotals: Record<string, any>, group: Record<string, any>) => {
         groupTotals.budgeted = ExactMath.add(group.budgeted, groupTotals.budgeted || 0)
         groupTotals.activity = ExactMath.add(group.activity, groupTotals.activity || 0)
         groupTotals.prevMonthLeftOver = ExactMath.add(group.prevMonthLeftOver, groupTotals.prevMonthLeftOver)
@@ -82,7 +83,6 @@ export const getGroupTotals = (groups) => {
         }
     })
 }
-
 
 
 const getMonthInstanceCount = (frequency: string, weekDay: string, date = new Date()) => {

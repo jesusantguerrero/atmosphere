@@ -1,11 +1,4 @@
-<template>
-    <span class="relative inline-block" :class="{'font-bold': bold}">
-        <NumberHider />
-        {{ formatMoney(value) }}
-    </span>
-</template>
-
-<script setup>
+<script setup lang="ts">
 import { formatMoney } from '@/utils';
 import NumberHider from './NumberHider.vue';
 
@@ -18,3 +11,11 @@ defineProps({
     }
 })
 </script>
+
+
+<template>
+    <span class="relative inline-block" :class="{'font-bold': bold}">
+        <NumberHider />
+        {{ formatMoney(value) }}
+    </span>
+</template>

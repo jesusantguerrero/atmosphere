@@ -1,29 +1,31 @@
-<script setup>
+<script setup lang="ts">
 import { computed, provide, toRefs } from "vue";
 import { router } from "@inertiajs/vue3";
 import { AtButton, AtDatePager } from "atmosphere-ui";
 import { useBreakpoints, breakpointsTailwind } from "@vueuse/core";
+import { startOfMonth } from "date-fns";
 
 import Modal from "@/Components/atoms/Modal.vue";
 import AppLayout from "@/Components/templates/AppLayout.vue";
-import BudgetDetailForm from "@/Components/organisms/BudgetDetailForm.vue";
+import StatusButtons from "@/Components/molecules/StatusButtons.vue";
 import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
 import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
-import BalanceAssign from "@/Components/organisms/BalanceAssign.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
-import BudgetProgress from "@/Components/molecules/BudgetProgress.vue";
 import ExpenseIncome from "@/Components/widgets/ExpenseIncome.vue";
 import PointAlert from "@/Components/atoms/PointAlert.vue";
 import IconClose from "@/Components/icons/IconClose.vue";
 
-import { useServerSearch } from "@/composables/useServerSearch";
+import BalanceAssign from "@/Components/organisms/BalanceAssign.vue";
+import BudgetDetailForm from "@/domains/budget/components/BudgetDetailForm.vue";
+import BudgetProgress from "@/domains/budget/components/BudgetProgress.vue";
+
 import { useBudget } from "@/domains/budget";
+import { useServerSearch } from "@/composables/useServerSearch";
 import MoneyPresenter from "@/Components/molecules/MoneyPresenter.vue";
 import MessageBox from "@/Components/organisms/MessageBox.vue";
 import BudgetCategories from "./Partials/BudgetCategories.vue";
+
 import { formatMonth } from "@/utils";
-import StatusButtons from "@/Components/molecules/StatusButtons.vue";
-import { startOfMonth } from "date-fns";
 
 const props = defineProps({
   budgets: {

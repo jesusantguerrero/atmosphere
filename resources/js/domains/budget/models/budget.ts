@@ -1,5 +1,5 @@
 export interface BudgetTarget {
-    amount: string;
+    amount: number
     category_id: number;
     color: string;
     created_at: string;
@@ -8,7 +8,7 @@ export interface BudgetTarget {
     frequency_interval?:null
     frequency_interval_unit?:null
     frequency_month_date: number;
-    frequency_week_day: number;
+    frequency_week_day: string;
     icon?: string
     id: number;
     is_private: boolean;
@@ -62,9 +62,13 @@ export interface BudgetCategory {
     budget: BudgetTarget
     budgets: BudgetMonth[]
     month:string
-    budgeted:string
+    budgeted: number;
     activity: number;
     available: number
     prevMonthLeftOver:number
     hasFunded: boolean
+}
+
+export interface BudgetItem {
+
 }
