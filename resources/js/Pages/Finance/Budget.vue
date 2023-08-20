@@ -72,7 +72,7 @@ const {
 } = useBudget();
 
 const panelSize = computed(() => {
-  return !selectedBudget.value ? "large" : "small";
+  return !selectedBudget.value ? "large" : "large";
 });
 
 const { isSmaller } = useBreakpoints(breakpointsTailwind);
@@ -81,7 +81,7 @@ const showCategoriesInMain = isSmaller("md");
 //  budget filters
 const budgetStatus = {
   funded: {
-    label: "funded",
+    label: "Funded",
   },
   underFunded: {
     label: "Not funded",

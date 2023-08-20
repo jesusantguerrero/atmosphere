@@ -126,9 +126,11 @@ const handleOptions = (option: any) => {
             break;
         case 'add':
             toggleAdding()
+            break;
         case 'transactions':
             const link = getCategoryLink(props.item.id, 'groups');
             router.visit(link)
+            break;
         default:
             break;
     }

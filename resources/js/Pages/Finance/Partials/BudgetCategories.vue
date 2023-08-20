@@ -1,12 +1,13 @@
 <template>
     <BudgetGroupForm
         v-model="categoryForm.name"
-        class="rounded-md overflow-hidden"
+        class="overflow-hidden rounded-md"
         :class="[cardShadow]"
         @save="saveBudgetCategory()"
+        @cancel=""
     />
     <Draggable
-        class="w-full space-y-2 dragArea list-group overflow-auto ic-scroller"
+        class="w-full space-y-2 overflow-auto dragArea list-group ic-scroller"
         :list="visibleCategories"
         handle=".handle"
         @end="saveReorder(visibleCategories)"
@@ -22,11 +23,12 @@
         >
         <template v-slot:content="{ isExpanded, isAdding, toggleAdding }">
             <div class="bg-base-lvl-3">
-            <div v-if="isAdding" class="pt-2">
+            <div v-if="isAdding" class="pt-2 pr-4" :class="{'pb-4': !isExpanded}">
                 <LogerInput
                     placeholder="Add subcategory"
                     v-model="categoryForm.name"
-                    @keydown.enter.ctrl="saveBudgetCategory(itemGroup.id, toggleAdding)"
+                    :disabled="categoryForm.processing"
+                    @keydown.enter="saveBudgetCategory(itemGroup.id, toggleAdding)"
                 />
             </div>
 
@@ -38,7 +40,9 @@
                 @end="saveReorder(itemGroup.subCategories)"
             >
                 <BudgetItem
-                    class="bg-base-lvl-2 border-base-lvl-3"
+                    class=" border-base-lvl-3"
+                    :class="[selectedBudget?.id == item.id ?
+                        'bg-base-lvl-2 border-base-lvl-3' : 'bg-base-lvl-3' ]"
                     v-for="item in itemGroup.subCategories"
                     :key="`${item.id}-${item.budgeted}`"
                     :item="item"
