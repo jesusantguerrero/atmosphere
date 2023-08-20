@@ -8,10 +8,10 @@ interface QuickTransactionData {
     categoryName?: string;
     amount: number;
     date: string;
-    counterAccountName?: string 
+    counterAccountName?: string
 }
 export const useTransactionStore = defineStore('transactions', () => {
-    const onSubmit = (data: QuickTransactionData, direction = TRANSACTION_DIRECTIONS.WITHDRAW) => {      
+    const onSubmit = (data: QuickTransactionData, direction = TRANSACTION_DIRECTIONS.WITHDRAW) => {
         return new Promise((resolve, reject) => useForm({
             resource_type_id: "MANUAL",
             total: data.amount,
@@ -34,7 +34,7 @@ export const useTransactionStore = defineStore('transactions', () => {
                 reject()
             }
           }));
-      };
+    };
 
     return {
        onSubmit
