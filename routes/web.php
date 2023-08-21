@@ -178,6 +178,7 @@ Route::middleware(['auth:sanctum'])->prefix('/api')->name('api.')->group(functio
     Route::get('/timezones', [TimezonesApiController::class, 'index']);
     // currencies
     Route::get('/currencies', [CurrencyApiController::class, 'index']);
+    Route::get('/category-transactions/{category}', [FinanceLinesController::class, 'getTransactions']);
 
     // Jetstream teams rewrite
     Route::patch('/v2/team-invitations/{invitation}', [TeamInvitationController::class, 'accept'])->name('team-invitations.accept-internal');

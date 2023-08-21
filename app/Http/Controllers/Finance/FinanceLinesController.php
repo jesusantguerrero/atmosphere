@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Finance;
 
+use App\Domains\Transaction\Services\ReportService;
 use App\Domains\Transaction\Services\TransactionService;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Freesgen\Atmosphere\Http\Querify;
@@ -73,5 +74,28 @@ class FinanceLinesController extends InertiaController {
                 ]
             )
         ]);
+    }
+
+    public function getTransactions(Category $category) {
+        $queryParams = request()->query();
+        $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
+        [$startDate, $endDate] = $this->getFilterDates($filters);
+
+        return [
+            "sectionTitle" => $category->name,
+            'accountId' => $category->id,
+            'resource' => $category,
+            'transactions' => ReportService::getExpensesByCategoriesInPeriod(
+                $category->team_id,
+                $startDate,
+                $endDate,
+                [$category->id]
+            )->groupBy('date')->map(function ($monthItems) {
+                return [
+                    'date' => $monthItems->first()->date,
+                    'total' => $monthItems->sum('total')
+                ];
+            })->sortBy('date')
+        ];
     }
 }
