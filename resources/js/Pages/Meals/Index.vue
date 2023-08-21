@@ -1,49 +1,14 @@
-<template>
-  <AppLayout
-    title="Recipes"
-    :show-back-button="true"
-    @back="router.visit('/meal-planner')"
-  >
-    <template #header>
-      <MealSectionNav>
-        <template #actions>
-          <StatusButtons
-            v-model="currentStatus"
-            :statuses="mealStatus"
-            @change="router.visit($event)"
-          />
-          <div>
-            <AtButton
-              class="items-center h-10 text-white bg-primary"
-              rounded
-              @click="router.visit(route('meals.create'))"
-            >
-              New Meal</AtButton
-            >
-          </div>
-        </template>
-      </MealSectionNav>
-    </template>
-    <MealTemplate class="mx-auto">
-      <MealSection
-        :meals="recipes"
-        @click="router.visit(route('meals.edit', $event))"
-        @toggle-like="onToggleLike"
-      />
-    </MealTemplate>
-  </AppLayout>
-</template>
-
-<script setup>
-import { AtButton } from "atmosphere-ui";
-import { router } from "@inertiajs/vue3";
+<script setup lang="ts">
 import { computed, ref } from "vue";
+import { router } from "@inertiajs/vue3";
+import { AtButton } from "atmosphere-ui";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
-import MealSection from "@/Components/MealSection.vue";
-import MealTemplate from "@/Components/templates/MealTemplate.vue";
-import MealSectionNav from "@/Components/templates/MealSectionNav.vue";
 import StatusButtons from "@/Components/molecules/StatusButtons.vue";
+
+import MealSection from "@/domains/meal/components/MealSection.vue";
+import MealTemplate from "@/domains/meal/components/MealTemplate.vue";
+import MealSectionNav from "@/domains/meal/components/MealSectionNav.vue";
 
 const props = defineProps({
   meals: {
@@ -90,3 +55,40 @@ const mealStatus = {
 
 const currentStatus = ref(props.serverSearchOptions.filters?.is_liked || "all");
 </script>
+
+<template>
+  <AppLayout
+    title="Recipes"
+    :show-back-button="true"
+    @back="router.visit('/meal-planner')"
+  >
+    <template #header>
+      <MealSectionNav>
+        <template #actions>
+          <StatusButtons
+            v-model="currentStatus"
+            :statuses="mealStatus"
+            @change="router.visit($event)"
+          />
+          <div>
+            <AtButton
+              class="items-center h-10 text-white bg-primary"
+              rounded
+              @click="router.visit(route('meals.create'))"
+            >
+              New Meal</AtButton
+            >
+          </div>
+        </template>
+      </MealSectionNav>
+    </template>
+    <MealTemplate class="mx-auto">
+      <MealSection
+        :meals="recipes"
+        @click="router.visit(route('meals.edit', $event))"
+        @toggle-like="onToggleLike"
+      />
+    </MealTemplate>
+  </AppLayout>
+</template>
+

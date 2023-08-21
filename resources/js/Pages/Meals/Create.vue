@@ -1,3 +1,31 @@
+<script setup lang="ts">
+import { ref, computed } from "vue";
+import { AtButton } from "atmosphere-ui";
+import { router } from "@inertiajs/vue3";
+
+import AppLayout from "@/Components/templates/AppLayout.vue";
+
+import MealForm from "@/Domains/meal/components/MealForm.vue";
+import MealSectionNav from "@/Domains/meal/components/MealSectionNav.vue";
+import MealTemplate from "@/Domains/meal/components/MealTemplate.vue";
+
+const props = defineProps({
+  meals: {
+    type: [Object, null],
+    default: null,
+  },
+});
+
+const mealForm = ref(null);
+const submit = () => {
+  mealForm.value.submit();
+};
+
+const mealFormLabel = computed(() => {
+  return props.meals ? `Meals / ${props.meals.name}` : "Create recipe";
+});
+</script>
+
 <template>
   <AppLayout
     :title="mealFormLabel"
@@ -21,30 +49,3 @@
     </MealTemplate>
   </AppLayout>
 </template>
-
-<script setup>
-import { ref, computed } from "vue";
-import { AtButton } from "atmosphere-ui";
-import { router } from "@inertiajs/vue3";
-
-import AppLayout from "@/Components/templates/AppLayout.vue";
-import MealForm from "@/Components/MealForm.vue";
-import MealSectionNav from "@/Components/templates/MealSectionNav.vue";
-import MealTemplate from "@/Components/templates/MealTemplate.vue";
-
-const props = defineProps({
-  meals: {
-    type: [Object, null],
-    default: null,
-  },
-});
-
-const mealForm = ref(null);
-const submit = () => {
-  mealForm.value.submit();
-};
-
-const mealFormLabel = computed(() => {
-  return props.meals ? `Meals / ${props.meals.name}` : "Create recipe";
-});
-</script>

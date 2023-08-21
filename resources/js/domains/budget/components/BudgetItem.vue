@@ -3,6 +3,7 @@ import { format, startOfMonth } from 'date-fns';
 import { ref, nextTick, onMounted, inject } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { NDropdown } from 'naive-ui';
+import { computed } from 'vue';
 
 import IconDrag from '@/Components/icons/IconDrag.vue';
 import IconAllocated from '@/Components/icons/IconAllocated.vue';
@@ -12,27 +13,29 @@ import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 import LogerInput from '@/Components/atoms/LogerInput.vue';
 import PointAlert from '@/Components/atoms/PointAlert.vue';
 
-import { BudgetItem } from '@/Modules/finance/budget';
+import { BudgetCategory } from '@/domains/budget/models/budget';
 import autoAnimate from '@formkit/auto-animate';
+
 import formatMoney from "@/utils/formatMoney";
 import { getBudgetTarget } from '@/domains/budget/budgetTotals';
-import { computed } from 'vue';
+import { getCategoryLink } from '@/domains/transactions/models/transactions';
 
 
 const props = defineProps<{
-    item: BudgetItem;
+    item: BudgetCategory;
     showDelete: boolean;
 }>();
 
 const emit = defineEmits(['removed', 'edit'])
-const budgeted = ref(props.item.budgeted);
+const budgeted = ref<number>(props.item.budgeted);
 
 const budgetTarget = computed(() => {
     return props.item.budget ? getBudgetTarget(props.item.budget) : 0;
 })
 
 const lastMonthAmount = computed(() => {
-    return props.item.budgets?.at(2)?.budgeted ?? 0
+    // @ts-ignore: 
+    return props.item.budgets?.at?.(2)?.budgeted ?? 0
 })
 
 const assignOptions = computed(() => {
@@ -56,10 +59,6 @@ const assignOptions = computed(() => {
 
 const setAmount = (amount: number) => {
     budgeted.value = amount;
-};
-
-const clear = () => {
-//   form.value.amount = 0;
 };
 
 const handleAssignOptions = (option: string) => {
@@ -106,6 +105,9 @@ const options = [{
 }, {
     name: 'updateActivity',
     label: 'Update Activity'
+}, {
+    name: 'transactions',
+    label: 'Transactions'
 }]
 
 const removeCategory = () => {
@@ -136,7 +138,7 @@ const updateActivity = () => {
     })
 }
 
-const handleOptions = (option) => {
+const handleOptions = (option: string) => {
     switch(option) {
         case 'delete':
             removeCategory()
@@ -144,6 +146,9 @@ const handleOptions = (option) => {
         case 'updateActivity':
             updateActivity()
             break;
+        case 'transactions':
+            const link = getCategoryLink(props.item.id, 'categories');
+            router.visit(link)
         default:
             break;
     }
@@ -168,7 +173,7 @@ onMounted(() => {
 
 
 <template>
-<div class="flex px-4 py-2 space-between">
+<div class="flex px-4 py-2 space-between" @click.stop="$emit('edit')">
     <div class="flex items-center w-full space-x-4">
         <button v-if="showDelete" class="text-gray-400 transition cursor-pointer hover:text-red-400 focus:outline-none" @click="$emit('deleted', $event)">
             <i class="fa fa-trash"></i>
@@ -182,7 +187,6 @@ onMounted(() => {
                     <span :style="{ color: item.color }">
                         {{ item.name }}
                     </span>
-                    <i class="ml-2 fa fa-cog" @click.stop="$emit('edit')"></i>
                 </span>
                 <PointAlert
                     v-if="item.hasOverspent || item.hasOverAssigned || item.hasUnderFunded"

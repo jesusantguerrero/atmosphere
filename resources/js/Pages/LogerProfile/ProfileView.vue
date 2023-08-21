@@ -168,3 +168,4 @@ const budgets = computed(() => {
         </LogerProfileTemplate>
     </AppLayout>
 </template>
+@/domains/transactions/models/transactions

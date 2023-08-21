@@ -20,10 +20,11 @@ class CreateTeamSettings
     {
         $team = $event->team;
 
+        (new CreateChartAccounts)->create($team);
+        (new CreateTransactionCategories)->create($team);
+        (new CreateDefaultMealTypes)->setup($team->id, $team->user_id);
+
         if ($team->personal_team) {
-            (new CreateChartAccounts)->create($team);
-            (new CreateTransactionCategories)->create($team);
-            (new CreateDefaultMealTypes)->setup($team->id, $team->user_id);
             $this->setTrialPeriod($team);
         }
     }

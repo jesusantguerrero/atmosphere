@@ -3,8 +3,8 @@
 namespace App\Listeners;
 
 use App\Domains\AppCore\Models\Category;
+use App\Domains\Transaction\Models\Transaction;
 use Insane\Journal\Events\AccountCreated;
-use App\Models\Transaction;
 use Illuminate\Support\Carbon;
 use Insane\Journal\Models\Core\Payee;
 

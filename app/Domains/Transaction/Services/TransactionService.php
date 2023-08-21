@@ -307,6 +307,6 @@ class TransactionService {
         ->with(['splits', 'payee', 'category', 'splits.payee','account', 'counterAccount'])
         ->orderByDesc('date')
         ->whereBetween('date', [$options['startDate'], $options['endDate']])
-        ->when($options['limit'], fn ($query) => $query->limit($options['limit']));
+        ->when(isset($options['limit']), fn ($query) => $query->limit($options['limit']));
     }
 }

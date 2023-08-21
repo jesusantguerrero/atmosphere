@@ -1,65 +1,35 @@
-<template>
-<div class="flex justify-between w-full pr-8 overflow-auto md:overflow-hidden">
-    <SubmenuTab
-        v-for="section in visibleTabs"
-        @click="handleClick(section)"
-        :is-selected="isSelected(section)"
-        :key="section.url"
-        class="text-xs md:text-md w-full md:w-auto text-center"
-    >
-        {{ section.label }}
-    </SubmenuTab>
-    <NDropdown
-        trigger="click"
-        key-field="name"
-        class="w-full"
-        v-if="isMobile"
-        :options="options"
-        :on-select="handleOptionClick"
-    >
-        <SubmenuTab
-            :key="more"
-            class="text-xs md:text-md w-full md:w-auto text-center"
-        >
-            More
-        </SubmenuTab>
-    </NDropdown>
-    <div class="hidden space-x-2 text-xs md:flex py-1 justify-end items-center ml-auto">
-       <slot name="actions" />
-    </div>
-</div>
-</template>
-
-
-<script setup>
+<script setup lang="ts">
 import SubmenuTab from '@/Components/atoms/SubmenuTab.vue';
 import { router } from '@inertiajs/vue3';
 import { computed } from "vue"
 import { useBreakpoints, breakpointsTailwind } from "@vueuse/core"
 import { NDropdown } from 'naive-ui';
 
-const props = defineProps({
-    sections: {
-        type: Array,
-        default: () => ([])
-    },
-    modelValue: {
-        type: String
-    }
-})
+
+interface NavSection {
+    url?: string;
+    value: string;
+    label: string;
+}
+
+const props = defineProps<{
+    sections: NavSection[];
+    modelValue?: string;
+}>();
+
 const emit = defineEmits(['update:modelValue']);
 
 const currentPath = computed(() => {
     return document?.location?.pathname
 })
 
-const isSelected = (section) => {
+const isSelected = (section: NavSection) => {
     const sectionName = section.url || section.value
     const value = props.modelValue || currentPath.value
     return sectionName == value
 }
 
-const handleClick = (section) => {
+const handleClick = (section: NavSection) => {
     if (section?.url) {
         router.visit(section.url)
     } else {
@@ -79,7 +49,7 @@ const options = computed(() => {
     }))
 })
 
-const handleOptionClick = (url) => {
+const handleOptionClick = (url: string) => {
     if (url.includes('/')) {
         router.visit(url)
     } else {
@@ -87,3 +57,36 @@ const handleOptionClick = (url) => {
     }
 }
 </script>
+
+
+<template>
+<div class="flex justify-between w-full pr-8 overflow-auto md:overflow-hidden">
+    <SubmenuTab
+        v-for="section in visibleTabs"
+        @click="handleClick(section)"
+        :is-selected="isSelected(section)"
+        :key="section.url"
+        class="w-full text-xs text-center md:text-md md:w-auto"
+    >
+        {{ section.label }}
+    </SubmenuTab>
+    <NDropdown
+        trigger="click"
+        key-field="name"
+        class="w-full"
+        v-if="isMobile"
+        :options="options"
+        :on-select="handleOptionClick"
+    >
+        <SubmenuTab
+            key="more"
+            class="w-full text-xs text-center md:text-md md:w-auto"
+        >
+            More
+        </SubmenuTab>
+    </NDropdown>
+    <div class="items-center justify-end hidden py-1 ml-auto space-x-2 text-xs md:flex">
+       <slot name="actions" />
+    </div>
+</div>
+</template>

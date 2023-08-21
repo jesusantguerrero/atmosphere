@@ -1,3 +1,27 @@
+<script setup lang="ts">
+import formatMoney from "@/utils/formatMoney";
+
+import NumberHider from "@/Components/molecules/NumberHider.vue";
+import IconDrag from "../icons/IconDrag.vue";
+import LogerButtonTab from "./LogerButtonTab.vue";
+
+defineProps({
+  account: {
+    type: Object,
+    required: true,
+  },
+  isSelected: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+const isDebt = (amount: number) => {
+  return amount < 0;
+};
+</script>
+
+
 <template>
   <div
     class="flex justify-between px-2 py-2 overflow-hidden rounded-md cursor-pointer hover:bg-base group"
@@ -29,25 +53,3 @@
   </div>
 </template>
 
-<script setup>
-import formatMoney from "@/utils/formatMoney";
-
-import NumberHider from "@/Components/molecules/NumberHider.vue";
-import IconDrag from "../icons/IconDrag.vue";
-import LogerButtonTab from "./LogerButtonTab.vue";
-
-defineProps({
-  account: {
-    type: Object,
-    required: true,
-  },
-  isSelected: {
-    type: Boolean,
-    default: false,
-  },
-});
-
-const isDebt = (amount) => {
-  return amount < 0;
-};
-</script>
