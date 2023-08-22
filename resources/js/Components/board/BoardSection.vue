@@ -1,139 +1,4 @@
-<template>
-    <div class="px-8 pb-24">
-        <header class="flex justify-between board__toolbar">
-            <BoardTitle
-                class="w-full"
-                :board="board"
-                @saved="updateBoardName"
-                :automations="automations"
-                @run-automation="runAutomation"
-            />
-
-            <div class="flex items-center">
-                <div class="w-40">
-                    <multiselect
-                        v-model="modeSelected"
-                        ref="input"
-                        v-if="false"
-                        :show-labels="false"
-                        :options="viewsKeys"
-                        class="w-full"
-                    >
-                     <template slot="singleLabel" slot-scope="props">
-                         <span class="option__title">
-                                <i :class="views[props.option].icon" class="mr-2"></i>
-                                {{ views[props.option].title }}
-                            </span>
-                    </template>
-                    <template slot="option" slot-scope="props">
-                        <div class="option__desc">
-                            <span class="option__title"><i :class="views[props.option].icon" class="mr-2"></i>
-                                {{ views[props.option].title }}
-                            </span>
-                        </div>
-                    </template>
-                    </multiselect>
-                </div>
-                <input
-                    type="search"
-                    class="w-48 ml-2 form-input"
-                    name=""
-                    id=""
-                    v-model="searchOptions.search"
-                    placeholder="search"
-                />
-                <!-- <span class="ml-2 toolbar-buttons">
-                    <i class="fa fa-user"></i>
-                </span> -->
-                <span class="ml-2 toolbar-buttons"
-                    :class="{active: searchOptions.done}"
-                    @click="toggleDone()"
-                    ><i class="fa fa-eye"></i
-                ></span>
-                <!-- <span class="ml-2 toolbar-buttons">
-                    <i class="fa fa-thumbtack"></i
-                ></span>
-                <span class="ml-2 toolbar-buttons">
-                    <i class="fa fa-filter"></i>
-                </span>
-                -->
-                <span class="ml-2 toolbar-buttons" :class="{active: searchOptions.sort}" @click="clearSort()">
-                    <i class="fa fa-sort"></i>
-                </span>
-            </div>
-        </header>
-
-        <BulkSelectionBar
-            v-if="selectedItems.length"
-            :selected-items="selectedItems"
-            @delete-pressed="confirmDeleteItems(selectedItems, true)"
-        />
-
-        <div class="">
-            <draggable
-                v-model="board.stages"
-                v-if="modeSelected == 'list'"
-                handle=".handle"
-                @end="saveReorder"
-            >
-                <TransitionGroup>
-                    <ListView
-                        v-for="stage in board.stages"
-                        :key="stage.name"
-                        :stage="stage"
-                        :board="board"
-                        :items="stage.items"
-                        :create-mode="createMode"
-                        :filters="filters"
-                        @sort="sort"
-                        @clear-sort="clearSort"
-                        @saved="addItem"
-                        @open-item="openItem"
-                        @item-deleted="confirmDeleteItem"
-                        @stage-updated="addStage"
-                        class="mt-10"
-                    />
-                </TransitionGroup>
-            </draggable>
-
-            <component
-                v-else
-                :is="containerComponent"
-                :stages="board.stages"
-                :fields="board.fields"
-                :kanban-data="kanbanData"
-                @saved="addItem"
-                class="flex pt-5"
-            />
-
-            <div class="flex justify-center w-full py-5" v-if="modeSelected == 'list'">
-                <button
-                    class="flex items-center justify-center w-8 h-8 px-2 text-purple-400 border-2 border-purple-400 rounded-full hover:bg-purple-400 hover:text-white"
-                    @click="addStage()"
-                >
-                    <i class="fa fa-plus"></i>
-                </button>
-            </div>
-        </div>
-
-        <ItemModal
-            @cancel="isItemModalOpen=false"
-            @saved="isItemModalOpen=false"
-            :record-data="openedItem"
-            :is-open="isItemModalOpen"
-        />
-
-        <AutomationModal
-            @cancel="state.isAutomationModalOpen=false"
-            @saved="state.isAutomationModalOpen=false"
-            :record-data="{}"
-            :board="board"
-            :is-open="state.isAutomationModalOpen"
-        />
-    </div>
-</template>
-
-<script setup>
+<script setup lang="ts">
 import ListView from "./views/List/ListView.vue";
 import MatrixView from "./views/matrix/MatrixBoard.vue";
 import ItemModal from "./ItemModal.vue";
@@ -295,13 +160,16 @@ onMounted(() => {
 });
 
 const isLoading = ref(false)
-function addItem(item, reload = true) {
+function addItem(item: Record<string, string>, stage: Record<string, string>, reload = true) {
     const method = item.id ? "PUT" : "POST";
     const param = item.id ? `/${item.id}` : "";
     if (isLoading.value) return
     isLoading.value = true;
+
+    item.order = stage.items.length;
+    
     axios({
-        url: `/items${param}`,
+        url: `/housing/plans/${props.board.id}/items${param}`,
         method,
         data: item
     }).then(() => {
@@ -367,7 +235,7 @@ function runAutomation(automationId) {
 }
 
 function saveReorder() {
-    props.board.stages.forEach(async (stage, index) => {
+    props.board.stages.forEach(async (stage: Record<string, string|number>, index: number) => {
         stage.order = index;
         await addStage(stage, false);
     });
@@ -417,7 +285,7 @@ function confirmDeleteItem(item, reload = true) {
         confirmationButtonText: "Yes, delete",
         confirm: () => {
             axios({
-                url: `/items/${item.id}`,
+                url: `/housing/plans/${props.board.id}/items/${item.id}`,
                 method: "delete"
             }).then(() => {
                 if (reload) {
@@ -455,6 +323,144 @@ const {
     isItemModalOpen
 } = toRefs(state)
 </script>
+ 
+ <template>
+    <div class="px-8 pb-24">
+        <header class="flex justify-between board__toolbar">
+            <BoardTitle
+                v-if="board.title"
+                class="w-full"
+                :board="board"
+                @saved="updateBoardName"
+                :automations="automations"
+                @run-automation="runAutomation"
+            />
+
+            <div class="flex items-center">
+                <div class="w-40">
+                    <multiselect
+                        v-model="modeSelected"
+                        ref="input"
+                        v-if="false"
+                        :show-labels="false"
+                        :options="viewsKeys"
+                        class="w-full"
+                    >
+                     <template slot="singleLabel" slot-scope="props">
+                         <span class="option__title">
+                                <i :class="views[props.option].icon" class="mr-2"></i>
+                                {{ views[props.option].title }}
+                            </span>
+                    </template>
+                    <template slot="option" slot-scope="props">
+                        <div class="option__desc">
+                            <span class="option__title"><i :class="views[props.option].icon" class="mr-2"></i>
+                                {{ views[props.option].title }}
+                            </span>
+                        </div>
+                    </template>
+                    </multiselect>
+                </div>
+                <input
+                    type="search"
+                    class="w-48 ml-2 form-input"
+                    name=""
+                    id=""
+                    v-model="searchOptions.search"
+                    placeholder="search"
+                />
+                <!-- <span class="ml-2 toolbar-buttons">
+                    <i class="fa fa-user"></i>
+                </span> -->
+                <span class="ml-2 toolbar-buttons"
+                    :class="{active: searchOptions.done}"
+                    @click="toggleDone()"
+                    ><i class="fa fa-eye"></i
+                ></span>
+                <!-- <span class="ml-2 toolbar-buttons">
+                    <i class="fa fa-thumbtack"></i
+                ></span>
+                <span class="ml-2 toolbar-buttons">
+                    <i class="fa fa-filter"></i>
+                </span>
+                -->
+                <span class="ml-2 toolbar-buttons" :class="{active: searchOptions.sort}" @click="clearSort()">
+                    <i class="fa fa-sort"></i>
+                </span>
+            </div>
+        </header>
+
+        <BulkSelectionBar
+            v-if="selectedItems.length"
+            :selected-items="selectedItems"
+            @delete-pressed="confirmDeleteItems(selectedItems, true)"
+        />
+
+        <div class="">
+            <draggable
+                v-model="board.stages"
+                v-if="modeSelected == 'list'"
+                handle=".handle"
+                @end="saveReorder"
+            >
+                <TransitionGroup>
+                    <ListView
+                        v-for="stage in board.stages"
+                        :key="stage.name"
+                        :stage="stage"
+                        :board="board"
+                        :items="stage.items"
+                        :create-mode="createMode"
+                        :filters="filters"
+                        @sort="sort"
+                        @clear-sort="clearSort"
+                        @saved="addItem($event, stage)"
+                        @open-item="openItem"
+                        @item-deleted="confirmDeleteItem"
+                        @stage-updated="addStage"
+                        class="mt-10"
+                    />
+                </TransitionGroup>
+            </draggable>
+
+            <component
+                v-else
+                :is="containerComponent"
+                :stages="board.stages"
+                :fields="board.fields"
+                :kanban-data="kanbanData"
+                @saved="addItem"
+                class="flex pt-5"
+            />
+
+            <div class="flex justify-center w-full py-5" v-if="modeSelected == 'list'">
+                <button
+                    class="flex items-center justify-center w-8 h-8 px-2 text-purple-400 border-2 border-purple-400 rounded-full hover:bg-purple-400 hover:text-white"
+                    @click="addStage()"
+                >
+                    <i class="fa fa-plus"></i>
+                </button>
+            </div>
+        </div>
+
+        <ItemModal
+            @cancel="isItemModalOpen=false"
+            @saved="isItemModalOpen=false"
+            :record-data="openedItem"
+            :is-open="isItemModalOpen"
+        />
+
+        <AutomationModal
+            @cancel="state.isAutomationModalOpen=false"
+            @saved="state.isAutomationModalOpen=false"
+            :record-data="{}"
+            :board="board"
+            :is-open="state.isAutomationModalOpen"
+        />
+    </div>
+</template>
+
+
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="scss">

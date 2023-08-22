@@ -1,14 +1,60 @@
+<script setup lang="ts">
+import { ref, nextTick } from 'vue';
+
+interface Board {
+    id: number;
+    name: string;
+}
+
+interface Automation {
+    id: number;
+    service_logo: string;
+    name: string;
+}
+
+const props = defineProps<{
+    board: Board
+    automations: Automation[]
+}>();
+
+const emit = defineEmits(['saved', 'run-automation']);
+
+const isEditMode = ref();
+const boardNameInputRef= ref<HTMLInputElement>()
+function toggleEditMode() {
+    isEditMode.value = !isEditMode.value;
+    nextTick(() => {
+        boardNameInputRef.value?.focus()
+    });
+};
+
+const boardName = ref(props.board.name)
+const checkChanges = (shouldToggle: boolean) => {
+    if (boardName.value !== props.board.name) {
+        const changes = {...props.board, name: boardName.value}
+        emit('saved', changes)
+    }
+    if (shouldToggle) {
+        toggleEditMode()
+    }
+}
+</script>
+
 <template>
 <div class="flex justify-between mr-2">
-    <span class="text-3xl  font-bold border border-transparent rounded-md hover:border-slate-300 px-2 w-full" v-if="!isEditMode" @click="toggleEditMode(true)">
+    <span class="w-full px-2 text-3xl font-bold border border-transparent rounded-md hover:border-slate-300" 
+    v-if="!isEditMode" 
+    @click="toggleEditMode()"
+    >
         {{ boardName }}
     </span>
     <input
         v-else
         v-model="boardName"
         id="board-name"
+        ref="boardNameInputRef0"
         type="text"
-        class="inline-block text-2xl  font-bold w-full border rounded-md px-2 focus:outline-none focus:border-purple-500"
+        class="inline-block w-full px-2 text-2xl font-bold border rounded-md focus:outline-none focus:border-purple-500"
         @blur="checkChanges(true)"
         @keypress.enter="checkChanges(true)"
     />
@@ -25,45 +71,8 @@
 
             </div>
         </span>
-        <!-- <span class="automation" @click="isAutomationModalOpen=true">
-            <i class="fa fa-plus"></i>
-        </span> -->
     </div>
 </div>
 </template>
 
-<script setup>
-import { ref, nextTick } from 'vue';
 
-const props = defineProps({
-    board: {
-        type: Object,
-        required: true
-    },
-    automations: {
-        type: Array,
-        default: () => ([])
-    }
-});
-
-const emit = defineEmits(['saved']);
-
-const isEditMode = ref();
-function toggleEditMode() {
-    isEditMode.value = !isEditMode.value;
-    nextTick(() => {
-        document.querySelector('#board-name')?.focus()
-    });
-};
-
-const boardName = ref(props.board.name)
-const checkChanges = (shouldToggle) => {
-    if (boardName.value !== props.board.name) {
-        const changes = {...props.board, name: boardName.value}
-        emit('saved', changes)
-    }
-    if (shouldToggle) {
-        toggleEditMode()
-    }
-}
-</script>

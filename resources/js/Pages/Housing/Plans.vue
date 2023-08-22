@@ -1,3 +1,14 @@
+<script setup lang="ts">
+import { ref } from 'vue';
+import { NDropdown } from 'naive-ui';
+
+import AppLayout from '@/Components/templates/AppLayout.vue';
+import HouseSectionNav from '@/Components/templates/HouseSectionNav.vue';
+import LogerButton from '@/Components/atoms/LogerButton.vue';
+import BoardSection from '@/Components/board/BoardSection.vue';
+</script>
+
+
 <template>
     <AppLayout title="Occurrence Checks">
         <template #header>
@@ -29,13 +40,3 @@
     </AppLayout>
 </template>
 
-<script setup>
-import { ref } from 'vue';
-import { NDropdown } from 'naive-ui';
-
-import AppLayout from '@/Components/templates/AppLayout.vue';
-import HouseSectionNav from '@/Components/templates/HouseSectionNav.vue';
-import LogerButton from '@/Components/atoms/LogerButton.vue';
-import BoardSection from '@/Components/board/BoardSection.vue';
-
-</script>

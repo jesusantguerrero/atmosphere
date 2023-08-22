@@ -2,7 +2,6 @@
     import { ref } from 'vue';
 
     import AppLayout from '@/Components/templates/AppLayout.vue'
-    import BudgetTracker from "@/Components/organisms/BudgetTracker.vue";
     import OnboardingSteps from "@/Components/widgets/OnboardingSteps.vue";
     import ChartComparison from "@/Components/widgets/ChartComparison.vue";
     import ChartCurrentVsPrevious from "@/Components/widgets/ChartCurrentVsPrevious.vue";
@@ -10,6 +9,7 @@
     import NextPaymentsWidget from "@/Components/widgets/NextPaymentsWidget.vue";
     
     import MealWidget from "@/domains/meal/components/MealWidget.vue";
+    import BudgetTracker from "@/domains/budget/components/BudgetTracker.vue";
     
     import { useAppContextStore } from '@/store';
     import AppIcon from '@/Components/AppIcon.vue';

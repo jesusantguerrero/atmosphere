@@ -1,3 +1,218 @@
+<script setup lang="ts">
+import { VueDraggableNext as Draggable } from "vue-draggable-next";
+import { NDropdown } from "naive-ui";
+import { computed, nextTick, reactive, ref, watch, toRefs } from "vue";
+import { router } from "@inertiajs/vue3";
+
+import ItemGroupCell from "../../ItemGroupCell.vue";
+import FieldPopover from "../../FieldPopover.vue";
+import ListCellTitle from "./ListCellTitle.vue";
+import ListCellHeader from "./ListCellHeader.vue";
+import ListRow from "./ListRow.vue";
+import ListSummaryRow from "./ListSummaryRow.vue";
+
+import { useSyncScroll } from "@/utils/useSyncScroll";
+
+const props = defineProps({
+  createMode: {
+    type: Boolean,
+  },
+  stage: {
+    type: Object,
+  },
+  board: {
+    type: Object,
+  },
+  selectedItems: {
+    type: Array,
+    default() {
+      return [];
+    },
+  },
+  items: {
+    type: Array,
+    default() {
+      return [];
+    },
+  },
+  filters: {
+    type: Object,
+  },
+});
+
+const emit = defineEmits([
+    "selected-items-updated",
+    "item-deleted",
+    "saved",
+    "stage-updated",
+    "board-deleted",
+    "save-order",
+    "clear-sort",
+    "open-item",
+    "sort"
+]);
+
+const state = reactive({
+  newItem: {},
+  newField: {},
+  isSelectMode: false,
+  isEditMode: false,
+  isExpanded: true,
+  isLoaded: false,
+});
+
+watch(props.selectedItems, () => {
+  emit("selected-items-updated", props.selectedItems);
+});
+
+const visibleFields = computed(() => {
+  return props.board?.fields?.filter((field) => !field.hide) ?? [];
+});
+
+const tableSize = computed(() => {
+  return visibleFields.value.length;
+});
+
+watch(
+  tableSize,
+  () => {
+    const documentRoot = document.documentElement;
+    documentRoot.style.setProperty("--board-column-size", tableSize.value);
+  },
+  {
+    deep: true,
+    immediate: true,
+  }
+);
+
+function toggleExpand() {
+  state.isExpanded = !state.isExpanded;
+}
+
+const input = ref();
+function toggleEditMode() {
+  state.isEditMode = !state.isEditMode;
+  nextTick(() => {
+    if (input.value) {
+      input.value.focus();
+    }
+  });
+}
+
+function addItem(stage, reload) {
+  const lastItemOrder = stage.items ? Math.max(...props.stage.items.map((item) => item.order)) : 0;
+  state.newItem.board_id = stage.board_id;
+  state.newItem.stage_id = stage.id;
+  state.newItem.fields = props.board.fields.map((field) => {
+    return {
+      field_id: field.id,
+      field_name: field.name,
+      value: state.newItem[field.name],
+    };
+  });
+  state.newItem.order = lastItemOrder + 1;
+  emit("saved", { ...state.newItem }, reload);
+  state.newItem = {};
+  console.log(state.newItem, "here")
+}
+
+function handleSelect() {}
+
+function onFieldAdded() {
+  state.newField = {};
+  router.reload({ preserveScroll: true });
+}
+
+function saveChanges(item, field, value) {
+  item[field] = value;
+  item.fields = props.board.fields.map((field) => {
+    return {
+      field_id: field.id,
+      field_name: field.name,
+      value: item[field.name],
+    };
+  });
+  emit("saved", { ...item });
+}
+
+function saveStage(stage) {
+  stage.name = input.value?.value;
+  state.isEditMode = false;
+  emit("stage-updated", { ...stage });
+}
+
+function saveReorder() {
+  prop.stage.items.forEach(async (item, index) => {
+    item.order = index;
+    emit("saved", { ...item }, false);
+  });
+  router.reload({ preserveScroll: true });
+}
+
+function handleBoardCommands(command: string) {
+  switch (command) {
+    case "delete":
+      emit("board-deleted");
+      break;
+    case "edit":
+      toggleEditMode();
+      break;
+    case "selection":
+      state.isSelectMode = !state.isSelectMode;
+      break;
+    default:
+      break;
+  }
+}
+
+function handleCommand(item: Record<string, string>, command: string) {
+  switch (command) {
+    case "delete":
+      emit("item-deleted", item);
+      break;
+    case "edit":
+      emit("open-item", item);
+      break;
+    default:
+      break;
+  }
+}
+
+const sort = (fieldName: string) => {
+  emit("sort", fieldName);
+};
+
+const clearSort = (fieldName: string) => {
+  emit("clear-sort", fieldName);
+};
+
+function handleFilterCommands(fieldName: string, command: string) {
+  switch (command) {
+    case "clearSort":
+      clearSort(fieldName);
+      break;
+    case "sort":
+      sort(fieldName);
+      break;
+    default:
+      emit("save-order", fieldName);
+      break;
+  }
+}
+
+function toggleSelection() {
+  props.stage?.items.forEach((item: Record<string, string>) => {
+    item["selected"] = props.stage?.selected;
+  });
+}
+
+const { newItem, newField, isSelectMode, isEditMode, isExpanded, isLoaded } = toRefs(
+  state
+);
+
+const { syncScroll } = useSyncScroll("left", "ic-scroller-slim");
+</script>
+
 <template>
   <div
     class="ic-list"
@@ -201,235 +416,6 @@
   </div>
 </template>
 
-<script setup>
-import { VueDraggableNext as Draggable } from "vue-draggable-next";
-import { NDropdown } from "naive-ui";
-import { computed, nextTick, reactive, ref, watch, toRefs } from "vue";
-import { router } from "@inertiajs/vue3";
-
-import ItemGroupCell from "../../ItemGroupCell.vue";
-import FieldPopover from "../../FieldPopover.vue";
-import ListCellTitle from "./ListCellTitle.vue";
-import ListCellHeader from "./ListCellHeader.vue";
-import ListRow from "./ListRow.vue";
-import ListSummaryRow from "./ListSummaryRow.vue";
-
-import { matrixColors } from "@/utils/constants";
-import { useSyncScroll } from "@/utils/useSyncScroll";
-
-const props = defineProps({
-  createMode: {
-    type: Boolean,
-  },
-  stage: {
-    type: Object,
-  },
-  board: {
-    type: Object,
-  },
-  selectedItems: {
-    type: Array,
-    default() {
-      return [];
-    },
-  },
-  items: {
-    type: Array,
-    default() {
-      return [];
-    },
-  },
-  filters: {
-    type: Object,
-  },
-});
-
-const emit = defineEmits([]);
-
-const state = reactive({
-  newItem: {},
-  newField: {},
-  isSelectMode: false,
-  isEditMode: false,
-  isExpanded: true,
-  isLoaded: false,
-});
-
-watch(props.selectedItems, () => {
-  emit("selected-items-updated", props.selectedItems);
-});
-
-const visibleFields = computed(() => {
-  return props.board.fields?.filter((field) => !field.hide) ?? [];
-});
-
-const tableSize = computed(() => {
-  return visibleFields.value.length;
-});
-
-watch(
-  tableSize,
-  () => {
-    const documentRoot = document.documentElement;
-    documentRoot.style.setProperty("--board-column-size", tableSize.value);
-  },
-  {
-    deep: true,
-    immediate: true,
-  }
-);
-
-function getBg(field, item, fieldName) {
-  const fieldValue =
-    item.fields && item.fields.find((field) => field.field_name == fieldName);
-  const value = fieldValue ? fieldValue.value : item[fieldName];
-
-  if (value && field.rules) {
-    const bgRule = field.rules.find((rule) => rule.name == "bg");
-    if (bgRule) {
-      const ruleOptions = bgRule.options || field[bgRule.reference];
-      const bg =
-        ruleOptions &&
-        ruleOptions.find((rule) => {
-          const name = rule.name || rule.value;
-          return value.toLowerCase() == name.toLowerCase();
-        });
-      return bg ? matrixColors[bg.result || bg.color] : "";
-    }
-  }
-  return "bg-gray-200";
-}
-
-function toggleExpand() {
-  state.isExpanded = !state.isExpanded;
-}
-
-const input = ref();
-function toggleEditMode() {
-  state.isEditMode = !state.isEditMode;
-  nextTick(() => {
-    if (input.value) {
-      input.value.focus();
-    }
-  });
-}
-
-function addItem(stage, reload) {
-  const lastItemOrder = Math.max(...props.stage.items.map((item) => item.order));
-  state.newItem.board_id = stage.board_id;
-  state.newItem.stage_id = stage.id;
-  state.newItem.fields = props.board.fields.map((field) => {
-    return {
-      field_id: field.id,
-      field_name: field.name,
-      value: state.newItem[field.name],
-    };
-  });
-  state.newItem.order = lastItemOrder + 1;
-  emit("saved", { ...state.newItem }, reload);
-  state.newItem = {};
-  console.log(state.newItem, "here")
-}
-
-function handleSelect() {}
-
-function onFieldAdded() {
-  state.newField = {};
-  router.reload({ preserveScroll: true });
-}
-
-function saveChanges(item, field, value) {
-  item[field] = value;
-  item.fields = props.board.fields.map((field) => {
-    return {
-      field_id: field.id,
-      field_name: field.name,
-      value: item[field.name],
-    };
-  });
-  emit("saved", { ...item });
-}
-
-function saveStage(stage) {
-  stage.name = input.value?.value;
-  state.isEditMode = false;
-  emit("stage-updated", { ...stage });
-}
-
-function saveReorder() {
-  prop.stage.items.forEach(async (item, index) => {
-    item.order = index;
-    emit("saved", { ...item }, false);
-  });
-  router.reload({ preserveScroll: true });
-}
-
-function handleBoardCommands(command) {
-  switch (command) {
-    case "delete":
-      emit("board-deleted", item);
-      break;
-    case "edit":
-      toggleEditMode();
-      break;
-    case "selection":
-      state.isSelectMode = !state.isSelectMode;
-      break;
-    default:
-      break;
-  }
-}
-
-function handleCommand(item, command) {
-  switch (command) {
-    case "delete":
-      emit("item-deleted", item);
-      break;
-    case "edit":
-      emit("open-item", item);
-      break;
-    default:
-      break;
-  }
-}
-
-const sort = (fieldName) => {
-  emit("sort", fieldName);
-};
-
-const clearSort = (fieldName) => {
-  emit("clearSort", fieldName);
-};
-
-function handleFilterCommands(fieldName, command) {
-  switch (command) {
-    case "clearSort":
-      clearSort(fieldName);
-      break;
-    case "sort":
-      sort(fieldName);
-      break;
-    default:
-      emit("saveOrder", fieldName);
-      break;
-  }
-}
-
-function toggleSelection() {
-  props.stage.items.forEach((item) => {
-    item["selected"] = props.stage.selected;
-  });
-}
-
-const { newItem, newField, isSelectMode, isEditMode, isExpanded, isLoaded } = toRefs(
-  state
-);
-
-const summaryRow = ref();
-const bodyRow = ref();
-
-const { syncScroll } = useSyncScroll("left", "ic-scroller-slim");
-</script>
 
 <style lang="scss">
 .header-cell {

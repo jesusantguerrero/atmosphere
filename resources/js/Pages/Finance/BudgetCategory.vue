@@ -1,3 +1,39 @@
+<script setup lang="ts">
+import { toRefs } from "vue";
+import { AtDatePager } from "atmosphere-ui";
+
+import AppLayout from "@/Components/templates/AppLayout.vue";
+import LogerButton from "@/Components/atoms/LogerButton.vue";
+import SectionTitle from "@/Components/atoms/SectionTitle.vue";
+import TransactionSearch from "@/Components/templates/TransactionSearch.vue";
+import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
+import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
+import ChartComparison from "@/Components/widgets/ChartComparison.vue";
+
+import BudgetDetailForm from "@/domains/budget/components/BudgetDetailForm.vue";
+
+import { useServerSearch } from "@/composables/useServerSearch";
+
+const props = defineProps({
+  resource: {
+    type: Object,
+  },
+  transactions: {
+    type: Array,
+  },
+  serverSearchOptions: {
+    type: Object,
+    default: () => ({}),
+  },
+  stats: {
+    type: Object,
+  }
+});
+
+const { serverSearchOptions } = toRefs(props);
+const { state: pageState } = useServerSearch(serverSearchOptions);
+</script>
+
 <template>
   <AppLayout @back="router.visit('/budgets')" :show-back-button="true">
     <template #header>
@@ -24,7 +60,7 @@
 
     <FinanceTemplate>
       <main class="py-3 space-y-4">
-        <section class="rounded-md bg-white px-4 py-2">
+        <section class="px-4 py-2 bg-white rounded-md">
         <ChartComparison 
           class="w-full mt-4 mb-10 overflow-hidden bg-white rounded-lg"
           :class="[cardShadow]"
@@ -34,7 +70,7 @@
         />
         </section>
 
-        <section class="rounded-md bg-white px-4 py-2">
+        <section class="px-4 py-2 bg-white rounded-md">
             <SectionTitle>Transactions</SectionTitle>
             <TransactionSearch 
                 :transactions="transactions"
@@ -55,35 +91,4 @@
   </AppLayout>
 </template>
 
-<script setup>
-import LogerButton from "@/Components/atoms/LogerButton.vue";
-import SectionTitle from "@/Components/atoms/SectionTitle.vue";
-import BudgetDetailForm from "@/Components/organisms/BudgetDetailForm.vue";
-import AppLayout from "@/Components/templates/AppLayout.vue";
-import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
-import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
-import TransactionSearch from "@/Components/templates/TransactionSearch.vue";
-import ChartComparison from "@/Components/widgets/ChartComparison.vue";
-import { useServerSearch } from "@/composables/useServerSearch";
-import { AtDatePager } from "atmosphere-ui";
-import { toRefs } from "vue";
 
-const props = defineProps({
-  resource: {
-    type: Object,
-  },
-  transactions: {
-    type: Array,
-  },
-  serverSearchOptions: {
-    type: Object,
-    default: () => ({}),
-  },
-  stats: {
-    type: Object,
-  }
-});
-
-const { serverSearchOptions } = toRefs(props);
-const { state: pageState } = useServerSearch(serverSearchOptions);
-</script>

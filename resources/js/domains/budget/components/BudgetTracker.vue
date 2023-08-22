@@ -1,3 +1,52 @@
+<script setup lang="ts">
+import { AtButton } from "atmosphere-ui";
+import { computed, ref } from "vue";
+import { useI18n } from "vue-i18n";
+import { router } from "@inertiajs/vue3";
+
+import SectionTitle from "@/Components/atoms/SectionTitle.vue";
+import NumberHider from "@/Components/molecules/NumberHider.vue";
+
+import formatMoney from "@/utils/formatMoney";
+import { useTransactionModal } from "@/domains/transactions";
+
+const props = defineProps({
+  username: {
+    type: String,
+    required: true,
+  },
+  budget: {
+    type: Number,
+  },
+  expenses: {
+    type: [Number, String],
+  },
+  message: {
+    default: "Welcome to Loger",
+  },
+});
+
+const { t } = useI18n();
+const { isOpen: isTransferModalOpen } = useTransactionModal();
+
+const openedTransaction = ref(null);
+
+const sections = computed(() => ({
+  expenses: {
+    label: t("Current Expenses"),
+    value: props.expenses,
+  },
+  budget: {
+    label: t("Monthly Budget"),
+    value: props.budget,
+  },
+}));
+
+const isMultiple = (value) => {
+  return Array.isArray(value);
+};
+</script>
+
 <template>
   <div
     class="px-5 py-3 transition border divide-y rounded-lg divide-base border-base bg-base-lvl-3"
@@ -46,52 +95,3 @@
     <slot></slot>
   </div>
 </template>
-
-<script setup>
-import { AtButton } from "atmosphere-ui";
-import { computed, ref } from "vue";
-import { useI18n } from "vue-i18n";
-import { router } from "@inertiajs/vue3";
-
-import SectionTitle from "@/Components/atoms/SectionTitle.vue";
-import NumberHider from "@/Components/molecules/NumberHider.vue";
-
-import formatMoney from "@/utils/formatMoney";
-import { useTransactionModal } from "@/domains/transactions";
-
-const props = defineProps({
-  username: {
-    type: String,
-    required: true,
-  },
-  budget: {
-    type: Number,
-  },
-  expenses: {
-    type: [Number, String],
-  },
-  message: {
-    default: "Welcome to Loger",
-  },
-});
-
-const { t } = useI18n();
-const { isOpen: isTransferModalOpen } = useTransactionModal();
-
-const openedTransaction = ref(null);
-
-const sections = computed(() => ({
-  expenses: {
-    label: t("Current Expenses"),
-    value: props.expenses,
-  },
-  budget: {
-    label: t("Monthly Budget"),
-    value: props.budget,
-  },
-}));
-
-const isMultiple = (value) => {
-  return Array.isArray(value);
-};
-</script>
