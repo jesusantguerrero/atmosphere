@@ -24,6 +24,7 @@
         "nwidart/laravel-modules": "^9.0",
         "php-mime-mail-parser/php-mime-mail-parser": "^7.1",
         "phpoffice/phpspreadsheet": "^1.27",
+        "rlanvin/php-rrule": "^2.4",
         "simshaun/recurr": "^5.0",
         "spatie/laravel-data": "^3.7",
         "spatie/laravel-onboard": "^2.4",
@@ -67,6 +68,7 @@
             "@php artisan key:generate --ansi"
         ],
         "test": [
+            "Composer\\Config::disableProcessTimeout",
             "composer install --prefer-dist --no-interaction --no-scripts --no-progress --no-ansi --ignore-platform-reqs",
             "composer dump-autoload",
             "composer install --prefer-dist --no-interaction --no-scripts --no-suggest --no-progress --no-ansi --ignore-platform-reqs"
@@ -77,14 +79,14 @@
             "dont-discover": []
         },
         "google/apiclient-services": [
-            "Gmail",
-            "Calendar"
+            "Gmail"
         ]
     },
     "config": {
         "optimize-autoloader": true,
         "preferred-install": "dist",
-        "sort-packages": true
+        "sort-packages": true,
+        "process-timeout": 0
     },
     "minimum-stability": "stable",
     "prefer-stable": true

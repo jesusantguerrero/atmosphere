@@ -31,6 +31,8 @@
     "baseUrl": ".",                                      /* Specify the base directory to resolve non-relative module names. */
     "paths": {
       "@/*": ["resources/js/*"],
+      "@/Domains/*": ["resources/js/domains/*"],
+      "@/domains/meal/*": ["resources/js/domains/meal"],
       "@/Modules/*": ["resources/js/Modules/*"],
       "@/utils/*": ["resources/js/utils/*"],
       "~shared/*": ["resources/js/Components/shared/*"]
