@@ -1,7 +1,22 @@
+<script setup lang="ts">
+import SectionTitle from '@/Components/atoms/SectionTitle.vue';
+import RandomMealCard from '@/Components/widgets/RandomMealCard.vue';
+import LogerButton from '@/Components/atoms/LogerButton.vue';
+
+defineProps({
+    meals: {
+        type: Array,
+        default() {
+            return []
+        }
+    }
+})
+</script>
+
 <template>
     <div class="pb-10"  :class="cardShadow">
-        <RandomMealCard class="rounded-b-none border-b mt-4" />
-        <div class="px-4 py-2 space-y-4 rounded-b-md cursor-pointer min-h-min bg-base-lvl-3">
+        <RandomMealCard class="mt-4 border-b rounded-b-none" />
+        <div class="px-4 py-2 space-y-4 cursor-pointer rounded-b-md min-h-min bg-base-lvl-3">
             <div class="text-center">
                 <SectionTitle type="secondary"> {{ t('Menu for today') }}</SectionTitle>
             </div>
@@ -21,18 +36,3 @@
         </div>
     </div>
 </template>
-
-<script setup>
-import SectionTitle from '@/Components/atoms/SectionTitle.vue';
-import RandomMealCard from '@/Components/widgets/RandomMealCard.vue';
-import LogerButton from '@/Components/atoms/LogerButton.vue';
-
-defineProps({
-    meals: {
-        type: Array,
-        default() {
-            return []
-        }
-    }
-})
-</script>
