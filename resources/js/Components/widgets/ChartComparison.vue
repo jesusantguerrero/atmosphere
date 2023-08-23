@@ -28,6 +28,10 @@ const props = defineProps({
       type: Object,
       required: true
     },
+    dataItemTotal: {
+        type: String,
+        default: "total"
+    }
 });
 
 const selectedDate = ref()
@@ -39,25 +43,27 @@ const currentSeries = computed(() => {
     }]
     const dateSeries = selectedDate.value ? [{
         name: formatMonth(selectedDate.value),
-        data: props.data[selectedDate.value].data.map(item => item.total),
+        data: props.data[selectedDate.value].data.map(item => item[props.dataItemTotal]),
         labels: props.data[selectedDate.value].data.map(item => item.name)
     }] : []
 
     return selectedDate.value ? dateSeries : generalSeries;
 })
 
-const hasHiddenValues = inject('hasHiddenValues')
-const state = reactive({
-    headers: Object.entries(props.data).map(([dateString, item]) => ({
-        label: formatMonth(dateString),
-        value: item.total,
-        id: dateString
-    })),
-    options: {
-        colors: ["#7B77D1", "#80CDFE"],
-        hasHiddenValues: hasHiddenValues.value
-    },
-    series: currentSeries
+const hasHiddenValues = inject('hasHiddenValues', ref(false))
+const state = computed(() => {
+    return {
+        headers: Object.entries(props.data).map(([dateString, item]) => ({
+            label: formatMonth(dateString),
+            value: item.total,
+            id: dateString
+        })),
+        options: {
+            colors: ["#7B77D1", "#80CDFE"],
+            hasHiddenValues: hasHiddenValues.value
+        },
+        series: currentSeries.value
+    }
 });
 
 </script>
