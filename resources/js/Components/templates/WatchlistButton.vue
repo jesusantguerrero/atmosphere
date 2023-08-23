@@ -39,7 +39,7 @@
 import { formatMoney } from '@/utils';
 
     const getWatchlist = () => {
-        return axios.get('/api/watchlist/').then(({data}) => data.data);
+        return axios.get('/api/finance/watchlist').then(({data}) => data.data);
     }
 
     const items = ref()
