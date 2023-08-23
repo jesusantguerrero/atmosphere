@@ -3,7 +3,7 @@ import { matrixColors } from '@/utils/constants';
 import CellSummaryDate from '../../cellTypes/CellSummaryDate.vue';
 import CellSummaryProgress from '../../cellTypes/CellSummaryProgress.vue';
 import ItemGroupCell from "../../ItemGroupCell.vue";
-import { PlanItem , LogerField, FieldValue } from "@/Domains/housing/models";
+import { PlanItem , LogerField, FieldValue } from "@/domains/housing/models";
 import { ConcreteComponent } from 'vue';
 
 

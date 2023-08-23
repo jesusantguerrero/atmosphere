@@ -5,9 +5,9 @@ import { router } from "@inertiajs/vue3";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
 
-import MealForm from "@/Domains/meal/components/MealForm.vue";
-import MealSectionNav from "@/Domains/meal/components/MealSectionNav.vue";
-import MealTemplate from "@/Domains/meal/components/MealTemplate.vue";
+import MealForm from "@/domains/meal/components/MealForm.vue";
+import MealSectionNav from "@/domains/meal/components/MealSectionNav.vue";
+import MealTemplate from "@/domains/meal/components/MealTemplate.vue";
 
 const props = defineProps({
   meals: {

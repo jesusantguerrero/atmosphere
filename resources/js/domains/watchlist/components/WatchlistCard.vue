@@ -2,7 +2,7 @@
 import { computed } from "vue";
 
 import { formatMoney, formatDate } from "@/utils";
-import { getVariances } from "@/Domains/transactions";
+import { getVariances } from "@/domains/transactions";
 
 const props = defineProps({
   item: {
