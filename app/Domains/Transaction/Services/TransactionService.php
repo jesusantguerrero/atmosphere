@@ -247,6 +247,41 @@ class TransactionService {
         ->get();
     }
 
+    public static function getForExport($teamId) {
+        return DB::table('transactions')
+        ->selectRaw("
+        accounts.name AS 'account',
+        '' as flag,
+        transactions.date AS 'date',
+        (CASE WHEN transactions.is_transfer
+           THEN concat('Transfer :', ca.name)
+           ELSE payees.name END) AS 'payee',
+        concat(groups.name, '/', categories.name) as group_category,
+        groups.name group_name,
+        categories.name category_name,
+        transactions.description memo,
+        (CASE WHEN transactions.direction <> 'DEPOSIT'
+        THEN concat(transactions.currency_code, '$', transactions.total)
+        ELSE  0 END) as outflow,
+        (CASE WHEN transactions.direction = 'DEPOSIT'
+           THEN concat(transactions.currency_code, '$', transactions.total)
+           ELSE 0 END) as inflow,
+       'reconciled' as cleared
+        ")
+        ->where([
+            'transactions.team_id' => $teamId,
+            'transactions.status' => 'verified'
+        ])
+        ->orderByRaw('date_format(transactions.date, "%Y-%m-01"), concat(groups.index,"." , categories.index)')
+        ->leftJoin('categories', 'transactions.category_id', '=', 'categories.id')
+        ->leftJoin(DB::raw('categories groups'), 'groups.id', '=', 'categories.parent_id')
+        ->leftJoin('payees', 'transactions.payee_id', '=', 'payees.id')
+        ->leftJoin('accounts', 'transactions.account_id', '=', 'accounts.id')
+        ->leftJoin(DB::raw('accounts ca'), 'ca.id', '=', 'transactions.counter_account_id')
+        ->get()
+        ->toArray();
+    }
+
     public static function getIncomeByPayeeInPeriod($teamId, $startDate, $endDate) {
         return DB::table('payees')
         ->selectRaw('sum(COALESCE(total,0)) as total, date_format(transactions.date, "%Y-%m-01") as date, payees.name, payees.id')

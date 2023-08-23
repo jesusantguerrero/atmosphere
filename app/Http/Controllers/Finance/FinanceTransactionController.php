@@ -101,7 +101,7 @@ class FinanceTransactionController extends InertiaController {
     }
 
     public function export() {
-        $dataToExport = new TransactionExport(Transaction::where('team_id', request()->user()->current_team_id)->get()->toArray());
+        $dataToExport = new TransactionExport(TransactionService::getForExport(request()->user()->current_team_id));
         $today = now()->format('Y-m-d');
         return Excel::download($dataToExport, "transactions_as_of_{$today}.xlsx");
     }
