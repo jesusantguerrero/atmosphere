@@ -9,10 +9,10 @@
     import AppLayout from '@/Components/templates/AppLayout.vue';
     import LogerButton from "@/Components/atoms/LogerButton.vue";
 
-    import RandomMealModal from '@/Domains/meal/components/RandomMealModal.vue';
-    import MealTemplate from "@/Domains/meal/components/MealTemplate.vue";
-    import MealSectionNav from "@/Domains/meal/components/MealSectionNav.vue";
-    import MealTypeCell from "@/Domains/meal/components/MealTypeCell.vue";
+    import RandomMealModal from '@/domains/meal/components/RandomMealModal.vue';
+    import MealTemplate from "@/domains/meal/components/MealTemplate.vue";
+    import MealSectionNav from "@/domains/meal/components/MealSectionNav.vue";
+    import MealTypeCell from "@/domains/meal/components/MealTypeCell.vue";
 
     const pageProps = usePage().props;
 
