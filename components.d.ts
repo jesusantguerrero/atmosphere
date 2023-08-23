@@ -14,6 +14,7 @@ declare module 'vue' {
     IMdiCallSplit: typeof import('~icons/mdi/call-split')['default']
     IMdiChevronLeft: typeof import('~icons/mdi/chevron-left')['default']
     IMdiChevronRight: typeof import('~icons/mdi/chevron-right')['default']
+    IMdiExport: typeof import('~icons/mdi/export')['default']
     IMdiFile: typeof import('~icons/mdi/file')['default']
     IMdiLink: typeof import('~icons/mdi/link')['default']
     IMdiMinus: typeof import('~icons/mdi/minus')['default']

@@ -138,6 +138,8 @@
                                 :current-team="$page.props.user.current_team"
                                 :teams="$page.props.user.all_teams"
                                 @switch-team="switchToTeam"
+                                :full-height="true"
+                                :image-only="true"
                                 @create="router.visit(route('teams.create'))"
                                 resource-name="Budget"
                             />
@@ -192,7 +194,7 @@
                     brand-container-class="py-2"
                     nav-container-class="px-2 pt-1 space-y-2 border-t"
                     icon-class="text-gray-400 transition hover:text-primary"
-                    item-class="px-5 py-[0.80rem] rounded-md font-bold text-gray-400 w-54 hover:text-primary hover:bg-base-lvl-1"
+                    item-class="px-5 py-[0.60rem] rounded-md font-bold text-gray-400 w-54 hover:text-primary hover:bg-base-lvl-1 text-xs"
                     item-active-class="text-primary bg-base-lvl-1/70"
                     is-expandable
                 >

@@ -3,6 +3,7 @@
 namespace App\Domains\Transaction\Services;
 
 use App\Domains\Transaction\Models\Transaction;
+use Exception;
 
 class YNABService
 {
@@ -15,10 +16,12 @@ class YNABService
     public static function extractMoneyCurrency($amountWithCurrency, $symbol = "$") {
         $amount = explode($symbol, $amountWithCurrency);
 
+
         return (object) [
-            "amount" => (double) str_replace(',','', $amount[1]),
+            "amount" => isset($amount[1]) ? (double) str_replace(',','', $amount[1]) : 0,
             "currencyCode" => self::CODES[$amount[0]] ?? 'USD'
         ];
+
     }
 
     public static function getMoney(array $row)  {

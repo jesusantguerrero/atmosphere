@@ -1,60 +1,5 @@
-<template>
-  <AppLayout :title="sectionTitle" @back="handleBackButton" :show-back-button="true">
-    <template #header>
-      <FinanceSectionNav>
-        <template #actions>
-          <div class="flex items-center w-full space-x-2">
-            <DraftButtons v-if="isDraft" />
-            <LogerButton variant="inverse"> Add transaction </LogerButton>
-            <StatusButtons
-              v-model="currentStatus"
-              :statuses="transactionStatus"
-              @change="router.visit($event)"
-            />
-            <AtDatePager
-              class="w-full h-12 border-none bg-base-lvl-1 text-body"
-              v-model:startDate="pageState.dates.startDate"
-              v-model:endDate="pageState.dates.endDate"
-              @change="executeSearchWithDelay(500)"
-              controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
-              next-mode="month"
-            />
-          </div>
-        </template>
-      </FinanceSectionNav>
-    </template>
-
-    <FinanceTemplate
-      title="Transactions"
-      :accounts="accounts"
-      :force-show-panel="!showTransactionTable"
-    >
-      <template #prepend-panel v-if="context.isMobile">
-        <button
-          v-ripple
-          class="flex items-center justify-between w-full px-4 py-3 font-bold text-body-1 bg-base-lvl-3"
-          @click="showAllTransactions = true"
-        >
-          All accounts
-          <IconBack class="transform rotate-180" />
-        </button>
-      </template>
-
-      <component
-        v-if="showTransactionTable"
-        :is="listComponent"
-        :transactions="transactions.data"
-        :server-search-options="serverSearchOptions"
-        all-accounts
-        @findLinked="findLinked"
-        @removed="removeTransaction"
-        @edit="handleEdit"
-      />
-    </FinanceTemplate>
-  </AppLayout>
-</template>
-
-<script setup>
+<script setup lang="ts">
+// @ts-ignore
 import { AtDatePager } from "atmosphere-ui";
 import { computed, toRefs, provide, ref, nextTick } from "vue";
 import { router } from "@inertiajs/vue3";
@@ -184,3 +129,64 @@ const transactionStatus = {
 };
 const currentStatus = ref(serverSearchOptions.value.filters?.status || "verified");
 </script>
+
+
+<template>
+  <AppLayout :title="sectionTitle" @back="handleBackButton" :show-back-button="true">
+    <template #header>
+      <FinanceSectionNav>
+        <template #actions>
+          <div class="flex items-center w-full space-x-2">
+            <DraftButtons v-if="isDraft" />
+            <LogerButton variant="inverse" :href="route('finance.export')"  target="_blank" as="a">
+                <IMdiExport />
+                Export transactions
+            </LogerButton>
+            <StatusButtons
+              v-model="currentStatus"
+              :statuses="transactionStatus"
+              @change="router.visit($event)"
+            />
+            <AtDatePager
+              class="w-full h-12 border-none bg-base-lvl-1 text-body"
+              v-model:startDate="pageState.dates.startDate"
+              v-model:endDate="pageState.dates.endDate"
+              @change="executeSearchWithDelay(500)"
+              controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
+              next-mode="month"
+            />
+          </div>
+        </template>
+      </FinanceSectionNav>
+    </template>
+
+    <FinanceTemplate
+      title="Transactions"
+      :accounts="accounts"
+      :force-show-panel="!showTransactionTable"
+    >
+      <template #prepend-panel v-if="context.isMobile">
+        <button
+          v-ripple
+          class="flex items-center justify-between w-full px-4 py-3 font-bold text-body-1 bg-base-lvl-3"
+          @click="showAllTransactions = true"
+        >
+          All accounts
+          <IconBack class="transform rotate-180" />
+        </button>
+      </template>
+
+      <component
+        v-if="showTransactionTable"
+        :is="listComponent"
+        :transactions="transactions.data"
+        :server-search-options="serverSearchOptions"
+        all-accounts
+        @findLinked="findLinked"
+        @removed="removeTransaction"
+        @edit="handleEdit"
+      />
+    </FinanceTemplate>
+  </AppLayout>
+</template>
+

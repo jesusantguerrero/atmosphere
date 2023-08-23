@@ -69,13 +69,6 @@ export const useAppMenu = t => {
 
     const headerMenu =  [
         {
-            icon: 'fa fa-heart',
-            name: 'support',
-            label: t('Support project'),
-            to: '/settings/support',
-            as: Link
-        },
-        {
             icon: 'fas fa-info',
             label: t('About'),
             to: '/settings/about',
@@ -91,7 +84,7 @@ export const useAppMenu = t => {
             icon: 'fas fa-cogs',
             label: t('Settings'),
             name: 'settings',
-            to: '/settings',
+            to: '/user/profile',
             as: Link
         },
     ];

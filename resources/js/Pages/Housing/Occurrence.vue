@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue';
 import { NDropdown } from 'naive-ui';
 import { router, useForm } from '@inertiajs/vue3';

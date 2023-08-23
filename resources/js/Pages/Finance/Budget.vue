@@ -195,7 +195,7 @@ const goToday = () => {
               <h4 class="text-secondary">
                 <MoneyPresenter :value="readyToAssign.monthlyGoals.balance" />
               </h4>
-              <p class="font-bold text-body-1/80">Monthly Goals Progress</p>
+              <p class="font-bold text-body-1/80">Monthly target progress</p>
             </section>
           </BudgetProgress>
         </template>

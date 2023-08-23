@@ -29,17 +29,17 @@
     </JetDropdown>
 </template>
 
-<script setup>
+<script setup lang="ts">
     import { ref } from 'vue';
     import JetDropdown from '@/Components/atoms/Dropdown.vue'
     import LogerButtonTab from '@/Components/atoms/LogerButtonTab.vue';
     import LogerButtonCircle from '../atoms/LogerButtonCircle.vue';
     import axios from 'axios';
     import { watchOnce } from "@vueuse/core"
-import { formatMoney } from '@/utils';
+    import { formatMoney } from '@/utils';
 
     const getWatchlist = () => {
-        return axios.get('/api/watchlist/').then(({data}) => data.data);
+        return axios.get('/api/finance/watchlist').then(({data}) => data.data);
     }
 
     const items = ref()
