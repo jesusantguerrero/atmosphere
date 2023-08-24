@@ -5,20 +5,18 @@ import { AtDatePager } from "atmosphere-ui";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import SectionTitle from "@/Components/atoms/SectionTitle.vue";
-import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
-import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 import IconImport from "@/Components/icons/IconImport.vue";
 import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 import ChartComparison from "@/Components/widgets//ChartComparison.vue";
 
+import FinanceTemplate from "./Partials/FinanceTemplate.vue";
+import FinanceSectionNav from "./Partials/FinanceSectionNav.vue";
+
 import WatchlistModal from "@/domains/watchlist/components/WatchlistModal.vue";
 
 import { useServerSearch } from "@/composables/useServerSearch";
 import { formatMoney, formatMonth, MonthTypeFormat } from "@/utils";
-
-const { serverSearchOptions } = toRefs(props);
-const { state: pageState } = useServerSearch(serverSearchOptions);
 
 const props = defineProps({
   user: {
@@ -48,6 +46,10 @@ const props = defineProps({
     default: () => ({}),
   },
 });
+const { serverSearchOptions } = toRefs(props);
+const { state: pageState } = useServerSearch(serverSearchOptions);
+
+
 
 const isModalOpen = ref(false);
 const resourceToEdit = ref(null);

@@ -1,38 +1,4 @@
-<template>
-  <div class="w-full comparison-card">
-    <div class="pb-10 rounded-lg">
-      <div class="card-text" >
-        <ChartHeaderScroller item-class="comparison-header__item">
-            <section
-                v-for="header in state.headers"
-                :key="header.id"
-                @click="selectedDate = header.id"
-                class="comparison-header__item select-none  snap-center min-w-max px-6 justify-center w-full items-center flex-col flex  previous-period cursor-pointer hover:text-body/80"
-            >
-            <h6 class="period-title">{{ header.label }}</h6>
-            <span class="period-value text-sm" v-for="(value, index) in header.value">
-                <div
-                    class="absolute -left-4 top-2 h-2 w-2 rounded-full"
-                    :style="{backgroundColor: state.options.colors[index]}"
-                />
-                <NumberHider />
-                {{ formatMoney(value) }}
-            </span>
-        </section>
-        </ChartHeaderScroller>
-        <LogerChart
-            label="name"
-            type="bar"
-            :labels="currentSeries[0].labels"
-            :options="state.options"
-            :series="state.series"
-        />
-      </div>
-    </div>
-  </div>
-</template>
-
-<script setup>
+<script setup lang="ts">
 import formatMoney from "@/utils/formatMoney";
 import { format, parseISO } from "date-fns";
 import { computed, reactive, ref } from "vue";
@@ -87,6 +53,41 @@ const state = reactive({
 
 
 </script>
+
+<template>
+  <div class="w-full comparison-card">
+    <div class="pb-10 rounded-lg">
+      <div class="card-text" >
+        <ChartHeaderScroller item-class="comparison-header__item">
+            <section
+                v-for="header in state.headers"
+                :key="header.id"
+                @click="selectedDate = header.id"
+                class="flex flex-col items-center justify-center w-full px-6 cursor-pointer select-none comparison-header__item snap-center min-w-max previous-period hover:text-body/80"
+            >
+            <h6 class="period-title">{{ header.label }}</h6>
+            <span class="text-sm period-value" v-for="(value, index) in header.value">
+                <div
+                    class="absolute w-2 h-2 rounded-full -left-4 top-2"
+                    :style="{backgroundColor: state.options.colors[index]}"
+                />
+                <NumberHider />
+                {{ formatMoney(value) }}
+            </span>
+        </section>
+        </ChartHeaderScroller>
+        <LogerChart
+            label="name"
+            type="bar"
+            :labels="currentSeries[0].labels"
+            :options="state.options"
+            :series="state.series"
+        />
+      </div>
+    </div>
+  </div>
+</template>
+
 
 <style lang="scss" scoped>
 .comparison-card {

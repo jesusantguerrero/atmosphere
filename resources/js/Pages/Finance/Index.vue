@@ -12,9 +12,10 @@ import WidgetTitleCard from "@/Components/molecules/WidgetTitleCard.vue";
 
 import FinanceCard from "@/Components/molecules/FinanceCard.vue";
 import FinanceVarianceCard from "@/Components/molecules/FinanceVarianceCard.vue";
-import TransactionsTable from "@/Components/organisms/TransactionsTable.vue";
-import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
-import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
+
+import FinanceTemplate from "./Partials/FinanceTemplate.vue";
+import FinanceSectionNav from "./Partials/FinanceSectionNav.vue";
+import TransactionsTable from "@/domains/transactions/components/TransactionsTable.vue";
 import CategoryTrendsPreview from "@/domains/transactions/components/CategoryTrendsPreview.vue";
 import BudgetProgress from "@/domains/budget/components/BudgetProgress.vue";
 
@@ -28,6 +29,7 @@ import {
 } from "@/domains/transactions";
 import { useSelect } from "@/utils/useSelects";
 import formatMoney from "@/utils/formatMoney";
+import { ITransaction } from "@/domains/transactions/models";
 
 
 
@@ -128,7 +130,7 @@ const expenseVariance = computed(() => {
 const topCategories = props.expensesByCategory.slice(0, 4);
 
 const { openTransactionModal } = useTransactionModal();
-const handleEdit = (transaction) => {
+const handleEdit = (transaction: ITransaction) => {
     openTransactionModal({
         transactionData: transaction
     })

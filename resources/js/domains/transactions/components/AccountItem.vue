@@ -2,8 +2,8 @@
 import formatMoney from "@/utils/formatMoney";
 
 import NumberHider from "@/Components/molecules/NumberHider.vue";
-import IconDrag from "../icons/IconDrag.vue";
-import LogerButtonTab from "./LogerButtonTab.vue";
+import IconDrag from "@/Components/icons/IconDrag.vue";
+import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 
 defineProps({
   account: {

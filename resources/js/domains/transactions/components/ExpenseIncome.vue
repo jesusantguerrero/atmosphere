@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import SectionTitle from "@/Components/atoms/SectionTitle.vue";
-import MoneyPresenter from "../molecules/MoneyPresenter.vue";
+import MoneyPresenter from "@/Components/molecules/MoneyPresenter.vue";
 
 interface IFooterStat {
     label: string;
@@ -21,19 +21,19 @@ withDefaults(defineProps<{
 
 
 <template>
-  <section class="space-y-2 border border-transparent rounded bg-base-lvl-3 p-4" :class="[cardShadow]">
-    <header class="flex justify-between items-center">
+  <section class="p-4 space-y-2 border border-transparent rounded bg-base-lvl-3" :class="[cardShadow]">
+    <header class="flex items-center justify-between">
       <SectionTitle>{{ title }}</SectionTitle>
-      <span class="text-secondary font-bold text-sm">
+      <span class="text-sm font-bold text-secondary">
         {{  subtitle }}
     </span>
     </header>
     <article class="flex space-x-4">
       <section>
-        <h4 class="text-secondary font-bold text-3xl relative">
+        <h4 class="relative text-3xl font-bold text-secondary">
             <MoneyPresenter :value="value" />
         </h4>
-        <p class="text-body-1/80 mt-4 space-x-4">
+        <p class="mt-4 space-x-4 text-body-1/80">
             <span v-for="stat in footerStats">
                 {{ stat.label}}:
                 <MoneyPresenter

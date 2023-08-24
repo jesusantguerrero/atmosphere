@@ -5,18 +5,15 @@ import { router } from "@inertiajs/vue3";
 import { AtDatePager } from "atmosphere-ui";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
-import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
-import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
+import FinanceTemplate from "./Partials/FinanceTemplate.vue";
+import FinanceSectionNav from "./Partials/FinanceSectionNav.vue";
 
 import WatchlistCard from "@/domains/watchlist/components/WatchlistCard.vue";
 import WatchlistModal from "@/domains/watchlist/components/WatchlistModal.vue";
 
 import { useServerSearch } from "@/composables/useServerSearch";
 import { formatMonth, MonthTypeFormat } from "@/utils";
-
-const { serverSearchOptions } = toRefs(props);
-const { state: pageState } = useServerSearch(serverSearchOptions);
 
 const props = defineProps({
   user: {
@@ -46,6 +43,10 @@ const props = defineProps({
     default: () => ({}),
   },
 });
+
+const { serverSearchOptions } = toRefs(props);
+const { state: pageState } = useServerSearch(serverSearchOptions);
+
 
 const sectionTitle = computed(() => {
     return "Spending watchlist for " + formatMonth(pageState.dates.startDate, MonthTypeFormat.long);

@@ -56,11 +56,6 @@ const handleSelect = (transaction: ITransaction) => {
 const selectedSum = computed(() => {
     return calculateSum(selectedItems as ITransaction);
 })
-
-const totalSum = computed(() => {
-    return calculateSum(transactionsParsed.value.map((transaction: ITransaction) => transaction.id));
-})
-
 const calculateSum = (items: ITransaction[]) => {
      return items.reduce((sum: Record<string, number>, id: number|string) => {
         const transaction = transactionsParsed.value.find(
@@ -124,6 +119,3 @@ const calculateSum = (items: ITransaction[]) => {
     </div>
 </SectionCard>
 </template>
-
-
-../../domains/transactions/models/transactions

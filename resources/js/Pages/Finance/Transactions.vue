@@ -1,33 +1,38 @@
 <script setup lang="ts">
-import { computed, toRefs, provide, ref, nextTick, onMounted } from "vue";
+import { computed, toRefs, reactive, provide, ref, nextTick, onMounted } from "vue";
 import { router } from "@inertiajs/vue3";
+import { format } from "date-fns";
+import axios from "axios";
 // @ts-ignore
 import { AtDatePager } from "atmosphere-ui";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import AppSearch from "@/Components/AppSearch/AppSearch.vue";
-import TransactionSearch from "@/Components/templates/TransactionSearch.vue";
-import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
-import TransactionTemplate from "@/Components/templates/TransactionTemplate.vue";
-import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
-import DraftButtons from "@/Components/DraftButtons.vue";
+import StatusButtons from "@/Components/molecules/StatusButtons.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
+import IconBack from "@/Components/icons/IconBack.vue";
+
+import FinanceTemplate from "@/Pages/Finance/Partials/FinanceTemplate.vue";
+import FinanceSectionNav from "@/Pages/Finance/Partials/FinanceSectionNav.vue";
+import TransactionTemplate from "@/domains/transactions/components/TransactionTemplate.vue";
+import TransactionSearch from "@/domains/transactions/components/TransactionSearch.vue";
+import DraftButtons from "@/domains/transactions/components/DraftButtons.vue";
 
 import { useTransactionModal } from "@/domains/transactions";
 import { useServerSearch, IServerSearchData } from "@/composables/useServerSearch";
-import StatusButtons from "@/Components/molecules/StatusButtons.vue";
 import { useAppContextStore } from "@/store";
-import IconBack from "@/Components/icons/IconBack.vue";
 import { IAccount, ITransaction } from "@/domains/transactions/models";
-import { format } from "date-fns";
-import axios from "axios";
-import { reactive } from "vue";
 
-const props = defineProps<{
+
+const props = withDefaults(defineProps<{
   accounts: IAccount[],
-  serverSearchOptions: IServerSearchData,
+  serverSearchOptions: Partial<IServerSearchData>,
   accountId?: number,
-}>();
+}>(), {
+    serverSearchOptions: () => {
+         return {}
+    }
+});
 
 // mobile
 const context = useAppContextStore();
@@ -111,6 +116,7 @@ const removeTransaction = (transaction: ITransaction) => {
 
 const findLinked = (transaction: ITransaction) => {
   router.patch(`/transactions/${transaction.id}/linked`, {
+    // @ts-ignore
     onSuccess() {
       router.reload();
     },

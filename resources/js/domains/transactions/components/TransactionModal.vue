@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { format, parseISO } from "date-fns";
 import { reactive, toRefs, watch, computed, inject, ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
@@ -8,7 +8,7 @@ import { NSelect, NDatePicker } from "naive-ui";
 import Modal from "@/Components/atoms/Modal.vue";
 import LogerInput from "@/Components/atoms/LogerInput.vue";
 import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
-import CategoryPicker from "./mobile/CategoryPicker.vue";
+import CategoryPicker from "./CategoryPicker.vue";
 import TransactionTypesPicker from "./TransactionTypesPicker.vue";
 import TransactionItems from "./TransactionItems.vue";
 

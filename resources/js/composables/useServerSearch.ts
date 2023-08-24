@@ -119,7 +119,7 @@ export const defaultSearchInertia = (urlParams: string) => {
     return updateSearch(finalUrl);
 }
 
-export const useServerSearch = (serverSearchData: Ref<IServerSearchData>, options: IServerSearchOptions = {}, onUrlChange = defaultSearchInertia) => {
+export const useServerSearch = (serverSearchData: Ref<Partial<IServerSearchData>>, options: IServerSearchOptions = {}, onUrlChange = defaultSearchInertia) => {
     const dates = parseDateFilters(serverSearchData)
     const state = reactive<ISearchState>({
         filters: {

@@ -7,13 +7,17 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
+    IIonEllipsisVertical: typeof import('~icons/ion/ellipsis-vertical')['default']
     IMdiBankTransfer: typeof import('~icons/mdi/bank-transfer')['default']
     IMdiBankTransferIn: typeof import('~icons/mdi/bank-transfer-in')['default']
     IMdiBankTransferOut: typeof import('~icons/mdi/bank-transfer-out')['default']
     IMdiCallSplit: typeof import('~icons/mdi/call-split')['default']
+    IMdiChevronLeft: typeof import('~icons/mdi/chevron-left')['default']
+    IMdiChevronRight: typeof import('~icons/mdi/chevron-right')['default']
     IMdiClose: typeof import('~icons/mdi/close')['default']
     IMdiExport: typeof import('~icons/mdi/export')['default']
     IMdiFilter: typeof import('~icons/mdi/filter')['default']
+    IMdiLink: typeof import('~icons/mdi/link')['default']
     IMdiSearch: typeof import('~icons/mdi/search')['default']
     IMdiSort: typeof import('~icons/mdi/sort')['default']
     IMdiStar: typeof import('~icons/mdi/star')['default']

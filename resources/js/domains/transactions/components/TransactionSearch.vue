@@ -2,9 +2,10 @@
 import { reactive, ref } from "vue";
 import { router } from "@inertiajs/vue3";
 
-import TransactionsTable from "@/Components/organisms/TransactionsTable.vue";
-import { fromDBToAllAccounts, transactionDBToTransaction } from "@/domains/transactions";
+import TransactionsTable from "@/domains/transactions/components/TransactionsTable.vue";
 import { ITransaction } from "@/domains/transactions/models/transactions";
+
+import { fromDBToAllAccounts, transactionDBToTransaction } from "@/domains/transactions";
 
 const props = defineProps({
   transactions: {

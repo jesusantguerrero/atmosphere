@@ -1,3 +1,55 @@
+<script setup lang="ts">
+import { useCollapse } from '@/composables/useCollapse';
+import { computed, ref } from 'vue';
+
+import Collapse from '@/Components/molecules/Collapse.vue';
+import TableCell from './TableCell.vue';
+
+import formatMoney from '@/utils/formatMoney';
+import { formatMonth } from '@/utils';
+
+const props = defineProps({
+    data: {
+        type: Object
+    }
+})
+
+const incomeRef = ref();
+const { isCollapsed, icon, toggleCollapse } = useCollapse(incomeRef);
+
+const cols = computed(() => {
+    return [
+        {
+            field: "name",
+            class: "font-bold text-sm"
+        },
+        ...props.data.dateUnits.map((item) => ({
+            field: item,
+            label: formatMonth(item),
+            class: "text-right text-sm",
+            render: (value) => {
+                return formatMoney(value || 0)
+            }
+        })),
+        {
+            field: "avg",
+            label: "AVG",
+            class: "text-right text-sm",
+            render: (value) => {
+                return formatMoney(value || 0)
+            }
+        }, {
+            field: "total",
+            label: "Total",
+            class: "text-right text-sm",
+            render: (value) => {
+                return formatMoney(value || 0)
+            }
+        }
+    ]
+})
+</script>
+
 <template>
     <section class="px-4 py-2 divide-y">
         <header class="flex px-4 py-2 mt-4 bg-base">
@@ -55,55 +107,3 @@
         </Collapse>
     </section>
 </template>
-
-<script setup>
-import { useCollapse } from '@/composables/useCollapse';
-import { computed, ref } from 'vue';
-
-import Collapse from '@/Components/molecules/Collapse.vue';
-import TableCell from './TableCell.vue';
-
-import formatMoney from '@/utils/formatMoney';
-import { formatMonth } from '@/utils';
-
-const props = defineProps({
-    data: {
-        type: Object
-    }
-})
-
-const incomeRef = ref();
-const { isCollapsed, icon, toggleCollapse } = useCollapse(incomeRef);
-
-const cols = computed(() => {
-    return [
-        {
-            field: "name",
-            class: "font-bold text-sm"
-        },
-        ...props.data.dateUnits.map((item) => ({
-            field: item,
-            label: formatMonth(item),
-            class: "text-right text-sm",
-            render: (value) => {
-                return formatMoney(value || 0)
-            }
-        })),
-        {
-            field: "avg",
-            label: "AVG",
-            class: "text-right text-sm",
-            render: (value) => {
-                return formatMoney(value || 0)
-            }
-        }, {
-            field: "total",
-            label: "Total",
-            class: "text-right text-sm",
-            render: (value) => {
-                return formatMoney(value || 0)
-            }
-        }
-    ]
-})
-</script>

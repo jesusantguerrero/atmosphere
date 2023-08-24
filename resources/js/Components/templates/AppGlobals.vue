@@ -18,7 +18,7 @@
 </template>
 
 <script setup>
-import TransactionModal from "@/Components/TransactionModal.vue";
+import TransactionModal from "@/domains/transactions/components/TransactionModal.vue";
 import { useTransactionModal, transactionModalState } from "@/domains/transactions";
 import { useImportModal } from "@/domains/transactions/useImportModal";
 import ImportResourceModal from "@/Components/ImportResourceModal.vue";
