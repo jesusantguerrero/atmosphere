@@ -27,8 +27,21 @@
 
 
 ## Home Widgets
-- [] Finance Budget
+- [x] Finance Budget
 - [] Finance Goals -> Have to configure which I want to watch in Dashboard
 - [] Finance Accounts -> Have to configure which I want to watch in Dashboard
-- [] Finance Top Groups / Top Categories
+- [] Finance Watchlist -> Have to configure which I want to watch in Dashboard
+- [] Finance Top Groups / Top Categories / Top Payees
 - [] Finance Planned Transactions
+- [] Meals Today Planner
+- [] Meals Random Generator
+- [] Housing Occurrence Checks
+- [] Housing Chores
+- [] Housing Equipment
+- [] Housing Plans
+- [] Housing Week Chopping Chore
+- [] Profiles Events / Updates / Activities
+
+
+## Categories / Goals
+completed_at. and only show up until that time

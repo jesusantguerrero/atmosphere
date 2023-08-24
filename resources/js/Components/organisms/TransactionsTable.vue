@@ -7,7 +7,7 @@ import TransactionCard from "@/Components/molecules/TransactionCard.vue";
 import SectionCard from '@/Components/molecules/SectionCard.vue';
 
 import formatMoney from "@/utils/formatMoney";
-import { ITransaction } from '../Modules/finance/models/transactions';
+import { ITransaction } from '@/domains/transactions/models/transactions';
 
 const {
     classes = "mt-1",
@@ -16,17 +16,17 @@ const {
     parser = null,
     allowSelect
 } = defineProps<{
-    classes: string;
-    tableClass: string;
+    classes?: string;
+    tableClass?: string;
     tableLabel?: string;
     transactions: any[];
     parser: Function | null;
     showSum?: boolean;
-    allowMarkAsPaid: boolean;
-    allowMarkAsApproved: boolean;
-    allowRemove: boolean;
-    allowSelect: boolean;
-    allowEdit: boolean
+    allowMarkAsPaid?: boolean;
+    allowMarkAsApproved?: boolean;
+    allowRemove?: boolean;
+    allowSelect?: boolean;
+    allowEdit?: boolean
 }>()
 
 const emit = defineEmits(['update:selected', 'edit', 'paid-clicked', 'approved', 'removed']);
@@ -34,7 +34,7 @@ const transactionsParsed = computed(() => {
     return !parser ? transactions : parser(transactions);
 })
 
-const selectedItems: number[] = reactive<number[]>([]);
+const selectedItems: number[]|string[] = reactive<number[]|string[]>([]);
 
 const isSelected = (transaction: ITransaction) => {
     // @ts-expect-error: includes inst available they said

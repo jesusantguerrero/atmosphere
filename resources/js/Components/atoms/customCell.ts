@@ -1,6 +1,6 @@
-import { h } from "vue";
+import { defineComponent, h } from "vue";
 
-export default {
+export default defineComponent({
     props: {
         col: {
             type: Object
@@ -12,4 +12,4 @@ export default {
     setup(props, { slots }) {
         return () => h('div', props.col?.render(props.data))
     }
-}
+})

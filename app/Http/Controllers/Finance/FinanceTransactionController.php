@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Finance;
 
-use App\Domains\AppCore\Models\Planner;
 use App\Domains\Transaction\Actions\FindLinkedTransactions;
 use App\Domains\Transaction\Exports\TransactionExport;
 use App\Domains\Transaction\Models\Transaction;
@@ -12,6 +11,7 @@ use App\Domains\Transaction\Services\TransactionService;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
 use Freesgen\Atmosphere\Http\Querify;
+use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
 
 class FinanceTransactionController extends InertiaController {
@@ -40,6 +40,15 @@ class FinanceTransactionController extends InertiaController {
             'date' => "{$dates['0']}~{$dates['1']}",
             'status' => Transaction::STATUS_VERIFIED
         ];
+    }
+
+    protected function index(Request $request) {
+        $resourceName = $this->resourceName ?? $this->model->getTable();
+
+        return inertia($this->templates['index'],[
+            $resourceName => Inertia::lazy(fn () => $this->parser($this->getModelQuery($request))),
+            "serverSearchOptions" => $this->getServerParams(),
+        ]);
     }
 
     public function getByState(Request $request, $state = 'verified') {

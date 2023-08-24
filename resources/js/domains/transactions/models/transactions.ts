@@ -2,6 +2,13 @@ export interface ITransaction {
     id: number;
     title: string;
     currencyCode: string;
+    status: string;
+    payee: IPayee;
+    direction: string;
+    total: number;
+    currency_code: string;
+    description: string;
+    linked: Record<string, any>[]
 }
 
 export interface ITransactionLine {
@@ -21,6 +28,11 @@ export interface IAccount {
     name: string;
     color: string;
     balance: number;
+}
+
+export interface IPayee {
+    id: number;
+    name: string;
 }
 
 export const getCategoryLink = (itemId: number, type: 'categories' | 'groups' ) => {

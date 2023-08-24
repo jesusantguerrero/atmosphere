@@ -1,44 +1,4 @@
-<template>
-  <div class="pb-20 mt-5 bg-base-lvl-3">
-    <CustomTable
-      :cols="cols"
-      :show-prepend="true"
-      :table-data="transactions"
-      @edit="handleEdit"
-    >
-      <template v-slot:total="{ scope: { row } }">
-        <div class="font-bold" :class="[getTransactionColor(row)]">
-          {{ formatMoney(row.total, row.currency_code) }}
-        </div>
-      </template>
-
-      <template v-slot:description="{ scope: { row } }">
-        <span class="capitalize text-xs">
-          {{ row.description }}
-          {{ row.linked }}
-        </span>
-      </template>
-
-      <template v-slot:actions="{ scope: { row } }">
-        <div>
-          <NDropdown
-            trigger="click"
-            key-field="name"
-            :options="options(row)"
-            :on-select="(optionName) => handleOptions(optionName, row)"
-            @click.stop
-          >
-            <button class="hover:bg-base-lvl-3 px-2">
-              <i class="fa fa-ellipsis-v"></i>
-            </button>
-          </NDropdown>
-        </div>
-      </template>
-    </CustomTable>
-  </div>
-</template>
-
-<script setup>
+<script setup lang="ts">
 import { reactive, ref } from "vue";
 import { NDropdown } from "naive-ui";
 
@@ -46,43 +6,34 @@ import CustomTable from "@/Components/atoms/CustomTable.vue";
 
 import { tableCols } from "@/domains/transactions";
 import formatMoney from "@/utils/formatMoney";
+import { ITransaction, TransactionConfig } from "@/domains/transactions/models";
 
-const props = defineProps({
-  transactions: {
-    type: Array,
-    default: () => [],
-  },
-  serverSearchOptions: {
-    type: Object,
-    default: () => ({}),
-  },
-  title: {
-    type: String,
-    default: "s",
-  },
-  cols: {
-    type: Array,
-    default() {
-      return tableCols;
-    },
-  },
+withDefaults(defineProps<{
+    transactions: ITransaction[],
+    serverSearchOptions: Record<string, any>,
+    title: string,
+    cols: Record<string, any>[],
+    isLoading: boolean;
+}>(), {
+    cols: () => tableCols
 });
 
 const emit = defineEmits(["removed", "edit", "approved"]);
 
 const isTransferModalOpen = ref(false);
-const transferConfig = reactive({
+
+const transferConfig = reactive<TransactionConfig>({
   recurrence: false,
   automatic: false,
   transactionData: null,
 });
 
-const handleEdit = (transaction) => {
+const handleEdit = (transaction: ITransaction) => {
   transferConfig.transactionData = transaction;
   isTransferModalOpen.value = true;
 };
 
-const options = (row) => {
+const options = (row: Record<string, any>) => {
   const defaultOptions = [
     {
       name: "edit",
@@ -102,14 +53,57 @@ const options = (row) => {
   return defaultOptions.filter((option) => !option.hide);
 };
 
-const handleOptions = (option, transaction) => {
+type ItemAction = "edit" | "approved" | "removed"
+const handleOptions = (option: ItemAction, transaction: ITransaction) => {
   emit(option, transaction);
 };
 
-const getTransactionColor = (row) => {
+const getTransactionColor = (row: ITransaction) => {
   if (row.payee?.name) {
     return row.direction == "WITHDRAW" ? "text-red-400" : "text-green-500";
   }
   return "text-body-1";
 };
 </script>
+
+<template>
+  <div class="pb-20 mt-5 bg-base-lvl-3">
+    <CustomTable
+      :cols="cols"
+      :show-prepend="true"
+      :table-data="transactions"
+      :is-loading="isLoading"
+      @edit="handleEdit"
+    >
+      <template v-slot:total="{ scope: { row } }">
+        <div class="font-bold" :class="[getTransactionColor(row)]">
+          {{ formatMoney(row.total, row.currency_code) }}
+        </div>
+      </template>
+
+      <template v-slot:description="{ scope: { row } }">
+        <span class="text-xs capitalize">
+          {{ row.description }}
+          {{ row.linked }}
+        </span>
+      </template>
+
+      <template v-slot:actions="{ scope: { row } }">
+        <div>
+          <NDropdown
+            trigger="click"
+            key-field="name"
+            :options="options(row)"
+            :on-select="(optionName) => handleOptions(optionName, row)"
+            @click.stop
+          >
+            <button class="px-2 hover:bg-base-lvl-3">
+              <i class="fa fa-ellipsis-v"></i>
+            </button>
+          </NDropdown>
+        </div>
+      </template>
+    </CustomTable>
+  </div>
+</template>
+
