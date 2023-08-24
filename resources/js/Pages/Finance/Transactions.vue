@@ -18,7 +18,6 @@ import { useServerSearch, IServerSearchData } from "@/composables/useServerSearc
 import StatusButtons from "@/Components/molecules/StatusButtons.vue";
 import { useAppContextStore } from "@/store";
 import IconBack from "@/Components/icons/IconBack.vue";
-import { debounce } from "lodash";
 import { IAccount, ITransaction } from "@/domains/transactions/models";
 import { format } from "date-fns";
 
@@ -56,27 +55,32 @@ const handleBackButton = () => {
 const { serverSearchOptions } = toRefs(props);
 const {
      state: pageState,
-     executeSearchWithDelay,
      executeSearch,
-     updateSearch,
      reset,
 } = useServerSearch(serverSearchOptions, { manual: false }, async (urlParams) => {
     if (isLoading.value) return;
-    const url = `/finance/transactions?${urlParams}`;
-    await updateSearch(url),
-    fetchTransactions(url)
+    const url = `/api/finance/transactions?${urlParams}`;
+    console.time("fetch with axios");
+    isLoading.value = true
+    return axios.get(url).then((data) => {
+        console.log(data)
+        isLoading.value = false
+        console.timeEnd("fetch with axios")
+    })
 });
 
 const isLoading = ref(false);
 const transactionForm = useForm({});
 
 const fetchTransactions = (url = location.toString()) => {
+    console.time("fetch with inertia")
     transactionForm.get(url, {
         only: ['transactions', 'serverSearchOptions'],
         onStart() {
             isLoading.value = true
         },
         onFinish() {
+            console.timeEnd("fetch with inertia")
             isLoading.value = false;
         }
     })
@@ -152,7 +156,6 @@ const listData = computed(() => {
                 class="w-full h-12 border-none bg-base-lvl-1 text-body"
                 v-model:startDate="pageState.dates.startDate"
                 v-model:endDate="pageState.dates.endDate"
-                @change="executeSearchWithDelay(500)"
                 controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
                 next-mode="month"
             />

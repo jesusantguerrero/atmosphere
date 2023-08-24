@@ -11,8 +11,8 @@ import { ITransaction, TransactionConfig } from "@/domains/transactions/models";
 withDefaults(defineProps<{
     transactions: ITransaction[],
     serverSearchOptions: Record<string, any>,
-    title: string,
-    cols: Record<string, any>[],
+    title?: string,
+    cols?: Record<string, any>[],
     isLoading: boolean;
 }>(), {
     cols: () => tableCols

@@ -42,11 +42,14 @@ class FinanceTransactionController extends InertiaController {
         ];
     }
 
+    protected function list(Request $request) {
+        return  $this->parser($this->getModelQuery($request));
+    }
+
     protected function index(Request $request) {
         $resourceName = $this->resourceName ?? $this->model->getTable();
-
         return inertia($this->templates['index'],[
-            $resourceName => Inertia::lazy(fn () => $this->parser($this->getModelQuery($request))),
+            $resourceName => fn () => $this->parser($this->getModelQuery($request)),
             "serverSearchOptions" => $this->getServerParams(),
         ]);
     }

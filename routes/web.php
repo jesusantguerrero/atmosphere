@@ -144,6 +144,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
 
     // Transactions
     Route::controller(FinanceTransactionController::class)->group(function() {
+        Route::get('/api/finance/transactions', 'list')->name('finance.transactions.list');
         Route::get('/finance/transactions', 'index')->name('finance.transactions');
         Route::get('/finance/transactions/{state}', 'getByState')->name('finance.transactions.states');
         Route::post('/finance/import', 'import')->name('finance.import');
