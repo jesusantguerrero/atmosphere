@@ -146,6 +146,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     Route::controller(FinanceTransactionController::class)->group(function() {
         Route::get('/api/finance/transactions', 'list')->name('finance.transactions.list');
         Route::get('/finance/transactions', 'index')->name('finance.transactions');
+        Route::post('/finance/transactions/bulk/delete', 'bulkDelete')->name('finance.transactions.bulk-delete');
         Route::get('/finance/transactions/{state}', 'getByState')->name('finance.transactions.states');
         Route::post('/finance/import', 'import')->name('finance.import');
         Route::get('/finance/export', 'export')->name('finance.export');

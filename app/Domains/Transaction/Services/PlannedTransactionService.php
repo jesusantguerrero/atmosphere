@@ -33,7 +33,6 @@ class PlannedTransactionService {
             'team_id' => $teamId,
         ])
         ->planned()
-        ->whereRaw("date >= ?", [ now()->format('Y-m-d')])
         ->orderBy('date')
         ->get()
         ->map(function ($transaction) {

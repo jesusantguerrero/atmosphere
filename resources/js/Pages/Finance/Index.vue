@@ -1,7 +1,7 @@
 
 <script setup lang="ts">
-import { computed, toRefs } from "vue";
-import { router } from "@inertiajs/vue3";
+import { computed, toRefs, watch, ref } from "vue";
+import { router, useForm } from "@inertiajs/vue3";
 import { format, subMonths } from "date-fns";
 // @ts-ignore
 import { AtButton, AtDatePager } from "atmosphere-ui";
@@ -12,9 +12,10 @@ import WidgetTitleCard from "@/Components/molecules/WidgetTitleCard.vue";
 
 import FinanceCard from "@/Components/molecules/FinanceCard.vue";
 import FinanceVarianceCard from "@/Components/molecules/FinanceVarianceCard.vue";
-import TransactionsTable from "@/Components/organisms/TransactionsTable.vue";
-import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
-import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
+
+import FinanceTemplate from "./Partials/FinanceTemplate.vue";
+import FinanceSectionNav from "./Partials/FinanceSectionNav.vue";
+import TransactionsTable from "@/domains/transactions/components/TransactionsTable.vue";
 import CategoryTrendsPreview from "@/domains/transactions/components/CategoryTrendsPreview.vue";
 import BudgetProgress from "@/domains/budget/components/BudgetProgress.vue";
 
@@ -28,8 +29,9 @@ import {
 } from "@/domains/transactions";
 import { useSelect } from "@/utils/useSelects";
 import formatMoney from "@/utils/formatMoney";
-
-
+import { ITransaction } from "@/domains/transactions/models";
+import BulkSelectionBar from "@/Components/BulkSelectionBar.vue";
+import ConfirmationModal from "@/Components/atoms/ConfirmationModal.vue";
 
 const props = defineProps({
   user: {
@@ -128,11 +130,30 @@ const expenseVariance = computed(() => {
 const topCategories = props.expensesByCategory.slice(0, 4);
 
 const { openTransactionModal } = useTransactionModal();
-const handleEdit = (transaction) => {
+const handleEdit = (transaction: ITransaction) => {
     openTransactionModal({
         transactionData: transaction
     })
 }
+
+const selectedItems = ref([]);
+const deleteTransactionsForm = useForm({
+    isVisible: false,
+    data: [],
+})
+
+const deleteBulkTransactions = () => {
+    deleteTransactionsForm.transform(() => ({
+        data: selectedItems.value,
+
+    })).post(`/finance/transactions/bulk/delete`, {
+        onSuccess() {
+            deleteTransactionsForm.isVisible = false;
+            selectedItems.value = [];
+            router.reload({ preserveScroll: true });
+        }
+    })
+};
 </script>
 
 <template>
@@ -200,11 +221,13 @@ const handleEdit = (transaction) => {
                       class="w-full"
                       table-class="w-full p-2 overflow-auto text-sm rounded-t-lg shadow-md bg-base-lvl-3"
                       :transactions="planned"
+                      v-model:selected="selectedItems"
                       :parser="plannedDBToTransaction"
                       :allow-remove="true"
+                      :allow-mark-as-approved="true"
                       :hide-accounts="true"
-                      @edit="handleEdit"
-                      @removed="removeTransaction"
+                      @approved="handleEdit"
+                      @removed="removeTransaction($event, ['planned'])"
                     />
 
                     <template #action>
@@ -242,7 +265,36 @@ const handleEdit = (transaction) => {
                 </template>
             </WidgetTitleCard>
       </section>
+
+      <BulkSelectionBar
+        v-if="selectedItems.length"
+        :selected-items="selectedItems"
+        @delete-pressed="deleteTransactionsForm.isVisible = true"
+        />
     </FinanceTemplate>
+
+    <ConfirmationModal 
+        :show="deleteTransactionsForm.isVisible" 
+        @close="deleteTransactionsForm.isVisible = false"
+        title="Delete transactions"
+        content="Once transactions are deleted, all of its resources and data will be permanently deleted."
+    >
+        <template #footer>
+            <footer class="flex justify-end">
+                <LogerButton @click="deleteTransactionsForm.isVisible = false" variant="neutral">
+                    Cancel
+                </LogerButton>
+    
+                <LogerButton 
+                    type="danger" class="ml-2" 
+                    @click="deleteBulkTransactions" 
+                    :class="{ 'opacity-25': deleteTransactionsForm.processing }" 
+                    :disabled="deleteTransactionsForm.processing">
+                    Delete Team
+                </LogerButton>
+            </footer>
+        </template>
+    </ConfirmationModal>
   </AppLayout>
 </template>
 

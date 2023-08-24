@@ -1,3 +1,14 @@
+<script lang="ts">
+export default {
+    props: {
+        selectedItems: {
+            type: Array,
+            required: true
+        }
+    }
+}
+</script>
+
 <template>
     <div  class="bulk-selection-bar">
         <div class="flex items-center">
@@ -11,16 +22,6 @@
     </div>
 </template>
 
-<script>
-export default {
-    props: {
-        selectedItems: {
-            type: Array,
-            required: true
-        }
-    }
-}
-</script>
 
 <style lang="scss" scoped>
 .bulk-selection-bar {

@@ -4,9 +4,9 @@ import { ref, inject, computed, Ref } from "vue";
 import { router } from "@inertiajs/vue3";
 import { VueDraggableNext as Draggable } from "vue-draggable-next"
 
-import AccountModal from "@/Components/organisms/AccountModal.vue";
-import AccountItem from "@/Components/atoms/AccountItem.vue";
 import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
+import AccountModal from "./AccountModal.vue";
+import AccountItem from "./AccountItem.vue";
 
 import { useAppContextStore } from "@/store";
 import { IAccount } from "@/domains/transactions/models/transactions";

@@ -59,7 +59,8 @@ const handleOptions = (option: ItemAction, transaction: ITransaction) => {
 };
 
 const getTransactionColor = (row: ITransaction) => {
-  if (row.payee?.name) {
+// @ts-ignore
+  if (row.payee?.name || row.payee_name) {
     return row.direction == "WITHDRAW" ? "text-red-400" : "text-green-500";
   }
   return "text-body-1";
@@ -97,8 +98,8 @@ const getTransactionColor = (row: ITransaction) => {
             :on-select="(optionName) => handleOptions(optionName, row)"
             @click.stop
           >
-            <button class="px-2 hover:bg-base-lvl-3">
-              <i class="fa fa-ellipsis-v"></i>
+            <button class="px-2 hover:bg-base-lvl-3 ">
+                <IIonEllipsisVertical />
             </button>
           </NDropdown>
         </div>

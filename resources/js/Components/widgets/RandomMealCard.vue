@@ -13,7 +13,7 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { reactive, computed } from 'vue'
 import axios from 'axios'
 import LogerButton from "@/Components/atoms/LogerButton.vue";

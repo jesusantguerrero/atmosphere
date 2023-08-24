@@ -1,67 +1,54 @@
 <script setup lang="ts">
-import { AtBackgroundIconCard, AtDatePager } from "atmosphere-ui";
 import { computed, toRefs, provide, ref, onMounted } from "vue";
 import { router } from "@inertiajs/vue3";
+// @ts-expect-error: no definitions
+import { AtBackgroundIconCard, AtDatePager } from "atmosphere-ui";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import AppSearch from "@/Components/AppSearch/AppSearch.vue";
-import TransactionSearch from "@/Components/templates/TransactionSearch.vue";
-import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
-import TransactionTemplate from "@/Components/templates/TransactionTemplate.vue";
-import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
-import DraftButtons from "@/Components/DraftButtons.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 
+import FinanceTemplate from "./Partials/FinanceTemplate.vue";
+import FinanceSectionNav from "./Partials/FinanceSectionNav.vue";
+import TransactionSearch from "@/domains/transactions/components/TransactionSearch.vue";
+import TransactionTemplate from "@/domains/transactions/components/TransactionTemplate.vue";
+import DraftButtons from "@/domains/transactions/components/DraftButtons.vue";
+
 import { useTransactionModal } from "@/domains/transactions";
-import { useServerSearch } from "@/composables/useServerSearch";
+import { IServerSearchData, useServerSearch } from "@/composables/useServerSearch";
 import { tableAccountCols } from "@/domains/transactions";
 import { useAppContextStore } from "@/store";
 import { formatMoney } from "@/utils";
-import { ITransaction } from "@/domains/transactions/models";
+import { IAccount, ICategory, ITransaction } from "@/domains/transactions/models";
 import { format } from "date-fns";
 
 const { openTransactionModal } = useTransactionModal();
 
-const props = defineProps({
-  transactions: {
-    type: Object,
-    default: () => ({
-      data: [],
-    }),
-  },
-  stats: {
-    type: Object,
-    default: () => ({
-      data: [],
-    }),
-  },
-  accounts: {
-    type: Array,
-    default: () => [],
-  },
-  categories: {
-    type: Array,
-    default() {
-      return [];
-    },
-  },
-  serverSearchOptions: {
-    type: Object,
-    default: () => ({}),
-  },
-  accountId: {
-    type: [Number, null],
-  },
+
+interface CollectionData<T> {
+    data: T[]
+}
+const props = withDefaults(defineProps<{
+    transactions: ITransaction[];
+    stats: CollectionData<Record<string, number>>;
+    accounts: IAccount[];
+    categories: ICategory[],
+    serverSearchOptions: Partial<IServerSearchData>,
+    accountId?: number,
+}>(), {
+    serverSearchOptions: () => {
+        return {}
+    }
 });
 
 const { serverSearchOptions, accountId, accounts } = toRefs(props);
-const { state: pageState, hasFilters,executeSearchWithDelay, executeSearch, reset } =
+const { state: pageState, hasFilters, executeSearch, reset } =
 useServerSearch(serverSearchOptions);
 
 provide("selectedAccountId", accountId);
 
 const selectedAccount = computed(() => {
-  return accounts.value.find((account) => account.id === accountId.value);
+  return accounts.value.find((account) => account.id === accountId?.value);
 });
 
 const context = useAppContextStore();
@@ -83,6 +70,7 @@ const removeTransaction = (transaction: ITransaction) => {
 
 const findLinked = (transaction: ITransaction) => {
   router.patch(`/transactions/${transaction.id}/linked`, {
+    // @ts-ignore
     onSuccess() {
       router.reload();
     },
@@ -96,8 +84,8 @@ const handleEdit = (transaction: ITransaction) => {
 };
 
 const reconciliation = () => {
-  const current = prompt("Whats your current amount?");
-  const total = selectedAccount.value?.balance - current;
+  const current: number = Number(prompt("Whats your current amount?"));
+  const total = (selectedAccount.value?.balance || 0) - current;
   openTransactionModal({
     mode: "Deposit",
     transactionData: {

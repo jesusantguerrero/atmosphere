@@ -1,3 +1,121 @@
+<script setup lang="ts">
+import { computed, toRefs } from "vue";
+import { Link, router } from "@inertiajs/vue3";
+// @ts-ignore
+import { AtDatePager } from "atmosphere-ui";
+
+import AppLayout from "@/Components/templates/AppLayout.vue";
+import ChartNetWorth from "@/Components/ChartNetworth.vue";
+import IncomeExpenses from "@/Components/IncomeExpenses.vue";
+
+import FinanceTemplate from "./Partials/FinanceTemplate.vue";
+import FinanceSectionNav from "./Partials/FinanceSectionNav.vue";
+import ChartComparison from "@/Components/widgets/ChartComparison.vue";
+import WidgetTitleCard from "@/Components/molecules/WidgetTitleCard.vue";
+import Collapse from "@/Components/molecules/Collapse.vue";
+
+import YearSummary from "@/domains/transactions/components/YearSummary.vue";
+import ExpenseIncome from "@/domains/transactions/components/ExpenseIncome.vue";
+import ExpenseChartWidget from "@/domains/transactions/components/ExpenseChartWidget.vue";
+
+import { useServerSearch } from "@/composables/useServerSearch";
+
+const props = defineProps({
+  user: {
+    type: Object,
+    required: true,
+  },
+  data: {
+    type: Array,
+    default() {
+      return [];
+    },
+  },
+  metaData: {
+    type: Object
+  },
+  serverSearchOptions: {
+    type: Object,
+    default: () => ({}),
+  },
+  section: {
+    type: String
+  }
+});
+
+const { serverSearchOptions } = toRefs(props);
+const {state: pageState, executeSearchWithDelay } = useServerSearch(serverSearchOptions, {
+    manual: true
+});
+
+const handleSelection = (index: number) => {
+    const parent: Record<string, string> = props.data[index]
+    if (!props.metaData.parent_name) {
+        router.visit(`/trends/categories?filter[parent_id]=${parent.id}`)
+    }
+}
+
+const trends = [
+    {
+        name: 'Cashflow',
+        link: '/trends'
+    },
+    {
+        name: 'Category Trends',
+        link: '/trends/categories'
+    },
+    {
+        name: 'Net Worth',
+        link: '/trends/net-worth'
+    },
+    {
+        name: 'Income v Expenses',
+        link: '/trends/income-expenses'
+    },
+    {
+        name: 'Income vs Expenses Graph',
+        link: '/trends/income-expenses-graph'
+    },
+    {
+        name: 'Year summary',
+        link: '/trends/year-summary'
+    }
+]
+
+
+const components = {
+    groups: ExpenseChartWidget,
+    categories: ExpenseChartWidget,
+    netWorth: ChartNetWorth,
+    incomeExpenses: IncomeExpenses,
+    incomeExpensesGraph:  ChartComparison,
+    yearSummary: YearSummary
+}
+
+const trendComponent = computed(() => {
+    return components[props.metaData.name] || ExpenseChartWidget
+})
+
+const cashflowEntities = {
+    groups: {
+        label: 'Groups',
+        value: '/trends/groups'
+    },
+    categories: {
+        label: 'Categories',
+        value: '/trends/categories'
+    },
+    payees: {
+        label: 'Payees',
+        value: '/trends/payees'
+    }
+}
+const isFilterSelected = (filterValue) => {
+    const currentStatus = location.pathname;
+    return currentStatus.includes(filterValue);
+}
+</script>
+
 <template>
   <AppLayout :title="metaData.title">
     <template #header>
@@ -95,118 +213,3 @@
     </FinanceTemplate>
   </AppLayout>
 </template>
-
-<script setup>
-import { computed, toRefs } from "vue";
-import { AtDatePager } from "atmosphere-ui";
-import { Link, router } from "@inertiajs/vue3";
-
-import AppLayout from "@/Components/templates/AppLayout.vue";
-import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
-import ChartNetWorth from "@/Components/ChartNetworth.vue";
-import IncomeExpenses from "@/Components/IncomeExpenses.vue";
-import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
-import ExpenseChartWidget from "@/Components/widgets/ExpenseChartWidget.vue";
-
-import { useServerSearch } from "@/composables/useServerSearch";
-import ChartComparison from "@/Components/widgets/ChartComparison.vue";
-import YearSummary from "@/Components/widgets/YearSummary.vue";
-import WidgetTitleCard from "@/Components/molecules/WidgetTitleCard.vue";
-import Collapse from "@/Components/molecules/Collapse.vue";
-import ExpenseIncome from "@/Components/widgets/ExpenseIncome.vue";
-
-const props = defineProps({
-  user: {
-    type: Object,
-    required: true,
-  },
-  data: {
-    type: Array,
-    default() {
-      return [];
-    },
-  },
-  metaData: {
-    type: Object
-  },
-  serverSearchOptions: {
-    type: Object,
-    default: () => ({}),
-  },
-  section: {
-    type: String
-  }
-});
-
-const { serverSearchOptions } = toRefs(props);
-const {state: pageState, executeSearchWithDelay } = useServerSearch(serverSearchOptions, {
-    manual: true
-});
-
-const handleSelection = (index) => {
-    const parent = props.data[index]
-    if (!props.metaData.parent_name) {
-        router.visit(`/trends/categories?filter[parent_id]=${parent.id}`)
-    }
-}
-
-const trends = [
-    {
-        name: 'Cashflow',
-        link: '/trends'
-    },
-    {
-        name: 'Category Trends',
-        link: '/trends/categories'
-    },
-    {
-        name: 'Net Worth',
-        link: '/trends/net-worth'
-    },
-    {
-        name: 'Income v Expenses',
-        link: '/trends/income-expenses'
-    },
-    {
-        name: 'Income vs Expenses Graph',
-        link: '/trends/income-expenses-graph'
-    },
-    {
-        name: 'Year summary',
-        link: '/trends/year-summary'
-    }
-]
-
-
-const components = {
-    groups: ExpenseChartWidget,
-    categories: ExpenseChartWidget,
-    netWorth: ChartNetWorth,
-    incomeExpenses: IncomeExpenses,
-    incomeExpensesGraph:  ChartComparison,
-    yearSummary: YearSummary
-}
-
-const trendComponent = computed(() => {
-    return components[props.metaData.name] || ExpenseChartWidget
-})
-
-const cashflowEntities = {
-    groups: {
-        label: 'Groups',
-        value: '/trends/groups'
-    },
-    categories: {
-        label: 'Categories',
-        value: '/trends/categories'
-    },
-    payees: {
-        label: 'Payees',
-        value: '/trends/payees'
-    }
-}
-const isFilterSelected = (filterValue) => {
-    const currentStatus = location.pathname;
-    return currentStatus.includes(filterValue);
-}
-</script>

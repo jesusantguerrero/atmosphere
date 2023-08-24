@@ -104,7 +104,7 @@ const handleOptions = (option: any) => {
                 <h4 class="relative font-bold text-primary cursor-grab" :class="{'handle': !isMobile }">
                     {{ item.name }}
                     <PointAlert
-                        v-if="item.hasOverspent || item.hasOverAssigned || item.hasUnderfunded"
+                        v-if="item.hasOverspent || item.hasUnderfunded"
                     />
                 </h4>
             </div>

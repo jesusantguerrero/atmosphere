@@ -4,10 +4,8 @@
   </div>
 </template>
 
-<script setup>
-import { computed, reactive, ref, inject } from "vue";
-
-const props = defineProps({
+<script setup lang="ts">
+defineProps({
     title: {
         type: String
     },
@@ -30,7 +28,3 @@ const props = defineProps({
 
 
 </script>
-
-<style lang="scss" scoped>
-
-</style>

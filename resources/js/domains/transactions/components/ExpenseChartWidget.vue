@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { computed } from "vue";
-import DonutChart from "../organisms/DonutChart.vue";
+import DonutChart from "@/Components/organisms/DonutChart.vue";
+// @ts-ignore
 import exactMath from "exact-math";
 import { formatMoney } from "@/utils";
 

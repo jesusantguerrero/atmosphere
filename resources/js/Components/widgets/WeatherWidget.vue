@@ -5,20 +5,20 @@
     :value-description="description"
     >
         <template #title>
-            <div class="group cursor-pointer transition" @click="fetchWeatherInfo()">
-                {{ state.name }} <small class="group-hover:inline-block hidden">Update</small> 
+            <div class="transition cursor-pointer group" @click="fetchWeatherInfo()">
+                {{ state.name }} <small class="hidden group-hover:inline-block">Update</small> 
             </div>
         </template>
         <template #leftTitle>
             <img :src="image" alt="weather-image" />
         </template>
-        <h4 class="text-secondary font-bold text-4xl relative">
-            {{ state.main.temp }} <span class="text-sm absolute">Cº</span>
+        <h4 class="relative text-4xl font-bold text-secondary">
+            {{ state.main.temp }} <span class="absolute text-sm">Cº</span>
         </h4>
   </WidgetCard>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { useLocalStorage } from "@vueuse/core";
 import { addMinutes, format } from "date-fns";
 import { onMounted, reactive, computed } from "vue";

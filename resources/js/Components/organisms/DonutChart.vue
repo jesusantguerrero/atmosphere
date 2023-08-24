@@ -1,13 +1,5 @@
-<template>
-    <div class="relative">
-      <DoughnutChart ref="chartRef" :data="chartData" :options="options" />
-      <div class="absolute">
-        {{ total }}
-      </div>
-    </div>
-</template>
 
-<script setup>
+<script setup lang="ts">
 import { generateRandomColor } from "@/utils";
 import { Chart, registerables } from "chart.js/auto";
 import { computed, ref, toRefs } from "vue";
@@ -86,3 +78,12 @@ const options = computed(() => ({
   },
 }));
 </script>
+
+<template>
+    <div class="relative">
+      <DoughnutChart ref="chartRef" :data="chartData" :options="options" />
+      <div class="absolute">
+        {{ total }}
+      </div>
+    </div>
+</template>

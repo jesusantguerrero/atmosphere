@@ -3,14 +3,9 @@ import SectionTitle from '@/Components/atoms/SectionTitle.vue';
 import RandomMealCard from '@/Components/widgets/RandomMealCard.vue';
 import LogerButton from '@/Components/atoms/LogerButton.vue';
 
-defineProps({
-    meals: {
-        type: Array,
-        default() {
-            return []
-        }
-    }
-})
+defineProps<{
+    meals: Record<string, any>[]
+}>()
 </script>
 
 <template>
@@ -18,7 +13,7 @@ defineProps({
         <RandomMealCard class="mt-4 border-b rounded-b-none" />
         <div class="px-4 py-2 space-y-4 cursor-pointer rounded-b-md min-h-min bg-base-lvl-3">
             <div class="text-center">
-                <SectionTitle type="secondary"> {{ t('Menu for today') }}</SectionTitle>
+                <SectionTitle type="secondary"> {{ $t('Menu for today') }}</SectionTitle>
             </div>
             <slot v-if="meals.length">
                 <div v-for="plannedMeal in meals" :key="plannedMeal.id">
@@ -30,8 +25,8 @@ defineProps({
             </slot>
             <div v-else class="py-1.5 text-center">
 
-                <h4 class="py-1 text-2xl font-bold text-body-1"> {{t('No meals') }} </h4>
-                <LogerButton variant="inverse" class="mx-auto">{{ t('Go to planner')}}</LogerButton>
+                <h4 class="py-1 text-2xl font-bold text-body-1"> {{ $t('No meals') }} </h4>
+                <LogerButton variant="inverse" class="mx-auto">{{ $t('Go to planner')}}</LogerButton>
             </div>
         </div>
     </div>

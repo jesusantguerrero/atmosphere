@@ -6,15 +6,16 @@ import { AtButton, AtDatePager } from "atmosphere-ui";
 import { useBreakpoints, breakpointsTailwind } from "@vueuse/core";
 import { startOfMonth } from "date-fns";
 
-import Modal from "@/Components/atoms/Modal.vue";
-import AppLayout from "@/Components/templates/AppLayout.vue";
-import StatusButtons from "@/Components/molecules/StatusButtons.vue";
-import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
-import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
-import LogerButton from "@/Components/atoms/LogerButton.vue";
-import ExpenseIncome from "@/Components/widgets/ExpenseIncome.vue";
-import PointAlert from "@/Components/atoms/PointAlert.vue";
 import IconClose from "@/Components/icons/IconClose.vue";
+import Modal from "@/Components/atoms/Modal.vue";
+import LogerButton from "@/Components/atoms/LogerButton.vue";
+import PointAlert from "@/Components/atoms/PointAlert.vue";
+import StatusButtons from "@/Components/molecules/StatusButtons.vue";
+import AppLayout from "@/Components/templates/AppLayout.vue";
+
+import FinanceTemplate from "./Partials/FinanceTemplate.vue";
+import FinanceSectionNav from "./Partials/FinanceSectionNav.vue";
+import ExpenseIncome from "@/domains/transactions/components/ExpenseIncome.vue";
 
 import BalanceAssign from "@/domains/budget/components/BudgetBalanceAssign.vue";
 import BudgetDetailForm from "@/domains/budget/components/BudgetDetailForm.vue";

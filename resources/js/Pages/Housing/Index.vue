@@ -4,10 +4,11 @@ import HouseSectionNav from '@/Components/templates/HouseSectionNav.vue';
 import LogerButton from '@/Components/atoms/LogerButton.vue';
 import WelcomeCard from '@/Components/organisms/WelcomeCard.vue';
 import OccurrenceCard from '@/Components/Modules/occurrence/OccurrenceCard.vue';
-import CategoryItem from '@/Components/mobile/CategoryItem.vue';
-import SectionTitle from '@/Components/atoms/SectionTitle.vue';
-import MealTypeCell from '@/domains/meal/components/MealTypeCell.vue';
 import ChoreWidget from '@/Components/widgets/ChoreWidget.vue';
+import SectionTitle from '@/Components/atoms/SectionTitle.vue';
+
+import CategoryItem from '@/domains/transactions/components/CategoryItem.vue';
+import MealTypeCell from '@/domains/meal/components/MealTypeCell.vue';
 
 import { IOccurrenceCheck } from '@/Components/Modules/occurrence/models';
 
