@@ -35,7 +35,7 @@
     </JetActionSection>
 </template>
 
-<script>
+<script lang="ts">
     import JetActionSection from '@/Components/atoms/ActionSection.vue'
     import JetConfirmationModal from '@/Components/atoms/ConfirmationModal.vue'
     import JetDangerButton from '@/Components/atoms/DangerButton.vue'

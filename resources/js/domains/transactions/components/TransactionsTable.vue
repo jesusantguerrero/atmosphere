@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive } from 'vue';
+import { computed, reactive, watch } from 'vue';
 // @ts-expect-error: no definition
 import ExactMath from "exact-math";
 
@@ -9,13 +9,7 @@ import SectionCard from '@/Components/molecules/SectionCard.vue';
 import formatMoney from "@/utils/formatMoney";
 import { ITransaction } from '@/domains/transactions/models/transactions';
 
-const {
-    classes = "mt-1",
-    tableClass = "mt-2 bg-base-lvl-1 border border-base-deep-1 rounded-lg shadow-md",
-    transactions = [],
-    parser = null,
-    allowSelect
-} = defineProps<{
+const props = withDefaults(defineProps<{
     classes?: string;
     tableClass?: string;
     tableLabel?: string;
@@ -27,11 +21,21 @@ const {
     allowRemove?: boolean;
     allowSelect?: boolean;
     allowEdit?: boolean
-}>()
+}>(), {
+    classes: "mt-1",
+    tableClass: "mt-2 bg-base-lvl-1 border border-base-deep-1 rounded-lg shadow-md",
+    transactions: () => ([]),
+    parser:  null,
+    allowSelect: true, 
+})
 
 const emit = defineEmits(['update:selected', 'edit', 'paid-clicked', 'approved', 'removed']);
 const transactionsParsed = computed(() => {
-    return !parser ? transactions : parser(transactions);
+    return !props.parser ? props.transactions : props.parser(props.transactions);
+})
+
+watch(() => props.transactions, () => {
+    console.log(" I have changed", props.transactions)
 })
 
 const selectedItems: number[]|string[] = reactive<number[]|string[]>([]);
@@ -42,7 +46,7 @@ const isSelected = (transaction: ITransaction) => {
 }
 
 const handleSelect = (transaction: ITransaction) => {
-    if (allowSelect) {
+    if (props.allowSelect) {
         const id: number| string = transaction.id || transaction.title;
         if (isSelected(transaction)) {
             selectedItems.splice(selectedItems.indexOf(id), 1);
@@ -95,8 +99,8 @@ const calculateSum = (items: ITransaction[]) => {
                 class="odd:bg-base-lvl-1 even:bg-base-lvl-2"
                 @selected="handleSelect(transaction)"
                 @paid-clicked="$emit('paid-clicked', transaction)"
-                @approved="$emit('approved', transaction)"
-                @removed="$emit('removed', transaction)"
+                @approved="$emit('approved', transactions[index])"
+                @removed="$emit('removed', transactions[index])"
                 @edit="$emit('edit', transactions[index])"
             />
             <div class="flex items-center justify-between px-4 py-5 bg-base-lvl-1 text-body-1" v-if="showSum">

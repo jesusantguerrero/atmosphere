@@ -177,4 +177,11 @@ class FinanceTransactionController extends InertiaController {
         $queryParams['filters'] = $filters;
         return $queryParams;
     }
+
+ 
+    public function bulkDelete(Request $request)
+    {
+        $items = $request->post('data');
+        Transaction::whereIn('id', $items)->delete();
+    }
 }

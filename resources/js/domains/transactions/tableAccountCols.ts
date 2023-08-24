@@ -2,6 +2,7 @@ import { format, isAfter, parseISO, startOfDay } from "date-fns"
 import { h } from "vue"
 import IconTransfer from "@/Components/icons/IconTransfer.vue";
 import { Link, router } from "@inertiajs/vue3";
+import { ITransaction } from "./models";
 
 const TRANSACTION_TYPES = {
     WITHDRAW: 'outflow',
@@ -77,11 +78,17 @@ export const tableAccountCols = (accountId) => [
     },
 ];
 
-export const removeTransaction = (transaction) => {
+export const removeTransaction = (transaction: ITransaction, only: string[] = []) => {
     if (confirm("Are you sure you want to remove this transaction?")) {
         router.delete(`/transactions/${transaction.id}`, {
+            preserveScroll: true, 
+            preserveState: true,
             onSuccess() {
-                router.reload();
+                router.reload({
+                    only,
+                    preserveScroll: true, 
+                    preserveState: true,
+                });
             }
         })
     }
