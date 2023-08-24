@@ -1,7 +1,6 @@
 
 <script lang="ts" setup>
     import { computed } from 'vue';
-    import AccountsLedger from "@/Components/templates/AccountsLedger.vue";
     import { PANEL_SIZES } from '@/utils/constants';
     import IconImport from '@/Components/icons/IconImport.vue';
     import LogerButtonTab from '@/Components/atoms/LogerButtonTab.vue';
@@ -81,12 +80,6 @@
                             </LogerButtonTab>
                         </template>
                     </WidgetCard>
-                    <AccountsLedger
-                        :accounts="accounts"
-                        @reordered="saveReorder"
-                        :class="[cardShadow]"
-                        class="px-4 py-2 space-y-4 cursor-pointer md:mt-4 rounded-b-md md:rounded-md min-h-min bg-base-lvl-3"
-                    />
                 </slot>
             </section>
         </aside>

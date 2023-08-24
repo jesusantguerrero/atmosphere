@@ -12,12 +12,12 @@ import LogerProfileModal from '@/Components/LogerProfileModal.vue';
 import ProfileEntityModal from '@/Components/ProfileEntityModal.vue';
 import OccurrenceCard from '@/Components/Modules/occurrence/OccurrenceCard.vue';
 import WidgetTitleCard from '@/Components/molecules/WidgetTitleCard.vue';
-import TransactionsTable from '@/Components/organisms/TransactionsTable.vue';
 
+import TransactionsTable from '@/domains/transactions/components/TransactionsTable.vue';
 import BudgetDetailForm from '@/domains/budget/components/BudgetDetailForm.vue';
 
 import { IOccurrenceCheck } from '@/Components/Modules/occurrence/models';
-import { ITransaction } from '@/Components/Modules/finance/models/transactions';
+import { ITransaction } from '@/domains/transactions/models';
 import { transactionDBToTransaction } from '@/domains/transactions';
 
 
