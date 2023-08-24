@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, toRefs, provide, ref, nextTick, onMounted } from "vue";
-import { router, useForm } from "@inertiajs/vue3";
+import { router } from "@inertiajs/vue3";
 // @ts-ignore
 import { AtDatePager } from "atmosphere-ui";
 
@@ -20,9 +20,10 @@ import { useAppContextStore } from "@/store";
 import IconBack from "@/Components/icons/IconBack.vue";
 import { IAccount, ITransaction } from "@/domains/transactions/models";
 import { format } from "date-fns";
+import axios from "axios";
+import { reactive } from "vue";
 
 const props = defineProps<{
-  transactions: ITransaction[],
   accounts: IAccount[],
   serverSearchOptions: IServerSearchData,
   accountId?: number,
@@ -63,30 +64,31 @@ const {
     console.time("fetch with axios");
     isLoading.value = true
     return axios.get(url).then((data) => {
-        console.log(data)
+        transactions.data = data.data
         isLoading.value = false
         console.timeEnd("fetch with axios")
     })
 });
 
 const isLoading = ref(false);
-const transactionForm = useForm({});
+const transactions = reactive<{
+    data: ITransaction[]
+}>({
+    data: []
+})
 
-const fetchTransactions = (url = location.toString()) => {
-    console.time("fetch with inertia")
-    transactionForm.get(url, {
-        only: ['transactions', 'serverSearchOptions'],
-        onStart() {
-            isLoading.value = true
-        },
-        onFinish() {
-            console.timeEnd("fetch with inertia")
-            isLoading.value = false;
-        }
-    })
+const fetchTransactions = (params = location.toString()) => {
+    // const url = `/api/${params}`;
+    // return axios.get(url).then((data) => {
+    //     transactions.data = data.data;
+    //     console.log(data.data, " the data")
+    //     isLoading.value = false
+    // })
 }
 onMounted(() => {
-    fetchTransactions()
+    nextTick(() => {
+        fetchTransactions()
+    })
 })
 
 const selectedAccountId = computed(() => {
@@ -141,7 +143,7 @@ const currentStatus = ref(serverSearchOptions.value.filters?.status || "verified
 const monthName = computed(() => format(pageState.dates.startDate, "MMMM"))
 
 const listData = computed(() => {
-    return props.transactions?.data ?? [];
+    return transactions.data;
 })
 </script>
 

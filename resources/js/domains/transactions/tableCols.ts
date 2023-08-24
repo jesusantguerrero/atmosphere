@@ -16,7 +16,12 @@ export const tableCols = [
         class: 'text-center',
         headerClass: 'text-center',
         render(row) {
-            const date = parseISO(row.date)
+            let date = new Date()
+            try {
+                date = parseISO(row.date)
+            } catch (e) {
+                console.log(e, row.date)
+            }
             const hasPassed = isAfter(startOfDay(date), startOfDay(new Date()))
             return h('div', {class: hasPassed ? 'text-danger' : 'text-info cursor-pointer'} ,format(date, "dd MMM, yyyy"))
         }

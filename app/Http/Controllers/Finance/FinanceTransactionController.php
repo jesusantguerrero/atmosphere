@@ -8,10 +8,11 @@ use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Transaction\Resources\TransactionResource;
 use App\Domains\Transaction\Services\PlannedTransactionService;
 use App\Domains\Transaction\Services\TransactionService;
+use App\Http\Controllers\Traits\QuerifySlim;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
 use Freesgen\Atmosphere\Http\Querify;
-use Inertia\Inertia;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
 class FinanceTransactionController extends InertiaController {
@@ -43,13 +44,50 @@ class FinanceTransactionController extends InertiaController {
     }
 
     protected function list(Request $request) {
-        return  $this->parser($this->getModelQuery($request));
+        $dates = $this->getFilterDates();
+        $query = new QuerifySlim([
+            "searchable" => ["id", "date", "description"],
+            "sorts" => ['-date'],
+            "includes" => [
+                'mainLine',
+                'lines',
+                'category',
+                'counterAccount',
+                'mainLine.account',
+                'counterLine.account'
+            ],
+            "filters" => [
+                'date' => "{$dates['0']}~{$dates['1']}",
+                'status' => Transaction::STATUS_VERIFIED
+            ],
+        ]);
+        return $query->getModelQuery($request, "transactions", function ($query) {
+            $query->selectRaw("
+                transactions.id,
+                transactions.description,
+                date,
+                transactions.direction,
+                transactions.status, 
+                total,
+                transactions.account_id,
+                counter_account_id,
+                payee_id,
+                categories.name category_name,
+                payees.name payee_name,
+                ca.name counter_account_name, 
+                accounts.name account_name
+            ")
+            ->leftJoin('categories', 'categories.id', 'transactions.category_id')
+            ->leftJoin('payees', 'payees.id', 'transactions.payee_id')
+            ->leftJoin(DB::raw('accounts ca'), 'ca.id', 'transactions.counter_account_id')
+            ->leftJoin(DB::raw('accounts'), 'accounts.id', 'transactions.account_id');
+        });
     }
 
     protected function index(Request $request) {
         $resourceName = $this->resourceName ?? $this->model->getTable();
         return inertia($this->templates['index'],[
-            $resourceName => fn () => $this->parser($this->getModelQuery($request)),
+            $resourceName => [],
             "serverSearchOptions" => $this->getServerParams(),
         ]);
     }
