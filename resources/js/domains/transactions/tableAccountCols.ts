@@ -4,19 +4,24 @@ import IconTransfer from "@/Components/icons/IconTransfer.vue";
 import { Link, router } from "@inertiajs/vue3";
 import { ITransaction } from "./models";
 
-const TRANSACTION_TYPES = {
-    WITHDRAW: 'outflow',
-    DEPOSIT: 'inflow'
-}
-
-export const tableAccountCols = (accountId) => [
+export const tableAccountCols = (accountId: number) => [
+    {
+        label: "",
+        name: "selection",
+        width: 30,
+        class: 'text-center',
+        headerClass: 'text-center',
+        render(row: any) {
+            return h('input', { type: 'checkbox'})
+        },
+    },
     {
         label: "Date",
         name: "date",
         width: 200,
         class: 'text-center',
         headerClass: 'text-center',
-        render(row) {
+        render(row: any) {
             const date = parseISO(row.date)
             const hasPassed = isAfter(startOfDay(date), startOfDay(new Date()))
             return h('div', {class: hasPassed ? 'text-danger' : 'text-info cursor-pointer'} ,format(date, "dd MMM, yyyy"))
@@ -27,7 +32,7 @@ export const tableAccountCols = (accountId) => [
         name: "payee",
         width: 400,
         class: 'w-full',
-        render(row) {
+        render(row: any) {
             try {
                 const account = row.account_id === accountId ? row.counter_account : row.account
                 const children = () => [
@@ -43,7 +48,7 @@ export const tableAccountCols = (accountId) => [
     {
         label: "Category",
         name: "category",
-        render(row) {
+        render(row: any) {
             return row.category?.name
         }
     },
@@ -51,16 +56,6 @@ export const tableAccountCols = (accountId) => [
         label: "Description",
         name: "description",
         width: 300,
-    },
-    {
-        label: "Type",
-        name: "direction",
-        width: 300,
-        class: 'text-center',
-        headerClass: 'text-center',
-        render(row) {
-            return TRANSACTION_TYPES[row.direction];
-        },
     },
     {
         label: "Amount",

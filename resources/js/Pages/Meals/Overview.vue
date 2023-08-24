@@ -7,7 +7,7 @@ import SectionTitle from "@/Components/atoms/SectionTitle.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 import ChoppingListForm from "./Partials/ChoppingListForm.vue";
 
-import CategoryItem from "@/Components/mobile/CategoryItem.vue";
+import CategoryItem from "@/domains/transactions/components/CategoryItem.vue";
 import MealWidget from "@/domains/meal/components/MealWidget.vue";
 import MealTypeCell from "@/domains/meal/components/MealTypeCell.vue";
 import MealSectionNav from "@/domains/meal/components/MealSectionNav.vue";

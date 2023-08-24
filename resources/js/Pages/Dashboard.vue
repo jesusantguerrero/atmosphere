@@ -6,13 +6,13 @@
     import ChartComparison from "@/Components/widgets/ChartComparison.vue";
     import ChartCurrentVsPrevious from "@/Components/widgets/ChartCurrentVsPrevious.vue";
     import WeatherWidget from "@/Components/widgets/WeatherWidget.vue";
-    import NextPaymentsWidget from "@/Components/widgets/NextPaymentsWidget.vue";
+    import AppIcon from '@/Components/AppIcon.vue';
     
+    import NextPaymentsWidget from "@/domains/transactions/components/NextPaymentsWidget.vue";
     import MealWidget from "@/domains/meal/components/MealWidget.vue";
     import BudgetTracker from "@/domains/budget/components/BudgetTracker.vue";
     
     import { useAppContextStore } from '@/store';
-    import AppIcon from '@/Components/AppIcon.vue';
 
     const props = defineProps({
         revenue: {

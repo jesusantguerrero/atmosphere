@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import SectionTitle from "@/Components/atoms/SectionTitle.vue";
-import CategoryItem from '@/Components/mobile/CategoryItem.vue';
 import { differenceInCalendarDays, parseISO } from 'date-fns';
+
+import SectionTitle from "@/Components/atoms/SectionTitle.vue";
+
+import CategoryItem from '@/domains/transactions/components/CategoryItem.vue';
+
 import { IOccurrenceCheck } from "@/Components/Modules/occurrence/models";
 
 defineProps<{
