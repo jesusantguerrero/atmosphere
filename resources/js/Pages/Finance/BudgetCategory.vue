@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { toRefs } from "vue";
+// @ts-expect-error: no definitions
 import { AtDatePager } from "atmosphere-ui";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 import SectionTitle from "@/Components/atoms/SectionTitle.vue";
-import TransactionSearch from "@/Components/templates/TransactionSearch.vue";
-import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
-import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
+
+import FinanceSectionNav from "./Partials/FinanceSectionNav.vue";
+import FinanceTemplate from "./Partials/FinanceTemplate.vue";
+import TransactionSearch from "@/domains/transactions/components/TransactionSearch.vue";
 import ChartComparison from "@/Components/widgets/ChartComparison.vue";
 
 import BudgetDetailForm from "@/domains/budget/components/BudgetDetailForm.vue";

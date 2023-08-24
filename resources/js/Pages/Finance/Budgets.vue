@@ -3,10 +3,11 @@ import { toRefs } from "vue";
 // @ts-ignore
 import {  AtDatePager } from "atmosphere-ui";
 
-import AppLayout from "@/Components/templates/AppLayout.vue";
-import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
-import FinanceSectionNav from "@/Components/templates/FinanceSectionNav.vue";
+import AppLayout from "@/Components/templates/AppLayout.vue";
+
+import FinanceTemplate from "./Partials/FinanceTemplate.vue";
+import FinanceSectionNav from "./Partials/FinanceSectionNav.vue";
 
 import { useSelect } from "@/utils/useSelects";
 import { useServerSearch } from "@/composables/useServerSearch";
