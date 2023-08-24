@@ -7,21 +7,17 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
-    IFluentFoodApple20Filled: typeof import('~icons/fluent/food-apple20-filled')['default']
     IMdiBankTransfer: typeof import('~icons/mdi/bank-transfer')['default']
     IMdiBankTransferIn: typeof import('~icons/mdi/bank-transfer-in')['default']
     IMdiBankTransferOut: typeof import('~icons/mdi/bank-transfer-out')['default']
     IMdiCallSplit: typeof import('~icons/mdi/call-split')['default']
-    IMdiChevronLeft: typeof import('~icons/mdi/chevron-left')['default']
-    IMdiChevronRight: typeof import('~icons/mdi/chevron-right')['default']
+    IMdiClose: typeof import('~icons/mdi/close')['default']
     IMdiExport: typeof import('~icons/mdi/export')['default']
-    IMdiFile: typeof import('~icons/mdi/file')['default']
-    IMdiLink: typeof import('~icons/mdi/link')['default']
-    IMdiMinus: typeof import('~icons/mdi/minus')['default']
-    IMdiPlus: typeof import('~icons/mdi/plus')['default']
+    IMdiFilter: typeof import('~icons/mdi/filter')['default']
+    IMdiSearch: typeof import('~icons/mdi/search')['default']
+    IMdiSort: typeof import('~icons/mdi/sort')['default']
     IMdiStar: typeof import('~icons/mdi/star')['default']
     IMdiStarOutline: typeof import('~icons/mdi/star-outline')['default']
-    IMdiSync: typeof import('~icons/mdi/sync')['default']
     IMdiTrash: typeof import('~icons/mdi/trash')['default']
   }
 }

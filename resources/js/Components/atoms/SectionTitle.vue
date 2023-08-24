@@ -2,7 +2,7 @@
 import { computed } from "vue";
 
 const props = withDefaults(defineProps<{
-    type: string
+    type?: string
 }>(), {
     type:"default",
 });

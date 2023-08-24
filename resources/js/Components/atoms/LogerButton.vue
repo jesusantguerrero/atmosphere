@@ -27,7 +27,7 @@ const typeClasses = computed(() => {
 </script>
 
 <template>
- <component :is="as" class="flex items-center font-bold transition border rounded-md min-w-max" :class="[typeClasses]">
+ <component :is="as" class="relative flex items-center px-5 py-2 font-bold transition border rounded-md min-w-max" :class="[typeClasses]">
     <slot />
  </component>
 </template>

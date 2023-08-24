@@ -1,9 +1,10 @@
-<script setup>
+<script setup lang="ts">
 import { AtBackgroundIconCard, AtDatePager } from "atmosphere-ui";
-import { computed, toRefs, provide } from "vue";
+import { computed, toRefs, provide, ref, onMounted } from "vue";
 import { router } from "@inertiajs/vue3";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
+import AppSearch from "@/Components/AppSearch/AppSearch.vue";
 import TransactionSearch from "@/Components/templates/TransactionSearch.vue";
 import FinanceTemplate from "@/Components/templates/FinanceTemplate.vue";
 import TransactionTemplate from "@/Components/templates/TransactionTemplate.vue";
@@ -16,6 +17,8 @@ import { useServerSearch } from "@/composables/useServerSearch";
 import { tableAccountCols } from "@/domains/transactions";
 import { useAppContextStore } from "@/store";
 import { formatMoney } from "@/utils";
+import { ITransaction } from "@/domains/transactions/models";
+import { format } from "date-fns";
 
 const { openTransactionModal } = useTransactionModal();
 
@@ -52,7 +55,8 @@ const props = defineProps({
 });
 
 const { serverSearchOptions, accountId, accounts } = toRefs(props);
-const { state: pageState } = useServerSearch(serverSearchOptions);
+const { state: pageState, hasFilters,executeSearchWithDelay, executeSearch, reset } =
+useServerSearch(serverSearchOptions);
 
 provide("selectedAccountId", accountId);
 
@@ -69,7 +73,7 @@ const isDraft = computed(() => {
   return serverSearchOptions.value.filters?.status == "draft";
 });
 
-const removeTransaction = (transaction) => {
+const removeTransaction = (transaction: ITransaction) => {
   router.delete(`/transactions/${transaction.id}`, {
     onSuccess() {
       router.reload();
@@ -77,7 +81,7 @@ const removeTransaction = (transaction) => {
   });
 };
 
-const findLinked = (transaction) => {
+const findLinked = (transaction: ITransaction) => {
   router.patch(`/transactions/${transaction.id}/linked`, {
     onSuccess() {
       router.reload();
@@ -85,25 +89,10 @@ const findLinked = (transaction) => {
   });
 };
 
-const handleEdit = (transaction) => {
+const handleEdit = (transaction: ITransaction) => {
   openTransactionModal({
     transactionData: transaction,
   });
-};
-
-const transactionStatus = {
-  draft: {
-    label: "Drafts",
-    value: "/finance/transactions?filter[status]=draft&relationships=linked",
-  },
-  verified: {
-    label: "Verified",
-    value: "/finance/transactions?",
-  },
-  scheduled: {
-    label: "Scheduled",
-    value: "/finance/transactions?filter[status]=scheduled",
-  },
 };
 
 const reconciliation = () => {
@@ -117,6 +106,14 @@ const reconciliation = () => {
     },
   });
 };
+
+const isLoading = ref(false);
+onMounted(() => {
+    router.on('start', () => isLoading.value = true)
+    router.on('finish', () => isLoading.value = false)
+})
+
+const monthName = computed(() => format(pageState.dates.startDate, "MMMM"))
 </script>
 
 <template>
@@ -125,15 +122,6 @@ const reconciliation = () => {
       <FinanceSectionNav>
         <template #actions>
           <div class="flex items-center w-full space-x-2">
-            <LogerButton
-              variant="inverse"
-              class=""
-              v-for="(item, statusName) in transactionStatus"
-              :key="statusName"
-              @click="router.visit(item.value)"
-            >
-              {{ item.label }}
-            </LogerButton>
             <AtDatePager
               class="w-full h-12 border-none bg-base-lvl-1 text-body"
               v-model:startDate="pageState.dates.startDate"
@@ -150,22 +138,45 @@ const reconciliation = () => {
       </FinanceSectionNav>
     </template>
     <FinanceTemplate title="Transactions" :accounts="accounts">
-      <div class="flex space-x-4 mt-4">
+      <div class="flex mt-4 space-x-4">
         <AtBackgroundIconCard
-          class="w-full text-body-1 cursor-pointer bg-base-lvl-3"
+          class="w-full cursor-pointer text-body-1 bg-base-lvl-3"
           v-for="stat in stats"
           :value="formatMoney(stat)"
         />
       </div>
-      <Component
-        :is="listComponent"
-        :cols="tableAccountCols(props.accountId)"
-        :transactions="transactions"
-        :server-search-options="serverSearchOptions"
-        @findLinked="findLinked"
-        @removed="removeTransaction"
-        @edit="handleEdit"
-      />
+
+      <section class="mt-4 bg-base-lvl-3">
+        <header class="flex items-center justify-between px-6 py-2">
+            <section>
+                <h4 class="text-lg font-bold text-body-1">
+                    All transactions in <span class="text-secondary">
+                        {{ monthName }}
+                    </span>
+                </h4>
+                <AppSearch
+                    v-model.lazy="pageState.search"
+                    class="w-full md:flex"
+                    :has-filters="hasFilters"
+                    @clear="reset()"
+                    @blur="executeSearch"
+                />
+            </section>
+        <span>
+            {{  transactions.length }} Results
+        </span>
+        </header>
+          <Component
+            :is="listComponent"
+            :cols="tableAccountCols(props.accountId)"
+            :transactions="transactions"
+            :server-search-options="serverSearchOptions"
+            :is-loading="isLoading"
+            @findLinked="findLinked"
+            @removed="removeTransaction"
+            @edit="handleEdit"
+          />
+      </section>
     </FinanceTemplate>
   </AppLayout>
 </template>
