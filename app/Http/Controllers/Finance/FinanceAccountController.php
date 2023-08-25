@@ -28,7 +28,7 @@ class FinanceAccountController extends InertiaController {
         $this->appends = [];
     }
 
-    public function show(Account $account, ) {
+    public function show(Account $account) {
         $queryParams = request()->query();
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
         [$startDate, $endDate] = $this->getFilterDates($filters);

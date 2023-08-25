@@ -152,17 +152,20 @@ export const useServerSearch = (serverSearchData: Ref<Partial<IServerSearchData>
     );
 
     const executeSearch = (delay?: number) => {
-        const urlParams = parseParams(state)
-        const currentUrl = getCurrentLocationParams()
-        if (urlParams == currentUrl || !onUrlChange) return
-
-        if (!delay) {
-            onUrlChange(urlParams);
-        } else {
-            nextTick(debounce(() => {
-            onUrlChange(urlParams);
-        }, delay))
-      }
+        nextTick(() => {      
+            const urlParams = parseParams(state)
+            const currentUrl = getCurrentLocationParams()
+            if (urlParams == currentUrl || !onUrlChange) return
+    
+            if (!delay) {
+                onUrlChange(urlParams);
+            } else {
+                nextTick(debounce(() => {
+                    const urlParams = parseParams(state)
+                    onUrlChange(urlParams);
+                }, delay))
+            }
+        })
     }
 
     function parseDateFilters(options: Ref<IServerSearchData>) {

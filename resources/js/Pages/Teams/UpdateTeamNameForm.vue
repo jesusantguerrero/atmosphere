@@ -1,5 +1,9 @@
 <template>
-    <JetFormSection @submitted="updateTeamName" title="Team Name" description="The team's name and owner information.">
+    <JetFormSection 
+        @submitted="updateTeamName" 
+        title="Budget space name" 
+        description="The budget's information."
+    >
         <template #form>
             <!-- Team Owner Information -->
             <TeamForm
@@ -15,21 +19,21 @@
                 Saved.
             </JetActionMessage>
 
-            <AtButton type="primary" :is-loading="form.processing" :disabled="form.processing">
+            <LogerButton type="primary" :is-loading="form.processing" :disabled="form.processing">
                 Save
-            </AtButton>
+            </LogerButton>
         </template>
     </JetFormSection>
 </template>
 
-<script setup>
-    import JetActionMessage from '@/Components/atoms/ActionMessage.vue'
-    import JetButton from '@/Components/atoms/Button.vue'
-    import JetFormSection from '@/Components/atoms/FormSection.vue'
+<script setup lang="ts">
     import { useForm } from '@inertiajs/vue3'
-    import { AtField, AtButton } from "atmosphere-ui"
-    import LogerInput from '@/Components/atoms/LogerInput.vue'
+
+    import JetActionMessage from '@/Components/atoms/ActionMessage.vue'
+    import LogerButton from '@/Components/atoms/LogerButton.vue'
+    import JetFormSection from '@/Components/atoms/FormSection.vue'
     import TeamForm from '../Onboarding/TeamForm.vue'
+    
     import { mapTeamFormServer, parseTeamForm } from "@/domains/app"
 
     const props = defineProps(['team', 'permissions']);

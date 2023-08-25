@@ -167,7 +167,7 @@ const listData = computed(() => {
                 controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
                 next-mode="month"
             />
-            <DraftButtons v-if="isDraft" />
+            <DraftButtons v-if="isDraft" @submitted="fetchTransactions()" />
             <StatusButtons
               v-model="currentStatus"
               :statuses="transactionStatus"

@@ -272,7 +272,7 @@ class TransactionService {
             'transactions.team_id' => $teamId,
             'transactions.status' => 'verified'
         ])
-        ->orderByRaw('date_format(transactions.date, "%Y-%m-01"), concat(groups.index,"." , categories.index)')
+        ->orderByRaw('transactions.date, concat(groups.index,"." , categories.index)')
         ->leftJoin('categories', 'transactions.category_id', '=', 'categories.id')
         ->leftJoin(DB::raw('categories groups'), 'groups.id', '=', 'categories.parent_id')
         ->leftJoin('payees', 'transactions.payee_id', '=', 'payees.id')

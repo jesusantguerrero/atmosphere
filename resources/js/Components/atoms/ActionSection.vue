@@ -6,14 +6,14 @@
         </JetSectionTitle>
 
         <div class="mt-5 md:mt-0 md:col-span-2">
-            <div class="px-4 py-5 sm:p-6 bg-base-lvl-1 shadow sm:rounded-lg text-base-200">
+            <div class="px-4 py-5 shadow sm:p-6 bg-base-lvl-1 sm:rounded-lg text-base-200">
                 <slot name="content"></slot>
             </div>
         </div>
     </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
     import JetSectionTitle from './SectionCardTitle.vue'
     defineProps(['title', 'description'])
 </script>
