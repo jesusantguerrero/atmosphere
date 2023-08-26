@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Domains\AppCore\Policies\FinanceAccountPolicy;
 use App\Models\Team;
 use App\Models\User;
 use App\Policies\TeamPolicy;
@@ -18,6 +19,7 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         Team::class => TeamPolicy::class,
+        Account::class => FinanceAccountPolicy::class
     ];
 
     /**

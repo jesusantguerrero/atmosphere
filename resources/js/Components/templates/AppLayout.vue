@@ -62,6 +62,7 @@
 
     const isPrivacyMode = useLocalStorage('hasHiddenValues', false)
     provide('hasHiddenValues', isPrivacyMode)
+    provide('router', router)
 
     // routing
     const showingNavigationDropdown = ref(false)
