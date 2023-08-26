@@ -16,6 +16,7 @@ export interface ITransactionLine {
     category_id: number;
     title: string;
     currencyCode: string;
+    is_split: boolean;
 }
 
 export interface ICategory {

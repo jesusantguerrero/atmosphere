@@ -259,18 +259,18 @@ class TransactionService {
         concat(groups.name, '/', categories.name) as group_category,
         groups.name group_name,
         categories.name category_name,
-        transactions.description memo,
+        (CASE WHEN split.id is not null THEN split.concept ELSE transactions.description END) as memo ,
         (CASE WHEN transactions.direction <> 'DEPOSIT'
-        THEN concat(transactions.currency_code, '$', transactions.total)
+        THEN concat(transactions.currency_code, '$', (CASE WHEN split.id is not null THEN split.amount ELSE transactions.total END))
         ELSE  0 END) as outflow,
         (CASE WHEN transactions.direction = 'DEPOSIT'
-           THEN concat(transactions.currency_code, '$', transactions.total)
+           THEN concat(transactions.currency_code, '$', (CASE WHEN split.id is not null THEN split.amount ELSE transactions.total END))
            ELSE 0 END) as inflow,
        'reconciled' as cleared
         ")
         ->where([
             'transactions.team_id' => $teamId,
-            'transactions.status' => 'verified'
+            'transactions.status' => 'verified',
         ])
         ->orderByRaw('transactions.date, concat(groups.index,"." , categories.index)')
         ->leftJoin('categories', 'transactions.category_id', '=', 'categories.id')
@@ -278,6 +278,7 @@ class TransactionService {
         ->leftJoin('payees', 'transactions.payee_id', '=', 'payees.id')
         ->leftJoin('accounts', 'transactions.account_id', '=', 'accounts.id')
         ->leftJoin(DB::raw('accounts ca'), 'ca.id', '=', 'transactions.counter_account_id')
+        ->leftJoin(DB::raw('transaction_lines split'), fn($q) => $q->on('split.transaction_id', '=', 'transactions.id')->where('is_split', true))
         ->get()
         ->toArray();
     }
