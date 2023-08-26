@@ -213,7 +213,7 @@ watch(
             payee_label: newValue.payee?.name,
             category_id: newValue.category_id ?? newValue.category?.id,
             category: newValue.category,
-            counter_account_id: null,
+            counter_account_id:  newValue.counter_account_id ?? newValue.counter_account?.id,
             account_id: newValue.account_id ?? newValue.account?.id,
             account: newValue.account,
             amount: newValue.total,
@@ -228,6 +228,8 @@ watch(
   (show) => {
     if (show && !props.transactionData?.id) {
         state.form.direction = props.mode?.toUpperCase() ?? "WITHDRAW";
+    } else if (!show) {
+        state.form.reset()
     }
   }
 );
@@ -236,6 +238,10 @@ const isRecurrence = ref(props.recurrence);
 const { form, schedule_settings } = toRefs(state);
 
 const isPickerOpen = ref(false);
+
+const saveText = computed(() => {
+    return !props.transactionData?.id ? 'save' : 'update'
+})
 </script>
 
 <template>
@@ -377,20 +383,20 @@ const isPickerOpen = ref(false);
             Cancel
         </AtButton>
         <AtButton
-            class="h-10 text-white bg-primary"
+            class="h-10 text-white capitalize bg-primary"
             :processing="form.processing"
             :disabled="form.processing"
             @click="onSubmit(true)" rounded
         >
-          Save and another
+          {{ saveText }} and another
         </AtButton>
         <AtButton
-            class="h-10 text-white bg-primary"
+            class="h-10 text-white capitalize bg-primary"
             :processing="form.processing"
             :disabled="form.processing"
             @click="onSubmit()" rounded
         >
-          Save
+          {{ saveText }}
         </AtButton>
       </div>
     </footer>

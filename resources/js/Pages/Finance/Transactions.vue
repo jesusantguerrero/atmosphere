@@ -119,9 +119,11 @@ const findLinked = (transaction: ITransaction) => {
 
 const { openTransactionModal } = useTransactionModal();
 const handleEdit = (transaction: ITransaction) => {
-  openTransactionModal({
-    transactionData: transaction,
-  });
+    axios.get(`/transactions/${transaction.id}?json=true`).then(({ data }) => {
+        openTransactionModal({
+          transactionData: data,
+        });
+    })
 };
 
 const transactionStatus = {
@@ -156,12 +158,11 @@ const listData = computed(() => {
           <div class="flex items-center w-full space-x-2">
             <AtDatePager
                 class="w-full h-12 border-none bg-base-lvl-1 text-body"
-                :model-value:startDate="pageState.dates.startDate"
-                :model-value:endDate="pageState.dates.endDate"
+                v-model:startDate="pageState.dates.startDate"
+                v-model:endDate="pageState.dates.endDate"
                 controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
                 next-mode="month"
             />
-            {{ pageState }} {{ serverSearchOptions }}
             <DraftButtons v-if="isDraft" @submitted="fetchTransactions()" />
             <StatusButtons
               v-model="currentStatus"

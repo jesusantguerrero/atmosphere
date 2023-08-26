@@ -62,7 +62,6 @@
 
     const isPrivacyMode = useLocalStorage('hasHiddenValues', false)
     provide('hasHiddenValues', isPrivacyMode)
-    provide('router', router)
 
     // routing
     const showingNavigationDropdown = ref(false)
@@ -140,7 +139,6 @@
                                 :teams="$page.props.user.all_teams"
                                 @switch-team="switchToTeam"
                                 :full-height="true"
-                                :image-only="true"
                                 @create="router.visit(route('teams.create'))"
                                 resource-name="Budget"
                             />

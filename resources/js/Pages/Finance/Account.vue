@@ -2,7 +2,8 @@
 import { computed, toRefs, provide, ref, onMounted } from "vue";
 import { router } from "@inertiajs/vue3";
 // @ts-expect-error: no definitions
-import { AtBackgroundIconCard, AtDatePager } from "atmosphere-ui";
+// import { AtBackgroundIconCard, AtDatePager } from "atmosphere-ui";
+import { AtBackgroundIconCard, AtDatePager, useServerSearch, IServerSearchData } from "atmosphere-ui";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import AppSearch from "@/Components/AppSearch/AppSearch.vue";
@@ -15,7 +16,7 @@ import TransactionTemplate from "@/domains/transactions/components/TransactionTe
 import DraftButtons from "@/domains/transactions/components/DraftButtons.vue";
 
 import { useTransactionModal } from "@/domains/transactions";
-import { IServerSearchData, useServerSearch } from "@/composables/useServerSearch";
+// import { IServerSearchData, useServerSearch } from "@/composables/useServerSearch";
 import { tableAccountCols } from "@/domains/transactions";
 import { useAppContextStore } from "@/store";
 import { formatMoney } from "@/utils";
@@ -41,6 +42,7 @@ const props = withDefaults(defineProps<{
     }
 });
 
+const isLoading = ref(false);
 const { serverSearchOptions, accountId, accounts } = toRefs(props);
 const { state: pageState, hasFilters, executeSearch, reset } =
 useServerSearch(serverSearchOptions);
@@ -95,7 +97,6 @@ const reconciliation = () => {
   });
 };
 
-const isLoading = ref(false);
 onMounted(() => {
     router.on('start', () => isLoading.value = true)
     router.on('finish', () => isLoading.value = false)

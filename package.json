@@ -36,7 +36,7 @@
         "@vitejs/plugin-vue": "^4.3.1",
         "@vue/server-renderer": "^3.3.4",
         "@vueuse/core": "^10.3.0",
-        "atmosphere-ui": "^1.2.1",
+        "atmosphere-ui": "^1.2.2",
         "autoprefixer": "^10.4.15",
         "axios": "^1.4.0",
         "cypress": "^11.1.0",
