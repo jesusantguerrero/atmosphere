@@ -3,45 +3,30 @@ import { router } from "@inertiajs/vue3";
 // @ts-expect-error: no definitions
 import { AtButton } from "atmosphere-ui";
 
+const emit = defineEmits(['submitted'])
 
 const runAutomation = () => {
     axios.post('/api/automation/run-all')
-        .then(response => {
-            console.log(response.data)
+        .then(()=> {
+            emit('submitted')
         })
-        .catch(error => {
+        .catch(() => {
             console.log(error)
         })
 }
 
 const removeAllDrafts = () => {
-    router.post('/transactions/remove-all-drafts', {
+    router.post('/transactions/remove-all-drafts', {} ,{
         onSuccess() {
-            router.reload();
+            emit('submitted')
         }
     })
 }
 
-const approveTransactionAll = (transaction) => {
-    router.post(`/transactions/approve-all-drafts`, {
-        onSuccess() {
-            router.reload();
-        }
-    })
-}
-
-const approveTransaction = (transaction) => {
-    router.post(`/transactions/${transaction.id}/approve`, {
-        onSuccess() {
-            router.reload();
-        }
-    })
-}
-
-const removeTransaction = (transaction) => {
-    router.delete(`/transactions/${transaction.id}`, {
-        onSuccess() {
-            router.reload();
+const approveTransactionAll = () => {
+    router.post(`/transactions/approve-all-drafts`, {} , {
+        onSuccess() {;
+            emit('submitted')
         }
     })
 }

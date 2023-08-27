@@ -14,6 +14,7 @@ import TransactionItems from "./TransactionItems.vue";
 
 import { TRANSACTION_DIRECTIONS } from "@/domains/transactions";
 import { cloneDeep } from "lodash";
+import { ITransactionLine } from "../models";
 
 const props = defineProps({
   show: {
@@ -66,7 +67,6 @@ const state = reactive({
     start_date: null,
     timezone_id: "America/Santo_Domingo",
   },
-  splits: [],
   form: useForm({
     name: "",
     payee_id: "",
@@ -82,6 +82,8 @@ const state = reactive({
     has_splits: false,
   }),
 });
+
+const splits = ref<Record<string, any>[]>([])
 
 watch(
   () => state.form.direction,
@@ -167,7 +169,6 @@ const onSubmit = (addAnother = false) => {
       if (splits.length > 1) {
         data.items = splits;
         data.has_splits = true;
-        data.description = "Split with multiple categories";
       }
 
       return data;
@@ -207,18 +208,20 @@ watch(
         state.form.direction = TRANSACTION_DIRECTIONS.TRANSFER;
     }
 
-    state.splits = newValue.has_splits ? props.transactionData?.splits : [
-        {
+    if (newValue.has_splits) {
+        splits.value = props.transactionData?.splits ?? props.transactionData.lines.filter((line: ITransactionLine) => line.is_split)
+    } else {
+        splits.value = [{
             payee_id: newValue.payee_id ?? newValue.payee?.id,
             payee_label: newValue.payee?.name,
             category_id: newValue.category_id ?? newValue.category?.id,
             category: newValue.category,
-            counter_account_id: null,
+            counter_account_id:  newValue.counter_account_id ?? newValue.counter_account?.id,
             account_id: newValue.account_id ?? newValue.account?.id,
             account: newValue.account,
             amount: newValue.total,
-        }
-    ];
+        }];
+    }
   },
   { deep: true }
 );
@@ -228,6 +231,8 @@ watch(
   (show) => {
     if (show && !props.transactionData?.id) {
         state.form.direction = props.mode?.toUpperCase() ?? "WITHDRAW";
+    } else if (!show) {
+        state.form.reset()
     }
   }
 );
@@ -236,6 +241,10 @@ const isRecurrence = ref(props.recurrence);
 const { form, schedule_settings } = toRefs(state);
 
 const isPickerOpen = ref(false);
+
+const saveText = computed(() => {
+    return !props.transactionData?.id ? 'save' : 'update'
+})
 </script>
 
 <template>
@@ -298,7 +307,7 @@ const isPickerOpen = ref(false);
 
               <TransactionItems
                 ref="gridSplitsRef"
-                :items="state.splits"
+                :items="splits"
                 :is-transfer="isTransfer"
                 :categories="categoryOptions"
                 :accounts="accountOptions"
@@ -377,20 +386,20 @@ const isPickerOpen = ref(false);
             Cancel
         </AtButton>
         <AtButton
-            class="h-10 text-white bg-primary"
+            class="h-10 text-white capitalize bg-primary"
             :processing="form.processing"
             :disabled="form.processing"
             @click="onSubmit(true)" rounded
         >
-          Save and another
+          {{ saveText }} and another
         </AtButton>
         <AtButton
-            class="h-10 text-white bg-primary"
+            class="h-10 text-white capitalize bg-primary"
             :processing="form.processing"
             :disabled="form.processing"
             @click="onSubmit()" rounded
         >
-          Save
+          {{ saveText }}
         </AtButton>
       </div>
     </footer>

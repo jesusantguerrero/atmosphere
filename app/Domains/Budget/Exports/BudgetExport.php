@@ -3,14 +3,24 @@
 namespace App\Domains\Budget\Exports;
 
 use App\Domains\Budget\Models\BudgetMonth;
+use App\Models\Setting;
 use Brick\Money\Money;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\FromQuery;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
+use Ramsey\Uuid\Type\Decimal;
 
-class BudgetExport implements FromQuery, WithMapping
+class BudgetExport implements FromQuery, WithMapping, WithHeadings
 {
+
+    public function __construct(protected int $teamId)
+    {
+        
+    }
+
+
     public function query() {
         return BudgetMonth::query()
         ->select([
@@ -22,14 +32,18 @@ class BudgetExport implements FromQuery, WithMapping
         ])
         ->join(DB::raw('categories c'), 'c.id', 'category_id')
         ->join(DB::raw('categories g'), 'g.id', 'c.parent_id')
-        ->orderBy('month')->orderBy('g.index')->orderBy('c.index');
+        ->where("budget_months.team_id", $this->teamId)
+        ->orderBy('month')
+        ->orderBy('g.index')
+        ->orderBy('c.index');
     }
 
     public function map($budgetMonth): array
     {
        return [
-            Carbon::createFromFormat('Y-m-d', $budgetMonth->month)->format('M-Y'),
+            Carbon::createFromFormat('Y-m-d', $budgetMonth->month)->format('M Y'),
             "{$budgetMonth->groupName}: {$budgetMonth->categoryName}",
+            "{$budgetMonth->groupName}",
             "{$budgetMonth->categoryName}",
             $this->formatMoney($budgetMonth, 'budgeted'),
             $this->formatMoney($budgetMonth, 'activity'),
@@ -38,6 +52,19 @@ class BudgetExport implements FromQuery, WithMapping
     }
 
     private function formatMoney($budget, $property) {
-        return Money::of($budget->$property, $budget->currency_code, null);
+        $sign = $budget->$property < 0 ? '-' : '';
+        return $sign . $budget->currency_code . '$' . abs($budget->$property);
+    }
+
+    public function headings(): array {
+        return [
+            "Month",
+            "Category Group/Category",
+            "Category Group",
+            "Category",
+            "Budgeted",
+            "Activity",
+            "Available",
+        ];
     }
 }

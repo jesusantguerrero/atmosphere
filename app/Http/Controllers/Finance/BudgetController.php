@@ -22,10 +22,11 @@ class BudgetController extends InertiaController
         ];
         $this->sorts = [];
         $this->includes = ['subCategories', 'subCategories.budget', 'subCategories.budgets'];
+        $dates = $this->getFilterDates();
         $this->filters = [
             'parent_id' => '$null',
             'resource_type' => 'transactions',
-            'data' => date('Y-m-01')
+            'date' => "{$dates['0']}~{$dates['1']}",
         ];
         $this->resourceName= "budgets";
     }

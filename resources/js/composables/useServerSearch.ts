@@ -1,7 +1,7 @@
 import { router } from '@inertiajs/vue3';
 import { format, parseISO } from "date-fns";
-import { reactive, Ref, watch, nextTick, computed }  from "vue"
-import { debounce } from 'lodash';
+import { reactive, Ref, watch, nextTick, computed, ref }  from "vue"
+import debounce  from 'lodash/debounce';
 
 export interface IServerSearchData {
     filters: Record<string, string>
@@ -17,10 +17,9 @@ interface IServerSearchOptions {
     manual?: Boolean,
     mainDateField?: string,
 }
-
 interface IDateSpan {
-    startDate: Date,
-    endDate?: Date
+    startDate: Date|null;
+    endDate?: Date|null;
 }
 
 interface ISearchState {
@@ -32,23 +31,6 @@ interface ISearchState {
   search?: string
   page?: number
 }
-
-const DEFAULT_CONFIG = {
-  search: "",
-  filters: {},
-  sorts: {
-    title: {
-      label: "Name",
-      value: "",
-      direction: "",
-    },
-    releaseYear: {
-      label: "Year",
-      value: "",
-      direction: "",
-    },
-  },
-};
 
 export const filterParams = (mainDateField: string, externalFilters: Record<string, string|null>, dates: IDateSpan) => {
     let filters = [];
@@ -103,6 +85,14 @@ export const parseParams = (state: ISearchState) => {
   return params.filter(value => typeof value == 'string' && value?.trim() || value).join("&");
 }
 
+function parseDateFilters(options: Ref<Partial<IServerSearchData>>) {
+    const dates = options?.value.filters?.date ? options.value.filters.date.split('~') : [null, null]
+    return {
+        startDate: dates[0] && parseISO(dates[0]),
+        endDate: dates.length == 2 && dates[1] && dates[1] !== "" ? parseISO(dates[1]) : null
+    }
+}
+
 const getCurrentLocationParams = () => {
     return location.search.toString();
 }
@@ -113,7 +103,7 @@ export const updateSearch = (newUrl: string) => {
   })
 }
 
-export const defaultSearchInertia = (urlParams: string) => {
+export const defaultSearchInertia = async (urlParams: string) => {
     const finalUrl = `${window.location.pathname}?${urlParams}`
     if (finalUrl == window.location.toString()) return
     return updateSearch(finalUrl);
@@ -121,6 +111,8 @@ export const defaultSearchInertia = (urlParams: string) => {
 
 export const useServerSearch = (serverSearchData: Ref<Partial<IServerSearchData>>, options: IServerSearchOptions = {}, onUrlChange = defaultSearchInertia) => {
     const dates = parseDateFilters(serverSearchData)
+    const isLoaded = ref(false)
+
     const state = reactive<ISearchState>({
         filters: {
             ...(serverSearchData.value ? serverSearchData.value.filters : {}),
@@ -132,19 +124,23 @@ export const useServerSearch = (serverSearchData: Ref<Partial<IServerSearchData>
         },
         sorts: serverSearchData.value?.sorts ?? "",
         limit: serverSearchData.value?.limit ?? 0,
-        relationships: serverSearchData.value?.relationships,
+        relationships: serverSearchData.value?.relationships ?? "",
         search: serverSearchData.value?.search,
         page: serverSearchData.value?.page
     });
 
 
+    onUrlChange(parseParams(state)).then(() => {
+        isLoaded.value = true
+    })
+
     watch(
         () => state,
         debounce((paramsConfig) => {
-          const urlParams = parseParams(paramsConfig);
-          const currentUrl = getCurrentLocationParams()
+            const urlParams = parseParams(paramsConfig);
+            const currentUrl = getCurrentLocationParams()
 
-          if (urlParams != currentUrl && !options.manual && onUrlChange) {
+          if (urlParams != currentUrl && !options.manual && isLoaded.value && onUrlChange) {
             onUrlChange(urlParams);
           }
         }, 400),
@@ -152,27 +148,20 @@ export const useServerSearch = (serverSearchData: Ref<Partial<IServerSearchData>
     );
 
     const executeSearch = (delay?: number) => {
-        const urlParams = parseParams(state)
-        const currentUrl = getCurrentLocationParams()
-        if (urlParams == currentUrl || !onUrlChange) return
-
-        if (!delay) {
-            onUrlChange(urlParams);
-        } else {
-            nextTick(debounce(() => {
-            onUrlChange(urlParams);
-        }, delay))
-      }
-    }
-
-    function parseDateFilters(options: Ref<IServerSearchData>) {
-        if (!options.value) return {}
-        const dates = options?.value.filters?.date ? options.value.filters.date.split('~') : [null, null]
-
-        return {
-            startDate: dates[0] && parseISO(dates[0]),
-            endDate: dates.length == 2 && dates[1] ? parseISO(dates[1]) : null
-        }
+        nextTick(() => {      
+            const urlParams = parseParams(state)
+            const currentUrl = getCurrentLocationParams()
+            if (urlParams == currentUrl || !onUrlChange) return
+    
+            if (!delay) {
+                onUrlChange(urlParams);
+            } else {
+                nextTick(debounce(() => {
+                    const urlParams = parseParams(state)
+                    onUrlChange(urlParams);
+                }, delay))
+            }
+        })
     }
 
     const reset = () => {

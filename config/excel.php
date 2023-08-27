@@ -151,7 +151,7 @@ return [
 
         'chunk_size' => 1000,
 
-        'row_limit' => 1500
+        'row_limit' => 3000
     ],
 
     /*

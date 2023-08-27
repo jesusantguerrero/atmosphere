@@ -1,11 +1,9 @@
 <script setup lang="ts">
-const props = defineProps({
-    modelValue: {
-        type: Object
-    }
-});
+defineProps<{
+    modelValue: string;
+}>();
 
-const emit = defineEmits(['update:modelValue'])
+defineEmits(['update:modelValue'])
 
 const transactionTypes = [{
         value: 'DEPOSIT',

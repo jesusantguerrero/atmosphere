@@ -4,6 +4,8 @@ import { NSelect } from "naive-ui";
 import { ref, onMounted } from "vue";
 import { debounce } from "lodash";
 import { RenderLabel } from "naive-ui/es/_internal/select-menu/src/interface";
+import { watch } from "vue";
+import { computed } from "vue";
 
 const props = withDefaults(defineProps<{
     modelValue: string | null;
@@ -35,6 +37,11 @@ const optionParser = (option: string | Record<string, string>) => {
     }
     return props.customLabel && option ? option[props.customLabel] : option.label;
 }
+const selected = ref();
+
+const selectedText = computed(() => {
+    return optionParser(selected .value ?? props.modelValue)
+})
 
 const resultParser = (apiOptions: Record<string, string>[], query: string = "") => {
     let includeCustom = true;
@@ -70,28 +77,39 @@ const handleSearch = debounce((query) => {
     })
 }, 200)
 
-const emitInput = (optionId: string) => {
-    const option = options.value.find(option => option.value == optionId)
+const emitInput = (optionId: string, option?: Record<string, string>) => {
+    const optionData = option ?? options.value.find(option => option.value == optionId)
+    selected.value = optionData;
     emit('update:modelValue', optionId)
-    emit('update:value', option)
-    emit('update:label', option?.label)
+    emit('update:value', optionData)
+    emit('update:label', optionData?.label)
 }
+
+const fetchInitialValue = (id: string) => {
+    window.axios.get(`${props.endpoint}/${id}`).then(({ data }) => {
+        options.value = resultParser([data?.data || data])
+        .filter( value => value.label);
+        emitInput(id, data)
+        isLoading.value = false
+    })
+}
+
+watch(() => props.modelValue, (value, oldValue) => {
+    if (value !== oldValue && typeof value == 'string') {
+        fetchInitialValue(value)
+    }
+})
 
 onMounted(() => {
     if (props.modelValue) {
-        window.axios.get(`${props.endpoint}/${props.modelValue}`).then(({ data }) => {
-            options.value = resultParser([data?.data || data])
-            .filter( value => value.label );
-            emitInput(props.modelValue)
-            isLoading.value = false
-        })
+       fetchInitialValue(props.modelValue)
     }
 })
 </script>
 
 <template>
 <NSelect
-    :value="optionParser(modelValue)"
+    :value="selectedText"
     filterable
     clearable
     remote

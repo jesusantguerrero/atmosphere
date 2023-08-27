@@ -9,7 +9,7 @@
         url: '/user/api-tokens'
     },
     {
-        label: 'Teams',
+        label: 'Budget',
         url: `/teams/${teamId}`
     },
     {

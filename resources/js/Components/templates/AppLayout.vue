@@ -139,7 +139,6 @@
                                 :teams="$page.props.user.all_teams"
                                 @switch-team="switchToTeam"
                                 :full-height="true"
-                                :image-only="true"
                                 @create="router.visit(route('teams.create'))"
                                 resource-name="Budget"
                             />

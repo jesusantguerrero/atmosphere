@@ -47,7 +47,7 @@ const splits = reactive(props.items ?? []);
 const hasSplits = computed(() => splits.length > 1);
 
 const defaultRow = {
-    payee_id: "",
+    payee_id: null,
     payee_label: "",
     date: null,
     description: "",
