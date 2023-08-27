@@ -22,7 +22,7 @@ class FinanceAccountController extends InertiaController {
             'index' => 'Finance/Account',
             'show' => 'Finance/Account'
         ];
-        $this->searchable = ["id", "date"];
+        $this->searchable = ["id", "date", 'concent'];
         $this->includes = [
             'transactions'
         ];
@@ -44,7 +44,7 @@ class FinanceAccountController extends InertiaController {
             "sectionTitle" => $account->name,
             'accountId' => $account->id,
             'resource' => $account,
-            'transactions' => $account->transactionSplits(25, $startDate, $endDate),
+            'transactions' => $account->transactionSplits(25, $startDate, $endDate, request()->only(['search', 'page', 'limit', 'direction'])),
             'stats' => $this->reportService->getAccountStats($account->id, $startDate, $endDate),
             "serverSearchOptions" => $this->getServerParams(),
         ]);

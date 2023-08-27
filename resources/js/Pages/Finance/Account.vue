@@ -1,13 +1,19 @@
 <script setup lang="ts">
-import { computed, toRefs, provide, ref, onMounted } from "vue";
+import { computed, toRefs, provide, ref, onMounted, watch , nextTick } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
+import { format } from "date-fns";
+import { NDatePicker } from "naive-ui";
+import { debounce,  } from "lodash";
 // @ts-expect-error: no definitions
 // import { AtBackgroundIconCard, AtDatePager } from "atmosphere-ui";
-import { AtBackgroundIconCard, AtDatePager, useServerSearch, IServerSearchData, AtField } from "atmosphere-ui";
+import { AtDatePager, useServerSearch, IServerSearchData, AtField } from "atmosphere-ui";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import AppSearch from "@/Components/AppSearch/AppSearch.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
+import ConfirmationModal from "@/Components/atoms/ConfirmationModal.vue";
+import LogerInput from "@/Components/atoms/LogerInput.vue";
+import BackgroundCard from "@/Components/molecules/BackgroundCard.vue";
 
 import FinanceTemplate from "./Partials/FinanceTemplate.vue";
 import FinanceSectionNav from "./Partials/FinanceSectionNav.vue";
@@ -21,10 +27,6 @@ import { tableAccountCols } from "@/domains/transactions";
 import { useAppContextStore } from "@/store";
 import { formatMoney } from "@/utils";
 import { IAccount, ICategory, ITransaction } from "@/domains/transactions/models";
-import { format } from "date-fns";
-import ConfirmationModal from "@/Components/atoms/ConfirmationModal.vue";
-import { NDatePicker } from "naive-ui";
-import LogerInput from "@/Components/atoms/LogerInput.vue";
 
 const { openTransactionModal } = useTransactionModal();
 
@@ -49,6 +51,13 @@ const isLoading = ref(false);
 const { serverSearchOptions, accountId, accounts } = toRefs(props);
 const { state: pageState, hasFilters, executeSearch, reset } =
 useServerSearch(serverSearchOptions);
+
+watch(() => pageState.search, debounce((oldSearch, search) => {
+    if(oldSearch == search) return;
+    nextTick(() => {
+        executeSearch();
+    })
+}, 600))
 
 provide("selectedAccountId", accountId);
 
@@ -138,13 +147,15 @@ const reconciliation = () => {
       </FinanceSectionNav>
     </template>
     <FinanceTemplate title="Transactions" :accounts="accounts">
-      <div class="flex mt-4 space-x-4">
-        <AtBackgroundIconCard
+      <section class="flex w-full mt-4 space-x-4 flex-nowrap">
+        <BackgroundCard
           class="w-full cursor-pointer text-body-1 bg-base-lvl-3"
-          v-for="stat in stats"
+          v-for="(stat, label) in stats"
           :value="formatMoney(stat)"
+          :label="label"
+          label-class="capitalize text-secondary font-base"
         />
-      </div>
+      </section>
 
       <section class="mt-4 bg-base-lvl-3">
         <header class="flex items-center justify-between px-6 py-2">
@@ -159,7 +170,6 @@ const reconciliation = () => {
                     class="w-full md:flex"
                     :has-filters="hasFilters"
                     @clear="reset()"
-                    @blur="executeSearch"
                 />
             </section>
         <span>
@@ -177,6 +187,7 @@ const reconciliation = () => {
             @edit="handleEdit"
           />
       </section>
+
       <ConfirmationModal 
         :show="reconcileForm.isVisible" 
         @close="reconcileForm.isVisible = false"
