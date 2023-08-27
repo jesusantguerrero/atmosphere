@@ -159,6 +159,10 @@ const goToday = () => {
             >
               {{ formatMonth(pageState.dates.startDate, "MMMM") }}
             </AtDatePager>
+            <LogerButton variant="secondary" :href="route('budget.export')"  target="_blank" as="a">
+                <IMdiExport class="mr-2" />
+                Export Budget
+            </LogerButton>
           </div>
         </template>
       </FinanceSectionNav>

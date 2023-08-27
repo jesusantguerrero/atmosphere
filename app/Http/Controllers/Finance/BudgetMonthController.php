@@ -37,6 +37,7 @@ class BudgetMonthController extends Controller
     }
 
     public function export() {
-        return Excel::download(new BudgetExport, 'budget.xlsx');
+        $today = now()->format('Y-m-d');
+        return Excel::download(new BudgetExport(auth()->user()->current_team_id), "budget_as_of_{$today}.xlsx");
     }
 }
