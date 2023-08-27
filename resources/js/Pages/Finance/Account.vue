@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, toRefs, provide, ref, onMounted } from "vue";
-import { router } from "@inertiajs/vue3";
+import { router, useForm } from "@inertiajs/vue3";
 // @ts-expect-error: no definitions
 // import { AtBackgroundIconCard, AtDatePager } from "atmosphere-ui";
-import { AtBackgroundIconCard, AtDatePager, useServerSearch, IServerSearchData } from "atmosphere-ui";
+import { AtBackgroundIconCard, AtDatePager, useServerSearch, IServerSearchData, AtField } from "atmosphere-ui";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import AppSearch from "@/Components/AppSearch/AppSearch.vue";
@@ -22,6 +22,9 @@ import { useAppContextStore } from "@/store";
 import { formatMoney } from "@/utils";
 import { IAccount, ICategory, ITransaction } from "@/domains/transactions/models";
 import { format } from "date-fns";
+import ConfirmationModal from "@/Components/atoms/ConfirmationModal.vue";
+import { NDatePicker } from "naive-ui";
+import LogerInput from "@/Components/atoms/LogerInput.vue";
 
 const { openTransactionModal } = useTransactionModal();
 
@@ -85,17 +88,7 @@ const handleEdit = (transaction: ITransaction) => {
   });
 };
 
-const reconciliation = () => {
-  const current: number = Number(prompt("Whats your current amount?"));
-  const total = (selectedAccount.value?.balance || 0) - current;
-  openTransactionModal({
-    mode: "Deposit",
-    transactionData: {
-      category_id: "",
-      total: total,
-    },
-  });
-};
+
 
 onMounted(() => {
     router.on('start', () => isLoading.value = true)
@@ -103,6 +96,24 @@ onMounted(() => {
 })
 
 const monthName = computed(() => format(pageState.dates.startDate, "MMMM"))
+
+const reconcileForm = useForm({
+    isVisible: false,
+    date: new Date(),
+    balance: 0,
+})
+
+const reconciliation = () => {
+  reconcileForm.transform(data => ({
+    ...data,
+    date: format(data.date, 'yyyy-MM-dd'),
+  })).post(`/finance/reconciliation/accounts/${selectedAccount.value?.id}`, {
+    onFinish() {
+        reconcileForm.reset()
+        reconcileForm.isVisible = false;
+    }
+  });
+};
 </script>
 
 <template>
@@ -118,7 +129,7 @@ const monthName = computed(() => format(pageState.dates.startDate, "MMMM"))
               controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
               next-mode="month"
             />
-            <LogerButton variant="inverse" @click="reconciliation()">
+            <LogerButton variant="inverse" @click="reconcileForm.isVisible = true">
               Reconciliation
             </LogerButton>
             <DraftButtons v-if="isDraft" />
@@ -166,6 +177,63 @@ const monthName = computed(() => format(pageState.dates.startDate, "MMMM"))
             @edit="handleEdit"
           />
       </section>
+      <ConfirmationModal 
+        :show="reconcileForm.isVisible" 
+        @close="reconcileForm.isVisible = false"
+        title="Ending statement balance"
+       >
+
+        <template #content>
+            <section>
+                <h4 class="font-bold">
+                   {{ selectedAccount.name }}
+                </h4>
+                <AtField
+                label="Ending balance Date"
+                class="flex justify-between w-full md:w-4/12 md:block"
+              >
+                <NDatePicker
+                  v-model:value="reconcileForm.date"
+                  type="date"
+                  size="large"
+                  class="w-48 md:w-full"
+                />
+              </AtField>
+
+              <AtField label="statement balance">
+                <LogerInput
+                    ref="input"
+                    class="opacity-100 cursor-text"
+                    v-model="reconcileForm.balance"
+                    :number-format="true"
+                   
+                >
+                    <template #prefix>
+                        {{ selectedAccount.currency_code }}
+                    </template>
+                </LogerInput>
+              </AtField>
+            </section>
+
+        </template>
+
+        <template #footer>
+            <section class="flex justify-between">
+                <LogerButton @click="reconcileForm.isVisible = false" variant="neutral">
+                    Cancel
+                </LogerButton>
+    
+                <LogerButton 
+                    class="ml-2" 
+                    @click="reconciliation"  
+                    :class="{ 'opacity-25': reconcileForm.processing }" 
+                    :disabled="reconcileForm.processing"
+                >
+                    Save
+                </LogerButton>
+            </section>
+        </template>
+    </ConfirmationModal>
     </FinanceTemplate>
   </AppLayout>
 </template>

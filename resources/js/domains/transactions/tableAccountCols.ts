@@ -22,9 +22,13 @@ export const tableAccountCols = (accountId: number) => [
         class: 'text-center',
         headerClass: 'text-center',
         render(row: any) {
-            const date = parseISO(row.date)
-            const hasPassed = isAfter(startOfDay(date), startOfDay(new Date()))
-            return h('div', {class: hasPassed ? 'text-danger' : 'text-info cursor-pointer'} ,format(date, "dd MMM, yyyy"))
+            try {
+                const date = parseISO(row.date)
+                const hasPassed = isAfter(startOfDay(date), startOfDay(new Date()))
+                return h('div', {class: hasPassed ? 'text-danger' : 'text-info cursor-pointer'} ,format(date, "dd MMM, yyyy"))
+            } catch (e) {
+                return h('div', {class:'text-info cursor-pointer'} , '--')
+            }
         }
     },
     {
