@@ -8,6 +8,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     Route::get('/finance/reconciliation/accounts/{account}', [ReconciliationController::class, 'create']);
     Route::post('/finance/reconciliation/accounts/{account}', [ReconciliationController::class, 'store']);
     Route::get('/finance/reconciliation/{reconciliation}', [ReconciliationController::class, 'show']);
+    Route::put('/finance/reconciliation/{reconciliation}/save-adjustment', [ReconciliationController::class, 'adjustment']);
 });
 
 

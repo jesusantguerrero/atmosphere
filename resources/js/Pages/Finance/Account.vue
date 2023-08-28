@@ -27,24 +27,26 @@ import { tableAccountCols } from "@/domains/transactions";
 import { useAppContextStore } from "@/store";
 import { formatMoney } from "@/utils";
 import { IAccount, ICategory, ITransaction } from "@/domains/transactions/models";
+import AccountReconciliationAlert from "@/domains/transactions/components/AccountReconciliationAlert.vue";
+import AccountReconciliationBanner from "./Partials/AccountReconciliationBanner.vue";
 
 const { openTransactionModal } = useTransactionModal();
 
 
 interface CollectionData<T> {
-    data: T[]
+		data: T[]
 }
 const props = withDefaults(defineProps<{
-    transactions: ITransaction[];
-    stats: CollectionData<Record<string, number>>;
-    accounts: IAccount[];
-    categories: ICategory[],
-    serverSearchOptions: Partial<IServerSearchData>,
-    accountId?: number,
+		transactions: ITransaction[];
+		stats: CollectionData<Record<string, number>>;
+		accounts: IAccount[];
+		categories: ICategory[],
+		serverSearchOptions: Partial<IServerSearchData>,
+		accountId?: number,
 }>(), {
-    serverSearchOptions: () => {
-        return {}
-    }
+		serverSearchOptions: () => {
+				return {}
+		}
 });
 
 const isLoading = ref(false);
@@ -53,100 +55,100 @@ const { state: pageState, hasFilters, executeSearch, reset } =
 useServerSearch(serverSearchOptions);
 
 watch(() => pageState.search, debounce((oldSearch, search) => {
-    if(oldSearch == search) return;
-    nextTick(() => {
-        executeSearch();
-    })
+		if(oldSearch == search) return;
+		nextTick(() => {
+				executeSearch();
+		})
 }, 600))
 
 provide("selectedAccountId", accountId);
 
 const selectedAccount = computed(() => {
-  return accounts.value.find((account) => account.id === accountId?.value);
+	return accounts.value.find((account) => account.id === accountId?.value);
 });
 
 const context = useAppContextStore();
 const listComponent = computed(() => {
-  return context.isMobile ? TransactionSearch : TransactionTemplate;
+	return context.isMobile ? TransactionSearch : TransactionTemplate;
 });
 
 const isDraft = computed(() => {
-  return serverSearchOptions.value.filters?.status == "draft";
+	return serverSearchOptions.value.filters?.status == "draft";
 });
 
 const removeTransaction = (transaction: ITransaction) => {
-  router.delete(`/transactions/${transaction.id}`, {
-    onSuccess() {
-      router.reload();
-    },
-  });
+	router.delete(`/transactions/${transaction.id}`, {
+		onSuccess() {
+			router.reload();
+		},
+	});
 };
 
 const findLinked = (transaction: ITransaction) => {
-  router.patch(`/transactions/${transaction.id}/linked`, {
-    // @ts-ignore
-    onSuccess() {
-      router.reload();
-    },
-  });
+	router.patch(`/transactions/${transaction.id}/linked`, {
+		// @ts-ignore
+		onSuccess() {
+			router.reload();
+		},
+	});
 };
 
 const handleEdit = (transaction: ITransaction) => {
-  openTransactionModal({
-    transactionData: transaction,
-  });
+	openTransactionModal({
+		transactionData: transaction,
+	});
 };
 
 
 
 onMounted(() => {
-    router.on('start', () => isLoading.value = true)
-    router.on('finish', () => isLoading.value = false)
+		router.on('start', () => isLoading.value = true)
+		router.on('finish', () => isLoading.value = false)
 })
 
 const monthName = computed(() => format(pageState.dates.startDate, "MMMM"))
 
 const reconcileForm = useForm({
-    isVisible: false,
-    date: new Date(),
-    balance: 0,
+		isVisible: false,
+		date: new Date(),
+		balance: 0,
 })
 
 const reconciliation = () => {
-  reconcileForm.transform(data => ({
-    ...data,
-    date: format(data.date, 'yyyy-MM-dd'),
-  })).post(`/finance/reconciliation/accounts/${selectedAccount.value?.id}`, {
-    onFinish() {
-        reconcileForm.reset()
-        reconcileForm.isVisible = false;
-    }
-  });
+	reconcileForm.transform(data => ({
+		...data,
+		date: format(data.date, 'yyyy-MM-dd'),
+	})).post(`/finance/reconciliation/accounts/${selectedAccount.value?.id}`, {
+		onFinish() {
+				reconcileForm.reset()
+				reconcileForm.isVisible = false;
+		}
+	});
 };
 </script>
 
 <template>
-  <AppLayout @back="router.visit('/finance/transactions')" :show-back-button="true">
-    <template #header>
-      <FinanceSectionNav>
-        <template #actions>
-          <div class="flex items-center w-full space-x-2">
-            <AtDatePager
-              class="w-full h-12 border-none bg-base-lvl-1 text-body"
-              v-model:startDate="pageState.dates.startDate"
-              v-model:endDate="pageState.dates.endDate"
-              controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
-              next-mode="month"
-            />
-            <LogerButton variant="inverse" @click="reconcileForm.isVisible = true">
-              Reconciliation
-            </LogerButton>
-            <DraftButtons v-if="isDraft" />
-          </div>
-        </template>
-      </FinanceSectionNav>
-    </template>
-    <FinanceTemplate title="Transactions" :accounts="accounts">
+<AppLayout @back="router.visit('/finance/transactions')" :show-back-button="true">
+  <template #header>
+    <FinanceSectionNav>
+      <template #actions>
+        <div class="flex items-center w-full space-x-2">
+          <AtDatePager
+            class="w-full h-12 border-none bg-base-lvl-1 text-body"
+            v-model:startDate="pageState.dates.startDate"
+            v-model:endDate="pageState.dates.endDate"
+            controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
+            next-mode="month"
+          />
+          <LogerButton variant="inverse" @click="reconcileForm.isVisible = true">
+            Reconciliation
+          </LogerButton>
+          <DraftButtons v-if="isDraft" />
+        </div>
+      </template>
+    </FinanceSectionNav>
+  </template>
+  <FinanceTemplate title="Transactions" :accounts="accounts">
       <section class="flex w-full mt-4 space-x-4 flex-nowrap">
         <BackgroundCard
           class="w-full cursor-pointer text-body-1 bg-base-lvl-3"
@@ -176,6 +178,10 @@ const reconciliation = () => {
             {{  transactions.length }} Results
         </span>
         </header>
+        <AccountReconciliationBanner
+            v-if="selectedAccount"
+            :account="selectedAccount"    
+        />
           <Component
             :is="listComponent"
             :cols="tableAccountCols(props.accountId)"
@@ -187,64 +193,64 @@ const reconciliation = () => {
             @edit="handleEdit"
           />
       </section>
-
+      
       <ConfirmationModal 
-        :show="reconcileForm.isVisible" 
-        @close="reconcileForm.isVisible = false"
-        title="Ending statement balance"
-       >
+          :show="reconcileForm.isVisible" 
+          @close="reconcileForm.isVisible = false"
+          title="Ending statement balance"
+        >
 
-        <template #content>
-            <section>
-                <h4 class="font-bold">
-                   {{ selectedAccount.name }}
-                </h4>
-                <AtField
-                label="Ending balance Date"
-                class="flex justify-between w-full md:w-4/12 md:block"
+          <template #content>
+              <section>
+                  <h4 class="font-bold">
+                  {{ selectedAccount.name }}
+                  </h4>
+                  <AtField
+                  label="Ending balance Date"
+                  class="flex justify-between w-full md:w-4/12 md:block"
               >
-                <NDatePicker
+                  <NDatePicker
                   v-model:value="reconcileForm.date"
                   type="date"
                   size="large"
                   class="w-48 md:w-full"
-                />
+                  />
               </AtField>
 
               <AtField label="statement balance">
-                <LogerInput
-                    ref="input"
-                    class="opacity-100 cursor-text"
-                    v-model="reconcileForm.balance"
-                    :number-format="true"
-                   
-                >
-                    <template #prefix>
-                        {{ selectedAccount.currency_code }}
-                    </template>
-                </LogerInput>
+                  <LogerInput
+                      ref="input"
+                      class="opacity-100 cursor-text"
+                      v-model="reconcileForm.balance"
+                      :number-format="true"
+                  
+                  >
+                      <template #prefix>
+                          {{ selectedAccount.currency_code }}
+                      </template>
+                  </LogerInput>
               </AtField>
-            </section>
+              </section>
 
-        </template>
+          </template>
 
-        <template #footer>
-            <section class="flex justify-between">
-                <LogerButton @click="reconcileForm.isVisible = false" variant="neutral">
-                    Cancel
-                </LogerButton>
-    
-                <LogerButton 
-                    class="ml-2" 
-                    @click="reconciliation"  
-                    :class="{ 'opacity-25': reconcileForm.processing }" 
-                    :disabled="reconcileForm.processing"
-                >
-                    Save
-                </LogerButton>
-            </section>
-        </template>
-    </ConfirmationModal>
-    </FinanceTemplate>
-  </AppLayout>
+          <template #footer>
+              <section class="flex justify-between">
+                  <LogerButton @click="reconcileForm.isVisible = false" variant="neutral">
+                      Cancel
+                  </LogerButton>
+      
+                  <LogerButton 
+                      class="ml-2" 
+                      @click="reconciliation"  
+                      :class="{ 'opacity-25': reconcileForm.processing }" 
+                      :disabled="reconcileForm.processing"
+                  >
+                      Save
+                  </LogerButton>
+              </section>
+          </template>
+      </ConfirmationModal>
+  </FinanceTemplate>
+</AppLayout>
 </template>

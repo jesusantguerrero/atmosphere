@@ -7,7 +7,8 @@ const variants = {
     primary: "bg-primary text-white",
     secondary: "bg-secondary text-white",
     neutral: "bg-base-lvl-2 text-primary border-base-lvl-1",
-    inverse: "border-primary bg-primary/10 text-primary hover:bg-primary hover:text-white"
+    inverse: "border-primary bg-primary/10 text-primary hover:bg-primary hover:text-white",
+    'inverse-secondary': "border-secondary bg-secondary/10 text-secondary hover:bg-secondary hover:text-white"
 }
 
 const props = defineProps({

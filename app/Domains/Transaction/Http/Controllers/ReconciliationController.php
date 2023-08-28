@@ -6,6 +6,7 @@ use App\Domains\Transaction\Data\ReconciliationParamsData;
 use App\Domains\Transaction\Services\ReconciliationService;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Traits\HasEnrichedRequest;
+use Illuminate\Support\Facades\Gate;
 use Insane\Journal\Models\Accounting\Reconciliation;
 use Insane\Journal\Models\Core\Account;
 
@@ -34,7 +35,6 @@ class ReconciliationController extends Controller {
     }
 
     public function store(Account $account, ReconciliationService $service) {
-
         $reconciliation = $service->create($account, 
            ReconciliationParamsData::from([
                 ...$this->getPostData(),
@@ -46,5 +46,14 @@ class ReconciliationController extends Controller {
        if ($reconciliation->difference) {
             return redirect("/finance/reconciliation/$reconciliation->id");
        }
+   }
+
+   public function adjustment(Reconciliation $reconciliation, ReconciliationService $service) {
+        if(!Gate::forUser(auth()->user())->check('adjust', $reconciliation)) {
+            back()->with('flash', [
+                'banner' => "Can't reconcile this account"
+            ]);
+        }
+        $service->saveAdjustment($reconciliation);
    }
 }
