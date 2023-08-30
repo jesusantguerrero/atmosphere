@@ -39,6 +39,9 @@
     })
 
     const { appMenu, headerMenu, mobileMenu } = useAppMenu(t)
+    const serverMenu = computed(() => {
+        return pageProps.menu
+    })
     const currentMenu = computed(() => {
         return props.isOnboarding ? [{
             icon: 'home',
@@ -53,12 +56,21 @@
             to: '/user/profile',
             as: Link
         }] : appMenu
+        // serverMenu.value.map(item => ({
+        //     label: item.title,
+        //     name: item.title,
+        //     to: item.url,
+        //     as: Link,
+        //     icon: item.icon
+        // }))
     });
 
     const pageProps = usePage().props
     const sectionTitle = computed(() => {
         return props.title || pageProps.sectionTitle
     })
+
+   
 
     const isPrivacyMode = useLocalStorage('hasHiddenValues', false)
     provide('hasHiddenValues', isPrivacyMode)

@@ -31,6 +31,20 @@ class ReconciliationService
         return $reconciliation;
     }
 
+    public function update(Reconciliation $reconciliation, ReconciliationParamsData $params) {
+        $extraTransactions = $reconciliation->transactionsToReconcile(null, $reconciliation->date);
+        $diff = $reconciliation->account->balance - $params->balance;
+
+        $reconciliation->update([
+            'amount' => $params->balance,
+            'difference' => $diff,
+            'status' => $diff ? Reconciliation::STATUS_PENDING : Reconciliation::STATUS_COMPLETED,
+        ]);
+
+        $reconciliation->addEntries($extraTransactions->toArray());
+        return $reconciliation;
+    }
+
     public function saveAdjustment(Reconciliation $reconciliation) {
         $transaction = Transaction::createTransaction([
             'team_id' => $reconciliation->team_id,
@@ -49,7 +63,6 @@ class ReconciliationService
         ]);
 
         $reconciliation->addEntry($transaction->lines()->select(['id', 'transaction_id'])->where('account_id', $reconciliation->account_id)->first());
-        $reconciliation->update(['status' => Reconciliation::STATUS_COMPLETED]);
         $reconciliation->checkStatus();
     }
 }

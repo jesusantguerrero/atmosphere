@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
-    Route::get('/housing', ProjectController::class);
+    Route::get('/housing', ProjectController::class)->name('housing.overview');
     Route::resource('/housing/occurrence', OccurrenceController::class);
 
     Route::controller(OccurrenceController::class)->group(function () {

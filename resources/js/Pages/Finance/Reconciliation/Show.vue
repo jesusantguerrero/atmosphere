@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, toRefs, provide, ref, onMounted, nextTick } from "vue";
-import { router } from "@inertiajs/vue3";
+import { router, useForm } from "@inertiajs/vue3";
 import { AtBackgroundIconCard, AtDatePager, useServerSearch, IServerSearchData, AtField } from "atmosphere-ui";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
@@ -80,18 +80,22 @@ const handleEdit = (transaction: ITransaction) => {
   });
 };
 
-const reconciliation = () => {
-  const current: number = Number(prompt("Whats your current amount?"));
-  const total = (selectedAccount.value?.balance || 0) - current;
-  openTransactionModal({
-    mode: "Deposit",
-    transactionData: {
-      category_id: "",
-      total: total,
-    },
-  });
-};
+const reconcileForm = useForm({
+    date: props.reconciliation.date,
+    balance: props.reconciliation.balance,
+})
 
+const reconciliation = () => {
+	reconcileForm.transform(data => ({
+		...data,
+		date: format(data.date, 'yyyy-MM-dd'),
+	})).post(`/finance/reconciliation/accounts/${selectedAccount.value?.id}`, {
+		onFinish() {
+				reconcileForm.reset()
+				reconcileForm.isVisible = false;
+		}
+	});
+};
 onMounted(() => {
     router.on('start', () => isLoading.value = true)
     router.on('finish', () => isLoading.value = false)
@@ -135,7 +139,7 @@ const toggleEditing = () => {
                 <LogerInput
                     ref="input"
                     class="opacity-100 cursor-text"
-                    v-model="statementBalance"
+                    v-model="reconcileForm.balance"
                     :number-format="true"
                     :disabled="!isEditing"
                     @blur="isEditing = false"

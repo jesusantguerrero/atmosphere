@@ -59,9 +59,9 @@ Route::resource('onboarding', OnboardingController::class)->middleware(['auth:sa
 // Automation Services
 Route::get('/services/accept-oauth', [ServiceController::class, 'acceptOauth']);
 
-Route::group([], app_path('/Domains/Housing/routes.php'));
-Route::group([], app_path('/Domains/LogerProfile/routes.php'));
-Route::group([], app_path('/Domains/Transaction/routes.php'));
+Route::group(["middleware" => ["menu.portal"]], app_path('/Domains/Housing/routes.php'));
+Route::group(["middleware" => ["menu.portal"]], app_path('/Domains/LogerProfile/routes.php'));
+Route::group(["middleware" => ["menu.portal"]], app_path('/Domains/Transaction/routes.php'));
 
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
     Route::get('/', fn () => redirect("/dashboard"));
@@ -99,7 +99,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     ***************************************************************************************/
 
     //  Meal related routes
-    Route::get('/meals/overview', MealController::class);
+    Route::get('/meals/overview', MealController::class)->name("meals.overview");
     Route::controller(MealController::class)->group(function () {
         Route::resource('/meals', MealController::class);
         Route::post('/meals/add-plan','addPlan')->name('meals.addPlan');
@@ -117,7 +117,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     ***************************************************************************************/
     // Finance dashboard related routes
     Route::controller(FinanceController::class)->group(function () {
-        Route::get('/finance', 'index')->name('finance');
+        Route::get('/finance', 'index')->name('finance.overview');
     });
 
     // Budgeting & Goals routes

@@ -56,4 +56,23 @@ class ReconciliationController extends Controller {
         }
         $service->saveAdjustment($reconciliation);
    }
+
+   public function update(Reconciliation $reconciliation, ReconciliationService $service) {
+        $reconciliation = $service->update($reconciliation, ReconciliationParamsData::from([
+                ...$this->getPostData(),
+                "account_id" => $reconciliation->account_id,
+                "user_id" => auth()->user()->id
+            ])
+        );
+
+        if ($reconciliation->difference) {
+            return back()->with('flash', [
+                'banner' => "Can't reconcile this account"
+            ]);
+        } else {
+            back()->with('flash', [
+                'banner' => "Updated correctly"
+            ]);
+        }
+    }
 }

@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Domains\Housing\Actions\RegisterOccurrence;
 use App\Jobs\RunTeamChecks;
 use App\Models\Team;
+use App\Concerns\AppMenu;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 use Spatie\Onboard\Facades\Onboard;
@@ -31,6 +32,10 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->bindMethod([RunTeamChecks::class, 'handle'], function (RunTeamChecks $job, Application $app) {
             return $job->handle($app->make(RegisterOccurrence::class));
+        });
+
+        $this->app->singleton('menu', function(Application $app) {
+            return new AppMenu();
         });
 
         Onboard::addStep('Step 1: Add accounts')
