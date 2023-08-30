@@ -32,7 +32,7 @@ class ReconciliationService
     }
 
     public function update(Reconciliation $reconciliation, ReconciliationParamsData $params) {
-        $extraTransactions = $reconciliation->transactionsToReconcile(null, $reconciliation->date);
+        $extraTransactions = $reconciliation->account->transactionsToReconcile(null, $reconciliation->date);
         $diff = $reconciliation->account->balance - $params->balance;
 
         $reconciliation->update([
@@ -41,7 +41,12 @@ class ReconciliationService
             'status' => $diff ? Reconciliation::STATUS_PENDING : Reconciliation::STATUS_COMPLETED,
         ]);
 
-        $reconciliation->addEntries($extraTransactions->toArray());
+        if (count($extraTransactions)) {
+            $reconciliation->addEntries($extraTransactions->toArray());
+        }
+
+        $reconciliation->checkStatus();
+
         return $reconciliation;
     }
 

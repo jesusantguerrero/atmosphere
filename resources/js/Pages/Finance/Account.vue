@@ -108,6 +108,12 @@ onMounted(() => {
 
 const monthName = computed(() => format(pageState.dates.startDate, "MMMM"))
 
+// reconciliation
+
+const hasReconciliation = computed(() => {
+    return selectedAccount.value?.reconciliations_pending
+})
+
 const reconcileForm = useForm({
 		isVisible: false,
 		date: new Date(),
@@ -125,6 +131,7 @@ const reconciliation = () => {
 		}
 	});
 };
+
 </script>
 
 <template>
@@ -140,8 +147,18 @@ const reconciliation = () => {
             controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
             next-mode="month"
           />
-          <LogerButton variant="inverse" @click="reconcileForm.isVisible = true">
+          <LogerButton
+          variant="inverse"
+          @click="reconcileForm.isVisible = true"
+          v-if="!hasReconciliation">
             Reconciliation
+          </LogerButton>
+          <LogerButton
+            variant="inverse"
+            @click="router.visit(`/finance/reconciliation/${selectedAccount?.reconciliations_pending.id}`)"
+            v-else
+          >
+            Review Reconciliation
           </LogerButton>
           <DraftButtons v-if="isDraft" />
         </div>
@@ -180,7 +197,7 @@ const reconciliation = () => {
         </header>
         <AccountReconciliationBanner
             v-if="selectedAccount"
-            :account="selectedAccount"    
+            :account="selectedAccount"
         />
           <Component
             :is="listComponent"
@@ -193,9 +210,9 @@ const reconciliation = () => {
             @edit="handleEdit"
           />
       </section>
-      
-      <ConfirmationModal 
-          :show="reconcileForm.isVisible" 
+
+      <ConfirmationModal
+          :show="reconcileForm.isVisible"
           @close="reconcileForm.isVisible = false"
           title="Ending statement balance"
         >
@@ -223,7 +240,7 @@ const reconciliation = () => {
                       class="opacity-100 cursor-text"
                       v-model="reconcileForm.balance"
                       :number-format="true"
-                  
+
                   >
                       <template #prefix>
                           {{ selectedAccount.currency_code }}
@@ -239,11 +256,11 @@ const reconciliation = () => {
                   <LogerButton @click="reconcileForm.isVisible = false" variant="neutral">
                       Cancel
                   </LogerButton>
-      
-                  <LogerButton 
-                      class="ml-2" 
-                      @click="reconciliation"  
-                      :class="{ 'opacity-25': reconcileForm.processing }" 
+
+                  <LogerButton
+                      class="ml-2"
+                      @click="reconciliation"
+                      :class="{ 'opacity-25': reconcileForm.processing }"
                       :disabled="reconcileForm.processing"
                   >
                       Save
