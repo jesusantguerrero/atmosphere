@@ -70,7 +70,7 @@
         return props.title || pageProps.sectionTitle
     })
 
-   
+
 
     const isPrivacyMode = useLocalStorage('hasHiddenValues', false)
     provide('hasHiddenValues', isPrivacyMode)
