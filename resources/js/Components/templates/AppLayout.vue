@@ -39,6 +39,9 @@
     })
 
     const { appMenu, headerMenu, mobileMenu } = useAppMenu(t)
+    const serverMenu = computed(() => {
+        return pageProps.menu
+    })
     const currentMenu = computed(() => {
         return props.isOnboarding ? [{
             icon: 'home',
@@ -53,12 +56,21 @@
             to: '/user/profile',
             as: Link
         }] : appMenu
+        // serverMenu.value.map(item => ({
+        //     label: item.title,
+        //     name: item.title,
+        //     to: item.url,
+        //     as: Link,
+        //     icon: item.icon
+        // }))
     });
 
     const pageProps = usePage().props
     const sectionTitle = computed(() => {
         return props.title || pageProps.sectionTitle
     })
+
+   
 
     const isPrivacyMode = useLocalStorage('hasHiddenValues', false)
     provide('hasHiddenValues', isPrivacyMode)
@@ -139,7 +151,6 @@
                                 :teams="$page.props.user.all_teams"
                                 @switch-team="switchToTeam"
                                 :full-height="true"
-                                :image-only="true"
                                 @create="router.visit(route('teams.create'))"
                                 resource-name="Budget"
                             />

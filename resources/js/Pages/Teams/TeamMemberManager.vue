@@ -1,3 +1,113 @@
+<script setup lang="ts">
+    import { useForm } from '@inertiajs/vue3'
+    import { router } from '@inertiajs/vue3'
+    import { reactive } from 'vue'
+    // @ts-ignore
+    import { AtField, AtButton } from "atmosphere-ui"
+
+    import JetActionMessage from '@/Components/atoms/ActionMessage.vue'
+    import JetActionSection from '@/Components/atoms/ActionSection.vue'
+    import JetButton from '@/Components/atoms/Button.vue'
+    import JetConfirmationModal from '@/Components/atoms/ConfirmationModal.vue'
+    import JetDangerButton from '@/Components/atoms/DangerButton.vue'
+    import JetDialogModal from '@/Components/atoms/DialogModal.vue'
+    import JetFormSection from '@/Components/atoms/FormSection.vue'
+    import JetSecondaryButton from '@/Components/atoms/SecondaryButton.vue'
+    import JetSectionBorder from '@/Components/atoms/SectionBorder.vue'
+    import LogerInput from '@/Components/atoms/LogerInput.vue'
+import LogerButton from '@/Components/atoms/LogerButton.vue'
+
+
+    const props = defineProps({
+        team: Object,
+        availableRoles: {
+            type: Array,
+            default() {
+                return []
+            }
+        },
+        userPermissions: Object,
+    });
+
+    const addTeamMemberForm = useForm({
+        email: '',
+        role: null,
+    });
+
+    const updateRoleForm = useForm({
+        role: null,
+    });
+
+    const leaveTeamForm = useForm({});
+    const removeTeamMemberForm = useForm({});
+
+    const state = reactive({
+        currentlyManagingRole: false,
+        managingRoleFor: null,
+        confirmingLeavingTeam: false,
+        teamMemberBeingRemoved: null,
+    });
+
+    function addTeamMember() {
+        addTeamMemberForm.post(route('team-members.store', props.team), {
+            errorBag: 'addTeamMember',
+            preserveScroll: true,
+            onSuccess: () => addTeamMemberForm.reset(),
+        });
+    }
+
+    function resendTeamInvitation(invitation) {
+        useForm({}).put(route('team-invitations.resend', invitation), {
+            preserveScroll: true,
+        });
+    }
+
+    function cancelTeamInvitation(invitation) {
+        router.delete(route('team-invitations.destroy', invitation), {
+            preserveScroll: true
+        });
+    }
+
+    function manageRole(teamMember) {
+        state.managingRoleFor = teamMember
+        updateRoleForm.role = teamMember.membership.role
+        state.currentlyManagingRole = true
+    }
+
+    function updateRole() {
+        updateRoleForm.put(route('team-members.update', [props.team, state.managingRoleFor]), {
+            preserveScroll: true,
+            onSuccess: () => (this.currentlyManagingRole = false),
+        })
+    }
+
+    function confirmLeavingTeam() {
+        state.confirmingLeavingTeam = true
+    }
+
+    function leaveTeam() {
+        leaveTeamForm.delete(route('team-members.destroy', [this.team, this.$page.props.user]))
+    }
+
+    function confirmTeamMemberRemoval(teamMember) {
+        state.teamMemberBeingRemoved = teamMember
+    }
+
+    function removeTeamMember() {
+        removeTeamMemberForm.delete(route('team-members.destroy', [this.team, this.teamMemberBeingRemoved]), {
+            errorBag: 'removeTeamMember',
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: () => (this.teamMemberBeingRemoved = null),
+        })
+    }
+
+    function displayableRole(role) {
+        return props.availableRoles.find(r => r.key === role).name
+    };
+</script>
+
+
 <template>
     <div>
         <div v-if="userPermissions?.canAddTeamMembers">
@@ -5,14 +115,14 @@
 
             <!-- Add Team Member -->
             <JetFormSection
-                title="Add Team Member"
-                description="Add a new team member to your team, allowing them to collaborate with you."
+                title="Add Budget Member"
+                description="Add a member to your budget, allowing them to collaborate with you."
                 @submitted="addTeamMember"
             >
                 <template #form>
                     <div class="col-span-6">
                         <div class="max-w-xl text-sm text-body-1">
-                            Please provide the email address of the person you would like to add to this team.
+                            Please provide the email address of the new member.
                         </div>
                     </div>
 
@@ -66,9 +176,9 @@
                         Added.
                     </JetActionMessage>
 
-                    <AtButton type="primary" :is-loading="addTeamMemberForm.processing" :disabled="addTeamMemberForm.processing">
+                    <LogerButton type="primary" :is-loading="addTeamMemberForm.processing" :disabled="addTeamMemberForm.processing">
                         Add
-                    </AtButton>
+                    </LogerButton>
                 </template>
             </JetFormSection>
         </div>
@@ -248,107 +358,3 @@
     </div>
 </template>
 
-<script setup>
-    import JetActionMessage from '@/Components/atoms/ActionMessage.vue'
-    import JetActionSection from '@/Components/atoms/ActionSection.vue'
-    import JetButton from '@/Components/atoms/Button.vue'
-    import JetConfirmationModal from '@/Components/atoms/ConfirmationModal.vue'
-    import JetDangerButton from '@/Components/atoms/DangerButton.vue'
-    import JetDialogModal from '@/Components/atoms/DialogModal.vue'
-    import JetFormSection from '@/Components/atoms/FormSection.vue'
-    import JetSecondaryButton from '@/Components/atoms/SecondaryButton.vue'
-    import JetSectionBorder from '@/Components/atoms/SectionBorder.vue'
-    import LogerInput from '@/Components/atoms/LogerInput.vue'
-    import { AtField, AtButton } from "atmosphere-ui"
-    import { useForm } from '@inertiajs/vue3'
-    import { router } from '@inertiajs/vue3'
-    import { reactive } from 'vue'
-
-    const props = defineProps({
-        team: Object,
-        availableRoles: {
-            type: Array,
-            default() {
-                return []
-            }
-        },
-        userPermissions: Object,
-    });
-
-    const addTeamMemberForm = useForm({
-        email: '',
-        role: null,
-    });
-
-    const updateRoleForm = useForm({
-        role: null,
-    });
-
-    const leaveTeamForm = useForm({});
-    const removeTeamMemberForm = useForm({});
-
-    const state = reactive({
-        currentlyManagingRole: false,
-        managingRoleFor: null,
-        confirmingLeavingTeam: false,
-        teamMemberBeingRemoved: null,
-    });
-
-    function addTeamMember() {
-        addTeamMemberForm.post(route('team-members.store', props.team), {
-            errorBag: 'addTeamMember',
-            preserveScroll: true,
-            onSuccess: () => addTeamMemberForm.reset(),
-        });
-    }
-
-    function resendTeamInvitation(invitation) {
-        useForm({}).put(route('team-invitations.resend', invitation), {
-            preserveScroll: true,
-        });
-    }
-
-    function cancelTeamInvitation(invitation) {
-        router.delete(route('team-invitations.destroy', invitation), {
-            preserveScroll: true
-        });
-    }
-
-    function manageRole(teamMember) {
-        state.managingRoleFor = teamMember
-        updateRoleForm.role = teamMember.membership.role
-        state.currentlyManagingRole = true
-    }
-
-    function updateRole() {
-        updateRoleForm.put(route('team-members.update', [props.team, state.managingRoleFor]), {
-            preserveScroll: true,
-            onSuccess: () => (this.currentlyManagingRole = false),
-        })
-    }
-
-    function confirmLeavingTeam() {
-        state.confirmingLeavingTeam = true
-    }
-
-    function leaveTeam() {
-        leaveTeamForm.delete(route('team-members.destroy', [this.team, this.$page.props.user]))
-    }
-
-    function confirmTeamMemberRemoval(teamMember) {
-        state.teamMemberBeingRemoved = teamMember
-    }
-
-    function removeTeamMember() {
-        removeTeamMemberForm.delete(route('team-members.destroy', [this.team, this.teamMemberBeingRemoved]), {
-            errorBag: 'removeTeamMember',
-            preserveScroll: true,
-            preserveState: true,
-            onSuccess: () => (this.teamMemberBeingRemoved = null),
-        })
-    }
-
-    function displayableRole(role) {
-        return props.availableRoles.find(r => r.key === role).name
-    };
-</script>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, toRefs, reactive, provide, ref, nextTick, onMounted } from "vue";
+import { computed, toRefs, reactive, provide, ref } from "vue";
 import { router } from "@inertiajs/vue3";
 import { format } from "date-fns";
 import axios from "axios";
@@ -58,6 +58,7 @@ const handleBackButton = () => {
   return router.visit(route("finance"));
 };
 
+const isLoading = ref(false);
 const { serverSearchOptions } = toRefs(props);
 const {
      state: pageState,
@@ -66,16 +67,15 @@ const {
 } = useServerSearch(serverSearchOptions, { manual: false }, async (urlParams) => {
     if (isLoading.value) return;
     const url = `/api/finance/transactions?${urlParams}`;
-    console.time("fetch with axios");
     isLoading.value = true
+    window.history.pushState({}, null, `${location.pathname}?${urlParams}`)
     return axios.get(url).then((data) => {
         transactions.data = data.data
         isLoading.value = false
-        console.timeEnd("fetch with axios")
     })
 });
 
-const isLoading = ref(false);
+
 const transactions = reactive<{
     data: ITransaction[]
 }>({
@@ -83,18 +83,12 @@ const transactions = reactive<{
 })
 
 const fetchTransactions = (params = location.toString()) => {
-    // const url = `/api/${params}`;
-    // return axios.get(url).then((data) => {
-    //     transactions.data = data.data;
-    //     console.log(data.data, " the data")
-    //     isLoading.value = false
-    // })
-}
-onMounted(() => {
-    nextTick(() => {
-        fetchTransactions()
+    const url = `/api/${params}`;
+    return axios.get(url).then((data) => {
+        transactions.data = data.data;
+        isLoading.value = false
     })
-})
+}
 
 const selectedAccountId = computed(() => {
   return serverSearchOptions.value.filters?.account_id;
@@ -125,9 +119,11 @@ const findLinked = (transaction: ITransaction) => {
 
 const { openTransactionModal } = useTransactionModal();
 const handleEdit = (transaction: ITransaction) => {
-  openTransactionModal({
-    transactionData: transaction,
-  });
+    axios.get(`/transactions/${transaction.id}?json=true`).then(({ data }) => {
+        openTransactionModal({
+          transactionData: data,
+        });
+    })
 };
 
 const transactionStatus = {
@@ -167,7 +163,7 @@ const listData = computed(() => {
                 controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
                 next-mode="month"
             />
-            <DraftButtons v-if="isDraft" />
+            <DraftButtons v-if="isDraft" @submitted="fetchTransactions()" />
             <StatusButtons
               v-model="currentStatus"
               :statuses="transactionStatus"

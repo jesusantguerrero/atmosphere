@@ -43,7 +43,7 @@ const range = computed(() => {
     >
         <thead>
             <tr class="px-2 py-4 font-bold text-left border-b border-gray-200 text-body">
-                 <th v-for="col in cols" :key="col.name" class="px-2 py-4" :class="[col.headerClass]">
+                 <th v-for="col in cols" :key="col.name" class="px-2 py-4" :class="[col.headerClass]"  :style="{width: col.width, maxWidth: col.maxWidth}">
                     {{ col.label }}
                  </th>
             </tr>
@@ -55,7 +55,7 @@ const range = computed(() => {
                 class="text-body"
                 :class="{'bg-base-lvl-2 py-2': index % 2}"
             >
-                <td v-for="col in cols" :key="col.name" class="h-6 py-1" 
+                <td v-for="col in cols" :key="col.name" class="h-6 py-1"
                 :style="{width: col.width, maxWidth: col.maxWidth}">
                     <span class="inline-block w-full h-full align-baseline bg-base-lvl-1"></span>
                 </td>

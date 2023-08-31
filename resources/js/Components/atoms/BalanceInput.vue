@@ -8,6 +8,7 @@
     import { format, startOfMonth } from "date-fns";
     import { formatMoney } from "@/utils";
 import Multiselect from "vue-multiselect";
+import { ICategory } from "@/domains/transactions/models";
 
     const props = defineProps({
         value: {
@@ -94,7 +95,7 @@ import Multiselect from "vue-multiselect";
                 value: category.id,
                 label: category.name,
                 available: category.available,
-            }))
+            })).filter((category: ICategory) => category.available > 0)
         }))
     })
 
@@ -151,7 +152,7 @@ import Multiselect from "vue-multiselect";
                     <template v-slot:option="{ option }">
                         <div class="flex justify-between text-sm group md:text-base">
                             <span class="">{{ option.label || option.$groupLabel }}</span>
-                            <span class="text-success group-hover:text-white" v-if="option.available">{{ formatMoney(option.available) }}</span>
+                            <span class="text-success font-bold group-hover:text-white" v-if="option.available">{{ formatMoney(option.available) }}</span>
                         </div>
                   </template>
                 </Multiselect>

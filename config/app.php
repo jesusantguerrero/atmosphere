@@ -239,7 +239,7 @@ return [
         'Countries' => ErnySans\Laraworld\Facades\Countries::class,
         'TimeZones' => ErnySans\Laraworld\Facades\TimeZones::class,
         'Languages' => ErnySans\Laraworld\Facades\Languages::class,
-
+        'Menu' => App\Concerns\Facades\AppMenuFacade::class,
     ],
 
 ];

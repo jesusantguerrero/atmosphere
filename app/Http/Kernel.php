@@ -37,6 +37,7 @@ class Kernel extends HttpKernel
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\AppMenu::class,
             \App\Http\Middleware\HandleInertiaRequests::class,
         ],
 
@@ -66,6 +67,6 @@ class Kernel extends HttpKernel
         'atmosphere.teamed' => \Freesgen\Atmosphere\Http\Middleware\EnsureUserHasTeam::class,
         'atmosphere.unteamed' => \Freesgen\Atmosphere\Http\Middleware\EnsureHasNoTeam::class,
         'treasurer.biller' => \Insane\Treasurer\Http\Middleware\EnsureIsBiller::class,
-        'treasurer.subscribed' => \Insane\Treasurer\Http\Middleware\Subscribed::class
+        'treasurer.subscribed' => \Insane\Treasurer\Http\Middleware\Subscribed::class,
     ];
 }

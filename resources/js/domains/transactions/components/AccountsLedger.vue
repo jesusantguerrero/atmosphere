@@ -42,6 +42,11 @@ const context = useAppContextStore()
 const modalMaxWidth = computed(() => {
     return context.isMobile ? 'mobile' : undefined;
 })
+
+const onClick = (accountId: number) => {
+    if (isSelectedAccount(accountId)) return
+    router.visit(`/finance/accounts/${accountId}`)
+}
 </script>
 
 <template>
@@ -56,7 +61,7 @@ const modalMaxWidth = computed(() => {
                 :key="account.id"
                 :account="account"
                 :is-selected="isSelectedAccount(account.id)"
-                @click="router.visit(`/finance/accounts/${account.id}`)"
+                @click="onClick(account.id)"
                 @edit="openAccountModal(account)"
             />
        </Draggable>

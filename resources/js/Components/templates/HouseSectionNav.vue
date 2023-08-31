@@ -7,7 +7,7 @@
 </template>
 
 
-<script setup>
+<script setup lang="ts">
 import SectionNav from "@/Components/molecules/SectionNav.vue";
 import { getSectionMenu, MODULES } from "@/domains/app";
 

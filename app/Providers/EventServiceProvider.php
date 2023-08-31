@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Events\AutomationEvent;
 use App\Events\BudgetAssigned;
 use App\Events\OccurrenceCreated;
+use App\Events\Menu\AppCreated;
 use App\Listeners\AcceptInvitation;
 use App\Listeners\AutomationListener;
 use App\Listeners\CheckOccurrence;
@@ -15,6 +16,8 @@ use App\Listeners\CreateOccurrenceAutomation;
 use App\Listeners\CreateStartingBalance;
 use App\Listeners\CreateTeamSettings;
 use App\Listeners\HandleTransactionCreated;
+use App\Listeners\TrashTeamSettings;
+use App\Listeners\Menu\ShowInApp;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -22,6 +25,7 @@ use Insane\Journal\Listeners\CreateTeamAccounts;
 use Insane\Journal\Events\AccountCreated;
 use Insane\Journal\Events\TransactionCreated;
 use Laravel\Jetstream\Events\TeamCreated;
+use Laravel\Jetstream\Events\TeamDeleted;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -38,6 +42,9 @@ class EventServiceProvider extends ServiceProvider
             CreateTeamAccounts::class,
             CreateTeamSettings::class
         ],
+        TeamDeleted::class => [
+            TrashTeamSettings::class
+        ],
         TeamMemberAdded::class => [
             AcceptInvitation::class
         ],
@@ -52,6 +59,9 @@ class EventServiceProvider extends ServiceProvider
             CheckOccurrence::class
         ],
         // App events
+        AppCreated::class => [
+            ShowInApp::class,
+        ],
         AutomationEvent::class => [
             AutomationListener::class
         ],

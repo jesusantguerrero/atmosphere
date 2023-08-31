@@ -1,11 +1,10 @@
 import { format, isAfter, parseISO, startOfDay } from "date-fns"
 import { h } from "vue"
 import IconTransfer from "@/Components/icons/IconTransfer.vue";
-import { Link, router } from "@inertiajs/vue3";
-import { ITransaction } from "./models";
+import { Link } from "@inertiajs/vue3";
 
-export const tableAccountCols = (accountId: number) => [
-    {
+export const tableAccountCols = (accountId: number, showSelects: false) => [
+    ...( showSelects ? [{
         label: "",
         name: "selection",
         width: 30,
@@ -14,7 +13,7 @@ export const tableAccountCols = (accountId: number) => [
         render(row: any) {
             return h('input', { type: 'checkbox'})
         },
-    },
+    }] : []),
     {
         label: "Date",
         name: "date",
@@ -22,9 +21,13 @@ export const tableAccountCols = (accountId: number) => [
         class: 'text-center',
         headerClass: 'text-center',
         render(row: any) {
-            const date = parseISO(row.date)
-            const hasPassed = isAfter(startOfDay(date), startOfDay(new Date()))
-            return h('div', {class: hasPassed ? 'text-danger' : 'text-info cursor-pointer'} ,format(date, "dd MMM, yyyy"))
+            try {
+                const date = parseISO(row.date)
+                const hasPassed = isAfter(startOfDay(date), startOfDay(new Date()))
+                return h('div', {class: hasPassed ? 'text-danger' : 'text-info cursor-pointer'} ,format(date, "dd MMM, yyyy"))
+            } catch (e) {
+                return h('div', {class:'text-info cursor-pointer'} , '--')
+            }
         }
     },
     {
@@ -72,19 +75,3 @@ export const tableAccountCols = (accountId: number) => [
         class: 'text-right'
     },
 ];
-
-export const removeTransaction = (transaction: ITransaction, only: string[] = []) => {
-    if (confirm("Are you sure you want to remove this transaction?")) {
-        router.delete(`/transactions/${transaction.id}`, {
-            preserveScroll: true, 
-            preserveState: true,
-            onSuccess() {
-                router.reload({
-                    only,
-                    preserveScroll: true, 
-                    preserveState: true,
-                });
-            }
-        })
-    }
-}

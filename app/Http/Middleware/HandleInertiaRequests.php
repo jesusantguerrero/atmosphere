@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Domains\AppCore\Models\Category;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use App\Concerns\Facades\Menu;
 use Insane\Journal\Models\Core\Account as CoreAccount;
 use Insane\Journal\Models\Core\AccountDetailType;
 use Tightenco\Ziggy\Ziggy;
@@ -42,7 +43,7 @@ class HandleInertiaRequests extends Middleware
     {
         $user = $request->user();
         $team = $user ? $user->currentTeam : null;
-        // dd($accounts->toArray());
+        $menu = Menu::render("app");
         return array_merge(parent::share($request), [
             'auth' => [
                 'user' => $request->user(),
@@ -58,6 +59,7 @@ class HandleInertiaRequests extends Middleware
             'unreadNotifications' => function() use ($user) {
                 return $user ? $user->unreadNotifications->count() : 0;
             },
+            "menu" => $menu,
             "balance" => $team ? $team->balance() : 0,
             "accounts" => $team ? CoreAccount::getByDetailTypes($team->id) : [],
             "categories" => $team ? Category::where([
