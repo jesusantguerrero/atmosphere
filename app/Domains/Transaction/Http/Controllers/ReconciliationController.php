@@ -15,6 +15,15 @@ class ReconciliationController extends Controller {
 
     use HasEnrichedRequest;
 
+    public function accountReconciliations(Account $account, ReconciliationService $service) {
+        [$startDate, $endDate] = $this->getFilterDates();
+
+        return inertia("Finance/Reconciliation/AccountReconciliations", [
+            "account" => $account,
+            'transactions' => $service->listHistoryOf($account),
+            "dates" => [$startDate, $endDate]
+        ]);
+    }
     public function create(Account $account) {
         [$startDate, $endDate] = $this->getFilterDates();
 
@@ -26,16 +35,17 @@ class ReconciliationController extends Controller {
     }
 
     public function show(Reconciliation $reconciliation) {
+        $page = request()->get('page') ?? 1;
         return inertia("Finance/Reconciliation/Show", [
             "account" => $reconciliation->account,
-            'transactions' => $reconciliation->getTransactions(),
+            'transactions' => $reconciliation->getTransactions(25, $page),
             'reconciliation' => $reconciliation,
             "dates" => [null, $reconciliation->date]
         ]);
     }
 
     public function store(Account $account, ReconciliationService $service) {
-        $reconciliation = $service->create($account, 
+        $reconciliation = $service->create($account,
            ReconciliationParamsData::from([
                 ...$this->getPostData(),
                 "account_id" => $account->id,

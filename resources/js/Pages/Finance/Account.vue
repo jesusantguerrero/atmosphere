@@ -5,8 +5,9 @@ import { format } from "date-fns";
 import { NDatePicker } from "naive-ui";
 import { debounce,  } from "lodash";
 // @ts-expect-error: no definitions
-// import { AtBackgroundIconCard, AtDatePager } from "atmosphere-ui";
-import { AtDatePager, useServerSearch, IServerSearchData, AtField } from "atmosphere-ui";
+import { AtField, AtDatePager } from "atmosphere-ui";
+// import { AtDatePager, useServerSearch, IServerSearchData, AtField } from "atmosphere-ui";
+import { useServerSearch, IServerSearchData } from "@/composables/useServerSearchV2";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import AppSearch from "@/Components/AppSearch/AppSearch.vue";
@@ -51,15 +52,8 @@ const props = withDefaults(defineProps<{
 
 const isLoading = ref(false);
 const { serverSearchOptions, accountId, accounts } = toRefs(props);
-const { state: pageState, hasFilters, executeSearch, reset } =
+const { state: pageState, hasFilters, reset } =
 useServerSearch(serverSearchOptions);
-
-watch(() => pageState.search, debounce((oldSearch, search) => {
-		if(oldSearch == search) return;
-		nextTick(() => {
-				executeSearch();
-		})
-}, 600))
 
 provide("selectedAccountId", accountId);
 

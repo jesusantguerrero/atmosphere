@@ -11,6 +11,13 @@ use Insane\Journal\Models\Core\Account;
 
 class ReconciliationService
 {
+    public function listHistoryOf(Account $account) {
+        return Reconciliation::where([
+            "team_id" => $account->team_id,
+            "account_id" => $account->id
+        ])->get();
+    }
+
     public function create(Account $account, ReconciliationParamsData $params) {
         $transactions = $account->transactionsToReconcile(null, $params->date);
         if (!count($transactions)) {

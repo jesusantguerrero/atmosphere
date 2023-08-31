@@ -32,7 +32,7 @@ class FinanceAccountController extends InertiaController {
     public function show(Account $account) {
         $queryParams = request()->query();
         $response = Gate::inspect('show', $account);
-        
+
         if (!$response->allowed()) {
             return redirect(route('finance'));
         }
@@ -44,7 +44,7 @@ class FinanceAccountController extends InertiaController {
             "sectionTitle" => $account->name,
             'accountId' => $account->id,
             'resource' => $account,
-            'transactions' => $account->transactionSplits(25, $startDate, $endDate, request()->only(['search', 'page', 'limit', 'direction'])),
+            'transactions' => $account->transactionSplits(50, $startDate, $endDate, request()->only(['search', 'page', 'limit', 'direction'])),
             'stats' => $this->reportService->getAccountStats($account->id, $startDate, $endDate),
             "serverSearchOptions" => $this->getServerParams(),
         ]);

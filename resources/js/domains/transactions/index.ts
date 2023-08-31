@@ -1,6 +1,10 @@
+import { router } from "@inertiajs/vue3"
+import { ITransaction } from "./models"
+
 export * from "./formatters"
 export * from "./tableCols"
 export * from "./tableAccountCols"
+export * from "./reconciliationCols"
 export * from "./useTransactionModal"
 
 export const TRANSACTION_DIRECTIONS = {
@@ -16,3 +20,20 @@ export const getVariances = (current = 0, last = 0) => {
     const variance = ((current - last) / last) * 100;
     return Number.isNaN(variance) ? 0 : variance.toFixed(2);
 };
+
+
+export const removeTransaction = (transaction: ITransaction, only: string[] = []) => {
+    if (confirm("Are you sure you want to remove this transaction?")) {
+        router.delete(`/transactions/${transaction.id}`, {
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess() {
+                router.reload({
+                    only,
+                    preserveScroll: true,
+                    preserveState: true,
+                });
+            }
+        })
+    }
+}

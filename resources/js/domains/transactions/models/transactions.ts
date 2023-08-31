@@ -34,7 +34,8 @@ export interface IAccount {
 
 export interface IReconciliation {
     id: number;
-    difference: number
+    difference: number;
+    amount: number;
 }
 export interface IPayee {
     id: number;

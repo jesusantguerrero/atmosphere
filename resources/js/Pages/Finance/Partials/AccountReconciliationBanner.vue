@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { router, useForm} from "@inertiajs/vue3";
-
+import { computed } from "vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 
 // import { IServerSearchData, useServerSearch } from "@/composables/useServerSearch";
@@ -23,24 +23,28 @@ const adjustAndFinish = () => {
     adjustmentForm.put(`/finance/reconciliation/${account?.reconciliations_pending.id}/save-adjustment`)
 }
 
+const differenceStateText = computed(() => {
+    return (account.reconciliations_pending?.difference || 0) > (account.reconciliations_pending?.amount ?? 0) ? 'higher' : 'lower'
+})
+
 </script>
 
 <template>
-        <section class="flex justify-between w-full px-4 py-2 text-white cursor-pointer bg-secondary" 
-            v-if="account.reconciliations_pending"    
-        >   
+        <section class="flex justify-between w-full px-4 py-2 text-white cursor-pointer bg-secondary"
+            v-if="account.reconciliations_pending"
+        >
         <article class="flex items-center">
             <AccountReconciliationAlert class="mr-2 text-white" />
             <p>
-                This account's cleared balance in 
-                <strong>Loger</strong> is {{ formatMoney(account.reconciliations_pending.difference) }} lower than your 
+                This account's cleared balance in
+                <strong>Loger</strong> is {{ formatMoney(account.reconciliations_pending.difference) }} {{ differenceStateText }} than your
                 <strong>
                     bank account.
                 </strong>
             </p>
         </article>
         <article class="flex space-x-2">
-            <LogerButton 
+            <LogerButton
                 variant="secondary"
                 @click="goToReconciliation()"
                 :disabled="adjustmentForm.processing"
