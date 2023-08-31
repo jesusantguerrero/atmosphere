@@ -29,8 +29,14 @@ export interface IAccount {
     name: string;
     color: string;
     balance: number;
+    reconciliations_pending?: IReconciliation
 }
 
+export interface IReconciliation {
+    id: number;
+    difference: number;
+    amount: number;
+}
 export interface IPayee {
     id: number;
     name: string;

@@ -7,7 +7,10 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
     Route::get('/finance/reconciliation/accounts/{account}', [ReconciliationController::class, 'create']);
     Route::post('/finance/reconciliation/accounts/{account}', [ReconciliationController::class, 'store']);
+    Route::get('/finance/accounts/{account}/reconciliations', [ReconciliationController::class, 'accountReconciliations']);
     Route::get('/finance/reconciliation/{reconciliation}', [ReconciliationController::class, 'show']);
+    Route::put('/finance/reconciliation/{reconciliation}/save-adjustment', [ReconciliationController::class, 'adjustment']);
+    Route::put('/finance/reconciliation/{reconciliation}', [ReconciliationController::class, 'update']);
 });
 
 

@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Events\AutomationEvent;
 use App\Events\BudgetAssigned;
 use App\Events\OccurrenceCreated;
+use App\Events\Menu\AppCreated;
 use App\Listeners\AcceptInvitation;
 use App\Listeners\AutomationListener;
 use App\Listeners\CheckOccurrence;
@@ -16,6 +17,7 @@ use App\Listeners\CreateStartingBalance;
 use App\Listeners\CreateTeamSettings;
 use App\Listeners\HandleTransactionCreated;
 use App\Listeners\TrashTeamSettings;
+use App\Listeners\Menu\ShowInApp;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -57,6 +59,9 @@ class EventServiceProvider extends ServiceProvider
             CheckOccurrence::class
         ],
         // App events
+        AppCreated::class => [
+            ShowInApp::class,
+        ],
         AutomationEvent::class => [
             AutomationListener::class
         ],

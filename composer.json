@@ -14,6 +14,7 @@
         "guzzlehttp/guzzle": "^7.0.2",
         "inertiajs/inertia-laravel": "^0.6.3",
         "insane/journal": "dev-master",
+        "joshbrw/laravel-module-installer": "^2.0",
         "kreait/laravel-firebase": "^5.2",
         "laravel/cashier-paddle": "^1.8",
         "laravel/framework": "^10.0",
@@ -27,6 +28,7 @@
         "rlanvin/php-rrule": "^2.4",
         "simshaun/recurr": "^5.0",
         "spatie/laravel-data": "^3.7",
+        "spatie/laravel-navigation": "^1.2",
         "spatie/laravel-onboard": "^2.4",
         "staudenmeir/belongs-to-through": "^2.5",
         "symfony/dom-crawler": "^6.0",
@@ -86,7 +88,10 @@
         "optimize-autoloader": true,
         "preferred-install": "dist",
         "sort-packages": true,
-        "process-timeout": 0
+        "process-timeout": 0,
+        "allow-plugins": {
+            "joshbrw/laravel-module-installer": true
+        }
     },
     "minimum-stability": "stable",
     "prefer-stable": true

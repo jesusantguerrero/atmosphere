@@ -161,7 +161,7 @@ const onSubmit = (addAnother = false) => {
 
       data.category_id = splits[0].category_id;
       data.payee_id = splits[0].payee_id;
-      data.counter_account_id = splits[0].counter_account_id;
+      data.counter_account_id = form.is_transfer ? splits[0].counter_account_id : null;
       data.account_id = splits[0].account_id;
       data.total = splits[0].amount;
       data.has_splits = false;

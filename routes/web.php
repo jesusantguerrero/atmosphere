@@ -99,7 +99,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     ***************************************************************************************/
 
     //  Meal related routes
-    Route::get('/meals/overview', MealController::class);
+    Route::get('/meals/overview', MealController::class)->name("meals.overview");
     Route::controller(MealController::class)->group(function () {
         Route::resource('/meals', MealController::class);
         Route::post('/meals/add-plan','addPlan')->name('meals.addPlan');
@@ -117,7 +117,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     ***************************************************************************************/
     // Finance dashboard related routes
     Route::controller(FinanceController::class)->group(function () {
-        Route::get('/finance', 'index')->name('finance');
+        Route::get('/finance', 'index')->name('finance.overview');
     });
 
     // Budgeting & Goals routes

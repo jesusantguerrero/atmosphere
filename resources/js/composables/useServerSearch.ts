@@ -131,12 +131,15 @@ export const useServerSearch = (serverSearchData: Ref<Partial<IServerSearchData>
 
 
     onUrlChange(parseParams(state)).then(() => {
-        isLoaded.value = true
+        nextTick(() => {
+            isLoaded.value = true
+            console.log('loaded first')
+        })
     })
 
     watch(
         () => state,
-        debounce((paramsConfig) => {
+        debounce((paramsConfig, oldConfig) => {
             const urlParams = parseParams(paramsConfig);
             const currentUrl = getCurrentLocationParams()
 
@@ -148,11 +151,11 @@ export const useServerSearch = (serverSearchData: Ref<Partial<IServerSearchData>
     );
 
     const executeSearch = (delay?: number) => {
-        nextTick(() => {      
+        nextTick(() => {
             const urlParams = parseParams(state)
             const currentUrl = getCurrentLocationParams()
             if (urlParams == currentUrl || !onUrlChange) return
-    
+
             if (!delay) {
                 onUrlChange(urlParams);
             } else {
