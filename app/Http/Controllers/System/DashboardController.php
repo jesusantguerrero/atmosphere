@@ -7,18 +7,20 @@ use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Domains\Meal\Services\MealService;
 use App\Domains\Transaction\Services\ReportService;
 use App\Domains\Transaction\Services\TransactionService;
+use App\Http\Controllers\Traits\HasEnrichedRequest;
 use App\Http\Resources\PlannedMealResource;
-use Carbon\Carbon;
 
 class DashboardController {
+    use HasEnrichedRequest;
+
     public function __construct(private MealService $mealService)
     {
 
     }
+
     public function __invoke() {
         $request = request();
-        $startDate = $request->query('startDate', Carbon::now()->startOfMonth()->format('Y-m-d'));
-        $endDate = $request->query('endDate', Carbon::now()->endOfMonth()->format('Y-m-d'));
+        [$startDate, $endDate] = $this->getFilterDates();
         $team = $request->user()->currentTeam;
         $teamId = $request->user()->current_team_id;
         $budget = BudgetMonth::getMonthAssignmentTotal($teamId, $startDate);

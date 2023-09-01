@@ -67,7 +67,8 @@ export const budgetCols = (state) =>  {
                     const month = format(startOfMonth(new Date()), 'yyyy-MM-dd');
                     router.post(`/budgets/${row.id}/months/${month}`, {
                         id: row.id,
-                        budgeted: row.budgeted
+                        budgeted: row.budgeted,
+                        date: format(new Date(), 'yyyy-MM-dd')
                     }, {
                         preserveState: true,
                         preserveScroll: true

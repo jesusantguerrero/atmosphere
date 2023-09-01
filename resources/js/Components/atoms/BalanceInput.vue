@@ -75,7 +75,8 @@ import { ICategory } from "@/domains/transactions/models";
                 budgeted: BALANCE_STATUS.available ? data.amount : props.category.budgeted + data.amount,
                 [field]: props.category.id,
                 source_category_id: data.source_category_id?.value,
-                type: 'movement'
+                type: 'movement',
+                date: format(new Date(), 'yyyy-MM-dd')
             })).post(`/budgets/${props.category.id}/months/${month}`, {
                 preserveState: true,
                 preserveScroll: true
@@ -152,7 +153,7 @@ import { ICategory } from "@/domains/transactions/models";
                     <template v-slot:option="{ option }">
                         <div class="flex justify-between text-sm group md:text-base">
                             <span class="">{{ option.label || option.$groupLabel }}</span>
-                            <span class="text-success font-bold group-hover:text-white" v-if="option.available">{{ formatMoney(option.available) }}</span>
+                            <span class="font-bold text-success group-hover:text-white" v-if="option.available">{{ formatMoney(option.available) }}</span>
                         </div>
                   </template>
                 </Multiselect>

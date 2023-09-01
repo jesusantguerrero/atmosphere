@@ -12,6 +12,8 @@ import VueMultiselect from 'vue-multiselect'
 import { autoAnimatePlugin } from '@formkit/auto-animate/vue'
 import { createPinia } from 'pinia';
 import { vRipple } from './utils/vRipple';
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
 
 const localesMessages = Object.fromEntries(
     Object.entries(
@@ -52,6 +54,7 @@ createInertiaApp({
         .use(pinia)
         .use(ZiggyVue, Ziggy)
         .use(autoAnimatePlugin)
+        .use(ElementPlus)
         .component('Multiselect', VueMultiselect)
         .directive('ripple', vRipple)
         .provide("router", router)

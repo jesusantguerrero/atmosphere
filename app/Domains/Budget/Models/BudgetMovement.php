@@ -12,7 +12,7 @@ class BudgetMovement extends Model
     use HasFactory;
     protected $fillable = ['team_id', 'user_id', 'source_category_id', 'destination_category_id', 'amount', 'date'];
 
-    public static function registerMovement($monthBudget, $form) {
+    public static function registerMovement(BudgetMonth $monthBudget, $form) {
         DB::beginTransaction();
         $session = [
             'team_id' => $monthBudget->team_id,
@@ -38,7 +38,7 @@ class BudgetMovement extends Model
             'source_category_id' => $sourceId,
             'destination_category_id' => $destinationId,
             'amount' => $amount,
-            'date' => date('Y-m-d')
+            'date' => $form['date']
         ]);
 
         $savedMovement = self::create($formData);

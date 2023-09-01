@@ -34,7 +34,7 @@ const budgetTarget = computed(() => {
 })
 
 const lastMonthAmount = computed(() => {
-    // @ts-ignore: 
+    // @ts-ignore:
     return props.item.budgets?.at?.(2)?.budgeted ?? 0
 })
 
@@ -87,7 +87,8 @@ const onAssignBudget = () => {
 
         router.post(`/budgets/${props.item.id}/months/${month}`, {
             id: props.item.id,
-            budgeted: Number(budgeted.value)
+            budgeted: Number(budgeted.value),
+            date: format(new Date(), 'yyyy-MM-dd')
         }, {
             preserveState: true,
             preserveScroll: true

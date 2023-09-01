@@ -64,7 +64,7 @@ const {
      state: pageState,
      executeSearch,
      reset,
-} = useServerSearch(serverSearchOptions, { manual: false }, async (urlParams) => {
+} = useServerSearch(serverSearchOptions, { manual: false, defaultDates: true }, async (urlParams) => {
     if (isLoading.value) return;
     const url = `/api/finance/transactions?${urlParams}`;
     isLoading.value = true

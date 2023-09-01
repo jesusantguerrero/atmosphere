@@ -9,7 +9,7 @@
             </button>
         </template>
         <div>
-            
+
         </div>
     </NPopover>
 </div>
@@ -88,7 +88,8 @@
                 ...data,
                 budgeted: BALANCE_STATUS.available ? data.amount : props.category.budgeted + data.amount,
                 [field]: props.category.id,
-                type: 'movement'
+                type: 'movement',
+                date: format(new Date(), 'yyyy-MM-dd')
             })).post(`/budgets/${props.category.id}/months/${month}`, {
                 preserveState: true,
                 preserveScroll: true
