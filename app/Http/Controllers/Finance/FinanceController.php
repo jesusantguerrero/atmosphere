@@ -7,6 +7,7 @@ use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Transaction\Services\PlannedTransactionService;
 use App\Domains\Transaction\Services\TransactionService;
+use App\Models\Setting;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Laravel\Jetstream\Jetstream;
@@ -26,9 +27,11 @@ class FinanceController extends InertiaController {
 
     public function index(Request $request) {
         $teamId = $request->user()->current_team_id;
+        $settings = Setting::getByTeam(auth()->user()->current_team_id);
+
         $queryParams = $request->query();
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
-        [$startDate, $endDate] = $this->getFilterDates($filters);
+        [$startDate, $endDate] = $this->getFilterDates($filters, $settings['team_timezone']);
 
         $lastMonthStartDate = Carbon::createFromFormat(self::DateFormat, $startDate)->subMonth()->startOfMonth()->format(self::DateFormat);
         $lastMonthEndDate = Carbon::createFromFormat(self::DateFormat, $startDate)->subMonth()->endOfMonth()->format(self::DateFormat);

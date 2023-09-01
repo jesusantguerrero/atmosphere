@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Finance;
 
 use App\Domains\Transaction\Services\ReportService;
+use App\Models\Setting;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Freesgen\Atmosphere\Http\Querify;
 use Illuminate\Support\Facades\Gate;
@@ -32,13 +33,13 @@ class FinanceAccountController extends InertiaController {
     public function show(Account $account) {
         $queryParams = request()->query();
         $response = Gate::inspect('show', $account);
-
+        $settings = Setting::getByTeam(auth()->user()->current_team_id);
         if (!$response->allowed()) {
             return redirect(route('finance'));
         }
 
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
-        [$startDate, $endDate] = $this->getFilterDates($filters);
+        [$startDate, $endDate] = $this->getFilterDates($filters, $settings["team_timezone"]);
 
         return inertia($this->templates['show'], [
             "sectionTitle" => $account->name,

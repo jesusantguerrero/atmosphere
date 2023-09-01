@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Traits;
 
+use App\Models\Setting;
 use Illuminate\Support\Carbon;
 
 trait HasEnrichedRequest {
@@ -27,9 +28,10 @@ trait HasEnrichedRequest {
     }
 
     protected function getFilterDates($filters = [], $subCount=0) {
+        $settings = Setting::getByTeam(auth()->user()->current_team_id);
         $dates = isset($filters['date']) ? explode("~", $filters['date']) : [
-            Carbon::now()->subMonths($subCount)->startOfMonth()->format('Y-m-d'),
-            Carbon::now()->endOfMonth()->format('Y-m-d')
+            Carbon::now()->setTimezone($settings["team_timezone"])->subMonths($subCount)->startOfMonth()->format('Y-m-d'),
+            Carbon::now()->setTimezone($settings["team_timezone"])->endOfMonth()->format('Y-m-d')
         ];
         return $dates;
     }

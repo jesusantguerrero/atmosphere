@@ -8,6 +8,7 @@ use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Transaction\Services\ReportService;
 use App\Http\Resources\CategoryGroupCollection;
+use App\Models\Setting;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -32,11 +33,9 @@ class BudgetCategoryController extends InertiaController
         ];
         $this->sorts = ['index'];
         $this->includes = ['subCategories', 'subCategories.budget', 'subCategories.budgets'];
-        $dates = $this->getFilterDates();
         $this->filters = [
             'parent_id' => '$null',
             'resource_type' => 'transactions',
-            'date' => "{$dates['0']}~{$dates['1']}",
         ];
         $this->resourceName= "budgets";
     }

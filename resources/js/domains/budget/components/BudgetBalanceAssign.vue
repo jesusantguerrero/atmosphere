@@ -102,7 +102,8 @@
                 budgeted: Math.abs(props.value),
                 [field]: props.category.id,
                 source_category_id: data.source_category_id?.value,
-                'type': 'movement'
+                'type': 'movement',
+                date: format(new Date(), 'yyyy-MM-dd')
             })).post(`/budgets/${props.category.id}/months/${month}`, {
                 onSuccess() {
                     router.reload({

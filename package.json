@@ -70,6 +70,7 @@
         "@formkit/auto-animate": "^1.0.0-beta.1",
         "@vueuse/components": "^10.3.0",
         "chart.js": "^4.3.3",
+        "element-plus": "^2.3.12",
         "firebase": "^10.2.0",
         "fuse.js": "^6.6.2",
         "luxon": "^3.4.0",

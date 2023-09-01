@@ -36,9 +36,7 @@ class FinanceTransactionController extends InertiaController {
             'counterLine.account'
         ];
         $this->appends = [];
-        $dates = $this->getFilterDates();
         $this->filters = [
-            'date' => "{$dates['0']}~{$dates['1']}",
             'status' => Transaction::STATUS_VERIFIED
         ];
     }
@@ -67,14 +65,14 @@ class FinanceTransactionController extends InertiaController {
                 transactions.description,
                 date,
                 transactions.direction,
-                transactions.status, 
+                transactions.status,
                 total,
                 transactions.account_id,
                 counter_account_id,
                 payee_id,
                 categories.name category_name,
                 payees.name payee_name,
-                ca.name counter_account_name, 
+                ca.name counter_account_name,
                 accounts.name account_name
             ")
             ->leftJoin('categories', 'categories.id', 'transactions.category_id')
@@ -178,7 +176,7 @@ class FinanceTransactionController extends InertiaController {
         return $queryParams;
     }
 
- 
+
     public function bulkDelete(Request $request)
     {
         $items = $request->post('data');

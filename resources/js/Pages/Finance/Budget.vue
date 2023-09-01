@@ -55,6 +55,7 @@ const { state: pageState, executeSearchWithDelay } = useServerSearch(
   serverSearchOptions,
   {
     manual: true,
+    defaultDates: true,
   }
 );
 

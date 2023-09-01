@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/vue3';
-import { format, parseISO } from "date-fns";
+import { endOfMonth, format, parseISO, startOfMonth } from "date-fns";
 import { reactive, Ref, watch, nextTick, computed, ref }  from "vue"
 import debounce  from 'lodash/debounce';
 
@@ -16,6 +16,7 @@ export interface IServerSearchData {
 interface IServerSearchOptions {
     manual?: Boolean,
     mainDateField?: string,
+    defaultDates?: boolean
 }
 interface IDateSpan {
     startDate: Date|null;
@@ -85,8 +86,12 @@ export const parseParams = (state: ISearchState) => {
   return params.filter(value => typeof value == 'string' && value?.trim() || value).join("&");
 }
 
-function parseDateFilters(options: Ref<Partial<IServerSearchData>>) {
-    const dates = options?.value.filters?.date ? options.value.filters.date.split('~') : [null, null]
+function parseDateFilters(options: Ref<Partial<IServerSearchData>>, setDefaultDate: boolean) {
+    const dates = options?.value.filters?.date ? options.value.filters.date.split('~') : [
+        setDefaultDate ? format(startOfMonth(new Date()), 'yyyy-MM-dd') : null,
+        setDefaultDate ? format(endOfMonth(new Date()), 'yyyy-MM-dd') : null
+    ];
+
     return {
         startDate: dates[0] && parseISO(dates[0]),
         endDate: dates.length == 2 && dates[1] && dates[1] !== "" ? parseISO(dates[1]) : null
@@ -110,7 +115,7 @@ export const defaultSearchInertia = async (urlParams: string) => {
 }
 
 export const useServerSearch = (serverSearchData: Ref<Partial<IServerSearchData>>, options: IServerSearchOptions = {}, onUrlChange = defaultSearchInertia) => {
-    const dates = parseDateFilters(serverSearchData)
+    const dates = parseDateFilters(serverSearchData, options.defaultDates)
     const isLoaded = ref(false)
 
     const state = reactive<ISearchState>({
