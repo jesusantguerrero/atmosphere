@@ -19,7 +19,7 @@ import BackgroundCard from "@/Components/molecules/BackgroundCard.vue";
 import FinanceTemplate from "./Partials/FinanceTemplate.vue";
 import FinanceSectionNav from "./Partials/FinanceSectionNav.vue";
 import TransactionSearch from "@/domains/transactions/components/TransactionSearch.vue";
-import TransactionTemplate from "@/domains/transactions/components/TransactionTemplate.vue";
+import TransactionTable from "@/domains/transactions/components/TransactionTable.vue";
 import DraftButtons from "@/domains/transactions/components/DraftButtons.vue";
 
 import { useTransactionModal } from "@/domains/transactions";
@@ -63,7 +63,7 @@ const selectedAccount = computed(() => {
 
 const context = useAppContextStore();
 const listComponent = computed(() => {
-	return context.isMobile ? TransactionSearch : TransactionTemplate;
+	return context.isMobile ? TransactionSearch : TransactionTable;
 });
 
 const isDraft = computed(() => {

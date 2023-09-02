@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Domains\Transaction\Listeners\UpdateOpenReconciliations;
 use App\Events\AutomationEvent;
 use App\Events\BudgetAssigned;
 use App\Events\OccurrenceCreated;
@@ -56,7 +57,8 @@ class EventServiceProvider extends ServiceProvider
         TransactionCreated::class => [
             CreateBudgetTransactionMovement::class,
             HandleTransactionCreated::class,
-            CheckOccurrence::class
+            CheckOccurrence::class,
+            UpdateOpenReconciliations::class
         ],
         // App events
         AppCreated::class => [

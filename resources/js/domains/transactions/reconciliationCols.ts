@@ -3,16 +3,6 @@ import { h } from "vue"
 
 export const reconciliationCols = () => [
     {
-        label: "",
-        name: "selection",
-        width: 30,
-        class: 'text-center',
-        headerClass: 'text-center',
-        render(row: any) {
-            return h('input', { type: 'checkbox'})
-        },
-    },
-    {
         label: "Date",
         name: "date",
         width: 200,

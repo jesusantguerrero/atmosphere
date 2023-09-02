@@ -13,7 +13,7 @@ import ProfileEntityModal from '@/Components/ProfileEntityModal.vue';
 import OccurrenceCard from '@/Components/Modules/occurrence/OccurrenceCard.vue';
 import WidgetTitleCard from '@/Components/molecules/WidgetTitleCard.vue';
 
-import TransactionsTable from '@/domains/transactions/components/TransactionsTable.vue';
+import TransactionsTable from '@/domains/transactions/components/TransactionsList.vue';
 import BudgetDetailForm from '@/domains/budget/components/BudgetDetailForm.vue';
 
 import { IOccurrenceCheck } from '@/Components/Modules/occurrence/models';
@@ -107,7 +107,7 @@ const budgets = computed(() => {
                     <section class="flex flex-col items-center mx-auto ">
                         <img :src="profile.image_url" />
                     </section>
-    
+
                     <template #action>
                         <LogerButton
                             class="text-sm text-primary"

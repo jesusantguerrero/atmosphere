@@ -24,7 +24,7 @@ const adjustAndFinish = () => {
 }
 
 const differenceStateText = computed(() => {
-    return (account.reconciliations_pending?.difference || 0) > (account.reconciliations_pending?.amount ?? 0) ? 'higher' : 'lower'
+    return (account.reconciliations_pending?.difference || 0) < (account.reconciliations_pending?.amount ?? 0) ? 'higher' : 'lower'
 })
 
 </script>
