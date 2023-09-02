@@ -1,7 +1,7 @@
 <template>
-    <JetFormSection 
-        @submitted="updateTeamName" 
-        title="Budget space name" 
+    <JetFormSection
+        @submitted="updateTeamName"
+        title="Budget space name"
         description="The budget's information."
     >
         <template #form>
@@ -33,7 +33,7 @@
     import LogerButton from '@/Components/atoms/LogerButton.vue'
     import JetFormSection from '@/Components/atoms/FormSection.vue'
     import TeamForm from '../Onboarding/TeamForm.vue'
-    
+
     import { mapTeamFormServer, parseTeamForm } from "@/domains/app"
 
     const props = defineProps(['team', 'permissions']);
@@ -41,7 +41,7 @@
 
     function updateTeamName() {
         form.transform((data) => {
-            data.primary_currency_code = data.primary_currency_code.code || data.primary_currency_code
+            data.primary_currency_code = data.primary_currency_code?.code || data.primary_currency_code
             return parseTeamForm(data)
         }).put(route('teams.update', props.team), {
             errorBag: 'updateTeamName',

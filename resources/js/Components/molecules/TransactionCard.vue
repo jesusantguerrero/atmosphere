@@ -5,6 +5,7 @@ import { NProgress, NDropdown } from "naive-ui";
 import NumberHider from "./NumberHider.vue";
 
 import { formatDate, formatMoney } from "@/utils";
+import { isBefore, parseISO } from "date-fns";
 
 const props = defineProps<{
   title: string,
@@ -73,6 +74,11 @@ const hasOptions = computed(() => {
     return Object.keys(options.value).length
 })
 
+
+const isDateInPast = computed(() => {
+    return props.date ? isBefore(parseISO(props.date), new Date()) : false
+})
+
 const handleOptions = (option: 'remove'|'selected') => {
   emit(option);
 };
@@ -113,7 +119,7 @@ const handleOptions = (option: 'remove'|'selected') => {
               >({{ formatMoney(expenses, currencyCode) }})</span
             >
           </h4>
-          <small class="block text-sm">
+          <small class="block text-sm" :class="[isDateInPast ? 'text-error font-bold': 'text-secondary']">
             {{ date ? formatDate(date) : valueSubtitle }}
         </small>
         </div>
@@ -130,7 +136,7 @@ const handleOptions = (option: 'remove'|'selected') => {
       </div>
     </div>
     <div class="px-5" v-if="expenses">
-      <n-progress
+      <NProgress
         :percentage="percentage"
         :stroke-width="1"
         height="2px"

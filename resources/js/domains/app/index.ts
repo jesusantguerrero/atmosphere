@@ -108,6 +108,10 @@ export const mapTeamFormServer = (team, prefix="team_") => {
         return acc;
     }, {
         name: team.name,
+        timezone:'',
+        primary_currency_code: 'USD',
+        currency_symbol_option: 'before',
+        date_format: ''
     })
 }
 

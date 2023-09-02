@@ -12,12 +12,12 @@ import WidgetTitleCard from "@/Components/molecules/WidgetTitleCard.vue";
 
 import FinanceCard from "@/Components/molecules/FinanceCard.vue";
 import FinanceVarianceCard from "@/Components/molecules/FinanceVarianceCard.vue";
+import BudgetProgress from "@/domains/budget/components/BudgetProgress.vue";
 
 import FinanceTemplate from "./Partials/FinanceTemplate.vue";
 import FinanceSectionNav from "./Partials/FinanceSectionNav.vue";
-import TransactionsTable from "@/domains/transactions/components/TransactionsList.vue";
+import TransactionsList from "@/domains/transactions/components/TransactionsList.vue";
 import CategoryTrendsPreview from "@/domains/transactions/components/CategoryTrendsPreview.vue";
-import BudgetProgress from "@/domains/budget/components/BudgetProgress.vue";
 
 import { useServerSearch } from "@/composables/useServerSearch";
 import {
@@ -217,7 +217,7 @@ const deleteBulkTransactions = () => {
 
             <section class="grid grid-cols-2 gap-2">
                 <WidgetTitleCard title="Planned Transactions" class="hidden md:block">
-                    <TransactionsTable
+                    <TransactionsList
                       class="w-full"
                       table-class="w-full p-2 overflow-auto text-sm rounded-t-lg shadow-md bg-base-lvl-3"
                       :transactions="planned"
@@ -250,7 +250,7 @@ const deleteBulkTransactions = () => {
             </section>
 
             <WidgetTitleCard title="Transaction history" class="w-full">
-                <TransactionsTable
+                <TransactionsList
                     class="w-full"
                     table-class="overflow-auto text-sm"
                     :transactions="transactions"
