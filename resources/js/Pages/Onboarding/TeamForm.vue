@@ -11,7 +11,7 @@ import LogerApiSelect from "@/Components/organisms/LogerApiSelect.vue";
 
 import { DEFAULT_TIMEZONE, defaultDateFormats } from "@/domains/app/index";
 
-const props = defineProps({
+defineProps({
     formData: {
         type: Object,
         default() {

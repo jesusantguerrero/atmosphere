@@ -10,6 +10,7 @@ use Exception;
 use Insane\Journal\Models\Accounting\Reconciliation;
 use Insane\Journal\Models\Accounting\ReconciliationEntry;
 use Insane\Journal\Models\Core\Account;
+use Insane\Journal\Models\Core\Transaction as CoreTransaction;
 
 class ReconciliationService
 {
@@ -114,12 +115,13 @@ class ReconciliationService
         return $reconciliation;
     }
 
-    public function checkOpenReconciliation(Account $account, Transaction $transaction) {
+    public function checkOpenReconciliation(Account $account, Transaction|CoreTransaction $transaction) {
         $reconciliation = Reconciliation::where([
             'account_id' => $account->id,
             'status' => Reconciliation::STATUS_PENDING,
         ])
-        ->where('date', '>=', $transaction->date);
+        ->where('date', '>=', $transaction->date)
+        ->first();
 
         if (!$reconciliation) return;
 

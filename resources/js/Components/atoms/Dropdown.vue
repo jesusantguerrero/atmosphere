@@ -16,7 +16,7 @@ const props = defineProps({
 const emit = defineEmits(['update:open'])
 
 const open = ref(false)
-const toggleOpen = (state) => {
+const toggleOpen = (state: number|boolean) => {
     open.value = state == undefined ? !open.value : !!state;
     emit('update:open', open.value)
 }
