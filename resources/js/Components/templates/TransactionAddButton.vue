@@ -1,19 +1,24 @@
 <script setup lang="ts">
+    // @ts-expect-error: no definitions
     import { AtButton } from 'atmosphere-ui';
     import JetDropdown from '@/Components/atoms/Dropdown.vue'
     import LogerButtonTab from '@/Components/atoms/LogerButtonTab.vue';
-    import { router } from '@inertiajs/vue3';
-    import { onMounted } from "vue";
+    import { usePage } from '@inertiajs/vue3';
 
     import { TRANSACTION_DIRECTIONS,  useTransactionModal } from '@/domains/transactions';
     const  { DEPOSIT, WITHDRAW, TRANSFER } = TRANSACTION_DIRECTIONS;
     const { openTransactionModal } = useTransactionModal();
 
-    onMounted(() => {
-        router.on('start', (evt) => {
-            console.log(`The route changed to ${evt.detail.visit.url}`, evt.detail)
+    const page = usePage().props;
+    const open = (mode: string) => {
+        const accountId = page.accountId
+        openTransactionModal({
+            mode: mode,
+            transactionData: {
+                account_id: accountId ?? "",
+            },
         })
-    })
+    }
 
 </script>
 
@@ -33,24 +38,15 @@
         <template #content>
             <div class="py-1 ">
                 <h4 class="px-2 text-body-1/80"> Transactions: </h4>
-                <LogerButtonTab class="w-full font-bold" @click="openTransactionModal({
-                    mode: DEPOSIT,
-                    transactionData: {
-                        account_id: '',
-                    },
-                })">
+                <LogerButtonTab class="w-full font-bold" @click="open(DEPOSIT)">
                 <IMdiBankTransferIn class="mr-2 text-md" />
                 Income
                 </LogerButtonTab>
-                <LogerButtonTab class="w-full font-bold" @click="openTransactionModal({
-                    mode: WITHDRAW
-                })">
+                <LogerButtonTab class="w-full font-bold" @click="open(WITHDRAW)">
                     <IMdiBankTransferOut class="mr-2 text-md" />
                     Expense
                 </LogerButtonTab>
-                <LogerButtonTab class="w-full font-bold" @click="openTransactionModal({
-                    mode: 'transfer'
-                })">
+                <LogerButtonTab class="w-full font-bold" @click="open('transfer')">
                     <IMdiBankTransfer class="mr-2 text-md" />
                     Transfer
                 </LogerButtonTab>
