@@ -96,14 +96,6 @@ onMounted(() => {
       <FinanceSectionNav />
     </template>
     <FinanceTemplate title="Transactions" :accounts="accounts">
-      <div class="flex mt-4 space-x-4">
-        <AtBackgroundIconCard
-          class="w-full cursor-pointer text-body-1 bg-base-lvl-3"
-          v-for="stat in stats"
-          :value="formatMoney(stat)"
-        />
-      </div>
-
       <section class=" bg-base-lvl-3">
           <Component
             :is="listComponent"

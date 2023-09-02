@@ -22,6 +22,7 @@ declare module 'vue' {
     IMdiExport: typeof import('~icons/mdi/export')['default']
     IMdiFile: typeof import('~icons/mdi/file')['default']
     IMdiFilter: typeof import('~icons/mdi/filter')['default']
+    IMdiHistory: typeof import('~icons/mdi/history')['default']
     IMdiLink: typeof import('~icons/mdi/link')['default']
     IMdiMinus: typeof import('~icons/mdi/minus')['default']
     IMdiPencil: typeof import('~icons/mdi/pencil')['default']
