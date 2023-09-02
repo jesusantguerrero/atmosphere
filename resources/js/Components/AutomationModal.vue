@@ -12,7 +12,7 @@
             <div class="px-5 py-3">
                 <form @submit.prevent="submit">
                     <AtField label="Services">
-                        <n-select
+                        <NSelect
                             filterable
                             clearable
                             :default-expand-all="true"
@@ -21,7 +21,7 @@
                         />
                     </AtField>
                     <AtField label="Integration" v-if="isExternalService">
-                        <n-select
+                        <NSelect
                             filterable
                             clearable
                             :options="integrationOptions"
@@ -33,7 +33,7 @@
                         <Button @click.prevent="selectType('recipe')">Recipes</Button>
                     </div>
                     <AtField label="Recipe" v-if="automationType=='recipe'">
-                        <n-select
+                        <NSelect
                             filterable
                             clearable
                             :options="recipeOptions"
@@ -43,7 +43,7 @@
                     <div v-if="automationType=='manual'|| form.recipe">
                         <div v-for="(task, index) in form.tasks" :key="task">
                             <AtField label="Automation Task" >
-                                <n-select
+                                <NSelect
                                     filterable
                                     clearable
                                     :options="taskOptions"
@@ -53,7 +53,7 @@
                             </AtField>
                             <div v-if="task.config" class="ml-5">
                                 <AtField :label="field.label||field.title||fieldName" v-for="(field, fieldName) in task.config" :key="fieldName">
-                                    <n-select
+                                    <NSelect
                                         v-if="field.type=='select'"
                                         filterable
                                         clearable
@@ -82,19 +82,23 @@
             </div>
         </div>
 
-        <div class="px-6 py-4 space-x-3 text-right bg-gray-100">
-            <at-button type="secondary" @click="close"> Cancel </at-button>
-            <at-button class="text-white bg-primary" @click="submit"> Save </at-button>
+        <div class="flex justify-end px-6 py-4 space-x-3 text-right bg-gray-100">
+            <LogerButton variant="neutral" @click="close"> Cancel </LogerButton>
+            <LogerButton class="text-white bg-primary" @click="submit">
+                Save
+            </LogerButton>
         </div>
    </modal>
 </template>
-<script setup>
+
+<script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
 import { AtField, AtButton, AtInput } from 'atmosphere-ui';
 import { NSelect } from "naive-ui";
 import { computed, nextTick, ref } from 'vue';
 import { AtButton as Button } from 'atmosphere-ui';
 import Modal from '@/Components/atoms/Modal.vue'
+import LogerButton from './atoms/LogerButton.vue';
 
 const props = defineProps({
     show: {
@@ -139,7 +143,7 @@ const props = defineProps({
     },
 })
 
-const emit = defineEmits(['save'])
+const emit = defineEmits(['save', 'close'])
 
 const form = useForm({
     service: null,
@@ -309,4 +313,6 @@ const submit = () => {
         emit("saved");
     });
 }
+
+const close = () => emit('close');
 </script>

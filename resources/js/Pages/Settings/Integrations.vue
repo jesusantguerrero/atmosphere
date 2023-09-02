@@ -60,7 +60,7 @@
                 :recipes="recipes"
                 :tasks="tasks"
                 type="event"
-                @cancel="state.isAutomationModalOpen = false"
+                @close="state.isAutomationModalOpen = false"
                 @saved="onItemSaved"
             />
         </div>
