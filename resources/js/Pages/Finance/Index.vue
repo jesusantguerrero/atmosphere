@@ -15,7 +15,7 @@ import FinanceVarianceCard from "@/Components/molecules/FinanceVarianceCard.vue"
 
 import FinanceTemplate from "./Partials/FinanceTemplate.vue";
 import FinanceSectionNav from "./Partials/FinanceSectionNav.vue";
-import TransactionsTable from "@/domains/transactions/components/TransactionsTable.vue";
+import TransactionsTable from "@/domains/transactions/components/TransactionsList.vue";
 import CategoryTrendsPreview from "@/domains/transactions/components/CategoryTrendsPreview.vue";
 import BudgetProgress from "@/domains/budget/components/BudgetProgress.vue";
 
@@ -273,8 +273,8 @@ const deleteBulkTransactions = () => {
         />
     </FinanceTemplate>
 
-    <ConfirmationModal 
-        :show="deleteTransactionsForm.isVisible" 
+    <ConfirmationModal
+        :show="deleteTransactionsForm.isVisible"
         @close="deleteTransactionsForm.isVisible = false"
         title="Delete transactions"
         content="Once transactions are deleted, all of its resources and data will be permanently deleted."
@@ -284,11 +284,11 @@ const deleteBulkTransactions = () => {
                 <LogerButton @click="deleteTransactionsForm.isVisible = false" variant="neutral">
                     Cancel
                 </LogerButton>
-    
-                <LogerButton 
-                    type="danger" class="ml-2" 
-                    @click="deleteBulkTransactions" 
-                    :class="{ 'opacity-25': deleteTransactionsForm.processing }" 
+
+                <LogerButton
+                    type="danger" class="ml-2"
+                    @click="deleteBulkTransactions"
+                    :class="{ 'opacity-25': deleteTransactionsForm.processing }"
                     :disabled="deleteTransactionsForm.processing">
                     Delete Team
                 </LogerButton>

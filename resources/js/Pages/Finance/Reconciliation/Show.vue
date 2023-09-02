@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, toRefs, provide, ref, onMounted, nextTick } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
-import { AtBackgroundIconCard, AtField } from "atmosphere-ui";
+import { AtBackgroundIconCard, AtField, AtButton } from "atmosphere-ui";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
 
@@ -11,7 +11,8 @@ import LogerInput from "@/Components/atoms/LogerInput.vue";
 import FinanceTemplate from "../Partials/FinanceTemplate.vue";
 import FinanceSectionNav from "../Partials/FinanceSectionNav.vue";
 import TransactionSearch from "@/domains/transactions/components/TransactionSearch.vue";
-import TransactionTemplate from "@/domains/transactions/components/TransactionTemplate.vue";
+import TransactionTable from "@/domains/transactions/components/TransactionTable.vue";
+import ReconciliationTable from "@/domains/transactions/components/ReconciliationTable.vue";
 
 import { useTransactionModal } from "@/domains/transactions";
 import { IServerSearchData, useServerSearch } from "@/composables/useServerSearchV2";
@@ -53,11 +54,29 @@ const { state } = useServerSearch(serverSearchOptions)
 
 const context = useAppContextStore();
 const listComponent = computed(() => {
-  return context.isMobile ? TransactionSearch : TransactionTemplate;
+  return context.isMobile ? TransactionSearch : TransactionTable;
 });
 
 const removeTransaction = (transaction: ITransaction) => {
   router.delete(`/transactions/${transaction.id}`, {
+    onSuccess() {
+      router.reload();
+    },
+  });
+};
+
+interface ReconciliationEntry {
+    entry_id: number
+    is_matched: boolean
+}
+
+const toggleCheck = (entry: ReconciliationEntry) => {
+  router.put(`/finance/reconciliation/${props.reconciliation.id}/reconciliation-entries/${entry.entry_id}/check`, {
+    matched: !Boolean(entry.is_matched),
+  }, {
+    preserveScroll: true,
+    preserveState: true,
+    only: ['transactions'],
     onSuccess() {
       router.reload();
     },
@@ -98,6 +117,7 @@ const toggleEditing = () => {
 };
 
 const completeReconciliation = () => {
+    if (reconcileForm.processing) return
   reconcileForm
     .transform((data) => ({
       ...data,
@@ -110,6 +130,33 @@ const completeReconciliation = () => {
       },
     });
 };
+
+const syncReconciliationForm = useForm({});
+const syncReconciliation = async () => {
+    if (syncReconciliationForm.processing) return
+    syncReconciliationForm
+        .put(`/finance/reconciliation/${props.reconciliation.id}/sync-transactions`, {
+        only: ['transactions'],
+            preserveScroll: true,
+            preserveState: true,
+        });
+};
+
+const deleteReconciliation = async () => {
+    const canDelete = confirm("Are you sure you want to delete this?")
+
+    if (canDelete) {
+        router
+          .delete(`/finance/reconciliation/${props.reconciliation.id}`, {
+           only: ['transactions'],
+              preserveScroll: true,
+              preserveState: true,
+              onSuccess() {
+                router.visit(`/finance/accounts/${props.reconciliation.account_id}`)
+              }
+          });
+    }
+};
 onMounted(() => {
   router.on("start", () => (isLoading.value = true));
   router.on("finish", () => (isLoading.value = false));
@@ -117,6 +164,10 @@ onMounted(() => {
 
 const transactionList = computed(() => {
   return props.transactions.data;
+});
+
+const transactionsMatched = computed(() => {
+  return props.transactions.data.filter(item => item.matched).length;
 });
 </script>
 
@@ -138,9 +189,9 @@ const transactionList = computed(() => {
         />
       </div>
 
-      <section class="mt-4 bg-base-lvl-3">
+      <section class=" bg-base-lvl-3">
         <header class="flex items-center justify-between px-6 py-2">
-          <AtField label="transaction matched"> 0 of {{ transactions.total }} </AtField>
+          <AtField label="transaction matched"> {{ transactionsMatched }} of {{ transactions.total }} </AtField>
 
           <AtField label="Statement balance">
             <LogerInput
@@ -168,22 +219,67 @@ const transactionList = computed(() => {
               {{ formatMoney(account.balance - reconcileForm.balance) }}
             </span>
           </AtField>
-          <LogerButton
-            variant="inverse"
-            v-if="reconciliation.status != 'completed'"
-            @click="completeReconciliation()"
-            :processing="reconcileForm.processing"
-            :disabled="!reconcileForm.balance"
-          >
-            Complete
-          </LogerButton>
+          <section class="flex items-center space-x-1">
+              <LogerButton
+                variant="neutral"
+                v-if="reconciliation.status != 'completed'"
+                @click="completeReconciliation()"
+                :processing="reconcileForm.processing"
+                :disabled="!reconcileForm.balance"
+              >
+                <IMdiCheck />
+              </LogerButton>
+              <LogerButton
+                variant="neutral"
+                v-if="reconciliation.status != 'completed'"
+                @click="syncReconciliation()"
+                :processing="syncReconciliationForm.processing || reconcileForm.processing"
+                title="sync transactions"
+              >
+                <IMdiSync :class="{'animate-spin': syncReconciliationForm.processing}" />
+              </LogerButton>
+              <LogerButton
+                variant="error"
+                v-if="reconciliation.status != 'completed'"
+                @click="deleteReconciliation()"
+                :processing="syncReconciliationForm.processing || reconcileForm.processing"
+                title="delete reconciliation"
+              >
+                <IMdiTrash />
+              </LogerButton>
+          </section>
         </header>
-        <Component
-          :is="listComponent"
+        <section class="flex justify-between px-4 py-2 bg-base-lvl-2">
+            <article class="flex items-center space-x-2" v-if="false">
+                <LogerButton variant="inverse">
+                    Merge
+                </LogerButton>
+                <LogerButton variant="inverse">
+                    Delete
+                </LogerButton>
+            </article>
+            <article class="flex items-center justify-end w-full space-x-2" v-if="false">
+                <LogerButton variant="inverse"   v-if="reconciliation.status != 'completed'">
+                    Add transaction
+                </LogerButton>
+                <LogerButton variant="inverse">
+                    Sort
+                </LogerButton>
+                <LogerButton variant="inverse">
+                    Filters
+                </LogerButton>
+                <LogerButton variant="inverse">
+                    Search
+                </LogerButton>
+            </article>
+            <article></article>
+        </section>
+        <ReconciliationTable
           :cols="tableAccountCols(props.reconciliation.account_id)"
           :transactions="transactionList"
           :server-search-options="serverSearchOptions"
           :is-loading="isLoading"
+          @toggleCheck="toggleCheck"
           @findLinked="findLinked"
           @removed="removeTransaction"
           @edit="handleEdit"

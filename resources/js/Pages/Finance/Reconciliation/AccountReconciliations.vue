@@ -8,7 +8,7 @@ import AppLayout from "@/Components/templates/AppLayout.vue";
 import FinanceTemplate from "../Partials/FinanceTemplate.vue";
 import FinanceSectionNav from "../Partials/FinanceSectionNav.vue";
 import TransactionSearch from "@/domains/transactions/components/TransactionSearch.vue";
-import TransactionTemplate from "@/domains/transactions/components/TransactionTemplate.vue";
+import TransactionTable from "@/domains/transactions/components/TransactionTable.vue";
 
 import { useTransactionModal } from "@/domains/transactions";
 // import { IServerSearchData, useServerSearch } from "@/composables/useServerSearch";
@@ -44,7 +44,7 @@ provide("selectedAccountId", accountId);
 
 const context = useAppContextStore();
 const listComponent = computed(() => {
-  return context.isMobile ? TransactionSearch : TransactionTemplate;
+  return context.isMobile ? TransactionSearch : TransactionTable;
 });
 
 const removeTransaction = (transaction: ITransaction) => {
@@ -104,7 +104,7 @@ onMounted(() => {
         />
       </div>
 
-      <section class="mt-4 bg-base-lvl-3">
+      <section class=" bg-base-lvl-3">
           <Component
             :is="listComponent"
             :cols="reconciliationCols()"

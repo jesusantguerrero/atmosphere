@@ -6,8 +6,10 @@ use App\Domains\Transaction\Data\ReconciliationParamsData;
 use App\Domains\Transaction\Services\ReconciliationService;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Traits\HasEnrichedRequest;
+use Exception;
 use Illuminate\Support\Facades\Gate;
 use Insane\Journal\Models\Accounting\Reconciliation;
+use Insane\Journal\Models\Accounting\ReconciliationEntry;
 use Insane\Journal\Models\Core\Account;
 
 class ReconciliationController extends Controller {
@@ -84,5 +86,44 @@ class ReconciliationController extends Controller {
                 'banner' => "Updated correctly"
             ]);
         }
+   }
+
+   public function syncTransactions(Reconciliation $reconciliation, ReconciliationService $service) {
+        $reconciliation = $service->syncTransactions($reconciliation);
+
+        if ($reconciliation->difference) {
+            return back()->with('flash', [
+                'banner' => "Can't reconcile this account"
+            ]);
+        } else {
+            back()->with('flash', [
+                'banner' => "Updated correctly"
+            ]);
+        }
+   }
+
+   public function delete(Reconciliation $reconciliation, ReconciliationService $service) {
+      try {
+            $accountId = $reconciliation->account_id;
+            $service->delete($reconciliation);
+            return redirect("/finance/reconciliation/$accountId")->with('flash', [
+                'banner' => "Can't reconcile this account"
+            ]);
+        } catch (Exception) {
+            back()->with('flash', [
+                'banner' => "Updated correctly"
+            ]);
+        }
     }
+
+
+   public function checkReconciliationEntry(Reconciliation $reconciliation, ReconciliationEntry $reconciliationEntry, ReconciliationService $service) {
+    if(!Gate::forUser(auth()->user())->check('adjust', $reconciliation)) {
+        back()->with('flash', [
+            'banner' => "Can't reconcile this account"
+        ]);
+    }
+    $postData = $this->getPostData();
+    $service->checkLine($reconciliation, $reconciliationEntry, $postData['matched']);
+   }
 }
