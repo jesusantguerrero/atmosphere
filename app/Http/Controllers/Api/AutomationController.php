@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Domains\Integration\Models\Automation;
-use App\Jobs\ProcessGmail;
 use App\Libraries\GoogleService;
+use Freesgen\Atmosphere\Http\InertiaController;
 
-class AutomationController extends BaseController
+class AutomationController extends InertiaController
 {
     public function __construct()
     {

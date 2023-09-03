@@ -290,7 +290,7 @@ const deleteBulkTransactions = () => {
                     @click="deleteBulkTransactions"
                     :class="{ 'opacity-25': deleteTransactionsForm.processing }"
                     :disabled="deleteTransactionsForm.processing">
-                    Delete Team
+                    Delete Transactions
                 </LogerButton>
             </footer>
         </template>

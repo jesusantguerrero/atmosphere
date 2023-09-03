@@ -4,7 +4,6 @@ namespace App\Domains\Integration\Services;
 use App\Domains\Integration\Models\Integration;
 use Exception;
 use Google\Client as GoogleClient;
-use Google\Service\Calendar;
 use Google\Service\Gmail;
 
 class GoogleService
@@ -15,9 +14,7 @@ class GoogleService
             "client_id" => config('integrations.google.client_id')
         ]);
         $client->addScope([
-            Gmail::GMAIL_READONLY,
-            Calendar::CALENDAR_READONLY,
-            Calendar::CALENDAR_EVENTS_READONLY
+            Gmail::GMAIL_READONLY
         ]);
         $client->setRedirectUri(config('app.url') . "/services/accept-oauth");
         $client->setAccessType('offline');

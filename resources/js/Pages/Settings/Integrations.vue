@@ -1,76 +1,7 @@
-<template>
-    <AppLayout title="Settings - Integrations">
-        <template #header>
-            <SettingsSectionNav>
-                <template #actions>
-                    <LogerButton variant="inverse" class="text-white bg-primary"
-                        @click="openAutomationModal"
-                    >
-                        Add Automation
-                    </LogerButton>
-                </template>
-            </SettingsSectionNav>
-        </template>
-        <div class="h-auto py-12 pt-32 mx-auto space-y-4 max-w-7xl sm:px-6 lg:px-8">
-            <div
-                v-for="service in externalServices" :key="service.id"
-                @click="handleCommand(service)"
-                class="flex px-5 py-3 rounded-md shadow-xl cursor-pointer bg-base-lvl-3">
-            <div>
-                <img :src="service.logo" class="w-9" />
-            </div>
-            <h2 class="ml-5">
-                {{ service.name }}
-            </h2>
-            <p class="ml-2">
-                {{ service.description }}
-            </p>
-            </div>
-
-            <div class="w-full integrations-form">
-                <div
-                    class="grid grid-cols-3 px-5 py-3 my-2 font-bold text-gray-500 cursor-pointer bg-base-lvl-1 app-service__item"
-                    v-for="service in integrations"
-                    :key="service.id"
-                >
-                    <div class="left">
-                        <div class="head">
-                            {{ service.name }} {{ service.hash }}
-                        </div>
-                        <div class="tagline">
-                            {{ service.hash }} {{ service.created_at }}
-                        </div>
-                    </div>
-
-                    <div class="text-right automations">
-                        {{ service?.automations.length }}
-                    </div>
-
-                    <div class="text-right options">options</div>
-                </div>
-            </div>
-
-            <AutomationModal
-                :show="state.isAutomationModalOpen"
-                :record-data="openedAutomation"
-                :closeable="true"
-                title="Add a new automation"
-                :services="services"
-                :integrations="integrations"
-                :recipes="recipes"
-                :tasks="tasks"
-                type="event"
-                @close="state.isAutomationModalOpen = false"
-                @saved="onItemSaved"
-            />
-        </div>
-    </AppLayout>
-</template>
-
-<script setup>
+<script setup lang="ts">
 import { computed, nextTick, reactive } from "vue";
 import { router } from '@inertiajs/vue3';
-import { AtButton } from "atmosphere-ui";
+
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import AutomationModal from '@/Components/AutomationModal.vue';
 import SettingsSectionNav from "@/Components/templates/SettingsSectionNav.vue";
@@ -153,6 +84,7 @@ const google = () => {
         service_id: service.id,
         service_name: service.name,
     };
+
     axios({
         url: "/services/google",
         method: "post",
@@ -164,6 +96,76 @@ const google = () => {
     })
 }
 </script>
+
+<template>
+    <AppLayout title="Settings - Integrations">
+        <template #header>
+            <SettingsSectionNav>
+                <template #actions>
+                    <LogerButton variant="inverse"
+                        @click="openAutomationModal"
+                    >
+                        Add Automation
+                    </LogerButton>
+                </template>
+            </SettingsSectionNav>
+        </template>
+        <div class="h-auto py-12 pt-32 mx-auto space-y-4 max-w-7xl sm:px-6 lg:px-8">
+            <div
+                v-for="service in externalServices" :key="service.id"
+                @click="handleCommand(service)"
+                class="flex px-5 py-3 rounded-md shadow-xl cursor-pointer bg-base-lvl-3">
+            <div>
+                <img :src="service.logo" class="w-9" />
+            </div>
+            <h2 class="ml-5">
+                {{ service.name }}
+            </h2>
+            <p class="ml-2">
+                {{ service.description }}
+            </p>
+            </div>
+
+            <div class="w-full integrations-form">
+                <div
+                    class="grid grid-cols-3 px-5 py-3 my-2 font-bold text-gray-500 cursor-pointer bg-base-lvl-1 app-service__item"
+                    v-for="service in integrations"
+                    :key="service.id"
+                >
+                    <div class="left">
+                        <div class="head">
+                            {{ service.name }} {{ service.hash }}
+                        </div>
+                        <div class="tagline">
+                            {{ service.hash }} {{ service.created_at }}
+                        </div>
+                    </div>
+
+                    <div class="text-right automations">
+                        {{ service?.automations.length }}
+                    </div>
+
+                    <div class="text-right options">options</div>
+                </div>
+            </div>
+
+            <AutomationModal
+                :show="state.isAutomationModalOpen"
+                :record-data="openedAutomation"
+                :closeable="true"
+                title="Add a new automation"
+                :services="services"
+                :integrations="integrations"
+                :recipes="recipes"
+                :tasks="tasks"
+                type="event"
+                @close="state.isAutomationModalOpen = false"
+                @saved="onItemSaved"
+            />
+        </div>
+    </AppLayout>
+</template>
+
 
 <style lang="scss">
     .app-service__integration {
