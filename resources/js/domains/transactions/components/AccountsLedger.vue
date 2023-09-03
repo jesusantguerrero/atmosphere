@@ -10,6 +10,7 @@ import AccountItem from "./AccountItem.vue";
 
 import { useAppContextStore } from "@/store";
 import { IAccount } from "@/domains/transactions/models/transactions";
+import AccountLinkModal from "./AccountLinkModal.vue";
 
 const selectedAccountId = inject<Ref<number|null>>('selectedAccountId', ref(null));
 const isSelectedAccount = (accountId: number) => {
@@ -47,6 +48,12 @@ const onClick = (accountId: number) => {
     if (isSelectedAccount(accountId)) return
     router.visit(`/finance/accounts/${accountId}`)
 }
+
+const isLinkModalOpen = ref(false);
+const openLinkModal = (account = {}) => {
+    accountToEdit.value = account;
+    isLinkModalOpen.value = true;
+};
 </script>
 
 <template>
@@ -63,6 +70,7 @@ const onClick = (accountId: number) => {
                 :is-selected="isSelectedAccount(account.id)"
                 @click="onClick(account.id)"
                 @edit="openAccountModal(account)"
+                @link="openLinkModal(account)"
             />
        </Draggable>
     </div>
@@ -73,6 +81,17 @@ const onClick = (accountId: number) => {
         :max-width="modalMaxWidth"
         :form-data="accountToEdit"
         @close="isAccountModalOpen = false"
+    />
+
+
+    <AccountLinkModal
+        v-if="accountToEdit"
+        :show="isLinkModalOpen"
+        :account="accountToEdit"
+        :closeable="true"
+        title="Link account"
+        @save="isLinkModalOpen = false"
+        @close="isLinkModalOpen = false"
     />
   </div>
 </template>

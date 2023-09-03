@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Finance;
 
+use App\Domains\Automation\Models\AutomationService;
+use App\Domains\Transaction\Services\BHDService;
 use App\Domains\Transaction\Services\ReportService;
 use App\Models\Setting;
 use Freesgen\Atmosphere\Http\InertiaController;
@@ -50,5 +52,11 @@ class FinanceAccountController extends InertiaController {
             'stats' => $this->reportService->getAccountStats($account->id, $startDate, $endDate),
             "serverSearchOptions" => $this->getServerParams(),
         ]);
+    }
+
+    public function linkAccount(Account $account, BHDService $service) {
+        $data = $this->getPostData(request());
+        $bankBHD = AutomationService::where('name', 'BHD')->first();
+        $service->linkAccount($account, $bankBHD->id, $data["integration_id"]);
     }
 }

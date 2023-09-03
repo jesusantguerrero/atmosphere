@@ -93,10 +93,9 @@
 
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
-import { AtField, AtButton, AtInput } from 'atmosphere-ui';
+import { AtField, AtButton, AtInput, AtButton as Button } from 'atmosphere-ui';
 import { NSelect } from "naive-ui";
-import { computed, nextTick, ref } from 'vue';
-import { AtButton as Button } from 'atmosphere-ui';
+import { computed, nextTick, ref, reactive } from 'vue';
 import Modal from '@/Components/atoms/Modal.vue'
 import LogerButton from './atoms/LogerButton.vue';
 

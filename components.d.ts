@@ -19,6 +19,7 @@ declare module 'vue' {
     IMdiChevronLeft: typeof import('~icons/mdi/chevron-left')['default']
     IMdiChevronRight: typeof import('~icons/mdi/chevron-right')['default']
     IMdiClose: typeof import('~icons/mdi/close')['default']
+    IMdiEdit: typeof import('~icons/mdi/edit')['default']
     IMdiExport: typeof import('~icons/mdi/export')['default']
     IMdiFile: typeof import('~icons/mdi/file')['default']
     IMdiFilter: typeof import('~icons/mdi/filter')['default']

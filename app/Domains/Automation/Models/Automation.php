@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Domains\Integration\Models;
+namespace App\Domains\Automation\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -25,15 +25,20 @@ class Automation extends Model
         AutomationTaskAction::query()->where('automation_id', $this->id)->delete();
         foreach ($tasks as $index => $task) {
             if (!$task['name']) continue;
-            $taskSource = AutomationTask::find($task['automation_task_id']);
+            if (empty($task['entity'])) {
+                $taskSource = AutomationTask::find($task['automation_task_id']);
+                $task['entity'] = $taskSource->entity;
+                $task['task_type'] = $taskSource->task_type;
+            }
+
             $this->tasks()->create([
                 "team_id" => $this->team_id,
                 "user_id" => $this->user_id,
-                "entity" => $taskSource->entity,
-                "task_type" => $taskSource->task_type,
+                "entity" => $task['entity'],
+                "task_type" => $task['task_type'],
                 'order' => $index,
                 "automation_id" => $this->id,
-                "automation_task_id" => $task['automation_task_id'],
+                "automation_task_id" => $task['automation_task_id'] ?? null,
                 "name" => $task['name'],
                 "values" => json_encode($task['values']),
             ]);

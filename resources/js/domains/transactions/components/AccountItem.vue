@@ -47,12 +47,18 @@ const isDebt = (amount: number) => {
         {{ formatMoney(account.balance, account.currency_code) }}
       </p>
     </section>
-    <div>
+    <div class="flex">
       <LogerButtonTab
         class="h-full flex items-center justify-center px-0.5 rounded-md hover:text-primary hover:bg-base-lvl-2"
         @click.stop="$emit('edit')"
       >
-        <i class="fa fa-edit"></i>
+        <IMdiEdit />
+      </LogerButtonTab>
+      <LogerButtonTab
+        class="h-full flex items-center justify-center px-0.5 rounded-md hover:text-primary hover:bg-base-lvl-2"
+        @click.stop="$emit('link')"
+      >
+        <IMdiLink />
       </LogerButtonTab>
     </div>
   </div>

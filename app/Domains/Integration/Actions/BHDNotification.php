@@ -2,15 +2,16 @@
 
 namespace App\Domains\Integration\Actions;
 
+use App\Domains\Automation\Models\Automation;
 use App\Domains\Integration\Concerns\MailToTransaction;
 use App\Domains\Integration\Concerns\TransactionDataDTO;
-use App\Domains\Integration\Models\Automation;
-use App\Domains\Transaction\Services\BHDService;
 use App\Domains\Transaction\Services\YNABService;
 use Symfony\Component\DomCrawler\Crawler;
 
 class BHDNotification implements MailToTransaction
 {
+    use BHDAction;
+
     public function handle(Automation $automation, mixed $mail, int $index = 0): TransactionDataDTO
     {
 
@@ -65,47 +66,6 @@ class BHDNotification implements MailToTransaction
                 "currencyCode" => $bhdOutput['amount']->currencyCode,
         ]);
     }
-
-    public static function getSchema(): mixed
-    {
-        return [
-            'description'=> [
-                'type' => 'string',
-                'required' => true
-            ],
-            'date' => [
-                'type' => 'date',
-                'label' => 'Date',
-
-            ],
-            'currencyCode' => [
-                'type' => 'string',
-                'label' => 'currencyCode',
-                'required' => true
-            ],
-            'amount' => [
-                'type' => 'money',
-                'label' => 'Amount',
-                'required' => true
-            ],
-            'payee' => [
-                'type' => 'string',
-                'label' => 'Payee',
-                'required' => true
-            ],
-            'categoryGroup' => [
-                'type' => 'string',
-                'label' => 'categoryGroup',
-                'required' => true
-            ],
-            'category' => [
-                'type' => 'string',
-                'label' => 'Category',
-                'required' => true
-            ]
-        ];
-    }
-
 
     public function processResult($value)
     {

@@ -2,13 +2,14 @@
 
 namespace App\Domains\Integration\Actions;
 
-use App\Domains\Integration\Models\Automation;
+use App\Domains\Automation\Concerns\AutomationActionContract;
+use App\Domains\Automation\Models\Automation;
 use App\Domains\Integration\Services\GoogleService;
 use Google\Service\Gmail as ServiceGmail;
 use Illuminate\Support\Facades\Log;
 use PhpMimeMailParser\Parser as EmailParser;
 
-class Gmail
+class GmailReceived implements AutomationActionContract
 {
     /**
      * Validate and create a new team for the given user.
@@ -16,7 +17,7 @@ class Gmail
      * @param  Automation  $automation
      * @return void
      */
-    public static function received(Automation $automation, $lastData = null, $task = null, $previousTask = null, $trigger = null)
+    public static function handle(Automation $automation, $lastData = null, $task = null, $previousTask = null, $trigger = null)
     {
         $maxResults = 50;
         $track = json_decode($automation->track, true);
@@ -77,6 +78,21 @@ class Gmail
                 }
             }
         };
+    }
+
+    public function getName(): string
+    {
+        return "gmailReceived";
+    }
+
+    public function label(): string
+    {
+        return "New Gmail";
+    }
+
+    public function getDescription(): string
+    {
+        return "When a new email is received";
     }
 
     public static function parseEmail($raw)

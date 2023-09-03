@@ -1,16 +1,13 @@
 <?php
 
-namespace App\Domains\Integration\Services;
+namespace App\Domains\Automation\Services;
 
-use App\Domains\Integration\Models\Automation;
+use App\Domains\Automation\Models\Automation;
+use App\Domains\Automation\Models\AutomationTask;
+use App\Domains\Integration\Actions\BHD;
 use App\Domains\Integration\Actions\BHDAlert;
-use App\Domains\Integration\Actions\BHDNotification;
-use App\Domains\Integration\Actions\Entry;
-use App\Domains\Integration\Actions\Gmail;
-use App\Domains\Integration\Actions\MealPlanAutomation;
 use App\Domains\Integration\Actions\OccurrenceCheckAutomation;
-use App\Domains\Integration\Models\AutomationTask;
-use App\Domains\Transaction\Services\BHDService;
+use App\Domains\Integration\Actions\TransactionCreateEntry;
 
 class LogerAutomationService {
 
@@ -29,8 +26,7 @@ class LogerAutomationService {
                 $previousTask = null;
             }
             $entity = $task->entity;
-            $action = $task->name;
-            $lastData = $entity::$action($automation, $lastData, $task, $previousTask, $trigger);
+            $lastData = $entity::handle($automation, $lastData, $task, $previousTask, $trigger);
             if (!$lastData) {
                 break;
             }
@@ -144,20 +140,12 @@ class LogerAutomationService {
                 'components' => [
                     [
                         'label' => 'Parse Alert',
-                        'name' => 'parseAlert',
-                        'entity' => BHDAlert::class,
+                        'name' => 'parseMessage',
+                        'entity' => BHD::class,
                         'description' => 'Parse an email alert',
                         'config' => json_encode(BHDAlert::getSchema()),
 
                     ],
-                    [
-                        'label' => 'Parse Notification',
-                        'name' => 'parseNotification',
-                        'entity' => BHDNotification::class,
-                        'description' => 'Parse an email alert',
-                        'config' => json_encode(BHDNotification::getSchema()),
-
-                    ]
                 ],
                 "type" => "internal"
 
@@ -166,9 +154,9 @@ class LogerAutomationService {
                 'name' => 'transactions',
                 'label' => 'Transactions',
                 'logo' => '/images/transactions.png',
-                'entity' => Entry::class,
+                'entity' => TransactionCreateEntry::class,
                 'description' => 'BHD bank',
-                'fields' => json_encode(Entry::fieldConfig()),
+                'fields' => json_encode(TransactionCreateEntry::fieldConfig()),
                 "triggers" => [
                     [
                         'name' => 'transactionCreated',
@@ -179,7 +167,7 @@ class LogerAutomationService {
                             'field' => [
                                 'title' => 'field',
                                 'type' => 'select',
-                                'options' => [array_keys(Entry::fieldConfig())]
+                                'options' => [array_keys(TransactionCreateEntry::fieldConfig())]
                             ],
                             'conditionType' => [
                                 'title' => 'Condition',
@@ -203,9 +191,9 @@ class LogerAutomationService {
                     [
                         'name' => 'createTransaction',
                         'label' => 'Create transaction',
-                        'entity' => Entry::class,
+                        'entity' => TransactionCreateEntry::class,
                         'description' => 'Create a new transaction',
-                        'config' => json_encode(Entry::fieldConfig()),
+                        'config' => json_encode(TransactionCreateEntry::fieldConfig()),
                         "accepts_config" => true,
                     ],
                 ],

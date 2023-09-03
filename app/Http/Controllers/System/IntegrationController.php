@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\System;
 
-use App\Domains\Integration\Models\AutomationRecipe;
-use App\Domains\Integration\Models\AutomationService;
-use App\Domains\Integration\Models\AutomationTask;
+use App\Domains\Automation\Models\AutomationRecipe;
+use App\Domains\Automation\Models\AutomationService;
+use App\Domains\Automation\Models\AutomationTask;
 use App\Domains\Integration\Models\Integration;
 use App\Domains\Integration\Services\GoogleService;
 use Illuminate\Http\Request;
