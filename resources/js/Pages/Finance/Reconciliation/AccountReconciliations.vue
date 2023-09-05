@@ -95,15 +95,21 @@ onMounted(() => {
     <template #header>
       <FinanceSectionNav />
     </template>
+    <template #title>
+        <section class="flex items-center">
+            <h4
+                @click="router.visit(`/finance/accounts/${account.id}/`)"
+                title="reconciliations"
+                class="flex items-center ml-2 font-bold cursor-pointer text-secondary"
+            >
+            <IMdiWallet class="mr-2" />
+            <span>
+                {{ account.name }}
+            </span>
+            </h4>
+        </section>
+    </template>
     <FinanceTemplate title="Transactions" :accounts="accounts">
-      <div class="flex mt-4 space-x-4">
-        <AtBackgroundIconCard
-          class="w-full cursor-pointer text-body-1 bg-base-lvl-3"
-          v-for="stat in stats"
-          :value="formatMoney(stat)"
-        />
-      </div>
-
       <section class=" bg-base-lvl-3">
           <Component
             :is="listComponent"

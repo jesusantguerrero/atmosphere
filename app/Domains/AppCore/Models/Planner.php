@@ -3,7 +3,7 @@
 namespace App\Domains\AppCore\Models;
 
 use App\Concerns\SupportsDateFrame;
-use App\Domains\Integration\Services\LogerAutomationService;
+use App\Domains\Automation\Services\LogerAutomationService;
 use App\Events\AutomationEvent;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

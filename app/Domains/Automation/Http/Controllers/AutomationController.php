@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Domains\Automation\Http\Controllers;
 
-use App\Domains\Integration\Models\Automation;
-use App\Jobs\ProcessGmail;
-use App\Libraries\GoogleService;
+use App\Domains\Automation\Models\Automation;
+use App\Domains\Integration\Services\GoogleService;
+use Freesgen\Atmosphere\Http\InertiaController;
 
-class AutomationController extends BaseController
+class AutomationController extends InertiaController
 {
     public function __construct()
     {

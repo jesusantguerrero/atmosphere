@@ -2,13 +2,14 @@
 
 namespace App\Domains\Integration\Actions;
 
-use App\Domains\Integration\Models\Automation;
+use App\Domains\Automation\Concerns\AutomationActionContract;
+use App\Domains\Automation\Models\Automation;
 use App\Domains\Integration\Services\GoogleService;
 use Google\Service\Gmail as ServiceGmail;
 use Illuminate\Support\Facades\Log;
 use PhpMimeMailParser\Parser as EmailParser;
 
-class Gmail
+class GmailReceived implements AutomationActionContract
 {
     /**
      * Validate and create a new team for the given user.
@@ -16,9 +17,9 @@ class Gmail
      * @param  Automation  $automation
      * @return void
      */
-    public static function received(Automation $automation, $lastData = null, $task = null, $previousTask = null, $trigger = null)
+    public static function handle(Automation $automation, $lastData = null, $task = null, $previousTask = null, $trigger = null)
     {
-        $maxResults = 50;
+        $maxResults = 15;
         $track = json_decode($automation->track, true);
         $trackId = $track['historyId'] ?? 0;
         $config = json_decode($trigger->values);
@@ -30,6 +31,7 @@ class Gmail
         }
 
         $results = $service->users_threads->listUsersThreads("me", ['maxResults' => $maxResults, 'q' => "$condition"]);
+
         foreach ($results->getThreads() as $index => $thread) {
             echo "reading thread $index \n";
             $theadResponse = $service->users_threads->get("me", $thread->id, ['format' => 'MINIMAL']);
@@ -62,10 +64,9 @@ class Gmail
                     $previousTask = $tasks->first();
                     foreach ($tasks as $taskIndex => $task) {
                         if ($taskIndex !== 0) {
-                            $action = $task->name;
                             $actionEntity = $task->entity;
                             try {
-                                $payload = $actionEntity::$action($automation, $payload, $task, $previousTask, $tasks[0]);
+                                $payload = $actionEntity::handle($automation, $payload, $task, $previousTask, $tasks[0]);
                                 $previousTask = $task;
                             } catch (\Exception $e) {
                                 print_r($e->getMessage());
@@ -77,6 +78,21 @@ class Gmail
                 }
             }
         };
+    }
+
+    public function getName(): string
+    {
+        return "gmailReceived";
+    }
+
+    public function label(): string
+    {
+        return "New Gmail";
+    }
+
+    public function getDescription(): string
+    {
+        return "When a new email is received";
     }
 
     public static function parseEmail($raw)

@@ -1,10 +1,13 @@
 <?php
 
 use App\Domains\Transaction\Http\Controllers\ReconciliationController;
+use App\Http\Controllers\Finance\FinanceAccountController;
 use Illuminate\Support\Facades\Route;
 
 
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
+    Route::post('/finance/accounts/{account}/link', [FinanceAccountController::class, 'linkAccount']);
+
     Route::get('/finance/reconciliation/accounts/{account}', [ReconciliationController::class, 'create']);
     Route::post('/finance/reconciliation/accounts/{account}', [ReconciliationController::class, 'store']);
     Route::get('/finance/accounts/{account}/reconciliations', [ReconciliationController::class, 'accountReconciliations']);

@@ -19,9 +19,11 @@ declare module 'vue' {
     IMdiChevronLeft: typeof import('~icons/mdi/chevron-left')['default']
     IMdiChevronRight: typeof import('~icons/mdi/chevron-right')['default']
     IMdiClose: typeof import('~icons/mdi/close')['default']
+    IMdiEdit: typeof import('~icons/mdi/edit')['default']
     IMdiExport: typeof import('~icons/mdi/export')['default']
     IMdiFile: typeof import('~icons/mdi/file')['default']
     IMdiFilter: typeof import('~icons/mdi/filter')['default']
+    IMdiHistory: typeof import('~icons/mdi/history')['default']
     IMdiLink: typeof import('~icons/mdi/link')['default']
     IMdiMinus: typeof import('~icons/mdi/minus')['default']
     IMdiPencil: typeof import('~icons/mdi/pencil')['default']
@@ -32,5 +34,6 @@ declare module 'vue' {
     IMdiStarOutline: typeof import('~icons/mdi/star-outline')['default']
     IMdiSync: typeof import('~icons/mdi/sync')['default']
     IMdiTrash: typeof import('~icons/mdi/trash')['default']
+    IMdiWallet: typeof import('~icons/mdi/wallet')['default']
   }
 }

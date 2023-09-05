@@ -1,7 +1,9 @@
 <?php
 namespace App\Domains\Integration\Concerns;
 
-class TransactionDataDTO {
+use Spatie\LaravelData\Data;
+
+class TransactionDataDTO extends Data {
     public int $id;
     public string $date;
     public string $payee;

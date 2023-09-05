@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Domains\Integration\Models\Automation;
-use App\Domains\Integration\Services\LogerAutomationService;
+use App\Domains\Automation\Models\Automation;
+use App\Domains\Automation\Services\LogerAutomationService;
 use Illuminate\Console\Command;
 
 class AutomationCheck extends Command

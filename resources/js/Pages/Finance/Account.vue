@@ -38,16 +38,16 @@ interface CollectionData<T> {
 		data: T[]
 }
 const props = withDefaults(defineProps<{
-		transactions: ITransaction[];
-		stats: CollectionData<Record<string, number>>;
-		accounts: IAccount[];
-		categories: ICategory[],
-		serverSearchOptions: Partial<IServerSearchData>,
-		accountId?: number,
+    transactions: ITransaction[];
+    stats: CollectionData<Record<string, number>>;
+    accounts: IAccount[];
+    categories: ICategory[],
+    serverSearchOptions: Partial<IServerSearchData>,
+    accountId?: number,
 }>(), {
-		serverSearchOptions: () => {
-				return {}
-		}
+    serverSearchOptions: () => {
+            return {}
+    }
 });
 
 const isLoading = ref(false);
@@ -158,6 +158,18 @@ const reconciliation = () => {
         </div>
       </template>
     </FinanceSectionNav>
+  </template>
+  <template #title>
+    <section class="flex items-center">
+        <span>{{ selectedAccount.name }}</span>
+        <button
+            @click="router.visit(`/finance/accounts/${selectedAccount.id}/reconciliations/`)"
+            title="reconciliations"
+            class="inline-block ml-2 font-bold text-secondary"
+        >
+            <IMdiHistory />
+        </button>
+    </section>
   </template>
   <FinanceTemplate title="Transactions" :accounts="accounts">
       <section class="flex w-full mt-4 space-x-4 flex-nowrap">
