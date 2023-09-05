@@ -19,7 +19,6 @@ class ServiceController {
                 GoogleService::setTokens((object) $request->post('credentials'), $request->user());
                 return redirect('/integrations');
             } catch (Exception $e) {
-                dd($e->getMessage());
                 return redirect('/integrations')->with('flash', [
                     'banner' => $e->getMessage(),
                 ]);

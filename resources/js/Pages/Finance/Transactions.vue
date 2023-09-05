@@ -14,7 +14,7 @@ import IconBack from "@/Components/icons/IconBack.vue";
 
 import FinanceTemplate from "@/Pages/Finance/Partials/FinanceTemplate.vue";
 import FinanceSectionNav from "@/Pages/Finance/Partials/FinanceSectionNav.vue";
-import TransactionTemplate from "@/domains/transactions/components/TransactionTemplate.vue";
+import TransactionTable from "@/domains/transactions/components/TransactionTable.vue";
 import TransactionSearch from "@/domains/transactions/components/TransactionSearch.vue";
 import DraftButtons from "@/domains/transactions/components/DraftButtons.vue";
 
@@ -41,7 +41,7 @@ const showTransactionTable = computed(() => {
   return context.isMobile ? showAllTransactions.value : true;
 });
 const listComponent = computed(() => {
-  return context.isMobile ? TransactionSearch : TransactionTemplate;
+  return context.isMobile ? TransactionSearch : TransactionTable;
 });
 const sectionTitle = computed(() => {
   if (context.isMobile) {

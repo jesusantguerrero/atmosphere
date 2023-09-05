@@ -19,7 +19,7 @@ import BackgroundCard from "@/Components/molecules/BackgroundCard.vue";
 import FinanceTemplate from "./Partials/FinanceTemplate.vue";
 import FinanceSectionNav from "./Partials/FinanceSectionNav.vue";
 import TransactionSearch from "@/domains/transactions/components/TransactionSearch.vue";
-import TransactionTemplate from "@/domains/transactions/components/TransactionTemplate.vue";
+import TransactionTable from "@/domains/transactions/components/TransactionTable.vue";
 import DraftButtons from "@/domains/transactions/components/DraftButtons.vue";
 
 import { useTransactionModal } from "@/domains/transactions";
@@ -38,16 +38,16 @@ interface CollectionData<T> {
 		data: T[]
 }
 const props = withDefaults(defineProps<{
-		transactions: ITransaction[];
-		stats: CollectionData<Record<string, number>>;
-		accounts: IAccount[];
-		categories: ICategory[],
-		serverSearchOptions: Partial<IServerSearchData>,
-		accountId?: number,
+    transactions: ITransaction[];
+    stats: CollectionData<Record<string, number>>;
+    accounts: IAccount[];
+    categories: ICategory[],
+    serverSearchOptions: Partial<IServerSearchData>,
+    accountId?: number,
 }>(), {
-		serverSearchOptions: () => {
-				return {}
-		}
+    serverSearchOptions: () => {
+            return {}
+    }
 });
 
 const isLoading = ref(false);
@@ -63,7 +63,7 @@ const selectedAccount = computed(() => {
 
 const context = useAppContextStore();
 const listComponent = computed(() => {
-	return context.isMobile ? TransactionSearch : TransactionTemplate;
+	return context.isMobile ? TransactionSearch : TransactionTable;
 });
 
 const isDraft = computed(() => {
@@ -158,6 +158,18 @@ const reconciliation = () => {
         </div>
       </template>
     </FinanceSectionNav>
+  </template>
+  <template #title>
+    <section class="flex items-center">
+        <span>{{ selectedAccount.name }}</span>
+        <button
+            @click="router.visit(`/finance/accounts/${selectedAccount.id}/reconciliations/`)"
+            title="reconciliations"
+            class="inline-block ml-2 font-bold text-secondary"
+        >
+            <IMdiHistory />
+        </button>
+    </section>
   </template>
   <FinanceTemplate title="Transactions" :accounts="accounts">
       <section class="flex w-full mt-4 space-x-4 flex-nowrap">

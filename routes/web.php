@@ -1,10 +1,10 @@
 <?php
 
+use App\Domains\Integration\Http\Controllers\ApiIntegrationController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
 
 use App\Http\Controllers\Api\AccountApiController;
-use App\Http\Controllers\Api\AutomationController;
 use App\Http\Controllers\Api\CategoryApiController;
 use App\Http\Controllers\Api\CurrencyApiController;
 use App\Http\Controllers\Api\IngredientApiController;
@@ -12,7 +12,6 @@ use App\Http\Controllers\Api\LabelApiController;
 use App\Http\Controllers\Api\PayeeApiController;
 use App\Http\Controllers\Api\RecipeApiController;
 use App\Http\Controllers\Api\TimezonesApiController;
-
 use App\Http\Controllers\System\DashboardController;
 use App\Http\Controllers\System\ServiceController;
 use App\Http\Controllers\System\IntegrationController;
@@ -59,6 +58,7 @@ Route::resource('onboarding', OnboardingController::class)->middleware(['auth:sa
 // Automation Services
 Route::get('/services/accept-oauth', [ServiceController::class, 'acceptOauth']);
 
+Route::group([], app_path('/Domains/Automation/routes.php'));
 Route::group([], app_path('/Domains/Housing/routes.php'));
 Route::group([], app_path('/Domains/LogerProfile/routes.php'));
 Route::group([], app_path('/Domains/Transaction/routes.php'));
@@ -189,12 +189,10 @@ Route::middleware(['auth:sanctum'])->prefix('/api')->name('api.')->group(functio
 });
 
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('/api')->name('api.')->group(function () {
-    //  automation routes
-    Route::controller(AutomationController::class)->group(function () {
-        Route::apiResource('automation', AutomationController::class);
-        Route::post('/automation/{id}/run', 'run');
-        Route::post('/automation/run-all', 'runAll');
-    });
+
+    Route::apiResource('integrations', ApiIntegrationController::class);
+
+    Route::get('/services/messages', [ServiceController::class, 'getMessages']);
 
     //  accounts and transactions
     Route::resource('payees', PayeeApiController::class);

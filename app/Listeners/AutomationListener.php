@@ -2,8 +2,8 @@
 
 namespace App\Listeners;
 
-use App\Domains\Integration\Models\Automation;
-use App\Domains\Integration\Services\LogerAutomationService;
+use App\Domains\Automation\Models\Automation;
+use App\Domains\Automation\Services\LogerAutomationService;
 use App\Events\AutomationEvent;
 use Illuminate\Contracts\Queue\ShouldQueue;
 

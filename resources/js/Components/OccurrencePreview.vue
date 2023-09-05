@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 
-import TransactionsTable from '@/domains/transactions/components/TransactionsTable.vue';
+import TransactionsTable from '@/domains/transactions/components/TransactionsList.vue';
 import LogerButton from './atoms/LogerButton.vue';
 
 import { transactionDBToTransaction } from '@/domains/transactions';

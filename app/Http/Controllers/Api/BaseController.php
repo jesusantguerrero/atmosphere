@@ -112,7 +112,7 @@ abstract class BaseController extends Controller
        return $request->validate($this->validationRules);
     }
 
-     /**
+    /**
      * Remove the specified resource from storage.
      *
      * @param  int  $id

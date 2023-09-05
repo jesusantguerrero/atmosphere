@@ -28,6 +28,7 @@ const props = withDefaults(
     responsive?: boolean;
     tableClass?: string;
     layout?: string;
+    height?: number
   }>(),
   {
     summaryMethod: (data: { columns: TableColumnCtx<any>[]; data: any[] }) => {
@@ -93,7 +94,7 @@ defineExpose({
   <section class="ic-base-table">
     <!-- Header and top pagination -->
     <section
-      class="flex justify-between items-center px-4 md:px-0 bg-base-lvl-3"
+      class="flex items-center justify-between px-4 md:px-0 bg-base-lvl-3"
       :class="{ 'py-4': config?.search }"
     >
       <div class="w-full md:px-4" v-if="config?.search">
@@ -101,7 +102,7 @@ defineExpose({
       </div>
       <ElPagination
         v-if="config?.pagination && pagination"
-        class="w-full flex justify-end pr-4 py-4"
+        class="flex justify-end w-full py-4 pr-4"
         :background="!isMobile"
         @current-change="$emit('paginate', $event)"
         @size-change="$emit('size-change', $event)"
@@ -129,6 +130,7 @@ defineExpose({
         :show-summary="showSummary"
         :summary-method="summaryMethod"
         :data="tableData"
+        :height="height"
         :header-cell-class-name="getHeaderClass"
         @sort-change="$emit('sort', $event)"
         @row-click="$emit('row-click', $event)"
@@ -154,7 +156,7 @@ defineExpose({
           :class="[col.headerClass]"
         >
           <template v-slot="scope" v-if="$slots[col.name] || col?.render || col.formula">
-            <slot :name="col.name" v-bind:scope="scope">
+            <slot :name="col.name" v-bind:scope="scope" :col="col">
               <CustomCell
                 v-if="col.render"
                 :class="col.class"
@@ -168,13 +170,13 @@ defineExpose({
     </section>
     <!-- Footer and pagination -->
     <section
-      class="flex justify-between items-center py-4 bg-base-lvl-3"
+      class="flex items-center justify-between py-4 bg-base-lvl-3"
       v-if="config?.pagination && pagination"
     >
       <div class="w-full"></div>
-      <div class="w-full flex justify-end">
+      <div class="flex justify-end w-full">
         <ElPagination
-          class="w-full flex justify-end pr-4"
+          class="flex justify-end w-full pr-4"
           :background="!isMobile"
           @current-change="$emit('paginate', $event)"
           @size-change="$emit('size-change', $event)"

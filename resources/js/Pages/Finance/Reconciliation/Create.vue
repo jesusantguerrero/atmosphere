@@ -11,7 +11,7 @@ import LogerInput from "@/Components/atoms/LogerInput.vue";
 import FinanceTemplate from "../Partials/FinanceTemplate.vue";
 import FinanceSectionNav from "../Partials/FinanceSectionNav.vue";
 import TransactionSearch from "@/domains/transactions/components/TransactionSearch.vue";
-import TransactionTemplate from "@/domains/transactions/components/TransactionTemplate.vue";
+import TransactionTable from "@/domains/transactions/components/TransactionTable.vue";
 
 import { useTransactionModal } from "@/domains/transactions";
 // import { IServerSearchData, useServerSearch } from "@/composables/useServerSearch";
@@ -53,7 +53,7 @@ const selectedAccount = computed(() => {
 
 const context = useAppContextStore();
 const listComponent = computed(() => {
-  return context.isMobile ? TransactionSearch : TransactionTemplate;
+  return context.isMobile ? TransactionSearch : TransactionTable;
 });
 
 const removeTransaction = (transaction: ITransaction) => {
@@ -125,11 +125,11 @@ const toggleEditing = () => {
 
       <section class="mt-4 bg-base-lvl-3">
         <header class="flex items-center justify-between px-6 py-2">
-          
+
               <AtField label="transaction matched">
                  0 of {{  transactions.length }}
               </AtField>
-         
+
               <AtField label="statement balance">
                 <LogerInput
                     ref="input"
@@ -138,7 +138,7 @@ const toggleEditing = () => {
                     :number-format="true"
                     :disabled="!isEditing"
                     @blur="isEditing = false"
-                   
+
                 >
                     <template #prefix>
                         {{ account.currency_code }}

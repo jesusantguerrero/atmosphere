@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, computed, inject } from "vue";
+import { reactive, computed, inject, ref } from "vue";
 // @ts-expect-error: no definitions
 import { AtField } from "atmosphere-ui";
 import { NSelect } from "naive-ui";
@@ -7,6 +7,7 @@ import { NSelect } from "naive-ui";
 import InputMoney from "@/Components/atoms/InputMoney.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 import LogerApiSimpleSelect from "@/Components/organisms/LogerApiSimpleSelect.vue";
+import CategoryPicker from "./CategoryPicker.vue";
 
 const props = defineProps({
   items: {
@@ -24,6 +25,9 @@ const props = defineProps({
   isTransfer: {
     type: Boolean,
   },
+  fullHeight: {
+    type: Boolean
+  }
 });
 const accountLabel = computed(() => {
   return !props.isTransfer ? "Account" : "Source";
@@ -74,9 +78,12 @@ defineExpose({
     return splits;
   },
   reset() {
-    splits.splice(0, splits.length, {...defaultRow})
+    const items = props.items.at?.(0) ?? {}
+    splits.splice(0, splits.length, {...items})
   }
 });
+
+const isPickerOpen = ref(false);
 </script>
 
 
@@ -93,6 +100,7 @@ defineExpose({
           <IMdiTrash />
         </button>
       </header>
+
       <AtField
         :label="accountLabel"
         v-if="!index"
@@ -144,8 +152,26 @@ defineExpose({
             </template>
           </InputMoney>
         </AtField>
+        <header v-if="fullHeight" class="flex justify-between px-4 py-3">
+            <CategoryPicker
+              class="w-full"
+              v-model="split[categoryField]"
+              v-model:isPickerOpen="isPickerOpen"
+              :placeholder="`Choose ${categoryLabel}`"
+              :options="categoryAccounts"
+            />
+
+            <AtField v-if="!isPickerOpen">
+              <InputMoney :number-format="true" v-model="split.amount">
+                <template #prefix>
+                  <span class="flex items-center pl-2"> RD$ </span>
+                </template>
+              </InputMoney>
+            </AtField>
+          </header>
       </div>
     </div>
+
     <LogerButton variant="neutral" @click="addSplit()" v-if="!isTransfer">
       <IMdiCallSplit />
       Add split

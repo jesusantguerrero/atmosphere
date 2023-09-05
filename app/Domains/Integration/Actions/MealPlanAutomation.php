@@ -2,9 +2,9 @@
 
 namespace App\Domains\Integration\Actions;
 
-use App\Domains\Integration\Models\Automation;
-use App\Domains\Integration\Models\AutomationTask;
-use App\Domains\Integration\Models\AutomationTaskAction;
+use App\Domains\Automation\Models\Automation;
+use App\Domains\Automation\Models\AutomationTask;
+use App\Domains\Automation\Models\AutomationTaskAction;
 use App\Domains\Meal\Models\MealPlan;
 use App\Domains\Meal\Services\MealService;
 use App\Helpers\FormulaHelper;

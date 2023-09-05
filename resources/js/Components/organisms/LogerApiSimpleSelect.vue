@@ -89,7 +89,8 @@ const fetchInitialValue = (id: string) => {
     window.axios.get(`${props.endpoint}/${id}`).then(({ data }) => {
         options.value = resultParser([data?.data || data])
         .filter( value => value.label);
-        emitInput(id, data)
+
+        emitInput(id, Array.isArray(data) ? null : data)
         isLoading.value = false
     })
 }

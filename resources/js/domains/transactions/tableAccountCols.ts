@@ -3,7 +3,7 @@ import { h } from "vue"
 import IconTransfer from "@/Components/icons/IconTransfer.vue";
 import { Link } from "@inertiajs/vue3";
 
-export const tableAccountCols = (accountId: number, showSelects: false) => [
+export const tableAccountCols = (accountId: number, showSelects?: false) => [
     ...( showSelects ? [{
         label: "",
         name: "selection",
@@ -17,7 +17,8 @@ export const tableAccountCols = (accountId: number, showSelects: false) => [
     {
         label: "Date",
         name: "date",
-        width: 200,
+        width: 150,
+        align: "center",
         class: 'text-center',
         headerClass: 'text-center',
         render(row: any) {
@@ -33,7 +34,6 @@ export const tableAccountCols = (accountId: number, showSelects: false) => [
     {
         label: "Payee",
         name: "payee",
-        width: 400,
         class: 'w-full',
         render(row: any) {
             try {
@@ -51,6 +51,9 @@ export const tableAccountCols = (accountId: number, showSelects: false) => [
     {
         label: "Category",
         name: "category",
+        width: 150,
+        align: 'center',
+        class: 'text-center',
         render(row: any) {
             return row.category?.name
         }
@@ -64,13 +67,14 @@ export const tableAccountCols = (accountId: number, showSelects: false) => [
         label: "Amount",
         name: "total",
         type: "custom",
+        align: 'right',
         class: 'text-right',
+        width: 200,
         headerClass: 'text-right',
     },
     {
         label: "",
         name: "actions",
-        width: 300,
         type: "custom",
         class: 'text-right'
     },

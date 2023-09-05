@@ -2,7 +2,7 @@
 import { reactive, ref } from "vue";
 import { router } from "@inertiajs/vue3";
 
-import TransactionsTable from "@/domains/transactions/components/TransactionsTable.vue";
+import TransactionsTable from "@/domains/transactions/components/TransactionsList.vue";
 import { ITransaction } from "@/domains/transactions/models/transactions";
 
 import { fromDBToAllAccounts, transactionDBToTransaction } from "@/domains/transactions";

@@ -29,9 +29,11 @@ trait HasEnrichedRequest {
 
     protected function getFilterDates($filters = [], $subCount=0) {
         $settings = Setting::getByTeam(auth()->user()->current_team_id);
+        $timeZone = $settings["team_timezone"] ?? config('app.timezone');
+
         $dates = isset($filters['date']) ? explode("~", $filters['date']) : [
-            Carbon::now()->setTimezone($settings["team_timezone"])->subMonths($subCount)->startOfMonth()->format('Y-m-d'),
-            Carbon::now()->setTimezone($settings["team_timezone"])->endOfMonth()->format('Y-m-d')
+            Carbon::now()->setTimezone($timeZone)->subMonths($subCount)->startOfMonth()->format('Y-m-d'),
+            Carbon::now()->setTimezone($timeZone)->endOfMonth()->format('Y-m-d')
         ];
         return $dates;
     }

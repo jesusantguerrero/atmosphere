@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { format, parseISO } from "date-fns";
-import { reactive, toRefs, watch, computed, inject, ref } from "vue";
+import { reactive, toRefs, watch, computed, inject, ref , nextTick} from "vue";
 import { useForm } from "@inertiajs/vue3";
 import { AtField, AtButton, AtFieldCheck, AtInput } from "atmosphere-ui";
 import { NSelect, NDatePicker } from "naive-ui";
@@ -113,82 +113,6 @@ const accountOptions = inject("accountsOptions", []);
 
 const gridSplitsRef = ref();
 
-const onSubmit = (addAnother = false) => {
-  const actions = {
-    transaction: {
-      save: {
-        method: "post",
-        url: () => route("transactions.store"),
-      },
-      update: {
-        method: "put",
-        url: () => route("transactions.update", props.transactionData),
-      },
-    },
-    recurrence: {
-      save: {
-        method: "post",
-        url: () => route("transactions.store-planned"),
-      },
-      update: {
-        method: "update",
-        url: () => route("transactions.store-planned"),
-      },
-    },
-  };
-  const method = props.transactionData && props.transactionData.id ? "update" : "save";
-  const actionType = isRecurrence.value ? "recurrence" : "transaction";
-  const action = actions[actionType][method];
-  const splits = gridSplitsRef.value.getSplits();
-
-  if (!splits.every((split) => split.amount)) {
-    alert("Every split most have an amount");
-    return;
-  }
-
-  state.form
-    .transform((form) => {
-      const data = {
-        ...cloneDeep(form),
-        resource_type_id: "MANUAL",
-        total: form.total,
-        date: format(new Date(form.date), "yyyy-MM-dd"),
-        status: "verified",
-        direction: form.is_transfer ? TRANSACTION_DIRECTIONS.WITHDRAW : form.direction,
-        category_id: form.is_transfer ? null : form.category_id,
-        ...state.schedule_settings,
-      };
-
-      data.category_id = splits[0].category_id;
-      data.payee_id = splits[0].payee_id;
-      data.counter_account_id = form.is_transfer ? splits[0].counter_account_id : null;
-      data.account_id = splits[0].account_id;
-      data.total = splits[0].amount;
-      data.has_splits = false;
-
-      if (splits.length > 1) {
-        data.items = splits;
-        data.has_splits = true;
-      }
-
-      return data;
-    })
-    .submit(action.method, action.url(), {
-      onBefore(evt) {
-        if (!evt.data.total) {
-          alert("The balance should be more than 0");
-        }
-      },
-      onSuccess: () => {
-        state.form.reset();
-        gridSplitsRef.value.reset();
-        if (!addAnother) {
-            emit("close");
-        }
-      },
-    });
-};
-
 watch(
   () => props.transactionData,
   () => {
@@ -237,10 +161,102 @@ watch(
   }
 );
 
+const resetSplits = (lastSaved: Record<string, any>) => {
+    splits.value = [{
+        payee_id: '',
+        payee_label: '',
+        category_id: '',
+        category: '',
+        counter_account_id:  '',
+        account_id: lastSaved.account_id,
+        amount: 0,
+    }]
+}
+const onSubmit = (addAnother = false) => {
+  const actions = {
+    transaction: {
+      save: {
+        method: "post",
+        url: () => route("transactions.store"),
+      },
+      update: {
+        method: "put",
+        url: () => route("transactions.update", props.transactionData),
+      },
+    },
+    recurrence: {
+      save: {
+        method: "post",
+        url: () => route("transactions.store-planned"),
+      },
+      update: {
+        method: "update",
+        url: () => route("transactions.store-planned"),
+      },
+    },
+  };
+  const method = props.transactionData && props.transactionData.id ? "update" : "save";
+  const actionType = isRecurrence.value ? "recurrence" : "transaction";
+  const action = actions[actionType][method];
+  const splitItems = gridSplitsRef.value.getSplits();
+  let lastSaved: null| Record<string, any> = null
+
+  if (!splitItems.every((split: Record<string, string>) => split.amount)) {
+    alert("Every split most have an amount");
+    return;
+  }
+
+  state.form
+    .transform((form) => {
+      const data = {
+        ...cloneDeep(form),
+        resource_type_id: "MANUAL",
+        total: form.total,
+        date: format(new Date(form.date), "yyyy-MM-dd"),
+        status: "verified",
+        direction: form.is_transfer ? TRANSACTION_DIRECTIONS.WITHDRAW : form.direction,
+        category_id: form.is_transfer ? null : form.category_id,
+        ...state.schedule_settings,
+      };
+
+      const splitItem = splitItems[0]
+      data.category_id = splitItem.category_id;
+      data.payee_id = splitItem.payee_id;
+      data.counter_account_id = form.is_transfer ? splitItem.counter_account_id : null;
+      data.account_id = splitItem.account_id;
+      data.total = splitItem.amount;
+      data.has_splits = false;
+
+      if (splitItems.length > 1) {
+        data.items = splitItems;
+        data.has_splits = true;
+      }
+      lastSaved = data;
+      return data;
+    })
+    .submit(action.method, action.url(), {
+      onBefore(evt) {
+        if (!evt.data.total) {
+          alert("The balance should be more than 0");
+        }
+      },
+      onSuccess: () => {
+        state.form.reset('description', 'category_id' , 'payee_id', 'payee_label', 'total', 'has_splits');
+        resetSplits(lastSaved);
+        nextTick(() => {
+            const items = splits.value;
+            gridSplitsRef.value.reset(items);
+        })
+        if (!addAnother) {
+            emit("close");
+        }
+      },
+    });
+};
+
+
 const isRecurrence = ref(props.recurrence);
 const { form, schedule_settings } = toRefs(state);
-
-const isPickerOpen = ref(false);
 
 const saveText = computed(() => {
     return !props.transactionData?.id ? 'save' : 'update'
@@ -266,24 +282,6 @@ const saveText = computed(() => {
         <div class="mt-2">
           <slot name="content">
             <div>
-              <header v-if="fullHeight" class="flex justify-between px-4 py-3">
-                <CategoryPicker
-                  class="w-full"
-                  v-model="form[categoryField]"
-                  v-model:isPickerOpen="isPickerOpen"
-                  :placeholder="`Choose ${categoryLabel}`"
-                  :options="categoryOptions"
-                />
-
-                <AtField v-if="!isPickerOpen">
-                  <LogerInput :number-format="true" v-model="form.total">
-                    <template #prefix>
-                      <span class="flex items-center pl-2"> RD$ </span>
-                    </template>
-                  </LogerInput>
-                </AtField>
-              </header>
-
               <div class="px-4 md:flex md:space-x-2 md:px-0">
                 <AtField
                   label="Date"
@@ -299,7 +297,7 @@ const saveText = computed(() => {
 
                 <AtField
                   label="Description"
-                  class="flex justify-between w-full md:w-8/12 md:block md:space-x-0"
+                  class="flex justify-between w-full space-x-2 md:w-8/12 md:block md:space-x-0"
                 >
                   <LogerInput v-model="form.description" class="w-48 md:w-full" />
                 </AtField>
@@ -311,6 +309,7 @@ const saveText = computed(() => {
                 :is-transfer="isTransfer"
                 :categories="categoryOptions"
                 :accounts="accountOptions"
+                :full-height="fullHeight"
               />
             </div>
 
@@ -377,7 +376,7 @@ const saveText = computed(() => {
     >
       <section class="flex">
         <LogerButtonTab class="hidden rounded bg-base"> Use template</LogerButtonTab>
-        <div class="flex space-x-2">
+        <div class="flex hidden space-x-2">
           <AtFieldCheck v-model="isRecurrence" label="Set recurrence" />
         </div>
       </section>

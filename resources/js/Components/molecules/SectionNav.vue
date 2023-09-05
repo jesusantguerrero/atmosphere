@@ -60,7 +60,7 @@ const handleOptionClick = (url: string) => {
 
 
 <template>
-<div class="flex justify-between w-full pr-8 overflow-auto md:overflow-hidden">
+<div class="flex justify-between w-full h-12 pr-8 overflow-auto md:overflow-hidden">
     <SubmenuTab
         v-for="section in visibleTabs"
         @click="handleClick(section)"

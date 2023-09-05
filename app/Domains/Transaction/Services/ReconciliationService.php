@@ -5,9 +5,12 @@ namespace App\Domains\Transaction\Services;
 use App\Domains\AppCore\Models\Category;
 use App\Domains\Transaction\Data\ReconciliationParamsData;
 use App\Domains\Transaction\Models\Transaction;
+use App\Domains\Transaction\Models\TransactionLine;
 use Exception;
 use Insane\Journal\Models\Accounting\Reconciliation;
+use Insane\Journal\Models\Accounting\ReconciliationEntry;
 use Insane\Journal\Models\Core\Account;
+use Insane\Journal\Models\Core\Transaction as CoreTransaction;
 
 class ReconciliationService
 {
@@ -20,9 +23,11 @@ class ReconciliationService
 
     public function create(Account $account, ReconciliationParamsData $params) {
         $transactions = $account->transactionsToReconcile(null, $params->date);
-        if (!count($transactions)) {
-            throw new Exception("no transactions matched");
-        }
+
+        // if (!count($transactions)) {
+        //     throw new Exception("no transactions matched");
+        // }
+
         $diff = $account->balance - $params->balance;
         $reconciliation = Reconciliation::create([
             'user_id' => $params->user_id,
@@ -57,6 +62,21 @@ class ReconciliationService
         return $reconciliation;
     }
 
+    public function delete(Reconciliation $reconciliation) {
+        $entries = $reconciliation->entries()->select(['id', 'transaction_line_id'])->get();
+
+        TransactionLine::whereIn('id', $entries->pluck('transaction_line_id'))
+        ->update([
+            'matched' => false
+        ]);
+
+        $reconciliation->entries()->whereIn('id', $entries->pluck('id'))->delete();
+
+        $reconciliation->delete();
+
+        return $reconciliation;
+    }
+
     public function saveAdjustment(Reconciliation $reconciliation) {
         $transaction = Transaction::createTransaction([
             'team_id' => $reconciliation->team_id,
@@ -76,5 +96,35 @@ class ReconciliationService
 
         $reconciliation->addEntry($transaction->lines()->select(['id', 'transaction_id'])->where('account_id', $reconciliation->account_id)->first());
         $reconciliation->checkStatus();
+    }
+
+
+    public function checkLine(Reconciliation $reconciliation, ReconciliationEntry $line, bool $matched = false) {
+        $reconciliation->entries()->where("id", $line->id)->update([
+            "matched" => $matched
+        ]);
+
+        return $reconciliation;
+    }
+
+    public function syncTransactions(Reconciliation $reconciliation) {
+        $extraTransactions = $reconciliation->account->transactionsToReconcile(null, $reconciliation->date);
+        $reconciliation->addEntries($extraTransactions->toArray());
+        $reconciliation->checkStatus();
+
+        return $reconciliation;
+    }
+
+    public function checkOpenReconciliation(Account $account, Transaction|CoreTransaction $transaction) {
+        $reconciliation = Reconciliation::where([
+            'account_id' => $account->id,
+            'status' => Reconciliation::STATUS_PENDING,
+        ])
+        ->where('date', '>=', $transaction->date)
+        ->first();
+
+        if (!$reconciliation) return;
+
+        return $this->syncTransactions($reconciliation);
     }
 }
