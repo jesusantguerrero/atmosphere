@@ -63,7 +63,7 @@ class BHDNotification implements MailToTransaction
                 "payee" => $bhdOutput['seller'],
                 'category' => '',
                 'categoryGroup' => '',
-                'description' => $bhdOutput['description'],
+                'description' => $bhdOutput['product'].":".$bhdOutput['description'],
                 "amount" => $bhdOutput['amount']->amount * 1,
                 "currencyCode" => $bhdOutput['amount']->currencyCode,
         ]);
