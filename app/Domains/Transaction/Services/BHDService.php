@@ -8,6 +8,8 @@ use App\Domains\Automation\Models\Automation;
 use App\Domains\Integration\Actions\BHD;
 use App\Domains\Integration\Actions\GmailReceived;
 use App\Domains\Integration\Actions\TransactionCreateEntry;
+use App\Domains\Transaction\Models\Transaction;
+use Exception;
 use Insane\Journal\Models\Core\Account;
 
 class BHDService {
@@ -16,46 +18,68 @@ class BHDService {
     const CONDITION_SUBJECT = "subject";
     const CONDITION_INCLUDES = "includes";
     const CONDITION_CUSTOM = "custom";
-    const EMAIL_ALERT = "alert.bhd.do";
+    const EMAIL_ALERT = "alertas@bhd.com.do";
+    const EMAIL_NOTIFICATION = "notificaciones@bhd.com.do";
 
     public static function parseCurrency($bhdCurrencyCode) {
-        $BHD_CURRENCY_CODES = [
-            'USD' => 'USD',
-            'RD' => 'DOP',
-        ];
-        return $BHD_CURRENCY_CODES[$bhdCurrencyCode];
+        try {
+            $BHD_CURRENCY_CODES = [
+                'USD' => 'USD',
+                'RD' => 'DOP',
+            ];
+
+            return $BHD_CURRENCY_CODES[$bhdCurrencyCode];
+        } catch (Exception) {
+            dd($bhdCurrencyCode, "The code");
+        }
     }
 
     public static function parseTypes($type) {
         $types = [
-            'Compra' => 1
+            'Compra' => 1,
+            "compra" => 1
         ];
 
         return  $types[$type];
     }
 
     public function linkAccount(Account $account, $serviceId, $integrationId) {
-        $builder = AutomationBuilder::make(new AutomationData(
+        $alertAutomation = AutomationBuilder::make(new AutomationData(
             $account->team_id,
             $account->user_id,
             $serviceId,
             $integrationId
 
-        ));
-
-        $builder
+        ))
         ->addAction(new GmailReceived(), AutomationTaskType::TRIGGER, [
-            "conditionType" => BHDService::CONDITION_FROM,
-            "value" => BHDService::EMAIL_ALERT
+            "values" => [
+                "conditionType" => BHDService::CONDITION_FROM,
+                // "value" => implode(",", [BHDService::EMAIL_ALERT, BHDService::EMAIL_NOTIFICATION])
+                "value" => BHDService::EMAIL_ALERT
+            ]
         ])
         ->addAction(new BHD(), AutomationTaskType::COMPONENT, [])
         ->addAction(new TransactionCreateEntry(), AutomationTaskType::ACTION, [
-            'account_id' => $account->id
+            "values" => [
+                'account_id' => $account->id,
+                'date' => '${date}',
+                'currency_code' => '${currencyCode}',
+                'category_id' => '',
+                'description' => '${description}',
+                'direction' => Transaction::DIRECTION_CREDIT,
+                'total' => '${amount}',
+                'items' => '',
+                'payee' => '${payee}',
+                'metaData' => ''
+            ]
         ]);
 
-        $builderData = $builder->getSchema();
-        // dd($builderData);
-        $automation = Automation::create($builderData);
+        $builderData = $alertAutomation->getSchema();
+        $automation = Automation::create([
+            ...$builderData,
+            "automatable_id" => $account->id,
+            "automatable_type" => get_class($account)
+        ]);
         $automation->saveTasks($builderData['tasks']);
     }
 }

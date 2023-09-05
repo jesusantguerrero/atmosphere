@@ -5,6 +5,8 @@ namespace App\Domains\Integration\Actions;
 use App\Domains\Automation\Concerns\AutomationActionContract;
 use App\Domains\Automation\Models\Automation;
 use App\Domains\Automation\Models\AutomationTaskAction;
+use Exception;
+use Symfony\Component\DomCrawler\Crawler;
 
 class BHD implements AutomationActionContract
 {
@@ -17,11 +19,16 @@ class BHD implements AutomationActionContract
     )
     {
         $type = self::getMessageType($payload);
+        try {
+            $transaction = match ($type) {
+                 'alert'=> self::parseAlert($automation, $payload, $task, $previousTask, $trigger),
+                 'notification'=> self::parseNotification($automation, $payload, $task, $previousTask, $trigger),
+            };
+            return $transaction?->toArray();
+        } catch (Exception $e) {
+            dd("hola", $e);
+        }
 
-        return match ($type) {
-             'alert'=> self::parseAlert($automation, $payload, $task, $previousTask, $trigger),
-             'notification'=> self::parseNotification($automation, $payload, $task, $previousTask, $trigger),
-        };
     }
 
     public function getName(): string
@@ -55,7 +62,7 @@ class BHD implements AutomationActionContract
     )
     {
 
-        return  (new BHDAlert())->handle($automation, $payload);
+        return (new BHDAlert())->handle($automation, $payload);
     }
 
     /**
@@ -78,8 +85,17 @@ class BHD implements AutomationActionContract
     }
 
 
-    public static function getMessageType() {
+    public static function getMessageType($mail) {
+        try {
+            $body = new Crawler($mail['message']);
+            $tdValues = $body->filter("[class*=table_trans_body] td")->each(function (Crawler $node) {
+                return $node->text();
+            });
 
+            return empty($tdValues) ? 'notification' : 'alert';
+        } catch (Exception) {
+            return 'notification';
+        }
     }
 
 }

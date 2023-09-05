@@ -1,9 +1,9 @@
 <?php
 
+use App\Domains\Automation\Http\Controllers\AutomationController;
 use App\Domains\Automation\Http\Controllers\AutomationRecipeController;
 use App\Domains\Automation\Http\Controllers\AutomationServiceController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AutomationController;
 
 /**************************************************************************************
  *                                  API Section

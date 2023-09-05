@@ -2,6 +2,7 @@
 
 namespace App\Domains\Integration\Models;
 
+use App\Domains\Automation\Models\Automation;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 

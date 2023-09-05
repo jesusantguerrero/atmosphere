@@ -8,7 +8,19 @@ use Illuminate\Database\Eloquent\Model;
 class Automation extends Model
 {
     use HasFactory;
-    protected $fillable = ['team_id', 'user_id', 'trigger_id', 'integration_id', 'name', 'description', 'entity', 'sentence', 'track'];
+    protected $fillable = [
+        'team_id',
+        'user_id',
+        "automatable_id",
+        "automatable_type",
+        'trigger_id',
+        'integration_id',
+        'name',
+        'description',
+        'entity',
+        'sentence',
+        'track'
+    ];
     public function recipe() {
         return $this->belongsTo('App\Models\Daily\AutomationRecipe', 'automation_recipe_id', 'id');
     }

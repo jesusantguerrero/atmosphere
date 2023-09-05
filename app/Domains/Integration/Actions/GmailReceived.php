@@ -19,7 +19,7 @@ class GmailReceived implements AutomationActionContract
      */
     public static function handle(Automation $automation, $lastData = null, $task = null, $previousTask = null, $trigger = null)
     {
-        $maxResults = 50;
+        $maxResults = 15;
         $track = json_decode($automation->track, true);
         $trackId = $track['historyId'] ?? 0;
         $config = json_decode($trigger->values);
@@ -31,6 +31,7 @@ class GmailReceived implements AutomationActionContract
         }
 
         $results = $service->users_threads->listUsersThreads("me", ['maxResults' => $maxResults, 'q' => "$condition"]);
+
         foreach ($results->getThreads() as $index => $thread) {
             echo "reading thread $index \n";
             $theadResponse = $service->users_threads->get("me", $thread->id, ['format' => 'MINIMAL']);
@@ -63,10 +64,9 @@ class GmailReceived implements AutomationActionContract
                     $previousTask = $tasks->first();
                     foreach ($tasks as $taskIndex => $task) {
                         if ($taskIndex !== 0) {
-                            $action = $task->name;
                             $actionEntity = $task->entity;
                             try {
-                                $payload = $actionEntity::$action($automation, $payload, $task, $previousTask, $tasks[0]);
+                                $payload = $actionEntity::handle($automation, $payload, $task, $previousTask, $tasks[0]);
                                 $previousTask = $task;
                             } catch (\Exception $e) {
                                 print_r($e->getMessage());

@@ -6,6 +6,7 @@ use App\Domains\Automation\Models\Automation;
 use App\Domains\Integration\Concerns\MailToTransaction;
 use App\Domains\Integration\Concerns\TransactionDataDTO;
 use App\Domains\Transaction\Services\YNABService;
+use Illuminate\Support\Carbon;
 use Symfony\Component\DomCrawler\Crawler;
 
 class BHDNotification implements MailToTransaction
@@ -53,15 +54,16 @@ class BHDNotification implements MailToTransaction
         ];
 
         foreach ($tableIds as $fieldName => $field) {
-            $bhdOutput[$field['name']] = $this->{$field['processor']}($body->filter("[id*=${fieldName}")->first()->text());
+            $bhdOutput[$field['name']] = $this->{$field['processor']}($body->filter("[id*=${fieldName}]")->first()->text());
         }
+
         return new TransactionDataDTO([
-                "id" => $mail['id'],
+                "id" => (int) $mail['id'],
                 "date" => $bhdOutput['date'],
                 "payee" => $bhdOutput['seller'],
                 'category' => '',
                 'categoryGroup' => '',
-                'description' => $bhdOutput['product'],
+                'description' => $bhdOutput['description'],
                 "amount" => $bhdOutput['amount']->amount * 1,
                 "currencyCode" => $bhdOutput['amount']->currencyCode,
         ]);
@@ -79,7 +81,8 @@ class BHDNotification implements MailToTransaction
 
     public function processDate($value)
     {
-        return Date('Y-m-d', strtotime($value));
+        $date = substr($value, 0, 10);
+        return Carbon::createFromFormat("d/m/Y", $date)->format("Y-m-d");
     }
 
     public function processType($value)

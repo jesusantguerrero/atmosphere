@@ -55,20 +55,9 @@ const integrationOptions = computed(() => {
     });
 })
 
-const prepareForm = () => {
-    const formData = { ...form.data() };
-
-    formData.config = {};
-    if (form.integration_id) {
-        formData.integration_id = formData.integration_id;
-    }
-
-    return formData;
-}
 
 const submit = () => {
-    const formData = prepareForm();
-    router.post(`/finance/accounts/${props.account.id}/link/`, formData, {
+    form.post(`/finance/accounts/${props.account.id}/link/`, {
         preserveScroll: true,
         preserveState: true,
         onSuccess() {

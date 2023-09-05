@@ -26,14 +26,14 @@ class BHDAlert implements MailToTransaction
 
 
         return new TransactionDataDTO([
-            "id" => $mail['id'],
+            "id" => (int) $mail['id'],
             "date" => Date('Y-m-d', strtotime($mail['date'])),
             "payee" => $tdValues[3],
             'category' => '',
             'categoryGroup' => '',
             'description' => $product,
             "amount" => $total * $type,
-            "currencyCode" => BHDService::parseCurrency([$tdValues[1]]),
+            "currencyCode" => BHDService::parseCurrency($tdValues[1]),
         ]);
     }
 
