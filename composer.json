@@ -82,7 +82,7 @@
         },
         "google/apiclient-services": [
             "Gmail",
-            "Oauth2"
+            "Auth"
         ]
     },
     "config": {

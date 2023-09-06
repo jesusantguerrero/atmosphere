@@ -74,12 +74,43 @@ class BHDService {
             ]
         ]);
 
-        $builderData = $alertAutomation->getSchema();
-        $automation = Automation::create([
-            ...$builderData,
-            "automatable_id" => $account->id,
-            "automatable_type" => get_class($account)
-        ]);
-        $automation->saveTasks($builderData['tasks']);
+        // $notificationAutomation = AutomationBuilder::make(new AutomationData(
+        //     $account->team_id,
+        //     $account->user_id,
+        //     $serviceId,
+        //     $integrationId
+        // ))
+        // ->addAction(new GmailReceived(), AutomationTaskType::TRIGGER, [
+        //     "values" => [
+        //         "conditionType" => BHDService::CONDITION_FROM,
+        //         "value" => BHDService::EMAIL_NOTIFICATION
+        //     ]
+        // ])
+        // ->addAction(new BHD(), AutomationTaskType::COMPONENT, [])
+        // ->addAction(new TransactionCreateEntry(), AutomationTaskType::ACTION, [
+        //     "values" => [
+        //         'account_id' => $account->id,
+        //         'date' => '${date}',
+        //         'currency_code' => '${currencyCode}',
+        //         'category_id' => '',
+        //         'description' => '${description}',
+        //         'direction' => Transaction::DIRECTION_CREDIT,
+        //         'total' => '${amount}',
+        //         'items' => '',
+        //         'payee' => '${payee}',
+        //         'metaData' => ''
+        //     ]
+        // ]);
+
+        $automationDefinitions = [$alertAutomation->getSchema(), ];
+        foreach ($automationDefinitions as $builderData) {
+            $automation = Automation::create([
+                ...$builderData,
+                "automatable_id" => $account->id,
+                "automatable_type" => get_class($account)
+            ]);
+            $automation->saveTasks($builderData['tasks']);
+        }
+
     }
 }
