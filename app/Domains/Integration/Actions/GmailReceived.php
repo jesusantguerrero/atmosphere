@@ -5,6 +5,7 @@ namespace App\Domains\Integration\Actions;
 use App\Domains\Automation\Concerns\AutomationActionContract;
 use App\Domains\Automation\Models\Automation;
 use App\Domains\Integration\Services\GoogleService;
+use App\Domains\Transaction\Services\BHDService;
 use Google\Service\Gmail as ServiceGmail;
 use Illuminate\Support\Facades\Log;
 use PhpMimeMailParser\Parser as EmailParser;
@@ -25,11 +26,11 @@ class GmailReceived implements AutomationActionContract
         $config = json_decode($trigger->values);
         $client = GoogleService::getClient($automation->integration_id);
         $service = new ServiceGmail($client);
-        $condition = isset($config->conditionType) && $config->value ? "$config->conditionType($config->value)" : "";
+        $notification = BHDService::EMAIL_NOTIFICATION;
+        $condition = isset($config->conditionType) && $config->value ? "$config->conditionType:$config->value" : "";
         if (!$condition) {
             $condition = $config->value ?? "";
         }
-
         $results = $service->users_threads->listUsersThreads("me", ['maxResults' => $maxResults, 'q' => "$condition"]);
 
         foreach ($results->getThreads() as $index => $thread) {
