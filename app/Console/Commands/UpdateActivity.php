@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Domains\Budget\Models\BudgetMonth;
 use Illuminate\Console\Command;
+use Illuminate\Support\Carbon;
 
 class UpdateActivity extends Command
 {
@@ -12,7 +13,7 @@ class UpdateActivity extends Command
      *
      * @var string
      */
-    protected $signature = 'app:update-activity {teamId} {month}';
+    protected $signature = 'app:update-activity {teamId}';
 
     /**
      * The console command description.
@@ -29,15 +30,22 @@ class UpdateActivity extends Command
     public function handle()
     {
         $teamId = $this->argument('teamId');
-        $month = $this->argument('month');
+        // $month = $this->argument('month') ?? null;
+        $month = null;
+
+
         $months = BudgetMonth::where([
             'team_id' => $teamId,
         ])
-        ->whereRaw("date_format(month, '%Y-%m') = '$month'")
+        ->when($month, fn ($q) => $q->whereRaw("date_format(month, '%Y-%m') = '$month'"))
+        ->orderBy("month")
         ->get();
 
-        foreach ($months as $month) {
+        $total = count($months);
+        foreach ($months as  $index => $month) {
             $month->updateActivity();
+            echo "updated {$month->category->name} for month {$month->month}" . PHP_EOL;
+            echo "{$index} of {$total}" . PHP_EOL . PHP_EOL;
         }
     }
 }

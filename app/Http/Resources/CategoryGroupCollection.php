@@ -14,7 +14,6 @@ class CategoryGroupCollection extends JsonResource
      */
     public function toArray($request)
     {
-
         return [
             'created_at' => $this->created_at,
             'depth' => $this->depth,

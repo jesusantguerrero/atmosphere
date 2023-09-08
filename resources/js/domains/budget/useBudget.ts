@@ -39,6 +39,10 @@ export const BudgetState = reactive({
     outflow: computed(() => {
         return BudgetState.data?.filter((category) => category.name != 'Inflow')
     }),
+    available: computed(() => {
+        const budgetTotals = getGroupTotals(BudgetState.outflow)
+        return budgetTotals.available
+    }),
     readyToAssign: computed(() => {
         const budgetTotals = getGroupTotals(BudgetState.outflow)
         const category = BudgetState.inflow?.subCategories[0] ?? {}
