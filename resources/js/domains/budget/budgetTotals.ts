@@ -69,6 +69,7 @@ export const getGroupTotals = (groups: Record<string, any>) => {
     return groups.reduce((groupTotals: Record<string, any>, group: Record<string, any>) => {
         groupTotals.budgeted = ExactMath.add(group.budgeted, groupTotals.budgeted || 0)
         groupTotals.activity = ExactMath.add(group.activity, groupTotals.activity || 0)
+        groupTotals.available = ExactMath.add(group.available, groupTotals.available || 0)
         groupTotals.prevMonthLeftOver = ExactMath.add(group.prevMonthLeftOver, groupTotals.prevMonthLeftOver)
         groupTotals.monthlyGoals.target = ExactMath.add(groupTotals.monthlyGoals.target, group.monthlyGoals.target)
         groupTotals.monthlyGoals.balance = ExactMath.add(groupTotals.monthlyGoals.balance, group.monthlyGoals.balance)

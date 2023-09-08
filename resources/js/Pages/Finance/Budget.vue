@@ -2,6 +2,8 @@
 import { computed, provide, toRefs } from "vue";
 import { router } from "@inertiajs/vue3";
 // @ts-ignore
+import exactMath from 'exact-math';
+// @ts-ignore
 import { AtButton, AtDatePager } from "atmosphere-ui";
 import { useBreakpoints, breakpointsTailwind } from "@vueuse/core";
 import { startOfMonth } from "date-fns";
@@ -27,7 +29,7 @@ import MoneyPresenter from "@/Components/molecules/MoneyPresenter.vue";
 import MessageBox from "@/Components/organisms/MessageBox.vue";
 import BudgetCategories from "./Partials/BudgetCategories.vue";
 
-import { formatMonth } from "@/utils";
+import { formatMoney, formatMonth } from "@/utils";
 
 const props = defineProps({
   budgets: {
@@ -68,6 +70,7 @@ const sectionTitle = computed(() => {
 const { budgets } = toRefs(props);
 const {
   readyToAssign,
+  available,
   filterGroups,
   filters,
   visibleFilters,
@@ -113,6 +116,12 @@ const goToday = () => {
   pageState.dates.startDate = startOfMonth(new Date());
   executeSearchWithDelay();
 };
+
+const budgetAccountsTotal =  computed(() => {
+    return props.accounts.reduce((total, account) => {
+        return exactMath.add(total, account?.balance)
+    }, 0)
+})
 </script>
 
 <template>
@@ -210,6 +219,9 @@ const goToday = () => {
       <section class="mx-auto mt-8 rounded-lg text-body bg-base max-w-7xl">
         <article class="w-full mt-4 space-y-4">
           <section class="space-y-4">
+            {{ formatMoney(available) }} -
+            {{ formatMoney(budgetAccountsTotal) }} =
+            {{ available - budgetAccountsTotal }}
             <BudgetCategories :budgets="budgets" />
           </section>
         </article>

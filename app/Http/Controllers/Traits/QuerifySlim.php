@@ -22,7 +22,7 @@ class QuerifySlim
     protected $responseType = "inertia";
     protected $resourceName;
     protected $tableName;
-    
+
     public function __construct(mixed $params)
     {
         $this->includes = $params["includes"];
@@ -209,7 +209,7 @@ class QuerifySlim
         if ($limit && $page) {
             return $this->modelQuery->paginate($limit, $page);
         } else if ($limit) {
-            return $this->modelQuery->limit($limit);
+            $this->modelQuery->limit($limit);
         }
 
         return $this->modelQuery->get();

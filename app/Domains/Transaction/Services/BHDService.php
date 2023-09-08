@@ -37,7 +37,8 @@ class BHDService {
     public static function parseTypes($type) {
         $types = [
             'Compra' => 1,
-            "compra" => 1
+            "compra" => 1,
+            "retiro de efectivo" => 1
         ];
 
         return  $types[$type];

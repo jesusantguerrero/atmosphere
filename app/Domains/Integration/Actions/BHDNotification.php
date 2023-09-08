@@ -6,6 +6,7 @@ use App\Domains\Automation\Models\Automation;
 use App\Domains\Integration\Concerns\MailToTransaction;
 use App\Domains\Integration\Concerns\TransactionDataDTO;
 use App\Domains\Transaction\Services\YNABService;
+use Exception;
 use Illuminate\Support\Carbon;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -52,21 +53,24 @@ class BHDNotification implements MailToTransaction
                 'name' => 'type',
             ]
         ];
+        try {
+            foreach ($tableIds as $fieldName => $field) {
+                $bhdOutput[$field['name']] = $this->{$field['processor']}($body->filter("[id*=${fieldName}]")->first()->text());
+            }
 
-        foreach ($tableIds as $fieldName => $field) {
-            $bhdOutput[$field['name']] = $this->{$field['processor']}($body->filter("[id*=${fieldName}]")->first()->text());
+            return new TransactionDataDTO([
+                    "id" => (int) $mail['id'],
+                    "date" => $bhdOutput['date'],
+                    "payee" => $bhdOutput['seller'],
+                    'category' => '',
+                    'categoryGroup' => '',
+                    'description' => $bhdOutput['product'].":".$bhdOutput['description'],
+                    "amount" => $bhdOutput['amount']->amount * 1,
+                    "currencyCode" => $bhdOutput['amount']->currencyCode,
+            ]);
+        } catch (Exception) {
+            return null;
         }
-
-        return new TransactionDataDTO([
-                "id" => (int) $mail['id'],
-                "date" => $bhdOutput['date'],
-                "payee" => $bhdOutput['seller'],
-                'category' => '',
-                'categoryGroup' => '',
-                'description' => $bhdOutput['product'].":".$bhdOutput['description'],
-                "amount" => $bhdOutput['amount']->amount * 1,
-                "currencyCode" => $bhdOutput['amount']->currencyCode,
-        ]);
     }
 
     public function processResult($value)
