@@ -11,6 +11,8 @@ import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 
 import BudgetProgress from "./BudgetProgress.vue";
 import { getCategoryLink } from "@/domains/transactions/models/transactions";
+import MoneyPresenter from "@/Components/molecules/MoneyPresenter.vue";
+import ExpenseChartWidgetRow from "@/domains/transactions/components/ExpenseChartWidgetRow.vue";
 
 const emit = defineEmits(['removed'])
 
@@ -111,18 +113,15 @@ const handleOptions = (option: any) => {
             </div>
         </div>
         <div class="flex items-center space-x-2">
-                <!-- <MoneyPresenter :value="item.activity" /> of -->
-                <!-- <MoneyPresenter :value="item.budgeted" /> -->
-            <BudgetProgress
-                :current="Math.abs(item.activity)"
-                :goal="item.budgeted"
-                class="h-1.5 rounded-sm w-14"
-                :progress-class="['bg-success', 'bg-secondary/5']"
-            >
-            <template v-slot:after="{ progress }">
-                {{ progress }}%
-            </template>
-            </BudgetProgress>
+            <MoneyPresenter :value="item.budgeted" />
+            <ExpenseChartWidgetRow
+                :value="item.activity"
+                hide-title
+                :item="item"
+                type="groups"
+                classes="w-44 h-full"
+            />
+            <MoneyPresenter :value="item.available" />
             <NDropdown
                 trigger="click"
                 key-field="name"

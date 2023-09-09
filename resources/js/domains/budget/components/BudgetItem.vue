@@ -20,6 +20,7 @@ import { getBudgetTarget } from '@/domains/budget/budgetTotals';
 import { getCategoryLink } from '@/domains/transactions/models/transactions';
 import ExpenseChartWidgetRow from '@/domains/transactions/components/ExpenseChartWidgetRow.vue';
 import BudgetItemHeader from './BudgetItemHeader.vue';
+import InputMoney from '@/Components/atoms/InputMoney.vue';
 
 
 const props = defineProps<{
@@ -98,16 +99,6 @@ const onAssignBudget = () => {
     toggleEditing()
 }
 
-const options = [{
-    name: 'delete',
-    label: 'Delete'
-}, {
-    name: 'hide',
-    label: 'Hide'
-}, {
-    name: 'updateActivity',
-    label: 'Update Activity'
-}]
 
 const removeCategory = () => {
     if (confirm("Are you sure you want to remove this category?")) {
@@ -135,22 +126,6 @@ const updateActivity = () => {
             })
         }
     })
-}
-
-const handleOptions = (option: string) => {
-    switch(option) {
-        case 'delete':
-            removeCategory()
-            break;
-        case 'updateActivity':
-            updateActivity()
-            break;
-        case 'transactions':
-            const link = getCategoryLink(props.item.id, 'categories');
-            router.visit(link)
-        default:
-            break;
-    }
 }
 
 const isEditing = ref(false);
@@ -182,7 +157,7 @@ onMounted(() => {
         </div>
         <div class="flex justify-end items-center text-right flex-nowrap">
             <div ref="inputContainer"  title="Money Assigned" class="w-36">
-                <LogerInput
+                <InputMoney
                     ref="input"
                     class="opacity-100 cursor-text"
                     v-model="budgeted"
@@ -203,7 +178,7 @@ onMounted(() => {
                             <LogerButtonTab> <i class="fa fa-ellipsis-v"></i></LogerButtonTab>
                         </NDropdown>
                     </template>
-                </LogerInput>
+                </InputMoney>
             </div>
             <ExpenseChartWidgetRow
                 :value="item.activity"

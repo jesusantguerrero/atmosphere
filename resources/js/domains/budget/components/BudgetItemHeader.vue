@@ -78,7 +78,7 @@ const handleOptions = (option: string) => {
 
 
 <template>
-<header class="flex group items-center justify-between w-56 h-6">
+<header class="flex group items-center justify-between w-56 h-6 relative">
     <section class="flex items-center">
         <section class="hidden group-hover:block">
             <NDropdown trigger="click" :options="options" key-field="name" :on-select="handleOptions" >

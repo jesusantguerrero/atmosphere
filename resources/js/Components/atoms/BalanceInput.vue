@@ -66,9 +66,11 @@
         destination_category_id: null,
     });
 
+    const pageState = inject('pageState', {});
+
     const onAssignBudget = () => {
         if (BALANCE_STATUS.available || Number(props.category.budgeted) !== Number(form.amount)) {
-            const month = format(startOfMonth(new Date()), 'yyyy-MM-dd');
+            const month = format(startOfMonth(pageState.dates.endDate), 'yyyy-MM-dd');
             const field = status.value == BALANCE_STATUS.available ? 'source_category_id' : 'destination_category_id'
             form.transform(data => ({
                 ...data,
