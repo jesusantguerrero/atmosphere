@@ -18,7 +18,7 @@ class Category extends CoreCategory
     use HasFactory;
     const READY_TO_ASSIGN = "Ready to Assign";
     const INFLOW = "Inflow";
-    protected $with = ['budget', 'transactions'];
+    protected $with = ['budget'];
 
     public function budget() {
         return $this->hasOne(BudgetTarget::class);

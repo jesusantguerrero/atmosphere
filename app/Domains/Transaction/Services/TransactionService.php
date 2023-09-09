@@ -5,6 +5,7 @@ namespace App\Domains\Transaction\Services;
 use App\Domains\AppCore\Models\Category;
 use App\Domains\Transaction\Imports\TransactionsImport;
 use App\Domains\Transaction\Models\Transaction;
+use App\Domains\Transaction\Models\TransactionLine;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Illuminate\Support\Carbon;
@@ -78,11 +79,12 @@ class TransactionService {
     }
 
     public static function getExpensesTotal($teamId, $startDate, $endDate) {
-        return Transaction::byTeam($teamId)
+        return TransactionLine::byTeam($teamId)
         ->balance()
-        ->whereNot('categories.name', Category::READY_TO_ASSIGN)
-        ->join('categories', 'categories.id', 'transactions.category_id')
         ->inDateFrame($startDate, $endDate)
+        ->expenseCategories()
+        ->whereNot('categories.name', Category::READY_TO_ASSIGN)
+        ->join('transactions', 'transactions.id', 'transaction_lines.transaction_id')
         ->first();
     }
 
