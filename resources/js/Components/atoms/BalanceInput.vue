@@ -1,14 +1,14 @@
 <script lang="ts" setup>
     import { useForm } from "@inertiajs/vue3";
-    import { computed, h, inject, ref } from "vue"
-    import { NPopover, NSelect, SelectRenderLabel } from "naive-ui";
+    import { computed, inject, ref } from "vue"
+    import { NPopover, NSelect } from "naive-ui";
     import { AtField, AtButton } from "atmosphere-ui";
+    import Multiselect from "vue-multiselect";
+    import { ICategory } from "@/domains/transactions/models";
 
     import LogerInput from "./LogerInput.vue";
     import { format, startOfMonth } from "date-fns";
     import { formatMoney } from "@/utils";
-import Multiselect from "vue-multiselect";
-import { ICategory } from "@/domains/transactions/models";
 
     const props = defineProps({
         value: {
@@ -17,7 +17,7 @@ import { ICategory } from "@/domains/transactions/models";
         formatter: {
             type: Function,
             default() {
-                return (value) => {
+                return (value: string) => {
                     return value
                 }
             }
@@ -111,11 +111,11 @@ import { ICategory } from "@/domains/transactions/models";
 </script>
 
 <template>
-<div class="w-full text-right" title="Money Available">
+<div class="flex justify-end text-right select-none" title="Money Available">
     <NPopover trigger="manual" placement="bottom"  @update:show="handleUpdateShow" :show="showPopover">
         <template #trigger>
             <div
-                class="inline-flex items-center py-1 font-bold cursor-pointer flex-nowrap rounded-3xl min-w-max"
+                class="inline-flex items-center py-1 px-4 font-bold cursor-pointer flex-nowrap rounded-3xl min-w-max"
                 :class="badgeClass"
                 @click="toggle"
             >

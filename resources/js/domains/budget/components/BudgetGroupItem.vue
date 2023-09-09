@@ -48,9 +48,6 @@ onMounted(() => {
 })
 
 const options = [{
-    name: 'add',
-    label: 'Add subcategory'
-}, {
     name: 'delete',
     label: 'Delete'
 }, {
@@ -107,6 +104,10 @@ const handleOptions = (option: any) => {
                         v-if="item.hasOverspent || item.hasUnderfunded"
                     />
                 </h4>
+                <button class="ml-2 font-bold text-secondary" @click=" toggleAdding()">
+                    <IMdiMinus v-if="isAdding" title="Add new category" />
+                    <IMdiPlus  v-else />
+                </button>
             </div>
         </div>
         <div class="flex items-center space-x-2">
@@ -132,7 +133,7 @@ const handleOptions = (option: any) => {
             </NDropdown>
         </div>
     </header>
-    <section class="pl-4 border-l-4 border-primary bg-base-lvl-3" ref="dropdown">
+    <section class="border-l-4 border-primary bg-base-lvl-3" ref="dropdown">
         <slot v-if="isExpanded || isAdding" :isExpanded="isExpanded" :toggleAdding="toggleAdding" :isAdding="isAdding" name="content"/>
     </section>
 </article>

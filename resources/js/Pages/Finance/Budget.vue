@@ -227,7 +227,7 @@ const budgetAccountsTotal =  computed(() => {
         </article>
       </section>
 
-      <template #panel class="">
+      <template #prepend-panel class="">
         <div class="space-y-4 ">
           <BudgetDetailForm
             class="mt-5"
