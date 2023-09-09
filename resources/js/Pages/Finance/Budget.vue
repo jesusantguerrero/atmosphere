@@ -194,7 +194,7 @@ const budgetAccountsTotal =  computed(() => {
         <template #activity>
           <section class="flex flex-col items-center justify-center w-full py-2">
             <h4 class="font-bold text-secondary">
-              <MoneyPresenter :value="readyToAssign.activity" />
+              <MoneyPresenter :value="readyToAssign.budgetedSpending" />
             </h4>
             <p class="font-bold text-body-1/80">Activity</p>
           </section>
@@ -243,7 +243,7 @@ const budgetAccountsTotal =  computed(() => {
           />
 
           <ExpenseIncome
-            :value="readyToAssign.inflow + readyToAssign.activity"
+            :value="readyToAssign.inflow + readyToAssign.budgetedSpending"
             :footer-stats="[
               {
                 label: 'Income',
@@ -252,7 +252,7 @@ const budgetAccountsTotal =  computed(() => {
               },
               {
                 label: 'Expense',
-                value: readyToAssign.activity,
+                value: readyToAssign.budgetedSpending,
                 class: 'text-error',
               },
             ]"

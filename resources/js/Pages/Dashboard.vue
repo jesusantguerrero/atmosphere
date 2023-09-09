@@ -104,7 +104,7 @@
                     class="mt-5"
                     ref="budgetTrackerRef"
                     :budget="budgetTotal"
-                    :expenses="transactionTotal.total"
+                    :expenses="transactionTotal.total_amount"
                     :message="t('dashboard.welcome')"
                     :username="user.name"
                     @section-click="selected=$event"
