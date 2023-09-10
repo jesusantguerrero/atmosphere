@@ -11,9 +11,10 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Account;
+use Insane\Journal\Models\Core\Category as CoreCategory;
 
 class BudgetCategoryService {
-    function __construct(protected Category $model) { }
+    function __construct(protected Category|CoreCategory $model) { }
 
     public function addTarget($postData) {
         return $this->model->budget()->create(array_merge($postData, [
@@ -54,7 +55,7 @@ class BudgetCategoryService {
         return array_merge($category->toArray(), [ 'month' => $month ], $category->getBudgetInfo($month));
     }
 
-    public function updateActivity(Category $category, string $month) {
+    public function updateActivity(Category|CoreCategory $category, string $month) {
         $monthDate = Carbon::createFromFormat("Y-m-d", $month);
         $transactions = 0;
         $activity = 0;
@@ -85,7 +86,7 @@ class BudgetCategoryService {
        ])->first();
     }
 
-    public function updateFundedSpending(Category $category, string $month) {
+    public function updateFundedSpending(Category|CoreCategory $category, string $month) {
         $monthDate = Carbon::createFromFormat("Y-m-d", $month);
         $transactions = 0;
         $activity = 0;
