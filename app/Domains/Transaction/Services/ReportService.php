@@ -3,6 +3,7 @@
 namespace App\Domains\Transaction\Services;
 
 use App\Domains\Transaction\Models\Transaction;
+use App\Domains\Transaction\Models\TransactionLine;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -24,12 +25,12 @@ class ReportService {
     $results = [
         "currentYear" => [
             "year" => $year,
-            "values" => $this->mapInMonths($results->toArray(), $year),
+            "values" => DateMapperService::mapInMonths($results->toArray(), $year),
             "total" =>  $results->sum('total')
         ],
         "previousYear"=> [
             "year" => $previousYear,
-            "values" => $this->mapInMonths($previousYearResult->toArray(), $previousYear),
+            "values" => DateMapperService::mapInMonths($previousYearResult->toArray(), $previousYear),
             "total" =>  $previousYearResult->sum('total')
         ]
     ];
@@ -61,7 +62,6 @@ class ReportService {
 
     return $resultGroup->map(function ($monthItems) {
         [$year, $month] = explode('-', $monthItems->first()->month);
-
         return [
             'date' => $monthItems->first()->date,
             'data' => DateMapperService::mapInDays($monthItems->groupBy('date')->toArray(), $month, $year),
@@ -105,13 +105,14 @@ class ReportService {
   }
 
   public static function getExpensesInPeriod($teamId, $startDate, $endDate) {
-    return Transaction::byTeam($teamId)
+    return TransactionLine::byTeam($teamId)
     ->balance()
     ->inDateFrame($startDate, $endDate)
     ->expenseCategories()
-    ->selectRaw('date_format(transactions.date, "%Y-%m-%d") as date, date_format(transactions.date, "%Y-%m") as month')
-    ->groupByRaw('date_format(transactions.date, "%Y-%m"), transactions.date')
+    ->selectRaw('date_format(transaction_lines.date, "%Y-%m-%d") as date, date_format(transaction_lines.date, "%Y-%m") as month')
+    ->groupByRaw('date_format(transaction_lines.date, "%Y-%m"), transaction_lines.date')
     ->orderByDesc('date')
+    ->join('transactions', 'transactions.id', 'transaction_lines.transaction_id')
     ->get();
   }
 
@@ -187,7 +188,7 @@ class ReportService {
 
     $data = [
         "earned" => $earned,
-        "earnedAvg" => $earned / 12, 
+        "earnedAvg" => $earned / 12,
         "topPayers" => $topPayers,
         "topPayees" => $topPayees,
         "topExpense" => $topExpense,

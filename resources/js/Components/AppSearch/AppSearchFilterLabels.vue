@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { computed } from "vue";
-import IconClose from "@/components/icons/IconClose.vue";
+import IconClose from "@/Components/icons/IconClose.vue";
 
 const props = defineProps({
   filters: {

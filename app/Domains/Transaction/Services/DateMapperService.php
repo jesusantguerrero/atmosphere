@@ -32,7 +32,7 @@ class DateMapperService
             $index = "$year-$month-$padDay";
 
             $lastAmount = isset($data[$index]) ?
-            Money::of($data[$index][0]['total'], 'USD', null, RoundingMode::HALF_EVEN)->plus(Money::of($lastAmount, 'USD', null, RoundingMode::HALF_EVEN))->getAmount(): $lastAmount;
+            Money::of($data[$index][0]['total'] ?? $data[$index][0]['total_amount'], 'USD', null, RoundingMode::HALF_EVEN)->plus(Money::of($lastAmount, 'USD', null, RoundingMode::HALF_EVEN))->getAmount(): $lastAmount;
             $dataByDate[] = [
                 "month" => $month,
                 "days" => $day,

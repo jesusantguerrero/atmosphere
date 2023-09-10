@@ -6,6 +6,9 @@ import { getFrequencyMonthFactor } from "./getFrequencyMonthFactor";
 import { BudgetTarget } from "./models/budget";
 import { useDatePager } from "vueuse-temporals";
 
+enum InflowCategories {
+    READY_TO_ASSIGN = "Ready to Assign"
+}
 export const isSpendingTarget = (budgetMetaData: Record<string, any>) => {
     return budgetMetaData.target_type == 'spending'
 }
@@ -24,6 +27,7 @@ export const getCategoriesTotals = (categories: Record<string, any>, config = {
         categoryTotals.budgeted = ExactMath.add(categoryTotals.budgeted, category.budgeted || 0)
         categoryTotals.activity =  ExactMath.add(categoryTotals.activity, category.activity || 0)
         categoryTotals.available = ExactMath.add(categoryTotals.available, category.available || 0)
+        categoryTotals.budgetedSpending = ExactMath.add(categoryTotals.budgetedSpending, !category.account_id && category.name !== InflowCategories.READY_TO_ASSIGN  ? category.activity : 0)
         categoryTotals.prevMonthLeftOver = ExactMath.add(categoryTotals.prevMonthLeftOver, category.prevMonthLeftOver || 0)
 
         if (Number(category.available) < 0 && category.name !== 'Inflow') {
@@ -55,6 +59,7 @@ export const getCategoriesTotals = (categories: Record<string, any>, config = {
         return categoryTotals;
     }, {
         budgeted: 0,
+        budgetedSpending: 0,
         activity: 0,
         available: 0,
         prevMonthLeftOver: 0,
@@ -69,12 +74,19 @@ export const getGroupTotals = (groups: Record<string, any>) => {
     return groups.reduce((groupTotals: Record<string, any>, group: Record<string, any>) => {
         groupTotals.budgeted = ExactMath.add(group.budgeted, groupTotals.budgeted || 0)
         groupTotals.activity = ExactMath.add(group.activity, groupTotals.activity || 0)
+        groupTotals.budgetedSpending = ExactMath.add(group.budgetedSpending, groupTotals.budgetedSpending || 0)
+        groupTotals.available = ExactMath.add(group.available, groupTotals.available || 0)
+
+        // console.log(groupTotals.budgetedSpending, group.name);
+
         groupTotals.prevMonthLeftOver = ExactMath.add(group.prevMonthLeftOver, groupTotals.prevMonthLeftOver)
+
         groupTotals.monthlyGoals.target = ExactMath.add(groupTotals.monthlyGoals.target, group.monthlyGoals.target)
         groupTotals.monthlyGoals.balance = ExactMath.add(groupTotals.monthlyGoals.balance, group.monthlyGoals.balance)
         return groupTotals;
     }, {
         budgeted: 0,
+        budgetedSpending: 0,
         activity: 0,
         prevMonthLeftOver: 0,
         monthlyGoals: {

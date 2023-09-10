@@ -91,6 +91,7 @@ const getTransactionColor = (row: ITransaction) => {
 
       <template v-slot:actions="{ scope: { row } }">
         <div>
+          <span><IMdiLink v-if="row.linked_transaction_id" /></span>
           <NDropdown
             trigger="click"
             key-field="name"

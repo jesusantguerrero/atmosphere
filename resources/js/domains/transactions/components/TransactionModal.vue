@@ -88,9 +88,9 @@ const splits = ref<Record<string, any>[]>([])
 watch(
   () => state.form.direction,
   (direction) => {
-    if (direction?.toLowerCase() == "transfer" && !props.transactionData) {
+    if (direction?.toLowerCase() == "transfer") {
       state.form.is_transfer = true;
-    } else if (!props.transactionData) {
+    } else {
       state.form.is_transfer = false;
     }
   }

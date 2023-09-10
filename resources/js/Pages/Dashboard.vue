@@ -1,5 +1,5 @@
 <script setup lang="ts">
-    import { ref } from 'vue';
+    import { ref, onMounted } from 'vue';
 
     import AppLayout from '@/Components/templates/AppLayout.vue'
     import OnboardingSteps from "@/Components/widgets/OnboardingSteps.vue";
@@ -7,12 +7,15 @@
     import ChartCurrentVsPrevious from "@/Components/widgets/ChartCurrentVsPrevious.vue";
     import WeatherWidget from "@/Components/widgets/WeatherWidget.vue";
     import AppIcon from '@/Components/AppIcon.vue';
-    
+    import DashboardDrafts from "./DashboardDrafts.vue";
+
     import NextPaymentsWidget from "@/domains/transactions/components/NextPaymentsWidget.vue";
     import MealWidget from "@/domains/meal/components/MealWidget.vue";
     import BudgetTracker from "@/domains/budget/components/BudgetTracker.vue";
-    
+
     import { useAppContextStore } from '@/store';
+    import { ITransaction } from '@/domains/transactions/models';
+
 
     const props = defineProps({
         revenue: {
@@ -86,8 +89,7 @@
 
     const selected = ref(null);
 
-    const budgetTrackerRef = ref();
-
+    const budgetTrackerRef = ref();;
 </script>
 
 <template>
@@ -102,7 +104,7 @@
                     class="mt-5"
                     ref="budgetTrackerRef"
                     :budget="budgetTotal"
-                    :expenses="transactionTotal.total"
+                    :expenses="transactionTotal.total_amount"
                     :message="t('dashboard.welcome')"
                     :username="user.name"
                     @section-click="selected=$event"
@@ -142,6 +144,8 @@
                     :payments="nextPayments"
                 />
                 <MealWidget :meals="meals?.data" />
+
+                <DashboardDrafts />
             </div>
         </div>
     </AppLayout>

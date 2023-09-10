@@ -11,6 +11,8 @@ import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 
 import BudgetProgress from "./BudgetProgress.vue";
 import { getCategoryLink } from "@/domains/transactions/models/transactions";
+import MoneyPresenter from "@/Components/molecules/MoneyPresenter.vue";
+import ExpenseChartWidgetRow from "@/domains/transactions/components/ExpenseChartWidgetRow.vue";
 
 const emit = defineEmits(['removed'])
 
@@ -48,9 +50,6 @@ onMounted(() => {
 })
 
 const options = [{
-    name: 'add',
-    label: 'Add subcategory'
-}, {
     name: 'delete',
     label: 'Delete'
 }, {
@@ -107,21 +106,22 @@ const handleOptions = (option: any) => {
                         v-if="item.hasOverspent || item.hasUnderfunded"
                     />
                 </h4>
+                <button class="ml-2 font-bold text-secondary" @click=" toggleAdding()">
+                    <IMdiMinus v-if="isAdding" title="Add new category" />
+                    <IMdiPlus  v-else />
+                </button>
             </div>
         </div>
         <div class="flex items-center space-x-2">
-                <!-- <MoneyPresenter :value="item.activity" /> of -->
-                <!-- <MoneyPresenter :value="item.budgeted" /> -->
-            <BudgetProgress
-                :current="Math.abs(item.activity)"
-                :goal="item.budgeted"
-                class="h-1.5 rounded-sm w-14"
-                :progress-class="['bg-success', 'bg-secondary/5']"
-            >
-            <template v-slot:after="{ progress }">
-                {{ progress }}%
-            </template>
-            </BudgetProgress>
+            <MoneyPresenter :value="item.budgeted" />
+            <ExpenseChartWidgetRow
+                :value="item.activity"
+                hide-title
+                :item="item"
+                type="groups"
+                classes="w-44 h-full"
+            />
+            <MoneyPresenter :value="item.available" />
             <NDropdown
                 trigger="click"
                 key-field="name"
@@ -132,7 +132,7 @@ const handleOptions = (option: any) => {
             </NDropdown>
         </div>
     </header>
-    <section class="pl-4 border-l-4 border-primary bg-base-lvl-3" ref="dropdown">
+    <section class="border-l-4 border-primary bg-base-lvl-3" ref="dropdown">
         <slot v-if="isExpanded || isAdding" :isExpanded="isExpanded" :toggleAdding="toggleAdding" :isAdding="isAdding" name="content"/>
     </section>
 </article>

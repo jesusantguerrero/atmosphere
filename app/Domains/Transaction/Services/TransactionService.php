@@ -5,6 +5,7 @@ namespace App\Domains\Transaction\Services;
 use App\Domains\AppCore\Models\Category;
 use App\Domains\Transaction\Imports\TransactionsImport;
 use App\Domains\Transaction\Models\Transaction;
+use App\Domains\Transaction\Models\TransactionLine;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Illuminate\Support\Carbon;
@@ -31,6 +32,34 @@ class TransactionService {
             ->get();
     }
 
+    public function getListByStatus(string $status) {
+        return DB::table('transactions')
+        ->selectRaw("
+                transactions.id,
+                transactions.description,
+                transactions.date,
+                transactions.direction,
+                transactions.status,
+                transactions.total,
+                transactions.account_id,
+                transactions.counter_account_id,
+                transactions.payee_id,
+                categories.name category_name,
+                payees.name payee_name,
+                ca.name counter_account_name,
+                accounts.name account_name,
+                linked.id linked_transaction_id,
+                linked.total linked_transaction_total
+            ")
+            ->leftJoin('categories', 'categories.id', 'transactions.category_id')
+            ->leftJoin('payees', 'payees.id', 'transactions.payee_id')
+            ->leftJoin(DB::raw('accounts ca'), 'ca.id', 'transactions.counter_account_id')
+            ->leftJoin('accounts', 'accounts.id', 'transactions.account_id')
+            ->leftJoin('linked_transactions', 'transactions.id', 'linked_transactions.transaction_id')
+            ->leftJoin(DB::raw('transactions linked'), 'linked.id', 'linked_transactions.linked_transaction_id')
+            ->where('transactions.status', $status);
+    }
+
     public function getForAccount($accountId, $teamId,  $options) {
         return $this->model::verified()
             ->where('team_id', $teamId)
@@ -50,11 +79,12 @@ class TransactionService {
     }
 
     public static function getExpensesTotal($teamId, $startDate, $endDate) {
-        return Transaction::byTeam($teamId)
+        return TransactionLine::byTeam($teamId)
         ->balance()
-        ->whereNot('categories.name', Category::READY_TO_ASSIGN)
-        ->join('categories', 'categories.id', 'transactions.category_id')
         ->inDateFrame($startDate, $endDate)
+        ->expenseCategories()
+        ->whereNot('categories.name', Category::READY_TO_ASSIGN)
+        ->join('transactions', 'transactions.id', 'transaction_lines.transaction_id')
         ->first();
     }
 

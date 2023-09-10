@@ -6,23 +6,24 @@ use App\Domains\AppCore\Models\Category;
 use App\Domains\Budget\Services\BudgetCategoryService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Insane\Journal\Models\Core\Account;
+use Insane\Journal\Models\Core\AccountDetailType;
 
-class UpdateActivity extends Command
+class UpdateFundedSpending extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'app:update-activity {teamId}';
+    protected $signature = 'app:update-funded-spending {teamId}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Update activity for a given month';
-
+    protected $description = 'Update available money for credit cards';
 
     /**
      * Execute the console command.
@@ -36,9 +37,13 @@ class UpdateActivity extends Command
         $month = null;
 
 
-        $categories = Category::where([
-            'team_id' => $teamId,
-        ])->get();
+        $categories = Category::where('categories.team_id', $teamId)
+        ->whereHas('account', fn ($q) => $q
+            ->join('account_detail_types', 'account_detail_types.id', '=', 'accounts.account_detail_type_id')
+            ->whereIn('account_detail_types.name', [AccountDetailType::CREDIT_CARD])
+        )
+        ->get();
+
 
         $monthsWithTransactions = DB::table('transaction_lines')
         ->selectRaw("date_format(transaction_lines.date, '%Y-%m') AS date")
@@ -47,11 +52,10 @@ class UpdateActivity extends Command
         ->pluck("date");
 
         $total = count($categories) * count($monthsWithTransactions);
-        $count = 0;
-        foreach ($categories as $category) {
-            foreach ($monthsWithTransactions as $month) {
-                $count++;
-                (new BudgetCategoryService($category))->updateActivity($category, $month . '-01');
+        foreach ($categories as $categoryIndex => $category) {
+            foreach ($monthsWithTransactions as  $index => $month) {
+                $count = $categoryIndex + $index;
+                (new BudgetCategoryService($category))->updateFundedSpending($category, $month . '-01');
                 echo "updated {$category->name} for month {$month}" . PHP_EOL;
                 echo "{$count} of {$total}" . PHP_EOL . PHP_EOL;
             }

@@ -81,7 +81,8 @@
             "dont-discover": []
         },
         "google/apiclient-services": [
-            "Gmail"
+            "Gmail",
+            "Auth"
         ]
     },
     "config": {

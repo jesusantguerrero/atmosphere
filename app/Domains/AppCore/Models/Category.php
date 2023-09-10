@@ -18,7 +18,7 @@ class Category extends CoreCategory
     use HasFactory;
     const READY_TO_ASSIGN = "Ready to Assign";
     const INFLOW = "Inflow";
-    protected $with = ['budget', 'transactions'];
+    protected $with = ['budget'];
 
     public function budget() {
         return $this->hasOne(BudgetTarget::class);
@@ -85,16 +85,37 @@ class Category extends CoreCategory
         $yearMonth = substr((string) $month, 0, 7);
         $monthBudget = $this->budgets->where('month', $month)->first();
         $budgeted = $monthBudget ? $monthBudget->budgeted : 0;
-        $monthBalance = (double) $this->getMonthBalance($yearMonth)->balance;
-        $prevMonthLeftOver = $this->getPrevMonthLeftOver($yearMonth);
-        $available = Money::of($budgeted, 'USD')->plus($prevMonthLeftOver)->plus($monthBalance)->getAmount()->toFloat();
 
-        return [
+        if ($this->account_id) {
+            $prevMonthLeftOver = $this->getPrevMonthFundedLeftOver($yearMonth);
+            $prevMonthPaymentsLeftOver = $this->getPrevMonthPaymentsLeftOver($yearMonth);
+            $funded = $monthBudget ? $monthBudget->funded_spending : 0;
+            $monthPayment = $monthBudget ? $monthBudget->payments : 0;
+
+            $monthBalance = Money::of($funded, $this->account->currency_code)->minus($monthPayment)->getAmount()->toFloat();
+            $available = Money::of($prevMonthPaymentsLeftOver, 'USD')
+                // ->plus($prevMonthLeftOver)
+                // ->minus($monthBalance)
+                ->getAmount()
+                ->toFloat();
+        } else {
+            $monthBalance = (double) $this->getMonthBalance($yearMonth)->balance;
+            $prevMonthLeftOver = $this->getPrevMonthLeftOver($yearMonth);
+            $available = Money::of($budgeted, 'USD')->plus($prevMonthLeftOver)->plus($monthBalance)->getAmount()->toFloat();
+        }
+
+        $data = [
             'budgeted' => $budgeted,
             'activity' => $monthBalance,
             'available' => $available,
             'prevMonthLeftOver' => $prevMonthLeftOver
         ];
+
+        // if ($this->id == 718) {
+        //     dd($data);
+        // }
+
+        return $data;
     }
 
     public static function getBudgetSubcategories($teamId) {
@@ -116,11 +137,12 @@ class Category extends CoreCategory
     public function getMonthBalance($yearMonth)
     {
         if (!$this->resource_type_id) {
-            return $this->transactionLines()
+            $activity = $this->transactionLines()
             ->whereHas('transaction', fn ($q) => $q->where('status', Transaction::STATUS_VERIFIED))
             ->whereRaw("date_format(transaction_lines.date, '%Y-%m') = '$yearMonth'")
-            ->selectRaw("SUM(amount * type) as balance"
+            ->selectRaw("COALESCE(SUM(amount * type), 0) as balance"
             )->first();
+            return $activity;
         } else {
             return $this->creditLines()
             ->whereRaw("date_format(date, '%Y-%m') = '$yearMonth'")
@@ -139,11 +161,44 @@ class Category extends CoreCategory
         ->select('*')
         ->where([
             'category_id' => $this->id,
-            ])
-            ->whereRaw("date_format(month, '%Y-%m') < '$yearMonth'")
-            ->from('budget_months')
-            ->sum(DB::raw("budgeted + activity"));
+        ])
+        ->whereRaw("date_format(month, '%Y-%m') < '$yearMonth'")
+        ->from('budget_months')
+        ->sum(DB::raw("budgeted + activity"));
+    }
 
+    /**
+     * Get the current balance.
+     *
+     * @return string
+     */
+    public function getPrevMonthFundedLeftOver($yearMonth)
+    {
+        return DB::query()
+        ->select('*')
+        ->where([
+            'category_id' => $this->id,
+        ])
+        ->whereRaw("date_format(month, '%Y-%m') < '$yearMonth'")
+        ->from('budget_months')
+        ->sum(DB::raw("funded_spending"));
+    }
+
+    /**
+     * Get the current balance.
+     *
+     * @return string
+     */
+    public function getPrevMonthPaymentsLeftOver($yearMonth)
+    {
+        return DB::query()
+        ->select('*')
+        ->where([
+            'category_id' => $this->id,
+        ])
+        ->whereRaw("date_format(month, '%Y-%m') <= '$yearMonth'")
+        ->from('budget_months')
+        ->sum(DB::raw("funded_spending - payments"));
     }
 
     /**

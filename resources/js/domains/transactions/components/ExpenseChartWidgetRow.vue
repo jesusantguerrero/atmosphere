@@ -3,16 +3,24 @@ import { capitalize, computed } from "vue";
 import { formatMoney } from "@/utils";
 import { NDataTable, NPopover } from "naive-ui";
 import { Link } from "@inertiajs/vue3";
-import { ITransactionLine } from "../Modules/finance/models/transactions";
 
-const { item, type  }= defineProps<{
+import { ITransactionLine } from "@/domains/transactions/models";
+import SectionTitle from "@/Components/atoms/SectionTitle.vue";
+
+const {
+    item,
+    type,
+    classes = "w-full h-full"
+} = defineProps<{
   item: Record<string, any>;
   title?: string;
   type: 'categories' | 'groups';
+  value?: number;
+  hideTitle?: boolean;
+  classes?: string
 }>();
 
-const emit = defineEmits(['selected']);
-
+defineEmits(['selected']);
 
 interface Line {
     id: string,
@@ -62,24 +70,33 @@ const detailColumn = computed(() => {
 <template>
     <NPopover trigger="click">
         <template #trigger>
-            <p class="flex justify-between w-full px-4 cursor-pointer">
-                <span class="font-bold">
-                    {{ item.name }}:
+            <p class="inline-flex justify-between px-4 cursor-pointer " :class="classes">
+                <span class="font-bold" v-if="!hideTitle">
+                    {{ title ?? item.name }}: {{ classes }}
                 </span>
-                <Link
-                class="flex items-center ml-4 hover:underline group hover:text-primary"
-                :href="getCategoryLink(item)">
-                    {{  formatMoney(item.total) }}
+                <span
+                    class="flex items-center ml-4 hover:underline group hover:text-primary"
+                    :href="getCategoryLink(item)">
+                    {{  formatMoney(value ?? item.total) }}
                     <IMdiLink class="invisible ml-1 group-hover:visible" />
-                </Link>
+                </span>
             </p>
         </template>
-        <div class="">
+        <section class="h-96 w-[900px] overflow-hidden">
+            <SectionTitle class="flex items-center"> Transaction history
+                <Link
+                    class="flex items-center ml-4 hover:underline group hover:text-primary"
+                    :href="getCategoryLink(item)">
+                    Total: {{  formatMoney(value ?? item.total) }}
+                    <IMdiLink class="invisible ml-1 group-hover:visible" />
+                </Link>
+            </SectionTitle>
             <NDataTable
+                class="mt-6"
                 :columns="detailColumn"
                 :data="itemDetail"
+                :max-height="250"
             />
-        </div>
+        </section>
     </NPopover>
 </template>
-../../domains/transactions/models/transactions

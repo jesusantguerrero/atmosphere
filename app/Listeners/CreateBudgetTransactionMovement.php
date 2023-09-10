@@ -2,15 +2,15 @@
 
 namespace App\Listeners;
 
-use App\Domains\Budget\Models\BudgetMonth;
-use App\Domains\Transaction\Models\Transaction;
+use App\Domains\Budget\Services\BudgetCategoryService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Support\Facades\DB;
 use Insane\Journal\Events\TransactionCreated;
 
-class CreateBudgetTransactionMovement
+class CreateBudgetTransactionMovement implements ShouldQueue
 {
+
+    public function __construct(private BudgetCategoryService $budgetCategoryService) {}
     /**
      * Handle the event.
      *
@@ -20,18 +20,17 @@ class CreateBudgetTransactionMovement
     public function handle(TransactionCreated $event)
     {
         $transaction = $event->transaction;
-        $type = $transaction->direction == Transaction::DIRECTION_CREDIT ? -1 : 1;
-        $amount = $transaction->total * $type;
+        $account = $transaction->account;
         $month = substr($transaction->date, 0, 7) . "-01";
+
+
+        if ($categoryAccount = $this->budgetCategoryService->findByAccount($account)) {
+           $this->budgetCategoryService->updateFundedSpending($categoryAccount, $month);
+           $this->budgetCategoryService->updateActivity($categoryAccount, $month);
+        }
+
         if ($transaction->category_id) {
-            BudgetMonth::updateOrCreate([
-                'category_id' => $transaction->category_id,
-                'team_id' => $transaction->team_id,
-                'name' => $month,
-                'month' => $month,
-            ], [
-                'activity' => DB::raw("activity + $amount")
-            ]);
+            $this->budgetCategoryService->updateActivity($transaction->category, $month);
         }
     }
 }
