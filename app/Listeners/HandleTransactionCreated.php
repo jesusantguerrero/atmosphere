@@ -10,22 +10,6 @@ use Insane\Journal\Events\TransactionCreated;
 
 class HandleTransactionCreated implements ShouldQueue
 {
-    /**
-     * Create the event listener.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        //
-    }
-
-    /**
-     * Handle the event.
-     *
-     * @param  object  $event
-     * @return void
-     */
     public function handle(TransactionCreated $event)
     {
         $transaction = $event->transaction;

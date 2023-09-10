@@ -6,6 +6,7 @@ import { ref, toRefs, nextTick } from 'vue';
 
 const props = defineProps<{
     modelValue: string;
+    disabled?: boolean
 }>()
 
 const emit = defineEmits(['update:modelValue']);
@@ -23,6 +24,7 @@ const onBlur = (evt: InputEvent) => {
     const result = calculate(evt.target.value)
     if (result !== 'Error') {
         emit('update:modelValue', result)
+        input.value.value = result;
     }
 }
 
@@ -44,15 +46,19 @@ defineExpose({
 <template>
     <AtInput
         type="text"
-        class="rounded-sm bg-base-lvl-2/80 text-base-200 border-base hover:ring-primary"
+        class="items-center px-2 rounded-sm bg-base-lvl-2/80 text-base-200 border-base hover:ring-primary"
+        :class="{'border-none': disabled}"
+        :disabled="disabled"
         v-bind="$attrs"
-        required
         ref="input"
         :model-value="modelValue"
         @update:model-value="$emit('update:model-value', $event)"
         @blur="onBlur"
         @focus="onFocus"
     >
+    <template v-slot:prefix v-if="$slots.prefix">
+        <slot name="prefix" />
+    </template>
     <template v-slot:prefix v-if="$slots.prefix">
         <slot name="prefix" />
     </template>

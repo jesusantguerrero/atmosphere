@@ -8,14 +8,30 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Insane\Journal\Models\Core\Account;
 
 class BudgetMonth extends Model
 {
     use HasFactory;
-    protected $fillable = ['team_id', 'user_id', 'category_id', 'month', 'name', 'budgeted', 'activity' , 'available'];
+    protected $fillable = [
+        'team_id',
+        'user_id',
+        'category_id',
+        'month',
+        'name',
+        'budgeted',
+        'activity' ,
+        'available',
+        'funded_spending',
+        'payments'
+    ];
 
     public function category() {
         return $this->belongsTo(Category::class);
+    }
+
+    public function account() {
+        return $this->hasOneThrough(Account::class, Category::class, 'account_id', 'id');
     }
 
     public static function getMonthAssignments($teamId, $date) {
@@ -66,10 +82,18 @@ class BudgetMonth extends Model
 
     public function updateActivity() {
         $monthDate = Carbon::createFromFormat("Y-m-d", $this->month);
-        $this->update([
-            'activity' => $this->category->getMonthBalance($monthDate->format('Y-m'))->balance,
-        ]);
+        if (!$this->category->account) {
+            $this->update([
+                'activity' => $this->category->getMonthBalance($monthDate->format('Y-m'))->balance,
+            ]);
+        } else {
+            $accountTransactions = $this->category->account->getMonthBalance($monthDate->format('Y-m'))->balance;
+            $this->update([
+                'activity' => $accountTransactions,
+            ]);
+        }
     }
+
 
     public static function getSavingBalance($teamId, $endMonth) {
         return DB::query()

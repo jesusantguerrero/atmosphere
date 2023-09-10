@@ -26,7 +26,7 @@ const isDebt = (amount: number) => {
 
 <template>
   <div
-    class="flex justify-between px-2 py-2 overflow-hidden rounded-md cursor-pointer hover:bg-base group"
+    class="flex justify-between px-2 py-2 overflow-hidden group rounded-md cursor-pointer hover:bg-base group"
     :class="{ 'bg-base': isSelected }"
     v-bind="$attrs"
     v-on="$attrs"
@@ -47,7 +47,7 @@ const isDebt = (amount: number) => {
         {{ formatMoney(account.balance, account.currency_code) }}
       </p>
     </section>
-    <div class="flex">
+    <div class="hidden group-hover:flex transaction">
       <LogerButtonTab
         class="h-full flex items-center justify-center px-0.5 rounded-md hover:text-primary hover:bg-base-lvl-2"
         @click.stop="$emit('edit')"

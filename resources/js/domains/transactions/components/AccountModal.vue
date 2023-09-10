@@ -9,6 +9,7 @@
     import LogerInput from '@/Components/atoms/LogerInput.vue'
 
     import { makeOptions } from '@/utils/naiveui'
+import LogerButton from "@/Components/atoms/LogerButton.vue";
 
     const emit = defineEmits(['close'])
     const props = defineProps({
@@ -149,20 +150,24 @@
             </div>
         </div>
 
-        <div 
+        <div
             class="flex w-full px-6 py-4 md:space-x-3 space-between bg-base-lvl-2"
             :class="[form.id ? 'space-between' : 'justify-end']"
         >
-            <AtButton type="secondary" class="hidden text-danger md:block" @click="remove" rounded v-if="form.id"> 
-                Delete 
+            <AtButton type="secondary" class="hidden text-danger md:block" @click="remove" rounded v-if="form.id" :disabled="form.processing">
+                Delete
             </AtButton>
             <div class="flex items-center justify-end w-full md:space-x-2">
-                <AtButton type="secondary" class="hidden md:block" @click="close" rounded> 
-                    Cancel 
+                <AtButton type="secondary" class="hidden md:block" @click="close" rounded :disabled="form.processing">
+                    Cancel
                 </AtButton>
-                <AtButton class="w-full text-white md:w-fit bg-primary" @click="submit" rounded> 
-                    Save 
-                </AtButton>
+                <LogerButton
+                    class="w-full text-white md:w-fit bg-primary"
+                    @click="submit" rounded
+                    :processing="form.processing"
+                >
+                    Save
+                </LogerButton>
             </div>
         </div>
     </modal>

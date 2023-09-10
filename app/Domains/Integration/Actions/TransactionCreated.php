@@ -7,7 +7,7 @@ use App\Domains\Automation\Models\Automation;
 use App\Domains\Automation\Models\AutomationTaskAction;
 use Illuminate\Support\Str;
 
-class TransactionCreateEntry implements AutomationActionContract
+class TransactionCreated implements AutomationActionContract
 {
     use TransactionAction;
 
@@ -22,5 +22,20 @@ class TransactionCreateEntry implements AutomationActionContract
         if (Str::contains($payload['description'], $config->value)) {
             return $payload;
         }
+    }
+
+    public function getName(): string
+    {
+        return "transactionCreated";
+    }
+
+    public function label(): string
+    {
+        return "On Transaction Created";
+    }
+
+    public function getDescription(): string
+    {
+        return "Triggers when a transaction is created";
     }
 }

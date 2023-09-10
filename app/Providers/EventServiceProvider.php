@@ -24,6 +24,7 @@ use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Insane\Journal\Listeners\CreateTeamAccounts;
 use Insane\Journal\Events\AccountCreated;
+use Insane\Journal\Events\AccountUpdated;
 use Insane\Journal\Events\TransactionCreated;
 use Laravel\Jetstream\Events\TeamCreated;
 use Laravel\Jetstream\Events\TeamDeleted;
@@ -54,11 +55,20 @@ class EventServiceProvider extends ServiceProvider
             CreateBudgetCategory::class,
             CreateStartingBalance::class
         ],
+        AccountUpdated::class => [
+            CreateBudgetCategory::class,
+        ],
         TransactionCreated::class => [
             CreateBudgetTransactionMovement::class,
             HandleTransactionCreated::class,
             CheckOccurrence::class,
             UpdateOpenReconciliations::class
+        ],
+        TransactionUpdated::class => [
+            CreateBudgetTransactionMovement::class,
+        ],
+        TransactionDeleted::class => [
+            CreateBudgetTransactionMovement::class,
         ],
         // App events
         AppCreated::class => [

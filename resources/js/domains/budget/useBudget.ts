@@ -1,6 +1,7 @@
 import { cloneDeep } from "lodash";
 import { computed, watch, reactive, toRefs } from "vue";
 import { getCategoriesTotals, getGroupTotals } from './index';
+import { ICategory } from "../transactions/models";
 
 export const BudgetState = reactive({
     data: [],
@@ -34,17 +35,20 @@ export const BudgetState = reactive({
     }),
     // Balance
     inflow: computed(() => {
-        return BudgetState.data.find((category) => category.name == 'Inflow')
+        return BudgetState.data.find((category: ICategory) => category.name == 'Inflow')
     }),
     outflow: computed(() => {
         return BudgetState.data?.filter((category) => category.name != 'Inflow')
     }),
+    budgetTotals: computed(() => {
+        return getGroupTotals(BudgetState.outflow)
+    }),
+
     available: computed(() => {
-        const budgetTotals = getGroupTotals(BudgetState.outflow)
-        return budgetTotals.available
+        return BudgetState.budgetTotals.available
     }),
     readyToAssign: computed(() => {
-        const budgetTotals = getGroupTotals(BudgetState.outflow)
+        const budgetTotals = BudgetState.budgetTotals;
         const category = BudgetState.inflow?.subCategories[0] ?? {}
         const balance = category?.activity - budgetTotals.budgeted
 

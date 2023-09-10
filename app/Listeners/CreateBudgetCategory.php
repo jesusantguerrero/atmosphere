@@ -3,36 +3,25 @@
 namespace App\Listeners;
 
 use App\Domains\AppCore\Models\Category;
+use App\Domains\Budget\Data\CategoryData;
+use App\Domains\Budget\Services\BudgetCategoryService;
 use Insane\Journal\Models\Core\AccountDetailType;
 use Insane\Journal\Events\AccountCreated;
+use Insane\Journal\Events\AccountUpdated;
 
 class CreateBudgetCategory
 {
-    /**
-     * Create the event listener.
-     *
-     * @return void
-     */
-    public function __construct()
+    public function handle(AccountCreated|AccountUpdated $event)
     {
-        //
-    }
-
-    /**
-     * Handle the event.
-     *
-     * @param  object  $event
-     * @return void
-     */
-    public function handle(AccountCreated $event)
-    {
-        if ($event->account->detailTypeId?->name == AccountDetailType::CREDIT_CARD) {
-            $session = [
-                "team_id" => $event->account->team_id,
-                "user_id" => $event->account->user_id
-            ];
-            $categoryGroupId = Category::findOrCreateByName($session, 'Credit Card Payments');
-            Category::findOrCreateByName($session, $event->account->name, $categoryGroupId);
+        if ($event->account->detailType->name == AccountDetailType::CREDIT_CARD) {
+            BudgetCategoryService::findOrCreateByName(new CategoryData(
+                null,
+                $event->account->team_id,
+                $event->account->user_id,
+                $event->account->id,
+                Category::findOrCreateByName($event->account, 'Credit Card Payments'),
+                 $event->account->name
+            ));
         }
     }
 }
