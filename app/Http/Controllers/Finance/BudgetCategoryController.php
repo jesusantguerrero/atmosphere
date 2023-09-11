@@ -33,7 +33,7 @@ class BudgetCategoryController extends InertiaController
             'name' => 'required|string|max:255|unique:categories',
         ];
         $this->sorts = ['index'];
-        $this->includes = ['subCategories'];
+        $this->includes = ['subCategories', 'subCategories.budget', 'subCategories.budgets'];
         $this->filters = [
             'parent_id' => '$null',
             'resource_type' => 'transactions',

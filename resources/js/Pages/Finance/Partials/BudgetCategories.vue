@@ -12,6 +12,7 @@ import BudgetGroupForm from "@/domains/budget/components/BudgetGroupForm.vue";
 
 import { useBudget } from "@/domains/budget";
 import { createBudgetCategory } from "@/domains/budget/createBudgetCategory";
+import { ICategory } from "@/domains/transactions/models";
 
 const props = defineProps({
   budgets: {
@@ -28,7 +29,7 @@ const {
   visibleCategories,
   filters,
   setSelectedBudget,
-  
+
 } = useBudget(budgets);
 
 const categoryForm = useForm({
@@ -45,13 +46,13 @@ const groupById = (items) =>
 }, {});
 
 
-const saveBudgetCategory = (parentId, callback) => {
+const saveBudgetCategory = (parentId?: number, callback?: () => {}) => {
   if (!categoryForm.processing) {
     createBudgetCategory(categoryForm, parentId, callback);
   }
 };
 
-const saveReorder = (categories) => {
+const saveReorder = (categories: ICategory[]) => {
   const items = categories.map((item, index) => ({
     id: item.id,
     name: item.name,

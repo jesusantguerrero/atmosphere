@@ -27,17 +27,11 @@ class Category extends CoreCategory
         return $this->hasMany(BudgetMonth::class)->orderBy('month', 'desc');
     }
 
-    public function lastMonthBudget() {
-        return $this->hasMany(BudgetMonth::class)->orderBy('month', 'desc')->limit(1);
+    public function subCategories() {
+        return $this->hasMany(self::class, 'parent_id', 'id')->orderBy('index');
     }
 
-    /**
-     * Create a new factory instance for the model.
-     *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
-     */
-    protected static function newFactory()
-    {
-        return \Database\Factories\CategoryFactory::new();
+    public function lastMonthBudget() {
+        return $this->hasMany(BudgetMonth::class)->orderBy('month', 'desc')->limit(1);
     }
 }

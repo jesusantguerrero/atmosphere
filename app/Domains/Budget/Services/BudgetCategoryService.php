@@ -92,7 +92,7 @@ class BudgetCategoryService {
             'budgeted' => $budgeted,
             'activity' => $monthBalance,
             'available' => $available,
-            'prevMonthLeftOver' => $prevMonthLeftOver
+            'prevMonthLeftOver' => $prevMonthLeftOver,
         ];
 
         // if ($this->id == 718) {
