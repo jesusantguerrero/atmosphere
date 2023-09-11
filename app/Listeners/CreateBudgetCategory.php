@@ -3,6 +3,7 @@
 namespace App\Listeners;
 
 use App\Domains\AppCore\Models\Category;
+use App\Domains\Budget\Data\BudgetReservedNames;
 use App\Domains\Budget\Data\CategoryData;
 use App\Domains\Budget\Services\BudgetCategoryService;
 use Insane\Journal\Models\Core\AccountDetailType;
@@ -19,8 +20,8 @@ class CreateBudgetCategory
                 $event->account->team_id,
                 $event->account->user_id,
                 $event->account->id,
-                Category::findOrCreateByName($event->account, 'Credit Card Payments'),
-                 $event->account->name
+                Category::findOrCreateByName($event->account, BudgetReservedNames::CREDIT_CARD_PAYMENTS->value),
+                $event->account->name
             ));
         }
     }

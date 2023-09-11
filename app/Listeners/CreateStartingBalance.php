@@ -3,7 +3,7 @@
 namespace App\Listeners;
 
 use App\Domains\AppCore\Models\Category;
-use App\Domains\Budget\Data\FixedCategories;
+use App\Domains\Budget\Data\BudgetReservedNames;
 use Insane\Journal\Events\AccountCreated;
 use Illuminate\Support\Carbon;
 use Insane\Journal\Models\Core\Payee;
@@ -43,8 +43,8 @@ class CreateStartingBalance
             $transactionCategoryId = null;
             $isDeposit = $amount > 0;
             if ($isDeposit) {
-                $categoryGroupId = Category::findOrCreateByName($session, FixedCategories::INFLOW->value);
-                $transactionCategoryId = Category::findOrCreateByName($session, FixedCategories::READY_TO_ASSIGN->value, $categoryGroupId);
+                $categoryGroupId = Category::findOrCreateByName($session, BudgetReservedNames::INFLOW->value);
+                $transactionCategoryId = Category::findOrCreateByName($session, BudgetReservedNames::READY_TO_ASSIGN->value, $categoryGroupId);
             }
 
             $categoriesUUID = $categoryGroupId ? "$categoryGroupId:$transactionCategoryId" : "not:needed";

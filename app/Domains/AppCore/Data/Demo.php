@@ -3,7 +3,7 @@
 namespace App\Domains\AppCore\Data;
 
 use App\Domains\AppCore\Models\Category;
-use App\Domains\Budget\Data\FixedCategories;
+use App\Domains\Budget\Data\BudgetReservedNames;
 use App\Domains\Transaction\Models\Transaction;
 use Illuminate\Database\Eloquent\Model;
 use Insane\Journal\Models\Core\Account;
@@ -79,7 +79,7 @@ class Demo
             $this->items[] = function () use ($attrs, $faker) {
                 $category = $this->team->budgetCategories()
                 ->whereNotNull('parent_id')
-                ->whereNot('display_id', FixedCategories::READY_TO_ASSIGN->value)
+                ->whereNot('display_id', BudgetReservedNames::READY_TO_ASSIGN->value)
                 ->get()
                 ->random(1)
                 ->first();

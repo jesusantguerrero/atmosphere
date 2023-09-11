@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use App\Domains\AppCore\Data\Demo;
 use App\Domains\AppCore\Models\Category;
-use App\Domains\Budget\Data\FixedCategories;
+use App\Domains\Budget\Data\BudgetReservedNames;
 use App\Domains\Transaction\Models\Transaction;
 use App\Models\Team;
 use App\Models\User;
@@ -81,7 +81,7 @@ class DemoDataSeeder extends Seeder
             'total' => 40000,
             'payee_id' => $payees[0]->id,
             'direction' => Transaction::DIRECTION_DEBIT,
-            'category_id' => Category::findOrCreateByName($userSession, FixedCategories::READY_TO_ASSIGN->value),
+            'category_id' => Category::findOrCreateByName($userSession, BudgetReservedNames::READY_TO_ASSIGN->value),
             'date' => $faker->dateTimeBetween($month->startOfMonth(), $month->endOfMonth())->format('Y-m-d H:i:s')
         ])
         ->createTransactions();

@@ -89,7 +89,7 @@ const saveReorder = (categories: ICategory[]) => {
         >
         <template v-slot:content="{ isExpanded, isAdding, toggleAdding }">
             <div class="bg-base-lvl-3">
-            <div v-if="isAdding" class="pt-2 pr-4" :class="{'pb-4': !isExpanded}">
+            <div v-if="isAdding" class="px-4 pt-2" :class="{'pb-4': !isExpanded}">
                 <LogerInput
                     placeholder="Add subcategory"
                     v-model="categoryForm.name"

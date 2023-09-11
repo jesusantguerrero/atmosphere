@@ -3,7 +3,7 @@
 namespace App\Domains\Transaction\Services;
 
 use App\Domains\AppCore\Models\Category;
-use App\Domains\Budget\Data\FixedCategories;
+use App\Domains\Budget\Data\BudgetReservedNames;
 use App\Domains\Transaction\Data\ReconciliationParamsData;
 use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Transaction\Models\TransactionLine;
@@ -87,7 +87,7 @@ class ReconciliationService
             'payee_label' => 'Loger adjustment',
             'date' => now()->format('Y-m-d'),
             'currency_code' => $reconciliation->account->currency_code,
-            'category_id' => Category::findOrCreateByName($reconciliation, FixedCategories::READY_TO_ASSIGN->value),
+            'category_id' => Category::findOrCreateByName($reconciliation, BudgetReservedNames::READY_TO_ASSIGN->value),
             'description' => 'Loger adjustment',
             'direction' => $reconciliation->difference > 0 ? Transaction::DIRECTION_CREDIT : Transaction::DIRECTION_DEBIT,
             'status' => Transaction::STATUS_VERIFIED,
