@@ -3,7 +3,7 @@
 namespace App\Domains\Budget\Models;
 
 use App\Domains\AppCore\Models\Category;
-use App\Domains\Budget\Data\FixedCategories;
+use App\Domains\Budget\Data\BudgetReservedNames;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -21,7 +21,7 @@ class BudgetMovement extends Model
         ];
 
         // 2
-        $sourceId = $form['source_category_id'] ?? Category::findOrCreateByName($session, FixedCategories::READY_TO_ASSIGN->value);
+        $sourceId = $form['source_category_id'] ?? Category::findOrCreateByName($session, BudgetReservedNames::READY_TO_ASSIGN->value);
         // 4
         $destinationId = $monthBudget->category_id;
         // 0

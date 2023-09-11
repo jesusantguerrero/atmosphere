@@ -2,8 +2,7 @@
 
 namespace App\Domains\Transaction\Traits;
 
-use App\Domains\AppCore\Models\Category;
-use App\Domains\Budget\Data\FixedCategories;
+use App\Domains\Budget\Data\BudgetReservedNames;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Transaction;
 
@@ -70,7 +69,7 @@ trait TransactionLineTrait {
     }
 
     public function scopeExpenseCategories($query, array $categories = null) {
-        $query->whereNot('categories.name', FixedCategories::READY_TO_ASSIGN->value)
+        $query->whereNot('categories.name', BudgetReservedNames::READY_TO_ASSIGN->value)
         ->join('categories', 'transaction_lines.category_id', '=', 'categories.id');
 
         if ($categories) {

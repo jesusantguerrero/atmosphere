@@ -4,7 +4,7 @@ namespace App\Domains\Budget\Services;
 
 use App\Domains\AppCore\Models\Category;
 use App\Domains\Budget\Data\CategoryData;
-use App\Domains\Budget\Data\FixedCategories;
+use App\Domains\Budget\Data\BudgetReservedNames;
 use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Budget\Models\BudgetTarget;
 use App\Events\BudgetAssigned;
@@ -49,7 +49,7 @@ class BudgetMonthService {
     public function assignBudget(Category $category, string $month, mixed $postData) {
         $amount = (double) $postData['budgeted'];
         $type = $postData['type'] ?? 'budgeted';
-        $shouldAggregate = $category->name === FixedCategories::READY_TO_ASSIGN->value|| $type === 'movement';
+        $shouldAggregate = $category->name === BudgetReservedNames::READY_TO_ASSIGN->value|| $type === 'movement';
 
         $month = BudgetMonth::updateOrCreate([
             'category_id' => $category->id,

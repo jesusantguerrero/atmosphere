@@ -2,7 +2,7 @@
 
 namespace App\Domains\AppCore\Models;
 
-use App\Domains\Budget\Data\FixedCategories;
+use App\Domains\Budget\Data\BudgetReservedNames;
 use App\Domains\Budget\Models\BudgetTarget;
 use App\Domains\Budget\Models\BudgetMonth;
 use App\Events\BudgetAssigned;
