@@ -128,8 +128,8 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
         Route::put('/budgets/{category}/targets/{budgetTarget}', 'update')->name("budget.target.update");
     });
     Route::controller(BudgetMonthController::class)->group(function () {
-        Route::post('/budgets/{categoryId}/months/{month}', 'assign')->name("budget.assignment");
-        Route::put('/budgets/{categoryId}/months/{month}', 'updateActivity')->name("budget.update-activity");
+        Route::post('/budgets/{category}/months/{month}', 'assign')->name("budget.assignment");
+        Route::put('/budgets/{category}/months/{month}', 'updateActivity')->name("budget.update-activity");
         Route::post('/budgets-import', 'import')->name('budget.import');
         Route::get('/budgets-export', 'export')->name('budget.export');
     });

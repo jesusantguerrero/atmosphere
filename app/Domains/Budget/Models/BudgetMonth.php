@@ -3,6 +3,7 @@
 namespace App\Domains\Budget\Models;
 
 use App\Domains\AppCore\Models\Category;
+use App\Domains\Budget\Data\FixedCategories;
 use DateTime;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -45,7 +46,8 @@ class BudgetMonth extends Model
         ->where('month', $yearMonth)
         ->orderByDesc("budgeted")
         ->join('categories', fn ($q) =>
-            $q->on('categories.id', 'category_id')->whereNot('categories.name', Category::READY_TO_ASSIGN)
+            $q->on('categories.id', 'category_id')
+            ->whereNot('categories.name', FixedCategories::READY_TO_ASSIGN->value)
         )
         ->where('budgeted', '>' , 0)
         ->sum($field);

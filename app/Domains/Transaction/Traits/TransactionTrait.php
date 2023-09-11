@@ -3,6 +3,7 @@
 namespace App\Domains\Transaction\Traits;
 
 use App\Domains\AppCore\Models\Category;
+use App\Domains\Budget\Data\FixedCategories;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Transaction;
 
@@ -69,7 +70,7 @@ trait TransactionTrait {
     }
 
     public function scopeExpenseCategories($query, array $categories = null) {
-        $query->whereNot('categories.name', Category::READY_TO_ASSIGN)
+        $query->whereNot('categories.name', FixedCategories::READY_TO_ASSIGN->value)
         ->join('categories', 'transactions.category_id', '=', 'categories.id');
 
         if ($categories) {

@@ -2,30 +2,32 @@
 
 namespace App\Domains\Budget\Services;
 
-use App\Domains\AppCore\Models\Category;
 use App\Domains\Budget\Data\CategoryData;
+use App\Domains\Budget\Data\FixedCategories;
 use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Budget\Models\BudgetTarget;
+use App\Events\BudgetAssigned;
 use App\Helpers\RequestQueryHelper;
+use Brick\Money\Money;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Account;
-use Insane\Journal\Models\Core\Category as CoreCategory;
+use Insane\Journal\Models\Core\Category;
 
 class BudgetCategoryService {
-    function __construct(protected Category|CoreCategory $model) { }
+    function __construct() { }
 
-    public function addTarget($postData) {
-        return $this->model->budget()->create(array_merge($postData, [
-            "name" => $this->model->name ?? $this->model->display_id,
-            "team_id" => $this->model->team_id
+    public function addTarget(Category $category, mixed $postData) {
+        return $category->budget()->create(array_merge($postData, [
+            "name" => $category->name ?? $category->display_id,
+            "team_id" => $category->team_id
         ]));
     }
 
-    public function updateTarget($postData) {
-        return $this->model->budget()->update(array_merge($postData, [
-            "name" => $this->model->name ?? $this->model->display_id,
+    public function updateTarget(Category $category,mixed $postData) {
+        return $category->budget()->update(array_merge($postData, [
+            "name" => $category->name ?? $category->display_id,
         ]));
     }
 
@@ -34,6 +36,7 @@ class BudgetCategoryService {
         $endMonth = substr((string) $endDate, 0, 7);
 
         return DB::query()
+        ->where("budget_targets.team_id", $teamId)
         ->whereIn('budget_targets.target_type', ['saving_balance'])
         ->whereRaw("date_format(month, '%Y-%m') <= '$endMonth'")
         ->from('budget_months')
@@ -41,10 +44,129 @@ class BudgetCategoryService {
         ->sum(DB::raw("budgeted + activity"));
     }
 
+
+    public function assignBudget(Category $category, string $month, mixed $postData) {
+        $amount = (double) $postData['budgeted'];
+        $type = $postData['type'] ?? 'budgeted';
+        $shouldAggregate = $category->name === FixedCategories::READY_TO_ASSIGN->value|| $type === 'movement';
+
+
+        $budgetMonth = BudgetMonth::updateOrCreate([
+            'category_id' => $category->id,
+            'team_id' => $category->team_id,
+            'month' => $month,
+            'name' => $month,
+        ], [
+            'user_id' => $category->user_id,
+            'budgeted' => $shouldAggregate ? DB::raw("budgeted + $amount") : $amount,
+        ]);
+
+        BudgetAssigned::dispatch($budgetMonth, $postData);
+        return $budgetMonth;
+    }
+
+    public function getBudgetInfo($category, string $month) {
+        $yearMonth = substr((string) $month, 0, 7);
+        $monthBudget = (new BudgetMonthService())->getMonthByCategory($category, $month);
+        $budgeted = $monthBudget ? $monthBudget->budgeted : 0;
+
+        if ($category->account_id) {
+            $prevMonthLeftOver = $this->getPrevMonthFundedLeftOver($category, $yearMonth);
+            $prevMonthPaymentsLeftOver = $this->getPrevMonthPaymentsLeftOver($category, $yearMonth);
+            $funded = $monthBudget ? $monthBudget->funded_spending : 0;
+            $monthPayment = $monthBudget ? $monthBudget->payments : 0;
+
+            $monthBalance = Money::of($funded, $category->account->currency_code)->minus($monthPayment)->getAmount()->toFloat();
+            $available = Money::of($prevMonthPaymentsLeftOver, 'USD')
+                // ->plus($prevMonthLeftOver)
+                // ->minus($monthBalance)
+                ->getAmount()
+                ->toFloat();
+        } else {
+            $monthBalance = (double) $category->getMonthBalance($yearMonth)->balance;
+            $prevMonthLeftOver = $this->getPrevMonthLeftOver($category, $yearMonth);
+            $available = Money::of($budgeted, 'USD')->plus($prevMonthLeftOver)->plus($monthBalance)->getAmount()->toFloat();
+        }
+
+        $data = [
+            'budgeted' => $budgeted,
+            'activity' => $monthBalance,
+            'available' => $available,
+            'prevMonthLeftOver' => $prevMonthLeftOver,
+        ];
+
+        // if ($this->id == 718) {
+        //     dd($data);
+        // }
+
+        return $data;
+    }
+
+    public static function getBudgetSubcategories($teamId) {
+        return Category::where([
+            'categories.team_id' => $teamId,
+            'categories.resource_type' => 'transactions',
+        ])
+        ->whereNull('parent_id')
+            ->orderBy('index')
+            ->with('subCategories')
+            ->get();
+    }
+
+    /**
+     * Get the current balance.
+     *
+     * @return string
+     */
+    public function getPrevMonthLeftOver($category, $yearMonth)
+    {
+        return DB::query()
+        ->select('*')
+        ->where([
+            'category_id' => $category->id,
+        ])
+        ->whereRaw("date_format(month, '%Y-%m') < '$yearMonth'")
+        ->from('budget_months')
+        ->sum(DB::raw("budgeted + activity"));
+    }
+
+    /**
+     * Get the current balance.
+     *
+     * @return string
+     */
+    public function getPrevMonthFundedLeftOver($category, $yearMonth)
+    {
+        return DB::query()
+        ->select('*')
+        ->where([
+            'category_id' => $category->id,
+        ])
+        ->whereRaw("date_format(month, '%Y-%m') < '$yearMonth'")
+        ->from('budget_months')
+        ->sum(DB::raw("funded_spending"));
+    }
+
+    /**
+     * Get the current balance.
+     *
+     * @return string
+     */
+    public function getPrevMonthPaymentsLeftOver($category, $yearMonth)
+    {
+        return DB::query()
+        ->select('*')
+        ->where([
+            'category_id' => $category->id,
+        ])
+        ->whereRaw("date_format(month, '%Y-%m') <= '$yearMonth'")
+        ->from('budget_months')
+        ->sum(DB::raw("funded_spending - payments"));
+    }
+
     public static function getNextBudgetItems($teamId) {
        BudgetTarget::getNextTargets($teamId);
     }
-
 
     public static function withBudgetInfo(Category $category) {
         $queryParams = request()->query();
@@ -55,7 +177,7 @@ class BudgetCategoryService {
         return array_merge($category->toArray(), [ 'month' => $month ], $category->getBudgetInfo($month));
     }
 
-    public function updateActivity(Category|CoreCategory $category, string $month) {
+    public function updateActivity(Category $category, string $month) {
         $monthDate = Carbon::createFromFormat("Y-m-d", $month);
         $transactions = 0;
         $activity = 0;
@@ -86,7 +208,7 @@ class BudgetCategoryService {
        ])->first();
     }
 
-    public function updateFundedSpending(Category|CoreCategory $category, string $month) {
+    public function updateFundedSpending(Category $category, string $month) {
         $monthDate = Carbon::createFromFormat("Y-m-d", $month);
         $transactions = 0;
         $activity = 0;

@@ -27,6 +27,7 @@ export const getCategoriesTotals = (categories: Record<string, any>, config = {
         categoryTotals.budgeted = ExactMath.add(categoryTotals.budgeted, category.budgeted || 0)
         categoryTotals.activity =  ExactMath.add(categoryTotals.activity, category.activity || 0)
         categoryTotals.available = ExactMath.add(categoryTotals.available, category.available || 0)
+        categoryTotals.budgetAvailable = ExactMath.add(categoryTotals.budgetAvailable, !category.account_id && category.name !== InflowCategories.READY_TO_ASSIGN ? category.available : 0)
         categoryTotals.budgetedSpending = ExactMath.add(categoryTotals.budgetedSpending, !category.account_id && category.name !== InflowCategories.READY_TO_ASSIGN  ? category.activity : 0)
         categoryTotals.prevMonthLeftOver = ExactMath.add(categoryTotals.prevMonthLeftOver, category.prevMonthLeftOver || 0)
 
@@ -60,6 +61,7 @@ export const getCategoriesTotals = (categories: Record<string, any>, config = {
     }, {
         budgeted: 0,
         budgetedSpending: 0,
+        budgetAvailable: 0,
         activity: 0,
         available: 0,
         prevMonthLeftOver: 0,
@@ -75,6 +77,7 @@ export const getGroupTotals = (groups: Record<string, any>) => {
         groupTotals.budgeted = ExactMath.add(group.budgeted, groupTotals.budgeted || 0)
         groupTotals.activity = ExactMath.add(group.activity, groupTotals.activity || 0)
         groupTotals.budgetedSpending = ExactMath.add(group.budgetedSpending, groupTotals.budgetedSpending || 0)
+        groupTotals.budgetAvailable = ExactMath.add(group.budgetAvailable, groupTotals.budgetAvailable || 0)
         groupTotals.available = ExactMath.add(group.available, groupTotals.available || 0)
 
         // console.log(groupTotals.budgetedSpending, group.name);
@@ -87,6 +90,7 @@ export const getGroupTotals = (groups: Record<string, any>) => {
     }, {
         budgeted: 0,
         budgetedSpending: 0,
+        budgetAvailable: 0,
         activity: 0,
         prevMonthLeftOver: 0,
         monthlyGoals: {

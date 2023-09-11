@@ -1,8 +1,8 @@
 import { router } from "@inertiajs/vue3";
 import { nextTick } from "vue";
 
-export const createBudgetCategory = (categoryForm, parentCategoryId = null, callback) => {
-    categoryForm.transform((formData) => ({
+export const createBudgetCategory = (categoryForm: Record<string, any>, parentCategoryId?: number, callback?: () => {}) => {
+    categoryForm.transform((formData: Record<string, string>) => ({
         ...formData,
         resource_type: "transactions",
         parent_id: parentCategoryId
