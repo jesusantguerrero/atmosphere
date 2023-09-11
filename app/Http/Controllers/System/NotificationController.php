@@ -7,7 +7,7 @@ use Laravel\Jetstream\Jetstream;
 class NotificationController {
     public function index() {
         return Jetstream::inertia()->render(request(), 'System/Notifications/Index', [
-            'notifications' => request()->user()->notifications,
+            'notifications' => request()->user()->unreadNotifications,
         ]);
     }
 

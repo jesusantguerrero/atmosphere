@@ -9,10 +9,10 @@ use App\Http\Controllers\Controller;
 
 class BudgetTargetController extends Controller
 {
-    public function store(Category $category)
+    public function store(Category $category, BudgetCategoryService $service)
     {
         $postData = request()->post();
-        (new BudgetCategoryService($category))->addTarget($postData);
+        $service->addTarget($category, $postData);
         return redirect()->back();
     }
 

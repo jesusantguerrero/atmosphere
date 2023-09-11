@@ -3,6 +3,7 @@
 namespace App\Domains\Transaction\Services;
 
 use App\Domains\AppCore\Models\Category;
+use App\Domains\Budget\Data\FixedCategories;
 use App\Domains\Transaction\Imports\TransactionsImport;
 use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Transaction\Models\TransactionLine;
@@ -83,7 +84,7 @@ class TransactionService {
         ->balance()
         ->inDateFrame($startDate, $endDate)
         ->expenseCategories()
-        ->whereNot('categories.name', Category::READY_TO_ASSIGN)
+        ->whereNot('categories.name', FixedCategories::READY_TO_ASSIGN->value)
         ->join('transactions', 'transactions.id', 'transaction_lines.transaction_id')
         ->first();
     }
@@ -95,7 +96,7 @@ class TransactionService {
             'transactions.status' => 'verified'
         ])
         ->whereNotNull('transaction_lines.category_id')
-        ->whereNot('categories.name', Category::READY_TO_ASSIGN)
+        ->whereNot('categories.name', FixedCategories::READY_TO_ASSIGN->value)
         ->whereBetween('transactions.date', [$startDate, $endDate]);
 
         if ($parentId) {
@@ -125,7 +126,7 @@ class TransactionService {
             'transactions.status' => 'verified'
         ])
         ->whereNotNull('transaction_lines.category_id')
-        ->whereNot('catGroup.name', Category::INFLOW)
+        ->whereNot('catGroup.name', FixedCategories::INFLOW->value)
         ->whereBetween('transactions.date', [$startDate, $endDate])
         ->select(DB::raw("
             ABS(sum(transaction_lines.amount * transaction_lines.type)) as total,

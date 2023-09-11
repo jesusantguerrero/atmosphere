@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Finance;
 
 use App\Domains\AppCore\Models\Category;
 use App\Domains\Budget\Models\BudgetMovement;
+use App\Domains\Budget\Services\BudgetAccountService;
 use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Transaction\Services\ReportService;
 use App\Http\Resources\CategoryGroupCollection;
+use App\Models\Setting;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -18,7 +20,7 @@ class BudgetCategoryController extends InertiaController
     protected $authorizedUser = false;
     protected $authorizedTeam = true;
 
-    public function __construct(Category $category)
+    public function __construct(Category $category, public BudgetAccountService $accountService)
     {
         $this->model = $category;
         $this->templates = [
@@ -31,12 +33,26 @@ class BudgetCategoryController extends InertiaController
             'name' => 'required|string|max:255|unique:categories',
         ];
         $this->sorts = ['index'];
-        $this->includes = ['subCategories', 'subCategories.budget', 'subCategories.budgets'];
+        $this->includes = ['subCategories'];
         $this->filters = [
             'parent_id' => '$null',
             'resource_type' => 'transactions',
         ];
         $this->resourceName= "budgets";
+    }
+
+    protected function getIndexProps(Request $request, $resources = null): array
+    {
+        $queryParams = request()->query();
+        $settings = Setting::getByTeam(auth()->user()->current_team_id);
+        $timeZone = $settings["team_timezone"] ?? config('app.timezone');
+        $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
+        [$startDate, $endDate] = $this->getFilterDates($filters, $timeZone);
+
+        $accountTotalBalance = $this->accountService->getBalanceAs($request->user()->current_team_id, $endDate);
+        return [
+            'accountTotal' => $accountTotalBalance
+        ];
     }
 
     public function show(int $categoryId) {
@@ -91,15 +107,6 @@ class BudgetCategoryController extends InertiaController
         $category = Category::find($categoryId);
         $postData = $request->post();
         $category->budget->update($postData);
-        return Redirect::back();
-    }
-
-    public function assignMonthBudget(Request $request, $categoryId, $month)
-    {
-        $category = Category::find($categoryId);
-        $postData = $request->post();
-        $monthBalance = $category->assignBudget($month, $postData);
-        BudgetMovement::registerMovement($monthBalance, $postData);
         return Redirect::back();
     }
 
