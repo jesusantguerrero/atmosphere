@@ -5,11 +5,12 @@
     import WidgetTitleCard from '@/Components/molecules/WidgetTitleCard.vue';
     import TransactionsList from '@/domains/transactions/components/TransactionsList.vue';
     import { removeTransaction, transactionDBToTransaction, useTransactionModal } from '@/domains/transactions';
+import LogerButton from '@/Components/atoms/LogerButton.vue';
 
 
     const transactionsDraft = ref([]);
     const isLoadingDrafts = ref(false);
-    const fetchTransactions = () => {
+    const fetchTransactions = async () => {
         const url = `/api/finance/transactions?filter[status]=draft&limit=10`;
         return axios.get(url).then<ITransaction[]>(({ data }) => {
             transactionsDraft.value = data;
@@ -20,6 +21,14 @@
     onMounted(() => {
         fetchTransactions()
     })
+
+    const isLoading = ref(false);
+    const updateTransactions = () => {
+        isLoading.value = true;
+        fetchTransactions().finally(() => {
+            isLoading.value = false;
+        })
+    }
 
     const { openTransactionModal } = useTransactionModal();
     const handleEdit = (transaction: ITransaction) => {
@@ -46,13 +55,11 @@
         />
 
         <template #action>
-            <AtButton
-                class="flex items-center text-primary"
-                @click="router.visit('/transactions?filter[status]=planned')"
-            >
-                <span> See scheduled</span>
-                <i class="ml-2 fa fa-chevron-right"></i>
-            </AtButton>
+            <LogerButton variant="inverse" class="rounded-full" @click="updateTransactions()" :disabled="isLoading">
+                <div :class="{'animate-spin': isLoading}">
+                    <IMdiSync  />
+                </div>
+            </LogerButton>
         </template>
     </WidgetTitleCard>
 </template>

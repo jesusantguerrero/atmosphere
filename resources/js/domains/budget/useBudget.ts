@@ -45,7 +45,7 @@ export const BudgetState = reactive({
     }),
 
     available: computed(() => {
-        return BudgetState.budgetTotals.available
+        return BudgetState.budgetTotals.budgetAvailable
     }),
     readyToAssign: computed(() => {
         const budgetTotals = BudgetState.budgetTotals;

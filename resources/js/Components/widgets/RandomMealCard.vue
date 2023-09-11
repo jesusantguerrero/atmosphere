@@ -1,18 +1,3 @@
-<template>
-    <div class="flex items-center justify-between px-4 py-3 rounded-lg bg-base-lvl-3">
-        <div class="flex items-center h-10 text-lg text-center capitalize text-secondary">
-            <span>
-                {{ state.label }}
-            </span>
-        </div>
-        <div class="flex justify-between">
-            <LogerButton variant="inverse" class="rounded-full" @click="getRandomMeal" :disabled="state.isLoading">
-                <i class="fa fa-sync" :class="[state.isLoading ? 'fa-spin' : '']"></i>
-            </LogerButton>
-        </div>
-    </div>
-</template>
-
 <script setup lang="ts">
 import { reactive, computed } from 'vue'
 import axios from 'axios'
@@ -68,3 +53,18 @@ const getRandomMeal = () => {
     })
 }
 </script>
+
+<template>
+    <div class="flex items-center justify-between px-4 py-3 rounded-lg bg-base-lvl-3">
+        <div class="flex items-center h-10 text-lg text-center capitalize text-secondary">
+            <span>
+                {{ state.label }}
+            </span>
+        </div>
+        <div class="flex justify-between">
+            <LogerButton variant="inverse" class="rounded-full" @click="getRandomMeal" :disabled="state.isLoading">
+                <i class="fa fa-sync" :class="[state.isLoading ? 'fa-spin' : '']"></i>
+            </LogerButton>
+        </div>
+    </div>
+</template>
