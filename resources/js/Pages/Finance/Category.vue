@@ -38,7 +38,7 @@ const listComponent = computed(() => {
 });
 
 const isDraft = computed(() => {
-  return serverSearchOptions.value.filters?.status == "draft";
+  return serverSearchOptions.value?.filters?.status == "draft";
 });
 
 const removeTransaction = (transaction: ITransaction) => {

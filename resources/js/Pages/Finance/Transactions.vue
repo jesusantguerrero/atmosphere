@@ -91,13 +91,13 @@ const fetchTransactions = (params = location.toString()) => {
 }
 
 const selectedAccountId = computed(() => {
-  return serverSearchOptions.value.filters?.account_id;
+  return serverSearchOptions.value?.filters?.account_id;
 });
 
 provide("selectedAccountId", selectedAccountId.value);
 
 const isDraft = computed(() => {
-  return serverSearchOptions.value.filters?.status == "draft";
+  return serverSearchOptions.value?.filters?.status == "draft";
 });
 
 const removeTransaction = (transaction: ITransaction) => {
@@ -140,7 +140,7 @@ const transactionStatus = {
     value: "/finance/transactions?filter[status]=draft&relationships=linked",
   },
 };
-const currentStatus = ref(serverSearchOptions.value.filters?.status || "verified");
+const currentStatus = ref(serverSearchOptions.value?.filters?.status || "verified");
 
 const monthName = computed(() => format(pageState.dates.startDate, "MMMM"))
 
