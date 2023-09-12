@@ -21,10 +21,16 @@ const { modelValue } = toRefs(props)
 const { calculate } = useCalculatorInput();
 
 const onBlur = (evt: InputEvent) => {
-    const result = calculate(evt.target.value)
+    const result = parseFloat(calculate(evt.target.value))
     if (result !== 'Error') {
         emit('update:modelValue', result)
         input.value.value = result;
+    }
+}
+
+const emitValue = (value: string) => {
+    if (value !== undefined) {
+        emit('update:modelValue', value)
     }
 }
 
@@ -52,7 +58,7 @@ defineExpose({
         v-bind="$attrs"
         ref="input"
         :model-value="modelValue"
-        @update:model-value="$emit('update:model-value', $event)"
+        @update:model-value="emitValue"
         @blur="onBlur"
         @focus="onFocus"
     >

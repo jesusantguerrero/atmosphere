@@ -183,6 +183,7 @@ Route::middleware(['auth:sanctum'])->prefix('/api')->name('api.')->group(functio
     // currencies
     Route::get('/currencies', [CurrencyApiController::class, 'index']);
     Route::get('/category-transactions/{category}', [FinanceLinesController::class, 'getTransactions']);
+    Route::get('/category-transactions/{category}/details', [FinanceLinesController::class, 'getDetails']);
 
     // Jetstream teams rewrite
     Route::patch('/v2/team-invitations/{invitation}', [TeamInvitationController::class, 'accept'])->name('team-invitations.accept-internal');
