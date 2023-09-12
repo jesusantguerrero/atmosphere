@@ -10,17 +10,16 @@ import IconAllocated from '@/Components/icons/IconAllocated.vue';
 import BalanceInput from "@/Components/atoms/BalanceInput.vue";
 import BudgetTransaction from '@/Components/atoms/BudgetTransaction.vue';
 import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
-import LogerInput from '@/Components/atoms/LogerInput.vue';
 
 import { BudgetCategory } from '@/domains/budget/models/budget';
 import autoAnimate from '@formkit/auto-animate';
 
 import formatMoney from "@/utils/formatMoney";
 import { getBudgetTarget } from '@/domains/budget/budgetTotals';
-import { getCategoryLink } from '@/domains/transactions/models/transactions';
 import ExpenseChartWidgetRow from '@/domains/transactions/components/ExpenseChartWidgetRow.vue';
 import BudgetItemHeader from './BudgetItemHeader.vue';
 import InputMoney from '@/Components/atoms/InputMoney.vue';
+import { ICategory } from '@/domains/transactions/models';
 
 
 const props = defineProps<{
@@ -84,7 +83,7 @@ const handleAssignOptions = (option: string) => {
 };
 
 const onAssignBudget = () => {
-    if (Number(props.item.budgeted) !== Number(budgeted.value)) {
+    if (Number(props.item.budgeted) !== Number(budgeted.value) && budgeted.value !== null) {
         const month = format(startOfMonth(pageState.dates.endDate), 'yyyy-MM-dd');
 
         router.post(`/budgets/${props.item.id}/months/${month}`, {
@@ -139,6 +138,23 @@ const toggleEditing = () => {
     }
 }
 
+const currentDetails = ref("");
+const fetchDetails = async (category: ICategory) => {
+    const startDate = format(pageState.dates.startDate, 'yyyy-MM-dd');
+    const endDate = format(pageState.dates.endDate, 'yyyy-MM-dd');
+
+    const response = await axios.get(`/api/category-transactions/${category.id}/details`, {
+        params: {
+            filter: {
+                date: `${startDate}~${endDate}`
+            },
+        }
+    })
+
+
+    category.details = response.data?.transactions.at(0).details;
+}
+
 const inputContainer = ref()
 onMounted(() => {
     autoAnimate(inputContainer.value)
@@ -186,6 +202,8 @@ onMounted(() => {
                 :item="item"
                 type="categories"
                 classes="w-44 h-full"
+                :details="currentDetails"
+                @open-details="fetchDetails(item)"
             />
             <BalanceInput
                 :value="item.available"

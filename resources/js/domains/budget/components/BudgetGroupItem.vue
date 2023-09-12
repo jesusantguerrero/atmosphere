@@ -10,9 +10,12 @@ import PointAlert from "@/Components/atoms/PointAlert.vue";
 import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 
 import BudgetProgress from "./BudgetProgress.vue";
-import { getCategoryLink } from "@/domains/transactions/models/transactions";
+import { ICategory, getCategoryLink } from "@/domains/transactions/models/transactions";
 import MoneyPresenter from "@/Components/molecules/MoneyPresenter.vue";
 import ExpenseChartWidgetRow from "@/domains/transactions/components/ExpenseChartWidgetRow.vue";
+import { format } from "date-fns";
+import { inject } from "vue";
+import axios from "axios";
 
 const emit = defineEmits(['removed'])
 
@@ -87,6 +90,23 @@ const handleOptions = (option: any) => {
             break;
     }
 }
+
+const pageState = inject('pageState', {});
+const fetchDetails = async (category: ICategory) => {
+    const startDate = format(pageState.dates.startDate, 'yyyy-MM-dd');
+    const endDate = format(pageState.dates.endDate, 'yyyy-MM-dd');
+    category.details = ""
+
+    const response = await axios.get(`/api/category-transactions/${category.id}/details`, {
+        params: {
+            filter: {
+                date: `${startDate}~${endDate}`
+            },
+        }
+    })
+
+    category.details = response.data?.transactions.at(0).details;
+}
 </script>
 
 <template>
@@ -120,6 +140,7 @@ const handleOptions = (option: any) => {
                 :item="item"
                 type="groups"
                 classes="w-44 h-full"
+                @open-details="fetchDetails(item)"
             />
             <MoneyPresenter :value="item.available" />
             <NDropdown

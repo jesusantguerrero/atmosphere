@@ -108,12 +108,45 @@ class TransactionService {
             transaction_lines.category_id,
             categories.name,
             categories.parent_id,
-            group.name as parent_name
+            group.name as parent_name,
+            group_concat(concat(transaction_lines.id, '/', accounts.name, '/', transactions.date, '/', payees.name, '/', transaction_lines.concept, '/', amount * transaction_lines.type) SEPARATOR '|') as details
         ", [
              $DIRECTION_FACTOR
         ])
         ->join('transactions', 'transactions.id', 'transaction_id')
         ->join('categories', 'categories.id', 'transaction_lines.category_id')
+        ->join('accounts', 'accounts.id', 'transaction_lines.account_id')
+        ->join('payees', 'payees.id', 'transaction_lines.payee_id')
+        ->leftJoin('categories as group', 'group.id', 'categories.parent_id')
+        ->orderBy('total', 'desc')
+        ->limit($limit)
+        ->get();
+    }
+
+    public static function getCategoryExpenseDetails($teamId, $startDate, $endDate, $limit = null, $categoryId = null, $parentId = null) {
+        $DIRECTION_FACTOR = -1;
+        return DB::table('transaction_lines')->where([
+            'transaction_lines.team_id' => $teamId,
+            'transactions.status' => 'verified'
+        ])
+        ->whereNotNull('transaction_lines.category_id')
+        ->whereNot('categories.name', BudgetReservedNames::READY_TO_ASSIGN->value)
+        ->whereBetween('transactions.date', [$startDate, $endDate])
+        ->when($categoryId, fn ($q) => $q->where("categories.id", $categoryId)->groupBy('transaction_lines.category_id'))
+        ->when($parentId, fn ($q) => $q->where("group.id", $parentId)->groupBy('group.id'))
+        ->selectRaw("sum(transaction_lines.amount * transaction_lines.type * ?) as total,
+            transaction_lines.category_id,
+            categories.name,
+            categories.parent_id,
+            group.name as parent_name,
+            group_concat(concat(transaction_lines.id, '/', accounts.name, '/', transactions.date, '/', payees.name, '/', transaction_lines.concept, '/', amount * transaction_lines.type) SEPARATOR '|') as details
+        ", [
+             $DIRECTION_FACTOR
+        ])
+        ->join('transactions', 'transactions.id', 'transaction_id')
+        ->join('categories', 'categories.id', 'transaction_lines.category_id')
+        ->join('accounts', 'accounts.id', 'transaction_lines.account_id')
+        ->join('payees', 'payees.id', 'transaction_lines.payee_id')
         ->leftJoin('categories as group', 'group.id', 'categories.parent_id')
         ->orderBy('total', 'desc')
         ->limit($limit)
@@ -132,7 +165,7 @@ class TransactionService {
             ABS(sum(transaction_lines.amount * transaction_lines.type)) as total,
             catGroup.name,
             catGroup.id,
-            group_concat(concat(transaction_lines.id, ':',accounts.name, ':', transactions.date, ':', payees.name, ':', transaction_lines.concept, ':', amount * transaction_lines.type) SEPARATOR '|') as details
+            group_concat(concat(transaction_lines.id, '/',accounts.name, '/', transactions.date, '/', payees.name, '/', transaction_lines.concept, '/', amount * transaction_lines.type) SEPARATOR '|') as details
             ",
         ))
         ->join('transactions', 'transactions.id', 'transaction_id')

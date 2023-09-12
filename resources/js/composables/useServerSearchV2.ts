@@ -157,7 +157,7 @@ export const useServerSearch = (
 
   const state = reactive<ISearchState>({
     filters: {
-      ...(serverSearchData.value ? serverSearchData.value.filters : {}),
+      ...(serverSearchData.value ? serverSearchData.value?.filters : {}),
       date: null,
     },
     dates: {
