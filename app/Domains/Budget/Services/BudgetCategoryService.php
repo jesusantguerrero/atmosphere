@@ -48,7 +48,7 @@ class BudgetCategoryService {
     public function assignBudget(Category $category, string $month, mixed $postData) {
         $amount = (double) $postData['budgeted'];
         $type = $postData['type'] ?? 'budgeted';
-        $shouldAggregate = $category->name === BudgetReservedNames::READY_TO_ASSIGN->value|| $type === 'movement';
+        $shouldAggregate = $category->name === BudgetReservedNames::READY_TO_ASSIGN->value || $type === 'movement';
 
 
         $budgetMonth = BudgetMonth::updateOrCreate([
@@ -65,9 +65,26 @@ class BudgetCategoryService {
         return $budgetMonth;
     }
 
+    public function moveBudget(Category $category, string $month, mixed $postData) {
+        $amount = (double) $postData['budgeted'];
+
+        $budgetMonth = BudgetMonth::updateOrCreate([
+            'category_id' => $category->id,
+            'team_id' => $category->team_id,
+            'month' => $month,
+            'name' => $month,
+        ], [
+            'user_id' => $category->user_id,
+            'budgeted' => DB::raw("budgeted + $amount"),
+        ]);
+
+        BudgetAssigned::dispatch($budgetMonth, $postData);
+        return $budgetMonth;
+    }
+
     public function getBudgetInfo($category, string $month) {
         $yearMonth = substr((string) $month, 0, 7);
-        $monthBudget = (new BudgetMonthService())->getMonthByCategory($category, $month);
+        $monthBudget = (new BudgetMonthService())->getMonthByCategory($category, $yearMonth. '-01');
         $budgeted = $monthBudget ? $monthBudget->budgeted : 0;
 
         if ($category->account_id) {
@@ -93,10 +110,13 @@ class BudgetCategoryService {
             'activity' => $monthBalance,
             'available' => $available,
             'prevMonthLeftOver' => $prevMonthLeftOver,
+            "name" => $category->name,
+            "month" => $yearMonth
         ];
 
-        // if ($this->id == 718) {
-        //     dd($data);
+        // if ($category->id == 733) {
+        //     // dd($data);
+        //     // dd($prevMonthLeftOver);
         // }
 
         return $data;
