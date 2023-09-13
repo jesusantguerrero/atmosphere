@@ -14,7 +14,7 @@ class CreateBudgetCategory
 {
     public function handle(AccountCreated|AccountUpdated $event)
     {
-        if ($event->account->detailType->name == AccountDetailType::CREDIT_CARD) {
+        if ($event->account->detailType?->name == AccountDetailType::CREDIT_CARD) {
             BudgetCategoryService::findOrCreateByName(new CategoryData(
                 null,
                 $event->account->team_id,
