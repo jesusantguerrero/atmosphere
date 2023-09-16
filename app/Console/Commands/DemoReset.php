@@ -22,7 +22,7 @@ class DemoReset extends Command
      *
      * @var string
      */
-    protected $signature = 'demo:reset';
+    protected $signature = 'app:demo-reset';
 
     /**
      * The console command description.

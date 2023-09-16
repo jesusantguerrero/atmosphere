@@ -16,7 +16,7 @@ class MakeOccurrenceReminders extends Command
      *
      * @var string
      */
-    protected $signature = 'loger:occurrence-reminders';
+    protected $signature = 'app:occurrence-reminders';
 
     /**
      * The console command description.

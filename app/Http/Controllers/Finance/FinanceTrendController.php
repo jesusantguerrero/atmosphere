@@ -24,7 +24,7 @@ class FinanceTrendController extends Controller {
 
     public function __construct(private ReportService $reportService)
     {
-        
+
     }
 
     public function index(Request $request, $sectionName = 'groups') {
@@ -65,14 +65,15 @@ class FinanceTrendController extends Controller {
         $teamId = $request->user()->current_team_id;
 
         $data  = TransactionService::getCategoryExpenses($teamId, $startDate, $endDate, null, $filters['parent_id'] ?? null);
-        $parentName = $data[0]?->parent_name ? $data[0]?->parent_name . " - " : null;
+        $hasData = isset($data[0]);
+        $parentName = $hasData ? $data[0]?->parent_name . " - " : null;
 
         return [
             'data' => $data,
             'metaData' => [
                 'title' => $parentName . 'Category Trends',
-                'parent_id' => $data[0]?->parent_id ?? null,
-                'parent_name' => $data[0]?->parent_name ?? null,
+                'parent_id' => $hasData ? $data[0]?->parent_id : null,
+                'parent_name' => $hasData ? $data[0]?->parent_name : null,
             ]
         ];
     }

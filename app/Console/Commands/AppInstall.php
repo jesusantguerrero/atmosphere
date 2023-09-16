@@ -12,14 +12,14 @@ class DemoSetup extends Command
      *
      * @var string
      */
-    protected $signature = 'app:demo-setup';
+    protected $signature = 'app:install';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Generate demo environment';
+    protected $description = 'Setup loger application';
 
     /**
      * Execute the console command.
@@ -29,7 +29,7 @@ class DemoSetup extends Command
     public function handle()
     {
         Artisan::call('migrate:fresh --force --seed');
-        Artisan::call('demo:seed');
+        echo "open your app at ". config('app.url');
         return 0;
     }
 }

@@ -13,7 +13,7 @@ class GeneratePayees extends Command
      *
      * @var string
      */
-    protected $signature = 'generate:payees {teamId}';
+    protected $signature = 'app:generate-payees {teamId}';
 
     /**
      * The console command description.

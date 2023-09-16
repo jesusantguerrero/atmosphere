@@ -2,13 +2,9 @@
 
 namespace App\Domains\AppCore\Models;
 
-use App\Domains\Budget\Data\BudgetReservedNames;
 use App\Domains\Budget\Models\BudgetTarget;
 use App\Domains\Budget\Models\BudgetMonth;
-use App\Events\BudgetAssigned;
 use App\Models\Team;
-use Brick\Money\Money;
-use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Category as CoreCategory;
 
 class Category extends CoreCategory

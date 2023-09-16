@@ -12,7 +12,7 @@ class DemoSeed extends Command
      *
      * @var string
      */
-    protected $signature = 'demo:seed';
+    protected $signature = 'app:demo-seed';
 
     /**
      * The console command description.

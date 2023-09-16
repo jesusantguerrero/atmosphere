@@ -1,5 +1,4 @@
 <?php
-use Insane\Journal\Features;
 
 return [
     "accounts_inertia_path" => "Journal/Accounts",
