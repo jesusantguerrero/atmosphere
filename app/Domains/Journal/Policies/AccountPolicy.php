@@ -2,7 +2,6 @@
 
 namespace App\Domains\Journal\Policies;
 
-use App\Models\Team;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Insane\Journal\Models\Core\Account;
