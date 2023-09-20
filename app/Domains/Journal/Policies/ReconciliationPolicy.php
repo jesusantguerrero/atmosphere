@@ -10,12 +10,10 @@ class ReconciliationPolicy
 {
     use HandlesAuthorization;
 
-
     public function create(User $user)
     {
         return true;
     }
-
 
     public function view(User $user, Reconciliation $reconciliation)
     {

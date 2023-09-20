@@ -15,7 +15,7 @@ class AcceptInvitation
      */
     public function handle(TeamMemberAdded $teamMemberAdded)
     {
-        if (!$teamMemberAdded->member->user->hasVerifiedEmail()) {
+        if (! $teamMemberAdded->member->user->hasVerifiedEmail()) {
             $teamMemberAdded->member->user->markEmailAsVerified();
             event(new Verified($teamMemberAdded->member->user));
         }

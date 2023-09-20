@@ -7,11 +7,15 @@ use Illuminate\Support\Facades\Gate;
 use Insane\Journal\Contracts\TransactionDeletes;
 use Insane\Journal\Models\Core\Transaction;
 
-class TransactionDelete implements TransactionDeletes {
-    public function validate(User $user, Transaction $transaction) {
+class TransactionDelete implements TransactionDeletes
+{
+    public function validate(User $user, Transaction $transaction)
+    {
         Gate::forUser($user)->authorize('delete', $transaction);
     }
-    public function delete(User $user, Transaction $transaction) {
+
+    public function delete(User $user, Transaction $transaction)
+    {
         $this->validate($user, $transaction);
         $transaction->remove();
     }

@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('budget_months', function (Blueprint $table) {
-            $table->decimal('funded_spending')->default(0)->after("available");
-            $table->decimal('payments')->default(0)->after("funded_spending");
+            $table->decimal('funded_spending')->default(0)->after('available');
+            $table->decimal('payments')->default(0)->after('funded_spending');
         });
     }
 

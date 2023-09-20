@@ -14,24 +14,20 @@ class CategoryPolicy
         return true;
     }
 
-
     public function view(User $user, Category $category)
     {
         return $user->team_id == $category->team_id;
     }
-
 
     public function create(User $user)
     {
         return true;
     }
 
-
     public function update(User $user, Category $category)
     {
         return $user->team_id == $category->team_id;
     }
-
 
     public function delete(User $user, Category $category)
     {

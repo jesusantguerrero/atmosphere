@@ -30,6 +30,7 @@ class DemoSetup extends Command
     {
         Artisan::call('migrate:fresh --force --seed');
         Artisan::call('demo:seed');
+
         return 0;
     }
 }

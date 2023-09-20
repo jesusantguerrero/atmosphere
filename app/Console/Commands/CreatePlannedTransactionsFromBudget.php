@@ -8,8 +8,7 @@ use Illuminate\Console\Command;
 
 class CreatePlannedTransactionsFromBudget extends Command
 {
-    protected  $signature = 'app:create-planned-transactions-from-budget {teamId}';
-
+    protected $signature = 'app:create-planned-transactions-from-budget {teamId}';
 
     protected $description = 'Create planned transactions from budget.';
 
@@ -17,6 +16,7 @@ class CreatePlannedTransactionsFromBudget extends Command
     {
         $team = Team::find($this->argument('teamId'));
         $service->createPlannedTransactions($team->id);
+
         return 0;
     }
 }

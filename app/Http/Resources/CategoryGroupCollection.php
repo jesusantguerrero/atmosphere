@@ -23,7 +23,7 @@ class CategoryGroupCollection extends JsonResource
             'index' => $this->index,
             'name' => $this->name,
             'parent_id' => null,
-            'resource_type' => "transactions",
+            'resource_type' => 'transactions',
             'resource_type_id' => $this->resource_type_id,
             'status' => $this->status,
             'subCategories' => CategoryCollection::collection($this->whenLoaded('subCategories')),

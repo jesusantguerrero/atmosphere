@@ -10,12 +10,10 @@ class ProductPolicy
 {
     use HandlesAuthorization;
 
-
     public function create(User $user)
     {
         return true;
     }
-
 
     public function view(User $user, Product $product)
     {
@@ -26,7 +24,6 @@ class ProductPolicy
     {
         return $user->team_id == $product->team_id;
     }
-
 
     public function delete(User $user, Product $product)
     {

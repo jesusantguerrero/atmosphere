@@ -53,7 +53,7 @@ class GitSetupCommand extends Command
         };
 
         $process->run(function ($type, $output) use ($callback) {
-            $callback($type, "Digital Ocean", $output);
+            $callback($type, 'Digital Ocean', $output);
         });
 
         $process->getExitCode();
@@ -61,7 +61,8 @@ class GitSetupCommand extends Command
         echo "copy this code in the repo: git remote add live ssh://root@$account/home/$name.git";
     }
 
-    public function getRemoteGitSetupProcess($account, $repoName) {
+    public function getRemoteGitSetupProcess($account, $repoName)
+    {
         $process = Process::fromShellCommandline("ssh $account -T");
 
         $process->setInput(
@@ -74,9 +75,9 @@ class GitSetupCommand extends Command
             mkdir /var/www/$repoName.com
             cd /var/www/"
         );
+
         return $process;
     }
-
 
     protected function displayOutput($type, $host, $line)
     {

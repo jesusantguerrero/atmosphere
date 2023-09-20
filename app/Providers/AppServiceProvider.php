@@ -2,10 +2,10 @@
 
 namespace App\Providers;
 
+use App\Concerns\AppMenu;
 use App\Domains\Housing\Actions\RegisterOccurrence;
 use App\Jobs\RunTeamChecks;
 use App\Models\Team;
-use App\Concerns\AppMenu;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 use Spatie\Onboard\Facades\Onboard;
@@ -14,8 +14,6 @@ class AppServiceProvider extends ServiceProvider
 {
     /**
      * Register any application services.
-     *
-     * @return void
      */
     public function register(): void
     {
@@ -24,8 +22,6 @@ class AppServiceProvider extends ServiceProvider
 
     /**
      * Bootstrap any application services.
-     *
-     * @return void
      */
     public function boot(): void
     {
@@ -34,7 +30,7 @@ class AppServiceProvider extends ServiceProvider
             return $job->handle($app->make(RegisterOccurrence::class));
         });
 
-        $this->app->singleton('menu', function(Application $app) {
+        $this->app->singleton('menu', function (Application $app) {
             return new AppMenu();
         });
 
@@ -75,7 +71,6 @@ class AppServiceProvider extends ServiceProvider
             ->completeIf(function (Team $model) {
                 return $model->meals->count() > 0;
             });
-
 
     }
 }

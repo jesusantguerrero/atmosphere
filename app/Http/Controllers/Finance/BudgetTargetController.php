@@ -13,6 +13,7 @@ class BudgetTargetController extends Controller
     {
         $postData = request()->post();
         $service->addTarget($category, $postData);
+
         return redirect()->back();
     }
 
@@ -21,10 +22,11 @@ class BudgetTargetController extends Controller
         $postData = request()->post();
         $budgetTarget->update(array_merge(
             $postData, [
-            "team_id" => request()->user()->current_team_id,
-            "name" => $category->name,
-            "category_id" => $budgetTarget->category_id
-        ]));
+                'team_id' => request()->user()->current_team_id,
+                'name' => $category->name,
+                'category_id' => $budgetTarget->category_id,
+            ]));
+
         return redirect()->back();
     }
 }

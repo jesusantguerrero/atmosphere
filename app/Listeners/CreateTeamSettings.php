@@ -6,21 +6,18 @@ use App\Actions\Loger\CreateDefaultMealTypes;
 use App\Domains\Journal\Actions\AccountCatalogCreate;
 use App\Domains\Journal\Actions\TransactionCategoriesCreate;
 use Carbon\Carbon;
-use Insane\Journal\Actions\CreateChartAccounts;
-use Insane\Journal\Actions\CreateTransactionCategories;
 use Laravel\Jetstream\Events\TeamCreated;
 
 class CreateTeamSettings
 {
-
     public function __construct(
         public AccountCatalogCreate $accountCatalog,
         public TransactionCategoriesCreate $transactionCategories,
         public CreateDefaultMealTypes $createDefaultMealTypes
-    )
-    {
+    ) {
 
     }
+
     /**
      * Handle the event.
      *
@@ -41,7 +38,8 @@ class CreateTeamSettings
         }
     }
 
-    public function setTrialPeriod($team) {
+    public function setTrialPeriod($team)
+    {
         $date = now()->format('Y-m-d');
         $date = Carbon::now()->addDays(14);
         $formattedDate = $date->format('Y-m-d');

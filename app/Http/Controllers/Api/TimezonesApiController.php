@@ -7,9 +7,10 @@ use Illuminate\Http\Request;
 
 class TimezonesApiController extends BaseController
 {
-    public function index(Request $request) {
+    public function index(Request $request)
+    {
         return [
-            "data" => DateTimeZone::listIdentifiers()
+            'data' => DateTimeZone::listIdentifiers(),
         ];
     }
 }

@@ -27,7 +27,7 @@ class CreateBudgetTargetsTable extends Migration
                 'saving_balance',
                 'savings_monthly',
                 'debt_monthly_payment',
-                'debt_payoff_date'
+                'debt_payoff_date',
             ])->nullable();
             $table->enum('frequency', ['MONTHLY', 'WEEKLY', 'DATE'])->nullable();
             $table->integer('frequency_interval')->nullable();

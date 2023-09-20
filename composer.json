@@ -14,6 +14,8 @@
         "guzzlehttp/guzzle": "^7.0.2",
         "inertiajs/inertia-laravel": "^0.6.3",
         "insane/journal": "dev-master",
+        "insane/plan-module": "dev-master",
+        "insane/watchlist-module": "dev-main",
         "joshbrw/laravel-module-installer": "^2.0",
         "kreait/laravel-firebase": "^5.2",
         "laravel/cashier-paddle": "^1.8",
@@ -38,7 +40,7 @@
         "brianium/paratest": "^7.0",
         "fakerphp/faker": "^1.9.1",
         "insane/remotr": "dev-main",
-        "laravel/sail": "^1.0.1",
+        "laravel/pint": "^1.13",
         "mockery/mockery": "^1.4.2",
         "nunomaduro/collision": "^7.0",
         "phpunit/phpunit": "^10.0",
@@ -81,8 +83,7 @@
             "dont-discover": []
         },
         "google/apiclient-services": [
-            "Gmail",
-            "Auth"
+            "Gmail"
         ]
     },
     "config": {
@@ -94,6 +95,6 @@
             "joshbrw/laravel-module-installer": true
         }
     },
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "prefer-stable": true
 }

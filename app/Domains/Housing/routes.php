@@ -6,7 +6,6 @@ use App\Domains\Housing\Http\Controllers\ProjectController;
 use App\Domains\Housing\Models\OccurrenceCheck;
 use Illuminate\Support\Facades\Route;
 
-
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
     Route::get('/housing', ProjectController::class)->name('housing.overview');
     Route::resource('/housing/occurrence', OccurrenceController::class);
@@ -21,15 +20,13 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
         Route::get('housing/occurrence-export', 'export')->name('occurrences.export');
     });
 
-    Route::get('/housing/test',function () {
+    Route::get('/housing/test', function () {
         $occurrencesOnLast = OccurrenceCheck::getForNotificationType(OccurrenceNotifyTypes::LAST);
         $occurrencesOnAvg = OccurrenceCheck::getForNotificationType(OccurrenceNotifyTypes::AVG);
 
         return [
             $occurrencesOnAvg,
-            $occurrencesOnLast
+            $occurrencesOnLast,
         ];
     });
 });
-
-

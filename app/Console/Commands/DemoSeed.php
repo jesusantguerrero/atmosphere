@@ -33,6 +33,7 @@ class DemoSeed extends Command
         $seeder = $class->setContainer($this->laravel)->setCommand($this);
 
         $seeder->__invoke();
+
         return 0;
     }
 }

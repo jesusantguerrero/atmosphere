@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Route;
  *                                  API Section
  ***************************************************************************************/
 
-
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('/api')->name('api.')->group(function () {
     Route::controller(AutomationController::class)->group(function () {
         Route::apiResource('automation', AutomationController::class);

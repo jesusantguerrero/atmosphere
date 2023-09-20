@@ -9,15 +9,16 @@ use App\Domains\Transaction\Services\PlannedTransactionService;
 use App\Domains\Transaction\Services\TransactionService;
 use App\Models\Setting;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
-use Laravel\Jetstream\Jetstream;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Freesgen\Atmosphere\Http\Querify;
+use Illuminate\Http\Request;
+use Laravel\Jetstream\Jetstream;
 
-class FinanceController extends InertiaController {
+class FinanceController extends InertiaController
+{
     use Querify;
-    const DateFormat = 'Y-m-d';
 
+    const DateFormat = 'Y-m-d';
 
     public function __construct(Transaction $transaction, private TransactionService $service, private PlannedTransactionService $plannedService)
     {
@@ -25,10 +26,11 @@ class FinanceController extends InertiaController {
 
     }
 
-    public function index(Request $request) {
+    public function index(Request $request)
+    {
         $teamId = $request->user()->current_team_id;
         $settings = Setting::getByTeam(auth()->user()->current_team_id);
-        $timeZone = $settings["team_timezone"] ?? config('app.timezone');
+        $timeZone = $settings['team_timezone'] ?? config('app.timezone');
 
         $queryParams = $request->query();
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
@@ -44,27 +46,27 @@ class FinanceController extends InertiaController {
         $expensesByCategory = TransactionService::getCategoryExpenses($teamId, $startDate, $endDate, 4);
         $expensesByCategoryGroup = TransactionService::getCategoryExpensesGroup($teamId, $startDate, $endDate);
         $lastMonthExpenses = TransactionService::getExpensesTotal($teamId, $lastMonthStartDate, $lastMonthEndDate);
-        $income = TransactionService::getIncome( $teamId, $startDate, $endDate);
-        $lastMonthIncome = TransactionService::getIncome( $teamId, $lastMonthStartDate, $lastMonthEndDate);
+        $income = TransactionService::getIncome($teamId, $startDate, $endDate);
+        $lastMonthIncome = TransactionService::getIncome($teamId, $lastMonthStartDate, $lastMonthEndDate);
         $savings = BudgetCategoryService::getSavings($teamId, $startDate, $endDate);
 
         return Jetstream::inertia()->render($request, 'Finance/Index', [
-            "sectionTitle" => "Finance",
-            "planned" => $this->plannedService->getPlanned($teamId),
-            "budgetTotal" => $budgetTotal,
-            "expensesByCategory" => $expensesByCategory,
-            "expensesByCategoryGroup" => $expensesByCategoryGroup,
-            "transactionTotal" => $transactionsTotal->total_amount,
-            "lastMonthExpenses" => $lastMonthExpenses->total_amount,
-            "income" => $income,
-            "savings" => $savings,
-            "lastMonthIncome" => $lastMonthIncome,
-            "transactions" => $transactions->map(function ($transaction) {
+            'sectionTitle' => 'Finance',
+            'planned' => $this->plannedService->getPlanned($teamId),
+            'budgetTotal' => $budgetTotal,
+            'expensesByCategory' => $expensesByCategory,
+            'expensesByCategoryGroup' => $expensesByCategoryGroup,
+            'transactionTotal' => $transactionsTotal->total_amount,
+            'lastMonthExpenses' => $lastMonthExpenses->total_amount,
+            'income' => $income,
+            'savings' => $savings,
+            'lastMonthIncome' => $lastMonthIncome,
+            'transactions' => $transactions->map(function ($transaction) {
                 return Transaction::parser($transaction);
             })->take(4),
-            "serverSearchOptions" => [
-                "filters" => $filters
-            ]
+            'serverSearchOptions' => [
+                'filters' => $filters,
+            ],
         ]);
     }
 }

@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use App\Domains\AppCore\Models\Category;
-use App\Domains\Housing\Models\OccurrenceCheck;
 use App\Domains\LogerProfile\Data\ProfileEntityData;
 use App\Domains\LogerProfile\Services\LogerProfileService;
 use Illuminate\Console\Command;
@@ -38,7 +37,7 @@ class TestProfileEntity extends Command
                 2,
                 Category::class,
                 205,
-                "Car maintenance",
+                'Car maintenance',
                 null,
                 null
             )

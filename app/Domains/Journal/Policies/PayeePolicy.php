@@ -10,7 +10,6 @@ class PayeePolicy
 {
     use HandlesAuthorization;
 
-
     public function create(User $user)
     {
         return true;
@@ -25,7 +24,6 @@ class PayeePolicy
     {
         return $user->team_id == $payee->team_id;
     }
-
 
     public function delete(User $user, Payee $payee)
     {

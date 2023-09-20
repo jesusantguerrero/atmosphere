@@ -4,8 +4,8 @@ namespace Tests\Feature\Finance;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use Inertia\Testing\AssertableInertia as Assert;
+use Tests\TestCase;
 
 class BudgetTest extends TestCase
 {

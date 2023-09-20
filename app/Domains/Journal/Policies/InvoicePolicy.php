@@ -10,12 +10,10 @@ class InvoicePolicy
 {
     use HandlesAuthorization;
 
-
     public function create(User $user)
     {
         return true;
     }
-
 
     public function view(User $user, Invoice $invoice)
     {
@@ -26,7 +24,6 @@ class InvoicePolicy
     {
         return $user->team_id == $invoice->team_id;
     }
-
 
     public function delete(User $user, Invoice $invoice)
     {

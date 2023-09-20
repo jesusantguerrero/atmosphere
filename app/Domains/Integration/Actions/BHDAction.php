@@ -7,9 +7,9 @@ trait BHDAction
     public static function getSchema(): mixed
     {
         return [
-            'description'=> [
+            'description' => [
                 'type' => 'string',
-                'required' => true
+                'required' => true,
             ],
             'date' => [
                 'type' => 'date',
@@ -19,28 +19,28 @@ trait BHDAction
             'currencyCode' => [
                 'type' => 'string',
                 'label' => 'currencyCode',
-                'required' => true
+                'required' => true,
             ],
             'amount' => [
                 'type' => 'money',
                 'label' => 'Amount',
-                'required' => true
+                'required' => true,
             ],
             'payee' => [
                 'type' => 'string',
                 'label' => 'Payee',
-                'required' => true
+                'required' => true,
             ],
             'categoryGroup' => [
                 'type' => 'string',
                 'label' => 'categoryGroup',
-                'required' => true
+                'required' => true,
             ],
             'category' => [
                 'type' => 'string',
                 'label' => 'Category',
-                'required' => true
-            ]
+                'required' => true,
+            ],
         ];
     }
 }

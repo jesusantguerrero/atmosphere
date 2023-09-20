@@ -15,24 +15,20 @@ class AccountStatementPolicy
         return true;
     }
 
-
     public function view(User $user, Account $account)
     {
         return $user->team_id == $account->team_id;
     }
-
 
     public function create(User $user)
     {
         return true;
     }
 
-
     public function update(User $user, Account $account)
     {
         return $user->team_id == $account->team_id;
     }
-
 
     public function delete(User $user, Account $account)
     {

@@ -12,13 +12,17 @@ use Insane\Journal\Models\Core\Category;
 
 class BudgetMovementService
 {
-   const MODE_ADD = "add";
-   const MODE_SUBTRACT = "subtract";
+    const MODE_ADD = 'add';
 
-   public function __construct(public BudgetCategoryService $budgetService) {}
+    const MODE_SUBTRACT = 'subtract';
 
-    public function updateBalances(int $categoryId, BudgetMovement $movement, string $date, float $amount, $mode = null) {
-        $month = substr($date, 0, 7)."-01";
+    public function __construct(public BudgetCategoryService $budgetService)
+    {
+    }
+
+    public function updateBalances(int $categoryId, BudgetMovement $movement, string $date, float $amount, $mode = null)
+    {
+        $month = substr($date, 0, 7).'-01';
         $modeSign = $mode == self::MODE_ADD ? '+' : '-';
 
         BudgetMonth::updateOrCreate([
@@ -27,10 +31,11 @@ class BudgetMovementService
             'category_id' => $categoryId,
             'month' => $month,
             'name' => $month,
-        ], ['budgeted' =>  $mode ? DB::raw("budgeted $modeSign $amount") : $amount]);
+        ], ['budgeted' => $mode ? DB::raw("budgeted $modeSign $amount") : $amount]);
     }
 
-    public function registerMovement(BudgetMovementData $data) {
+    public function registerMovement(BudgetMovementData $data)
+    {
         $session = [
             'team_id' => $data->team_id,
             'user_id' => $data->user_id,
@@ -39,14 +44,14 @@ class BudgetMovementService
         $sourceId = $data->source_category_id ?? Category::findOrCreateByName($session, BudgetReservedNames::READY_TO_ASSIGN->value);
         $destinationId = $data->destination_category_id;
 
-        $sourceCategoryBalance = self::getBalanceOfCategory($sourceId,  $data->date); // 2000
+        $sourceCategoryBalance = self::getBalanceOfCategory($sourceId, $data->date); // 2000
         $amount = $data->amount > $sourceCategoryBalance->available ? $sourceCategoryBalance->available : $data->amount; // 2096 > 2000 ? 2000 : 2096
 
         $formData = array_merge($session, [
             'source_category_id' => $sourceId,
             'destination_category_id' => $destinationId,
             'amount' => $amount,
-            'date' => $data->date
+            'date' => $data->date,
         ]);
         DB::beginTransaction();
 
@@ -59,7 +64,8 @@ class BudgetMovementService
         DB::commit();
     }
 
-    public function registerAssignment(BudgetAssignData $data) {
+    public function registerAssignment(BudgetAssignData $data)
+    {
         DB::beginTransaction();
         $session = [
             'team_id' => $data->team_id,
@@ -75,7 +81,7 @@ class BudgetMovementService
             'source_category_id' => $sourceId,
             'destination_category_id' => $destinationId,
             'amount' => $amount,
-            'date' => $data->date
+            'date' => $data->date,
         ]);
 
         $savedMovement = BudgetMovement::create($formData);
@@ -86,7 +92,8 @@ class BudgetMovementService
         DB::commit();
     }
 
-    public function getBalanceOfCategory($categoryId, string $month) {
+    public function getBalanceOfCategory($categoryId, string $month)
+    {
         return (object) $this->budgetService->getBudgetInfo(Category::find($categoryId), $month);
     }
     // public function getBalanceOfCategory($categoryId) {

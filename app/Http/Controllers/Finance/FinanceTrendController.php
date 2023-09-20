@@ -6,13 +6,16 @@ use App\Domains\Transaction\Services\ReportService;
 use App\Domains\Transaction\Services\TransactionService;
 use App\Http\Controllers\Controller;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 use Freesgen\Atmosphere\Http\Querify;
+use Illuminate\Http\Request;
 
-class FinanceTrendController extends Controller {
+class FinanceTrendController extends Controller
+{
     use Querify;
+
     const DateFormat = 'Y-m-d';
-    const sections  = [
+
+    const sections = [
         'groups' => 'group',
         'categories' => 'category',
         'payees' => 'payee',
@@ -27,7 +30,8 @@ class FinanceTrendController extends Controller {
 
     }
 
-    public function index(Request $request, $sectionName = 'groups') {
+    public function index(Request $request, $sectionName = 'groups')
+    {
         $queryParams = $request->query();
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
         $section = self::sections[$sectionName];
@@ -35,14 +39,15 @@ class FinanceTrendController extends Controller {
 
         return inertia('Finance/Trends',
             array_merge([
-                "serverSearchOptions" => $filters,
-                "section" => $sectionName,
+                'serverSearchOptions' => $filters,
+                'section' => $sectionName,
             ],
-            $data
-        ));
+                $data
+            ));
     }
 
-    public function group(Request $request) {
+    public function group(Request $request)
+    {
         $queryParams = $request->query();
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
         [$startDate, $endDate] = $this->getFilterDates($filters);
@@ -53,49 +58,52 @@ class FinanceTrendController extends Controller {
             'data' => TransactionService::getCategoryExpensesGroup($teamId, $startDate, $endDate),
             'metaData' => [
                 'title' => 'Category Group Trends',
-            ]
+            ],
         ];
     }
 
-    public function category(Request $request) {
+    public function category(Request $request)
+    {
         $queryParams = $request->query();
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
         [$startDate, $endDate] = $this->getFilterDates($filters);
 
         $teamId = $request->user()->current_team_id;
 
-        $data  = TransactionService::getCategoryExpenses($teamId, $startDate, $endDate, null, $filters['parent_id'] ?? null);
+        $data = TransactionService::getCategoryExpenses($teamId, $startDate, $endDate, null, $filters['parent_id'] ?? null);
         $hasData = isset($data[0]);
-        $parentName = $hasData ? $data[0]?->parent_name . " - " : null;
+        $parentName = $hasData ? $data[0]?->parent_name.' - ' : null;
 
         return [
             'data' => $data,
             'metaData' => [
-                'title' => $parentName . 'Category Trends',
+                'title' => $parentName.'Category Trends',
                 'parent_id' => $hasData ? $data[0]?->parent_id : null,
                 'parent_name' => $hasData ? $data[0]?->parent_name : null,
-            ]
+            ],
         ];
     }
 
-    public function payee(Request $request) {
+    public function payee(Request $request)
+    {
         $queryParams = $request->query();
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
         [$startDate, $endDate] = $this->getFilterDates($filters);
 
         $teamId = $request->user()->current_team_id;
 
-        $data  = TransactionService::getIncomeByPayeeInPeriod($teamId, $startDate, $endDate);
+        $data = TransactionService::getIncomeByPayeeInPeriod($teamId, $startDate, $endDate);
 
         return [
             'data' => $data,
             'metaData' => [
                 'title' => 'Payee Trends',
-            ]
+            ],
         ];
     }
 
-    public function netWorth(Request $request) {
+    public function netWorth(Request $request)
+    {
         $queryParams = $request->query();
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
         [$startDate, $endDate] = $this->getFilterDates($filters);
@@ -107,42 +115,47 @@ class FinanceTrendController extends Controller {
             'metaData' => [
                 'name' => 'netWorth',
                 'title' => 'Net Worth',
-            ]
+            ],
         ];
     }
 
-    public function incomeExpenses() {
+    public function incomeExpenses()
+    {
         $queryParams = request()->query();
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
         // [$startDate, $endDate] = $this->getFilterDates($filters);
         $teamId = request()->user()->current_team_id;
+
         return [
             'data' => TransactionService::getIncomeVsExpenses($teamId, 3),
             'metaData' => [
                 'name' => 'incomeExpenses',
                 'title' => 'Income vs Expenses',
-            ]
+            ],
         ];
     }
 
-    public function incomeExpensesGraph() {
+    public function incomeExpensesGraph()
+    {
         $queryParams = request()->query();
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
         [$startDate, $endDate] = $this->getFilterDates($filters);
         $teamId = request()->user()->current_team_id;
+
         return [
             'data' => ReportService::generateExpensesByPeriod($teamId, 'month', 12),
             'metaData' => [
                 'name' => 'incomeExpensesGraph',
                 'title' => 'Income vs Expenses',
-                "props" => [
-                    "headerTemplate" => 'grid',
-                ]
-            ]
+                'props' => [
+                    'headerTemplate' => 'grid',
+                ],
+            ],
         ];
     }
 
-    public function yearSummary() {
+    public function yearSummary()
+    {
         // $queryParams = request()->query();
         // $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
         // [$startDate, $endDate] = $this->getFilterDates($filters);
@@ -152,16 +165,18 @@ class FinanceTrendController extends Controller {
             'data' => $this->reportService->yearSummary($teamId, now()->subYear(1)->format('Y')),
             'metaData' => [
                 'name' => 'yearSummary',
-                'title' => 'Results of the year'
-            ]
+                'title' => 'Results of the year',
+            ],
         ];
     }
 
-    private Function getFilterDates($filters) {
-        $dates = isset($filters['date']) ? explode("~", $filters['date']) : [
+    private function getFilterDates($filters)
+    {
+        $dates = isset($filters['date']) ? explode('~', $filters['date']) : [
             Carbon::now()->startOfMonth()->format('Y-m-d'),
-            Carbon::now()->endOfMonth()->format('Y-m-d')
+            Carbon::now()->endOfMonth()->format('Y-m-d'),
         ];
+
         return $dates;
     }
 }

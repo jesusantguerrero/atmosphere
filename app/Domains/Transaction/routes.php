@@ -4,7 +4,6 @@ use App\Domains\Transaction\Http\Controllers\ReconciliationController;
 use App\Http\Controllers\Finance\FinanceAccountController;
 use Illuminate\Support\Facades\Route;
 
-
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
     Route::post('/finance/accounts/{account}/link', [FinanceAccountController::class, 'linkAccount']);
 
@@ -20,5 +19,3 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
 
     Route::put('/finance/reconciliation/{reconciliation}/reconciliation-entries/{reconciliationEntry}/check', [ReconciliationController::class, 'checkReconciliationEntry']);
 });
-
-

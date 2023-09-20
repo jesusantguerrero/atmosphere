@@ -5,11 +5,9 @@ namespace Database\Seeders;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Seeder;
 use Illuminate\Foundation\Auth\User;
-use Insane\Journal\Models\Core\Account;
 
 class AccountsSeeder extends Seeder
 {
-
     /**
      * Run the database seeds.
      *
@@ -27,7 +25,6 @@ class AccountsSeeder extends Seeder
     private function create()
     {
         $user = User::where('email', 'demo@loger.com')->get();
-
 
     }
 }

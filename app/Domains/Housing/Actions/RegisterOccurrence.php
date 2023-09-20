@@ -13,7 +13,7 @@ class RegisterOccurrence
     {
         $occurrence = OccurrenceCheck::where([
             'team_id' => $teamId,
-            'name' => $name
+            'name' => $name,
         ])->first();
 
         if ($occurrence && $occurrence->last_date !== $date) {
@@ -30,9 +30,9 @@ class RegisterOccurrence
                 'total_days' => $totalDays,
                 'avg_days_passed' => $avg,
                 'occurrence_count' => $occurrenceCount,
-                'log' => $log
+                'log' => $log,
             ]);
-        } else if (!$occurrence) {
+        } elseif (! $occurrence) {
             OccurrenceCheck::create([
                 'name' => $name,
                 'team_id' => $teamId,
@@ -40,7 +40,7 @@ class RegisterOccurrence
                 'previous_days_count' => 0,
                 'total_days' => 0,
                 'avg_days_passed' => 0,
-                'log' => []
+                'log' => [],
             ]);
 
         }
@@ -53,7 +53,7 @@ class RegisterOccurrence
         if ($occurrence && $occurrence->last_date) {
             $log = $occurrence->log;
             array_pop($log);
-            $previousLastDate = count($log) > 1 ? $log[count($log) - 2]: null;
+            $previousLastDate = count($log) > 1 ? $log[count($log) - 2] : null;
             $lastDate = $log[count($log) - 1];
 
             $lastDuration = $previousLastDate ? $this->getDaysDifference($lastDate, $previousLastDate) : 0;
@@ -67,12 +67,13 @@ class RegisterOccurrence
                 'total_days' => $totalDays,
                 'avg_days_passed' => $avg,
                 'occurrence_count' => $occurrenceCount,
-                'log' => json_encode($log)
+                'log' => json_encode($log),
             ]);
         }
     }
 
-    public function load(OccurrenceCheck $occurrence) {
+    public function load(OccurrenceCheck $occurrence)
+    {
         $transactions = (new SearchTransactions())->handle($occurrence->conditions);
         foreach ($transactions as $transaction) {
             try {
@@ -83,12 +84,14 @@ class RegisterOccurrence
                 );
             } catch (\Exception $e) {
                 Log::error($e->getMessage());
+
                 continue;
             }
         }
     }
 
-    public function sync(OccurrenceCheck $occurrence) {
+    public function sync(OccurrenceCheck $occurrence)
+    {
         $transactions = (new SearchTransactions())->handle($occurrence->conditions);
 
         foreach ($transactions as $transaction) {
@@ -100,12 +103,14 @@ class RegisterOccurrence
                 );
             } catch (\Exception $e) {
                 Log::error($e->getMessage());
+
                 continue;
             }
         }
     }
 
-    private function getDaysDifference($startDate, $endDate, $format = 'Y-m-d') {
+    private function getDaysDifference($startDate, $endDate, $format = 'Y-m-d')
+    {
         return Carbon::createFromFormat($format, $endDate)->diffInDays(Carbon::createFromFormat($format, $startDate));
     }
 }

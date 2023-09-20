@@ -6,9 +6,9 @@ use App\Domains\AppCore\Models\Category;
 use App\Domains\Budget\Data\BudgetReservedNames;
 use App\Domains\Budget\Data\CategoryData;
 use App\Domains\Budget\Services\BudgetCategoryService;
-use Insane\Journal\Models\Core\AccountDetailType;
 use Insane\Journal\Events\AccountCreated;
 use Insane\Journal\Events\AccountUpdated;
+use Insane\Journal\Models\Core\AccountDetailType;
 
 class CreateBudgetCategory
 {

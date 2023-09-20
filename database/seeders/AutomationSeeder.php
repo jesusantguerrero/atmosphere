@@ -37,7 +37,7 @@ class AutomationSeeder extends Seeder
             ]);
 
             $serviceId = DB::getPdo()->lastInsertId();
-            LogerAutomationService::setupService($serviceId,$service);
+            LogerAutomationService::setupService($serviceId, $service);
         }
     }
 }

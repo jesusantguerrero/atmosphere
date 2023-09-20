@@ -8,5 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class Ingredient extends Model
 {
     use HasFactory;
-    protected $fillable = ['team_id','user_id', 'product_id', 'name', 'quantity', 'unit'];
+
+    protected $fillable = ['team_id', 'user_id', 'product_id', 'name', 'quantity', 'unit'];
 }

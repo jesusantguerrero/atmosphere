@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('team_id');
             $table->foreignId('user_id');
-            $table->string("name");
-            $table->string("description")->nullable();
+            $table->string('name');
+            $table->string('description')->nullable();
             $table->foreignId('profile_id');
             $table->foreignId('entity_id');
             $table->text('entity_type');

@@ -24,7 +24,7 @@ class AuthServiceProvider extends ServiceProvider
         Team::class => TeamPolicy::class,
         Account::class => FinanceAccountPolicy::class,
         Reconciliation::class => ReconciliationPolicy::class,
-        Transaction::class => TransactionPolicy::class
+        Transaction::class => TransactionPolicy::class,
     ];
 
     /**

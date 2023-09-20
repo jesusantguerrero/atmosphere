@@ -1,7 +1,8 @@
 <?php
+
 namespace App\Domains\Budget\Data;
 
-
-enum CategoryResourceType: string {
-    case Transactions = "transactions";
+enum CategoryResourceType: string
+{
+    case Transactions = 'transactions';
 }

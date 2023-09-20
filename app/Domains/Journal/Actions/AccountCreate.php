@@ -9,15 +9,14 @@ use Insane\Journal\Models\Core\Account;
 
 class AccountCreate implements AccountCreates
 {
-
     public function create(User $user, array $accountData): Account
     {
         $this->validate($user);
         $account = new Account();
         $account = Account::create([
             ...$accountData,
-            "team_id" => $user->current_team_id,
-            "user_id" => $user->id,
+            'team_id' => $user->current_team_id,
+            'user_id' => $user->id,
         ]);
 
         return $account;
@@ -28,5 +27,3 @@ class AccountCreate implements AccountCreates
         Gate::forUser($user)->authorize('create', Account::class);
     }
 }
-
-

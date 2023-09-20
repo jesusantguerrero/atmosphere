@@ -26,16 +26,16 @@ class TransactionCreated implements AutomationActionContract
 
     public function getName(): string
     {
-        return "transactionCreated";
+        return 'transactionCreated';
     }
 
     public function label(): string
     {
-        return "On Transaction Created";
+        return 'On Transaction Created';
     }
 
     public function getDescription(): string
     {
-        return "Triggers when a transaction is created";
+        return 'Triggers when a transaction is created';
     }
 }

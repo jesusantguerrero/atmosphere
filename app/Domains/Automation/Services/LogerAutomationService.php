@@ -9,13 +9,16 @@ use App\Domains\Integration\Actions\BHDAlert;
 use App\Domains\Integration\Actions\OccurrenceCheckAutomation;
 use App\Domains\Integration\Actions\TransactionCreateEntry;
 
-class LogerAutomationService {
-
+class LogerAutomationService
+{
     const MEAL_PLAN_LIKED = 'mealPlanLiked';
+
     const TRANSACTION_CREATED = 'transactionCreated';
+
     const TRANSACTION_OCCURRENCE = 'transactionsFetch';
 
-    public static function run(Automation $automation, $eventData = null) {
+    public static function run(Automation $automation, $eventData = null)
+    {
         echo "starting $automation->name with $automation->id \n";
         $tasks = $automation->tasks;
         $trigger = $automation->triggerTask;
@@ -27,14 +30,15 @@ class LogerAutomationService {
             }
             $entity = $task->entity;
             $lastData = $entity::handle($automation, $lastData, $task, $previousTask, $trigger);
-            if (!$lastData) {
+            if (! $lastData) {
                 break;
             }
             $previousTask = $task;
         }
     }
 
-    public static function setupService($serviceId, $service) {
+    public static function setupService($serviceId, $service)
+    {
         $taskTypes = ['triggers', 'components', 'actions'];
         foreach ($taskTypes as $taskType) {
             if (isset($service[$taskType])) {
@@ -50,8 +54,9 @@ class LogerAutomationService {
         }
     }
 
-    public static function services() {
-       return [
+    public static function services()
+    {
+        return [
             'Gmail' => [
                 'name' => 'Gmail',
                 'logo' => '/images/gmail.png',
@@ -119,18 +124,18 @@ class LogerAutomationService {
                                     'to',
                                     'subject',
                                     'includes',
-                                    'custom'
-                                ]
+                                    'custom',
+                                ],
                             ],
                             'value' => [
                                 'title' => 'search text',
                                 'type' => 'input',
-                            ]
+                            ],
                         ]),
-                        "accepts_config" => true,
-                    ]
+                        'accepts_config' => true,
+                    ],
                 ],
-                "type" => 'external',
+                'type' => 'external',
             ],
             'BHD' => [
                 'name' => 'BHD',
@@ -147,7 +152,7 @@ class LogerAutomationService {
 
                     ],
                 ],
-                "type" => "internal"
+                'type' => 'internal',
 
             ],
             'transactions' => [
@@ -157,7 +162,7 @@ class LogerAutomationService {
                 'entity' => TransactionCreateEntry::class,
                 'description' => 'BHD bank',
                 'fields' => json_encode(TransactionCreateEntry::fieldConfig()),
-                "triggers" => [
+                'triggers' => [
                     [
                         'name' => 'transactionCreated',
                         'label' => 'Transaction Created',
@@ -167,12 +172,12 @@ class LogerAutomationService {
                             'field' => [
                                 'title' => 'field',
                                 'type' => 'select',
-                                'options' => [array_keys(TransactionCreateEntry::fieldConfig())]
+                                'options' => [array_keys(TransactionCreateEntry::fieldConfig())],
                             ],
                             'conditionType' => [
                                 'title' => 'Condition',
                                 'type' => 'select',
-                                'options' => ['equal', 'includes', 'starts', 'ends', 'not']
+                                'options' => ['equal', 'includes', 'starts', 'ends', 'not'],
                             ],
                             'value' => [
                                 'title' => 'search text',
@@ -181,10 +186,10 @@ class LogerAutomationService {
                             'connector' => [
                                 'title' => 'Connector',
                                 'type' => 'select',
-                                'options' => ['AND', 'OR']
-                            ]
+                                'options' => ['AND', 'OR'],
+                            ],
                         ]),
-                        "accepts_config" => true,
+                        'accepts_config' => true,
                     ],
                 ],
                 'actions' => [
@@ -194,10 +199,10 @@ class LogerAutomationService {
                         'entity' => TransactionCreateEntry::class,
                         'description' => 'Create a new transaction',
                         'config' => json_encode(TransactionCreateEntry::fieldConfig()),
-                        "accepts_config" => true,
+                        'accepts_config' => true,
                     ],
                 ],
-                "type" => "internal"
+                'type' => 'internal',
             ],
             'mealPlanner' => [
                 'name' => 'meal_planner',
@@ -205,24 +210,24 @@ class LogerAutomationService {
                 'logo' => '/images/meal-planner.png',
                 'entity' => MealPlanAutomation::class,
                 'description' => 'Meal Plans',
-                "fields" =>  [
+                'fields' => [
                     'meal_id' => [
-                    'type' => 'id',
-                    'required' => true
+                        'type' => 'id',
+                        'required' => true,
                     ],
                     'date' => [
                         'type' => 'date',
-                        'required' => true
+                        'required' => true,
                     ],
                     'meal_type_id' => [
-                        'type' => 'id'
+                        'type' => 'id',
                     ],
                     'metaData' => [
                         'type' => 'json',
-                        'required' => false
-                    ]
+                        'required' => false,
+                    ],
                 ],
-                "triggers" => [
+                'triggers' => [
                     [
                         'name' => 'mealPlanLiked',
                         'label' => 'Meal Plan Liked',
@@ -232,18 +237,18 @@ class LogerAutomationService {
                             'meal_id' => [
                                 'type' => 'id',
                                 'required' => true,
-                                'template'
+                                'template',
                             ],
                             'date' => [
                                 'type' => 'date',
                                 'required' => true,
-                                'template' => ''
+                                'template' => '',
                             ],
                         ]),
-                        "accepts_config" => true,
+                        'accepts_config' => true,
                     ],
                 ],
-                "actions" => [
+                'actions' => [
                     [
                         'name' => 'createMealPlan',
                         'label' => 'Create Meal Entry',
@@ -253,32 +258,32 @@ class LogerAutomationService {
                             'meal_id' => [
                                 'type' => 'id',
                                 'required' => true,
-                                'template'
+                                'template',
                             ],
                             'date' => [
                                 'type' => 'date',
                                 'required' => true,
-                                'template' => ''
+                                'template' => '',
                             ],
                             'meal_type_id' => [
                                 'type' => 'date',
                                 'required' => true,
-                                'template' => ''
+                                'template' => '',
                             ],
                         ]),
-                        "accepts_config" => true,
+                        'accepts_config' => true,
                     ],
                 ],
-                "type" => "internal"
+                'type' => 'internal',
             ],
-            "occurrenceChecks" => [
+            'occurrenceChecks' => [
                 'name' => 'occurrence_check',
                 'label' => 'Occurrence Check',
                 'logo' => '/images/meal-planner.png',
                 'entity' => OccurrenceCheckAutomation::class,
                 'description' => 'Occurrence check',
-                "fields" =>  json_encode(OccurrenceCheckAutomation::fieldConfig()),
-                "actions" => [
+                'fields' => json_encode(OccurrenceCheckAutomation::fieldConfig()),
+                'actions' => [
                     [
                         'name' => 'createOccurrenceCheck',
                         'label' => 'Create Occurrence Check',
@@ -288,19 +293,19 @@ class LogerAutomationService {
                             'name' => [
                                 'type' => 'id',
                                 'required' => true,
-                                'template'
+                                'template',
                             ],
                             'date' => [
                                 'type' => 'date',
                                 'required' => true,
-                                'template' => ''
+                                'template' => '',
                             ],
                         ]),
-                        "accepts_config" => true,
+                        'accepts_config' => true,
                     ],
                 ],
-                "type" => "internal"
-            ]
+                'type' => 'internal',
+            ],
         ];
     }
 }

@@ -15,7 +15,6 @@ class GmailReceived implements AutomationActionContract
     /**
      * Validate and create a new team for the given user.
      *
-     * @param  Automation  $automation
      * @return void
      */
     public static function handle(Automation $automation, $lastData = null, $task = null, $previousTask = null, $trigger = null)
@@ -27,18 +26,18 @@ class GmailReceived implements AutomationActionContract
         $client = GoogleService::getClient($automation->integration_id);
         $service = new ServiceGmail($client);
         $notification = BHDService::EMAIL_NOTIFICATION;
-        $condition = isset($config->conditionType) && $config->value ? "$config->conditionType:$config->value" : "";
-        if (!$condition) {
-            $condition = $config->value ?? "";
+        $condition = isset($config->conditionType) && $config->value ? "$config->conditionType:$config->value" : '';
+        if (! $condition) {
+            $condition = $config->value ?? '';
         }
-        $results = $service->users_threads->listUsersThreads("me", ['maxResults' => $maxResults, 'q' => "$condition"]);
+        $results = $service->users_threads->listUsersThreads('me', ['maxResults' => $maxResults, 'q' => "$condition"]);
 
         foreach ($results->getThreads() as $index => $thread) {
             echo "reading thread $index \n";
-            $theadResponse = $service->users_threads->get("me", $thread->id, ['format' => 'MINIMAL']);
+            $theadResponse = $service->users_threads->get('me', $thread->id, ['format' => 'MINIMAL']);
             foreach ($theadResponse->getMessages() as $message) {
                 if ($message && $message->getHistoryId() > $trackId) {
-                    $raw = $service->users_messages->get("me", $message->id, ['format' => 'raw']);
+                    $raw = $service->users_messages->get('me', $message->id, ['format' => 'raw']);
                     $parser = self::parseEmail($raw);
 
                     $body = $parser->getMessageBody('html');
@@ -72,34 +71,36 @@ class GmailReceived implements AutomationActionContract
                             } catch (\Exception $e) {
                                 print_r($e->getMessage());
                                 Log::error($e->getMessage(), $mail);
+
                                 continue;
                             }
                         }
                     }
                 }
             }
-        };
+        }
     }
 
     public function getName(): string
     {
-        return "gmailReceived";
+        return 'gmailReceived';
     }
 
     public function label(): string
     {
-        return "New Gmail";
+        return 'New Gmail';
     }
 
     public function getDescription(): string
     {
-        return "When a new email is received";
+        return 'When a new email is received';
     }
 
     public static function parseEmail($raw)
     {
         $switched = str_replace(['-', '_'], ['+', '/'], $raw['raw']);
         $raw = base64_decode($switched);
+
         return (new EmailParser)->setText($raw);
     }
 }

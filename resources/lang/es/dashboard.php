@@ -18,5 +18,5 @@ return [
     'current_expenses' => 'Gastos del mes',
     'monthly_budget' => 'Presupuesto mensual',
     'meals' => 'Comida',
-    'meals_menu_today' => 'Menu para hoy'
+    'meals_menu_today' => 'Menu para hoy',
 ];

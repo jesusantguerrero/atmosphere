@@ -10,17 +10,17 @@ use Insane\Journal\Models\Invoice\Invoice;
 
 class InvoicePaymentDelete implements InvoicePaymentDeletes
 {
-   
-   public function delete(User $user, Invoice $invoice, Payment $payment)
-   {
+    public function delete(User $user, Invoice $invoice, Payment $payment)
+    {
         $this->validate($user, $invoice);
         $invoice->deletePayment($payment->id);
         $invoice->save();
+
         return $payment;
-   }
+    }
 
     public function validate(User $user, Invoice $invoice)
     {
-        Gate::forUser($user)->authorize('add-payment', Invoice::class);   
+        Gate::forUser($user)->authorize('add-payment', Invoice::class);
     }
 }

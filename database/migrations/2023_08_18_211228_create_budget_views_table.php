@@ -15,10 +15,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('team_id');
             $table->foreignId('user_id');
-            $table->string("name");
-            $table->text("description")->nullable();
-            $table->boolean("is_favorite")->default(false);
-            $table->integer("index")->default(0);
+            $table->string('name');
+            $table->text('description')->nullable();
+            $table->boolean('is_favorite')->default(false);
+            $table->integer('index')->default(0);
             $table->timestamps();
         });
     }

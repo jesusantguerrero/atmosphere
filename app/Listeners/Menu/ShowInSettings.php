@@ -2,9 +2,6 @@
 
 namespace App\Listeners\Menu;
 
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
-
 class ShowInSettings
 {
     /**

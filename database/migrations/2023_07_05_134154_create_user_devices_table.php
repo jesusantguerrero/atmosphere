@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('team_id');
             $table->foreignId('user_id');
-            $table->string("device_id");
+            $table->string('device_id');
             $table->timestamps();
             $table->index(['team_id', 'user_id', 'device_id']);
         });

@@ -8,18 +8,21 @@ use Insane\Journal\Models\Core\Account;
 
 class FinanceAccountPolicy
 {
-    public function show(User $user, Account $account) {
+    public function show(User $user, Account $account)
+    {
         return $user->current_team_id === $account->team_id
         ? Response::allow()
         : Response::deny('You do not own this post.');
     }
 
-    public function create(User $user) {
+    public function create(User $user)
+    {
 
         return true;
     }
 
-    public function delete(User $user, Account $account) {
+    public function delete(User $user, Account $account)
+    {
 
         return $user->id == $account->user_id;
     }

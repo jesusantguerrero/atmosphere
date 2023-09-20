@@ -25,7 +25,7 @@ class DatabaseSeeder extends Seeder
             ThemeSeeder::class,
             PlanDatabaseSeeder::class,
             PlanTemplateSeeder::class,
-            WatchlistDatabaseSeeder::class
+            WatchlistDatabaseSeeder::class,
 
         ]);
         Artisan::call('journal:set-accounts');

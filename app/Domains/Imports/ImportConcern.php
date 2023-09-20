@@ -10,8 +10,10 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithLimit;
 use Maatwebsite\Excel\Concerns\WithMapping;
 
-abstract class ImportConcern implements WithMapping, ToModel, WithHeadingRow, WithChunkReading, WithLimit, SkipsEmptyRows {
+abstract class ImportConcern implements SkipsEmptyRows, ToModel, WithChunkReading, WithHeadingRow, WithLimit, WithMapping
+{
     use Importable;
+
     public $session;
 
     public function __construct($userSession)

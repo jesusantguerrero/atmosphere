@@ -9,16 +9,16 @@ use Insane\Journal\Models\Core\Account;
 
 class AccountUpdate implements AccountUpdates
 {
-   
     public function update(User $user, Account $account, array $accountData): Account
     {
         $this->validate($user, $account);
         $account->update($accountData);
+
         return $account;
     }
 
     public function validate(mixed $user, mixed $account)
     {
-        Gate::forUser($user)->authorize('update', $account);   
+        Gate::forUser($user)->authorize('update', $account);
     }
 }

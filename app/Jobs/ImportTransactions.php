@@ -18,7 +18,7 @@ class ImportTransactions implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(private User $user, private mixed $file )
+    public function __construct(private User $user, private mixed $file)
     {
         //
     }

@@ -7,17 +7,20 @@ use Illuminate\Support\Facades\Gate;
 use Insane\Journal\Contracts\TransactionShows;
 use Insane\Journal\Models\Core\Transaction;
 
-class TransactionShow implements TransactionShows {
-    public function validate(User $user, Transaction $transaction) {
+class TransactionShow implements TransactionShows
+{
+    public function validate(User $user, Transaction $transaction)
+    {
         Gate::forUser($user)->authorize('view', $transaction);
     }
 
-    public function show(User $user, Transaction $transaction) {
+    public function show(User $user, Transaction $transaction)
+    {
         $this->validate($user, $transaction);
 
         return [
             ...$transaction->toArray(),
-            ["lines" => $transaction->lines]
+            ['lines' => $transaction->lines],
         ];
     }
 }

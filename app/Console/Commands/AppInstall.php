@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 
-class DemoSetup extends Command
+class AppInstall extends Command
 {
     /**
      * The name and signature of the console command.
@@ -29,7 +29,7 @@ class DemoSetup extends Command
     public function handle()
     {
         Artisan::call('migrate:fresh --force --seed');
-        echo "open your app at ". config('app.url');
+
         return 0;
     }
 }

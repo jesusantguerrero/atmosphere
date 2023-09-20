@@ -31,7 +31,7 @@ class AccountCatalogCreate implements AccountCatalogCreates
                 Account::create(array_merge($account, $generalInfo, [
                     'index' => $index,
                     'type' => $type,
-                    'account_detail_type_id' => AccountDetailType::where('name', $detailType)->first()->id
+                    'account_detail_type_id' => AccountDetailType::where('name', $detailType)->first()->id,
                 ]));
             }
         }
@@ -40,8 +40,8 @@ class AccountCatalogCreate implements AccountCatalogCreates
     public function createChart(Team $team)
     {
         Category::where([
-            'team_id' =>  0,
-            'resource_type' => 'accounts'
+            'team_id' => 0,
+            'resource_type' => 'accounts',
         ])->delete();
 
         $categories = config('journal.accounts_categories');
@@ -49,7 +49,7 @@ class AccountCatalogCreate implements AccountCatalogCreates
             'team_id' => $team->id,
             'user_id' => $team->user_id,
             'depth' => 0,
-            'resource_type' => 'accounts'
+            'resource_type' => 'accounts',
         ];
 
         Category::saveBulk($categories, $generalInfo);

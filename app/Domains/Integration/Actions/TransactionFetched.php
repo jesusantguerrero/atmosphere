@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Log;
 
 class TransactionCreateEntry implements AutomationActionContract
 {
-
     use TransactionAction;
 
     public static function handle(
@@ -19,12 +18,11 @@ class TransactionCreateEntry implements AutomationActionContract
         AutomationTaskAction $task,
         mixed $previousTask = null,
         AutomationTaskAction $trigger = null
-    )
-    {
+    ) {
         $config = json_decode($trigger->values);
         $track = json_decode($automation->track, true);
         $trackId = $track['lastId'] ?? 0;
-        $transactions = ModelsTransaction::where('description', 'like' ,"%$config->value%")->orderBy('date')->get();
+        $transactions = ModelsTransaction::where('description', 'like', "%$config->value%")->orderBy('date')->get();
         foreach ($transactions as $transaction) {
             $tasks = $automation->tasks;
             $previousTask = $tasks->first();
@@ -39,6 +37,7 @@ class TransactionCreateEntry implements AutomationActionContract
                     } catch (\Exception $e) {
                         print_r($e->getMessage());
                         Log::error($e->getMessage(), $transaction->toArray());
+
                         continue;
                     }
                 }

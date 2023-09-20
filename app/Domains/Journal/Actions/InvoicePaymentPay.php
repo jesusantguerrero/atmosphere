@@ -10,15 +10,15 @@ use Insane\Journal\Models\Invoice\Invoice;
 
 class InvoicePaymentPay implements InvoicePaymentMarkAsPaid
 {
-   
     public function markAsPaid(User $user, Invoice $invoice)
     {
         $this->validate($user, $invoice);
+
         return $invoice->markAsPaid();
     }
 
     public function validate(mixed $user, Invoice $invoice)
     {
-        Gate::forUser($user)->authorize('update', Category::class);   
+        Gate::forUser($user)->authorize('update', Category::class);
     }
 }

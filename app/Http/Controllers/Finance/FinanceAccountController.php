@@ -11,9 +11,12 @@ use Freesgen\Atmosphere\Http\Querify;
 use Illuminate\Support\Facades\Gate;
 use Insane\Journal\Models\Core\Account;
 
-class FinanceAccountController extends InertiaController {
+class FinanceAccountController extends InertiaController
+{
     use Querify;
+
     const DateFormat = 'Y-m-d';
+
     private $reportService;
 
     public function __construct(Account $account, ReportService $reportService)
@@ -22,22 +25,23 @@ class FinanceAccountController extends InertiaController {
         $this->model = $account;
         $this->templates = [
             'index' => 'Finance/Account',
-            'show' => 'Finance/Account'
+            'show' => 'Finance/Account',
         ];
-        $this->searchable = ["id", "date", 'concent'];
+        $this->searchable = ['id', 'date', 'concent'];
         $this->includes = [
-            'transactions'
+            'transactions',
         ];
         $this->appends = [];
     }
 
-    public function show(Account $account) {
+    public function show(Account $account)
+    {
         $queryParams = request()->query();
         $response = Gate::inspect('show', $account);
         $settings = Setting::getByTeam(auth()->user()->current_team_id);
-        $timeZone = $settings["team_timezone"] ?? config('app.timezone');
+        $timeZone = $settings['team_timezone'] ?? config('app.timezone');
 
-        if (!$response->allowed()) {
+        if (! $response->allowed()) {
             return redirect(route('finance'));
         }
 
@@ -45,18 +49,19 @@ class FinanceAccountController extends InertiaController {
         [$startDate, $endDate] = $this->getFilterDates($filters, $timeZone);
 
         return inertia($this->templates['show'], [
-            "sectionTitle" => $account->name,
+            'sectionTitle' => $account->name,
             'accountId' => $account->id,
             'resource' => $account,
             'transactions' => $account->transactionSplits(50, $startDate, $endDate, request()->only(['search', 'page', 'limit', 'direction'])),
             'stats' => $this->reportService->getAccountStats($account->id, $startDate, $endDate),
-            "serverSearchOptions" => $this->getServerParams(),
+            'serverSearchOptions' => $this->getServerParams(),
         ]);
     }
 
-    public function linkAccount(Account $account, BHDService $service) {
+    public function linkAccount(Account $account, BHDService $service)
+    {
         $data = $this->getPostData(request());
         $bankBHD = AutomationService::where('name', 'BHD')->first();
-        $service->linkAccount($account, $bankBHD->id, $data["integration_id"]);
+        $service->linkAccount($account, $bankBHD->id, $data['integration_id']);
     }
 }

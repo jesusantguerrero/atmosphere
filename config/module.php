@@ -22,7 +22,7 @@ return [
     */
     'stubs' => [
         'enabled' => false,
-        'path' => base_path() . '/vendor/akaunting/module/src/Commands/stubs',
+        'path' => base_path().'/vendor/akaunting/module/src/Commands/stubs',
         'files' => [
             'routes/web' => 'Routes/web.php',
             'routes/api' => 'Routes/api.php',

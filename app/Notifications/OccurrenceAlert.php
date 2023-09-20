@@ -4,7 +4,6 @@ namespace App\Notifications;
 
 use App\Domains\Housing\Models\OccurrenceCheck;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -44,9 +43,9 @@ class OccurrenceAlert extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-                    ->line('The introduction to the notification.')
-                    ->action('Notification Action', url('/'))
-                    ->line('Thank you for using our application!');
+            ->line('The introduction to the notification.')
+            ->action('Notification Action', url('/'))
+            ->line('Thank you for using our application!');
     }
 
     /**
@@ -63,7 +62,7 @@ class OccurrenceAlert extends Notification
         return [
             'message' => "Hey the $name occurrence is close to $days days in 3 days",
             'cta' => "Check $name",
-            'link' => '/housing/occurrence'
+            'link' => '/housing/occurrence',
         ];
     }
 }

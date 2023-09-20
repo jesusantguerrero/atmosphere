@@ -20,7 +20,6 @@ class TransactionPolicy
         return true;
     }
 
-
     public function update(User $user, Transaction $transaction)
     {
         return $user->current_team_id == $transaction->team_id;
@@ -28,6 +27,6 @@ class TransactionPolicy
 
     public function delete(User $user, Transaction $transaction)
     {
-       return $user->current_team_id == $transaction->team_id;
+        return $user->current_team_id == $transaction->team_id;
     }
 }

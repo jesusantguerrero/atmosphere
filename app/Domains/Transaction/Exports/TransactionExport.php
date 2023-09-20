@@ -19,19 +19,20 @@ class TransactionExport implements FromArray, WithHeadings
         return $this->transactions;
     }
 
-    public function headings(): array {
+    public function headings(): array
+    {
         return [
-            "Account",
-            "Flag",
-            "Date",
-            "Payee",
-            "Category Group/Category",
-            "Category Group",
-            "Category",
-            "Memo",
-            "Outflow",
-            "Inflow",
-            "Cleared"
+            'Account',
+            'Flag',
+            'Date',
+            'Payee',
+            'Category Group/Category',
+            'Category Group',
+            'Category',
+            'Memo',
+            'Outflow',
+            'Inflow',
+            'Cleared',
         ];
     }
 }

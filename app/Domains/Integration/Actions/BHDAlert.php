@@ -16,25 +16,23 @@ class BHDAlert implements MailToTransaction
     {
 
         $body = new Crawler($mail['message']);
-        $product = $body->filter("[class*=titleA] + p")->first()->text();
-        $tdValues = $body->filter("[class*=table_trans_body] td")->each(function (Crawler $node) {
+        $product = $body->filter('[class*=titleA] + p')->first()->text();
+        $tdValues = $body->filter('[class*=table_trans_body] td')->each(function (Crawler $node) {
             return $node->text();
         });
 
-        $total = (int) str_replace(',','', $tdValues[2]);
+        $total = (int) str_replace(',', '', $tdValues[2]);
         $type = BHDService::parseTypes(strtolower($tdValues[5])) ?? 1;
 
-
         return new TransactionDataDTO([
-            "id" => (int) $mail['id'],
-            "date" => Date('Y-m-d', strtotime($mail['date'])),
-            "payee" => $tdValues[3],
+            'id' => (int) $mail['id'],
+            'date' => date('Y-m-d', strtotime($mail['date'])),
+            'payee' => $tdValues[3],
             'category' => '',
             'categoryGroup' => '',
             'description' => $product,
-            "amount" => $total * $type,
-            "currencyCode" => BHDService::parseCurrency($tdValues[1]),
+            'amount' => $total * $type,
+            'currencyCode' => BHDService::parseCurrency($tdValues[1]),
         ]);
     }
-
 }

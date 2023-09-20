@@ -10,18 +10,15 @@ class InvoicePaymentPolicy
 {
     use HandlesAuthorization;
 
-
     public function create(User $user)
     {
         return true;
     }
 
-
     public function pay(User $user, Invoice $invoice)
     {
         return $user->team_id == $invoice->team_id;
     }
-
 
     public function delete(User $user, Invoice $invoice)
     {
