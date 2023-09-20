@@ -65,9 +65,12 @@ const findLinked = (transaction: ITransaction) => {
 };
 
 const handleEdit = (transaction: ITransaction) => {
-  openTransactionModal({
-    transactionData: transaction,
-  });
+    debugger
+    axios.get(`/transactions/${transaction.id}?json=true`).then(({ data }) => {
+        openTransactionModal({
+            transactionData: data,
+        });
+    })
 };
 
 // reconciliation

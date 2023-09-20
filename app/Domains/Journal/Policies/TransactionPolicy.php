@@ -39,16 +39,10 @@ class TransactionPolicy
         return true;
     }
 
-    /**
-     * Determine whether the user can update the model.
-     *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\Team  $team
-     * @return mixed
-     */
-    public function update(User $user, Team $team)
+
+    public function update(User $user, Transaction $transaction)
     {
-        return $user->ownsTeam($team);
+        return $user->current_team_id == $transaction->team_id;
     }
 
     /**
@@ -94,8 +88,8 @@ class TransactionPolicy
      * @param  \App\Models\Team  $team
      * @return mixed
      */
-    public function delete(User $user, Team $team)
+    public function delete(User $user, Transaction $transaction)
     {
-        return $user->ownsTeam($team);
+       return $user->current_team_id == $transaction->team_id;
     }
 }

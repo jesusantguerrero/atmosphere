@@ -109,6 +109,7 @@ class ReconciliationService
     }
 
     public function syncTransactions(Reconciliation $reconciliation) {
+        ReconciliationEntry::destroy($reconciliation->entries()->select('id')->get()->pluck('id'));
         $extraTransactions = $reconciliation->account->transactionsToReconcile(null, $reconciliation->date);
         $reconciliation->addEntries($extraTransactions->toArray());
         $reconciliation->checkStatus();

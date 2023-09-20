@@ -9,12 +9,12 @@ use Insane\Journal\Models\Core\Transaction;
 
 class TransactionUpdate implements TransactionUpdates {
     public function validate(User $user, Transaction $transaction) {
-        Gate::forUser($user)->authorize('update', $transaction);   
+        Gate::forUser($user)->authorize('update', $transaction);
     }
 
     public function update(User $user, Transaction $transaction, array $data) {
         $this->validate($user, $transaction);
-        $transaction->update($data);
+        $transaction->updateTransaction($data);
         return $transaction;
     }
 }

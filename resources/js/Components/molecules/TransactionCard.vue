@@ -95,18 +95,13 @@ const handleOptions = (option: 'remove'|'selected') => {
         : 'odd:bg-base-lvl-2 even:bg-base-lvl-1',
     ]"
   >
-    <div class="flex justify-between px-5 py-2">
-      <div class="flex space-x-3">
+    <div class="flex justify-between px-5 py-2 space-x-2">
+      <div class="flex w-6/12 space-x-3 truncate">
         <div v-if="allowSelect" class="flex items-center h-full">
           <input type="checkbox" :checked="isSelected" @change="handleSelect()" />
         </div>
-        <div
-          class="items-center justify-center hidden w-20 px-5 py-3 font-bold text-center transition-all rounded-md md:flex bg-base-lvl-3 group-hover:bg-primary group-hover:text-white group-body-1"
-        >
-          {{ title.slice(0, 1) }}
-        </div>
         <div>
-          <h4 class="font-bold">{{ title }}</h4>
+          <h4 class="font-bold truncate">{{ title }}</h4>
           <small class="text-sm"> {{ subtitle }}</small>
         </div>
       </div>

@@ -145,7 +145,7 @@
                              />
 
                              <AtTeamSelect
-                                v-if="$page.props.team"
+                                v-if="$page.props.user.all_teams.length"
                                 :has-team-features="$page.props.jetstream.hasTeamFeatures"
                                 :can-create-teams="$page.props.jetstream.canCreateTeams"
                                 :current-team="$page.props.user.current_team"
