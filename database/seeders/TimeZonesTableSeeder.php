@@ -2,12 +2,11 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use ErnySans\Laraworld\Models\TimeZones;
+use Illuminate\Database\Seeder;
 
 class TimeZonesTableSeeder extends Seeder
 {
-
     /**
      * Run the database seeds.
      *
@@ -23,12 +22,12 @@ class TimeZonesTableSeeder extends Seeder
 
         foreach ($JSON_timezones as $timezone) {
             TimeZones::create([
-                'name'      => ((isset($timezone['name'])) ? $timezone['name'] : null),
-                'abbr'      => ((isset($timezone['abbr'])) ? $timezone['abbr'] : null),
-                'offset'    => ((isset($timezone['offset'])) ? $timezone['offset'] : null),
-                'isdst'     => ((isset($timezone['isdst'])) ? $timezone['isdst'] : null),
-                'text'      => ((isset($timezone['text'])) ? $timezone['text'] : null),
-                'utc'       => ((isset($timezone['utc'])) ? $timezone['utc'] : null),
+                'name' => ((isset($timezone['name'])) ? $timezone['name'] : null),
+                'abbr' => ((isset($timezone['abbr'])) ? $timezone['abbr'] : null),
+                'offset' => ((isset($timezone['offset'])) ? $timezone['offset'] : null),
+                'isdst' => ((isset($timezone['isdst'])) ? $timezone['isdst'] : null),
+                'text' => ((isset($timezone['text'])) ? $timezone['text'] : null),
+                'utc' => ((isset($timezone['utc'])) ? $timezone['utc'] : null),
             ]);
         }
     }

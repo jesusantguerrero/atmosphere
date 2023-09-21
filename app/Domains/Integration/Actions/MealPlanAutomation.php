@@ -5,22 +5,17 @@ namespace App\Domains\Integration\Actions;
 use App\Domains\Automation\Models\Automation;
 use App\Domains\Automation\Models\AutomationTask;
 use App\Domains\Automation\Models\AutomationTaskAction;
-use App\Domains\Meal\Models\MealPlan;
 use App\Domains\Meal\Services\MealService;
 use App\Helpers\FormulaHelper;
 use App\Models\User;
-use App\Notifications\EntryGenerated;
 use Illuminate\Support\Carbon;
 use Insane\Journal\Models\Core\Account;
-use Insane\Journal\Models\Core\Transaction;
 
 class MealPlanAutomation
 {
-
-     /**
+    /**
      * Validate and create a new team for the given user.
      *
-     * @param  Automation  $automation
      * @param  Google_Calendar_Events  $calendarEvents
      * @return void
      */
@@ -30,8 +25,7 @@ class MealPlanAutomation
         AutomationTaskAction $task = null,
         AutomationTaskAction $previousTask = null,
         AutomationTask $trigger = null
-    )
-    {
+    ) {
 
         return $payload;
     }
@@ -39,7 +33,6 @@ class MealPlanAutomation
     /**
      * Validate and create a new team for the given user.
      *
-     * @param  Automation  $automation
      * @param  Google_Calendar_Events  $calendarEvents
      * @return void
      */
@@ -49,13 +42,12 @@ class MealPlanAutomation
         AutomationTaskAction $task = null,
         AutomationTaskAction $previousTask = null,
         AutomationTask $trigger = null
-    )
-    {
+    ) {
         $taskData = json_decode($task->values);
 
         // $mealId = FormulaHelper::parseFormula($taskData->account_id, $payload) ?? $payload['mealId'];
         // $date = FormulaHelper::parseFormula($taskData->category_id, $payload) ?? $payload['date'];
-        $mealId =  $payload['meal_id'];
+        $mealId = $payload['meal_id'];
         $date = Carbon::parse($payload['date'])->addDays(7)->format('Y-m-d');
 
         $plan = MealService::scheduleMealOnDate(

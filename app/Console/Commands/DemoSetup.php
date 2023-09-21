@@ -12,7 +12,7 @@ class DemoSetup extends Command
      *
      * @var string
      */
-    protected $signature = 'demo:setup';
+    protected $signature = 'app:demo-setup';
 
     /**
      * The console command description.
@@ -30,6 +30,7 @@ class DemoSetup extends Command
     {
         Artisan::call('migrate:fresh --force --seed');
         Artisan::call('demo:seed');
+
         return 0;
     }
 }

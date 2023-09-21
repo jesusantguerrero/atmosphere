@@ -4,13 +4,14 @@ namespace App\Listeners;
 
 use App\Domains\Budget\Services\BudgetCategoryService;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
 use Insane\Journal\Events\TransactionCreated;
 
 class CreateBudgetTransactionMovement implements ShouldQueue
 {
+    public function __construct(private BudgetCategoryService $budgetCategoryService)
+    {
+    }
 
-    public function __construct(private BudgetCategoryService $budgetCategoryService) {}
     /**
      * Handle the event.
      *
@@ -21,12 +22,11 @@ class CreateBudgetTransactionMovement implements ShouldQueue
     {
         $transaction = $event->transaction;
         $account = $transaction->account;
-        $month = substr($transaction->date, 0, 7) . "-01";
-
+        $month = substr($transaction->date, 0, 7).'-01';
 
         if ($categoryAccount = $this->budgetCategoryService->findByAccount($account)) {
-           $this->budgetCategoryService->updateFundedSpending($categoryAccount, $month);
-           $this->budgetCategoryService->updateActivity($categoryAccount, $month);
+            $this->budgetCategoryService->updateFundedSpending($categoryAccount, $month);
+            $this->budgetCategoryService->updateActivity($categoryAccount, $month);
         }
 
         if ($transaction->category_id) {

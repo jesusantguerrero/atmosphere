@@ -1,36 +1,10 @@
-<template>
-  <AtAuthBox>
-    <AtAuthForm
-      app-name="Loger"
-      mode="register"
-      btn-class="mb-2 font-bold border-2 border-primary rounded-md bg-gradient-to-br from-purple-400 to-primary hover:bg-primary"
-      link-class="text-primary hover:text-primary"
-      v-model:isLoading="form.processing"
-      :initial-values="form"
-      :config="formConfig"
-      :errors="form.errors"
-      @submit="submit"
-      @home-pressed="onHomePressed"
-      @link-pressed="onLinkPressed"
-    >
-      <template #brand>
-        <Link :to="{ name: 'landing' }" class="w-full font-light font-brand">
-          Loger DHM
-        </Link>
-      </template>
-      <template #prependInput>
-        <AtField label="Name">
-          <AtInput v-model="form.name" required />
-        </AtField>
-      </template>
-    </AtAuthForm>
-  </AtAuthBox>
-</template>
 
-<script setup>
+<script setup lang="ts">
 import { useForm, Link, router } from "@inertiajs/vue3";
 import { AtAuthBox, AtAuthForm, AtInput, AtField } from "atmosphere-ui";
 import { computed, onMounted, ref } from "vue";
+
+import AppIcon from "@/Components/AppIcon.vue";
 
 const form = useForm({
   name: "",
@@ -80,3 +54,33 @@ const formConfig = computed(() => {
   };
 });
 </script>
+
+
+<template>
+  <AtAuthBox>
+    <AtAuthForm
+      app-name="Loger"
+      mode="register"
+      btn-class="mb-2 font-bold border-2 rounded-md border-primary bg-gradient-to-br from-purple-400 to-primary hover:bg-primary"
+      link-class="text-primary hover:text-primary"
+      v-model:isLoading="form.processing"
+      :initial-values="form"
+      :config="formConfig"
+      :errors="form.errors"
+      @submit="submit"
+      @home-pressed="onHomePressed"
+      @link-pressed="onLinkPressed"
+    >
+    <template #brand>
+        <Link :to="{ name: 'landing' }" class="w-full h-20">
+          <AppIcon size="huge" class="text-white" />
+        </Link>
+      </template>
+      <template #prependInput>
+        <AtField label="Name">
+          <AtInput v-model="form.name" required />
+        </AtField>
+      </template>
+    </AtAuthForm>
+  </AtAuthBox>
+</template>

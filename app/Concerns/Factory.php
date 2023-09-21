@@ -5,11 +5,9 @@ namespace App\Concerns;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory as FactoriesFactory;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Date;
 
-abstract class Factory extends FactoriesFactory {
-
+abstract class Factory extends FactoriesFactory
+{
     /**
      * @var Team
      */
@@ -32,9 +30,9 @@ abstract class Factory extends FactoriesFactory {
     public function team(Team $team): static
     {
         return $this->state(function ($attributes) use ($team) {
-           return [
+            return [
                 'team_id' => $team->id,
-                'user_id' => $team->user_id
+                'user_id' => $team->user_id,
             ];
         });
     }

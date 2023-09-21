@@ -22,7 +22,7 @@ class DemoReset extends Command
      *
      * @var string
      */
-    protected $signature = 'demo:reset';
+    protected $signature = 'app:demo-reset';
 
     /**
      * The console command description.
@@ -43,14 +43,14 @@ class DemoReset extends Command
         $user = User::where(['email' => 'demo@loger.com'])->first();
         $team = Team::where('user_id', $user->id)->first();
 
-        Transaction::where(["team_id" => $team->id])->delete();
-        TransactionLine::where(["team_id" => $team->id])->delete();
-        Payment::where(["team_id" => $team->id])->delete();
-        PaymentDocument::where(["team_id" => $team->id])->delete();
+        Transaction::where(['team_id' => $team->id])->delete();
+        TransactionLine::where(['team_id' => $team->id])->delete();
+        Payment::where(['team_id' => $team->id])->delete();
+        PaymentDocument::where(['team_id' => $team->id])->delete();
 
         // app
-        Account::where(["team_id" => $team->id])->delete();
-        Category::where(["team_id" => $team->id])->delete();
+        Account::where(['team_id' => $team->id])->delete();
+        Category::where(['team_id' => $team->id])->delete();
 
         Artisan::call("journal:set-chart-accounts $team->id");
 
@@ -60,7 +60,8 @@ class DemoReset extends Command
         $seeder = $class->setContainer($this->laravel)->setCommand($this);
         $seeder->run($user, $team);
 
-        echo "Done";
+        echo 'Done';
+
         return 0;
     }
 }

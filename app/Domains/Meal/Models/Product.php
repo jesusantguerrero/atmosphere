@@ -9,7 +9,9 @@ use Insane\Journal\Models\Product\Product as ProductProduct;
 class Product extends ProductProduct
 {
     protected $with = ['labels'];
-    public function labels(): MorphToMany {
+
+    public function labels(): MorphToMany
+    {
         return $this->morphToMany(Label::class, 'labelable');
     }
 }

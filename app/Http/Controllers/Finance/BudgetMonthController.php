@@ -23,33 +23,39 @@ class BudgetMonthController extends Controller
     {
         $isMovement = request()->post('type');
         $postData = $this->getPostData();
-        if (!$isMovement && $postData && $postData["budgeted"] != null) {
+        if (! $isMovement && $postData && $postData['budgeted'] != null) {
             $service->registerAssignment(new BudgetAssignData(
-                $postData["team_id"],
-                $postData["user_id"],
+                $postData['team_id'],
+                $postData['user_id'],
                 $month,
                 $category->id,
-                $postData["budgeted"],
+                $postData['budgeted'],
             ));
-        } else if ($isMovement) {
+        } elseif ($isMovement) {
             $service->registerMovement(BudgetMovementData::from($this->getPostData()));
         }
+
         return Redirect::back();
     }
 
     public function updateActivity(BudgetCategoryService $service, Category $category, $month)
     {
         $service->updateActivity($category, $month);
+
         return Redirect::back();
     }
 
-    public function import(Request $request) {
+    public function import(Request $request)
+    {
         Excel::import(new BudgetImport($request->user()), $request->file('file'));
+
         return redirect()->back();
     }
 
-    public function export() {
+    public function export()
+    {
         $today = now()->format('Y-m-d');
+
         return Excel::download(new BudgetExport(auth()->user()->current_team_id), "budget_as_of_{$today}.xlsx");
     }
 }

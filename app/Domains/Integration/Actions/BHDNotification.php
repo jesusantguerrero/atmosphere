@@ -19,39 +19,39 @@ class BHDNotification implements MailToTransaction
 
         $body = new Crawler($mail['message']);
         $tableIds = [
-            "idProductoOrigen" => [
-                'processor' => "processResult",
+            'idProductoOrigen' => [
+                'processor' => 'processResult',
                 'name' => 'product',
             ],
-            "idProductoDestino" => [
-                'processor' => "processResult",
+            'idProductoDestino' => [
+                'processor' => 'processResult',
                 'name' => 'seller',
             ],
-            "idDescripcion" => [
-                'processor' => "processResult",
+            'idDescripcion' => [
+                'processor' => 'processResult',
                 'name' => 'description',
             ],
 
-            "idMonto" => [
-                'processor' => "processMoney",
+            'idMonto' => [
+                'processor' => 'processMoney',
                 'name' => 'amount',
             ],
-            "idBeneficiario" => [
-                'processor' => "processResult",
+            'idBeneficiario' => [
+                'processor' => 'processResult',
                 'name' => 'seller',
             ],
-            "idNumeroConfirmacion" => [
-                'processor' => "processResult",
+            'idNumeroConfirmacion' => [
+                'processor' => 'processResult',
                 'name' => 'confirmation_number',
             ],
-            "idFechayHoraTransaccion" => [
-                'processor' => "processDate",
+            'idFechayHoraTransaccion' => [
+                'processor' => 'processDate',
                 'name' => 'date',
             ],
-            "idTipoTransaccion" => [
-                'processor' => "processType",
+            'idTipoTransaccion' => [
+                'processor' => 'processType',
                 'name' => 'type',
-            ]
+            ],
         ];
         try {
             foreach ($tableIds as $fieldName => $field) {
@@ -59,14 +59,14 @@ class BHDNotification implements MailToTransaction
             }
 
             return new TransactionDataDTO([
-                    "id" => (int) $mail['id'],
-                    "date" => $bhdOutput['date'],
-                    "payee" => $bhdOutput['seller'],
-                    'category' => '',
-                    'categoryGroup' => '',
-                    'description' => $bhdOutput['product'].":".$bhdOutput['description'],
-                    "amount" => $bhdOutput['amount']->amount * 1,
-                    "currencyCode" => $bhdOutput['amount']->currencyCode,
+                'id' => (int) $mail['id'],
+                'date' => $bhdOutput['date'],
+                'payee' => $bhdOutput['seller'],
+                'category' => '',
+                'categoryGroup' => '',
+                'description' => $bhdOutput['product'].':'.$bhdOutput['description'],
+                'amount' => $bhdOutput['amount']->amount * 1,
+                'currencyCode' => $bhdOutput['amount']->currencyCode,
             ]);
         } catch (Exception) {
             return null;
@@ -86,7 +86,8 @@ class BHDNotification implements MailToTransaction
     public function processDate($value)
     {
         $date = substr($value, 0, 10);
-        return Carbon::createFromFormat("d/m/Y", $date)->format("Y-m-d");
+
+        return Carbon::createFromFormat('d/m/Y', $date)->format('Y-m-d');
     }
 
     public function processType($value)

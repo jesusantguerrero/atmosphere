@@ -14,11 +14,12 @@ return new class extends Migration
     public function up()
     {
         Schema::table('budget_months', function (Blueprint $table) {
-            $table->string('currency_code')->default('DOP')->after("name");
-            $table->decimal('activity')->default(0)->after("budgeted");
-            $table->decimal('available')->default(0)->after("activity");
+            $table->string('currency_code')->default('DOP')->after('name');
+            $table->decimal('activity')->default(0)->after('budgeted');
+            $table->decimal('available')->default(0)->after('activity');
         });
     }
+
     /**
      * Reverse the migrations.
      *

@@ -30,7 +30,7 @@ class TestMessaging extends Command
         $service = new MessagingService();
         $userDevice = UserDevice::find(3);
         $service->occurrenceType([
-            "title" => "test"
+            'title' => 'test',
         ], $userDevice->device_id);
         echo $userDevice->device_id;
     }

@@ -3,8 +3,6 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class TransactionsImported extends Notification
@@ -32,7 +30,6 @@ class TransactionsImported extends Notification
         return ['database'];
     }
 
-
     /**
      * Get the array representation of the notification.
      *
@@ -42,9 +39,9 @@ class TransactionsImported extends Notification
     public function toArray($notifiable)
     {
         return [
-            'message' => "New transactions has been imported, go to drafts to approve them!",
+            'message' => 'New transactions has been imported, go to drafts to approve them!',
             'cta' => 'Approve new transactions',
-            'link' => $this->url
+            'link' => $this->url,
         ];
     }
 }

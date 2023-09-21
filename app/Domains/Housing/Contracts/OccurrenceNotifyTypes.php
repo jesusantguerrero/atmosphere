@@ -2,7 +2,8 @@
 
 namespace App\Domains\Housing\Contracts;
 
-enum OccurrenceNotifyTypes: string {
+enum OccurrenceNotifyTypes: string
+{
     case AVG = 'avg';
     case LAST = 'last';
 }

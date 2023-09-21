@@ -14,7 +14,6 @@ class UpdateTeamName implements UpdatesTeamNames
      *
      * @param  mixed  $user
      * @param  mixed  $team
-     * @param  array  $input
      * @return void
      */
     public function update($user, $team, array $input)
@@ -30,8 +29,8 @@ class UpdateTeamName implements UpdatesTeamNames
         ])->save();
 
         $entryData = [
-            'user_id' =>  $user->id,
-            'team_id' => $team->id
+            'user_id' => $user->id,
+            'team_id' => $team->id,
         ];
 
         Setting::storeBulk($input, $entryData);

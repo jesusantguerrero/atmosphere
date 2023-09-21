@@ -1,0 +1,11 @@
+{
+    "repositories": [
+        {
+          "url": "../packages/journal",
+          "type": "path",
+          "options": {
+                "symlink": true
+            }
+        }
+    ]
+}

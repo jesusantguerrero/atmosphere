@@ -5,7 +5,6 @@ namespace App\Http\Resources;
 use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Helpers\RequestQueryHelper;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Insane\Journal\Models\Core\Category;
 
 class CategoryCollection extends JsonResource
 {
@@ -21,17 +20,18 @@ class CategoryCollection extends JsonResource
     {
         $queryParams = $request->query();
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
-        [ $startDate ] = RequestQueryHelper::getFilterDates($filters);
+        [$startDate] = RequestQueryHelper::getFilterDates($filters);
 
         $month = $startDate ?? date('Y-m-01');
         $normalArray = parent::toArray($request);
+
         // if ($this->id == 723) {
         //     dd( $this->service->getBudgetInfo($this->resource, $month), $this->id);
         // }
         return array_merge(
             $normalArray,
             [
-                 'month' => $month
+                'month' => $month,
             ],
             $this->service->getBudgetInfo($this->resource, $month));
     }

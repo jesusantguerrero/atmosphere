@@ -13,7 +13,7 @@ class GeneratePayees extends Command
      *
      * @var string
      */
-    protected $signature = 'generate:payees {teamId}';
+    protected $signature = 'app:generate-payees {teamId}';
 
     /**
      * The console command description.
@@ -39,7 +39,7 @@ class GeneratePayees extends Command
                 'team_id' => $teamId,
                 'user_id' => 0,
                 'name' => "Transfer: $account->name",
-                'account_id' => $account->id
+                'account_id' => $account->id,
             ]);
         }
     }

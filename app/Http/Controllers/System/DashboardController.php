@@ -10,7 +10,8 @@ use App\Domains\Transaction\Services\TransactionService;
 use App\Http\Controllers\Traits\HasEnrichedRequest;
 use App\Http\Resources\PlannedMealResource;
 
-class DashboardController {
+class DashboardController
+{
     use HasEnrichedRequest;
 
     public function __construct(private MealService $mealService)
@@ -18,7 +19,8 @@ class DashboardController {
 
     }
 
-    public function __invoke() {
+    public function __invoke()
+    {
         $request = request();
         [$startDate, $endDate] = $this->getFilterDates();
         $team = $request->user()->currentTeam;
@@ -30,28 +32,29 @@ class DashboardController {
         $nextPayments = BudgetCategoryService::getNextBudgetItems($teamId);
 
         return inertia('Dashboard', [
-            "sectionTitle" => "Dashboard",
-            "meals" => PlannedMealResource::collection($plannedMeals),
-            "budgetTotal" => $budget,
-            "transactionTotal" => $transactionsTotal,
-            "expenses" => ReportService::generateCurrentPreviousReport($teamId, 'month', 1),
-            "revenue" => ReportService::generateExpensesByPeriod($teamId),
+            'sectionTitle' => 'Dashboard',
+            'meals' => PlannedMealResource::collection($plannedMeals),
+            'budgetTotal' => $budget,
+            'transactionTotal' => $transactionsTotal,
+            'expenses' => ReportService::generateCurrentPreviousReport($teamId, 'month', 1),
+            'revenue' => ReportService::generateExpensesByPeriod($teamId),
             'onboarding' => function () use ($team) {
-                $onboarding =  $team->onboarding();
+                $onboarding = $team->onboarding();
+
                 return $onboarding->inProgress() ? [
-                    "percentage" => $onboarding->percentageCompleted(),
-                    "steps" => $onboarding->steps()->map(function($step) {
-                        return ["title" => $step->title,
-                        "cta" => $step->cta,
-                        "link" => $step->link,
-                        "description" => $step->description,
-                        "icon" => $step->icon,
-                        "complete" => $step->complete(),
-                    ];
-                    })
+                    'percentage' => $onboarding->percentageCompleted(),
+                    'steps' => $onboarding->steps()->map(function ($step) {
+                        return ['title' => $step->title,
+                            'cta' => $step->cta,
+                            'link' => $step->link,
+                            'description' => $step->description,
+                            'icon' => $step->icon,
+                            'complete' => $step->complete(),
+                        ];
+                    }),
                 ] : [];
             },
-            "nextPayments" => $nextPayments
+            'nextPayments' => $nextPayments,
         ]);
     }
 }

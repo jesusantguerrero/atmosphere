@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Meal;
 
-use App\Domains\AppCore\Models\Planner;
 use App\Domains\Meal\Models\Meal;
 use App\Domains\Meal\Models\MealType;
 use App\Domains\Meal\Services\MealService;
@@ -19,17 +18,17 @@ class MealController extends InertiaController
     {
         $this->model = $meal;
         $this->templates = [
-            "index" => 'Meals/Index',
-            "create" => 'Meals/Create',
-            "edit" => 'Meals/Create'
+            'index' => 'Meals/Index',
+            'create' => 'Meals/Create',
+            'edit' => 'Meals/Create',
         ];
         $this->searchable = ['name'];
         $this->validationRules = [
-            'name' => 'required'
+            'name' => 'required',
         ];
         $this->includes = ['ingredients', 'mealType'];
         $this->filters = [
-            'date' => date('Y-m-01')
+            'date' => date('Y-m-01'),
         ];
     }
 
@@ -44,54 +43,57 @@ class MealController extends InertiaController
         $weekPlan = $this->mealService->getMealScheduleInFrame($teamId, $startDate, $endDate);
 
         return inertia('Meals/Overview', [
-            "sectionTitle" => "Meal overview",
-            "mostLikedMeals" => Meal::where([
-                "team_id" => $teamId
+            'sectionTitle' => 'Meal overview',
+            'mostLikedMeals' => Meal::where([
+                'team_id' => $teamId,
             ])->limit(3)->get(),
             'ingredients' => function () use ($weekPlan) {
                 return MealService::getIngredients($weekPlan);
             },
-            "mealTypes" => MealType::where([
-                "team_id" => $request->user()->current_team_id,
-                "user_id" => $request->user()->current_team_id
+            'mealTypes' => MealType::where([
+                'team_id' => $request->user()->current_team_id,
+                'user_id' => $request->user()->current_team_id,
             ])->get(),
-            "meals" => PlannedMealResource::collection($plannedMeals),
+            'meals' => PlannedMealResource::collection($plannedMeals),
         ]);
     }
 
-    protected function parser($resources) {
+    protected function parser($resources)
+    {
         return MealResource::collection($resources);
     }
 
     protected function getIndexProps(Request $request, $resources = null): array
     {
         return [
-            "mealTypes" => MealType::where([
-                "team_id" => $request->user()->current_team_id,
-                "user_id" => $request->user()->current_team_id
+            'mealTypes' => MealType::where([
+                'team_id' => $request->user()->current_team_id,
+                'user_id' => $request->user()->current_team_id,
             ])->get(),
         ];
     }
 
     protected function afterSave($postData, $resource): void
     {
-        if ( isset($postData['ingredients'])) {
+        if (isset($postData['ingredients'])) {
             $resource->saveIngredients($postData['ingredients']);
         }
     }
 
-    public function addPlan(Request $request, MealService $mealService) {
+    public function addPlan(Request $request, MealService $mealService)
+    {
         $postData = $this->getPostData($request);
         $mealService->addPlan($postData);
 
         return Redirect::back();
     }
 
-    public function random(Request $request) {
+    public function random(Request $request)
+    {
         $meals = Meal::where([
-            'team_id' => $request->user()->current_team_id
+            'team_id' => $request->user()->current_team_id,
         ])->get();
 
-        return count($meals) ? $meals->random(): 'Noting to show';
+        return count($meals) ? $meals->random() : 'Noting to show';
     }
 }

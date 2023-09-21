@@ -127,7 +127,7 @@ return [
      * Loger things
      */
 
-     'demo' => env('APP_DEMO', false),
+    'demo' => env('APP_DEMO', false),
 
     /*
     |--------------------------------------------------------------------------

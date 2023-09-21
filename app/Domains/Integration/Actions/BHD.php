@@ -16,40 +16,39 @@ class BHD implements AutomationActionContract
         AutomationTaskAction $task,
         AutomationTaskAction $previousTask,
         AutomationTaskAction $trigger
-    )
-    {
+    ) {
         $type = self::getMessageType($payload);
         try {
             $transaction = match ($type) {
-                 'alert'=> self::parseAlert($automation, $payload, $task, $previousTask, $trigger),
-                 'notification'=> self::parseNotification($automation, $payload, $task, $previousTask, $trigger),
+                'alert' => self::parseAlert($automation, $payload, $task, $previousTask, $trigger),
+                'notification' => self::parseNotification($automation, $payload, $task, $previousTask, $trigger),
             };
+
             return $transaction?->toArray();
         } catch (Exception $e) {
-            dd("hola", $e);
+            dd('hola', $e);
         }
 
     }
 
     public function getName(): string
     {
-        return "BHDMessage";
+        return 'BHDMessage';
     }
 
     public function label(): string
     {
-        return "BHD Message";
+        return 'BHD Message';
     }
 
     public function getDescription(): string
     {
-        return "Parse an email alert or notification";
+        return 'Parse an email alert or notification';
     }
 
     /**
      * Validate and create a new team for the given user.
      *
-     * @param  Automation  $automation
      * @param  Google_Calendar_Events  $calendarEvents
      * @return void
      */
@@ -59,8 +58,7 @@ class BHD implements AutomationActionContract
         AutomationTaskAction $task,
         AutomationTaskAction $previousTask,
         AutomationTaskAction $trigger
-    )
-    {
+    ) {
 
         return (new BHDAlert())->handle($automation, $payload);
     }
@@ -68,7 +66,6 @@ class BHD implements AutomationActionContract
     /**
      * Validate and create a new team for the given user.
      *
-     * @param  Automation  $automation
      * @param  Google_Calendar_Events  $calendarEvents
      * @return void
      */
@@ -78,17 +75,16 @@ class BHD implements AutomationActionContract
         AutomationTaskAction $task,
         AutomationTaskAction $previousTask,
         AutomationTaskAction $trigger
-    )
-    {
+    ) {
 
         return (new BHDNotification())->handle($automation, $payload);
     }
 
-
-    public static function getMessageType($mail) {
+    public static function getMessageType($mail)
+    {
         try {
             $body = new Crawler($mail['message']);
-            $tdValues = $body->filter("[class*=table_trans_body] td")->each(function (Crawler $node) {
+            $tdValues = $body->filter('[class*=table_trans_body] td')->each(function (Crawler $node) {
                 return $node->text();
             });
 
@@ -97,5 +93,4 @@ class BHD implements AutomationActionContract
             return 'notification';
         }
     }
-
 }

@@ -15,15 +15,15 @@ class MealPlannerController extends InertiaController
     {
         $this->model = $mealPlan;
         $this->templates = [
-            "index" => 'Meals/Planner',
-            "create" => 'Meals/PlannerCreate',
-            "edit" => 'Meals/PlannerCreate'
+            'index' => 'Meals/Planner',
+            'create' => 'Meals/PlannerCreate',
+            'edit' => 'Meals/PlannerCreate',
         ];
         $this->searchable = ['name'];
         $this->validationRules = [];
         $this->includes = ['dateable'];
         $this->filters = [];
-        $this->resourceName = "mealPlans";
+        $this->resourceName = 'mealPlans';
     }
 
     protected function getIndexProps(Request $request, $resources = null): array
@@ -39,7 +39,7 @@ class MealPlannerController extends InertiaController
             },
             'meals' => function () use ($request) {
                 return Meal::where([
-                    'team_id' => $request->user()->current_team_id
+                    'team_id' => $request->user()->current_team_id,
                 ])->get();
             },
         ];

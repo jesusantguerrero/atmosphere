@@ -5,27 +5,27 @@ namespace App\Providers;
 use App\Domains\Transaction\Listeners\UpdateOpenReconciliations;
 use App\Events\AutomationEvent;
 use App\Events\BudgetAssigned;
-use App\Events\OccurrenceCreated;
 use App\Events\Menu\AppCreated;
+use App\Events\OccurrenceCreated;
 use App\Listeners\AcceptInvitation;
 use App\Listeners\AutomationListener;
 use App\Listeners\CheckOccurrence;
-use App\Listeners\CreateBudgetMovement;
 use App\Listeners\CreateBudgetCategory;
+use App\Listeners\CreateBudgetMovement;
 use App\Listeners\CreateBudgetTransactionMovement;
 use App\Listeners\CreateOccurrenceAutomation;
 use App\Listeners\CreateStartingBalance;
 use App\Listeners\CreateTeamSettings;
 use App\Listeners\HandleTransactionCreated;
-use App\Listeners\TrashTeamSettings;
 use App\Listeners\Menu\ShowInApp;
+use App\Listeners\TrashTeamSettings;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-use Insane\Journal\Listeners\CreateTeamAccounts;
 use Insane\Journal\Events\AccountCreated;
 use Insane\Journal\Events\AccountUpdated;
 use Insane\Journal\Events\TransactionCreated;
+use Insane\Journal\Listeners\CreateTeamAccounts;
 use Laravel\Jetstream\Events\TeamCreated;
 use Laravel\Jetstream\Events\TeamDeleted;
 
@@ -42,18 +42,18 @@ class EventServiceProvider extends ServiceProvider
         ],
         TeamCreated::class => [
             CreateTeamAccounts::class,
-            CreateTeamSettings::class
+            CreateTeamSettings::class,
         ],
         TeamDeleted::class => [
-            TrashTeamSettings::class
+            TrashTeamSettings::class,
         ],
         TeamMemberAdded::class => [
-            AcceptInvitation::class
+            AcceptInvitation::class,
         ],
         // Journal Events
         AccountCreated::class => [
             CreateBudgetCategory::class,
-            CreateStartingBalance::class
+            CreateStartingBalance::class,
         ],
         AccountUpdated::class => [
             CreateBudgetCategory::class,
@@ -62,7 +62,7 @@ class EventServiceProvider extends ServiceProvider
             CreateBudgetTransactionMovement::class,
             HandleTransactionCreated::class,
             CheckOccurrence::class,
-            UpdateOpenReconciliations::class
+            UpdateOpenReconciliations::class,
         ],
         TransactionUpdated::class => [
             CreateBudgetTransactionMovement::class,
@@ -75,20 +75,18 @@ class EventServiceProvider extends ServiceProvider
             ShowInApp::class,
         ],
         AutomationEvent::class => [
-            AutomationListener::class
+            AutomationListener::class,
         ],
         BudgetAssigned::class => [
-            CreateBudgetMovement::class
+            CreateBudgetMovement::class,
         ],
         OccurrenceCreated::class => [
-            CreateOccurrenceAutomation::class
-        ]
+            CreateOccurrenceAutomation::class,
+        ],
     ];
 
     /**
      * Register any events for your application.
-     *
-     * @return void
      */
     public function boot(): void
     {

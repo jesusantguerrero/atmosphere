@@ -10,7 +10,6 @@ use App\Domains\Transaction\Models\Transaction;
  */
 class TransactionFactory extends Factory
 {
-
     /**
      * The name of the factory's corresponding model.
      *

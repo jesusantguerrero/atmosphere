@@ -4,18 +4,19 @@ namespace App\Domains\Transaction\Actions;
 
 use App\Domains\Transaction\Models\Transaction;
 
-class SearchTransactions {
+class SearchTransactions
+{
     public const DATE_AFTER = 1;
-    public const DATE_BEFORE = 1;
 
+    public const DATE_BEFORE = 1;
 
     private $searchConfig = [
         'description' => [
-            'type' => 'text'
+            'type' => 'text',
         ],
         'category_id' => [
-            'type' => 'array'
-        ]
+            'type' => 'array',
+        ],
     ];
 
     private $modelQuery;
@@ -26,7 +27,8 @@ class SearchTransactions {
         $this->modelQuery = Transaction::query();
     }
 
-    public function handle(mixed $conditions) {
+    public function handle(mixed $conditions)
+    {
 
         foreach ($conditions as $field => $condition) {
             if ($condition) {
@@ -36,25 +38,29 @@ class SearchTransactions {
         }
 
         return $this->modelQuery->orderBy('date')->where([
-            "status" => Transaction::STATUS_VERIFIED
+            'status' => Transaction::STATUS_VERIFIED,
         ])->get();
     }
 
-    public function gettext($condition, $field) {
+    public function gettext($condition, $field)
+    {
         $operators = [
             'contains' => 'LIKE',
-            'is' => '='
+            'is' => '=',
         ];
 
         foreach ($condition as $param) {
-            if (!$param['operator'] || !$param['value']) continue;
+            if (! $param['operator'] || ! $param['value']) {
+                continue;
+            }
             $operator = $operators[$param['operator']];
             $value = $operator == 'LIKE' ? "%{$param['value']}%" : $param['value'];
             $this->modelQuery->where($field, $operator, $value);
         }
     }
 
-    public function getarray($condition, $field) {
+    public function getarray($condition, $field)
+    {
         $this->modelQuery->whereIn($field, $condition);
     }
 }

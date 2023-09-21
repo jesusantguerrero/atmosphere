@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Budget extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'team_id',
         'user_id',
@@ -16,11 +17,13 @@ class Budget extends Model
         'name',
     ];
 
-    public function accounts() {
+    public function accounts()
+    {
         $this->belongsToMany(Account::class);
     }
 
-    public function categories() {
+    public function categories()
+    {
         $this->belongsToMany(Category::class);
     }
 }

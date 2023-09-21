@@ -1,8 +1,9 @@
 <?php
+
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use ErnySans\Laraworld\Models\Languages;
+use Illuminate\Database\Seeder;
 
 class LanguagesTableSeeder extends Seeder
 {
@@ -21,9 +22,9 @@ class LanguagesTableSeeder extends Seeder
 
         foreach ($JSON_languages as $language) {
             Languages::create([
-                'alpha3'    => ((isset($language['alpha3'])) ? $language['alpha3'] : null),
-                'alpha2'    => ((isset($language['alpha2'])) ? $language['alpha2'] : null),
-                'english'   => ((isset($language['english'])) ? $language['english'] : null),
+                'alpha3' => ((isset($language['alpha3'])) ? $language['alpha3'] : null),
+                'alpha2' => ((isset($language['alpha2'])) ? $language['alpha2'] : null),
+                'english' => ((isset($language['english'])) ? $language['english'] : null),
             ]);
         }
     }

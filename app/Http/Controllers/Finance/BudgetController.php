@@ -8,13 +8,14 @@ use Freesgen\Atmosphere\Http\InertiaController;
 class BudgetController extends InertiaController
 {
     protected $authorizedUser = false;
+
     protected $authorizedTeam = true;
 
     public function __construct(Budget $budget)
     {
         $this->model = $budget;
         $this->templates = [
-            "index" => 'Finance/Budgets'
+            'index' => 'Finance/Budgets',
         ];
         $this->searchable = ['name'];
         $this->validationRules = [
@@ -28,6 +29,6 @@ class BudgetController extends InertiaController
             'resource_type' => 'transactions',
             'date' => "{$dates['0']}~{$dates['1']}",
         ];
-        $this->resourceName= "budgets";
+        $this->resourceName = 'budgets';
     }
 }

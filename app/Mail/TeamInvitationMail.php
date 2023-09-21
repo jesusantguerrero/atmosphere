@@ -4,7 +4,6 @@ namespace App\Mail;
 
 use App\Models\TeamInvitation;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\URL;
@@ -13,7 +12,7 @@ class TeamInvitationMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-     /**
+    /**
      * The team invitation instance.
      *
      * @var \Laravel\Jetstream\TeamInvitation
@@ -30,7 +29,6 @@ class TeamInvitationMail extends Mailable
     {
         $this->invitation = $invitation;
     }
-
 
     /**
      * Build the message.

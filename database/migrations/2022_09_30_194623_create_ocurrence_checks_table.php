@@ -25,7 +25,7 @@ return new class extends Migration
             $table->integer('previous_days_count')->default(0);
             $table->integer('avg_days_passed')->default(0);
             $table->boolean('notify_on_avg')->default(false);
-            $table->boolean('notify_on_last_count')->default(false);;
+            $table->boolean('notify_on_last_count')->default(false);
             $table->boolean('is_active')->default(false);
             $table->json('log')->nullable();
             $table->string('type')->nullable();

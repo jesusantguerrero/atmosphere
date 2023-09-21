@@ -4,7 +4,6 @@ namespace App\Domains\Transaction\Listeners;
 
 use App\Domains\Transaction\Services\ReconciliationService;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
 use Insane\Journal\Events\TransactionCreated;
 
 class UpdateOpenReconciliations implements ShouldQueue

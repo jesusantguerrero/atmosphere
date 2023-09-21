@@ -2,7 +2,7 @@
   <a href="https://loger.neatlancer.com" target="_blank" rel="noopener noreferrer">
     <img width="160" height="100" src="./public/logo.svg" alt="Loger logo">
   </a>
-  <sup><em>alpha</em></sup></
+  <sup><em>beta</em></sup></
 </p>
 
 <h3 align="center">
@@ -56,8 +56,8 @@ Loger is organized in "concerns" by the moment it has 4
     - [x] Chores
     - [x] Occurrence Checks
     - [x] Plans (Events and activities / Repairs / ETC)
-        - [x] Quick Create Budget from plans
-        - [x] Quick Create Transactions from Plans? 
+        - [ ] Quick Create Budget from plans
+        - [ ] Quick Create Transactions from plans? 
     - [x] Equipment 
 
 >  (*) Feature is planned but not finished yet
@@ -125,16 +125,12 @@ php -v
 To install Loger, you'll need to clone or download this repo:
 
 ```
-git clone https://github.com/jesusantguerrero/atmosphere.git project_name
+git clone https://github.com/jesusantguerrero/atmosphere.git loger
 ```
 
 Next, we can install Atmosphere with these **4 simple steps**:
 
-### 1. Create a New Database
-
-During the installation, we need to use a MySQL database. You will need to create a new database and save the credentials for the next step.
-
-### 2. Copy the `.env.example` file
+### 1. Copy the `.env.example` file
 
 We need to specify the Environment variables for our application. You will see a file named `.env.example`, you will need to duplicate that file and rename it to `.env`.
 
@@ -151,16 +147,20 @@ DB_USERNAME=root
 DB_PASSWORD=
 ```
 
-### 3. Add Composer Dependencies
+### 2. Install dependencies
 ```php
-composer install --ignore-platform-reqs
+composer install --ignore-platform-reqs; npm install; npm run build
 ```
-### 4. Run Migrations and Seeds
+### 3. Install loger
 
 ```bash
-php artisan migrate
-php artisan db:seed
-php artisan journal:set-accounts
+php artisan app:install --email="demo@loger.com"
+```
+
+### 4. Add sample data(optional)
+
+```bash
+php artisan app:demo-seed
 ```
 <br>
 
@@ -172,9 +172,6 @@ Frontend development
 The backend has to be running
 
 ```bash
-# install npm packages
-npm install
-# development
 npm run dev
 ```
 

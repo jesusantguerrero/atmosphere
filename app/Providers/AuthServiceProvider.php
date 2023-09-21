@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Domains\AppCore\Policies\FinanceAccountPolicy;
+use App\Domains\Journal\Policies\TransactionPolicy;
 use App\Domains\Transaction\Policies\ReconciliationPolicy;
 use App\Models\Team;
 use App\Models\User;
@@ -10,6 +11,7 @@ use App\Policies\TeamPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 use Insane\Journal\Models\Core\Account;
+use Insane\Journal\Models\Core\Transaction;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -21,7 +23,8 @@ class AuthServiceProvider extends ServiceProvider
     protected $policies = [
         Team::class => TeamPolicy::class,
         Account::class => FinanceAccountPolicy::class,
-        Reconciliation::class => ReconciliationPolicy::class
+        Reconciliation::class => ReconciliationPolicy::class,
+        Transaction::class => TransactionPolicy::class,
     ];
 
     /**

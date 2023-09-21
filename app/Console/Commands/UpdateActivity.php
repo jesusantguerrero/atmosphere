@@ -23,7 +23,6 @@ class UpdateActivity extends Command
      */
     protected $description = 'Update activity for a given month';
 
-
     /**
      * Execute the console command.
      *
@@ -35,25 +34,24 @@ class UpdateActivity extends Command
         // $month = $this->argument('month') ?? null;
         $month = null;
 
-
         $categories = Category::where([
             'team_id' => $teamId,
         ])->get();
 
         $monthsWithTransactions = DB::table('transaction_lines')
-        ->selectRaw("date_format(transaction_lines.date, '%Y-%m') AS date")
-        ->groupBy(DB::raw("date_format(transaction_lines.date, '%Y-%m')"))
-        ->get()
-        ->pluck("date");
+            ->selectRaw("date_format(transaction_lines.date, '%Y-%m') AS date")
+            ->groupBy(DB::raw("date_format(transaction_lines.date, '%Y-%m')"))
+            ->get()
+            ->pluck('date');
 
         $total = count($categories) * count($monthsWithTransactions);
         $count = 0;
         foreach ($categories as $category) {
             foreach ($monthsWithTransactions as $month) {
                 $count++;
-                (new BudgetCategoryService($category))->updateActivity($category, $month . '-01');
-                echo "updated {$category->name} for month {$month}" . PHP_EOL;
-                echo "{$count} of {$total}" . PHP_EOL . PHP_EOL;
+                (new BudgetCategoryService($category))->updateActivity($category, $month.'-01');
+                echo "updated {$category->name} for month {$month}".PHP_EOL;
+                echo "{$count} of {$total}".PHP_EOL.PHP_EOL;
             }
         }
     }

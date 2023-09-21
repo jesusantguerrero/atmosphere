@@ -2,36 +2,37 @@
 
 namespace App\Domains\AppCore\Models;
 
-use App\Domains\Budget\Data\BudgetReservedNames;
-use App\Domains\Budget\Models\BudgetTarget;
 use App\Domains\Budget\Models\BudgetMonth;
-use App\Events\BudgetAssigned;
+use App\Domains\Budget\Models\BudgetTarget;
 use App\Models\Team;
-use Brick\Money\Money;
-use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Category as CoreCategory;
 
 class Category extends CoreCategory
 {
     protected $with = ['budget'];
 
-    public function team() {
+    public function team()
+    {
         return $this->belongsTo(Team::class);
     }
 
-    public function budget() {
+    public function budget()
+    {
         return $this->hasOne(BudgetTarget::class);
     }
 
-    public function budgets() {
+    public function budgets()
+    {
         return $this->hasMany(BudgetMonth::class)->orderBy('month', 'desc');
     }
 
-    public function subCategories() {
+    public function subCategories()
+    {
         return $this->hasMany(self::class, 'parent_id', 'id')->orderBy('index');
     }
 
-    public function lastMonthBudget() {
+    public function lastMonthBudget()
+    {
         return $this->hasMany(BudgetMonth::class)->orderBy('month', 'desc')->limit(1);
     }
 }

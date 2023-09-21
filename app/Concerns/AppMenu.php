@@ -4,8 +4,6 @@ namespace App\Concerns;
 
 use Closure;
 use Countable;
-use Illuminate\Contracts\Config\Repository;
-use Illuminate\View\Factory;
 use Spatie\Navigation\Facades\Navigation;
 
 class AppMenu implements Countable
@@ -63,7 +61,7 @@ class AppMenu implements Countable
     /**
      * Render the menu tag by given name.
      */
-    public function get(string $name, ?string $presenter = null, array $bindings = []): ?array
+    public function get(string $name, string $presenter = null, array $bindings = []): ?array
     {
         return $this->has($name) ?
             $this->menu[$name]->tree() : null;
