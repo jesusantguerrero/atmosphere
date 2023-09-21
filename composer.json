@@ -13,7 +13,7 @@
         "google/apiclient": "^2.12",
         "guzzlehttp/guzzle": "^7.0.2",
         "inertiajs/inertia-laravel": "^0.6.3",
-        "insane/journal": "dev-master",
+        "insane/journal": "^v1.0.0-rc",
         "insane/plan-module": "dev-master",
         "insane/watchlist-module": "dev-main",
         "joshbrw/laravel-module-installer": "^2.0",

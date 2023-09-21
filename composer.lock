@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2d9c597a4af765f5b8144aff47468ea1",
+    "content-hash": "8892999da5a2a5364848ee453b1ad510",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -2425,11 +2425,17 @@
         },
         {
             "name": "insane/journal",
-            "version": "dev-master",
+            "version": "v1.0.0-rc",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/insane-code/journal.git",
+                "reference": "d8afb8776696d3c1bd37a6bc515229cc29d49355"
+            },
             "dist": {
-                "type": "path",
-                "url": "../packages/journal",
-                "reference": "470e7b682f60951de845419fba7118581503874d"
+                "type": "zip",
+                "url": "https://api.github.com/repos/insane-code/journal/zipball/d8afb8776696d3c1bd37a6bc515229cc29d49355",
+                "reference": "d8afb8776696d3c1bd37a6bc515229cc29d49355",
+                "shasum": ""
             },
             "require": {
                 "staudenmeir/belongs-to-through": "^2.5"
@@ -2459,19 +2465,7 @@
                     "Insane\\Journal\\": "src/"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "Insane\\Journal\\Tests\\": "tests/"
-                }
-            },
-            "scripts": {
-                "test": [
-                    "vendor/bin/phpunit"
-                ],
-                "test-coverage": [
-                    "vendor/bin/phpunit --coverage-html coverage"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -2483,13 +2477,14 @@
             ],
             "description": "Accounting module for atmosphere and laravel",
             "keywords": [
-                "accounting",
+                "Accounting",
                 "invoicing"
             ],
-            "transport-options": {
-                "symlink": true,
-                "relative": true
-            }
+            "support": {
+                "issues": "https://github.com/insane-code/journal/issues",
+                "source": "https://github.com/insane-code/journal/tree/v1.0.0-rc"
+            },
+            "time": "2023-09-20T23:49:41+00:00"
         },
         {
             "name": "insane/plan-module",
@@ -13035,7 +13030,6 @@
     "minimum-stability": "dev",
     "stability-flags": {
         "freesgen/atmosphere": 20,
-        "insane/journal": 20,
         "insane/plan-module": 20,
         "insane/watchlist-module": 20,
         "insane/remotr": 20
