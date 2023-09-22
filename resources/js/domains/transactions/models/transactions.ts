@@ -1,10 +1,12 @@
+export type TransactionStatus = "draft" | "verified" | "planned";
+
 export interface ITransaction {
     id: number;
     title: string;
     currencyCode: string;
     status: string;
     payee: IPayee;
-    direction: string;
+    direction: TransactionStatus;
     total: number;
     currency_code: string;
     description: string;
@@ -36,6 +38,7 @@ export interface IReconciliation {
     id: number;
     difference: number;
     amount: number;
+    date: string;
 }
 export interface IPayee {
     id: number;

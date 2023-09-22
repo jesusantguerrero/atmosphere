@@ -5,7 +5,8 @@
     import WidgetTitleCard from '@/Components/molecules/WidgetTitleCard.vue';
     import TransactionsList from '@/domains/transactions/components/TransactionsList.vue';
     import { removeTransaction, transactionDBToTransaction, useTransactionModal } from '@/domains/transactions';
-import LogerButton from '@/Components/atoms/LogerButton.vue';
+    import LogerButton from '@/Components/atoms/LogerButton.vue';
+import { useTransactionStore } from '@/store/transactions';
 
 
     const transactionsDraft = ref([]);
@@ -38,6 +39,21 @@ import LogerButton from '@/Components/atoms/LogerButton.vue';
             });
         })
     };
+
+    const transactionStore = useTransactionStore();
+    const unsubscribe =  transactionStore.$onAction(({
+        name,
+        store,
+        args,
+        after
+    }) => {
+        after((result) => {
+            const [savedValue, action, originalData] = args;
+            if (originalData && originalData.status == 'draft' && savedValue.status == 'verified') {
+                fetchTransactions();
+            }
+        })
+    })
 </script>
 
 <template>

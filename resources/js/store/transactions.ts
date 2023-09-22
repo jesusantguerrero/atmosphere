@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { useForm } from "@inertiajs/vue3";
 import { TRANSACTION_DIRECTIONS } from "@/domains/transactions";
 import { format } from "date-fns";
+import { ITransaction } from "@/domains/transactions/models";
 
 interface QuickTransactionData {
     accountName: string;
@@ -33,10 +34,15 @@ export const useTransactionStore = defineStore('transactions', () => {
             onError() {
                 reject()
             }
-          }));
+        }));
     };
 
+    const emitTransaction = (transaction: ITransaction, method: string, oldData?: ITransaction) => {
+
+    }
+
     return {
-       onSubmit
+       onSubmit,
+       emitTransaction
     }
 })

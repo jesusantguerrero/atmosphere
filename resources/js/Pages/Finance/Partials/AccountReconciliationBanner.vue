@@ -18,12 +18,32 @@ const goToReconciliation = () => {
     router.visit(`/finance/reconciliation/${account?.reconciliations_pending.id}`)
 }
 
-const adjustmentForm = useForm({})
+const isMatched = computed(() => {
+    return account.balance == account.reconciliations_pending?.amount;
+})
+const adjustmentForm = useForm({
+    date: account.reconciliations_pending?.date,
+    balance: account.balance,
+})
 const adjustAndFinish = () => {
-    adjustmentForm.put(`/finance/reconciliation/${account?.reconciliations_pending.id}/save-adjustment`)
+    if (!isMatched.value) {
+        adjustmentForm.put(`/finance/reconciliation/${account?.reconciliations_pending.id}/save-adjustment`)
+    } else {
+        adjustmentForm
+    .transform((data) => ({
+      ...data,
+      date: account.reconciliations_pending?.date,
+    }))
+    .put(`/finance/reconciliation/${account.reconciliations_pending.id}`, {
+      onFinish() {
+        adjustmentForm.reset();
+      },
+    });
+    }
 }
 
 const differenceStateText = computed(() => {
+
     return (account.reconciliations_pending?.difference || 0) < (account.reconciliations_pending?.amount ?? 0) ? 'higher' : 'lower'
 })
 
@@ -35,7 +55,7 @@ const differenceStateText = computed(() => {
         >
         <article class="flex items-center">
             <AccountReconciliationAlert class="mr-2 text-white" />
-            <p>
+            <p v-if="!isMatched">
                 This account's cleared balance in
                 <strong>Loger</strong> is {{ formatMoney(account.reconciliations_pending.difference) }} {{ differenceStateText }} than your
                 <strong>
@@ -46,6 +66,7 @@ const differenceStateText = computed(() => {
         <article class="flex space-x-2">
             <LogerButton
                 variant="secondary"
+                v-if="!isMatched"
                 @click="goToReconciliation()"
                 :disabled="adjustmentForm.processing"
                 :processing="adjustmentForm.processing"
@@ -57,6 +78,9 @@ const differenceStateText = computed(() => {
                 :disabled="adjustmentForm.processing"
                 :processing="adjustmentForm.processing"
             >
+                <template #icon>
+                    <IMdiCheck />
+                </template>
                 Save adjustment and finish
             </LogerButton>
         </article>
