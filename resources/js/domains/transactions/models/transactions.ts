@@ -31,7 +31,7 @@ export interface IAccount {
     name: string;
     color: string;
     balance: number;
-    reconciliations_pending?: IReconciliation
+    reconciliations_last?: IReconciliation
 }
 
 export interface IReconciliation {

@@ -105,7 +105,7 @@ const monthName = computed(() => format(pageState.dates.startDate, "MMMM"))
 // reconciliation
 
 const hasReconciliation = computed(() => {
-    return selectedAccount.value?.reconciliations_pending
+    return selectedAccount.value?.reconciliations_last
 })
 
 const reconcileForm = useForm({
@@ -149,7 +149,7 @@ const reconciliation = () => {
           </LogerButton>
           <LogerButton
             variant="inverse"
-            @click="router.visit(`/finance/reconciliation/${selectedAccount?.reconciliations_pending.id}`)"
+            @click="router.visit(`/finance/reconciliation/${selectedAccount?.reconciliations_last.id}`)"
             v-else
           >
             Review Reconciliation

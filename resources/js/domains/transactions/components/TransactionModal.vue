@@ -386,7 +386,7 @@ const saveText = computed(() => {
       <div class="flex space-x-2">
         <LogerButton @click="close" rounded class="h-10 text-body" :disabled="form.processing">
             Cancel
-        </LogButton>
+        </LogerButton>
         <LogerButton
             class="h-10 text-white capitalize bg-primary"
             :processing="form.processing"
