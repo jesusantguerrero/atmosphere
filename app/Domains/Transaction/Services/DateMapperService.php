@@ -10,14 +10,15 @@ class DateMapperService
 {
     public static function mapInMonths($data, $year)
     {
-        $months = [1, 2, 3,4,5,6,7,8,9,10,11, 12];
+        $months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+
         return array_map(function ($month) use ($data, $year) {
             $index = array_search($month, array_column($data, 'months'));
 
-            return  $index !== false ? $data[$index] : [
-                "year" => $year,
-                "months" => $month,
-                "total" =>  0
+            return $index !== false ? $data[$index] : [
+                'year' => $year,
+                'months' => $month,
+                'total' => 0,
             ];
         }, $months);
     }
@@ -32,13 +33,14 @@ class DateMapperService
             $index = "$year-$month-$padDay";
 
             $lastAmount = isset($data[$index]) ?
-            Money::of($data[$index][0]['total'] ?? $data[$index][0]['total_amount'], 'USD', null, RoundingMode::HALF_EVEN)->plus(Money::of($lastAmount, 'USD', null, RoundingMode::HALF_EVEN))->getAmount(): $lastAmount;
+            Money::of($data[$index][0]['total'] ?? $data[$index][0]['total_amount'], 'USD', null, RoundingMode::HALF_EVEN)->plus(Money::of($lastAmount, 'USD', null, RoundingMode::HALF_EVEN))->getAmount() : $lastAmount;
             $dataByDate[] = [
-                "month" => $month,
-                "days" => $day,
-                "total" => Carbon::createFromFormat('Y-m-d', $index)->isBefore(now()) ? $lastAmount : null
+                'month' => $month,
+                'days' => $day,
+                'total' => Carbon::createFromFormat('Y-m-d', $index)->isBefore(now()) ? $lastAmount : null,
             ];
         }
+
         return $dataByDate;
     }
 }

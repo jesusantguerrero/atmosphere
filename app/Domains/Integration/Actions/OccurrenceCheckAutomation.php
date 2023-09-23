@@ -2,18 +2,15 @@
 
 namespace App\Domains\Integration\Actions;
 
-use App\Domains\Housing\Actions\RegisterOccurrence;
-use App\Domains\Housing\Models\OccurrenceCheck;
 use App\Domains\Automation\Models\Automation;
-use App\Domains\Automation\Models\AutomationTask;
 use App\Domains\Automation\Models\AutomationTaskAction;
+use App\Domains\Housing\Actions\RegisterOccurrence;
 
 class OccurrenceCheckAutomation
 {
     /**
      * Validate and create a new team for the given user.
      *
-     * @param  Automation  $automation
      * @param  Google_Calendar_Events  $calendarEvents
      * @return void
      */
@@ -23,19 +20,19 @@ class OccurrenceCheckAutomation
         AutomationTaskAction $task = null,
         AutomationTaskAction $previousTask = null,
         AutomationTaskAction $trigger = null
-    )
-    {
+    ) {
         $taskData = json_decode($task->values);
         $occurrence = (new RegisterOccurrence())->add(
             $payload['team_id'],
             $taskData->name,
             $payload['date']
         );
+
         return $occurrence;
     }
 
-
-    public static function fieldConfig() {
+    public static function fieldConfig()
+    {
         return [];
     }
 }

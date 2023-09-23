@@ -1,5 +1,5 @@
 import { cloneDeep } from "lodash";
-import { computed, watch, reactive, toRefs } from "vue";
+import { computed, watch, reactive, toRefs, Ref } from "vue";
 import { getCategoriesTotals, getGroupTotals } from './index';
 import { ICategory } from "../transactions/models";
 
@@ -30,7 +30,7 @@ export const BudgetState = reactive({
 
     selectedBudget: computed(() => {
         return BudgetState.selectedBudgetIds.id
-        ? BudgetState.categories.find(cat => cat.id == BudgetState.selectedBudgetIds.id)
+        ? BudgetState.categories.find((cat: ICategory) => cat.id == BudgetState.selectedBudgetIds.id)
         : null;
     }),
     // Balance
@@ -38,14 +38,14 @@ export const BudgetState = reactive({
         return BudgetState.data.find((category: ICategory) => category.name == 'Inflow')
     }),
     outflow: computed(() => {
-        return BudgetState.data?.filter((category) => category.name != 'Inflow')
+        return BudgetState.data?.filter((category: ICategory) => category.name != 'Inflow')
     }),
     budgetTotals: computed(() => {
         return getGroupTotals(BudgetState.outflow)
     }),
 
     available: computed(() => {
-        return BudgetState.budgetTotals.available
+        return BudgetState.budgetTotals.budgetAvailable
     }),
     readyToAssign: computed(() => {
         const budgetTotals = BudgetState.budgetTotals;
@@ -115,7 +115,7 @@ const setBudgetState = ({ filterGroups, categories, budgetData}) => {
         BudgetState.categories = cloneDeep(categories);
     }
 }
-export const useBudget = (budgets) => {
+export const useBudget = (budgets: Ref<Record<string, any>>) => {
     if (budgets) {
         watch(() => budgets.value, (budgetServerData) => {
             setBudgetState(getBudget(budgetServerData.data));
@@ -123,7 +123,7 @@ export const useBudget = (budgets) => {
         }, { immediate: true, deep: true })
     }
 
-    const toggleFilter = (filterName) => {
+    const toggleFilter = (filterName: string) => {
         Object.entries(BudgetState.filters).forEach(([filter, value]) => {
             BudgetState.filters[filter] = filterName == filter ? !value : false ;
         })
@@ -140,16 +140,16 @@ export const useBudget = (budgets) => {
 }
 
 const filterConditions = {
-    overspent: (category) =>  category.hasOverspent,
-    funded: (category) =>  category.hasFunded,
-    underFunded: (category) =>  category.hasUnderFunded,
+    overspent: (category: ICategory) =>  category.hasOverspent,
+    funded: (category: ICategory) =>  category.hasFunded,
+    underFunded: (category: ICategory) =>  category.hasUnderFunded,
 }
 
-const evaluateFilterCondition  = (category, filterName) => {
+const evaluateFilterCondition  = (category: ICategory, filterName: string) => {
     return !filterName ? true : filterConditions[filterName](category);
 }
 
-function getVisibleCategories(budgetData, filterName) {
+function getVisibleCategories(budgetData: Record<string, any>, filterName?: string) {
     const data = cloneDeep(budgetData);
     const visibleGroups = data.reduce((groups, group) => {
         const groupHasFilter = group.name != 'Inflow' && evaluateFilterCondition(group, filterName)

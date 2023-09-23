@@ -19,20 +19,19 @@ class Kernel extends ConsoleKernel
     /**
      * Define the application's command schedule.
      *
-     * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
      * @return void
      */
     protected function schedule(Schedule $schedule)
     {
         $scheduleTime = config('app.schedule_time');
 
-        $schedule->command("automation:check")->everyMinute()->runInBackground();
-        $schedule->command('loger:occurrence-reminders')->daily()->runInBackground();
+        $schedule->command('app:automation-check')->everyMinute()->runInBackground();
+        $schedule->command('app:occurrence-reminders')->daily()->runInBackground();
         if (config('app.demo')) {
             if ($scheduleTime) {
-                $schedule->command("demo:reset")->dailyAt($scheduleTime)->runInBackground();
+                $schedule->command('app:demo-reset')->dailyAt($scheduleTime)->runInBackground();
             } else {
-                $schedule->command("demo:reset")->everyTwoHours()->runInBackground();
+                $schedule->command('app:demo-reset')->everyTwoHours()->runInBackground();
             }
         }
     }

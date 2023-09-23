@@ -48,12 +48,12 @@ class Kernel extends HttpKernel
     ];
 
     /**
-    * The application's middleware aliases.
-    *
-    * Aliases may be used to conveniently assign middleware to routes and groups.
-    *
-    * @var array
-    */
+     * The application's middleware aliases.
+     *
+     * Aliases may be used to conveniently assign middleware to routes and groups.
+     *
+     * @var array
+     */
     protected $middlewareAliases = [
         'auth' => \App\Http\Middleware\Authenticate::class,
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,

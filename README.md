@@ -2,7 +2,7 @@
   <a href="https://loger.neatlancer.com" target="_blank" rel="noopener noreferrer">
     <img width="160" height="100" src="./public/logo.svg" alt="Loger logo">
   </a>
-  <sup><em>alpha</em></sup></
+  <sup><em>beta</em></sup></
 </p>
 
 <h3 align="center">
@@ -24,13 +24,13 @@
 
 ## About Loger
 
-Loger (House in french) as a family managing home is almost like being CEO of a company. There are a lot of things going on that you have to keep in mind. Things like budgeting, expenses, subscriptions to keep healthy financial habits managing goals/savings like an emergency fund or planning your next vacation or Christmas; having a Meal Plan, grocery list generated with the things you need... well, you get the point.
+Loger (House in French) as a family managing home is almost like being CEO of a company. There are a lot of things going on that you have to keep in mind. Things like budgeting, expenses, subscriptions to keep healthy financial habits managing goals/savings like an emergency fund or planning your next vacation or Christmas; having a Meal Plan, grocery list generated with the things you need... well, you get the point.
 
-All the things mentioned above are part of our family/personal routine. We do it in our minds or paper or if you are like me with different software. Loger aims to be a central point to manage all that an more.
+All the things mentioned above are part of our family/personal routine. We do it in our minds or on paper or if you are like me with different software. Loger aims to be a central point to manage all that an more.
 
 ## ✨Features:
 
-Loger is organized in "concerns" by the moment it have 4
+Loger is organized in "concerns" by the moment it has 4
 
 * ### 💵 Finance:
     - [x] Monthly Budget
@@ -53,15 +53,20 @@ Loger is organized in "concerns" by the moment it have 4
     - Goals/Projects like travels and activities 
 
 * ### 🏡Home/Family Projects**
-    - [ ] Chores
+    - [x] Chores
     - [x] Occurrence Checks
-    - [ ] Plans (Events and activities / Repairs / ETC)
+    - [x] Plans (Events and activities / Repairs / ETC)
         - [ ] Quick Create Budget from plans
-        - [ ] Quikc Create Transactions from plans? 
-    - [ ] Equipment 
+        - [ ] Quick Create Transactions from plans? 
+    - [x] Equipment 
 
 >  (*) Feature is planned but not finished yet
-(**) Section is considered but not planned still in research
+(**) The section is considered but not planned still in research
+
+
+## Modules
+- Plan module: (home/projects) 
+- Watchlist module: (finance)
 
 <!-- ## Demo
 
@@ -89,12 +94,12 @@ Loger is organized in "concerns" by the moment it have 4
 ## Motivation
 - This was an Idea initially considered as a part of a 12x12 SaaS challenge.
 - I married and needed something like this to keep my things organized and planned.
-- Financial software had fixed categories, bank sync didn't work in my country or just. worked more like expense tracker than budget (Except YNAB).
+- Financial software had fixed categories, and bank sync didn't work in my country or just. worked more like an expense tracker than a budget (Except YNAB).
 - I didn't want to have multiple apps to manage things of the same context and need a relation (Budgeting app, calendars, meal planner, custom notion template).
 
 
 ## Technical Stuff
-Loger is a Monolith app using laravel 9, jetstream, inertia, vue3, Tailwindcss and some hand crafted packages [Atmosphere UI](https://github.com/jesusantguerrero/atmosphere-ui), [Journal](https://github.com/insane-code/journal), and others.
+Loger is a Monolith app using Laravel 9, jetstream, inertia, vue3, Tailwindcss, and some handcrafted packages [Atmosphere UI](https://github.com/jesusantguerrero/atmosphere-ui), [Journal](https://github.com/insane-code/journal), and others.
 
 
 | Prerequisite                                          | Version     |
@@ -120,18 +125,14 @@ php -v
 To install Loger, you'll need to clone or download this repo:
 
 ```
-git clone https://github.com/jesusantguerrero/atmosphere.git project_name
+git clone https://github.com/jesusantguerrero/atmosphere.git loger
 ```
 
 Next, we can install Atmosphere with these **4 simple steps**:
 
-### 1. Create a New Database
+### 1. Copy the `.env.example` file
 
-During the installation we need to use a MySQL database. You will need to create a new database and save the credentials for the next step.
-
-### 2. Copy the `.env.example` file
-
-We need to specify our Environment variables for our application. You will see a file named `.env.example`, you will need to duplicate that file and rename it to `.env`.
+We need to specify the Environment variables for our application. You will see a file named `.env.example`, you will need to duplicate that file and rename it to `.env`.
 
 Then, open up the `.env` file and update your *DB_DATABASE*, *DB_USERNAME*, and *DB_PASSWORD* in the appropriate fields. You will also want to update the *APP_URL* to the URL of your application.
 
@@ -146,16 +147,20 @@ DB_USERNAME=root
 DB_PASSWORD=
 ```
 
-### 3. Add Composer Dependencies
+### 2. Install dependencies
 ```php
-composer install --ignore-platform-reqs
+composer install --ignore-platform-reqs; npm install; npm run build
 ```
-### 4. Run Migrations and Seeds
+### 3. Install loger
 
 ```bash
-php artisan migrate
-php artisan db:seed
-php artisan journal:set-accounts
+php artisan app:install --email="demo@loger.com"
+```
+
+### 4. Add sample data(optional)
+
+```bash
+php artisan app:demo-seed
 ```
 <br>
 
@@ -164,12 +169,9 @@ backend development
 php artisan serve
 ```
 Frontend development
-The bachend have to be running
+The backend has to be running
 
 ```bash
-# install npm packages
-npm install
-# development
 npm run dev
 ```
 

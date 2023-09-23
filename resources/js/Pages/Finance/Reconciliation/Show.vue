@@ -21,6 +21,7 @@ import { useAppContextStore } from "@/store";
 import { formatMoney } from "@/utils";
 import { IAccount, ICategory, ITransaction } from "@/domains/transactions/models";
 import { NPagination } from "naive-ui";
+import axios from "axios";
 
 const { openTransactionModal } = useTransactionModal();
 
@@ -53,22 +54,23 @@ provide("selectedAccountId", accountId);
 const { state } = useServerSearch(serverSearchOptions)
 
 const context = useAppContextStore();
-const listComponent = computed(() => {
-  return context.isMobile ? TransactionSearch : TransactionTable;
-});
 
-const removeTransaction = (transaction: ITransaction) => {
-  router.delete(`/transactions/${transaction.id}`, {
+
+interface ReconciliationEntry {
+    entry_id: number
+    transaction_id: number
+    is_matched: boolean
+}
+
+const removeTransaction = (transaction: ReconciliationEntry) => {
+  router.delete(`/transactions/${transaction.transaction_id}`, {
     onSuccess() {
       router.reload();
     },
   });
 };
 
-interface ReconciliationEntry {
-    entry_id: number
-    is_matched: boolean
-}
+
 
 const toggleCheck = (entry: ReconciliationEntry) => {
   router.put(`/finance/reconciliation/${props.reconciliation.id}/reconciliation-entries/${entry.entry_id}/check`, {
@@ -93,17 +95,15 @@ const findLinked = (transaction: ITransaction) => {
 };
 
 const handleEdit = (transaction: ITransaction) => {
-  openTransactionModal({
-    transactionData: transaction,
-  });
+    axios.get(`/transactions/${transaction.transaction_id}?json=true`).then(({ data }) => {
+        openTransactionModal({
+            transactionData: data,
+        });
+    })
 };
 
 // reconciliation
 
-const reconcileForm = useForm({
-  date: props.reconciliation.date,
-  balance: props.reconciliation.amount,
-});
 
 const isEditing = ref(false);
 const statementBalanceRef = ref();
@@ -115,6 +115,11 @@ const toggleEditing = () => {
     });
   }
 };
+
+const reconcileForm = useForm({
+  date: props.reconciliation.date,
+  balance: props.reconciliation.amount,
+});
 
 const completeReconciliation = () => {
     if (reconcileForm.processing) return

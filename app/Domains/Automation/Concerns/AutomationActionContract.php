@@ -10,7 +10,6 @@ interface AutomationActionContract
     /**
      * Validate and create a new team for the given user.
      *
-     * @param  Automation  $automation
      * @param  Google_Calendar_Events  $calendarEvents
      * @return void
      */
@@ -23,6 +22,8 @@ interface AutomationActionContract
     );
 
     public function getName(): string;
+
     public function getDescription(): string;
+
     public function label(): string;
 }

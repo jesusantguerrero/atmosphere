@@ -11,13 +11,13 @@ class IngredientController extends InertiaController
     {
         $this->model = $ingredient;
         $this->templates = [
-            "index" => 'Meals/Ingredients',
-            "create" => 'Ingredients/Form',
-            "edit" => 'Ingredients/Form',
+            'index' => 'Meals/Ingredients',
+            'create' => 'Ingredients/Form',
+            'edit' => 'Ingredients/Form',
         ];
         $this->searchable = ['name'];
         $this->validationRules = [
-            'name' => 'required'
+            'name' => 'required',
         ];
         $this->includes = ['labels'];
         $this->filters = [];

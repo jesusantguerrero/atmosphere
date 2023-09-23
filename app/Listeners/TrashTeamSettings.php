@@ -42,38 +42,38 @@ class TrashTeamSettings
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
         // Journal
-        Transaction::where(["team_id" => $team->id])->delete();
-        TransactionLine::where(["team_id" => $team->id])->delete();
-        LinkedTransaction::where(["team_id" => $team->id])->delete();
-        Payment::where(["team_id" => $team->id])->delete();
-        PaymentDocument::where(["team_id" => $team->id])->delete();
+        Transaction::where(['team_id' => $team->id])->delete();
+        TransactionLine::where(['team_id' => $team->id])->delete();
+        LinkedTransaction::where(['team_id' => $team->id])->delete();
+        Payment::where(['team_id' => $team->id])->delete();
+        PaymentDocument::where(['team_id' => $team->id])->delete();
 
         // core
-        Account::where(["team_id" => $team->id])->delete();
-        Category::where(["team_id" => $team->id])->delete();
-        Label::where(["team_id" => $team->id])->delete();
-        Planner::where(["team_id" => $team->id])->delete();
+        Account::where(['team_id' => $team->id])->delete();
+        Category::where(['team_id' => $team->id])->delete();
+        Label::where(['team_id' => $team->id])->delete();
+        Planner::where(['team_id' => $team->id])->delete();
 
         //  Budget
-        Budget::where(["team_id" => $team->id])->delete();
-        BudgetMonth::where(["team_id" => $team->id])->delete();
-        BudgetMovement::where(["team_id" => $team->id])->delete();
-        BudgetTarget::where(["team_id" => $team->id])->delete();
+        Budget::where(['team_id' => $team->id])->delete();
+        BudgetMonth::where(['team_id' => $team->id])->delete();
+        BudgetMovement::where(['team_id' => $team->id])->delete();
+        BudgetTarget::where(['team_id' => $team->id])->delete();
 
         // housing
-        OccurrenceCheck::where(["team_id" => $team->id])->delete();
+        OccurrenceCheck::where(['team_id' => $team->id])->delete();
 
         //  Loger profile
-        LogerProfile::where(["team_id" => $team->id])->delete();
-        LogerProfileEntity::where(["team_id" => $team->id])->delete();
+        LogerProfile::where(['team_id' => $team->id])->delete();
+        LogerProfileEntity::where(['team_id' => $team->id])->delete();
 
         // meal
-        Ingredient::where(["team_id" => $team->id])->delete();
+        Ingredient::where(['team_id' => $team->id])->delete();
         // MealMenu::where(["team_id" => $team->id])->delete();
-        Meal::where(["team_id" => $team->id])->delete();
-        MealPlan::where(["team_id" => $team->id])->delete();
-        MealType::where(["team_id" => $team->id])->delete();
-        Product::where(["team_id" => $team->id])->delete();
+        Meal::where(['team_id' => $team->id])->delete();
+        MealPlan::where(['team_id' => $team->id])->delete();
+        MealType::where(['team_id' => $team->id])->delete();
+        Product::where(['team_id' => $team->id])->delete();
 
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
     }

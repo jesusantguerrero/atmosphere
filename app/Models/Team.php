@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Domains\AppCore\Models\Category;
-use App\Models\Setting;
 use App\Domains\Meal\Models\Meal;
 use App\Domains\Transaction\Models\Transaction;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,14 +12,15 @@ use Laravel\Jetstream\Events\TeamCreated;
 use Laravel\Jetstream\Events\TeamDeleted;
 use Laravel\Jetstream\Events\TeamUpdated;
 use Laravel\Jetstream\Team as JetstreamTeam;
-use Spatie\Onboard\Concerns\Onboardable;
-use Spatie\Onboard\Concerns\GetsOnboarded;
 use Laravel\Paddle\Billable;
+use Spatie\Onboard\Concerns\GetsOnboarded;
+use Spatie\Onboard\Concerns\Onboardable;
+
 class Team extends JetstreamTeam implements Onboardable
 {
-    use HasFactory;
-    use GetsOnboarded;
     use Billable;
+    use GetsOnboarded;
+    use HasFactory;
 
     protected $with = ['settings'];
 
@@ -54,35 +54,42 @@ class Team extends JetstreamTeam implements Onboardable
         'deleted' => TeamDeleted::class,
     ];
 
-    public function settings() {
+    public function settings()
+    {
         return $this->hasMany(Setting::class);
     }
 
-    public function accounts() {
+    public function accounts()
+    {
         return $this->hasMany(Account::class);
     }
 
-    public function budgetAccounts() {
-        return $this->hasMany(Account::class)->whereIn('account_detail_type_id',[1,2,4,5]);
+    public function budgetAccounts()
+    {
+        return $this->hasMany(Account::class)->whereIn('account_detail_type_id', [1, 2, 4, 5]);
     }
 
-    public function budgetCategories() {
+    public function budgetCategories()
+    {
         return $this->hasMany(Category::class)
-        ->where('resource_type', 'transactions')
-        ->whereNotNull('parent_id');
+            ->where('resource_type', 'transactions')
+            ->whereNotNull('parent_id');
     }
 
-    public function categoryGroups() {
+    public function categoryGroups()
+    {
         return $this->hasMany(Category::class)->where([
-            'resource_type' => 'transactions'
+            'resource_type' => 'transactions',
         ])->whereNull('parent_id');
     }
 
-    public function payees() {
+    public function payees()
+    {
         return $this->hasMany(Payee::class);
     }
 
-    public function meals() {
+    public function meals()
+    {
         return $this->hasMany(Meal::class);
     }
 
@@ -93,10 +100,10 @@ class Team extends JetstreamTeam implements Onboardable
      */
     public function balance()
     {
-        return (double) Transaction::byTeam($this->id)
-        ->verified()
-        ->balance()
-        ->first()
+        return (float) Transaction::byTeam($this->id)
+            ->verified()
+            ->balance()
+            ->first()
         ->total;
     }
 }

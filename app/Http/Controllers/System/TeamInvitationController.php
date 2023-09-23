@@ -7,11 +7,11 @@ use App\Models\TeamInvitation;
 use Illuminate\Http\Request;
 use Laravel\Jetstream\Features;
 
-class TeamInvitationController {
+class TeamInvitationController
+{
     /**
      * Re send an existing invitation to the user email.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  int  $teamId
      * @return \Illuminate\Http\RedirectResponse
      */
@@ -77,6 +77,7 @@ class TeamInvitationController {
         }
 
         $invitation->delete();
+
         return back(303);
     }
 }

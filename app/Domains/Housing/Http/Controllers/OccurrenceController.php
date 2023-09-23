@@ -20,7 +20,7 @@ class OccurrenceController extends InertiaController
         $this->templates = [
             'index' => 'Housing/Occurrence',
         ];
-        $this->searchable = ["id", "name"];
+        $this->searchable = ['id', 'name'];
         $this->includes = [];
         $this->appends = [];
         $this->resourceName = 'occurrence';
@@ -30,11 +30,12 @@ class OccurrenceController extends InertiaController
     protected function getIndexProps(Request $request, $resources = null): array
     {
         return [
-            'linkedTypes' => OccurrenceCheck::getLinkedModels()
+            'linkedTypes' => OccurrenceCheck::getLinkedModels(),
         ];
     }
 
-    public function addInstance(OccurrenceCheck $occurrence, RegisterOccurrence $registerOccurrence) {
+    public function addInstance(OccurrenceCheck $occurrence, RegisterOccurrence $registerOccurrence)
+    {
         $registerOccurrence->add(
             $occurrence->team_id,
             $occurrence->name,
@@ -44,7 +45,8 @@ class OccurrenceController extends InertiaController
         return redirect()->back();
     }
 
-    public function removeLastInstance(OccurrenceCheck $occurrence, RegisterOccurrence $registerOccurrence) {
+    public function removeLastInstance(OccurrenceCheck $occurrence, RegisterOccurrence $registerOccurrence)
+    {
         $registerOccurrence->remove(
             $occurrence->id,
         );
@@ -52,24 +54,30 @@ class OccurrenceController extends InertiaController
         return redirect()->back();
     }
 
-    public function automationPreview(OccurrenceCheck $occurrence, SearchTransactions $search) {
+    public function automationPreview(OccurrenceCheck $occurrence, SearchTransactions $search)
+    {
         return $search->handle($occurrence->conditions);
     }
 
-    public function automationLoad(OccurrenceCheck $occurrence, RegisterOccurrence $registerer) {
+    public function automationLoad(OccurrenceCheck $occurrence, RegisterOccurrence $registerer)
+    {
         return $registerer->load($occurrence);
     }
 
-    public function sync(OccurrenceCheck $occurrence, RegisterOccurrence $registerer) {
+    public function sync(OccurrenceCheck $occurrence, RegisterOccurrence $registerer)
+    {
         return $registerer->sync($occurrence);
     }
 
-    public function syncAll() {
+    public function syncAll()
+    {
         RunTeamChecks::dispatch(auth()->user()->current_team_id);
     }
 
-    public function export() {
+    public function export()
+    {
         $dataToExport = new OccurrenceExport(OccurrenceCheck::where('team_id', request()->user()->current_team_id)->get()->toArray());
+
         return Excel::download($dataToExport, 'occurrences.xlsx');
     }
 }

@@ -5,7 +5,6 @@ namespace App\Listeners;
 use App\Domains\Automation\Services\LogerAutomationService;
 use App\Events\AutomationEvent;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
 use Insane\Journal\Events\TransactionCreated;
 
 class HandleTransactionCreated implements ShouldQueue

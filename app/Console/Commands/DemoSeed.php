@@ -12,7 +12,7 @@ class DemoSeed extends Command
      *
      * @var string
      */
-    protected $signature = 'demo:seed';
+    protected $signature = 'app:demo-seed';
 
     /**
      * The console command description.
@@ -33,6 +33,7 @@ class DemoSeed extends Command
         $seeder = $class->setContainer($this->laravel)->setCommand($this);
 
         $seeder->__invoke();
+
         return 0;
     }
 }

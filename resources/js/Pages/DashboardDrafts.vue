@@ -5,11 +5,13 @@
     import WidgetTitleCard from '@/Components/molecules/WidgetTitleCard.vue';
     import TransactionsList from '@/domains/transactions/components/TransactionsList.vue';
     import { removeTransaction, transactionDBToTransaction, useTransactionModal } from '@/domains/transactions';
+    import LogerButton from '@/Components/atoms/LogerButton.vue';
+import { useTransactionStore } from '@/store/transactions';
 
 
     const transactionsDraft = ref([]);
     const isLoadingDrafts = ref(false);
-    const fetchTransactions = () => {
+    const fetchTransactions = async () => {
         const url = `/api/finance/transactions?filter[status]=draft&limit=10`;
         return axios.get(url).then<ITransaction[]>(({ data }) => {
             transactionsDraft.value = data;
@@ -21,6 +23,14 @@
         fetchTransactions()
     })
 
+    const isLoading = ref(false);
+    const updateTransactions = () => {
+        isLoading.value = true;
+        fetchTransactions().finally(() => {
+            isLoading.value = false;
+        })
+    }
+
     const { openTransactionModal } = useTransactionModal();
     const handleEdit = (transaction: ITransaction) => {
         axios.get(`/transactions/${transaction.id}?json=true`).then(({ data }) => {
@@ -29,6 +39,21 @@
             });
         })
     };
+
+    const transactionStore = useTransactionStore();
+    const unsubscribe =  transactionStore.$onAction(({
+        name,
+        store,
+        args,
+        after
+    }) => {
+        after((result) => {
+            const [savedValue, action, originalData] = args;
+            if (originalData && originalData.status == 'draft' && savedValue.status == 'verified') {
+                fetchTransactions();
+            }
+        })
+    })
 </script>
 
 <template>
@@ -46,13 +71,11 @@
         />
 
         <template #action>
-            <AtButton
-                class="flex items-center text-primary"
-                @click="router.visit('/transactions?filter[status]=planned')"
-            >
-                <span> See scheduled</span>
-                <i class="ml-2 fa fa-chevron-right"></i>
-            </AtButton>
+            <LogerButton variant="inverse" class="rounded-full" @click="updateTransactions()" :disabled="isLoading">
+                <div :class="{'animate-spin': isLoading}">
+                    <IMdiSync  />
+                </div>
+            </LogerButton>
         </template>
     </WidgetTitleCard>
 </template>

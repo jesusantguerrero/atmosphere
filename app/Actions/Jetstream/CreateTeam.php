@@ -16,7 +16,6 @@ class CreateTeam implements CreatesTeams
      * Validate and create a new team for the given user.
      *
      * @param  mixed  $user
-     * @param  array  $input
      * @return mixed
      */
     public function create($user, array $input)
@@ -40,18 +39,16 @@ class CreateTeam implements CreatesTeams
     /**
      * Create a personal team for the user.
      *
-     * @param  \App\Models\User  $user
      * @return \App\Models\Team
      */
-
     public function createUserTeam(User $user, $teamName)
     {
         $teamName = $teamName ?? explode(' ', $user->name, 2)[0]."'s Team";
+
         return $user->ownedTeams()->save(Team::forceCreate([
             'user_id' => $user->id,
             'name' => $teamName,
             'personal_team' => true,
         ]));
     }
-
 }

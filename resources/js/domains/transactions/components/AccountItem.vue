@@ -6,8 +6,9 @@ import IconDrag from "@/Components/icons/IconDrag.vue";
 import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 
 import AccountReconciliationAlert from "./AccountReconciliationAlert.vue";
+import { computed } from "vue";
 
-defineProps({
+const { account } = defineProps({
   account: {
     type: Object,
     required: true,
@@ -21,6 +22,14 @@ defineProps({
 const isDebt = (amount: number) => {
   return amount < 0;
 };
+
+const hasPendingReconciliation = computed(() => {
+    return account.reconciliation_last?.status == 'pending';
+})
+
+const isReconciled = computed(() => {
+    return account.reconciliation_last?.amount == account.balance;
+})
 </script>
 
 
@@ -37,7 +46,8 @@ const isDebt = (amount: number) => {
     </div>
     <section class="w-full pl-2">
       <header class="flex flex-wrap items-center overflow-hidden overflow-ellipsis">
-        <AccountReconciliationAlert v-if="account.reconciliations_pending" class="mr-1" />
+        <AccountReconciliationAlert v-if="hasPendingReconciliation" class="mr-1" />
+        <IMdiLock v-if="isReconciled" class="mr-1 text-success opacity-70 text-sm" />
         <span>
             {{ account.name }}
         </span>

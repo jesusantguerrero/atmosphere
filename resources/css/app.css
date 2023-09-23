@@ -2,3 +2,14 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 @import "../../node_modules/atmosphere-ui/dist/style.css";
+
+
+.multiselect__option--highlight {
+  @apply bg-primary/20 !important;
+}
+
+.multiselect__tags,
+.multiselect__single,
+.multiselect__input {
+  @apply bg-base-lvl-2;
+}

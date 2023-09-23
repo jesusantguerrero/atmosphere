@@ -42,6 +42,10 @@ const props = defineProps({
       return [];
     },
   },
+  accountTotal: {
+    type: Number,
+    default: 0
+  },
   categories: {
     type: Array,
     required: true,
@@ -219,9 +223,7 @@ const budgetAccountsTotal =  computed(() => {
       <section class="mx-auto mt-8 rounded-lg text-body bg-base max-w-7xl">
         <article class="w-full mt-4 space-y-4">
           <section class="space-y-4">
-            {{ formatMoney(available) }} -
-            {{ formatMoney(budgetAccountsTotal) }} =
-            {{ available - budgetAccountsTotal }}
+            <!-- {{  accountTotal }} -  {{ formatMoney(available) }}  = {{ accountTotal - available }} -->
             <BudgetCategories :budgets="budgets" />
           </section>
         </article>

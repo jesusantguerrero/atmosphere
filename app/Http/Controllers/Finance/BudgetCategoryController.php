@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Finance;
 
 use App\Domains\AppCore\Models\Category;
 use App\Domains\Budget\Models\BudgetMovement;
+use App\Domains\Budget\Services\BudgetAccountService;
 use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Transaction\Services\ReportService;
 use App\Http\Resources\CategoryGroupCollection;
+use App\Models\Setting;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -16,15 +18,16 @@ use Illuminate\Validation\Rule;
 class BudgetCategoryController extends InertiaController
 {
     protected $authorizedUser = false;
+
     protected $authorizedTeam = true;
 
-    public function __construct(Category $category)
+    public function __construct(Category $category, public BudgetAccountService $accountService)
     {
         $this->model = $category;
         $this->templates = [
-            "index" => 'Finance/Budget',
-            "edit" => 'Finance/BudgetCategory',
-            "show" => 'Finance/BudgetCategory'
+            'index' => 'Finance/Budget',
+            'edit' => 'Finance/BudgetCategory',
+            'show' => 'Finance/BudgetCategory',
         ];
         $this->searchable = ['name'];
         $this->validationRules = [
@@ -36,10 +39,26 @@ class BudgetCategoryController extends InertiaController
             'parent_id' => '$null',
             'resource_type' => 'transactions',
         ];
-        $this->resourceName= "budgets";
+        $this->resourceName = 'budgets';
     }
 
-    public function show(int $categoryId) {
+    protected function getIndexProps(Request $request, $resources = null): array
+    {
+        $queryParams = request()->query();
+        $settings = Setting::getByTeam(auth()->user()->current_team_id);
+        $timeZone = $settings['team_timezone'] ?? config('app.timezone');
+        $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
+        [$startDate, $endDate] = $this->getFilterDates($filters, $timeZone);
+
+        $accountTotalBalance = $this->accountService->getBalanceAs($request->user()->current_team_id, $endDate);
+
+        return [
+            'accountTotal' => $accountTotalBalance,
+        ];
+    }
+
+    public function show(int $categoryId)
+    {
         $queryParams = request()->query();
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
         [$startDate, $endDate] = $this->getFilterDates($filters);
@@ -54,12 +73,12 @@ class BudgetCategoryController extends InertiaController
         )->groupBy('date')->map(function ($monthItems) {
             return [
                 'date' => $monthItems->first()->date,
-                'total' => $monthItems->sum('total')
+                'total' => $monthItems->sum('total'),
             ];
         })->sortBy('date');
 
         return inertia($this->templates['show'], [
-            "sectionTitle" => $category->name,
+            'sectionTitle' => $category->name,
             'categoryId' => $category->id,
             'resource' => BudgetCategoryService::withBudgetInfo($category),
             'transactions' => $category->resource_type_id ? $category->creditLines()->whereBetween('date', [
@@ -69,7 +88,7 @@ class BudgetCategoryController extends InertiaController
                 $startDate,
                 $endDate,
             ])->get(),
-            "stats" => $stats
+            'stats' => $stats,
         ]);
     }
 
@@ -78,11 +97,12 @@ class BudgetCategoryController extends InertiaController
     {
         $category = Category::find($categoryId);
         $postData = $request->post();
-        $category->budget()->create(array_merge($postData,[
+        $category->budget()->create(array_merge($postData, [
             'name' => $category->name,
             'user_id' => $request->user()->id,
-            'team_id' => $request->user()->current_team_id
+            'team_id' => $request->user()->current_team_id,
         ]));
+
         return Redirect::back();
     }
 
@@ -91,15 +111,7 @@ class BudgetCategoryController extends InertiaController
         $category = Category::find($categoryId);
         $postData = $request->post();
         $category->budget->update($postData);
-        return Redirect::back();
-    }
 
-    public function assignMonthBudget(Request $request, $categoryId, $month)
-    {
-        $category = Category::find($categoryId);
-        $postData = $request->post();
-        $monthBalance = $category->assignBudget($month, $postData);
-        BudgetMovement::registerMovement($monthBalance, $postData);
         return Redirect::back();
     }
 
@@ -114,10 +126,11 @@ class BudgetCategoryController extends InertiaController
     {
         $transactions = Transaction::where('category_id', $resource->id)->count();
         $budgetMovements = BudgetMovement::where('destination_category_id', $resource->id)
-        ->orWhere('source_category_id', $resource->id)->count();
+            ->orWhere('source_category_id', $resource->id)->count();
         if ($transactions > 0 || $budgetMovements > 0 || $resource->subCategories->count() > 0) {
             return false;
         }
+
         return true;
     }
 
@@ -125,7 +138,7 @@ class BudgetCategoryController extends InertiaController
     {
         return $this->validationRules = [
             'name' => 'required|string|max:255|',
-            Rule::unique('categories',)->where(fn ($query) => $query->where('team_id', $postData['team_id'])),
+            Rule::unique('categories')->where(fn ($query) => $query->where('team_id', $postData['team_id'])),
         ];
     }
 }

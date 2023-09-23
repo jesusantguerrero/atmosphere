@@ -14,8 +14,7 @@ class IngredientApiController extends BaseController
         $this->includes = ['labels'];
     }
 
-
-    public function addLabel ($id)
+    public function addLabel($id)
     {
         $postData = request()->post();
         $product = $this->model->find($id);
@@ -23,11 +22,11 @@ class IngredientApiController extends BaseController
             $label = $product->labels()->find($postData['label_id']);
         } else {
             $label = $product->labels()->create([
-                "user_id" => auth()->user()->id,
-                "team_id" => auth()->user()->current_team_id,
-                "name" => $postData['name'],
-                "label" => $postData['name'],
-                "color" => $postData['color'],
+                'user_id' => auth()->user()->id,
+                'team_id' => auth()->user()->current_team_id,
+                'name' => $postData['name'],
+                'label' => $postData['name'],
+                'color' => $postData['color'],
             ]);
         }
 

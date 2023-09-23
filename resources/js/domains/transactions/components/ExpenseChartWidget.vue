@@ -34,8 +34,8 @@ const total = computed(() => {
 </script>
 
 <template>
-    <article class="flex items-center justify-center">
-        <section class="relative w-[500px]">
+    <article class="">
+        <section class="relative w-[550px] mx-auto ">
             <DonutChart
               style="background: white; width: 100%"
               :series="data"
@@ -46,7 +46,7 @@ const total = computed(() => {
               value="total"
               :legend="false"
             />
-            <section class="absolute font-bold text-center top-1/2 left-44 text-primary">
+            <section class="absolute mx-auto font-bold text-center top-1/2 left-44 text-primary">
                 <h4>
                     {{  title  }}
                 </h4>
@@ -55,14 +55,14 @@ const total = computed(() => {
                 </h5>
             </section>
         </section>
-            <div class="space-y-1">
-                <ExpenseChartWidgetRow
-                    v-for="item in data"
-                    :item="item"
-                    :type="type"
-                    :key="item.id"
-                />
-            </div>
+        <section class="space-y-1  grid grid-cols-4">
+            <ExpenseChartWidgetRow
+                v-for="item in data"
+                :item="item"
+                :type="type"
+                :key="item.id"
+            />
+        </section>
     </article>
 
 </template>

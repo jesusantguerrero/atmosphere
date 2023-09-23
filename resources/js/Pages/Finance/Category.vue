@@ -14,44 +14,23 @@ import TransactionTable from "@/domains/transactions/components/TransactionTable
 import DraftButtons from "@/domains/transactions/components/DraftButtons.vue";
 
 import { useTransactionModal } from "@/domains/transactions";
-import { useServerSearch } from "@/composables/useServerSearch";
+import { useServerSearch, IServerSearchData } from "@/composables/useServerSearchV2";
 import { tableAccountCols } from "@/domains/transactions";
 import { useAppContextStore } from "@/store";
-import { ITransaction } from "@/domains/transactions/models";
+import { ICategory, ITransaction } from "@/domains/transactions/models";
 
 const { openTransactionModal } = useTransactionModal();
 
-const props = defineProps({
-  transactions: {
-    type: Object,
-    default: () => ({
-      data: [],
-    }),
-  },
-  accounts: {
-    type: Array,
-    default: () => [],
-  },
-  categories: {
-    type: Array,
-    default() {
-      return [];
-    },
-  },
-  serverSearchOptions: {
-    type: Object,
-    default: () => ({}),
-  },
-  accountId: {
-    type: [Number, null],
-  },
-});
+const props = defineProps<{
+  transactions: ITransaction[],
+  accounts: IAccount,
+  categories: ICategory,
+  serverSearchOptions: Partial<IServerSearchData>,
+  accountId: number,
+}>();
 
-const { serverSearchOptions, accountId } = toRefs(props);
-const { state: pageState, executeSearch } = useServerSearch(serverSearchOptions, {
-    manual: true
-});
-provide("selectedAccountId", accountId);
+const { serverSearchOptions } = toRefs(props);
+const { state: pageState, hasFilters, reset } = useServerSearch(serverSearchOptions);
 
 const context = useAppContextStore();
 const listComponent = computed(() => {
@@ -59,7 +38,7 @@ const listComponent = computed(() => {
 });
 
 const isDraft = computed(() => {
-  return serverSearchOptions.value.filters?.status == "draft";
+  return serverSearchOptions.value?.filters?.status == "draft";
 });
 
 const removeTransaction = (transaction: ITransaction) => {

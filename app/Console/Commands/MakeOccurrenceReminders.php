@@ -7,7 +7,6 @@ use App\Domains\Housing\Models\OccurrenceCheck;
 use App\Models\User;
 use App\Notifications\OccurrenceAlert;
 use Illuminate\Console\Command;
-use Kreait\Laravel\Firebase\Facades\Firebase;
 
 class MakeOccurrenceReminders extends Command
 {
@@ -16,7 +15,7 @@ class MakeOccurrenceReminders extends Command
      *
      * @var string
      */
-    protected $signature = 'loger:occurrence-reminders';
+    protected $signature = 'app:occurrence-reminders';
 
     /**
      * The console command description.
@@ -39,7 +38,8 @@ class MakeOccurrenceReminders extends Command
         $this->sendNotifications($occurrencesOnAvg);
     }
 
-    public function sendNotifications($occurrences) {
+    public function sendNotifications($occurrences)
+    {
         foreach ($occurrences as $occurrence) {
             User::find($occurrence->user_id)->notify(new OccurrenceAlert($occurrence));
         }

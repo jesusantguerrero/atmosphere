@@ -1,22 +1,22 @@
 <?php
 
-namespace App\Actions\Journal;
+namespace App\Domains\Journal\Actions;
 
+use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
-use Insane\Journal\Contracts\DeleteAccounts;
+use Insane\Journal\Contracts\AccountDeletes;
+use Insane\Journal\Models\Core\Account;
 
-class DeleteAccount implements DeleteAccounts
+class AccountDelete implements AccountDeletes
 {
-    public function delete(mixed $account)
+    public function delete(User $user, Account $account)
     {
-        if ($account->payee && $account->team_id == $account->team_id) {
-            $account->payee->delete();
-        }
+        $this->validate($user, $account);
         $account->delete();
     }
 
-    public function validate(mixed $user, mixed $account)
+    public function validate(User $user, mixed $account)
     {
         Gate::forUser($user)->authorize('delete-account', $account);
         if (count($account->transactions)) {

@@ -17,7 +17,6 @@ return new class extends Migration
             $table->foreignId('product_id')->nullable()->after('user_id');
         });
 
-
     }
 
     /**

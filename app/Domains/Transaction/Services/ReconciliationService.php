@@ -3,6 +3,7 @@
 namespace App\Domains\Transaction\Services;
 
 use App\Domains\AppCore\Models\Category;
+use App\Domains\Budget\Data\BudgetReservedNames;
 use App\Domains\Transaction\Data\ReconciliationParamsData;
 use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Transaction\Models\TransactionLine;
@@ -14,14 +15,16 @@ use Insane\Journal\Models\Core\Transaction as CoreTransaction;
 
 class ReconciliationService
 {
-    public function listHistoryOf(Account $account) {
+    public function listHistoryOf(Account $account)
+    {
         return Reconciliation::where([
-            "team_id" => $account->team_id,
-            "account_id" => $account->id
+            'team_id' => $account->team_id,
+            'account_id' => $account->id,
         ])->get();
     }
 
-    public function create(Account $account, ReconciliationParamsData $params) {
+    public function create(Account $account, ReconciliationParamsData $params)
+    {
         $transactions = $account->transactionsToReconcile(null, $params->date);
 
         // if (!count($transactions)) {
@@ -40,10 +43,12 @@ class ReconciliationService
         ]);
 
         $reconciliation->createEntries($transactions->toArray());
+
         return $reconciliation;
     }
 
-    public function update(Reconciliation $reconciliation, ReconciliationParamsData $params) {
+    public function update(Reconciliation $reconciliation, ReconciliationParamsData $params)
+    {
         $extraTransactions = $reconciliation->account->transactionsToReconcile(null, $reconciliation->date);
         $diff = $reconciliation->account->balance - $params->balance;
 
@@ -62,13 +67,14 @@ class ReconciliationService
         return $reconciliation;
     }
 
-    public function delete(Reconciliation $reconciliation) {
+    public function delete(Reconciliation $reconciliation)
+    {
         $entries = $reconciliation->entries()->select(['id', 'transaction_line_id'])->get();
 
         TransactionLine::whereIn('id', $entries->pluck('transaction_line_id'))
-        ->update([
-            'matched' => false
-        ]);
+            ->update([
+                'matched' => false,
+            ]);
 
         $reconciliation->entries()->whereIn('id', $entries->pluck('id'))->delete();
 
@@ -77,7 +83,8 @@ class ReconciliationService
         return $reconciliation;
     }
 
-    public function saveAdjustment(Reconciliation $reconciliation) {
+    public function saveAdjustment(Reconciliation $reconciliation)
+    {
         $transaction = Transaction::createTransaction([
             'team_id' => $reconciliation->team_id,
             'user_id' => $reconciliation->user_id,
@@ -86,7 +93,7 @@ class ReconciliationService
             'payee_label' => 'Loger adjustment',
             'date' => now()->format('Y-m-d'),
             'currency_code' => $reconciliation->account->currency_code,
-            'category_id' => Category::findOrCreateByName($reconciliation, Category::READY_TO_ASSIGN),
+            'category_id' => Category::findOrCreateByName($reconciliation, BudgetReservedNames::READY_TO_ASSIGN->value),
             'description' => 'Loger adjustment',
             'direction' => $reconciliation->difference > 0 ? Transaction::DIRECTION_CREDIT : Transaction::DIRECTION_DEBIT,
             'status' => Transaction::STATUS_VERIFIED,
@@ -98,16 +105,18 @@ class ReconciliationService
         $reconciliation->checkStatus();
     }
 
-
-    public function checkLine(Reconciliation $reconciliation, ReconciliationEntry $line, bool $matched = false) {
-        $reconciliation->entries()->where("id", $line->id)->update([
-            "matched" => $matched
+    public function checkLine(Reconciliation $reconciliation, ReconciliationEntry $line, bool $matched = false)
+    {
+        $reconciliation->entries()->where('id', $line->id)->update([
+            'matched' => $matched,
         ]);
 
         return $reconciliation;
     }
 
-    public function syncTransactions(Reconciliation $reconciliation) {
+    public function syncTransactions(Reconciliation $reconciliation)
+    {
+        ReconciliationEntry::destroy($reconciliation->entries()->select('id')->get()->pluck('id'));
         $extraTransactions = $reconciliation->account->transactionsToReconcile(null, $reconciliation->date);
         $reconciliation->addEntries($extraTransactions->toArray());
         $reconciliation->checkStatus();
@@ -115,15 +124,18 @@ class ReconciliationService
         return $reconciliation;
     }
 
-    public function checkOpenReconciliation(Account $account, Transaction|CoreTransaction $transaction) {
+    public function checkOpenReconciliation(Account $account, Transaction|CoreTransaction $transaction)
+    {
         $reconciliation = Reconciliation::where([
             'account_id' => $account->id,
             'status' => Reconciliation::STATUS_PENDING,
         ])
-        ->where('date', '>=', $transaction->date)
-        ->first();
+            ->where('date', '>=', $transaction->date)
+            ->first();
 
-        if (!$reconciliation) return;
+        if (! $reconciliation) {
+            return;
+        }
 
         return $this->syncTransactions($reconciliation);
     }

@@ -13,7 +13,7 @@ class AutomationCheck extends Command
      *
      * @var string
      */
-    protected $signature = 'automation:check';
+    protected $signature = 'app:automation-check';
 
     /**
      * The console command description.

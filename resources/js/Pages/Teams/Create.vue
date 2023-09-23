@@ -4,10 +4,10 @@
 </script>
 
 <template>
-    <AppLayout title="Create Space">
+    <AppLayout title="Create budget">
         <template #header>
             <h2 class="px-4 py-2 text-xl font-semibold leading-tight text-gray-800">
-                Create Space
+                Create budget
             </h2>
         </template>
 

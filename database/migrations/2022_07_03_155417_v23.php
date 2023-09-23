@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignId('user_id')->nullable()->after('team_id');
         });
     }
+
     /**
      * Reverse the migrations.
      *

@@ -2,28 +2,37 @@
 
 namespace App\Http\Resources;
 
+use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Helpers\RequestQueryHelper;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class CategoryCollection extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
-     */
+    public $service;
+
+    public function __construct($resource)
+    {
+        parent::__construct($resource);
+        $this->service = new BudgetCategoryService();
+    }
+
     public function toArray($request)
     {
         $queryParams = $request->query();
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
-        [ $startDate ] = RequestQueryHelper::getFilterDates($filters);
+        [$startDate] = RequestQueryHelper::getFilterDates($filters);
 
         $month = $startDate ?? date('Y-m-01');
         $normalArray = parent::toArray($request);
-        // if ($this->id == 159) {
-        //     dd(array_merge($normalArray, [ 'month' => $month ], $this->getBudgetInfo($month)));
+
+        // if ($this->id == 723) {
+        //     dd( $this->service->getBudgetInfo($this->resource, $month), $this->id);
         // }
-        return array_merge($normalArray, [ 'month' => $month ], $this->getBudgetInfo($month));
+        return array_merge(
+            $normalArray,
+            [
+                'month' => $month,
+            ],
+            $this->service->getBudgetInfo($this->resource, $month));
     }
 }

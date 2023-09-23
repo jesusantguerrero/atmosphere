@@ -22,8 +22,8 @@ class TransactionResource extends JsonResource
             'payee' => $this->payee,
             'description' => $this->description,
             'direction' => $this->direction,
-            'account' => $this->mainLine ? $this->mainLine->account: [],
-            'counterAccount' =>  $this->counterAccount ?? [],
+            'account' => $this->mainLine ? $this->mainLine->account : [],
+            'counterAccount' => $this->counterAccount ?? [],
             'category' => $this->category,
             'currency_code' => $this->currency_code,
             'total' => $this->total,
@@ -31,9 +31,9 @@ class TransactionResource extends JsonResource
             'status' => $this->status,
             'mainLine' => $this->mainLine,
             'schedule' => $this->schedule,
-            'linked' => $this->whenLoaded('linked', function() {
+            'linked' => $this->whenLoaded('linked', function () {
                 return $this->linked->toArray();
-            })
+            }),
         ];
     }
 }

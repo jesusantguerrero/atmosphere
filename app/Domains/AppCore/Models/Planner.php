@@ -12,10 +12,10 @@ use Laravel\Jetstream\HasTeams;
 class Planner extends Model
 {
     use HasFactory;
-    use SupportsDateFrame;
     use HasTeams;
+    use SupportsDateFrame;
 
-    protected $fillable = ['team_id', 'user_id','dateable_id', 'dateable_type' ,'date', 'frequency', 'automatic', 'is_liked'];
+    protected $fillable = ['team_id', 'user_id', 'dateable_id', 'dateable_type', 'date', 'frequency', 'automatic', 'is_liked'];
 
     /**
      * The "booted" method of the model.
@@ -25,16 +25,16 @@ class Planner extends Model
     protected static function booted()
     {
         static::updated(function ($updatedModel) {
-            if($updatedModel->isDirty('is_liked') && $updatedModel->is_liked) {
+            if ($updatedModel->isDirty('is_liked') && $updatedModel->is_liked) {
                 AutomationEvent::dispatch($updatedModel->team_id, LogerAutomationService::MEAL_PLAN_LIKED, $updatedModel->toArray());
             }
+
             return $updatedModel;
         });
     }
 
-    public function dateable() {
+    public function dateable()
+    {
         return $this->morphTo('dateable');
     }
-
-
 }

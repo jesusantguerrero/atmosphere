@@ -4,8 +4,6 @@ namespace App\Listeners;
 
 use App\Domains\Housing\Actions\RegisterOccurrence;
 use App\Events\OccurrenceCreated;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
 
 class CreateOccurrenceAutomation
 {

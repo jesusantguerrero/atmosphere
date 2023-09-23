@@ -5,7 +5,6 @@ namespace App\Jobs;
 use App\Domains\Housing\Actions\RegisterOccurrence;
 use App\Domains\Housing\Models\OccurrenceCheck;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -29,7 +28,7 @@ class RunTeamChecks implements ShouldQueue
     public function handle(RegisterOccurrence $registerer): void
     {
         $checks = OccurrenceCheck::where([
-            "team_id" => $this->teamId
+            'team_id' => $this->teamId,
         ])->get();
 
         foreach ($checks as $check) {

@@ -3,13 +3,11 @@
 namespace App\Listeners;
 
 use App\Events\BudgetAssigned;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
 
 class CreateBudgetMovement
 {
-
     protected $formData;
+
     /**
      * Create the event listener.
      *

@@ -1,12 +1,14 @@
 <script lang="ts" setup>
     import { useForm } from "@inertiajs/vue3";
-    import { computed, inject, ref } from "vue"
-    import { NPopover, NSelect } from "naive-ui";
+    import { computed, inject, ref, watch, nextTick } from "vue"
+    import { NPopover } from "naive-ui";
     import { AtField, AtButton } from "atmosphere-ui";
     import Multiselect from "vue-multiselect";
     import { ICategory } from "@/domains/transactions/models";
-
+    import LogerButton from "./LogerButton.vue";
+    import InputMoney from "./InputMoney.vue";
     import LogerInput from "./LogerInput.vue";
+
     import { format, startOfMonth } from "date-fns";
     import { formatMoney } from "@/utils";
 
@@ -72,23 +74,31 @@
         if (BALANCE_STATUS.available || Number(props.category.budgeted) !== Number(form.amount)) {
             const month = format(startOfMonth(pageState.dates.endDate), 'yyyy-MM-dd');
             const field = status.value == BALANCE_STATUS.available ? 'source_category_id' : 'destination_category_id'
+
             form.transform(data => ({
                 ...data,
                 budgeted: BALANCE_STATUS.available ? data.amount : props.category.budgeted + data.amount,
-                [field]: props.category.id,
                 source_category_id: data.source_category_id?.value,
+                destination_category_id: data.destination_category_id?.value,
+                [field]: props.category.id,
                 type: 'movement',
                 date: format(new Date(), 'yyyy-MM-dd')
             })).post(`/budgets/${props.category.id}/months/${month}`, {
                 preserveState: true,
-                preserveScroll: true
+                preserveScroll: true,
+                onSuccess() {
+                    showPopover.value = false;
+                }
             });
         }
     }
 
+    const hasAvailable = computed(() => {
+        return status.value == BALANCE_STATUS.available
+    })
+
     const categories = inject('categories', ref({ data: []}))
     const categoryOptions = computed(() => {
-        console.log(categories.value.data);
         return categories.value.data?.map(item => ({
             value: item.id,
             key: item.id,
@@ -98,11 +108,12 @@
                 value: category.id,
                 label: category.name,
                 available: category.available,
-            })).filter((category: ICategory) => category.available > 0)
+            })).filter((category: ICategory) => !hasAvailable.value ? category.available > 0 : true)
         }))
     })
 
     const showPopover = ref(false)
+
     const clear = () => {
         form.reset();
         showPopover.value = false;
@@ -129,17 +140,32 @@
         </template>
         <div class="w-72 md:w-96">
             <AtField label="Move">
-                <LogerInput v-model="form.amount" />
+                <InputMoney :number-format="true" v-model="form.amount" >
+                    <template #prefix>
+                        <span class="flex items-center pl-2"> RD$ </span>
+                      </template>
+                </InputMoney>
             </AtField>
             <AtField label="To" v-if="status == BALANCE_STATUS.available">
-                <NSelect
-                    filterable
-                    clearable
-                    size="large"
-                    v-model:value="form.destination_category_id"
-                    :default-expand-all="true"
+                <Multiselect
+                    v-model="form.destination_category_id"
                     :options="categoryOptions"
-                />
+                    group-values="children"
+                    group-label="label"
+                    placeholder="Search category"
+                    track-by="value"
+                    label="label"
+                    select-label=""
+                >
+                    <template v-slot:option="{ option }">
+                        <div class="flex justify-between text-sm group md:text-base">
+                            <span class="text-body-1/80" :class="{'font-bold': option.$groupLabel }">{{ option.label || option.$groupLabel }}</span>
+                            <span class="font-bold text-secondary" v-if="option.available">
+                                {{ formatMoney(option.available)
+                            }}</span>
+                        </div>
+                    </template>
+                </Multiselect>
             </AtField>
              <AtField label="From" v-else>
                 <Multiselect
@@ -147,22 +173,31 @@
                     :options="categoryOptions"
                     group-values="children"
                     group-label="label"
-                    placeholder="Type to search"
+                    placeholder="Search category"
                     track-by="value"
                     label="label"
                     select-label=""
+
                 >
                     <template v-slot:option="{ option }">
                         <div class="flex justify-between text-sm group md:text-base">
-                            <span class="">{{ option.label || option.$groupLabel }}</span>
-                            <span class="font-bold text-success group-hover:text-white" v-if="option.available">{{ formatMoney(option.available) }}</span>
+                            <span class="text-body-1/80" :class="{'font-bold': option.$groupLabel }">{{ option.label || option.$groupLabel }}</span>
+                            <span class="font-bold text-secondary" v-if="option.available">{{ formatMoney(option.available) }}</span>
                         </div>
-                  </template>
+                    </template>
                 </Multiselect>
             </AtField>
             <div class="flex items-center justify-end space-x-2">
-                <AtButton class="text-body-1" @click="clear">Cancel</AtButton>
-                <AtButton class="text-white rounded-md bg-success" @click="onAssignBudget()"> Save</AtButton>
+                <AtButton class="text-body-1" @click="clear" :disabled="form.processing">
+                    Cancel
+                </AtButton>
+                <LogerButton
+                    class="text-white rounded-md bg-success"
+                    @click="onAssignBudget()"
+                    :processing="form.processing"
+                >
+                    Save
+                </LogerButton>
             </div>
         </div>
     </NPopover>

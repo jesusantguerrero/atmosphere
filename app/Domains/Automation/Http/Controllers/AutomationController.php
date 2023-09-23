@@ -26,14 +26,16 @@ class AutomationController extends InertiaController
         if ($automation) {
             $service = $automation->recipe->name;
             GoogleService::$service($automation->id, true);
-            return ["done" => $automation];
+
+            return ['done' => $automation];
         }
     }
 
-    public function runAll() {
+    public function runAll()
+    {
         $automationTasks = Automation::where([
             // "team_id" => auth()->user()->team_id,
-            "user_id" => auth()->user()->id,
+            'user_id' => auth()->user()->id,
         ])->get();
 
         foreach ($automationTasks as $automation) {

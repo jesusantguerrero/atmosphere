@@ -10,14 +10,16 @@ import SectionTitle from "@/Components/atoms/SectionTitle.vue";
 const {
     item,
     type,
-    classes = "w-full h-full"
+    classes = "w-full h-full",
+    details
 } = defineProps<{
   item: Record<string, any>;
   title?: string;
   type: 'categories' | 'groups';
   value?: number;
   hideTitle?: boolean;
-  classes?: string
+  classes?: string;
+  details?: string;
 }>();
 
 defineEmits(['selected']);
@@ -33,7 +35,7 @@ interface Line {
 const parseDetails = (details: string): any[] => {
     return !details ? [] : details.split('|')
     .map((row: any): Line | null => {
-        const rowData = row.split(':');
+        const rowData = row.split('/');
         return !rowData ? null : {
             id: rowData[0],
             accountName: rowData[1],
@@ -46,8 +48,8 @@ const parseDetails = (details: string): any[] => {
 }
 
 const types = {
-    categories: 'category_id',
-    groups: 'group_id'
+    categories: 'filter[category_id]',
+    groups: 'filter[category_id]'
 }
 const getCategoryLink = (item: ITransactionLine) => {
     const itemField = types[type] ?? types.groups;
@@ -56,7 +58,7 @@ const getCategoryLink = (item: ITransactionLine) => {
 }
 
 const itemDetail = computed(() => {
-    return parseDetails(item.details) ?? []
+    return parseDetails(item.details ?? details ?? "") ?? []
 })
 
 const detailColumn = computed(() => {
@@ -70,7 +72,7 @@ const detailColumn = computed(() => {
 <template>
     <NPopover trigger="click">
         <template #trigger>
-            <p class="inline-flex justify-between px-4 cursor-pointer " :class="classes">
+            <p class="inline-flex justify-between px-4 cursor-pointer " :class="classes" @click="$emit('open-details')">
                 <span class="font-bold" v-if="!hideTitle">
                     {{ title ?? item.name }}: {{ classes }}
                 </span>

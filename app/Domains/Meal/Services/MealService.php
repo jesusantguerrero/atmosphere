@@ -7,17 +7,19 @@ use App\Domains\Meal\Models\Meal;
 use App\Domains\Meal\Models\MealPlan;
 use Illuminate\Support\Carbon;
 
-class MealService {
-    public function addPlan($mealsData) {
+class MealService
+{
+    public function addPlan($mealsData)
+    {
         foreach ($mealsData['meals'] as $mealData) {
             if (isset($mealData['id']) && $mealData['id'] !== "new::{$mealData['name']}") {
                 $meal = Meal::find($mealData['id']);
-            } else if (isset($mealData['name'])) {
+            } elseif (isset($mealData['name'])) {
                 $meal = Meal::create([
                     'name' => $mealData['name'],
                     'meal_type_id' => $mealData['meal_type_id'],
                     'team_id' => $mealsData['team_id'],
-                    'user_id' => $mealsData['user_id']
+                    'user_id' => $mealsData['user_id'],
                 ]);
             }
 
@@ -25,39 +27,42 @@ class MealService {
                 'date' => Carbon::parse($mealsData['date'])->setTimezone('UTC')->toDateTimeString(),
                 'meal_type_id' => $mealData['meal_type_id'],
                 'team_id' => $meal->team_id,
-                'user_id' => $meal->user_id
+                'user_id' => $meal->user_id,
             ], [
                 'meal_id' => $meal->id,
-                'name' => $meal->name
+                'name' => $meal->name,
             ]);
 
-            Planner::create(array_merge($mealData ,[
+            Planner::create(array_merge($mealData, [
                 'dateable_type' => MealPlan::class,
                 'dateable_id' => $plan->id,
                 'date' => $plan->date,
                 'team_id' => $plan->team_id,
-                'user_id' => $plan->user_id
+                'user_id' => $plan->user_id,
             ]));
         }
     }
 
-    public function getMealSchedule(int $teamId) {
+    public function getMealSchedule(int $teamId)
+    {
         return Planner::where([
             'team_id' => $teamId,
             'date' => date('Y-m-d'),
-            'dateable_type' => MealPlan::class
+            'dateable_type' => MealPlan::class,
         ])->with(['dateable', 'dateable.mealType'])->get();
     }
 
-    public function getMealScheduleInFrame(int $teamId, $startDate, $endDate) {
+    public function getMealScheduleInFrame(int $teamId, $startDate, $endDate)
+    {
         return Planner::whereTeamId($teamId)
-        ->where(['dateable_type' => MealPlan::class])
-        ->inDateFrame($startDate, $endDate)
-        ->with(['dateable', 'dateable.mealType'])
-        ->get();
+            ->where(['dateable_type' => MealPlan::class])
+            ->inDateFrame($startDate, $endDate)
+            ->with(['dateable', 'dateable.mealType'])
+            ->get();
     }
 
-    public static function scheduleMealOnDate($mealId, $date, $payload) {
+    public static function scheduleMealOnDate($mealId, $date, $payload)
+    {
         $meal = Meal::find($mealId);
 
         $plan = MealPlan::create([
@@ -66,7 +71,7 @@ class MealService {
             'team_id' => $meal->team_id,
             'user_id' => $meal->user_id,
             'meal_id' => $meal->id,
-            'name' => $meal->name
+            'name' => $meal->name,
         ]);
 
         Planner::create([
@@ -74,11 +79,12 @@ class MealService {
             'dateable_id' => $plan->id,
             'date' => $plan->date,
             'team_id' => $plan->team_id,
-            'user_id' => $plan->user_id
+            'user_id' => $plan->user_id,
         ]);
     }
 
-    public static function getIngredients($plans) {
+    public static function getIngredients($plans)
+    {
         $ingredients = [];
         foreach ($plans as $plan) {
             $mealIngredients = $plan->dateable?->meal?->ingredients;
@@ -86,12 +92,12 @@ class MealService {
                 foreach ($mealIngredients as $product) {
                     if (array_key_exists($product->name, $ingredients)) {
                         $ingredients[$product->name] = array_merge($ingredients[$product->name], [
-                            'quantity' => $ingredients[$product->name]['quantity']++
+                            'quantity' => $ingredients[$product->name]['quantity']++,
                         ]);
                     } else {
                         $ingredients[$product->name] = [
                             'quantity' => $product->quantity,
-                            'unit' => $product->unit
+                            'unit' => $product->unit,
                         ];
                     }
                 }
@@ -100,6 +106,4 @@ class MealService {
 
         return $ingredients;
     }
-
-
 }

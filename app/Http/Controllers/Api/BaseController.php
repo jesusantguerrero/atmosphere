@@ -3,22 +3,29 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use Freesgen\Atmosphere\Http\Querify;
+use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
 abstract class BaseController extends Controller
 {
     protected $model;
-    protected $createdMessage = "created";
-    protected $searchable = ["id"];
-    protected $validationRules = [];
-    protected $sorts = [];
-    protected $includes = [];
-    protected $appends = [];
-    protected $filters = [];
-    use Querify;
 
+    protected $createdMessage = 'created';
+
+    protected $searchable = ['id'];
+
+    protected $validationRules = [];
+
+    protected $sorts = [];
+
+    protected $includes = [];
+
+    protected $appends = [];
+
+    protected $filters = [];
+
+    use Querify;
 
     /**
      * Display a listing of the resource.
@@ -30,26 +37,28 @@ abstract class BaseController extends Controller
         $queryParams = $request->query() ?? [];
         $queryParams['limit'] = $queryParams['limit'] ?? 50;
         $results = $this->getModelQuery($request);
+
         return $this->parser($results);
     }
 
-    protected function parser($results) {
+    protected function parser($results)
+    {
         return $results;
     }
 
-
-    protected function getFilterDates($filters = [], $subCount=0) {
-        $dates = isset($filters['date']) ? explode("~", $filters['date']) : [
+    protected function getFilterDates($filters = [], $subCount = 0)
+    {
+        $dates = isset($filters['date']) ? explode('~', $filters['date']) : [
             Carbon::now()->subMonths($subCount)->startOfMonth()->format('Y-m-d'),
-            Carbon::now()->endOfMonth()->format('Y-m-d')
+            Carbon::now()->endOfMonth()->format('Y-m-d'),
         ];
+
         return $dates;
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
@@ -61,8 +70,8 @@ abstract class BaseController extends Controller
         $resource = $this->model::create($data);
 
         return [
-            "message" => $this->createdMessage,
-            "data" => $resource
+            'message' => $this->createdMessage,
+            'data' => $resource,
         ];
     }
 
@@ -84,7 +93,6 @@ abstract class BaseController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
@@ -92,6 +100,7 @@ abstract class BaseController extends Controller
     {
         $resource = $this->model::find($id);
         $resource->update($request->post());
+
         return $resource;
     }
 
@@ -105,11 +114,13 @@ abstract class BaseController extends Controller
     {
         $resource = $this->model::find($id);
         $resource->delete();
+
         return $resource;
     }
 
-    public function validateLocal(Request $request) {
-       return $request->validate($this->validationRules);
+    public function validateLocal(Request $request)
+    {
+        return $request->validate($this->validationRules);
     }
 
     /**
@@ -122,6 +133,7 @@ abstract class BaseController extends Controller
     {
         $items = $request->post();
         $this->model::whereIn('id', $items)->delete();
+
         return $items;
     }
 }

@@ -103,7 +103,7 @@ export const parseParams = (state: SearchState) => {
 };
 
 function parseDateFilters(options: Ref<Partial<IServerSearchData>>) {
-  const dates = options?.value.filters?.date
+  const dates = options?.value?.filters?.date
     ? options.value.filters.date.split("~")
     : [null, null];
   return {
@@ -157,7 +157,7 @@ export const useServerSearch = (
 
   const state = reactive<ISearchState>({
     filters: {
-      ...(serverSearchData.value ? serverSearchData.value.filters : {}),
+      ...(serverSearchData.value ? serverSearchData.value?.filters : {}),
       date: null,
     },
     dates: {

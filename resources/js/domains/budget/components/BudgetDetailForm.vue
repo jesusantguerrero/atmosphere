@@ -98,7 +98,6 @@
                             v-model="category.color"
                             @update:modelValue="onBlur(category)"
                         />
-                        {{  category.id }}
                     </div>
                 </template>
             </AtInput>
@@ -129,7 +128,7 @@
                 <BudgetMoneyLine title="Cash expending" :value="category.activity" />
                 <BudgetMoneyLine title="Credit expending" :value="category.activity" />
             </section>
-    
+
             <BudgetCategoryTransactions :category-id="category.id" v-else />
           </section>
     </section>
