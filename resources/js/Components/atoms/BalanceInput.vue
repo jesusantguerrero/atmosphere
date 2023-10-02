@@ -82,7 +82,7 @@
                 destination_category_id: data.destination_category_id?.value,
                 [field]: props.category.id,
                 type: 'movement',
-                date: format(new Date(), 'yyyy-MM-dd')
+                date: month
             })).post(`/budgets/${props.category.id}/months/${month}`, {
                 preserveState: true,
                 preserveScroll: true,
@@ -128,7 +128,7 @@
     <NPopover trigger="manual" placement="bottom"  @update:show="handleUpdateShow" :show="showPopover">
         <template #trigger>
             <div
-                class="inline-flex items-center py-1 px-4 font-bold cursor-pointer flex-nowrap rounded-3xl min-w-max"
+                class="inline-flex items-center px-4 py-1 font-bold cursor-pointer flex-nowrap rounded-3xl min-w-max"
                 :class="badgeClass"
                 @click="toggle"
             >

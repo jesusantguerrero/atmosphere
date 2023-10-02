@@ -1,27 +1,8 @@
-<template>
-<div class="w-full text-right">
-    <NPopover trigger="manual" placement="bottom"  @update:show="handleUpdateShow" :show="showPopover">
-        <template #trigger>
-            <button
-                class="px-5 py-1 cursor-pointer rounded-3xl text-body-1"
-            >
-                <slot />
-            </button>
-        </template>
-        <div>
-
-        </div>
-    </NPopover>
-</div>
-</template>
-
-<script setup>
+<script setup lang="ts">
     import { useForm } from "@inertiajs/vue3";
     import { computed, inject, ref } from "vue"
-    import { NPopover, NSelect } from "naive-ui";
-    import { AtField, AtButton } from "atmosphere-ui";
+    import { NPopover } from "naive-ui";
 
-    import LogerInput from "./LogerInput.vue";
     import { format, startOfMonth } from "date-fns";
 
     const props = defineProps({
@@ -31,7 +12,7 @@
         formatter: {
             type: Function,
             default() {
-                return (value) => {
+                return (value: string) => {
                     return value
                 }
             }
@@ -109,3 +90,21 @@
         showPopover.value = !showPopover.value
     }
 </script>
+
+<template>
+<div class="w-full text-right">
+    <NPopover trigger="manual" placement="bottom"  @update:show="handleUpdateShow" :show="showPopover">
+        <template #trigger>
+            <button
+                class="px-5 py-1 cursor-pointer rounded-3xl text-body-1"
+            >
+                <slot />
+            </button>
+        </template>
+        <div>
+
+        </div>
+    </NPopover>
+</div>
+</template>
+
