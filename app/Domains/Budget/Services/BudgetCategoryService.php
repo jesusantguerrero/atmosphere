@@ -119,6 +119,7 @@ class BudgetCategoryService
             'activity' => $monthBalance,
             'available' => $available,
             'prevMonthLeftOver' => $prevMonthLeftOver,
+            'left_from_last_month' => $monthBudget?->left_from_last_month ?? 0,
             'name' => $category->name,
             'month' => $yearMonth,
         ];
@@ -233,6 +234,21 @@ class BudgetCategoryService
         ]);
 
         echo "{$category->name} updated to {$activity}".PHP_EOL;
+    }
+
+    public function getCategoryActivity(Category $category, string $month)
+    {
+        $monthDate = Carbon::createFromFormat('Y-m-d', $month);
+        $transactions = 0;
+        $activity = 0;
+
+        if ($category->account) {
+            $transactions = $category->account->getMonthBalance($monthDate->format('Y-m'))->balance;
+        } else {
+            $activity = $category->getMonthBalance($monthDate->format('Y-m'))?->balance;
+        }
+
+        return  ($activity + $transactions) ?? 0;
     }
 
     public function findByAccount(Account $account)
