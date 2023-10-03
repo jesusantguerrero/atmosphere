@@ -110,15 +110,13 @@ class BudgetCategoryService
                 ->toFloat();
         } else {
             $monthBalance = (float) $category->getMonthBalance($yearMonth)->balance;
-            $prevMonthLeftOver = $this->getPrevMonthLeftOver($category, $yearMonth);
-            $available = Money::of($budgeted, 'USD')->plus($prevMonthLeftOver)->plus($monthBalance)->getAmount()->toFloat();
+            $available = Money::of($budgeted, 'USD')->plus($monthBudget?->left_from_last_month ?? 0)->plus($monthBalance)->getAmount()->toFloat();
         }
 
         $data = [
             'budgeted' => $budgeted,
             'activity' => $monthBalance,
             'available' => $available,
-            'prevMonthLeftOver' => $prevMonthLeftOver,
             'left_from_last_month' => $monthBudget?->left_from_last_month ?? 0,
             'name' => $category->name,
             'month' => $yearMonth,

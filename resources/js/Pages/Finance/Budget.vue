@@ -223,7 +223,7 @@ const budgetAccountsTotal =  computed(() => {
       <section class="mx-auto mt-8 rounded-lg text-body bg-base max-w-7xl">
         <article class="w-full mt-4 space-y-4">
           <section class="space-y-4">
-            <!-- {{  accountTotal }} -  {{ formatMoney(available) }}  = {{ accountTotal - available }} -->
+            account totals: {{  formatMoney(accountTotal) }} -  budget available: {{ formatMoney(available) }}  = rest: {{ formatMoney(accountTotal - available) }}
             <BudgetCategories :budgets="budgets" />
           </section>
         </article>
