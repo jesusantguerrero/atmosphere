@@ -189,7 +189,7 @@
                 </article>
             </template>
             <section class="text-center">
-                <p>Inflow: Ready to assign transactions in Month: <MoneyPresenter :value="category.activity"/> </p>
+                <p>Available for funds: <MoneyPresenter :value="toAssign.availableForFunding"/> </p>
                 <p>Assigned in month: <MoneyPresenter :value="toAssign.budgeted" /> </p>
             </section>
         </NPopover>

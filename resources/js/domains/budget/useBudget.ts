@@ -50,10 +50,12 @@ export const BudgetState = reactive({
     readyToAssign: computed(() => {
         const budgetTotals = BudgetState.budgetTotals;
         const category = BudgetState.inflow?.subCategories[0] ?? {}
-        const balance = category?.activity - budgetTotals.budgeted
+        const availableForFunding = (category?.activity + parseFloat(category?.left_from_last_month ?? 0));
+        const balance = availableForFunding - budgetTotals.budgeted
 
         return {
             balance,
+            availableForFunding,
             inflow: BudgetState.inflow?.activity,
             toAssign: category,
             ...budgetTotals,
