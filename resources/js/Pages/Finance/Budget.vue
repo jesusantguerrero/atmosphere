@@ -19,7 +19,7 @@ import FinanceTemplate from "./Partials/FinanceTemplate.vue";
 import FinanceSectionNav from "./Partials/FinanceSectionNav.vue";
 import ExpenseIncome from "@/domains/transactions/components/ExpenseIncome.vue";
 
-import BalanceAssign from "@/domains/budget/components/BudgetBalanceAssign.vue";
+import BudgetBalanceAssign from "@/domains/budget/components/BudgetBalanceAssign.vue";
 import BudgetDetailForm from "@/domains/budget/components/BudgetDetailForm.vue";
 import BudgetProgress from "@/domains/budget/components/BudgetProgress.vue";
 
@@ -188,7 +188,7 @@ const budgetAccountsTotal =  computed(() => {
         title="This is your budget."
         content="Create new category groups and categories and organize them to suit your needs"
       />
-      <BalanceAssign
+      <BudgetBalanceAssign
         class="mt-5 rounded-t-md"
         :class="[cardShadow, !visibleFilters.overspent && 'rounded-b-md']"
         :value="readyToAssign.balance"
@@ -218,7 +218,7 @@ const budgetAccountsTotal =  computed(() => {
             </section>
           </BudgetProgress>
         </template>
-      </BalanceAssign>
+      </BudgetBalanceAssign>
 
       <section class="mx-auto mt-8 rounded-lg text-body bg-base max-w-7xl">
         <article class="w-full mt-4 space-y-4">

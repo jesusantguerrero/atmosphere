@@ -9,7 +9,7 @@
     import Multiselect from "vue-multiselect";
 
     import MoneyPresenter from "@/Components/molecules/MoneyPresenter.vue";
-    
+
     import formatMoney from "@/utils/formatMoney";
 
     const props = defineProps({
@@ -99,7 +99,7 @@
             const field = status.value == BALANCE_STATUS.available ? 'source_category_id' : 'destination_category_id'
             form.transform(data => ({
                 ...data,
-                budgeted: Math.abs(props.value),
+                amount: Math.abs(props.value),
                 [field]: props.category.id,
                 source_category_id: data.source_category_id?.value,
                 'type': 'movement',
