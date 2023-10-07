@@ -3,14 +3,20 @@
 import { ref, inject, computed, Ref } from "vue";
 import { router } from "@inertiajs/vue3";
 import { VueDraggableNext as Draggable } from "vue-draggable-next"
+// @ts-ignore
+import exactMathNode from 'exact-math';
 
 import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 import AccountModal from "./AccountModal.vue";
 import AccountItem from "./AccountItem.vue";
 
+import IconImport from '@/Components/icons/IconImport.vue';
+import WidgetCard from '@/Components/molecules/WidgetCard.vue';
+import MoneyPresenter from '@/Components/molecules/MoneyPresenter.vue';
 import { useAppContextStore } from "@/store";
 import { IAccount } from "@/domains/transactions/models/transactions";
 import AccountLinkModal from "./AccountLinkModal.vue";
+import SectionTitle from "@/Components/atoms/SectionTitle.vue";
 
 const selectedAccountId = inject<Ref<number|null>>('selectedAccountId', ref(null));
 const isSelectedAccount = (accountId: number) => {
@@ -54,14 +60,30 @@ const openLinkModal = (account = {}) => {
     accountToEdit.value = account;
     isLinkModalOpen.value = true;
 };
+
+const budgetAccountsTotal =  computed(() => {
+    return props.accounts.reduce((total, account) => {
+        return exactMathNode.add(total, account?.balance)
+    }, 0)
+})
 </script>
 
 <template>
   <div class="px-5 border-l border-base-lvl-1 text-body-1">
     <div class="space-y-2">
-      <LogerButtonTab class="w-full bg-base-lvl-3" icon="fa-plus" @click="openAccountModal()">
-        Add Account
-      </LogerButtonTab>
+        <header class="rounded-t-md flex justify-between items-center">
+            <section class="flex items-center space-x-1">
+                <SectionTitle class="min-w-fit">
+                    Accounts
+                </SectionTitle>
+                <MoneyPresenter :value="budgetAccountsTotal" class="mr-2 w-full text-primary" />
+            </section>
+            <section class="flex">
+                <LogerButtonTab class="w-full bg-base-lvl-3" @click="openAccountModal()">
+                    <IMdiPlus />
+                </LogerButtonTab>
+            </section>
+        </header>
        <Draggable class="w-full space-y-1 dragArea list-group" ref="draggableRef" :list="accounts" handle=".handle"  @end="saveReorder" tag="div">
             <AccountItem
                 v-for="account in accounts"

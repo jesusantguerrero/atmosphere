@@ -41,8 +41,8 @@ const isReconciled = computed(() => {
     v-on="$attrs"
     :title="account.balance"
   >
-    <div class="w-4">
-      <IconDrag class="hidden h-10 group-hover:inline-block handle" />
+    <div class="w-4 hidden h-10 group-hover:inline-block handle cursor-grab">
+      <IconDrag class="h-10" />
     </div>
     <section class="w-full pl-2">
       <header class="flex flex-wrap items-center overflow-hidden overflow-ellipsis">

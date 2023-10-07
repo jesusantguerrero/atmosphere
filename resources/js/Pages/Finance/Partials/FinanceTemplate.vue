@@ -1,15 +1,8 @@
 <script setup lang="ts">
     import { computed } from 'vue';
-    // @ts-ignore
-    import exactMathNode from 'exact-math';
-    
-    import IconImport from '@/Components/icons/IconImport.vue';
-    import LogerButtonTab from '@/Components/atoms/LogerButtonTab.vue';
-    import WidgetCard from '@/Components/molecules/WidgetCard.vue';
-    import MoneyPresenter from '@/Components/molecules/MoneyPresenter.vue';
-    
+
     import AccountsLedger from "@/domains/transactions/components/AccountsLedger.vue";
-    
+
     import { useImportModal } from '@/domains/transactions/useImportModal';
     import { PANEL_SIZES } from '@/utils/constants';
 
@@ -56,12 +49,6 @@
         const visible = !props.forceShowPanel && 'hidden';
         return [sizes, visible];
     })
-
-    const budgetAccountsTotal =  computed(() => {
-        return props.accounts.reduce((total, account) => {
-            return exactMathNode.add(total, account?.balance)
-        }, 0)
-    })
 </script>
 
 <template>
@@ -74,19 +61,11 @@
             <section class="px-2 md:fixed aside-content md:pr-8">
                 <slot name="prepend-panel" />
                 <slot name="panel">
-                    <WidgetCard title="Accounts" class="mt-4 rounded-t-md">
-                        <template #subtitle>
-                            <LogerButtonTab class="flex items-center w-full text-primary" @click="toggleImportModal()" title="import">
-                                <MoneyPresenter :value="budgetAccountsTotal" class="mr-2" />
-                                <IconImport />
-                            </LogerButtonTab>
-                        </template>
-                    </WidgetCard>
                     <AccountsLedger
                         :accounts="accounts"
-                        @reordered="saveReorder"
                         :class="[cardShadow]"
                         class="px-4 py-2 space-y-4 cursor-pointer md:mt-4 rounded-b-md md:rounded-md min-h-min bg-base-lvl-3"
+                        @reordered="saveReorder"
                     />
                 </slot>
             </section>
