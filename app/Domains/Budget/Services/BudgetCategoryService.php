@@ -116,7 +116,10 @@ class BudgetCategoryService
             'budgeted' => $budgeted,
             'activity' => $monthBalance,
             'available' => $available,
+            'payments' => $monthBudget?->payments ?? 0,
             'left_from_last_month' => $monthBudget?->left_from_last_month ?? 0,
+            'funded_spending_previous_month' => $monthBudget?->funded_spending_previous_month ?? 0,
+            'funded_spending' => $monthBudget?->funded_spending ?? 0,
             'name' => $category->name,
             'month' => $yearMonth,
         ];

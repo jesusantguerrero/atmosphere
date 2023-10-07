@@ -153,7 +153,9 @@
                     <slot name="top" />
                     <header class="flex w-full ">
                         <section class="w-full h-10 " />
-                        <h4 class="flex items-center justify-center w-full mt-0 text-lg font-bold text-center"> {{ formatter(value) }} </h4>
+                        <h4 class="flex items-center justify-center w-full mt-0 text-lg font-bold text-center">
+                             {{ formatter(value) }}
+                        </h4>
                         <BudgetProgress
                             class="text-center rounded-lg "
                             :goal="toAssign.monthlyGoals.target"
@@ -207,7 +209,10 @@
             </template>
             <section class="text-center">
                 <p>Available for funds: <MoneyPresenter :value="toAssign.availableForFunding"/> </p>
-                <p>Assigned in month: <MoneyPresenter :value="toAssign.budgeted" /> </p>
+                <p>Budgeted: <MoneyPresenter :value="toAssign.budgeted"/> </p>
+                <p>Funded: <MoneyPresenter :value="toAssign.creditCardFunded"/> </p>
+                <p>Assigned in month: <MoneyPresenter :value="toAssign.assigned" /> </p>
+                <p>Balance: <MoneyPresenter :value="toAssign.balance" /> </p>
             </section>
         </NPopover>
 

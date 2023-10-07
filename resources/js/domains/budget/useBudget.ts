@@ -50,12 +50,16 @@ export const BudgetState = reactive({
     readyToAssign: computed(() => {
         const budgetTotals = BudgetState.budgetTotals;
         const category = BudgetState.inflow?.subCategories[0] ?? {}
+        const creditCardFunded = parseFloat(budgetTotals?.fundedSpendingPreviousMonth ?? 0) + parseFloat(category?.funded_spending ?? 0)
         const availableForFunding = (category?.activity + parseFloat(category?.left_from_last_month ?? 0));
-        const balance = availableForFunding - budgetTotals.budgeted
+        const assigned = budgetTotals.budgeted + (creditCardFunded - budgetTotals.payments);
+        const balance = availableForFunding - assigned;
 
         return {
-            balance,
+            assigned,
             availableForFunding,
+            balance,
+            creditCardFunded,
             inflow: BudgetState.inflow?.activity,
             toAssign: category,
             ...budgetTotals,

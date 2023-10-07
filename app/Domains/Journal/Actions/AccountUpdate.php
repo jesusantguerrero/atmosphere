@@ -13,11 +13,10 @@ class AccountUpdate implements AccountUpdates
     {
         $this->validate($user, $account);
         $account->update($accountData);
-
         return $account;
     }
 
-    public function validate(mixed $user, mixed $account)
+    public function validate(User $user, Account $account)
     {
         Gate::forUser($user)->authorize('update', $account);
     }

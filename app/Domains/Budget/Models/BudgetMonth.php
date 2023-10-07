@@ -26,7 +26,8 @@ class BudgetMonth extends Model
         'available',
         'funded_spending',
         'payments',
-        'left_from_last_month'
+        'left_from_last_month',
+        'funded_spending_previous_month',
     ];
 
     public function category()
