@@ -1,13 +1,12 @@
 <script lang="ts" setup>
     import { useForm } from "@inertiajs/vue3";
-    import { computed, inject, ref, watch, nextTick } from "vue"
+    import { computed, inject, ref } from "vue"
     import { NPopover } from "naive-ui";
     import { AtField, AtButton } from "atmosphere-ui";
     import Multiselect from "vue-multiselect";
     import { ICategory } from "@/domains/transactions/models";
     import LogerButton from "./LogerButton.vue";
     import InputMoney from "./InputMoney.vue";
-    import LogerInput from "./LogerInput.vue";
 
     import { format, startOfMonth } from "date-fns";
     import { formatMoney } from "@/utils";

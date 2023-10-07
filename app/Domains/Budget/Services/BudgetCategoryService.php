@@ -97,15 +97,14 @@ class BudgetCategoryService
         $budgeted = $monthBudget ? $monthBudget->budgeted : 0;
 
         if ($category->account_id) {
-            $prevMonthLeftOver = $this->getPrevMonthFundedLeftOver($category, $yearMonth);
-            $prevMonthPaymentsLeftOver = $this->getPrevMonthPaymentsLeftOver($category, $yearMonth);
             $funded = $monthBudget ? $monthBudget->funded_spending : 0;
             $monthPayment = $monthBudget ? $monthBudget->payments : 0;
 
+           + $monthBudget->activity;
+
             $monthBalance = Money::of($funded, $category->account->currency_code)->minus($monthPayment)->getAmount()->toFloat();
-            $available = Money::of($prevMonthPaymentsLeftOver, 'USD')
-                // ->plus($prevMonthLeftOver)
-                // ->minus($monthBalance)
+            $available = Money::of($monthBalance, 'USD')
+                ->plus(($monthBudget->left_from_last_month * -1))
                 ->getAmount()
                 ->toFloat();
         } else {
