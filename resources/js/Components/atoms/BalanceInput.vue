@@ -1,13 +1,12 @@
 <script lang="ts" setup>
     import { useForm } from "@inertiajs/vue3";
-    import { computed, inject, ref, watch, nextTick } from "vue"
+    import { computed, inject, ref } from "vue"
     import { NPopover } from "naive-ui";
     import { AtField, AtButton } from "atmosphere-ui";
     import Multiselect from "vue-multiselect";
     import { ICategory } from "@/domains/transactions/models";
     import LogerButton from "./LogerButton.vue";
     import InputMoney from "./InputMoney.vue";
-    import LogerInput from "./LogerInput.vue";
 
     import { format, startOfMonth } from "date-fns";
     import { formatMoney } from "@/utils";
@@ -82,7 +81,7 @@
                 destination_category_id: data.destination_category_id?.value,
                 [field]: props.category.id,
                 type: 'movement',
-                date: format(new Date(), 'yyyy-MM-dd')
+                date: month
             })).post(`/budgets/${props.category.id}/months/${month}`, {
                 preserveState: true,
                 preserveScroll: true,
@@ -128,7 +127,7 @@
     <NPopover trigger="manual" placement="bottom"  @update:show="handleUpdateShow" :show="showPopover">
         <template #trigger>
             <div
-                class="inline-flex items-center py-1 px-4 font-bold cursor-pointer flex-nowrap rounded-3xl min-w-max"
+                class="inline-flex items-center px-4 py-1 font-bold cursor-pointer flex-nowrap rounded-3xl min-w-max"
                 :class="badgeClass"
                 @click="toggle"
             >

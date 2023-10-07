@@ -102,8 +102,8 @@ class GoogleService
         ]);
         $client->addScope([
             Gmail::GMAIL_READONLY,
-            Oauth2::USERINFO_PROFILE,
-            Oauth2::USERINFO_EMAIL,
+            "https://www.googleapis.com/auth/userinfo.profile",
+            "https://www.googleapis.com/auth/userinfo.email"
         ]);
         $client->setRedirectUri(config('app.url').'/services/accept-oauth');
         $client->setAccessType('offline');

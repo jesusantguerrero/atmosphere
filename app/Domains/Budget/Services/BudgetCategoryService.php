@@ -97,28 +97,29 @@ class BudgetCategoryService
         $budgeted = $monthBudget ? $monthBudget->budgeted : 0;
 
         if ($category->account_id) {
-            $prevMonthLeftOver = $this->getPrevMonthFundedLeftOver($category, $yearMonth);
-            $prevMonthPaymentsLeftOver = $this->getPrevMonthPaymentsLeftOver($category, $yearMonth);
             $funded = $monthBudget ? $monthBudget->funded_spending : 0;
             $monthPayment = $monthBudget ? $monthBudget->payments : 0;
 
+           + $monthBudget->activity;
+
             $monthBalance = Money::of($funded, $category->account->currency_code)->minus($monthPayment)->getAmount()->toFloat();
-            $available = Money::of($prevMonthPaymentsLeftOver, 'USD')
-                // ->plus($prevMonthLeftOver)
-                // ->minus($monthBalance)
+            $available = Money::of($monthBalance, 'USD')
+                ->plus(($monthBudget->left_from_last_month * -1))
                 ->getAmount()
                 ->toFloat();
         } else {
             $monthBalance = (float) $category->getMonthBalance($yearMonth)->balance;
-            $prevMonthLeftOver = $this->getPrevMonthLeftOver($category, $yearMonth);
-            $available = Money::of($budgeted, 'USD')->plus($prevMonthLeftOver)->plus($monthBalance)->getAmount()->toFloat();
+            $available = Money::of($budgeted, 'USD')->plus($monthBudget?->left_from_last_month ?? 0)->plus($monthBalance)->getAmount()->toFloat();
         }
 
         $data = [
             'budgeted' => $budgeted,
             'activity' => $monthBalance,
             'available' => $available,
-            'prevMonthLeftOver' => $prevMonthLeftOver,
+            'payments' => $monthBudget?->payments ?? 0,
+            'left_from_last_month' => $monthBudget?->left_from_last_month ?? 0,
+            'funded_spending_previous_month' => $monthBudget?->funded_spending_previous_month ?? 0,
+            'funded_spending' => $monthBudget?->funded_spending ?? 0,
             'name' => $category->name,
             'month' => $yearMonth,
         ];
@@ -233,6 +234,21 @@ class BudgetCategoryService
         ]);
 
         echo "{$category->name} updated to {$activity}".PHP_EOL;
+    }
+
+    public function getCategoryActivity(Category $category, string $month)
+    {
+        $monthDate = Carbon::createFromFormat('Y-m-d', $month);
+        $transactions = 0;
+        $activity = 0;
+
+        if ($category->account) {
+            $transactions = $category->account->getMonthBalance($monthDate->format('Y-m'))->balance;
+        } else {
+            $activity = $category->getMonthBalance($monthDate->format('Y-m'))?->balance;
+        }
+
+        return  ($activity + $transactions) ?? 0;
     }
 
     public function findByAccount(Account $account)

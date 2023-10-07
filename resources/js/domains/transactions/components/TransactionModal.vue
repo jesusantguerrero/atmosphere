@@ -15,6 +15,7 @@ import { TRANSACTION_DIRECTIONS } from "@/domains/transactions";
 import { cloneDeep } from "lodash";
 import { ITransaction, ITransactionLine } from "../models";
 import { useTransactionStore } from "@/store/transactions";
+import LogerButton from "@/Components/atoms/LogerButton.vue";
 
 const props = defineProps({
   show: {
@@ -174,7 +175,10 @@ const resetSplits = (lastSaved: Record<string, any>) => {
 }
 
 const transactionStore = useTransactionStore();
+
+const isAddingAnother = ref(false);
 const onSubmit = (addAnother = false) => {
+    isAddingAnother.value = addAnother;
   const actions = {
     transaction: {
       save: {
@@ -253,6 +257,7 @@ const onSubmit = (addAnother = false) => {
             emit("close");
         }
         transactionStore.emitTransaction(lastSaved as ITransaction, action.method, props.transactionData);
+        isAddingAnother.value = false;
       },
     });
 };
@@ -389,7 +394,7 @@ const saveText = computed(() => {
         </LogerButton>
         <LogerButton
             class="h-10 text-white capitalize bg-primary"
-            :processing="form.processing"
+            :processing="isAddingAnother && form.processing"
             :disabled="form.processing"
             @click="onSubmit(true)" rounded
         >
@@ -397,7 +402,7 @@ const saveText = computed(() => {
         </LogerButton>
         <LogerButton
             class="h-10 text-white capitalize bg-primary"
-            :processing="form.processing"
+            :processing="form.processing && !isAddingAnother"
             :disabled="form.processing"
             @click="onSubmit()" rounded
         >

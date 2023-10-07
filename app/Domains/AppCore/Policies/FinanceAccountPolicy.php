@@ -12,7 +12,14 @@ class FinanceAccountPolicy
     {
         return $user->current_team_id === $account->team_id
         ? Response::allow()
-        : Response::deny('You do not own this post.');
+        : Response::deny('You do not own this account.');
+    }
+
+    public function update(User $user, Account $account)
+    {
+        return $user->current_team_id === $account->team_id
+        ? Response::allow()
+        : Response::deny('You do not own this account.');
     }
 
     public function create(User $user)

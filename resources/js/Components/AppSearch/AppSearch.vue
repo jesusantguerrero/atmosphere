@@ -34,7 +34,7 @@ const emit = defineEmits([
   "focus",
 ]);
 
-const sort = (field) => {
+const sort = (field: string) => {
   const sortField = props.sorts[field];
   const direction = ["desc", ""].includes(sortField.direction) ? `asc` : "desc";
   emit("update:sorts", {
@@ -48,7 +48,7 @@ const sort = (field) => {
   visibleOption.value = "";
 };
 
-const filter = (name, value) => {
+const filter = (name: string, value: string) => {
   emit("update:filters", {
     ...props.filters,
     [name]: {
@@ -60,7 +60,7 @@ const filter = (name, value) => {
 };
 
 const visibleOption = ref("");
-const isVisibleOption = (optionName) => {
+const isVisibleOption = (optionName: string) => {
   return optionName == visibleOption.value;
 };
 
@@ -72,11 +72,25 @@ const resetFilters = () => {
 const handleInput = useDebounceFn((searchText) => {
   emit("update:modelValue", searchText);
 }, 200);
+
+
+const isFocused = ref(false);
+
+const emitFocus = () => {
+    isFocused.value = true
+    emit('focus');
+}
+
+const emitBlur = () => {
+    isFocused.value = false
+    emit('blur');
+}
 </script>
 
 <template>
   <div
-    class="flex rounded-md overflow-hidden bg-base-lvl-3 w-full h-12 border border-base-lvl-1"
+    class="flex rounded-md overflow-hidden bg-base-lvl-3 w-full h-12 border border-base-lvl-1 transition"
+    :class="{'border-primary': isFocused}"
   >
     <AtInput
       v-if="!visibleOption"
@@ -87,14 +101,15 @@ const handleInput = useDebounceFn((searchText) => {
       :placeholder="placeholder"
       :model-value="modelValue"
       @update:modelValue="handleInput"
-      @focus="$emit('focus')"
-      @blur="$emit('blur')"
+      @focus="emitFocus"
+      @blur="emitBlur"
       @keydown.enter.stop="$emit('search')"
     >
       <template #prefix>
         <button
-          class="rounded-l-md px-2 hover:bg-gray-50 md:px-4"
-          @click.stop="$emit('search')"
+            class="rounded-l-md px-2 hover:bg-gray-50 md:px-4"
+            :class="{'text-primary': isFocused}"
+            @click.stop="$emit('search')"
         >
           <IMdiSearch />
         </button>

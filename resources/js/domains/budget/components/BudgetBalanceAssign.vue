@@ -9,7 +9,8 @@
     import Multiselect from "vue-multiselect";
 
     import MoneyPresenter from "@/Components/molecules/MoneyPresenter.vue";
-    
+    import BudgetProgress from "@/domains/budget/components/BudgetProgress.vue";
+
     import formatMoney from "@/utils/formatMoney";
 
     const props = defineProps({
@@ -99,7 +100,7 @@
             const field = status.value == BALANCE_STATUS.available ? 'source_category_id' : 'destination_category_id'
             form.transform(data => ({
                 ...data,
-                budgeted: Math.abs(props.value),
+                amount: Math.abs(props.value),
                 [field]: props.category.id,
                 source_category_id: data.source_category_id?.value,
                 'type': 'movement',
@@ -148,9 +149,27 @@
     >
         <NPopover>
             <template #trigger>
-                <article class="flex flex-col items-center justify-center py-4 mx-auto" :class="badgeClass">
-                    <h4 class="text-lg font-bold "> {{ formatter(value) }} </h4>
-                    <small>
+                <article class="relative flex flex-col items-center justify-center mx-auto" :class="badgeClass">
+                    <slot name="top" />
+                    <header class="flex w-full ">
+                        <section class="w-full h-10 " />
+                        <h4 class="flex items-center justify-center w-full mt-0 text-lg font-bold text-center">
+                             {{ formatter(value) }}
+                        </h4>
+                        <BudgetProgress
+                            class="text-center rounded-lg "
+                            :goal="toAssign.monthlyGoals.target"
+                            :current="toAssign.monthlyGoals.balance"
+                            :progress-class="['bg-secondary/10', 'bg-secondary/5']"
+                        >
+                            <section class="font-bold">
+                                <h4 class="text-secondary">
+                                    <MoneyPresenter :value="toAssign.monthlyGoals.balance" />
+                                </h4>
+                            </section>
+                        </BudgetProgress>
+                    </header>
+                    <small class="mb-4">
                         {{ description }}
                     </small>
 
@@ -189,8 +208,11 @@
                 </article>
             </template>
             <section class="text-center">
-                <p>Inflow: Ready to assign transactions in Month: <MoneyPresenter :value="category.activity"/> </p>
-                <p>Assigned in month: <MoneyPresenter :value="toAssign.budgeted" /> </p>
+                <p>Available for funds: <MoneyPresenter :value="toAssign.availableForFunding"/> </p>
+                <p>Budgeted: <MoneyPresenter :value="toAssign.budgeted"/> </p>
+                <p>Funded: <MoneyPresenter :value="toAssign.creditCardFunded"/> </p>
+                <p>Assigned in month: <MoneyPresenter :value="toAssign.assigned" /> </p>
+                <p>Balance: <MoneyPresenter :value="toAssign.balance" /> </p>
             </section>
         </NPopover>
 
