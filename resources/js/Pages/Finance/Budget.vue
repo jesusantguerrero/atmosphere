@@ -21,11 +21,9 @@ import ExpenseIncome from "@/domains/transactions/components/ExpenseIncome.vue";
 
 import BudgetBalanceAssign from "@/domains/budget/components/BudgetBalanceAssign.vue";
 import BudgetDetailForm from "@/domains/budget/components/BudgetDetailForm.vue";
-import BudgetProgress from "@/domains/budget/components/BudgetProgress.vue";
 
 import { useBudget } from "@/domains/budget";
 import { useServerSearch } from "@/composables/useServerSearch";
-import MoneyPresenter from "@/Components/molecules/MoneyPresenter.vue";
 import MessageBox from "@/Components/organisms/MessageBox.vue";
 import BudgetCategories from "./Partials/BudgetCategories.vue";
 
@@ -162,17 +160,7 @@ const budgetAccountsTotal =  computed(() => {
 
             <LogerButton variant="inverse" @click="goToday"> Today </LogerButton>
 
-            <AtDatePager
-              v-if="pageState.dates?.startDate"
-              class="w-full h-12 border-none bg-base-lvl-1 text-body"
-              v-model:startDate="pageState.dates.startDate"
-              v-model:endDate="pageState.dates.endDate"
-              @change="executeSearchWithDelay(5)"
-              controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
-              next-mode="month"
-            >
-              {{ formatMonth(pageState.dates.startDate, "MMMM") }}
-            </AtDatePager>
+
             <LogerButton variant="secondary" :href="route('budget.export')"  target="_blank" as="a">
                 <IMdiExport class="mr-2" />
                 Export Budget
@@ -188,44 +176,32 @@ const budgetAccountsTotal =  computed(() => {
         title="This is your budget."
         content="Create new category groups and categories and organize them to suit your needs"
       />
+
       <BudgetBalanceAssign
-        class="mt-5 rounded-t-md"
+        class="rounded-t-md"
         :class="[cardShadow, !visibleFilters.overspent && 'rounded-b-md']"
         :value="readyToAssign.balance"
         :category="readyToAssign.toAssign"
         :to-assign="readyToAssign"
       >
-        <template #activity>
-          <section class="flex flex-col items-center justify-center w-full py-2">
-            <h4 class="font-bold text-secondary">
-              <MoneyPresenter :value="readyToAssign.budgetedSpending" />
-            </h4>
-            <p class="font-bold text-body-1/80">Activity</p>
-          </section>
-        </template>
-        <template #target>
-          <BudgetProgress
-            class="w-full text-center h-14"
-            :goal="readyToAssign.monthlyGoals.target"
-            :current="readyToAssign.monthlyGoals.balance"
-            :progress-class="['bg-secondary/10', 'bg-secondary/5']"
-          >
-            <section class="font-bold">
-              <h4 class="text-secondary">
-                <MoneyPresenter :value="readyToAssign.monthlyGoals.balance" />
-              </h4>
-              <p class="font-bold text-body-1/80">Monthly target progress</p>
-            </section>
-          </BudgetProgress>
+        <template #top>
+            <AtDatePager
+              v-if="pageState.dates?.startDate"
+              class="w-full h-12 border-none bg-base-lvl-1 text-body"
+              v-model:startDate="pageState.dates.startDate"
+              v-model:endDate="pageState.dates.endDate"
+              @change="executeSearchWithDelay(5)"
+              controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
+              next-mode="month"
+            >
+              {{ formatMonth(pageState.dates.startDate, "MMMM") }}
+            </AtDatePager>
         </template>
       </BudgetBalanceAssign>
 
-      <section class="mx-auto mt-8 rounded-lg text-body bg-base max-w-7xl">
-        <article class="w-full mt-4 space-y-4">
-          <section class="space-y-4">
-            account totals: {{  formatMoney(accountTotal) }} -  budget available: {{ formatMoney(available) }}  = rest: {{ formatMoney(accountTotal - available) }}
+      <section class="mx-auto mt-4 rounded-lg text-body bg-base max-w-7xl">
+        <article class="w-full space-y-4">
             <BudgetCategories :budgets="budgets" />
-          </section>
         </article>
       </section>
 

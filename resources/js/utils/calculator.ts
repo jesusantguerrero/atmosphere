@@ -45,7 +45,7 @@ export const useCalculatorInput = () => {
     }
 
     // Calculate related Functions
-    function calculate(expression) {
+    function calculate(expression: string) {
       let result = orderExpression(expression)
       let lastLength = result.length
 
@@ -58,7 +58,7 @@ export const useCalculatorInput = () => {
           const highOrder =  'x/'.includes(operator)
           const lowOrder =  '+-'.includes(operator)
 
-          if (highOrder) {
+          if (haveHighOrder && highOrder) {
             const value = doOperation(left, operator, right)
             result.splice(i - 1, 3, value)
             break;
@@ -78,8 +78,8 @@ export const useCalculatorInput = () => {
     }
 
     function orderExpression(expression = '') {
-      let history = state.history
-      const operations = []
+      let history: string[] = state.history
+      const operations: string[] = []
       history = expression.split('').map((n) => {
         if (operators.includes(n)){
           operations.push(n)
@@ -88,7 +88,7 @@ export const useCalculatorInput = () => {
         return n
       })
 
-      const numbers = history.join('').split('|')
+      const numbers = history.join('').split('|').map(num => parseFloat(num || "0"))
       history = [];
 
       numbers.forEach((n, i) => {
@@ -100,27 +100,21 @@ export const useCalculatorInput = () => {
       return history
     }
 
-    function doOperation(left, operator, right) {
-       switch(operator){
+    function doOperation(left: string, operator:string, right: string) {
+        const firstNumber = parseFloat(left ?? 0);
+        switch(operator){
          case '/':
-            const result = parseFloat(left) / parseFloat(right)
+            const result = firstNumber / parseFloat(right)
             return result.toFixed(2)
-            break;
          case 'x':
-            return parseFloat(left) * parseFloat(right)
-            break;
+            return firstNumber * parseFloat(right)
           case '-':
-            return parseFloat(left) - parseFloat(right)
-            break;
+            return firstNumber - parseFloat(right)
           case '+':
-           return parseFloat(left)  + parseFloat(right)
+           return firstNumber  + parseFloat(right)
+           default:
+            return 0;
         }
-    }
-
-   //  decoration styles and behavior ralated
-
-    function setMode(name, value){
-      state.mode[name] = value
     }
 
     return {
