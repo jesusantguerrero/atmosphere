@@ -45,7 +45,10 @@ const props = defineProps({
 });
 
 const { serverSearchOptions } = toRefs(props);
-const { state: pageState } = useServerSearch(serverSearchOptions);
+const { state: pageState, executeSearchWithDelay } = useServerSearch(serverSearchOptions, {
+    manual: true,
+    defaultDates: true,
+});
 
 
 const sectionTitle = computed(() => {
@@ -64,9 +67,12 @@ const resourceToEdit = ref(null);
             class="w-full h-12 border-none bg-base-lvl-1 text-body"
             v-model:startDate="pageState.dates.startDate"
             v-model:endDate="pageState.dates.endDate"
+            @change="executeSearchWithDelay(5)"
             controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
             next-mode="month"
-          />
+          >
+            {{ formatMonth(pageState.dates.startDate, "MMMM") }}
+          </AtDatePager>
           <div>
             <LogerButton variant="inverse" @click="isModalOpen=!isModalOpen"> Add WatchList </LogerButton>
           </div>
