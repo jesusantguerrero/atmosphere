@@ -202,29 +202,32 @@ const listData = computed(() => {
                         {{  monthName }}
                     </span>
                 </h4>
-                <AppSearch
-                v-model.lazy="pageState.search"
-                class="w-full md:flex"
-                :has-filters="true"
-                @clear="reset()"
-                @blur="executeSearch"
-              />
             </section>
-        <span>
-            {{  listData.length }}
-        </span>
+
+            <section class="flex items-center space-x-2">
+                <AppSearch
+                    v-model.lazy="pageState.search"
+                    class="w-full md:flex"
+                    :has-filters="true"
+                    @clear="reset()"
+                    @blur="executeSearch"
+                />
+            <span>
+                {{  listData.length }}
+            </span>
+            </section>
         </header>
-            <component
-              v-if="showTransactionTable"
-              :is="listComponent"
-              :transactions="listData"
-              :server-search-options="serverSearchOptions"
-              :is-loading="isLoading"
-              all-accounts
-              @findLinked="findLinked"
-              @removed="removeTransaction"
-              @edit="handleEdit"
-            />
+        <component
+            v-if="showTransactionTable"
+            :is="listComponent"
+            :transactions="listData"
+            :server-search-options="serverSearchOptions"
+            :is-loading="isLoading"
+            all-accounts
+            @findLinked="findLinked"
+            @removed="removeTransaction"
+            @edit="handleEdit"
+        />
       </main>
     </FinanceTemplate>
   </AppLayout>

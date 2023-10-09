@@ -93,6 +93,7 @@ trait TransactionLineTrait
 
     public function scopePayees($query, array $payees)
     {
-        return $query->whereIn('payee_id', $payees);
+        return $query->whereIn('transaction_lines.payee_id', $payees)
+        ->join('categories', 'transaction_lines.category_id', '=', 'categories.id');
     }
 }
