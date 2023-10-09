@@ -8,13 +8,14 @@ import { NSelect, NDatePicker } from "naive-ui";
 import Modal from "@/Components/atoms/Modal.vue";
 import LogerInput from "@/Components/atoms/LogerInput.vue";
 import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
-import CategoryPicker from "./CategoryPicker.vue";
 import TransactionTypesPicker from "./TransactionTypesPicker.vue";
 import TransactionItems from "./TransactionItems.vue";
 
 import { TRANSACTION_DIRECTIONS } from "@/domains/transactions";
 import { cloneDeep } from "lodash";
-import { ITransactionLine } from "../models";
+import { ITransaction, ITransactionLine } from "../models";
+import { useTransactionStore } from "@/store/transactions";
+import LogerButton from "@/Components/atoms/LogerButton.vue";
 
 const props = defineProps({
   show: {
@@ -172,7 +173,12 @@ const resetSplits = (lastSaved: Record<string, any>) => {
         amount: 0,
     }]
 }
+
+const transactionStore = useTransactionStore();
+
+const isAddingAnother = ref(false);
 const onSubmit = (addAnother = false) => {
+    isAddingAnother.value = addAnother;
   const actions = {
     transaction: {
       save: {
@@ -250,6 +256,8 @@ const onSubmit = (addAnother = false) => {
         if (!addAnother) {
             emit("close");
         }
+        transactionStore.emitTransaction(lastSaved as ITransaction, action.method, props.transactionData);
+        isAddingAnother.value = false;
       },
     });
 };
@@ -381,25 +389,25 @@ const saveText = computed(() => {
         </div>
       </section>
       <div class="flex space-x-2">
-        <AtButton @click="close" rounded class="h-10 text-body" :disabled="form.processing">
+        <LogerButton @click="close" rounded class="h-10 text-body" :disabled="form.processing">
             Cancel
-        </AtButton>
-        <AtButton
+        </LogerButton>
+        <LogerButton
             class="h-10 text-white capitalize bg-primary"
-            :processing="form.processing"
+            :processing="isAddingAnother && form.processing"
             :disabled="form.processing"
             @click="onSubmit(true)" rounded
         >
           {{ saveText }} and another
-        </AtButton>
-        <AtButton
+        </LogerButton>
+        <LogerButton
             class="h-10 text-white capitalize bg-primary"
-            :processing="form.processing"
+            :processing="form.processing && !isAddingAnother"
             :disabled="form.processing"
             @click="onSubmit()" rounded
         >
           {{ saveText }}
-        </AtButton>
+        </LogerButton>
       </div>
     </footer>
   </modal>

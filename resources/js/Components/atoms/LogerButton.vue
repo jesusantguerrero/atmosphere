@@ -42,9 +42,11 @@ const typeClasses = computed(() => {
     :class="[typeClasses]"
     :disabled="processing || disabled"
 >
-    <section class="flex">
-        <slot name="icon" v-if="!processing" />
-        <IMdiSync class="mr-2 animate-rotate" v-if="processing" />
+    <section class="flex items-center">
+        <div  class="mr-2">
+            <slot name="icon" v-if="!processing" />
+            <IMdiSync  v-else class="animate-spin"/>
+        </div>
         <slot />
     </section>
  </component>

@@ -27,7 +27,7 @@ class AccountPolicy
 
     public function update(User $user, Account $account)
     {
-        return $user->team_id == $account->team_id;
+        return $user->current_team_id == $account->team_id;
     }
 
     public function delete(User $user, Account $account)

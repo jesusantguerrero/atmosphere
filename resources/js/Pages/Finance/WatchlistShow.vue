@@ -1,62 +1,96 @@
 <script setup lang="ts">
-import { ref, toRefs } from "vue";
+import { ref, toRefs, computed } from "vue";
 // @ts-ignore
 import { AtDatePager } from "atmosphere-ui";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
-import SectionTitle from "@/Components/atoms/SectionTitle.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
-import IconImport from "@/Components/icons/IconImport.vue";
-import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
-import ChartComparison from "@/Components/widgets//ChartComparison.vue";
+import ChartComparison from "@/Components/widgets/ChartComparison.vue";
+import WidgetStats from "@/Components/widgets/WidgetStats.vue";
 
 import FinanceTemplate from "./Partials/FinanceTemplate.vue";
 import FinanceSectionNav from "./Partials/FinanceSectionNav.vue";
 
+import TransactionsList from "@/domains/transactions/components/TransactionsList.vue";
 import WatchlistModal from "@/domains/watchlist/components/WatchlistModal.vue";
+import WatchlistSummaryCard from "@/domains/watchlist/components/WatchlistSummaryCard.vue";
 
 import { useServerSearch } from "@/composables/useServerSearch";
 import { formatMoney, formatMonth, MonthTypeFormat } from "@/utils";
+import { IAccount } from "@/domains/transactions/models";
+import { IServerSearchData } from "@/composables/useServerSearchV2";
+import { router } from "@inertiajs/vue3";
 
-const props = defineProps({
-  user: {
-    type: Object,
-    required: true,
-  },
-  resource: {
-    type: Object,
-    default() {
-      return {};
-    },
-  },
-  categories: {
-    type: Array,
-    default() {
-      return [];
-    },
-  },
-  accounts: {
-    type: Array,
-    default() {
-      return [];
-    },
-  },
-  serverSearchOptions: {
-    type: Object,
-    default: () => ({}),
-  },
+interface MonthStat {
+    total: number,
+    currency_code: string,
+    lastTransactionDate: string,
+    transactionsCount: number
+}
+
+interface WatchlistResource {
+    month: MonthStat;
+    prevMonth: MonthStat;
+    transactions: Record<string, {
+        data: Record<string, string>[]
+    }>
+}
+
+const props = withDefaults(defineProps<{
+  user: Object,
+  resource: WatchlistResource,
+  categories: Record<string, string>[],
+  accounts: IAccount[],
+  serverSearchOptions: IServerSearchData,
+  watchlist: Record<string, string>[]
+}>(), {
+
 });
 const { serverSearchOptions } = toRefs(props);
-const { state: pageState } = useServerSearch(serverSearchOptions);
-
-
+const { state: pageState, executeSearchWithDelay } = useServerSearch(serverSearchOptions, {
+    manual: true,
+    defaultDates: true
+});
 
 const isModalOpen = ref(false);
 const resourceToEdit = ref(null);
+
+const sectionName = computed(() => {
+    return  `${props.resource.name} : ${formatMonth(pageState?.dates.startDate, MonthTypeFormat.long)}`
+})
+
+const statCards = computed(() => [
+    {
+        value: props.resource.month.transactionsCount,
+        label: 'transactions'
+    }, {
+        value: props.resource.month.lastTransactionDate,
+        label: 'date'
+    }, {
+        value: formatMoney(props.resource.prevMonth.total, props.resource.prevMonth.currency_code),
+        label: "last month"
+    }
+]);
+
+const parser = (transactions: Record<string, string>[]) => {
+    return transactions.map((transaction) => ({
+        title: transaction.description,
+        subtitle: `${transaction?.account_from?.name} -> ${transaction.category.name}`,
+        date: transaction.date,
+        value: transaction.amount,
+        currencyCode: transaction.currency_code,
+        status: transaction.status,
+    }));
+}
+
+const onClick = (itemId: number) => {
+    if (props.resource.id == itemId) return
+    router.visit(`/finance/watchlist/${itemId}?${location.search}`)
+}
 </script>
 
 <template>
-  <AppLayout title="Spending Watchlist">
+  <AppLayout :title="sectionName">
     <template #header>
       <FinanceSectionNav>
         <template #actions>
@@ -66,7 +100,9 @@ const resourceToEdit = ref(null);
             v-model:endDate="pageState.dates.endDate"
             controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
             next-mode="month"
-          />
+            @change="executeSearchWithDelay(5)"
+          >
+          </AtDatePager>
           <div>
             <LogerButton variant="inverse" @click="isModalOpen=!isModalOpen"> Add WatchList </LogerButton>
           </div>
@@ -74,26 +110,37 @@ const resourceToEdit = ref(null);
       </FinanceSectionNav>
     </template>
 
-    <FinanceTemplate title="Finance" :accounts="accounts" ref="financeTemplateRef">
+    <FinanceTemplate :accounts="accounts" ref="financeTemplateRef">
       <article class="w-full">
-        <header class="mt-5">
-          <SectionTitle type="secondary"> {{ resource.name }} : {{ formatMonth(pageState.dates.startDate, MonthTypeFormat.long) }} </SectionTitle>
-        </header>
 
-        <section class="mt-4">
-          <header>
-            <h4 class="text-4xl font-bold">{{ formatMoney(resource.month.total, resource.month.currency_code) }}</h4>
-          </header>
-          <section class="py-8">
+        <section>
+            <section class="w-full">
+                <WidgetWatchlistStats
+                  class="w-full"
+                  :total="formatMoney(resource.month.total, resource.month.currency_code)"
+                  description="This month"
+                  :cards="statCards"
+                >
+                 <template #icon>
+                  <IIcRoundQueryStats />
+                 </template>
+                </WidgetWatchlistStats>
+            </section>
             <ChartComparison
-                class="w-full mt-4 mb-10 overflow-hidden bg-white rounded-lg shadow-xl"
+                class="w-full mb-10 mt-4 overflow-hidden bg-white rounded-lg shadow-xl"
                 :title="`${resource.name} Report`"
                 ref="ComparisonRevenue"
-                :data="resource.transactions"
+                :data="resource.categories"
                 data-item-total="total_amount"
             />
-          </section>
         </section>
+
+        <TransactionsList
+            class="w-full"
+            table-class="overflow-auto text-sm"
+            :transactions="parser(resource.transactions)"
+        />
+
       </article>
 
       <WatchlistModal
@@ -103,16 +150,13 @@ const resourceToEdit = ref(null);
       />
 
       <template #panel>
-        <section class="fixed">
-            <SectionTitle class="flex items-center justify-between pl-5 mt-5" type="secondary">
-                <span>
-                    Transactions
-                </span>
-                <LogerButtonTab class="flex items-center ml-2 text-primary" @click="isImportModalOpen=!isImportModalOpen" title="import">
-                    {{ formatMoney(budgetAccountsTotal) }}
-                    <IconImport />
-                </LogerButtonTab>
-            </SectionTitle>
+        <section class="fixed space-y-2 px-4">
+            <WatchlistSummaryCard
+                v-for="item in watchlist"
+                :startDate="pageState.dates.startDate"
+                :item="item"
+                @click="onClick(item.id)"
+            />
         </section>
       </template>
     </FinanceTemplate>

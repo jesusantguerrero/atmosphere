@@ -104,10 +104,6 @@ const handleEdit = (transaction: ITransaction) => {
 
 // reconciliation
 
-const reconcileForm = useForm({
-  date: props.reconciliation.date,
-  balance: props.reconciliation.amount,
-});
 
 const isEditing = ref(false);
 const statementBalanceRef = ref();
@@ -119,6 +115,11 @@ const toggleEditing = () => {
     });
   }
 };
+
+const reconcileForm = useForm({
+  date: props.reconciliation.date,
+  balance: props.reconciliation.amount,
+});
 
 const completeReconciliation = () => {
     if (reconcileForm.processing) return

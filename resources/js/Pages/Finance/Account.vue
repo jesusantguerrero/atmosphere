@@ -3,7 +3,6 @@ import { computed, toRefs, provide, ref, onMounted, watch , nextTick } from "vue
 import { router, useForm } from "@inertiajs/vue3";
 import { format } from "date-fns";
 import { NDatePicker } from "naive-ui";
-import { debounce,  } from "lodash";
 // @ts-expect-error: no definitions
 import { AtField, AtDatePager } from "atmosphere-ui";
 // import { AtDatePager, useServerSearch, IServerSearchData, AtField } from "atmosphere-ui";
@@ -18,6 +17,7 @@ import BackgroundCard from "@/Components/molecules/BackgroundCard.vue";
 
 import FinanceTemplate from "./Partials/FinanceTemplate.vue";
 import FinanceSectionNav from "./Partials/FinanceSectionNav.vue";
+import AccountReconciliationBanner from "./Partials/AccountReconciliationBanner.vue";
 import TransactionSearch from "@/domains/transactions/components/TransactionSearch.vue";
 import TransactionTable from "@/domains/transactions/components/TransactionTable.vue";
 import DraftButtons from "@/domains/transactions/components/DraftButtons.vue";
@@ -28,8 +28,7 @@ import { tableAccountCols } from "@/domains/transactions";
 import { useAppContextStore } from "@/store";
 import { formatMoney } from "@/utils";
 import { IAccount, ICategory, ITransaction } from "@/domains/transactions/models";
-import AccountReconciliationAlert from "@/domains/transactions/components/AccountReconciliationAlert.vue";
-import AccountReconciliationBanner from "./Partials/AccountReconciliationBanner.vue";
+
 
 const { openTransactionModal } = useTransactionModal();
 
@@ -96,8 +95,8 @@ const handleEdit = (transaction: ITransaction) => {
 
 
 onMounted(() => {
-		router.on('start', () => isLoading.value = true)
-		router.on('finish', () => isLoading.value = false)
+    router.on('start', () => isLoading.value = true)
+    router.on('finish', () => isLoading.value = false)
 })
 
 const monthName = computed(() => format(pageState.dates.startDate, "MMMM"))
@@ -105,7 +104,7 @@ const monthName = computed(() => format(pageState.dates.startDate, "MMMM"))
 // reconciliation
 
 const hasReconciliation = computed(() => {
-    return selectedAccount.value?.reconciliations_pending
+    return selectedAccount.value?.reconciliations_last
 })
 
 const reconcileForm = useForm({
@@ -149,7 +148,7 @@ const reconciliation = () => {
           </LogerButton>
           <LogerButton
             variant="inverse"
-            @click="router.visit(`/finance/reconciliation/${selectedAccount?.reconciliations_pending.id}`)"
+            @click="router.visit(`/finance/reconciliation/${selectedAccount?.reconciliations_last.id}`)"
             v-else
           >
             Review Reconciliation
@@ -159,6 +158,7 @@ const reconciliation = () => {
       </template>
     </FinanceSectionNav>
   </template>
+
   <template #title>
     <section class="flex items-center">
         <span>{{ selectedAccount.name }}</span>
@@ -171,6 +171,7 @@ const reconciliation = () => {
         </button>
     </section>
   </template>
+
   <FinanceTemplate title="Transactions" :accounts="accounts">
       <section class="flex w-full mt-4 space-x-4 flex-nowrap">
         <BackgroundCard
@@ -190,31 +191,35 @@ const reconciliation = () => {
                         {{ monthName }}
                     </span>
                 </h4>
+            </section>
+            <section class="flex items-center space-x-2">
                 <AppSearch
                     v-model.lazy="pageState.search"
-                    class="w-full md:flex"
+                    class="w-full md:flex "
                     :has-filters="hasFilters"
                     @clear="reset()"
                 />
+
+                <span class="min-w-fit text-secondary font-bold">
+                    {{  transactions.length }} Results
+                </span>
             </section>
-        <span>
-            {{  transactions.length }} Results
-        </span>
         </header>
-        <AccountReconciliationBanner
-            v-if="selectedAccount"
-            :account="selectedAccount"
-        />
-          <Component
-            :is="listComponent"
-            :cols="tableAccountCols(props.accountId)"
-            :transactions="transactions"
-            :server-search-options="serverSearchOptions"
-            :is-loading="isLoading"
-            @findLinked="findLinked"
-            @removed="removeTransaction"
-            @edit="handleEdit"
-          />
+            <AccountReconciliationBanner
+                v-if="selectedAccount"
+                :account="selectedAccount"
+            />
+
+            <Component
+                :is="listComponent"
+                :cols="tableAccountCols(props.accountId)"
+                :transactions="transactions"
+                :server-search-options="serverSearchOptions"
+                :is-loading="isLoading"
+                @findLinked="findLinked"
+                @removed="removeTransaction"
+                @edit="handleEdit"
+            />
       </section>
 
       <ConfirmationModal

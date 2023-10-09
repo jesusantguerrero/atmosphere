@@ -65,8 +65,8 @@ defineExpose({
     <template v-slot:prefix v-if="$slots.prefix">
         <slot name="prefix" />
     </template>
-    <template v-slot:prefix v-if="$slots.prefix">
-        <slot name="prefix" />
+    <template v-slot:suffix v-if="$slots.suffix">
+        <slot name="suffix" />
     </template>
 </AtInput>
 </template>

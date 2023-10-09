@@ -28,8 +28,17 @@ export const getCategoriesTotals = (categories: Record<string, any>, config = {
         categoryTotals.activity =  ExactMath.add(categoryTotals.activity, category.activity || 0)
         categoryTotals.available = ExactMath.add(categoryTotals.available, category.available || 0)
         categoryTotals.budgetAvailable = ExactMath.add(categoryTotals.budgetAvailable, !category.account_id && category.name !== InflowCategories.READY_TO_ASSIGN ? category.available : 0)
-        categoryTotals.budgetedSpending = ExactMath.add(categoryTotals.budgetedSpending, !category.account_id && category.name !== InflowCategories.READY_TO_ASSIGN  ? category.activity : 0)
         categoryTotals.prevMonthLeftOver = ExactMath.add(categoryTotals.prevMonthLeftOver, category.prevMonthLeftOver || 0)
+
+        // credit cards
+        categoryTotals.budgetedSpending = ExactMath.add(categoryTotals.budgetedSpending, !category.account_id && category.name !== InflowCategories.READY_TO_ASSIGN  ? category.activity : 0)
+        categoryTotals.payments = ExactMath.add(categoryTotals.payments, category.name !== InflowCategories.READY_TO_ASSIGN  ? category.payments : 0)
+        categoryTotals.fundedSpending = ExactMath.add(categoryTotals.fundedSpending, category.name !== InflowCategories.READY_TO_ASSIGN  ? category.funded_spending : 0)
+        categoryTotals.fundedSpendingPreviousMonth = ExactMath.add(categoryTotals.fundedSpendingPreviousMonth, category.name !== InflowCategories.READY_TO_ASSIGN  ? category.funded_spending_previous_month : 0)
+
+        if (category.account_id) {
+            console.log(categoryTotals, category);
+        }
 
         if (Number(category.available) < 0 && category.name !== 'Inflow') {
             category.budgeted
@@ -60,11 +69,14 @@ export const getCategoriesTotals = (categories: Record<string, any>, config = {
         return categoryTotals;
     }, {
         budgeted: 0,
-        budgetedSpending: 0,
         budgetAvailable: 0,
         activity: 0,
         available: 0,
         prevMonthLeftOver: 0,
+        budgetedSpending: 0,
+        payments: 0,
+        fundedSpending: 0,
+        fundedSpendingPreviousMonth: 0,
         monthlyGoals: {
             target: 0,
             balance: 0
@@ -76,16 +88,22 @@ export const getGroupTotals = (groups: Record<string, any>) => {
     return groups.reduce((groupTotals: Record<string, any>, group: Record<string, any>) => {
         groupTotals.budgeted = ExactMath.add(group.budgeted, groupTotals.budgeted || 0)
         groupTotals.activity = ExactMath.add(group.activity, groupTotals.activity || 0)
-        groupTotals.budgetedSpending = ExactMath.add(group.budgetedSpending, groupTotals.budgetedSpending || 0)
         groupTotals.budgetAvailable = ExactMath.add(group.budgetAvailable, groupTotals.budgetAvailable || 0)
+        groupTotals.prevMonthLeftOver = ExactMath.add(group.prevMonthLeftOver, groupTotals.prevMonthLeftOver)
+
         groupTotals.available = ExactMath.add(group.available, groupTotals.available || 0)
 
-        // console.log(groupTotals.budgetedSpending, group.name);
+        // credit cards calculations
+        groupTotals.budgetedSpending = ExactMath.add(group.budgetedSpending, groupTotals.budgetedSpending || 0)
+        groupTotals.payments = ExactMath.add(group.payments, groupTotals.payments || 0)
+        groupTotals.fundedSpending= ExactMath.add(group.fundedSpending, groupTotals.fundedSpending || 0)
+        groupTotals.fundedSpendingPreviousMonth= ExactMath.add(group.fundedSpendingPreviousMonth, groupTotals.fundedSpendingPreviousMonth || 0)
 
-        groupTotals.prevMonthLeftOver = ExactMath.add(group.prevMonthLeftOver, groupTotals.prevMonthLeftOver)
+
 
         groupTotals.monthlyGoals.target = ExactMath.add(groupTotals.monthlyGoals.target, group.monthlyGoals.target)
         groupTotals.monthlyGoals.balance = ExactMath.add(groupTotals.monthlyGoals.balance, group.monthlyGoals.balance)
+
         return groupTotals;
     }, {
         budgeted: 0,
@@ -93,6 +111,9 @@ export const getGroupTotals = (groups: Record<string, any>) => {
         budgetAvailable: 0,
         activity: 0,
         prevMonthLeftOver: 0,
+        payments: 0,
+        fundedSpending: 0,
+        fundedSpendingPreviousMonth: 0,
         monthlyGoals: {
             target: 0,
             balance: 0
