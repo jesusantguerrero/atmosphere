@@ -6,13 +6,20 @@
     import TransactionsList from '@/domains/transactions/components/TransactionsList.vue';
     import { removeTransaction, transactionDBToTransaction, useTransactionModal } from '@/domains/transactions';
     import LogerButton from '@/Components/atoms/LogerButton.vue';
-import { useTransactionStore } from '@/store/transactions';
+    import { useTransactionStore } from '@/store/transactions';
 
 
     const transactionsDraft = ref([]);
     const isLoadingDrafts = ref(false);
     const fetchTransactions = async () => {
         const url = `/api/finance/transactions?filter[status]=draft&limit=10`;
+        return axios.get(url).then<ITransaction[]>(({ data }) => {
+            transactionsDraft.value = data;
+            isLoadingDrafts.value = false
+        })
+    }
+    const syncDrafts = async () => {
+        const url = `/api/finance/transactions/sync-drafts`;
         return axios.get(url).then<ITransaction[]>(({ data }) => {
             transactionsDraft.value = data;
             isLoadingDrafts.value = false

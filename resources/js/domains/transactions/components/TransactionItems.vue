@@ -8,27 +8,29 @@ import InputMoney from "@/Components/atoms/InputMoney.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 import LogerApiSimpleSelect from "@/Components/organisms/LogerApiSimpleSelect.vue";
 import CategoryPicker from "./CategoryPicker.vue";
+import { IAccount, ICategory } from "../models";
+import { formatMoney } from "@/utils";
+import LogerInput from "@/Components/atoms/LogerInput.vue";
 
-const props = defineProps({
-  items: {
-    type: Array,
-    default: [],
-  },
-  categories: {
-    type: Array,
-    default: [],
-  },
-  accounts: {
-    type: Array,
-    default: [],
-  },
-  isTransfer: {
-    type: Boolean,
-  },
-  fullHeight: {
-    type: Boolean
-  }
-});
+interface SplitItem {
+    payee_id: null|number,
+    payee_label: string,
+    date: null|Date,
+    description: string,
+    category_id: null|number,
+    counter_account_id: null|number,
+    account_id: null|number,
+    amount: number,
+    history: string|number[]
+}
+
+const props = defineProps<{
+  items: SplitItem[],
+  categories: ICategory[],
+  accounts: IAccount[],
+  isTransfer: boolean
+  fullHeight: boolean
+}>();
 const accountLabel = computed(() => {
   return !props.isTransfer ? "Account" : "Source";
 });
@@ -47,7 +49,7 @@ const categoryAccounts = computed(() => {
   return props.isTransfer ? accountsOptions : categoryOptions;
 });
 
-const splits = reactive(props.items ?? []);
+const splits = reactive<SplitItem[]>(props.items ?? []);
 const hasSplits = computed(() => splits.length > 1);
 
 const defaultRow = {
@@ -59,7 +61,14 @@ const defaultRow = {
     counter_account_id: null,
     account_id: null,
     amount: 0,
+    history: [0]
 };
+
+const splitsTotal = computed(() =>
+    splits.reduce((total: number, splitItem: Record<string, string>): number => {
+        return total + parseFloat(splitItem.amount ?? 0);
+    }, 0)
+)
 
 const addSplit = () => {
   splits.push({...defaultRow});
@@ -78,7 +87,7 @@ defineExpose({
     return splits;
   },
   reset() {
-    const items = props.items.at?.(0) ?? {}
+    const items = props.items.at?.(0) ?? structuredClone(defaultRow)
     splits.splice(0, splits.length, {...items})
   }
 });
@@ -88,12 +97,36 @@ const isPickerOpen = ref(false);
 
 
 <template>
-  <div>
-    <div
+  <section>
+    <section
       v-for="(split, index) in splits"
       :key="index"
       class="px-4 -mx-4 rounded-md even:bg-base-lvl-2"
     >
+
+
+      <section v-if="!index">
+          <AtField
+            :label="accountLabel"
+            class="flex justify-between w-full space-x-4 md:w-full md:my-0 md:block md:space-x-0 md:-mt-4"
+          >
+            <NSelect
+              filterable
+              clearable
+              tag
+              size="large"
+              class="w-48 md:w-full"
+              v-model:value="split.account_id"
+              :default-expand-all="true"
+              :options="accountsOptions"
+            />
+          </AtField>
+
+        <div class="px-2 py-1 text-center">
+            {{  formatMoney(splitsTotal) }}
+        </div>
+      </section>
+
       <header class="flex justify-between pt-2 -mb-4" v-if="hasSplits">
         <h4 class="font-bold">Split ({{ index + 1 }}/{{ splits.length }})</h4>
         <button @click="removeSplit(index)">
@@ -101,22 +134,6 @@ const isPickerOpen = ref(false);
         </button>
       </header>
 
-      <AtField
-        :label="accountLabel"
-        v-if="!index"
-        class="flex justify-between w-full space-x-4 md:w-full md:my-0 md:block md:space-x-0 md:-mt-4"
-      >
-        <NSelect
-          filterable
-          clearable
-          tag
-          size="large"
-          class="w-48 md:w-full"
-          v-model:value="split.account_id"
-          :default-expand-all="true"
-          :options="accountsOptions"
-        />
-      </AtField>
       <div class="px-4 md:flex md:space-x-3 md:px-0 md:-mt-4">
         <AtField
           label="Payee"
@@ -134,19 +151,21 @@ const isPickerOpen = ref(false);
             class="w-48 md:w-full"
           />
         </AtField>
-        <AtField :label="categoryLabel" class="hidden md:block md:w-full">
-          <NSelect
-            filterable
-            clearable
-            tag
-            size="large"
-            v-model:value="split[categoryField]"
-            :default-expand-all="true"
-            :options="categoryAccounts"
-          />
-        </AtField>
+        <section>
+            <AtField :label="categoryLabel" class="hidden md:block md:w-full">
+              <NSelect
+                filterable
+                clearable
+                tag
+                size="large"
+                v-model:value="split[categoryField]"
+                :default-expand-all="true"
+                :options="categoryAccounts"
+              />
+            </AtField>
+        </section>
         <AtField label="Amount" class="hidden md:block md:w-5/12">
-          <InputMoney :number-format="true" v-model="split.amount">
+          <InputMoney :number-format="true" v-model="split.amount" v-model:history="split.history">
             <template #prefix>
               <span class="flex items-center pl-2"> RD$ </span>
             </template>
@@ -162,7 +181,7 @@ const isPickerOpen = ref(false);
             />
 
             <AtField v-if="!isPickerOpen">
-              <InputMoney :number-format="true" v-model="split.amount">
+              <InputMoney :number-format="true" v-model="split.amount" v-model:history="split.history">
                 <template #prefix>
                   <span class="flex items-center pl-2"> RD$ </span>
                 </template>
@@ -170,11 +189,24 @@ const isPickerOpen = ref(false);
             </AtField>
           </header>
       </div>
-    </div>
+
+      <footer class="flex justify-end mb-2">
+        <AtField
+            v-if="hasSplits"
+            label="Description"
+            class="flex justify-between w-full space-x-2 md:block md:space-x-0 md:mt-0"
+    >
+        <LogerInput v-model="split.concept" class="w-48 md:w-full" />
+    </AtField>
+    <span class="flex items-center justify-center ">
+        {{  split.history }}
+    </span>
+      </footer>
+    </section>
 
     <LogerButton variant="neutral" @click="addSplit()" v-if="!isTransfer">
       <IMdiCallSplit />
       Add split
     </LogerButton>
-  </div>
+  </section>
 </template>

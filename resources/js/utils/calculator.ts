@@ -1,8 +1,6 @@
-import { Ref, toRefs, reactive, onMounted, computed } from 'vue';
+import { toRefs, reactive, computed } from 'vue';
 const b = '789456123.0=,DEL,/,x,-,+,CL';
-const buttons    = b.slice(0,12).split('')
 const operators  = b.slice(13).split(',')
-const changers = ['=','DEL','CL']
 
 export const useCalculatorInput = () => {
     const state = reactive({
@@ -20,34 +18,13 @@ export const useCalculatorInput = () => {
 
     const currentValue = computed(() => {
         return  state.current
-    })
-
-    function resolveAction(val) {
-      (val == '=') ? state.calculate() : this[val]()
-    }
-
-    function CL() {
-      state.current = 0
-      state.history = []
-      state.mode.initial = true
-    }
-
-    function DEL() {
-      const len = state.history.length
-      state.history.pop()
-      if (state.history.length) {
-       state.current = 0
-       state.last = state.current[0]
-       state.setMode('deleted', true)
-      } else {
-       state.CL()
-      }
-    }
+    });
 
     // Calculate related Functions
     function calculate(expression: string) {
       let result = orderExpression(expression)
       let lastLength = result.length
+      state.history = [...result];
 
       while (result.length > 1) {
         for (let i = 0 ; i < result.length; i++) {
@@ -78,9 +55,9 @@ export const useCalculatorInput = () => {
     }
 
     function orderExpression(expression = '') {
-      let history: string[] = state.history
+      let localHistory: string|number[] = state.history
       const operations: string[] = []
-      history = expression.split('').map((n) => {
+      localHistory = expression.split('').map((n) => {
         if (operators.includes(n)){
           operations.push(n)
           return '|'
@@ -88,16 +65,16 @@ export const useCalculatorInput = () => {
         return n
       })
 
-      const numbers = history.join('').split('|').map(num => parseFloat(num || "0"))
-      history = [];
+      const numbers: number[] = localHistory.join('').split('|').map(num => parseFloat(num || "0"))
+      localHistory = [];
 
-      numbers.forEach((n, i) => {
-        history.push(n)
+      numbers.forEach((digit: number, i: number) => {
+        localHistory.push(digit)
         if (operations[i])
-          history.push(operations[i])
+          localHistory.push(operations[i])
       })
 
-      return history
+      return localHistory
     }
 
     function doOperation(left: string, operator:string, right: string) {
