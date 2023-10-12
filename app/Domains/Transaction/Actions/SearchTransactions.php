@@ -3,6 +3,7 @@
 namespace App\Domains\Transaction\Actions;
 
 use App\Domains\Transaction\Models\Transaction;
+use App\Domains\Transaction\Models\TransactionLine;
 
 class SearchTransactions
 {
@@ -24,22 +25,26 @@ class SearchTransactions
     public function __construct()
     {
 
-        $this->modelQuery = Transaction::query();
+        $this->modelQuery = TransactionLine::query();
     }
 
     public function handle(mixed $conditions)
     {
-
         foreach ($conditions as $field => $condition) {
             if ($condition) {
                 $parserName = $this->searchConfig[$field]['type'];
+                if ($field == 'description') {
+                    $field = "concept";
+                }
                 \call_user_func([$this, "get$parserName"], $condition, $field);
             }
         }
 
-        return $this->modelQuery->orderBy('date')->where([
+        return $this->modelQuery->orderBy('date')->whereHas('transaction', fn ($q) => $q->where([
             'status' => Transaction::STATUS_VERIFIED,
-        ])->get();
+        ]))
+        ->whereRaw("(anchor = 1 or is_split =1)")
+        ->get();
     }
 
     public function gettext($condition, $field)

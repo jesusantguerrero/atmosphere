@@ -25,3 +25,8 @@ export interface PlanItem {
     [key: string]: string;
     type: string;
 }
+
+export interface OccurrenceItem {
+    id: number;
+    name: string;
+}
