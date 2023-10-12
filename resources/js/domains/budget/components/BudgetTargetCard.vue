@@ -132,8 +132,8 @@ const isGoal = computed(() => {
         <BudgetMoneyLine :title="fundedLabel" :value="category.available" />
         <BudgetMoneyLine title="To go" :value="item.amount - category.available" />
 
-        <section class="border-t py-2 items-center justify-center flex">
-            <LogerButton variant="secondary" v-if="isGoal" @click="$emit('completed', item)" :processing="isProcessing">
+        <section class="border-t py-2 items-center justify-center flex" v-if="!item.completed_at && isGoal">
+            <LogerButton variant="secondary" @click="$emit('completed', item)" :processing="isProcessing">
                 Complete Goal
             </LogerButton>
         </section>

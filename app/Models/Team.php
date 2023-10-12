@@ -59,6 +59,11 @@ class Team extends JetstreamTeam implements Onboardable
         return $this->hasMany(Setting::class);
     }
 
+    public function timezone()
+    {
+        return $this->hasOne(Setting::class)->where(['name' => 'team_timezone']);
+    }
+
     public function accounts()
     {
         return $this->hasMany(Account::class);

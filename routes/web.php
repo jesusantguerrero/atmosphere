@@ -1,36 +1,36 @@
 <?php
 
-use App\Domains\Integration\Http\Controllers\ApiIntegrationController;
-use App\Http\Controllers\Api\AccountApiController;
-use App\Http\Controllers\Api\CategoryApiController;
-use App\Http\Controllers\Api\CurrencyApiController;
-use App\Http\Controllers\Api\IngredientApiController;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Meal\MealController;
 use App\Http\Controllers\Api\LabelApiController;
 use App\Http\Controllers\Api\PayeeApiController;
 use App\Http\Controllers\Api\RecipeApiController;
-use App\Http\Controllers\Api\TimezonesApiController;
-use App\Http\Controllers\Finance\BudgetCategoryController;
-use App\Http\Controllers\Finance\BudgetMonthController;
-use App\Http\Controllers\Finance\BudgetTargetController;
-use App\Http\Controllers\Finance\FinanceAccountController;
-use App\Http\Controllers\Finance\FinanceController;
-use App\Http\Controllers\Finance\FinanceLinesController;
-use App\Http\Controllers\Finance\FinanceTransactionController;
-use App\Http\Controllers\Finance\FinanceTrendController;
-use App\Http\Controllers\Meal\IngredientController;
-use App\Http\Controllers\Meal\MealController;
-use App\Http\Controllers\Meal\MealPlannerController;
-use App\Http\Controllers\Relationship\RelationshipController;
-use App\Http\Controllers\System\DashboardController;
-use App\Http\Controllers\System\IntegrationController;
-use App\Http\Controllers\System\NotificationController;
+use App\Http\Controllers\Api\AccountApiController;
 use App\Http\Controllers\System\ServiceController;
-use App\Http\Controllers\System\TeamInvitationController;
-use App\Http\Controllers\System\UserDeviceController;
-use Freesgen\Atmosphere\Http\Controllers\SettingsController;
 use Freesgen\Atmosphere\Http\OnboardingController;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\URL;
+use App\Http\Controllers\Api\CategoryApiController;
+use App\Http\Controllers\Api\CurrencyApiController;
+use App\Http\Controllers\Finance\FinanceController;
+use App\Http\Controllers\Meal\IngredientController;
+use App\Http\Controllers\Api\TimezonesApiController;
+use App\Http\Controllers\Meal\MealPlannerController;
+use App\Http\Controllers\System\DashboardController;
+use App\Http\Controllers\Api\IngredientApiController;
+use App\Http\Controllers\System\UserDeviceController;
+use App\Http\Controllers\System\IntegrationController;
+use App\Http\Controllers\Finance\BudgetMonthController;
+use App\Http\Controllers\System\NotificationController;
+use App\Http\Controllers\Finance\BudgetTargetController;
+use App\Http\Controllers\Finance\FinanceLinesController;
+use App\Http\Controllers\Finance\FinanceTrendController;
+use App\Http\Controllers\System\TeamInvitationController;
+use App\Http\Controllers\Finance\BudgetCategoryController;
+use App\Http\Controllers\Finance\FinanceAccountController;
+use Freesgen\Atmosphere\Http\Controllers\SettingsController;
+use App\Http\Controllers\Relationship\RelationshipController;
+use App\Http\Controllers\Finance\FinanceTransactionController;
+use App\Domains\Integration\Http\Controllers\ApiIntegrationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -56,6 +56,7 @@ Route::group([], app_path('/Domains/Automation/routes.php'));
 Route::group([], app_path('/Domains/Housing/routes.php'));
 Route::group([], app_path('/Domains/LogerProfile/routes.php'));
 Route::group([], app_path('/Domains/Transaction/routes.php'));
+Route::group([], app_path('/Domains/Budget/routes.php'));
 
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
     Route::get('/', fn () => redirect('/dashboard'));
@@ -111,20 +112,6 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     // Finance dashboard related routes
     Route::controller(FinanceController::class)->group(function () {
         Route::get('/finance', 'index')->name('finance.overview');
-    });
-
-    // Budgeting & Goals routes
-    // Route::get('/budgets', [BudgetController::class, 'index']);
-    Route::resource('/budgets', BudgetCategoryController::class);
-    Route::controller(BudgetTargetController::class)->group(function () {
-        Route::post('/budgets/{category}/targets/', 'store')->name('budget.target.store');
-        Route::put('/budgets/{category}/targets/{budgetTarget}', 'update')->name('budget.target.update');
-    });
-    Route::controller(BudgetMonthController::class)->group(function () {
-        Route::post('/budgets/{category}/months/{month}', 'assign')->name('budget.assignment');
-        Route::put('/budgets/{category}/months/{month}', 'updateActivity')->name('budget.update-activity');
-        Route::post('/budgets-import', 'import')->name('budget.import');
-        Route::get('/budgets-export', 'export')->name('budget.export');
     });
 
     // Accounts

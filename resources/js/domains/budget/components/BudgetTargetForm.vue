@@ -117,7 +117,10 @@ const onCancel = () => {
 
 const formComplete = useForm({})
 const markAsComplete = (item: BudgetTarget) => {
-    formComplete.post(route('target.complete', item))
+    formComplete.post(route('budget-target.complete', {
+        category: props.category,
+        budgetTarget: item
+    }))
 }
 
 const { selectedSpan } = useDatePager({ nextMode: "month" });
@@ -265,12 +268,12 @@ const handleOptions = (option: string) => {
             Cancel
           </at-button>
         </div>
-        <at-button
+        <AtButton
           class="block h-full text-white rounded-md bg-primary"
           @click="onSubmit()"
         >
           Save
-        </at-button>
+        </AtButton>
       </div>
     </div>
 

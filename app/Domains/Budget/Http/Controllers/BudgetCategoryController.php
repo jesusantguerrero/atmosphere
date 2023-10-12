@@ -1,19 +1,19 @@
 <?php
 
-namespace App\Http\Controllers\Finance;
+namespace App\Domains\Budget\Http\Controllers;
 
+use App\Models\Setting;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use App\Domains\AppCore\Models\Category;
+use Illuminate\Support\Facades\Redirect;
 use App\Domains\Budget\Models\BudgetMovement;
+use App\Domains\Transaction\Models\Transaction;
+use App\Http\Resources\CategoryGroupCollection;
+use Freesgen\Atmosphere\Http\InertiaController;
+use App\Domains\Transaction\Services\ReportService;
 use App\Domains\Budget\Services\BudgetAccountService;
 use App\Domains\Budget\Services\BudgetCategoryService;
-use App\Domains\Transaction\Models\Transaction;
-use App\Domains\Transaction\Services\ReportService;
-use App\Http\Resources\CategoryGroupCollection;
-use App\Models\Setting;
-use Freesgen\Atmosphere\Http\InertiaController;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\Validation\Rule;
 
 class BudgetCategoryController extends InertiaController
 {

@@ -2,18 +2,18 @@
 
 namespace App\Domains\Budget\Services;
 
-use App\Domains\Budget\Data\BudgetReservedNames;
+use Brick\Money\Money;
+use Illuminate\Support\Str;
+use App\Events\BudgetAssigned;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use App\Helpers\RequestQueryHelper;
+use Insane\Journal\Models\Core\Account;
+use Insane\Journal\Models\Core\Category;
 use App\Domains\Budget\Data\CategoryData;
 use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Budget\Models\BudgetTarget;
-use App\Events\BudgetAssigned;
-use App\Helpers\RequestQueryHelper;
-use Brick\Money\Money;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
-use Insane\Journal\Models\Core\Account;
-use Insane\Journal\Models\Core\Category;
+use App\Domains\Budget\Data\BudgetReservedNames;
 
 class BudgetCategoryService
 {
@@ -48,6 +48,19 @@ class BudgetCategoryService
             ->from('budget_months')
             ->join('budget_targets', 'budget_targets.category_id', 'budget_months.category_id')
             ->sum(DB::raw('budgeted + activity'));
+    }
+
+    public function getLastTransactionMonth($category)
+    {
+        return DB::query()
+            ->where('budget_targets.team_id', $category->team_id)
+            ->where('budget_targets.category_id', $category->id)
+            ->where('activity', '<>', 0)
+            ->whereIn('budget_targets.target_type', ['saving_balance'])
+            ->from('budget_months')
+            ->join('budget_targets', 'budget_targets.category_id', 'budget_months.category_id')
+            ->orderByDesc('month')
+            ->first();
     }
 
     public function assignBudget(Category $category, string $month, mixed $postData)
