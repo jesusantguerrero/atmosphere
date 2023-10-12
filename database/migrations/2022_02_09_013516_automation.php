@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
 class Automation extends Migration
 {
@@ -28,6 +28,7 @@ class Automation extends Migration
             $table->json('config')->nullable();
             $table->json('track')->nullable();
             $table->boolean('status')->default(true);
+            $table->boolean('is_background')->default(true);
             $table->timestamps();
         });
     }
