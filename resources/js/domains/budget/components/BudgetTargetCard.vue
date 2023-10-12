@@ -8,19 +8,21 @@ import BudgetProgress from "./BudgetProgress.vue";
 import BudgetMoneyLine from "./BudgetMoneyLine.vue";
 
 import { getBudgetTarget } from "@/domains/budget/budgetTotals";
-import { ICategory } from "@/Modules/finance/models/transactions";
-import { BudgetTarget } from "@/Modules/finance/models/budget";
-import { isSpendingTarget } from "@/domains/budget";
+import { isSavingBalance, isSpendingTarget } from "@/domains/budget";
+import { BudgetTarget } from "@/domains/budget/models/budget";
+import { ICategory } from "@/domains/transactions/models";
 import { formatDate, formatMoney, formatMonth, toOrdinals } from "@/utils";
+import LogerButton from "@/Components/atoms/LogerButton.vue";
 // import IconPicker from '../IconPicker.vue';
 
 const props = defineProps<{
     category: ICategory;
     item: BudgetTarget;
     editable: boolean;
+    isProcessing: boolean;
 }>();
 
-defineEmits(["edit"]);
+defineEmits(["edit", "completed"]);
 
 const targetDate = computed(() => {
     if (props.item.frequency_month_date == -1) {
@@ -71,14 +73,27 @@ const fundedLabel = computed(() => isSpendingTarget(props.item) ? 'Funded' : 'Sa
 const targetAmount = computed(() => {
     return getBudgetTarget(props.item)
 })
+
+const targetTypeNames = {
+    saving_balance: 'saving balance'
+}
+
+const getTargetName = (code: string) => {
+    return targetTypeNames[code] ?? code;
+}
+
+const isGoal = computed(() => {
+    return isSavingBalance(props.item);
+})
+
+
 </script>
 
 <template>
 <div class="w-full">
     <header class="flex justify-between w-full mb-8">
         <h4 class="text-lg font-bold text-primary">
-            Target:
-            <p> {{ item.target_type }} </p>
+            Target: <span class="capitalize"> {{ getTargetName(item.target_type) }} </span>
         </h4>
         <button class="text-secondary" @click="$emit('edit')" v-if="editable">
             Edit target
@@ -116,6 +131,12 @@ const targetAmount = computed(() => {
         <BudgetMoneyLine title="Total needed" :value="item.amount" />
         <BudgetMoneyLine :title="fundedLabel" :value="category.available" />
         <BudgetMoneyLine title="To go" :value="item.amount - category.available" />
+
+        <section class="border-t py-2 items-center justify-center flex">
+            <LogerButton variant="secondary" v-if="isGoal" @click="$emit('completed', item)" :processing="isProcessing">
+                Complete Goal
+            </LogerButton>
+        </section>
     </footer>
 </div>
 </template>
