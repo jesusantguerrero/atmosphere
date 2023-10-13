@@ -89,7 +89,7 @@ const submit = () => {
 };
 
 const update = () => {
-    debugger
+
     form.put(route('occurrence.update', props.formData), {
             onSuccess() {
                 emitClose();
