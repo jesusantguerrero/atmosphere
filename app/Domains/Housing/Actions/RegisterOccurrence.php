@@ -2,10 +2,10 @@
 
 namespace App\Domains\Housing\Actions;
 
-use App\Domains\Housing\Models\OccurrenceCheck;
-use App\Domains\Transaction\Actions\SearchTransactions;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
+use App\Domains\Housing\Models\OccurrenceCheck;
+use App\Domains\Transaction\Actions\SearchTransactions;
 
 class RegisterOccurrence
 {

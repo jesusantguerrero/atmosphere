@@ -2,16 +2,28 @@
 
 namespace App\Domains\Budget\Models;
 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Model;
 use App\Domains\Transaction\Models\Transaction;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
 
 class BudgetTarget extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['team_id', 'user_id', 'color', 'amount', 'name', 'target_type', 'frequency', 'frequency_date', 'frequency_week_day', 'frequency_month_date'];
+    protected $fillable = [
+        'team_id',
+        'user_id',
+        'color',
+        'amount',
+        'name',
+        'target_type',
+        'frequency',
+        'frequency_date',
+        'frequency_week_day',
+        'frequency_month_date',
+        'completed_at'
+    ];
 
     public function getExpensesByPeriod($startDate, $endDate = null)
     {

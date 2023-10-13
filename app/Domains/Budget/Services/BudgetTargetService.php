@@ -2,13 +2,14 @@
 
 namespace App\Domains\Budget\Services;
 
+use App\Domains\AppCore\Models\Category;
 use App\Domains\Budget\Models\BudgetTarget;
 use App\Domains\Integration\Concerns\PlannedTransactionDTO;
 use App\Domains\Transaction\Services\PlannedTransactionService;
 
-class BudgetTargetTransactionService
+class BudgetTargetService
 {
-    public function __construct(private PlannedTransactionService $plannedService)
+    public function __construct(private PlannedTransactionService $plannedService, private BudgetCategoryService $budgetCategoryService)
     {
 
     }
@@ -35,5 +36,14 @@ class BudgetTargetTransactionService
         $date = $month.'-'.$target->frequency_month_date;
         $data = PlannedTransactionDTO::fromTarget($target, $date);
         $this->plannedService->add($data);
+    }
+
+    public function complete(BudgetTarget $budgetTarget, Category $category,  array $postData) {
+        $budgetTarget->update(array_merge(
+            $postData, [
+                'completed_at' => $postData['completed_at']
+                ?? $this->budgetCategoryService->getLastTransactionMonth($category)?->month,
+            ]));
+
     }
 }

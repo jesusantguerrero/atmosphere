@@ -1,116 +1,5 @@
-<template>
-  <section class="pb-4 text-left border-b rounded-md bg-base-lvl-3" v-auto-animate>
-    <LogerButtonTab
-      @click="state.isEditing = true"
-      v-if="!state.isEditing && !state.hasTarget"
-      class="flex items-center w-full px-2 py-2 rounded-md bg-body-1/5 text-body-1"
-    >
-      <span class="mr-2">
-        <IconTarget />
-      </span>
-      Set target
-    </LogerButtonTab>
-
-    <div v-else-if="state.isEditing">
-      <AtField label="Target Type">
-        <NSelect
-          filterable
-          clearable
-          size="large"
-          v-model:value="form.target_type"
-          :default-expand-all="true"
-          :options="targetTypes"
-        />
-        <AtErrorBag v-if="errors" :errors="errors" field="account_id" />
-      </AtField>
-
-      <AtField label="Amount" errors="errors" field="amount">
-        <AtInput :number-format="true" v-model="form.amount">
-          <template #prefix>
-            <span class="flex items-center pl-2"> RD$ </span>
-          </template>
-          <template #suffix>
-            <NDropdown
-              trigger="click"
-              :options="options"
-              key-field="name"
-              :on-select="handleOptions"
-            >
-              <LogerButtonTab> <i class="fa fa-ellipsis-v"></i></LogerButtonTab>
-            </NDropdown>
-          </template>
-        </AtInput>
-      </AtField>
-
-      <section v-if="form.target_type == 'spending'">
-        <AtButtonGroup
-          v-model="form.frequency"
-          :options="budgetFrequencies"
-          class="text-sm"
-          selected-class="text-white bg-primary"
-        />
-
-        <AtField
-          label="Every"
-          v-if="['MONTHLY', 'WEEKLY'].includes(form.frequency)"
-          :errors="errors"
-          :field="frequencyUnit.field"
-        >
-          <NSelect
-            filterable
-            clearable
-            size="large"
-            v-model:value="form[frequencyUnit.field]"
-            :default-expand-all="true"
-            :options="frequencyUnit.options"
-          />
-
-          <div class="flex mt-2 space-x-2">
-            <div
-              v-for="instance in monthInstanceCount"
-              class="w-full h-2 bg-primary"
-              :key="instance"
-            />
-          </div>
-        </AtField>
-      </section>
-
-      <AtField label="Date" class="w-full" v-if="isSavingBalance(form)">
-        <NDatePicker
-          type="date"
-          size="large"
-          @update:value="form.frequency_date = $event"
-        />
-      </AtField>
-
-      <div class="flex justify-between mt-4">
-        <div class="flex font-bold">
-          <at-button class="block h-full text-gray-500" @click="onCancel">
-            Cancel
-          </at-button>
-        </div>
-        <at-button
-          class="block h-full text-white rounded-md bg-primary"
-          @click="onSubmit()"
-        >
-          Save
-        </at-button>
-      </div>
-    </div>
-
-    <BudgetTargetCard
-      :item="item"
-      :category="category"
-      :editable="editable"
-      class="w-full"
-      v-else
-      @edit="state.isEditing = true"
-    />
-  </section>
-</template>
-
 <script setup lang="ts">
-import { reactive, toRefs, watch, computed } from "vue";
+import { reactive, toRefs, watch, computed, ref } from "vue";
 import { AtButton, AtField, AtInput, AtErrorBag, AtButtonGroup } from "atmosphere-ui";
 import { useDatePager } from "vueuse-temporals";
 import { NSelect, NDropdown, NDatePicker } from "naive-ui";
@@ -122,8 +11,8 @@ import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 import IconTarget from "@/Components/icons/IconTarget.vue";
 import { budgetFrequencies, isSavingBalance, targetTypes } from "@/domains/budget";
 import BudgetTargetCard from "./BudgetTargetCard.vue";
-import { BudgetTarget } from "../Modules/finance/models/budget";
-import { ICategory } from "../Modules/finance/models/transactions";
+import { ICategory } from "@/domains/transactions/models";
+import { BudgetTarget } from "../models/budget";
 // import IconPicker from '../IconPicker.vue';
 
 const props = defineProps<{
@@ -217,12 +106,22 @@ const onSubmit = () => {
     });
 };
 
+
+
 const onCancel = () => {
   state.isEditing = false;
   if (state.hasTarget) {
     emit("cancel");
   }
 };
+
+const formComplete = useForm({})
+const markAsComplete = (item: BudgetTarget) => {
+    formComplete.post(route('budget-target.complete', {
+        category: props.category,
+        budgetTarget: item
+    }))
+}
 
 const { selectedSpan } = useDatePager({ nextMode: "month" });
 
@@ -277,3 +176,117 @@ const handleOptions = (option: string) => {
   }
 };
 </script>
+
+<template>
+  <section class="pb-4 text-left border-b rounded-md bg-base-lvl-3" v-auto-animate>
+    <LogerButtonTab
+      @click="state.isEditing = true"
+      v-if="!state.isEditing && !state.hasTarget"
+      class="flex items-center w-full px-2 py-2 rounded-md bg-body-1/5 text-body-1"
+    >
+      <span class="mr-2">
+        <IconTarget />
+      </span>
+      Set target
+    </LogerButtonTab>
+
+    <div v-else-if="state.isEditing">
+      <AtField label="Target Type">
+        <NSelect
+          filterable
+          clearable
+          size="large"
+          v-model:value="form.target_type"
+          :default-expand-all="true"
+          :options="targetTypes"
+        />
+        <AtErrorBag v-if="errors" :errors="errors" field="account_id" />
+      </AtField>
+
+      <AtField label="Amount" errors="errors" field="amount">
+        <AtInput :number-format="true" v-model="form.amount">
+          <template #prefix>
+            <span class="flex items-center pl-2"> RD$ </span>
+          </template>
+          <template #suffix>
+            <NDropdown
+              trigger="click"
+              :options="options"
+              key-field="name"
+              :on-select="handleOptions"
+            >
+              <LogerButtonTab> <i class="fa fa-ellipsis-v"></i></LogerButtonTab>
+            </NDropdown>
+          </template>
+        </AtInput>
+      </AtField>
+
+      <section v-if="form.target_type == 'spending'">
+        <AtButtonGroup
+          v-model="form.frequency"
+          :options="budgetFrequencies"
+          class="text-sm"
+          selected-class="text-white bg-primary"
+        />
+
+        <AtField
+          label="Every"
+          v-if="['MONTHLY', 'WEEKLY'].includes(form.frequency)"
+          :errors="errors"
+          :field="frequencyUnit.field"
+        >
+          <NSelect
+            filterable
+            clearable
+            size="large"
+            v-model:value="form[frequencyUnit.field]"
+            :default-expand-all="true"
+            :options="frequencyUnit.options"
+          />
+
+          <div class="flex mt-2 space-x-2">
+            <div
+              v-for="instance in monthInstanceCount"
+              class="w-full h-2 bg-primary"
+              :key="instance"
+            />
+          </div>
+        </AtField>
+      </section>
+
+      <AtField label="Date" class="w-full" v-if="isSavingBalance(form)">
+        <NDatePicker
+          type="date"
+          size="large"
+          @update:value="form.frequency_date = $event"
+        />
+      </AtField>
+
+      <div class="flex justify-between mt-4">
+        <div class="flex font-bold">
+          <at-button class="block h-full text-gray-500" @click="onCancel">
+            Cancel
+          </at-button>
+        </div>
+        <AtButton
+          class="block h-full text-white rounded-md bg-primary"
+          @click="onSubmit()"
+        >
+          Save
+        </AtButton>
+      </div>
+    </div>
+
+    <BudgetTargetCard
+      :item="item"
+      :category="category"
+      :editable="editable"
+      :is-processing="formComplete.processing"
+      class="w-full"
+      v-else
+      @edit="state.isEditing = true"
+      @completed="markAsComplete(item)"
+    />
+  </section>
+</template>
+
