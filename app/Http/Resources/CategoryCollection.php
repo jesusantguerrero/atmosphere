@@ -2,9 +2,9 @@
 
 namespace App\Http\Resources;
 
-use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Helpers\RequestQueryHelper;
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Domains\Budget\Services\BudgetCategoryService;
 
 class CategoryCollection extends JsonResource
 {
@@ -25,14 +25,10 @@ class CategoryCollection extends JsonResource
         $month = $startDate ?? date('Y-m-01');
         $normalArray = parent::toArray($request);
 
-        // if ($this->id == 723) {
-        //     dd( $this->service->getBudgetInfo($this->resource, $month), $this->id);
-        // }
-        return array_merge(
-            $normalArray,
-            [
-                'month' => $month,
-            ],
-            $this->service->getBudgetInfo($this->resource, $month));
+        return [
+            ...$normalArray,
+            ...$this->service->getBudgetInfo($this->resource, $month),
+            'month' => $month
+        ];
     }
 }

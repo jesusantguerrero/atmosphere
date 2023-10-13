@@ -36,9 +36,8 @@ class BudgetCategoryService
         ]));
     }
 
-    public static function getSavings($teamId, $startDate, $endDate)
+    public static function getSavingsBalance($teamId, $startDate, $endDate)
     {
-        $startMonth = substr((string) $startDate, 0, 7);
         $endMonth = substr((string) $endDate, 0, 7);
 
         return DB::query()
