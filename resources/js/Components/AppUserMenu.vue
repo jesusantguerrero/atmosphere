@@ -24,8 +24,14 @@
             <div class="block px-4 py-2 text-xs text-gray-400">
                 Exports
             </div>
+            <div class="block px-4 py-2 text-xs text-gray-400">
+                Import
+            </div>
             <AtDropdownLink :href="route('finance.export')"  target="_blank" as="a">
                 Download CSV
+            </AtDropdownLink>
+            <AtDropdownLink as="button" target="_blank" @click="toggleImportModal()">
+                Import
             </AtDropdownLink>
 
             <div class="border-t border-gray-100"></div>
@@ -47,13 +53,14 @@
     />
 </template>
 
-<script setup>
+<script setup lang="ts">
 import JetDropdown from '@/Components/atoms/Dropdown.vue'
 import JetDropdownLink from '@/Components/atoms/DropdownLink.vue'
 import AppUserMenuButton from './AppUserMenuButton.vue';
 
 import { useAppContextStore } from '@/store';
 import { AtDropdownLink } from 'atmosphere-ui';
+import { useImportModal } from '@/domains/transactions/useImportModal';
 
 defineProps({
     hasImage: {
@@ -71,4 +78,7 @@ defineProps({
 })
 
 const context = useAppContextStore()
+
+
+const { toggleModal: toggleImportModal } = useImportModal();
 </script>

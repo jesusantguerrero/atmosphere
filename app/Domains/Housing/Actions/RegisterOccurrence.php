@@ -2,38 +2,41 @@
 
 namespace App\Domains\Housing\Actions;
 
+use Exception;
+use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
-use App\Domains\Housing\Models\OccurrenceCheck;
+use App\Domains\Housing\Models\Occurrence;
+use App\Domains\Housing\Data\OccurrenceData;
 use App\Domains\Transaction\Actions\SearchTransactions;
 
 class RegisterOccurrence
 {
+    private function softAdd(Occurrence $occurrence, $date) {
+        $lastDuration = $occurrence->last_date ? $this->getDaysDifference($occurrence->last_date, $date) : 0;
+        $log = (array) $occurrence->log ?? [];
+        $log[] = $date;
+        $occurrenceCount = count($log);
+        $totalDays = $occurrenceCount > 1 ? $this->getDaysDifference($log[0], $date) : $lastDuration;
+
+        $occurrence->last_date = $date;
+        $occurrence->previous_days_count = $lastDuration;
+        $occurrence->occurrence_count = $occurrenceCount;
+        $occurrence->log = $log;
+        $occurrence->total_days = $totalDays;
+        $occurrence->avg_days_passed = $totalDays / $occurrenceCount;
+    }
+
     public function add(int $teamId, string $name, string $date)
     {
-        $occurrence = OccurrenceCheck::where([
-            'team_id' => $teamId,
-            'name' => $name,
-        ])->first();
-
+        $occurrence = Occurrence::byTeam($teamId)->byName($name)->first();
         if ($occurrence && $occurrence->last_date !== $date) {
-            $lastDuration = $occurrence->last_date ? $this->getDaysDifference($occurrence->last_date, $date) : 0;
-            $totalDays = $occurrence->total_days + $lastDuration;
-            $occurrenceCount = $occurrence->occurrence_count + 1;
-            $avg = $totalDays / $occurrenceCount;
-            $log = (array) $occurrence->log ?? [];
-            $log[] = $date;
+            $this->softAdd($occurrence, $date);
+            $occurrence->save();
+            return;
+        }
 
-            $occurrence->update([
-                'last_date' => $date,
-                'previous_days_count' => $lastDuration,
-                'total_days' => $totalDays,
-                'avg_days_passed' => $avg,
-                'occurrence_count' => $occurrenceCount,
-                'log' => $log,
-            ]);
-        } elseif (! $occurrence) {
-            OccurrenceCheck::create([
+        Occurrence::create([
                 'name' => $name,
                 'team_id' => $teamId,
                 'last_date' => $date,
@@ -41,14 +44,12 @@ class RegisterOccurrence
                 'total_days' => 0,
                 'avg_days_passed' => 0,
                 'log' => [],
-            ]);
-
-        }
+        ]);
     }
 
     public function remove(int $id, string $date = null)
     {
-        $occurrence = OccurrenceCheck::find($id);
+        $occurrence = Occurrence::find($id);
 
         if ($occurrence && $occurrence->last_date) {
             $log = $occurrence->log;
@@ -72,38 +73,37 @@ class RegisterOccurrence
         }
     }
 
-    public function load(OccurrenceCheck $occurrence)
+    public function load(Occurrence $occurrence)
     {
         $transactions = (new SearchTransactions())->handle($occurrence->conditions);
         foreach ($transactions as $transaction) {
             try {
-                (new RegisterOccurrence())->add(
-                    $transaction->team_id,
-                    $occurrence->name,
-                    $transaction->date
-                );
-            } catch (\Exception $e) {
-                Log::error($e->getMessage());
-
+                $this->softAdd($occurrence, $transaction->date);
+            } catch (Exception) {
                 continue;
             }
         }
+        $occurrence->update();
     }
 
-    public function sync(OccurrenceCheck $occurrence)
+    public function sync(Occurrence $occurrence)
     {
-        $transactions = (new SearchTransactions())->handle($occurrence->conditions);
 
-        foreach ($transactions as $transaction) {
+        $transactions = (new SearchTransactions())->handle($occurrence->conditions);
+        $occurrence->log = [];
+        $occurrence->saveQuietly();
+
+        $dates = $transactions->pluck('date')->toArray();
+
+        foreach ($dates as $date) {
             try {
-                (new RegisterOccurrence())->add(
-                    $transaction->team_id,
-                    $occurrence->name,
-                    $transaction->date
+                $this->softAdd(
+                    $occurrence,
+                    $date
                 );
+                $occurrence->save();
             } catch (\Exception $e) {
                 Log::error($e->getMessage());
-
                 continue;
             }
         }
@@ -112,5 +112,14 @@ class RegisterOccurrence
     private function getDaysDifference($startDate, $endDate, $format = 'Y-m-d')
     {
         return Carbon::createFromFormat($format, $endDate)->diffInDays(Carbon::createFromFormat($format, $startDate));
+    }
+
+    public function fromImport(User $user, OccurrenceData $data) {
+        Occurrence::create([
+            'team_id' => $user->current_team_id,
+            'user_id' => $user->id,
+            ...$data->toArray(),
+            "name" => $data->name . " copy"
+        ]);
     }
 }

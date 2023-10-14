@@ -80,7 +80,7 @@ const submit = () => {
 };
 
 const update = () => {
-    const url = `/housing/occurrence/${props.formData.id}`
+    const url = `/housing/occurrences/${props.formData.id}`
     form.put(url, {
             onSuccess() {
                 emitClose();

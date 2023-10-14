@@ -85,16 +85,16 @@ const onSaved = () => {
 }
 
 const addInstance = (id) => {
-    router.post(`/housing/occurrence/${id}/instances`)
+    router.post(`/housing/occurrences/${id}/instances`)
 }
 
 const removeLastInstance = (id) => {
-    router.delete(`/housing/occurrence/${id}/instances`)
+    router.delete(`/housing/occurrences/${id}/instances`)
 }
 
 const handleDelete = (resource) => {
     if (confirm(`Are you sure you want to delete this check ${resource.name}?`)) {
-        router.delete(`/housing/occurrence/${resource.id}`)
+        router.delete(`/housing/occurrences/${resource.id}`)
     }
 }
 

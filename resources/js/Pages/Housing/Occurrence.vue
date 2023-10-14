@@ -30,22 +30,22 @@ const onSaved = () => {
 }
 
 const addInstance = (id: number) => {
-    router.post(`/housing/occurrence/${id}/instances`)
+    router.post(`/housing/occurrences/${id}/instances`)
 }
 
 const removeLastInstance = (id: number) => {
-    router.delete(`/housing/occurrence/${id}/instances`)
+    router.delete(`/housing/occurrences/${id}/instances`)
 }
 
 const handleDelete = (resource: OccurrenceItem) => {
     if (confirm(`Are you sure you want to delete this check ${resource.name}?`)) {
-        router.delete(`/housing/occurrence/${resource.id}`)
+        router.delete(`/housing/occurrences/${resource.id}`)
     }
 }
 
 const syncForm = useForm({})
 const syncAll = () => {
-    syncForm.post(`/housing/occurrence/sync-all`)
+    syncForm.post(`/housing/occurrences/sync-all`)
 }
 
 const handleEdit = (resource: OccurrenceItem) => {
@@ -63,7 +63,7 @@ const defaultOptions = {
         name: 'sync',
         label: 'Sync',
         handle(resource: OccurrenceItem) {
-            router.post(`/housing/occurrence/${resource.id}/sync`)
+            router.post(`/housing/occurrences/${resource.id}/sync`)
         }
     },
     removed: {
@@ -89,7 +89,7 @@ const handleOptions = (optionName: IOptionNames , transaction: ITransaction) => 
             <HouseSectionNav>
                   <template #actions>
                       <div class="flex space-x-2">
-                        <LogerButton variant="neutral" class="flex" :href="route('occurrences.export')"  target="_blank" as="a">
+                        <LogerButton variant="neutral" class="flex" :href="route('housing.occurrences.export')"  target="_blank" as="a">
                             <IMdiFile  class="mr-2" />
                             Export
                         </LogerButton>
