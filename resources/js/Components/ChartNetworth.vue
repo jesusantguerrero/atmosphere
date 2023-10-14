@@ -58,7 +58,7 @@ const state = reactive({
   <div class="w-full comparison-card">
     <div class="pb-10 rounded-lg">
       <div class="card-text" >
-        <ChartHeaderScroller item-class="comparison-header__item">
+        <ChartHeaderScroller item-class="comparison-header__item" class="flex flex-row-reverse">
             <section
                 v-for="header in state.headers"
                 :key="header.id"

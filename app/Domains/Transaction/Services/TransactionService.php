@@ -2,14 +2,14 @@
 
 namespace App\Domains\Transaction\Services;
 
-use App\Domains\Budget\Data\BudgetReservedNames;
-use App\Domains\Transaction\Imports\TransactionsImport;
-use App\Domains\Transaction\Models\Transaction;
-use App\Domains\Transaction\Models\TransactionLine;
-use Brick\Math\RoundingMode;
 use Brick\Money\Money;
+use Brick\Math\RoundingMode;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Domains\Transaction\Models\Transaction;
+use App\Domains\Budget\Data\BudgetReservedNames;
+use App\Domains\Transaction\Models\TransactionLine;
+use App\Domains\Transaction\Imports\TransactionsImport;
 
 class TransactionService
 {
@@ -229,7 +229,7 @@ class TransactionService
             INNER JOIN transactions t on tl.transaction_id = t.id
             INNER JOIN accounts on tl.account_id = accounts.id
             INNER JOIN account_detail_types adt on adt.id = accounts.account_detail_type_id
-            WHERE t.STATUS = 'verified'
+            WHERE t.STATUS = 'verified' AND tl.date <= :monthDate
             AND adt.name IN ('cash', 'cash_on_hand', 'bank', 'savings', 'credit_card')
             AND tl.team_id = :teamId
             AND balance_type IS NOT null
@@ -239,10 +239,11 @@ class TransactionService
           SUM(SUM(CASE WHEN balance_type = 'credit' THEN total ELSE 0 END)) over (ORDER BY month_date) as debts
           FROM DATA
           GROUP BY month_date
-          ORDER BY month_date
+          ORDER BY month_date DESC
           LIMIT 12;
         ", [
             'teamId' => $teamId,
+            'monthDate' => $endDate
             // 'detailTypes' => implode(',', AccountDetailType::ALL)
         ]);
     }
