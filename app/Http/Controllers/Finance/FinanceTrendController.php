@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Finance;
 
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Freesgen\Atmosphere\Http\Querify;
 use App\Domains\Transaction\Services\ReportService;
 use App\Domains\Transaction\Services\TransactionService;
-use App\Http\Controllers\Controller;
-use Carbon\Carbon;
-use Freesgen\Atmosphere\Http\Querify;
-use Illuminate\Http\Request;
 
 class FinanceTrendController extends Controller
 {
@@ -67,12 +67,12 @@ class FinanceTrendController extends Controller
         $queryParams = $request->query();
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
         [$startDate, $endDate] = $this->getFilterDates($filters);
-
         $teamId = $request->user()->current_team_id;
+        $parentId = $filters['parent_id'] ?? null;
 
-        $data = TransactionService::getCategoryExpenses($teamId, $startDate, $endDate, null, $filters['parent_id'] ?? null);
+        $data = TransactionService::getCategoryExpenses($teamId, $startDate, $endDate, null, $parentId);
         $hasData = isset($data[0]);
-        $parentName = $hasData ? $data[0]?->parent_name.' - ' : null;
+        $parentName = $hasData && $parentId ? $data[0]?->parent_name.' - ' : null;
 
         return [
             'data' => $data,
@@ -111,7 +111,7 @@ class FinanceTrendController extends Controller
         $teamId = $request->user()->current_team_id;
 
         return [
-            'data' => TransactionService::getNetWorth($teamId, $startDate, $endDate),
+            'data' => collect(TransactionService::getNetWorth($teamId, $startDate, $endDate))->reverse()->values(),
             'metaData' => [
                 'name' => 'netWorth',
                 'title' => 'Net Worth',

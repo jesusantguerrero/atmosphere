@@ -57,12 +57,8 @@ const handleSelection = (index: number) => {
 
 const trends = [
     {
-        name: 'Cashflow',
+        name: 'Spending',
         link: '/trends'
-    },
-    {
-        name: 'Category Trends',
-        link: '/trends/categories'
     },
     {
         name: 'Net Worth',
@@ -137,7 +133,7 @@ const isFilterSelected = (filterValue) => {
 
     <FinanceTemplate title="Finance" ref="financeTemplateRef">
         <WidgetTitleCard
-            title="Trends preview"
+            :title="metaData.title"
             class="mt-5"
             :action="{
                 label: 'Go to Trends',
@@ -186,27 +182,6 @@ const isFilterSelected = (filterValue) => {
                             {{ trend.name }}
                         </Link>
                     </div>
-                </template>
-            </Collapse>
-
-            <Collapse
-                title="Report Summary"
-                title-class="p-2 mt-6 font-bold rounded-md bg-base-lvl-3 text-body-1 bg-base-lvl-1 "
-                content-class="pb-4 bg-base-lvl-3"
-            >
-                <template #content>
-                    <article class="divide-y divide-base-lvl-2 bg-base-lvl-3">
-                        <ExpenseIncome
-                            title="Total Spending"
-                            :value="5000"
-                            subtitle="This period"
-                        />
-                        <ExpenseIncome
-                            title="Average Spending"
-                            :value="5000"
-                            subtitle="Per month"
-                        />
-                    </article>
                 </template>
             </Collapse>
       </template>
