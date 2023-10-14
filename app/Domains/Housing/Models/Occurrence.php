@@ -2,15 +2,17 @@
 
 namespace App\Domains\Housing\Models;
 
-use App\Domains\Housing\Contracts\OccurrenceNotifyTypes;
-use App\Domains\Transaction\Models\Transaction;
 use App\Events\OccurrenceCreated;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Domains\Transaction\Models\Transaction;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Domains\Housing\Contracts\OccurrenceNotifyTypes;
 
-class OccurrenceCheck extends Model
+class Occurrence extends Model
 {
     use HasFactory;
+
+    protected $table ="occurrence_checks";
 
     protected $fillable = [
         'team_id',
@@ -71,8 +73,20 @@ class OccurrenceCheck extends Model
         $activatedField = self::NOTIFY_FIELDS[$type->value]['activatedField'];
         $countField = self::NOTIFY_FIELDS[$type->value]['countField'];
 
-        return OccurrenceCheck::where($activatedField, true)
+        return Occurrence::where($activatedField, true)
             ->whereRaw("DATEDIFF( date_format(now(), '%Y-%m-%d'), last_date) > ($countField - $daysBefore)")
             ->get();
+    }
+
+    public static function scopeByTeam($query, int $teamId) {
+        return $query->where([
+            'team_id' => $teamId,
+        ]);
+    }
+
+    public static function scopeByName($query, string $name) {
+        $query->where([
+            'name' => $name,
+        ]);
     }
 }

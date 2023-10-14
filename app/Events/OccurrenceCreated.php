@@ -2,7 +2,7 @@
 
 namespace App\Events;
 
-use App\Domains\Housing\Models\OccurrenceCheck;
+use App\Domains\Housing\Models\Occurrence;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -17,7 +17,7 @@ class OccurrenceCreated
      *
      * @return void
      */
-    public function __construct(OccurrenceCheck $occurrence)
+    public function __construct(Occurrence $occurrence)
     {
         $this->occurrence = $occurrence;
     }

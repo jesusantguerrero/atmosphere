@@ -9,7 +9,7 @@ use App\Domains\Budget\Models\Budget;
 use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Budget\Models\BudgetMovement;
 use App\Domains\Budget\Models\BudgetTarget;
-use App\Domains\Housing\Models\OccurrenceCheck;
+use App\Domains\Housing\Models\Occurrence;
 use App\Domains\LogerProfile\Models\LogerProfile;
 use App\Domains\LogerProfile\Models\LogerProfileEntity;
 use App\Domains\Meal\Models\Ingredient;
@@ -61,7 +61,7 @@ class TrashTeamSettings
         BudgetTarget::where(['team_id' => $team->id])->delete();
 
         // housing
-        OccurrenceCheck::where(['team_id' => $team->id])->delete();
+        Occurrence::where(['team_id' => $team->id])->delete();
 
         //  Loger profile
         LogerProfile::where(['team_id' => $team->id])->delete();

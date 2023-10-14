@@ -21,14 +21,14 @@ const isCalled = ref(false);
 
 onMounted(async () => {
     if (props.occurrenceId && !isCalled.value) {
-        const data = await fetch(`/housing/occurrence/${props.occurrenceId}/preview`)
+        const data = await fetch(`/housing/occurrences/${props.occurrenceId}/preview`)
         transactions.value = await data.json()
         isCalled.value = true
     }
 })
 
 const load = () => {
-    axios.post(`/housing/occurrence/${props.occurrenceId}/load`).then(() => {
+    axios.post(`/housing/occurrences/${props.occurrenceId}/load`).then(() => {
         router.reload();
     })
 }

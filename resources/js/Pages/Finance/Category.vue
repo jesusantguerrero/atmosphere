@@ -102,7 +102,9 @@ const transactionStatus = {
               controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
               next-mode="month"
             />
-            <LogerButton variant="inverse"> Import Transactions </LogerButton>
+            <LogerButton variant="inverse">
+                Import Transactions
+            </LogerButton>
             <DraftButtons v-if="isDraft" />
           </div>
         </template>

@@ -3,8 +3,8 @@
 namespace App\Domains\Integration\Actions;
 
 use App\Domains\Automation\Models\Automation;
-use App\Domains\Automation\Models\AutomationTaskAction;
 use App\Domains\Housing\Actions\RegisterOccurrence;
+use App\Domains\Automation\Models\AutomationTaskAction;
 
 class OccurrenceCheckAutomation
 {

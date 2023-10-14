@@ -2,7 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Domains\Housing\Models\OccurrenceCheck;
+use App\Domains\Housing\Models\Occurrence;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -11,14 +11,14 @@ class OccurrenceAlert extends Notification
 {
     use Queueable;
 
-    private OccurrenceCheck $occurrence;
+    private Occurrence $occurrence;
 
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct(OccurrenceCheck $occurrence)
+    public function __construct(Occurrence $occurrence)
     {
         $this->occurrence = $occurrence;
     }
