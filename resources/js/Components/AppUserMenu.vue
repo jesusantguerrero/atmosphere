@@ -24,12 +24,20 @@
             <div class="block px-4 py-2 text-xs text-gray-400">
                 Exports
             </div>
+            <AtDropdownLink :href="route('finance.export')"  target="_blank" as="a">
+                Export transactions
+            </AtDropdownLink>
+            <AtDropdownLink :href="route('housing.occurrences.export')"  target="_blank" as="a">
+                <section class="flex w-full">
+                    <IMdiFile  class="mr-2" />
+                    <span>
+                        Export occurrence
+                    </span>
+                </section>
+            </AtDropdownLink>
             <div class="block px-4 py-2 text-xs text-gray-400">
                 Import
             </div>
-            <AtDropdownLink :href="route('finance.export')"  target="_blank" as="a">
-                Download CSV
-            </AtDropdownLink>
             <AtDropdownLink as="button" target="_blank" @click="toggleImportModal()">
                 Import
             </AtDropdownLink>

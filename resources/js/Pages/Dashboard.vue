@@ -12,12 +12,13 @@
     import NextPaymentsWidget from "@/domains/transactions/components/NextPaymentsWidget.vue";
     import MealWidget from "@/domains/meal/components/MealWidget.vue";
     import BudgetTracker from "@/domains/budget/components/BudgetTracker.vue";
+    import OccurrenceCard from '@/Components/Modules/occurrence/OccurrenceCard.vue';
 
     import { useAppContextStore } from '@/store';
     import { ITransaction } from '@/domains/transactions/models';
+    import { router } from '@inertiajs/vue3';
 
-
-    const props = defineProps({
+    defineProps({
         revenue: {
             type: Object,
             default() {
@@ -83,6 +84,9 @@
             default() {
                 return []
             }
+        },
+        checks: {
+            type: Array
         }
     });
     const contextStore = useAppContextStore()
@@ -90,6 +94,21 @@
     const selected = ref(null);
 
     const budgetTrackerRef = ref();;
+
+
+    const areChecksLoading = ref(true);
+    const fetchChecks = () => {
+        return router.reload({
+            only: ['checks'],
+            onFinish: () => {
+                areChecksLoading.value = false
+            }
+        });
+    }
+
+    onMounted(() => {
+        fetchChecks()
+    })
 </script>
 
 <template>
@@ -99,27 +118,30 @@
         </template>
 
         <div class="px-5 mx-auto mt-5 space-y-10 md:space-y-0 md:space-x-10 md:flex max-w-screen-2xl sm:px-6 lg:px-8">
-            <div class="md:w-9/12">
-                <BudgetTracker
-                    class="mt-5"
-                    ref="budgetTrackerRef"
-                    :budget="budgetTotal"
-                    :expenses="transactionTotal.total_amount"
-                    :message="t('dashboard.welcome')"
-                    :username="user.name"
-                    @section-click="selected=$event"
-                >
-                    <ChartCurrentVsPrevious
-                        v-if="selected=='expenses'"
-                        class="w-full mt-4 mb-10 overflow-hidden bg-white rounded-lg"
-                        :class="[cardShadow]"
-                        :title="t('This month vs last month')"
-                        ref="ComparisonRevenue"
-                        :data="expenses"
-                    />
-                </BudgetTracker>
+            <div class="mt-6 md:w-9/12">
+                <section class="flex space-x-4">
+                    <BudgetTracker
+                        class="w-8/12 "
+                        ref="budgetTrackerRef"
+                        :budget="budgetTotal"
+                        :expenses="transactionTotal.total_amount"
+                        :message="t('dashboard.welcome')"
+                        :username="user.name"
+                        @section-click="selected=$event"
+                    >
+                        <ChartCurrentVsPrevious
+                            v-if="selected=='expenses'"
+                            class="w-full mt-4 mb-10 overflow-hidden bg-white rounded-lg"
+                            :class="[cardShadow]"
+                            :title="t('This month vs last month')"
+                            ref="ComparisonRevenue"
+                            :data="expenses"
+                        />
+                    </BudgetTracker>
+                    <WeatherWidget class="w-4/12" />
+                </section>
 
-                <div class="flex space-x-4">
+                <section class="flex space-x-4">
                     <ChartComparison
                         class="w-full mt-4 mb-10 overflow-hidden bg-white rounded-lg"
                         :class="[cardShadow]"
@@ -127,11 +149,11 @@
                         ref="ComparisonRevenue"
                         :data="revenue"
                     />
-                </div>
+                </section>
 
             </div>
             <div class="py-6 space-y-4 md:w-3/12">
-                <WeatherWidget />
+                <OccurrenceCard :checks="checks" />
                 <OnboardingSteps
                     v-if="onboarding.steps"
                     class="mt-5"

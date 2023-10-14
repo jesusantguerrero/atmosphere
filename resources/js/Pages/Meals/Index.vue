@@ -9,6 +9,7 @@ import StatusButtons from "@/Components/molecules/StatusButtons.vue";
 import MealSection from "@/domains/meal/components/MealSection.vue";
 import MealTemplate from "@/domains/meal/components/MealTemplate.vue";
 import MealSectionNav from "@/domains/meal/components/MealSectionNav.vue";
+import LogerButton from "@/Components/atoms/LogerButton.vue";
 
 const props = defineProps({
   meals: {
@@ -71,13 +72,14 @@ const currentStatus = ref(props.serverSearchOptions.filters?.is_liked || "all");
             @change="router.visit($event)"
           />
           <div>
-            <AtButton
+            <LogerButton
               class="items-center h-10 text-white bg-primary"
               rounded
+              variant="secondary"
               @click="router.visit(route('meals.create'))"
             >
-              New Meal</AtButton
-            >
+              New Meal
+            </LogerButton>
           </div>
         </template>
       </MealSectionNav>
@@ -91,4 +93,3 @@ const currentStatus = ref(props.serverSearchOptions.filters?.is_liked || "all");
     </MealTemplate>
   </AppLayout>
 </template>
-
