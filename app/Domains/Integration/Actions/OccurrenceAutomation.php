@@ -6,7 +6,8 @@ use App\Domains\Automation\Models\Automation;
 use App\Domains\Housing\Actions\RegisterOccurrence;
 use App\Domains\Automation\Models\AutomationTaskAction;
 
-class OccurrenceCheckAutomation
+class OccurrenceAutomation
+
 {
     /**
      * Validate and create a new team for the given user.
