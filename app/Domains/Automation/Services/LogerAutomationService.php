@@ -6,8 +6,8 @@ use App\Domains\Integration\Actions\BHD;
 use App\Domains\Automation\Models\Automation;
 use App\Domains\Integration\Actions\BHDAlert;
 use App\Domains\Automation\Models\AutomationTask;
-use App\Domains\Integration\Actions\TransactionCreateEntry;
 use App\Domains\Integration\Actions\OccurrenceAutomation;
+use App\Domains\Integration\Actions\TransactionCreateEntry;
 
 class LogerAutomationService
 {
