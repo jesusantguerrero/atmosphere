@@ -12,14 +12,19 @@ import OccurrenceCheckModal from '@/Components/OccurrenceCheckModal.vue';
 import { occurrenceCols as cols } from '@/domains/housing/occurrenceCols';
 import { OccurrenceItem } from '@/domains/housing/models';
 import { ITransaction } from '@/domains/transactions/models';
+import StatusButtons from '@/Components/molecules/StatusButtons.vue';
 
-defineProps({
+const props = defineProps({
     occurrence: {
         type: Array,
         default() {
             return []
         }
-    }
+    },
+    serverSearchOptions: {
+        type: Object,
+        default: () => ({}),
+    },
 })
 
 const isModalOpen = ref(false);
@@ -81,6 +86,19 @@ const options = () => {
 const handleOptions = (optionName: IOptionNames , transaction: ITransaction) => {
     defaultOptions[optionName].handle(transaction)
 };
+
+const dataStatus = {
+  all: {
+    label: "All checks",
+    value: "/housing/occurrence",
+  },
+  1: {
+    label: "Favorites",
+    value: "/housing/occurrence?filter[is_liked]=1",
+  },
+};
+
+const currentStatus = ref(props.serverSearchOptions.filters?.is_liked || "all");
 </script>
 
 <template>
@@ -89,10 +107,11 @@ const handleOptions = (optionName: IOptionNames , transaction: ITransaction) => 
             <HouseSectionNav>
                   <template #actions>
                       <div class="flex space-x-2">
-                        <LogerButton variant="neutral" class="flex" :href="route('housing.occurrences.export')"  target="_blank" as="a">
-                            <IMdiFile  class="mr-2" />
-                            Export
-                        </LogerButton>
+                        <StatusButtons
+                            v-model="currentStatus"
+                            :statuses="dataStatus"
+                            @change="router.visit($event)"
+                        />
                         <LogerButton variant="secondary"  class="flex" @click="isModalOpen = !isModalOpen">
                             <IMdiPlus class="mr-2"/>
                             Add Check

@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers\System;
 
+use Inertia\Inertia;
 use App\Domains\Budget\Models\BudgetMonth;
-use App\Domains\Budget\Services\BudgetCategoryService;
+use App\Domains\Housing\Models\Occurrence;
 use App\Domains\Meal\Services\MealService;
-use App\Domains\Transaction\Services\ReportService;
-use App\Domains\Transaction\Services\TransactionService;
-use App\Http\Controllers\Traits\HasEnrichedRequest;
 use App\Http\Resources\PlannedMealResource;
+use App\Domains\Transaction\Services\ReportService;
+use App\Http\Controllers\Traits\HasEnrichedRequest;
+use App\Domains\Budget\Services\BudgetCategoryService;
+use App\Domains\Transaction\Services\TransactionService;
 
 class DashboardController
 {
@@ -54,6 +56,7 @@ class DashboardController
                     }),
                 ] : [];
             },
+            'checks' => Inertia::lazy(fn () => Occurrence::where('team_id', auth()->user()->current_team_id)->limit(4)->get()),
             'nextPayments' => $nextPayments,
         ]);
     }
