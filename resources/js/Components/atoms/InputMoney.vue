@@ -2,14 +2,16 @@
 import { useCalculatorInput } from '@/utils/calculator';
 // @ts-expect-error: no definitions
 import { AtInput } from 'atmosphere-ui';
+import { watch } from 'vue';
 import { ref, toRefs, nextTick } from 'vue';
 
 const props = defineProps<{
     modelValue: string;
+    history?: string|number[];
     disabled?: boolean
 }>()
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue', 'update:history']);
 
 const input = ref()
 const focus = () => {
@@ -18,7 +20,7 @@ const focus = () => {
 
 const { modelValue } = toRefs(props)
 
-const { calculate } = useCalculatorInput();
+const { calculate, history } = useCalculatorInput();
 
 const onBlur = (evt: InputEvent) => {
     const result = parseFloat(calculate(evt.target.value))
@@ -27,6 +29,10 @@ const onBlur = (evt: InputEvent) => {
         input.value.value = result;
     }
 }
+
+watch(() => [...history.value], (historyValue: string[]) => {
+    emit('update:history', historyValue.join(''))
+})
 
 const emitValue = (value: string) => {
     if (value !== undefined) {

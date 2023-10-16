@@ -10,6 +10,8 @@ import CustomTable from '@/Components/atoms/CustomTable.vue';
 import OccurrenceCheckModal from '@/Components/OccurrenceCheckModal.vue';
 
 import { occurrenceCols as cols } from '@/domains/housing/occurrenceCols';
+import { OccurrenceItem } from '@/domains/housing/models';
+import { ITransaction } from '@/domains/transactions/models';
 
 defineProps({
     occurrence: {
@@ -27,26 +29,26 @@ const onSaved = () => {
     router.reload()
 }
 
-const addInstance = (id) => {
-    router.post(`/housing/occurrence/${id}/instances`)
+const addInstance = (id: number) => {
+    router.post(`/housing/occurrences/${id}/instances`)
 }
 
-const removeLastInstance = (id) => {
-    router.delete(`/housing/occurrence/${id}/instances`)
+const removeLastInstance = (id: number) => {
+    router.delete(`/housing/occurrences/${id}/instances`)
 }
 
-const handleDelete = (resource) => {
+const handleDelete = (resource: OccurrenceItem) => {
     if (confirm(`Are you sure you want to delete this check ${resource.name}?`)) {
-        router.delete(`/housing/occurrence/${resource.id}`)
+        router.delete(`/housing/occurrences/${resource.id}`)
     }
 }
 
 const syncForm = useForm({})
 const syncAll = () => {
-    syncForm.post(`/housing/occurrence/sync-all`)
+    syncForm.post(`/housing/occurrences/sync-all`)
 }
 
-const handleEdit = (resource) => {
+const handleEdit = (resource: OccurrenceItem) => {
     resourceToEdit.value = resource;
     isModalOpen.value = true;
 }
@@ -60,8 +62,8 @@ const defaultOptions = {
     sync: {
         name: 'sync',
         label: 'Sync',
-        handle(resource) {
-            router.post(`/housing/occurrence/${resource.id}/sync`)
+        handle(resource: OccurrenceItem) {
+            router.post(`/housing/occurrences/${resource.id}/sync`)
         }
     },
     removed: {
@@ -71,12 +73,13 @@ const defaultOptions = {
     }
 }
 
-const options = (row) => {
+type IOptionNames = keyof typeof defaultOptions;
+const options = () => {
     return Object.values(defaultOptions).filter(option => !option.hide)
 };
 
-const handleOptions = (option, transaction) => {
-    defaultOptions[option].handle(transaction)
+const handleOptions = (optionName: IOptionNames , transaction: ITransaction) => {
+    defaultOptions[optionName].handle(transaction)
 };
 </script>
 
@@ -86,7 +89,7 @@ const handleOptions = (option, transaction) => {
             <HouseSectionNav>
                   <template #actions>
                       <div class="flex space-x-2">
-                        <LogerButton variant="neutral" class="flex" :href="route('occurrences.export')"  target="_blank" as="a">
+                        <LogerButton variant="neutral" class="flex" :href="route('housing.occurrences.export')"  target="_blank" as="a">
                             <IMdiFile  class="mr-2" />
                             Export
                         </LogerButton>
@@ -102,8 +105,9 @@ const handleOptions = (option, transaction) => {
                   </template>
             </HouseSectionNav>
       </template>
+
       <div class="pt-16 pb-20 pl-6 max-w-screen-2xl">
-          <div class="flex flex-col items-center justify-center py-10 mx-auto mt-4 font-bold rounded-md h-92 bg-base-lvl-3 text-body-1 max-w-7xl">
+          <div class="flex flex-col items-center justify-center w-full px-4 py-10 mx-auto mt-4 font-bold rounded-md h-92 bg-base-lvl-3 text-body-1 max-w-7xl">
             <div class="space-y-4">
                 <CustomTable
                     :cols="cols"

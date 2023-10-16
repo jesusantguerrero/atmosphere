@@ -1,19 +1,19 @@
 <?php
 
-namespace App\Http\Controllers\Finance;
+namespace App\Domains\Budget\Http\Controllers;
 
+use App\Models\Setting;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use App\Domains\AppCore\Models\Category;
+use Illuminate\Support\Facades\Redirect;
 use App\Domains\Budget\Models\BudgetMovement;
+use App\Domains\Transaction\Models\Transaction;
+use App\Http\Resources\CategoryGroupCollection;
+use Freesgen\Atmosphere\Http\InertiaController;
+use App\Domains\Transaction\Services\ReportService;
 use App\Domains\Budget\Services\BudgetAccountService;
 use App\Domains\Budget\Services\BudgetCategoryService;
-use App\Domains\Transaction\Models\Transaction;
-use App\Domains\Transaction\Services\ReportService;
-use App\Http\Resources\CategoryGroupCollection;
-use App\Models\Setting;
-use Freesgen\Atmosphere\Http\InertiaController;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\Validation\Rule;
 
 class BudgetCategoryController extends InertiaController
 {
@@ -34,7 +34,7 @@ class BudgetCategoryController extends InertiaController
             'name' => 'required|string|max:255|unique:categories',
         ];
         $this->sorts = ['index'];
-        $this->includes = ['subCategories', 'subCategories.budget', 'subCategories.budgets'];
+        $this->includes = [];
         $this->filters = [
             'parent_id' => '$null',
             'resource_type' => 'transactions',
@@ -42,19 +42,25 @@ class BudgetCategoryController extends InertiaController
         $this->resourceName = 'budgets';
     }
 
-    protected function getIndexProps(Request $request, $resources = null): array
-    {
+    protected function index(Request $request) {
+        $resourceName = $this->resourceName ?? $this->model->getTable();
         $queryParams = request()->query();
         $settings = Setting::getByTeam(auth()->user()->current_team_id);
         $timeZone = $settings['team_timezone'] ?? config('app.timezone');
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
         [$startDate, $endDate] = $this->getFilterDates($filters, $timeZone);
 
-        $accountTotalBalance = $this->accountService->getBalanceAs($request->user()->current_team_id, $endDate);
+        $resources = $this->parser($this->getModelQuery($request, null, function ($model) use ($startDate) {
+            return $model->withCurrentSavings($startDate);
+        }));
 
-        return [
-            'accountTotal' => $accountTotalBalance,
-        ];
+
+        return inertia($this->templates['index'],
+        [
+            $resourceName => $this->parser($resources),
+            "serverSearchOptions" => $this->getServerParams(),
+            "accountTotal" => $this->accountService->getBalanceAs($request->user()->current_team_id, $endDate)
+        ]);
     }
 
     public function show(int $categoryId)

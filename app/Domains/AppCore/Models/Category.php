@@ -2,13 +2,16 @@
 
 namespace App\Domains\AppCore\Models;
 
+use App\Models\Team;
 use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Budget\Models\BudgetTarget;
-use App\Models\Team;
 use Insane\Journal\Models\Core\Category as CoreCategory;
+use App\Domains\Budget\Models\Traits\BudgetCategoryTrait;
 
 class Category extends CoreCategory
 {
+    use BudgetCategoryTrait;
+
     protected $with = ['budget'];
 
     public function team()
@@ -23,7 +26,7 @@ class Category extends CoreCategory
 
     public function budgets()
     {
-        return $this->hasMany(BudgetMonth::class)->orderBy('month', 'desc');
+        return $this->hasMany(BudgetMonth::class)->orderBy('month', 'desc')->limit(2);
     }
 
     public function subCategories()
@@ -33,6 +36,6 @@ class Category extends CoreCategory
 
     public function lastMonthBudget()
     {
-        return $this->hasMany(BudgetMonth::class)->orderBy('month', 'desc')->limit(1);
+        return $this->hasOne(BudgetMonth::class)->orderBy('month', 'desc')->limit(1);
     }
 }

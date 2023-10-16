@@ -48,7 +48,7 @@ class FinanceController extends InertiaController
         $lastMonthExpenses = TransactionService::getExpensesTotal($teamId, $lastMonthStartDate, $lastMonthEndDate);
         $income = TransactionService::getIncome($teamId, $startDate, $endDate);
         $lastMonthIncome = TransactionService::getIncome($teamId, $lastMonthStartDate, $lastMonthEndDate);
-        $savings = BudgetCategoryService::getSavings($teamId, $startDate, $endDate);
+        $savings = BudgetCategoryService::getSavingsBalance($teamId, $startDate, $endDate);
 
         return Jetstream::inertia()->render($request, 'Finance/Index', [
             'sectionTitle' => 'Finance',

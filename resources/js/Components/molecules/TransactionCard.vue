@@ -126,7 +126,9 @@ const handleOptions = (option: 'remove'|'selected') => {
             :on-select="handleOptions"
             @click.stop
         >
-          <button class="px-2 hover:bg-base-lvl-3"> <i class="fa fa-ellipsis-v"></i></button>
+          <button class="px-2 hover:bg-base-lvl-3">
+            <IMdiEllipsisVertical />
+          </button>
         </NDropdown>
       </div>
     </div>

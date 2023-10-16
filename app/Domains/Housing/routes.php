@@ -1,28 +1,29 @@
 <?php
 
-use App\Domains\Housing\Contracts\OccurrenceNotifyTypes;
-use App\Domains\Housing\Http\Controllers\OccurrenceController;
-use App\Domains\Housing\Http\Controllers\ProjectController;
-use App\Domains\Housing\Models\OccurrenceCheck;
 use Illuminate\Support\Facades\Route;
+use App\Domains\Housing\Models\Occurrence;
+use App\Domains\Housing\Contracts\OccurrenceNotifyTypes;
+use App\Domains\Housing\Http\Controllers\ProjectController;
+use App\Domains\Housing\Http\Controllers\OccurrenceController;
 
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
     Route::get('/housing', ProjectController::class)->name('housing.overview');
     Route::resource('/housing/occurrence', OccurrenceController::class);
 
     Route::controller(OccurrenceController::class)->group(function () {
-        Route::post('/housing/occurrence/{occurrence}/instances', 'addInstance');
-        Route::delete('/housing/occurrence/{occurrence}/instances', 'removeLastInstance');
-        Route::get('/housing/occurrence/{occurrence}/preview', 'automationPreview');
-        Route::post('/housing/occurrence/{occurrence}/load', 'automationLoad');
-        Route::post('/housing/occurrence/{occurrence}/sync', 'sync');
-        Route::post('/housing/occurrence/sync-all', 'syncAll');
-        Route::get('housing/occurrence-export', 'export')->name('occurrences.export');
+        Route::post('/housing/occurrences/{occurrence}/instances', 'addInstance');
+        Route::delete('/housing/occurrences/{occurrence}/instances', 'removeLastInstance');
+        Route::get('/housing/occurrences/{occurrence}/preview', 'automationPreview');
+        Route::post('/housing/occurrences/{occurrence}/load', 'automationLoad');
+        Route::post('/housing/occurrences/{occurrence}/sync', 'sync');
+        Route::post('/housing/occurrences/sync-all', 'syncAll');
+        Route::get('housing/occurrence-export', 'export')->name('housing.occurrences.export');
+        Route::post('housing/occurrence-import', 'import')->name('housing.occurrences.import');
     });
 
     Route::get('/housing/test', function () {
-        $occurrencesOnLast = OccurrenceCheck::getForNotificationType(OccurrenceNotifyTypes::LAST);
-        $occurrencesOnAvg = OccurrenceCheck::getForNotificationType(OccurrenceNotifyTypes::AVG);
+        $occurrencesOnLast = Occurrence::getForNotificationType(OccurrenceNotifyTypes::LAST);
+        $occurrencesOnAvg = Occurrence::getForNotificationType(OccurrenceNotifyTypes::AVG);
 
         return [
             $occurrencesOnAvg,

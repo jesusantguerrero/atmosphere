@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Finance;
+namespace App\Domains\Budget\Http\Controllers;
 
 use App\Domains\Budget\Models\Budget;
 use Freesgen\Atmosphere\Http\InertiaController;

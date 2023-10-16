@@ -2,12 +2,12 @@
 
 namespace App\Domains\Automation\Services;
 
-use App\Domains\Automation\Models\Automation;
-use App\Domains\Automation\Models\AutomationTask;
 use App\Domains\Integration\Actions\BHD;
+use App\Domains\Automation\Models\Automation;
 use App\Domains\Integration\Actions\BHDAlert;
-use App\Domains\Integration\Actions\OccurrenceCheckAutomation;
+use App\Domains\Automation\Models\AutomationTask;
 use App\Domains\Integration\Actions\TransactionCreateEntry;
+use App\Domains\Integration\Actions\OccurrenceAutomation;
 
 class LogerAutomationService
 {
@@ -276,18 +276,18 @@ class LogerAutomationService
                 ],
                 'type' => 'internal',
             ],
-            'occurrenceChecks' => [
+            'Occurrences' => [
                 'name' => 'occurrence_check',
                 'label' => 'Occurrence Check',
                 'logo' => '/images/meal-planner.png',
-                'entity' => OccurrenceCheckAutomation::class,
+                'entity' => OccurrenceAutomation::class,
                 'description' => 'Occurrence check',
-                'fields' => json_encode(OccurrenceCheckAutomation::fieldConfig()),
+                'fields' => json_encode(OccurrenceAutomation::fieldConfig()),
                 'actions' => [
                     [
-                        'name' => 'createOccurrenceCheck',
+                        'name' => 'createOccurrence',
                         'label' => 'Create Occurrence Check',
-                        'entity' => OccurrenceCheckAutomation::class,
+                        'entity' => OccurrenceAutomation::class,
                         'description' => 'Create an occurrence check',
                         'config' => json_encode([
                             'name' => [

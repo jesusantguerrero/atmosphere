@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Domains\Budget\Services\BudgetTargetTransactionService;
+use App\Domains\Budget\Services\BudgetTargetService;
 use App\Models\Team;
 use Illuminate\Console\Command;
 
@@ -12,7 +12,7 @@ class CreatePlannedTransactionsFromBudget extends Command
 
     protected $description = 'Create planned transactions from budget.';
 
-    public function handle(BudgetTargetTransactionService $service): mixed
+    public function handle(BudgetTargetService $service): mixed
     {
         $team = Team::find($this->argument('teamId'));
         $service->createPlannedTransactions($team->id);
