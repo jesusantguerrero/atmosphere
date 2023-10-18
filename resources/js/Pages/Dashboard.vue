@@ -17,6 +17,7 @@
     import { useAppContextStore } from '@/store';
     import { ITransaction } from '@/domains/transactions/models';
     import { router } from '@inertiajs/vue3';
+import BudgetWidget from './BudgetWidget.vue';
 
     defineProps({
         revenue: {
@@ -167,6 +168,7 @@
                 />
                 <MealWidget :meals="meals?.data" />
 
+                <BudgetWidget />
                 <DashboardDrafts />
             </div>
         </div>

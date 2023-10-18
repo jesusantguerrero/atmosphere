@@ -56,6 +56,16 @@ export const useAppMenu = t => {
             isActiveFunction(url, currentPath) {
                 return /loger-profiles/.test(currentPath)
              }
+        },
+        {
+            icon: 'fas fa-chart-bar',
+            label: t('Profiles'),
+            label: 'Trends',
+            to: '/trends',
+            as: Link,
+            isActiveFunction(url, currentPath) {
+                return /trends/.test(currentPath)
+            }
         }
     ].filter(item => !item.hidden);
 
