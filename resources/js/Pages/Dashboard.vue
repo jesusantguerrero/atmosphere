@@ -18,6 +18,7 @@
     import { ITransaction } from '@/domains/transactions/models';
     import { router } from '@inertiajs/vue3';
 import BudgetWidget from './BudgetWidget.vue';
+import NetWorthWidget from './NetWorthWidget.vue';
 
     defineProps({
         revenue: {
@@ -168,7 +169,6 @@ import BudgetWidget from './BudgetWidget.vue';
                 />
                 <MealWidget :meals="meals?.data" />
 
-                <BudgetWidget />
                 <DashboardDrafts />
             </div>
         </div>
