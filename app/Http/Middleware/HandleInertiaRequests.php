@@ -2,13 +2,13 @@
 
 namespace App\Http\Middleware;
 
-use App\Concerns\Facades\Menu;
-use App\Domains\AppCore\Models\Category;
-use Illuminate\Http\Request;
 use Inertia\Middleware;
-use Insane\Journal\Models\Core\Account as CoreAccount;
-use Insane\Journal\Models\Core\AccountDetailType;
 use Tightenco\Ziggy\Ziggy;
+use Illuminate\Http\Request;
+use App\Concerns\Facades\Menu;
+use Insane\Journal\Models\Core\Account;
+use App\Domains\AppCore\Models\Category;
+use Insane\Journal\Models\Core\AccountDetailType;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -63,7 +63,7 @@ class HandleInertiaRequests extends Middleware
             },
             'menu' => $menu,
             'balance' => $team ? $team->balance() : 0,
-            'accounts' => $team ? CoreAccount::getByDetailTypes($team->id) : [],
+            'accounts' => $team ? Account::getByDetailTypes($team->id) : [],
             'categories' => $team ? Category::where([
                 'categories.team_id' => $team->id,
                 'categories.resource_type' => 'transactions',

@@ -21,6 +21,7 @@ module.exports = {
     },
     defaultLight: {
         primary: "#F37EA1",
+        primaryDark: customColors.mauvelous[800],
         secondary: "#7B77D1",
         "accent": "#f782c2",
         "neutral": "#F3F4F6",

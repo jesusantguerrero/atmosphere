@@ -64,7 +64,7 @@
 </script>
 
 <template>
-    <WidgetTitleCard title="Draft Transactions" class="hidden md:block">
+    <WidgetTitleCard title="Draft Transactions" class="hidden md:block" :with-padding="false">
         <TransactionsList
             class="w-full"
             table-class="w-full p-2 overflow-auto text-sm rounded-t-lg shadow-md bg-base-lvl-3"

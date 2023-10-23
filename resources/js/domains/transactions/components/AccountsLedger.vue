@@ -10,8 +10,6 @@ import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 import AccountModal from "./AccountModal.vue";
 import AccountItem from "./AccountItem.vue";
 
-import IconImport from '@/Components/icons/IconImport.vue';
-import WidgetCard from '@/Components/molecules/WidgetCard.vue';
 import MoneyPresenter from '@/Components/molecules/MoneyPresenter.vue';
 import { useAppContextStore } from "@/store";
 import { IAccount } from "@/domains/transactions/models/transactions";

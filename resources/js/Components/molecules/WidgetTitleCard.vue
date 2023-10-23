@@ -10,15 +10,28 @@ defineProps({
     },
     action: {
         type: Object,
+    },
+    hideDivider: {
+        type: Boolean
+    },
+    withPadding: {
+        type: Boolean,
+        default: true,
     }
 })
 </script>
 
 
 <template>
-    <div class="px-5 py-3 transition border divide-y rounded-lg divide-base border-base bg-base-lvl-3" :class="cardShadow">
-        <div class="flex items-center justify-between pb-2">
-            <h1 class="font-bold text-body">
+    <div class="py-3 transition text-body border rounded-lg  border-base bg-base-lvl-3"
+    :class="[cardShadow, hideDivider ? '' : 'divide-base divide-y ']">
+        <div class="px-5 flex items-center justify-between pb-2">
+            <h1 class="font-bold flex items-center">
+                <section class="bg-white text-primary w-8 h-8 rounded-full flex items-center justify-center mr-2"
+                    v-if="$slots.icon"
+                >
+                    <slot name="icon"></slot>
+                </section>
                 <slot name="title"> {{ title }}</slot>
             </h1>
             <div class="flex items-center space-x-2">
@@ -35,7 +48,7 @@ defineProps({
                 <slot name="afterActions" />
             </div>
         </div>
-        <div class="flex py-3">
+        <div class="flex py-3" :class="{'px-5': withPadding}">
             <slot></slot>
         </div>
     </div>

@@ -61,7 +61,7 @@ const defaultRow = {
     counter_account_id: null,
     account_id: null,
     amount: 0,
-    history: [0]
+    history: 0
 };
 
 const splitsTotal = computed(() =>
@@ -122,7 +122,7 @@ const isPickerOpen = ref(false);
             />
           </AtField>
 
-        <div class="px-2 py-1 text-center">
+        <div class="px-2 py-1 text-center" v-if="hasSplits">
             {{  formatMoney(splitsTotal) }}
         </div>
       </section>
@@ -190,17 +190,18 @@ const isPickerOpen = ref(false);
           </header>
       </div>
 
-      <footer class="flex justify-end mb-2">
+      <footer class="flex justify-end mb-2" v-if="hasSplits">
         <AtField
-            v-if="hasSplits"
             label="Description"
             class="flex justify-between w-full space-x-2 md:block md:space-x-0 md:mt-0"
-    >
-        <LogerInput v-model="split.concept" class="w-48 md:w-full" />
-    </AtField>
-    <span class="flex items-center justify-center ">
-        {{  split.history }}
-    </span>
+        >
+            <LogerInput v-model="split.concept" class="w-48 md:w-full" />
+        </AtField>
+        <div class="flex items-center justify-center">
+            <span class=" flex items-center  mt-10 h-10 min-w-fit px-4">
+                {{  split.history }}
+            </span>
+        </div>
       </footer>
     </section>
 

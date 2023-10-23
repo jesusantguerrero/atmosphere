@@ -13,6 +13,3 @@ export const matrixColors = {
     green: 'bg-green-500 text-white',
     yellow: 'bg-yellow-500 text-white'
 }
-
-const demo = import.meta.env.VITE_APP_DEMO;
-export const isDemo = Boolean(demo) && demo !== 'false';

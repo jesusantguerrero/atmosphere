@@ -6,8 +6,7 @@ import { useForm, Link } from "@inertiajs/vue3";
 
 import DemoInstructions from "./Partials/DemoInstructions.vue";
 import AppIcon from "@/Components/AppIcon.vue";
-
-import { isDemo } from "@/utils/constants";
+import { config } from "@/config";
 
 defineProps({
   canResetPassword: Boolean,
@@ -39,6 +38,7 @@ const submit = (formData) => {
       onFinish: () => form.reset("password"),
     });
 };
+
 </script>
 
 <template>
@@ -59,7 +59,7 @@ const submit = (formData) => {
           <AppIcon size="huge" class="text-white" />
         </Link>
       </template>
-      <template #prependInput v-if="isDemo">
+      <template #prependInput v-if="config.IS_DEMO">
         <DemoInstructions
           class="px-5 py-2 mt-6 font-sans text-sm text-center bg-black bg-opacity-25 rounded-md"
         />

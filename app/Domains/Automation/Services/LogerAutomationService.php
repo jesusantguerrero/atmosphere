@@ -22,6 +22,7 @@ class LogerAutomationService
         echo "starting $automation->name with $automation->id \n";
         $tasks = $automation->tasks;
         $trigger = $automation->triggerTask;
+        print_r([$tasks, $trigger]);
 
         foreach ($tasks as $index => $task) {
             if ($index == 0) {
@@ -29,6 +30,7 @@ class LogerAutomationService
                 $previousTask = null;
             }
             $entity = $task->entity;
+            echo "hello>";
             $lastData = $entity::handle($automation, $lastData, $task, $previousTask, $trigger);
             if (! $lastData) {
                 break;

@@ -2,7 +2,8 @@ export const MODULES = {
     HOUSING: 'housing',
     MEAL: 'meal',
     FINANCE: 'finance',
-    RELATIONSHIP: 'relationship'
+    RELATIONSHIP: 'relationship',
+    TRENDS: 'trends'
 }
 
 const menus = {
@@ -61,11 +62,28 @@ const menus = {
     {
         label: 'Transactions',
         url: '/finance/transactions'
-    },
-     {
-        label: 'Trends',
-        url: '/trends'
-    }]
+    }],
+    [MODULES.TRENDS]: [
+        {
+            label: 'Spending',
+            url: '/trends'
+        },
+        {
+            label: 'Net Worth',
+            url: '/trends/net-worth'
+        },
+        {
+            label: 'Income v Expenses',
+            url: '/trends/income-expenses'
+        },
+        {
+            label: 'Income vs Expenses Graph',
+            url: '/trends/income-expenses-graph'
+        },
+        {
+            label: 'Year summary',
+            url: '/trends/year-summary'
+        }]
 }
 
 
