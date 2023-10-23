@@ -1,7 +1,6 @@
+import { endOfMonth, startOfMonth, format, parseISO } from 'date-fns';
 // import { format, parseISO } from "date-fns";
-import format from "date-fns/format";
-import parseISO from "date-fns/parseISO";
-import { reactive, Ref, watch, nextTick, computed, ref, inject, toRaw, onMounted } from "vue";
+import { reactive, Ref, watch, nextTick, computed, ref, inject } from "vue";
 import debounce from "lodash/debounce";
 
 export interface IServerSearchData {
@@ -102,10 +101,17 @@ export const parseParams = (state: SearchState) => {
     .join("&");
 };
 
-function parseDateFilters(options: Ref<Partial<IServerSearchData>>) {
-  const dates = options?.value?.filters?.date
+function parseDateFilters(options: Ref<Partial<IServerSearchData>>, setDefaultDate: boolean) {
+
+    const defaultDates = setDefaultDate ? [
+        format(startOfMonth(new Date()), 'yyyy-MM-dd'),
+        format(endOfMonth(new Date()), 'yyyy-MM-dd')
+    ] : [null, null]
+
+   const dates = options?.value?.filters?.date
     ? options.value.filters.date.split("~")
-    : [null, null];
+    : defaultDates;
+
   return {
     startDate: dates[0] && parseISO(dates[0]),
     endDate:
