@@ -58,7 +58,7 @@ const { serverSearchOptions } = toRefs(props);
 const { state: pageState, executeSearchWithDelay } = useServerSearch(
   serverSearchOptions,
   {
-    manual: true,
+    manual: false,
     defaultDates: true,
   }
 );

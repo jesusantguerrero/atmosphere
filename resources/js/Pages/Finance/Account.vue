@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, toRefs, provide, ref, onMounted, watch , nextTick } from "vue";
-import { router, useForm } from "@inertiajs/vue3";
+import { router, useForm, usePage } from "@inertiajs/vue3";
 import { format } from "date-fns";
 import { NDatePicker } from "naive-ui";
 // @ts-expect-error: no definitions
@@ -22,7 +22,7 @@ import TransactionSearch from "@/domains/transactions/components/TransactionSear
 import TransactionTable from "@/domains/transactions/components/TransactionTable.vue";
 import DraftButtons from "@/domains/transactions/components/DraftButtons.vue";
 
-import { useTransactionModal } from "@/domains/transactions";
+import { useTransactionModal, TRANSACTION_DIRECTIONS } from "@/domains/transactions";
 // import { IServerSearchData, useServerSearch } from "@/composables/useServerSearch";
 import { tableAccountCols } from "@/domains/transactions";
 import { useAppContextStore } from "@/store";
@@ -37,6 +37,7 @@ interface CollectionData<T> {
     data: T[]
 }
 const props = withDefaults(defineProps<{
+    accountDetailTypes: {label: string, id: number| string}[];
     transactions: ITransaction[];
     stats: CollectionData<Record<string, number>>;
     accounts: IAccount[];
@@ -113,20 +114,44 @@ const reconcileForm = useForm({
 		balance: 0,
 })
 
-const reconciliation = () => {
-	reconcileForm.transform(data => ({
-		...data,
-		date: format(data.date, 'yyyy-MM-dd'),
-	})).post(`/finance/reconciliation/accounts/${selectedAccount.value?.id}`, {
-		onFinish() {
-			reconcileForm.reset()
-			reconcileForm.isVisible = false;
-            router.reload({
-                only: ['transactions', 'accounts', 'stats']
-            });
-		}
-	});
-};
+    const reconciliation = () => {
+        reconcileForm.transform(data => ({
+            ...data,
+            date: format(data.date, 'yyyy-MM-dd'),
+        })).post(`/finance/reconciliation/accounts/${selectedAccount.value?.id}`, {
+            onFinish() {
+                reconcileForm.reset()
+                reconcileForm.isVisible = false;
+                router.reload({
+                    only: ['transactions', 'accounts', 'stats']
+                });
+            }
+        });
+    };
+
+    const  { TRANSFER } = TRANSACTION_DIRECTIONS;
+    const page = usePage().props;
+
+    const creditCard = computed(() => {
+        return props.accountDetailTypes.find((type) => type.label.toLowerCase() == "credit cards");
+    });
+    const isCreditCard = computed(() => {
+        return selectedAccount.value?.account_detail_type_id == creditCard.value?.id;
+    });
+
+    const payCreditCard = () => {
+        const accountId = page.accountId
+        const debt = Math.abs(selectedAccount.value?.balance ?? 0);
+        openTransactionModal({
+            mode: TRANSFER,
+            transactionData: {
+                counter_account_id: accountId ?? "",
+                total: debt,
+                description: `Payment of ${selectedAccount.value?.name}`,
+                account_id: props.accounts.find((account) => account.balance > debt)?.id
+            },
+        })
+    }
 
 </script>
 
@@ -155,6 +180,13 @@ const reconciliation = () => {
             v-else
           >
             Review Reconciliation
+          </LogerButton>
+          <LogerButton
+            variant="neutral"
+            v-if="isCreditCard"
+            @click="payCreditCard"
+          >
+            Pay credit card
           </LogerButton>
           <DraftButtons v-if="isDraft" />
         </div>
