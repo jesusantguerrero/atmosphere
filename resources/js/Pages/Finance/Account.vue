@@ -34,7 +34,7 @@ const { openTransactionModal } = useTransactionModal();
 
 
 interface CollectionData<T> {
-		data: T[]
+    data: T[]
 }
 const props = withDefaults(defineProps<{
     transactions: ITransaction[];
@@ -119,8 +119,11 @@ const reconciliation = () => {
 		date: format(data.date, 'yyyy-MM-dd'),
 	})).post(`/finance/reconciliation/accounts/${selectedAccount.value?.id}`, {
 		onFinish() {
-				reconcileForm.reset()
-				reconcileForm.isVisible = false;
+			reconcileForm.reset()
+			reconcileForm.isVisible = false;
+            router.reload({
+                only: ['transactions', 'accounts', 'stats']
+            });
 		}
 	});
 };

@@ -1,7 +1,7 @@
 // import { format, parseISO } from "date-fns";
 import format from "date-fns/format";
 import parseISO from "date-fns/parseISO";
-import { reactive, Ref, watch, nextTick, computed, ref, inject, toRaw } from "vue";
+import { reactive, Ref, watch, nextTick, computed, ref, inject, toRaw, onMounted } from "vue";
 import debounce from "lodash/debounce";
 
 export interface IServerSearchData {
@@ -60,7 +60,7 @@ export const filterParams = (
     });
   }
 
-  if (dates.startDate) {
+  if (dates?.startDate) {
     try {
       let dateFilterValue = format(dates.startDate, "yyyy-MM-dd");
       if (dates.endDate) {
@@ -134,59 +134,82 @@ const defaultSearchInertia = async (
       });
 };
 
+export const searchFromSearchString = (searchString: string) => {
+    const parsedSearchState = Object.fromEntries(
+        new URLSearchParams(searchString)
+    )
+
+    return Object.entries(parsedSearchState).reduce((searchState, [key, value]) => {
+        const regexString = /filter\[([^)]+)\]/
+        const matches = key.match(regexString)
+        if (matches) {
+            searchState.filters = {
+                ...(searchState.filters ?? {}),
+                [matches[1]]: value
+            }
+        } else {
+            searchState[key] = value
+        }
+        return searchState;
+    }, {});
+}
+
+const setSearchState = (serverSearchData: Record<string, any>, dates: any) => {
+    return {
+        filters: {
+            ...(serverSearchData.value ? serverSearchData.value?.filters : {}),
+            date: null
+        },
+        dates:{
+            startDate: dates.startDate,
+            endDate: dates.endDate,
+        },
+        sorts:serverSearchData.value?.sorts ?? "",
+        limit: serverSearchData.value?.limit ?? 0,
+        relationships: serverSearchData.value?.relationships ?? "",
+        search: serverSearchData.value?.search,
+        page: serverSearchData.value?.page
+    }
+}
 export const useServerSearch = (
-  serverSearchData: Ref<Partial<IServerSearchData>>,
+  _serverSearchData: Ref<Partial<IServerSearchData>>,
   options: IServerSearchOptions = {},
   onUrlChange?: UrlChangeCallback,
   router?: InertiaRouterType
 ) => {
-  const dates = parseDateFilters(serverSearchData);
-  const isLoaded = ref(false);
+    const serverSearchData = ref(searchFromSearchString(location.search));
+    const dates = parseDateFilters(serverSearchData, options.defaultDates)
+    const isLoaded = ref(false)
+    const state = reactive<ISearchState>(setSearchState(serverSearchData.value, dates));
+    const localRouter = inject(
+        "router",
+        // eslint-disable-next-line no-empty-pattern
+        router ?? {get: (params, {}, {}) => {
+            throw new Error(`provide an router with ${params}`)
+            return;
+        },
+        }
+    );
 
-  const localRouter = inject(
-    "router",
-    // eslint-disable-next-line no-empty-pattern
-    router ?? {get: (params, {}, {}) => {
-        throw new Error(`provide an router with ${params}`)
-        return;
-      },
-    }
-  );
-  const localUrlChange =
-    onUrlChange ?? defaultSearchInertia.bind(null, localRouter);
+    const localUrlChange = onUrlChange ?? defaultSearchInertia.bind(null, localRouter);
 
-  const state = reactive<ISearchState>({
-    filters: {
-      ...(serverSearchData.value ? serverSearchData.value?.filters : {}),
-      date: null,
-    },
-    dates: {
-      startDate: dates.startDate,
-      endDate: dates.endDate,
-    },
-    sorts: serverSearchData.value?.sorts ?? "",
-    limit: serverSearchData.value?.limit ?? 0,
-    relationships: serverSearchData.value?.relationships ?? "",
-    search: serverSearchData.value?.search,
-    page: serverSearchData.value?.page,
-  });
+    const updateSearch = (urlParams: string) => {
+        const finalUrl = `${window.location.pathname}?${urlParams}`;
+        return localRouter.get(finalUrl, undefined, {
+        preserveState: true,
+        });
+    };
 
-  const updateSearch = (urlParams: string) => {
-    const finalUrl = `${window.location.pathname}?${urlParams}`;
-    return localRouter.get(finalUrl, undefined, {
-      preserveState: true,
+    localUrlChange(parseParams(state), updateSearch).then(() => {
+        nextTick(() => {
+            isLoaded.value = true
+        })
     });
-  };
-
-  localUrlChange(parseParams(state), updateSearch).then(() => {
-    nextTick(() => {
-        isLoaded.value = true
-        console.log('loaded first')
-    })
-  });
 
   const executeSearch = (delay?: number) => {
     nextTick(() => {
+        if (!isLoaded.value)
+        return
       const urlParams = parseParams(state);
       const currentUrl = getCurrentLocationParams();
       if (urlParams == currentUrl || !localUrlChange) return;
@@ -217,28 +240,10 @@ export const useServerSearch = (
         `${location.pathname}?${urlParams}`
       );
   }
-  const isLoading = ref(false)
+
   watch(() => state,
     debounce((paramsConfig) => {
-        const urlParams = parseParams(paramsConfig);
-        const currentUrl = getCurrentLocationParams()
-
-        if( urlParams != currentUrl) {
-            setUrl(urlParams)
-        }
-
-        if (
-            currentUrl &&
-            urlParams != currentUrl &&
-            !options.manual &&
-            isLoaded.value &&
-            localUrlChange
-            ) {
-            isLoading.value = true;
-            localUrlChange(urlParams, updateSearch).then(() => {
-                isLoading.value = false
-            });
-        }
+       executeSearch();
     }, 200),
     { deep: true }
   );

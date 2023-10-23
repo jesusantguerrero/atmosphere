@@ -15,7 +15,6 @@ import WidgetTitleCard from "@/Components/molecules/WidgetTitleCard.vue";
 import Collapse from "@/Components/molecules/Collapse.vue";
 
 import YearSummary from "@/domains/transactions/components/YearSummary.vue";
-import ExpenseIncome from "@/domains/transactions/components/ExpenseIncome.vue";
 import ExpenseChartWidget from "@/domains/transactions/components/ExpenseChartWidget.vue";
 
 import { useServerSearch } from "@/composables/useServerSearch";

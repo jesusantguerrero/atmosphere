@@ -59,8 +59,7 @@ export const useAppMenu = t => {
         },
         {
             icon: 'fas fa-chart-bar',
-            label: t('Profiles'),
-            label: 'Trends',
+            label: t('Trends'),
             to: '/trends',
             as: Link,
             isActiveFunction(url, currentPath) {
