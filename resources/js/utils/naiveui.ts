@@ -1,6 +1,6 @@
 import colors from 'tailwindcss/colors'
 
-export const makeOptions = (options, [id, label] = ['id', 'label']) => {
+export const makeOptions = (options, [id, label] = ['id', 'label']): {label: string, value: string|number}[] => {
     try {
         if (typeof options == 'object') {
             return Object.entries(options).map(([key, value]) => ({

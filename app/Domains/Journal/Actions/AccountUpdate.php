@@ -4,8 +4,8 @@ namespace App\Domains\Journal\Actions;
 
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Gate;
-use Insane\Journal\Contracts\AccountUpdates;
 use Insane\Journal\Models\Core\Account;
+use Insane\Journal\Contracts\AccountUpdates;
 
 class AccountUpdate implements AccountUpdates
 {

@@ -30,6 +30,19 @@ const hasPendingReconciliation = computed(() => {
 const isReconciled = computed(() => {
     return account.reconciliation_last?.amount == account.balance;
 })
+const creditLimitDate = computed(() => {
+    const formatter = new Intl.PluralRules('en-US', {
+        type: 'ordinal'
+    })
+
+    const suffixes = new Map([
+        ["one", "st"],
+        ["two", "nd"],
+        ["few", "rd"],
+        ["other", "th"],
+    ]);
+    return account.credit_closing_day ? ` - ${account.credit_closing_day}${suffixes.get(formatter.select(account.credit_closing_day))}` : '';
+})
 </script>
 
 
@@ -49,7 +62,7 @@ const isReconciled = computed(() => {
         <AccountReconciliationAlert v-if="hasPendingReconciliation" class="mr-1" />
         <IMdiLock v-if="isReconciled" class="mr-1 text-success opacity-70 text-sm" />
         <span>
-            {{ account.name }}
+            {{ account.name }} {{ creditLimitDate }}
         </span>
       </header>
       <p class="relative text-sm" :class="{ 'text-red-400': isDebt(account.balance) }">
