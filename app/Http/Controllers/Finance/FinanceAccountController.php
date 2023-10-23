@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers\Finance;
 
-use App\Domains\Automation\Models\AutomationService;
+use App\Models\Setting;
+use Illuminate\Support\Facades\Gate;
+use Freesgen\Atmosphere\Http\Querify;
+use Insane\Journal\Models\Core\Account;
+use Freesgen\Atmosphere\Http\InertiaController;
 use App\Domains\Transaction\Services\BHDService;
 use App\Domains\Transaction\Services\ReportService;
-use App\Models\Setting;
-use Freesgen\Atmosphere\Http\InertiaController;
-use Freesgen\Atmosphere\Http\Querify;
-use Illuminate\Support\Facades\Gate;
-use Insane\Journal\Models\Core\Account;
+use App\Domains\Automation\Models\AutomationService;
 
 class FinanceAccountController extends InertiaController
 {
@@ -54,7 +54,7 @@ class FinanceAccountController extends InertiaController
             'resource' => $account,
             'transactions' => $account->transactionSplits(50, $startDate, $endDate, request()->only(['search', 'page', 'limit', 'direction'])),
             'stats' => $this->reportService->getAccountStats($account->id, $startDate, $endDate),
-            'serverSearchOptions' => $this->getServerParams(),
+            'serverSearchOptions' => [],
         ]);
     }
 

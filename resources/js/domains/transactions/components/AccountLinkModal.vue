@@ -34,7 +34,6 @@ function getIntegrations() {
     axios({
         url: "/api/integrations"
     }).then(({ data }) => {
-        console.log(data);
         state.integrations = data;
     })
     .catch((err) => console.log(err));

@@ -13,6 +13,20 @@ module.exports = {
         '900': '#161c2d'
     },
     dodgerblue: {
-        
-    }
+
+    },
+    mauvelous: {
+        DEFAULT: '#F37EA1',
+        50: '#FFFFFF',
+        100: '#FFFFFF',
+        200: '#FDEEF3',
+        300: '#FAC9D7',
+        400: '#F6A3BC',
+        500: '#F37EA1',
+        600: '#EE4B7C',
+        700: '#E91756',
+        800: '#B81143',
+        900: '#840C30',
+        950: '#6B0A27'
+      },
 }

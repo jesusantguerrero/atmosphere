@@ -8,14 +8,13 @@ import AppLayout from "@/Components/templates/AppLayout.vue";
 import ChartNetWorth from "@/Components/ChartNetworth.vue";
 import IncomeExpenses from "@/Components/IncomeExpenses.vue";
 
-import FinanceTemplate from "./Partials/FinanceTemplate.vue";
-import FinanceSectionNav from "./Partials/FinanceSectionNav.vue";
+import TrendTemplate from "./Partials/TrendTemplate.vue";
+import TrendSectionNav from "./Partials/TrendSectionNav.vue";
 import ChartComparison from "@/Components/widgets/ChartComparison.vue";
 import WidgetTitleCard from "@/Components/molecules/WidgetTitleCard.vue";
 import Collapse from "@/Components/molecules/Collapse.vue";
 
 import YearSummary from "@/domains/transactions/components/YearSummary.vue";
-import ExpenseIncome from "@/domains/transactions/components/ExpenseIncome.vue";
 import ExpenseChartWidget from "@/domains/transactions/components/ExpenseChartWidget.vue";
 
 import { useServerSearch } from "@/composables/useServerSearch";
@@ -115,10 +114,8 @@ const isFilterSelected = (filterValue) => {
 <template>
   <AppLayout :title="metaData.title">
     <template #header>
-      <FinanceSectionNav>
+      <TrendSectionNav>
         <template #actions>
-            <span>All categories</span>
-            <span>All accounts</span>
             <AtDatePager
                 class="w-full h-12 border-none bg-base-lvl-1 text-body"
                 v-model:startDate="pageState.dates.startDate"
@@ -128,18 +125,13 @@ const isFilterSelected = (filterValue) => {
                 next-mode="month"
             />
         </template>
-      </FinanceSectionNav>
+      </TrendSectionNav>
     </template>
 
-    <FinanceTemplate title="Finance" ref="financeTemplateRef">
+    <TrendTemplate title="Finance" ref="financeTemplateRef">
         <WidgetTitleCard
             :title="metaData.title"
             class="mt-5"
-            :action="{
-                label: 'Go to Trends',
-                iconClass: 'fa fa-chevron-right',
-            }"
-            @action="router.visit('/trends')"
         >
         <section class="relative flex flex-wrap items-center justify-center w-full bg-base-lvl-3 md:flex-nowrap md:space-x-8">
             <component
@@ -185,6 +177,6 @@ const isFilterSelected = (filterValue) => {
                 </template>
             </Collapse>
       </template>
-    </FinanceTemplate>
+    </TrendTemplate>
   </AppLayout>
 </template>

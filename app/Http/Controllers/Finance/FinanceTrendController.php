@@ -37,7 +37,7 @@ class FinanceTrendController extends Controller
         $section = self::sections[$sectionName];
         $data = $this->$section($request);
 
-        return inertia('Finance/Trends',
+        return inertia('Trends/Overview',
             array_merge([
                 'serverSearchOptions' => $filters,
                 'section' => $sectionName,

@@ -1,18 +1,18 @@
 import { initializeApp } from "firebase/app";
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
 import { getAnalytics } from "firebase/analytics";
-import CONFIG from "../config";
+import { config } from "../config";
 import { reactive } from "vue";
 
 const firebaseConfig = {
-    apiKey: CONFIG.FIREBASE_API_KEY,
-    authDomain: `${CONFIG.FIREBASE_PROJECT_ID}.firebaseapp.com`,
-    databaseURL: `https://${CONFIG.FIREBASE_PROJECT_ID}.firebaseio.com`,
-    projectId: CONFIG.FIREBASE_PROJECT_ID,
-    storageBucket: `${CONFIG.FIREBASE_PROJECT_ID}.appspot.com`,
-    messagingSenderId: CONFIG.FIREBASE_SENDER_ID,
-    measurementId: CONFIG.MEASUREMENT_ID,
-    appId: CONFIG.FIREBASE_APP_ID,
+    apiKey: config.FIREBASE_API_KEY,
+    authDomain: `${config.FIREBASE_PROJECT_ID}.firebaseapp.com`,
+    databaseURL: `https://${config.FIREBASE_PROJECT_ID}.firebaseio.com`,
+    projectId: config.FIREBASE_PROJECT_ID,
+    storageBucket: `${config.FIREBASE_PROJECT_ID}.appspot.com`,
+    messagingSenderId: config.FIREBASE_SENDER_ID,
+    measurementId: config.MEASUREMENT_ID,
+    appId: config.FIREBASE_APP_ID,
 }
 
 const firebase = reactive({
@@ -58,7 +58,6 @@ export const useMessaging = (onTokenGenerated) => {
 
 export const useOnMessage = (onMessaged) => {
     firebase.messaging && onMessage(firebase.messaging, (payload) => {
-        console.log(payload)
         onMessaged && onMessaged(payload)
     })
 }
