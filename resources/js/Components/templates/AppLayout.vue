@@ -1,6 +1,5 @@
 <script setup lang="ts">
     import { provide, ref, computed, onMounted } from 'vue'
-    import { NConfigProvider } from 'naive-ui'
     import { router } from '@inertiajs/vue3'
     import { AtSide, AtTeamSelect } from "atmosphere-ui"
     import { useLocalStorage } from "@vueuse/core"
@@ -24,6 +23,11 @@
     import { useSelect } from '@/utils/useSelects'
     import { useTransactionModal } from '@/domains/transactions'
     import { useOnMessage } from '@/composables/useFirebase'
+    import AppProvider from './AppProvider.vue'
+    import { useSpeechRecognition } from '@vueuse/core'
+    import { useSpeechSynthesis } from '@vueuse/core'
+    import { watch } from 'vue'
+    // import LogerAssistant from '../organisms/logerAssistant.vue'
 
     const props = defineProps({
         title: {
@@ -113,11 +117,10 @@
             console.log(payload, "Mi mensaje favorito")
         })
     })
-
 </script>
 
 <template>
-    <NConfigProvider>
+    <AppProvider>
         <AppShell :is-expanded="isExpanded" :nav-class="[!$slots.header && `${panelShadow} border-b`]">
             <template #navigation>
                 <!-- Primary Navigation Menu -->
@@ -143,7 +146,7 @@
                                 :notifications="$page.props.unreadNotifications"
                                 @click="router.visit('/notifications')"
                              />
-
+                             <!-- <LogerAssistant /> -->
                              <AtTeamSelect
                                 v-if="$page.props.user.all_teams.length"
                                 :has-team-features="$page.props.jetstream.hasTeamFeatures"
@@ -237,7 +240,7 @@
             </template>
         </AppShell>
         <AppGlobals />
-    </NConfigProvider>
+    </AppProvider>
 </template>
 
 

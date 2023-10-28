@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 const defaultTheme = require('tailwindcss/defaultTheme');
-const themes = require('./tailwindTheme/index');
+const themes = require('./tailwindTheme/index.cjs');
 
 module.exports = {
     content: [
@@ -34,5 +34,8 @@ module.exports = {
         },
     },
 
-    plugins: [require('@tailwindcss/typography')],
+    plugins: [
+        require('@tailwindcss/typography'),
+        require('@mertasan/tailwindcss-variables')
+    ],
 };

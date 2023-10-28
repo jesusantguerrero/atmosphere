@@ -163,18 +163,18 @@ export const searchFromSearchString = (searchString: string) => {
 const setSearchState = (serverSearchData: Record<string, any>, dates: any) => {
     return {
         filters: {
-            ...(serverSearchData.value ? serverSearchData.value?.filters : {}),
+            ...(serverSearchData ? serverSearchData?.filters : {}),
             date: null
         },
         dates:{
             startDate: dates.startDate,
             endDate: dates.endDate,
         },
-        sorts:serverSearchData.value?.sorts ?? "",
-        limit: serverSearchData.value?.limit ?? 0,
-        relationships: serverSearchData.value?.relationships ?? "",
-        search: serverSearchData.value?.search,
-        page: serverSearchData.value?.page
+        sorts:serverSearchData?.sorts ?? "",
+        limit: serverSearchData?.limit ?? 0,
+        relationships: serverSearchData?.relationships ?? "",
+        search: serverSearchData?.search,
+        page: serverSearchData?.page
     }
 }
 export const useServerSearch = (
@@ -187,6 +187,7 @@ export const useServerSearch = (
     const dates = parseDateFilters(serverSearchData, options.defaultDates)
     const isLoaded = ref(false)
     const state = reactive<ISearchState>(setSearchState(serverSearchData.value, dates));
+    console.log({ state, serverSearchData })
     const localRouter = inject(
         "router",
         // eslint-disable-next-line no-empty-pattern
@@ -239,16 +240,8 @@ export const useServerSearch = (
   };
 
 
-  const setUrl = (urlParams: string) => {
-    window.history.pushState(
-        {},
-        null,
-        `${location.pathname}?${urlParams}`
-      );
-  }
-
   watch(() => state,
-    debounce((paramsConfig) => {
+    debounce(() => {
        executeSearch();
     }, 200),
     { deep: true }

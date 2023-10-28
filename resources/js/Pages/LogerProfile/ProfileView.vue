@@ -19,6 +19,7 @@ import BudgetDetailForm from '@/domains/budget/components/BudgetDetailForm.vue';
 import { IOccurrenceCheck } from '@/Components/Modules/occurrence/models';
 import { ITransaction } from '@/domains/transactions/models';
 import { transactionDBToTransaction } from '@/domains/transactions';
+import axios from 'axios';
 
 
 const { entities } = defineProps<{
@@ -38,10 +39,6 @@ const onSaved = () => {
 const isProfileEntityModalOpen = ref(false);
 const profileEntity = ref({});
 
-const onProfileSaved = () => {
-    router.reload()
-}
-
 const areEntitiesLoading = ref(true)
 function fetchProfileEntities() {
     router.reload({
@@ -52,7 +49,19 @@ function fetchProfileEntities() {
     })
 }
 
-onMounted(() => {
+const transactions = ref<ITransaction[]>([]);
+const isLoading = ref(false);
+const fetchTransactions = (params = location.toString()) => {
+    return axios.get(`${location.pathname}/transactions`).then(({ data }: { data : {
+        data: ITransaction[]
+    }}) => {
+        transactions.value = data.data;
+        isLoading.value = false
+    })
+}
+
+onMounted(async () => {
+    fetchTransactions()
     fetchProfileEntities()
 })
 
@@ -64,14 +73,7 @@ const occurrenceChecks = computed(() => {
         return checks;
     }, []);
 })
-const transactions = computed(() => {
-    return entities.reduce((checks: ITransaction[], entity: any) => {
-        if (entity.entity?.transactions && entity.entity) {
-            checks.push(...entity.entity.transactions);
-        }
-        return checks;
-    }, []);
-})
+
 const budgets = computed(() => {
     return entities.reduce((checks: any, entity: any) => {
         if (entity.entity?.budget) {
@@ -83,6 +85,7 @@ const budgets = computed(() => {
         return checks;
     }, []);
 })
+
 </script>
 
 
@@ -143,7 +146,7 @@ const budgets = computed(() => {
                 <section v-else class="w-full">
                     <OccurrenceCard :checks="occurrenceChecks" class="mx-auto mt-4" />
                     <BudgetDetailForm
-                     v-for="budget in budgets"
+                        v-for="budget in budgets"
                         class="mt-5"
                         full
                         :category="budget.category"
@@ -169,4 +172,3 @@ const budgets = computed(() => {
         </LogerProfileTemplate>
     </AppLayout>
 </template>
-@/domains/transactions/models/transactions

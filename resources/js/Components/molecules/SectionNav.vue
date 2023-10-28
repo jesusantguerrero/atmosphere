@@ -8,6 +8,7 @@ import { NDropdown } from 'naive-ui';
 
 interface NavSection {
     url?: string;
+    action?: string;
     value: string;
     label: string;
 }
@@ -17,7 +18,7 @@ const props = defineProps<{
     modelValue?: string;
 }>();
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue', 'action']);
 
 const currentPath = computed(() => {
     return document?.location?.pathname
@@ -32,6 +33,8 @@ const isSelected = (section: NavSection) => {
 const handleClick = (section: NavSection) => {
     if (section?.url) {
         router.visit(section.url)
+    } else if (section?.action) {
+        emit('action', section.action)
     } else {
         emit('update:modelValue', section?.value)
     }
