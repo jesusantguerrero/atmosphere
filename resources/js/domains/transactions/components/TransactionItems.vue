@@ -143,7 +143,7 @@ const isPickerOpen = ref(false);
           <LogerApiSimpleSelect
             v-model="split.payee_id"
             v-model:label="split.payee_label"
-            tag
+            :allow-create="true"
             custom-label="name"
             track-id="id"
             placeholder="Add a payee"
@@ -198,7 +198,7 @@ const isPickerOpen = ref(false);
             <LogerInput v-model="split.concept" class="w-48 md:w-full" />
         </AtField>
         <div class="flex items-center justify-center">
-            <span class=" flex items-center  mt-10 h-10 min-w-fit px-4">
+            <span class="flex items-center h-10 px-4 mt-10  min-w-fit">
                 {{  split.history }}
             </span>
         </div>
