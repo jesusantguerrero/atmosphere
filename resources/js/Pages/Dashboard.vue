@@ -17,8 +17,8 @@
     import { useAppContextStore } from '@/store';
     import { ITransaction } from '@/domains/transactions/models';
     import { router } from '@inertiajs/vue3';
-import BudgetWidget from './BudgetWidget.vue';
-import NetWorthWidget from './NetWorthWidget.vue';
+    import BudgetWidget from './BudgetWidget.vue';
+    import NetWorthWidget from './NetWorthWidget.vue';
 
     defineProps({
         revenue: {

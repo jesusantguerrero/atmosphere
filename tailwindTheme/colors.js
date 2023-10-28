@@ -12,9 +12,6 @@ module.exports = {
         '800': '#1a2237',
         '900': '#161c2d'
     },
-    dodgerblue: {
-
-    },
     mauvelous: {
         DEFAULT: '#F37EA1',
         50: '#FFFFFF',
