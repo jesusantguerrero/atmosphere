@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, toRefs } from "vue";
+import { computed, toRefs, ref, onMounted } from "vue";
 import { Link, router } from "@inertiajs/vue3";
 // @ts-ignore
 import { AtDatePager } from "atmosphere-ui";
@@ -14,10 +14,11 @@ import ChartComparison from "@/Components/widgets/ChartComparison.vue";
 import WidgetTitleCard from "@/Components/molecules/WidgetTitleCard.vue";
 import Collapse from "@/Components/molecules/Collapse.vue";
 
-import YearSummary from "@/domains/transactions/components/YearSummary.vue";
 import ExpenseChartWidget from "@/domains/transactions/components/ExpenseChartWidget.vue";
 
 import { useServerSearch } from "@/composables/useServerSearch";
+import { ITransaction } from "@/domains/transactions/models";
+import axios from "axios";
 
 const props = defineProps({
   user: {
@@ -113,7 +114,7 @@ const cashflowEntities = {
         value: '/trends/payees'
     }
 }
-const isFilterSelected = (filterValue) => {
+const isFilterSelected = (filterValue: string) => {
     const currentStatus = location.pathname;
     return currentStatus.includes(filterValue);
 }

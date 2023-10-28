@@ -2,10 +2,10 @@
 
 namespace App\Domains\LogerProfile\Http\Controllers;
 
-use App\Domains\LogerProfile\Data\ProfileEntityData;
-use App\Domains\LogerProfile\Services\LogerProfileService;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Traits\HasEnrichedRequest;
+use App\Domains\LogerProfile\Data\ProfileEntityData;
+use App\Domains\LogerProfile\Services\LogerProfileService;
 
 class LogerProfileEntityController extends Controller
 {

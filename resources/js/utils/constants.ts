@@ -1,5 +1,5 @@
 export const PANEL_SIZES = {
-    small: 'md:w-3/12',
+    small: "md:w-5/12 lg:w-3/12",
     large: 'md:w-5/12'
 }
 

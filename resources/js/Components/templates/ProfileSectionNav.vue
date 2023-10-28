@@ -9,6 +9,7 @@ const props = defineProps<{
 }>();
 
 
+
 const sections = computed(() => {
     return [
         ...(props.logerProfile?.map((profile: Record<string, string>) => ({
@@ -21,7 +22,7 @@ const sections = computed(() => {
             icon: 'plus',
             name: 'add',
             label: 'Add',
-            url: '/trends'
+            action: 'add'
         }
     ]
 })
@@ -29,7 +30,7 @@ const sections = computed(() => {
 
 
 <template>
-<SectionNav :sections="sections">
+<SectionNav :sections="sections" @action="$emit('action', $event)">
     <template #actions>
         <slot name="actions" />
     </template>

@@ -2,10 +2,13 @@
 
 namespace App\Domains\LogerProfile\Services;
 
-use App\Domains\LogerProfile\Data\LogerProfileData;
-use App\Domains\LogerProfile\Data\ProfileEntityData;
+use App\Domains\AppCore\Models\Category;
 use App\Domains\LogerProfile\Models\LogerProfile;
+use App\Domains\LogerProfile\Data\LogerProfileData;
+use App\Domains\Transaction\Models\TransactionLine;
+use App\Domains\LogerProfile\Data\ProfileEntityData;
 use App\Domains\LogerProfile\Models\LogerProfileEntity;
+use App\Domains\Transaction\Services\TransactionService;
 
 class LogerProfileService
 {
@@ -39,5 +42,29 @@ class LogerProfileService
         return ProfileEntityData::collection(LogerProfileEntity::where([
             'profile_id' => $profileId,
         ])->get());
+    }
+
+    public function getTransactionsByProfileId(int $profileId, $startDate, $endDate)
+    {
+        $entities =  LogerProfileEntity::where([
+            'profile_id' => $profileId,
+            'entity_type' => Category::class
+        ])->get();
+
+        $categories = $entities->map(fn ($entity) => $entity->entity->id)->all();
+
+        $teamId = $entities[0]->team_id;
+
+        $transactions = TransactionLine::byTeam($teamId)
+            ->inDateFrame($startDate, $endDate)
+            ->expenseCategories($categories)
+            ->verified()
+            ->orderByDesc('transactions.date')
+            ->get();
+
+        return [
+            "data" => $transactions,
+            "total" => $transactions->sum('total'),
+        ];
     }
 }
