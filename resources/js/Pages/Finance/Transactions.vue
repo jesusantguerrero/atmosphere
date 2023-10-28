@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, toRefs, reactive, provide, ref } from "vue";
+import { computed, toRefs, reactive, provide, ref, watch } from "vue";
 import { router } from "@inertiajs/vue3";
 import { format } from "date-fns";
 import axios from "axios";
@@ -91,13 +91,13 @@ const fetchTransactions = (params = location.toString()) => {
 }
 
 const selectedAccountId = computed(() => {
-  return serverSearchOptions.value?.filters?.account_id;
+  return pageState?.filters?.account_id;
 });
 
 provide("selectedAccountId", selectedAccountId.value);
 
 const isDraft = computed(() => {
-  return serverSearchOptions.value?.filters?.status == "draft";
+  return pageState?.filters?.status == "draft";
 });
 
 const removeTransaction = (transaction: ITransaction) => {
@@ -140,7 +140,13 @@ const transactionStatus = {
     value: "/finance/transactions?filter[status]=draft&relationships=linked",
   },
 };
-const currentStatus = ref(serverSearchOptions.value?.filters?.status || "verified");
+const currentStatus = ref(pageState?.filters?.status || "verified");
+
+watch(() => pageState?.filters, (filters) => {
+    if (filters.status) {
+        currentStatus.value = filters.status;
+    }
+}, { immediate: true })
 
 const monthName = computed(() => format(pageState.dates.startDate, "MMMM"))
 
