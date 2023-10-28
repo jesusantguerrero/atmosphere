@@ -4,14 +4,14 @@ namespace App\Domains\Journal\Actions;
 
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Gate;
-use Insane\Journal\Contracts\TransactionBulkApproves;
 use Insane\Journal\Models\Core\Transaction;
+use Insane\Journal\Contracts\TransactionBulkApproves;
 
 class TransactionBulkApprove implements TransactionBulkApproves
 {
     public function validate(User $user)
     {
-        Gate::forUser($user)->authorize('update', Transaction::class);
+        Gate::forUser($user)->authorize('updateBulk', Transaction::class);
     }
 
     public function approveAllDrafts(User $user)
