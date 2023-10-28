@@ -29,7 +29,7 @@ export const useAppMenu = t => {
             to: '/finance',
             as: Link,
             isActiveFunction(url, currentPath) {
-               return /finance|budgets|trends/.test(currentPath)
+               return /finance|budgets/.test(currentPath)
             }
         },
         {

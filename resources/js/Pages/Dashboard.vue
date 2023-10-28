@@ -15,10 +15,7 @@
     import OccurrenceCard from '@/Components/Modules/occurrence/OccurrenceCard.vue';
 
     import { useAppContextStore } from '@/store';
-    import { ITransaction } from '@/domains/transactions/models';
     import { router } from '@inertiajs/vue3';
-    import BudgetWidget from './BudgetWidget.vue';
-    import NetWorthWidget from './NetWorthWidget.vue';
 
     defineProps({
         revenue: {
@@ -147,9 +144,14 @@
                     <ChartComparison
                         class="w-full mt-4 mb-10 overflow-hidden bg-white rounded-lg"
                         :class="[cardShadow]"
-                        :title="t('Spending summary')"
+                        :title="$t('Spending summary')"
                         ref="ComparisonRevenue"
                         :data="revenue"
+                        :action="{
+                            label: 'Go to Trends',
+                            iconClass: 'fa fa-chevron-right',
+                        }"
+                        @action="router.visit('/trends/income-expenses-graph')"
                     />
                 </section>
 

@@ -6,10 +6,13 @@ import LogerButton from '@/Components/atoms/LogerButton.vue';
 defineProps<{
     meals: Record<string, any>[]
 }>()
+
+// @ts-ignore: expected in global
+const defaultShadow = window?.cardShadow ?? "";
 </script>
 
 <template>
-    <div  :class="cardShadow">
+    <div  :class="defaultShadow">
         <RandomMealCard class="mt-4 border-b rounded-b-none" />
         <div class="px-4 py-2 space-y-4 cursor-pointer rounded-b-md min-h-min bg-base-lvl-3">
             <div class="text-center">

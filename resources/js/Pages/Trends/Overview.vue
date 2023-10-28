@@ -56,39 +56,47 @@ const handleSelection = (index: number) => {
 
 const trends = [
     {
-        name: 'Spending',
-        link: '/trends'
+        label: 'Spending',
+        url: '/trends'
     },
     {
-        name: 'Net Worth',
-        link: '/trends/net-worth'
+        label: 'Net Worth',
+        url: '/trends/net-worth'
     },
     {
-        name: 'Income v Expenses',
-        link: '/trends/income-expenses'
+        label: 'Income v Expenses',
+        url: '/trends/income-expenses'
     },
     {
-        name: 'Income vs Expenses Graph',
-        link: '/trends/income-expenses-graph'
+        label: 'Income vs Expenses Graph',
+        url: '/trends/income-expenses-graph'
     },
     {
-        name: 'Year summary',
-        link: '/trends/year-summary'
+        label: 'Year spending',
+        url: '/trends/spending-year'
     }
 ]
-
 
 const components = {
     groups: ExpenseChartWidget,
     categories: ExpenseChartWidget,
     netWorth: ChartNetWorth,
     incomeExpenses: IncomeExpenses,
-    incomeExpensesGraph:  ChartComparison,
-    yearSummary: YearSummary
+    incomeExpensesGraph:  ChartNetWorth,
+    spendingYear: ChartComparison
 }
 
 const trendComponent = computed(() => {
     return components[props.metaData.name] || ExpenseChartWidget
+})
+
+const isCategoryTrend = computed(() => {
+    return ['group', 'categories', 'payees'].includes(props.metaData.name)
+})
+
+
+const isYearSpending = computed(() => {
+    return ['spendingYear'].includes(props.metaData.name)
 })
 
 const cashflowEntities = {
@@ -114,7 +122,7 @@ const isFilterSelected = (filterValue) => {
 <template>
   <AppLayout :title="metaData.title">
     <template #header>
-      <TrendSectionNav>
+      <TrendSectionNav :sections="trends">
         <template #actions>
             <AtDatePager
                 class="w-full h-12 border-none bg-base-lvl-1 text-body"
@@ -129,7 +137,24 @@ const isFilterSelected = (filterValue) => {
     </template>
 
     <TrendTemplate title="Finance" ref="financeTemplateRef">
+
+        <component
+            class="mt-5"
+            v-if="isYearSpending"
+            :is="trendComponent"
+            style="background: white; width: 100%"
+            :type="section"
+            :series="data"
+            :data="data"
+            @selected="handleSelection"
+            v-bind="metaData.props"
+            :title="metaData.title"
+            label="name"
+            value="total"
+            :legend="false"
+        />
         <WidgetTitleCard
+            v-else
             :title="metaData.title"
             class="mt-5"
         >
@@ -148,7 +173,7 @@ const isFilterSelected = (filterValue) => {
                 :legend="false"
             />
         </section>
-        <template #afterActions>
+        <template #afterActions v-if="isCategoryTrend">
             <div class="flex overflow-hidden text-white border rounded-md bg-primary border-primary min-w-max">
                 <button
                     v-for="(item, statusName) in cashflowEntities"
@@ -170,8 +195,13 @@ const isFilterSelected = (filterValue) => {
             >
                 <template #content>
                     <div class="divide-y divide-base-lvl-2 bg-base-lvl-3">
-                        <Link :href="trend.link" v-for="trend in trends" :key="trend.name" class="block px-2 py-4 cursor-pointer hover:bg-base-lvl-2">
-                            {{ trend.name }}
+                        <Link
+                            :href="trend.url"
+                            v-for="trend in trends"
+                            :key="trend.label"
+                            class="block px-2 py-4 cursor-pointer hover:bg-base-lvl-2"
+                        >
+                            {{ trend.label }}
                         </Link>
                     </div>
                 </template>

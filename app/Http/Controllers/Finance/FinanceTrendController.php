@@ -21,6 +21,7 @@ class FinanceTrendController extends Controller
         'payees' => 'payee',
         'net-worth' => 'NetWorth',
         'income-expenses' => 'IncomeExpenses',
+        'spending-year' => 'spendingYear',
         'income-expenses-graph' => 'IncomeExpensesGraph',
         'year-summary' => 'yearSummary',
     ];
@@ -143,16 +144,39 @@ class FinanceTrendController extends Controller
         $teamId = request()->user()->current_team_id;
 
         return [
-            'data' => ReportService::generateExpensesByPeriod($teamId, 'month', 12),
+            'data' => ReportService::getIncomeVsExpenses($teamId, 12),
             'metaData' => [
                 'name' => 'incomeExpensesGraph',
                 'title' => 'Income vs Expenses',
+                'props' => [
+                    'headerTemplate' => 'grid',
+                    "assetsLabel" => "income",
+                    "debtsLabel" => "expense"
+                ],
+            ],
+        ];
+    }
+
+    public function spendingYear()
+    {
+        $queryParams = request()->query();
+        $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
+        [$startDate, $endDate] = $this->getFilterDates($filters);
+        $teamId = request()->user()->current_team_id;
+
+        return [
+            'data' => ReportService::generateExpensesByPeriod($teamId, $startDate, 12),
+            'metaData' => [
+                'name' => 'spendingYear',
+                'title' => 'Expenses',
                 'props' => [
                     'headerTemplate' => 'grid',
                 ],
             ],
         ];
     }
+
+
 
     public function yearSummary()
     {

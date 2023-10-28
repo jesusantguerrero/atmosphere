@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { AtButton } from "atmosphere-ui";
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { router } from "@inertiajs/vue3";
 
@@ -8,7 +8,6 @@ import SectionTitle from "@/Components/atoms/SectionTitle.vue";
 import NumberHider from "@/Components/molecules/NumberHider.vue";
 
 import formatMoney from "@/utils/formatMoney";
-import { useTransactionModal } from "@/domains/transactions";
 
 const props = defineProps({
   username: {
@@ -27,9 +26,6 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
-const { isOpen: isTransferModalOpen } = useTransactionModal();
-
-const openedTransaction = ref(null);
 
 const sections = computed(() => ({
   expenses: {
@@ -42,7 +38,7 @@ const sections = computed(() => ({
   },
 }));
 
-const isMultiple = (value) => {
+const isMultiple = (value: any) => {
   return Array.isArray(value);
 };
 </script>
