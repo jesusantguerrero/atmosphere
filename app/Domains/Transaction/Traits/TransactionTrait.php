@@ -2,9 +2,9 @@
 
 namespace App\Domains\Transaction\Traits;
 
-use App\Domains\Budget\Data\BudgetReservedNames;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Transaction;
+use App\Domains\Budget\Data\BudgetReservedNames;
 
 trait TransactionTrait
 {
@@ -81,12 +81,17 @@ trait TransactionTrait
 
     public function scopeExpenseCategories($query, array $categories = null)
     {
-        $query->whereNot('categories.name', BudgetReservedNames::READY_TO_ASSIGN->value)
-            ->join('categories', 'transactions.category_id', '=', 'categories.id');
+        $categories = collect($categories);
+        $excluded = $categories->filter( fn ($id) => $id < 0)->map(fn ($id) => abs($id))->all();
+        $included = $categories->filter( fn ($id) => $id > 0)->all();
 
-        if ($categories) {
-            $query->whereIn('category_id', $categories);
-        }
+
+        $query->whereNot('categories.name', BudgetReservedNames::READY_TO_ASSIGN->value)
+            ->join('categories', 'transactions.category_id', '=', 'categories.id')
+            ->where(fn ($q) =>
+                $q->when(count($excluded),fn ($q) => $q->whereNotIn('categories.id', $excluded))
+                ->when(count($included), fn ($q) =>  $q->whereIn('categories.id', $included))
+            );
 
         return $query;
     }

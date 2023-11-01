@@ -38,6 +38,11 @@ createInertiaApp({
             legacy: false,
         })
 
+        window.logerAppSettings = {
+            currency_code: props.initialPage.props.settings?.team_primary_currency_code ?? 'USD',
+            date_format: props.initialPage.props.settings?.team_date_format,
+        }
+
         const t = (...param) => i18n.global.t(...param)
         window.t = t
 

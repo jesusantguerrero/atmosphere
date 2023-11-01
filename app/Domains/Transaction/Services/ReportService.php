@@ -40,12 +40,12 @@ class ReportService
         return $results;
     }
 
-    public static function generateExpensesByPeriod($teamId, $startDate, $timeUnitDiff = 2,  $timeUnit = 'month')
+    public static function generateExpensesByPeriod($teamId, $startDate, $timeUnitDiff = 2,  $timeUnit = 'month', $categories = null)
     {
         $rangeEndAt = Carbon::createFromFormat('Y-m-d', $startDate)->endOfMonth()->format('Y-m-d');
         $rangeStartAt = Carbon::now()->subMonth($timeUnitDiff)->startOfMonth()->format('Y-m-d');
 
-        $results = self::getExpensesByCategoriesInPeriod($teamId, $rangeStartAt, $rangeEndAt);
+        $results = self::getExpensesByCategoriesInPeriod($teamId, $rangeStartAt, $rangeEndAt, $categories);
         $resultGroup = $results->groupBy('date');
 
         return $resultGroup->map(function ($monthItems) {

@@ -56,6 +56,7 @@ class HandleInertiaRequests extends Middleware
                 ]);
             },
             'locale' => app()->getLocale(),
+            'settings' => $team ? $team->settings->mapWithKeys(fn ($setting) => [$setting['name'] => $setting['value']]) : [],
             'accountDetailTypes' => AccountDetailType::all(),
             'trialEndsAt' => $team ? $team->trial_ends_at : null,
             'unreadNotifications' => function () use ($user) {

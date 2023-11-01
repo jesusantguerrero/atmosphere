@@ -104,7 +104,7 @@
                 [field]: props.category.id,
                 source_category_id: data.source_category_id?.value,
                 'type': 'movement',
-                date: format(new Date(), 'yyyy-MM-dd')
+                date: format(startOfMonth(pageState?.dates?.endDate), 'yyyy-MM-dd')
             })).post(`/budgets/${props.category.id}/months/${month}`, {
                 onSuccess() {
                     router.reload({
@@ -117,7 +117,6 @@
 
     const categories = inject('categories', ref({ data: []}))
     const categoryOptions = computed(() => {
-        console.log(categories.value.data);
         return categories.value.data?.map(item => ({
             value: item.id,
             key: item.id,

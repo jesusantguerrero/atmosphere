@@ -2,16 +2,16 @@
 
 namespace App\Domains\Transaction\Services;
 
-use App\Domains\Automation\Data\AutomationData;
-use App\Domains\Automation\Enums\AutomationTaskType;
-use App\Domains\Automation\Helpers\AutomationBuilder;
-use App\Domains\Automation\Models\Automation;
-use App\Domains\Integration\Actions\BHD;
-use App\Domains\Integration\Actions\GmailReceived;
-use App\Domains\Integration\Actions\TransactionCreateEntry;
-use App\Domains\Transaction\Models\Transaction;
 use Exception;
 use Insane\Journal\Models\Core\Account;
+use App\Domains\Integration\Actions\BHD;
+use App\Domains\Automation\Models\Automation;
+use App\Domains\Automation\Data\AutomationData;
+use App\Domains\Transaction\Models\Transaction;
+use App\Domains\Integration\Actions\GmailReceived;
+use App\Domains\Automation\Enums\AutomationTaskType;
+use App\Domains\Automation\Helpers\AutomationBuilder;
+use App\Domains\Integration\Actions\TransactionCreateEntry;
 
 class BHDService
 {
@@ -49,6 +49,7 @@ class BHDService
             'Compra' => 1,
             'compra' => 1,
             'retiro de efectivo' => 1,
+            "reserva de fondos (hold)" => 1
         ];
 
         return $types[$type];
