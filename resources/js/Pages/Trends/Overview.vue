@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, toRefs, ref, onMounted } from "vue";
+import { computed, toRefs, inject } from "vue";
 import { Link, router } from "@inertiajs/vue3";
 // @ts-ignore
 import { AtDatePager } from "atmosphere-ui";
@@ -17,8 +17,8 @@ import Collapse from "@/Components/molecules/Collapse.vue";
 import ExpenseChartWidget from "@/domains/transactions/components/ExpenseChartWidget.vue";
 
 import { useServerSearch } from "@/composables/useServerSearch";
-import { ITransaction } from "@/domains/transactions/models";
-import axios from "axios";
+import { NSelect } from "naive-ui";
+import AccountFilters from "./AccountFilters.vue";
 
 const props = defineProps({
   user: {
@@ -118,6 +118,10 @@ const isFilterSelected = (filterValue: string) => {
     const currentStatus = location.pathname;
     return currentStatus.includes(filterValue);
 }
+
+const handleCategories = (categories: ICategory[]) => {
+    console.log(categories)
+}
 </script>
 
 <template>
@@ -125,14 +129,21 @@ const isFilterSelected = (filterValue: string) => {
     <template #header>
       <TrendSectionNav :sections="trends">
         <template #actions>
-            <AtDatePager
-                class="w-full h-12 border-none bg-base-lvl-1 text-body"
-                v-model:startDate="pageState.dates.startDate"
-                v-model:endDate="pageState.dates.endDate"
-                @change="executeSearchWithDelay(500)"
-                controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
-                next-mode="month"
-            />
+            <section class="flex w-full my-auto space-x-2">
+                <AtDatePager
+                    class="w-full h-12 border-none bg-base-lvl-1 text-body"
+                    v-model:startDate="pageState.dates.startDate"
+                    v-model:endDate="pageState.dates.endDate"
+                    @change="executeSearchWithDelay(500)"
+                    controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
+                    next-mode="month"
+                />
+                <AccountFilters
+                    class="w-full"
+                    v-model:accounts="pageState.filters.account"
+                    v-model:categories="pageState.filters.category"
+                />
+            </section>
         </template>
       </TrendSectionNav>
     </template>

@@ -117,7 +117,6 @@
 
     const categories = inject('categories', ref({ data: []}))
     const categoryOptions = computed(() => {
-        console.log(categories.value.data);
         return categories.value.data?.map(item => ({
             value: item.id,
             key: item.id,

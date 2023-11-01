@@ -30,6 +30,11 @@ class TransactionPolicy
         return $user->current_team_id;
     }
 
+    public function deleteBulk(User $user)
+    {
+        return $user->current_team_id;
+    }
+
     public function delete(User $user, Transaction $transaction)
     {
         return $user->current_team_id == $transaction->team_id;

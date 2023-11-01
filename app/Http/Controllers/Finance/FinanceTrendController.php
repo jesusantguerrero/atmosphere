@@ -163,9 +163,13 @@ class FinanceTrendController extends Controller
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
         [$startDate, $endDate] = $this->getFilterDates($filters);
         $teamId = request()->user()->current_team_id;
+        $excludedAccounts = null;
+        if (isset($filters['category'])) {
+            $excludedAccounts = collect(explode(',', $filters['category']))->map(fn ($id) => "-$id")->all();
+        }
 
         return [
-            'data' => ReportService::generateExpensesByPeriod($teamId, $startDate, 12),
+            'data' => ReportService::generateExpensesByPeriod($teamId, $startDate, 12, 'month', $excludedAccounts),
             'metaData' => [
                 'name' => 'spendingYear',
                 'title' => 'Expenses',

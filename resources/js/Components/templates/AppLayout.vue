@@ -24,9 +24,6 @@
     import { useTransactionModal } from '@/domains/transactions'
     import { useOnMessage } from '@/composables/useFirebase'
     import AppProvider from './AppProvider.vue'
-    import { useSpeechRecognition } from '@vueuse/core'
-    import { useSpeechSynthesis } from '@vueuse/core'
-    import { watch } from 'vue'
     // import LogerAssistant from '../organisms/logerAssistant.vue'
 
     const props = defineProps({
