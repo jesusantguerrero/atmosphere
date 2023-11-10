@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, toRefs, provide, ref, onMounted, nextTick } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
-import { AtBackgroundIconCard, AtField, AtButton } from "atmosphere-ui";
+import { AtBackgroundIconCard, AtField } from "atmosphere-ui";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
 
@@ -10,14 +10,11 @@ import LogerInput from "@/Components/atoms/LogerInput.vue";
 
 import FinanceTemplate from "../Partials/FinanceTemplate.vue";
 import FinanceSectionNav from "../Partials/FinanceSectionNav.vue";
-import TransactionSearch from "@/domains/transactions/components/TransactionSearch.vue";
-import TransactionTable from "@/domains/transactions/components/TransactionTable.vue";
 import ReconciliationTable from "@/domains/transactions/components/ReconciliationTable.vue";
 
 import { useTransactionModal } from "@/domains/transactions";
 import { IServerSearchData, useServerSearch } from "@/composables/useServerSearchV2";
 import { tableAccountCols } from "@/domains/transactions";
-import { useAppContextStore } from "@/store";
 import { formatMoney } from "@/utils";
 import { IAccount, ICategory, ITransaction } from "@/domains/transactions/models";
 import { NPagination } from "naive-ui";
@@ -52,8 +49,6 @@ const { serverSearchOptions, accountId, accounts } = toRefs(props);
 provide("selectedAccountId", accountId);
 
 const { state } = useServerSearch(serverSearchOptions)
-
-const context = useAppContextStore();
 
 
 interface ReconciliationEntry {
@@ -288,9 +283,13 @@ const transactionsMatched = computed(() => {
           @findLinked="findLinked"
           @removed="removeTransaction"
           @edit="handleEdit"
-        />
-
-        <NPagination v-model:page="state.page" :page-count="Math.ceil(transactions.total / 25)" />
+        >
+          <template #footer>
+              <footer class="justify-end flex px-4 mt-4">
+                  <NPagination v-model:page="state.page" :page-count="Math.ceil(transactions.total / 25)" />
+              </footer>
+        </template>
+        </ReconciliationTable>
       </section>
     </FinanceTemplate>
   </AppLayout>
