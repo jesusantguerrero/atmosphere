@@ -32,6 +32,14 @@ class LogerProfileService
         return LogerProfileData::from(LogerProfile::find($id));
     }
 
+    public function getByName(int $teamId, string $name)
+    {
+        return LogerProfileData::from(LogerProfile::where([
+            "team_id" => $teamId,
+            "name" => $name,
+        ])->first());
+    }
+
     public function addProfileEntity(ProfileEntityData $profileEntityData)
     {
         LogerProfileEntity::create($profileEntityData->toArray());

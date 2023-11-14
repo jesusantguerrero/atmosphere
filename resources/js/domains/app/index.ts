@@ -35,8 +35,7 @@ export const useAppMenu = t => {
         {
             icon: 'fas fa-heart',
             label: t('Relationship'),
-            to: '/relationships',
-            hidden: true,
+            to: '/relationships/partner',
             as: Link
         },
         {

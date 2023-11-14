@@ -148,8 +148,7 @@ const handleCategories = (categories: ICategory[]) => {
       </TrendSectionNav>
     </template>
 
-    <TrendTemplate title="Finance" ref="financeTemplateRef">
-
+    <TrendTemplate title="Finance" ref="financeTemplateRef" :hide-panel="true">
         <component
             class="mt-5"
             v-if="isYearSpending"
@@ -198,27 +197,6 @@ const handleCategories = (categories: ICategory[]) => {
             </div>
         </template>
       </WidgetTitleCard>
-
-      <template #panel>
-            <Collapse
-                title="Reports"
-                title-class="p-2 mt-6 font-bold rounded-md bg-base-lvl-3 text-body-1 bg-base-lvl-1 "
-                content-class="pb-4 bg-base-lvl-3"
-            >
-                <template #content>
-                    <div class="divide-y divide-base-lvl-2 bg-base-lvl-3">
-                        <Link
-                            :href="trend.url"
-                            v-for="trend in trends"
-                            :key="trend.label"
-                            class="block px-2 py-4 cursor-pointer hover:bg-base-lvl-2"
-                        >
-                            {{ trend.label }}
-                        </Link>
-                    </div>
-                </template>
-            </Collapse>
-      </template>
     </TrendTemplate>
   </AppLayout>
 </template>

@@ -47,4 +47,45 @@ class LogerProfileController extends Controller
 
         return $profileService->getTransactionsByProfileId($profileId, $startDate, $endDate);
     }
+
+    public function relationships(LogerProfileService $profileService, string $profileName = 'relationship')
+    {
+        $profile = $profileService->getByName(request()->user()->current_team_id, $profileName);
+        return inertia('LogerProfile/ProfileView', [
+            'profile' => $profile,
+            'entities' => fn () =>  $profileService->getEntitiesByProfileId($profile->id),
+        ]);
+    }
 }
+
+/***
+ * Name: Partner
+ * Type: Relationship
+ * kind: me and her
+ * created_at: by default
+ *
+ * Entities:
+ * - Movies
+ * - Remark
+ *
+ * layout/display 'cards' | natural | remark | grid | events | notes
+ *
+ * Entity Types:
+ * Category
+ * Category Group
+ * Meal Menu
+ * Chores assigned to users
+ * Plans assigned to users
+ * new Board
+ *  create a new board to link
+ *  - visibility | show to all, show to selected, private
+ *  - selected_users
+ *  show in menus
+ */
+/***
+ * Name: Diana
+ * Type: Relationship
+ * kind: Hija
+ *
+ *
+ */

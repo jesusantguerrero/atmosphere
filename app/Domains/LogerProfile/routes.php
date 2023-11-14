@@ -9,4 +9,5 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     Route::resource('/loger-profiles', LogerProfileController::class);
     Route::resource('/loger-profiles/{profileId}/entities', LogerProfileEntityController::class);
     Route::get('/loger-profiles/{profileId}/transactions', [LogerProfileController::class, 'transactions']);
+    Route::get('/relationships/{profileName}', [LogerProfileController::class, 'relationships']);
 });

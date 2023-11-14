@@ -85,7 +85,7 @@ services:
     container_name: loger-db
     restart: always
     ports:
-      - "3306:3306"
+      - "3308:3306"
     environment:
       MYSQL_DATABASE: ${DB_DATABASE}
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
