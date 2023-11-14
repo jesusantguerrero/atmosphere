@@ -68,7 +68,7 @@ const getTransactionColor = (row: ITransaction) => {
 </script>
 
 <template>
-  <div class="pb-20 mt-5 bg-base-lvl-3">
+  <div class="pb-8 mt-5 bg-base-lvl-3">
     <CustomTable
       :cols="cols"
       :show-prepend="true"
@@ -82,13 +82,6 @@ const getTransactionColor = (row: ITransaction) => {
         <div class="font-bold" :class="[getTransactionColor(row), col?.class]">
           {{ formatMoney(row.total, row.currency_code) }}
         </div>
-      </template>
-
-      <template v-slot:description="{ scope: { row } }">
-        <span class="text-xs capitalize">
-          {{ row.description }}
-          {{ row.linked }}
-        </span>
       </template>
 
       <template v-slot:actions="{ scope: { row } }">
@@ -115,6 +108,7 @@ const getTransactionColor = (row: ITransaction) => {
         </div>
       </template>
     </CustomTable>
+    <slot name="footer" />
   </div>
 </template>
 
