@@ -1,5 +1,7 @@
 <?php
 
+use Dompdf\{Dompdf, Options};
+use App\Helpers\ExportPdfHelper;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Meal\MealController;
@@ -46,6 +48,7 @@ use App\Domains\Integration\Http\Controllers\ApiIntegrationController;
 if (config('app.env') == 'production') {
     URL::forceScheme('https');
 }
+
 
 Route::resource('onboarding', OnboardingController::class)->middleware(['auth:sanctum', 'atmosphere.unteamed', 'verified']);
 

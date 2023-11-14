@@ -21,7 +21,6 @@
         "docker:set-accounts": "docker compose exec web php artisan journal:set-accounts",
         "docker:artisan": "docker compose exec web php artisan",
         "docker:dev": "npm run docker:up-dev && npm run docker:install && npm run docker:migrate && npm run docker:seed && npm run docker:set-accounts",
-        "deploy": "git push live master",
         "docker:setup": "npm run docker:up && npm run docker:install && npm run docker:migrate && npm run docker:seed && npm run docker:set-accounts",
         "start": "npm run docker:up",
         "test:e2e": "cypress open"
