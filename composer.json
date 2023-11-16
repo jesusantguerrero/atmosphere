@@ -4,15 +4,6 @@
     "description": "The Laravel Framework.",
     "keywords": ["framework", "laravel"],
     "license": "MIT",
-    "repositories": [
-        {
-          "url": "../packages/journal",
-          "type": "path",
-          "options": {
-                "symlink": true
-            }
-        }
-    ],
     "require": {
         "php": "^8.1.0",
         "brick/money": "^0.6.0",
@@ -23,7 +14,7 @@
         "google/apiclient": "^2.12",
         "guzzlehttp/guzzle": "^7.0.2",
         "inertiajs/inertia-laravel": "^0.6.3",
-        "insane/journal": "dev-feat/credit-cards-support",
+        "insane/journal": "dev-master",
         "insane/plan-module": "dev-master",
         "insane/watchlist-module": "dev-main",
         "joshbrw/laravel-module-installer": "^2.0",
