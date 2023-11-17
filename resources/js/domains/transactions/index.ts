@@ -1,5 +1,7 @@
 import { router } from "@inertiajs/vue3"
 import { ITransaction } from "./models"
+import { useTransactionStore } from "@/store/transactions"
+
 
 export * from "./formatters"
 export * from "./tableCols"
@@ -22,6 +24,7 @@ export const getVariances = (current = 0, last = 0) => {
 };
 
 
+
 export const removeTransaction = (transaction: ITransaction, only: string[] = []) => {
     if (confirm("Are you sure you want to remove this transaction?")) {
         router.delete(`/transactions/${transaction.id}`, {
@@ -33,6 +36,9 @@ export const removeTransaction = (transaction: ITransaction, only: string[] = []
                     preserveScroll: true,
                     preserveState: true,
                 });
+
+                const transactionStore = useTransactionStore();
+                transactionStore.emitTransaction(transaction as ITransaction, 'delete', transaction);
             }
         })
     }

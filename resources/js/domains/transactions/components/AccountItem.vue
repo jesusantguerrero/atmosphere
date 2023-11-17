@@ -30,6 +30,10 @@ const hasPendingReconciliation = computed(() => {
 const isReconciled = computed(() => {
     return account.reconciliation_last?.amount == account.balance;
 })
+
+const availableCredit = computed(() => {
+    return  parseFloat(account.credit_limit) + parseFloat(account.balance);
+})
 const creditLimitDate = computed(() => {
     const formatter = new Intl.PluralRules('en-US', {
         type: 'ordinal'
@@ -68,6 +72,9 @@ const creditLimitDate = computed(() => {
       <p class="relative text-sm" :class="{ 'text-red-400': isDebt(account.balance) }">
         <NumberHider />
         {{ formatMoney(account.balance, account.currency_code) }}
+        <span v-if="creditLimitDate" class="text-success">
+            ({{ formatMoney(availableCredit, account.currency_code) }} )
+        </span>
       </p>
     </section>
     <div class="hidden group-hover:flex transaction">

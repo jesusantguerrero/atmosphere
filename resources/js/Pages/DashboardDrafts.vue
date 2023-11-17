@@ -18,13 +18,6 @@
             isLoadingDrafts.value = false
         })
     }
-    const syncDrafts = async () => {
-        const url = `/api/finance/transactions/sync-drafts`;
-        return axios.get(url).then<ITransaction[]>(({ data }) => {
-            transactionsDraft.value = data;
-            isLoadingDrafts.value = false
-        })
-    }
 
     onMounted(() => {
         fetchTransactions()
@@ -48,7 +41,7 @@
     };
 
     const transactionStore = useTransactionStore();
-    const unsubscribe =  transactionStore.$onAction(({
+    transactionStore.$onAction(({
         name,
         store,
         args,
@@ -56,7 +49,7 @@
     }) => {
         after((result) => {
             const [savedValue, action, originalData] = args;
-            if (originalData && originalData.status == 'draft' && savedValue.status == 'verified') {
+            if ((originalData && originalData.status == 'draft' && savedValue.status == 'verified') || action == 'delete') {
                 fetchTransactions();
             }
         })

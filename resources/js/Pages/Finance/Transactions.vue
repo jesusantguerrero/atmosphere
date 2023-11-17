@@ -18,7 +18,7 @@ import TransactionTable from "@/domains/transactions/components/TransactionTable
 import TransactionSearch from "@/domains/transactions/components/TransactionSearch.vue";
 import DraftButtons from "@/domains/transactions/components/DraftButtons.vue";
 
-import { useTransactionModal } from "@/domains/transactions";
+import { removeTransaction, useTransactionModal } from "@/domains/transactions";
 import { useServerSearch, IServerSearchData } from "@/composables/useServerSearch";
 import { useAppContextStore } from "@/store";
 import { IAccount, ITransaction } from "@/domains/transactions/models";
@@ -100,13 +100,6 @@ const isDraft = computed(() => {
   return pageState?.filters?.status == "draft";
 });
 
-const removeTransaction = (transaction: ITransaction) => {
-  router.delete(`/transactions/${transaction.id}`, {
-    preserveState: true,
-    preserveScroll: true,
-  });
-};
-
 const findLinked = (transaction: ITransaction) => {
   router.patch(`/transactions/${transaction.id}/linked`, {
     // @ts-ignore
@@ -119,6 +112,15 @@ const findLinked = (transaction: ITransaction) => {
 const { openTransactionModal } = useTransactionModal();
 const handleEdit = (transaction: ITransaction) => {
     axios.get(`/transactions/${transaction.id}?json=true`).then(({ data }) => {
+        openTransactionModal({
+          transactionData: data,
+        });
+    })
+};
+
+const handleDuplicate = (transaction: ITransaction) => {
+    axios.get(`/transactions/${transaction.id}?json=true`).then(({ data }) => {
+        delete data.id;
         openTransactionModal({
           transactionData: data,
         });
@@ -230,7 +232,8 @@ const listData = computed(() => {
             :is-loading="isLoading"
             all-accounts
             @findLinked="findLinked"
-            @removed="removeTransaction"
+            @removed="removeTransaction($event, ['verified'])"
+            @duplicate="handleDuplicate"
             @edit="handleEdit"
         />
       </main>
