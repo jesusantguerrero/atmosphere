@@ -29,8 +29,9 @@ import MoreOptionsModal from "../MoreOptionsModal.vue";
 
 const { isOpen, closeTransactionModal } = useTransactionModal();
 const onTransactionSaved = () => {
-  router.reload();
-  closeTransactionModal();
+    debugger
+    router.reload();
+    closeTransactionModal();
 };
 const context = useAppContextStore();
 const modalMaxWidth = computed(() => {

@@ -18,7 +18,7 @@ withDefaults(defineProps<{
     cols: () => tableCols
 });
 
-const emit = defineEmits(["removed", "edit", "approved"]);
+const emit = defineEmits(["removed", "edit", "approved", "duplicate"]);
 
 const isTransferModalOpen = ref(false);
 
@@ -38,6 +38,10 @@ const options = (row: Record<string, any>) => {
     {
       name: "edit",
       label: "Edit",
+    },
+    {
+      name: "duplicate",
+      label: "Duplicate",
     },
     {
       name: "removed",

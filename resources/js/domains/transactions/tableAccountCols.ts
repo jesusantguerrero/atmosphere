@@ -7,7 +7,7 @@ export const tableAccountCols = (accountId: number, showSelects?: false) => [
     ...( showSelects ? [{
         label: "",
         name: "selection",
-        width: 30,
+        width: 20,
         class: 'text-center',
         headerClass: 'text-center',
         render(row: any) {
@@ -35,6 +35,7 @@ export const tableAccountCols = (accountId: number, showSelects?: false) => [
         label: "Payee",
         name: "payee",
         class: 'w-full',
+        width: 200,
         render(row: any) {
             try {
                 const account = row.account_id === accountId ? row.counter_account : row.account
@@ -49,19 +50,15 @@ export const tableAccountCols = (accountId: number, showSelects?: false) => [
         }
     },
     {
-        label: "Category",
-        name: "category",
-        width: 150,
-        align: 'center',
-        class: 'text-center',
-        render(row: any) {
-            return row.category?.name
-        }
-    },
-    {
-        label: "Description",
+        label: "Description/category",
         name: "description",
-        width: 300,
+        width: 220,
+        render(row: any) {
+            return h('div', [
+                h('div', row.description),
+                h('div', { class: 'text-primary font-bold' },  row.category?.name ?? row.category_name)
+            ])
+        }
     },
     {
         label: "Amount",

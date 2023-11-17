@@ -2507,12 +2507,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/insane-code/journal.git",
-                "reference": "e4749385670fa9f7183a2f1bbb65a014e5eac9ee"
+                "reference": "5aff6d54e18c1c566f3f1b94297b71394c59e10a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/insane-code/journal/zipball/e4749385670fa9f7183a2f1bbb65a014e5eac9ee",
-                "reference": "e4749385670fa9f7183a2f1bbb65a014e5eac9ee",
+                "url": "https://api.github.com/repos/insane-code/journal/zipball/5aff6d54e18c1c566f3f1b94297b71394c59e10a",
+                "reference": "5aff6d54e18c1c566f3f1b94297b71394c59e10a",
                 "shasum": ""
             },
             "require": {
@@ -2561,9 +2561,9 @@
             ],
             "support": {
                 "issues": "https://github.com/insane-code/journal/issues",
-                "source": "https://github.com/insane-code/journal/tree/v1.0.2"
+                "source": "https://github.com/insane-code/journal/tree/v1.0.3"
             },
-            "time": "2023-10-28T16:52:32+00:00"
+            "time": "2023-11-16T23:51:06+00:00"
         },
         {
             "name": "insane/plan-module",

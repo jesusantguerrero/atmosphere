@@ -28,6 +28,7 @@ import { tableAccountCols } from "@/domains/transactions";
 import { useAppContextStore } from "@/store";
 import { formatMoney } from "@/utils";
 import { IAccount, ICategory, ITransaction } from "@/domains/transactions/models";
+import axios from "axios";
 
 
 const { openTransactionModal } = useTransactionModal();
@@ -70,12 +71,13 @@ const isDraft = computed(() => {
 	return serverSearchOptions.value?.filters?.status == "draft";
 });
 
-const removeTransaction = (transaction: ITransaction) => {
-	router.delete(`/transactions/${transaction.id}`, {
-		onSuccess() {
-			router.reload();
-		},
-	});
+const handleDuplicate = (transaction: ITransaction) => {
+    axios.get(`/transactions/${transaction.id}?json=true`).then(({ data }) => {
+        delete data.id;
+        openTransactionModal({
+          transactionData: data,
+        });
+    })
 };
 
 const findLinked = (transaction: ITransaction) => {
@@ -252,7 +254,8 @@ const reconcileForm = useForm({
                 :server-search-options="serverSearchOptions"
                 :is-loading="isLoading"
                 @findLinked="findLinked"
-                @removed="removeTransaction"
+                @removed="removeTransaction($event, ['verified'])"
+                @duplicate="handleDuplicate"
                 @edit="handleEdit"
             />
       </section>

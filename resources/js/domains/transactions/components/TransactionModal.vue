@@ -170,7 +170,7 @@ const transactionStore = useTransactionStore();
 
 const isAddingAnother = ref(false);
 const onSubmit = (addAnother = false) => {
-    isAddingAnother.value = addAnother;
+  isAddingAnother.value = addAnother;
   const actions = {
     transaction: {
       save: {
@@ -233,7 +233,7 @@ const onSubmit = (addAnother = false) => {
       return data;
     })
     .submit(action.method, action.url(), {
-        preserveState: false,
+        preserveState: true,
         preserveScroll: true,
       onBefore(evt) {
         if (!evt.data.total) {
@@ -247,7 +247,7 @@ const onSubmit = (addAnother = false) => {
             const items = splits.value;
             gridSplitsRef.value?.reset(items);
         })
-        if (!addAnother) {
+        if (!isAddingAnother.value) {
             emit("close");
         }
         transactionStore.emitTransaction(lastSaved as ITransaction, action.method, props.transactionData);
