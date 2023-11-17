@@ -24,6 +24,7 @@
     import { useTransactionModal } from '@/domains/transactions'
     import { useOnMessage } from '@/composables/useFirebase'
     import AppProvider from './AppProvider.vue'
+    import { useAppContextStore } from '@/store'
     // import LogerAssistant from '../organisms/logerAssistant.vue'
 
     const props = defineProps({
@@ -38,6 +39,8 @@
             default: false
         },
     })
+
+    const context = useAppContextStore()
 
     const { appMenu, headerMenu, mobileMenu } = useAppMenu(t)
     const serverMenu = computed(() => {
@@ -145,7 +148,7 @@
                              />
                              <!-- <LogerAssistant /> -->
                              <AtTeamSelect
-                                v-if="$page.props.user.all_teams.length"
+                                v-if="$page.props.user.all_teams.length && !context.isMobile"
                                 :has-team-features="$page.props.jetstream.hasTeamFeatures"
                                 :can-create-teams="$page.props.jetstream.canCreateTeams"
                                 :current-team="$page.props.user.current_team"

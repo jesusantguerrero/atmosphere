@@ -33,12 +33,6 @@ export const useAppMenu = t => {
             }
         },
         {
-            icon: 'fas fa-heart',
-            label: t('Relationship'),
-            to: '/relationships/partner',
-            as: Link
-        },
-        {
             icon: 'fas fa-home',
             label: t('Housing'),
             to: '/housing',
@@ -46,6 +40,12 @@ export const useAppMenu = t => {
             isActiveFunction(url, currentPath) {
                 return /housing/.test(currentPath)
              }
+        },
+        {
+            icon: 'fas fa-heart',
+            label: t('Relationship'),
+            to: '/relationships/partner',
+            as: Link
         },
         {
             icon: 'fas fa-users',
@@ -67,7 +67,7 @@ export const useAppMenu = t => {
         }
     ].filter(item => !item.hidden);
 
-    let mobileMenu = cloneDeep(appMenu)
+    let mobileMenu = cloneDeep(appMenu).splice(0, 4)
     mobileMenu.splice(2, null, {
         name: 'add',
         label: 'Add',

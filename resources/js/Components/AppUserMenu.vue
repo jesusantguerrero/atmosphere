@@ -1,3 +1,34 @@
+<script setup lang="ts">
+import JetDropdown from '@/Components/atoms/Dropdown.vue'
+import JetDropdownLink from '@/Components/atoms/DropdownLink.vue'
+import AppUserMenuButton from './AppUserMenuButton.vue';
+
+import { useAppContextStore } from '@/store';
+import { AtDropdownLink } from 'atmosphere-ui';
+import { useImportModal } from '@/domains/transactions/useImportModal';
+
+defineProps({
+    hasImage: {
+        type: Boolean
+    },
+    hasApiFeatures: {
+        type: Boolean
+    },
+    imageUrl: {
+        type: String
+    },
+    user: {
+        type: Object
+    }
+})
+
+const context = useAppContextStore()
+
+
+const { toggleModal: toggleImportModal } = useImportModal();
+</script>
+
+
 <template>
     <JetDropdown align="right" width="48" v-if="!context.isMobile">
         <template #trigger>
@@ -60,33 +91,3 @@
         @click="context.toggleOptionsModal()"
     />
 </template>
-
-<script setup lang="ts">
-import JetDropdown from '@/Components/atoms/Dropdown.vue'
-import JetDropdownLink from '@/Components/atoms/DropdownLink.vue'
-import AppUserMenuButton from './AppUserMenuButton.vue';
-
-import { useAppContextStore } from '@/store';
-import { AtDropdownLink } from 'atmosphere-ui';
-import { useImportModal } from '@/domains/transactions/useImportModal';
-
-defineProps({
-    hasImage: {
-        type: Boolean
-    },
-    hasApiFeatures: {
-        type: Boolean
-    },
-    imageUrl: {
-        type: String
-    },
-    user: {
-        type: Object
-    }
-})
-
-const context = useAppContextStore()
-
-
-const { toggleModal: toggleImportModal } = useImportModal();
-</script>

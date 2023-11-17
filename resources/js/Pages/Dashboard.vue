@@ -116,33 +116,33 @@
             <AppIcon size="medium" class="ml-2" />
         </template>
 
-        <div class="px-5 mx-auto mt-5 space-y-10 md:space-y-0 md:space-x-10 md:flex max-w-screen-2xl sm:px-6 lg:px-8">
+        <div class="px-5 mx-auto mt-5 mb-10 md:space-y-0 md:space-x-10 md:flex max-w-screen-2xl sm:px-6 lg:px-8">
             <div class="mt-6 md:w-9/12">
-                <section class="flex space-x-4">
+                <section class="flex flex-col md:flex-row md:space-x-4">
                     <BudgetTracker
-                        class="w-8/12 "
+                        class="md:w-8/12 w-full order-1 mt-2 md:mt-0"
                         ref="budgetTrackerRef"
                         :budget="budgetTotal"
                         :expenses="transactionTotal.total_amount"
-                        :message="t('dashboard.welcome')"
+                        :message="$t('dashboard.welcome')"
                         :username="user.name"
                         @section-click="selected=$event"
                     >
                         <ChartCurrentVsPrevious
                             v-if="selected=='expenses'"
-                            class="w-full mt-4 mb-10 overflow-hidden bg-white rounded-lg"
+                            class="w-full mt-4 md:mb-10 overflow-hidden bg-white rounded-lg"
                             :class="[cardShadow]"
                             :title="t('This month vs last month')"
                             ref="ComparisonRevenue"
                             :data="expenses"
                         />
                     </BudgetTracker>
-                    <WeatherWidget class="w-4/12" />
+                    <WeatherWidget class="md:w-4/12" />
                 </section>
 
                 <section class="flex space-x-4">
                     <ChartComparison
-                        class="w-full mt-4 mb-10 overflow-hidden bg-white rounded-lg"
+                        class="w-full mt-4 md:mb-10 overflow-hidden bg-white rounded-lg"
                         :class="[cardShadow]"
                         :title="$t('Spending summary')"
                         ref="ComparisonRevenue"
@@ -154,9 +154,8 @@
                         @action="router.visit('/trends/income-expenses-graph')"
                     />
                 </section>
-
             </div>
-            <div class="py-6 space-y-4 md:w-3/12">
+            <div class="py-6  space-y-4 md:w-3/12">
                 <OccurrenceCard :checks="checks" />
                 <OnboardingSteps
                     v-if="onboarding.steps"
