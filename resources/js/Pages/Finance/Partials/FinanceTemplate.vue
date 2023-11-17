@@ -72,12 +72,3 @@
         </aside>
     </article>
 </template>
-
-
-
-
-<style lang="scss" scoped>
-.aside-content {
-    width: -webkit-fill-available;
-}
-</style>
