@@ -1,6 +1,6 @@
 
 <script setup lang="ts">
-import { computed, toRefs, watch, ref } from "vue";
+import { computed, toRefs, ref } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
 import { format, subMonths } from "date-fns";
 // @ts-ignore
@@ -215,7 +215,7 @@ const deleteBulkTransactions = () => {
                 </div>
             </WidgetTitleCard>
 
-            <section class="grid grid-cols-2 gap-2">
+            <section class="grid md:grid-cols-2 gap-2">
                 <WidgetTitleCard title="Planned Transactions" class="hidden md:block">
                     <TransactionsList
                       class="w-full"

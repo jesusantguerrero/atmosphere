@@ -13,3 +13,9 @@
 .multiselect__input {
   @apply bg-base-lvl-2;
 }
+
+.aside-content {
+    width: -webkit-fill-available;
+    height: 100%;
+    overflow: auto;
+}
