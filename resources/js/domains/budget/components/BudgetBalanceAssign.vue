@@ -208,8 +208,12 @@
             </template>
             <section class="text-center">
                 <p>Available for funds: <MoneyPresenter :value="toAssign.availableForFunding"/> </p>
+                <p class="text-red-500">Funded: <MoneyPresenter :value="toAssign.creditCardFunded"/></p>
+                <p>funded spending: <MoneyPresenter :value="toAssign.funded_spending"/> </p>
+                <p class="text-green-500">Total: <MoneyPresenter :value="toAssign.availableForFunding + toAssign.creditCardFunded"/> </p>
                 <p>Budgeted: <MoneyPresenter :value="toAssign.budgeted"/> </p>
-                <p>Funded: <MoneyPresenter :value="toAssign.creditCardFunded"/> </p>
+                <p>payments: <MoneyPresenter :value="toAssign.payments"/> </p>
+                <p class="text-green-500">Total: <MoneyPresenter :value="(toAssign.availableForFunding + toAssign.creditCardFunded) - (toAssign.budgeted + toAssign.payments)"/> </p>
                 <p>Assigned in month: <MoneyPresenter :value="toAssign.assigned" /> </p>
                 <p>Balance: <MoneyPresenter :value="toAssign.balance" /> </p>
             </section>

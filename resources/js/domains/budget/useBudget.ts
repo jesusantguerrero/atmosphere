@@ -1,7 +1,10 @@
+import { isCurrentMonth } from './../../utils/index';
+import { budgetCols } from './budgetCols';
 import { cloneDeep } from "lodash";
 import { computed, watch, reactive, toRefs, Ref } from "vue";
 import { getCategoriesTotals, getGroupTotals } from './index';
 import { ICategory } from "../transactions/models";
+import { format } from 'date-fns';
 
 export const BudgetState = reactive({
     data: [],
@@ -50,16 +53,20 @@ export const BudgetState = reactive({
     readyToAssign: computed(() => {
         const budgetTotals = BudgetState.budgetTotals;
         const category = BudgetState.inflow?.subCategories[0] ?? {}
-        const creditCardFunded = parseFloat(budgetTotals?.fundedSpendingPreviousMonth ?? 0) + parseFloat(category?.funded_spending ?? 0)
-        const availableForFunding = (category?.activity + parseFloat(category?.left_from_last_month ?? 0));
-        const assigned = budgetTotals.budgeted + (creditCardFunded - budgetTotals.payments);
-        const balance = availableForFunding - assigned;
+        const creditCardFunded = parseFloat(budgetTotals?.fundedSpendingPreviousMonth ?? 0)
+        const availableForFunding = parseFloat(category.available ?? 0);
+        const fundedSpending = parseFloat(category?.funded_spending ?? 0);
+        const assigned = budgetTotals.budgeted;
+        const isCurrentMonth = category.month == format(new Date(), 'yyyy-MM-01')
+        const balance = (availableForFunding) - (assigned + (isCurrentMonth ? creditCardFunded : 0));
+        console.log(category)
 
         return {
             assigned,
             availableForFunding,
             balance,
             creditCardFunded,
+            fundedSpending,
             inflow: BudgetState.inflow?.activity,
             toAssign: category,
             ...budgetTotals,

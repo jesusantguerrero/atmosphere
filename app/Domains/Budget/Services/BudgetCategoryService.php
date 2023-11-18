@@ -121,26 +121,31 @@ class BudgetCategoryService
                 ->toFloat();
         } else {
             $monthBalance = (float) $category->getMonthBalance($yearMonth)->balance;
-            $available = Money::of($budgeted, 'USD')->plus($monthBudget?->left_from_last_month ?? 0)->plus($monthBalance)->getAmount()->toFloat();
+
+            $available = Money::of($budgeted, 'USD')
+                        ->plus($monthBudget?->left_from_last_month ?? 0)
+                        ->plus($monthBalance)
+                        ->getAmount()
+                        ->toFloat();
+
+            if ($category->display_id == 'ready_to_assign') {
+                $available = $monthBudget?->available;
+                $monthBalance =  $monthBudget?->activity;
+                // dd($monthBalance, $available, $monthBalance, $monthBudget);
+            }
         }
 
         $data = [
-            'budgeted' => $budgeted,
+            'budgeted' => $monthBudget?->budgeted,
             'activity' => $monthBalance,
             'available' => $available,
             'payments' => $monthBudget?->payments ?? 0,
             'left_from_last_month' => $monthBudget?->left_from_last_month ?? 0,
-            'funded_spending_previous_month' => $monthBudget?->funded_spending_previous_month ?? 0,
+            'funded_spending_previous_month' => 0,
             'funded_spending' => $monthBudget?->funded_spending ?? 0,
             'name' => $category->name,
             'month' => $yearMonth,
         ];
-
-        // if ($category->id == 733) {
-        //     // dd($data);
-        //     // dd($prevMonthLeftOver);
-        // }
-
         return $data;
     }
 
@@ -282,6 +287,8 @@ class BudgetCategoryService
             $transactions = $category->account->getMonthFundedSpending($yearMonth)->balance;
             $payments = $category->account->getMonthPayments($yearMonth)->balance;
 
+            $fundedSpending = ($transactions * -1) ?? 0;
+
             BudgetMonth::updateOrCreate([
                 'category_id' => $category->id,
                 'team_id' => $category->team_id,
@@ -289,8 +296,9 @@ class BudgetCategoryService
                 'name' => $month,
             ], [
                 'user_id' => $category->user_id,
-                'funded_spending' => ($transactions * -1) ?? 0,
+                'funded_spending' => $fundedSpending,
                 'payments' => $payments ?? 0,
+                'available' =>  DB::raw("$fundedSpending + available  - $payments"),
             ]);
 
             echo "{$category->name} updated to {$activity}".PHP_EOL;

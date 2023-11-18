@@ -120,7 +120,7 @@
             <div class="mt-6 md:w-9/12">
                 <section class="flex flex-col md:flex-row md:space-x-4">
                     <BudgetTracker
-                        class="md:w-8/12 w-full order-1 mt-2 md:mt-0"
+                        class="md:w-8/12 w-full order-1  mt-2 md:mt-0"
                         ref="budgetTrackerRef"
                         :budget="budgetTotal"
                         :expenses="transactionTotal.total_amount"
@@ -137,7 +137,7 @@
                             :data="expenses"
                         />
                     </BudgetTracker>
-                    <WeatherWidget class="md:w-4/12" />
+                    <WeatherWidget class="md:w-4/12 md:order-1" />
                 </section>
 
                 <section class="flex space-x-4">
