@@ -33,25 +33,30 @@ const selectedCategories = computed({
 </script>
 
 <template>
-        <NSelect
-            filterable
-            clearable
-            tag
-            size="large"
-            class="w-48 md:w-full"
-            multiple
-            v-model:value="selectedAccounts"
-            :default-expand-all="true"
-            :options="accountsOptions"
-        />
-        <NSelect
-            filterable
-            clearable
-            tag
-            size="large"
-            multiple
-            v-model:value="selectedCategories"
-            :default-expand-all="true"
-            :options="categoryOptions"
-        />
+        <section class="w-80">
+            <NSelect
+                filterable
+                clearable
+                tag
+                size="large"
+                class="w-full"
+                multiple
+                v-model:value="selectedAccounts"
+                :default-expand-all="true"
+                :options="accountsOptions"
+            />
+        </section>
+        <section class="w-full bg-red-500">
+            <NSelect
+                filterable
+                clearable
+                tag
+                size="large"
+                multiple
+                class="w-full"
+                v-model:value="selectedCategories"
+                :default-expand-all="true"
+                :options="categoryOptions"
+            />
+        </section>
 </template>
