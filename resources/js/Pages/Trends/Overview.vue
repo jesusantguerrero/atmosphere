@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, toRefs, inject } from "vue";
-import { Link, router } from "@inertiajs/vue3";
+import { computed, toRefs } from "vue";
+import { router } from "@inertiajs/vue3";
 // @ts-ignore
 import { AtDatePager } from "atmosphere-ui";
 
@@ -12,13 +12,11 @@ import TrendTemplate from "./Partials/TrendTemplate.vue";
 import TrendSectionNav from "./Partials/TrendSectionNav.vue";
 import ChartComparison from "@/Components/widgets/ChartComparison.vue";
 import WidgetTitleCard from "@/Components/molecules/WidgetTitleCard.vue";
-import Collapse from "@/Components/molecules/Collapse.vue";
 
 import ExpenseChartWidget from "@/domains/transactions/components/ExpenseChartWidget.vue";
 
 import { useServerSearch } from "@/composables/useServerSearch";
-import { NSelect } from "naive-ui";
-import AccountFilters from "./AccountFilters.vue";
+import AccountFilters from "@/domains/transactions/components/AccountFilters.vue";
 
 const props = defineProps({
   user: {
