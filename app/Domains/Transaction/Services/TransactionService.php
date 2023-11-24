@@ -223,8 +223,8 @@ class TransactionService
     public static function getNetWorth($teamId, $startDate, $endDate)
     {
         return DB::select("
-         with data (month_date, total, type, balance_type, detail_type) AS (
-            SELECT LAST_DAY(tl.date) as month_date, tl.amount * tl.type, tl.type, accounts.balance_type, adt.name
+         with data (date_unit, total, type, balance_type, detail_type) AS (
+            SELECT LAST_DAY(tl.date) as date_unit, tl.amount * tl.type, tl.type, accounts.balance_type, adt.name
             FROM transaction_lines tl
             INNER JOIN transactions t on tl.transaction_id = t.id
             INNER JOIN accounts on tl.account_id = accounts.id
@@ -234,12 +234,12 @@ class TransactionService
             AND tl.team_id = :teamId
             AND balance_type IS NOT null
          )
-          SELECT month_date,
-          SUM(SUM(CASE WHEN balance_type = 'debit' THEN total ELSE 0 END)) over (ORDER BY month_date) as assets,
-          SUM(SUM(CASE WHEN balance_type = 'credit' THEN total ELSE 0 END)) over (ORDER BY month_date) as debts
+          SELECT date_unit,
+          SUM(SUM(CASE WHEN balance_type = 'debit' THEN total ELSE 0 END)) over (ORDER BY date_unit) as assets,
+          SUM(SUM(CASE WHEN balance_type = 'credit' THEN total ELSE 0 END)) over (ORDER BY date_unit) as debts
           FROM DATA
-          GROUP BY month_date
-          ORDER BY month_date DESC
+          GROUP BY date_unit
+          ORDER BY date_unit DESC
           LIMIT 12;
         ", [
             'teamId' => $teamId,

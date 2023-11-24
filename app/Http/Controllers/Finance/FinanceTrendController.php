@@ -143,8 +143,13 @@ class FinanceTrendController extends Controller
         [$startDate, $endDate] = $this->getFilterDates($filters);
         $teamId = request()->user()->current_team_id;
 
+        $span = [
+            "month" => 12,
+            "year" => 2
+        ];
+
         return [
-            'data' => ReportService::getIncomeVsExpenses($teamId, 12),
+            'data' => ReportService::getIncomeVsExpenses($teamId, 2, $startDate, 'year'),
             'metaData' => [
                 'name' => 'incomeExpensesGraph',
                 'title' => 'Income vs Expenses',

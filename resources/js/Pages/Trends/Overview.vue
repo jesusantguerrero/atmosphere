@@ -129,7 +129,6 @@ const handleCategories = (categories: ICategory[]) => {
     <template #header>
       <TrendSectionNav :sections="trends">
         <template #actions>
-            <section class="flex w-full my-auto space-x-2">
                 <AtDatePager
                     class="w-full h-12 border-none bg-base-lvl-1 text-body"
                     v-model:startDate="pageState.dates.startDate"
@@ -139,11 +138,10 @@ const handleCategories = (categories: ICategory[]) => {
                     next-mode="month"
                 />
                 <AccountFilters
-                    class="w-full"
+                    class="w-full bg-red-500"
                     v-model:accounts="pageState.filters.account"
                     v-model:categories="pageState.filters.category"
                 />
-            </section>
         </template>
       </TrendSectionNav>
     </template>

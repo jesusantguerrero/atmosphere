@@ -6,8 +6,6 @@
     import { useImportModal } from '@/domains/transactions/useImportModal';
     import { PANEL_SIZES } from '@/utils/constants';
 
-    const { toggleModal: toggleImportModal } = useImportModal();
-
     const props = defineProps({
         title: {
             type: String
@@ -32,6 +30,9 @@
         },
         forceShowPanel: {
             type: Boolean,
+        },
+        hidePanel: {
+            type: Boolean
         }
     });
 
@@ -53,11 +54,14 @@
 
 <template>
     <article class="relative flex flex-col-reverse w-full pt-16 pb-20 mx-auto md:flex-row md:space-x-2 md:max-w-screen-2xl">
-        <main class="w-full overflow-hidden md:pr-5 md:w-7/12 lg:w-10/12 md:pl-8">
+        <main
+            class="w-full overflow-hidden md:pr-5  md:pl-8"
+            :class="!hidePanel && 'md:w-7/12 lg:w-10/12'"
+        >
             <slot />
         </main>
 
-        <aside class="relative w-full h-screen overflow-auto md:px-2 md:block" :class="panelStyles">
+        <aside class="relative w-full h-screen overflow-auto md:px-2 md:block" :class="panelStyles" v-if="!hidePanel">
             <section class="px-2 md:fixed aside-content md:pr-8">
                 <slot name="prepend-panel" />
                 <slot name="panel">
