@@ -12,41 +12,12 @@ use Insane\Journal\Models\Core\Account;
 use Insane\Journal\Models\Core\Category;
 use App\Domains\Budget\Data\CategoryData;
 use App\Domains\Budget\Models\BudgetMonth;
-use App\Domains\Budget\Models\BudgetTarget;
 use App\Domains\Budget\Data\BudgetReservedNames;
 
 class BudgetCategoryService
 {
     public function __construct()
     {
-    }
-
-    public function addTarget(Category $category, mixed $postData)
-    {
-        return $category->budget()->create(array_merge($postData, [
-            'name' => $category->name ?? $category->display_id,
-            'team_id' => $category->team_id,
-        ]));
-    }
-
-    public function updateTarget(Category $category, mixed $postData)
-    {
-        return $category->budget()->update(array_merge($postData, [
-            'name' => $category->name ?? $category->display_id,
-        ]));
-    }
-
-    public static function getSavingsBalance($teamId, $startDate, $endDate)
-    {
-        $endMonth = substr((string) $endDate, 0, 7);
-
-        return DB::query()
-            ->where('budget_targets.team_id', $teamId)
-            ->whereIn('budget_targets.target_type', ['saving_balance'])
-            ->whereRaw("date_format(month, '%Y-%m') <= '$endMonth'")
-            ->from('budget_months')
-            ->join('budget_targets', 'budget_targets.category_id', 'budget_months.category_id')
-            ->sum(DB::raw('budgeted + activity'));
     }
 
     public function getLastTransactionMonth($category)
@@ -210,11 +181,6 @@ class BudgetCategoryService
             ->whereRaw("date_format(month, '%Y-%m') <= '$yearMonth'")
             ->from('budget_months')
             ->sum(DB::raw('funded_spending - payments'));
-    }
-
-    public static function getNextBudgetItems($teamId)
-    {
-        BudgetTarget::getNextTargets($teamId);
     }
 
     public static function withBudgetInfo(Category $category)
