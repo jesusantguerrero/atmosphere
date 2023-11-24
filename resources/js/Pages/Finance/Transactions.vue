@@ -22,6 +22,7 @@ import { removeTransaction, useTransactionModal } from "@/domains/transactions";
 import { useServerSearch, IServerSearchData } from "@/composables/useServerSearch";
 import { useAppContextStore } from "@/store";
 import { IAccount, ITransaction } from "@/domains/transactions/models";
+import AccountFilter from "@/domains/transactions/components/AccountFilter.vue";
 
 
 const props = withDefaults(defineProps<{
@@ -154,6 +155,10 @@ const monthName = computed(() => format(pageState.dates.startDate, "MMMM"))
 const listData = computed(() => {
     return transactions.data;
 })
+
+const goToAccount = (accountId: number) => {
+    router.visit(`/finance/accounts/${accountId}`)
+}
 </script>
 
 
@@ -188,7 +193,7 @@ const listData = computed(() => {
     <FinanceTemplate
       title="Transactions"
       :accounts="accounts"
-      :force-show-panel="!showTransactionTable"
+      hide-panel
     >
       <template #prepend-panel v-if="context.isMobile">
         <button
@@ -204,11 +209,10 @@ const listData = computed(() => {
       <main class="mt-4 ">
         <header class="flex bg-base-lvl-3 justify-between px-6 py-2">
             <section>
-                <h4 class="text-lg font-bold text-body-1">
-                    All transactions in <span class="text-secondary">
-                        {{  monthName }}
-                    </span>
-                </h4>
+                <AccountFilter
+                    show-all
+                    @update:model-value="goToAccount"
+                />
             </section>
 
             <section class="flex items-center space-x-2">
