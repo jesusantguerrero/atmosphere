@@ -12,7 +12,6 @@ use Insane\Journal\Models\Core\Account;
 use Insane\Journal\Models\Core\Category;
 use App\Domains\Budget\Data\CategoryData;
 use App\Domains\Budget\Models\BudgetMonth;
-use App\Domains\Budget\Data\BudgetReservedNames;
 
 class BudgetCategoryService
 {
@@ -31,27 +30,6 @@ class BudgetCategoryService
             ->join('budget_targets', 'budget_targets.category_id', 'budget_months.category_id')
             ->orderByDesc('month')
             ->first();
-    }
-
-    public function assignBudget(Category $category, string $month, mixed $postData)
-    {
-        $amount = (float) $postData['budgeted'];
-        $type = $postData['type'] ?? 'budgeted';
-        $shouldAggregate = $category->name === BudgetReservedNames::READY_TO_ASSIGN->value || $type === 'movement';
-
-        $budgetMonth = BudgetMonth::updateOrCreate([
-            'category_id' => $category->id,
-            'team_id' => $category->team_id,
-            'month' => $month,
-            'name' => $month,
-        ], [
-            'user_id' => $category->user_id,
-            'budgeted' => $shouldAggregate ? DB::raw("budgeted + $amount") : $amount,
-        ]);
-
-        BudgetAssigned::dispatch($budgetMonth, $postData);
-
-        return $budgetMonth;
     }
 
     public function moveBudget(Category $category, string $month, mixed $postData)
@@ -102,7 +80,6 @@ class BudgetCategoryService
             if ($category->display_id == 'ready_to_assign') {
                 $available = $monthBudget?->available;
                 $monthBalance =  $monthBudget?->activity;
-                // dd($monthBalance, $available, $monthBalance, $monthBudget);
             }
         }
 
@@ -217,6 +194,23 @@ class BudgetCategoryService
         ]);
 
         echo "{$category->name} updated to {$activity}".PHP_EOL;
+    }
+
+    public function updateMonthBalances(Category $category, string $month)
+    {
+        $monthBudgetInfo = $this->getBudgetInfo($category, $month);
+        BudgetMonth::updateOrCreate([
+            'category_id' => $category->id,
+            'team_id' => $category->team_id,
+            'month' => $month,
+            'name' => $month,
+        ], [
+            'available' => $monthBudgetInfo['available'],
+            'payments' =>  $monthBudgetInfo['payments'],
+            'left_from_last_month' => $monthBudgetInfo['left_from_last_month'],
+            'funded_spending_previous_month' => 0,
+            'funded_spending' => $monthBudgetInfo['funded_spending'],
+        ]);
     }
 
     public function getCategoryActivity(Category $category, string $month)

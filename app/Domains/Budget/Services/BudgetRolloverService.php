@@ -6,6 +6,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Category;
 use App\Domains\Budget\Models\BudgetMonth;
+use App\Domains\Budget\Data\BudgetAssignData;
 use App\Domains\Budget\Data\BudgetReservedNames;
 
 class BudgetRolloverService {
@@ -39,6 +40,9 @@ class BudgetRolloverService {
             'name' => $month,
         ])->first();
         $available = ($budgetMonth?->budgeted ?? 0) + ($budgetMonth->left_from_last_month ?? 0) + $activity;
+        // if ($budgetMonth) {
+        //     $this->fixBudgetMovements($budgetMonth);
+        // }
         $this->movePositiveAmounts($category, $month, $available);
 
     }
@@ -115,6 +119,16 @@ class BudgetRolloverService {
             'left_from_last_month' => $available ?? 0,
             'funded_spending_previous_month' => 0,
         ]);
+    }
+
+    private function fixBudgetMovements($budgetMonth) {
+        (new BudgetMovementService(new BudgetCategoryService()))->registerAssignment(new BudgetAssignData(
+                $budgetMonth->team_id,
+                $budgetMonth->user_id,
+                $budgetMonth->month,
+                $budgetMonth->category_id,
+                $budgetMonth->budgeted,
+        ), true);
     }
 
     private function reduceOverspent() {

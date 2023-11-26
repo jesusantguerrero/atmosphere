@@ -29,27 +29,6 @@ class BudgetMonthService
             ->sum(DB::raw('budgeted + activity'));
     }
 
-    public function assignBudget(Category $category, string $month, mixed $postData)
-    {
-        $amount = (float) $postData['budgeted'];
-        $type = $postData['type'] ?? 'budgeted';
-        $shouldAggregate = $category->name === BudgetReservedNames::READY_TO_ASSIGN->value || $type === 'movement';
-
-        $month = BudgetMonth::updateOrCreate([
-            'category_id' => $category->id,
-            'team_id' => $category->team_id,
-            'month' => $month,
-            'name' => $month,
-        ], [
-            'user_id' => $category->user_id,
-            'budgeted' => $shouldAggregate ? DB::raw("budgeted + $amount") : $amount,
-        ]);
-
-        BudgetAssigned::dispatch($month, $postData);
-
-        return $month;
-    }
-
     public function getMonthByCategory($category, string $month)
     {
         return BudgetMonth::where([

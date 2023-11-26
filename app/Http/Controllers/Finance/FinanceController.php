@@ -11,7 +11,6 @@ use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Transaction\Models\Transaction;
 use Freesgen\Atmosphere\Http\InertiaController;
 use App\Domains\Budget\Services\BudgetMonthService;
-use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Domains\Transaction\Services\TransactionService;
 use App\Domains\Transaction\Services\PlannedTransactionService;
 
