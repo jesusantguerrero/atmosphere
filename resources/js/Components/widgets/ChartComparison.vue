@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, inject } from "vue";
+import { computed, ref, inject, watch } from "vue";
 
 
 import LogerChart from "@/Components/organisms/LogerChart.vue";
@@ -35,7 +35,7 @@ const props = defineProps({
     }
 });
 
-const selectedDate = ref()
+const selectedDate = ref(null)
 const currentSeries = computed(() => {
     const generalSeries = [{
         name: 'Expenses',
@@ -66,6 +66,10 @@ const state = computed(() => {
         series: currentSeries.value
     }
 });
+
+watch(() => props.data, () => {
+    selectedDate.value = null
+})
 
 </script>
 

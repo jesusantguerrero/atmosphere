@@ -96,6 +96,26 @@ class BudgetCategoryService
         ];
         return $data;
     }
+    public function getBudgetData($category, string $month)
+    {
+        $yearMonth = substr((string) $month, 0, 7);
+        $monthBudget = (new BudgetMonthService())->getMonthByCategory($category, $yearMonth.'-01');
+
+
+        $data = [
+            'budgeted' => $monthBudget?->budgeted,
+            'activity' => $monthBudget?->activity,
+            'available' => $monthBudget?->available,
+            'payments' => $monthBudget?->payments ?? 0,
+            'left_from_last_month' => $monthBudget?->left_from_last_month ?? 0,
+            'funded_spending_previous_month' => 0,
+            'funded_spending' => $monthBudget?->funded_spending ?? 0,
+            'name' => $category->name,
+            'month' => $yearMonth,
+        ];
+
+        return $data;
+    }
 
     public static function getBudgetSubcategories($teamId)
     {

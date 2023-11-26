@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { inject, computed } from "vue";
+import { inject, computed, h } from "vue";
 
-import { NSelect } from "naive-ui";
+import { NSelect, SelectRenderLabel } from "naive-ui";
 import { IAccount } from "@/domains/transactions/models";
+import { formatMoney } from "@/utils";
 
 const props = defineProps<{
     modelValue: IAccount,
@@ -22,6 +23,15 @@ const selectedAccount = computed({
     }
 })
 
+const renderLabel: SelectRenderLabel = (option) => {
+      return h('div',{class: 'w-full flex justify-between space-x-4'},
+        [
+          h('span', option.label),
+          h('div', formatMoney(option.balance))
+        ]
+      )
+    }
+
 </script>
 
 <template>
@@ -35,6 +45,7 @@ const selectedAccount = computed({
             :multiple="multiple"
             v-model:value="selectedAccount"
             :default-expand-all="true"
+            :render-label="renderLabel"
             :options="accountsOptions"
         />
     </section>

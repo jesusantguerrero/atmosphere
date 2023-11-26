@@ -6,7 +6,6 @@ import { AtDatePager } from "atmosphere-ui";
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 import ChartComparison from "@/Components/widgets/ChartComparison.vue";
-import WidgetStats from "@/Components/widgets/WidgetStats.vue";
 
 import FinanceTemplate from "./Partials/FinanceTemplate.vue";
 import FinanceSectionNav from "./Partials/FinanceSectionNav.vue";
@@ -87,6 +86,10 @@ const onClick = (itemId: number) => {
     if (props.resource.id == itemId) return
     router.visit(`/finance/watchlist/${itemId}?${location.search}`)
 }
+
+const categories = computed(() => {
+    return props.resource.categories;
+})
 </script>
 
 <template>
@@ -127,10 +130,10 @@ const onClick = (itemId: number) => {
                 </WidgetWatchlistStats>
             </section>
             <ChartComparison
-                class="w-full mb-10 mt-4 overflow-hidden bg-white rounded-lg shadow-xl"
+                class="w-full mb-10 mt-4 overflow-hidden bg-white rounded-lg"
                 :title="`${resource.name} Report`"
                 ref="ComparisonRevenue"
-                :data="resource.categories"
+                :data="categories"
                 data-item-total="total_amount"
             />
         </section>
