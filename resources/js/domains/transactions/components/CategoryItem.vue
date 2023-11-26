@@ -21,7 +21,7 @@ const props = defineProps({
         default: 'fas fa-tags'
     },
     colorClass: {
-        default: 'group-hover:bg-base-lvl-2 bg-gray-400'
+        default: 'group-hover:bg-base-lvl-2 bg-gray-400 hover:text-body-1'
     },
     wrap: {
         type: Boolean
@@ -46,7 +46,7 @@ const title = computed(() => {
         >
             <div class="w-1/2 h-full bg-white opacity-30" />
             <i :class="iconClass" v-if="iconClass" class="font-bold text-white" />
-            <span class="absolute top-0 left-0 flex items-center justify-center w-full h-full font-bold text-white"> {{ value }}</span>
+            <span class="absolute top-0 left-0 flex items-center justify-center w-full h-full font-bold text-white group-hover:text-body-1"> {{ value }}</span>
         </section>
         <p class="flex justify-center w-full mt-2 text-center h-[21px] overflow-hidden" ref="titleRef"
             :class="[wrap ? 'flex-wrap' : 'flex-nowrap']"
