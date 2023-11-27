@@ -27,9 +27,9 @@ class CreateBudgetTransactionMovement implements ShouldQueue
             $this->budgetCategoryService->updateActivity($transaction->category, $month);
         }
 
-        if ($transaction->category) {
-            $this->budgetCategoryService->updateMonthBalances($transaction->category, $month);
-        }
+        // if ($transaction->category) {
+        //     $this->budgetCategoryService->updateMonthBalances($transaction->category, $month);
+        // }
 
     }
 }
