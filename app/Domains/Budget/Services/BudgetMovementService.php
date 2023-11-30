@@ -2,6 +2,7 @@
 
 namespace App\Domains\Budget\Services;
 
+use App\Events\BudgetAssigned;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Category;
 use App\Domains\Budget\Models\BudgetMonth;
@@ -69,6 +70,7 @@ class BudgetMovementService
             $this->updateBalances($sourceId, $savedMovement, $savedMovement->date, $amount, self::MODE_SUBTRACT);
         }
         DB::commit();
+        BudgetAssigned::dispatch($data, $formData);
     }
 
     public function registerAssignment(BudgetAssignData $data, $quietly = false)
@@ -97,6 +99,7 @@ class BudgetMovementService
             $this->updateBalances($sourceId, $savedMovement, $savedMovement->date, $amount, self::MODE_SUBTRACT);
         }
         DB::commit();
+        BudgetAssigned::dispatch($data, $formData);
     }
 
     public function getBalanceOfCategory($categoryId, string $month)

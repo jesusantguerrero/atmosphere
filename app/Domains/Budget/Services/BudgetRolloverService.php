@@ -2,6 +2,7 @@
 
 namespace App\Domains\Budget\Services;
 
+use Brick\Money\Money;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Category;
@@ -20,35 +21,48 @@ class BudgetRolloverService {
             ->whereNot('name', BudgetReservedNames::READY_TO_ASSIGN->value)
             ->get();
         }
-
+        $overspending = 0;
+        $fundedFromBudgets = 0;
         foreach ($categories as $category) {
             if($category->account_id) {
-                $this->budgetCategoryService->updateFundedSpending($category, $month);
+                $fundedFromBudgets += $this->budgetCategoryService->updateFundedSpending($category, $month);
             }
-            $this->setNewMonthBudget($category, $month);
+            $overspendingInCat = $this->setMonthBudget($category, $month);
+            if ($overspendingInCat < 0) {
+                $overspending += abs($overspendingInCat);
+            }
         }
-        $this->moveReadyToAssign($teamId, $month);
+        $this->moveReadyToAssign($teamId, $month, $overspending, $fundedFromBudgets);
 
     }
 
-    private function setNewMonthBudget($category, $month) {
+    private function setMonthBudget($category, $month) {
         $activity = (new BudgetCategoryService($category))->getCategoryActivity($category, $month);
+
         $budgetMonth = BudgetMonth::where([
             'category_id' => $category->id,
             'team_id' => $category->team_id,
             'month' => $month,
             'name' => $month,
         ])->first();
-        $available = ($budgetMonth?->budgeted ?? 0) + ($budgetMonth->left_from_last_month ?? 0) + $activity;
-        // if ($budgetMonth) {
-        //     $this->fixBudgetMovements($budgetMonth);
-        // }
-        $this->movePositiveAmounts($category, $month, $available);
 
-    }
+        if ($budgetMonth->category->account_id) {
+            $available = (- $budgetMonth->payments);
+            $available = Money::of($budgetMonth->funded_spending, $category->account->currency_code)
+                ->plus($budgetMonth->left_from_last_month)
+                ->minus(($budgetMonth->payments))
+                ->getAmount()
+                ->toFloat();
+        } else {
+            $available = ($budgetMonth?->budgeted ?? 0) + ($budgetMonth->left_from_last_month ?? 0) -  abs($activity);
+        }
+         // close current month
+        $budgetMonth->update([
+            'activity' => $activity,
+            'available' => $available,
+        ]);
 
-    private function movePositiveAmounts($category, $oldMonth, $available) {
-        $nextMonth = Carbon::createFromFormat("Y-m-d", $oldMonth)->addMonthsWithNoOverflow(1)->format('Y-m-d');
+        $nextMonth = Carbon::createFromFormat("Y-m-d", $month)->addMonthsWithNoOverflow(1)->format('Y-m-d');
         BudgetMonth::updateOrCreate([
             'category_id' => $category->id,
             'team_id' => $category->team_id,
@@ -57,11 +71,12 @@ class BudgetRolloverService {
         ], [
             'user_id' => $category->user_id,
             'left_from_last_month' => $available ?? 0,
-            'funded_spending_previous_month' => 0
         ]);
+        return $available;
+
     }
 
-    private function moveReadyToAssign($teamId, $month) {
+    private function moveReadyToAssign($teamId, $month, $overspending = 0, $fundedFromBudgets = 0) {
         $readyToAssignCategory = Category::where([
             "name" => BudgetReservedNames::READY_TO_ASSIGN->value,
             "team_id" => $teamId
@@ -69,15 +84,16 @@ class BudgetRolloverService {
 
         $results = DB::table('budget_months')
         ->where([
-            'team_id' => $teamId,
+            'budget_months.team_id' => $teamId,
             'month' => $month,
         ])->whereNot('category_id', $readyToAssignCategory->id)
+        ->join('categories', 'categories.id', 'budget_months.category_id')
         ->selectRaw("
             coalesce(sum(budgeted), 0) as budgeted,
+            coalesce(sum(activity), 0) as budgetsActivity,
             coalesce(sum(payments), 0) as payments,
-            coalesce(sum(funded_spending), 0) as funded_spending,
-            coalesce(sum(funded_spending_previous_month), 0) as funded_spending_previous_month
-        ")
+            coalesce(sum(funded_spending), 0) as funded_spending
+        ")->groupBy('month')
         ->first();
 
         $budgetMonth = BudgetMonth::where([
@@ -87,9 +103,9 @@ class BudgetRolloverService {
             'name' => $month,
         ])->first();
 
-        $activity = (new BudgetCategoryService($readyToAssignCategory))->getCategoryActivity($readyToAssignCategory, $month);
-        $activityPlusLeft = $activity + $budgetMonth->left_from_last_month;
-        $available = $activityPlusLeft - ($results?->budgeted ?? 0) ;
+        $inflow = (new BudgetCategoryService($readyToAssignCategory))->getCategoryActivity($readyToAssignCategory, $month);
+        $positiveAmount = $budgetMonth->left_from_last_month +  $inflow + $results?->funded_spending;
+        $available = $positiveAmount -  $results?->budgeted ;
 
         $nextMonth = Carbon::createFromFormat("Y-m-d", $month)->addMonthsWithNoOverflow(1)->format('Y-m-d');
 
@@ -102,8 +118,8 @@ class BudgetRolloverService {
         ], [
             'user_id' => $readyToAssignCategory->user_id,
             'budgeted' => $results?->budgeted,
-            'activity' => $activity,
-            'available' => $activityPlusLeft,
+            'activity' => $inflow,
+            'available' => $available,
             'funded_spending' => $results?->funded_spending ?? 0,
             'payments' => $results?->payments ?? 0,
         ]);
@@ -116,8 +132,8 @@ class BudgetRolloverService {
             'name' => $nextMonth,
         ], [
             'user_id' => $readyToAssignCategory->user_id,
-            'left_from_last_month' => $available ?? 0,
-            'funded_spending_previous_month' => 0,
+            'left_from_last_month' => $inflow - $results?->budgeted,
+            'overspending_previous_month' => $available < 0 ? $available : $available,
         ]);
     }
 
@@ -138,6 +154,31 @@ class BudgetRolloverService {
 
 
         // Not seeing an Underfunded Alert in your Credit Card Payment category? We're testing this new feature in stages and releasing it to everyone soon.
+    }
+
+    public function startFrom($teamId, $date) {
+        $categories = Category::where([
+            'team_id' => $teamId,
+            ])
+            ->whereNot('name', BudgetReservedNames::READY_TO_ASSIGN->value)
+            ->get();
+
+
+        $monthsWithTransactions = DB::table('transaction_lines')
+        ->selectRaw("date_format(transaction_lines.date, '%Y-%m') AS date")
+        ->groupBy(DB::raw("date_format(transaction_lines.date, '%Y-%m')"))
+        ->whereRaw("date_format(transaction_lines.date, '%Y-%m') >= ?", [$date])
+        ->get()
+        ->pluck('date');
+
+        $total = count($monthsWithTransactions);
+        $count = 0;
+        foreach ($monthsWithTransactions as $month) {
+            $count++;
+            $this->rollMonth($teamId, $month."-01", $categories);
+            echo "updated month {$month}".PHP_EOL;
+            echo "{$count} of {$total}".PHP_EOL.PHP_EOL;
+        }
     }
 
     // transactions with more than 3 days prior to the las recinciled transaction are not imported

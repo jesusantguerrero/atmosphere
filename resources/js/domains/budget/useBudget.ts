@@ -54,12 +54,12 @@ export const BudgetState = reactive({
         const budgetTotals = BudgetState.budgetTotals;
         const category = BudgetState.inflow?.subCategories[0] ?? {}
         const creditCardFunded = parseFloat(budgetTotals?.fundedSpendingPreviousMonth ?? 0)
-        const availableForFunding = parseFloat(category.available ?? 0);
+        const availableForFunding = parseFloat(category.activity ?? 0);
         const fundedSpending = parseFloat(category?.funded_spending ?? 0);
         const assigned = budgetTotals.budgeted;
         const isCurrentMonth = category.month == format(new Date(), 'yyyy-MM-01')
-        const balance = (availableForFunding) - (assigned + (isCurrentMonth ? creditCardFunded : 0));
-        console.log(category)
+        const leftOVer = parseFloat(category.left_from_last_month ?? 0)
+        const balance = (leftOVer + availableForFunding) - (parseFloat(category.overspending_previous_month ?? 0) + parseFloat(budgetTotals.budgeted ?? 0));
 
         return {
             assigned,

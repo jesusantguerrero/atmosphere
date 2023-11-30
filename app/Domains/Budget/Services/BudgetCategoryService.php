@@ -32,25 +32,6 @@ class BudgetCategoryService
             ->first();
     }
 
-    public function moveBudget(Category $category, string $month, mixed $postData)
-    {
-        $amount = (float) $postData['budgeted'];
-
-        $budgetMonth = BudgetMonth::updateOrCreate([
-            'category_id' => $category->id,
-            'team_id' => $category->team_id,
-            'month' => $month,
-            'name' => $month,
-        ], [
-            'user_id' => $category->user_id,
-            'budgeted' => DB::raw("budgeted + $amount"),
-        ]);
-
-        BudgetAssigned::dispatch($budgetMonth, $postData);
-
-        return $budgetMonth;
-    }
-
     public function getBudgetInfo($category, string $month)
     {
         $yearMonth = substr((string) $month, 0, 7);
@@ -60,8 +41,6 @@ class BudgetCategoryService
         if ($category->account_id) {
             $funded = $monthBudget ? $monthBudget->funded_spending : 0;
             $monthPayment = $monthBudget ? $monthBudget->payments : 0;
-
-           + $monthBudget->activity;
 
             $monthBalance = Money::of($funded, $category->account->currency_code)->minus($monthPayment)->getAmount()->toFloat();
             $available = Money::of($monthBalance, 'USD')
@@ -96,6 +75,7 @@ class BudgetCategoryService
         ];
         return $data;
     }
+
     public function getBudgetData($category, string $month)
     {
         $yearMonth = substr((string) $month, 0, 7);
@@ -199,6 +179,7 @@ class BudgetCategoryService
 
         if ($category->account) {
             $transactions = $category->account->getMonthBalance($monthDate->format('Y-m'))->balance;
+            echo "$category->name:$transactions";
         } else {
             $activity = $category->getMonthBalance($monthDate->format('Y-m'))?->balance;
         }
@@ -212,8 +193,6 @@ class BudgetCategoryService
             'user_id' => $category->user_id,
             'activity' => ($activity + $transactions) ?? 0,
         ]);
-
-        echo "{$category->name} updated to {$activity}".PHP_EOL;
     }
 
     public function updateMonthBalances(Category $category, string $month)
@@ -261,6 +240,7 @@ class BudgetCategoryService
         $monthDate = Carbon::createFromFormat('Y-m-d', $month);
         $transactions = 0;
         $activity = 0;
+        $fromBudgets = 0;
 
         if ($category->account) {
             $yearMonth = $monthDate->format('Y-m');
@@ -278,12 +258,11 @@ class BudgetCategoryService
                 'user_id' => $category->user_id,
                 'funded_spending' => $fundedSpending,
                 'payments' => $payments ?? 0,
-                'available' =>  DB::raw("$fundedSpending + available  - $payments"),
+                'available' =>  DB::raw("($fundedSpending + available)  - $payments"),
             ]);
-
-            echo "{$category->name} updated to {$activity}".PHP_EOL;
+            $fromBudgets = $fundedSpending - $payments;
         }
-
+        return $fromBudgets;
     }
 
     public static function findOrCreateByName(CategoryData $params)

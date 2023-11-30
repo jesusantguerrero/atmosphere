@@ -2,14 +2,14 @@
 
 namespace App\Domains\Budget\Models;
 
-use App\Domains\AppCore\Models\Category;
-use App\Domains\Budget\Data\BudgetReservedNames;
 use DateTime;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Model;
 use Insane\Journal\Models\Core\Account;
+use App\Domains\AppCore\Models\Category;
+use App\Domains\Budget\Data\BudgetReservedNames;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class BudgetMonth extends Model
 {
@@ -27,7 +27,7 @@ class BudgetMonth extends Model
         'funded_spending',
         'payments',
         'left_from_last_month',
-        'funded_spending_previous_month',
+        'overspending_previous_month',
     ];
 
     public function category()
