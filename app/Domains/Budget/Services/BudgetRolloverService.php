@@ -156,7 +156,7 @@ class BudgetRolloverService {
         // Not seeing an Underfunded Alert in your Credit Card Payment category? We're testing this new feature in stages and releasing it to everyone soon.
     }
 
-    public function startFrom($teamId, $date) {
+    public function startFrom($teamId, $yearMonth) {
         $categories = Category::where([
             'team_id' => $teamId,
             ])
@@ -167,7 +167,7 @@ class BudgetRolloverService {
         $monthsWithTransactions = DB::table('transaction_lines')
         ->selectRaw("date_format(transaction_lines.date, '%Y-%m') AS date")
         ->groupBy(DB::raw("date_format(transaction_lines.date, '%Y-%m')"))
-        ->whereRaw("date_format(transaction_lines.date, '%Y-%m') >= ?", [$date])
+        ->whereRaw("date_format(transaction_lines.date, '%Y-%m') >= ?", [$yearMonth])
         ->get()
         ->pluck('date');
 

@@ -57,7 +57,6 @@ export const BudgetState = reactive({
         const availableForFunding = parseFloat(category.activity ?? 0);
         const fundedSpending = parseFloat(category?.funded_spending ?? 0);
         const assigned = budgetTotals.budgeted;
-        const isCurrentMonth = category.month == format(new Date(), 'yyyy-MM-01')
         const leftOVer = parseFloat(category.left_from_last_month ?? 0)
         const balance = (leftOVer + availableForFunding) - (parseFloat(category.overspending_previous_month ?? 0) + parseFloat(budgetTotals.budgeted ?? 0));
 

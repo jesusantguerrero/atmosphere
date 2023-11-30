@@ -15,7 +15,7 @@ class TeamBudgetRollover extends Command
      *
      * @var string
      */
-    protected $signature = 'app:team-budget-rollover {teamId}';
+    protected $signature = 'app:team-budget-rollover {teamId} ?{date}';
 
     /**
      * The console command description.
@@ -31,6 +31,7 @@ class TeamBudgetRollover extends Command
     {
 
         $teamId = $this->argument('teamId');
+        $date = $this->argument('date');
 
         $monthsWithTransactions = DB::table('transaction_lines')
             ->where([
@@ -41,6 +42,6 @@ class TeamBudgetRollover extends Command
             ->orderBy('date')
             ->first();
 
-            $rolloverService->startFrom($teamId, $monthsWithTransactions->date);
+            $rolloverService->startFrom($teamId, $date ?? $monthsWithTransactions->date);
     }
 }
