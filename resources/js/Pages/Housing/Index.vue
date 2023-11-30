@@ -11,6 +11,7 @@ import CategoryItem from '@/domains/transactions/components/CategoryItem.vue';
 import MealTypeCell from '@/domains/meal/components/MealTypeCell.vue';
 
 import { IOccurrenceCheck } from '@/Components/Modules/occurrence/models';
+import WeatherWidget from '@/Components/widgets/WeatherWidget.vue';
 
 defineProps<{
     checks: IOccurrenceCheck
@@ -31,31 +32,18 @@ defineProps<{
       <div
       class="px-5 mx-auto mt-12 space-y-10 md:space-y-0 md:space-x-10 md:flex max-w-screen-2xl sm:px-6 lg:px-8"
     >
-      <div class="md:w-9/12">
-        <WelcomeCard class="mt-5" message="Current home plans">
-          <article class="grid grid-cols-2 gap-2 md:flex md:space-x-4">
-            <div
-              v-for="mealType in []"
-              :key="mealType.id"
-              class="flex flex-col items-center justify-center w-full h-20 font-bold text-white transition rounded-md cursor-pointer border-primary bg-primary/80"
-            >
-              <h4 class="capitalize">
-                {{ mealType.name }}
-              </h4>
-              <p>{{ mealType.description }}</p>
-            </div>
-          </article>
-        </WelcomeCard>
-
-        <div class="mt-4 space-y-4">
-          <ChoppingListForm :ingredients="ingredients">
-            <template #prepend>
-              <div class="px-4 py-2 font-bold rounded-md bg-primary/10 text-primary">
-                This are the things you'll need this week according to your planning
-              </div>
-            </template>
-          </ChoppingListForm>
-        </div>
+      <div class="mt-6 md:w-9/12 space-y-4">
+        <section class="flex flex-col md:flex-row md:space-x-4">
+            <WelcomeCard  message="Loger profiles" class="md:w-8/12 w-full order-1">
+                <section class="mt-2 md:mt-0 flex flex-col items-center mx-auto">
+                    <h4 class="text-lg font-bold text-body-1"> There are not profiles created</h4>
+                    <p class="max-w-lg my-3">
+                        Lorem ipsum dolor sit amet consectetur adipiscing elit maecenas.
+                    </p>
+                </section>
+            </WelcomeCard>
+            <WeatherWidget class="md:w-4/12 md:order-1" />
+        </section>
       </div>
       <div class="py-6 space-y-4 md:w-3/12">
         <OccurrenceCard :checks="checks" />

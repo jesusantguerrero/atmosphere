@@ -63,7 +63,7 @@ const frequencyUnit = computed(() => {
 });
 
 watch(
-  () => props.category,
+  () => props.category.id,
   () => {
     if (props.item) {
       state.form.reset();
@@ -102,6 +102,7 @@ const onSubmit = () => {
       preserveScroll: true,
       onSuccess() {
         state.isEditing = false;
+        state.form.reset()
       },
     });
 };

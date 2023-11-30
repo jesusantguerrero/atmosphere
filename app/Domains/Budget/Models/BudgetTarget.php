@@ -39,15 +39,16 @@ class BudgetTarget extends Model
             ->get()[0]->total;
     }
 
-    public static function getNextTargets($teamId)
+    public static function getNextTargets($teamId, $targetTypes = ['spending'])
     {
         return DB::query()
-            ->whereIn('budget_targets.target_type', ['spending'])
+            ->whereIn('budget_targets.target_type', $targetTypes)
             ->where([
                 'frequency' => 'monthly',
                 'budget_targets.team_id' => $teamId,
             ])
             ->whereRaw("concat(date_format(now(), '%Y-%m'), '-', frequency_month_date) >= now()")
+            ->addSelect(DB::raw("budget_targets.*, concat(date_format(now(), '%Y-%m'), '-', frequency_month_date) as due_date"))
             ->from('budget_targets')
             ->get();
     }

@@ -12,6 +12,7 @@ use App\Domains\Transaction\Models\Transaction;
 use App\Http\Resources\CategoryGroupCollection;
 use Freesgen\Atmosphere\Http\InertiaController;
 use App\Domains\Transaction\Services\ReportService;
+use App\Domains\Budget\Services\BudgetTargetService;
 use App\Domains\Budget\Services\BudgetAccountService;
 use App\Domains\Budget\Services\BudgetCategoryService;
 
@@ -99,24 +100,28 @@ class BudgetCategoryController extends InertiaController
     }
 
     // Category Budget targets
-    public function addCategoryBudget(Request $request, $categoryId)
+    public function addCategoryBudget(Request $request, $categoryId, BudgetTargetService $budgetTargetService)
     {
         $category = Category::find($categoryId);
-        $postData = $request->post();
-        $category->budget()->create(array_merge($postData, [
-            'name' => $category->name,
-            'user_id' => $request->user()->id,
-            'team_id' => $request->user()->current_team_id,
-        ]));
+
+        $budgetTargetService->add(
+            $category,
+            request()->user(),
+            $request->post()
+        );
 
         return Redirect::back();
     }
 
-    public function updateCategoryBudget(Request $request, $categoryId)
+    public function updateCategoryBudget($categoryId, BudgetTargetService $budgetTargetService)
     {
         $category = Category::find($categoryId);
-        $postData = $request->post();
-        $category->budget->update($postData);
+        $budgetTargetService->update(
+            $category,
+            $category->budget,
+            request()->user(),
+            request()->post()
+        );
 
         return Redirect::back();
     }

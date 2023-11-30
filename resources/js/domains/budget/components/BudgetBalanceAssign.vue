@@ -144,7 +144,7 @@
     <section
         class="overflow-hidden border divide-y-2 rounded-md cursor-pointer text-body-1"
         :class="theme.default"
-        @click="toggle"
+
     >
         <NPopover>
             <template #trigger>
@@ -172,7 +172,7 @@
                         {{ description }}
                     </small>
 
-                    <NPopover v-if="isOverspent" trigger="manual" placement="bottom"  @update:show="handleUpdateShow" :show="showPopover">
+                    <NPopover v-if="isOverspent"  placement="bottom" >
                         <template #trigger>
                             <AtButton class="text-white rounded-md bg-black/30">
                                 Fix this

@@ -27,7 +27,7 @@ class CategoryCollection extends JsonResource
 
         return [
             ...$normalArray,
-            ...$this->service->getBudgetInfo($this->resource, $month),
+            ...$this->service->getBudgetData($this->resource, $month),
             'month' => $month
         ];
     }

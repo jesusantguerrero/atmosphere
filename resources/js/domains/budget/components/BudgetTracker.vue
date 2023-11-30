@@ -88,6 +88,6 @@ const isMultiple = (value: any) => {
         </SectionTitle>
       </div>
     </div>
-    <slot></slot>
+    <slot />
   </div>
 </template>

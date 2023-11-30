@@ -2,11 +2,11 @@
 
 namespace App\Console\Commands;
 
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use App\Domains\AppCore\Models\Category;
 use App\Domains\Budget\Data\BudgetReservedNames;
 use App\Domains\Budget\Services\BudgetRolloverService;
-use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 
 class TeamBudgetRollover extends Command
 {
@@ -15,7 +15,7 @@ class TeamBudgetRollover extends Command
      *
      * @var string
      */
-    protected $signature = 'app:team-budget-rollover {teamId}';
+    protected $signature = 'app:team-budget-rollover {teamId} ?{date}';
 
     /**
      * The console command description.
@@ -31,26 +31,17 @@ class TeamBudgetRollover extends Command
     {
 
         $teamId = $this->argument('teamId');
-
-        $categories = Category::where([
-            'team_id' => $teamId,
-        ])
-        ->whereNot('name', BudgetReservedNames::READY_TO_ASSIGN->value)
-        ->get();
+        $date = $this->argument('date');
 
         $monthsWithTransactions = DB::table('transaction_lines')
+            ->where([
+                "team_id" => $teamId
+            ])
             ->selectRaw("date_format(transaction_lines.date, '%Y-%m') AS date")
             ->groupBy(DB::raw("date_format(transaction_lines.date, '%Y-%m')"))
-            ->get()
-            ->pluck('date');
+            ->orderBy('date')
+            ->first();
 
-        $total = count($monthsWithTransactions);
-        $count = 0;
-        foreach ($monthsWithTransactions as $month) {
-            $count++;
-            $rolloverService->rollMonth($teamId, $month."-01", $categories);
-            echo "updated month {$month}".PHP_EOL;
-            echo "{$count} of {$total}".PHP_EOL.PHP_EOL;
-        }
+            $rolloverService->startFrom($teamId, $date ?? $monthsWithTransactions->date);
     }
 }

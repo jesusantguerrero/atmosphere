@@ -14,7 +14,6 @@ use App\Domains\LogerProfile\Models\LogerProfile;
 use App\Domains\LogerProfile\Models\LogerProfileEntity;
 use App\Domains\Meal\Models\Ingredient;
 use App\Domains\Meal\Models\Meal;
-use App\Domains\Meal\Models\MealMenu;
 use App\Domains\Meal\Models\MealPlan;
 use App\Domains\Meal\Models\MealType;
 use App\Domains\Meal\Models\Product;

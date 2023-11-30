@@ -2,6 +2,8 @@
 
 namespace App\Domains\Budget\Services;
 
+use Exception;
+use App\Models\User;
 use App\Domains\AppCore\Models\Category;
 use App\Domains\Budget\Models\BudgetTarget;
 use App\Domains\Integration\Concerns\PlannedTransactionDTO;
@@ -31,6 +33,11 @@ class BudgetTargetService
         }
     }
 
+    public function getNextBudgetItems($teamId)
+    {
+        return BudgetTarget::getNextTargets($teamId);
+    }
+
     private function buildPlanned(BudgetTarget $target, $month)
     {
         $date = $month.'-'.$target->frequency_month_date;
@@ -39,11 +46,37 @@ class BudgetTargetService
     }
 
     public function complete(BudgetTarget $budgetTarget, Category $category,  array $postData) {
-        $budgetTarget->update(array_merge(
-            $postData, [
-                'completed_at' => $postData['completed_at']
-                ?? $this->budgetCategoryService->getLastTransactionMonth($category)?->month,
-            ]));
+        $budgetTarget->update([
+            ...$postData,
+            'completed_at' => $postData['completed_at'] ?? $this->budgetCategoryService->getLastTransactionMonth($category)?->month,
+        ]);
+    }
 
+    public function update(Category $category, BudgetTarget $budgetTarget, User $user, $postData) {
+        if ($category->id !== $budgetTarget->category->id){
+            throw new Exception(__("This target doent belongs to this category"));
+        }
+
+        $budgetTarget->update([
+            ...$postData,
+            'team_id' => $user->current_team_id,
+            'user_id' => $user->id,
+            'name' => $category->name,
+            'category_id' => $budgetTarget->category_id,
+        ]);
+    }
+
+    public function add(Category $category,User $user, mixed $postData)
+    {
+        if ($category->team_id !== $user->current_team_id){
+            throw new Exception(__("This category doent belongs to this team"));
+        }
+
+        return $category->budget()->create([
+            ...$postData,
+            'name' => $category->name ?? $category->display_id,
+            'team_id' => $user->current_team_id,
+            "user_id" => $user->id
+        ]);
     }
 }

@@ -121,12 +121,11 @@ const reconcileForm = useForm({
             ...data,
             date: format(data.date, 'yyyy-MM-dd'),
         })).post(`/finance/reconciliation/accounts/${selectedAccount.value?.id}`, {
+            only: ['transactions', 'accounts', 'stats'],
             onFinish() {
                 reconcileForm.reset()
                 reconcileForm.isVisible = false;
-                router.reload({
-                    only: ['transactions', 'accounts', 'stats']
-                });
+
             }
         });
     };

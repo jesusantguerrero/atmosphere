@@ -2,18 +2,18 @@
 
 namespace App\Http\Controllers\Finance;
 
-use App\Domains\Transaction\Actions\FindLinkedTransactions;
-use App\Domains\Transaction\Exports\TransactionExport;
-use App\Domains\Transaction\Models\Transaction;
-use App\Domains\Transaction\Resources\TransactionResource;
-use App\Domains\Transaction\Services\PlannedTransactionService;
-use App\Domains\Transaction\Services\TransactionService;
-use App\Http\Controllers\Traits\QuerifySlim;
-use Freesgen\Atmosphere\Http\InertiaController;
-use Freesgen\Atmosphere\Http\Querify;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
+use Freesgen\Atmosphere\Http\Querify;
+use App\Http\Controllers\Traits\QuerifySlim;
+use App\Domains\Transaction\Models\Transaction;
+use Freesgen\Atmosphere\Http\InertiaController;
+use App\Domains\Transaction\Exports\TransactionExport;
+use App\Domains\Transaction\Services\TransactionService;
+use App\Domains\Transaction\Resources\TransactionResource;
+use App\Domains\Transaction\Actions\FindLinkedTransactions;
+use App\Domains\Transaction\Services\PlannedTransactionService;
 
 class FinanceTransactionController extends InertiaController
 {
@@ -27,7 +27,7 @@ class FinanceTransactionController extends InertiaController
         $this->templates = [
             'index' => 'Finance/Transactions',
         ];
-        $this->searchable = ['id', 'date'];
+        $this->searchable = ['transactions.description', 'date'];
         $this->sorts = ['-date'];
         $this->includes = [
             'mainLine',
@@ -47,7 +47,7 @@ class FinanceTransactionController extends InertiaController
     {
         $dates = $this->getFilterDates();
         $query = new QuerifySlim([
-            'searchable' => ['id', 'date', 'description'],
+            'searchable' => ['transactions.date', 'transactions.description'],
             'sorts' => ['-date'],
             'includes' => [
                 'mainLine',
