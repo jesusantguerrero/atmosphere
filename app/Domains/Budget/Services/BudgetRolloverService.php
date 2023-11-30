@@ -92,8 +92,11 @@ class BudgetRolloverService {
             coalesce(sum(budgeted), 0) as budgeted,
             coalesce(sum(activity), 0) as budgetsActivity,
             coalesce(sum(payments), 0) as payments,
+            sum(CASE WHEN available < 0 THEN available ELSE 0 END) as overspendingInMonth,
             coalesce(sum(funded_spending), 0) as funded_spending
-        ")->groupBy('month')
+        ")
+        ->groupBy('month')
+        // ->dd();
         ->first();
 
         $budgetMonth = BudgetMonth::where([
@@ -105,9 +108,18 @@ class BudgetRolloverService {
 
         $inflow = (new BudgetCategoryService($readyToAssignCategory))->getCategoryActivity($readyToAssignCategory, $month);
         $positiveAmount = $budgetMonth->left_from_last_month +  $inflow + $results?->funded_spending;
-        $available = $positiveAmount -  $results?->budgeted ;
+        $available = $positiveAmount - $results?->budgeted;
 
         $nextMonth = Carbon::createFromFormat("Y-m-d", $month)->addMonthsWithNoOverflow(1)->format('Y-m-d');
+        $overspending = abs($results?->overspendingInMonth);
+        $leftover = $inflow - $results?->budgeted;
+        echo $overspending;
+
+        if ($overspending > 0 && $leftover > 0) {
+            $overspendingCopy = $overspending;
+            $overspending =  $overspending > $leftover ? $overspending - $leftover : 0;
+            $leftover = $overspendingCopy >= $leftover ? 0 : $leftover - $overspendingCopy;
+        }
 
         // close current month
         BudgetMonth::updateOrCreate([
@@ -132,8 +144,8 @@ class BudgetRolloverService {
             'name' => $nextMonth,
         ], [
             'user_id' => $readyToAssignCategory->user_id,
-            'left_from_last_month' => $inflow - $results?->budgeted,
-            'overspending_previous_month' => $available < 0 ? $available : $available,
+            'left_from_last_month' => $leftover,
+            'overspending_previous_month' => $overspending,
         ]);
     }
 

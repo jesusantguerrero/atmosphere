@@ -3,10 +3,11 @@
 namespace App\Listeners;
 
 use App\Events\BudgetAssigned;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Domains\Budget\Services\BudgetRolloverService;
 
-class CreateBudgetMovement
+class CreateBudgetMovement implements ShouldQueue
 {
     protected $formData;
 
