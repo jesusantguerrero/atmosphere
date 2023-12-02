@@ -27,7 +27,7 @@ import { useServerSearch } from "@/composables/useServerSearch";
 import MessageBox from "@/Components/organisms/MessageBox.vue";
 import BudgetCategories from "./Partials/BudgetCategories.vue";
 
-import { formatMoney, formatMonth } from "@/utils";
+import { MonthTypeFormat, formatMoney, formatMonth } from "@/utils";
 
 const props = defineProps({
   budgets: {
@@ -66,7 +66,7 @@ const { state: pageState, executeSearchWithDelay } = useServerSearch(
 provide("pageState", pageState);
 
 const sectionTitle = computed(() => {
-  return `${formatMonth(pageState.dates.startDate, "MMMM yyyy")}`;
+  return pageState.dates.startDate ? `${formatMonth(pageState.dates.startDate, MonthTypeFormat.monthYear)}` : '--';
 });
 
 const { budgets } = toRefs(props);
@@ -76,9 +76,9 @@ const {
   filterGroups,
   filters,
   visibleFilters,
+  selectedBudget,
   toggleFilter,
   setSelectedBudget,
-  selectedBudget,
 } = useBudget();
 
 const panelSize = computed(() => {
@@ -121,7 +121,10 @@ const goToday = () => {
 
 const budgetAccountsTotal =  computed(() => {
     return props.accounts.reduce((total, account) => {
-        return exactMath.add(total, account?.balance)
+        console.log(account);
+        return account.balance_type == 'CREDIT'
+        ? total
+        : exactMath.add(total, account?.balance)
     }, 0)
 })
 </script>
@@ -209,8 +212,8 @@ const budgetAccountsTotal =  computed(() => {
       <template #prepend-panel class="">
         <div class="space-y-4 ">
           <BudgetDetailForm
+          v-if="selectedBudget && !showCategoriesInMain"
             class="mt-5"
-            v-if="selectedBudget && !showCategoriesInMain"
             full
             :category="selectedBudget"
             :item="selectedBudget.budget"

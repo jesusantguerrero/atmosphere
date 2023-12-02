@@ -63,10 +63,10 @@ const { state: pageState } = useServerSearch(serverSearchOptions);
     <FinanceTemplate>
       <main class="py-3 space-y-4">
         <section class="px-4 py-2 bg-white rounded-md">
-        <ChartComparison 
+        <ChartComparison
           class="w-full mt-4 mb-10 overflow-hidden bg-white rounded-lg"
           :class="[cardShadow]"
-          :title="t('Spending summary')"
+          :title="$t('Spending summary')"
           ref="ComparisonRevenue"
           :data="stats"
         />
@@ -74,7 +74,7 @@ const { state: pageState } = useServerSearch(serverSearchOptions);
 
         <section class="px-4 py-2 bg-white rounded-md">
             <SectionTitle>Transactions</SectionTitle>
-            <TransactionSearch 
+            <TransactionSearch
                 :transactions="transactions"
                 :server-search-options="serverSearchOptions"
             />

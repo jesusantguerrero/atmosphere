@@ -2,15 +2,21 @@
 
 namespace App\Domains\Budget\Services;
 
+use App\Models\Team;
 use Brick\Money\Money;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Insane\Journal\Models\Core\Account;
 use Insane\Journal\Models\Core\Category;
 use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Budget\Data\BudgetAssignData;
 use App\Domains\Budget\Data\BudgetReservedNames;
+use Insane\Journal\Models\Core\AccountDetailType;
 
 class BudgetRolloverService {
+    private Team|null $team = null;
+    private mixed $accounts = [];
+
     public function __construct(private BudgetCategoryService $budgetCategoryService) {}
 
     public function rollMonth($teamId, $month, $categories = null) {
@@ -92,6 +98,7 @@ class BudgetRolloverService {
             coalesce(sum(budgeted), 0) as budgeted,
             coalesce(sum(activity), 0) as budgetsActivity,
             coalesce(sum(payments), 0) as payments,
+            coalesce(sum(available), 0) as available,
             sum(CASE WHEN available < 0 THEN available ELSE 0 END) as overspendingInMonth,
             coalesce(sum(funded_spending), 0) as funded_spending
         ")
@@ -113,7 +120,8 @@ class BudgetRolloverService {
         $nextMonth = Carbon::createFromFormat("Y-m-d", $month)->addMonthsWithNoOverflow(1)->format('Y-m-d');
         $overspending = abs($results?->overspendingInMonth);
         $leftover = $inflow - $results?->budgeted;
-        echo $overspending;
+
+        echo "Leftover: ". $leftover . "overspending: " . $overspending . PHP_EOL;
 
         if ($overspending > 0 && $leftover > 0) {
             $overspendingCopy = $overspending;
@@ -121,7 +129,17 @@ class BudgetRolloverService {
             $leftover = $overspendingCopy >= $leftover ? 0 : $leftover - $overspendingCopy;
         }
 
+
+        if ($leftover < 0) {
+            $overspending =  $overspending > abs($leftover);
+            $leftover = 0;
+
+        }
+
         // close current month
+
+        $details = $this->team->balanceDetail(Carbon::createFromFormat("Y-m-d", $month)->endOfMonth()->format('Y-m-d'), $this->accounts);
+
         BudgetMonth::updateOrCreate([
             'category_id' => $readyToAssignCategory->id,
             'team_id' => $readyToAssignCategory->team_id,
@@ -131,9 +149,11 @@ class BudgetRolloverService {
             'user_id' => $readyToAssignCategory->user_id,
             'budgeted' => $results?->budgeted,
             'activity' => $inflow,
-            'available' => $available,
+            'available' => $results?->available,
             'funded_spending' => $results?->funded_spending ?? 0,
             'payments' => $results?->payments ?? 0,
+            "accounts_balance" => collect($details)->sum('balance'),
+            "meta_data" => $details
         ]);
 
         //  set left over to the next month
@@ -169,6 +189,9 @@ class BudgetRolloverService {
     }
 
     public function startFrom($teamId, $yearMonth) {
+        $this->team = Team::find($teamId);
+        $this->accounts = Account::getByDetailTypes($teamId, AccountDetailType::ALL_CASH)->pluck('id');
+
         $categories = Category::where([
             'team_id' => $teamId,
             ])
@@ -182,6 +205,11 @@ class BudgetRolloverService {
         ->whereRaw("date_format(transaction_lines.date, '%Y-%m') >= ?", [$yearMonth])
         ->get()
         ->pluck('date');
+
+        $monthsWithTransactions = [
+            ...$monthsWithTransactions,
+            now()->format('Y-m'),
+        ];
 
         $total = count($monthsWithTransactions);
         $count = 0;

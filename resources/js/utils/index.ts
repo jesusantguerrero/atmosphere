@@ -71,7 +71,8 @@ export const generateRandomColor = () => `#${Math.floor(Math.random() * 16777215
 
 export enum MonthTypeFormat {
     short = 'MMM',
-    long = 'MMMM'
+    long = 'MMMM',
+    monthYear = 'MMMM yyyy'
 }
 export const formatMonth = (dateString: string | Date, type: MonthTypeFormat = MonthTypeFormat.short ) => {
     try {

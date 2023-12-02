@@ -3,7 +3,7 @@ import { FREQUENCY_TYPE } from './../../utils/index';
 // @ts-ignore
 import ExactMath from "exact-math";
 import { getFrequencyMonthFactor } from "./getFrequencyMonthFactor";
-import { BudgetTarget } from "./models/budget";
+import { BudgetTarget, IBudgetCategory } from "./models/budget";
 import { useDatePager } from "vueuse-temporals";
 
 enum InflowCategories {
@@ -17,10 +17,10 @@ export const isSavingBalance = (budgetMetaData: Record<string, any>) => {
     return budgetMetaData.target_type == 'saving_balance'
 }
 export const getCategoriesTotals = (categories: Record<string, any>, config = {
-    onOverspent: (category: Record<string, any>) => {},
-    onOverAssigned: (category: Record<string, any>) => {},
-    onUnderFunded: (category: Record<string, any>) => {},
-    onFunded: (category: Record<string, any>) => {}
+    onOverspent: (category: IBudgetCategory) => {},
+    onOverAssigned: (category: IBudgetCategory) => {},
+    onUnderFunded: (category: IBudgetCategory) => {},
+    onFunded: (category: IBudgetCategory) => {}
 }) => {
     return Object.values(categories).reduce((categoryTotals, category) => {
         const { budget: budgetTarget } = category;

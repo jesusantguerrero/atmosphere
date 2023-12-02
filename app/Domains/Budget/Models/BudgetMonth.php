@@ -28,6 +28,12 @@ class BudgetMonth extends Model
         'payments',
         'left_from_last_month',
         'overspending_previous_month',
+        'accounts_balance',
+        'meta_data'
+    ];
+
+    protected $casts = [
+        'meta_data' => 'array'
     ];
 
     public function category()

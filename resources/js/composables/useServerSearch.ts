@@ -16,6 +16,7 @@ export interface IServerSearchData {
 interface IServerSearchOptions {
   manual?: boolean;
   mainDateField?: string;
+  defaultDates?: boolean;
 }
 
 interface IDateSpan {
@@ -187,7 +188,6 @@ export const useServerSearch = (
     const dates = parseDateFilters(serverSearchData, options.defaultDates)
     const isLoaded = ref(false)
     const state = reactive<ISearchState>(setSearchState(serverSearchData.value, dates));
-    console.log({ state, serverSearchData })
     const localRouter = inject(
         "router",
         // eslint-disable-next-line no-empty-pattern

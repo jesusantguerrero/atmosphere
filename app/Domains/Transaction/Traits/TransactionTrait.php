@@ -55,7 +55,7 @@ trait TransactionTrait
             ->whereNotNull('category_id');
     }
 
-    public function scopeBalance($query)
+    public function scopeBalance($query, $uptoDate = null, $accountIds = [])
     {
         $transactionsTotalSum = "ABS(sum(CASE
         WHEN transactions.direction = 'WITHDRAW'
@@ -65,6 +65,8 @@ trait TransactionTrait
         return $query->where([
             'transactions.status' => 'verified',
         ])
+            ->when($uptoDate, fn($q) => $q->whereRaw('transactions.date <= ?', [$uptoDate]))
+            ->when(count($accountIds), fn($q) => $q->whereIn('transactions.account_id', [$uptoDate]))
             ->whereNotNull('category_id')
             ->selectRaw($transactionsTotalSum);
     }
