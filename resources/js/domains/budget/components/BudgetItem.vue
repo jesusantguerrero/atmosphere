@@ -102,10 +102,11 @@ const onAssignBudget = () => {
                 budgeted: Number(budgeted.value),
                 date: format(new Date(), 'yyyy-MM-dd')
             }, {
-                preserveState: false,
+                preserveState: true,
                 preserveScroll: true
             });
         }
+        console.log("here?");
         isEditing.value = false;
     })
 }

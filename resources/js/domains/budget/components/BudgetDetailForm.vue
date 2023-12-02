@@ -17,13 +17,14 @@
     import { ICategory } from '@/Modules/transactions/models/transactions';
 
     const { hideDetails = true , category , item , editable = true } = defineProps<{
-        parentId: number;
-        full: boolean;
         category: ICategory,
         item: Record<string, string>,
-        hideDetails: boolean,
-        editable: boolean;
+        parentId?: number;
+        full?: boolean;
+        hideDetails?: boolean,
+        editable?: boolean;
     }>();
+
 
     const emit = defineEmits(['update:category'])
 

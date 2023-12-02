@@ -47,9 +47,10 @@ class BudgetTarget extends Model
                 'frequency' => 'monthly',
                 'budget_targets.team_id' => $teamId,
             ])
-            ->whereRaw("concat(date_format(now(), '%Y-%m'), '-', frequency_month_date) >= now()")
-            ->addSelect(DB::raw("budget_targets.*, concat(date_format(now(), '%Y-%m'), '-', frequency_month_date) as due_date"))
+            ->whereRaw("concat(date_format(now(), '%Y-%m'), '-', LPAD(frequency_month_date, 2, '0')) >= date_format(now(), '%Y-%m-%d')")
+            ->addSelect(DB::raw("budget_targets.*, concat(date_format(now(), '%Y-%m'), '-', LPAD(frequency_month_date, 2, '0')) as due_date"))
             ->from('budget_targets')
+            ->orderByRaw('due_date')
             ->get();
     }
 

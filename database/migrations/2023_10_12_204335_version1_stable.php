@@ -17,7 +17,7 @@ return new class extends Migration
 
         Schema::table('budget_months', function (Blueprint $table) {
             $table->decimal('left_from_last_month')->default(0)->after('payments');
-            $table->decimal('funded_spending_previous_month')->default(0)->after('left_from_last_month');
+            $table->decimal('overspending_previous_month')->default(0)->after('left_from_last_month');
         });
     }
 };

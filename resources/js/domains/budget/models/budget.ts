@@ -1,3 +1,5 @@
+import { ICategory } from "@/domains/transactions/models";
+
 export interface BudgetTarget {
     amount: number
     category_id: number;
@@ -71,4 +73,12 @@ export interface BudgetCategory {
 
 export interface BudgetItem {
 
+}
+
+export interface IBudgetCategory extends ICategory {
+    hasOverspent: boolean;
+    hasFunded: boolean;
+    hasUnderFunded: boolean;
+    overAssigned: boolean;
+    subCategories: any[]
 }

@@ -1,10 +1,8 @@
-import { isCurrentMonth } from './../../utils/index';
-import { budgetCols } from './budgetCols';
+
 import { cloneDeep } from "lodash";
 import { computed, watch, reactive, toRefs, Ref } from "vue";
 import { getCategoriesTotals, getGroupTotals } from './index';
 import { ICategory } from "../transactions/models";
-import { format } from 'date-fns';
 
 export const BudgetState = reactive({
     data: [],
@@ -57,12 +55,13 @@ export const BudgetState = reactive({
         const availableForFunding = parseFloat(category.activity ?? 0);
         const fundedSpending = parseFloat(category?.funded_spending ?? 0);
         const assigned = budgetTotals.budgeted;
-        const leftOVer = parseFloat(category.left_from_last_month ?? 0)
-        const balance = (leftOVer + availableForFunding) - (parseFloat(category.overspending_previous_month ?? 0) + parseFloat(budgetTotals.budgeted ?? 0));
+        const leftOver = parseFloat(category.left_from_last_month ?? 0)
+        const balance = (leftOver + availableForFunding) - (parseFloat(category.overspending_previous_month ?? 0) + parseFloat(budgetTotals.budgeted ?? 0));
 
         return {
-            assigned,
             availableForFunding,
+            leftOver,
+            assigned,
             balance,
             creditCardFunded,
             fundedSpending,

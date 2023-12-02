@@ -31,6 +31,5 @@ class MonthlyRollover extends Command
         $month = $this->argument('month');
 
         $rolloverService->rollMonth($teamId, $month."-01");
-
     }
 }
