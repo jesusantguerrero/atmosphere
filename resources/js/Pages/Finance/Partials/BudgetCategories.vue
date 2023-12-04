@@ -72,8 +72,6 @@ const saveReorder = (categories: ICategory[]) => {
         @save="saveBudgetCategory()"
         @cancel=""
     />
-
-    {{  visibleCategories  }}
     <Draggable
         class="w-full space-y-2 overflow-auto dragArea list-group ic-scroller"
         :list="visibleCategories"
