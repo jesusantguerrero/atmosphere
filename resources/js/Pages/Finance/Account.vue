@@ -121,6 +121,7 @@ const reconcileForm = useForm({
             ...data,
             date: format(data.date, 'yyyy-MM-dd'),
         })).post(`/finance/reconciliation/accounts/${selectedAccount.value?.id}`, {
+            preserveScroll: true,
             only: ['transactions', 'accounts', 'stats'],
             onFinish() {
                 reconcileForm.reset()
