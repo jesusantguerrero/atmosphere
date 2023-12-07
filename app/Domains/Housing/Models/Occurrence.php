@@ -47,6 +47,7 @@ class Occurrence extends Model
     protected $casts = [
         'conditions' => 'array',
         'log' => 'array',
+        'last_date' => 'date'
     ];
 
     protected static function booted()
@@ -67,17 +68,6 @@ class Occurrence extends Model
         ];
     }
 
-    public static function getForNotificationType(OccurrenceNotifyTypes $type)
-    {
-        $daysBefore = self::DAYS_BEFORE;
-        $activatedField = self::NOTIFY_FIELDS[$type->value]['activatedField'];
-        $countField = self::NOTIFY_FIELDS[$type->value]['countField'];
-
-        return Occurrence::where($activatedField, true)
-            ->whereRaw("DATEDIFF( date_format(now(), '%Y-%m-%d'), last_date) > ($countField - $daysBefore)")
-            ->get();
-    }
-
     public static function scopeByTeam($query, int $teamId) {
         return $query->where([
             'team_id' => $teamId,
@@ -88,5 +78,40 @@ class Occurrence extends Model
         $query->where([
             'name' => $name,
         ]);
+    }
+
+    public function currentCount() {
+        return $this->last_date->diffInDays(now());
+    }
+
+    public function diffWithAvg() {
+        return $this->currentCount() - $this->avg_days_passed;
+    }
+
+    public function diffWithLastDuration() {
+        return $this->currentCount() - $this->previous_days_count;
+    }
+
+    public function isCloseToAvg() {
+
+        return $this->currentCount() >= $this->avg_days_passed - self::DAYS_BEFORE;
+    }
+
+    public function isCloseToLastDuration() {
+        return $this->currentCount() >= $this->previous_days_count - self::DAYS_BEFORE;
+    }
+
+    public static function getForNotificationType(OccurrenceNotifyTypes $type)
+    {
+        $activatedField = self::NOTIFY_FIELDS[$type->value]['activatedField'];
+        $countField = self::NOTIFY_FIELDS[$type->value]['countField'];
+
+        return Occurrence::where($activatedField, true)
+        ->where($countField, '>', 1)
+            ->get()
+            ->filter(fn ($occurrence) => $type->value == OccurrenceNotifyTypes::AVG->value
+            ? $occurrence->isCloseToAvg()
+            :$occurrence->isCloseToLastDuration()
+        );
     }
 }
