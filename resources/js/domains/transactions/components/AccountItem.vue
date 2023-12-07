@@ -6,9 +6,9 @@ import IconDrag from "@/Components/icons/IconDrag.vue";
 import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 
 import AccountReconciliationAlert from "./AccountReconciliationAlert.vue";
-import { computed } from "vue";
+import { computed, toRefs } from "vue";
 
-const { account } = defineProps({
+const props = defineProps({
   account: {
     type: Object,
     required: true,
@@ -19,20 +19,22 @@ const { account } = defineProps({
   },
 });
 
+const { account  } = toRefs(props)
+
 const isDebt = (amount: number) => {
   return amount < 0;
 };
 
 const hasPendingReconciliation = computed(() => {
-    return account.reconciliation_last?.status == 'pending';
+    return account.value.reconciliation_last?.status == 'pending';
 })
 
 const isReconciled = computed(() => {
-    return account.reconciliation_last?.amount == account.balance;
+    return account.value.reconciliation_last?.amount == account.value.balance;
 })
 
 const availableCredit = computed(() => {
-    return  parseFloat(account.credit_limit) + parseFloat(account.balance);
+    return  parseFloat(account.value.credit_limit) + parseFloat(account.value.balance);
 })
 const creditLimitDate = computed(() => {
     const formatter = new Intl.PluralRules('en-US', {
@@ -45,7 +47,7 @@ const creditLimitDate = computed(() => {
         ["few", "rd"],
         ["other", "th"],
     ]);
-    return account.credit_closing_day ? ` - ${account.credit_closing_day}${suffixes.get(formatter.select(account.credit_closing_day))}` : '';
+    return account.value.credit_closing_day ? ` - ${account.value.credit_closing_day}${suffixes.get(formatter.select(account.credit_closing_day))}` : '';
 })
 </script>
 

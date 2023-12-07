@@ -2,25 +2,25 @@
 
 namespace App\Notifications;
 
-use App\Domains\Housing\Models\Occurrence;
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Messages\MailMessage;
+use App\Domains\Housing\Models\Occurrence;
 use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Messages\MailMessage;
+use App\Domains\Housing\Contracts\OccurrenceNotifyTypes;
 
 class OccurrenceAlert extends Notification
 {
     use Queueable;
 
-    private Occurrence $occurrence;
 
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct(Occurrence $occurrence)
+    public function __construct(private Occurrence $occurrence, private OccurrenceNotifyTypes $type)
     {
-        $this->occurrence = $occurrence;
+
     }
 
     /**
@@ -57,10 +57,26 @@ class OccurrenceAlert extends Notification
     public function toArray($notifiable)
     {
         $name = $this->occurrence->name;
-        $days = $this->occurrence->previous_days_count;
+        $types = [
+            'avg' => "its average of {$this->occurrence->avg_days_passed}",
+            'last' => "its last duration of {$this->occurrence->previous_days_count}",
+        ];
+
+        $currentCount = $this->occurrence->currentCount();
+        $referenceCount = $this->type->value == OccurrenceNotifyTypes::AVG->value ? $this->occurrence->avg_days_passed : $this->occurrence->previous_days_count;
+        $diff = $currentCount - $referenceCount;
+        $diffAbs = abs($diff);
+
+        $messages = match (true) {
+            $diff < 0 => ["is close to", "days in $diffAbs days"],
+            $diff == 0 => ["is", ""],
+            default => ["has passed", "days by $diffAbs days"]
+        };
+
+
 
         return [
-            'message' => "Hey the $name occurrence is close to $days days in 3 days",
+            'message' => "The $name occurrence ({$currentCount}) {$messages[0]} {$types[$this->type->value]} {$messages[1]}",
             'cta' => "Check $name",
             'link' => '/housing/occurrence',
         ];

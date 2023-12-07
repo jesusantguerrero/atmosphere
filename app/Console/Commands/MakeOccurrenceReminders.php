@@ -2,11 +2,11 @@
 
 namespace App\Console\Commands;
 
-use App\Domains\Housing\Contracts\OccurrenceNotifyTypes;
-use App\Domains\Housing\Models\Occurrence;
 use App\Models\User;
-use App\Notifications\OccurrenceAlert;
 use Illuminate\Console\Command;
+use App\Notifications\OccurrenceAlert;
+use App\Domains\Housing\Models\Occurrence;
+use App\Domains\Housing\Contracts\OccurrenceNotifyTypes;
 
 class MakeOccurrenceReminders extends Command
 {
@@ -34,14 +34,14 @@ class MakeOccurrenceReminders extends Command
         $occurrencesOnLast = Occurrence::getForNotificationType(OccurrenceNotifyTypes::LAST);
         $occurrencesOnAvg = Occurrence::getForNotificationType(OccurrenceNotifyTypes::AVG);
 
-        $this->sendNotifications($occurrencesOnLast);
-        $this->sendNotifications($occurrencesOnAvg);
+        $this->sendNotifications($occurrencesOnLast, OccurrenceNotifyTypes::LAST);
+        $this->sendNotifications($occurrencesOnAvg, OccurrenceNotifyTypes::AVG);
     }
 
-    public function sendNotifications($occurrences)
+    public function sendNotifications($occurrences, $type)
     {
         foreach ($occurrences as $occurrence) {
-            User::find($occurrence->user_id)->notify(new OccurrenceAlert($occurrence));
+            User::find($occurrence->user_id)->notify(new OccurrenceAlert($occurrence, $type));
         }
     }
 }
