@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::table('budget_months', function (Blueprint $table) {
             $table->decimal('accounts_balance')->default(0)->after('left_from_last_month');
+            $table->decimal('overspending_from_last_month')->default(0);
+            $table->json('meta_data')->nullable();
         });
     }
 };
