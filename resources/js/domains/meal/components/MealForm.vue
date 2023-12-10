@@ -1,8 +1,7 @@
 <script setup lang="ts">
-    import { useForm } from "@inertiajs/vue3"
-    import { AtField, AtInput, AtButton } from "atmosphere-ui"
+    import { router, useForm } from "@inertiajs/vue3"
+    import { AtField } from "atmosphere-ui"
     import { nextTick } from '@vue/runtime-core'
-    import LogerApiSimpleSelect from "@/Components/organisms/LogerApiSimpleSelect.vue";
     import LogerInput from "@/Components/atoms/LogerInput.vue";
     import MealFormLine from "./MealFormLine.vue";
 
@@ -23,8 +22,7 @@
         ingredients: props.meal ? [...props.meal.ingredients, {}]: [{}]
     })
 
-
-    const submit = async () => {
+    const submit = async (redirectTo: string = "") => {
         const method = props.meal ? 'put' : 'post';
         const url = props.meal ? `/meals/${props.meal.id}` : '/meals';
         form
@@ -32,15 +30,19 @@
                 ...data,
                 ingredients: data.ingredients.filter( ingredient => ingredient.name)
         }))
-        .submit(method, url, {
+        [method](url, {
+            preserveScroll: true,
+            preserveState: false,
             onSuccess: async () => {
                 if (method == 'post') {
                     await nextTick()
                     form.reset()
+                    if (redirectTo) {
+                        router.visit(redirectTo)
+                    }
                 }
             }
         })
-
     }
 
     const checkIngredients = (index, value) => {
@@ -89,27 +91,22 @@
         <AtField
             label="Tags"
         >
-            <LogerInput v-model="form.name" rounded />
+            <LogerInput v-model="form.tags" rounded />
         </AtField>
         <AtField
             label="Link"
         >
-            <LogerInput v-model="form.name" rounded />
+            <LogerInput v-model="form.link" rounded />
         </AtField>
         <AtField
             label="Dish"
         >
-            <LogerInput v-model="form.name" rounded />
+            <LogerInput v-model="form.dish" rounded />
         </AtField>
         <AtField
             label="Time"
         >
-            <LogerInput v-model="form.name" rounded />
-        </AtField>
-        <AtField
-            label="Times Planned"
-        >
-            <LogerInput v-model="form.name" rounded />
+            <LogerInput v-model="form.time" rounded />
         </AtField>
     </div>
 </template>

@@ -4,17 +4,20 @@
     import { reactive } from "vue";
 
     import LogerApiSimpleSelect from "@/Components/organisms/LogerApiSimpleSelect.vue";
-    import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
     import IconHeart from "@/Components/icons/IconHeart.vue";
     import IconHeartOutline from "@/Components/icons/IconHeartOutline.vue";
+    import LogerButton from "@/Components/atoms/LogerButton.vue";
+import { useForm } from "@inertiajs/vue3";
+import { ElMessage, ElMessageBox } from "element-plus";
 
     interface Label {
         id: number;
         name: string;
         color: string;
     }
-    
+
     interface Meal {
+[x: string]: any;
         id: number;
         name: string;
         is_liked: boolean;
@@ -34,6 +37,17 @@
     const isSelected = (meal: Meal) => {
         return !!props.selected
         ?.find(selectedMeal => selectedMeal.id == meal.id)
+    }
+
+    const deleteForm = useForm({
+        id: 0
+    });
+
+    const deleteResource = async (meal: any) => {
+        const isConfirmed = await ElMessageBox.confirm("Are you sure to delete this meal?");
+        if (!isConfirmed) return
+
+        deleteForm.delete(route('meals.destroy', { meal }))
     }
 </script>
 
@@ -58,26 +72,18 @@
             </div>
 
             <div class="flex items-center space-x-2 text-right">
-                <div class="flex items-center space-x-1 font-bold">
-                    <div v-for="tag in meal.labels" :style="{color: tag.color}" :key="tag.id">
-                        #{{ tag.name  }}
+                <div class="flex items-center space-x-1 font-bold text-gray-500">
+                    <div v-for="ingredient in meal.ingredients" :style="{color: ingredient.color}" :key="ingredient.id">
+                        {{ ingredient.name  }}
                     </div>
-
-                    <LogerApiSimpleSelect
-                        v-model="label.label_id"
-                        v-model:label="label.name"
-                        class="w-24"
-                        tag
-                        custom-label="name"
-                        track-id="id"
-                        placeholder="Add label"
-                        endpoint="/api/labels"
-                        @update:label="$emit('tag-selected', label, meal)"
-                    />
                 </div>
-                <LogerButtonTab type="secondary">
+                <LogerButton type="danger"
+                    @click="deleteResource(meal)"
+                    :disabled="deleteForm.processing"
+                    :processing="deleteForm.processing && deleteForm.id==meal.id"
+                >
                     <i class="fa fa-trash"></i>
-                </LogerButtonTab>
+                </LogerButton>
             </div>
         </article>
     </section>

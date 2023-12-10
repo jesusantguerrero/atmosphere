@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Domains\Meal\Models\Product;
+use App\Domains\Meal\Services\MealService;
 
 class IngredientApiController extends BaseController
 {
@@ -14,21 +15,14 @@ class IngredientApiController extends BaseController
         $this->includes = ['labels'];
     }
 
-    public function addLabel($id)
+    public function addLabel($id, MealService $mealService)
     {
-        $postData = request()->post();
-        $product = $this->model->find($id);
-        if ($postData['label_id'] !== "new::{$postData['name']}") {
-            $label = $product->labels()->find($postData['label_id']);
-        } else {
-            $label = $product->labels()->create([
-                'user_id' => auth()->user()->id,
-                'team_id' => auth()->user()->current_team_id,
-                'name' => $postData['name'],
-                'label' => $postData['name'],
-                'color' => $postData['color'],
-            ]);
-        }
+        $product = $this->model->find($id);    
+        $label = $mealService->addIngredientLabel(
+            $product, 
+            request()->post(), 
+            request()->user()
+        );
 
         return response()->json(['label' => $label]);
     }

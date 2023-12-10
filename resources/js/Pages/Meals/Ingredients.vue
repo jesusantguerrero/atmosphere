@@ -10,6 +10,7 @@ import MealTemplate from "@/domains/meal/components/MealTemplate.vue";
 import MealSectionNav from "@/domains/meal/components/MealSectionNav.vue";
 
 import { generateRandomColor } from "@/utils";
+import axios from "axios";
 
 const props = defineProps({
   products: {
@@ -26,6 +27,8 @@ const assignProductLabel = (label: Record<string, string>, product: Record<strin
   axios.post(`/api/ingredients/${product.id}/labels`, {
     ...label,
     color: generateRandomColor(),
+  }).then(() => {
+    router.reload()
   });
 };
 </script>
