@@ -33,6 +33,7 @@ export interface IAccount {
     balance: number;
     reconciliations_last?: IReconciliation;
     account_detail_type_id: number;
+    currency_code: string;
 }
 
 export interface IReconciliation {

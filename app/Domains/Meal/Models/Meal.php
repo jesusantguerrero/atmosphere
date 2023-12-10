@@ -2,9 +2,9 @@
 
 namespace App\Domains\Meal\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Insane\Journal\Models\Product\Product;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Meal extends Model
 {
@@ -26,11 +26,12 @@ class Meal extends Model
     {
         Ingredient::query()->where('meal_id', $this->id)->delete();
         foreach ($items as $item) {
-            if (isset($item['product_id']) && $item['product_id'] !== "new::{$item['name']}") {
+            if (isset($item['product_id']) && !str_contains($item['product_id'], "new::")) {
                 $product = Product::find($item['product_id']);
-            } elseif (isset($item['name'])) {
-                $product = Product::create([
-                    'name' => $item['name'],
+            } else {
+                $ingredientName = str_replace("new::", "", $item['product_id']);
+                $product = Product::firstOrCreate([
+                    'name' => $ingredientName,
                     'team_id' => $this->team_id,
                     'user_id' => $this->user_id,
                 ]);
@@ -40,9 +41,9 @@ class Meal extends Model
                 'user_id' => $this->user_id,
                 'meal_id' => $this->id,
                 'product_id' => $product->id,
-                'quantity' => $item['quantity'],
-                'name' => $item['name'],
-                'unit' => $item['unit'],
+                'quantity' => $item['quantity'] ?? 1,
+                'name' => $product->name,
+                'unit' => $item['unit'] ?? "",
             ]);
         }
     }

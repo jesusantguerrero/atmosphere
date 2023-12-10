@@ -22,13 +22,14 @@ import TransactionSearch from "@/domains/transactions/components/TransactionSear
 import TransactionTable from "@/domains/transactions/components/TransactionTable.vue";
 import DraftButtons from "@/domains/transactions/components/DraftButtons.vue";
 
-import { useTransactionModal, TRANSACTION_DIRECTIONS } from "@/domains/transactions";
+import { useTransactionModal, TRANSACTION_DIRECTIONS, removeTransaction } from "@/domains/transactions";
 // import { IServerSearchData, useServerSearch } from "@/composables/useServerSearch";
 import { tableAccountCols } from "@/domains/transactions";
 import { useAppContextStore } from "@/store";
 import { formatMoney } from "@/utils";
 import { IAccount, ICategory, ITransaction } from "@/domains/transactions/models";
 import axios from "axios";
+import AccountReconciliationForm from "./AccountReconciliationForm.vue";
 
 
 const { openTransactionModal } = useTransactionModal();
@@ -260,63 +261,11 @@ const reconcileForm = useForm({
             />
       </section>
 
-      <ConfirmationModal
+      <AccountReconciliationForm
           :show="reconcileForm.isVisible"
           @close="reconcileForm.isVisible = false"
-          title="Ending statement balance"
-        >
-
-          <template #content>
-              <section>
-                  <h4 class="font-bold">
-                  {{ selectedAccount.name }}
-                  </h4>
-                  <AtField
-                  label="Ending balance Date"
-                  class="flex justify-between w-full md:w-4/12 md:block"
-              >
-                  <NDatePicker
-                  v-model:value="reconcileForm.date"
-                  type="date"
-                  size="large"
-                  class="w-48 md:w-full"
-                  />
-              </AtField>
-
-              <AtField label="statement balance">
-                  <LogerInput
-                      ref="input"
-                      class="opacity-100 cursor-text"
-                      v-model="reconcileForm.balance"
-                      :number-format="true"
-
-                  >
-                      <template #prefix>
-                          {{ selectedAccount.currency_code }}
-                      </template>
-                  </LogerInput>
-              </AtField>
-              </section>
-
-          </template>
-
-          <template #footer>
-              <section class="flex justify-between">
-                  <LogerButton @click="reconcileForm.isVisible = false" variant="neutral">
-                      Cancel
-                  </LogerButton>
-
-                  <LogerButton
-                      class="ml-2"
-                      @click="reconciliation"
-                      :class="{ 'opacity-25': reconcileForm.processing }"
-                      :disabled="reconcileForm.processing"
-                  >
-                      Save
-                  </LogerButton>
-              </section>
-          </template>
-      </ConfirmationModal>
+          :account="selectedAccount"
+       />
   </FinanceTemplate>
 </AppLayout>
 </template>
