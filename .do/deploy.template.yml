@@ -137,5 +137,5 @@ spec:
     kind: POST_DEPLOY
     git:
       repo_clone_url: https://github.com/jesusantguerrero/atmosphere.git
-      branch: staging
+      branch: master
     run_command: php artisan storage:link
