@@ -33,7 +33,7 @@ spec:
     # DATABASE
     - key: DB_CONNECTION
       scope: RUN_TIME
-      value: "pgsql"
+      value: "mysql"
     - key: DB_HOST
       scope: RUN_TIME
       value: ${loger-db.HOSTNAME}
