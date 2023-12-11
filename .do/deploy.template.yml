@@ -134,4 +134,3 @@ spec:
   - name: loger-db
     engine: MYSQL
     size: professional-xs
-    version: "8"
