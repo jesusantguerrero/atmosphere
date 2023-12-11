@@ -133,6 +133,5 @@ spec:
   databases:
   - name: loger-db
     engine: MYSQL
-    production: true
     size: professional-xs
     version: "8"
