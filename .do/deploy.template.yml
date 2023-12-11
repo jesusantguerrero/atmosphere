@@ -6,7 +6,7 @@ spec:
       branch: master
       repo_clone_url: https://github.com/jesusantguerrero/atmosphere.git
     build_command: npm run build
-    run_command: php artisan migrate --force ; php artisan db:seed ; php artisan journal:set-accounts ; heroku-php-apache2 public/
+    run_command: php artisan migrate:fresh --force --seed ; php artisan storage:link; heroku-php-apache2 public/
     envs:
     - key: APP_NAME
       scope: RUN_TIME
@@ -132,10 +132,3 @@ spec:
       value: "YOUR_DO_SPACES_BUCKET"
   databases:
   - name: loger-db
-  jobs:
-  - name: storagelink
-    kind: POST_DEPLOY
-    git:
-      repo_clone_url: https://github.com/jesusantguerrero/atmosphere.git
-      branch: master
-    run_command: php artisan storage:link
