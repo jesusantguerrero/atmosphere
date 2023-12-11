@@ -6,7 +6,7 @@ spec:
       branch: master
       repo_clone_url: https://github.com/jesusantguerrero/atmosphere.git
     build_command: npm run build:digitalocean
-    run_command: php artisan migrate:fresh --force --seed ; php artisan storage:link; heroku-php-apache2 public/
+    run_command: php artisan migrate:fresh --force --seed ; php artisan storage:link; heroku-php-apache2 public/ && composer install --ignore-platform-reqs
     envs:
     - key: APP_NAME
       scope: RUN_TIME
@@ -132,3 +132,7 @@ spec:
       value: "YOUR_DO_SPACES_BUCKET"
   databases:
   - name: loger-db
+    engine: MYSQL
+    production: true
+    size: professional-xs
+    version: "8"
