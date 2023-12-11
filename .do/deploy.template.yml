@@ -5,7 +5,7 @@ spec:
     git:
       branch: master
       repo_clone_url: https://github.com/jesusantguerrero/atmosphere.git
-    build_command: npm run build
+    build_command: npm run build:digitalocean
     run_command: php artisan migrate:fresh --force --seed ; php artisan storage:link; heroku-php-apache2 public/
     envs:
     - key: APP_NAME
