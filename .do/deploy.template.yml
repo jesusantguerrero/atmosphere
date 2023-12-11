@@ -33,7 +33,7 @@ spec:
     # DATABASE
     - key: DB_CONNECTION
       scope: RUN_TIME
-      value: "mysql"
+      value: "pgsql"
     - key: DB_HOST
       scope: RUN_TIME
       value: ${loger-db.HOSTNAME}
@@ -132,5 +132,3 @@ spec:
       value: "YOUR_DO_SPACES_BUCKET"
   databases:
   - name: loger-db
-    engine: MYSQL
-    size: professional-xs
