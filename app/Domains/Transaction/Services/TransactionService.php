@@ -244,7 +244,6 @@ class TransactionService
         ", [
             'teamId' => $teamId,
             'monthDate' => $endDate
-            // 'detailTypes' => implode(',', AccountDetailType::ALL)
         ]);
     }
 
@@ -432,4 +431,37 @@ class TransactionService
             ->whereBetween('date', [$options['startDate'], $options['endDate']])
             ->when(isset($options['limit']), fn ($query) => $query->limit($options['limit']));
     }
+
+    public function getCreditCardSpentTransactions(int $teamId) {
+        return  DB::table(DB::raw('categories g'))
+        ->selectRaw('SUM(transaction_lines.amount * transaction_lines.type) as total,
+          accounts.id account_id,
+          date_format(transactions.date, "%Y-%m-01") as date,
+          accounts.display_id account_display_id,
+          accounts.name account_name,
+          accounts.alias account_alias,
+          categories.name,
+          categories.id,
+          categories.display_id,
+          categories.alias,
+          g.display_id groupName,
+          g.alias groupAlias,
+          MONTH(transactions.date) as months'
+        )
+        ->groupByRaw('transactions.id')
+        ->join('categories', 'g.id', '=', 'categories.parent_id')
+        ->join('accounts', 'accounts.category_id', '=', 'categories.id')
+        ->join('transaction_lines', 'transaction_lines.account_id', '=', 'accounts.id')
+        ->join('transactions', fn ($q)=> $q->on('transactions.id',  'transaction_lines.transaction_id'))
+        ->orderByRaw('g.index,categories.index, accounts.index,accounts.number')
+        ->where(fn ($q) => $q->where([
+            'transactions.status' => Transaction::STATUS_VERIFIED,
+            'accounts.team_id' => $teamId
+          ])->orWhereNull('transactions.status')
+        )
+        ->where([
+            'g.display_id' => 'liabilities',
+          ])
+        ->get();
+      }
 }
