@@ -3,6 +3,10 @@ FROM php:8.1.2-fpm
 ARG user
 ARG uid
 ARG TZ
+
+ENV user $user
+ENV uid $uid
+ENV TZ $TZ
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     git \
@@ -36,3 +40,4 @@ RUN mkdir -p /home/$user/.composer && \
 WORKDIR /var/www
 
 USER $user
+CMD ["php artisan serve"]

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c0075c94e330fc7f49b53c5e14cdbcc9",
+    "content-hash": "9ea65b2532aada17a850815c50136ee4",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -2636,16 +2636,10 @@
         {
             "name": "insane/journal",
             "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/insane-code/journal.git",
-                "reference": "424233e9ffa538efc51700b0bdd6700069717124"
-            },
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/insane-code/journal/zipball/424233e9ffa538efc51700b0bdd6700069717124",
-                "reference": "424233e9ffa538efc51700b0bdd6700069717124",
-                "shasum": ""
+                "type": "path",
+                "url": "../packages/journal",
+                "reference": "424233e9ffa538efc51700b0bdd6700069717124"
             },
             "require": {
                 "staudenmeir/belongs-to-through": "^2.5"
@@ -2659,7 +2653,6 @@
                 "phpunit/phpunit": "^7.4@dev",
                 "symfony/thanks": "^1.0"
             },
-            "default-branch": true,
             "type": "library",
             "extra": {
                 "laravel": {
@@ -2676,7 +2669,19 @@
                     "Insane\\Journal\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "Insane\\Journal\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "vendor/bin/phpunit"
+                ],
+                "test-coverage": [
+                    "vendor/bin/phpunit --coverage-html coverage"
+                ]
+            },
             "license": [
                 "MIT"
             ],
@@ -2688,14 +2693,13 @@
             ],
             "description": "Accounting module for atmosphere and laravel",
             "keywords": [
-                "Accounting",
+                "accounting",
                 "invoicing"
             ],
-            "support": {
-                "issues": "https://github.com/insane-code/journal/issues",
-                "source": "https://github.com/insane-code/journal/tree/v1.0.5"
-            },
-            "time": "2023-12-09T15:00:26+00:00"
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         },
         {
             "name": "insane/plan-module",
@@ -5902,21 +5906,21 @@
         },
         {
             "name": "php-mime-mail-parser/php-mime-mail-parser",
-            "version": "7.1.2",
+            "version": "8.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-mime-mail-parser/php-mime-mail-parser.git",
-                "reference": "81d84bbc6a73b913110e155e98059526825c7ee3"
+                "reference": "f922907123625d940adbba7be403a2e620d0a8e5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-mime-mail-parser/php-mime-mail-parser/zipball/81d84bbc6a73b913110e155e98059526825c7ee3",
-                "reference": "81d84bbc6a73b913110e155e98059526825c7ee3",
+                "url": "https://api.github.com/repos/php-mime-mail-parser/php-mime-mail-parser/zipball/f922907123625d940adbba7be403a2e620d0a8e5",
+                "reference": "f922907123625d940adbba7be403a2e620d0a8e5",
                 "shasum": ""
             },
             "require": {
                 "ext-mailparse": "*",
-                "php": "^7.2|^8.0"
+                "php": "^8.0"
             },
             "replace": {
                 "exorus/php-mime-mail-parser": "*",
@@ -5969,7 +5973,7 @@
                     "role": "Developer"
                 }
             ],
-            "description": "A fully tested email parser for PHP 7.2+ (mailparse extension wrapper).",
+            "description": "A fully tested email parser for PHP 8.0+ (mailparse extension wrapper).",
             "homepage": "https://github.com/php-mime-mail-parser/php-mime-mail-parser",
             "keywords": [
                 "MimeMailParser",
@@ -5981,15 +5985,9 @@
             ],
             "support": {
                 "issues": "https://github.com/php-mime-mail-parser/php-mime-mail-parser/issues",
-                "source": "https://github.com/php-mime-mail-parser/php-mime-mail-parser/tree/7.1.2"
+                "source": "https://github.com/php-mime-mail-parser/php-mime-mail-parser/tree/8.0.2"
             },
-            "funding": [
-                {
-                    "url": "https://github.com/eXorus",
-                    "type": "github"
-                }
-            ],
-            "time": "2022-04-16T07:56:53+00:00"
+            "time": "2023-08-23T13:29:02+00:00"
         },
         {
             "name": "phpdocumentor/reflection-common",
