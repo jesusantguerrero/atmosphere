@@ -19,6 +19,8 @@
 	</strong>
 </p>
 
+![example workflow](https://github.com/jesusantguerrero/atmosphere/actions/workflows/laravel.yml/badge.svg)
+
 
 ![image](https://user-images.githubusercontent.com/17421742/212417292-19f319c5-1cf4-48a8-ba40-1e9b040e820f.png)
 
