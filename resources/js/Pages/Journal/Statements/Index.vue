@@ -10,7 +10,7 @@ defineProps({
 </script>
 
 <template>
-  <AppLayout title="Reportes">
+  <AppLayout title="$t('Reports')">
     <div class="w-full py-10 mx-auto mt-8 sm:px-6 lg:px-8 print:w-[210mm] print">
       <div
         class="w-full px-5 py-5 mb-10 bg-white rounded-md shadow-md print:w-[210mm] print"

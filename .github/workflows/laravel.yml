@@ -1,4 +1,4 @@
-name: Laravel App Deployment
+name: Loger Demo Deployment
 
 on:
   push:
