@@ -146,7 +146,7 @@ const { customPrint } = usePrint("report");
             <article class="w-full px-5" v-for="categories in group.categories">
               <header class="flex justify-between py-2">
                 <span class="font-semibold text-blue-500">
-                  {{ categories.alias ?? categories.name }}
+                  {{ categories.alias || (categories.label ?? categories.name) }}
                 </span>
                 <div class="space-x-4">
                   <span class="font-bold text-success">
@@ -163,7 +163,7 @@ const { customPrint } = usePrint("report");
                 <article class="w-full px-5" v-for="account in categories.accounts">
                   <header class="flex justify-between py-2">
                     <span class="font-semibold text-blue-500">
-                      {{ account.alias ?? account.name }}
+                      {{ account.alias || (account.name ?? account) }}
                     </span>
                     <div class="space-x-4">
                       <span class="font-bold text-success">
