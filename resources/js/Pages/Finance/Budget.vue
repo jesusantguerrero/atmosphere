@@ -121,7 +121,7 @@ const goToday = () => {
 
 const budgetAccountsTotal =  computed(() => {
     return props.accounts.reduce((total, account) => {
-        console.log(account);
+        console.log(account.balance_type, account.name);
         return account.balance_type == 'CREDIT'
         ? total
         : exactMath.add(total, account?.balance)

@@ -52,6 +52,10 @@ class BudgetRolloverService {
             'name' => $month,
         ])->first();
 
+        if (!$budgetMonth) {
+            return;
+        }
+
         if ($budgetMonth->category->account_id) {
             $available = (- $budgetMonth->payments);
             $available = Money::of($budgetMonth->funded_spending, $category->account->currency_code)

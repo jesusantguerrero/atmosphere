@@ -123,8 +123,6 @@ services:
   phpmyadmin:
     depends_on:
       - db
-    #links:
-      #- db:mysql
     image: phpmyadmin/phpmyadmin
     container_name: phpmyadmin
     restart: always
@@ -134,7 +132,6 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - VIRTUAL_HOST=phpmyadmin.${HOST_DOMAIN}
-      #- VIRTUAL_PORT=8002
       - LETSENCRYPT_HOST=phpmyadmin.${HOST_DOMAIN}
       - LETSENCRYPT_EMAIL=jesusant.guerrero@gmail.com
 networks:

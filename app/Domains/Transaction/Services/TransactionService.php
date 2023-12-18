@@ -456,10 +456,10 @@ class TransactionService
         ->orderByRaw('g.index,categories.index, accounts.index,accounts.number')
         ->where(fn ($q) => $q->where([
             'transactions.status' => Transaction::STATUS_VERIFIED,
-            'accounts.team_id' => $teamId
           ])->orWhereNull('transactions.status')
         )
         ->where([
+            'accounts.team_id' => $teamId,
             'g.display_id' => 'liabilities',
           ])
         ->get();
