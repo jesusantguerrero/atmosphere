@@ -4,7 +4,7 @@
 }
 
 # The domain name of your server
-loger.test {
+loger.localhost {
 	# Set the webroot to the public/ dir
 	root * public/
 	# Enable compression (optional)
@@ -14,4 +14,14 @@ loger.test {
 		# Required for the public/storage/ dir
 		resolve_root_symlink
 	}
+
+    mercure {
+		# Publisher JWT key
+		publisher_jwt !ChangeThisMercureHubJWTSecretKey!
+		# Subscriber JWT key
+		subscriber_jwt !ChangeThisMercureHubJWTSecretKey!
+	}
+
+	respond "Not Found" 404
+
 }
