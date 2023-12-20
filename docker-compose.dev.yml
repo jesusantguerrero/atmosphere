@@ -3,7 +3,6 @@ services:
   web:
     build:
       args:
-        user: 'loger'
         uid: 1000
         TZ: America\New_York
       context: ./
@@ -15,7 +14,7 @@ services:
       - 443:443
     restart: unless-stopped
     volumes:
-      - ./:/var/www
+      - ./:/app
       - ./docker-compose/web/timezone:/etc/timezone
       - loger_db:/var/lib/mysql
     networks:
@@ -23,7 +22,6 @@ services:
     depends_on:
       - db
       - redis
-    user: www-data
   db:
     image: mariadb:10.8.4
     container_name: loger-db
