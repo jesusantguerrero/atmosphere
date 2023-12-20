@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9ea65b2532aada17a850815c50136ee4",
+    "content-hash": "e7ce5f7029dee78a3cd0814d8820ba61",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -1867,16 +1867,16 @@
         },
         {
             "name": "google/apiclient-services",
-            "version": "v0.327.0",
+            "version": "v0.328.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/googleapis/google-api-php-client-services.git",
-                "reference": "51a11d4ff70dd9f60334525e71bf4cf592e6d282"
+                "reference": "211ba786d30a4ab21e012d2b7dbefc49b4fc6a3d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/googleapis/google-api-php-client-services/zipball/51a11d4ff70dd9f60334525e71bf4cf592e6d282",
-                "reference": "51a11d4ff70dd9f60334525e71bf4cf592e6d282",
+                "url": "https://api.github.com/repos/googleapis/google-api-php-client-services/zipball/211ba786d30a4ab21e012d2b7dbefc49b4fc6a3d",
+                "reference": "211ba786d30a4ab21e012d2b7dbefc49b4fc6a3d",
                 "shasum": ""
             },
             "require": {
@@ -1905,9 +1905,9 @@
             ],
             "support": {
                 "issues": "https://github.com/googleapis/google-api-php-client-services/issues",
-                "source": "https://github.com/googleapis/google-api-php-client-services/tree/v0.327.0"
+                "source": "https://github.com/googleapis/google-api-php-client-services/tree/v0.328.0"
             },
-            "time": "2023-12-11T00:52:16+00:00"
+            "time": "2023-12-18T01:00:18+00:00"
         },
         {
             "name": "google/auth",
@@ -2636,10 +2636,16 @@
         {
             "name": "insane/journal",
             "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/insane-code/journal.git",
+                "reference": "f1046801c53f62e6b31a56845d7c106916873ee4"
+            },
             "dist": {
-                "type": "path",
-                "url": "../packages/journal",
-                "reference": "424233e9ffa538efc51700b0bdd6700069717124"
+                "type": "zip",
+                "url": "https://api.github.com/repos/insane-code/journal/zipball/f1046801c53f62e6b31a56845d7c106916873ee4",
+                "reference": "f1046801c53f62e6b31a56845d7c106916873ee4",
+                "shasum": ""
             },
             "require": {
                 "staudenmeir/belongs-to-through": "^2.5"
@@ -2653,6 +2659,7 @@
                 "phpunit/phpunit": "^7.4@dev",
                 "symfony/thanks": "^1.0"
             },
+            "default-branch": true,
             "type": "library",
             "extra": {
                 "laravel": {
@@ -2669,19 +2676,7 @@
                     "Insane\\Journal\\": "src/"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "Insane\\Journal\\Tests\\": "tests/"
-                }
-            },
-            "scripts": {
-                "test": [
-                    "vendor/bin/phpunit"
-                ],
-                "test-coverage": [
-                    "vendor/bin/phpunit --coverage-html coverage"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -2693,13 +2688,14 @@
             ],
             "description": "Accounting module for atmosphere and laravel",
             "keywords": [
-                "accounting",
+                "Accounting",
                 "invoicing"
             ],
-            "transport-options": {
-                "symlink": true,
-                "relative": true
-            }
+            "support": {
+                "issues": "https://github.com/insane-code/journal/issues",
+                "source": "https://github.com/insane-code/journal/tree/v1.0.6"
+            },
+            "time": "2023-12-18T00:08:56+00:00"
         },
         {
             "name": "insane/plan-module",
@@ -3354,16 +3350,16 @@
         },
         {
             "name": "laravel/framework",
-            "version": "v10.37.3",
+            "version": "v10.38.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/framework.git",
-                "reference": "996375dd61f8c6e4ac262b57ed485655d71fcbdc"
+                "reference": "531732a17e4d0fa4fc4fb987a72abbdb93537d3a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/framework/zipball/996375dd61f8c6e4ac262b57ed485655d71fcbdc",
-                "reference": "996375dd61f8c6e4ac262b57ed485655d71fcbdc",
+                "url": "https://api.github.com/repos/laravel/framework/zipball/531732a17e4d0fa4fc4fb987a72abbdb93537d3a",
+                "reference": "531732a17e4d0fa4fc4fb987a72abbdb93537d3a",
                 "shasum": ""
             },
             "require": {
@@ -3552,7 +3548,7 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
-            "time": "2023-12-13T20:10:58+00:00"
+            "time": "2023-12-19T14:59:00+00:00"
         },
         {
             "name": "laravel/jetstream",
@@ -4495,16 +4491,16 @@
         },
         {
             "name": "livewire/livewire",
-            "version": "v3.3.0",
+            "version": "v3.3.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/livewire/livewire.git",
-                "reference": "7c1f609515e74ef1197c08e56a5606571b3ec1d9"
+                "reference": "6dd3bec8c711cd792742be4620057637e261e6f7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/livewire/livewire/zipball/7c1f609515e74ef1197c08e56a5606571b3ec1d9",
-                "reference": "7c1f609515e74ef1197c08e56a5606571b3ec1d9",
+                "url": "https://api.github.com/repos/livewire/livewire/zipball/6dd3bec8c711cd792742be4620057637e261e6f7",
+                "reference": "6dd3bec8c711cd792742be4620057637e261e6f7",
                 "shasum": ""
             },
             "require": {
@@ -4557,7 +4553,7 @@
             "description": "A front-end framework for Laravel.",
             "support": {
                 "issues": "https://github.com/livewire/livewire/issues",
-                "source": "https://github.com/livewire/livewire/tree/v3.3.0"
+                "source": "https://github.com/livewire/livewire/tree/v3.3.3"
             },
             "funding": [
                 {
@@ -4565,7 +4561,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2023-12-11T18:04:00+00:00"
+            "time": "2023-12-20T05:34:05+00:00"
         },
         {
             "name": "maatwebsite/excel",
@@ -7943,16 +7939,16 @@
         },
         {
             "name": "staudenmeir/belongs-to-through",
-            "version": "v2.15",
+            "version": "v2.15.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/staudenmeir/belongs-to-through.git",
-                "reference": "18b5d55ee0db5cc14bbba75702bf312dd28051f3"
+                "reference": "002b2eab60c03a41c0be709710300d22776b07a5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/staudenmeir/belongs-to-through/zipball/18b5d55ee0db5cc14bbba75702bf312dd28051f3",
-                "reference": "18b5d55ee0db5cc14bbba75702bf312dd28051f3",
+                "url": "https://api.github.com/repos/staudenmeir/belongs-to-through/zipball/002b2eab60c03a41c0be709710300d22776b07a5",
+                "reference": "002b2eab60c03a41c0be709710300d22776b07a5",
                 "shasum": ""
             },
             "require": {
@@ -7996,7 +7992,7 @@
             "description": "Laravel Eloquent BelongsToThrough relationships",
             "support": {
                 "issues": "https://github.com/staudenmeir/belongs-to-through/issues",
-                "source": "https://github.com/staudenmeir/belongs-to-through/tree/v2.15"
+                "source": "https://github.com/staudenmeir/belongs-to-through/tree/v2.15.1"
             },
             "funding": [
                 {
@@ -8004,7 +8000,7 @@
                     "type": "custom"
                 }
             ],
-            "time": "2023-12-16T22:07:22+00:00"
+            "time": "2023-12-19T11:58:06+00:00"
         },
         {
             "name": "symfony/cache",
