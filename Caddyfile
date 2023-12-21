@@ -4,14 +4,10 @@
 }
 
 # The domain name of your server
-loger.localhost {
-	# Set the webroot to the public/ dir
+dev-loger.neatlancer.com {
 	root * public/
-	# Enable compression (optional)
 	encode zstd gzip
-	# Execute PHP files in the current directory and serve assets
 	php_server {
-		# Required for the public/storage/ dir
 		resolve_root_symlink
 	}
 
@@ -21,7 +17,4 @@ loger.localhost {
 		# Subscriber JWT key
 		subscriber_jwt !ChangeThisMercureHubJWTSecretKey!
 	}
-
-	respond "Not Found" 404
-
 }

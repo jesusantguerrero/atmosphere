@@ -15,6 +15,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./:/app
+      - ./Caddyfile.dev:/etc/caddy/Caddyfile
       - ./docker-compose/web/timezone:/etc/timezone
       - loger_db:/var/lib/mysql
     networks:
@@ -42,17 +43,6 @@ services:
       - ./docker-compose/mysql:/home/root/cache/
     networks:
       - loger
-  # nginx:
-  #   image: nginx:alpine
-  #   container_name: loger-nginx
-  #   restart: unless-stopped
-  #   ports:
-  #     - "8080:80"
-  #   volumes:
-  #     - ./:/var/www
-  #     - ./docker-compose/nginx/vhosts:/etc/nginx/conf.d/
-  #   networks:
-  #     - loger
   redis:
     image: 'redis:alpine'
     ports:
@@ -80,7 +70,7 @@ services:
       dockerfile: cron.dockerfile
     container_name: cron
     volumes:
-      - ./:/var/www
+      - ./:/app
     depends_on:
       - web
     networks:

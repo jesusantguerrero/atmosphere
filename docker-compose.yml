@@ -1,55 +1,8 @@
 version: "3.7"
 services:
-  web-proxy:
-    image: nginxproxy/nginx-proxy:latest
-    container_name: web-proxy
-    restart: unless-stopped
-    ports:
-      - 80:80
-      - 443:443
-    volumes:
-      - ./:/var/www
-      - ./docker-compose/nginx:/etc/nginx/conf.d/
-      - ./docker-compose/nginx:/etc/nginx/certs:ro
-      - /var/run/docker.sock:/tmp/docker.sock:ro
-      - ./docker-compose/nginx/vhosts:/etc/nginx/vhost.d
-      - ./:/usr/share/nginx/html
-    networks:
-      - loger
-    depends_on:
-      - nginx
-  ssl-companion:
-    image: jrcs/letsencrypt-nginx-proxy-companion
-    container_name: ssl-companion
-    restart: always
-    volumes_from:
-      - web-proxy
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./docker-compose/nginx:/etc/nginx/certs:rw
-    depends_on:
-      - web-proxy
-  nginx:
-    image: nginx:alpine
-    container_name: web-nginx
-    restart: unless-stopped
-    ports:
-      - 8080:80
-    volumes:
-      - ./:/var/www
-      - ./docker-compose/nginx/vhosts:/etc/nginx/conf.d/
-      - ./:/usr/share/nginx/html
-    environment:
-      - VIRTUAL_PORT=80
-      - VIRTUAL_HOST=${VIRTUAL_APP_HOST}
-      - LETSENCRYPT_HOST=${VIRTUAL_APP_HOST}
-      - LETSENCRYPT_EMAIL=jesusant.guerrero@gmail.com
-    networks:
-      - loger
   web:
     build:
       args:
-        user: 'loger'
         uid: 1000
         TZ: America\New_York
       context: ./
@@ -60,7 +13,8 @@ services:
     depends_on:
       - db
     volumes:
-      - ./:/var/www
+      - ./:/app
+      - ./Caddyfile:/etc/caddy/Caddyfile
       - loger_db:/var/lib/mysql
     networks:
       - loger
@@ -73,19 +27,14 @@ services:
     restart: unless-stopped
     ports:
       - 3000:3000
-    environment:
-      - VIRTUAL_PORT=3000
-      - VIRTUAL_HOST=${VIRTUAL_LANDING_HOST}
-      - LETSENCRYPT_HOST=${VIRTUAL_LANDING_HOST}
-      - LETSENCRYPT_EMAIL=jesusant.guerrero@gmail.com
     networks:
       - loger
   db:
-    image: mysql:5.7
+    image: mariadb:10.8.4
     container_name: loger-db
     restart: always
     ports:
-      - "3308:3306"
+      - "3306:3306"
     environment:
       MYSQL_DATABASE: ${DB_DATABASE}
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
@@ -114,8 +63,8 @@ services:
       dockerfile: cron.dockerfile
     container_name: cron
     volumes:
-      - ./:/var/www
-    working_dir: /var/www
+      - ./:/app
+    working_dir: /app
     depends_on:
       - web
     networks:
@@ -131,9 +80,6 @@ services:
     env_file: .env
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - VIRTUAL_HOST=phpmyadmin.${HOST_DOMAIN}
-      - LETSENCRYPT_HOST=phpmyadmin.${HOST_DOMAIN}
-      - LETSENCRYPT_EMAIL=jesusant.guerrero@gmail.com
 networks:
   loger:
     driver: bridge
