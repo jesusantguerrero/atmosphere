@@ -7,23 +7,12 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
-    IIonEllipsisVertical: typeof import('~icons/ion/ellipsis-vertical')['default']
-    IMaterialSymbolsBrightnessAlertOutlineRounded: typeof import('~icons/material-symbols/brightness-alert-outline-rounded')['default']
     IMdiBankTransfer: typeof import('~icons/mdi/bank-transfer')['default']
     IMdiBankTransferIn: typeof import('~icons/mdi/bank-transfer-in')['default']
     IMdiBankTransferOut: typeof import('~icons/mdi/bank-transfer-out')['default']
     IMdiCallSplit: typeof import('~icons/mdi/call-split')['default']
-    IMdiClose: typeof import('~icons/mdi/close')['default']
-    IMdiEdit: typeof import('~icons/mdi/edit')['default']
     IMdiEllipsisVertical: typeof import('~icons/mdi/ellipsis-vertical')['default']
-    IMdiExport: typeof import('~icons/mdi/export')['default']
     IMdiFile: typeof import('~icons/mdi/file')['default']
-    IMdiFilter: typeof import('~icons/mdi/filter')['default']
-    IMdiLink: typeof import('~icons/mdi/link')['default']
-    IMdiLock: typeof import('~icons/mdi/lock')['default']
-    IMdiPlus: typeof import('~icons/mdi/plus')['default']
-    IMdiSearch: typeof import('~icons/mdi/search')['default']
-    IMdiSort: typeof import('~icons/mdi/sort')['default']
     IMdiStar: typeof import('~icons/mdi/star')['default']
     IMdiStarOutline: typeof import('~icons/mdi/star-outline')['default']
     IMdiSync: typeof import('~icons/mdi/sync')['default']

@@ -24,7 +24,8 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/* && \
 docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd && \
 #install mailparse
 pecl install mailparse && \
-echo extension=mailparse.so > /usr/local/etc/php/conf.d/mailparse.ini
+echo extension=mailparse.so > /usr/local/etc/php/conf.d/mailparse.ini && \
+echo "max_execution_time=900" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 

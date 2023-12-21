@@ -39,4 +39,10 @@ const modalMaxWidth = computed(() => {
 });
 
 const { isOpen: isImportModalOpen } = useImportModal();
+
+var es = new EventSource('http://localhost:3000/.well-known/mercure?topic=' + encodeURIComponent('http://example/budget-calculated'));
+es.addEventListener('message', (messageEvent) => {
+    var eventData = JSON.parse(messageEvent.data);
+    console.log(eventData);
+});
 </script>
