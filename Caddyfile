@@ -4,14 +4,17 @@
 }
 
 # The domain name of your server
-loger.test {
-	# Set the webroot to the public/ dir
+dev-loger.neatlancer.com {
 	root * public/
-	# Enable compression (optional)
 	encode zstd gzip
-	# Execute PHP files in the current directory and serve assets
 	php_server {
-		# Required for the public/storage/ dir
 		resolve_root_symlink
+	}
+
+    mercure {
+		# Publisher JWT key
+		publisher_jwt !ChangeThisMercureHubJWTSecretKey!
+		# Subscriber JWT key
+		subscriber_jwt !ChangeThisMercureHubJWTSecretKey!
 	}
 }
