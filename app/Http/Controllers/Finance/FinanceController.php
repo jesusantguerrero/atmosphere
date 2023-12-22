@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Finance;
 use Carbon\Carbon;
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use App\Events\BudgetCalculated;
 use Laravel\Jetstream\Jetstream;
 use Freesgen\Atmosphere\Http\Querify;
 use App\Domains\Budget\Models\BudgetMonth;
@@ -50,6 +51,8 @@ class FinanceController extends InertiaController
         $lastMonthIncome = TransactionService::getIncome($teamId, $lastMonthStartDate, $lastMonthEndDate);
         $savings = BudgetMonthService::getSavingsBalance($teamId, $endDate);
         $savingsInMonth = BudgetMonthService::getSavingsBalance($teamId, $endDate, $startDate);
+
+        BudgetCalculated::dispatch();
 
         return Jetstream::inertia()->render($request, 'Finance/Index', [
             'sectionTitle' => 'Finance',

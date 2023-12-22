@@ -29,7 +29,6 @@ return [
     */
 
     'connections' => [
-
         'pusher' => [
             'driver' => 'pusher',
             'key' => env('PUSHER_APP_KEY'),
@@ -63,6 +62,7 @@ return [
             'driver' => 'mercure',
             'url' => env('MERCURE_URL', 'http://localhost:3000/.well-known/mercure'),
             'secret' => env('MERCURE_SECRET', 'aVerySecretKey'),
+            'publisher_key' => env('MERCURE_PUBLISHER_JWT_KEY')
         ],
     ],
 

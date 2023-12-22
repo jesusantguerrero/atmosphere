@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\System;
 
 use Inertia\Inertia;
+use App\Events\BudgetCalculated;
 use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Housing\Models\Occurrence;
 use App\Domains\Meal\Services\MealService;
@@ -32,6 +33,7 @@ class DashboardController
         $transactionsTotal = TransactionService::getExpensesTotal($teamId, $startDate, $endDate);
         $plannedMeals = $this->mealService->getMealSchedule($teamId);
         $nextPayments = $this->budgetTargetService->getNextBudgetItems($teamId);
+
 
         return inertia('Dashboard', [
             'sectionTitle' => 'Dashboard',

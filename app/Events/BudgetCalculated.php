@@ -2,35 +2,39 @@
 
 namespace App\Events;
 
-use Illuminate\Broadcasting\Channel;
+use App\Models\User;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Broadcasting\PresenceChannel;
-use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+use Duijker\LaravelMercureBroadcaster\Broadcasting\Channel;
 
-class BudgetCalculated implements ShouldBroadcast
+class BudgetCalculated implements ShouldBroadcastNow
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use SerializesModels;
+    public User $user;
 
-    /**
-     * Create a new event instance.
-     */
-    public function __construct()
+    public function __construct(string $message = "Hello world")
     {
-        //
+        $this->user= User::all()->first();
     }
-
-    /**
-     * Get the channels the event should broadcast on.
-     *
-     * @return array<int, \Illuminate\Broadcasting\Channel>
-     */
     public function broadcastOn(): array
     {
         return [
-            new Channel('http://example/budget-calculated'),
+            new Channel('https://example.com/main', false),
         ];
     }
+
+            /**
+         * Get the data to broadcast.
+         *
+         * @return array<string, mixed>
+         */
+        public function broadcastWith(): array
+        {
+            return [
+                'message' => "{$this->user->name} Are you not entertained?"
+            ];
+        }
 }
