@@ -11,7 +11,6 @@ import { config } from "@/config/index";
 
 const { isOpen, closeTransactionModal } = useTransactionModal();
 const onTransactionSaved = () => {
-  debugger;
   router.reload();
   closeTransactionModal();
 };

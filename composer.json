@@ -23,6 +23,7 @@
         "laravel/cashier-paddle": "^1.8",
         "laravel/framework": "^10.0",
         "laravel/jetstream": "^2.3",
+        "laravel/octane": "^2.2",
         "laravel/pulse": "^1.0@beta",
         "laravel/sanctum": "^3.2",
         "laravel/tinker": "^2.8",

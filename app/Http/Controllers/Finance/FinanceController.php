@@ -52,7 +52,7 @@ class FinanceController extends InertiaController
         $savings = BudgetMonthService::getSavingsBalance($teamId, $endDate);
         $savingsInMonth = BudgetMonthService::getSavingsBalance($teamId, $endDate, $startDate);
 
-        BudgetCalculated::dispatch();
+        // BudgetCalculated::dispatch();
 
         return Jetstream::inertia()->render($request, 'Finance/Index', [
             'sectionTitle' => 'Finance',
