@@ -123,6 +123,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
 
     // Transactions
     Route::controller(FinanceTransactionController::class)->group(function () {
+        Route::post('/linked-drafts', 'findLinkedDrafts')->name('finance.transactions.linked-drafts');
         Route::patch('/transactions/{transaction}/linked', 'findLinked')->name('finance.transactions.linked');
         Route::get('/api/finance/transactions', 'list')->name('finance.transactions.list');
         Route::get('/finance/transactions', 'index')->name('finance.transactions');

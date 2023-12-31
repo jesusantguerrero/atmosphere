@@ -4,15 +4,16 @@
     import axios from 'axios';
     import WidgetTitleCard from '@/Components/molecules/WidgetTitleCard.vue';
     import TransactionsList from '@/domains/transactions/components/TransactionsList.vue';
-    import { removeTransaction, transactionDBToTransaction, useTransactionModal } from '@/domains/transactions';
+    import { removeTransaction, draftsDBToTransaction, useTransactionModal } from '@/domains/transactions';
     import LogerButton from '@/Components/atoms/LogerButton.vue';
     import { useTransactionStore } from '@/store/transactions';
+    import { router } from '@inertiajs/vue3';
 
 
     const transactionsDraft = ref([]);
     const isLoadingDrafts = ref(false);
     const fetchTransactions = async () => {
-        const url = `/api/finance/transactions?filter[status]=draft&limit=10`;
+        const url = `/api/finance/transactions?filter[status]=draft&limit=10&relationships=linked`;
         return axios.get(url).then<ITransaction[]>(({ data }) => {
             transactionsDraft.value = data;
             isLoadingDrafts.value = false
@@ -26,8 +27,12 @@
     const isLoading = ref(false);
     const updateTransactions = () => {
         isLoading.value = true;
-        fetchTransactions().finally(() => {
-            isLoading.value = false;
+        router.post('/linked-drafts', {}, {
+            onSuccess() {
+                fetchTransactions().finally(() => {
+                    isLoading.value = false;
+                })
+            }
         })
     }
 
@@ -62,7 +67,7 @@
             class="w-full"
             table-class="w-full p-2 overflow-auto text-sm rounded-t-lg shadow-md bg-base-lvl-3"
             :transactions="transactionsDraft"
-            :parser="transactionDBToTransaction"
+            :parser="draftsDBToTransaction"
             :allow-remove="true"
             :allow-mark-as-approved="true"
             :hide-accounts="true"

@@ -13,7 +13,7 @@ use App\Domains\Transaction\Actions\SearchTransactions;
 class RegisterOccurrence
 {
     private function softAdd(Occurrence $occurrence, $date) {
-        $lastDuration = $occurrence->last_date ? $this->getDaysDifference($occurrence->last_date, $date) : 0;
+        $lastDuration = $occurrence->last_date ? $this->getDaysDifference($occurrence->last_date->format('Y-m-d'), $date) : 0;
         $log = (array) $occurrence->log ?? [];
         $log[] = $date;
         $occurrenceCount = count($log);
@@ -93,7 +93,9 @@ class RegisterOccurrence
         $occurrence->log = [];
         $occurrence->saveQuietly();
 
+
         $dates = $transactions->pluck('date')->toArray();
+
 
         foreach ($dates as $date) {
             try {
@@ -103,6 +105,7 @@ class RegisterOccurrence
                 );
                 $occurrence->save();
             } catch (\Exception $e) {
+                throw $e;
                 Log::error($e->getMessage());
                 continue;
             }
