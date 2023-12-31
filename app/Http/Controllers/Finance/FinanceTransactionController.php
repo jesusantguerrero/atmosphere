@@ -9,6 +9,7 @@ use Freesgen\Atmosphere\Http\Querify;
 use App\Http\Controllers\Traits\QuerifySlim;
 use App\Domains\Transaction\Models\Transaction;
 use Freesgen\Atmosphere\Http\InertiaController;
+use App\Domains\Transaction\Actions\FindLinkedDrafts;
 use App\Domains\Transaction\Exports\TransactionExport;
 use App\Domains\Transaction\Services\TransactionService;
 use App\Domains\Transaction\Resources\TransactionResource;
@@ -186,6 +187,12 @@ class FinanceTransactionController extends InertiaController
             ]
         ))->handle();
 
+        return redirect()->back();
+    }
+
+    public function findLinkedDrafts()
+    {
+        (new FindLinkedDrafts(request()->user()->current_team_id))->handle();
         return redirect()->back();
     }
 

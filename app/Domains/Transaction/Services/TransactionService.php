@@ -52,7 +52,9 @@ class TransactionService
                 ca.name counter_account_name,
                 accounts.name account_name,
                 linked.id linked_transaction_id,
-                linked.total linked_transaction_total
+                linked.total linked_transaction_total,
+                transactions.team_id,
+                transactions.user_id
             ')
             ->leftJoin('categories', 'categories.id', 'transactions.category_id')
             ->leftJoin('payees', 'payees.id', 'transactions.payee_id')
