@@ -29,22 +29,29 @@ const props = defineProps({
       type: Object,
       required: true
     },
+    groupTotal: {
+        type: String,
+        default: "total"
+    },
     dataItemTotal: {
         type: String,
         default: "total"
-    }
+    },
 });
 
 const selectedDate = ref(null)
 const currentSeries = computed(() => {
     const generalSeries = [{
         name: 'Expenses',
-        data: Object.values(props.data).map(item => item.total),
+        data: Object.values(props.data).map(item => item[props.groupTotal]),
         labels: Object.keys(props.data).map(month => formatMonth(month))
     }]
     const dateSeries = selectedDate.value ? [{
         name: formatMonth(selectedDate.value),
-        data: props.data[selectedDate.value].data.map(item => item[props.dataItemTotal]),
+        data: props.data[selectedDate.value].data.map(item => {
+            console.log(item, props.dataItemTotal);
+            return item[props.dataItemTotal]
+        }),
         labels: props.data[selectedDate.value].data.map(item => item.name)
     }] : []
 
@@ -56,7 +63,7 @@ const state = computed(() => {
     return {
         headers: Object.entries(props.data).map(([dateString, item]) => ({
             label: formatMonth(dateString),
-            value: item.total,
+            value: item[props.groupTotal],
             id: dateString
         })),
         options: {

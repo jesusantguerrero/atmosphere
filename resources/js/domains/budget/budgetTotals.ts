@@ -24,21 +24,17 @@ export const getCategoriesTotals = (categories: Record<string, any>, config = {
 }) => {
     return Object.values(categories).reduce((categoryTotals, category) => {
         const { budget: budgetTarget } = category;
-        categoryTotals.budgeted = ExactMath.add(categoryTotals.budgeted, category.budgeted || 0)
-        categoryTotals.activity =  ExactMath.add(categoryTotals.activity, category.activity || 0)
-        categoryTotals.available = ExactMath.add(categoryTotals.available, category.available || 0)
-        categoryTotals.budgetAvailable = ExactMath.add(categoryTotals.budgetAvailable, category.name !== InflowCategories.READY_TO_ASSIGN ? category.available : 0)
-        categoryTotals.prevMonthLeftOver = ExactMath.add(categoryTotals.prevMonthLeftOver, category.prevMonthLeftOver || 0)
+        categoryTotals.budgeted = ExactMath.add(categoryTotals.budgeted ?? 0, category.budgeted || 0)
+        categoryTotals.activity =  ExactMath.add(categoryTotals.activity ?? 0, category.activity || 0)
+        categoryTotals.available = ExactMath.add(categoryTotals.available ?? 0, category.available || 0)
+        categoryTotals.budgetAvailable = ExactMath.add(categoryTotals.budgetAvailable ?? 0, category.name !== InflowCategories.READY_TO_ASSIGN ? (category.available || 0) : 0)
+        categoryTotals.prevMonthLeftOver = ExactMath.add(categoryTotals.prevMonthLeftOver ?? 0, category.prevMonthLeftOver || 0)
 
         // credit cards
-        categoryTotals.budgetedSpending = ExactMath.add(categoryTotals.budgetedSpending, !category.account_id && category.name !== InflowCategories.READY_TO_ASSIGN  ? category.activity : 0)
-        categoryTotals.payments = ExactMath.add(categoryTotals.payments, category.name !== InflowCategories.READY_TO_ASSIGN  ? category.payments : 0)
-        categoryTotals.fundedSpending = ExactMath.add(categoryTotals.fundedSpending, category.name !== InflowCategories.READY_TO_ASSIGN  ? category.funded_spending : 0)
-        categoryTotals.fundedSpendingPreviousMonth = ExactMath.add(categoryTotals.fundedSpendingPreviousMonth, category.account_id && category.name !== InflowCategories.READY_TO_ASSIGN  ? category.available : 0)
-
-        if (category.account_id) {
-            console.log(categoryTotals, category);
-        }
+        categoryTotals.budgetedSpending = ExactMath.add(categoryTotals.budgetedSpending ?? 0, !category.account_id && category.name !== InflowCategories.READY_TO_ASSIGN  ? (category.activity || 0) : 0)
+        categoryTotals.payments = ExactMath.add(categoryTotals.payments ?? 0, category.name !== InflowCategories.READY_TO_ASSIGN  ? category.payments : 0)
+        categoryTotals.fundedSpending = ExactMath.add(categoryTotals.fundedSpending ?? 0, category.name !== InflowCategories.READY_TO_ASSIGN  ? category.funded_spending : 0)
+        categoryTotals.fundedSpendingPreviousMonth = ExactMath.add(categoryTotals.fundedSpendingPreviousMonth ?? 0, category.account_id && category.name !== InflowCategories.READY_TO_ASSIGN  ? category.available : 0)
 
         if (Number(category.available) < 0 && category.name !== 'Inflow') {
             category.budgeted

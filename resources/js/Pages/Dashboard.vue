@@ -147,6 +147,7 @@
                         :title="$t('Spending summary')"
                         ref="ComparisonRevenue"
                         :data="revenue"
+                        data-item-total="total_amount"
                         :action="{
                             label: 'Go to Trends',
                             iconClass: 'fa fa-chevron-right',

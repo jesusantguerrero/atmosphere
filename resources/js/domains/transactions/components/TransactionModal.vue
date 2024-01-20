@@ -126,7 +126,7 @@ watch(
     }
 
     if (newValue.has_splits) {
-        splits.value = props.transactionData?.splits ?? props.transactionData.lines.filter((line: ITransactionLine) => line.is_split)
+        splits.value = props.transactionData?.splits ?? props.transactionData.lines?.filter((line: ITransactionLine) => line.is_split)
     } else {
         splits.value = [{
             payee_id: newValue.payee_id ?? newValue.payee?.id,
@@ -225,7 +225,7 @@ const onSubmit = (addAnother = false) => {
       data.total = splitItem.amount;
       data.has_splits = false;
 
-      if (splitItems.length > 1) {
+      if (splitItems?.length > 1) {
         data.items = splitItems;
         data.has_splits = true;
       }
