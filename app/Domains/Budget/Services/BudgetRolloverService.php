@@ -57,12 +57,16 @@ class BudgetRolloverService {
         }
 
         if ($budgetMonth->category->account_id) {
-            $available = (- $budgetMonth->payments);
             $available = Money::of($budgetMonth->funded_spending, $category->account->currency_code)
-                ->plus($budgetMonth->left_from_last_month)
+                // ->plus($budgetMonth->left_from_last_month)
                 ->minus(($budgetMonth->payments))
                 ->getAmount()
                 ->toFloat();
+
+            $activity = Money::of($budgetMonth->funded_spending, $category->account->currency_code)
+            ->minus($budgetMonth->payments)
+            ->getAmount()
+            ->toFloat();
         } else {
             $available = ($budgetMonth?->budgeted ?? 0) + ($budgetMonth->left_from_last_month ?? 0) -  abs($activity);
         }

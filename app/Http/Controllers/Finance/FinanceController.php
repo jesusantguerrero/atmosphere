@@ -43,7 +43,7 @@ class FinanceController extends InertiaController
         $budgetTotal = BudgetMonth::getMonthAssignmentTotal($teamId, $startDate);
 
         $transactions = TransactionService::getExpenses($teamId, $startDate, $endDate);
-        $transactionsTotal = TransactionService::getExpensesTotal($teamId, $startDate, $endDate);
+        $transactionsTotal = TransactionService::getExpensesTotalByTarget($teamId, $startDate, $endDate);
         $expensesByCategory = TransactionService::getCategoryExpenses($teamId, $startDate, $endDate, 4);
         $expensesByCategoryGroup = TransactionService::getCategoryExpensesGroup($teamId, $startDate, $endDate);
         $lastMonthExpenses = TransactionService::getExpensesTotal($teamId, $lastMonthStartDate, $lastMonthEndDate);

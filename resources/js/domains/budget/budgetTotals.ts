@@ -22,6 +22,7 @@ export const getCategoriesTotals = (categories: Record<string, any>, config = {
     onUnderFunded: (category: IBudgetCategory) => {},
     onFunded: (category: IBudgetCategory) => {}
 }) => {
+    console.log(categories)
     return Object.values(categories).reduce((categoryTotals, category) => {
         const { budget: budgetTarget } = category;
         categoryTotals.budgeted = ExactMath.add(categoryTotals.budgeted ?? 0, category.budgeted || 0)
@@ -58,8 +59,8 @@ export const getCategoriesTotals = (categories: Record<string, any>, config = {
                 categoryTotals.hasFunded = true;
             }
 
-            categoryTotals.monthlyGoals.target = ExactMath.add(categoryTotals.monthlyGoals.target, monthlyTarget)
-            categoryTotals.monthlyGoals.balance = ExactMath.add(categoryTotals.monthlyGoals.balance, category.budgeted)
+            categoryTotals.monthlyGoals.target = ExactMath.add(categoryTotals.monthlyGoals.target ?? 0, monthlyTarget ?? 0)
+            categoryTotals.monthlyGoals.balance = ExactMath.add(categoryTotals.monthlyGoals.balance ?? 0, category.budgeted ?? 0)
         }
 
         return categoryTotals;

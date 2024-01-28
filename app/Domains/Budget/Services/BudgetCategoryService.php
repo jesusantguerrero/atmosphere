@@ -245,7 +245,7 @@ class BudgetCategoryService
         if ($category->account) {
             $yearMonth = $monthDate->format('Y-m');
             $transactions = $category->account->getMonthFundedSpending($yearMonth)->balance;
-            $payments = $category->account->getMonthPayments($yearMonth)->balance;
+            $payments = $category->account->getMonthPayments($yearMonth)->balance ?? 0;
 
             $fundedSpending = ($transactions * -1) ?? 0;
 
@@ -257,7 +257,8 @@ class BudgetCategoryService
             ], [
                 'user_id' => $category->user_id,
                 'funded_spending' => $fundedSpending,
-                'payments' => $payments ?? 0,
+                'activity' => $fundedSpending - $payments,
+                'payments' => $payments,
                 'available' =>  DB::raw("($fundedSpending + available)  - $payments"),
             ]);
             $fromBudgets = $fundedSpending - $payments;

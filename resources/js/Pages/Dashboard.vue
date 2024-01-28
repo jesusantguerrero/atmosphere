@@ -18,7 +18,7 @@
     import { router } from '@inertiajs/vue3';
 
     defineProps({
-        revenue: {
+        spendingSummary: {
             type: Object,
             default() {
                 return {
@@ -108,6 +108,11 @@
     onMounted(() => {
         fetchChecks()
     })
+
+
+    const itemLabel = (row: any) => {
+        return `${row.name}, ${row.target_type}`;
+    }
 </script>
 
 <template>
@@ -146,8 +151,9 @@
                         :class="[cardShadow]"
                         :title="$t('Spending summary')"
                         ref="ComparisonRevenue"
-                        :data="revenue"
+                        :data="spendingSummary"
                         data-item-total="total_amount"
+                        :data-item-label="itemLabel"
                         :action="{
                             label: 'Go to Trends',
                             iconClass: 'fa fa-chevron-right',

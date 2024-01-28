@@ -56,14 +56,20 @@ class BudgetMonth extends Model
     public static function getMonthAssignmentTotal($teamId, $date, $field = 'budgeted')
     {
         $yearMonth = (new DateTime($date))->format('Y-m').'-01';
-        $balance = self::where('budget_months.team_id', $teamId)
+
+        $balance = self::selectRaw("
+            sum(CASE WHEN budget_targets.target_type not in ('saving_balance', 'savings_monthly') or budget_targets.target_type is null THEN budgeted ELSE 0 END) as spending,
+            sum(CASE WHEN budget_targets.target_type in ('saving_balance', 'savings_monthly') THEN budgeted ELSE 0 END) as savings,
+            sum(budgeted) as total
+        ")
+            ->where('budget_months.team_id', $teamId)
             ->where('month', $yearMonth)
-            ->orderByDesc('budgeted')
             ->join('categories', fn ($q) => $q->on('categories.id', 'category_id')
                 ->whereNot('categories.name', BudgetReservedNames::READY_TO_ASSIGN->value)
             )
+            ->leftJoin('budget_targets', 'budget_targets.category_id', 'budget_months.category_id')
             ->where('budgeted', '>', 0)
-            ->sum($field);
+            ->first();
 
         return $balance;
     }

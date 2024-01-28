@@ -6,6 +6,7 @@ use Brick\Money\Money;
 use Brick\Math\RoundingMode;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Domains\AppCore\Models\Category;
 use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Budget\Data\BudgetReservedNames;
 use App\Domains\Transaction\Models\TransactionLine;
@@ -96,6 +97,19 @@ class TransactionService
             ->first();
     }
 
+    public static function getExpensesTotalByTarget($teamId, $startDate, $endDate)
+    {
+        return TransactionLine::byTeam($teamId)
+            ->balance()
+            ->inDateFrame($startDate, $endDate)
+            ->addSelect('budget_targets.target_type')
+            ->expenseCategories()
+            ->whereNot('categories.name', BudgetReservedNames::READY_TO_ASSIGN->value)
+            ->join('transactions', 'transactions.id', 'transaction_lines.transaction_id')
+            ->leftJoin('budget_targets', 'budget_targets.category_id', 'categories.id')
+            ->first();
+    }
+
     public static function getCategoryExpenses($teamId, $startDate, $endDate, $limit = null, $parentId = null)
     {
         $DIRECTION_FACTOR = -1;
@@ -131,7 +145,7 @@ class TransactionService
             ->get();
     }
 
-    public static function getCategoryExpenseDetails($teamId, $startDate, $endDate, $limit = null, $categoryId = null, $parentId = null)
+    public static function getCategoryExpenseDetails($teamId, $startDate, $endDate, $limit = null, Category $category = null, $parentId = null)
     {
         $DIRECTION_FACTOR = -1;
 
@@ -142,7 +156,8 @@ class TransactionService
             ->whereNotNull('transaction_lines.category_id')
             ->whereNot('categories.name', BudgetReservedNames::READY_TO_ASSIGN->value)
             ->whereBetween('transactions.date', [$startDate, $endDate])
-            ->when($categoryId, fn ($q) => $q->where('categories.id', $categoryId)->groupBy('transaction_lines.category_id'))
+            ->when($category, fn ($q) => $q->where('categories.id', $category->id)->groupBy('transaction_lines.category_id'))
+            ->when($category?->account_id, fn ($q) => $q->where('accounts.id', $category->id)->groupBy('transaction_lines.account_id'))
             ->when($parentId, fn ($q) => $q->where('group.id', $parentId)->groupBy('group.id'))
             ->selectRaw("sum(transaction_lines.amount * transaction_lines.type * ?) as total,
             transaction_lines.category_id,

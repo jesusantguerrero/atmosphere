@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { computed, toRefs, provide } from "vue";
+import { computed, toRefs } from "vue";
 import { router } from "@inertiajs/vue3";
-// @ts-expect-error: no definitions
 import { AtDatePager } from "atmosphere-ui";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
@@ -17,7 +16,7 @@ import { useTransactionModal } from "@/domains/transactions";
 import { useServerSearch, IServerSearchData } from "@/composables/useServerSearchV2";
 import { tableAccountCols } from "@/domains/transactions";
 import { useAppContextStore } from "@/store";
-import { ICategory, ITransaction } from "@/domains/transactions/models";
+import { ICategory, ITransaction, IAccount } from "@/domains/transactions/models";
 
 const { openTransactionModal } = useTransactionModal();
 
@@ -30,7 +29,9 @@ const props = defineProps<{
 }>();
 
 const { serverSearchOptions } = toRefs(props);
-const { state: pageState, hasFilters, reset } = useServerSearch(serverSearchOptions);
+const { state: pageState, hasFilters, reset } = useServerSearch(serverSearchOptions, {
+    defaultDates: true,
+});
 
 const context = useAppContextStore();
 const listComponent = computed(() => {

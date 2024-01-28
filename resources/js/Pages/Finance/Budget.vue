@@ -28,11 +28,15 @@ import MessageBox from "@/Components/organisms/MessageBox.vue";
 import BudgetCategories from "./Partials/BudgetCategories.vue";
 
 import { MonthTypeFormat, formatMoney, formatMonth } from "@/utils";
+import MoneyPresenter from "@/Components/molecules/MoneyPresenter.vue";
 
 const props = defineProps({
   budgets: {
     type: Array,
     required: true,
+  },
+  distribution: {
+    type: Object
   },
   accounts: {
     type: Array,
@@ -212,7 +216,7 @@ const budgetAccountsTotal =  computed(() => {
       <template #prepend-panel class="">
         <div class="space-y-4 ">
           <BudgetDetailForm
-          v-if="selectedBudget && !showCategoriesInMain"
+            v-if="selectedBudget && !showCategoriesInMain"
             class="mt-5"
             full
             :category="selectedBudget"
@@ -238,7 +242,16 @@ const budgetAccountsTotal =  computed(() => {
                 class: 'text-error',
               },
             ]"
-          />
+
+            />
+            <div class="p-4 space-y-2 border border-transparent rounded bg-base-lvl-3">
+                <p v-for="(typeTotal, typeName) in distribution">
+                    <span class="font-bold capitalize">
+                        {{  typeName }}:
+                    </span>
+                    <MoneyPresenter :value="typeTotal" />
+                </p>
+            </div>
         </div>
       </template>
     </FinanceTemplate>

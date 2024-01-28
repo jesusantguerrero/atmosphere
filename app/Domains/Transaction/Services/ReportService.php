@@ -156,10 +156,20 @@ class ReportService
             ->balance()
             ->inDateFrame($startDate, $endDate)
             ->expenseCategories($categories)
-            ->selectRaw('date_format(transaction_lines.date, "%Y-%m-01") as date, date_format(transaction_lines.date, "%Y-%m-01") as month, year(transaction_lines.date) as year, categories.name, categories.id')
+            ->selectRaw("
+                date_format(transaction_lines.date,
+                '%Y-%m-01') as date,
+                date_format(transaction_lines.date, '%Y-%m-01') as month,
+                year(transaction_lines.date) as year,
+                categories.name,
+                categories.id,
+                budget_targets.target_type
+                "
+            )
             ->groupByRaw('date_format(transaction_lines.date, "%Y-%m"), categories.id')
             ->orderBy('date')
             ->join('transactions', 'transactions.id', 'transaction_lines.transaction_id')
+            ->join('budget_targets', 'budget_targets.category_id', 'categories.id')
             ->get();
     }
 

@@ -37,6 +37,9 @@ const props = defineProps({
         type: String,
         default: "total"
     },
+    dataItemLabel: {
+        type: Function
+    },
 });
 
 const selectedDate = ref(null)
@@ -49,10 +52,11 @@ const currentSeries = computed(() => {
     const dateSeries = selectedDate.value ? [{
         name: formatMonth(selectedDate.value),
         data: props.data[selectedDate.value].data.map(item => {
-            console.log(item, props.dataItemTotal);
             return item[props.dataItemTotal]
         }),
-        labels: props.data[selectedDate.value].data.map(item => item.name)
+        labels: props.data[selectedDate.value].data.map(item => {
+            return props.dataItemLabel ? props.dataItemLabel(item) : item.name
+        })
     }] : []
 
     return selectedDate.value ? dateSeries : generalSeries;

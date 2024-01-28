@@ -8,6 +8,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     IFluentFoodApple20Filled: typeof import('~icons/fluent/food-apple20-filled')['default']
+    IIcRoundQueryStats: typeof import('~icons/ic/round-query-stats')['default']
     IIonEllipsisVertical: typeof import('~icons/ion/ellipsis-vertical')['default']
     IMaterialSymbolsBrightnessAlertOutlineRounded: typeof import('~icons/material-symbols/brightness-alert-outline-rounded')['default']
     IMdiBankTransfer: typeof import('~icons/mdi/bank-transfer')['default']
@@ -15,15 +16,19 @@ declare module 'vue' {
     IMdiBankTransferOut: typeof import('~icons/mdi/bank-transfer-out')['default']
     IMdiCallSplit: typeof import('~icons/mdi/call-split')['default']
     IMdiCheck: typeof import('~icons/mdi/check')['default']
+    IMdiChevronLeft: typeof import('~icons/mdi/chevron-left')['default']
+    IMdiChevronRight: typeof import('~icons/mdi/chevron-right')['default']
     IMdiClose: typeof import('~icons/mdi/close')['default']
     IMdiEdit: typeof import('~icons/mdi/edit')['default']
     IMdiEllipsisVertical: typeof import('~icons/mdi/ellipsis-vertical')['default']
+    IMdiExport: typeof import('~icons/mdi/export')['default']
     IMdiFile: typeof import('~icons/mdi/file')['default']
     IMdiFilter: typeof import('~icons/mdi/filter')['default']
     IMdiHistory: typeof import('~icons/mdi/history')['default']
     IMdiLink: typeof import('~icons/mdi/link')['default']
     IMdiLock: typeof import('~icons/mdi/lock')['default']
     IMdiMinus: typeof import('~icons/mdi/minus')['default']
+    IMdiPencil: typeof import('~icons/mdi/pencil')['default']
     IMdiPlus: typeof import('~icons/mdi/plus')['default']
     IMdiSearch: typeof import('~icons/mdi/search')['default']
     IMdiSort: typeof import('~icons/mdi/sort')['default']
@@ -31,5 +36,6 @@ declare module 'vue' {
     IMdiStarOutline: typeof import('~icons/mdi/star-outline')['default']
     IMdiSync: typeof import('~icons/mdi/sync')['default']
     IMdiTrash: typeof import('~icons/mdi/trash')['default']
+    IMdiWallet: typeof import('~icons/mdi/wallet')['default']
   }
 }

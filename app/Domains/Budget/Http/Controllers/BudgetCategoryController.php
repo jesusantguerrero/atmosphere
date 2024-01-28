@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Domains\AppCore\Models\Category;
 use Illuminate\Support\Facades\Redirect;
+use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Budget\Models\BudgetMovement;
 use App\Domains\Transaction\Models\Transaction;
 use App\Http\Resources\CategoryGroupCollection;
@@ -46,7 +47,8 @@ class BudgetCategoryController extends InertiaController
     protected function index(Request $request) {
         $resourceName = $this->resourceName ?? $this->model->getTable();
         $queryParams = request()->query();
-        $settings = Setting::getByTeam(auth()->user()->current_team_id);
+        $teamId = auth()->user()->current_team_id;
+        $settings = Setting::getByTeam($teamId);
         $timeZone = $settings['team_timezone'] ?? config('app.timezone');
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
         [$startDate, $endDate] = $this->getFilterDates($filters, $timeZone);
@@ -55,12 +57,12 @@ class BudgetCategoryController extends InertiaController
             return $model->withCurrentSavings($startDate);
         }));
 
-
         return inertia($this->templates['index'],
         [
             $resourceName => $this->parser($resources),
             "serverSearchOptions" => $this->getServerParams(),
-            "accountTotal" => $this->accountService->getBalanceAs($request->user()->current_team_id, $endDate)
+            "accountTotal" => $this->accountService->getBalanceAs($teamId, $endDate),
+            "distribution" => fn () => BudgetMonth::getMonthAssignmentTotal($teamId, $startDate)
         ]);
     }
 
