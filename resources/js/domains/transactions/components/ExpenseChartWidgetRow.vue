@@ -58,7 +58,8 @@ const getCategoryLink = (item: ITransactionLine) => {
 }
 
 const itemDetail = computed(() => {
-    return parseDetails(item.details ?? details ?? "") ?? []
+    console.log(details)
+    return parseDetails(details ?? "") ?? []
 })
 
 const detailColumn = computed(() => {

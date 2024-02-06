@@ -29,20 +29,25 @@ class BudgetRolloverService {
         }
         $overspending = 0;
         $fundedFromBudgets = 0;
+        $overspendingCategories = [
+
+        ];
         foreach ($categories as $category) {
             if($category->account_id) {
                 $fundedFromBudgets += $this->budgetCategoryService->updateFundedSpending($category, $month);
             }
-            $overspendingInCat = $this->setMonthBudget($category, $month);
-            if ($overspendingInCat < 0) {
-                $overspending += abs($overspendingInCat);
+            $available = $this->getAvailableInMonth($category, $month);
+            $this->setMonthBudget($category, $month, $available);
+            if ($available < 0) {
+                $overspending += abs($available);
+                $overspendingCategories[] = $category->display_id;
             }
         }
-        $this->moveReadyToAssign($teamId, $month, $overspending, $fundedFromBudgets);
 
+        $this->moveReadyToAssign($teamId, $month, $overspending, $fundedFromBudgets);
     }
 
-    private function setMonthBudget($category, $month) {
+    private function getAvailableInMonth($category, $month) {
         $activity = (new BudgetCategoryService($category))->getCategoryActivity($category, $month);
 
         $budgetMonth = BudgetMonth::where([
@@ -57,8 +62,9 @@ class BudgetRolloverService {
         }
 
         if ($budgetMonth->category->account_id) {
-            $available = Money::of($budgetMonth->funded_spending, $category->account->currency_code)
-                // ->plus($budgetMonth->left_from_last_month)
+            $available = Money::of($budgetMonth->left_from_last_month, $category->account->currency_code)
+                ->plus($budgetMonth->budgeted)
+                ->plus($budgetMonth->funded_spending)
                 ->minus(($budgetMonth->payments))
                 ->getAmount()
                 ->toFloat();
@@ -70,12 +76,17 @@ class BudgetRolloverService {
         } else {
             $available = ($budgetMonth?->budgeted ?? 0) + ($budgetMonth->left_from_last_month ?? 0) -  abs($activity);
         }
-         // close current month
+
+        // close current month
         $budgetMonth->update([
             'activity' => $activity,
             'available' => $available,
         ]);
 
+        return $available;
+    }
+
+    private function setMonthBudget($category, $month, $available = 0) {
         $nextMonth = Carbon::createFromFormat("Y-m-d", $month)->addMonthsWithNoOverflow(1)->format('Y-m-d');
         BudgetMonth::updateOrCreate([
             'category_id' => $category->id,
@@ -84,10 +95,8 @@ class BudgetRolloverService {
             'name' => $nextMonth,
         ], [
             'user_id' => $category->user_id,
-            'left_from_last_month' => $available ?? 0,
+            'left_from_last_month' => $available > 0 ? $available : 0,
         ]);
-        return $available;
-
     }
 
     private function moveReadyToAssign($teamId, $month, $overspending = 0, $fundedFromBudgets = 0) {
@@ -101,17 +110,20 @@ class BudgetRolloverService {
             'budget_months.team_id' => $teamId,
             'month' => $month,
         ])->whereNot('category_id', $readyToAssignCategory->id)
+        ->whereNotNull('categories.parent_id')
         ->join('categories', 'categories.id', 'budget_months.category_id')
+        ->join(DB::raw('categories g'), 'g.id', 'categories.parent_id')
         ->selectRaw("
             coalesce(sum(budgeted), 0) as budgeted,
             coalesce(sum(activity), 0) as budgetsActivity,
             coalesce(sum(payments), 0) as payments,
-            coalesce(sum(available), 0) as available,
+            sum(coalesce(available, 0)) as available,
             sum(CASE WHEN available < 0 THEN available ELSE 0 END) as overspendingInMonth,
+            group_concat(g.index, '.', categories.index, ':', categories.name, ':', available) as description,
             coalesce(sum(funded_spending), 0) as funded_spending
         ")
+        ->orderBy(DB::raw('concat(g.index, ".", categories.index)'))
         ->groupBy('month')
-        // ->dd();
         ->first();
 
         $budgetMonth = BudgetMonth::where([
@@ -121,30 +133,46 @@ class BudgetRolloverService {
             'name' => $month,
         ])->first();
 
-        $inflow = (new BudgetCategoryService($readyToAssignCategory))->getCategoryActivity($readyToAssignCategory, $month);
-        $positiveAmount = $budgetMonth->left_from_last_month +  $inflow + $results?->funded_spending;
-        $available = $positiveAmount - $results?->budgeted;
+
+        $inflow = (new BudgetCategoryService($readyToAssignCategory))->getCategoryInflow($readyToAssignCategory, $month);
+        $TBB = $budgetMonth->left_from_last_month +  $inflow;
 
         $nextMonth = Carbon::createFromFormat("Y-m-d", $month)->addMonthsWithNoOverflow(1)->format('Y-m-d');
         $overspending = abs($results?->overspendingInMonth);
-        $leftover = $inflow - $results?->budgeted;
+        $leftover = $TBB - $results?->budgeted;
 
-        echo "Leftover: ". $leftover . "overspending: " . $overspending . PHP_EOL;
+        $available = Money::of($budgetMonth->left_from_last_month, "DOP")
+        ->plus($results->budgeted)
+        ->plus($results->funded_spending)
+        ->minus(($results->payments))
+        ->getAmount()
+        ->toFloat();
 
-        if ($overspending > 0 && $leftover > 0) {
-            $overspendingCopy = $overspending;
-            $overspending =  $overspending > $leftover ? $overspending - $leftover : 0;
-            $leftover = $overspendingCopy >= $leftover ? 0 : $leftover - $overspendingCopy;
-        }
+        echo "TBB: " . $TBB . " budgeted: " . $results?->budgeted . " Available: " . $available . " Leftover: ". $leftover . " overspending: " . $overspending . PHP_EOL;
+        // dd(collect(explode(",", $results->description))->map(function ($line) {
 
+        //     $cat = explode(":", $line);
+        //     return [
+        //         "index" => $cat[0],
+        //         "name" => $cat[1],
+        //         "value" => $cat[2] ?? 0,
+        //     ];
+        // }
+        // )->sortBy("index")->map(fn ($item) => $item['index']. " ". $item["name"] . ":" . $item["value"]));
+        // dd($results->description);
 
-        if ($leftover < 0) {
-            $overspending =  $overspending > abs($leftover);
-            $leftover = 0;
+        // if ($overspending > 0 && $leftover > 0) {
+        //     $overspendingCopy = $overspending;
+        //     $overspending =  $overspending > $leftover ? $overspending - $leftover : 0;
+        //     $leftover = $overspendingCopy >= $leftover ? 0 : $leftover - $overspendingCopy;
+        // }
 
-        }
+        // if ($leftover < 0) {
+        //     $overspending =  $overspending > abs($leftover);
+        //     $leftover = 0;
+        // }
 
-        // close current month
+        // Close current month
 
         $details = $this->team->balanceDetail(Carbon::createFromFormat("Y-m-d", $month)->endOfMonth()->format('Y-m-d'), $this->accounts);
 
@@ -157,14 +185,14 @@ class BudgetRolloverService {
             'user_id' => $readyToAssignCategory->user_id,
             'budgeted' => $results?->budgeted,
             'activity' => $inflow,
-            'available' => $results?->available,
+            'available' => $available,
             'funded_spending' => $results?->funded_spending ?? 0,
             'payments' => $results?->payments ?? 0,
             "accounts_balance" => collect($details)->sum('balance'),
             "meta_data" => $details
         ]);
 
-        //  set left over to the next month
+        //  Set left over to the next month
         BudgetMonth::updateOrCreate([
             'category_id' => $readyToAssignCategory->id,
             'team_id' => $readyToAssignCategory->team_id,
@@ -173,6 +201,7 @@ class BudgetRolloverService {
         ], [
             'user_id' => $readyToAssignCategory->user_id,
             'left_from_last_month' => $leftover,
+            'moved_from_last_month' => $results?->available + $leftover,
             'overspending_previous_month' => $overspending,
         ]);
     }

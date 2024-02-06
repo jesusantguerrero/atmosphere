@@ -27,6 +27,7 @@ class BudgetMonth extends Model
         'funded_spending',
         'payments',
         'left_from_last_month',
+        'moved_from_last_month',
         'overspending_previous_month',
         'accounts_balance',
         'meta_data'
@@ -67,9 +68,33 @@ class BudgetMonth extends Model
             ->join('categories', fn ($q) => $q->on('categories.id', 'category_id')
                 ->whereNot('categories.name', BudgetReservedNames::READY_TO_ASSIGN->value)
             )
+            ->join(DB::raw('categories g'), fn ($q) => $q->on('g.id', 'categories.parent_id'))
             ->leftJoin('budget_targets', 'budget_targets.category_id', 'budget_months.category_id')
-            ->where('budgeted', '>', 0)
+            ->orderBy('g.index')
             ->first();
+
+        return $balance;
+    }
+
+    public static function getMonthAssignmentByGroup($teamId, $date, $field = 'budgeted')
+    {
+        $yearMonth = (new DateTime($date))->format('Y-m').'-01';
+
+        $balance = self::selectRaw("
+            sum(budgeted) as total, categories.name
+        ")
+            ->where('budget_months.team_id', $teamId)
+            ->where('month', $yearMonth)
+            ->join('categories', fn ($q) => $q->on('categories.id', 'category_id')
+                ->whereNot('categories.name', BudgetReservedNames::READY_TO_ASSIGN->value)
+            )
+            ->join(DB::raw('categories g'), fn ($q) => $q->on('g.id', 'categories.parent_id'))
+            ->leftJoin('budget_targets', 'budget_targets.category_id', 'budget_months.category_id')
+            ->orderBy('g.index')
+            ->groupBy('g.name')
+            ->get();
+
+        $balance = $balance->mapWithKeys(fn ($item) => [$item['name'] => $item['total']])->toArray();
 
         return $balance;
     }

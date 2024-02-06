@@ -125,7 +125,6 @@ const goToday = () => {
 
 const budgetAccountsTotal =  computed(() => {
     return props.accounts.reduce((total, account) => {
-        console.log(account.balance_type, account.name);
         return account.balance_type == 'CREDIT'
         ? total
         : exactMath.add(total, account?.balance)
@@ -208,7 +207,7 @@ const budgetAccountsTotal =  computed(() => {
 
       <section class="mx-auto mt-4 rounded-lg text-body bg-base max-w-7xl">
         <article class="w-full space-y-4">
-            {{ formatMoney(budgetAccountsTotal) }} {{ formatMoney(available)  }} = ({{ formatMoney(budgetAccountsTotal - available)}})
+            {{ formatMoney(accountTotal) }} {{ formatMoney(available)  }} = ({{ formatMoney(accountTotal - available)}})
             <BudgetCategories :budgets="budgets" />
         </article>
       </section>

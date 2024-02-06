@@ -207,13 +207,15 @@
                 </article>
             </template>
             <section class="text-center">
-                <p>from last month: <MoneyPresenter :value="toAssign.leftOver"/> </p>
-                <p>inflow: <MoneyPresenter :value="toAssign.availableForFunding"/> </p>
-                <p class="text-green-500">Total: <MoneyPresenter :value="toAssign.availableForFunding + toAssign.leftOver"/> </p>
+                <p>From last month: <MoneyPresenter :value="toAssign.movedFromLastMonth"/> </p>
+                <p>Inflow: <MoneyPresenter :value="toAssign.availableForFunding"/> </p>
+                <p>left over: <MoneyPresenter :value="toAssign.leftOver"/> </p>
+                <p class="text-green-300">Total Available: <MoneyPresenter :value="toAssign.availableForFunding + toAssign.leftOver + toAssign.movedFromLastMonth"/> </p>
+                <p class="text-green-500">Total to budget: <MoneyPresenter :value="toAssign.availableForFunding + toAssign.leftOver"/> </p>
                 <p>Budgeted: <MoneyPresenter :value="toAssign.budgeted"/> </p>
-                <p>last month overspending: <MoneyPresenter :value="toAssign.overspending_from_previous_month"/> </p>
+                <p>Last month overspending: <MoneyPresenter :value="toAssign.overspending_from_previous_month"/> </p>
                 <p class="text-red-500">Funded: <MoneyPresenter :value="toAssign.budgeted + toAssign.overspending_from_previous_month"/></p>
-                <p>Balance: <MoneyPresenter :value="toAssign.balance" /> </p>
+                <p>Balance: <MoneyPresenter :value="toAssign.availableForFunding + toAssign.leftOver - toAssign.budgeted" /> </p>
             </section>
         </NPopover>
 

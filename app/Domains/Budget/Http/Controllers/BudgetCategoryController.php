@@ -62,7 +62,8 @@ class BudgetCategoryController extends InertiaController
             $resourceName => $this->parser($resources),
             "serverSearchOptions" => $this->getServerParams(),
             "accountTotal" => $this->accountService->getBalanceAs($teamId, $endDate),
-            "distribution" => fn () => BudgetMonth::getMonthAssignmentTotal($teamId, $startDate)
+            "distribution" => fn () => BudgetMonth::getMonthAssignmentByGroup($teamId, $startDate),
+            "available" => fn () => BudgetMonth::getMonthAssignmentTotal($teamId, $startDate, 'available')
         ]);
     }
 

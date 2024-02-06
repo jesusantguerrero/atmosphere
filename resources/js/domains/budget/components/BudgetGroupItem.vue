@@ -9,7 +9,6 @@ import IconDrag from "@/Components/icons/IconDrag.vue";
 import PointAlert from "@/Components/atoms/PointAlert.vue";
 import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 
-import BudgetProgress from "./BudgetProgress.vue";
 import { ICategory, getCategoryLink } from "@/domains/transactions/models/transactions";
 import MoneyPresenter from "@/Components/molecules/MoneyPresenter.vue";
 import ExpenseChartWidgetRow from "@/domains/transactions/components/ExpenseChartWidgetRow.vue";
@@ -92,10 +91,11 @@ const handleOptions = (option: any) => {
 }
 
 const pageState = inject('pageState', {});
+const details = ref("");
 const fetchDetails = async (category: ICategory) => {
+    console.log("Here")
     const startDate = format(pageState.dates.startDate, 'yyyy-MM-dd');
     const endDate = format(pageState.dates.endDate, 'yyyy-MM-dd');
-    category.details = ""
 
     const response = await axios.get(`/api/category-transactions/${category.id}/details`, {
         params: {
@@ -105,7 +105,8 @@ const fetchDetails = async (category: ICategory) => {
         }
     })
 
-    category.details = response.data?.transactions.at(0).details;
+    details.value = response.data?.transactions.at(0).details;
+    console.log(details.value)
 }
 </script>
 
@@ -140,8 +141,10 @@ const fetchDetails = async (category: ICategory) => {
                 :item="item"
                 type="groups"
                 classes="w-44 h-full"
+                :details="details"
                 @open-details="fetchDetails(item)"
             />
+            {{ details }}
             <MoneyPresenter :value="item.available" />
             <NDropdown
                 trigger="click"
