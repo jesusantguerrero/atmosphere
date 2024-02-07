@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { capitalize, computed } from "vue";
+import { capitalize, computed, watch, ref } from "vue";
 import { formatMoney } from "@/utils";
 import { NDataTable, NPopover } from "naive-ui";
 import { Link } from "@inertiajs/vue3";
@@ -7,12 +7,7 @@ import { Link } from "@inertiajs/vue3";
 import { ITransactionLine } from "@/domains/transactions/models";
 import SectionTitle from "@/Components/atoms/SectionTitle.vue";
 
-const {
-    item,
-    type,
-    classes = "w-full h-full",
-    details
-} = defineProps<{
+const props = withDefaults(defineProps<{
   item: Record<string, any>;
   title?: string;
   type: 'categories' | 'groups';
@@ -20,7 +15,9 @@ const {
   hideTitle?: boolean;
   classes?: string;
   details?: string;
-}>();
+}>(), {
+    classes: "w-full h-full",
+});
 
 defineEmits(['selected']);
 
@@ -52,15 +49,14 @@ const types = {
     groups: 'filter[category_id]'
 }
 const getCategoryLink = (item: ITransactionLine) => {
-    const itemField = types[type] ?? types.groups;
+    const itemField = types[props.type] ?? types.groups;
     const currentSearch = location.search.replace('?', '&');
     return `/finance/lines?${itemField}=${item.id || item.category_id}${currentSearch}`;
 }
 
 const itemDetail = computed(() => {
-    console.log(details)
-    return parseDetails(details ?? "") ?? []
-})
+    return parseDetails(props.details ?? "") ?? []
+});
 
 const detailColumn = computed(() => {
     return itemDetail.value.length ? Object.keys(itemDetail.value?.at?.(0)).map(item => ({

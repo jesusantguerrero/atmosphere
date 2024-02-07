@@ -9,7 +9,7 @@ import { createInertiaApp, router } from '@inertiajs/vue3';;
 import { ZiggyVue } from '../../vendor/tightenco/ziggy/dist/vue.m';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import VueMultiselect from 'vue-multiselect'
-import { autoAnimatePlugin } from '@formkit/auto-animate/vue'
+// import { autoAnimatePlugin } from '@formkit/auto-animate/vue'
 import { createPinia } from 'pinia';
 import { vRipple } from './utils/vRipple';
 import ElementPlus from 'element-plus'
@@ -60,7 +60,7 @@ createInertiaApp({
         .use(i18n)
         .use(pinia)
         .use(ZiggyVue, Ziggy)
-        .use(autoAnimatePlugin)
+        // .use(autoAnimatePlugin)
         .use(ElementPlus)
         .component('Multiselect', VueMultiselect)
         .directive('ripple', vRipple)
