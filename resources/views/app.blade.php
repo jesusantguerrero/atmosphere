@@ -21,6 +21,19 @@
         <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
         <!-- Scripts -->
         <script src="https://apis.google.com/js/api.js" defer></script>
+        <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+        <script>
+        window.OneSignalDeferred = window.OneSignalDeferred || [];
+        OneSignalDeferred.push(function(OneSignal) {
+            OneSignal.init({
+            appId: "931a2618-8ed0-4186-a41e-33da70fdf721",
+            safari_web_id: "web.onesignal.auto.122898af-6461-4378-9cd0-e897364a2895",
+            notifyButton: {
+                enable: true,
+            },
+            });
+        });
+        </script>
         @routes
         @vite('resources/js/app.js')
         @inertiaHead
