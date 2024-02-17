@@ -35,7 +35,7 @@ export const getCategoriesTotals = (categories: Record<string, any>, config = {
         categoryTotals.budgetedSpending = ExactMath.add(categoryTotals.budgetedSpending ?? 0, !category.account_id && category.name !== InflowCategories.READY_TO_ASSIGN  ? (category.activity || 0) : 0)
         categoryTotals.payments = ExactMath.add(categoryTotals.payments ?? 0, category.name !== InflowCategories.READY_TO_ASSIGN  ? category.payments : 0)
         categoryTotals.fundedSpending = ExactMath.add(categoryTotals.fundedSpending ?? 0, category.name !== InflowCategories.READY_TO_ASSIGN  ? category.funded_spending : 0)
-        categoryTotals.fundedSpendingPreviousMonth = ExactMath.add(categoryTotals.fundedSpendingPreviousMonth ?? 0, category.account_id && category.name !== InflowCategories.READY_TO_ASSIGN  ? category.available : 0)
+        categoryTotals.fundedSpendingPreviousMonth = ExactMath.add(categoryTotals.fundedSpendingPreviousMonth || 0, category.account_id && category.name !== InflowCategories.READY_TO_ASSIGN  ? (category.available || 0): 0)
 
         if (Number(category.available) < 0 && category.name !== 'Inflow') {
             category.budgeted
@@ -98,8 +98,8 @@ export const getGroupTotals = (groups: Record<string, any>) => {
 
 
 
-        groupTotals.monthlyGoals.target = ExactMath.add(groupTotals.monthlyGoals.target, group.monthlyGoals.target)
-        groupTotals.monthlyGoals.balance = ExactMath.add(groupTotals.monthlyGoals.balance, group.monthlyGoals.balance)
+        groupTotals.monthlyGoals.target = ExactMath.add(groupTotals.monthlyGoals.target || 0, group.monthlyGoals.target || 0)
+        groupTotals.monthlyGoals.balance = ExactMath.add(groupTotals.monthlyGoals.balance || 0, group.monthlyGoals.balance || 0)
 
         return groupTotals;
     }, {

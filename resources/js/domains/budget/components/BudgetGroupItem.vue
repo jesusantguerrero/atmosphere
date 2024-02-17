@@ -112,7 +112,7 @@ const fetchDetails = async (category: ICategory) => {
 
 <template>
 <article>
-    <header class="flex justify-between px-4 py-2 text-body-1/80">
+    <header class="flex justify-between px-4 py-0.5 text-body-1/80 text-xs">
         <div class="flex items-center space-x-2">
             <div class="cursor-grab" v-if="isMobile && allowDrag">
                 <IconDrag class="handle" />

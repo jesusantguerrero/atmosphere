@@ -149,28 +149,19 @@ class BudgetRolloverService {
         ->toFloat();
 
         echo "TBB: " . $TBB . " budgeted: " . $results?->budgeted . " Available: " . $available . " Leftover: ". $leftover . " overspending: " . $overspending . PHP_EOL;
-        // dd(collect(explode(",", $results->description))->map(function ($line) {
 
-        //     $cat = explode(":", $line);
-        //     return [
-        //         "index" => $cat[0],
-        //         "name" => $cat[1],
-        //         "value" => $cat[2] ?? 0,
-        //     ];
-        // }
-        // )->sortBy("index")->map(fn ($item) => $item['index']. " ". $item["name"] . ":" . $item["value"]));
-        // dd($results->description);
+        if ($overspending > 0 && $leftover > 0) {
+            $overspendingCopy = $overspending;
+            $overspending =  $overspending > $leftover ? $overspending - $leftover : 0;
+            $leftover = $overspendingCopy >= $leftover ? 0 : $leftover - $overspendingCopy;
+            // 300 = 100 >= 300 ? 0 : 300 - 100 = 200
+        }
 
-        // if ($overspending > 0 && $leftover > 0) {
-        //     $overspendingCopy = $overspending;
-        //     $overspending =  $overspending > $leftover ? $overspending - $leftover : 0;
-        //     $leftover = $overspendingCopy >= $leftover ? 0 : $leftover - $overspendingCopy;
-        // }
+        if ($leftover <= 0) {
+            $leftover = $leftover - $overspending;
+        }
 
-        // if ($leftover < 0) {
-        //     $overspending =  $overspending > abs($leftover);
-        //     $leftover = 0;
-        // }
+        echo "TBB: " . $TBB . " budgeted: " . $results?->budgeted . " Available: " . $available . " Leftover: ". $leftover . " overspending: " . $overspending . PHP_EOL;
 
         // Close current month
 

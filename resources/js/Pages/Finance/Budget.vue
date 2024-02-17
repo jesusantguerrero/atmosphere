@@ -122,14 +122,6 @@ const goToday = () => {
   pageState.dates.startDate = startOfMonth(new Date());
   executeSearchWithDelay();
 };
-
-const budgetAccountsTotal =  computed(() => {
-    return props.accounts.reduce((total, account) => {
-        return account.balance_type == 'CREDIT'
-        ? total
-        : exactMath.add(total, account?.balance)
-    }, 0)
-})
 </script>
 
 <template>
@@ -243,14 +235,6 @@ const budgetAccountsTotal =  computed(() => {
             ]"
 
             />
-            <div class="p-4 space-y-2 border border-transparent rounded bg-base-lvl-3">
-                <p v-for="(typeTotal, typeName) in distribution">
-                    <span class="font-bold capitalize">
-                        {{  typeName }}:
-                    </span>
-                    <MoneyPresenter :value="typeTotal" />
-                </p>
-            </div>
         </div>
       </template>
     </FinanceTemplate>

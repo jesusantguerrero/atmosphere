@@ -175,7 +175,6 @@ class TransactionService
             ->join('payees', 'payees.id', 'transaction_lines.payee_id')
             ->leftJoin('categories as group', 'group.id', 'categories.parent_id')
             ->orderByDesc('transaction_lines.date')
-            ->
             ->get();
 
         return [
