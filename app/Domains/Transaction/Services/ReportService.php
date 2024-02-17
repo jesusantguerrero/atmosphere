@@ -152,7 +152,7 @@ class ReportService
 
     public static function getExpensesByCategoriesInPeriod($teamId, $startDate, $endDate, $categories = null)
     {
-        return TransactionLine::byTeam($teamId)
+        $cats = TransactionLine::byTeam($teamId)
             ->balance()
             ->inDateFrame($startDate, $endDate)
             ->expenseCategories($categories)
@@ -169,8 +169,10 @@ class ReportService
             ->groupByRaw('date_format(transaction_lines.date, "%Y-%m"), categories.id')
             ->orderBy('date')
             ->join('transactions', 'transactions.id', 'transaction_lines.transaction_id')
-            ->join('budget_targets', 'budget_targets.category_id', 'categories.id')
+            ->leftJoin('budget_targets', 'budget_targets.category_id', 'categories.id')
             ->get();
+
+            return $cats;
     }
 
     public static function getExpensesInPeriod($teamId, $startDate, $endDate)

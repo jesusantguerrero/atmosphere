@@ -47,7 +47,7 @@ class LogerProfileService
 
     public function getEntitiesByProfileId(int $profileId)
     {
-        return ProfileEntityData::collection(LogerProfileEntity::where([
+        return ProfileEntityData::collect(LogerProfileEntity::where([
             'profile_id' => $profileId,
         ])->get());
     }

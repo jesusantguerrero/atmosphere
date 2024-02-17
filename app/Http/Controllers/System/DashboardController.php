@@ -35,7 +35,6 @@ class DashboardController
         $nextPayments = $this->budgetTargetService->getNextBudgetItems($teamId);
 
 
-
         return inertia('Dashboard', [
             'sectionTitle' => 'Dashboard',
             'meals' => PlannedMealResource::collection($plannedMeals),
