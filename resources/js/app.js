@@ -43,13 +43,11 @@ createInertiaApp({
             date_format: props.initialPage.props.settings?.team_date_format,
         }
 
-        console.log(window.logerAppSettings, "here");
-
         const t = (...param) => i18n.global.t(...param)
         window.t = t
 
-        const { registerSW } = await import('virtual:pwa-register')
-        registerSW({ immediate: true })
+        // const { registerSW } = await import('virtual:pwa-register')
+        // registerSW({ immediate: true })
 
         createApp({
             progress: {
