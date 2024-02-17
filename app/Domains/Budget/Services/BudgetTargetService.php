@@ -53,7 +53,7 @@ class BudgetTargetService
     }
 
     public function update(Category $category, BudgetTarget $budgetTarget, User $user, $postData) {
-        if ($category->id !== $budgetTarget->category->id){
+        if ($category->id !== $budgetTarget->category_id){
             throw new Exception(__("This target doent belongs to this category"));
         }
 

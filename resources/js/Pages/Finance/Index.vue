@@ -198,7 +198,7 @@ const deleteBulkTransactions = () => {
                             :subtitle="`Total: ${formatMoney(savings)}`"
                         />
                         <BudgetProgress
-                            :goal="budgetTotal"
+                            :goal="budgetTotal.spending"
                             :current="transactionTotal"
                             class="h-8 text-white border-t rounded-b-lg"
                         />

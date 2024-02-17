@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import vue from '@vitejs/plugin-vue';
-import { VitePWA } from 'vite-plugin-pwa'
 import Icons from 'unplugin-icons/vite'
 import IconsResolver from "unplugin-icons/resolver"
 import Components from 'unplugin-vue-components/vite'
@@ -18,37 +17,6 @@ export default defineConfig({
                     base: null,
                     includeAbsolute: false,
                 },
-            },
-        }),
-        VitePWA({
-            registerType: 'autoUpdate',
-            includeAssets: ['favicon.svg', 'safari-pinned-tab.svg'],
-            outDir: 'public',
-            devOptions: {
-                enabled: true
-            },
-            manifest: {
-              name: 'Loger',
-              short_name: 'Loger',
-              theme_color: '#F37EA1',
-              icons: [
-                {
-                  src: '/pwa-192x192.png',
-                  sizes: '192x192',
-                  type: 'image/png',
-                },
-                {
-                  src: '/pwa-512x512.png',
-                  sizes: '512x512',
-                  type: 'image/png',
-                },
-                {
-                  src: '/pwa-512x512.png',
-                  sizes: '512x512',
-                  type: 'image/png',
-                  purpose: 'any maskable',
-                },
-              ],
             },
         }),
         Components({

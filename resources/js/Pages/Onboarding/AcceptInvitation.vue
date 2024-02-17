@@ -13,13 +13,13 @@ defineProps({
 })
 
  function acceptTeamInvitation(invitation: Invitation) {
-    useForm({}).patch(route('team-invitations.accept-internal', invitation), {
+    useForm({}).patch(route('api.team-invitations.accept-internal', invitation), {
         preserveScroll: true,
     });
 }
 
  function rejectTeamInvitation(invitation: Invitation) {
-    useForm({}).delete(route('team-invitations.reject', invitation), {
+    useForm({}).delete(route('api.team-invitations.reject', invitation), {
         preserveScroll: true,
     });
 }

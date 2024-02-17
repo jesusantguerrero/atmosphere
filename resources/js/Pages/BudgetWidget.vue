@@ -6,7 +6,7 @@ import WidgetTitleCard from '@/Components/molecules/WidgetTitleCard.vue';
 import LogerButton from '@/Components/atoms/LogerButton.vue';
 import { useTransactionStore } from '@/store/transactions';
 import { useI18n } from "vue-i18n";
-import VueApexCharts from "vue3-apexcharts";
+// import VueApexCharts from "vue3-apexcharts";
 import { formatMoney } from '@/utils';
 import BudgetProgress from '@/domains/budget/components/BudgetProgress.vue';
 
@@ -133,23 +133,14 @@ const unsubscribe =  transactionStore.$onAction(({
         <section class="w-full">
             <section class="w-full  py-3 relative h-[155px]">
                 <article style="width: 100%; height: 300px" class="relative py-1 mb-10">
-                  <VueApexCharts
+                  <!-- <VueApexCharts
                     ref="chartRef"
                     width="100%"
                     height="100%"
                     type="donut"
                     :options="chartConfig.options"
                     :series="chartConfig.series.map((value) => Number(value))"
-                  />
-                  <!-- <IClarityContractLine class="absolute text-4xl report-icon-center" /> -->
-                  <!-- <section class="flex absolute w-full bottom-28">
-                    <article v-for="item in legend" class="w-full text-center">
-                      <header>
-                        <span class="font-bold"> {{ item.value }}</span>
-                      </header>
-                      <p>{{ item.label }}</p>
-                    </article>
-                  </section> -->
+                  /> -->
                 </article>
               </section>
               <header class="mt-4 border-t py-4 flex items-start justify-between pb-2">

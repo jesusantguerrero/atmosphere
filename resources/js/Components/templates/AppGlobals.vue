@@ -11,8 +11,8 @@ import { config } from "@/config/index";
 
 const { isOpen, closeTransactionModal } = useTransactionModal();
 const onTransactionSaved = () => {
-  router.reload();
-  closeTransactionModal();
+    closeTransactionModal();
+    router.reload();
 };
 const context = useAppContextStore();
 const modalMaxWidth = computed(() => {
@@ -21,14 +21,16 @@ const modalMaxWidth = computed(() => {
 
 const { isOpen: isImportModalOpen } = useImportModal();
 
-const url = new URL(config.MERCURE_URL);
-url.searchParams.append("topic", "https://example.com/main");
-url.searchParams.append("topic", "https://example.com/users/jesus");
-var es = new EventSource(url);
-es.onmessage = (messageEvent) => {
-  var eventData = JSON.parse(messageEvent.data);
-  console.log(eventData);
-};
+if (config.MERCURE_URL) {
+    const url = new URL(config.MERCURE_URL);
+    url.searchParams.append("topic", "https://example.com/main");
+    url.searchParams.append("topic", "https://example.com/users/jesus");
+    var es = new EventSource(url);
+    es.onmessage = (messageEvent) => {
+      var eventData = JSON.parse(messageEvent.data);
+      console.log(eventData);
+    };
+}
 </script>
 
 <template>

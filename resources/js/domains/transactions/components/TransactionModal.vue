@@ -16,6 +16,7 @@ import { cloneDeep } from "lodash";
 import { ITransaction, ITransactionLine } from "../models";
 import { useTransactionStore } from "@/store/transactions";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
+import { useStorage } from "@vueuse/core";
 
 const props = defineProps({
   show: {
@@ -126,7 +127,7 @@ watch(
     }
 
     if (newValue.has_splits) {
-        splits.value = props.transactionData?.splits ?? props.transactionData.lines.filter((line: ITransactionLine) => line.is_split)
+        splits.value = props.transactionData?.splits ?? props.transactionData.lines?.filter((line: ITransactionLine) => line.is_split)
     } else {
         splits.value = [{
             payee_id: newValue.payee_id ?? newValue.payee?.id,
@@ -168,9 +169,12 @@ const resetSplits = (lastSaved: Record<string, any>) => {
 
 const transactionStore = useTransactionStore();
 
-const isAddingAnother = ref(false);
+const lastSaved = useStorage('lastTransactionSaved', {
+    lastSaved: null,
+    addAnother: false,
+});
 const onSubmit = (addAnother = false) => {
-  isAddingAnother.value = addAnother;
+  lastSaved.value.addAnother = addAnother;
   const actions = {
     transaction: {
       save: {
@@ -197,7 +201,7 @@ const onSubmit = (addAnother = false) => {
   const actionType = isRecurrence.value ? "recurrence" : "transaction";
   const action = actions[actionType][method];
   const splitItems = gridSplitsRef.value.getSplits();
-  let lastSaved: null| Record<string, any> = null
+
 
   if (!splitItems.every((split: Record<string, string>) => split.amount)) {
     alert("Every split most have an amount");
@@ -225,16 +229,15 @@ const onSubmit = (addAnother = false) => {
       data.total = splitItem.amount;
       data.has_splits = false;
 
-      if (splitItems.length > 1) {
+      if (splitItems?.length > 1) {
         data.items = splitItems;
         data.has_splits = true;
       }
-      lastSaved = data;
+      lastSaved.value.lastSaved = data;
       return data;
     })
     .submit(action.method, action.url(), {
-        preserveState: false,
-        preserveScroll: true,
+      preserveScroll: true,
       onBefore(evt) {
         if (!evt.data.total) {
           alert("The balance should be more than 0");
@@ -242,16 +245,16 @@ const onSubmit = (addAnother = false) => {
       },
       onSuccess: () => {
         state.form.reset('description', 'category_id' , 'payee_id', 'payee_label', 'total', 'has_splits');
-        resetSplits(lastSaved);
+        resetSplits(lastSaved.value.lastSaved);
         nextTick(() => {
             const items = splits.value;
             gridSplitsRef.value?.reset(items);
         })
-        if (!addAnother) {
+        if (!lastSaved.value.addAnother) {
             emit("close");
         }
         transactionStore.emitTransaction(lastSaved as ITransaction, action.method, props.transactionData);
-        isAddingAnother.value = false;
+        lastSaved.value.addAnother = false;
       },
     });
 };
@@ -388,7 +391,7 @@ const saveText = computed(() => {
         </LogerButton>
         <LogerButton
             class="h-10 text-white capitalize bg-primary"
-            :processing="isAddingAnother && form.processing"
+            :processing="lastSaved.addAnother && form.processing"
             :disabled="form.processing"
             @click="onSubmit(true)" rounded
         >
@@ -396,7 +399,7 @@ const saveText = computed(() => {
         </LogerButton>
         <LogerButton
             class="h-10 text-white capitalize bg-primary"
-            :processing="form.processing && !isAddingAnother"
+            :processing="form.processing && !lastSaved.addAnother"
             :disabled="form.processing"
             @click="onSubmit()" rounded
         >

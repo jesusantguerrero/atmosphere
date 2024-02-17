@@ -9,7 +9,7 @@ import { createInertiaApp, router } from '@inertiajs/vue3';;
 import { ZiggyVue } from '../../vendor/tightenco/ziggy/dist/vue.m';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import VueMultiselect from 'vue-multiselect'
-import { autoAnimatePlugin } from '@formkit/auto-animate/vue'
+// import { autoAnimatePlugin } from '@formkit/auto-animate/vue'
 import { createPinia } from 'pinia';
 import { vRipple } from './utils/vRipple';
 import ElementPlus from 'element-plus'
@@ -43,13 +43,11 @@ createInertiaApp({
             date_format: props.initialPage.props.settings?.team_date_format,
         }
 
-        console.log(window.logerAppSettings, "here");
-
         const t = (...param) => i18n.global.t(...param)
         window.t = t
 
-        const { registerSW } = await import('virtual:pwa-register')
-        registerSW({ immediate: true })
+        // const { registerSW } = await import('virtual:pwa-register')
+        // registerSW({ immediate: true })
 
         createApp({
             progress: {
@@ -60,7 +58,7 @@ createInertiaApp({
         .use(i18n)
         .use(pinia)
         .use(ZiggyVue, Ziggy)
-        .use(autoAnimatePlugin)
+        // .use(autoAnimatePlugin)
         .use(ElementPlus)
         .component('Multiselect', VueMultiselect)
         .directive('ripple', vRipple)

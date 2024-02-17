@@ -6,10 +6,12 @@ use Brick\Money\Money;
 use Brick\Math\RoundingMode;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Domains\AppCore\Models\Category;
 use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Budget\Data\BudgetReservedNames;
 use App\Domains\Transaction\Models\TransactionLine;
 use App\Domains\Transaction\Imports\TransactionsImport;
+use Insane\Journal\Models\Core\Category as CoreCategory;
 
 class TransactionService
 {
@@ -96,6 +98,19 @@ class TransactionService
             ->first();
     }
 
+    public static function getExpensesTotalByTarget($teamId, $startDate, $endDate)
+    {
+        return TransactionLine::byTeam($teamId)
+            ->balance()
+            ->inDateFrame($startDate, $endDate)
+            ->addSelect('budget_targets.target_type')
+            ->expenseCategories()
+            ->whereNot('categories.name', BudgetReservedNames::READY_TO_ASSIGN->value)
+            ->join('transactions', 'transactions.id', 'transaction_lines.transaction_id')
+            ->leftJoin('budget_targets', 'budget_targets.category_id', 'categories.id')
+            ->first();
+    }
+
     public static function getCategoryExpenses($teamId, $startDate, $endDate, $limit = null, $parentId = null)
     {
         $DIRECTION_FACTOR = -1;
@@ -131,36 +146,41 @@ class TransactionService
             ->get();
     }
 
-    public static function getCategoryExpenseDetails($teamId, $startDate, $endDate, $limit = null, $categoryId = null, $parentId = null)
+    public static function getCategoryExpenseDetails($teamId, $startDate, $endDate, $limit = null, CoreCategory $category = null, $parentId = null)
     {
-        $DIRECTION_FACTOR = -1;
-
-        return DB::table('transaction_lines')->where([
+        $result = DB::table('transaction_lines')->where([
             'transaction_lines.team_id' => $teamId,
             'transactions.status' => 'verified',
         ])
-            ->whereNotNull('transaction_lines.category_id')
             ->whereNot('categories.name', BudgetReservedNames::READY_TO_ASSIGN->value)
             ->whereBetween('transactions.date', [$startDate, $endDate])
-            ->when($categoryId, fn ($q) => $q->where('categories.id', $categoryId)->groupBy('transaction_lines.category_id'))
+            ->when($category && !$category?->account_id, fn ($q) => $q->where('categories.id', $category->id)->groupBy('transaction_lines.category_id'))
+            ->when($category?->account_id, fn ($q) => $q->where('accounts.id', $category->account_id)->groupBy('transaction_lines.account_id'))
             ->when($parentId, fn ($q) => $q->where('group.id', $parentId)->groupBy('group.id'))
-            ->selectRaw("sum(transaction_lines.amount * transaction_lines.type * ?) as total,
-            transaction_lines.category_id,
-            categories.name,
-            categories.parent_id,
-            group.name as parent_name,
-            group_concat(concat(transaction_lines.id, '/', accounts.name, '/', transactions.date, '/', payees.name, '/', transaction_lines.concept, '/', amount * transaction_lines.type) SEPARATOR '|') as details
-        ", [
-                $DIRECTION_FACTOR,
-            ])
+            ->selectRaw("
+                transaction_lines.category_id,
+                categories.name,
+                categories.parent_id,
+                group.name as parent_name,
+                transaction_lines.id,
+                accounts.name,
+                transactions.date,
+                payees.name payee_name,
+                transaction_lines.concept,
+                amount * transaction_lines.type total
+            ")
             ->join('transactions', 'transactions.id', 'transaction_id')
             ->join('categories', 'categories.id', 'transaction_lines.category_id')
             ->join('accounts', 'accounts.id', 'transaction_lines.account_id')
             ->join('payees', 'payees.id', 'transaction_lines.payee_id')
             ->leftJoin('categories as group', 'group.id', 'categories.parent_id')
-            ->orderBy('total', 'desc')
-            ->limit($limit)
+            ->orderByDesc('transaction_lines.date')
             ->get();
+
+        return [
+            "total" => $result->sum('total'),
+            "data" => $result
+        ];
     }
 
     public static function getCategoryExpensesGroup($teamId, $startDate, $endDate, $limit = null)
@@ -206,6 +226,20 @@ class TransactionService
 
         (new TransactionsImport($user))->queue($filePath);
         unlink($filePath);
+    }
+
+    public static function getBalanceTo($user, $date)
+    {
+
+        `FROM transaction_lines tl
+        inner JOIN transactions ON transactions.id = tl.transaction_id
+        LEFT JOIN accounts acc ON acc.id = tl.account_id
+        LEFT JOIN account_detail_types adt ON adt.id = acc.account_detail_type_id
+        WHERE transactions.DATE < "2022-06-31" AND transactions.team_id = 2
+        AND tl.category_id IS NOT NULL
+        AND tl.category_id <> 0
+        AND acc.name <> 'credit_card'
+        ORDER BY transactions.DATE`;
     }
 
     // Trends

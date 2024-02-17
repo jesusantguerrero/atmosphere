@@ -35,13 +35,14 @@ class DashboardController
         $nextPayments = $this->budgetTargetService->getNextBudgetItems($teamId);
 
 
+
         return inertia('Dashboard', [
             'sectionTitle' => 'Dashboard',
             'meals' => PlannedMealResource::collection($plannedMeals),
             'budgetTotal' => $budget,
             'transactionTotal' => $transactionsTotal,
             'expenses' => ReportService::generateCurrentPreviousReport($teamId, 'month', 1),
-            'revenue' => ReportService::generateExpensesByPeriod($teamId, $startDate),
+            'spendingSummary' => ReportService::generateExpensesByPeriod($teamId, $startDate),
             'onboarding' => function () use ($team) {
                 $onboarding = $team->onboarding();
 

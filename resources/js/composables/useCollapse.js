@@ -1,4 +1,4 @@
-import autoAnimate from "@formkit/auto-animate";
+// import autoAnimate from "@formkit/auto-animate";
 import { computed, onMounted, ref } from "vue";
 
 
@@ -14,7 +14,7 @@ export const useCollapse = (element, collapsed = false) => {
 
     onMounted(() => {
         try {
-            autoAnimate(element.value)
+            // autoAnimate(element.value)
         } catch (err) {
             console.error(err)
         }

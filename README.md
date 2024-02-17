@@ -115,7 +115,7 @@ Loger is a Monolith app using Laravel 9, jetstream, inertia, vue3, Tailwindcss, 
 
 | Prerequisite                                          | Version     |
 | ------------------------------------------------------| ----------  |
-| [Node.js](http://nodejs.org)                          | `~ ^14.18.0`|
+| [Node.js](http://nodejs.org)                          | `~ ^20.9.0`|
 | npm (comes with Node) or yarn (used)                  | `~ ^5`      |
 | [PHP]                                                 | `~ ^8.1.2`  |
 | [Composer](https://getcomposer.org/)                  | ' ^2.3.8    |

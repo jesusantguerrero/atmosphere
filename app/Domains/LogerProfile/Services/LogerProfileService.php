@@ -63,7 +63,7 @@ class LogerProfileService
 
         $teamId = $entities[0]->team_id;
 
-        $transactions = TransactionLine::byTeam($teamId)
+        $transactions = TransactionLine::query()->byTeam($teamId)
             ->inDateFrame($startDate, $endDate)
             ->expenseCategories($categories)
             ->verified()
