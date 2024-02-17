@@ -38,16 +38,17 @@ jobs:
     - name: Install Composer
       run: composer test
 
-    - uses: actions/setup-node@v4
     - name: Build fronted
-      with:
-        node-version: 20
       env:
         APP_URL: ${{ secrets.DO_APP_URL }}
         ASSET_URL: ${{ secrets.DO_APP_URL }}
         APP_DEMO: true
         VITE_APP_DEMO: true
-      run: npm install ; npm run build
+      
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
+    - run: npm install; npm run build
 
     - name: Archive production artifacts
       uses: actions/upload-artifact@v3
