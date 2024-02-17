@@ -58,7 +58,7 @@ trait TransactionLineTrait
 
     public function scopeBalance($query)
     {
-        $transactionsTotalSum = 'ABS(sum(transaction_lines.amount * transaction_lines.type)) as total_amount';
+        $transactionsTotalSum = 'ABS(sum(transaction_lines.amount * transaction_lines.type)) as total_amount, group_concat(distinct(categories.name)) as cat_name';
 
         return $query->where([
             'transactions.status' => 'verified',
@@ -82,6 +82,26 @@ trait TransactionLineTrait
     public function scopeExpenseCategories($query, array $categories = null)
     {
         $query->whereNot('categories.name', BudgetReservedNames::READY_TO_ASSIGN->value)
+            ->join('categories', 'transaction_lines.category_id', '=', 'categories.id');
+
+        $categories = collect($categories);
+        $excluded = $categories->filter( fn ($id) => $id < 0)->all();
+        $included = $categories->filter( fn ($id) => $id > 0)->all();
+
+        if (count($excluded)) {
+            $query->whereNotIn('transaction_lines.category_id', $excluded);
+        }
+        if (count($included)) {
+            $query->whereIn('transaction_lines.category_id', $included);
+        }
+
+        return $query;
+    }
+
+    public function scopeAllCategories($query, array $categories = null)
+    {
+        $query
+            ->whereNot('categories.name', BudgetReservedNames::READY_TO_ASSIGN->value)
             ->join('categories', 'transaction_lines.category_id', '=', 'categories.id');
 
         $categories = collect($categories);
