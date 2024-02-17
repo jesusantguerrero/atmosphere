@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, toRefs, reactive, provide, ref } from "vue";
+import { computed, toRefs, reactive, provide, ref, watch } from "vue";
 import { router } from "@inertiajs/vue3";
 import { format } from "date-fns";
 import axios from "axios";
@@ -18,10 +18,11 @@ import TransactionTable from "@/domains/transactions/components/TransactionTable
 import TransactionSearch from "@/domains/transactions/components/TransactionSearch.vue";
 import DraftButtons from "@/domains/transactions/components/DraftButtons.vue";
 
-import { useTransactionModal } from "@/domains/transactions";
+import { removeTransaction, useTransactionModal } from "@/domains/transactions";
 import { useServerSearch, IServerSearchData } from "@/composables/useServerSearch";
 import { useAppContextStore } from "@/store";
 import { IAccount, ITransaction } from "@/domains/transactions/models";
+import AccountFilter from "@/domains/transactions/components/AccountFilter.vue";
 
 
 const props = withDefaults(defineProps<{
@@ -91,22 +92,14 @@ const fetchTransactions = (params = location.toString()) => {
 }
 
 const selectedAccountId = computed(() => {
-  return serverSearchOptions.value?.filters?.account_id;
+  return pageState?.filters?.account_id;
 });
 
 provide("selectedAccountId", selectedAccountId.value);
 
 const isDraft = computed(() => {
-  return serverSearchOptions.value?.filters?.status == "draft";
+  return pageState?.filters?.status == "draft";
 });
-
-const removeTransaction = (transaction: ITransaction) => {
-  router.delete(`/transactions/${transaction.id}`, {
-    onSuccess() {
-      router.reload();
-    },
-  });
-};
 
 const findLinked = (transaction: ITransaction) => {
   router.patch(`/transactions/${transaction.id}/linked`, {
@@ -120,6 +113,15 @@ const findLinked = (transaction: ITransaction) => {
 const { openTransactionModal } = useTransactionModal();
 const handleEdit = (transaction: ITransaction) => {
     axios.get(`/transactions/${transaction.id}?json=true`).then(({ data }) => {
+        openTransactionModal({
+          transactionData: data,
+        });
+    })
+};
+
+const handleDuplicate = (transaction: ITransaction) => {
+    axios.get(`/transactions/${transaction.id}?json=true`).then(({ data }) => {
+        delete data.id;
         openTransactionModal({
           transactionData: data,
         });
@@ -140,13 +142,23 @@ const transactionStatus = {
     value: "/finance/transactions?filter[status]=draft&relationships=linked",
   },
 };
-const currentStatus = ref(serverSearchOptions.value?.filters?.status || "verified");
+const currentStatus = ref(pageState?.filters?.status || "verified");
+
+watch(() => pageState?.filters, (filters) => {
+    if (filters.status) {
+        currentStatus.value = filters.status;
+    }
+}, { immediate: true })
 
 const monthName = computed(() => format(pageState.dates.startDate, "MMMM"))
 
 const listData = computed(() => {
     return transactions.data;
 })
+
+const goToAccount = (accountId: number) => {
+    router.visit(`/finance/accounts/${accountId}`)
+}
 </script>
 
 
@@ -181,7 +193,7 @@ const listData = computed(() => {
     <FinanceTemplate
       title="Transactions"
       :accounts="accounts"
-      :force-show-panel="!showTransactionTable"
+      hide-panel
     >
       <template #prepend-panel v-if="context.isMobile">
         <button
@@ -194,14 +206,13 @@ const listData = computed(() => {
         </button>
       </template>
 
-      <main class="mt-4 bg-base-lvl-3">
-        <header class="flex justify-between px-6 py-2">
+      <main class="mt-4 ">
+        <header class="flex bg-base-lvl-3 justify-between px-6 py-2">
             <section>
-                <h4 class="text-lg font-bold text-body-1">
-                    All transactions in <span class="text-secondary">
-                        {{  monthName }}
-                    </span>
-                </h4>
+                <AccountFilter
+                    show-all
+                    @update:model-value="goToAccount"
+                />
             </section>
 
             <section class="flex items-center space-x-2">
@@ -217,6 +228,7 @@ const listData = computed(() => {
             </span>
             </section>
         </header>
+
         <component
             v-if="showTransactionTable"
             :is="listComponent"
@@ -225,7 +237,8 @@ const listData = computed(() => {
             :is-loading="isLoading"
             all-accounts
             @findLinked="findLinked"
-            @removed="removeTransaction"
+            @removed="removeTransaction($event, ['verified'])"
+            @duplicate="handleDuplicate"
             @edit="handleEdit"
         />
       </main>

@@ -3,9 +3,9 @@
 namespace App\Domains\Transaction\Models;
 
 use App\Domains\AppCore\Models\Planner;
+use Insane\Journal\Models\Core\Category;
 use App\Domains\Transaction\Traits\TransactionTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Insane\Journal\Models\Core\Category;
 use Insane\Journal\Models\Core\Transaction as CoreTransaction;
 
 class Transaction extends CoreTransaction
@@ -47,18 +47,19 @@ class Transaction extends CoreTransaction
 
     public static function matchedFor($teamId, $searchParams)
     {
-        return Transaction::select('id')->where([
+        return Transaction::select('id')
+        ->where([
             'team_id' => $teamId,
             'total' => $searchParams['total'],
-            'status' => Transaction::STATUS_VERIFIED,
         ])
-            ->whereRaw('date >= SUBDATE(?, interval ? DAY) and date <= ADDDATE(?, INTERVAL ? DAY)',
-                [
-                    $searchParams['date'],
-                    $searchParams['datesBefore'] ?? 1,
-                    $searchParams['date'],
-                    $searchParams['datesAfter'] ?? 1,
-                ])->get();
+        ->whereIn("status", [Transaction::STATUS_DRAFT, Transaction::STATUS_VERIFIED])
+        ->whereRaw('date >= SUBDATE(?, interval ? DAY) and date <= ADDDATE(?, INTERVAL ? DAY)',
+        [
+            $searchParams['date'],
+            $searchParams['datesBefore'] ?? 1,
+            $searchParams['date'],
+            $searchParams['datesAfter'] ?? 1,
+        ])->get();
     }
 
     /**

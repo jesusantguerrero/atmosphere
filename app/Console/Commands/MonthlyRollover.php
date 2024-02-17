@@ -2,12 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Domains\AppCore\Models\Category;
-use App\Domains\Budget\Data\BudgetReservedNames;
-use App\Domains\Budget\Services\BudgetRolloverService;
 use Illuminate\Console\Command;
-
-use Illuminate\Support\Facades\DB;
+use App\Domains\Budget\Services\BudgetRolloverService;
 
 class MonthlyRollover extends Command
 {
@@ -35,6 +31,5 @@ class MonthlyRollover extends Command
         $month = $this->argument('month');
 
         $rolloverService->rollMonth($teamId, $month."-01");
-
     }
 }

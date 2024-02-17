@@ -2,9 +2,11 @@
 
 namespace App\Console\Commands;
 
+use Exception;
 use App\Models\UserDevice;
-use App\Services\MessagingService;
 use Illuminate\Console\Command;
+use App\Events\BudgetCalculated;
+use App\Services\MessagingService;
 
 class TestMessaging extends Command
 {
@@ -27,11 +29,17 @@ class TestMessaging extends Command
      */
     public function handle()
     {
-        $service = new MessagingService();
-        $userDevice = UserDevice::find(3);
-        $service->occurrenceType([
-            'title' => 'test',
-        ], $userDevice->device_id);
-        echo $userDevice->device_id;
+        // $service = new MessagingService();
+        // $userDevice = UserDevice::find(3);
+        // $service->occurrenceType([
+        //     'title' => 'test',
+        // ], $userDevice->device_id);
+        // echo $userDevice->device_id;
+        try {
+            broadcast( new BudgetCalculated());
+        } catch (Exception $e) {
+            dd($e);
+        }
+        echo "Done";
     }
 }

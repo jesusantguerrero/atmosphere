@@ -3,10 +3,10 @@ spec:
   services:
   - name: web
     git:
-      branch: staging
+      branch: master
       repo_clone_url: https://github.com/jesusantguerrero/atmosphere.git
-    build_command: npm run build
-    run_command: php artisan migrate --force ; php artisan db:seed ; php artisan journal:set-accounts ; heroku-php-apache2 public/
+    build_command: npm run build:digitalocean; composer install --ignore-platform-reqs
+    run_command: php artisan migrate:fresh --force --seed ; php artisan storage:link; heroku-php-nginx public/
     envs:
     - key: APP_NAME
       scope: RUN_TIME
@@ -132,10 +132,3 @@ spec:
       value: "YOUR_DO_SPACES_BUCKET"
   databases:
   - name: loger-db
-  jobs:
-  - name: storagelink
-    kind: POST_DEPLOY
-    git:
-      repo_clone_url: https://github.com/jesusantguerrero/atmosphere.git
-      branch: staging
-    run_command: php artisan storage:link

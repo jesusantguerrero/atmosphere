@@ -1,7 +1,6 @@
+import { endOfMonth, startOfMonth, format, parseISO } from 'date-fns';
 // import { format, parseISO } from "date-fns";
-import format from "date-fns/format";
-import parseISO from "date-fns/parseISO";
-import { reactive, Ref, watch, nextTick, computed, ref, inject, toRaw, onMounted } from "vue";
+import { reactive, Ref, watch, nextTick, computed, ref, inject } from "vue";
 import debounce from "lodash/debounce";
 
 export interface IServerSearchData {
@@ -17,6 +16,7 @@ export interface IServerSearchData {
 interface IServerSearchOptions {
   manual?: boolean;
   mainDateField?: string;
+  defaultDates?: boolean;
 }
 
 interface IDateSpan {
@@ -102,10 +102,17 @@ export const parseParams = (state: SearchState) => {
     .join("&");
 };
 
-function parseDateFilters(options: Ref<Partial<IServerSearchData>>) {
-  const dates = options?.value?.filters?.date
+function parseDateFilters(options: Ref<Partial<IServerSearchData>>, setDefaultDate: boolean) {
+
+    const defaultDates = setDefaultDate ? [
+        format(startOfMonth(new Date()), 'yyyy-MM-dd'),
+        format(endOfMonth(new Date()), 'yyyy-MM-dd')
+    ] : [null, null]
+
+   const dates = options?.value?.filters?.date
     ? options.value.filters.date.split("~")
-    : [null, null];
+    : defaultDates;
+
   return {
     startDate: dates[0] && parseISO(dates[0]),
     endDate:
@@ -157,18 +164,18 @@ export const searchFromSearchString = (searchString: string) => {
 const setSearchState = (serverSearchData: Record<string, any>, dates: any) => {
     return {
         filters: {
-            ...(serverSearchData.value ? serverSearchData.value?.filters : {}),
+            ...(serverSearchData ? serverSearchData?.filters : {}),
             date: null
         },
         dates:{
             startDate: dates.startDate,
             endDate: dates.endDate,
         },
-        sorts:serverSearchData.value?.sorts ?? "",
-        limit: serverSearchData.value?.limit ?? 0,
-        relationships: serverSearchData.value?.relationships ?? "",
-        search: serverSearchData.value?.search,
-        page: serverSearchData.value?.page
+        sorts:serverSearchData?.sorts ?? "",
+        limit: serverSearchData?.limit ?? 0,
+        relationships: serverSearchData?.relationships ?? "",
+        search: serverSearchData?.search,
+        page: serverSearchData?.page
     }
 }
 export const useServerSearch = (
@@ -233,16 +240,8 @@ export const useServerSearch = (
   };
 
 
-  const setUrl = (urlParams: string) => {
-    window.history.pushState(
-        {},
-        null,
-        `${location.pathname}?${urlParams}`
-      );
-  }
-
   watch(() => state,
-    debounce((paramsConfig) => {
+    debounce(() => {
        executeSearch();
     }, 200),
     { deep: true }

@@ -6,8 +6,6 @@
     import { useImportModal } from '@/domains/transactions/useImportModal';
     import { PANEL_SIZES } from '@/utils/constants';
 
-    const { toggleModal: toggleImportModal } = useImportModal();
-
     const props = defineProps({
         title: {
             type: String
@@ -32,6 +30,9 @@
         },
         forceShowPanel: {
             type: Boolean,
+        },
+        hidePanel: {
+            type: Boolean,
         }
     });
 
@@ -46,7 +47,7 @@
     // Styling
     const panelStyles = computed(() => {
         const sizes = PANEL_SIZES[props.panelSize] || PANEL_SIZES.small;
-        const visible = !props.forceShowPanel && 'hidden';
+        const visible = (!props.forceShowPanel || props.hidePanel) && 'hidden';
         return [sizes, visible];
     })
 </script>
@@ -57,7 +58,7 @@
             <slot />
         </main>
 
-        <aside class="relative w-full h-screen overflow-auto md:px-2 md:block" :class="panelStyles">
+        <aside class="relative w-full h-screen overflow-auto md:px-2 md:block" :class="panelStyles" v-if="!hidePanel">
             <section class="px-2 md:fixed aside-content md:pr-8">
                 <slot name="prepend-panel" />
                 <slot name="panel">
@@ -72,12 +73,3 @@
         </aside>
     </article>
 </template>
-
-
-
-
-<style lang="scss" scoped>
-.aside-content {
-    width: -webkit-fill-available;
-}
-</style>

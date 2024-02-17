@@ -22,7 +22,7 @@ defineProps<{
                 {{ valueBadge }}
             </span>
             <span>
-                {{ {{ value }}}}
+                {{ value }}
             </span>
         </h2>
         <p class="text-xs" v-if="valueSubtitle">

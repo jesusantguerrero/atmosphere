@@ -27,7 +27,7 @@ const onLinkPressed = () => {
   router.visit("register");
 };
 
-const submit = (formData) => {
+const submit = (formData: Record<string, string>) => {
   form
     .transform((data) => ({
       ...data,

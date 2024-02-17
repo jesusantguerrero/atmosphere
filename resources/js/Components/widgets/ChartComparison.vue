@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref, inject } from "vue";
+import { computed, ref, inject, watch } from "vue";
 
 
 import LogerChart from "@/Components/organisms/LogerChart.vue";
@@ -8,6 +8,7 @@ import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 
 import { formatMonth } from "@/utils";
 import formatMoney from "@/utils/formatMoney";
+import WidgetTitleCard from "../molecules/WidgetTitleCard.vue";
 
 const props = defineProps({
     title: {
@@ -34,7 +35,7 @@ const props = defineProps({
     }
 });
 
-const selectedDate = ref()
+const selectedDate = ref(null)
 const currentSeries = computed(() => {
     const generalSeries = [{
         name: 'Expenses',
@@ -66,48 +67,52 @@ const state = computed(() => {
     }
 });
 
+watch(() => props.data, () => {
+    selectedDate.value = null
+})
+
 </script>
 
 <template>
-  <div class="w-full comparison-card">
-    <div class="px-5 pb-10 rounded-lg">
-      <h5 class="p-4 font-bold text-left card-title">
-        <LogerButtonTab v-if="selectedDate" @click="selectedDate=null">
-            <i class="fa fa-arrow-left"></i>
-        </LogerButtonTab>
-        {{ title }}
-        <span v-if="selectedDate" class="capitalize text-primary">{{ formatMonth(selectedDate) }}</span>
-      </h5>
-      <div class="card-text" >
-        <div
-            :class="[headerTemplate == 'grid' ? 'md:grid md:grid-cols-4' : 'md:flex']"
-            class="w-full mb-2 divide-y comparison-header md:px-10 text-body-1/50 md:space-x-2 md:divide-x md:divide-y-0 divide-dashed divide-opacity-20 divide-body-1 bg-base-lvl-2">
-          <div
-            v-for="header in state.headers"
-            :key="header.id"
-            @click="selectedDate = header.id"
-            class="flex items-center justify-between w-full px-4 py-2 cursor-pointer comparison-header__item md:py-6 md:justify-center md:flex-col previous-period hover:text-body/80"
-          >
-            <h6 class="period-title">{{ header.label }}</h6>
-            <span class="mt-2 text-xs period-value">
-                <NumberHider />
-                {{ formatMoney(header.value) }}
-            </span>
-          </div>
-        </div>
-        <LogerChart
-            class="bg-white"
-            style="height:300px; width: 100%"
-            label="name"
-            type="bar"
-            :labels="currentSeries[0].labels"
-            :options="state.options"
-            :series="state.series"
-            :has-hidden-values="hasHiddenValues"
-        />
-      </div>
-    </div>
-  </div>
+    <WidgetTitleCard  :title="title" :action="action" @action="$emit('action', $event)">
+        <template #before v-if="selectedDate">
+            <LogerButtonTab  @click="selectedDate=null">
+                <i class="fa fa-arrow-left"></i>
+            </LogerButtonTab>
+        </template>
+        <template #action v-if="selectedDate">
+            <span v-if="selectedDate" class="capitalize text-primary">{{ formatMonth(selectedDate) }}</span>
+        </template>
+
+        <section class="w-full card-text" >
+            <div
+                :class="[headerTemplate == 'grid' ? 'md:grid md:grid-cols-4' : 'md:flex']"
+                class="w-full mb-2 divide-y comparison-header md:px-10 text-body-1/50 md:space-x-2 md:divide-x md:divide-y-0 divide-dashed divide-opacity-20 divide-body-1 bg-base-lvl-2">
+            <div
+                v-for="header in state.headers"
+                :key="header.id"
+                @click="selectedDate = header.id"
+                class="flex items-center justify-between w-full px-4 py-2 cursor-pointer comparison-header__item md:py-6 md:justify-center md:flex-col previous-period hover:text-body/80"
+            >
+                <h6 class="period-title">{{ header.label }}</h6>
+                <span class="mt-2 text-xs period-value">
+                    <NumberHider />
+                    {{ formatMoney(header.value) }}
+                </span>
+            </div>
+            </div>
+            <LogerChart
+                class="bg-white"
+                style="height:300px; width: 100%"
+                label="name"
+                type="bar"
+                :labels="currentSeries[0].labels"
+                :options="state.options"
+                :series="state.series"
+                :has-hidden-values="hasHiddenValues"
+            />
+        </section>
+    </WidgetTitleCard>
 </template>
 
 

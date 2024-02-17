@@ -10,6 +10,7 @@ interface AppConfig {
     GOOGLE_APP_CLIENT: string;
     FIREBASE_VAPID_KEY: string;
     IS_DEMO: boolean;
+    MERCURE_URL: string;
 }
 
 const isDemo = import.meta.env?.VITE_APP_DEMO
@@ -24,5 +25,6 @@ export const config: AppConfig = {
     GOOGLE_APP_KEY: import.meta.env.VITE_GOOGLE_APP_KEY,
     GOOGLE_APP_CLIENT: import.meta.env.VITE_GOOGLE_CLIENT_ID,
     FIREBASE_VAPID_KEY: import.meta.env.VITE_FIREBASE_VAPID_KEY,
-    IS_DEMO: Boolean(isDemo) && isDemo !== 'false'
+    IS_DEMO: Boolean(isDemo) && isDemo !== 'false',
+    MERCURE_URL: import.meta.env.VITE_MERCURE_URL
 }

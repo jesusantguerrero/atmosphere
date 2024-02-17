@@ -2,16 +2,18 @@
 
 namespace App\Events;
 
-use App\Domains\Budget\Models\BudgetMonth;
-use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use App\Domains\Budget\Models\BudgetMonth;
+use App\Domains\Budget\Data\BudgetAssignData;
+use Illuminate\Foundation\Events\Dispatchable;
+use App\Domains\Budget\Data\BudgetMovementData;
+use Illuminate\Broadcasting\InteractsWithSockets;
 
 class BudgetAssigned
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public BudgetMonth $monthBudget;
+    public BudgetAssignData|BudgetMovementData $budgetMonth;
 
     public mixed $postData;
 
@@ -20,9 +22,9 @@ class BudgetAssigned
      *
      * @return void
      */
-    public function __construct(BudgetMonth $monthBudget, mixed $postData = [])
+    public function __construct(BudgetAssignData|BudgetMovementData $budgetMonth, mixed $postData = [])
     {
-        $this->monthBudget = $monthBudget;
+        $this->budgetMonth = $budgetMonth;
         $this->postData = $postData;
     }
 }

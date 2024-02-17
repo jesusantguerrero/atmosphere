@@ -81,52 +81,6 @@ const handleAssignOptions = (option: string) => {
   }
   onAssignBudget()
 };
-
-const onAssignBudget = () => {
-    if (Number(props.item.budgeted) !== Number(budgeted.value) && budgeted.value !== null) {
-        const month = format(startOfMonth(pageState.dates.endDate), 'yyyy-MM-dd');
-
-        router.post(`/budgets/${props.item.id}/months/${month}`, {
-            id: props.item.id,
-            budgeted: Number(budgeted.value),
-            date: format(new Date(), 'yyyy-MM-dd')
-        }, {
-            preserveState: true,
-            preserveScroll: true
-        });
-    }
-    toggleEditing()
-}
-
-
-const removeCategory = () => {
-    if (confirm("Are you sure you want to remove this category?")) {
-        router.delete(`budgets/${props.item.id}`, {
-            onSuccess() {
-                emit('removed', props.item.id)
-                router.reload({
-                    only: ['budgets'],
-                    preserveScroll: true,
-                })
-            }
-        })
-    }
-}
-
-const pageState = inject('pageState', {});
-const updateActivity = () => {
-    const month = format(startOfMonth(pageState.dates.endDate), 'yyyy-MM-dd');
-
-    router.put(`budgets/${props.item.id}/months/${month}`, {
-        onSuccess() {
-            router.reload({
-                only: ['budgets'],
-                preserveScroll: true,
-            })
-        }
-    })
-}
-
 const isEditing = ref(false);
 const input = ref()
 const toggleEditing = () => {
@@ -137,6 +91,29 @@ const toggleEditing = () => {
         })
     }
 }
+
+const onAssignBudget = () => {
+    nextTick(() => {
+        if (Number(props.item.budgeted) !== Number(budgeted.value) && budgeted.value !== null) {
+            const month = format(startOfMonth(pageState.dates.endDate), 'yyyy-MM-dd');
+
+            router.post(`/budgets/${props.item.id}/months/${month}`, {
+                id: props.item.id,
+                budgeted: Number(budgeted.value),
+                date: format(new Date(), 'yyyy-MM-dd')
+            }, {
+                preserveState: true,
+                preserveScroll: true
+            });
+        }
+        console.log("here?");
+        isEditing.value = false;
+    })
+}
+
+const pageState = inject('pageState', {});
+
+
 
 const currentDetails = ref("");
 const fetchDetails = async (category: ICategory) => {
@@ -178,7 +155,7 @@ onMounted(() => {
                     class="opacity-100 cursor-text"
                     v-model="budgeted"
                     :number-format="true"
-                    @blur="onAssignBudget"
+                    @blur="onAssignBudget()"
                     @click="toggleEditing"
                 >
                     <template #prefix>

@@ -40,6 +40,8 @@ class QuerifySlim
         $this->includes = $params['includes'];
         $this->sorts = $params['sorts'];
         $this->filters = $params['filters'];
+        $this->searchable = $params['searchable'];
+        $this->validationRules = $params['validationRules'] ?? [];
     }
 
     public function getModelQuery($request, $tableName, $extendFunction = null)
@@ -105,6 +107,7 @@ class QuerifySlim
         $whereRaw = '';
         // handle search
         foreach ($this->searchable as $field) {
+
             //  add search fields to where clause
             if (! $whereRaw) {
                 $whereRaw .= "$field like '%$search%'";

@@ -52,7 +52,9 @@ class TransactionService
                 ca.name counter_account_name,
                 accounts.name account_name,
                 linked.id linked_transaction_id,
-                linked.total linked_transaction_total
+                linked.total linked_transaction_total,
+                transactions.team_id,
+                transactions.user_id
             ')
             ->leftJoin('categories', 'categories.id', 'transactions.category_id')
             ->leftJoin('payees', 'payees.id', 'transactions.payee_id')
@@ -223,8 +225,8 @@ class TransactionService
     public static function getNetWorth($teamId, $startDate, $endDate)
     {
         return DB::select("
-         with data (month_date, total, type, balance_type, detail_type) AS (
-            SELECT LAST_DAY(tl.date) as month_date, tl.amount * tl.type, tl.type, accounts.balance_type, adt.name
+         with data (date_unit, total, type, balance_type, detail_type) AS (
+            SELECT LAST_DAY(tl.date) as date_unit, tl.amount * tl.type, tl.type, accounts.balance_type, adt.name
             FROM transaction_lines tl
             INNER JOIN transactions t on tl.transaction_id = t.id
             INNER JOIN accounts on tl.account_id = accounts.id
@@ -234,17 +236,16 @@ class TransactionService
             AND tl.team_id = :teamId
             AND balance_type IS NOT null
          )
-          SELECT month_date,
-          SUM(SUM(CASE WHEN balance_type = 'debit' THEN total ELSE 0 END)) over (ORDER BY month_date) as assets,
-          SUM(SUM(CASE WHEN balance_type = 'credit' THEN total ELSE 0 END)) over (ORDER BY month_date) as debts
+          SELECT date_unit,
+          SUM(SUM(CASE WHEN balance_type = 'debit' THEN total ELSE 0 END)) over (ORDER BY date_unit) as assets,
+          SUM(SUM(CASE WHEN balance_type = 'credit' THEN total ELSE 0 END)) over (ORDER BY date_unit) as debts
           FROM DATA
-          GROUP BY month_date
-          ORDER BY month_date DESC
+          GROUP BY date_unit
+          ORDER BY date_unit DESC
           LIMIT 12;
         ", [
             'teamId' => $teamId,
             'monthDate' => $endDate
-            // 'detailTypes' => implode(',', AccountDetailType::ALL)
         ]);
     }
 
@@ -432,4 +433,37 @@ class TransactionService
             ->whereBetween('date', [$options['startDate'], $options['endDate']])
             ->when(isset($options['limit']), fn ($query) => $query->limit($options['limit']));
     }
+
+    public function getCreditCardSpentTransactions(int $teamId) {
+        return  DB::table(DB::raw('categories g'))
+        ->selectRaw('SUM(transaction_lines.amount * transaction_lines.type) as total,
+          accounts.id account_id,
+          date_format(transactions.date, "%Y-%m-01") as date,
+          accounts.display_id account_display_id,
+          accounts.name account_name,
+          accounts.alias account_alias,
+          categories.name,
+          categories.id,
+          categories.display_id,
+          categories.alias,
+          g.display_id groupName,
+          g.alias groupAlias,
+          MONTH(transactions.date) as months'
+        )
+        ->groupByRaw('transactions.id')
+        ->join('categories', 'g.id', '=', 'categories.parent_id')
+        ->join('accounts', 'accounts.category_id', '=', 'categories.id')
+        ->join('transaction_lines', 'transaction_lines.account_id', '=', 'accounts.id')
+        ->join('transactions', fn ($q)=> $q->on('transactions.id',  'transaction_lines.transaction_id'))
+        ->orderByRaw('g.index,categories.index, accounts.index,accounts.number')
+        ->where(fn ($q) => $q->where([
+            'transactions.status' => Transaction::STATUS_VERIFIED,
+          ])->orWhereNull('transactions.status')
+        )
+        ->where([
+            'accounts.team_id' => $teamId,
+            'g.display_id' => 'liabilities',
+          ])
+        ->get();
+      }
 }

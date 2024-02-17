@@ -21,6 +21,7 @@ class FinanceTrendController extends Controller
         'payees' => 'payee',
         'net-worth' => 'NetWorth',
         'income-expenses' => 'IncomeExpenses',
+        'spending-year' => 'spendingYear',
         'income-expenses-graph' => 'IncomeExpensesGraph',
         'year-summary' => 'yearSummary',
     ];
@@ -142,17 +143,49 @@ class FinanceTrendController extends Controller
         [$startDate, $endDate] = $this->getFilterDates($filters);
         $teamId = request()->user()->current_team_id;
 
+        $span = [
+            "month" => 12,
+            "year" => 2
+        ];
+
         return [
-            'data' => ReportService::generateExpensesByPeriod($teamId, 'month', 12),
+            'data' => ReportService::getIncomeVsExpenses($teamId, 2, $startDate, 'year'),
             'metaData' => [
                 'name' => 'incomeExpensesGraph',
                 'title' => 'Income vs Expenses',
+                'props' => [
+                    'headerTemplate' => 'grid',
+                    "assetsLabel" => "income",
+                    "debtsLabel" => "expense"
+                ],
+            ],
+        ];
+    }
+
+    public function spendingYear()
+    {
+        $queryParams = request()->query();
+        $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
+        [$startDate, $endDate] = $this->getFilterDates($filters);
+        $teamId = request()->user()->current_team_id;
+        $excludedAccounts = null;
+        if (isset($filters['category'])) {
+            $excludedAccounts = collect(explode(',', $filters['category']))->map(fn ($id) => "-$id")->all();
+        }
+
+        return [
+            'data' => ReportService::generateExpensesByPeriod($teamId, $startDate, 12, 'month', $excludedAccounts),
+            'metaData' => [
+                'name' => 'spendingYear',
+                'title' => 'Expenses',
                 'props' => [
                     'headerTemplate' => 'grid',
                 ],
             ],
         ];
     }
+
+
 
     public function yearSummary()
     {

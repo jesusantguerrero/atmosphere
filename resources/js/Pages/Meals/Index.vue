@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { router } from "@inertiajs/vue3";
-import { AtButton } from "atmosphere-ui";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import StatusButtons from "@/Components/molecules/StatusButtons.vue";
@@ -87,7 +86,9 @@ const currentStatus = ref(props.serverSearchOptions.filters?.is_liked || "all");
     <MealTemplate class="mx-auto">
       <MealSection
         :meals="recipes"
-        @click="router.visit(route('meals.edit', $event))"
+        @click="router.visit(route('meals.edit', {
+          meal: $event
+        }))"
         @toggle-like="onToggleLike"
       />
     </MealTemplate>

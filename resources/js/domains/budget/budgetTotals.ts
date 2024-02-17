@@ -3,7 +3,7 @@ import { FREQUENCY_TYPE } from './../../utils/index';
 // @ts-ignore
 import ExactMath from "exact-math";
 import { getFrequencyMonthFactor } from "./getFrequencyMonthFactor";
-import { BudgetTarget } from "./models/budget";
+import { BudgetTarget, IBudgetCategory } from "./models/budget";
 import { useDatePager } from "vueuse-temporals";
 
 enum InflowCategories {
@@ -17,24 +17,24 @@ export const isSavingBalance = (budgetMetaData: Record<string, any>) => {
     return budgetMetaData.target_type == 'saving_balance'
 }
 export const getCategoriesTotals = (categories: Record<string, any>, config = {
-    onOverspent: (category: Record<string, any>) => {},
-    onOverAssigned: (category: Record<string, any>) => {},
-    onUnderFunded: (category: Record<string, any>) => {},
-    onFunded: (category: Record<string, any>) => {}
+    onOverspent: (category: IBudgetCategory) => {},
+    onOverAssigned: (category: IBudgetCategory) => {},
+    onUnderFunded: (category: IBudgetCategory) => {},
+    onFunded: (category: IBudgetCategory) => {}
 }) => {
     return Object.values(categories).reduce((categoryTotals, category) => {
         const { budget: budgetTarget } = category;
         categoryTotals.budgeted = ExactMath.add(categoryTotals.budgeted, category.budgeted || 0)
         categoryTotals.activity =  ExactMath.add(categoryTotals.activity, category.activity || 0)
         categoryTotals.available = ExactMath.add(categoryTotals.available, category.available || 0)
-        categoryTotals.budgetAvailable = ExactMath.add(categoryTotals.budgetAvailable, !category.account_id && category.name !== InflowCategories.READY_TO_ASSIGN ? category.available : 0)
+        categoryTotals.budgetAvailable = ExactMath.add(categoryTotals.budgetAvailable, category.name !== InflowCategories.READY_TO_ASSIGN ? category.available : 0)
         categoryTotals.prevMonthLeftOver = ExactMath.add(categoryTotals.prevMonthLeftOver, category.prevMonthLeftOver || 0)
 
         // credit cards
         categoryTotals.budgetedSpending = ExactMath.add(categoryTotals.budgetedSpending, !category.account_id && category.name !== InflowCategories.READY_TO_ASSIGN  ? category.activity : 0)
         categoryTotals.payments = ExactMath.add(categoryTotals.payments, category.name !== InflowCategories.READY_TO_ASSIGN  ? category.payments : 0)
         categoryTotals.fundedSpending = ExactMath.add(categoryTotals.fundedSpending, category.name !== InflowCategories.READY_TO_ASSIGN  ? category.funded_spending : 0)
-        categoryTotals.fundedSpendingPreviousMonth = ExactMath.add(categoryTotals.fundedSpendingPreviousMonth, category.name !== InflowCategories.READY_TO_ASSIGN  ? category.funded_spending_previous_month : 0)
+        categoryTotals.fundedSpendingPreviousMonth = ExactMath.add(categoryTotals.fundedSpendingPreviousMonth, category.account_id && category.name !== InflowCategories.READY_TO_ASSIGN  ? category.available : 0)
 
         if (category.account_id) {
             console.log(categoryTotals, category);

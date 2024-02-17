@@ -2,13 +2,13 @@
 
 namespace App\Console\Commands;
 
-use App\Domains\Budget\Services\BudgetRolloverService;
+use DateTime;
 use App\Models\Team;
+
 use Illuminate\Console\Command;
+use App\Domains\Budget\Services\BudgetRolloverService;
 
-use Illuminate\Support\Facades\DB;
-
-class MonthlyRollover extends Command
+class CheckMonthRollover extends Command
 {
     /**
      * The name and signature of the console command.
@@ -31,7 +31,16 @@ class MonthlyRollover extends Command
     {
 
         $teams = Team::with('timezone')->without(['settings'])->get();
-        dd($teams->toArray());
+        $now = now();
+        foreach ($teams as $team) {
+            $timezone = $team["timezone"] ?? null;
+            if (!$timezone) continue;
 
+            $now->setTimezone($timezone['value']);
+            if ($now->format('H:i') === '00:00' && $now->format('Y-m-d')) {
+                $previousMonth = $now->subMonth()->startOf('month')->format('Y-m');
+                $rolloverService->startFrom($team->id, $previousMonth);
+            }
+        }
     }
 }

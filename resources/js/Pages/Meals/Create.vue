@@ -1,29 +1,35 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { AtButton } from "atmosphere-ui";
 import { router } from "@inertiajs/vue3";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
+import LogerButton from '@/Components/atoms/LogerButton.vue';
 
 import MealForm from "@/domains/meal/components/MealForm.vue";
 import MealSectionNav from "@/domains/meal/components/MealSectionNav.vue";
 import MealTemplate from "@/domains/meal/components/MealTemplate.vue";
 
-const props = defineProps({
-  meals: {
-    type: [Object, null],
-    default: null,
-  },
+const props = withDefaults(defineProps<{
+    meals: null|{
+        name: string;
+        id: number;
+    }
+}>(), {
+    meals: null
 });
 
-const mealForm = ref(null);
-const submit = () => {
-  mealForm.value.submit();
+const mealForm = ref();
+const submit = (redirectTo?: string) => {
+  mealForm.value?.submit(redirectTo);
 };
 
 const mealFormLabel = computed(() => {
   return props.meals ? `Meals / ${props.meals.name}` : "Create recipe";
 });
+
+const saveFormText = computed(() => {
+    return !props.meals?.id ? 'Save' : 'Update';
+})
 </script>
 
 <template>
@@ -35,10 +41,13 @@ const mealFormLabel = computed(() => {
     <template #header>
       <MealSectionNav>
         <template #actions>
-          <div>
-            <AtButton class="h-10 text-white bg-primary" rounded @click="submit()">
-              Save
-            </AtButton>
+          <div class="flex space-x-2">
+              <LogerButton class="h-10 text-white bg-primary" rounded @click="submit()">
+                {{ saveFormText }} and keep
+              </LogerButton>
+            <LogerButton class="h-10 text-white bg-primary" rounded @click="submit('/meals')">
+              {{ saveFormText }}
+            </LogerButton>
           </div>
         </template>
       </MealSectionNav>

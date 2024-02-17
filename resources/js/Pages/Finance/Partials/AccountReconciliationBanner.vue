@@ -44,7 +44,11 @@ const adjustAndFinish = () => {
 
 const differenceStateText = computed(() => {
 
-    return (account.reconciliation_last?.difference || 0) < (account.reconciliation_last?.amount ?? 0) ? 'higher' : 'lower'
+    return (account.balance || 0) > (account.reconciliation_last?.amount ?? 0) ? 'higher' : 'lower'
+})
+const differenceAmount = computed(() => {
+
+    return account.reconciliation_last?.amount - account.balance
 })
 
 const hasPendingReconciliation = computed(() => {
@@ -61,7 +65,7 @@ const hasPendingReconciliation = computed(() => {
             <AccountReconciliationAlert class="mr-2 text-white" />
             <p v-if="!isMatched">
                 This account's cleared balance in
-                <strong>Loger</strong> is {{ formatMoney(account.reconciliation_last.difference) }} {{ differenceStateText }} than your
+                <strong>Loger</strong> is {{ formatMoney(differenceAmount) }}  {{ differenceStateText }} than your
                 <strong>
                     bank account.
                 </strong>

@@ -19,6 +19,10 @@
 	</strong>
 </p>
 
+![example workflow](https://github.com/jesusantguerrero/atmosphere/actions/workflows/laravel.yml/badge.svg)
+
+![example workflow](https://github.com/jesusantguerrero/atmosphere/actions/workflows/laravel.yml/badge.svg?event-push)
+
 
 ![image](https://user-images.githubusercontent.com/17421742/212417292-19f319c5-1cf4-48a8-ba40-1e9b040e820f.png)
 
@@ -73,6 +77,13 @@ Loger is organized in "concerns" by the moment it has 4
 <a href="https://cloud.digitalocean.com/apps/new?repo=https://github.com/jesusantguerrero/atmosphere/tree/staging" target="_blank"><img src="https://www.deploytodo.com/do-btn-blue.svg" width="240" alt="Deploy to DO"></a> -->
 
 ## Showcase
+
+## Demo
+View a live [demo here](https://loger.neatlancer.com), or deploy your instance to DigitalOcean, by clicking the button below.
+
+<a href="https://cloud.digitalocean.com/apps/new?repo=https://github.com/jesusantguerrero/atmosphere/tree/master" target="_blank">
+ <img src="https://www.deploytodo.com/do-btn-blue.svg" width="240" alt="Deploy to DO">
+</a>
 
 ### Dashboard 
 ![Dashboard](https://user-images.githubusercontent.com/17421742/212417292-19f319c5-1cf4-48a8-ba40-1e9b040e820f.png)

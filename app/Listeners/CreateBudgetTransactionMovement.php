@@ -2,9 +2,9 @@
 
 namespace App\Listeners;
 
-use App\Domains\Budget\Services\BudgetCategoryService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Insane\Journal\Events\TransactionCreated;
+use App\Domains\Budget\Services\BudgetCategoryService;
 
 class CreateBudgetTransactionMovement implements ShouldQueue
 {
@@ -12,12 +12,6 @@ class CreateBudgetTransactionMovement implements ShouldQueue
     {
     }
 
-    /**
-     * Handle the event.
-     *
-     * @param  object  $event
-     * @return void
-     */
     public function handle(TransactionCreated $event)
     {
         $transaction = $event->transaction;
@@ -32,5 +26,10 @@ class CreateBudgetTransactionMovement implements ShouldQueue
         if ($transaction->category_id) {
             $this->budgetCategoryService->updateActivity($transaction->category, $month);
         }
+
+        // if ($transaction->category) {
+        //     $this->budgetCategoryService->updateMonthBalances($transaction->category, $month);
+        // }
+
     }
 }

@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers\Finance;
 
-use App\Domains\Budget\Models\BudgetMonth;
-use App\Domains\Budget\Services\BudgetCategoryService;
-use App\Domains\Transaction\Models\Transaction;
-use App\Domains\Transaction\Services\PlannedTransactionService;
-use App\Domains\Transaction\Services\TransactionService;
-use App\Models\Setting;
 use Carbon\Carbon;
-use Freesgen\Atmosphere\Http\InertiaController;
-use Freesgen\Atmosphere\Http\Querify;
+use App\Models\Setting;
 use Illuminate\Http\Request;
+use App\Events\BudgetCalculated;
 use Laravel\Jetstream\Jetstream;
+use Freesgen\Atmosphere\Http\Querify;
+use App\Domains\Budget\Models\BudgetMonth;
+use App\Domains\Transaction\Models\Transaction;
+use Freesgen\Atmosphere\Http\InertiaController;
+use App\Domains\Budget\Services\BudgetMonthService;
+use App\Domains\Transaction\Services\TransactionService;
+use App\Domains\Transaction\Services\PlannedTransactionService;
 
 class FinanceController extends InertiaController
 {
@@ -48,7 +49,10 @@ class FinanceController extends InertiaController
         $lastMonthExpenses = TransactionService::getExpensesTotal($teamId, $lastMonthStartDate, $lastMonthEndDate);
         $income = TransactionService::getIncome($teamId, $startDate, $endDate);
         $lastMonthIncome = TransactionService::getIncome($teamId, $lastMonthStartDate, $lastMonthEndDate);
-        $savings = BudgetCategoryService::getSavingsBalance($teamId, $startDate, $endDate);
+        $savings = BudgetMonthService::getSavingsBalance($teamId, $endDate);
+        $savingsInMonth = BudgetMonthService::getSavingsBalance($teamId, $endDate, $startDate);
+
+        // BudgetCalculated::dispatch();
 
         return Jetstream::inertia()->render($request, 'Finance/Index', [
             'sectionTitle' => 'Finance',
@@ -60,6 +64,7 @@ class FinanceController extends InertiaController
             'lastMonthExpenses' => $lastMonthExpenses->total_amount,
             'income' => $income,
             'savings' => $savings,
+            'savingsInMonth' => $savingsInMonth,
             'lastMonthIncome' => $lastMonthIncome,
             'transactions' => $transactions->map(function ($transaction) {
                 return Transaction::parser($transaction);

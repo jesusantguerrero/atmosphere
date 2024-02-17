@@ -2,7 +2,7 @@
 import { format, parseISO } from "date-fns";
 import { reactive, toRefs, watch, computed, inject, ref , nextTick} from "vue";
 import { useForm } from "@inertiajs/vue3";
-import { AtField, AtButton, AtFieldCheck, AtInput } from "atmosphere-ui";
+import { AtField, AtFieldCheck, AtInput } from "atmosphere-ui";
 import { NSelect, NDatePicker } from "naive-ui";
 
 import Modal from "@/Components/atoms/Modal.vue";
@@ -101,14 +101,6 @@ const isTransfer = computed(() => {
   return state.form.is_transfer;
 });
 
-const categoryLabel = computed(() => {
-  return !isTransfer.value ? "Category" : "Destination";
-});
-
-const categoryField = computed(() => {
-  return isTransfer.value ? "counter_account_id" : "category_id";
-});
-
 const categoryOptions = inject("categoryOptions", []);
 const accountOptions = inject("accountsOptions", []);
 
@@ -178,7 +170,7 @@ const transactionStore = useTransactionStore();
 
 const isAddingAnother = ref(false);
 const onSubmit = (addAnother = false) => {
-    isAddingAnother.value = addAnother;
+  isAddingAnother.value = addAnother;
   const actions = {
     transaction: {
       save: {
@@ -241,6 +233,8 @@ const onSubmit = (addAnother = false) => {
       return data;
     })
     .submit(action.method, action.url(), {
+        preserveState: false,
+        preserveScroll: true,
       onBefore(evt) {
         if (!evt.data.total) {
           alert("The balance should be more than 0");
@@ -251,7 +245,7 @@ const onSubmit = (addAnother = false) => {
         resetSplits(lastSaved);
         nextTick(() => {
             const items = splits.value;
-            gridSplitsRef.value.reset(items);
+            gridSplitsRef.value?.reset(items);
         })
         if (!addAnother) {
             emit("close");

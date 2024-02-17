@@ -1,6 +1,5 @@
 <script setup lang="ts">
     import { provide, ref, computed, onMounted } from 'vue'
-    import { NConfigProvider } from 'naive-ui'
     import { router } from '@inertiajs/vue3'
     import { AtSide, AtTeamSelect } from "atmosphere-ui"
     import { useLocalStorage } from "@vueuse/core"
@@ -24,6 +23,9 @@
     import { useSelect } from '@/utils/useSelects'
     import { useTransactionModal } from '@/domains/transactions'
     import { useOnMessage } from '@/composables/useFirebase'
+    import AppProvider from './AppProvider.vue'
+    import { useAppContextStore } from '@/store'
+    // import LogerAssistant from '../organisms/logerAssistant.vue'
 
     const props = defineProps({
         title: {
@@ -37,6 +39,8 @@
             default: false
         },
     })
+
+    const context = useAppContextStore()
 
     const { appMenu, headerMenu, mobileMenu } = useAppMenu(t)
     const serverMenu = computed(() => {
@@ -113,11 +117,10 @@
             console.log(payload, "Mi mensaje favorito")
         })
     })
-
 </script>
 
 <template>
-    <NConfigProvider>
+    <AppProvider>
         <AppShell :is-expanded="isExpanded" :nav-class="[!$slots.header && `${panelShadow} border-b`]">
             <template #navigation>
                 <!-- Primary Navigation Menu -->
@@ -143,9 +146,9 @@
                                 :notifications="$page.props.unreadNotifications"
                                 @click="router.visit('/notifications')"
                              />
-
+                             <!-- <LogerAssistant /> -->
                              <AtTeamSelect
-                                v-if="$page.props.user.all_teams.length"
+                                v-if="$page.props.user.all_teams.length && !context.isMobile"
                                 :has-team-features="$page.props.jetstream.hasTeamFeatures"
                                 :can-create-teams="$page.props.jetstream.canCreateTeams"
                                 :current-team="$page.props.user.current_team"
@@ -237,7 +240,7 @@
             </template>
         </AppShell>
         <AppGlobals />
-    </NConfigProvider>
+    </AppProvider>
 </template>
 
 

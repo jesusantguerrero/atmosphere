@@ -2,9 +2,9 @@
 
 namespace App\Domains\Transaction\Traits;
 
-use App\Domains\Budget\Data\BudgetReservedNames;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Transaction;
+use App\Domains\Budget\Data\BudgetReservedNames;
 
 trait TransactionLineTrait
 {
@@ -84,8 +84,28 @@ trait TransactionLineTrait
         $query->whereNot('categories.name', BudgetReservedNames::READY_TO_ASSIGN->value)
             ->join('categories', 'transaction_lines.category_id', '=', 'categories.id');
 
-        if ($categories) {
-            $query->whereIn('transaction_lines.category_id', $categories);
+        $categories = collect($categories);
+        $excluded = $categories->filter( fn ($id) => $id < 0)->all();
+        $included = $categories->filter( fn ($id) => $id > 0)->all();
+
+        if (count($excluded)) {
+            $query->whereNotIn('transaction_lines.category_id', $excluded);
+        }
+        if (count($included)) {
+            $query->whereIn('transaction_lines.category_id', $included);
+        }
+
+        return $query;
+    }
+
+    public function scopeIncomePayees($query, array $payees = null)
+    {
+        $query->where('categories.name', BudgetReservedNames::READY_TO_ASSIGN->value)
+            ->join('categories', 'transaction_lines.category_id', '=', 'categories.id')
+            ->join('payees', 'transaction_lines.payee_id', '=', 'payees.id');
+
+        if ($payees) {
+            $query->whereIn('transaction_lines.payee_id', $payees);
         }
 
         return $query;

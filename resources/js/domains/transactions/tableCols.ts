@@ -51,16 +51,15 @@ export const tableCols = [
         }
     },
     {
-        label: "Category",
-        name: "category",
-        render(row: any) {
-            return row.category?.name ?? row.category_name
-        }
-    },
-    {
         label: "Description",
         name: "description",
         width: 300,
+        render(row: any) {
+            return h('div', [
+                h('div', row.description),
+                h('div', row.category?.name ?? row.category_name)
+            ])
+        }
     },
     {
         label: "Amount",

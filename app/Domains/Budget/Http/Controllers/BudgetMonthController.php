@@ -23,7 +23,7 @@ class BudgetMonthController extends Controller
     {
         $isMovement = request()->post('type');
         $postData = $this->getPostData();
-        if (! $isMovement && $postData && $postData['budgeted'] != null) {
+        if (!$isMovement && $postData && $postData['budgeted'] != null) {
             $service->registerAssignment(new BudgetAssignData(
                 $postData['team_id'],
                 $postData['user_id'],

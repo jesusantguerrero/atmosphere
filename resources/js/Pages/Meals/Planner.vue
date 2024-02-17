@@ -96,6 +96,7 @@
             meals: [recipe]
         }))
         .post(route('meals.addPlan'), {
+            preserveScroll: true,
             onSuccess: () => {
                 form.id = "";
                 form.name = ""

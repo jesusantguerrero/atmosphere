@@ -1,12 +1,23 @@
 import { v4 } from 'uuid';
-export const transactionDBToTransaction = (transactions) => {
+export const transactionDBToTransaction = (transactions: any[]) => {
     return transactions.map(transaction => ({
         id: transaction.id || v4(),
         date: transaction.date,
         title: transaction.description,
         subtitle: transaction.account?.name ? `${transaction.account?.name} -> ${transaction.category?.name}` : '',
         value: transaction.total,
-        status: 'VERIFIED',
+        status: transaction.status,
+        currencyCode: transaction.currency_code,
+    }))
+}
+export const draftsDBToTransaction = (transactions: any[]) => {
+    return transactions.map(transaction => ({
+        id: transaction.id || v4(),
+        date: transaction.date,
+        title: transaction.description,
+        subtitle: transaction.linked ? `${transaction.linked}` : '',
+        value: transaction.total,
+        status: transaction.status,
         currencyCode: transaction.currency_code,
     }))
 }

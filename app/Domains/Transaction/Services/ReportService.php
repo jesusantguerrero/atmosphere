@@ -2,10 +2,10 @@
 
 namespace App\Domains\Transaction\Services;
 
-use App\Domains\Transaction\Models\Transaction;
-use App\Domains\Transaction\Models\TransactionLine;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Domains\Transaction\Models\Transaction;
+use App\Domains\Transaction\Models\TransactionLine;
 
 class ReportService
 {
@@ -40,12 +40,12 @@ class ReportService
         return $results;
     }
 
-    public static function generateExpensesByPeriod($teamId, $timeUnit = 'month', $timeUnitDiff = 2, $type = 'expenses')
+    public static function generateExpensesByPeriod($teamId, $startDate, $timeUnitDiff = 2,  $timeUnit = 'month', $categories = null)
     {
-        $endDate = Carbon::now()->endOfMonth()->format('Y-m-d');
-        $startDate = Carbon::now()->subMonth($timeUnitDiff)->startOfMonth()->format('Y-m-d');
+        $rangeEndAt = Carbon::createFromFormat('Y-m-d', $startDate)->endOfMonth()->format('Y-m-d');
+        $rangeStartAt = Carbon::now()->subMonth($timeUnitDiff)->startOfMonth()->format('Y-m-d');
 
-        $results = self::getExpensesByCategoriesInPeriod($teamId, $startDate, $endDate);
+        $results = self::getExpensesByCategoriesInPeriod($teamId, $rangeStartAt, $rangeEndAt, $categories);
         $resultGroup = $results->groupBy('date');
 
         return $resultGroup->map(function ($monthItems) {
@@ -55,6 +55,41 @@ class ReportService
                 'total' => $monthItems->sum('total'),
             ];
         }, $resultGroup)->sortBy('date');
+    }
+
+    public static function getIncomeVsExpenses($teamId, $timeUnitDiff = 2, $startDate = null, $timeUnit = 'month')
+    {
+        $endDate = Carbon::now()->endOfMonth()->format('Y-m-d');
+        $startDate = Carbon::now()->subMonth($timeUnitDiff)->startOfMonth()->format('Y-m-d');
+
+        if ($timeUnit == 'year') {
+            $endDate = Carbon::now()->endOfYear()->format('Y-m-d');
+            $startDate = Carbon::now()->subYear($timeUnitDiff)->startOfYear()->format('Y-m-d');
+        }
+
+        $expenses = self::getExpensesByCategoriesInPeriod($teamId, $startDate, $endDate);
+        $expensesGroup = $expenses->groupBy($timeUnit);
+
+
+
+        $income = self::getIncomeByPayeeInPeriod($teamId, $startDate, $endDate);
+        $incomeCategories =  $income->groupBy($timeUnit);
+
+        $dates = $expensesGroup->keys();
+
+
+        return $dates->map(function ($dateUnit) use ($incomeCategories, $expensesGroup) {
+            $incomeData = $incomeCategories->get($dateUnit);
+            $expenseData = $expensesGroup->get($dateUnit);
+            return [
+                'date' => $dateUnit,
+                'date_unit' => $dateUnit,
+                'income' => $incomeData?->values()->all() ?? [],
+                "expense" => $expenseData?->values()->all() ?? [],
+                'assets' => $incomeData?->sum('total_amount') ?? 0,
+                'debts' => $expenseData?->sum('total') ?? 0,
+            ];
+        })->sortByDesc($timeUnit)->values()->toArray();
     }
 
     public static function generateCurrentPreviousReport($teamId, $timeUnit = 'month', $timeUnitDiff = 2, $type = 'expenses')
@@ -101,13 +136,26 @@ class ReportService
             ->get();
     }
 
+    public static function getIncomeByPayeeInPeriod($teamId, $startDate, $endDate)
+    {
+        return TransactionLine::byTeam($teamId)
+            ->balance()
+            ->inDateFrame($startDate, $endDate)
+            ->incomePayees()
+            ->selectRaw('date_format(transaction_lines.date, "%Y-%m-%01") as date, date_format(transaction_lines.date, "%Y-%m-%01") as month, year(transaction_lines.date) as year, payees.name, payees.id')
+            ->groupByRaw('date_format(transaction_lines.date, "%Y-%m"), payees.id')
+            ->orderByDesc('date')
+            ->join('transactions', 'transactions.id', 'transaction_lines.transaction_id')
+            ->get();
+    }
+
     public static function getExpensesByCategoriesInPeriod($teamId, $startDate, $endDate, $categories = null)
     {
         return Transaction::byTeam($teamId)
             ->balance()
             ->inDateFrame($startDate, $endDate)
             ->expenseCategories($categories)
-            ->selectRaw('date_format(transactions.date, "%Y-%m-01") as date, categories.name, categories.id')
+            ->selectRaw('date_format(transactions.date, "%Y-%m-01") as date, date_format(transactions.date, "%Y-%m-01") as month, year(transactions.date) as year, categories.name, categories.id')
             ->groupByRaw('date_format(transactions.date, "%Y-%m"), categories.id')
             ->orderBy('date')
             ->get();
@@ -119,7 +167,7 @@ class ReportService
             ->balance()
             ->inDateFrame($startDate, $endDate)
             ->expenseCategories()
-            ->selectRaw('date_format(transaction_lines.date, "%Y-%m-%d") as date, date_format(transaction_lines.date, "%Y-%m") as month')
+            ->selectRaw('date_format(transaction_lines.date, "%Y-%m-%d") as date, year(transaction_lines.date) as year, date_format(transaction_lines.date, "%Y-%m") as month')
             ->groupByRaw('date_format(transaction_lines.date, "%Y-%m"), transaction_lines.date')
             ->orderByDesc('date')
             ->join('transactions', 'transactions.id', 'transaction_lines.transaction_id')

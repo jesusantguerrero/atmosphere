@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, toRefs } from "vue";
-import { Link, router } from "@inertiajs/vue3";
+import { router } from "@inertiajs/vue3";
 // @ts-ignore
 import { AtDatePager } from "atmosphere-ui";
 
@@ -12,12 +12,11 @@ import TrendTemplate from "./Partials/TrendTemplate.vue";
 import TrendSectionNav from "./Partials/TrendSectionNav.vue";
 import ChartComparison from "@/Components/widgets/ChartComparison.vue";
 import WidgetTitleCard from "@/Components/molecules/WidgetTitleCard.vue";
-import Collapse from "@/Components/molecules/Collapse.vue";
 
-import YearSummary from "@/domains/transactions/components/YearSummary.vue";
 import ExpenseChartWidget from "@/domains/transactions/components/ExpenseChartWidget.vue";
 
 import { useServerSearch } from "@/composables/useServerSearch";
+import AccountFilters from "@/domains/transactions/components/AccountFilters.vue";
 
 const props = defineProps({
   user: {
@@ -56,39 +55,47 @@ const handleSelection = (index: number) => {
 
 const trends = [
     {
-        name: 'Spending',
-        link: '/trends'
+        label: 'Spending',
+        url: '/trends'
     },
     {
-        name: 'Net Worth',
-        link: '/trends/net-worth'
+        label: 'Net Worth',
+        url: '/trends/net-worth'
     },
     {
-        name: 'Income v Expenses',
-        link: '/trends/income-expenses'
+        label: 'Income v Expenses',
+        url: '/trends/income-expenses'
     },
     {
-        name: 'Income vs Expenses Graph',
-        link: '/trends/income-expenses-graph'
+        label: 'Income vs Expenses Graph',
+        url: '/trends/income-expenses-graph'
     },
     {
-        name: 'Year summary',
-        link: '/trends/year-summary'
+        label: 'Year spending',
+        url: '/trends/spending-year'
     }
 ]
-
 
 const components = {
     groups: ExpenseChartWidget,
     categories: ExpenseChartWidget,
     netWorth: ChartNetWorth,
     incomeExpenses: IncomeExpenses,
-    incomeExpensesGraph:  ChartComparison,
-    yearSummary: YearSummary
+    incomeExpensesGraph:  ChartNetWorth,
+    spendingYear: ChartComparison
 }
 
 const trendComponent = computed(() => {
     return components[props.metaData.name] || ExpenseChartWidget
+})
+
+const isCategoryTrend = computed(() => {
+    return ['group', 'categories', 'payees'].includes(props.metaData.name)
+})
+
+
+const isYearSpending = computed(() => {
+    return ['spendingYear'].includes(props.metaData.name)
 })
 
 const cashflowEntities = {
@@ -105,31 +112,56 @@ const cashflowEntities = {
         value: '/trends/payees'
     }
 }
-const isFilterSelected = (filterValue) => {
+const isFilterSelected = (filterValue: string) => {
     const currentStatus = location.pathname;
     return currentStatus.includes(filterValue);
+}
+
+const handleCategories = (categories: ICategory[]) => {
+    console.log(categories)
 }
 </script>
 
 <template>
   <AppLayout :title="metaData.title">
     <template #header>
-      <TrendSectionNav>
+      <TrendSectionNav :sections="trends">
         <template #actions>
-            <AtDatePager
-                class="w-full h-12 border-none bg-base-lvl-1 text-body"
-                v-model:startDate="pageState.dates.startDate"
-                v-model:endDate="pageState.dates.endDate"
-                @change="executeSearchWithDelay(500)"
-                controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
-                next-mode="month"
-            />
+                <AtDatePager
+                    class="w-full h-12 border-none bg-base-lvl-1 text-body"
+                    v-model:startDate="pageState.dates.startDate"
+                    v-model:endDate="pageState.dates.endDate"
+                    @change="executeSearchWithDelay(500)"
+                    controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
+                    next-mode="month"
+                />
+                <AccountFilters
+                    class="w-full bg-red-500"
+                    v-model:accounts="pageState.filters.account"
+                    v-model:categories="pageState.filters.category"
+                />
         </template>
       </TrendSectionNav>
     </template>
 
-    <TrendTemplate title="Finance" ref="financeTemplateRef">
+    <TrendTemplate title="Finance" ref="financeTemplateRef" :hide-panel="true">
+        <component
+            class="mt-5"
+            v-if="isYearSpending"
+            :is="trendComponent"
+            style="background: white; width: 100%"
+            :type="section"
+            :series="data"
+            :data="data"
+            @selected="handleSelection"
+            v-bind="metaData.props"
+            :title="metaData.title"
+            label="name"
+            value="total"
+            :legend="false"
+        />
         <WidgetTitleCard
+            v-else
             :title="metaData.title"
             class="mt-5"
         >
@@ -148,7 +180,7 @@ const isFilterSelected = (filterValue) => {
                 :legend="false"
             />
         </section>
-        <template #afterActions>
+        <template #afterActions v-if="isCategoryTrend">
             <div class="flex overflow-hidden text-white border rounded-md bg-primary border-primary min-w-max">
                 <button
                     v-for="(item, statusName) in cashflowEntities"
@@ -161,22 +193,6 @@ const isFilterSelected = (filterValue) => {
             </div>
         </template>
       </WidgetTitleCard>
-
-      <template #panel>
-            <Collapse
-                title="Reports"
-                title-class="p-2 mt-6 font-bold rounded-md bg-base-lvl-3 text-body-1 bg-base-lvl-1 "
-                content-class="pb-4 bg-base-lvl-3"
-            >
-                <template #content>
-                    <div class="divide-y divide-base-lvl-2 bg-base-lvl-3">
-                        <Link :href="trend.link" v-for="trend in trends" :key="trend.name" class="block px-2 py-4 cursor-pointer hover:bg-base-lvl-2">
-                            {{ trend.name }}
-                        </Link>
-                    </div>
-                </template>
-            </Collapse>
-      </template>
     </TrendTemplate>
   </AppLayout>
 </template>

@@ -8,9 +8,9 @@ use Insane\Journal\Models\Core\Account;
 
 class FinanceAccountPolicy
 {
-    public function show(User $user, Account $account)
+    public function show(User $user)
     {
-        return $user->current_team_id === $account->team_id
+        return $user->current_team_id
         ? Response::allow()
         : Response::deny('You do not own this account.');
     }

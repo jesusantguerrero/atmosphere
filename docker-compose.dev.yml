@@ -3,18 +3,31 @@ services:
   web:
     build:
       args:
-        user: 'loger'
         uid: 1000
         TZ: America\New_York
       context: ./
       dockerfile: Dockerfile
     image: loger
     container_name: loger-app
+    ports:
+      - 80:80
+      - 443:443
     restart: unless-stopped
     volumes:
-      - ./:/var/www
+      - ./:/app
+      - ./Caddyfile.dev:/etc/caddy/Caddyfile
       - ./docker-compose/web/timezone:/etc/timezone
       - loger_db:/var/lib/mysql
+    environment:
+        DEBUG: "debug"
+        # Change the following value if you know how it works.
+        # MERCURE_TRANSPORT_URL: "bolt://mercure.db"
+        MERCURE_PUBLISHER_JWT_KEY: "${MERCURE_PUBLISHER_JWT_KEY}"
+        MERCURE_SUBSCRIBER_JWT_KEY: "${MERCURE_SUBSCRIBER_JWT_KEY}"
+        # In the cors_origin, add your domain(s). Or just use *
+        MERCURE_EXTRA_DIRECTIVES: |-
+            cors_origins "*"
+            anonymous
     networks:
       - loger
     depends_on:
@@ -38,17 +51,6 @@ services:
       - ./docker-compose/mysql:/docker-entrypoint-initdb.d
       - loger_db:/var/lib/mysql
       - ./docker-compose/mysql:/home/root/cache/
-    networks:
-      - loger
-  nginx:
-    image: nginx:alpine
-    container_name: loger-nginx
-    restart: unless-stopped
-    ports:
-      - "8080:80"
-    volumes:
-      - ./:/var/www
-      - ./docker-compose/nginx/vhosts:/etc/nginx/conf.d/
     networks:
       - loger
   redis:
@@ -78,7 +80,7 @@ services:
       dockerfile: cron.dockerfile
     container_name: cron
     volumes:
-      - ./:/var/www
+      - ./:/app
     depends_on:
       - web
     networks:

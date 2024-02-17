@@ -30,20 +30,20 @@ const currentSeries = computed(() => {
     return [{
         name: 'Debts',
         data: Object.values(props.data).map(item => Math.abs(item.debts)),
-        labels: Object.values(props.data).map(item => item.month_date)
+        labels: Object.values(props.data).map(item => item.date_unit)
     },
     {
         name: 'Assets',
         data: Object.values(props.data).map(item => item.assets),
-        labels: Object.values(props.data).map(item => item.month_date)
+        labels: Object.values(props.data).map(item => item.date_unit)
     }];
 })
 
 const state = reactive({
     headers: Object.entries(props.data).map(([dateString, item]) => ({
-        label: formatMonth(item.month_date),
+        label: item.date_unit,
         value: [item.debts, item.assets],
-        id: item.month_date
+        id: item.date_unit
     })),
     options: {
         colors: ["#7B77D1", "#F37EA1"],

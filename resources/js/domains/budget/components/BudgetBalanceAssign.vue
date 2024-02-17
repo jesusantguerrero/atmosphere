@@ -104,7 +104,7 @@
                 [field]: props.category.id,
                 source_category_id: data.source_category_id?.value,
                 'type': 'movement',
-                date: format(new Date(), 'yyyy-MM-dd')
+                date: format(startOfMonth(pageState?.dates?.endDate), 'yyyy-MM-dd')
             })).post(`/budgets/${props.category.id}/months/${month}`, {
                 onSuccess() {
                     router.reload({
@@ -117,7 +117,6 @@
 
     const categories = inject('categories', ref({ data: []}))
     const categoryOptions = computed(() => {
-        console.log(categories.value.data);
         return categories.value.data?.map(item => ({
             value: item.id,
             key: item.id,
@@ -145,7 +144,7 @@
     <section
         class="overflow-hidden border divide-y-2 rounded-md cursor-pointer text-body-1"
         :class="theme.default"
-        @click="toggle"
+
     >
         <NPopover>
             <template #trigger>
@@ -173,7 +172,7 @@
                         {{ description }}
                     </small>
 
-                    <NPopover v-if="isOverspent" trigger="manual" placement="bottom"  @update:show="handleUpdateShow" :show="showPopover">
+                    <NPopover v-if="isOverspent"  placement="bottom" >
                         <template #trigger>
                             <AtButton class="text-white rounded-md bg-black/30">
                                 Fix this
@@ -208,10 +207,12 @@
                 </article>
             </template>
             <section class="text-center">
-                <p>Available for funds: <MoneyPresenter :value="toAssign.availableForFunding"/> </p>
+                <p>from last month: <MoneyPresenter :value="toAssign.leftOver"/> </p>
+                <p>inflow: <MoneyPresenter :value="toAssign.availableForFunding"/> </p>
+                <p class="text-green-500">Total: <MoneyPresenter :value="toAssign.availableForFunding + toAssign.leftOver"/> </p>
                 <p>Budgeted: <MoneyPresenter :value="toAssign.budgeted"/> </p>
-                <p>Funded: <MoneyPresenter :value="toAssign.creditCardFunded"/> </p>
-                <p>Assigned in month: <MoneyPresenter :value="toAssign.assigned" /> </p>
+                <p>last month overspending: <MoneyPresenter :value="toAssign.overspending_from_previous_month"/> </p>
+                <p class="text-red-500">Funded: <MoneyPresenter :value="toAssign.budgeted + toAssign.overspending_from_previous_month"/></p>
                 <p>Balance: <MoneyPresenter :value="toAssign.balance" /> </p>
             </section>
         </NPopover>

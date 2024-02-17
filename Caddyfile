@@ -1,0 +1,34 @@
+{
+	frankenphp
+	order mercure after encode
+	order php_server before file_server
+	{$GLOBAL_OPTIONS}
+}
+
+# The domain name of your server
+dev-loger.neatlancer.com {
+	root * public/
+	encode zstd gzip
+	php_server {
+		resolve_root_symlink
+	}
+
+    mercure {
+		# Transport to use (default to Bolt)
+		transport_url {$MERCURE_TRANSPORT_URL:bolt://mercure.db}
+		# Publisher JWT key
+		publisher_jwt {env.MERCURE_PUBLISHER_JWT_KEY}
+		# Subscriber JWT key
+		subscriber_jwt {env.MERCURE_SUBSCRIBER_JWT_KEY}
+		# Permissive configuration for the development environment
+		cors_origins *
+		publish_origins *
+		demo
+		anonymous
+		subscriptions
+		# Extra directives
+		{$MERCURE_EXTRA_DIRECTIVES}
+	}
+
+	{$CADDY_SERVER_EXTRA_DIRECTIVES}
+}

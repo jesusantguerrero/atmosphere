@@ -21,7 +21,7 @@ const props = defineProps({
         default: 'fas fa-tags'
     },
     colorClass: {
-        default: 'group-hover:bg-base-lvl-2 bg-gray-400'
+        default: 'group-hover:bg-base-lvl-2 bg-gray-400 hover:text-body-1'
     },
     wrap: {
         type: Boolean
@@ -39,14 +39,16 @@ const title = computed(() => {
 <template>
     <button class="flex flex-col items-center justify-center w-32 group">
         <section
-        class="relative overflow-hidden border-2 rounded-full h-14 w-14"
-        :class="colorClass"
-        :style="{backgroundColor: color}">
+            class="relative overflow-hidden border-2 rounded-full h-14 w-14"
+            :class="colorClass"
+            :style="{backgroundColor: color}"
+            :title="title"
+        >
             <div class="w-1/2 h-full bg-white opacity-30" />
             <i :class="iconClass" v-if="iconClass" class="font-bold text-white" />
-            <span class="absolute top-0 left-0 flex items-center justify-center w-full h-full font-bold text-white"> {{ value }}</span>
+            <span class="absolute top-0 left-0 flex items-center justify-center w-full h-full font-bold text-white group-hover:text-body-1"> {{ value }}</span>
         </section>
-        <p class="flex justify-center w-full mt-2 text-center" ref="titleRef"
+        <p class="flex justify-center w-full mt-2 text-center h-[21px] overflow-hidden" ref="titleRef"
             :class="[wrap ? 'flex-wrap' : 'flex-nowrap']"
         > {{ title }} </p>
     </button>

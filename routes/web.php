@@ -19,13 +19,10 @@ use App\Http\Controllers\System\DashboardController;
 use App\Http\Controllers\Api\IngredientApiController;
 use App\Http\Controllers\System\UserDeviceController;
 use App\Http\Controllers\System\IntegrationController;
-use App\Http\Controllers\Finance\BudgetMonthController;
 use App\Http\Controllers\System\NotificationController;
-use App\Http\Controllers\Finance\BudgetTargetController;
 use App\Http\Controllers\Finance\FinanceLinesController;
 use App\Http\Controllers\Finance\FinanceTrendController;
 use App\Http\Controllers\System\TeamInvitationController;
-use App\Http\Controllers\Finance\BudgetCategoryController;
 use App\Http\Controllers\Finance\FinanceAccountController;
 use Freesgen\Atmosphere\Http\Controllers\SettingsController;
 use App\Http\Controllers\Relationship\RelationshipController;
@@ -46,6 +43,7 @@ use App\Domains\Integration\Http\Controllers\ApiIntegrationController;
 if (config('app.env') == 'production') {
     URL::forceScheme('https');
 }
+
 
 Route::resource('onboarding', OnboardingController::class)->middleware(['auth:sanctum', 'atmosphere.unteamed', 'verified']);
 
@@ -125,6 +123,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
 
     // Transactions
     Route::controller(FinanceTransactionController::class)->group(function () {
+        Route::post('/linked-drafts', 'findLinkedDrafts')->name('finance.transactions.linked-drafts');
         Route::patch('/transactions/{transaction}/linked', 'findLinked')->name('finance.transactions.linked');
         Route::get('/api/finance/transactions', 'list')->name('finance.transactions.list');
         Route::get('/finance/transactions', 'index')->name('finance.transactions');

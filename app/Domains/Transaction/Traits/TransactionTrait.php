@@ -2,9 +2,9 @@
 
 namespace App\Domains\Transaction\Traits;
 
-use App\Domains\Budget\Data\BudgetReservedNames;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Transaction;
+use App\Domains\Budget\Data\BudgetReservedNames;
 
 trait TransactionTrait
 {
@@ -55,7 +55,7 @@ trait TransactionTrait
             ->whereNotNull('category_id');
     }
 
-    public function scopeBalance($query)
+    public function scopeBalance($query, $uptoDate = null, $accountIds = [])
     {
         $transactionsTotalSum = "ABS(sum(CASE
         WHEN transactions.direction = 'WITHDRAW'
@@ -65,6 +65,8 @@ trait TransactionTrait
         return $query->where([
             'transactions.status' => 'verified',
         ])
+            ->when($uptoDate, fn($q) => $q->whereRaw('transactions.date <= ?', [$uptoDate]))
+            ->when(count($accountIds), fn($q) => $q->whereIn('transactions.account_id', [$uptoDate]))
             ->whereNotNull('category_id')
             ->selectRaw($transactionsTotalSum);
     }
@@ -81,12 +83,17 @@ trait TransactionTrait
 
     public function scopeExpenseCategories($query, array $categories = null)
     {
-        $query->whereNot('categories.name', BudgetReservedNames::READY_TO_ASSIGN->value)
-            ->join('categories', 'transactions.category_id', '=', 'categories.id');
+        $categories = collect($categories);
+        $excluded = $categories->filter( fn ($id) => $id < 0)->map(fn ($id) => abs($id))->all();
+        $included = $categories->filter( fn ($id) => $id > 0)->all();
 
-        if ($categories) {
-            $query->whereIn('category_id', $categories);
-        }
+
+        $query->whereNot('categories.name', BudgetReservedNames::READY_TO_ASSIGN->value)
+            ->join('categories', 'transactions.category_id', '=', 'categories.id')
+            ->where(fn ($q) =>
+                $q->when(count($excluded),fn ($q) => $q->whereNotIn('categories.id', $excluded))
+                ->when(count($included), fn ($q) =>  $q->whereIn('categories.id', $included))
+            );
 
         return $query;
     }

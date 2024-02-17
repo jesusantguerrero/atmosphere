@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, toRefs, provide, ref, onMounted, watch , nextTick } from "vue";
-import { router, useForm } from "@inertiajs/vue3";
+import { router, useForm, usePage } from "@inertiajs/vue3";
 import { format } from "date-fns";
 import { NDatePicker } from "naive-ui";
 // @ts-expect-error: no definitions
@@ -22,12 +22,14 @@ import TransactionSearch from "@/domains/transactions/components/TransactionSear
 import TransactionTable from "@/domains/transactions/components/TransactionTable.vue";
 import DraftButtons from "@/domains/transactions/components/DraftButtons.vue";
 
-import { useTransactionModal } from "@/domains/transactions";
+import { useTransactionModal, TRANSACTION_DIRECTIONS, removeTransaction } from "@/domains/transactions";
 // import { IServerSearchData, useServerSearch } from "@/composables/useServerSearch";
 import { tableAccountCols } from "@/domains/transactions";
 import { useAppContextStore } from "@/store";
 import { formatMoney } from "@/utils";
 import { IAccount, ICategory, ITransaction } from "@/domains/transactions/models";
+import axios from "axios";
+import AccountReconciliationForm from "./AccountReconciliationForm.vue";
 
 
 const { openTransactionModal } = useTransactionModal();
@@ -37,6 +39,7 @@ interface CollectionData<T> {
     data: T[]
 }
 const props = withDefaults(defineProps<{
+    accountDetailTypes: {label: string, id: number| string}[];
     transactions: ITransaction[];
     stats: CollectionData<Record<string, number>>;
     accounts: IAccount[];
@@ -69,12 +72,13 @@ const isDraft = computed(() => {
 	return serverSearchOptions.value?.filters?.status == "draft";
 });
 
-const removeTransaction = (transaction: ITransaction) => {
-	router.delete(`/transactions/${transaction.id}`, {
-		onSuccess() {
-			router.reload();
-		},
-	});
+const handleDuplicate = (transaction: ITransaction) => {
+    axios.get(`/transactions/${transaction.id}?json=true`).then(({ data }) => {
+        delete data.id;
+        openTransactionModal({
+          transactionData: data,
+        });
+    })
 };
 
 const findLinked = (transaction: ITransaction) => {
@@ -113,20 +117,44 @@ const reconcileForm = useForm({
 		balance: 0,
 })
 
-const reconciliation = () => {
-	reconcileForm.transform(data => ({
-		...data,
-		date: format(data.date, 'yyyy-MM-dd'),
-	})).post(`/finance/reconciliation/accounts/${selectedAccount.value?.id}`, {
-		onFinish() {
-			reconcileForm.reset()
-			reconcileForm.isVisible = false;
-            router.reload({
-                only: ['transactions', 'accounts', 'stats']
-            });
-		}
-	});
-};
+    const reconciliation = () => {
+        reconcileForm.transform(data => ({
+            ...data,
+            date: format(data.date, 'yyyy-MM-dd'),
+        })).post(`/finance/reconciliation/accounts/${selectedAccount.value?.id}`, {
+            preserveScroll: true,
+            only: ['transactions', 'accounts', 'stats'],
+            onFinish() {
+                reconcileForm.reset()
+                reconcileForm.isVisible = false;
+
+            }
+        });
+    };
+
+    const  { TRANSFER } = TRANSACTION_DIRECTIONS;
+    const page = usePage().props;
+
+    const creditCard = computed(() => {
+        return props.accountDetailTypes.find((type) => type.label.toLowerCase() == "credit cards");
+    });
+    const isCreditCard = computed(() => {
+        return selectedAccount.value?.account_detail_type_id == creditCard.value?.id;
+    });
+
+    const payCreditCard = () => {
+        const accountId = page.accountId
+        const debt = Math.abs(selectedAccount.value?.balance ?? 0);
+        openTransactionModal({
+            mode: TRANSFER,
+            transactionData: {
+                counter_account_id: accountId ?? "",
+                total: debt,
+                description: `Payment of ${selectedAccount.value?.name}`,
+                account_id: props.accounts.find((account) => account.balance > debt)?.id
+            },
+        })
+    }
 
 </script>
 
@@ -155,6 +183,13 @@ const reconciliation = () => {
             v-else
           >
             Review Reconciliation
+          </LogerButton>
+          <LogerButton
+            variant="neutral"
+            v-if="isCreditCard"
+            @click="payCreditCard"
+          >
+            Pay credit card
           </LogerButton>
           <DraftButtons v-if="isDraft" />
         </div>
@@ -220,68 +255,17 @@ const reconciliation = () => {
                 :server-search-options="serverSearchOptions"
                 :is-loading="isLoading"
                 @findLinked="findLinked"
-                @removed="removeTransaction"
+                @removed="removeTransaction($event, ['verified'])"
+                @duplicate="handleDuplicate"
                 @edit="handleEdit"
             />
       </section>
 
-      <ConfirmationModal
+      <AccountReconciliationForm
           :show="reconcileForm.isVisible"
           @close="reconcileForm.isVisible = false"
-          title="Ending statement balance"
-        >
-
-          <template #content>
-              <section>
-                  <h4 class="font-bold">
-                  {{ selectedAccount.name }}
-                  </h4>
-                  <AtField
-                  label="Ending balance Date"
-                  class="flex justify-between w-full md:w-4/12 md:block"
-              >
-                  <NDatePicker
-                  v-model:value="reconcileForm.date"
-                  type="date"
-                  size="large"
-                  class="w-48 md:w-full"
-                  />
-              </AtField>
-
-              <AtField label="statement balance">
-                  <LogerInput
-                      ref="input"
-                      class="opacity-100 cursor-text"
-                      v-model="reconcileForm.balance"
-                      :number-format="true"
-
-                  >
-                      <template #prefix>
-                          {{ selectedAccount.currency_code }}
-                      </template>
-                  </LogerInput>
-              </AtField>
-              </section>
-
-          </template>
-
-          <template #footer>
-              <section class="flex justify-between">
-                  <LogerButton @click="reconcileForm.isVisible = false" variant="neutral">
-                      Cancel
-                  </LogerButton>
-
-                  <LogerButton
-                      class="ml-2"
-                      @click="reconciliation"
-                      :class="{ 'opacity-25': reconcileForm.processing }"
-                      :disabled="reconcileForm.processing"
-                  >
-                      Save
-                  </LogerButton>
-              </section>
-          </template>
-      </ConfirmationModal>
+          :account="selectedAccount"
+       />
   </FinanceTemplate>
 </AppLayout>
 </template>

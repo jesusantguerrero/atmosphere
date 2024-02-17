@@ -29,11 +29,11 @@ const onSaved = () => {
 <template>
     <AppLayout title="Home Projects">
         <template #header>
-            <ProfileSectionNav :loger-profile="profiles" />
+            <ProfileSectionNav :loger-profile="profiles" @action="isModalOpen = true" />
         </template>
 
         <LogerProfileTemplate title="Loger Profiles"  ref="profileTemplateRef">
-            <WelcomeCard class="mt-5" message="Loger profiles">
+            <WelcomeCard  message="Loger profiles">
                 <section class="flex flex-col items-center pb-12 mx-auto">
                     <img src="./empty-box.svg" class="opacity-50" />
                     <h4 class="text-lg font-bold text-body-1"> There are not profiles created</h4>

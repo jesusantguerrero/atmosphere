@@ -2,19 +2,21 @@
 
 namespace App\Models;
 
-use App\Domains\AppCore\Models\Category;
+use Laravel\Paddle\Billable;
 use App\Domains\Meal\Models\Meal;
-use App\Domains\Transaction\Models\Transaction;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Insane\Journal\Models\Core\Account;
+use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Payee;
+use Insane\Journal\Models\Core\Account;
+use App\Domains\AppCore\Models\Category;
+use Spatie\Onboard\Concerns\Onboardable;
 use Laravel\Jetstream\Events\TeamCreated;
 use Laravel\Jetstream\Events\TeamDeleted;
 use Laravel\Jetstream\Events\TeamUpdated;
-use Laravel\Jetstream\Team as JetstreamTeam;
-use Laravel\Paddle\Billable;
 use Spatie\Onboard\Concerns\GetsOnboarded;
-use Spatie\Onboard\Concerns\Onboardable;
+use Laravel\Jetstream\Team as JetstreamTeam;
+use App\Domains\Transaction\Models\Transaction;
+use App\Domains\Transaction\Models\TransactionLine;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Team extends JetstreamTeam implements Onboardable
 {
@@ -103,12 +105,28 @@ class Team extends JetstreamTeam implements Onboardable
      *
      * @return string
      */
-    public function balance()
+    public function balance($upToDate = null, $accountIds = [])
     {
         return (float) Transaction::byTeam($this->id)
             ->verified()
-            ->balance()
+            ->balance($upToDate, $accountIds)
             ->first()
         ->total;
+    }
+
+    public function balanceDetail($upToDate = null, $accountIds = [])
+    {
+
+        return DB::table('transaction_lines')->where([
+            'transactions.status' => Transaction::STATUS_VERIFIED,
+            'transactions.team_id' => $this->id,
+        ])
+        ->when($upToDate, fn($q) => $q->whereRaw('transaction_lines.date <= ?', [$upToDate]))
+        ->when(count($accountIds), fn($q) => $q->whereIn('transaction_lines.account_id', $accountIds))
+        ->join('transactions', 'transactions.id', 'transaction_lines.transaction_id')
+        ->join('accounts', 'accounts.id', 'transaction_lines.account_id')
+        ->selectRaw("sum(amount * transaction_lines.type) as balance, transaction_lines.account_id, accounts.name")
+        ->groupBy('accounts.id')
+        ->get();
     }
 }

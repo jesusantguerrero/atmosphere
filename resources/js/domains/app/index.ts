@@ -29,15 +29,8 @@ export const useAppMenu = t => {
             to: '/finance',
             as: Link,
             isActiveFunction(url, currentPath) {
-               return /finance|budgets|trends/.test(currentPath)
+               return /finance|budgets/.test(currentPath)
             }
-        },
-        {
-            icon: 'fas fa-heart',
-            label: t('Relationship'),
-            to: '/relationships',
-            hidden: true,
-            as: Link
         },
         {
             icon: 'fas fa-home',
@@ -47,6 +40,12 @@ export const useAppMenu = t => {
             isActiveFunction(url, currentPath) {
                 return /housing/.test(currentPath)
              }
+        },
+        {
+            icon: 'fas fa-heart',
+            label: t('Relationship'),
+            to: '/relationships/partner',
+            as: Link
         },
         {
             icon: 'fas fa-users',
@@ -68,7 +67,7 @@ export const useAppMenu = t => {
         }
     ].filter(item => !item.hidden);
 
-    let mobileMenu = cloneDeep(appMenu)
+    let mobileMenu = cloneDeep(appMenu).splice(0, 4)
     mobileMenu.splice(2, null, {
         name: 'add',
         label: 'Add',

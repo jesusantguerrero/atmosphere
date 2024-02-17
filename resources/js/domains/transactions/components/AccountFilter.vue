@@ -1,0 +1,52 @@
+<script setup lang="ts">
+import { inject, computed, h } from "vue";
+
+import { NSelect, SelectRenderLabel } from "naive-ui";
+import { IAccount } from "@/domains/transactions/models";
+import { formatMoney } from "@/utils";
+
+const props = defineProps<{
+    modelValue: IAccount,
+    multiple: boolean;
+}>();
+
+const accountsOptions = inject("accountsOptions", []);
+
+const emit = defineEmits(['update:model-value'])
+
+const selectedAccount = computed({
+    get: () => {
+        return props.modelValue
+    },
+    set: (value: IAccount) => {
+        emit('update:model-value', value)
+    }
+})
+
+const renderLabel: SelectRenderLabel = (option) => {
+      return h('div',{class: 'w-full flex justify-between space-x-4'},
+        [
+          h('span', option.label),
+          h('div', formatMoney(option.balance))
+        ]
+      )
+    }
+
+</script>
+
+<template>
+    <section class="w-80">
+        <NSelect
+            filterable
+            clearable
+            tag
+            size="large"
+            class="w-full"
+            :multiple="multiple"
+            v-model:value="selectedAccount"
+            :default-expand-all="true"
+            :render-label="renderLabel"
+            :options="accountsOptions"
+        />
+    </section>
+</template>
