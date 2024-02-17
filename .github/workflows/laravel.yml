@@ -38,7 +38,10 @@ jobs:
     - name: Install Composer
       run: composer test
 
+    - uses: actions/setup-node@v4
     - name: Build fronted
+      with:
+        node-version: 20
       env:
         APP_URL: ${{ secrets.DO_APP_URL }}
         ASSET_URL: ${{ secrets.DO_APP_URL }}
