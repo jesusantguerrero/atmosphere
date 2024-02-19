@@ -11,6 +11,10 @@ class BudgetTarget extends Model
 {
     use HasFactory;
 
+    const TYPE_SPENDING = 'spending';
+    const TYPE_SAVING_BALANCE = 'saving_balance';
+    const TYPE_SAVING_MONTHLY = 'savings_monthly';
+
     protected $fillable = [
         'team_id',
         'user_id',

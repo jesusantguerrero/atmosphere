@@ -25,6 +25,9 @@ export interface ICategory {
     id?: number;
     name: string;
     color: string;
+    available: number;
+    left_from_last_month: number;
+    budgeted: number;
 }
 export interface IAccount {
     id: number;
