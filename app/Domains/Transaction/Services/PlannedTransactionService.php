@@ -48,5 +48,15 @@ class PlannedTransactionService
             });
     }
 
+    public function getForNotificationType()
+    {
+        return Transaction::where([
+            "status" => Transaction::STATUS_PLANNED
+        ])
+        ->whereRaw("DATEDIFF(date, now()) <= 3")
+        ->get();
+
+    }
+
 
 }
