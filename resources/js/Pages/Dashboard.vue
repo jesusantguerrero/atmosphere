@@ -16,77 +16,39 @@
 
     import { useAppContextStore } from '@/store';
     import { router } from '@inertiajs/vue3';
+    import { IOccurrenceCheck } from '@/Components/Modules/occurrence/models';
+    import { IAccount, ICategory } from '@/domains/transactions/models';
 
-    defineProps({
+    withDefaults(defineProps<{
         spendingSummary: {
-            type: Object,
-            default() {
-                return {
-                    previousYear: {
-                        values: []
-                    },
-                    currentYear: {
-                        values: []
-                    }
-                }
+            previousYear: {
+                values: []
+            },
+            currentYear: {
+                values: []
             }
         },
         expenses: {
-            type: Object,
-            default() {
-                return {
-                    previousYear: {
-                        values: []
-                    },
-                    currentYear: {
-                        values: []
-                    }
-                }
-            }
+          previousYear: {
+            values: []
+          },
+          currentYear: {
+             values: []
+          }
         },
-        meals: {
-            type: Object,
-            required: true,
-        },
+        meals: { data: any[] },
         user: {
-            type: Object,
-            required: true,
+            name: string;
         },
-        budgetTotal: {
-            type: Number,
-            default: 0,
-        },
-        nextPayments: {
-            type: Array,
-            default() {
-                return []
-            }
-        },
-        transactionTotal: {
-            type: Object,
-            default: 0,
-        },
-        categories: {
-            type: Array,
-            default() {
-                return []
-            }
-        },
-        accounts: {
-            type: Array,
-            default() {
-                return []
-            }
-        },
-        onboarding: {
-            type: Array,
-            default() {
-                return []
-            }
-        },
-        checks: {
-            type: Array
-        }
+        budgetTotal: number,
+        nextPayments: any[],
+        transactionTotal: Record<string, any>,
+        categories: ICategory[],
+        accounts: IAccount[],
+        onboarding: Record<string, any>,
+        checks: IOccurrenceCheck[]
+    }>(), {
+
     });
     const contextStore = useAppContextStore()
 
@@ -140,7 +102,7 @@
                     v-if="selected=='expenses'"
                     class="w-full  md:mb-10 overflow-hidden bg-white rounded-lg"
                     :class="[cardShadow]"
-                    :title="t('This month vs last month')"
+                    :title="$t('This month vs last month')"
                     ref="ComparisonRevenue"
                     :data="expenses"
                 />
@@ -163,7 +125,7 @@
                 </section>
             </div>
             <div class="py-6  space-y-4 md:w-3/12">
-                <OccurrenceCard :checks="checks" />
+                <OccurrenceCard :checks="checks" :wrap="true" />
                 <OnboardingSteps
                     v-if="onboarding.steps"
                     class="mt-5"

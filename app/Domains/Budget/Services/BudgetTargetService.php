@@ -6,17 +6,15 @@ use Exception;
 use App\Models\User;
 use App\Domains\AppCore\Models\Category;
 use App\Domains\Budget\Models\BudgetTarget;
+use App\Domains\Transaction\Models\TransactionLine;
 use App\Domains\Integration\Concerns\PlannedTransactionDTO;
 use App\Domains\Transaction\Services\PlannedTransactionService;
 
 class BudgetTargetService
 {
-    public function __construct(private PlannedTransactionService $plannedService, private BudgetCategoryService $budgetCategoryService)
-    {
+    public function __construct(private PlannedTransactionService $plannedService, private BudgetCategoryService $budgetCategoryService) {}
 
-    }
-
-    public function createPlannedTransactions(int $teamId)
+    public function createPlannedTransactionsFor(int $teamId)
     {
         $targets = BudgetTarget::where([
             'team_id' => $teamId,
@@ -33,16 +31,44 @@ class BudgetTargetService
         }
     }
 
-    public function getNextBudgetItems($teamId)
+    public function createPlannedTransactions()
     {
-        return BudgetTarget::getNextTargets($teamId);
+        $targets = BudgetTarget::whereNotNull('frequency_month_date')
+        ->whereNotNull('frequency')
+        ->where([
+            "target_type" => 'spending',
+            "notify" => 1
+        ])
+        ->get();
+
+        $months = [now()];
+
+        foreach ($months as $month) {
+            $endOfMonth = $month->endOfMonth()->format('Y-m-d');
+            foreach ($targets as $target) {
+                $this->buildPlanned($target, $month->format('Y-m'), $endOfMonth);
+            }
+        }
     }
 
-    private function buildPlanned(BudgetTarget $target, $month)
+    private function buildPlanned(BudgetTarget $target, $month, $endOfMonth = null)
     {
         $date = $month.'-'.$target->frequency_month_date;
+        $date = ($endOfMonth && $date > $endOfMonth) ? $endOfMonth : $date;
         $data = PlannedTransactionDTO::fromTarget($target, $date);
-        $this->plannedService->add($data);
+
+        $transaction = TransactionLine::where([
+            "transaction_lines.team_id" => $target->team_id,
+            "category_id" => $target->category_id,
+        ])
+        ->whereRaw("DATE_FORMAT(transaction_lines.date, '%Y-%m') like ?", [$month])
+        ->first();
+
+        print_r($transaction);
+
+        if (!$transaction) {
+            $this->plannedService->add($data);
+        }
     }
 
     public function complete(BudgetTarget $budgetTarget, Category $category,  array $postData) {
@@ -69,7 +95,7 @@ class BudgetTargetService
     public function add(Category $category,User $user, mixed $postData)
     {
         if ($category->team_id !== $user->current_team_id){
-            throw new Exception(__("This category doent belongs to this team"));
+            throw new Exception(__("This category does not belongs to this team"));
         }
 
         return $category->budget()->create([

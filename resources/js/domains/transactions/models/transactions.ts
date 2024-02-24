@@ -2,6 +2,7 @@ export type TransactionStatus = "draft" | "verified" | "planned";
 
 export interface ITransaction {
     id: number;
+    date: string;
     title: string;
     currencyCode: string;
     status: string;

@@ -26,6 +26,7 @@ class BudgetTarget extends Model
         'frequency_date',
         'frequency_week_day',
         'frequency_month_date',
+        'notify',
         'completed_at'
     ];
 

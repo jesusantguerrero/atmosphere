@@ -1,3 +1,17 @@
+<script setup lang="ts">
+import { ref } from 'vue';
+import SectionTitle from '@/Components/atoms/SectionTitle.vue';
+import { useCollapse } from '@/composables/useCollapse';
+import { Link } from '@inertiajs/vue3';
+
+defineProps<{
+    steps: any[]
+}>()
+
+const collapsable = ref<HTMLElement>();
+const { isCollapsed, toggleCollapse, icon } = useCollapse(collapsable, false);
+</script>
+
 <template>
 <div class="space-y-2 border border-transparent rounded bg-base-lvl-3 shadow-xl"  ref="collapsable" :class="{'pb-4': isCollapsed}">
     <header class="flex items-center justify-between px-4 py-2 cursor-pointer" @click="toggleCollapse()">
@@ -26,21 +40,3 @@
 </div>
 </template>
 
-<script setup>
-import { ref } from 'vue';
-import SectionTitle from '@/Components/atoms/SectionTitle.vue';
-import { useCollapse } from '@/composables/useCollapse';
-import { Link } from '@inertiajs/vue3';
-
-defineProps({
-    steps: {
-        type: Array,
-        default() {
-            return []
-        }
-    }
-})
-
-const collapsable = ref();
-const { isCollapsed, toggleCollapse, icon } = useCollapse(collapsable, false);
-</script>

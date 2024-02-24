@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { reactive, toRefs, watch, computed, ref } from "vue";
-import { AtButton, AtField, AtInput, AtErrorBag, AtButtonGroup } from "atmosphere-ui";
+import { AtButton, AtField, AtInput, AtErrorBag, AtButtonGroup, AtFieldCheck } from "atmosphere-ui";
 import { useDatePager } from "vueuse-temporals";
 import { NSelect, NDropdown, NDatePicker } from "naive-ui";
 import { useForm } from "@inertiajs/vue3";
-import { monthDays, WEEK_DAYS, FREQUENCY_TYPE, generateRandomColor } from "@/utils";
+import { monthDays, WEEK_DAYS, FREQUENCY_TYPE, generateRandomColor, getDateFromIso } from "@/utils";
 import { makeOptions } from "@/utils/naiveui";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 import IconTarget from "@/Components/icons/IconTarget.vue";
 import { budgetFrequencies, isSavingBalance, targetTypes } from "@/domains/budget";
@@ -40,6 +40,7 @@ const state = reactive({
     frequency_date: null,
     frequency_interval: 0,
     frequency_interval_unit: 0,
+    notify: false,
   }),
   isEditing: false,
   hasTarget: Boolean(props.item),
@@ -68,9 +69,21 @@ watch(
     if (props.item) {
       state.form.reset();
       Object.keys(state.form.data()).forEach((key) => {
-        state.form[key] = props.item[key] || "";
+          // @ts-ignore
+        const fieldValue = props.item[key];
+
+        if (fieldValue?.match?.(/^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$/)) {
+            // @ts-ignore
+            state.form[key] = parseISO(fieldValue);
+        } else if (typeof state.form[key] == 'boolean') {
+            state.form[key] = Boolean(fieldValue);
+        } else {
+            // @ts-ignore
+            state.form[key] = fieldValue || "";
+        }
       });
       state.hasTarget = true;
+      state.form.name = props.category.name
     } else {
       state.hasTarget = false;
       state.form.reset();
@@ -94,8 +107,7 @@ const onSubmit = () => {
   state.form
     .transform((data) => ({
       ...data,
-      frequency_date:
-        data.frequency_date && format(new Date(data.frequency_date), "yyyy-MM-dd"),
+      frequency_date: data.frequency_date && format(new Date(data.frequency_date), "yyyy-MM-dd"),
       parent_id: data.parent_id || state.parentId,
     }))
     [endpoint.method](endpoint.url, {
@@ -255,13 +267,19 @@ const handleOptions = (option: string) => {
         </AtField>
       </section>
 
-      <AtField label="Date" class="w-full" v-if="isSavingBalance(form)">
+      <AtField
+            label="Date"
+            class="w-full"
+            v-if="isSavingBalance(form) || !['MONTHLY', 'WEEKLY'].includes(form.frequency)"
+        >
         <NDatePicker
           type="date"
           size="large"
-          @update:value="form.frequency_date = $event"
+          v-model:value="form.frequency_date"
         />
       </AtField>
+
+      <AtFieldCheck v-model="form.notify" label="Notify on AVG" />
 
       <div class="flex justify-between mt-4">
         <div class="flex font-bold">

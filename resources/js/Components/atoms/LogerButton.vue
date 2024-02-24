@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-// @ts-expect-error: no definitions
 import { AtButton } from "atmosphere-ui";
 
 const variants = {
@@ -14,25 +13,20 @@ const variants = {
     "border-secondary bg-secondary/10 text-secondary hover:bg-secondary hover:text-white",
 }
 
-const props = defineProps({
-    variant: {
-        type: String,
-        default: "primary"
-    },
-    as: {
-        type: [Object, String],
-        default: AtButton,
-    },
-    processing: {
-        type: Boolean
-    },
-    disabled: {
-        type: Boolean
-    }
-})
+export type ButtonVariants = keyof typeof variants;
+
+const props = withDefaults(defineProps<{
+    variant: ButtonVariants,
+    as: Object| string,
+    processing: boolean,
+    disabled?: boolean
+    icon: string | Object
+}>(), {
+    as: AtButton
+});
 
 const typeClasses = computed(() => {
-    return variants[props.variant] || variants.primary
+    return variants[props.variant as ButtonVariants] || variants.primary
 })
 </script>
 
@@ -43,8 +37,10 @@ const typeClasses = computed(() => {
     :disabled="processing || disabled"
 >
     <section class="flex items-center">
-        <div  class="mr-2">
-            <slot name="icon" v-if="!processing" />
+        <div  :class="{'mr-2': $slots.default}">
+            <slot name="icon" v-if="!processing" >
+                <component :is="icon" v-if="icon" />
+            </slot>
             <IMdiSync  v-else class="animate-spin"/>
         </div>
         <slot />
