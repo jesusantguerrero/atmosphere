@@ -2,8 +2,8 @@
 
 namespace App\Domains\Budget\Services;
 
-use App\Domains\Transaction\Models\Transaction;
 use Illuminate\Support\Facades\DB;
+use App\Domains\Transaction\Models\Transaction;
 use Insane\Journal\Models\Core\AccountDetailType;
 
 class BudgetAccountService
@@ -17,7 +17,7 @@ class BudgetAccountService
             )
             ->join('accounts', 'accounts.id', 'transaction_lines.account_id')
             ->join('account_detail_types', fn ($q) => $q->on('account_detail_types.id', '=', 'accounts.account_detail_type_id')
-                ->whereIn('account_detail_types.name', AccountDetailType::ALL)
+                ->whereIn('account_detail_types.name', AccountDetailType::ALL_CASH)
             )
             ->where('transactions.team_id', $teamId)
             ->orderBy('accounts.index')

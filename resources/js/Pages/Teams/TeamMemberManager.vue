@@ -15,7 +15,7 @@
     import JetSecondaryButton from '@/Components/atoms/SecondaryButton.vue'
     import JetSectionBorder from '@/Components/atoms/SectionBorder.vue'
     import LogerInput from '@/Components/atoms/LogerInput.vue'
-import LogerButton from '@/Components/atoms/LogerButton.vue'
+    import LogerButton from '@/Components/atoms/LogerButton.vue'
 
 
     const props = defineProps({

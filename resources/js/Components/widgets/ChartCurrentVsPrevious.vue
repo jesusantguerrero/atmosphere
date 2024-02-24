@@ -1,32 +1,7 @@
-<template>
-  <div class="w-full comparison-card">
-    <div class="px-5 pb-10 rounded-lg">
-      <h5 class="p-4 font-bold text-left card-title">
-        <LogerButtonTab v-if="selectedDate" @click="selectedDate=null">
-            <i class="fa fa-arrow-left"></i>
-        </LogerButtonTab>
-        {{ title }}
-        <span v-if="selectedDate" class="capitalize text-primary">{{ formatMonth(selectedDate) }}</span>
-      </h5>
-      <div class="card-text">
-        <LogerChart
-            style="height:300px; background: white; width: 100%"
-            label="name"
-            type="line"
-            :labels="state.headers.labels"
-            :options="state.options"
-            :series="state.series"
-        />
-      </div>
-    </div>
-  </div>
-</template>
-
-<script setup>
+<script setup lang="ts">
 import { computed, reactive } from "vue";
 
 import LogerChart from "@/Components/organisms/LogerChart.vue";
-import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 
 import { formatMonth, isCurrentMonth } from "@/utils";
 
@@ -48,7 +23,7 @@ const currentSeries = computed(() => {
     return Object.entries(props.data).map(([dateString, monthData]) => {
         return {
             name: formatMonth(dateString),
-            data: monthData.data.map(item => item.total),
+            data: monthData.data.map((item: any) => item.total),
             labels: Object.keys(monthData).map(month => formatMonth(month)),
             tension: 0,
             fill: false,
@@ -77,7 +52,8 @@ const state = reactive({
         scales: {
             x: {
                 ticks: {
-                    callback: function(val, index) {
+                    callback: function(val: any, index: number): string {
+                        // @ts-ignore
                         return index % 3 === 0 ? 'Day ' + this.getLabelForValue(val) : ''
                     }
                 }
@@ -88,6 +64,28 @@ const state = reactive({
 });
 
 </script>
+
+<template>
+  <div class="w-full comparison-card">
+    <div class="px-5 pb-10 rounded-lg">
+      <h5 class="p-4 font-bold text-left card-title">
+        {{ title }}
+      </h5>
+      <div class="card-text">
+        <LogerChart
+            style="height:300px; background: white; width: 100%"
+            label="name"
+            type="line"
+            :labels="state.headers.labels"
+            :options="state.options"
+            :series="state.series"
+        />
+      </div>
+    </div>
+  </div>
+</template>
+
+
 
 <style lang="scss" scoped>
 .comparison-card {

@@ -28,11 +28,15 @@ import MessageBox from "@/Components/organisms/MessageBox.vue";
 import BudgetCategories from "./Partials/BudgetCategories.vue";
 
 import { MonthTypeFormat, formatMoney, formatMonth } from "@/utils";
+import MoneyPresenter from "@/Components/molecules/MoneyPresenter.vue";
 
 const props = defineProps({
   budgets: {
     type: Array,
     required: true,
+  },
+  distribution: {
+    type: Object
   },
   accounts: {
     type: Array,
@@ -118,15 +122,6 @@ const goToday = () => {
   pageState.dates.startDate = startOfMonth(new Date());
   executeSearchWithDelay();
 };
-
-const budgetAccountsTotal =  computed(() => {
-    return props.accounts.reduce((total, account) => {
-        console.log(account.balance_type, account.name);
-        return account.balance_type == 'CREDIT'
-        ? total
-        : exactMath.add(total, account?.balance)
-    }, 0)
-})
 </script>
 
 <template>
@@ -204,7 +199,7 @@ const budgetAccountsTotal =  computed(() => {
 
       <section class="mx-auto mt-4 rounded-lg text-body bg-base max-w-7xl">
         <article class="w-full space-y-4">
-            {{ formatMoney(budgetAccountsTotal) }} {{ formatMoney(available)  }} = ({{ formatMoney(budgetAccountsTotal - available)}})
+            {{ formatMoney(accountTotal) }} {{ formatMoney(available)  }} = ({{ formatMoney(accountTotal - available)}})
             <BudgetCategories :budgets="budgets" />
         </article>
       </section>
@@ -212,7 +207,7 @@ const budgetAccountsTotal =  computed(() => {
       <template #prepend-panel class="">
         <div class="space-y-4 ">
           <BudgetDetailForm
-          v-if="selectedBudget && !showCategoriesInMain"
+            v-if="selectedBudget && !showCategoriesInMain"
             class="mt-5"
             full
             :category="selectedBudget"
@@ -238,7 +233,8 @@ const budgetAccountsTotal =  computed(() => {
                 class: 'text-error',
               },
             ]"
-          />
+
+            />
         </div>
       </template>
     </FinanceTemplate>

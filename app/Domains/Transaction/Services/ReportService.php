@@ -51,8 +51,8 @@ class ReportService
         return $resultGroup->map(function ($monthItems) {
             return [
                 'date' => $monthItems->first()->date,
-                'data' => $monthItems->sortByDesc('total')->values(),
-                'total' => $monthItems->sum('total'),
+                'data' => $monthItems->sortByDesc('total_amount')->values(),
+                'total' => $monthItems->sum('total_amount'),
             ];
         }, $resultGroup)->sortBy('date');
     }
@@ -103,10 +103,11 @@ class ReportService
         return $resultGroup->map(function ($monthItems) {
             [$year, $month] = explode('-', $monthItems->first()->month);
 
+
             return [
                 'date' => $monthItems->first()->date,
                 'data' => DateMapperService::mapInDays($monthItems->groupBy('date')->toArray(), $month, $year),
-                'total' => $monthItems->sum('total'),
+                'total' => $monthItems->sum('total_amount'),
             ];
         }, $resultGroup)->sortBy('date');
     }
@@ -151,14 +152,27 @@ class ReportService
 
     public static function getExpensesByCategoriesInPeriod($teamId, $startDate, $endDate, $categories = null)
     {
-        return Transaction::byTeam($teamId)
+        $cats = TransactionLine::byTeam($teamId)
             ->balance()
             ->inDateFrame($startDate, $endDate)
             ->expenseCategories($categories)
-            ->selectRaw('date_format(transactions.date, "%Y-%m-01") as date, date_format(transactions.date, "%Y-%m-01") as month, year(transactions.date) as year, categories.name, categories.id')
-            ->groupByRaw('date_format(transactions.date, "%Y-%m"), categories.id')
+            ->selectRaw("
+                date_format(transaction_lines.date,
+                '%Y-%m-01') as date,
+                date_format(transaction_lines.date, '%Y-%m-01') as month,
+                year(transaction_lines.date) as year,
+                categories.name,
+                categories.id,
+                budget_targets.target_type
+                "
+            )
+            ->groupByRaw('date_format(transaction_lines.date, "%Y-%m"), categories.id')
             ->orderBy('date')
+            ->join('transactions', 'transactions.id', 'transaction_lines.transaction_id')
+            ->leftJoin('budget_targets', 'budget_targets.category_id', 'categories.id')
             ->get();
+
+            return $cats;
     }
 
     public static function getExpensesInPeriod($teamId, $startDate, $endDate)

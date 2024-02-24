@@ -13,12 +13,13 @@ use App\Http\Controllers\Traits\HasEnrichedRequest;
 use App\Domains\Budget\Services\BudgetTargetService;
 use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Domains\Transaction\Services\TransactionService;
+use App\Domains\Transaction\Services\PlannedTransactionService;
 
 class DashboardController
 {
     use HasEnrichedRequest;
 
-    public function __construct(private MealService $mealService, private BudgetTargetService $budgetTargetService)
+    public function __construct(private MealService $mealService, private PlannedTransactionService $plannedService)
     {
 
     }
@@ -32,8 +33,7 @@ class DashboardController
         $budget = BudgetMonth::getMonthAssignmentTotal($teamId, $startDate);
         $transactionsTotal = TransactionService::getExpensesTotal($teamId, $startDate, $endDate);
         $plannedMeals = $this->mealService->getMealSchedule($teamId);
-        $nextPayments = $this->budgetTargetService->getNextBudgetItems($teamId);
-
+        $nextPayments = $this->plannedService->getPlanned($teamId);
 
         return inertia('Dashboard', [
             'sectionTitle' => 'Dashboard',
@@ -41,7 +41,7 @@ class DashboardController
             'budgetTotal' => $budget,
             'transactionTotal' => $transactionsTotal,
             'expenses' => ReportService::generateCurrentPreviousReport($teamId, 'month', 1),
-            'revenue' => ReportService::generateExpensesByPeriod($teamId, $startDate),
+            'spendingSummary' => ReportService::generateExpensesByPeriod($teamId, $startDate),
             'onboarding' => function () use ($team) {
                 $onboarding = $team->onboarding();
 

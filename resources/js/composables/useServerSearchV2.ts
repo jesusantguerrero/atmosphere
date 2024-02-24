@@ -1,11 +1,17 @@
+import { endOfMonth, startOfMonth, format, parseISO } from 'date-fns';
 // import { format, parseISO } from "date-fns";
-import format from "date-fns/format";
-import parseISO from "date-fns/parseISO";
-import { reactive, Ref, watch, nextTick, computed, ref, inject, toRaw, onMounted } from "vue";
+import { reactive, Ref, watch, nextTick, computed, ref, inject } from "vue";
 import debounce from "lodash/debounce";
+import { config } from '@/config';
+import {  useLocalStorage } from "@vueuse/core"
 
+export enum SearchFilterMode {
+  Replace = 1,
+  Add = 1
+}
 export interface IServerSearchData {
   filters: Record<string, string>;
+  custom: Record<string, string>;
   dates: IDateSpan;
   limit?: number;
   relationships: string;
@@ -17,6 +23,7 @@ export interface IServerSearchData {
 interface IServerSearchOptions {
   manual?: boolean;
   mainDateField?: string;
+  defaultDates?: string;
 }
 
 interface IDateSpan {
@@ -26,6 +33,7 @@ interface IDateSpan {
 
 interface ISearchState {
   filters: Record<string, string | null>;
+  custom: Record<string, string | null>;
   dates: IDateSpan;
   sorts: string;
   limit: number;
@@ -74,6 +82,20 @@ export const filterParams = (
 
   return filters.join("&");
 };
+export const customFilterParams = (
+  externalFilters: Record<string, string | null>,
+) => {
+  const customFilters: any[] = [];
+  if (externalFilters) {
+    Object.entries(externalFilters).forEach(([name, value]) => {
+      if (value) {
+        customFilters.push(`custom[${name}]=${value}`);
+      }
+    });
+  }
+
+  return customFilters.join("&");
+};
 
 export const getGroupParams = (groupValue: string) => {
   return `group=${groupValue}`;
@@ -86,9 +108,10 @@ export const getPaginationParams = (state: ISearchState) => {
   return state.page && `page=${state.page}&limit=${state.limit}`;
 };
 
-export const parseParams = (state: SearchState) => {
+export const parseParams = (state: ISearchState) => {
   const params = [
     filterParams("date", state.filters, state.dates),
+    customFilterParams(state.custom),
     getRelationshipsParams(state.relationships),
     getPaginationParams(state),
   ];
@@ -102,10 +125,17 @@ export const parseParams = (state: SearchState) => {
     .join("&");
 };
 
-function parseDateFilters(options: Ref<Partial<IServerSearchData>>) {
-  const dates = options?.value?.filters?.date
+function parseDateFilters(options: Ref<Partial<IServerSearchData>>, setDefaultDate: boolean) {
+
+    const defaultDates = setDefaultDate ? [
+        format(startOfMonth(new Date()), 'yyyy-MM-dd'),
+        format(endOfMonth(new Date()), 'yyyy-MM-dd')
+    ] : [null, null]
+
+   const dates = options?.value?.filters?.date
     ? options.value.filters.date.split("~")
-    : [null, null];
+    : defaultDates;
+
   return {
     startDate: dates[0] && parseISO(dates[0]),
     endDate:
@@ -141,36 +171,73 @@ export const searchFromSearchString = (searchString: string) => {
 
     return Object.entries(parsedSearchState).reduce((searchState, [key, value]) => {
         const regexString = /filter\[([^)]+)\]/
-        const matches = key.match(regexString)
-        if (matches) {
-            searchState.filters = {
-                ...(searchState.filters ?? {}),
-                [matches[1]]: value
+        const filterMatches = key.match(regexString)
+
+        const regexCString = /custom\[([^)]+)\]/
+        const cFilterMatches = key.match(regexCString)
+
+        const localSearchState: Record<string, any> = { ...searchState };
+        if (filterMatches) {
+            localSearchState.filters = {
+                ...(localSearchState.filters ?? {}),
+                [filterMatches[1]]: value
+            }
+        } else if (cFilterMatches) {
+            localSearchState.custom = {
+                ...(localSearchState.custom ?? {}),
+                [cFilterMatches[1]]: value
             }
         } else {
-            searchState[key] = value
+            localSearchState[key] = value
         }
-        return searchState;
+
+        return localSearchState;
     }, {});
 }
 
+const searchState = reactive<ISearchState>({
+  filters: {},
+  custom: {},
+  dates: {
+    startDate: new Date(),
+    endDate: null
+  },
+  limit: 25,
+  page: 1,
+  relationships: "",
+  sorts: "",
+  search: ""
+
+});
+
 const setSearchState = (serverSearchData: Record<string, any>, dates: any) => {
-    return {
-        filters: {
-            ...(serverSearchData.value ? serverSearchData.value?.filters : {}),
-            date: null
-        },
-        dates:{
-            startDate: dates.startDate,
-            endDate: dates.endDate,
-        },
-        sorts:serverSearchData.value?.sorts ?? "",
-        limit: serverSearchData.value?.limit ?? 0,
-        relationships: serverSearchData.value?.relationships ?? "",
-        search: serverSearchData.value?.search,
-        page: serverSearchData.value?.page
-    }
+    const state: Record<string, any> = {}
+    state.filters = {
+      ...(serverSearchData ? serverSearchData?.filters : {}),
+      date: null
+    };
+
+    console.log(serverSearchData, state.filters)
+
+    state.custom = {
+      ...(serverSearchData ? serverSearchData?.custom : {}),
+    };
+
+    state.dates = {
+      startDate: dates.startDate,
+      endDate: dates.endDate,
+    };
+
+    state.sorts = serverSearchData?.sorts ?? "";
+    state.limit = serverSearchData?.limit ?? 25;
+    state.relationships = serverSearchData?.relationships ?? "";
+    state.search = serverSearchData?.search ?? "";
+    state.page = serverSearchData?.page ?? 1
+
+    Object.assign(searchState, state)
 }
+
+
 export const useServerSearch = (
   _serverSearchData: Ref<Partial<IServerSearchData>>,
   options: IServerSearchOptions = {},
@@ -180,15 +247,16 @@ export const useServerSearch = (
     const serverSearchData = ref(searchFromSearchString(location.search));
     const dates = parseDateFilters(serverSearchData, options.defaultDates)
     const isLoaded = ref(false)
-    const state = reactive<ISearchState>(setSearchState(serverSearchData.value, dates));
+    const preventWatch = ref(true);
+
+    setSearchState(serverSearchData.value, dates);
     const localRouter = inject(
-        "router",
-        // eslint-disable-next-line no-empty-pattern
-        router ?? {get: (params, {}, {}) => {
-            throw new Error(`provide an router with ${params}`)
-            return;
-        },
-        }
+      "router",
+      // eslint-disable-next-line no-empty-pattern
+      router ?? {get: (params, {}, {}) => {
+        throw new Error(`provide an router with ${params}`)
+      },
+    }
     );
 
     const localUrlChange = onUrlChange ?? defaultSearchInertia.bind(null, localRouter);
@@ -196,21 +264,21 @@ export const useServerSearch = (
     const updateSearch = (urlParams: string) => {
         const finalUrl = `${window.location.pathname}?${urlParams}`;
         return localRouter.get(finalUrl, undefined, {
-        preserveState: true,
+          preserveState: true,
+          preserveScroll: true,
         });
     };
 
-    localUrlChange(parseParams(state), updateSearch).then(() => {
-        nextTick(() => {
+    localUrlChange(parseParams(searchState), updateSearch).then(() => {
+        setTimeout(() => {
             isLoaded.value = true
-        })
+        }, 3000)
     });
 
   const executeSearch = (delay?: number) => {
     nextTick(() => {
-        if (!isLoaded.value)
-        return
-      const urlParams = parseParams(state);
+      if (!isLoaded.value) return
+      const urlParams = parseParams(searchState);
       const currentUrl = getCurrentLocationParams();
       if (urlParams == currentUrl || !localUrlChange) return;
 
@@ -219,7 +287,7 @@ export const useServerSearch = (
       } else {
         nextTick(
           debounce(() => {
-            const urlParams = parseParams(state);
+            const urlParams = parseParams(searchState);
             window.history.pushState(
               {},
               null,
@@ -232,47 +300,67 @@ export const useServerSearch = (
     });
   };
 
+  preventWatch.value = false
 
-  const setUrl = (urlParams: string) => {
-    window.history.pushState(
-        {},
-        null,
-        `${location.pathname}?${urlParams}`
-      );
-  }
 
-  watch(() => state,
-    debounce((paramsConfig) => {
-       executeSearch();
+  watch(() => searchState,
+    debounce((newValue: any, oldValue: any) => {
+      if (isLoaded.value && !preventWatch.value) {
+        executeSearch();
+      }
     }, 200),
     { deep: true }
   );
 
   const reset = () => {
-    state.search = "";
-    state.filters = {};
-    state.sorts = "";
+    searchState.search = "";
+    searchState.filters = {};
+    searchState.custom = {};
+    searchState.sorts = "";
 
     executeSearch();
   };
 
   const paginate = (page: number) => {
-    state.page = page;
+    searchState.page = page;
     executeSearch();
   };
 
   const changeSize = (limit: number) => {
-    state.limit = limit;
+    searchState.limit = limit;
     executeSearch();
   };
 
   const hasFilters = computed(() => {
-    return Boolean(state.search?.length);
+    return Boolean(searchState.search?.length);
   });
 
+  const toggleCustomFilter = (field: string, value: string, mode = SearchFilterMode.Replace) => {
+    if (mode == SearchFilterMode.Replace) {
+      searchState.custom = {
+        [field]: value
+      }
+      executeSearch();
+      return
+    }
+
+    if (searchState.custom[field] == value) {
+      searchState.custom[field] = null
+    } else {
+      searchState.custom[field] = value
+    }
+    executeSearch();
+  }
+
+  const toggleFilter = () => {
+
+  }
+
   return {
-    state,
+    state: searchState,
     hasFilters,
+    toggleFilter,
+    toggleCustomFilter,
     executeSearch,
     updateSearch,
     changeSize,

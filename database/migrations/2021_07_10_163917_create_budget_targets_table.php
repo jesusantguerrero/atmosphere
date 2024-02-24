@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
 class CreateBudgetTargetsTable extends Migration
 {
@@ -38,7 +38,9 @@ class CreateBudgetTargetsTable extends Migration
             $table->enum('status', [
                 'active',
                 'paused',
+                'completed'
             ])->default('active');
+            $table->boolean('notify')->default(false);
             $table->boolean('is_private')->default(false);
             $table->boolean('is_team_goal')->default(false);
             $table->timestamps();

@@ -1,8 +1,9 @@
-import autoAnimate from "@formkit/auto-animate";
+import { Ref } from 'vue';
+// import autoAnimate from "@formkit/auto-animate";
 import { computed, onMounted, ref } from "vue";
 
 
-export const useCollapse = (element, collapsed = false) => {
+export const useCollapse = (element: Ref<HTMLElement>, collapsed = false) => {
     const isCollapsed = ref(collapsed);
     const toggleCollapse = () => {
         isCollapsed.value = !isCollapsed.value
@@ -14,7 +15,7 @@ export const useCollapse = (element, collapsed = false) => {
 
     onMounted(() => {
         try {
-            autoAnimate(element.value)
+            // autoAnimate(element.value)
         } catch (err) {
             console.error(err)
         }

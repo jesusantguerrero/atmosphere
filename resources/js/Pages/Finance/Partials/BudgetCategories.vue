@@ -73,7 +73,7 @@ const saveReorder = (categories: ICategory[]) => {
         @cancel=""
     />
     <Draggable
-        class="w-full space-y-2 overflow-auto dragArea list-group ic-scroller"
+        class="w-full space-y-0.5 overflow-auto dragArea list-group ic-scroller"
         :list="visibleCategories"
         handle=".handle"
         @end="saveReorder(visibleCategories)"

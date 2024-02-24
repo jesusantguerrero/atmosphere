@@ -1,5 +1,5 @@
 import { format, parseISO, startOfDay } from "date-fns"
-import { differenceInMonths } from "date-fns/esm";
+import { differenceInMonths } from "date-fns";
 export * from "./formatMoney";
 export * from "./isMobile";
 
@@ -18,7 +18,7 @@ export const recurrenceTypes = [
     }
 ]
 
-export const toOrdinals = (num) => {
+export const toOrdinals = (num: number) => {
     const suffixes = new Map([
         ['one', 'st'],
         ['two', 'nd'],
@@ -63,7 +63,7 @@ export const FREQUENCY_TYPE = {
     BY_DATE: 'BY_DATE'
 }
 
-export const getDateFromIso = (isoDateString) => {
+export const getDateFromIso = (isoDateString: string) => {
     return startOfDay(new Date(isoDateString))
 }
 

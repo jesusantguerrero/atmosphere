@@ -16,14 +16,17 @@
     import { generateRandomColor } from "@/utils"
     import { ICategory } from '@/Modules/transactions/models/transactions';
 
-    const { hideDetails = true , category , item , editable = true } = defineProps<{
+    const props = withDefaults(defineProps<{
         category: ICategory,
         item: Record<string, string>,
         parentId?: number;
         full?: boolean;
         hideDetails?: boolean,
         editable?: boolean;
-    }>();
+    }>(), {
+        hideDetails: true,
+        editable: true
+    });
 
 
     const emit = defineEmits(['update:category'])
@@ -31,8 +34,8 @@
     const form = useForm({
         category_id: null,
         parent_id: null,
-        color: category.color || generateRandomColor(),
-        name: category.name,
+        color: props.category.color || generateRandomColor(),
+        name: props.category.name,
         amount: 0,
         assigned: 0,
         target_type: '',
@@ -45,7 +48,7 @@
     })
 
     watch(
-        () => item,
+        () => props.item,
         (currentItem) => {
             if (currentItem) {
                 form.reset()
@@ -53,6 +56,8 @@
                     // @ts-ignore: trust me
                     form[key] = currentItem[key] || form[key]
                 })
+                form.color = props.category.color ??  generateRandomColor();
+                form.name = props.category.name;
             } else {
                 form.reset()
             }
@@ -61,8 +66,8 @@
 
 
     const onBlur = (categoryItem: ICategory) => {
-        if (category.id) {
-            window.axios.put(`/budgets/${category.id}?json=true`, categoryItem)
+        if (props.category.id) {
+            window.axios.put(`/budgets/${props.category.id}?json=true`, categoryItem)
             .then(() => {
                 emit('update:category', categoryItem)
             })
@@ -102,6 +107,7 @@
                     </div>
                 </template>
             </AtInput>
+            {{ category.id }}
             <LogerButtonTab @click="$emit('close')" v-if="editable">
                 <IconClose />
             </LogerButtonTab>

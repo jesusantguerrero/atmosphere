@@ -54,25 +54,28 @@ export const BudgetState = reactive({
         const creditCardFunded = parseFloat(budgetTotals?.fundedSpendingPreviousMonth ?? 0)
         const availableForFunding = parseFloat(category.activity ?? 0);
         const fundedSpending = parseFloat(category?.funded_spending ?? 0);
-        const assigned = budgetTotals.budgeted;
+        // const assigned = parseFloat(category.budgeted ?? 0);
+        const assigned = parseFloat(budgetTotals.budgeted ?? 0);
         const leftOver = parseFloat(category.left_from_last_month ?? 0)
-        const balance = (leftOver + availableForFunding) - (parseFloat(category.overspending_previous_month ?? 0) + parseFloat(budgetTotals.budgeted ?? 0));
+        const movedFromLastMonth = parseFloat(category.moved_from_last_month ?? 0)
+        const balance = (parseFloat(category.activity ?? 0) + parseFloat(category.left_from_last_month ?? 0) - assigned)
 
-        return {
+       return {
             availableForFunding,
+            movedFromLastMonth,
             leftOver,
             assigned,
-            balance,
             creditCardFunded,
             fundedSpending,
             inflow: BudgetState.inflow?.activity,
             toAssign: category,
             ...budgetTotals,
+            balance,
         }
     }),
 });
 
-const getBudget = (budgetRawData) => {
+const getBudget = (budgetRawData: any) => {
     const filters = {
         overSpent: [],
         overAssigned: [],

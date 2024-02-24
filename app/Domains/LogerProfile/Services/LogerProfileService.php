@@ -47,7 +47,7 @@ class LogerProfileService
 
     public function getEntitiesByProfileId(int $profileId)
     {
-        return ProfileEntityData::collection(LogerProfileEntity::where([
+        return ProfileEntityData::collect(LogerProfileEntity::where([
             'profile_id' => $profileId,
         ])->get());
     }
@@ -63,7 +63,7 @@ class LogerProfileService
 
         $teamId = $entities[0]->team_id;
 
-        $transactions = TransactionLine::byTeam($teamId)
+        $transactions = TransactionLine::query()->byTeam($teamId)
             ->inDateFrame($startDate, $endDate)
             ->expenseCategories($categories)
             ->verified()

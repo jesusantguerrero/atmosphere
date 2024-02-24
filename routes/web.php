@@ -44,7 +44,6 @@ if (config('app.env') == 'production') {
     URL::forceScheme('https');
 }
 
-
 Route::resource('onboarding', OnboardingController::class)->middleware(['auth:sanctum', 'atmosphere.unteamed', 'verified']);
 
 // Automation Services

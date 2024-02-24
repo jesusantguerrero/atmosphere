@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers\Finance;
 
+use Inertia\Inertia;
+use App\Models\Setting;
+use Illuminate\Http\Request;
+use Freesgen\Atmosphere\Http\Querify;
+use Insane\Journal\Models\Core\Category;
+use Freesgen\Atmosphere\Http\InertiaController;
 use App\Domains\Transaction\Services\ReportService;
 use App\Domains\Transaction\Services\TransactionService;
-use App\Models\Setting;
-use Freesgen\Atmosphere\Http\InertiaController;
-use Freesgen\Atmosphere\Http\Querify;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Insane\Journal\Models\Core\Category;
 
 class FinanceLinesController extends InertiaController
 {
@@ -110,15 +110,13 @@ class FinanceLinesController extends InertiaController
         $queryParams = request()->query();
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
         [$startDate, $endDate] = $this->getFilterDates($filters);
-
-        $categoryId = $category->parent_id ? $category->id : null;
         $groupId = ! $category->parent_id ? $category->id : null;
 
         return [
             'sectionTitle' => $category->name,
             'accountId' => $category->id,
             'resource' => $category,
-            'transactions' => TransactionService::getCategoryExpenseDetails($category->team_id, $startDate, $endDate, 50, $categoryId, $groupId),
+            'transactions' => TransactionService::getCategoryExpenseDetails($category->team_id, $startDate, $endDate, 50, $category, $groupId),
         ];
     }
 }

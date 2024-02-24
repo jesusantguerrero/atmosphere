@@ -2,10 +2,11 @@
 
 namespace App\Domains\Transaction\Models;
 
+use App\Models\Team;
 use App\Domains\AppCore\Models\Planner;
-use App\Domains\Transaction\Traits\TransactionLineTrait;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Insane\Journal\Models\Core\Category;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Domains\Transaction\Traits\TransactionLineTrait;
 use Insane\Journal\Models\Core\TransactionLine as CoreTransactionLine;
 
 class TransactionLine extends CoreTransactionLine

@@ -78,7 +78,7 @@ const removeSplit = (index: number) => {
   splits.splice(index, 1);
 };
 
-if (!props.items.length) {
+if (!props.items?.length) {
   addSplit();
 }
 

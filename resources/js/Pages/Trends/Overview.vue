@@ -116,10 +116,6 @@ const isFilterSelected = (filterValue: string) => {
     const currentStatus = location.pathname;
     return currentStatus.includes(filterValue);
 }
-
-const handleCategories = (categories: ICategory[]) => {
-    console.log(categories)
-}
 </script>
 
 <template>
@@ -159,6 +155,7 @@ const handleCategories = (categories: ICategory[]) => {
             label="name"
             value="total"
             :legend="false"
+            data-item-total="total_amount"
         />
         <WidgetTitleCard
             v-else
@@ -178,6 +175,7 @@ const handleCategories = (categories: ICategory[]) => {
                 label="name"
                 value="total"
                 :legend="false"
+                data-item-total="total_amount"
             />
         </section>
         <template #afterActions v-if="isCategoryTrend">
