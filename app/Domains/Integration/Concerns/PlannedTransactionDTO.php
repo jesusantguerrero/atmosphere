@@ -2,9 +2,9 @@
 
 namespace App\Domains\Integration\Concerns;
 
+use Spatie\LaravelData\Data;
 use App\Domains\Budget\Models\BudgetTarget;
 use App\Domains\Transaction\Models\Transaction;
-use Spatie\LaravelData\Data;
 
 class PlannedTransactionDTO extends Data
 {
@@ -20,8 +20,8 @@ class PlannedTransactionDTO extends Data
         public string $description,
         public string $direction,
         public int $total,
-        public mixed $items,
-        public TransactionMetadata $metaData,
+        public array $items,
+        public TransactionMetaData $metaData,
         public string $end_type,
         public string $frequency,
         public string $interval,
@@ -46,11 +46,11 @@ class PlannedTransactionDTO extends Data
             'direction' => Transaction::DIRECTION_CREDIT,
             'total' => $target->amount,
             'items' => [],
-            'metaData' => TransactionMetadata::from([
-                'resource_id' => $target->id,
-                'resource_origin' => 'budget_targets',
-                'resource_type' => 'budget_targets',
-            ]),
+            'metaData' => new TransactionMetaData(
+                $target->id,
+                'budget_targets',
+                'budget_targets'
+            ),
             'end_type' => 'NEVER',
             'frequency' => 'MONTHLY',
             'interval' => 1,

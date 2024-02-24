@@ -2,6 +2,7 @@ export type TransactionStatus = "draft" | "verified" | "planned";
 
 export interface ITransaction {
     id: number;
+    date: string;
     title: string;
     currencyCode: string;
     status: string;
@@ -25,6 +26,9 @@ export interface ICategory {
     id?: number;
     name: string;
     color: string;
+    available: number;
+    left_from_last_month: number;
+    budgeted: number;
 }
 export interface IAccount {
     id: number;

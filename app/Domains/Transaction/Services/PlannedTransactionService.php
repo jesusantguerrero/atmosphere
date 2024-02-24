@@ -2,32 +2,37 @@
 
 namespace App\Domains\Transaction\Services;
 
+use Exception;
 use App\Domains\AppCore\Models\Planner;
-use App\Domains\Integration\Concerns\PlannedTransactionDTO;
 use App\Domains\Transaction\Models\Transaction;
+use App\Domains\Integration\Concerns\PlannedTransactionDTO;
 
 class PlannedTransactionService
 {
-    public function add(PlannedTransactionDTO $postData)
+    public function add(PlannedTransactionDTO $plannedData)
     {
-        $postData->status = Transaction::STATUS_PLANNED;
+        $plannedData->status = Transaction::STATUS_PLANNED;
 
         $transaction = Transaction::where([
-            'category_id' => $postData->category_id,
+            'category_id' => $plannedData->category_id,
             'status' => Transaction::STATUS_PLANNED,
         ])->first();
 
-        if (! $transaction) {
-            $transaction = Transaction::create($postData->toArray());
-            $transaction->createLines($postData->items ?? []);
-        } else {
-            $transaction->updateTransaction($postData->toArray());
+        try {
+            if (!$transaction) {
+                $transaction = Transaction::create($plannedData->toArray());
+                $transaction->createLines($plannedData->items ?? []);
+            } else {
+                $transaction->updateTransaction($plannedData->toArray());
+            }
+            Planner::create(array_merge($plannedData->toArray(), [
+                'dateable_type' => Transaction::class,
+                'dateable_id' => $transaction->id,
+            ]));
+        } catch ( Exception $e) {
+            dd($plannedData);
         }
 
-        Planner::create(array_merge($postData->toArray(), [
-            'dateable_type' => Transaction::class,
-            'dateable_id' => $transaction->id,
-        ]));
     }
 
     public function getPlanned($teamId)
@@ -42,4 +47,16 @@ class PlannedTransactionService
                 return Transaction::parser($transaction);
             });
     }
+
+    public function getForNotificationType()
+    {
+        return Transaction::where([
+            "status" => Transaction::STATUS_PLANNED
+        ])
+        ->whereRaw("DATEDIFF(date, now()) <= 3")
+        ->get();
+
+    }
+
+
 }

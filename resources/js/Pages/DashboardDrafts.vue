@@ -8,6 +8,7 @@
     import LogerButton from '@/Components/atoms/LogerButton.vue';
     import { useTransactionStore } from '@/store/transactions';
     import { router } from '@inertiajs/vue3';
+    import MdiSync from '~icons/mdi/sync'
 
 
     const transactionsDraft = ref([]);
@@ -28,6 +29,7 @@
     const updateTransactions = () => {
         isLoading.value = true;
         router.post('/linked-drafts', {}, {
+            preserveScroll: true,
             onSuccess() {
                 fetchTransactions().finally(() => {
                     isLoading.value = false;
@@ -62,7 +64,7 @@
 </script>
 
 <template>
-    <WidgetTitleCard title="Draft Transactions" class="hidden md:block" :with-padding="false">
+    <WidgetTitleCard title="Draft Transactions" class="md:block" :with-padding="false">
         <TransactionsList
             class="w-full"
             table-class="w-full p-2 overflow-auto text-sm rounded-t-lg shadow-md bg-base-lvl-3"
@@ -76,11 +78,13 @@
         />
 
         <template #action>
-            <LogerButton variant="inverse" class="rounded-full" @click="updateTransactions()" :disabled="isLoading">
-                <div :class="{'animate-spin': isLoading}">
-                    <IMdiSync  />
-                </div>
-            </LogerButton>
+            <LogerButton
+                variant="inverse"
+                class="rounded-full"
+                @click="updateTransactions()"
+                :processing="isLoading"
+                :icon="MdiSync"
+            />
         </template>
     </WidgetTitleCard>
 </template>

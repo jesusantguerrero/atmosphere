@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import SectionTitle from '@/Components/atoms/SectionTitle.vue';
 import RandomMealCard from '@/Components/widgets/RandomMealCard.vue';
 import LogerButton from '@/Components/atoms/LogerButton.vue';

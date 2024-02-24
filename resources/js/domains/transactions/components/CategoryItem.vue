@@ -11,7 +11,7 @@ const props = defineProps({
         type: [String, Number]
     },
     color: {
-
+        type: String
     },
     icon: {
         type: Object,
@@ -34,6 +34,10 @@ const title = computed(() => {
     const chars = Math.floor(width.value / 3.5);
     return props.label.length > chars ? props.label.slice(0, props.label.length - chars) + ' ...' : props.label
 })
+
+const styles = computed(() => ({
+    backgroundColor: props.color
+}))
 </script>
 
 <template>
@@ -41,7 +45,7 @@ const title = computed(() => {
         <section
             class="relative overflow-hidden border-2 rounded-full h-14 w-14"
             :class="colorClass"
-            :style="{backgroundColor: color}"
+            :style="styles"
             :title="title"
         >
             <div class="w-1/2 h-full bg-white opacity-30" />

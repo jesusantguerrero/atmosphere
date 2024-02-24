@@ -22,7 +22,6 @@ export const getCategoriesTotals = (categories: Record<string, any>, config = {
     onUnderFunded: (category: IBudgetCategory) => {},
     onFunded: (category: IBudgetCategory) => {}
 }) => {
-    console.log(categories)
     return Object.values(categories).reduce((categoryTotals, category) => {
         const { budget: budgetTarget } = category;
         categoryTotals.budgeted = ExactMath.add(categoryTotals.budgeted ?? 0, category.budgeted || 0)
@@ -46,21 +45,21 @@ export const getCategoriesTotals = (categories: Record<string, any>, config = {
         if (budgetTarget && isSpendingTarget(budgetTarget) && budgetTarget.amount) {
             const factor = getFrequencyMonthFactor(budgetTarget, budgetTarget.month)
             const monthlyTarget = ExactMath.mul(budgetTarget.amount, factor)
-            const budgetedAmount = parseFloat(category.budgeted);
+            const progress = ExactMath.add(category.budgeted ?? 0, category.left_from_last_month ?? 0);
 
-            if (budgetedAmount > monthlyTarget) {
+            if (progress > monthlyTarget) {
                 config.onOverAssigned(category)
                 categoryTotals.hasOverAssigned = true;
-            } else if (budgetedAmount < monthlyTarget) {
+            } else if (progress < monthlyTarget) {
                 config.onUnderFunded(category)
                 categoryTotals.hasUnderFunded = true;
-            } else if (budgetedAmount == monthlyTarget) {
+            } else if (progress == monthlyTarget) {
                 config.onFunded(category)
                 categoryTotals.hasFunded = true;
             }
 
             categoryTotals.monthlyGoals.target = ExactMath.add(categoryTotals.monthlyGoals.target ?? 0, monthlyTarget ?? 0)
-            categoryTotals.monthlyGoals.balance = ExactMath.add(categoryTotals.monthlyGoals.balance ?? 0, category.budgeted ?? 0)
+            categoryTotals.monthlyGoals.balance = ExactMath.add(categoryTotals.monthlyGoals.balance ?? 0, progress ?? 0)
         }
 
         return categoryTotals;

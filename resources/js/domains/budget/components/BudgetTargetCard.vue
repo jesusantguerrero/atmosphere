@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { differenceInCalendarMonths, parseISO } from "date-fns";
 import { computed } from "vue";
+import exactMath from "exact-math";
 
 import MoneyPresenter from "@/Components/molecules/MoneyPresenter.vue";
 
@@ -47,9 +48,8 @@ const monthlyContribution = computed(() => {
 
 const currentAmount = computed(() => {
     if (isSpendingTarget(props.item)) {
-        const { available, budgeted } = props.category;
-        console.log(available, budgeted, props.item, props.category)
-        return available > budgeted ? available : budgeted
+        const { budgeted, left_from_last_month } = props.category;
+        return exactMath.add(budgeted ?? 0, left_from_last_month ?? 0)
     } else {
         return props.category.available;
     }
