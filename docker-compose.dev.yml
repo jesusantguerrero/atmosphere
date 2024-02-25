@@ -13,6 +13,8 @@ services:
       - 80:80
       - 443:443
     restart: unless-stopped
+    env_file:
+      - .env.docker
     volumes:
       - ./:/app
       - ./Caddyfile.dev:/etc/caddy/Caddyfile
