@@ -3,14 +3,18 @@
 namespace App\Domains\AppCore\Models;
 
 use App\Models\Team;
+use App\Concerns\Factory;
+use Database\Factories\CategoryFactory;
 use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Budget\Models\BudgetTarget;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Insane\Journal\Models\Core\Category as CoreCategory;
 use App\Domains\Budget\Models\Traits\BudgetCategoryTrait;
 
 class Category extends CoreCategory
 {
     use BudgetCategoryTrait;
+    use HasFactory;
 
     protected $with = ['budget'];
 
@@ -37,5 +41,10 @@ class Category extends CoreCategory
     public function lastMonthBudget()
     {
         return $this->hasOne(BudgetMonth::class)->orderBy('month', 'desc')->limit(1);
+    }
+
+    protected static function newFactory(): Factory
+    {
+        return CategoryFactory::new();
     }
 }

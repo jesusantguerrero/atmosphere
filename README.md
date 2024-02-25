@@ -160,12 +160,12 @@ DB_PASSWORD=
 
 ### 2. Install dependencies
 ```php
-composer install --ignore-platform-reqs; npm install; npm run build
+composer install --ignore-platform-reqs;
 ```
 ### 3. Install loger
 
 ```bash
-php artisan app:install --email="demo@loger.com"
+yarn app:install"
 ```
 
 ### 4. Add sample data(optional)
