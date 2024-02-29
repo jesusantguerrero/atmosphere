@@ -82,7 +82,7 @@ const budgetAccountsTotal =  computed(() => {
                 </LogerButtonTab>
             </section>
         </header>
-       <Draggable class="w-full space-y-1 dragArea list-group" ref="draggableRef" :list="accounts" handle=".handle"  @end="saveReorder" tag="div">
+       <Draggable class="w-full space-y-1 dragArea list-group h-96 overflow-auto ic-scroller" ref="draggableRef" :list="accounts" handle=".handle"  @end="saveReorder" tag="div">
             <AccountItem
                 v-for="account in accounts"
                 :key="account.id"

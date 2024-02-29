@@ -66,12 +66,12 @@ const creditLimitDate = computed(() => {
     <section class="w-full pl-2">
       <header class="flex flex-wrap items-center overflow-hidden overflow-ellipsis">
         <AccountReconciliationAlert v-if="hasPendingReconciliation" class="mr-1" />
-        <IMdiLock v-if="isReconciled" class="mr-1 text-success opacity-70 text-sm" />
+        <IMdiLock v-if="isReconciled" class="mr-1 text-success opacity-70 text-xs" />
         <span>
             {{ account.name }} {{ creditLimitDate }}
         </span>
       </header>
-      <p class="relative text-sm" :class="{ 'text-red-400': isDebt(account.balance) }">
+      <p class="relative text-xs" :class="{ 'text-red-400': isDebt(account.balance) }">
         <NumberHider />
         {{ formatMoney(account.balance, account.currency_code) }}
         <span v-if="creditLimitDate" class="text-success">
