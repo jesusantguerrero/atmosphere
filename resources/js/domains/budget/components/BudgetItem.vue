@@ -20,6 +20,7 @@ import ExpenseChartWidgetRow from '@/domains/transactions/components/ExpenseChar
 import BudgetItemHeader from './BudgetItemHeader.vue';
 import InputMoney from '@/Components/atoms/InputMoney.vue';
 import { ICategory } from '@/domains/transactions/models';
+import { useAppContextStore } from '@/store';
 
 
 const props = defineProps<{
@@ -137,19 +138,21 @@ const inputContainer = ref()
 onMounted(() => {
     autoAnimate(inputContainer.value)
 })
+
+const context = useAppContextStore();
 </script>
 
 
 <template>
 <div class="px-4 py-2 cursor-pointer group" @click.stop="$emit('edit')">
-    <section class="flex space-between">
-        <div class="flex items-center w-full space-x-4">
+    <section class="md:flex space-between">
+        <div class="flex items-center w-full space-x-4 ">
             <div class="hidden mr-4 cursor-grab group-hover:inline-block">
                 <IconDrag class="handle" />
             </div>
             <BudgetItemHeader :item="item" :show-delete="showDelete" />
         </div>
-        <div class="flex items-center justify-end text-right flex-nowrap">
+        <div class="flex items-center md:justify-end justify-between text-right flex-nowrap">
             <div ref="inputContainer"  title="Money Assigned" class="w-36">
                 <InputMoney
                     ref="input"
@@ -176,10 +179,11 @@ onMounted(() => {
             </div>
             <ExpenseChartWidgetRow
                 :value="item.activity"
-                hide-title
                 :item="item"
+                hide-title
                 type="categories"
                 classes="w-44 h-full"
+                v-if="!context.isMobile"
                 :details="currentDetails"
                 @open-details="fetchDetails(item)"
             />

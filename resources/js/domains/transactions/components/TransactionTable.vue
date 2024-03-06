@@ -87,10 +87,14 @@ const getTransactionColor = (row: ITransaction) => {
       </template>
 
       <template v-slot:description="{ scope: { row } }">
-        <span class="text-xs capitalize">
-          {{ row.description }}
-          {{ row.linked }}
-        </span>
+        <div class="text-xs capitalize">
+          <p>
+              {{ row.description }}
+          </p>
+          <p class="text-primary">
+              {{ row.category?.name ?? row.category_name }}
+          </p>
+        </div>
       </template>
 
       <template v-slot:actions="{ scope: { row } }">
