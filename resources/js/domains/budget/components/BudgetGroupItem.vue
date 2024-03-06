@@ -137,6 +137,7 @@ const fetchDetails = async (category: ICategory) => {
             <MoneyPresenter :value="item.budgeted" />
             <ExpenseChartWidgetRow
                 :value="item.activity"
+                v-if="!isMobile"
                 hide-title
                 :item="item"
                 type="groups"
@@ -144,7 +145,6 @@ const fetchDetails = async (category: ICategory) => {
                 :details="details"
                 @open-details="fetchDetails(item)"
             />
-            {{ details }}
             <MoneyPresenter :value="item.available" />
             <NDropdown
                 trigger="click"
