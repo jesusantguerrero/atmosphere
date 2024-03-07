@@ -85,7 +85,13 @@ watch(() => props.data, () => {
 </script>
 
 <template>
-    <WidgetTitleCard  :title="title" :action="action" @action="$emit('action', $event)">
+    <WidgetTitleCard
+        :title="title"
+        :action="action"
+        @action="$emit('action', $event)"
+        :border="false"
+        :with-padding="false"
+    >
         <template #before v-if="selectedDate">
             <LogerButtonTab  @click="selectedDate=null">
                 <i class="fa fa-arrow-left"></i>
