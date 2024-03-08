@@ -67,8 +67,8 @@ const state = reactive({
 
 <template>
   <div class="w-full comparison-card">
-    <div class="px-5 pb-10 rounded-lg">
-      <h5 class="p-4 font-bold text-left card-title">
+    <div class="pb-10 rounded-lg">
+      <h5 class="py-4 font-bold text-left card-title">
         {{ title }}
       </h5>
       <div class="card-text">

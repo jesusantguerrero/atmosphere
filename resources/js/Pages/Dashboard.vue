@@ -18,6 +18,7 @@
     import { router } from '@inertiajs/vue3';
     import { IOccurrenceCheck } from '@/Components/Modules/occurrence/models';
     import { IAccount, ICategory } from '@/domains/transactions/models';
+    import WidgetContainer from '@/Components/WidgetContainer.vue';
 
     withDefaults(defineProps<{
         spendingSummary: {
@@ -75,6 +76,22 @@
     const itemLabel = (row: any) => {
         return `${row.name}, ${row.target_type}`;
     }
+
+    const financeTabs = [{
+      name: "monthVsPrevious",
+      label: "vs Previous Month",
+    },{
+      name: "spendingSummary",
+      label: "Spending Summary",
+    }];
+
+    const transactionsTabs = [{
+      name: "next",
+      label: "Next",
+    },{
+      name: "drafts",
+      label: "Drafts",
+    }];
 </script>
 
 <template>
@@ -83,8 +100,8 @@
             <AppIcon size="medium" class="ml-2" />
         </template>
 
-        <div class="px-5 mx-auto mt-5 mb-10 md:space-y-0 md:space-x-10 md:flex max-w-screen-2xl sm:px-6 lg:px-8">
-            <div class="mt-6 md:w-9/12 space-y-4">
+        <main class="px-5 mx-auto mt-5 mb-10 md:space-y-0 md:space-x-10 md:flex max-w-screen-2xl sm:px-6 lg:px-8">
+            <section class="mt-6 md:w-9/12 space-y-4">
                 <section class="flex flex-col md:flex-row md:space-x-4">
                     <BudgetTracker
                         class="md:w-8/12 w-full order-1  mt-2 md:mt-0"
@@ -98,17 +115,26 @@
                     <WeatherWidget class="md:w-4/12 md:order-1" />
                 </section>
 
-                <ChartCurrentVsPrevious
-                    v-if="selected=='expenses'"
-                    class="w-full  md:mb-10 overflow-hidden bg-white rounded-lg"
-                    :class="[cardShadow]"
-                    :title="$t('This month vs last month')"
-                    ref="ComparisonRevenue"
-                    :data="expenses"
-                />
 
-                <section class="flex space-x-4">
+
+                <WidgetContainer
+                    :message="$t('Financial glance')"
+                    :tabs="financeTabs"
+                    default-tab="monthVsPrevious"
+                    class="order-2 mt-4 lg:mt-0 lg:order-1"
+              >
+                <template v-slot:content="{ selectedTab }">
+                    <ChartCurrentVsPrevious
+                        v-if="selectedTab=='monthVsPrevious'"
+                        class="w-full  md:mb-10 overflow-hidden bg-white rounded-lg"
+                        :class="[cardShadow]"
+                        :title="$t('This month vs last month')"
+                        ref="ComparisonRevenue"
+                        :data="expenses"
+                    />
+
                     <ChartComparison
+                        v-else
                         class="w-full md:mb-10 overflow-hidden bg-white rounded-lg"
                         :class="[cardShadow]"
                         :title="$t('Spending summary')"
@@ -122,9 +148,10 @@
                         }"
                         @action="router.visit('/trends/income-expenses-graph')"
                     />
-                </section>
-            </div>
-            <div class="py-6  space-y-4 md:w-3/12">
+                </template>
+              </WidgetContainer>
+            </section>
+            <section class="py-6  space-y-4 md:w-3/12">
                 <OccurrenceCard :checks="checks" :wrap="true" />
                 <OnboardingSteps
                     v-if="onboarding.steps"
@@ -132,16 +159,26 @@
                     :steps="onboarding.steps"
                     :percentage="onboarding.percentage"
                 />
-                <NextPaymentsWidget
-                    v-else
-                    class="w-full"
-                    :payments="nextPayments"
-                />
-                <MealWidget :meals="meals?.data" />
 
-                <DashboardDrafts />
-            </div>
-        </div>
+                <MealWidget :meals="meals?.data" />
+                <WidgetContainer
+                    :message="$t('Transactions')"
+                    :tabs="transactionsTabs"
+                    default-tab="monthVsPrevious"
+                    class="order-2 mt-4 lg:mt-0 lg:order-1"
+                >
+                    <template v-slot:content="{ selectedTab }">
+                        <NextPaymentsWidget
+                            v-if="selectedTab == 'next'"
+                            class="w-full"
+                            :payments="nextPayments"
+                        />
+
+                        <DashboardDrafts v-else />
+                    </template>
+                </WidgetContainer>
+            </section>
+        </main>
     </AppLayout>
 </template>
 
