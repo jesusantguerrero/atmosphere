@@ -64,7 +64,7 @@
 </script>
 
 <template>
-    <WidgetTitleCard title="Draft Transactions" class="md:block" :with-padding="false">
+    <WidgetTitleCard class="md:block" :with-padding="false" :border="false">
         <TransactionsList
             class="w-full"
             table-class="w-full p-2 overflow-auto text-sm rounded-t-lg shadow-md bg-base-lvl-3"
@@ -77,7 +77,7 @@
             @removed="removeTransaction($event, ['draft'])"
         />
 
-        <template #action>
+        <Teleport to="#actions">
             <LogerButton
                 variant="inverse"
                 class="rounded-full"
@@ -85,7 +85,7 @@
                 :processing="isLoading"
                 :icon="MdiSync"
             />
-        </template>
+        </Teleport>
     </WidgetTitleCard>
 </template>
 

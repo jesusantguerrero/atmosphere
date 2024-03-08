@@ -84,6 +84,14 @@
       name: "spendingSummary",
       label: "Spending Summary",
     }];
+
+    const transactionsTabs = [{
+      name: "next",
+      label: "Next",
+    },{
+      name: "drafts",
+      label: "Drafts",
+    }];
 </script>
 
 <template>
@@ -151,14 +159,24 @@
                     :steps="onboarding.steps"
                     :percentage="onboarding.percentage"
                 />
-                <NextPaymentsWidget
-                    v-else
-                    class="w-full"
-                    :payments="nextPayments"
-                />
-                <MealWidget :meals="meals?.data" />
 
-                <DashboardDrafts />
+                <MealWidget :meals="meals?.data" />
+                <WidgetContainer
+                    :message="$t('Transactions')"
+                    :tabs="transactionsTabs"
+                    default-tab="monthVsPrevious"
+                    class="order-2 mt-4 lg:mt-0 lg:order-1"
+                >
+                    <template v-slot:content="{ selectedTab }">
+                        <NextPaymentsWidget
+                            v-if="selectedTab == 'next'"
+                            class="w-full"
+                            :payments="nextPayments"
+                        />
+
+                        <DashboardDrafts v-else />
+                    </template>
+                </WidgetContainer>
             </section>
         </main>
     </AppLayout>
