@@ -22,20 +22,22 @@
     }
 
     onMounted(() => {
+        isLoadingDrafts.value = true
         fetchTransactions()
     })
 
     const isLoading = ref(false);
     const updateTransactions = () => {
         isLoading.value = true;
-        router.post('/linked-drafts', {}, {
-            preserveScroll: true,
-            onSuccess() {
+        // router.post('/linked-drafts', {}, {
+        //     preserveScroll: true,
+        //     preserveState: true,
+        //     onSuccess() {
                 fetchTransactions().finally(() => {
                     isLoading.value = false;
                 })
-            }
-        })
+            // }
+        // })
     }
 
     const { openTransactionModal } = useTransactionModal();
@@ -59,13 +61,19 @@
             if ((originalData && originalData.status == 'draft' && savedValue.status == 'verified') || action == 'delete') {
                 fetchTransactions();
             }
+
+            if (name == 'reload') {
+                updateTransactions()
+            }
         })
     })
+
 </script>
 
 <template>
     <WidgetTitleCard class="md:block" :with-padding="false" :border="false">
         <TransactionsList
+            v-if="!isLoadingDrafts"
             class="w-full"
             table-class="w-full p-2 overflow-auto text-sm rounded-t-lg shadow-md bg-base-lvl-3"
             :transactions="transactionsDraft"
@@ -77,15 +85,18 @@
             @removed="removeTransaction($event, ['draft'])"
         />
 
-        <Teleport to="#actions">
-            <LogerButton
-                variant="inverse"
-                class="rounded-full"
-                @click="updateTransactions()"
-                :processing="isLoading"
-                :icon="MdiSync"
-            />
-        </Teleport>
+        <template #top>
+            <section class="w-full">
+                <LogerButton
+                    v-if="isLoadingDrafts"
+                    variant="inverse"
+                    class="rounded-full w-full justify-center"
+                    @click="updateTransactions()"
+                    :processing="isLoading|| isLoadingDrafts"
+                    :icon="MdiSync"
+                />
+            </section>
+        </template>
     </WidgetTitleCard>
 </template>
 

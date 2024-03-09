@@ -4,6 +4,9 @@ module.exports = {
         es2021: true,
         node: true,
     },
+    globals: {
+        cardShadow: true,
+    },
     includes: ["/resources/js/**"],
     extends: ["plugin:vue/vue3-recommended", "prettier"],
     parserOptions: {

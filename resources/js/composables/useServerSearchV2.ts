@@ -2,8 +2,6 @@ import { endOfMonth, startOfMonth, format, parseISO } from 'date-fns';
 // import { format, parseISO } from "date-fns";
 import { reactive, Ref, watch, nextTick, computed, ref, inject } from "vue";
 import debounce from "lodash/debounce";
-import { config } from '@/config';
-import {  useLocalStorage } from "@vueuse/core"
 
 export enum SearchFilterMode {
   Replace = 1,
@@ -23,7 +21,7 @@ export interface IServerSearchData {
 interface IServerSearchOptions {
   manual?: boolean;
   mainDateField?: string;
-  defaultDates?: string;
+  defaultDates?: boolean;
 }
 
 interface IDateSpan {
@@ -113,7 +111,7 @@ export const parseParams = (state: ISearchState) => {
     filterParams("date", state.filters, state.dates),
     customFilterParams(state.custom),
     getRelationshipsParams(state.relationships),
-    getPaginationParams(state),
+    // getPaginationParams(state),
   ];
 
   if (state.search) {
@@ -125,7 +123,7 @@ export const parseParams = (state: ISearchState) => {
     .join("&");
 };
 
-function parseDateFilters(options: Ref<Partial<IServerSearchData>>, setDefaultDate: boolean) {
+function parseDateFilters(options: Ref<Partial<IServerSearchData>>, setDefaultDate: boolean = false) {
 
     const defaultDates = setDefaultDate ? [
         format(startOfMonth(new Date()), 'yyyy-MM-dd'),
@@ -217,8 +215,6 @@ const setSearchState = (serverSearchData: Record<string, any>, dates: any) => {
       date: null
     };
 
-    console.log(serverSearchData, state.filters)
-
     state.custom = {
       ...(serverSearchData ? serverSearchData?.custom : {}),
     };
@@ -248,6 +244,10 @@ export const useServerSearch = (
     const dates = parseDateFilters(serverSearchData, options.defaultDates)
     const isLoaded = ref(false)
     const preventWatch = ref(true);
+
+    const setPreventWatch = (shouldPreventWatch: boolean) => {
+        preventWatch.value = shouldPreventWatch
+    }
 
     setSearchState(serverSearchData.value, dates);
     const localRouter = inject(
@@ -300,11 +300,11 @@ export const useServerSearch = (
     });
   };
 
-  preventWatch.value = false
+  setPreventWatch(false)
 
 
   watch(() => searchState,
-    debounce((newValue: any, oldValue: any) => {
+    debounce(() => {
       if (isLoaded.value && !preventWatch.value) {
         executeSearch();
       }
@@ -334,14 +334,25 @@ export const useServerSearch = (
   const hasFilters = computed(() => {
     return Boolean(searchState.search?.length);
   });
-
-  const toggleCustomFilter = (field: string, value: string, mode = SearchFilterMode.Replace) => {
+  const toggleCustomFilter = (field: string, value: string, mode = SearchFilterMode.Replace, reload = true) => {
     if (mode == SearchFilterMode.Replace) {
-      searchState.custom = {
-        [field]: value
-      }
-      executeSearch();
-      return
+        if (!reload) {
+            setPreventWatch(true);
+        }
+        searchState.custom = {
+            [field]: value
+        }
+        if (reload) {
+            executeSearch();
+        } else {
+            const urlParams = parseParams(searchState);
+            window.history.replaceState(
+            {},
+            null,
+            `${location.pathname}?${urlParams}`
+            );
+        }
+        return
     }
 
     if (searchState.custom[field] == value) {
@@ -359,6 +370,7 @@ export const useServerSearch = (
   return {
     state: searchState,
     hasFilters,
+    setPreventWatch,
     toggleFilter,
     toggleCustomFilter,
     executeSearch,

@@ -69,6 +69,21 @@ const { isTab: isCurrentTab, selectedTab, tabs: widgetTabs } = useTabs(
       </slot>
 
       <div class="w-full flex justify-end" v-if="$slots.actions || actionLabel || tabs.length">
+        <section
+            class="flex justify-end w-full space-x-2 px-4 py-2.5"
+            v-if="tabs.length"
+        >
+            <button
+                v-for="tab in tabs"
+                @click="selectedTab = tab.name"
+                class="px-4 py-1 text-sm  border border-transparent bg-base-lvl-2 rounded-3xl text-body-1"
+                :class="{
+                'bg-primary/10 border-primary  text-primary': isCurrentTab(tab.name),
+                }"
+            >
+                {{ $t(tab.label) }}
+            </button>
+        </section>
         <slot name="actions">
           <div class="space-x-2" v-if="actionLabel && actionLink">
             <AtButton
@@ -80,20 +95,6 @@ const { isTab: isCurrentTab, selectedTab, tabs: widgetTabs } = useTabs(
               <IMdiChevronRight />
             </AtButton>
           </div>
-          <section class="flex justify-end w-full space-x-2 px-4 py-2.5" v-if="tabs.length">
-            <button
-                v-for="tab in tabs"
-              @click="selectedTab = tab.name"
-              class="px-4 py-1 text-sm  border border-transparent bg-base-lvl-2 rounded-3xl text-body-1"
-              :class="{
-                'bg-primary/10 border-primary  text-primary': isCurrentTab(tab.name),
-              }"
-            >
-              {{ $t(tab.label) }}
-            </button>
-          </section>
-        </slot>
-        <slot name="tabs">
 
         </slot>
       </div>

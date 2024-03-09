@@ -41,8 +41,13 @@ export const useTransactionStore = defineStore('transactions', () => {
 
     }
 
+    const reload = () => {
+
+    }
+
     return {
        onSubmit,
-       emitTransaction
+       emitTransaction,
+       reload
     }
 })

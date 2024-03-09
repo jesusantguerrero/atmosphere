@@ -1,19 +1,21 @@
 
 <template>
 <div :class="classes" class="overflow-hidden text-body-1">
-    <div class="flex justify-between">
-        <SectionTitle type="secondary" class="w-full">{{ sectionTitle }}</SectionTitle>
-        <div class="flex items-center justify-end w-full">
-            <slot name="action" v-if="action || $slots.action">
-                <AtButton v-if="action" class="flex items-center text-primary" @click="$emit('action')">
-                    <span>
-                        {{ action.label }}
-                    </span>
-                    <i class="ml-2" :class="action.iconClass" v-if="action.iconClass" />
-                </AtButton>
-            </slot>
+    <slot name="top">
+        <div class="flex justify-between">
+            <SectionTitle type="secondary" class="w-full">{{ sectionTitle }}</SectionTitle>
+            <div class="flex items-center justify-end w-full">
+                <slot name="action" v-if="action || $slots.action">
+                    <AtButton v-if="action" class="flex items-center text-primary" @click="$emit('action')">
+                        <span>
+                            {{ action.label }}
+                        </span>
+                        <i class="ml-2" :class="action.iconClass" v-if="action.iconClass" />
+                    </AtButton>
+                </slot>
+            </div>
         </div>
-    </div>
+    </slot>
     <div :class="cardClass" class="overflow-hidden border-base">
         <slot />
     </div>
