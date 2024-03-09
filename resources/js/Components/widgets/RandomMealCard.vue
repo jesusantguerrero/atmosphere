@@ -62,11 +62,17 @@ const getRandomMeal = () => {
             </span>
         </div>
         <div class="flex justify-between">
-            <LogerButton variant="inverse" class="rounded-full" @click="getRandomMeal" :disabled="state.isLoading">
-                <div :class="{'animate-spin': state.isLoading}">
+            <LogerButton
+                variant="inverse"
+                class="rounded-full"
+                @click="getRandomMeal"
+                :processing="state.isLoading"
+            >
+                <template #icon>
                     <IMdiSync  />
-                </div>
+                </template>
             </LogerButton>
+            <slot name="actions" />
         </div>
     </div>
 </template>

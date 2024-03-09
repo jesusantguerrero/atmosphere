@@ -19,7 +19,6 @@ export function useSelect() {
         })
         if (name) {
             provide(name, options);
-            console.log(`provided with ${name}`, options);
         }
         return options;
     }

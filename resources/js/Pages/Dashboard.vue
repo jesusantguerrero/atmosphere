@@ -8,6 +8,9 @@
     import WeatherWidget from "@/Components/widgets/WeatherWidget.vue";
     import AppIcon from '@/Components/AppIcon.vue';
     import DashboardDrafts from "./DashboardDrafts.vue";
+    import MdiSync from '~icons/mdi/sync'
+    import WidgetContainer from '@/Components/WidgetContainer.vue';
+    import LogerButton from '@/Components/atoms/LogerButton.vue';
 
     import NextPaymentsWidget from "@/domains/transactions/components/NextPaymentsWidget.vue";
     import MealWidget from "@/domains/meal/components/MealWidget.vue";
@@ -18,7 +21,6 @@
     import { router } from '@inertiajs/vue3';
     import { IOccurrenceCheck } from '@/Components/Modules/occurrence/models';
     import { IAccount, ICategory } from '@/domains/transactions/models';
-    import WidgetContainer from '@/Components/WidgetContainer.vue';
 
     withDefaults(defineProps<{
         spendingSummary: {
@@ -164,9 +166,12 @@
                 <WidgetContainer
                     :message="$t('Transactions')"
                     :tabs="transactionsTabs"
-                    default-tab="monthVsPrevious"
+                    default-tab="next"
                     class="order-2 mt-4 lg:mt-0 lg:order-1"
                 >
+                    <template #actions>
+                        <div id="transaction-actions" />
+                    </template>
                     <template v-slot:content="{ selectedTab }">
                         <NextPaymentsWidget
                             v-if="selectedTab == 'next'"
@@ -174,7 +179,7 @@
                             :payments="nextPayments"
                         />
 
-                        <DashboardDrafts v-else />
+                        <DashboardDrafts  v-else />
                     </template>
                 </WidgetContainer>
             </section>

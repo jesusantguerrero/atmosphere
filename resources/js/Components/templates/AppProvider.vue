@@ -5,7 +5,6 @@
     import { theme } from "../../../../tailwindTheme/index.js";
 
     const provider = ref()
-    console.log(theme);
     const bgColor = useCssVar('--colors-primary', provider, { initialValue: "#f20"} )
 
     const { primary } = theme.defaultLight;

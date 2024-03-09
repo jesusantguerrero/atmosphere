@@ -1,9 +1,6 @@
 <script setup lang="ts">
-import { computed, provide, toRefs } from "vue";
+import { computed, provide, toRefs, onMounted, nextTick } from "vue";
 import { router } from "@inertiajs/vue3";
-// @ts-ignore
-import exactMath from 'exact-math';
-// @ts-ignore
 import { AtButton, AtDatePager } from "atmosphere-ui";
 import { useBreakpoints, breakpointsTailwind } from "@vueuse/core";
 import { startOfMonth } from "date-fns";
@@ -23,12 +20,12 @@ import BudgetBalanceAssign from "@/domains/budget/components/BudgetBalanceAssign
 import BudgetDetailForm from "@/domains/budget/components/BudgetDetailForm.vue";
 
 import { useBudget } from "@/domains/budget";
-import { useServerSearch } from "@/composables/useServerSearch";
+import { SearchFilterMode, useServerSearch } from "@/composables/useServerSearchV2";
 import MessageBox from "@/Components/organisms/MessageBox.vue";
 import BudgetCategories from "./Partials/BudgetCategories.vue";
 
 import { MonthTypeFormat, formatMoney, formatMonth } from "@/utils";
-import MoneyPresenter from "@/Components/molecules/MoneyPresenter.vue";
+import { ICategory } from "@/domains/transactions/models";
 
 const props = defineProps({
   budgets: {
@@ -59,7 +56,7 @@ const props = defineProps({
 });
 
 const { serverSearchOptions } = toRefs(props);
-const { state: pageState, executeSearchWithDelay } = useServerSearch(
+const { state: pageState, executeSearchWithDelay, toggleCustomFilter, setPreventWatch } = useServerSearch(
   serverSearchOptions,
   {
     manual: false,
@@ -80,8 +77,8 @@ const {
   filterGroups,
   filters,
   visibleFilters,
+  setBudgetFilter,
   selectedBudget,
-  toggleFilter,
   setSelectedBudget,
 } = useBudget();
 
@@ -103,16 +100,18 @@ const budgetStatus = {
 };
 
 const currentStatus = computed(() =>
-  Object.keys(filters.value).find((key) => filters.value[key])
+    pageState?.custom?.mode
 );
 
 provide("categories", budgets);
 
 //  Budget Form
-const deleteBudget = (budget) => {
+const deleteBudget = (budget: ICategory) => {
   router.delete(route("budgets.destroy", budget), {
     onSuccess: () => {
-      router.reload(["budgets"]);
+      router.reload({
+        only: ["budgets"]
+      });
     },
   });
 };
@@ -122,6 +121,18 @@ const goToday = () => {
   pageState.dates.startDate = startOfMonth(new Date());
   executeSearchWithDelay();
 };
+
+const toggleFilter = async (value: string) => {
+    setBudgetFilter(value)
+    const status = Object.keys(filters.value).find((key) => filters.value[key]) ?? "";
+    toggleCustomFilter('mode', status, SearchFilterMode.Replace, false);
+};
+
+onMounted(() => {
+    nextTick(() => {
+        toggleFilter(currentStatus.value ?? "");
+    })
+})
 </script>
 
 <template>
@@ -198,8 +209,11 @@ const goToday = () => {
       </BudgetBalanceAssign>
 
       <section class="mx-auto mt-4 rounded-lg text-body bg-base max-w-7xl">
-        <article class="w-full space-y-4">
-            {{ formatMoney(accountTotal) }} {{ formatMoney(available)  }} = ({{ formatMoney(accountTotal - available)}})
+          <article class="w-full space-y-4">
+            <p class="text-center">
+                {{ formatMoney(accountTotal) }} {{ formatMoney(available)  }} = ({{ formatMoney(accountTotal - available)}})
+            </p>
+
             <BudgetCategories :budgets="budgets" />
         </article>
       </section>

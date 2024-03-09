@@ -26,7 +26,7 @@ const props = withDefaults(defineProps<{
     tableClass: "mt-2 bg-base-lvl-1 border border-base-deep-1 rounded-lg shadow-md",
     transactions: () => ([]),
     parser:  null,
-    allowSelect: true, 
+    allowSelect: true,
 })
 
 const emit = defineEmits(['update:selected', 'edit', 'paid-clicked', 'approved', 'removed']);
@@ -82,6 +82,9 @@ const calculateSum = (items: ITransaction[]) => {
 <SectionCard :classes="classes" :section-title="tableLabel" :card-class="tableClass">
     <template #action>
         <slot name="action" />
+    </template>
+    <template #top>
+        <slot name="top" />
     </template>
 
     <div>

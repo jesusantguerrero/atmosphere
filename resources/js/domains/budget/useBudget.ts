@@ -129,26 +129,30 @@ const setBudgetState = ({ filterGroups, categories, budgetData}) => {
         BudgetState.categories = cloneDeep(categories);
     }
 }
+
+const setVisibleCategories = () => {
+    const visibleFilter = Object.keys(BudgetState.filters).find(name => BudgetState.filters[name])
+    BudgetState.visibleCategories = getVisibleCategories(BudgetState.data, visibleFilter)
+}
 export const useBudget = (budgets: Ref<Record<string, any>>) => {
     if (budgets) {
         watch(() => budgets.value, (budgetServerData) => {
             setBudgetState(getBudget(budgetServerData.data));
-            BudgetState.visibleCategories = getVisibleCategories(BudgetState.data);
+            setVisibleCategories()
         }, { immediate: true, deep: true })
     }
 
-    const toggleFilter = (filterName: string) => {
+    const setBudgetFilter = (filterName: string) => {
         Object.entries(BudgetState.filters).forEach(([filter, value]) => {
             BudgetState.filters[filter] = filterName == filter ? !value : false ;
         })
-        const visibleFilter = Object.keys(BudgetState.filters).find(name => BudgetState.filters[name])
-        BudgetState.visibleCategories = getVisibleCategories(BudgetState.data, visibleFilter)
+        setVisibleCategories();
     }
 
     return {
         ...toRefs(BudgetState),
         budgetState: BudgetState.outflow,
-        toggleFilter,
+        setBudgetFilter,
         setSelectedBudget,
     }
 }
