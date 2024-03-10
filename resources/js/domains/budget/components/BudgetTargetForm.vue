@@ -16,11 +16,12 @@ import { BudgetTarget } from "../models/budget";
 // import IconPicker from '../IconPicker.vue';
 
 const props = defineProps<{
-  parentId: number;
-  full: boolean;
+  parentId?: number;
+  full?: boolean;
   category: ICategory;
   editable: boolean;
   item: BudgetTarget;
+  compact?: boolean;
 }>();
 
 const emit = defineEmits(["cancel", "deleted"]);
@@ -302,7 +303,7 @@ const handleOptions = (option: string) => {
       :editable="editable"
       :is-processing="formComplete.processing"
       class="w-full"
-      v-else
+      v-else-if="!compact"
       @edit="state.isEditing = true"
       @completed="markAsComplete(item)"
     />

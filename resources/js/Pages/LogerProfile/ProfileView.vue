@@ -18,8 +18,9 @@ import BudgetDetailForm from '@/domains/budget/components/BudgetDetailForm.vue';
 
 import { IOccurrenceCheck } from '@/Components/Modules/occurrence/models';
 import { ITransaction } from '@/domains/transactions/models';
-import { transactionDBToTransaction } from '@/domains/transactions';
+import { transactionLinesDBToTransaction } from '@/domains/transactions';
 import axios from 'axios';
+import { formatMoney } from '@/utils';
 
 
 const { entities } = defineProps<{
@@ -50,12 +51,14 @@ function fetchProfileEntities() {
 }
 
 const transactions = ref<ITransaction[]>([]);
+const transactionsTotal = ref(0);
 const isLoading = ref(false);
 const fetchTransactions = (params = location.toString()) => {
     return axios.get(`${location.pathname}/transactions`).then(({ data }: { data : {
         data: ITransaction[]
     }}) => {
         transactions.value = data.data;
+        transactionsTotal.value = data.total;
         isLoading.value = false
     })
 }
@@ -107,8 +110,8 @@ const budgets = computed(() => {
         <LogerProfileTemplate title="Loger Profiles"  ref="profileTemplateRef">
             <section class="space-y-4">
                 <WelcomeCard class="mt-5" :message="profile.name">
-                    <section class="flex flex-col items-center mx-auto ">
-                        <img :src="profile.image_url" />
+                    <section class="flex flex-col items-center mx-auto h-56">
+                        <img :src="profile.image_url" class="h-full object-contain w-full object-top"/>
                     </section>
 
                     <template #action>
@@ -129,11 +132,14 @@ const budgets = computed(() => {
                     <p v-if="areEntitiesLoading"> ...loading</p>
                     <section v-else class="w-full">
                         <WidgetTitleCard title="Transaction history" class="w-full">
+                            <template #action>
+                                {{  formatMoney(transactionsTotal) }}
+                            </template>
                             <TransactionsTable
                                 class="w-full"
                                 table-class="overflow-auto text-sm"
                                 :transactions="transactions"
-                                :parser="transactionDBToTransaction"
+                                :parser="transactionLinesDBToTransaction"
                                 @edit="''"
                             />
                         </WidgetTitleCard>
@@ -143,17 +149,21 @@ const budgets = computed(() => {
 
             <template #panel>
                 <p v-if="areEntitiesLoading"> ...loading</p>
-                <section v-else class="w-full">
-                    <OccurrenceCard :checks="occurrenceChecks" class="mx-auto mt-4" />
-                    <BudgetDetailForm
-                        v-for="budget in budgets"
-                        class="mt-5"
-                        full
-                        :category="budget.category"
-                        :item="budget"
-                        :hide-details="true"
-                        :editable="false"
-                    />
+                <section v-else class="w-full ic-scroller-slim mb-96">
+                    <OccurrenceCard :checks="occurrenceChecks" class="mx-auto mt-4 mb-4" />
+
+                    <article class="grid md:grid-cols-2 gap-2">
+                        <BudgetDetailForm
+                            v-for="budget in budgets"
+                         
+                            full
+                            compact
+                            :category="budget.category"
+                            :item="budget"
+                            :hide-details="true"
+                            :editable="false"
+                        />
+                    </article>
                 </section>
               </template>
             <LogerProfileModal

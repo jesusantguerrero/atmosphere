@@ -10,6 +10,17 @@ export const transactionDBToTransaction = (transactions: any[]) => {
         currencyCode: transaction.currency_code,
     }))
 }
+export const transactionLinesDBToTransaction = (transactions: any[]) => {
+    return transactions.map(transaction => ({
+        id: transaction.id || v4(),
+        date: transaction.date,
+        title: transaction.concept,
+        subtitle: transaction.account_from?.name ? `${transaction.account_from?.name} -> ${transaction.category?.name}` : '',
+        value: transaction.amount,
+        status: transaction.status,
+        currencyCode: transaction.currency_code,
+    }))
+}
 export const draftsDBToTransaction = (transactions: any[]) => {
     return transactions.map(transaction => ({
         id: transaction.id || v4(),

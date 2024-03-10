@@ -21,6 +21,7 @@ export interface BudgetTarget {
     target_type:string;
     team_id:number;
     updated_at: string;
+    completed_at: string;
     user_id: number;
 }
 
@@ -81,4 +82,13 @@ export interface IBudgetCategory extends ICategory {
     hasUnderFunded: boolean;
     overAssigned: boolean;
     subCategories: any[]
+}
+
+
+const targetTypeNames = {
+    saving_balance: 'saving balance'
+}
+
+export const getTargetName = (code: string) => {
+    return targetTypeNames[code] ?? code;
 }

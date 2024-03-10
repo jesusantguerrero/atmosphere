@@ -63,7 +63,8 @@ class LogerProfileService
 
         $teamId = $entities[0]->team_id;
 
-        $transactions = TransactionLine::query()->byTeam($teamId)
+        $transactions = TransactionLine::query()
+            ->byTeam($teamId)
             ->inDateFrame($startDate, $endDate)
             ->expenseCategories($categories)
             ->verified()
@@ -72,7 +73,7 @@ class LogerProfileService
 
         return [
             "data" => $transactions,
-            "total" => $transactions->sum('total'),
+            "total" => $transactions->sum('amount'),
         ];
     }
 }

@@ -23,6 +23,7 @@ export interface ITransactionLine {
 }
 
 export interface ICategory {
+    month: string;
     id?: number;
     name: string;
     color: string;
