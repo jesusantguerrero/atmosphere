@@ -312,6 +312,7 @@ const saveText = computed(() => {
                 ref="gridSplitsRef"
                 :items="splits"
                 :is-transfer="isTransfer"
+                :mode="form.direction"
                 :categories="categoryOptions"
                 :accounts="accountOptions"
                 :full-height="fullHeight"

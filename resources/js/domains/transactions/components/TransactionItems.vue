@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { reactive, computed, inject, ref } from "vue";
-// @ts-expect-error: no definitions
 import { AtField } from "atmosphere-ui";
 import { NSelect } from "naive-ui";
 
@@ -11,6 +10,7 @@ import CategoryPicker from "./CategoryPicker.vue";
 import { IAccount, ICategory } from "../models";
 import { formatMoney } from "@/utils";
 import LogerInput from "@/Components/atoms/LogerInput.vue";
+import { TRANSACTION_DIRECTIONS } from "..";
 
 interface SplitItem {
     payee_id: null|number,
@@ -20,8 +20,9 @@ interface SplitItem {
     category_id: null|number,
     counter_account_id: null|number,
     account_id: null|number,
-    amount: number,
-    history: string|number[]
+    amount: string,
+    history: string|number[];
+    concept: string;
 }
 
 const props = defineProps<{
@@ -29,7 +30,8 @@ const props = defineProps<{
   categories: ICategory[],
   accounts: IAccount[],
   isTransfer: boolean
-  fullHeight: boolean
+  fullHeight: boolean;
+  mode?: string;
 }>();
 const accountLabel = computed(() => {
   return !props.isTransfer ? "Account" : "Source";
@@ -46,7 +48,15 @@ const categoryOptions = inject("categoryOptions", []);
 const accountsOptions = inject("accountsOptions", []);
 
 const categoryAccounts = computed(() => {
-  return props.isTransfer ? accountsOptions : categoryOptions;
+    if (props.isTransfer) {
+        return accountsOptions;
+
+    } else {
+        return categoryOptions.filter((category) => {
+            const isInflow = props.mode == TRANSACTION_DIRECTIONS.DEPOSIT;
+            return (isInflow && category.display_id == "inflow") || !isInflow; 
+        });
+    }
 });
 
 const splits = reactive<SplitItem[]>(props.items ?? []);
@@ -65,8 +75,8 @@ const defaultRow = {
 };
 
 const splitsTotal = computed(() =>
-    splits.reduce((total: number, splitItem: Record<string, string>): number => {
-        return total + parseFloat(splitItem.amount ?? 0);
+    splits.reduce((total: number, splitItem): number => {
+        return total + parseFloat(splitItem.amount ?? "0");
     }, 0)
 )
 
@@ -205,7 +215,11 @@ const isPickerOpen = ref(false);
       </footer>
     </section>
 
-    <LogerButton variant="neutral" @click="addSplit()" v-if="!isTransfer">
+    <LogerButton 
+        v-if="!isTransfer"
+        variant="neutral" 
+        @click="addSplit()" 
+    >
       <IMdiCallSplit />
       Add split
     </LogerButton>
