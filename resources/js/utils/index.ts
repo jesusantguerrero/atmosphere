@@ -74,7 +74,7 @@ export enum MonthTypeFormat {
     long = 'MMMM',
     monthYear = 'MMMM yyyy'
 }
-export const formatMonth = (dateString: string | Date, type: MonthTypeFormat = MonthTypeFormat.short ) => {
+export const formatMonth = (dateString: string | Date, type: string = MonthTypeFormat.short ) => {
     try {
         if (typeof dateString == 'string') {
             return format(parseISO(dateString), type)

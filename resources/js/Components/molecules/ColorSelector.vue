@@ -2,11 +2,10 @@
     import { NPopover } from "naive-ui"
     import { computed } from "vue";
 
-    const props = defineProps({
-        modelValue: {
-            type: String
-        }
-    })
+    const props = defineProps<{
+        modelValue: string;
+        type: boolean;
+    }>();
 
     const colors = [
         '#037F4C',
@@ -29,10 +28,6 @@
         '#808080'
     ]
 
-    const currentColor = computed(() => {
-        return props.modelValue || colors[0];
-    })
-
     const styleColor = computed(() => {
         return { 
             backgroundColor:  props.modelValue || colors[0] 
@@ -42,7 +37,7 @@
 
 <template>
 <div>
-    <NPopover trigger="click">
+    <NPopover trigger="click" :disabled="disabled">
         <template #trigger>
             <div class="w-4 h-4 rounded-sm cursor-pointer" :style="styleColor" />
         </template>

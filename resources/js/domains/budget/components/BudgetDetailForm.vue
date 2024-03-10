@@ -15,21 +15,24 @@
 
     import { generateRandomColor } from "@/utils"
     import { ICategory } from '@/Modules/transactions/models/transactions';
+    import { BudgetTarget, getTargetName } from '../models/budget';
 
     const props = withDefaults(defineProps<{
         category: ICategory,
-        item: Record<string, string>,
+        item: BudgetTarget,
         parentId?: number;
         full?: boolean;
         hideDetails?: boolean,
         editable?: boolean;
+        compact?: boolean
     }>(), {
         hideDetails: true,
-        editable: true
+        editable: true,
+        compact: false,
     });
 
 
-    const emit = defineEmits(['update:category'])
+    const emit = defineEmits(['update:category', 'close', 'delete'])
 
     const form = useForm({
         category_id: null,
@@ -101,23 +104,30 @@
                 <template #prefix>
                     <div class="flex items-center justify-center px-1 ">
                         <ColorSelector
+                            :disabled="compact"
                             v-model="category.color"
                             @update:modelValue="onBlur(category)"
                         />
                     </div>
                 </template>
             </AtInput>
-            {{ category.id }}
-            <LogerButtonTab @click="$emit('close')" v-if="editable">
-                <IconClose />
-            </LogerButtonTab>
+            <section>
+                <span v-if="compact" class="capitalize">
+                    {{ getTargetName(item.target_type) }}
+                </span>
+                <LogerButtonTab @click="$emit('close')" v-if="editable">
+                    <IconClose />
+                </LogerButtonTab>
+            </section>
         </header>
 
         <BudgetTargetForm
+            v-if="!compact"
             :parent-id="parentId"
-            :category="category"
             :item="item"
+            :category="category"
             :editable="editable"
+            :compact="compact"
             @delete="$emit('delete')"
         />
 
@@ -138,6 +148,6 @@
             </section>
 
             <BudgetCategoryTransactions :category-id="category.id" v-else />
-          </section>
+        </section>
     </section>
 </template>

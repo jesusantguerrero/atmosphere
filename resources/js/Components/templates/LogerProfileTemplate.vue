@@ -68,8 +68,8 @@
             <slot />
         </main>
 
-        <aside class="relative w-full h-screen overflow-auto md:px-2 md:block" :class="panelStyles">
-            <section class="px-2 md:fixed aside-content md:pr-8">
+        <aside class="relative w-full h-screen overflow-auto md:px-2 md:block " :class="panelStyles">
+            <section class="px-2 md:fixed aside-content md:pr-8 ic-scroller">
                 <slot name="prepend-panel" />
                 <slot name="panel">
                     <WidgetCard title="Accounts" class="mt-4 rounded-t-md">

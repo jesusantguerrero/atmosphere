@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { differenceInCalendarMonths, parseISO } from "date-fns";
 import { computed } from "vue";
+// @ts-ignore: no definitions
 import exactMath from "exact-math";
 
 import MoneyPresenter from "@/Components/molecules/MoneyPresenter.vue";
@@ -10,7 +11,7 @@ import BudgetMoneyLine from "./BudgetMoneyLine.vue";
 
 import { getBudgetTarget } from "@/domains/budget/budgetTotals";
 import { isSavingBalance, isSpendingTarget } from "@/domains/budget";
-import { BudgetTarget } from "@/domains/budget/models/budget";
+import { BudgetTarget, getTargetName } from "@/domains/budget/models/budget";
 import { ICategory } from "@/domains/transactions/models";
 import { formatDate, formatMoney, formatMonth, toOrdinals } from "@/utils";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
@@ -31,11 +32,13 @@ const targetDate = computed(() => {
     } else if (props.item.frequency_month_date) {
         return `The ${toOrdinals(props.item.frequency_month_date)}`
     }
-    return formatDate(props.item.frequency_date)
+    return props.item.frequency_date && formatDate(props.item.frequency_date)
 })
 
 function instancesLeft() {
-    return  !props.item.frequency_date ? 1 : differenceInCalendarMonths(parseISO(props.item.frequency_date), parseISO(props.category.month));
+    return  !props.item.frequency_date 
+    ? 1 
+    : differenceInCalendarMonths(parseISO(props.item.frequency_date), parseISO(props.category.month));
 }
 
 const monthlyContribution = computed(() => {
@@ -73,14 +76,6 @@ const fundedLabel = computed(() => isSpendingTarget(props.item) ? 'Funded' : 'Sa
 const targetAmount = computed(() => {
     return getBudgetTarget(props.item)
 })
-
-const targetTypeNames = {
-    saving_balance: 'saving balance'
-}
-
-const getTargetName = (code: string) => {
-    return targetTypeNames[code] ?? code;
-}
 
 const isGoal = computed(() => {
     return isSavingBalance(props.item);

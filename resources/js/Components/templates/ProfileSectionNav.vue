@@ -17,13 +17,7 @@ const sections = computed(() => {
             name: profile.name,
             label: profile.name,
             url: `/loger-profiles/${profile.id}`
-        })) ?? []),
-        {
-            icon: 'plus',
-            name: 'add',
-            label: 'Add',
-            action: 'add'
-        }
+        })) ?? [])
     ]
 })
 </script>
