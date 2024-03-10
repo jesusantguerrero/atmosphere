@@ -18,7 +18,7 @@ export type ButtonVariants = keyof typeof variants;
 const props = withDefaults(defineProps<{
     variant: ButtonVariants,
     as?: Object| string,
-    processing: boolean,
+    processing?: boolean,
     disabled?: boolean
     icon?: string | Object
 }>(), {

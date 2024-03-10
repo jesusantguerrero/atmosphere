@@ -16,6 +16,7 @@ use Illuminate\Auth\Events\Registered;
 use App\Listeners\CreateBudgetCategory;
 use App\Listeners\CreateBudgetMovement;
 use App\Listeners\CreateStartingBalance;
+use App\Listeners\UpdateBudgetAvailable;
 use Insane\Journal\Events\AccountCreated;
 use Insane\Journal\Events\AccountUpdated;
 use Laravel\Jetstream\Events\TeamCreated;
@@ -23,6 +24,9 @@ use Laravel\Jetstream\Events\TeamDeleted;
 use App\Listeners\HandleTransactionCreated;
 use App\Listeners\CreateOccurrenceAutomation;
 use Insane\Journal\Events\TransactionCreated;
+use Insane\Journal\Events\TransactionDeleted;
+use Insane\Journal\Events\TransactionUpdated;
+use Laravel\Jetstream\Events\TeamMemberAdded;
 use Insane\Journal\Listeners\CreateTeamAccounts;
 use App\Listeners\CreateBudgetTransactionMovement;
 use App\Domains\Transaction\Listeners\UpdateOpenReconciliations;
@@ -54,28 +58,25 @@ class EventServiceProvider extends ServiceProvider
         AccountCreated::class => [
             CreateBudgetCategory::class,
             CreateStartingBalance::class,
-            CreateBudgetMovement::class,
         ],
         AccountUpdated::class => [
             CreateBudgetCategory::class,
-            CreateBudgetMovement::class,
         ],
         TransactionCreated::class => [
             CreateBudgetTransactionMovement::class,
             HandleTransactionCreated::class,
             CheckOccurrence::class,
             UpdateOpenReconciliations::class,
-            CreateBudgetMovement::class,
+            UpdateBudgetAvailable::class,
         ],
         TransactionUpdated::class => [
             CreateBudgetTransactionMovement::class,
-            CreateBudgetMovement::class,
+            UpdateBudgetAvailable::class,
         ],
         TransactionDeleted::class => [
             CreateBudgetTransactionMovement::class,
-            CreateBudgetMovement::class,
+            UpdateBudgetAvailable::class,
         ],
-        // App events
         AppCreated::class => [
             ShowInApp::class,
         ],
