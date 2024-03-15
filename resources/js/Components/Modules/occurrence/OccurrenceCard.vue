@@ -10,7 +10,11 @@ defineProps<{
     checks: IOccurrenceCheck[];
 }>()
 const getDayDiff = (lastDay: string): number => {
-    return differenceInCalendarDays(new Date(), parseISO(lastDay));
+    try {
+        return differenceInCalendarDays(new Date(), parseISO(lastDay));
+    } catch (e) {
+        return "--"
+    }
 }
 </script>
 

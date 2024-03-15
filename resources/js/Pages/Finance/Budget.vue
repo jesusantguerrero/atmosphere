@@ -210,9 +210,9 @@ onMounted(() => {
 
       <section class="mx-auto mt-4 rounded-lg text-body bg-base max-w-7xl">
           <article class="w-full space-y-4">
-            <p class="text-center">
+            <!-- <p class="text-center">
                 {{ formatMoney(accountTotal) }} {{ formatMoney(available)  }} = ({{ formatMoney(accountTotal - available)}})
-            </p>
+            </p> -->
 
             <BudgetCategories :budgets="budgets" />
         </article>
