@@ -59,6 +59,10 @@ const trends = [
         url: '/trends'
     },
     {
+        label: 'Income',
+        url: '/trends/payees'
+    },
+    {
         label: 'Net Worth',
         url: '/trends/net-worth'
     },
