@@ -17,7 +17,7 @@ const props = defineProps<{
     showDelete: boolean;
 }>();
 
-const emit = defineEmits(['removed', 'edit'])
+const emit = defineEmits(['removed', 'edit', 'open'])
 
 
 const options = [{
@@ -49,7 +49,7 @@ const pageState = inject('pageState', {});
 const updateActivity = () => {
     const month = format(startOfMonth(pageState.dates.endDate), 'yyyy-MM-dd');
 
-    router.put(`budgets/${props.item.id}/months/${month}`, {
+    router.put(`budgets/${props.item.id}/months/${month}`, {}, {
         onSuccess() {
             router.reload({
                 only: ['budgets'],
@@ -79,13 +79,13 @@ const handleOptions = (option: string) => {
 
 <template>
 <header class="flex group items-center justify-between w-56 h-6 relative">
-    <section class="flex items-center">
+    <section class="flex items-center ">
         <section class="hidden group-hover:block">
             <NDropdown trigger="click" :options="options" key-field="name" :on-select="handleOptions" >
                 <LogerButtonTab> <i class="fa fa-ellipsis-v"></i></LogerButtonTab>
             </NDropdown>
         </section>
-        <h4 class="flex cursor-pointer ml-12 group-hover:ml-6 mb-2" @click="$emit('open')" :title="`ID: ${item.id}`">
+        <h4 class="flex cursor-pointer ml-12   items-center group-hover:ml-6" @click="$emit('open')" :title="`ID: ${item.id}`">
             <span class="items-center font-bold text-body-1">
                 <span :style="{ color: item.color }">
                     {{ item.name }}
@@ -97,7 +97,7 @@ const handleOptions = (option: string) => {
         </h4>
     </section>
     <button class="text-gray-400 hidden group-hover:inline-block transition cursor-pointer hover:text-red-400 focus:outline-none" @click="$emit('deleted', $event)">
-        <i class="fa fa-trash"></i>
+       <IMdiTrash />
     </button>
 </header>
 </template>
