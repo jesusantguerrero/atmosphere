@@ -153,12 +153,13 @@ const categories = computed(() => {
       />
 
       <template #panel>
-        <section class="fixed space-y-2 px-4">
+        <section class="grid grid-cols-2 gap-2 pt-4">
             <WatchlistSummaryCard
                 v-for="item in watchlist"
                 :startDate="pageState.dates.startDate"
                 :item="item"
                 @click="onClick(item.id)"
+                class="w-full"
             />
         </section>
       </template>
