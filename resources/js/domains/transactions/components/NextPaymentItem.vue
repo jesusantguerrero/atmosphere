@@ -1,28 +1,36 @@
 <script setup lang="ts">
 import SectionTitle from '@/Components/atoms/SectionTitle.vue';
-import { formatDate, formatMoney } from '@/utils';
+import { formatDate } from '@/utils';
 import { ITransaction } from '../models';
+import MoneyPresenter from '@/Components/molecules/MoneyPresenter.vue';
 
 defineProps<{
     payment: ITransaction
 }>();
+
+defineEmits(['edit', 'deleted']);
 </script>
 
 <template>
-    <section class="flex justify-between px-4 payment">
-        <div>
-            <SectionTitle>
-                {{ formatMoney(payment.total) }}
-            </SectionTitle>
-            <span class="text-sm text-body-1/80">
-                {{ payment.description }}
-            </span>
-        </div>
-        <div>
-            <span class="text-secondary bg-secondary/10 px-4 rounded-3xl py-1.5 text-xs">
+    <article class="flex justify-between px-4 payment group">
+        <section class="flex">
+            <button class="text-gray-400 hidden group-hover:inline-block transition cursor-pointer hover:text-red-400 focus:outline-none" @click="$emit('deleted', payment)">
+                <IMdiTrash />
+             </button>
+             <section>
+                 <SectionTitle>
+                     <MoneyPresenter :value="payment.total" />
+                 </SectionTitle>
+                 <span class="text-sm text-body-1/80">
+                     {{ payment.description }}
+                 </span>
+             </section>
+        </section>
+        <section class="items-center">
+            <span title="Approve transaction" class="text-secondary bg-secondary/10 px-4 rounded-3xl py-1.5 text-xs cursor-pointer" @click="$emit('edit', payment)">
                 {{ formatDate(payment.date) }}
             </span>
-        </div>
-    </section>
+        </section>
+    </article>
 </template>
 
