@@ -3,15 +3,12 @@
 namespace App\Http\Controllers\System;
 
 use Inertia\Inertia;
-use App\Events\BudgetCalculated;
 use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Housing\Models\Occurrence;
 use App\Domains\Meal\Services\MealService;
 use App\Http\Resources\PlannedMealResource;
 use App\Domains\Transaction\Services\ReportService;
 use App\Http\Controllers\Traits\HasEnrichedRequest;
-use App\Domains\Budget\Services\BudgetTargetService;
-use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Domains\Transaction\Services\TransactionService;
 use App\Domains\Transaction\Services\PlannedTransactionService;
 
