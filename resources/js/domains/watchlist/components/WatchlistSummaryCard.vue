@@ -37,7 +37,8 @@ defineProps<{
         <main class="py-2 px-4 flex space-x-2">
             <CardStat
                 label="This month"
-                :value="formatMoney(item.data?.month?.total)"
+                is-money
+                :value="item.data?.month?.total"
             />
             <CardStat
                 label="transactions"
