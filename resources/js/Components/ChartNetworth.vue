@@ -39,18 +39,17 @@ const currentSeries = computed(() => {
     }];
 })
 
-const state = reactive({
+const state = computed(() => ({
     headers: Object.entries(props.data).map(([dateString, item]) => ({
-        label: item.date_unit,
+        label: formatMonth(item.date_unit),
         value: [item.debts, item.assets],
         id: item.date_unit
     })),
     options: {
         colors: ["#7B77D1", "#F37EA1"],
     },
-    series: currentSeries
-});
-
+    series: currentSeries.value
+}));
 
 </script>
 
@@ -79,9 +78,11 @@ const state = reactive({
         <LogerChart
             label="name"
             type="bar"
-            :labels="currentSeries[0].labels"
+            :labels="currentSeries[0].labels.map(formatMonth)"
             :options="state.options"
             :series="state.series"
+            summary-line
+            summary-line-label="Net worth"
         />
       </div>
     </div>
