@@ -33,6 +33,15 @@ class LogerProfileService
         return LogerProfileData::from(LogerProfile::find($id));
     }
 
+    public function checkByName(int $teamId, string $name)
+    {
+        $profile = LogerProfile::where([
+            "team_id" => $teamId,
+            "name" => $name,
+        ])->first();
+
+        return $profile;
+    }
     public function getByName(int $teamId, string $name)
     {
         $profile = LogerProfile::where([
