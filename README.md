@@ -42,9 +42,10 @@ Loger is organized in "concerns" by the moment it has 4
     - [x] Accounts
     - [x] Transactions
     - [x] Statistics/Net Worth
-    - [ ] Scheduled Transactions*
+    - [x] Scheduled Transactions*
+    - [x] Reconcile Accounts
 
-* ### 🍗 Meal Planner
+* ### 🍗 Meal Planner (beta)
     - [x] Recipes   
     - [x] Ingredients
     - [x] Meal Planner
@@ -54,7 +55,9 @@ Loger is organized in "concerns" by the moment it has 4
 * ### 👨‍👩‍👧 Relationship**
     I don't want to automate/digitalize the humanity of a relationship here but save reminders of activities that would strengthen it like:
 
-    - Goals/Projects like travels and activities 
+    - [ ] Goals (Goals will have a budget connected in finance)
+    - [ ] Plans (Plans will be more strategic text)
+    - [ ] Places (Restaurants, Cities, Concerts, Watever)
 
 * ### 🏡Home/Family Projects**
     - [x] Chores
