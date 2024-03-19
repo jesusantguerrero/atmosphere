@@ -24,7 +24,7 @@ import { SearchFilterMode, useServerSearch } from "@/composables/useServerSearch
 import MessageBox from "@/Components/organisms/MessageBox.vue";
 import BudgetCategories from "./Partials/BudgetCategories.vue";
 
-import { MonthTypeFormat, formatMoney, formatMonth } from "@/utils";
+import { MonthTypeFormat, formatMonth } from "@/utils";
 import { ICategory } from "@/domains/transactions/models";
 
 const props = defineProps({

@@ -8,6 +8,7 @@ use App\Domains\LogerProfile\Data\LogerProfileData;
 use App\Domains\Transaction\Models\TransactionLine;
 use App\Domains\LogerProfile\Data\ProfileEntityData;
 use App\Domains\LogerProfile\Models\LogerProfileEntity;
+use App\Domains\LogerProfile\Exceptions\ProfileNotFound;
 use App\Domains\Transaction\Services\TransactionService;
 
 class LogerProfileService
@@ -34,10 +35,16 @@ class LogerProfileService
 
     public function getByName(int $teamId, string $name)
     {
-        return LogerProfileData::from(LogerProfile::where([
+        $profile = LogerProfile::where([
             "team_id" => $teamId,
             "name" => $name,
-        ])->first());
+        ])->first();
+
+        if (!$profile) {
+            throw new ProfileNotFound("Profile not found");
+        }
+
+        return LogerProfileData::from($profile);
     }
 
     public function addProfileEntity(ProfileEntityData $profileEntityData)

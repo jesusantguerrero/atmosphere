@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Finance;
 use Carbon\Carbon;
 use App\Models\Setting;
 use Illuminate\Http\Request;
-use App\Events\BudgetCalculated;
 use Laravel\Jetstream\Jetstream;
 use Freesgen\Atmosphere\Http\Querify;
 use App\Domains\Budget\Models\BudgetMonth;
