@@ -129,9 +129,7 @@ const fetchDetails = async (category: ICategory) => {
         }
     })
 
-
-    currentDetails.value = response.data?.transactions.at(0).details;
-    console.log(currentDetails.value)
+    currentDetails.value = response.data?.transactions.data;
 }
 
 const inputContainer = ref()

@@ -29,17 +29,16 @@ interface Line {
     concept: string,
     amount: string,
 }
-const parseDetails = (details: string): any[] => {
-    return !details ? [] : details.split('|')
-    .map((row: any): Line | null => {
-        const rowData = row.split('/');
-        return !rowData ? null : {
-            id: rowData[0],
-            accountName: rowData[1],
-            date: rowData[2],
-            payeeName: rowData[3],
-            concept: rowData[4],
-            amount: rowData[5],
+const parseDetails = (details: any[]): any[] => {
+    console.log({ details })
+    return details?.map?.((row: any): Line | null => {
+        return !row ? null : {
+            id: row.id,
+            accountName: row.name,
+            date: row.date,
+            payeeName: row.payee_name,
+            concept: row.concept,
+            amount: formatMoney(row.total),
         }
     }).filter((item: Line | null) => item)
 }

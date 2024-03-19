@@ -2,10 +2,11 @@
 
 namespace App\Domains\LogerProfile\Http\Controllers;
 
-use App\Models\Setting;
+use Exception;
 use App\Http\Controllers\Controller;
 use App\Domains\LogerProfile\Data\LogerProfileData;
 use App\Http\Controllers\Traits\HasEnrichedRequest;
+use App\Domains\LogerProfile\Exceptions\ProfileNotFound;
 use App\Domains\LogerProfile\Services\LogerProfileService;
 
 class LogerProfileController extends Controller
@@ -50,10 +51,23 @@ class LogerProfileController extends Controller
 
     public function relationships(LogerProfileService $profileService, string $profileName = 'relationship')
     {
-        $profile = $profileService->getByName(request()->user()->current_team_id, $profileName);
-        return inertia('LogerProfile/ProfileView', [
-            'profile' => $profile,
-            'entities' => fn () =>  $profileService->getEntitiesByProfileId($profile->id),
+        try {
+            $profile = $profileService->getByName(request()->user()->current_team_id, $profileName);
+            return inertia('Relationships/RelationshipView', [
+                'profile' => $profile,
+                'entities' => fn () =>  $profileService->getEntitiesByProfileId($profile->id),
+            ]);
+        } catch (Exception $e) {
+            if ($e instanceof ProfileNotFound) {
+               return to_route("relationships-overview");
+            }
+        }
+    }
+
+    public function overview()
+    {
+        return inertia('Relationships/NotFound', [
+            'profiles' => [],
         ]);
     }
 }

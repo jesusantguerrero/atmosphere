@@ -54,8 +54,8 @@ export interface IPayee {
 
 export const getCategoryLink = (itemId: number, type: 'categories' | 'groups' ) => {
     const types = {
-        categories: 'category_id',
-        groups: 'group_id'
+        categories: 'filter[category_id]',
+        groups: 'filter[group_id]'
     }
 
     const itemField = types[type] ?? types.groups;

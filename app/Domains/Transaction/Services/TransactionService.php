@@ -148,6 +148,7 @@ class TransactionService
 
     public static function getCategoryExpenseDetails($teamId, $startDate, $endDate, $limit = null, CoreCategory $category = null, $parentId = null)
     {
+
         $result = DB::table('transaction_lines')->where([
             'transaction_lines.team_id' => $teamId,
             'transactions.status' => 'verified',
@@ -155,12 +156,13 @@ class TransactionService
             ->whereNot('categories.name', BudgetReservedNames::READY_TO_ASSIGN->value)
             ->whereBetween('transactions.date', [$startDate, $endDate])
             ->when($category && !$category?->account_id, fn ($q) => $q->where('categories.id', $category->id)->groupBy('transaction_lines.category_id'))
-            ->when($category?->account_id, fn ($q) => $q->where('accounts.id', $category->account_id)->groupBy('transaction_lines.account_id'))
+            ->when($category?->account_id, fn ($q) => $q->where('accounts.id', $category->account_id))
             ->when($parentId, fn ($q) => $q->where('group.id', $parentId)->groupBy('group.id'))
             ->selectRaw("
                 transaction_lines.category_id,
                 categories.name,
                 categories.parent_id,
+                accounts.id as account_id,
                 group.name as parent_name,
                 transaction_lines.id,
                 accounts.name,
@@ -169,13 +171,14 @@ class TransactionService
                 transaction_lines.concept,
                 amount * transaction_lines.type total
             ")
-            ->join('transactions', 'transactions.id', 'transaction_id')
-            ->join('categories', 'categories.id', 'transaction_lines.category_id')
+            ->leftJoin('transactions', 'transactions.id', 'transaction_id')
+            ->leftJoin('categories', 'categories.id', 'transaction_lines.category_id')
             ->join('accounts', 'accounts.id', 'transaction_lines.account_id')
-            ->join('payees', 'payees.id', 'transaction_lines.payee_id')
+            ->leftJoin('payees', 'payees.id', 'transaction_lines.payee_id')
             ->leftJoin('categories as group', 'group.id', 'categories.parent_id')
             ->orderByDesc('transaction_lines.date')
             ->get();
+
 
         return [
             "total" => $result->sum('total'),
@@ -448,7 +451,10 @@ class TransactionService
     public static function getBareSplits($teamId, $options)
     {
         return Transaction::query()
-            ->where('team_id', $teamId)
+            ->where([
+                'team_id' => $teamId,
+                'status' => Transaction::STATUS_VERIFIED,
+            ])
             ->whereHas('lines', function ($query) use ($options) {
                 if (isset($options['categoryId'])) {
                     $query->where('category_id', $options['categoryId']);

@@ -40,7 +40,8 @@ class FinanceLinesController extends InertiaController
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
         [$startDate, $endDate] = $this->getFilterDates($filters, $timeZone);
 
-        $category = Category::find($filters['category_id']);
+
+        $category = Category::find($filters['category_id'] ?? $filters['group_id']);
         $splits = TransactionService::getSplits(
             auth()->user()->current_team_id,
             [
@@ -114,7 +115,7 @@ class FinanceLinesController extends InertiaController
 
         return [
             'sectionTitle' => $category->name,
-            'accountId' => $category->id,
+            'categoryId' => $category->id,
             'resource' => $category,
             'transactions' => TransactionService::getCategoryExpenseDetails($category->team_id, $startDate, $endDate, 50, $category, $groupId),
         ];
