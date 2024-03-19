@@ -6,10 +6,9 @@ import LogerButton from '@/Components/atoms/LogerButton.vue';
 import WelcomeCard from '@/Components/organisms/WelcomeCard.vue';
 
 import ProfileSectionNav from '@/Components/templates/ProfileSectionNav.vue';
-import LogerProfileModal from '@/Components/LogerProfileModal.vue';
 
 import { ref } from 'vue';
-import { router } from "@inertiajs/vue3";
+import { useForm, router } from "@inertiajs/vue3";
 
 
 defineProps<{
@@ -18,11 +17,18 @@ defineProps<{
 
 
 const isModalOpen = ref(false);
-const resourceToEdit = ref({});
 
-const onSaved = () => {
-    router.reload()
-}
+const form = useForm({
+    name: 'partner'
+})
+const createRelationshipProfile = () => {
+    form.post('/loger-profiles/', {
+        preserveScroll: true,
+        onSuccess() {
+            router.visit("/relationships/partner")
+        }
+    });
+};
 </script>
 
 
@@ -37,18 +43,13 @@ const onSaved = () => {
                 <section class="flex flex-col items-center pb-12 mx-auto">
                     <img src="./empty-box.svg" class="opacity-50" />
                     <h4 class="text-lg font-bold text-body-1"> There are not relationships created</h4>
-                    <LogerButton variant="inverse" @click="isModalOpen = !isModalOpen" class="mt-4">
+                    <LogerButton variant="inverse" @click="createRelationshipProfile()" class="mt-4">
                         Create relationship
                     </LogerButton>
                 </section>
             </WelcomeCard>
 
-            <LogerProfileModal
-                v-if="isModalOpen"
-                v-model:show="isModalOpen"
-                :form-data="resourceToEdit"
-                @saved="onSaved"
-            />
+
         </LogerProfileTemplate>
     </AppLayout>
 </template>

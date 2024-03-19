@@ -64,8 +64,14 @@ class LogerProfileController extends Controller
         }
     }
 
-    public function overview()
+    public function overview(LogerProfileService $profileService)
     {
+        $profileName = "partner";
+        $profile = $profileService->checkByName(request()->user()->current_team_id, $profileName);
+
+        if ($profile) {
+            to_route("relationships.index", [ "profileName" => $profileName]);
+        }
         return inertia('Relationships/NotFound', [
             'profiles' => [],
         ]);
