@@ -16,14 +16,31 @@ class FinanceTrendController extends Controller
     const DateFormat = 'Y-m-d';
 
     const sections = [
-        'groups' => 'group',
-        'categories' => 'category',
-        'payees' => 'payee',
-        'net-worth' => 'NetWorth',
-        'income-expenses' => 'IncomeExpenses',
-        'spending-year' => 'spendingYear',
-        'income-expenses-graph' => 'IncomeExpensesGraph',
-        'year-summary' => 'yearSummary',
+        'groups' => [
+            "handler" => 'group'
+        ],
+        'categories' => [
+            "handler" => 'category'
+        ],
+        'payees' => [
+            "handler" => 'payee',
+        ],
+        'net-worth' => [
+            "template" => "Trends/NetWorth",
+            "handler" =>'NetWorth',
+        ],
+        'income-expenses' => [
+            "handler" => 'IncomeExpenses',
+        ],
+        'spending-year' => [
+            "handler" => 'spendingYear'
+        ],
+        'income-expenses-graph' => [
+            "handler" => 'IncomeExpensesGraph'
+        ],
+        'year-summary' => [
+            "handler" => 'yearSummary',
+        ]
     ];
 
     public function __construct(private ReportService $reportService)
@@ -36,15 +53,17 @@ class FinanceTrendController extends Controller
         $queryParams = $request->query();
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
         $section = self::sections[$sectionName];
-        $data = $this->$section($request);
+        $sectionHandler = $section["handler"];
+        $sectionTemplate = $section["template"] ?? 'Trends/Overview';
+        $data = $this->$sectionHandler($request);
 
-        return inertia('Trends/Overview',
+        return inertia($sectionTemplate,
             array_merge([
                 'serverSearchOptions' => $filters,
                 'section' => $sectionName,
             ],
                 $data
-            ));
+        ));
     }
 
     public function group(Request $request)

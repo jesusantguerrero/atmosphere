@@ -268,7 +268,8 @@ class TransactionService
             INNER JOIN transactions t on tl.transaction_id = t.id
             INNER JOIN accounts on tl.account_id = accounts.id
             INNER JOIN account_detail_types adt on adt.id = accounts.account_detail_type_id
-            WHERE t.STATUS = 'verified' AND tl.date <= :monthDate
+            WHERE t.STATUS = 'verified'
+            AND tl.date <= :monthDate
             AND adt.name IN ('cash', 'cash_on_hand', 'bank', 'savings', 'credit_card')
             AND tl.team_id = :teamId
             AND balance_type IS NOT null
@@ -279,10 +280,11 @@ class TransactionService
           FROM DATA
           GROUP BY date_unit
           ORDER BY date_unit DESC
-          LIMIT 12;
+          LIMIT :limit;
         ", [
             'teamId' => $teamId,
-            'monthDate' => $endDate
+            'monthDate' => $endDate,
+            'limit' => Carbon::createFromFormat("Y-m-d", $endDate)->diffInMonths(Carbon::createFromFormat("Y-m-d", $startDate)) + 1,
         ]);
     }
 

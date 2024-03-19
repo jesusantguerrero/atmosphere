@@ -43,6 +43,13 @@ const props = defineProps({
   hasHiddenValues: {
     type: Boolean,
   },
+  summaryLine: {
+    type: Boolean,
+  },
+  summaryLineLabel: {
+    type: String,
+    default: "Summary"
+  }
 });
 
 const types = {
@@ -55,9 +62,7 @@ const chartComponent = computed(() => {
 });
 
 const chartData = computed(() => {
-  return {
-    labels: props.labels,
-    datasets: props.series.map((item, index) => ({
+    const dataSets = props.series.map((item, index) => ({
       label: item.name,
       data: item.data,
       fill: true,
@@ -66,8 +71,30 @@ const chartData = computed(() => {
         borderColor: props.options.borderColors[index],
       }),
       ...item,
-    })),
-  };
+    }));
+
+    const defaultColor = props.options.colors[0]
+
+    return {
+    labels: props.labels,
+    datasets: [
+        ...dataSets,
+        ...(props.summaryLine ? [
+            {
+                label: props.summaryLineLabel,
+                data: dataSets[0].data.map((value: number, index: number) => dataSets[1].data[index] - value),
+                fill: false,
+                pointStyle: 'circle',
+                borderColor: defaultColor,
+                backgroundColor: defaultColor,
+                pointRadius: 4,
+                pointHoverRadius: 8,
+                type: 'line',
+                order: 3
+            }
+        ] : [])
+    ]
+    };
 });
 
 const options = computed(() => ({
