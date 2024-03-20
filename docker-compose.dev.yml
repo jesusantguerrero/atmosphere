@@ -1,4 +1,4 @@
-version: "3.7"
+version: "3.8"
 services:
   web:
     build:
@@ -14,22 +14,25 @@ services:
       - 443:443
     restart: unless-stopped
     env_file:
-      - .env.docker
+      - path: ./.env.docker
+        required: false
     volumes:
       - ./:/app
       - ./Caddyfile.dev:/etc/caddy/Caddyfile
       - ./docker-compose/web/timezone:/etc/timezone
       - loger_db:/var/lib/mysql
     environment:
-        DEBUG: "debug"
-        # Change the following value if you know how it works.
-        # MERCURE_TRANSPORT_URL: "bolt://mercure.db"
-        MERCURE_PUBLISHER_JWT_KEY: "${MERCURE_PUBLISHER_JWT_KEY}"
-        MERCURE_SUBSCRIBER_JWT_KEY: "${MERCURE_SUBSCRIBER_JWT_KEY}"
-        # In the cors_origin, add your domain(s). Or just use *
-        MERCURE_EXTRA_DIRECTIVES: |-
-            cors_origins "*"
-            anonymous
+      DEBUG: "debug"
+      # Change the following value if you know how it works.
+      # MERCURE_TRANSPORT_URL: "bolt://mercure.db"
+      MERCURE_URL: "${MERCURE_URL}"
+      MERCURE_JWT_TOKEN: "${MERCURE_PUBLISHER_JWT_KEY}"
+      MERCURE_PUBLISHER_JWT_KEY: "${MERCURE_PUBLISHER_JWT_KEY}"
+      MERCURE_SUBSCRIBER_JWT_KEY: "${MERCURE_SUBSCRIBER_JWT_KEY}"
+      # In the cors_origin, add your domain(s). Or just use *
+      MERCURE_EXTRA_DIRECTIVES: |-
+          cors_origins "*"
+          anonymous
     networks:
       - loger
     depends_on:
@@ -39,13 +42,15 @@ services:
     image: mariadb:10.8.4
     container_name: loger-db
     restart: always
+    env_file:
+      - .env.docker
     ports:
       - "3306:3306"
     environment:
-      MYSQL_DATABASE: ${DB_DATABASE}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_DATABASE: "${DB_DATABASE}"
+      MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_USER: "${DB_USERNAME}"
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
       SERVICE_TAGS: dev
       SERVICE_NAME: mysql

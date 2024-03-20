@@ -2,13 +2,14 @@
 
 namespace App\Domains\Integration\Actions;
 
-use App\Domains\Automation\Models\Automation;
-use App\Domains\Integration\Concerns\MailToTransaction;
-use App\Domains\Integration\Concerns\TransactionDataDTO;
-use App\Domains\Transaction\Services\YNABService;
 use Exception;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\DomCrawler\Crawler;
+use App\Domains\Automation\Models\Automation;
+use App\Domains\Transaction\Services\YNABService;
+use App\Domains\Integration\Concerns\MailToTransaction;
+use App\Domains\Integration\Concerns\TransactionDataDTO;
 
 class BHDNotification implements MailToTransaction
 {
@@ -68,7 +69,8 @@ class BHDNotification implements MailToTransaction
                 'amount' => $bhdOutput['amount']->amount * 1,
                 'currencyCode' => $bhdOutput['amount']->currencyCode,
             ]);
-        } catch (Exception) {
+        } catch (Exception $e) {
+            Log::error($e->getMessage(), $e);
             return null;
         }
     }

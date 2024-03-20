@@ -63,7 +63,7 @@
     const getDayMeals = (date, mealTypeId) => {
         const isoDate = format(date, 'yyyy-MM-dd');
         return props.mealPlans.find(mealPlan => {
-            return mealPlan.date == isoDate && mealPlan.dateable.meal_type_id == mealTypeId
+            return mealPlan.date == isoDate && mealPlan.dateable?.meal_type_id == mealTypeId
         });
     }
 
