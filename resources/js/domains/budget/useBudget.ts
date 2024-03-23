@@ -2,9 +2,39 @@
 import { cloneDeep } from "lodash";
 import { computed, watch, reactive, toRefs, Ref } from "vue";
 import { getCategoriesTotals, getGroupTotals } from './index';
-import { ICategory } from "../transactions/models";
+import { IBudgetCategory } from "./models/budget";
 
-export const BudgetState = reactive({
+
+interface IFilterGroups {
+    overSpent: any[],
+    overAssigned: any[],
+    funded: any[],
+    underFunded: any[],
+}
+interface IBudgetState {
+    data: IBudgetCategory[];
+    categories: any[];
+    visibleCategories: any[],
+    filters: {
+        overspent: boolean,
+        funded: boolean,
+        underFunded: boolean,
+    },
+    filterGroups: IFilterGroups,
+    visibleFilters: Record<string, any>;
+    selectedBudgetIds: {
+        id: number|null;
+        groupId: number|null;
+    },
+    selectedBudget: any;
+    inflow?: IBudgetCategory;
+    outflow: IBudgetCategory[];
+    budgetTotals: any;
+    available: any;
+    readyToAssign: any
+}
+
+export const BudgetState: IBudgetState = reactive({
     data: [],
     categories: [],
     visibleCategories: [],
@@ -31,15 +61,15 @@ export const BudgetState = reactive({
 
     selectedBudget: computed(() => {
         return BudgetState.selectedBudgetIds.id
-        ? BudgetState.categories.find((cat: ICategory) => cat.id == BudgetState.selectedBudgetIds.id)
+        ? BudgetState.categories.find((cat: IBudgetCategory) => cat.id == BudgetState.selectedBudgetIds.id)
         : null;
     }),
     // Balance
     inflow: computed(() => {
-        return BudgetState.data.find((category: ICategory) => category.name == 'Inflow')
+        return BudgetState.data.find((category: IBudgetCategory) => category.name == 'Inflow')
     }),
     outflow: computed(() => {
-        return BudgetState.data?.filter((category: ICategory) => category.name != 'Inflow')
+        return BudgetState.data?.filter((category: IBudgetCategory) => category.name != 'Inflow')
     }),
     budgetTotals: computed(() => {
         return getGroupTotals(BudgetState.outflow)
@@ -76,30 +106,30 @@ export const BudgetState = reactive({
 });
 
 const getBudget = (budgetRawData: any) => {
-    const filters = {
+    const filters: IFilterGroups = {
         overSpent: [],
         overAssigned: [],
         funded: [],
         underFunded: []
     }
-    let categories = [];
+    let categories: IBudgetCategory[] = [];
     let budgetData = cloneDeep(budgetRawData)
 
-    budgetData = budgetData?.map(item => {
+    budgetData = budgetData?.map((item: IBudgetCategory) => {
         const totals = getCategoriesTotals(item.subCategories, {
-            onOverspent(category) {
+            onOverspent(category: IBudgetCategory) {
                 filters.overSpent.push(category)
                 category.hasOverspent = true;
             },
-            onFunded(category) {
+            onFunded(category: IBudgetCategory) {
                 filters.funded.push(category)
                 category.hasFunded = true;
             },
-            onUnderFunded(category) {
+            onUnderFunded(category: IBudgetCategory) {
                 filters.underFunded.push(category)
                 category.hasUnderFunded = true;
             },
-            onOverAssigned(category) {
+            onOverAssigned(category: IBudgetCategory) {
                 filters.overAssigned.push(category)
                 category.overAssigned = true;
             }
@@ -120,7 +150,12 @@ const getBudget = (budgetRawData: any) => {
     }
 }
 
-const setBudgetState = ({ filterGroups, categories, budgetData}) => {
+const setBudgetState = ({ filterGroups, categories, budgetData }:{
+    filterGroups: IFilterGroups,
+    categories: IBudgetCategory[],
+    budgetData: any
+    }
+) => {
     BudgetState.data = cloneDeep(budgetData);
     if (filterGroups) {
         BudgetState.filterGroups = filterGroups;
@@ -130,8 +165,15 @@ const setBudgetState = ({ filterGroups, categories, budgetData}) => {
     }
 }
 
+enum FilterNames {
+    Overspent = "overspent",
+    Funded = "funded",
+    Underfunded = "underFunded"
+}
+
 const setVisibleCategories = () => {
-    const visibleFilter = Object.keys(BudgetState.filters).find(name => BudgetState.filters[name])
+    // @ts-ignore
+    const visibleFilter = Object.keys(BudgetState.filters).find((name: string) => BudgetState.filters[name]) as FilterNames
     BudgetState.visibleCategories = getVisibleCategories(BudgetState.data, visibleFilter)
 }
 export const useBudget = (budgets: Ref<Record<string, any>>) => {
@@ -144,6 +186,7 @@ export const useBudget = (budgets: Ref<Record<string, any>>) => {
 
     const setBudgetFilter = (filterName: string) => {
         Object.entries(BudgetState.filters).forEach(([filter, value]) => {
+            // @ts-ignore:: its ok not to be ok
             BudgetState.filters[filter] = filterName == filter ? !value : false ;
         })
         setVisibleCategories();
@@ -157,19 +200,23 @@ export const useBudget = (budgets: Ref<Record<string, any>>) => {
     }
 }
 
+
+
 const filterConditions = {
-    overspent: (category: ICategory) =>  category.hasOverspent,
-    funded: (category: ICategory) =>  category.hasFunded,
-    underFunded: (category: ICategory) =>  category.hasUnderFunded,
+    overspent: (category: IBudgetCategory) =>  category.hasOverspent,
+    funded: (category: IBudgetCategory) =>  category.hasFunded,
+    underFunded: (category: IBudgetCategory) =>  category.hasUnderFunded,
 }
 
-const evaluateFilterCondition  = (category: ICategory, filterName: string) => {
-    return !filterName ? true : filterConditions[filterName](category);
+const evaluateFilterCondition  = (category: IBudgetCategory, filterName?: FilterNames) => {
+    return filterName
+    ? filterConditions[filterName](category)
+    : true ;
 }
 
-function getVisibleCategories(budgetData: Record<string, any>, filterName?: string) {
+function getVisibleCategories(budgetData: Record<string, any>, filterName?: FilterNames) {
     const data = cloneDeep(budgetData);
-    const visibleGroups = data.reduce((groups, group) => {
+    const visibleGroups = data.reduce((groups: any, group: IBudgetCategory) => {
         const groupHasFilter = group.name != 'Inflow' && evaluateFilterCondition(group, filterName)
         if (groupHasFilter) {
             group.subCategories = group.subCategories?.filter(subCategory => filterName ? evaluateFilterCondition(subCategory, filterName) : true)

@@ -82,6 +82,7 @@ export interface IBudgetCategory extends ICategory {
     hasUnderFunded: boolean;
     overAssigned: boolean;
     subCategories: any[]
+    activity: number;
 }
 
 

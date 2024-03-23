@@ -23,6 +23,10 @@ export interface ITransactionLine {
 }
 
 export interface ICategory {
+    overAssigned: boolean;
+    hasOverspent: any;
+    hasFunded: any;
+    hasUnderFunded: any;
     month: string;
     id?: number;
     name: string;

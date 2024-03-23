@@ -15,6 +15,7 @@ import { TRANSACTION_DIRECTIONS } from "@/domains/transactions";
 import { cloneDeep } from "lodash";
 import { ITransaction, ITransactionLine } from "../models";
 import { useTransactionStore } from "@/store/transactions";
+import { useInertiaForm, validators } from "@/utils/useInertiaForm";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 import { useStorage } from "@vueuse/core";
 
@@ -69,7 +70,7 @@ const state = reactive({
     start_date: null,
     timezone_id: "America/Santo_Domingo",
   },
-  form: useForm({
+  form: useInertiaForm({
     name: "",
     payee_id: "",
     payee_label: "",
@@ -82,7 +83,11 @@ const state = reactive({
     account_id: null,
     total: 0,
     has_splits: false,
-  }),
+  })
+});
+
+state.form.validationSchema({
+    description: [validators.isRequired],
 });
 
 const splits = ref<Record<string, any>[]>([])
@@ -208,55 +213,54 @@ const onSubmit = (addAnother = false) => {
     return;
   }
 
-  state.form
-    .transform((form) => {
-      const data = {
-        ...cloneDeep(form),
-        resource_type_id: "MANUAL",
-        total: form.total,
-        date: format(new Date(form.date), "yyyy-MM-dd"),
-        status: "verified",
-        direction: form.is_transfer ? TRANSACTION_DIRECTIONS.WITHDRAW : form.direction,
-        category_id: form.is_transfer ? null : form.category_id,
-        ...state.schedule_settings,
-      };
+  try {
+      state.form
+        .transform((form) => {
+          const data = {
+            ...cloneDeep(form),
+            resource_type_id: "MANUAL",
+            total: form.total,
+            date: format(new Date(form.date), "yyyy-MM-dd"),
+            status: "verified",
+            direction: form.is_transfer ? TRANSACTION_DIRECTIONS.WITHDRAW : form.direction,
+            category_id: form.is_transfer ? null : form.category_id,
+            ...state.schedule_settings,
+          };
 
-      const splitItem = splitItems[0]
-      data.category_id = splitItem.category_id;
-      data.payee_id = splitItem.payee_id;
-      data.counter_account_id = form.is_transfer ? splitItem.counter_account_id : null;
-      data.account_id = splitItem.account_id;
-      data.total = splitItem.amount;
-      data.has_splits = false;
+          const splitItem = splitItems[0]
+          data.category_id = splitItem.category_id;
+          data.payee_id = splitItem.payee_id;
+          data.counter_account_id = form.is_transfer ? splitItem.counter_account_id : null;
+          data.account_id = splitItem.account_id;
+          data.total = splitItem.amount;
+          data.has_splits = false;
 
-      if (splitItems?.length > 1) {
-        data.items = splitItems;
-        data.has_splits = true;
-      }
-      lastSaved.value.lastSaved = data;
-      return data;
-    })
-    .submit(action.method, action.url(), {
-      preserveScroll: true,
-      onBefore(evt) {
-        if (!evt.data.total) {
-          alert("The balance should be more than 0");
-        }
-      },
-      onSuccess: () => {
-        state.form.reset('description', 'category_id' , 'payee_id', 'payee_label', 'total', 'has_splits');
-        resetSplits(lastSaved.value.lastSaved);
-        nextTick(() => {
-            const items = splits.value;
-            gridSplitsRef.value?.reset(items);
+          if (splitItems?.length > 1) {
+            data.items = splitItems;
+            data.has_splits = true;
+          }
+          lastSaved.value.lastSaved = data;
+          return data;
         })
-        if (!lastSaved.value.addAnother) {
-            emit("close");
-        }
-        transactionStore.emitTransaction(lastSaved as ITransaction, action.method, props.transactionData);
-        lastSaved.value.addAnother = false;
-      },
-    });
+        .submit(action.method, action.url(), {
+          preserveScroll: true,
+          onSuccess: () => {
+            state.form.reset('description', 'category_id' , 'payee_id', 'payee_label', 'total', 'has_splits');
+            resetSplits(lastSaved.value.lastSaved);
+            nextTick(() => {
+                const items = splits.value;
+                gridSplitsRef.value?.reset(items);
+            })
+            if (!lastSaved.value.addAnother) {
+                emit("close");
+            }
+            transactionStore.emitTransaction(lastSaved as ITransaction, action.method, props.transactionData);
+            lastSaved.value.addAnother = false;
+          },
+        });
+  } catch (err) {
+    console.log(err)
+  }
 };
 
 
@@ -287,6 +291,7 @@ const saveText = computed(() => {
         <div class="mt-2">
           <slot name="content">
             <div>
+                {{ form.error }}
               <div class="px-4 md:flex md:space-x-2 md:px-0">
                 <AtField
                   label="Date"
