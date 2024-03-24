@@ -40,7 +40,12 @@ const props = defineProps({
     dataItemLabel: {
         type: Function
     },
+    hideDivider: {
+        type: Boolean
+    }
 });
+
+const emit = defineEmits(['click']);
 
 const selectedDate = ref(null)
 const currentSeries = computed(() => {
@@ -72,7 +77,7 @@ const state = computed(() => {
         })),
         options: {
             colors: ["#7B77D1", "#80CDFE"],
-            hasHiddenValues: hasHiddenValues.value
+            hasHiddenValues: hasHiddenValues.value,
         },
         series: currentSeries.value
     }
@@ -82,23 +87,31 @@ watch(() => props.data, () => {
     selectedDate.value = null
 })
 
+const handleSelection = (index: number) => {
+    if (selectedDate.value) {
+       const item = props.data[selectedDate.value].data[index];
+       emit('subitem-clicked', item, selectedDate.value)
+    }
+}
+
 </script>
 
 <template>
     <WidgetTitleCard
         :title="title"
         :action="action"
+        :hide-divider="hideDivider"
         @action="$emit('action', $event)"
         :border="false"
         :with-padding="false"
     >
-        <template #before v-if="selectedDate">
+        <template #icon v-if="selectedDate">
             <LogerButtonTab  @click="selectedDate=null">
-                <i class="fa fa-arrow-left"></i>
+                <IMdiChevronLeft />
             </LogerButtonTab>
         </template>
         <template #action v-if="selectedDate">
-            <span v-if="selectedDate" class="capitalize text-primary">{{ formatMonth(selectedDate) }}</span>
+            <span v-if="selectedDate" class="capitalize text-primary">{{ formatMonth(selectedDate) }} Hola</span>
         </template>
 
         <section class="w-full card-text" >
@@ -127,6 +140,7 @@ watch(() => props.data, () => {
                 :options="state.options"
                 :series="state.series"
                 :has-hidden-values="hasHiddenValues"
+                @clicked="handleSelection"
             />
         </section>
     </WidgetTitleCard>

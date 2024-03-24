@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import DonutChart from "@/Components/organisms/DonutChart.vue";
 // @ts-ignore
-import exactMath from "exact-math";
+import exactMath from "@/plugins/exactMath"
 import { formatMoney } from "@/utils";
 
 import ExpenseChartWidgetRow from "./ExpenseChartWidgetRow.vue";

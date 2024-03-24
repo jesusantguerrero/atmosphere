@@ -4,7 +4,7 @@ import { ref, inject, computed, Ref } from "vue";
 import { router } from "@inertiajs/vue3";
 import { VueDraggableNext as Draggable } from "vue-draggable-next"
 // @ts-ignore
-import exactMathNode from 'exact-math';
+import exactMathNode from '@/plugins/exactMath';
 
 import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 import AccountModal from "./AccountModal.vue";

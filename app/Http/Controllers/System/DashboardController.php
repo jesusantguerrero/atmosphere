@@ -32,7 +32,7 @@ class DashboardController
         $plannedMeals = $this->mealService->getMealSchedule($teamId);
         $nextPayments = $this->plannedService->getPlanned($teamId);
 
-        return inertia('Dashboard', [
+        return inertia('Dashboard/Index', [
             'sectionTitle' => 'Dashboard',
             'meals' => PlannedMealResource::collection($plannedMeals),
             'budgetTotal' => $budget,

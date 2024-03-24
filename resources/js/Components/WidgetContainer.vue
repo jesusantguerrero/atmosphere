@@ -99,7 +99,7 @@ const { isTab: isCurrentTab, selectedTab, tabs: widgetTabs } = useTabs(
         </slot>
       </div>
     </header>
-    <section class="px-5">
+    <section class="px-5" v-auto-animate>
       <slot name="content" :selectedTab="selectedTab">
         <section :class="sectionClass">
           <AtBackgroundIconCard
