@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, watch } from 'vue';
 // @ts-expect-error: no definition
-import ExactMath from "exact-math";
+import ExactMath from "@/plugins/exactMath"
 
 import TransactionCard from "@/Components/molecules/TransactionCard.vue";
 import SectionCard from '@/Components/molecules/SectionCard.vue';

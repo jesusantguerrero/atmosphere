@@ -1,16 +1,13 @@
 <script setup lang="ts">
     import { ref, onMounted } from 'vue';
+    import { router } from '@inertiajs/vue3';
 
     import AppLayout from '@/Components/templates/AppLayout.vue'
     import OnboardingSteps from "@/Components/widgets/OnboardingSteps.vue";
-    import ChartComparison from "@/Components/widgets/ChartComparison.vue";
-    import ChartCurrentVsPrevious from "@/Components/widgets/ChartCurrentVsPrevious.vue";
     import WeatherWidget from "@/Components/widgets/WeatherWidget.vue";
     import AppIcon from '@/Components/AppIcon.vue';
-    import DashboardDrafts from "./DashboardDrafts.vue";
-    import MdiSync from '~icons/mdi/sync'
+    import DashboardDrafts from "./Partials/DashboardDrafts.vue";
     import WidgetContainer from '@/Components/WidgetContainer.vue';
-    import LogerButton from '@/Components/atoms/LogerButton.vue';
 
     import NextPaymentsWidget from "@/domains/transactions/components/NextPaymentsWidget.vue";
     import MealWidget from "@/domains/meal/components/MealWidget.vue";
@@ -18,9 +15,9 @@
     import OccurrenceCard from '@/Components/Modules/occurrence/OccurrenceCard.vue';
 
     import { useAppContextStore } from '@/store';
-    import { router } from '@inertiajs/vue3';
     import { IOccurrenceCheck } from '@/Components/Modules/occurrence/models';
     import { IAccount, ICategory } from '@/domains/transactions/models';
+    import DashboardSpendings from './Partials/DashboardSpendings.vue';
 
     withDefaults(defineProps<{
         spendingSummary: {
@@ -74,19 +71,6 @@
         fetchChecks()
     })
 
-
-    const itemLabel = (row: any) => {
-        return `${row.name}, ${row.target_type}`;
-    }
-
-    const financeTabs = [{
-      name: "monthVsPrevious",
-      label: "vs Previous Month",
-    },{
-      name: "spendingSummary",
-      label: "Spending Summary",
-    }];
-
     const transactionsTabs = [{
       name: "next",
       label: "Next",
@@ -117,41 +101,10 @@
                     <WeatherWidget class="md:w-4/12 md:order-1" />
                 </section>
 
-
-
-                <WidgetContainer
-                    :message="$t('Financial glance')"
-                    :tabs="financeTabs"
-                    default-tab="monthVsPrevious"
-                    class="order-2 mt-4 lg:mt-0 lg:order-1"
-              >
-                <template v-slot:content="{ selectedTab }">
-                    <ChartCurrentVsPrevious
-                        v-if="selectedTab=='monthVsPrevious'"
-                        class="w-full  md:mb-10 overflow-hidden bg-white rounded-lg"
-                        :class="[cardShadow]"
-                        :title="$t('This month vs last month')"
-                        ref="ComparisonRevenue"
-                        :data="expenses"
-                    />
-
-                    <ChartComparison
-                        v-else
-                        class="w-full md:mb-10 overflow-hidden bg-white rounded-lg"
-                        :class="[cardShadow]"
-                        :title="$t('Spending summary')"
-                        ref="ComparisonRevenue"
-                        :data="spendingSummary"
-                        data-item-total="total_amount"
-                        :data-item-label="itemLabel"
-                        :action="{
-                            label: 'Go to Trends',
-                            iconClass: 'fa fa-chevron-right',
-                        }"
-                        @action="router.visit('/trends/income-expenses-graph')"
-                    />
-                </template>
-              </WidgetContainer>
+                <DashboardSpendings
+                    :expenses="expenses"
+                    :spending-summary="spendingSummary"
+                />
             </section>
             <section class="py-6  space-y-4 md:w-3/12">
                 <OccurrenceCard :checks="checks" :wrap="true" />

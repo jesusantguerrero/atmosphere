@@ -41,12 +41,21 @@ const state = reactive({
         colors: ["#7B77D120", "#F598B420"],
         borderColors: ["#7B77D1", "#F598B4"],
         tension: 0,
+        interaction: {
+            intersect: false,
+            mode: 'nearest',
+            axis: 'x'
+        },
         plugins: {
             legend: {
                 display: false,
             },
             title: {
                 display: false,
+                text: (ctx: any) => {
+                    const { axis = 'xy', intersect, mode} = ctx.chart.options.interaction
+                    return 'Mode: ' + mode + ', axis: ' + axis + ', intersect: ' + intersect;
+                }
             },
         },
         scales: {

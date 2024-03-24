@@ -39,7 +39,7 @@ export const useInertiaForm = (
     config: IFormConfig = {}
 ) => {
     const data = props || {};
-    const defaults = cloneDeep(data);
+    let defaults = cloneDeep(data);
     let transform = (data: Record<string, any>) => data;
     let validationSchema: ValidationSchema = {};
     let cancelToken = null

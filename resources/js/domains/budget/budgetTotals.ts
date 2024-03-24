@@ -1,7 +1,7 @@
 import { format } from 'date-fns';
 import { FREQUENCY_TYPE } from './../../utils/index';
 // @ts-ignore
-import ExactMath from "exact-math";
+import ExactMath from "@/plugins/exactMath"
 import { getFrequencyMonthFactor } from "./getFrequencyMonthFactor";
 import { BudgetTarget, IBudgetCategory } from "./models/budget";
 import { useDatePager } from "vueuse-temporals";

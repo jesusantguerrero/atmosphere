@@ -52,6 +52,8 @@ const props = defineProps({
   }
 });
 
+const emit = defineEmits(['clicked'])
+
 const types = {
   bar: Bar,
   line: Line,
@@ -60,6 +62,8 @@ const types = {
 const chartComponent = computed(() => {
   return types[props.type];
 });
+
+
 
 const chartData = computed(() => {
     const dataSets = props.series.map((item, index) => ({
@@ -98,11 +102,16 @@ const chartData = computed(() => {
 });
 
 const options = computed(() => ({
+    interaction: {
+      intersect: false,
+      mode: 'index',
+    },
   plugins: {
     title: {
       display: !!props.title,
       text: props.title,
     },
+    ...props.options.plugins
   },
   layout: {
     padding: 20,
@@ -115,6 +124,11 @@ const options = computed(() => ({
         },
       },
     },
+  },
+  onClick: (e, ...args) => {
+    const chart = chartRef.value.chartInstance || args[1];
+    const index = chart?.tooltip.dataPoints[0].dataIndex;
+    emit("clicked", index);
   },
   ...props.options,
 }));
@@ -135,5 +149,10 @@ watch(
 </script>
 
 <template>
-  <component :is="chartComponent" :data="chartData" :options="options" ref="chartRef" />
+  <component
+    :is="chartComponent"
+    :data="chartData"
+    :options="options"
+    ref="chartRef"
+  />
 </template>

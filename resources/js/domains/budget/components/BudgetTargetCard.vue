@@ -2,7 +2,7 @@
 import { differenceInCalendarMonths, parseISO } from "date-fns";
 import { computed } from "vue";
 // @ts-ignore: no definitions
-import exactMath from "exact-math";
+import exactMath from "@/plugins/exactMath"
 
 import MoneyPresenter from "@/Components/molecules/MoneyPresenter.vue";
 
@@ -36,8 +36,8 @@ const targetDate = computed(() => {
 })
 
 function instancesLeft() {
-    return  !props.item.frequency_date 
-    ? 1 
+    return  !props.item.frequency_date
+    ? 1
     : differenceInCalendarMonths(parseISO(props.item.frequency_date), parseISO(props.category.month));
 }
 
