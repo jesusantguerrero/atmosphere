@@ -11,22 +11,23 @@ const menus = {
         label: 'Overview',
         url: '/housing'
     },
-    {
-        label: 'Chores',
-        url: '/housing/chores'
-    },
+    // {
+    //     label: 'Chores',
+    //     url: '/housing/chores'
+    // },
     {
         label: 'Occurrence Checks',
         url: '/housing/occurrence'
     },
-    {
-        label: 'Plans',
-        url: '/housing/plans'
-    },
-    {
-        label: 'Equipment',
-        url: '/housing/equipments'
-    }],
+    // {
+    //     label: 'Plans',
+    //     url: '/housing/plans'
+    // },
+    // {
+    //     label: 'Equipment',
+    //     url: '/housing/equipments'
+    // }
+    ],
     [MODULES.MEAL]: [
         {
             label: 'Overview',
