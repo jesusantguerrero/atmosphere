@@ -41,12 +41,12 @@ export const useAppMenu = t => {
                 return /housing/.test(currentPath)
              }
         },
-        {
-            icon: 'fas fa-heart',
-            label: t('Relationship'),
-            to: '/relationships/partner',
-            as: Link
-        },
+        // {
+        //     icon: 'fas fa-heart',
+        //     label: t('Relationship'),
+        //     to: '/relationships/partner',
+        //     as: Link
+        // },
         {
             icon: 'fas fa-users',
             label: t('Profiles'),

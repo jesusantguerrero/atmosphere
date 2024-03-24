@@ -13,11 +13,11 @@
     import MealWidget from "@/domains/meal/components/MealWidget.vue";
     import BudgetTracker from "@/domains/budget/components/BudgetTracker.vue";
     import OccurrenceCard from '@/Components/Modules/occurrence/OccurrenceCard.vue';
+    import DashboardSpendings from './Partials/DashboardSpendings.vue';
 
     import { useAppContextStore } from '@/store';
     import { IOccurrenceCheck } from '@/Components/Modules/occurrence/models';
     import { IAccount, ICategory } from '@/domains/transactions/models';
-    import DashboardSpendings from './Partials/DashboardSpendings.vue';
 
     withDefaults(defineProps<{
         spendingSummary: {
