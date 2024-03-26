@@ -98,6 +98,7 @@ const isGoal = computed(() => {
         class="h-1.5 rounded-sm"
         :goal="targetAmount"
         :current="currentAmount"
+        :filled="category.activity"
         :progress-class="[progressClass, 'bg-secondary/5']"
         :show-labels="false"
     >

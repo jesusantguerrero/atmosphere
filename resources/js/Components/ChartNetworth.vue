@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import formatMoney from "@/utils/formatMoney";
 import { format, parseISO } from "date-fns";
-import { computed, reactive, ref } from "vue";
+import { computed, ref, inject } from "vue";
 
 import LogerChart from "./organisms/LogerChart.vue";
 import ChartHeaderScroller from "./ChartHeaderScroller.vue";
@@ -19,6 +19,9 @@ const props = defineProps({
       type: Object,
       required: true
     },
+    hideHeaders: {
+        type: Boolean
+    }
 });
 
 const formatMonth = (dateString) => {
@@ -51,13 +54,15 @@ const state = computed(() => ({
     series: currentSeries.value
 }));
 
+const hasHiddenValues = inject('hasHiddenValues', ref(false))
+
 </script>
 
 <template>
   <div class="w-full comparison-card">
     <div class="pb-10 rounded-lg">
       <div class="card-text" >
-        <ChartHeaderScroller item-class="comparison-header__item" class="flex flex-row-reverse">
+        <ChartHeaderScroller v-if="!hideHeaders" item-class="comparison-header__item" class="flex flex-row-reverse">
             <section
                 v-for="header in state.headers"
                 :key="header.id"
@@ -77,10 +82,11 @@ const state = computed(() => ({
         </ChartHeaderScroller>
         <LogerChart
             label="name"
-            type="bar"
+            :type="type"
             :labels="currentSeries[0].labels.map(formatMonth)"
             :options="state.options"
             :series="state.series"
+            :has-hidden-values="hasHiddenValues"
             summary-line
             summary-line-label="Net worth"
         />

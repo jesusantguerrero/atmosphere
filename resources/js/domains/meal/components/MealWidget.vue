@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import SectionTitle from '@/Components/atoms/SectionTitle.vue';
 import RandomMealCard from '@/Components/widgets/RandomMealCard.vue';
-import LogerButton from '@/Components/atoms/LogerButton.vue';
 import { Link } from '@inertiajs/vue3';
 
 defineProps<{
@@ -14,7 +13,7 @@ const defaultShadow = window?.cardShadow ?? "";
 
 <template>
     <div  :class="defaultShadow">
-        <RandomMealCard class="mt-4 border-b rounded-b-none" />
+        <RandomMealCard class="border-b rounded-b-none" />
         <div class="px-4 py-2 space-y-4 cursor-pointer rounded-b-md min-h-min bg-base-lvl-3">
             <div class="text-center">
                 <SectionTitle type="secondary"> {{ $t('Menu for today') }}</SectionTitle>

@@ -11,6 +11,10 @@ const props = defineProps({
         type: [Number, String],
         default: 0
     },
+    filled: {
+        type: [Number, String],
+        default: 0
+    },
     progressClass: {
         type: Array,
         default: () => (["bg-primary", "bg-primary/40"]),
@@ -30,10 +34,21 @@ const progress = computed(() => {
 
   return Math.round((progressValue + Number.EPSILON) * 100) / 100;
 })
+const filledProgress = computed(() => {
+    let progressValue = ((parseFloat(Math.abs(props.filled) || 0)) / (parseFloat(props.current || 0)) || 0) * 100;
+    progressValue = Number.isFinite(progressValue) ? progressValue : 0;
+
+  return Math.round((progressValue + Number.EPSILON) * 100) / 100;
+})
 
 const progressStyle = computed(() => {
     return {
         width: `${progress.value || 0 }%` || '0px'
+    }
+})
+const filledStyle = computed(() => {
+    return {
+        width: `${filledProgress.value || 0 }%` || '0px'
     }
 })
 </script>
@@ -52,10 +67,26 @@ const progressStyle = computed(() => {
             </div>
         </slot>
     </div>
-    <div class="absolute z-10 flex w-full h-full" :class="progressClass[0]" :style="progressStyle" />
+    <div class="absolute z-10 flex w-full h-full" :class="progressClass[0]" :style="progressStyle">
+        <div class="w-full relative">
+            <div class="absolute z-20 flex w-full h-full bg-spent" :style="filledStyle" />
+        </div>
+    </div>
 </div>
 
 <div>
     <slot  name="after" :progress="progress" />
 </div>
 </template>
+
+<style lang="scss">
+.bg-spent {
+    background: repeating-linear-gradient(
+        45deg,
+        rgba(0,0,0, .6),
+        rgba(0,0,0, .6) 10px,
+        rgba(0,0,0, .2) 10px,
+        rgba(0,0,0, .2) 20px
+    );
+}
+</style>
