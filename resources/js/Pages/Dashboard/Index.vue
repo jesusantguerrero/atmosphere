@@ -4,7 +4,6 @@
 
     import AppLayout from '@/Components/templates/AppLayout.vue'
     import OnboardingSteps from "@/Components/widgets/OnboardingSteps.vue";
-    import WeatherWidget from "@/Components/widgets/WeatherWidget.vue";
     import AppIcon from '@/Components/AppIcon.vue';
     import DashboardDrafts from "./Partials/DashboardDrafts.vue";
     import WidgetContainer from '@/Components/WidgetContainer.vue';
@@ -90,7 +89,7 @@
             <section class="mt-6 md:w-9/12 space-y-4">
                 <section class="flex flex-col md:flex-row md:space-x-4">
                     <BudgetTracker
-                        class="md:w-8/12 w-full order-1  mt-2 md:mt-0"
+                        class="md:w-7/12 w-full order-1  mt-2 md:mt-0"
                         ref="budgetTrackerRef"
                         :budget="budgetTotal"
                         :expenses="transactionTotal.total_amount"
@@ -98,7 +97,14 @@
                         :username="user.name"
                         @section-click="selected=$event"
                     />
-                    <WeatherWidget class="md:w-4/12 md:order-1" />
+                    <BudgetTracker
+                        class="md:w-5/12 w-full order-1  mt-2 md:mt-0"
+                        ref="budgetTrackerRef"
+                        :budget="budgetTotal"
+                        :message="$t('Net-worth trend')"
+                        @section-click="selected=$event"
+                    />
+
                 </section>
 
                 <DashboardSpendings
@@ -106,8 +112,9 @@
                     :spending-summary="spendingSummary"
                 />
             </section>
-            <section class="py-6  space-y-4 md:w-3/12">
-                <OccurrenceCard :checks="checks" :wrap="true" />
+            <section class="py-6 space-y-4 md:w-3/12">
+                <OccurrenceCard   :checks="checks" :wrap="true" />
+
                 <OnboardingSteps
                     v-if="onboarding.steps"
                     class="mt-5"
@@ -135,6 +142,9 @@
                         <DashboardDrafts  v-else />
                     </template>
                 </WidgetContainer>
+                <WidgetContainer
+                    :message="$t('Emergency Fund Builder')"
+                />
             </section>
         </main>
     </AppLayout>

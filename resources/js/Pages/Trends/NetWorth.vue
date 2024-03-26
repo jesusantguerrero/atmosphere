@@ -1,22 +1,18 @@
 <script setup lang="ts">
 import { computed, toRefs } from "vue";
 import { router } from "@inertiajs/vue3";
-// @ts-ignore
-import { AtDatePager } from "atmosphere-ui";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
-import ChartNetWorth from "@/Components/ChartNetworth.vue";
-import IncomeExpenses from "@/Components/IncomeExpenses.vue";
 
 import TrendTemplate from "./Partials/TrendTemplate.vue";
+import ChartNetWorth from "@/Components/ChartNetworth.vue";
 import TrendSectionNav from "./Partials/TrendSectionNav.vue";
-import ChartComparison from "@/Components/widgets/ChartComparison.vue";
 import WidgetTitleCard from "@/Components/molecules/WidgetTitleCard.vue";
 
-import ExpenseChartWidget from "@/domains/transactions/components/ExpenseChartWidget.vue";
 
 import { useServerSearch } from "@/composables/useServerSearch";
 import RangeFilters from "@/domains/transactions/components/RangeFilters.vue";
+import { formatMoney } from "@/utils";
 
 const props = defineProps({
   user: {
@@ -80,109 +76,65 @@ const trends = [
     }
 ]
 
-const components = {
-    groups: ExpenseChartWidget,
-    categories: ExpenseChartWidget,
-    netWorth: ChartNetWorth,
-    incomeExpenses: IncomeExpenses,
-    incomeExpensesGraph:  ChartNetWorth,
-    spendingYear: ChartComparison
-}
-
-const trendComponent = computed(() => {
-    return components[props.metaData.name] || ExpenseChartWidget
-})
-
-const isCategoryTrend = computed(() => {
-    return ['group', 'categories', 'payees'].includes(props.metaData.name)
-})
-
-
 const isYearSpending = computed(() => {
     return ['spendingYear'].includes(props.metaData.name)
 })
 
-const cashflowEntities = {
-    groups: {
-        label: 'Groups',
-        value: '/trends/groups'
-    },
-    categories: {
-        label: 'Categories',
-        value: '/trends/categories'
-    },
-    payees: {
-        label: 'Payees',
-        value: '/trends/payees'
-    }
-}
-const isFilterSelected = (filterValue: string) => {
-    const currentStatus = location.pathname;
-    return currentStatus.includes(filterValue);
-}
+
+const getEntryBalance = (monthEntry: { assets: number, debts: number }) => {
+    return parseFloat(monthEntry.assets) + parseFloat(monthEntry.debts);
+};
+
+const lastMonth = computed(() => {
+    return getEntryBalance(props.data?.at?.(-2) ?? { debts: 0, assets: 0})
+});
+
+const thisMonth = computed(() => {
+    return getEntryBalance(props.data?.at?.(-1) ?? { debts: 0, assets: 0})
+});
+const monthMovement = computed(() => {
+    return  parseFloat(thisMonth.value) - parseFloat(lastMonth.value);
+});
+
+const monthMovementVariance = computed(() => {
+    return  (monthMovement.value /  parseFloat(lastMonth.value) * 100.00).toFixed(2);
+});
 </script>
 
 <template>
   <AppLayout :title="metaData.title">
     <template #header>
-      <TrendSectionNav :sections="trends">
-        <template #actions>
-            <ElDatePicker
-                class="w-full h-12 border-none bg-base-lvl-1 text-body"
-                v-model="pageState.dates.startDate"
-                v-model:endDate="pageState.dates.endDate"
-                @change="executeSearchWithDelay(500)"
-                controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
-                next-mode="3M"
-            />
-            <ElDatePicker
-                class="w-full h-12 border-none bg-base-lvl-1 text-body"
-                v-model="pageState.dates.endDate"
-                @change="executeSearchWithDelay(500)"
-                controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
-                next-mode="3M"
-            />
-            <RangeFilters
-                class="w-full"
-                v-model:startDate="pageState.dates.startDate"
-                v-model:endDate="pageState.dates.endDate"
-                defaultRange="3M"
-                method="back"
-                :ranges="[
-                    { label: '3M', value: [90, 0], tooltip: '3 Months' },
-                    { label: '6M', value: [180, 0], tooltip: '6 Months' },
-                    { label: '1Y', value: [365, 0], tooltip: '1 Year' },
-                ]"
-            />
-        </template>
-      </TrendSectionNav>
+      <TrendSectionNav :sections="trends" />
     </template>
 
     <TrendTemplate title="Finance" ref="financeTemplateRef" :hide-panel="true">
-        <component
-            class="mt-5"
-            v-if="isYearSpending"
-            :is="trendComponent"
-            style="background: white; width: 100%"
-            :type="section"
-            :series="data"
-            :data="data"
-            @selected="handleSelection"
-            v-bind="metaData.props"
-            :title="metaData.title"
-            label="name"
-            value="total"
-            :legend="false"
-            data-item-total="total_amount"
-        />
         <WidgetTitleCard
-            v-else
             :title="metaData.title"
             class="mt-5"
         >
+            <template #title>
+                <div>
+                    <h4>
+                        {{ formatMoney(thisMonth)}}
+                    </h4>
+                    <p class="space-x-1">
+                        <span class="text-success text-sms bg-success/10 px-2 rounded-md">
+                            {{ monthMovementVariance }}%
+                        </span>
+                        <span class="text-success text-sm">
+                           {{ formatMoney(monthMovement) }}
+                       </span>
+                       <span class="text-xs">
+                           Past Month
+                       </span>
+                    </p>
+                </div>
+            </template>
+
+
         <section class="relative flex flex-wrap items-center justify-center w-full bg-base-lvl-3 md:flex-nowrap md:space-x-8">
-            <component
-                :is="trendComponent"
+            <ChartNetWorth
+                hide-headers
                 style="background: white; width: 100%"
                 :type="section"
                 :series="data"
@@ -192,20 +144,40 @@ const isFilterSelected = (filterValue: string) => {
                 :title="metaData.title"
                 label="name"
                 value="total"
+                type="bar"
                 :legend="false"
                 data-item-total="total_amount"
             />
         </section>
-        <template #afterActions v-if="isCategoryTrend">
-            <div class="flex overflow-hidden text-white border rounded-md bg-primary border-primary min-w-max">
-                <button
-                    v-for="(item, statusName) in cashflowEntities"
-                    class="px-2 py-1.5 flex items-center border border-transparent hover:bg-accent"
-                    :class="{'bg-white text-primary border-primary hover:text-white': isFilterSelected(statusName)}"
-                    :key="statusName"
-                    @click="router.visit(item.value)">
-                    {{ item.label }}
-                </button>
+        <template #afterActions>
+            <div class="flex justify-end items-center">
+                <ElDatePicker
+                    class="w-full h-12 border-none bg-base-lvl-1 text-body"
+                    v-model="pageState.dates.startDate"
+                    v-model:endDate="pageState.dates.endDate"
+                    @change="executeSearchWithDelay(500)"
+                    controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
+                    next-mode="3M"
+                />
+                <ElDatePicker
+                    class="w-full h-12 border-none bg-base-lvl-1 text-body"
+                    v-model="pageState.dates.endDate"
+                    @change="executeSearchWithDelay(500)"
+                    controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
+                    next-mode="3M"
+                />
+                <RangeFilters
+                    class="w-fit"
+                    v-model:startDate="pageState.dates.startDate"
+                    v-model:endDate="pageState.dates.endDate"
+                    defaultRange="3M"
+                    method="back"
+                    :ranges="[
+                        { label: '3M', value: [90, 0], tooltip: '3 Months' },
+                        { label: '6M', value: [180, 0], tooltip: '6 Months' },
+                        { label: '1Y', value: [365, 0], tooltip: '1 Year' },
+                    ]"
+                />
             </div>
         </template>
       </WidgetTitleCard>

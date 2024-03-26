@@ -64,6 +64,21 @@ const chartComponent = computed(() => {
 });
 
 
+function parseNumberToK(number: number) {
+  if (number < 1000) {
+    return number.toString(); // No need for 'k' if less than 1000
+  } else {
+    const kValue = Math.floor(number / 1000);
+    const remainder = number % 1000;
+    let result = kValue.toString();
+    if (remainder > 0) {
+      result += `.${Math.floor(remainder / 100)}`; // Append decimal point and first decimal
+    }
+    result += 'k';
+    return result;
+  }
+}
+
 
 const chartData = computed(() => {
     const dataSets = props.series.map((item, index) => ({
@@ -120,7 +135,7 @@ const options = computed(() => ({
     y: {
       ticks: {
         callback(value, index, ticks) {
-          return props.hasHiddenValues ? "--" : formatMoney(value);
+          return props.hasHiddenValues ? "--" : parseNumberToK(value);
         },
       },
     },

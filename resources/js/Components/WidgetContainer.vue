@@ -18,13 +18,14 @@ interface Props {
   rounded: boolean;
   size: string;
   verticalHeader?: boolean;
-  tabs: any[],
+  tabs?: any[],
   defaultTab: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   rounded: true,
   size: "large",
+  tabs: () => [],
   sectionClass:
     "flex flex-col md:flex-row py-4 space-y-2 md:space-y-0 md:space-x-4 divide-x-2 rounded-md divide-base-lvl-2 bg-base-lvl-3",
 });

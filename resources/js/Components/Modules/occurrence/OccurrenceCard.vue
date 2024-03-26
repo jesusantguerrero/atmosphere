@@ -28,11 +28,11 @@ const getDayDiff = (lastDay: string): number => {
         </SectionTitle>
         <section class="flex mt-4">
           <CategoryItem
-            class="capitalize"
-            v-for="occurrence in checks"
-            :label="occurrence.name"
-            :value="getDayDiff(occurrence.last_date)"
-            wrap
+                class="capitalize"
+                v-for="occurrence in checks"
+                :label="occurrence.name"
+                :value="getDayDiff(occurrence.last_date)"
+                wrap
           />
         </section>
       </div>
