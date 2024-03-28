@@ -3,7 +3,6 @@
 namespace App\Events;
 
 use Illuminate\Queue\SerializesModels;
-use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Budget\Data\BudgetAssignData;
 use Illuminate\Foundation\Events\Dispatchable;
 use App\Domains\Budget\Data\BudgetMovementData;

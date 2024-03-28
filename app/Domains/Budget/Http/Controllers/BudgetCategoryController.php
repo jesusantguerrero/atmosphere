@@ -57,10 +57,9 @@ class BudgetCategoryController extends InertiaController
             return $model->withCurrentSavings($startDate);
         }));
 
-
         return inertia($this->templates['index'],
         [
-            $resourceName => $this->parser($resources),
+            $resourceName => $resources,
             "serverSearchOptions" => $this->getServerParams(),
             "accountTotal" => $this->accountService->getBalanceAs($teamId, $endDate),
             "distribution" => fn () => BudgetMonth::getMonthAssignmentByGroup($teamId, $startDate),

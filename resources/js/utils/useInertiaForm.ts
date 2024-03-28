@@ -91,9 +91,6 @@ export const useInertiaForm = (
         },
         setError(fieldOrFields: keyof IFormState | Record<keyof IFormState, string>, maybeValue?: string) {
             Object.assign(this.errors, typeof fieldOrFields === 'string' ? { [fieldOrFields]: maybeValue } : fieldOrFields)
-
-            this.hasErrors = Object.keys(this.errors).length > 0
-
             return this
         },
         clearErrors(...fields: any[]) {
@@ -104,8 +101,6 @@ export const useInertiaForm = (
               }),
               {},
             )
-
-            this.hasErrors = Object.keys(this.errors).length > 0
 
             return this
         },
@@ -263,7 +258,6 @@ export const useInertiaForm = (
                     }
                 });
             }
-            console.log(form.errors)
             return !form.hasErrors;
         },
     });

@@ -29,9 +29,8 @@ class BudgetRolloverService {
         }
         $overspending = 0;
         $fundedFromBudgets = 0;
-        $overspendingCategories = [
+        $overspendingCategories = [];
 
-        ];
         foreach ($categories as $category) {
             if($category->account_id) {
                 $fundedFromBudgets += $this->budgetCategoryService->updateFundedSpending($category, $month);
@@ -216,7 +215,7 @@ class BudgetRolloverService {
         // Not seeing an Underfunded Alert in your Credit Card Payment category? We're testing this new feature in stages and releasing it to everyone soon.
     }
 
-    public function startFrom($teamId, $yearMonth) {
+    public function startFrom($teamId, $yearMonth, $limit = null) {
         $this->team = Team::find($teamId);
         $this->accounts = Account::getByDetailTypes($teamId, AccountDetailType::ALL_CASH)->pluck('id');
 
@@ -231,6 +230,7 @@ class BudgetRolloverService {
         ->selectRaw("date_format(transaction_lines.date, '%Y-%m') AS date")
         ->groupBy(DB::raw("date_format(transaction_lines.date, '%Y-%m')"))
         ->whereRaw("date_format(transaction_lines.date, '%Y-%m') >= ?", [$yearMonth])
+        ->when($limit, fn($q) => $q->limit($limit))
         ->get()
         ->pluck('date');
 
@@ -249,5 +249,5 @@ class BudgetRolloverService {
         }
     }
 
-    // transactions with more than 3 days prior to the las recinciled transaction are not imported
+    // transactions with more than 3 days prior to the las reconciled transaction are not imported
 }

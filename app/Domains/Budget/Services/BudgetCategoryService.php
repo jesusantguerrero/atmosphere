@@ -4,7 +4,6 @@ namespace App\Domains\Budget\Services;
 
 use Brick\Money\Money;
 use Illuminate\Support\Str;
-use App\Events\BudgetAssigned;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Helpers\RequestQueryHelper;
@@ -226,10 +225,6 @@ class BudgetCategoryService
         } else {
             $activity = $category->getMonthBalance($monthDate->format('Y-m'))?->balance;
         }
-
-        // if ($monthDate->format('Y-m') == '2024-01') {
-        //     dd($transactions, $activity);
-        // }
 
         return  ($activity + $transactions) ?? 0;
     }
