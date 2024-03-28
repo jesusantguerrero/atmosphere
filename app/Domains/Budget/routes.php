@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Domains\Budget\Http\Controllers\BudgetFundController;
 use App\Domains\Budget\Http\Controllers\BudgetMonthController;
 use App\Domains\Budget\Http\Controllers\BudgetTargetController;
 use App\Domains\Budget\Http\Controllers\BudgetCategoryController;
@@ -18,4 +19,5 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
         Route::post('/budgets-import', 'import')->name('budget.import');
         Route::get('/budgets-export', 'export')->name('budget.export');
     });
+    Route::resource('/budget-funds', BudgetFundController::class);
 });

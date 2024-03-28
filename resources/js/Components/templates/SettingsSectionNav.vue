@@ -17,6 +17,10 @@ const sections = [
         label: 'Budget',
         url: `/teams/${teamId}`
     },
+    {
+        label: 'Emergency Fund Builder',
+        url: `/budget-funds/`
+    },
     // {
     //     label: 'Integrations',
     //     url: '/integrations'

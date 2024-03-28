@@ -22,7 +22,7 @@ const props = withDefaults(
       selected: boolean;
     }) => VNodeChild;
     trackId: string;
-    label: string;
+    label?: string;
   }>(),
   {
     customLabel: "label",
@@ -80,7 +80,7 @@ const getOptionFromLabel = (option: string): SelectOption => {
 };
 
 const resultParser = (apiOptions: Record<string, string>[], query: string = "") => {
-  let includeCustom = true;
+  let includeCustom = props.allowCreate;
   const queryTag = query.toLowerCase();
   const originalMap = apiOptions.map((option) => {
     const optionLabel = props.customLabel ? option[props.customLabel] : option.label;

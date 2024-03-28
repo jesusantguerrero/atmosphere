@@ -7,7 +7,6 @@
     import { removeTransaction, draftsDBToTransaction, useTransactionModal } from '@/domains/transactions';
     import LogerButton from '@/Components/atoms/LogerButton.vue';
     import { useTransactionStore } from '@/store/transactions';
-    import { router } from '@inertiajs/vue3';
     import MdiSync from '~icons/mdi/sync'
 
 
