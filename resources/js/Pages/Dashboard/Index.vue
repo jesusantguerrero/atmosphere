@@ -13,6 +13,7 @@
     import BudgetTracker from "@/domains/budget/components/BudgetTracker.vue";
     import OccurrenceCard from '@/Components/Modules/occurrence/OccurrenceCard.vue';
     import DashboardSpendings from './Partials/DashboardSpendings.vue';
+    import BudgetFundWidget from './Partials/BudgetFundWidget.vue';
 
     import { useAppContextStore } from '@/store';
     import { IOccurrenceCheck } from '@/Components/Modules/occurrence/models';
@@ -142,9 +143,7 @@
                         <DashboardDrafts  v-else />
                     </template>
                 </WidgetContainer>
-                <WidgetContainer
-                    :message="$t('Emergency Fund Builder')"
-                />
+                <BudgetFundWidget />
             </section>
         </main>
     </AppLayout>

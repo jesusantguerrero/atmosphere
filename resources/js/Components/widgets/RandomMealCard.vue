@@ -56,7 +56,7 @@ const getRandomMeal = () => {
 
 <template>
     <div class="flex items-center justify-between px-4 py-3 rounded-lg bg-base-lvl-3">
-        <div class="flex items-center h-10 text-lg text-center capitalize text-secondary">
+        <div class="flex items-center text-center capitalize text-secondary">
             <span>
                 {{ state.label }}
             </span>
@@ -64,7 +64,7 @@ const getRandomMeal = () => {
         <div class="flex justify-between">
             <LogerButton
                 variant="inverse"
-                class="rounded-full"
+                class="rounded-full text-xs h-6"
                 @click="getRandomMeal"
                 :processing="state.isLoading"
             >
