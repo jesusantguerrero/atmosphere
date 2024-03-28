@@ -3,6 +3,7 @@
 namespace App\Domains\Budget\Services;
 
 use App\Events\BudgetAssigned;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Category;
 use App\Domains\Budget\Models\BudgetMonth;
@@ -17,7 +18,7 @@ class BudgetMovementService
 
     const MODE_SUBTRACT = 'subtract';
 
-    public function __construct(public BudgetCategoryService $budgetService) {}
+    public function __construct(public BudgetCategoryService $budgetService, private BudgetRolloverService $budgetRolloverService) {}
 
     /**
      * Based on the direction of the movement for each account add or subtract the amount
@@ -70,7 +71,10 @@ class BudgetMovementService
             $this->updateBalances($sourceId, $savedMovement, $savedMovement->date, $amount, self::MODE_SUBTRACT);
         }
         DB::commit();
-        BudgetAssigned::dispatch($data, $formData);
+        $this->budgetRolloverService->startFrom($data->team_id, substr($data->date, 0, 7), 1);
+        if (!now()->isSameMonth(Carbon::createFromFormat("Y-m-d", $data->date))) {
+            BudgetAssigned::dispatch($data, $formData);
+        }
     }
 
     public function registerAssignment(BudgetAssignData $data, $quietly = false)
@@ -99,7 +103,10 @@ class BudgetMovementService
             $this->updateBalances($sourceId, $savedMovement, $savedMovement->date, $amount, self::MODE_SUBTRACT);
         }
         DB::commit();
-        BudgetAssigned::dispatch($data, $formData);
+        $this->budgetRolloverService->startFrom($data->team_id, substr($data->date, 0, 7), 1);
+        if (!now()->isSameMonth(Carbon::createFromFormat("Y-m-d", $data->date))) {
+            BudgetAssigned::dispatch($data, $formData);
+        }
     }
 
     public function getBalanceOfCategory($categoryId, string $month)
