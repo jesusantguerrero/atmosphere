@@ -95,6 +95,7 @@ const fetchTransactions = async () => {
   return axios.get(url).then<ITransaction[]>(({ data }) => {
     transactionsDraft.value = data;
     isLoadingDrafts.value = false;
+    return data;
   });
 };
 
@@ -102,32 +103,11 @@ onMounted(() => {
   fetchTransactions();
 });
 
-const isLoading = ref(false);
-const updateTransactions = () => {
-  isLoading.value = true;
-  fetchTransactions().finally(() => {
-    isLoading.value = false;
-  });
-};
-
-const transactionStore = useTransactionStore();
-const unsubscribe = transactionStore.$onAction(({ name, store, args, after }) => {
-  after((result) => {
-    const [savedValue, action, originalData] = args;
-    if (
-      originalData &&
-      originalData.status == "draft" &&
-      savedValue.status == "verified"
-    ) {
-      fetchTransactions();
-    }
-  });
-});
 </script>
 
 <template>
   <WidgetTitleCard
-    title="Financial indicators"
+    title="Net-Worth Balance"
     class="hidden md:block base-lvl-3 text-body-1"
     :hide-divider="true"
   >

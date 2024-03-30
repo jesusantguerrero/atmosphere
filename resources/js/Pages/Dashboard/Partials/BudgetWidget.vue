@@ -4,31 +4,37 @@ import { ITransaction } from '@/domains/transactions/models';
 import axios from 'axios';
 import WidgetTitleCard from '@/Components/molecules/WidgetTitleCard.vue';
 import LogerButton from '@/Components/atoms/LogerButton.vue';
-import { useTransactionStore } from '@/store/transactions';
 import { useI18n } from "vue-i18n";
-// import VueApexCharts from "vue3-apexcharts";
+import VueApexCharts from "vue3-apexcharts";
 import { formatMoney } from '@/utils';
 import BudgetProgress from '@/domains/budget/components/BudgetProgress.vue';
+import { IBudgetStat } from '@/domains/budget/models/budget';
 
 interface Stat {
     label: string;
     value: string|number;
 }
+
+const props = defineProps<{
+    budget: IBudgetStat
+}>();
+
+
 const stats = ref<{
     budgeted: Stat;
     spending: Stat;
     budgetedSpending: Stat;
 }>({
     budgeted: {
-        value: 2000,
+        value: props.budget.spending,
         label: 'Budgeted'
     },
     spending: {
-        value: 1000,
-        label: 'spending'
+        value: props.budget.savings,
+        label: 'Savings'
     },
     budgetedSpending: {
-        value: 1500,
+        value: 0,
         label: 'Budgeted spending'
     },
 });
@@ -81,51 +87,14 @@ const chartConfig = {
   series: Object.values(stats.value).map(item => item.value),
 };
 const legend = computed(() => {
-return chartConfig.options.labels.map((label, index) => {
-    return {
-    label: label,
-    value: chartConfig.series[index],
-    color: "",
-    };
+    return chartConfig.options.labels.map((label, index) => {
+        return {
+        label: label,
+        value: chartConfig.series[index],
+        color: "",
+        };
+    });
 });
-});
-
-const transactionsDraft = ref([]);
-const isLoadingDrafts = ref(false);
-const fetchTransactions = async () => {
-    const url = `/api/finance/transactions?filter[status]=draft&limit=10`;
-    return axios.get(url).then<ITransaction[]>(({ data }) => {
-        transactionsDraft.value = data;
-        isLoadingDrafts.value = false
-    })
-}
-
-onMounted(() => {
-    fetchTransactions()
-})
-
-const isLoading = ref(false);
-const updateTransactions = () => {
-    isLoading.value = true;
-    fetchTransactions().finally(() => {
-        isLoading.value = false;
-    })
-}
-
-const transactionStore = useTransactionStore();
-const unsubscribe =  transactionStore.$onAction(({
-    name,
-    store,
-    args,
-    after
-}) => {
-    after((result) => {
-        const [savedValue, action, originalData] = args;
-        if (originalData && originalData.status == 'draft' && savedValue.status == 'verified') {
-            fetchTransactions();
-        }
-    })
-})
 </script>
 
 <template>
@@ -133,14 +102,14 @@ const unsubscribe =  transactionStore.$onAction(({
         <section class="w-full">
             <section class="w-full  py-3 relative h-[155px]">
                 <article style="width: 100%; height: 300px" class="relative py-1 mb-10">
-                  <!-- <VueApexCharts
+                  <VueApexCharts
                     ref="chartRef"
                     width="100%"
                     height="100%"
                     type="donut"
                     :options="chartConfig.options"
                     :series="chartConfig.series.map((value) => Number(value))"
-                  /> -->
+                  />
                 </article>
               </section>
               <header class="mt-4 border-t py-4 flex items-start justify-between pb-2">
@@ -149,7 +118,7 @@ const unsubscribe =  transactionStore.$onAction(({
                         >
                             <IMdiBankTransfer />
                         </section>
-                        Budget total
+                        Total
                     </h1>
                     <section class="space-x-2 w-full">
                         <h2 class="text-lg flex items-center  font-bold">
@@ -168,18 +137,18 @@ const unsubscribe =  transactionStore.$onAction(({
               <article class="space-y-2 mt-4">
                 <BudgetProgress
                     class="h-2 rounded-sm"
-                    :goal="2000"
-                    :current="1500"
+                    :goal="budget.total"
+                    :current="budget.spending"
                     :progress-class="['bg-white', 'bg-primaryDark/60']"
                     :show-labels="false"
                 >
                     <template v-slot:before="{ progress }">
                         <header class="mb-1 font-bold text-xs flex justify-between w-full ">
                         <section>
-                            Class a
+                            For spending
                         </section>
                         <section >
-                            {{ formatMoney(totals?.paid) }} / {{ formatMoney(totals?.total) }}
+                            {{ formatMoney(budget.spending) }} / {{ formatMoney(budget?.total) }}
                             ({{ progress }}%)
                         </section>
                         </header>
@@ -187,11 +156,23 @@ const unsubscribe =  transactionStore.$onAction(({
                 </BudgetProgress>
                 <BudgetProgress
                     class="h-2 rounded-sm"
-                    :goal="1200"
-                    :current="700"
+                    :goal="budget.total"
+                    :current="budget.savings"
                     :progress-class="['bg-white', 'bg-primaryDark/60']"
                     :show-labels="false"
-                />
+                >
+                <template v-slot:before="{ progress }">
+                    <header class="mb-1 font-bold text-xs flex justify-between w-full ">
+                    <section>
+                        For savings
+                    </section>
+                    <section >
+                        {{ formatMoney(budget.savings) }} / {{ formatMoney(budget?.total) }}
+                        ({{ progress }}%)
+                    </section>
+                    </header>
+                </template>
+                </BudgetProgress>
               </article>
         </section>
 

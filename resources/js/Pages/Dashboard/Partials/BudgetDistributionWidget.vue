@@ -1,13 +1,15 @@
 <script setup lang="ts">
     import { ref, onMounted } from 'vue';
-    import { ITransaction } from '@/domains/transactions/models';
     import axios from 'axios';
+    import { router } from '@inertiajs/vue3';
+
+    import LogerButton from '@/Components/atoms/LogerButton.vue';
     import WidgetTitleCard from '@/Components/molecules/WidgetTitleCard.vue';
     import TransactionsList from '@/domains/transactions/components/TransactionsList.vue';
+
+    import { ITransaction } from '@/domains/transactions/models';
     import { removeTransaction, draftsDBToTransaction, useTransactionModal } from '@/domains/transactions';
-    import LogerButton from '@/Components/atoms/LogerButton.vue';
     import { useTransactionStore } from '@/store/transactions';
-    import { router } from '@inertiajs/vue3';
 
 
     const transactionsDraft = ref([]);

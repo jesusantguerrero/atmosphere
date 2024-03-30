@@ -1,5 +1,10 @@
 import { ICategory } from "@/domains/transactions/models";
 
+export interface IBudgetStat {
+    spending: number;
+    total: number;
+    saving: number;
+}
 export interface BudgetTarget {
     amount: number
     category_id: number;
@@ -91,5 +96,6 @@ const targetTypeNames = {
 }
 
 export const getTargetName = (code: string) => {
+    // @ts-ignore: is name
     return targetTypeNames[code] ?? code;
 }

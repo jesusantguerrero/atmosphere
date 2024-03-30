@@ -29,6 +29,7 @@ class DashboardController
         $teamId = $request->user()->current_team_id;
         $budget = BudgetMonth::getMonthAssignmentTotal($teamId, $startDate);
         $transactionsTotal = TransactionService::getExpensesTotal($teamId, $startDate, $endDate);
+        $netWorth = collect(TransactionService::getNetWorth($teamId, $startDate, $endDate))->reverse()->values();
         $plannedMeals = $this->mealService->getMealSchedule($teamId);
         $nextPayments = $this->plannedService->getPlanned($teamId);
 
@@ -37,6 +38,7 @@ class DashboardController
             'meals' => PlannedMealResource::collection($plannedMeals),
             'budgetTotal' => $budget,
             'transactionTotal' => $transactionsTotal,
+            'netWorth' => $netWorth,
             'expenses' => ReportService::generateCurrentPreviousReport($teamId, 'month', 1),
             'spendingSummary' => ReportService::generateExpensesByPeriod($teamId, $startDate),
             'onboarding' => function () use ($team) {

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { AtButton } from "atmosphere-ui";
-import { computed } from "vue";
+import { computed , toRefs } from "vue";
 import { useI18n } from "vue-i18n";
 import { router } from "@inertiajs/vue3";
 
@@ -8,24 +8,22 @@ import SectionTitle from "@/Components/atoms/SectionTitle.vue";
 import NumberHider from "@/Components/molecules/NumberHider.vue";
 
 import formatMoney from "@/utils/formatMoney";
+import { useNetWorth , INetWorthEntry} from "../useNetWorth";
+import MoneyPresenter from "@/Components/molecules/MoneyPresenter.vue";
 
-const props = defineProps({
-  username: {
-    type: String,
-    required: true,
-  },
-  budget: {
-    type: Number,
-  },
-  expenses: {
-    type: [Number, String],
-  },
-  message: {
-    default: "Welcome to Loger",
-  },
+const props = withDefaults(defineProps<{
+    username: string;
+    netWorth: INetWorthEntry[];
+    expenses: number | string;
+    message: string
+}>(), {
+  message:  "Welcome to Loger",
 });
 
 const { t } = useI18n();
+
+const { netWorth } = toRefs(props)
+const { lastMonth, thisMonth, monthMovement, monthMovementVariance } = useNetWorth(netWorth);
 
 const sections = computed(() => ({
   expenses: {
@@ -33,8 +31,8 @@ const sections = computed(() => ({
     value: props.expenses,
   },
   budget: {
-    label: t("Monthly Budget"),
-    value: props.budget,
+    label: t("Net-Worth Balance"),
+    value: thisMonth.value
   },
 }));
 
@@ -44,11 +42,11 @@ const isMultiple = (value: any) => {
 </script>
 
 <template>
-  <div
+  <article
     class="px-5 py-3 transition border divide-y rounded-lg divide-base border-base bg-base-lvl-3"
     :class="[cardShadow]"
   >
-    <div class="items-center pb-2 md:justify-between md:flex">
+    <header class="items-center pb-2 md:justify-between md:flex">
       <h1 class="font-bold text-body">
         {{ message }} <span class="text-primary">{{ username }}</span>
       </h1>
@@ -56,14 +54,14 @@ const isMultiple = (value: any) => {
         <AtButton
           class="text-sm text-primary"
           rounded
-          @click="router.visit(route('budgets.index'))"
+          @click="router.visit('/finance/transactions')"
         >
           <i class="fa fa-wallet"></i>
-          Edit budget
+          Transactions
         </AtButton>
       </div>
-    </div>
-    <div class="flex py-3">
+    </header>
+    <main class="flex py-3">
       <div
         class="w-full transition cursor-pointer hover:opacity-75"
         @click="$emit('section-click', sectionName)"
@@ -82,12 +80,11 @@ const isMultiple = (value: any) => {
         </SectionTitle>
         <SectionTitle class="mt-2" v-else>
           <span class="relative w-72">
-            <NumberHider />
-            {{ formatMoney(section.value) }}
+            <MoneyPresenter :value="section.value" />
           </span>
         </SectionTitle>
       </div>
-    </div>
+    </main>
     <slot />
-  </div>
+  </article>
 </template>
