@@ -13,6 +13,7 @@ import WidgetTitleCard from "@/Components/molecules/WidgetTitleCard.vue";
 import { useServerSearch } from "@/composables/useServerSearch";
 import RangeFilters from "@/domains/transactions/components/RangeFilters.vue";
 import { formatMoney } from "@/utils";
+import { useNetWorth } from "@/domains/transactions/useNetWorth";
 
 const props = defineProps({
   user: {
@@ -76,29 +77,8 @@ const trends = [
     }
 ]
 
-const isYearSpending = computed(() => {
-    return ['spendingYear'].includes(props.metaData.name)
-})
-
-
-const getEntryBalance = (monthEntry: { assets: number, debts: number }) => {
-    return parseFloat(monthEntry.assets) + parseFloat(monthEntry.debts);
-};
-
-const lastMonth = computed(() => {
-    return getEntryBalance(props.data?.at?.(-2) ?? { debts: 0, assets: 0})
-});
-
-const thisMonth = computed(() => {
-    return getEntryBalance(props.data?.at?.(-1) ?? { debts: 0, assets: 0})
-});
-const monthMovement = computed(() => {
-    return  parseFloat(thisMonth.value) - parseFloat(lastMonth.value);
-});
-
-const monthMovementVariance = computed(() => {
-    return  (monthMovement.value /  parseFloat(lastMonth.value) * 100.00).toFixed(2);
-});
+const { data } = toRefs(props)
+const { lastMonth, thisMonth, monthMovement, monthMovementVariance } = useNetWorth(data);
 </script>
 
 <template>

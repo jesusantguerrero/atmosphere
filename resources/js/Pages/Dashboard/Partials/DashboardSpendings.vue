@@ -53,10 +53,10 @@
 
     const financeTabs = [{
       name: "monthVsPrevious",
-      label: "vs Previous Month",
+      label: "Previous",
     },{
       name: "spendingSummary",
-      label: "Spending Summary",
+      label: "Spending",
     }];
 
 

@@ -10,14 +10,17 @@
 
     import NextPaymentsWidget from "@/domains/transactions/components/NextPaymentsWidget.vue";
     import MealWidget from "@/domains/meal/components/MealWidget.vue";
-    import BudgetTracker from "@/domains/budget/components/BudgetTracker.vue";
+    import AccountsTracker from "@/domains/transactions/components/AccountsTracker.vue";
     import OccurrenceCard from '@/Components/Modules/occurrence/OccurrenceCard.vue';
-    import DashboardSpendings from './Partials/DashboardSpendings.vue';
+    import DashboardSpending from './Partials/DashboardSpendings.vue';
     import BudgetFundWidget from './Partials/BudgetFundWidget.vue';
+    import NetWorthWidget from './Partials/NetWorthWidget.vue';
+    import BudgetWidget from "./Partials/BudgetWidget.vue";
 
     import { useAppContextStore } from '@/store';
     import { IOccurrenceCheck } from '@/Components/Modules/occurrence/models';
     import { IAccount, ICategory } from '@/domains/transactions/models';
+    import { IBudgetStat } from '@/domains/budget/models';
 
     withDefaults(defineProps<{
         spendingSummary: {
@@ -40,21 +43,20 @@
         user: {
             name: string;
         },
-        budgetTotal: number,
+        netWorth: any,
+        budgetTotal: IBudgetStat,
         nextPayments: any[],
         transactionTotal: Record<string, any>,
         categories: ICategory[],
         accounts: IAccount[],
         onboarding: Record<string, any>,
         checks: IOccurrenceCheck[]
-    }>(), {
-
-    });
+    }>(), {});
     const contextStore = useAppContextStore()
 
     const selected = ref(null);
 
-    const budgetTrackerRef = ref();;
+    const AccountsTrackerRef = ref();;
 
 
     const areChecksLoading = ref(true);
@@ -89,29 +91,23 @@
         <main class="px-5 mx-auto mt-5 mb-10 md:space-y-0 md:space-x-10 md:flex max-w-screen-2xl sm:px-6 lg:px-8">
             <section class="mt-6 md:w-9/12 space-y-4">
                 <section class="flex flex-col md:flex-row md:space-x-4">
-                    <BudgetTracker
+                    <AccountsTracker
                         class="md:w-7/12 w-full order-1  mt-2 md:mt-0"
-                        ref="budgetTrackerRef"
-                        :budget="budgetTotal"
+                        ref="AccountsTrackerRef"
+                        :net-worth="netWorth"
                         :expenses="transactionTotal.total_amount"
                         :message="$t('dashboard.welcome')"
                         :username="user.name"
                         @section-click="selected=$event"
                     />
-                    <BudgetTracker
-                        class="md:w-5/12 w-full order-1  mt-2 md:mt-0"
-                        ref="budgetTrackerRef"
-                        :budget="budgetTotal"
-                        :message="$t('Net-worth trend')"
-                        @section-click="selected=$event"
-                    />
-
+                    <BudgetFundWidget    class="md:w-5/12 w-full order-1  mt-2 md:mt-0" />
                 </section>
 
-                <DashboardSpendings
+                <DashboardSpending
                     :expenses="expenses"
                     :spending-summary="spendingSummary"
                 />
+                <MealWidget :meals="meals?.data" />
             </section>
             <section class="py-6 space-y-4 md:w-3/12">
                 <OccurrenceCard   :checks="checks" :wrap="true" />
@@ -122,8 +118,6 @@
                     :steps="onboarding.steps"
                     :percentage="onboarding.percentage"
                 />
-
-                <MealWidget :meals="meals?.data" />
                 <WidgetContainer
                     :message="$t('Transactions')"
                     :tabs="transactionsTabs"
@@ -143,7 +137,14 @@
                         <DashboardDrafts  v-else />
                     </template>
                 </WidgetContainer>
-                <BudgetFundWidget />
+                <BudgetWidget :budget="budgetTotal"/>
+                <!-- <NetWorthWidget
+                    ref="NetWorthWidgetRef"
+                    :budget="budgetTotal"
+                    :message="$t('Net-worth trend')"
+                    @section-click="selected=$event"
+                /> -->
+
             </section>
         </main>
     </AppLayout>

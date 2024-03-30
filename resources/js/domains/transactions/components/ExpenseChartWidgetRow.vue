@@ -70,7 +70,7 @@ const detailColumn = computed(() => {
         <template #trigger>
             <p class="inline-flex justify-between px-4 cursor-pointer " :class="classes" @click="$emit('open-details')">
                 <span class="font-bold" v-if="!hideTitle">
-                    {{ title ?? item.name }}: {{ classes }}
+                    {{ title ?? item.name }}:
                 </span>
                 <span
                     class="flex items-center ml-4 hover:underline group hover:text-primary"
