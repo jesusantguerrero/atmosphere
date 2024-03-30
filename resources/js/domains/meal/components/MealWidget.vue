@@ -14,7 +14,7 @@ const defaultShadow = window?.cardShadow ?? "";
 <template>
     <div  :class="defaultShadow">
         <RandomMealCard class="border-b rounded-b-none" />
-        <div class="px-4 py-2 space-y-4 cursor-pointer rounded-b-md min-h-min bg-base-lvl-3">
+        <div class="px-4 py-2 space-y-2 cursor-pointer rounded-b-md min-h-min bg-base-lvl-3">
             <div class="text-center">
                 <SectionTitle type="secondary"> {{ $t('Menu for today') }}</SectionTitle>
             </div>

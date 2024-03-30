@@ -1,13 +1,16 @@
 <script setup lang="ts">
     import { ref, onMounted } from 'vue';
-    import { ITransaction } from '@/domains/transactions/models';
     import axios from 'axios';
+
     import WidgetTitleCard from '@/Components/molecules/WidgetTitleCard.vue';
     import TransactionsList from '@/domains/transactions/components/TransactionsList.vue';
-    import { removeTransaction, draftsDBToTransaction, useTransactionModal } from '@/domains/transactions';
     import LogerButton from '@/Components/atoms/LogerButton.vue';
     import { useTransactionStore } from '@/store/transactions';
+    // @ts-expect-error: no types
     import MdiSync from '~icons/mdi/sync'
+
+    import { ITransaction } from '@/domains/transactions/models';
+    import { removeTransaction, draftsDBToTransaction, useTransactionModal } from '@/domains/transactions';
 
 
     const transactionsDraft = ref([]);
@@ -17,6 +20,7 @@
         return axios.get(url).then<ITransaction[]>(({ data }) => {
             transactionsDraft.value = data;
             isLoadingDrafts.value = false
+            return data;
         })
     }
 
@@ -57,7 +61,7 @@
     }) => {
         after((result) => {
             const [savedValue, action, originalData] = args;
-            if ((originalData && originalData.status == 'draft' && savedValue.status == 'verified') || action == 'delete') {
+            if ((originalData && originalData.status == 'draft' && savedValue?.status == 'verified') || action == 'delete') {
                 fetchTransactions();
             }
 

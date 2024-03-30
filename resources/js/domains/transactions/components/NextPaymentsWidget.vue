@@ -18,11 +18,11 @@ const handleEdit = (transaction: ITransaction) => {
 
 <template>
 <div
-    class="mt-4 mb-10 overflow-hidden bg-white sm:rounded-lg"
+    class="mt-4 mb-4 overflow-hidden bg-white sm:rounded-lg"
     :class="cardShadow"
 >
-    <h4 class="p-4 pb-2 font-bold">Next Payments</h4>
-    <section class="space-y-2 mb-4">
+    <h4 class="pb-2 font-bold">Next Payments</h4>
+    <section class="space-y-2">
         <NextPaymentItem
             v-for="transaction in payments"
             :key="transaction.id"
