@@ -71,7 +71,7 @@ const { isTab: isCurrentTab, selectedTab, tabs: widgetTabs } = useTabs(
 
       <div class="w-full flex justify-end" v-if="$slots.actions || actionLabel || tabs.length">
         <section
-            class="flex justify-end w-full space-x-2 px-4 py-2.5"
+            class="flex justify-end w-full space-x-2 px-4 py-2"
             v-if="tabs.length"
         >
             <button

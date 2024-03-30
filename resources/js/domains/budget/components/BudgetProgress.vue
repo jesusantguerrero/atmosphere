@@ -83,10 +83,10 @@ const filledStyle = computed(() => {
 .bg-spent {
     background: repeating-linear-gradient(
         45deg,
-        rgba(0,0,0, .6),
-        rgba(0,0,0, .6) 10px,
-        rgba(0,0,0, .2) 10px,
-        rgba(0,0,0, .2) 20px
+        rgba(255,255,255, .6),
+        rgba(255,255,255, .6) 10px,
+        rgba(255,255,255, .2) 10px,
+        rgba(255,255,255, .2) 20px
     );
 }
 </style>
