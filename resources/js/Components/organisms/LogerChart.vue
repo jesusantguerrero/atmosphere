@@ -149,9 +149,17 @@ const options = computed(() => ({
 }));
 
 const chartRef = ref();
+const chartTypes = {
+    'pie': 'pie',
+    'bar': 'bar',
+    'line': 'line'
+};
+
+const chartType = chartTypes[props.type] ?? 'bar';
+
 Chart.register(...registerables);
-if (Chart.overrides[props.type].plugins) {
-  Chart.overrides[props.type].plugins.legend.display = false;
+if (Chart.overrides[chartType].plugins) {
+  Chart.overrides[chartType].plugins.legend.display = false;
 }
 watch(
   () => props.hasHiddenValues,

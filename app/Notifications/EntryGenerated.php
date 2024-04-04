@@ -3,8 +3,8 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Messages\MailMessage;
 
 class EntryGenerated extends Notification
 {
@@ -53,8 +53,12 @@ class EntryGenerated extends Notification
      */
     public function toArray($notifiable)
     {
+        $url = "/finance/transactions?filter[status]=draft";
+
         return [
-            //
+            'message' => 'New transactions has been imported, go to drafts to approve them!',
+            'cta' => 'Approve new transactions',
+            'link' => $url,
         ];
     }
 }

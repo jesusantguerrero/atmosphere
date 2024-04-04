@@ -34,8 +34,11 @@
             }
         }
     });
+    interface INotification {
+        id: number;
+    }
 
-    const markAsRead = (notification) => {
+    const markAsRead = (notification: INotification ) => {
         router.patch(`/notifications/${notification.id}`, {
             read_at: new Date()
         })
@@ -66,13 +69,13 @@
                     </article>
 
                 </template>
-                 <template #actions="{ scope }">
+                 <template #actions="{ scope : { row } }">
                     <div class="flex items-center ml-auto space-x-2">
-                    <Link :href="scope.row.data.link" class="ml-auto transition-colors rounded-md text-primary" @click="markAsRead(scope.row)">
-                        {{ scope.row.data.cta }}
+                    <Link :href="row.data.link" class="ml-auto transition-colors rounded-md text-primary">
+                        {{ row.data.cta }}
                     </Link>
 
-                    <AtButton :href="scope.row.data.link" class="ml-auto text-white transition-colors rounded-md bg-primary" @click="markAsRead(scope.row)" v-if="!scope.row.read_at">
+                    <AtButton :href="row.data.link" class="ml-auto text-white transition-colors rounded-md bg-primary" @click="markAsRead(row)" v-if="!row.read_at">
                         Mark as read
                     </AtButton>
                     </div>
