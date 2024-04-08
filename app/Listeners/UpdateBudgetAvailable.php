@@ -11,12 +11,6 @@ class UpdateBudgetAvailable implements ShouldQueue
 {
     protected $formData;
 
-
-    public function __construct()
-    {
-
-    }
-
     public function handle($event)
     {
         if ($event->transactions->status == Transaction::STATUS_VERIFIED) {
