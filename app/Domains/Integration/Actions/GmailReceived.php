@@ -2,13 +2,13 @@
 
 namespace App\Domains\Integration\Actions;
 
-use App\Domains\Automation\Concerns\AutomationActionContract;
-use App\Domains\Automation\Models\Automation;
-use App\Domains\Integration\Services\GoogleService;
-use App\Domains\Transaction\Services\BHDService;
-use Google\Service\Gmail as ServiceGmail;
 use Illuminate\Support\Facades\Log;
+use Google\Service\Gmail as ServiceGmail;
 use PhpMimeMailParser\Parser as EmailParser;
+use App\Domains\Automation\Models\Automation;
+use App\Domains\Transaction\Services\BHDService;
+use App\Domains\Integration\Services\GoogleService;
+use App\Domains\Automation\Concerns\AutomationActionContract;
 
 class GmailReceived implements AutomationActionContract
 {
@@ -33,7 +33,6 @@ class GmailReceived implements AutomationActionContract
         $results = $service->users_threads->listUsersThreads('me', ['maxResults' => $maxResults, 'q' => "$condition"]);
 
         foreach ($results->getThreads() as $index => $thread) {
-            echo "reading thread $index \n";
             $theadResponse = $service->users_threads->get('me', $thread->id, ['format' => 'MINIMAL']);
             foreach ($theadResponse->getMessages() as $message) {
                 if ($message && $message->getHistoryId() > $trackId) {
@@ -56,7 +55,6 @@ class GmailReceived implements AutomationActionContract
                         $automation->track = json_encode($mail);
                         $automation->save();
                     }
-                    echo $mail['subject'];
 
                     $mail['message'] = $body;
                     $payload = $mail;
@@ -69,9 +67,7 @@ class GmailReceived implements AutomationActionContract
                                 $payload = $actionEntity::handle($automation, $payload, $task, $previousTask, $tasks[0]);
                                 $previousTask = $task;
                             } catch (\Exception $e) {
-                                print_r($e->getMessage());
                                 Log::error($e->getMessage(), $mail);
-
                                 continue;
                             }
                         }
