@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import formatMoney from "@/utils/formatMoney";
-import { format, parseISO } from "date-fns";
 import { computed, ref, inject } from "vue";
 
 import LogerChart from "./organisms/LogerChart.vue";
 import ChartHeaderScroller from "./ChartHeaderScroller.vue";
 import NumberHider from "./molecules/NumberHider.vue";
+import { formatMonth } from "@/utils";
 
 const props = defineProps({
     title: {
@@ -23,10 +23,6 @@ const props = defineProps({
         type: Boolean
     }
 });
-
-const formatMonth = (dateString) => {
-    return format(parseISO(dateString), 'MMMM')
-}
 
 const selectedDate = ref()
 const currentSeries = computed(() => {

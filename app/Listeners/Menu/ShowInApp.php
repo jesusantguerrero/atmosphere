@@ -6,9 +6,6 @@ use App\Events\Menu\AppCreated;
 
 class ShowInApp
 {
-    /**
-     * Handle the event.
-     */
     public function handle(AppCreated $event): void
     {
         $menu = $event->menu;

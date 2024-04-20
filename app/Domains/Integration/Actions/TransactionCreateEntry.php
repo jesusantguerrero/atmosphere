@@ -2,15 +2,15 @@
 
 namespace App\Domains\Integration\Actions;
 
-use App\Domains\Automation\Concerns\AutomationActionContract;
-use App\Domains\Automation\Models\Automation;
-use App\Domains\Automation\Models\AutomationTaskAction;
-use App\Domains\Transaction\Models\TransactionLine;
-use App\Helpers\FormulaHelper;
 use App\Models\User;
+use App\Helpers\FormulaHelper;
 use App\Notifications\EntryGenerated;
 use Insane\Journal\Models\Core\Payee;
 use Insane\Journal\Models\Core\Transaction;
+use App\Domains\Automation\Models\Automation;
+use App\Domains\Transaction\Models\TransactionLine;
+use App\Domains\Automation\Models\AutomationTaskAction;
+use App\Domains\Automation\Concerns\AutomationActionContract;
 
 class TransactionCreateEntry implements AutomationActionContract
 {
@@ -57,6 +57,21 @@ class TransactionCreateEntry implements AutomationActionContract
                 'resource_type' => $trigger->name,
             ],
         ];
+
+        $transaction = Transaction::where([
+            "team_id" => $transactionData['team_id'],
+            'date' => $transactionData['date'],
+            'total' => $transactionData['total'],
+            'description' => $transactionData['description'],
+            'currency_code' => $transactionData['currency_code'],
+            'direction' => $transactionData['direction'],
+            'payee_id' => $transactionData['payee_id'],
+        ])->first();
+
+        if ($transaction && $transaction->status == 'verified') {
+           return $transaction;
+        }
+
         $transaction = Transaction::createTransaction($transactionData);
         User::find($automation->user_id)->notify(new EntryGenerated($transaction));
 

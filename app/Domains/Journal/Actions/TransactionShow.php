@@ -4,8 +4,8 @@ namespace App\Domains\Journal\Actions;
 
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Gate;
-use Insane\Journal\Contracts\TransactionShows;
 use Insane\Journal\Models\Core\Transaction;
+use Insane\Journal\Contracts\TransactionShows;
 
 class TransactionShow implements TransactionShows
 {
@@ -20,7 +20,7 @@ class TransactionShow implements TransactionShows
 
         return [
             ...$transaction->toArray(),
-            ['lines' => $transaction->lines],
+            'lines' => $transaction->lines,
         ];
     }
 }

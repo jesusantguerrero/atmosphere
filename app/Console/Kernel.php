@@ -28,7 +28,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('app:automation-check')->everyMinute()->runInBackground();
         $schedule->command('app:occurrence-reminders')->daily()->runInBackground();
         $schedule->command('app:check-month-rollover')->daily()->runInBackground();
-        $schedule->command('app:create-planned-transactions-from-budget')->monthly()->runInBackground();
+        $schedule->command('app:planned-from-budget')->monthly()->runInBackground();
+        $schedule->command('bg:planned-reminders')->monthly()->runInBackground();
         if (config('app.demo')) {
             if ($scheduleTime) {
                 $schedule->command('app:demo-reset')->dailyAt($scheduleTime)->runInBackground();

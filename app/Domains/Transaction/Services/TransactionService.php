@@ -155,7 +155,7 @@ class TransactionService
         ])
             ->whereNot('categories.name', BudgetReservedNames::READY_TO_ASSIGN->value)
             ->whereBetween('transactions.date', [$startDate, $endDate])
-            ->when($category && !$category?->account_id, fn ($q) => $q->where('categories.id', $category->id)->groupBy('transaction_lines.category_id'))
+            ->when($category && !$category?->account_id, fn ($q) => $q->where('categories.id', $category->id))
             ->when($category?->account_id, fn ($q) => $q->where('accounts.id', $category->account_id))
             ->when($parentId, fn ($q) => $q->where('group.id', $parentId)->groupBy('group.id'))
             ->selectRaw("
@@ -168,12 +168,13 @@ class TransactionService
                 accounts.name,
                 transactions.date,
                 payees.name payee_name,
+                transactions.description transactionConcept,
                 transaction_lines.concept,
                 amount * transaction_lines.type total
             ")
             ->leftJoin('transactions', 'transactions.id', 'transaction_id')
             ->leftJoin('categories', 'categories.id', 'transaction_lines.category_id')
-            ->join('accounts', 'accounts.id', 'transaction_lines.account_id')
+            ->leftJoin('accounts', 'accounts.id', 'transaction_lines.account_id')
             ->leftJoin('payees', 'payees.id', 'transaction_lines.payee_id')
             ->leftJoin('categories as group', 'group.id', 'categories.parent_id')
             ->orderByDesc('transaction_lines.date')
