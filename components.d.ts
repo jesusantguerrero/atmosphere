@@ -7,6 +7,8 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
+    IFluentFoodApple20Filled: typeof import('~icons/fluent/food-apple20-filled')['default']
+    IIcRoundQueryStats: typeof import('~icons/ic/round-query-stats')['default']
     IIonEllipsisVertical: typeof import('~icons/ion/ellipsis-vertical')['default']
     IMaterialSymbolsBrightnessAlertOutlineRounded: typeof import('~icons/material-symbols/brightness-alert-outline-rounded')['default']
     IMdiBankTransfer: typeof import('~icons/mdi/bank-transfer')['default']

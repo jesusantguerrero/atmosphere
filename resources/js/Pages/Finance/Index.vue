@@ -266,10 +266,10 @@ const deleteBulkTransactions = () => {
             </WidgetTitleCard>
       </section>
 
-      <BulkSelectionBar
-        v-if="selectedItems.length"
-        :selected-items="selectedItems"
-        @delete-pressed="deleteTransactionsForm.isVisible = true"
+        <BulkSelectionBar
+            v-if="selectedItems.length"
+            :selected-items="selectedItems"
+            @delete-pressed="deleteTransactionsForm.isVisible = true"
         />
     </FinanceTemplate>
 

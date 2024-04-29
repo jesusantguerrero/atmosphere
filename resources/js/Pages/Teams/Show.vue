@@ -15,7 +15,7 @@
 
 
 <template>
-    <AppLayout title="Settings - Teams">
+    <AppLayout title="Settings - Space">
         <template #header>
             <SettingsSectionNav />
         </template>

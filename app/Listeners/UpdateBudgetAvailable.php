@@ -13,7 +13,7 @@ class UpdateBudgetAvailable implements ShouldQueue
 
     public function handle($event)
     {
-        if ($event->transactions->status == Transaction::STATUS_VERIFIED) {
+        if ($event->transaction->status == Transaction::STATUS_VERIFIED) {
             $teamId = $event->transaction->team_id;
             $date = $event->transaction->date;
             (new BudgetRolloverService(new BudgetCategoryService()))->startFrom($teamId, substr($date, 0, 7));

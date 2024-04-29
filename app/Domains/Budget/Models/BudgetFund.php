@@ -16,6 +16,7 @@ class BudgetFund extends Model
         'user_id',
         'amount',
         'name',
+        'monthly_splits',
         'category_id',
         'watchlist_id',
     ];
