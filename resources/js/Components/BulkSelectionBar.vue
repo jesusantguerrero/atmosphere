@@ -10,16 +10,19 @@ export default {
 </script>
 
 <template>
-    <div  class="bulk-selection-bar">
-        <div class="flex items-center">
-            {{ selectedItems.length }} Items selected
-        </div>
-        <div>
-            <span class="ml-2 toolbar-buttons" @click="$emit('delete-pressed')">
+    <article  class="bulk-selection-bar rounded-md justify-between">
+        <section class="flex items-center">
+            <span class="font-bold mr-1">
+                {{ selectedItems.length }}
+            </span>
+            Items selected
+        </section>
+        <section>
+            <span class="ml-2 toolbar-buttons cursor-pointer" @click="$emit('delete-pressed')">
                 <i class="fa fa-trash"></i>
             </span>
-        </div>
-    </div>
+        </section>
+    </article>
 </template>
 
 

@@ -246,7 +246,8 @@ const onSubmit = (addAnother = false) => {
           preserveScroll: true,
           onSuccess: () => {
             state.form.reset('description', 'category_id' , 'payee_id', 'payee_label', 'total', 'has_splits');
-            resetSplits(lastSaved.value.lastSaved);
+            const newData: ITransaction = lastSaved.value.lastSaved as ITransaction;
+            resetSplits(newData);
             nextTick(() => {
                 const items = splits.value;
                 gridSplitsRef.value?.reset(items);
@@ -254,7 +255,9 @@ const onSubmit = (addAnother = false) => {
             if (!lastSaved.value.addAnother) {
                 emit("close");
             }
-            transactionStore.emitTransaction(lastSaved as ITransaction, action.method, props.transactionData);
+
+
+            transactionStore.emitTransaction(newData, action.method, props.transactionData);
             lastSaved.value.addAnother = false;
           },
         });

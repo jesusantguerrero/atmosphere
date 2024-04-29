@@ -1,5 +1,5 @@
 <script setup lang="ts">
-    import { ref, onMounted } from 'vue';
+    import { ref, onMounted, defineModel } from 'vue';
     import axios from 'axios';
 
     import WidgetTitleCard from '@/Components/molecules/WidgetTitleCard.vue';
@@ -15,6 +15,7 @@
 
     const transactionsDraft = ref([]);
     const isLoadingDrafts = ref(false);
+    const selected = defineModel('selected');
     const fetchTransactions = async () => {
         const url = `/api/finance/transactions?filter[status]=draft&limit=10&relationships=linked`;
         return axios.get(url).then<ITransaction[]>(({ data }) => {
@@ -61,7 +62,7 @@
     }) => {
         after((result) => {
             const [savedValue, action, originalData] = args;
-            if ((originalData && originalData.status == 'draft' && savedValue?.status == 'verified') || action == 'delete') {
+            if ((originalData && originalData.status == 'draft' && savedValue.status == 'verified') || action == 'delete') {
                 fetchTransactions();
             }
 
@@ -79,6 +80,7 @@
             v-if="!isLoadingDrafts"
             class="w-full"
             table-class="w-full p-2 overflow-auto text-sm rounded-t-lg shadow-md bg-base-lvl-3"
+            v-model:selected="selected"
             :transactions="transactionsDraft"
             :parser="draftsDBToTransaction"
             :allow-remove="true"

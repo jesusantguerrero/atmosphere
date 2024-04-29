@@ -1,31 +1,3 @@
-<template>
-    <JetFormSection
-        @submitted="updateTeamName"
-        title="Budget space name"
-        description="The budget's information."
-    >
-        <template #form>
-            <!-- Team Owner Information -->
-            <TeamForm
-                class="col-span-6 sm:col-span-4"
-                :currencies="[]"
-                :timezones="[]"
-                :form-data="form"
-            />
-        </template>
-
-        <template #actions v-if="permissions?.canUpdateTeam">
-            <JetActionMessage :on="form.recentlySuccessful" class="mr-3">
-                Saved.
-            </JetActionMessage>
-
-            <LogerButton type="primary" :is-loading="form.processing" :disabled="form.processing">
-                Save
-            </LogerButton>
-        </template>
-    </JetFormSection>
-</template>
-
 <script setup lang="ts">
     import { useForm } from '@inertiajs/vue3'
 
@@ -49,3 +21,36 @@
         });
     };
 </script>
+
+
+<template>
+    <JetFormSection
+        @submitted="updateTeamName"
+        title="Space name"
+        description="The budget's information."
+    >
+        <template #form>
+            <!-- Team Owner Information -->
+            <TeamForm
+                class="col-span-6 sm:col-span-4"
+                :currencies="[]"
+                :timezones="[]"
+                :form-data="form"
+            />
+        </template>
+
+        <template #actions v-if="permissions?.canUpdateTeam">
+            <JetActionMessage :on="form.recentlySuccessful" class="mr-3">
+                Saved.
+            </JetActionMessage>
+
+            <LogerButton
+                variant="primary"
+                :processing="form.processing"
+                :disabled="form.processing"
+            >
+                Save
+            </LogerButton>
+        </template>
+    </JetFormSection>
+</template>

@@ -61,7 +61,6 @@
 
 
     const goToCategoryMonth = (category: IBudgetCategory, month: any) => {
-        debugger
         router.visit(`/finance/lines?filter[category_id]=${category.id}`)
     }
 </script>
