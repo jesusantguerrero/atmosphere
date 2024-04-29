@@ -53,7 +53,7 @@ class BudgetFundService
         return [
             'balance' => $available,
             'monthlyExpense' => $expenseTotal,
-            'total' => $available / $expenseTotal,
+            'total' => $available / $budgetFund->monthly_splits,
         ];
     }
 }

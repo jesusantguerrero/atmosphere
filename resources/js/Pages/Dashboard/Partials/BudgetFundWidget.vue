@@ -29,6 +29,17 @@
     <WidgetContainer
         :message="$t('Emergency Fund Builder')"
     >
+        <template #actions>
+            <section class="group cursor-default mr-5">
+                <span class="group-hover:flex hidden">
+                    <MoneyPresenter :value="fundMetrics.target" />
+                </span>
+                <span class="group-hover:hidden">
+                    {{ budgetData.target_times }} Months
+                </span>
+            </section>
+        </template>
+
         <template #content>
             <section class="my-2">
                 <BudgetProgress
@@ -38,21 +49,22 @@
                     :progress-class="['bg-primary', 'bg-secondary/5']"
                     :show-labels="false"
                 >
-                 <template #before>
+                 <template v-slot:before="{ progress }">
                     <header class="mb-1 font-bold flex justify-between">
+                        <section class="group cursor-default">
+                            <span class="group-hover:flex hidden"> <MoneyPresenter :value="fundMetrics.balance" /></span>
+                            <span  class="group-hover:hidden"> {{ progress}}% </span>
+                        </section>
                         <span>
-                            <MoneyPresenter :value="fundMetrics.target" />
-                        </span>
-                        <span>
-                            {{ budgetData.target_times }} Months
+                            {{ budgetData.total?.toFixed?.(2) }} Months
                         </span>
                     </header>
                 </template>
 
                     <template v-slot:after="{ progress }">
                     <div class="flex justify-between w-full mt-1">
-                        <span> <MoneyPresenter :value="fundMetrics.balance" />({{ progress}}%) </span>
-                        <span>{{ budgetData.total?.toFixed?.(2) }} Months</span>
+                        <span>Monthly Splits </span>
+                        <span> <MoneyPresenter :value="budgetData.monthly_splits" /></span>
                     </div>
                 </template>
                 </BudgetProgress>

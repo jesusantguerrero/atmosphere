@@ -20,6 +20,7 @@ return new class extends Migration
             $table->foreignId('category_team_id');
             $table->foreignId('category_id');
             $table->string('name');
+            $table->decimal('monthly_split', 11, 4)->default(0);
             $table->text('description')->nullable();
             $table->json('meta_data')->nullable();
             $table->integer('index')->default(0);
