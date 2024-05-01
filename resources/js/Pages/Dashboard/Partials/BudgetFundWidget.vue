@@ -16,7 +16,7 @@
 
 
     const fundMetrics = computed(() => ({
-        target: budgetData?.value.monthlyExpense * budgetData?.value.target_times,
+        target: budgetData?.value.monthly_splits * budgetData?.value.target_times,
         balance: budgetData.value?.balance ?? 0
     }))
 
@@ -45,7 +45,7 @@
                 <BudgetProgress
                     class="h-1.5 rounded-sm"
                     :goal="fundMetrics.target"
-                    :current="budgetData.balance"
+                    :current="fundMetrics.balance"
                     :progress-class="['bg-primary', 'bg-secondary/5']"
                     :show-labels="false"
                 >
