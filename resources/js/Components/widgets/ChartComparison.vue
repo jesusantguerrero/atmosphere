@@ -111,7 +111,7 @@ const handleSelection = (index: number) => {
             </LogerButtonTab>
         </template>
         <template #action v-if="selectedDate">
-            <span v-if="selectedDate" class="capitalize text-primary">{{ formatMonth(selectedDate) }} Hola</span>
+            <span v-if="selectedDate" class="capitalize text-primary">{{ formatMonth(selectedDate) }}</span>
         </template>
 
         <section class="w-full card-text" >

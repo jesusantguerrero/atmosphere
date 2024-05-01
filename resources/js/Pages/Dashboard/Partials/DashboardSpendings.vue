@@ -70,7 +70,7 @@
     :message="$t('Financial glance')"
     :tabs="financeTabs"
     default-tab="monthVsPrevious"
-    class="order-2 mt-4 lg:mt-0 lg:order-1"
+    class="mt-4 lg:mt-0"
 >
     <template v-slot:content="{ selectedTab }">
         <ChartCurrentVsPrevious

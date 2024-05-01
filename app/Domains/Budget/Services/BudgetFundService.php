@@ -40,8 +40,8 @@ class BudgetFundService
         ])->get();
 
         return $items->map(fn( $item) => [
-                ...$item->toArray(),
-                ...$this->getData($item)
+            ...$item->toArray(),
+            ...$this->getData($item)
         ]);
     }
 
