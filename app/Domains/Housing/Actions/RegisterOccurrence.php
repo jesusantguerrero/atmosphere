@@ -30,20 +30,22 @@ class RegisterOccurrence
     public function add(int $teamId, string $name, string $date)
     {
         $occurrence = Occurrence::byTeam($teamId)->byName($name)->first();
-        if ($occurrence && $occurrence->last_date !== $date) {
-            $this->softAdd($occurrence, $date);
-            $occurrence->save();
+        if ($occurrence) {
+            if ($occurrence->last_date->format('Y-m-d') !== $date) {
+                $this->softAdd($occurrence, $date);
+                $occurrence->save();
+            }
             return;
         }
 
         Occurrence::create([
-                'name' => $name,
-                'team_id' => $teamId,
-                'last_date' => $date,
-                'previous_days_count' => 0,
-                'total_days' => 0,
-                'avg_days_passed' => 0,
-                'log' => [],
+            'name' => $name,
+            'team_id' => $teamId,
+            'last_date' => $date,
+            'previous_days_count' => 0,
+            'total_days' => 0,
+            'avg_days_passed' => 0,
+            'log' => [],
         ]);
     }
 
@@ -58,8 +60,8 @@ class RegisterOccurrence
             $lastDate = $log[count($log) - 1];
 
             $lastDuration = $previousLastDate ? $this->getDaysDifference($lastDate, $previousLastDate) : 0;
-            $totalDays = $occurrence->total_days - $occurrence->previous_days_count;
-            $occurrenceCount = $occurrence->occurrence_count - 1;
+            $occurrenceCount = count($occurrence->log);
+            $totalDays = $occurrenceCount > 1 ? $this->getDaysDifference($log[0], $lastDate) : $lastDuration;
             $avg = $totalDays / $occurrenceCount;
 
             $occurrence->update([
@@ -68,7 +70,7 @@ class RegisterOccurrence
                 'total_days' => $totalDays,
                 'avg_days_passed' => $avg,
                 'occurrence_count' => $occurrenceCount,
-                'log' => json_encode($log),
+                'log' => $log,
             ]);
         }
     }

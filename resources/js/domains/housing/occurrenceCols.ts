@@ -1,4 +1,5 @@
-import { differenceInDays, format, parseISO } from "date-fns";
+import { getDayDiff } from "@/utils";
+import { format, parseISO } from "date-fns";
 import { h } from "vue";
 
 export const occurrenceCols = [
@@ -22,8 +23,7 @@ export const occurrenceCols = [
         width: 300,
         render(row) {
             if (row.last_date) {
-                const date = row.last_date && parseISO(row.last_date)
-                return differenceInDays(new Date(), date);
+                return getDayDiff(row.last_date);
             }
             return 0;
         }

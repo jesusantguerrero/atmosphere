@@ -1,4 +1,4 @@
-import { addDays, format, parseISO, startOfDay, subDays } from "date-fns"
+import { addDays, differenceInCalendarDays, format, parseISO, startOfDay, subDays } from "date-fns"
 import { differenceInMonths } from "date-fns";
 export * from "./formatMoney";
 export * from "./isMobile";
@@ -86,20 +86,27 @@ export const formatMonth = (dateString: string | Date, type: string = MonthTypeF
     }
 }
 
+
+const formatISOString = (isoString: string, formatString: string) => {
+    const date = isoString.includes('T') ? isoString.slice(0, isoString.indexOf('T')) : isoString
+    return format(parseISO(date), formatString)
+}
 export const formatDate = (dateISOString: string|Date, placeholder?: string, formatString = "MMM dd, yyyy") => {
     const emptyDate = '-- --- ----'
-    const dateOptions = {}
 
     if (!dateISOString && placeholder) return placeholder;
     try {
         return typeof dateISOString == 'string'
-        ? format(parseISO(dateISOString + "T00:00:00"), formatString)
-        : dateISOString;
+        ? formatISOString(dateISOString, formatString)
+        : format(dateISOString, formatString);
     }
     catch (e) {
+        console.log("There")
         return dateISOString ?? emptyDate;
     }
 };
+
+
 
 export const isCurrentMonth = (dateString: string) => {
     return !differenceInMonths(new Date(), parseISO(dateString));
@@ -118,6 +125,15 @@ const setRange = (dateCount: number|Date, direction: string): Date => {
     return typeof dateCount == 'number' ? dateToIso(method(date, dateCount)) : dateToIso(dateCount)
 
 }
+
+export const getDayDiff = (lastDay: string): number|string => {
+    try {
+        return differenceInCalendarDays(new Date(), parseISO(lastDay));
+    } catch (e) {
+        return "--"
+    }
+}
+
 export const getRangeParams = (field: string, range: RangeValue[]|null, direction = 'back') => {
     let rangeString: string = '';
 
