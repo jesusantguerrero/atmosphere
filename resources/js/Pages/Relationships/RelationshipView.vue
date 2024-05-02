@@ -10,13 +10,13 @@ import WelcomeCard from '@/Components/organisms/WelcomeCard.vue';
 import ProfileSectionNav from '@/Components/templates/ProfileSectionNav.vue';
 import LogerProfileModal from '@/Components/LogerProfileModal.vue';
 import ProfileEntityModal from '@/Components/ProfileEntityModal.vue';
-import OccurrenceCard from '@/Components/Modules/occurrence/OccurrenceCard.vue';
+import OccurrenceWidget from "@/domains/housing/components/OccurrenceWidget.vue";
 import WidgetTitleCard from '@/Components/molecules/WidgetTitleCard.vue';
 
 import TransactionsTable from '@/domains/transactions/components/TransactionsList.vue';
 import BudgetDetailForm from '@/domains/budget/components/BudgetDetailForm.vue';
 
-import { IOccurrenceCheck } from '@/Components/Modules/occurrence/models';
+import { IOccurrenceCheck } from "@/domains/housing/models";
 import { ITransaction } from '@/domains/transactions/models';
 import { transactionLinesDBToTransaction } from '@/domains/transactions';
 import axios from 'axios';
@@ -147,7 +147,7 @@ const budgets = computed(() => {
             <template #panel>
                 <p v-if="areEntitiesLoading"> ...loading</p>
                 <section v-else class="w-full ic-scroller-slim mb-96">
-                    <OccurrenceCard :checks="occurrenceChecks" class="mx-auto mt-4 mb-4" />
+                    <OccurrenceWidget :checks="occurrenceChecks" class="mx-auto mt-4 mb-4" />
 
                     <article class="grid md:grid-cols-2 gap-2">
                         <BudgetDetailForm

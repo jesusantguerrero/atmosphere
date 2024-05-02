@@ -6,16 +6,16 @@ import { router, useForm } from '@inertiajs/vue3';
 import AppLayout from '@/Components/templates/AppLayout.vue';
 import HouseSectionNav from '@/Components/templates/HouseSectionNav.vue';
 import LogerButton from '@/Components/atoms/LogerButton.vue';
-import CustomTable from '@/Components/atoms/CustomTable.vue';
 import OccurrenceCheckModal from '@/Components/OccurrenceCheckModal.vue';
+import OccurrenceCard from "@/domains/housing/components/OccurrenceCard.vue";
 
-import { occurrenceCols as cols } from '@/domains/housing/occurrenceCols';
-import { OccurrenceItem } from '@/domains/housing/models';
+import { useOccurrenceInstance, OccurrenceAction } from '@/domains/housing/useOccurrenceInstance';
+import { IOccurrenceCheck, OccurrenceItem } from '@/domains/housing/models';
 import { ITransaction } from '@/domains/transactions/models';
 import StatusButtons from '@/Components/molecules/StatusButtons.vue';
 
 const props = defineProps({
-    occurrence: {
+    occurrences: {
         type: Array,
         default() {
             return []
@@ -34,17 +34,19 @@ const onSaved = () => {
     router.reload()
 }
 
-const addInstance = (id: number) => {
-    router.post(`/housing/occurrences/${id}/instances`)
+const { applyChange, remove, isProcessing, isLoading } = useOccurrenceInstance()
+
+const addInstance = (occurrence: IOccurrenceCheck) => {
+    applyChange(occurrence, OccurrenceAction.Add)
 }
 
-const removeLastInstance = (id: number) => {
-    router.delete(`/housing/occurrences/${id}/instances`)
+const removeLastInstance = (occurrence: IOccurrenceCheck) => {
+    applyChange(occurrence, OccurrenceAction.Delete)
 }
 
-const handleDelete = (resource: OccurrenceItem) => {
+const handleDelete = (resource: IOccurrenceCheck) => {
     if (confirm(`Are you sure you want to delete this check ${resource.name}?`)) {
-        router.delete(`/housing/occurrences/${resource.id}`)
+        remove(resource)
     }
 }
 
@@ -123,53 +125,44 @@ const currentStatus = ref(props.serverSearchOptions.filters?.is_liked || "all");
                       </div>
                   </template>
             </HouseSectionNav>
-      </template>
+        </template>
 
-      <div class="pt-16 pb-20 pl-6 max-w-screen-2xl">
-          <div class="flex flex-col items-center justify-center w-full px-4 py-10 mx-auto mt-4 font-bold rounded-md h-92 bg-base-lvl-3 text-body-1 max-w-7xl">
-            <div class="space-y-4">
-                <CustomTable
-                    :cols="cols"
-                    :show-prepend="true"
-                    :table-data="occurrence"
+        <main class="px-5 mx-auto mt-12 space-y-10 md:space-y-0 md:space-x-10 md:flex max-w-screen-2xl sm:px-6 lg:px-8">
+            <div class="space-y-2 w-full mt-6 mb-20">
+                <OccurrenceCard 
+                    v-for="occurrence in occurrences"
+                    :occurrence
+                    class="w-full border rounded-lg shadow-md cursor-pointer text-body bg-base-lvl-3 hover:bg-base-lvl-2"
+                    :is-loading="isLoading(occurrence.id)"
+                    :disabled="isProcessing"
+                    @add-instance="addInstance(occurrence)"
+                    @remove-instance="removeLastInstance(occurrence)"
                 >
-                    <template v-slot:actions="{ scope: { row } }">
-                        <div class="flex justify-end">
-                            <div class="flex h-8 overflow-hidden border rounded-lg border-primary">
-                                <Button
-                                    class="flex items-center p-4 text-white bg-primary"
-                                    @click="addInstance(row.id)">
-                                    +
-                                </Button>
-                                <Button class="flex items-center p-4 text-primary "
-                                @click="removeLastInstance(row.id)"
-                                >
-                                    -
-                                </Button>
-                            </div>
-                            <NDropdown
-                                trigger="click"
-                                key-field="name"
-                                :options="options(row)"
-                                :on-select="(optionName) => handleOptions(optionName, row)"
-                                @click.stop
-                            >
-                                <button class="px-2 hover:bg-base-lvl-3"> <i class="fa fa-ellipsis-v"></i></button>
-                            </NDropdown>
-                        </div>
-                    </template>
-                </CustomTable>
-            </div>
-          </div>
-      </div>
+                <template v-slot:actions="{ scope: row }">
+                    <div class="flex justify-end">
+                        <NDropdown
+                            trigger="click"
+                            key-field="name"
+                            :options="options(row)"
+                            :on-select="(optionName) => handleOptions(optionName, row)"
+                            @click.stop
+                        >
+                            <button class="px-2 hover:bg-base-lvl-3"> <i class="fa fa-ellipsis-v"></i></button>
+                        </NDropdown>
+                    </div>
+                </template>
+                </OccurrenceCard>
 
-      <OccurrenceCheckModal
-        v-if="isModalOpen"
-        v-model:show="isModalOpen"
-        :form-data="resourceToEdit"
-        @saved="onSaved"
-        @close="resourceToEdit=null"
-      />
+            </div>
+            
+            <OccurrenceCheckModal
+                v-if="isModalOpen"
+                v-model:show="isModalOpen"
+                :form-data="resourceToEdit"
+                @saved="onSaved"
+                @close="resourceToEdit=null"
+            />
+        </main>
     </AppLayout>
 </template>
 

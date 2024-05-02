@@ -11,7 +11,7 @@ import WidgetContainer from "@/Components/WidgetContainer.vue";
 import NextPaymentsWidget from "@/domains/transactions/components/NextPaymentsWidget.vue";
 import MealWidget from "@/domains/meal/components/MealWidget.vue";
 import AccountsTracker from "@/domains/transactions/components/AccountsTracker.vue";
-import OccurrenceCard from "@/Components/Modules/occurrence/OccurrenceCard.vue";
+import OccurrenceWidget from "@/domains/housing/components/OccurrenceWidget.vue";
 import DashboardSpending from "./Partials/DashboardSpendings.vue";
 import BudgetFundWidget from "./Partials/BudgetFundWidget.vue";
 import BudgetWidget from "./Partials/BudgetWidget.vue";
@@ -20,10 +20,10 @@ import ConfirmationModal from "@/Components/atoms/ConfirmationModal.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 
 import { useAppContextStore } from "@/store";
-import { IOccurrenceCheck } from "@/Components/Modules/occurrence/models";
+import { useTransactionStore } from "@/store/transactions";
+import { IOccurrenceCheck } from "@/domains/housing/models";
 import { IAccount, ICategory } from "@/domains/transactions/models";
 import { IBudgetStat } from "@/domains/budget/models";
-import { useTransactionStore } from "@/store/transactions";
 
 withDefaults(
   defineProps<{
@@ -139,7 +139,7 @@ const deleteBulkTransactions = () => {
         <MealWidget :meals="meals?.data" />
       </section>
       <section class="py-6 space-y-4 md:w-3/12">
-        <OccurrenceCard :checks="checks" :wrap="true" />
+        <OccurrenceWidget :checks="checks" :wrap="true" />
 
         <OnboardingSteps
           v-if="onboarding.steps"

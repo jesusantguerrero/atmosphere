@@ -1,22 +1,15 @@
 <script setup lang="ts">
-import { differenceInCalendarDays, parseISO } from 'date-fns';
+import { Link } from '@inertiajs/vue3';
 
 import SectionTitle from "@/Components/atoms/SectionTitle.vue";
 import CategoryItem from '@/domains/transactions/components/CategoryItem.vue';
 
-import { IOccurrenceCheck } from "@/Components/Modules/occurrence/models";
-import { Link } from '@inertiajs/vue3';
+import { IOccurrenceCheck } from "@/domains/housing/models";
+import { getDayDiff } from '@/utils';
 
 defineProps<{
     checks: IOccurrenceCheck[];
 }>()
-const getDayDiff = (lastDay: string): number => {
-    try {
-        return differenceInCalendarDays(new Date(), parseISO(lastDay));
-    } catch (e) {
-        return "--"
-    }
-}
 </script>
 
 <template>

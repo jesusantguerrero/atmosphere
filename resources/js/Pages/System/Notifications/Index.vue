@@ -58,7 +58,6 @@
                     :section="section"
                 >
                  <template #data="{ scope }">
-
                     <article class="w-full py-2 pl-4 space-between">
                         <header>
                             {{ scope.row.data.message }}
