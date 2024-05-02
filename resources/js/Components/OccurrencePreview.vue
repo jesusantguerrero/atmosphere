@@ -6,22 +6,19 @@ import LogerButton from './atoms/LogerButton.vue';
 
 import { transactionDBToTransaction } from '@/domains/transactions';
 import { router } from '@inertiajs/vue3';
+import { IOccurrenceCheck } from '@/domains/housing/models';
 
-const props = defineProps({
-    occurrenceId: {
-        type: Number
-    },
-    conditions: {
-        type: Array
-    }
-})
+const props = defineProps<{
+    occurrence: IOccurrenceCheck;
+    conditions: any[]
+}>();
 
 const transactions = ref([]);
 const isCalled = ref(false);
 
 onMounted(async () => {
-    if (props.occurrenceId && !isCalled.value) {
-        const data = await fetch(`/housing/occurrences/${props.occurrenceId}/preview`)
+    if (props.occurrence.id && !isCalled.value) {
+        const data = await fetch(`/housing/occurrences/${props.occurrence.id}/preview`)
         transactions.value = await data.json()
         isCalled.value = true
     }
@@ -52,6 +49,7 @@ const load = () => {
             :transactions="transactions"
             :parser="transactionDBToTransaction"
         />
+        {{ occurrence }}
     </section>
 </article>
 </template>

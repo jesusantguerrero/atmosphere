@@ -2,13 +2,13 @@
     // @ts-ignore
     import { AtButton } from "atmosphere-ui";
     import { reactive } from "vue";
+    import { useForm } from "@inertiajs/vue3";
+    import {  ElMessageBox } from "element-plus";
 
     import LogerApiSimpleSelect from "@/Components/organisms/LogerApiSimpleSelect.vue";
     import IconHeart from "@/Components/icons/IconHeart.vue";
     import IconHeartOutline from "@/Components/icons/IconHeartOutline.vue";
     import LogerButton from "@/Components/atoms/LogerButton.vue";
-import { useForm } from "@inertiajs/vue3";
-import { ElMessage, ElMessageBox } from "element-plus";
 
     interface Label {
         id: number;
@@ -77,12 +77,15 @@ import { ElMessage, ElMessageBox } from "element-plus";
                         {{ ingredient.name  }}
                     </div>
                 </div>
-                <LogerButton type="danger"
+                <LogerButton 
+                    variant="error"
                     @click="deleteResource(meal)"
                     :disabled="deleteForm.processing"
                     :processing="deleteForm.processing && deleteForm.id==meal.id"
                 >
+                <template #icon>
                     <i class="fa fa-trash"></i>
+                </template>
                 </LogerButton>
             </div>
         </article>

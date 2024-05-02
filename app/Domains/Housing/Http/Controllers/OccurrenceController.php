@@ -24,7 +24,7 @@ class OccurrenceController extends InertiaController
         $this->searchable = ['id', 'name'];
         $this->includes = [];
         $this->appends = [];
-        $this->resourceName = 'occurrence';
+        $this->resourceName = 'occurrences';
         $this->authorizedTeam = true;
     }
 

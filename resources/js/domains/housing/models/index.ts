@@ -30,3 +30,13 @@ export interface OccurrenceItem {
     id: number;
     name: string;
 }
+
+export interface IOccurrenceCheck {
+    id: number;
+    name: string;
+    last_date: string;
+    avg_days_passed: number;
+    current_days_count: number,
+    previous_days_count: number,
+    status: string;
+}

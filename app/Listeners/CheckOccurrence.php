@@ -3,6 +3,7 @@
 namespace App\Listeners;
 
 use App\Jobs\RunTeamChecks;
+use Insane\Journal\Models\Core\Transaction;
 use Insane\Journal\Events\TransactionCreated;
 
 class CheckOccurrence
@@ -16,6 +17,8 @@ class CheckOccurrence
     public function handle(TransactionCreated $event)
     {
         $transaction = $event->transaction;
-        RunTeamChecks::dispatch($transaction->team_id);
+        if ($transaction->status == Transaction::STATUS_VERIFIED) {
+            RunTeamChecks::dispatch($transaction->team_id);
+        }
     }
 }

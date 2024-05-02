@@ -159,7 +159,12 @@ const tabs = [{
                     multiple
                 />
             </section>
-            <OccurrencePreview v-if="activeTab == 'preview'" :occurrence-id="form.id" :conditions="form.conditions" />
+            <OccurrencePreview 
+                v-if="activeTab == 'preview'" 
+                :occurrence="formData" 
+                :conditions="form.conditions" 
+                :logs="form.logs"
+            />
         </section>
     </article>
 
