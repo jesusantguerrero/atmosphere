@@ -30,11 +30,9 @@ class RegisterOccurrence
     public function add(int $teamId, string $name, string $date)
     {
         $occurrence = Occurrence::byTeam($teamId)->byName($name)->first();
-        if ($occurrence) {
-            if ($occurrence->last_date->format('Y-m-d') !== $date) {
-                $this->softAdd($occurrence, $date);
-                $occurrence->save();
-            }
+        if ($occurrence && ($occurrence->last_date && $occurrence->last_date->format('Y-m-d') !== $date || !$occurrence->last_date)) {
+            $this->softAdd($occurrence, $date);
+            $occurrence->save();
             return;
         }
 
@@ -90,28 +88,28 @@ class RegisterOccurrence
 
     public function sync(Occurrence $occurrence)
     {
-
         $transactions = (new SearchTransactions())->handle($occurrence->conditions);
-        $occurrence->log = [];
-        $occurrence->saveQuietly();
+        if ($transactions) {
+            $occurrence->log = [];
+            $occurrence->saveQuietly();
+            $dates = $transactions->pluck('date')->toArray();
 
-
-        $dates = $transactions->pluck('date')->toArray();
-
-
-        foreach ($dates as $date) {
-            try {
-                $this->softAdd(
-                    $occurrence,
-                    $date
-                );
-                $occurrence->save();
-            } catch (\Exception $e) {
-                throw $e;
-                Log::error($e->getMessage());
-                continue;
+            foreach ($dates as $date) {
+                try {
+                    $this->softAdd(
+                        $occurrence,
+                        $date
+                    );
+                    $occurrence->save();
+                } catch (\Exception $e) {
+                    throw $e;
+                    Log::error($e->getMessage());
+                    continue;
+                }
             }
         }
+
+
     }
 
     private function getDaysDifference($startDate, $endDate, $format = 'Y-m-d')
