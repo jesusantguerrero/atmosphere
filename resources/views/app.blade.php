@@ -10,7 +10,7 @@
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="icon" href="/favicon.ico">
         {{-- @laravelPWA --}}
-        <meta name="description" content="My Awesome App description">
+        <meta name="description" content="Loger">
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
         <link rel="mask-icon" href="/mask-icon.svg" color="#FFFFFF">
         <meta name="theme-color" content="#ffffff">

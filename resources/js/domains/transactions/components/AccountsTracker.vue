@@ -23,7 +23,7 @@ const props = withDefaults(defineProps<{
 const { t } = useI18n();
 
 const { netWorth } = toRefs(props)
-const { lastMonth, thisMonth, monthMovement, monthMovementVariance } = useNetWorth(netWorth);
+const {  thisMonth } = useNetWorth(netWorth);
 
 const sections = computed(() => ({
   expenses: {

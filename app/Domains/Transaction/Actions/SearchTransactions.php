@@ -28,14 +28,33 @@ class SearchTransactions
         $this->modelQuery = TransactionLine::query();
     }
 
+    public function hasValidConditions($conditions) {
+        foreach ($conditions as $field => $condition) {
+            if (!$condition) {
+                continue;
+            }
+            foreach ($condition as $param) {
+                if ($param['operator'] &&  $param['value']) {
+                    return true;
+                }
+            }
+        }
+    }
+
     public function handle(mixed $conditions)
     {
+        $allConditions = [];
+        if (!$this->hasValidConditions($conditions)) {
+            return null;
+        }
+
         foreach ($conditions as $field => $condition) {
             if ($condition) {
                 $parserName = $this->searchConfig[$field]['type'];
                 if ($field == 'description') {
                     $field = "concept";
                 }
+                $allConditions[] = [$parserName, $condition];
                 \call_user_func([$this, "get$parserName"], $condition, $field);
             }
         }

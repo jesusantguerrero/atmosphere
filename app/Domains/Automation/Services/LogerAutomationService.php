@@ -39,15 +39,19 @@ class LogerAutomationService
 
     public static function setupService($serviceId, $service)
     {
-        $taskTypes = ['triggers', 'components', 'actions'];
-        foreach ($taskTypes as $taskType) {
+        $taskTypes = [
+            'triggers' => 'trigger', 
+            'components' => 'component', 
+            'actions' => 'action'
+        ];
+        foreach ($taskTypes as $taskTypeName => $taskType) {
             if (isset($service[$taskType])) {
                 foreach ($service[$taskType] as $task) {
                     AutomationTask::createTask(
                         $serviceId,
                         $task,
                         $service,
-                        $taskType
+                        $taskTypeName
                     );
                 }
             }
