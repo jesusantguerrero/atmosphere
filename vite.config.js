@@ -4,6 +4,7 @@ import vue from '@vitejs/plugin-vue';
 import Icons from 'unplugin-icons/vite'
 import IconsResolver from "unplugin-icons/resolver"
 import Components from 'unplugin-vue-components/vite'
+import federation from "@originjs/vite-plugin-federation";
 
 export default defineConfig({
     plugins: [
@@ -27,6 +28,13 @@ export default defineConfig({
         Icons({
             // experimental
             autoInstall: true,
+        }),
+        federation({
+            name: 'core',
+            remotes: {
+                remote_app: "http://localhost:5001/assets/remoteEntry.js",
+            },
+            shared: ['vue']
         })
     ],
     resolve: {

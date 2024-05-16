@@ -6,7 +6,6 @@ use Brick\Money\Money;
 use Brick\Math\RoundingMode;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use App\Domains\AppCore\Models\Category;
 use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Budget\Data\BudgetReservedNames;
 use App\Domains\Transaction\Models\TransactionLine;
@@ -75,6 +74,13 @@ class TransactionService
             ->forAccount($accountId)
             ->with(['mainLine', 'lines', 'counterLine', 'mainLine.account', 'counterLine.account'])
             ->get();
+    }
+
+    public static function getDraftCount($teamId)
+    {
+        return Transaction::draft()
+            ->byTeam($teamId)
+            ->count();
     }
 
     public static function getExpenses($teamId, $startDate, $endDate)

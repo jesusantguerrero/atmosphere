@@ -57,7 +57,8 @@ class DashboardController
                     }),
                 ] : [];
             },
-            'checks' => Inertia::lazy(fn () => Occurrence::where('team_id', auth()->user()->current_team_id)->limit(4)->get()),
+            'drafts' => Inertia::lazy(fn () => TransactionService::getDraftCount($teamId)),
+            'checks' => Inertia::lazy(fn () => Occurrence::where('team_id', $teamId)->limit(4)->get()),
             'nextPayments' => $nextPayments,
         ]);
     }

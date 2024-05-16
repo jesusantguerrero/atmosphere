@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
+import { useSessionStorage } from "@vueuse/core";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import OnboardingSteps from "@/Components/widgets/OnboardingSteps.vue";
@@ -25,7 +26,7 @@ import { IOccurrenceCheck } from "@/domains/housing/models";
 import { IAccount, ICategory } from "@/domains/transactions/models";
 import { IBudgetStat } from "@/domains/budget/models";
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     spendingSummary: {
       previousYear: {
@@ -35,6 +36,7 @@ withDefaults(
         values: [];
       };
     };
+    drafts: number;
     expenses: {
       previousYear: {
         values: [];
@@ -65,20 +67,36 @@ const selected = ref(null);
 const AccountsTrackerRef = ref();
 
 const areChecksLoading = ref(true);
+
+interface DynamicStore  {
+    checks: IOccurrenceCheck[];
+    drafts: number
+}
+
+const dynamicStore = useSessionStorage<DynamicStore>(`dynamic-store::${props.user.current_team_id}`,{
+    checks: [],
+    drafts: 0
+})
 const fetchChecks = () => {
   return router.reload({
-    only: ["checks"],
+    only: ["checks", 'drafts'],
     onFinish: () => {
       areChecksLoading.value = false;
+      dynamicStore.value.checks = props.checks;
+      dynamicStore.value.drafts = props.drafts
     },
   });
 };
+
+watch(() => props.expenses, (expenses) => {
+    console.log({ expenses })
+});
 
 onMounted(() => {
   fetchChecks();
 });
 
-const transactionsTabs = [
+const transactionsTabs = computed(() => [
   {
     name: "next",
     label: "Next",
@@ -86,8 +104,9 @@ const transactionsTabs = [
   {
     name: "drafts",
     label: "Drafts",
+    count: dynamicStore.value.drafts
   },
-];
+]);
 
 const selectedItems = ref([]);
 const deleteTransactionsForm = useForm({
@@ -139,7 +158,7 @@ const deleteBulkTransactions = () => {
         <MealWidget :meals="meals?.data" />
       </section>
       <section class="py-6 space-y-4 md:w-3/12">
-        <OccurrenceWidget :checks="checks" :wrap="true" />
+        <OccurrenceWidget :checks="dynamicStore.checks" :wrap="true" />
 
         <OnboardingSteps
           v-if="onboarding.steps"
@@ -163,16 +182,14 @@ const deleteBulkTransactions = () => {
               :payments="nextPayments"
             />
 
-            <DashboardDrafts v-else v-model:selected="selectedItems" />
+            <DashboardDrafts
+                v-else
+                v-model:selected="selectedItems"
+                @re-loaded="fetchChecks"
+            />
           </template>
         </WidgetContainer>
         <BudgetWidget :budget="budgetTotal" />
-        <!-- <NetWorthWidget
-                    ref="NetWorthWidgetRef"
-                    :budget="budgetTotal"
-                    :message="$t('Net-worth trend')"
-                    @section-click="selected=$event"
-                /> -->
       </section>
     </main>
     <BulkSelectionBar
