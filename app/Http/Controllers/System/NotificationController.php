@@ -8,12 +8,18 @@ class NotificationController
 {
     public function index()
     {
-        return Jetstream::inertia()->render(request(), 'System/Notifications/Index', [
+        return inertia('System/Notifications/Index', [
             'notifications' => request()->user()->unreadNotifications,
         ]);
     }
 
     public function update($notificationId)
+    {
+        $user = request()->user();
+        $user->unreadNotifications()->where('id', $notificationId)->update(['read_at' => now()]);
+    }
+
+    public function bulkUpdate($notificationId)
     {
         $user = request()->user();
         $user->unreadNotifications()->update(['read_at' => now()]);

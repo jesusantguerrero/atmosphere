@@ -77,12 +77,19 @@ const { isTab: isCurrentTab, selectedTab, tabs: widgetTabs } = useTabs(
             <button
                 v-for="tab in tabs"
                 @click="selectedTab = tab.name"
-                class="px-4 py-1 text-sm  border border-transparent bg-base-lvl-2 rounded-3xl text-body-1"
+                class="px-4 py-1 relative text-sm  border border-transparent bg-base-lvl-2 rounded-3xl text-body-1"
                 :class="{
                 'bg-primary/10 border-primary  text-primary': isCurrentTab(tab.name),
                 }"
             >
                 {{ $t(tab.label) }}
+                <div
+                    v-if="tab.count"
+                    class="flex items-center absolute -right-1.5 -top-1.5 justify-center w-5 h-5 text-xs text-white rounded-full shadow-md"
+                    :class="[tab.countClass ?? 'bg-error']"
+                >
+                    {{ tab.count }}
+                </div>
             </button>
         </section>
         <slot name="actions">

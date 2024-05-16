@@ -38,6 +38,12 @@
         id: number;
     }
 
+    const markAllAsRead = (notification: INotification ) => {
+        router.patch(`/notifications/${notification.id}`, {
+            read_at: new Date()
+        })
+    }
+
     const markAsRead = (notification: INotification ) => {
         router.patch(`/notifications/${notification.id}`, {
             read_at: new Date()

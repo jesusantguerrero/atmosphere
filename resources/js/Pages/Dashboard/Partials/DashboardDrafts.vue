@@ -16,6 +16,7 @@
     const transactionsDraft = ref([]);
     const isLoadingDrafts = ref(false);
     const selected = defineModel('selected');
+    const emit = defineEmits(['re-loaded']);
     const fetchTransactions = async () => {
         const url = `/api/finance/transactions?filter[status]=draft&limit=10&relationships=linked`;
         return axios.get(url).then<ITransaction[]>(({ data }) => {
@@ -33,15 +34,9 @@
     const isLoading = ref(false);
     const updateTransactions = () => {
         isLoading.value = true;
-        // router.post('/linked-drafts', {}, {
-        //     preserveScroll: true,
-        //     preserveState: true,
-        //     onSuccess() {
-                fetchTransactions().finally(() => {
-                    isLoading.value = false;
-                })
-            // }
-        // })
+        fetchTransactions().finally(() => {
+            isLoading.value = false;
+        })
     }
 
     const { openTransactionModal } = useTransactionModal();
@@ -64,10 +59,12 @@
             const [savedValue, action, originalData] = args;
             if ((originalData && originalData.status == 'draft' && savedValue.status == 'verified') || action == 'delete') {
                 fetchTransactions();
+                emit('re-loaded')
             }
 
             if (name == 'reload') {
                 updateTransactions()
+                emit('re-loaded');
             }
         })
     })
