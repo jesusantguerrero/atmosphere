@@ -3,7 +3,7 @@ import { ICategory } from "@/domains/transactions/models";
 export interface IBudgetStat {
     spending: number;
     total: number;
-    saving: number;
+    savings: number;
 }
 export interface BudgetTarget {
     amount: number

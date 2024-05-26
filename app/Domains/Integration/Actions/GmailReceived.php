@@ -25,16 +25,17 @@ class GmailReceived implements AutomationActionContract
         $config = json_decode($trigger->values);
         $client = GoogleService::getClient($automation->integration_id);
         $service = new ServiceGmail($client);
-        $notification = BHDService::EMAIL_NOTIFICATION;
         $condition = isset($config->conditionType) && $config->value ? "$config->conditionType:$config->value" : '';
         if (! $condition) {
             $condition = $config->value ?? '';
         }
         $results = $service->users_threads->listUsersThreads('me', ['maxResults' => $maxResults, 'q' => "$condition"]);
 
+
         foreach ($results->getThreads() as $index => $thread) {
             $theadResponse = $service->users_threads->get('me', $thread->id, ['format' => 'MINIMAL']);
             foreach ($theadResponse->getMessages() as $message) {
+                dd($message, $trackId);
                 if ($message && $message->getHistoryId() > $trackId) {
                     $raw = $service->users_messages->get('me', $message->id, ['format' => 'raw']);
                     $parser = self::parseEmail($raw);

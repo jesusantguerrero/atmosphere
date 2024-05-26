@@ -2,24 +2,18 @@
 <script setup lang="ts">
 import { AtButton } from "atmosphere-ui";
 
-defineProps({
-    title: {
-        type: String,
-    },
+withDefaults(defineProps<{
+    title: string;
     action: {
-        type: Object,
+        label: string,
+        iconClass?: string,
     },
-    hideDivider: {
-        type: Boolean
-    },
-    withPadding: {
-        type: Boolean,
-        default: true,
-    },
-    border: {
-        type: Boolean,
-        default: true,
-    }
+    hideDivider: boolean;
+    withPadding: boolean;
+    border: boolean
+}>(), {
+    withPadding: true,
+    border: true,
 })
 </script>
 

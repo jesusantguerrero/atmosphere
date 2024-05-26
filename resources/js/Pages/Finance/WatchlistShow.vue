@@ -72,9 +72,17 @@ const statCards = computed(() => [
 ]);
 
 const parser = (transactions: Record<string, string>[]) => {
-    return transactions.map((transaction) => ({
+    const data = Object.values(transactions).reduce((allData, val) => {
+        console.log(val);
+        allData.push(...val?.data);
+        return allData;
+    }, []);
+
+    debugger
+
+    return data.map((transaction) => ({
         title: transaction.description,
-        subtitle: `${transaction?.account_from?.name} -> ${transaction.category.name}`,
+        subtitle: `${transaction?.account_from?.name} -> ${transaction.cat_name}`,
         date: transaction.date,
         value: transaction.amount,
         currencyCode: transaction.currency_code,
@@ -129,13 +137,13 @@ const categories = computed(() => {
                  </template>
                 </WidgetWatchlistStats>
             </section>
-            <ChartComparison
+            <!-- <ChartComparison
                 class="w-full mb-10 mt-4 overflow-hidden bg-white rounded-lg"
                 :title="`${resource.name} Report`"
                 ref="ComparisonRevenue"
                 :data="categories"
                 data-item-total="total_amount"
-            />
+            /> -->
         </section>
 
         <TransactionsList

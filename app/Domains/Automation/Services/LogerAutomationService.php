@@ -2,9 +2,11 @@
 
 namespace App\Domains\Automation\Services;
 
+use Google\Service\Gmail;
 use App\Domains\Integration\Actions\BHD;
 use App\Domains\Automation\Models\Automation;
 use App\Domains\Integration\Actions\BHDAlert;
+use App\Domains\Transaction\Services\BHDService;
 use App\Domains\Automation\Models\AutomationTask;
 use App\Domains\Integration\Actions\OccurrenceAutomation;
 use App\Domains\Integration\Actions\TransactionCreateEntry;
@@ -40,8 +42,8 @@ class LogerAutomationService
     public static function setupService($serviceId, $service)
     {
         $taskTypes = [
-            'triggers' => 'trigger', 
-            'components' => 'component', 
+            'triggers' => 'trigger',
+            'components' => 'component',
             'actions' => 'action'
         ];
         foreach ($taskTypes as $taskTypeName => $taskType) {

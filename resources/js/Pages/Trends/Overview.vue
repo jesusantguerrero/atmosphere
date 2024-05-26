@@ -77,6 +77,10 @@ const trends = [
     {
         label: 'Year spending',
         url: '/trends/spending-year'
+    },
+    {
+        label: 'Year assigned',
+        url: '/trends/assigned-year'
     }
 ]
 
@@ -86,7 +90,8 @@ const components = {
     netWorth: ChartNetWorth,
     incomeExpenses: IncomeExpenses,
     incomeExpensesGraph:  ChartNetWorth,
-    spendingYear: ChartComparison
+    spendingYear: ChartComparison,
+    assignedYear: ChartComparison,
 }
 
 const trendComponent = computed(() => {

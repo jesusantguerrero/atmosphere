@@ -9,11 +9,12 @@ use Illuminate\Database\Eloquent\Model;
 use Insane\Journal\Models\Core\Account;
 use App\Domains\AppCore\Models\Category;
 use App\Domains\Budget\Data\BudgetReservedNames;
+use App\Domains\Budget\Models\Traits\BudgetMonthTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class BudgetMonth extends Model
 {
-    use HasFactory;
+    use HasFactory, BudgetMonthTrait;
 
     protected $fillable = [
         'team_id',

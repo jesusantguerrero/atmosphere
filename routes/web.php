@@ -74,7 +74,8 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
 
     Route::controller(NotificationController::class)->group(function () {
         Route::get('/notifications', 'index')->name('notifications');
-        Route::patch('/notifications/{notificationId}', 'update')->name('notifications.update');
+        Route::put('/notifications/{notificationId}', 'update')->name('notifications.update');
+        Route::patch('/notifications', 'bulkUpdate')->name('notifications.bulk-update');
     });
 
     /**************************************************************************************

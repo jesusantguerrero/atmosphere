@@ -4,6 +4,7 @@ namespace App\Domains\Transaction\Services;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Transaction\Models\TransactionLine;
 
@@ -46,6 +47,23 @@ class ReportService
         $rangeStartAt = Carbon::now()->subMonth($timeUnitDiff)->startOfMonth()->format('Y-m-d');
 
         $results = self::getExpensesByCategoriesInPeriod($teamId, $rangeStartAt, $rangeEndAt, $categories);
+        $resultGroup = $results->groupBy('date');
+
+        return $resultGroup->map(function ($monthItems) {
+            return [
+                'date' => $monthItems->first()->date,
+                'data' => $monthItems->sortByDesc('total_amount')->values(),
+                'total' => $monthItems->sum('total_amount'),
+            ];
+        }, $resultGroup)->sortBy('date');
+    }
+
+    public static function getAssignedByPeriod($teamId, $startDate, $timeUnitDiff = 2,  $timeUnit = 'month', $categories = null)
+    {
+        $rangeEndAt = Carbon::createFromFormat('Y-m-d', $startDate)->endOfMonth()->format('Y-m-d');
+        $rangeStartAt = Carbon::now()->subMonth($timeUnitDiff)->startOfMonth()->format('Y-m-d');
+
+        $results = self::getAssignedByCategoriesInPeriod($teamId, $rangeStartAt, $rangeEndAt, $categories);
         $resultGroup = $results->groupBy('date');
 
         return $resultGroup->map(function ($monthItems) {
@@ -169,6 +187,30 @@ class ReportService
             ->groupByRaw('date_format(transaction_lines.date, "%Y-%m"), categories.id')
             ->orderBy('date')
             ->join('transactions', 'transactions.id', 'transaction_lines.transaction_id')
+            ->leftJoin('budget_targets', 'budget_targets.category_id', 'categories.id')
+            ->get();
+
+            return $cats;
+    }
+
+    public static function getAssignedByCategoriesInPeriod($teamId, $startDate, $endDate, $categories = null)
+    {
+        $cats = BudgetMonth::byTeam($teamId)
+            ->balance()
+            ->inDateFrame($startDate, $endDate)
+            ->expenseCategories($categories)
+            ->selectRaw("
+                date_format(budget_months.month,
+                '%Y-%m-01') as date,
+                date_format(budget_months.month, '%Y-%m-01') as month,
+                year(budget_months.month) as year,
+                categories.name,
+                categories.id,
+                budget_targets.target_type
+                "
+            )
+            ->groupByRaw('date_format(budget_months.month, "%Y-%m"), categories.id')
+            ->orderBy('date')
             ->leftJoin('budget_targets', 'budget_targets.category_id', 'categories.id')
             ->get();
 
