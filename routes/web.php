@@ -93,9 +93,11 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     //  Meal related routes
     Route::get('/meals/overview', MealController::class)->name('meals.overview');
     Route::controller(MealController::class)->group(function () {
+        Route::get('/meals/shopping-list', 'shoppingList')->name('meals.shoppingList');
         Route::resource('/meals', MealController::class);
         Route::post('/meals/add-plan', 'addPlan')->name('meals.addPlan');
         Route::get('/meals-random', 'random')->name('meals.random');
+        Route::post('/meals/{meal}/shopping-list', 'addToShoppingList')->name('meals.shoppingList.add');
     });
 
     Route::controller(IngredientController::class)->group(function () {

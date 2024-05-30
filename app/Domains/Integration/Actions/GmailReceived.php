@@ -31,11 +31,10 @@ class GmailReceived implements AutomationActionContract
         }
         $results = $service->users_threads->listUsersThreads('me', ['maxResults' => $maxResults, 'q' => "$condition"]);
 
-
         foreach ($results->getThreads() as $index => $thread) {
             $theadResponse = $service->users_threads->get('me', $thread->id, ['format' => 'MINIMAL']);
             foreach ($theadResponse->getMessages() as $message) {
-                dd($message, $trackId);
+
                 if ($message && $message->getHistoryId() > $trackId) {
                     $raw = $service->users_messages->get('me', $message->id, ['format' => 'raw']);
                     $parser = self::parseEmail($raw);

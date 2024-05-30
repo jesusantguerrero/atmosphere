@@ -2,15 +2,17 @@
 
 namespace App\Http\Controllers\Meal;
 
-use App\Domains\Meal\Models\Meal;
-use App\Domains\Meal\Models\MealType;
-use App\Domains\Meal\Services\MealService;
-use App\Http\Resources\MealResource;
-use App\Http\Resources\PlannedMealResource;
-use Freesgen\Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use App\Domains\Meal\Models\Meal;
+use App\Http\Resources\MealResource;
+use Modules\Plan\Entities\PlanTypes;
+use App\Domains\Meal\Models\MealType;
+use Modules\Plan\Services\PlanService;
 use Illuminate\Support\Facades\Redirect;
+use App\Domains\Meal\Services\MealService;
+use App\Http\Resources\PlannedMealResource;
+use Freesgen\Atmosphere\Http\InertiaController;
 
 class MealController extends InertiaController
 {
@@ -21,6 +23,7 @@ class MealController extends InertiaController
             'index' => 'Meals/Index',
             'create' => 'Meals/Create',
             'edit' => 'Meals/Create',
+            'view' => 'Meals/View',
         ];
         $this->searchable = ['name'];
         $this->validationRules = [
@@ -95,5 +98,24 @@ class MealController extends InertiaController
         ])->get();
 
         return count($meals) ? $meals->random() : 'Noting to show';
+    }
+
+    public function show(Request $request, int $id) {
+        return inertia($this->templates['view'], $this->getEditProps($request, $id));
+    }
+
+    public function addToShoppingList(Meal $meal, MealService $mealService)
+    {
+        $mealService->addToShoppingList($meal->ingredients->toArray());
+
+        return Redirect::back();
+    }
+
+    public function shoppingList(PlanService $service) {
+        $user = request()->user();
+
+        return inertia('Housing/Chores', [
+            'chores' =>  [$service->getPlanType($user->current_team_id, PlanTypes::SHOPPING_LIST, request())]
+        ]);
     }
 }

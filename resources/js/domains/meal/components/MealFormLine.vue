@@ -3,27 +3,31 @@
 
     import LogerInput from "@/Components/atoms/LogerInput.vue";
     import LogerApiSimpleSelect from "@/Components/organisms/LogerApiSimpleSelect.vue";
+    import { IMealIngredient } from "../models";
 
     defineEmits(['close']);
-    defineProps({
-        meal: {
-            type: Object,
-            default: () => ({
-                name: '',
-            }),
-        },
-        ingredient: {
-            type: Object,
-            required: true,
-        },
-        index: {
-            type: Number
-        }
+
+    withDefaults(defineProps<{
+        meal: Object;
+        ingredient: IMealIngredient;
+        index: number;
+        viewOnly: boolean
+    }>(), {
+        meal: () => ({
+            name: '',
+        })
     });
 </script>
 
 <template>
-    <div class="flex px-2 py-2 overflow-hidden rounded-md bg-base-lvl-3">
+    <article class="flex px-2 py-2 overflow-hidden rounded-md bg-base-lvl-3" v-if="viewOnly">
+        <section>
+            <h4 class="text-lg first-letter:capitalize font-bold">{{ ingredient.name }}</h4>
+            <p><span>{{ ingredient.quantity }} {{ ingredient.unit}}</span></p>
+        </section>
+    </article>
+
+    <div class="flex px-2 py-2 overflow-hidden rounded-md bg-base-lvl-3" v-else>
         <AtField class="px-4" label="Qty">
             <LogerInput bordered rounded type="number" v-model="ingredient.quantity" />
         </AtField>

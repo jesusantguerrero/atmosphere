@@ -33,7 +33,7 @@
         </div>
         <footer class="w-full flex px-4">
             <LogerButton class="ml-auto" variant="secondary">
-                Create chopping list
+            Create chopping list
             </LogerButton>
         </footer>
     </section>

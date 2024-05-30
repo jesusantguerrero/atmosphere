@@ -39,7 +39,6 @@ module.exports = {
             }
         },
     },
-
     plugins: [
         require('@tailwindcss/typography'),
         require('@mertasan/tailwindcss-variables')
