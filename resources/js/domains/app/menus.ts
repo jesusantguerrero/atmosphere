@@ -11,22 +11,22 @@ const menus = {
         label: 'Overview',
         url: '/housing'
     },
-    // {
-    //     label: 'Chores',
-    //     url: '/housing/chores'
-    // },
+    {
+        label: 'Chores',
+        url: '/housing/chores'
+    },
     {
         label: 'Occurrence Checks',
         url: '/housing/occurrence'
     },
-    // {
-    //     label: 'Plans',
-    //     url: '/housing/plans'
-    // },
-    // {
-    //     label: 'Equipment',
-    //     url: '/housing/equipments'
-    // }
+    {
+        label: 'Plans',
+        url: '/housing/plans'
+    },
+    {
+        label: 'Equipment',
+        url: '/housing/equipments'
+    }
     ],
     [MODULES.MEAL]: [
         {
@@ -43,6 +43,10 @@ const menus = {
         {
             label: 'Ingredients',
             url: '/ingredients'
+        },
+        {
+            label: 'Shopping List',
+            url: '/shopping-list'
         }, {
             label: 'Menus',
             url: '/meals/menus',

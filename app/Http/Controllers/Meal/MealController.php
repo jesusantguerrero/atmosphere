@@ -35,7 +35,7 @@ class MealController extends InertiaController
         ];
     }
 
-    public function __invoke()
+    public function __invoke(PlanService $service)
     {
         $request = request();
         $startDate = $request->query('startDate', Carbon::now()->startOfMonth()->format('Y-m-d'));
@@ -54,10 +54,11 @@ class MealController extends InertiaController
                 return MealService::getIngredients($weekPlan);
             },
             'mealTypes' => MealType::where([
-                'team_id' => $request->user()->current_team_id,
-                'user_id' => $request->user()->current_team_id,
+                'team_id' => $teamId,
+                'user_id' => $request->user()->id,
             ])->get(),
             'meals' => PlannedMealResource::collection($plannedMeals),
+            'shoppingList' => $service->getPlanType($teamId, PlanTypes::SHOPPING_LIST, request())
         ]);
     }
 
@@ -102,20 +103,5 @@ class MealController extends InertiaController
 
     public function show(Request $request, int $id) {
         return inertia($this->templates['view'], $this->getEditProps($request, $id));
-    }
-
-    public function addToShoppingList(Meal $meal, MealService $mealService)
-    {
-        $mealService->addToShoppingList($meal->ingredients->toArray());
-
-        return Redirect::back();
-    }
-
-    public function shoppingList(PlanService $service) {
-        $user = request()->user();
-
-        return inertia('Housing/Chores', [
-            'chores' =>  [$service->getPlanType($user->current_team_id, PlanTypes::SHOPPING_LIST, request())]
-        ]);
     }
 }

@@ -1,5 +1,38 @@
+<script setup>
+import ItemGroupCell from "../../ItemGroupCell.vue";
+import { NPopover as JetDropdown } from "naive-ui"
+import JetDropdownLink from "@/Components/atoms/DropdownLink.vue"
+
+defineProps({
+        item: {
+            type: Object,
+            required: true
+        },
+        index: {
+            type: Number,
+            required: true
+        },
+        isSelectMode: {
+            type: Boolean,
+            default: false
+        },
+        selectedItems: {
+            type: Array,
+            default() {
+                return []
+            }
+        }
+});
+function getFieldValue(item, name) {
+    const fieldValue = item.fields.find(
+        field => field.field_name == name
+    );
+    return fieldValue && fieldValue.value;
+}
+</script>
+
 <template>
-    <div
+    <section
         :class="`item-false bg-gray-200 border border-white flex`"
         :key="`item-false__title-${item.id}`"
     >
@@ -104,41 +137,10 @@
             </div>
         </JetDropdown>
         <!-- /Title options -->
-    </div>
+    </section>
 </template>
 
-<script setup>
-import ItemGroupCell from "../../ItemGroupCell.vue";
-import { NPopover as JetDropdown } from "naive-ui"
-import JetDropdownLink from "@/Components/atoms/DropdownLink.vue"
 
-defineProps({
-        item: {
-            type: Object,
-            required: true
-        },
-        index: {
-            type: Number,
-            required: true
-        },
-        isSelectMode: {
-            type: Boolean,
-            default: false
-        },
-        selectedItems: {
-            type: Array,
-            default() {
-                return []
-            }
-        }
-});
-function getFieldValue(item, name) {
-    const fieldValue = item.fields.find(
-        field => field.field_name == name
-    );
-    return fieldValue && fieldValue.value;
-}
-</script>
 
 <style lang="scss" scoped>
 .points {

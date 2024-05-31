@@ -1,104 +1,4 @@
-<template>
-    <div
-        class="item-group-cell"
-        ref="ItemGroupCell"
-        :class="{ 'editable-mode': isEditMode, 'new-item': isTitle }"
-    >
-        <div
-            v-if="isTitle && !isEditMode"
-            class="new-item-button"
-            @click="toggleEditMode()"
-        >
-            <i class="mr-3 fa fa-plus"></i>
-            <span>
-                {{ placeholder }}
-            </span>
-        </div>
-
-        <template v-else-if="!isEditMode">
-            <LinkPreview
-                v-if="field.type == 'url' && displayValue"
-                :value="displayValue"
-                @edit="toggleEditMode()"
-            />
-            <span
-                v-else
-                @click="toggleEditMode()"
-                :title="displayValue"
-                class="inline-block w-full px-2 overflow-hidden text-sm border-2 border-transparent border-dashed cursor-pointer h-7 hover:border-gray-300"
-            >
-                {{ displayValue }}
-            </span>
-        </template>
-
-        <template v-else>
-                <div class="w-full h-8 px-2" v-if="isCustomField">
-                    <component
-                        v-model="value"
-                        ref="input"
-                        :is="componentName"
-                        :users="users"
-                        :options="field.options"
-                        @saved="saveChanges()"
-                        @closed="isEditMode = false"
-                    />
-                </div>
-
-                <div v-else class="flex items-center w-full h-full">
-                    <div class="controls" v-if="showControls && item.board">
-                        <BoardSelector
-                            :options="item.board.stages"
-                            icon-class="fas fa-layer-group"
-                            v-model="item.stage"
-                        />
-                    </div>
-                    <input
-                        ref="input"
-                        type="text"
-                        class="w-full h-8 px-2 mx-0 border-none rounded-none form-input"
-                        :class="{ 'new-item': isTitle }"
-                        :name="`${index}-${fieldName}`"
-                        id=""
-                        :placeholder="placeholder"
-                        v-model="value"
-                        @blur="saveChanges()"
-                        @keydown.enter="saveItem"
-                    />
-                    {{  value }}
-                    <div class="flex h-full controls" v-if="showControls">
-                        <BoardSelector
-                            v-if="boards"
-                            :options="boards"
-                            tooltip="Board"
-                            icon-class="fas fa-list"
-                            :show-label="false"
-                            v-model="item.board"
-                        />
-                        <el-Tooltip
-                            effect="dark"
-                            content="reminder date"
-                            placement="top"
-                        >
-                            <i class="mx-2 fas fa-clock"></i>
-                        </el-Tooltip>
-                        <ElTooltip
-                            effect="dark"
-                            content="Delegate"
-                            placement="top"
-                        >
-                            <i class="mx-2 fas fa-user"></i>
-                        </ElTooltip>
-
-                        <ElTooltip effect="dark" content="Status" placement="top">
-                            <i class="mx-2 fas fa-tag"></i>
-                        </ElTooltip>
-                    </div>
-                </div>
-        </template>
-    </div>
-</template>
-
-<script setup>
+<script setup lang="ts">
 import LinkPreview from "./cellTypes/LinkPreview.vue";
 import InputLabel from "./cellTypes/Label.vue";
 import InputDate from "./cellTypes/Date.vue";
@@ -237,6 +137,106 @@ const {
     isEditMode
 } = toRefs(state)
 </script>
+
+<template>
+    <div
+        class="item-group-cell"
+        ref="ItemGroupCell"
+        :class="{ 'editable-mode': isEditMode, 'new-item': isTitle }"
+    >
+        <div
+            v-if="isTitle && !isEditMode"
+            class="new-item-button"
+            @click="toggleEditMode()"
+        >
+            <i class="mr-3 fa fa-plus"></i>
+            <span>
+                {{ placeholder }}
+            </span>
+        </div>
+
+        <template v-else-if="!isEditMode">
+            <LinkPreview
+                v-if="field.type == 'url' && displayValue"
+                :value="displayValue"
+                @edit="toggleEditMode()"
+            />
+            <span
+                v-else
+                @click="toggleEditMode()"
+                :title="displayValue"
+                class="inline-block w-full px-2 overflow-hidden text-sm border-2 border-transparent border-dashed cursor-pointer h-7 hover:border-gray-300"
+            >
+                {{ displayValue }}
+            </span>
+        </template>
+
+        <template v-else>
+                <div class="w-full h-8 px-2" v-if="isCustomField">
+                    <component
+                        v-model="value"
+                        ref="input"
+                        :is="componentName"
+                        :users="users"
+                        :options="field.options"
+                        @saved="saveChanges()"
+                        @closed="isEditMode = false"
+                    />
+                </div>
+
+                <div v-else class="flex items-center w-full h-full">
+                    <div class="controls" v-if="showControls && item.board">
+                        <BoardSelector
+                            :options="item.board.stages"
+                            icon-class="fas fa-layer-group"
+                            v-model="item.stage"
+                        />
+                    </div>
+                    <input
+                        ref="input"
+                        type="text"
+                        class="w-full h-8 px-2 mx-0 border-none rounded-none form-input"
+                        :class="{ 'new-item': isTitle }"
+                        :name="`${index}-${fieldName}`"
+                        id=""
+                        :placeholder="placeholder"
+                        v-model="value"
+                        @blur="saveChanges()"
+                        @keydown.enter="saveItem"
+                    />
+                    {{  value }}
+                    <div class="flex h-full controls" v-if="showControls">
+                        <BoardSelector
+                            v-if="boards"
+                            :options="boards"
+                            tooltip="Board"
+                            icon-class="fas fa-list"
+                            :show-label="false"
+                            v-model="item.board"
+                        />
+                        <el-Tooltip
+                            effect="dark"
+                            content="reminder date"
+                            placement="top"
+                        >
+                            <i class="mx-2 fas fa-clock"></i>
+                        </el-Tooltip>
+                        <ElTooltip
+                            effect="dark"
+                            content="Delegate"
+                            placement="top"
+                        >
+                            <i class="mx-2 fas fa-user"></i>
+                        </ElTooltip>
+
+                        <ElTooltip effect="dark" content="Status" placement="top">
+                            <i class="mx-2 fas fa-tag"></i>
+                        </ElTooltip>
+                    </div>
+                </div>
+        </template>
+    </div>
+</template>
 
 <style lang="scss">
 .el-input__icon {

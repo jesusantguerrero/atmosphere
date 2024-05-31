@@ -144,24 +144,7 @@ class MealService
                 "title" => $ingredient["name"],
                 "board_id" => null,
                 "stage_id" => $shoppingList->stages->first()->id,
-                "fields" => [
-                    [
-                        "field_id" => 73,
-                        "field_name" => "owner"
-                    ],
-                    [
-                        "field_id" => 74,
-                        "field_name" => "status"
-                    ],
-                    [
-                        "field_id" => 75,
-                        "field_name" => "due_date"
-                    ],
-                    [
-                        "field_id" => 76,
-                        "field_name" => "priority"
-                    ]
-                ],
+                "fields" => [],
                 "order" => 1
             ]);
         }

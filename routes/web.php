@@ -22,6 +22,7 @@ use App\Http\Controllers\System\IntegrationController;
 use App\Http\Controllers\System\NotificationController;
 use App\Http\Controllers\Finance\FinanceLinesController;
 use App\Http\Controllers\Finance\FinanceTrendController;
+use App\Http\Controllers\Meal\MealShoppingListController;
 use App\Http\Controllers\System\TeamInvitationController;
 use App\Http\Controllers\Finance\FinanceAccountController;
 use Freesgen\Atmosphere\Http\Controllers\SettingsController;
@@ -93,11 +94,15 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     //  Meal related routes
     Route::get('/meals/overview', MealController::class)->name('meals.overview');
     Route::controller(MealController::class)->group(function () {
-        Route::get('/meals/shopping-list', 'shoppingList')->name('meals.shoppingList');
         Route::resource('/meals', MealController::class);
         Route::post('/meals/add-plan', 'addPlan')->name('meals.addPlan');
         Route::get('/meals-random', 'random')->name('meals.random');
-        Route::post('/meals/{meal}/shopping-list', 'addToShoppingList')->name('meals.shoppingList.add');
+    });
+
+    Route::controller(MealShoppingListController::class)->group(function () {
+        Route::get('/shopping-list', 'index')->name('meals.shoppingList');
+        Route::put('/shopping-list', 'update')->name('meals.shoppingList.update');
+        Route::post('/meals/{meal}/shopping-list', 'store')->name('meals.shoppingList.add');
     });
 
     Route::controller(IngredientController::class)->group(function () {
