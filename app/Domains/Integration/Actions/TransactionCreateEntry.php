@@ -67,11 +67,14 @@ class TransactionCreateEntry implements AutomationActionContract
             "team_id" => $transactionData['team_id'],
             'date' => $transactionData['date'],
             'total' => $transactionData['total'],
-            'description' => $transactionData['description'],
             'currency_code' => $transactionData['currency_code'],
             'direction' => $transactionData['direction'],
             'payee_id' => $transactionData['payee_id'],
-        ])->first();
+        ])
+        ->where(
+            fn($q) => $q->where('description', $transactionData['description'])
+                        ->orWhere('reference', $transactionData['description'])
+        )->first();
 
         if ($transaction && $transaction->status == 'verified') {
            return $transaction;

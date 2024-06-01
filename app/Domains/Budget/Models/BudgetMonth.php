@@ -73,6 +73,7 @@ class BudgetMonth extends Model
             )
             ->join(DB::raw('categories g'), fn ($q) => $q->on('g.id', 'categories.parent_id'))
             ->leftJoin('budget_targets', 'budget_targets.category_id', 'budget_months.category_id')
+            ->orderBy('month')
             ->orderBy('g.index')
             ->groupBy("month")
             ->get();

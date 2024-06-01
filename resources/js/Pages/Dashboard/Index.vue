@@ -192,6 +192,7 @@ const deleteBulkTransactions = () => {
         <BudgetWidget :budgets="budgetTotal" />
       </section>
     </main>
+
     <BulkSelectionBar
       v-if="selectedItems.length"
       :selected-items="selectedItems"
