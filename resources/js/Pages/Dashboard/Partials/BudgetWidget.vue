@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useI18n } from "vue-i18n";
-import VueApexCharts from "vue3-apexcharts";
 import { router } from "@inertiajs/vue3"
+import VueApexCharts from "vue3-apexcharts";
+import { ElTooltip } from 'element-plus';
 
 import WidgetTitleCard from '@/Components/molecules/WidgetTitleCard.vue';
 import BudgetProgress from '@/domains/budget/components/BudgetProgress.vue';
 
 import { formatMoney } from '@/utils';
 import { IBudgetStat } from '@/domains/budget/models/budget';
+import { getVariances } from '@/domains/transactions';
 
 interface Stat {
     label: string;
@@ -16,7 +18,7 @@ interface Stat {
 }
 
 const props = defineProps<{
-    budget: IBudgetStat
+    budgets: IBudgetStat[]
 }>();
 
 const stats = ref<{
@@ -25,11 +27,11 @@ const stats = ref<{
     budgetedSpending: Stat;
 }>({
     budgeted: {
-        value: props.budget.spending,
+        value: props.budgets?.at(-1).spending,
         label: 'Budgeted'
     },
     spending: {
-        value: props.budget.savings,
+        value: props.budgets?.at(-1).savings,
         label: 'Savings'
     },
     budgetedSpending: {
@@ -85,12 +87,39 @@ const chartConfig = {
   },
   series: Object.values(stats.value).map(item => item.value),
 };
+
+interface MonthBudget {
+    forSpending: number
+    forSavings: number
+    total: number
+}
+
+const currentBudget = computed<MonthBudget>(() => {
+    return {
+        forSpending: props.budgets?.at(-1).spending,
+        forSavings: props.budgets?.at(-1).savings,
+        total: props.budgets?.at(-1).total,
+    }
+});
+
+const prevBudget = computed<MonthBudget>(() => {
+    return {
+        forSpending: props.budgets?.at(0).spending,
+        forSavings: props.budgets?.at(0).savings,
+        total: props.budgets?.at(0).total,
+    }
+});
+
+const variance = computed(() => {
+    return getVariances(currentBudget.value.total, prevBudget.value.total)
+})
+
 </script>
 
 <template>
     <WidgetTitleCard
         title="Budget balance"
-        class="hidden md:block bg-primary text-white"
+        class="hidden md:block bg-primary text-white overflow-hidden"
         :hide-divider="true"
         :action="{
             label: 'Budget',
@@ -99,7 +128,7 @@ const chartConfig = {
         @action="router.visit('/budgets')"
     >
         <section class="w-full">
-            <section class="w-full  py-3 relative h-[155px]">
+            <section class="w-full  py-3 relative h-[155px] overflow-hidden">
                 <article style="width: 100%; height: 300px" class="relative py-1 mb-10">
                   <VueApexCharts
                     ref="chartRef"
@@ -112,19 +141,21 @@ const chartConfig = {
                 </article>
               </section>
               <header class="mt-4 border-t py-4 flex items-start justify-between pb-2">
-                    <h1 class="font-bold flex items-center w-full">
+                    <h1 class="font-bold flex items-center ">
                         <section class="bg-white text-primary w-8 h-8 rounded-full flex items-center justify-center mr-2"
                         >
                             <IMdiBankTransfer />
                         </section>
                         Total
                     </h1>
-                    <section class="space-x-2 w-full">
-                        <h2 class="text-lg flex items-center  font-bold">
-                            <span class="bg-white rounded-md text-error text-xs px-1 py-0.5 mr-1">
-                                12%
-                            </span>
-                            <span>
+                    <section class="space-x-2 ">
+                        <h2 class="flex items-center text-lg font-bold">
+                            <ElTooltip :content="formatMoney(prevBudget.total)">
+                                <span class="bg-white inline-block cursor-pointer rounded-md text-error text-xs px-1 py-0.5 mr-1" >
+                                    {{variance}} %
+                                </span>
+                            </ElTooltip>
+                            <span >
                                 {{ formatMoney(stats.budgeted.value) }}
                             </span>
                         </h2>
@@ -133,8 +164,8 @@ const chartConfig = {
               <article class="space-y-2 mt-4">
                 <BudgetProgress
                     class="h-2 rounded-sm"
-                    :goal="budget.total"
-                    :current="budget.spending"
+                    :goal="currentBudget.total"
+                    :current="currentBudget.forSpending"
                     :progress-class="['bg-white', 'bg-primaryDark/60']"
                     :show-labels="false"
                 >
@@ -144,7 +175,7 @@ const chartConfig = {
                             For spending
                         </section>
                         <section >
-                            {{ formatMoney(budget.spending) }} / {{ formatMoney(budget?.total) }}
+                            {{ formatMoney(currentBudget.forSpending) }} / {{ formatMoney(currentBudget.total) }}
                             ({{ progress }}%)
                         </section>
                         </header>
@@ -152,8 +183,8 @@ const chartConfig = {
                 </BudgetProgress>
                 <BudgetProgress
                     class="h-2 rounded-sm"
-                    :goal="budget.total"
-                    :current="budget.savings"
+                    :goal="currentBudget.total"
+                    :current="currentBudget.forSavings"
                     :progress-class="['bg-white', 'bg-primaryDark/60']"
                     :show-labels="false"
                 >
@@ -163,7 +194,7 @@ const chartConfig = {
                         For savings
                     </section>
                     <section >
-                        {{ formatMoney(budget.savings) }} / {{ formatMoney(budget?.total) }}
+                        {{ formatMoney(currentBudget.forSavings) }} / {{ formatMoney(currentBudget.total) }}
                         ({{ progress }}%)
                     </section>
                     </header>
