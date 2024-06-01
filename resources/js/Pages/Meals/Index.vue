@@ -10,15 +10,12 @@ import MealTemplate from "@/domains/meal/components/MealTemplate.vue";
 import MealSectionNav from "@/domains/meal/components/MealSectionNav.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 
-const props = defineProps({
-  meals: {
-    type: Array,
-    required: true,
-  },
-  serverSearchOptions: {
-    type: Object,
-    default: () => ({}),
-  },
+const props = withDefaults(defineProps<{
+    meals: any[]
+    shoppingList: Object,
+    serverSearchOptions: Object
+}>(), {
+  serverSearchOptions:() => ({})
 });
 
 const recipes = computed(() => {

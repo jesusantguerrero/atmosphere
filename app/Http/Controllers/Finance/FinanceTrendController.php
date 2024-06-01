@@ -35,6 +35,9 @@ class FinanceTrendController extends Controller
         'spending-year' => [
             "handler" => 'spendingYear'
         ],
+        'assigned-year' => [
+            "handler" => 'assignedInYear'
+        ],
         'income-expenses-graph' => [
             "handler" => 'IncomeExpensesGraph'
         ],
@@ -197,6 +200,31 @@ class FinanceTrendController extends Controller
             'metaData' => [
                 'name' => 'spendingYear',
                 'title' => 'Expenses',
+                'props' => [
+                    'headerTemplate' => 'grid',
+                ],
+            ],
+        ];
+    }
+
+    public function assignedInYear()
+    {
+        $queryParams = request()->query();
+        $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
+        [$startDate] = $this->getFilterDates($filters);
+        $teamId = request()->user()->current_team_id;
+        $excludedAccounts = null;
+        if (isset($filters['category'])) {
+            $excludedAccounts = collect(explode(',', $filters['category']))->map(fn ($id) => "-$id")->all();
+        }
+
+        // dd(ReportService::generateExpensesByPeriod($teamId, $startDate, 12, 'month', $excludedAccounts), ReportService::getAssignedByPeriod($teamId, $startDate, 12, 'month', $excludedAccounts));
+
+        return [
+            'data' => ReportService::getAssignedByPeriod($teamId, $startDate, 12, 'month', $excludedAccounts),
+            'metaData' => [
+                'name' => 'assignedYear',
+                'title' => 'Assigned in year',
                 'props' => [
                     'headerTemplate' => 'grid',
                 ],

@@ -1,9 +1,6 @@
 <?php
 
 namespace App\Http\Controllers\System;
-
-use Laravel\Jetstream\Jetstream;
-
 class NotificationController
 {
     public function index()
@@ -19,7 +16,7 @@ class NotificationController
         $user->unreadNotifications()->where('id', $notificationId)->update(['read_at' => now()]);
     }
 
-    public function bulkUpdate($notificationId)
+    public function bulkUpdate()
     {
         $user = request()->user();
         $user->unreadNotifications()->update(['read_at' => now()]);

@@ -10,7 +10,7 @@
     import { router } from '@inertiajs/vue3';
     import { formatDate } from '@/utils';
 
-    const props = defineProps({
+    defineProps({
             notifications: {
                 type: Array,
                 default() {
@@ -19,33 +19,18 @@
             }
     });
 
-    const state = reactive({
-        tableSearchOptions: {
-            resourceUrl: "/projects?sort=surename"
-        },
-        tableConfig: {
-            resourceUrl: "/projects",
-            selectable: true,
-            pagination: true,
-            searchBar: ["search", "filter", "dates", "add", "actions"],
-            dataTemplate: {
-                name: "week-pager",
-                filter: "date"
-            }
-        }
-    });
     interface INotification {
         id: number;
     }
 
-    const markAllAsRead = (notification: INotification ) => {
-        router.patch(`/notifications/${notification.id}`, {
+    const markAllAsRead = () => {
+        router.patch(`/notifications`, {
             read_at: new Date()
         })
     }
 
     const markAsRead = (notification: INotification ) => {
-        router.patch(`/notifications/${notification.id}`, {
+        router.put(`/notifications/${notification.id}`, {
             read_at: new Date()
         })
     }
@@ -63,6 +48,13 @@
                     :table-data="notifications"
                     :section="section"
                 >
+                <template #header-actions v-if="notifications.length">
+                    <div class="flex items-center ml-auto space-x-2">
+                    <AtButton class="ml-auto text-white transition-colors rounded-md bg-primary" @click="markAllAsRead">
+                        Mark all as read
+                    </AtButton>
+                    </div>
+                </template>
                  <template #data="{ scope }">
                     <article class="w-full py-2 pl-4 space-between">
                         <header>

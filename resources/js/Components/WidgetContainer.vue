@@ -123,6 +123,9 @@ const { isTab: isCurrentTab, selectedTab, tabs: widgetTabs } = useTabs(
           />
         </section>
       </slot>
+      <template v-for="tab in tabs">
+        <slot :name="tab.name" v-if="selectedTab == tab.name" />
+      </template>
     </section>
     <slot name="append" />
   </article>

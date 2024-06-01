@@ -43,9 +43,16 @@ const range = computed(() => {
     >
         <thead>
             <tr class="px-2 py-4 font-bold text-left border-b border-gray-200 text-body">
-                 <th v-for="col in cols" :key="col.name" class="px-2 py-4" :class="[col.headerClass]"  :style="{width: col.width, maxWidth: col.maxWidth}">
-                    {{ col.label }}
-                 </th>
+                <th v-for="col in cols"
+                 :key="col.name"
+                 class="px-2 py-4"
+                 :class="[col.headerClass]"
+                 :style="{width: col.width, maxWidth: col.maxWidth}"
+                >
+                    <slot :name="`header-${col.name}`">
+                        {{ col.label }}
+                    </slot>
+                </th>
             </tr>
         </thead>
 

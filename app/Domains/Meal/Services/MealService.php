@@ -6,7 +6,9 @@ use App\Models\User;
 use Illuminate\Support\Carbon;
 use App\Domains\Meal\Models\Meal;
 use App\Domains\Meal\Models\Product;
+use Modules\Plan\Entities\PlanTypes;
 use App\Domains\Meal\Models\MealPlan;
+use Modules\Plan\Services\PlanService;
 use App\Domains\AppCore\Models\Planner;
 
 class MealService
@@ -124,5 +126,28 @@ class MealService
         }
 
         return $label;
+    }
+
+    // shopping list
+    public function addToShoppingList($ingredients = [])
+    {
+        $planService = new PlanService();
+        $user = request()->user();
+        $team = request()->user()->currentTeam;
+        $shoppingList =  $planService->getPlanTypeModel($team->id, PlanTypes::SHOPPING_LIST, request());
+        if (!$shoppingList) {
+            $shoppingList = $planService->createPlanBoard($team, PlanTypes::SHOPPING_LIST, PlanTypes::SHOPPING_LIST->name);
+        }
+
+        foreach ($ingredients as $ingredient) {
+            $shoppingList->addItem($user, [
+                "title" => $ingredient["name"],
+                "board_id" => null,
+                "stage_id" => $shoppingList->stages->first()->id,
+                "fields" => [],
+                "order" => 1
+            ]);
+        }
+
     }
 }

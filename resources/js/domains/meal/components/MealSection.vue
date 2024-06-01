@@ -17,7 +17,7 @@
     }
 
     interface Meal {
-[x: string]: any;
+        [x: string]: any;
         id: number;
         name: string;
         is_liked: boolean;
@@ -66,7 +66,6 @@
                 </AtButton>
 
                 <span @click="$emit('click', meal)" class="capitalize transition hover:text-primary">
-
                     {{ meal.name }}
                 </span>
             </div>
@@ -77,15 +76,31 @@
                         {{ ingredient.name  }}
                     </div>
                 </div>
-                <LogerButton 
+                <div class="flex items-center space-x-1 font-bold">
+                    <div v-for="tag in meal.labels" :style="{color: tag.color}" :key="tag.id">
+                        #{{ tag.name  }}
+                    </div>
+                    <LogerApiSimpleSelect
+                        v-model="label.label_id"
+                        v-model:label="label.name"
+                        class="w-24"
+                        tag
+                        custom-label="name"
+                        track-id="id"
+                        placeholder="Add label"
+                        endpoint="/api/labels"
+                        @update:label="$emit('tag-selected', label, meal)"
+                    />
+                </div>
+                <LogerButton
                     variant="error"
                     @click="deleteResource(meal)"
                     :disabled="deleteForm.processing"
                     :processing="deleteForm.processing && deleteForm.id==meal.id"
                 >
-                <template #icon>
-                    <i class="fa fa-trash"></i>
-                </template>
+                    <template #icon>
+                        <i class="fa fa-trash"></i>
+                    </template>
                 </LogerButton>
             </div>
         </article>

@@ -10,32 +10,24 @@ import { router } from "@inertiajs/vue3";
 import { onMounted, provide, computed, watch, reactive, ref, toRefs } from "vue";
 import BoardTitle from "./BoardTitle.vue";
 
-const props = defineProps({
-    board: {
-        type: Object,
-        required: true
-    },
-    automations: {
-        type: Array,
-        required: true
-    },
-    users: {
-        type: Array,
-        required: true
-    },
-    filters: {
-        type: Object,
-        default() {
-            return {
-                search: '',
-                done: '',
-                sort: ''
-            }
-        }
-    }
+const emit = defineEmits(['search'])
+const props = withDefaults(defineProps<{
+    board: Object;
+    automations: boolean;
+    users: any[];
+    filters: Record<string, any>
+    multiStage: boolean;
+    resourceName: string;
+}>(), {
+    filters: () => ({
+        search: '',
+        done: '',
+        sort: ''
+    })
 });
 
 provide('users', props.users);
+
 const views = {
     list:{
         name: "list",
@@ -76,10 +68,9 @@ const state = reactive({
 watch(state.searchOptions, throttle(() => {
     let query = pickBy(state.searchOptions);
     query = Object.keys(query).length ?  '?' + new URLSearchParams(pickBy(state.searchOptions)) : '';
-    // router.replace(`/boards/${props.board.id}${query}`)
+    emit('search', query)
 }, 200),{
     deep: true,
-    immediate: true
 });
 
 const containerComponent = computed(() => {
@@ -167,7 +158,7 @@ function addItem(item: Record<string, string>, stage: Record<string, string>, re
     isLoading.value = true;
 
     item.order = stage.items.length;
-    
+
     axios({
         url: `/housing/plans/${props.board.id}/items${param}`,
         method,
@@ -323,7 +314,7 @@ const {
     isItemModalOpen
 } = toRefs(state)
 </script>
- 
+
  <template>
     <div class="px-8 pb-24">
         <header class="flex justify-between board__toolbar">
@@ -412,6 +403,7 @@ const {
                         :items="stage.items"
                         :create-mode="createMode"
                         :filters="filters"
+                        :resource-name="resourceName"
                         @sort="sort"
                         @clear-sort="clearSort"
                         @saved="addItem($event, stage)"
@@ -430,10 +422,11 @@ const {
                 :fields="board.fields"
                 :kanban-data="kanbanData"
                 @saved="addItem"
+                :resource-name="resourceName"
                 class="flex pt-5"
             />
 
-            <div class="flex justify-center w-full py-5" v-if="modeSelected == 'list'">
+            <div class="flex justify-center w-full py-5" v-if="modeSelected == 'list' && multiStage">
                 <button
                     class="flex items-center justify-center w-8 h-8 px-2 text-purple-400 border-2 border-purple-400 rounded-full hover:bg-purple-400 hover:text-white"
                     @click="addStage()"

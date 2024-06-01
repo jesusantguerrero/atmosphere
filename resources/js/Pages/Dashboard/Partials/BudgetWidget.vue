@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
-import { ITransaction } from '@/domains/transactions/models';
-import axios from 'axios';
-import WidgetTitleCard from '@/Components/molecules/WidgetTitleCard.vue';
-import LogerButton from '@/Components/atoms/LogerButton.vue';
+import { ref } from 'vue';
 import { useI18n } from "vue-i18n";
 import VueApexCharts from "vue3-apexcharts";
-import { formatMoney } from '@/utils';
+import { router } from "@inertiajs/vue3"
+
+import WidgetTitleCard from '@/Components/molecules/WidgetTitleCard.vue';
 import BudgetProgress from '@/domains/budget/components/BudgetProgress.vue';
+
+import { formatMoney } from '@/utils';
 import { IBudgetStat } from '@/domains/budget/models/budget';
 
 interface Stat {
@@ -18,7 +18,6 @@ interface Stat {
 const props = defineProps<{
     budget: IBudgetStat
 }>();
-
 
 const stats = ref<{
     budgeted: Stat;
@@ -86,19 +85,19 @@ const chartConfig = {
   },
   series: Object.values(stats.value).map(item => item.value),
 };
-const legend = computed(() => {
-    return chartConfig.options.labels.map((label, index) => {
-        return {
-        label: label,
-        value: chartConfig.series[index],
-        color: "",
-        };
-    });
-});
 </script>
 
 <template>
-    <WidgetTitleCard title="Budget balance" class="hidden md:block bg-primary text-white" :hide-divider="true">
+    <WidgetTitleCard
+        title="Budget balance"
+        class="hidden md:block bg-primary text-white"
+        :hide-divider="true"
+        :action="{
+            label: 'Budget',
+            iconClass: 'fa fa-chevron-right text-white'
+        }"
+        @action="router.visit('/budgets')"
+    >
         <section class="w-full">
             <section class="w-full  py-3 relative h-[155px]">
                 <article style="width: 100%; height: 300px" class="relative py-1 mb-10">
@@ -129,9 +128,6 @@ const legend = computed(() => {
                                 {{ formatMoney(stats.budgeted.value) }}
                             </span>
                         </h2>
-                        <p class="text-xs">
-                            compared to {{  formatMoney(25000) }} last month
-                        </p>
                     </section>
               </header>
               <article class="space-y-2 mt-4">
@@ -178,12 +174,6 @@ const legend = computed(() => {
 
         <template #icon>
             <IMdiCheck />
-        </template>
-
-        <template #action>
-            <LogerButton class="primary border-primaryDark/60 bg-primaryDark/60 rounded-full text-sm" @click="updateTransactions()" :disabled="isLoading">
-                This month
-            </LogerButton>
         </template>
     </WidgetTitleCard>
 </template>

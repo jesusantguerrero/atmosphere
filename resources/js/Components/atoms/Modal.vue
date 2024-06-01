@@ -56,6 +56,7 @@ const maxWidthClass = computed(() => {
         'lg': 'sm:max-w-lg',
         'xl': 'sm:max-w-xl',
         '2xl': 'sm:max-w-2xl',
+        '4xl': 'sm:max-w-4xl',
         'mobile': 'w-full',
     }[props.maxWidth || '2xl']
 })
@@ -67,6 +68,7 @@ const containerClass = computed(() => {
         'lg': 'px-4 py-6',
         'xl': 'px-4 py-6',
         '2xl': 'px-4 py-6',
+        '4xl': 'px-4 py-6',
         'mobile': 'w-full',
     }[props.maxWidth || '2xl']
 })

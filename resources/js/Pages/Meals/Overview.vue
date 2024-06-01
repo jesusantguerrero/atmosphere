@@ -5,7 +5,7 @@ import WelcomeCard from "@/Components/organisms/WelcomeCard.vue";
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import SectionTitle from "@/Components/atoms/SectionTitle.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
-import ChoppingListForm from "./Partials/ChoppingListForm.vue";
+import ShoppingListForm from "./Partials/ShoppingListForm.vue";
 
 import CategoryItem from "@/domains/transactions/components/CategoryItem.vue";
 import MealWidget from "@/domains/meal/components/MealWidget.vue";
@@ -14,35 +14,12 @@ import MealSectionNav from "@/domains/meal/components/MealSectionNav.vue";
 
 import { addPlan } from "./utils";
 
-const props = defineProps({
-  meals: {
-    type: Object,
-    required: true,
-  },
-  mostLikedMeals: {
-    type: Array,
-  },
-  ingredients: {
-    type: Array,
-  },
-  user: {
-    type: Object,
-    required: true,
-  },
-
-  categories: {
-    type: Array,
-    default() {
-      return [];
-    },
-  },
-  accounts: {
-    type: Array,
-    default() {
-      return [];
-    },
-  },
-});
+const props = defineProps<{
+    meals:  Object,
+    mostLikedMeals: any[]
+    ingredients: any[]
+    shoppingList:  Object,
+}>();
 
 const pageProps = usePage().props;
 
@@ -92,13 +69,10 @@ const getMealByType = (mealTypeId) => {
         </WelcomeCard>
 
         <div class="mt-4 space-y-4">
-          <ChoppingListForm :ingredients="ingredients">
-            <template #prepend>
-              <div class="px-4 py-2 font-bold rounded-md bg-primary/10 text-primary">
-                This are the things you'll need this week according to your planning
-              </div>
-            </template>
-          </ChoppingListForm>
+            <ShoppingListForm
+                :ingredients="ingredients"
+                :shopping-list="shoppingList"
+            />
         </div>
       </div>
       <div class="py-6 space-y-4 md:w-3/12">

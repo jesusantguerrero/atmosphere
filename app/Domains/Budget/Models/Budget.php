@@ -2,8 +2,10 @@
 
 namespace App\Domains\Budget\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Insane\Journal\Models\Core\Account;
+use App\Domains\AppCore\Models\Category;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Budget extends Model
 {

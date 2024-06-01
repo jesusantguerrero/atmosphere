@@ -6,6 +6,7 @@ use Inertia\Middleware;
 use Tightenco\Ziggy\Ziggy;
 use Illuminate\Http\Request;
 use App\Concerns\Facades\Menu;
+use Nwidart\Modules\Facades\Module;
 use Insane\Journal\Models\Core\Account;
 use App\Domains\AppCore\Models\Category;
 use Insane\Journal\Models\Core\AccountDetailType;

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { VueDraggableNext as Draggable } from "vue-draggable-next";
-import { NDropdown } from "naive-ui";
 import { computed, nextTick, reactive, ref, watch, toRefs } from "vue";
+import { NDropdown } from "naive-ui";
 import { router } from "@inertiajs/vue3";
+import { VueDraggableNext as Draggable } from "vue-draggable-next";
 
 import ItemGroupCell from "../../ItemGroupCell.vue";
 import FieldPopover from "../../FieldPopover.vue";
@@ -13,31 +13,18 @@ import ListSummaryRow from "./ListSummaryRow.vue";
 
 import { useSyncScroll } from "@/utils/useSyncScroll";
 
-const props = defineProps({
-  createMode: {
-    type: Boolean,
-  },
-  stage: {
-    type: Object,
-  },
-  board: {
-    type: Object,
-  },
-  selectedItems: {
-    type: Array,
-    default() {
-      return [];
-    },
-  },
-  items: {
-    type: Array,
-    default() {
-      return [];
-    },
-  },
-  filters: {
-    type: Object,
-  },
+const props = withDefaults(defineProps<{
+  createMode: boolean,
+  stage: Object,
+  board:  Object,
+  selectedItems:  any[],
+  items: any[],
+  filters: Object,
+  resourceName: string
+}>(), {
+    selectedItems: () => ([]),
+    items: () => ([]),
+    resourceName: 'tasks'
 });
 
 const emit = defineEmits([
@@ -226,6 +213,7 @@ const { syncScroll } = useSyncScroll("left", "ic-scroller-slim");
           class="item-false__header"
           :visibleFields="[{ name: 'title' }]"
           :filters="filters"
+          :is-expanded="isExpanded"
           v-slot:default="{ filterIcons }"
         >
           <div class="flex items-center space-x-2 header-cell">
@@ -307,8 +295,9 @@ const { syncScroll } = useSyncScroll("left", "ic-scroller-slim");
                 },
               ]"
             >
-              <div class="px-2 py-1 transition cursor-pointer hover:bg-slate-200">
-                <span> {{ items.length }} Tasks <i :class="filterIcons.sort" /></span>
+              <div class="px-2 space-x-1 py-1 transition cursor-pointer hover:bg-slate-200">
+                <span > {{ items.length }} </span>
+                <span class="first-letter:capitalize">{{ resourceName }} <i :class="filterIcons.sort" /></span>
               </div>
             </NDropdown>
           </div>
@@ -463,10 +452,10 @@ const { syncScroll } = useSyncScroll("left", "ic-scroller-slim");
 }
 
 .item-checkbox {
-  @apply bg-gray-300 mr-2 flex items-center px-2;
+  @apply bg-gray-300  flex items-center px-2;
 
   &.selection {
-    @apply bg-blue-400;
+    @apply bg-primary;
   }
 }
 

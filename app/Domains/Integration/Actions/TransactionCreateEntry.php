@@ -38,23 +38,28 @@ class TransactionCreateEntry implements AutomationActionContract
             $counterAccountId = $payee->account_id;
         }
 
+        $description = FormulaHelper::parseFormula($taskData->description, $payload);
+
         $transactionData = [
             'team_id' => $automation->team_id,
             'user_id' => $automation->user_id,
             'account_id' => $accountId,
             'payee_id' => $payeeId,
+            'payee_name' => $payee?->name,
             'counter_account_id' => $counterAccountId ?? null,
             'date' => FormulaHelper::parseFormula($taskData->date, $payload),
             'currency_code' => FormulaHelper::parseFormula($taskData->currency_code, $payload),
             'category_id' => $transactionCategoryId ?? null,
-            'description' => FormulaHelper::parseFormula($taskData->description, $payload),
+            'description' => $description,
+            'reference' => $description,
             'direction' => FormulaHelper::parseFormula($taskData->direction, $payload),
             'total' => FormulaHelper::parseFormula($taskData->total, $payload),
             'items' => [],
-            'metaData' => [
+            'meta_data' => [
                 'resource_id' => $payload['id'],
                 'resource_origin' => $previousTask->name,
                 'resource_type' => $trigger->name,
+                'resource_description' => $description
             ],
         ];
 
@@ -71,6 +76,8 @@ class TransactionCreateEntry implements AutomationActionContract
         if ($transaction && $transaction->status == 'verified') {
            return $transaction;
         }
+
+        print_r($transactionData);
 
         $transaction = Transaction::createTransaction($transactionData);
         User::find($automation->user_id)->notify(new EntryGenerated($transaction));

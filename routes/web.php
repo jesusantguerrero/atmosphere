@@ -22,6 +22,7 @@ use App\Http\Controllers\System\IntegrationController;
 use App\Http\Controllers\System\NotificationController;
 use App\Http\Controllers\Finance\FinanceLinesController;
 use App\Http\Controllers\Finance\FinanceTrendController;
+use App\Http\Controllers\Meal\MealShoppingListController;
 use App\Http\Controllers\System\TeamInvitationController;
 use App\Http\Controllers\Finance\FinanceAccountController;
 use Freesgen\Atmosphere\Http\Controllers\SettingsController;
@@ -74,7 +75,8 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
 
     Route::controller(NotificationController::class)->group(function () {
         Route::get('/notifications', 'index')->name('notifications');
-        Route::patch('/notifications/{notificationId}', 'update')->name('notifications.update');
+        Route::put('/notifications/{notificationId}', 'update')->name('notifications.update');
+        Route::patch('/notifications', 'bulkUpdate')->name('notifications.bulk-update');
     });
 
     /**************************************************************************************
@@ -95,6 +97,12 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
         Route::resource('/meals', MealController::class);
         Route::post('/meals/add-plan', 'addPlan')->name('meals.addPlan');
         Route::get('/meals-random', 'random')->name('meals.random');
+    });
+
+    Route::controller(MealShoppingListController::class)->group(function () {
+        Route::get('/shopping-list', 'index')->name('meals.shoppingList');
+        Route::put('/shopping-list', 'update')->name('meals.shoppingList.update');
+        Route::post('/meals/{meal}/shopping-list', 'store')->name('meals.shoppingList.add');
     });
 
     Route::controller(IngredientController::class)->group(function () {

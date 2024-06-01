@@ -2,15 +2,17 @@
 
 namespace App\Http\Controllers\Meal;
 
-use App\Domains\Meal\Models\Meal;
-use App\Domains\Meal\Models\MealType;
-use App\Domains\Meal\Services\MealService;
-use App\Http\Resources\MealResource;
-use App\Http\Resources\PlannedMealResource;
-use Freesgen\Atmosphere\Http\InertiaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use App\Domains\Meal\Models\Meal;
+use App\Http\Resources\MealResource;
+use Modules\Plan\Entities\PlanTypes;
+use App\Domains\Meal\Models\MealType;
+use Modules\Plan\Services\PlanService;
 use Illuminate\Support\Facades\Redirect;
+use App\Domains\Meal\Services\MealService;
+use App\Http\Resources\PlannedMealResource;
+use Freesgen\Atmosphere\Http\InertiaController;
 
 class MealController extends InertiaController
 {
@@ -21,6 +23,7 @@ class MealController extends InertiaController
             'index' => 'Meals/Index',
             'create' => 'Meals/Create',
             'edit' => 'Meals/Create',
+            'view' => 'Meals/View',
         ];
         $this->searchable = ['name'];
         $this->validationRules = [
@@ -32,7 +35,7 @@ class MealController extends InertiaController
         ];
     }
 
-    public function __invoke()
+    public function __invoke(PlanService $service)
     {
         $request = request();
         $startDate = $request->query('startDate', Carbon::now()->startOfMonth()->format('Y-m-d'));
@@ -51,10 +54,11 @@ class MealController extends InertiaController
                 return MealService::getIngredients($weekPlan);
             },
             'mealTypes' => MealType::where([
-                'team_id' => $request->user()->current_team_id,
-                'user_id' => $request->user()->current_team_id,
+                'team_id' => $teamId,
+                'user_id' => $request->user()->id,
             ])->get(),
             'meals' => PlannedMealResource::collection($plannedMeals),
+            'shoppingList' => $service->getPlanType($teamId, PlanTypes::SHOPPING_LIST, request())
         ]);
     }
 
@@ -95,5 +99,9 @@ class MealController extends InertiaController
         ])->get();
 
         return count($meals) ? $meals->random() : 'Noting to show';
+    }
+
+    public function show(Request $request, int $id) {
+        return inertia($this->templates['view'], $this->getEditProps($request, $id));
     }
 }
