@@ -22,6 +22,7 @@ use Insane\Journal\Events\AccountUpdated;
 use Laravel\Jetstream\Events\TeamCreated;
 use Laravel\Jetstream\Events\TeamDeleted;
 use App\Listeners\HandleTransactionCreated;
+use App\Listeners\HandleTransactionUpdated;
 use App\Listeners\CreateOccurrenceAutomation;
 use Insane\Journal\Events\TransactionCreated;
 use Insane\Journal\Events\TransactionDeleted;

@@ -15,6 +15,8 @@ import { TRANSACTION_DIRECTIONS } from "..";
 interface SplitItem {
     payee_id: null|number,
     payee_label: string,
+    label_id: null|number,
+    label_name: string,
     date: null|Date,
     description: string,
     category_id: null|number,
@@ -54,7 +56,7 @@ const categoryAccounts = computed(() => {
     } else {
         return categoryOptions.filter((category) => {
             const isInflow = props.mode == TRANSACTION_DIRECTIONS.DEPOSIT;
-            return (isInflow && category.display_id == "inflow") || !isInflow; 
+            return (isInflow && category.display_id == "inflow") || !isInflow;
         });
     }
 });
@@ -65,6 +67,8 @@ const hasSplits = computed(() => splits.length > 1);
 const defaultRow = {
     payee_id: null,
     payee_label: "",
+    label_id: null,
+    label_name: "",
     date: null,
     description: "",
     category_id: null,
@@ -91,6 +95,11 @@ const removeSplit = (index: number) => {
 if (!props.items?.length) {
   addSplit();
 }
+
+const label = reactive({
+    label_id: "",
+    name: ""
+})
 
 defineExpose({
   getSplits() {
@@ -173,6 +182,19 @@ const isPickerOpen = ref(false);
                 :options="categoryAccounts"
               />
             </AtField>
+            <AtField label="Tags" class="hidden md:block md:w-full">
+                <LogerApiSimpleSelect
+                    v-model="split.label_id"
+                    v-model:label="split.label_name"
+                    :allow-create="true"
+                    class="w-full"
+                    tag
+                    custom-label="name"
+                    track-id="id"
+                    placeholder="Add label"
+                    endpoint="/api/labels"
+                />
+            </AtField>
         </section>
         <AtField label="Amount" class="hidden md:block md:w-5/12">
           <InputMoney :number-format="true" v-model="split.amount" v-model:history="split.history">
@@ -215,10 +237,10 @@ const isPickerOpen = ref(false);
       </footer>
     </section>
 
-    <LogerButton 
+    <LogerButton
         v-if="!isTransfer"
-        variant="neutral" 
-        @click="addSplit()" 
+        variant="neutral"
+        @click="addSplit()"
     >
       <IMdiCallSplit />
       Add split

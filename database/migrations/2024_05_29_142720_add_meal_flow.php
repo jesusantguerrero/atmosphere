@@ -17,7 +17,6 @@ return new class extends Migration
             $table->integer('cook_minutes')->default(0);
             $table->integer('servings')->default(0);
             $table->integer('rating')->default(0);
-            $table->text('notes')->nullable();
         });
     }
 

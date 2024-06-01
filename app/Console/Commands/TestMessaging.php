@@ -3,10 +3,8 @@
 namespace App\Console\Commands;
 
 use Exception;
-use App\Models\UserDevice;
 use Illuminate\Console\Command;
 use App\Events\BudgetCalculated;
-use App\Services\MessagingService;
 
 class TestMessaging extends Command
 {

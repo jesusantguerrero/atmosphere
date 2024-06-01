@@ -24,7 +24,7 @@ const props = defineProps({
     default: false,
   },
   maxWidth: {
-    default: "2xl",
+    default: "4xl",
   },
   closeable: {
     default: true,
@@ -74,6 +74,8 @@ const state = reactive({
     name: "",
     payee_id: "",
     payee_label: "",
+    label_id: "",
+    label_name: "",
     date: new Date(),
     is_transfer: false,
     description: "",
@@ -134,9 +136,12 @@ watch(
     if (newValue.has_splits) {
         splits.value = props.transactionData?.splits ?? props.transactionData.lines?.filter((line: ITransactionLine) => line.is_split)
     } else {
+        const anchorLine = newValue.lines.find(item => item.anchor)
         splits.value = [{
             payee_id: newValue.payee_id ?? newValue.payee?.id,
             payee_label: newValue.payee?.name,
+            label_id: newValue.label_id ?? anchorLine?.labels?.at?.(0)?.id,
+            label_name: anchorLine?.labels?.at?.(0)?.name,
             category_id: newValue.category_id ?? newValue.category?.id,
             category: newValue.category,
             counter_account_id:  newValue.counter_account_id ?? newValue.counter_account?.id,
@@ -164,6 +169,8 @@ const resetSplits = (lastSaved: Record<string, any>) => {
     splits.value = [{
         payee_id: '',
         payee_label: '',
+        label_id: '',
+        label_name: '',
         category_id: '',
         category: '',
         counter_account_id:  '',
@@ -229,6 +236,7 @@ const onSubmit = (addAnother = false) => {
 
           const splitItem = splitItems[0]
           data.category_id = splitItem.category_id;
+          data.label_id = splitItem.label_id;
           data.payee_id = splitItem.payee_id;
           data.counter_account_id = form.is_transfer ? splitItem.counter_account_id : null;
           data.account_id = splitItem.account_id;
@@ -273,6 +281,15 @@ const { form, schedule_settings } = toRefs(state);
 const saveText = computed(() => {
     return !props.transactionData?.id ? 'save' : 'update'
 })
+
+const assignTransactionLabel = (label: Record<string, string>, transaction: Record<string, string>) => {
+  axios.post(`/api/transactions/${transaction.id}/labels`, {
+    ...label,
+    color: generateRandomColor(),
+  }).then(() => {
+    router.reload()
+  });
+};
 </script>
 
 <template>
