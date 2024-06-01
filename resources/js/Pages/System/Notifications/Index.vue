@@ -1,6 +1,5 @@
 <script setup lang="ts">
     import { Link } from '@inertiajs/vue3';
-    import { reactive } from 'vue'
     import { AtButton } from "atmosphere-ui"
 
     import AppLayout from '@/Components/templates/AppLayout.vue'
@@ -11,12 +10,12 @@
     import { formatDate } from '@/utils';
 
     defineProps({
-            notifications: {
-                type: Array,
-                default() {
-                    return []
-                }
+        notifications: {
+            type: Array,
+            default() {
+                return []
             }
+        }
     });
 
     interface INotification {
@@ -39,8 +38,10 @@
 
 <template>
     <AppLayout title="Notifications">
-        <div class="px-2 py-10 mx-auto max-w-7xl sm:px-6 lg:px-8">
-            <div class="w-full rounded-md bg-base-lvl-3">
+        <main
+        class="px-5 mx-auto mt-5 mb-10 md:space-y-0 md:space-x-10 md:flex max-w-screen-2xl sm:px-6 lg:px-8"
+      >
+            <div class="w-full mt-6 rounded-md bg-base-lvl-3">
                 <CustomTable
                     ref="AtTable"
                     :config="tableConfig"
@@ -79,6 +80,6 @@
                 </template>
                 </CustomTable>
             </div>
-        </div>
+        </main>
     </AppLayout>
 </template>
