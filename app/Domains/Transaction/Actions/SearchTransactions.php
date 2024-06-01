@@ -34,9 +34,10 @@ class SearchTransactions
                 continue;
             }
             foreach ($condition as $param) {
-                if ($param['operator'] &&  $param['value']) {
-                    return true;
+                if ($param && $param['operator'] &&  $param['value']) {
+                        return true;
                 }
+
             }
         }
     }
