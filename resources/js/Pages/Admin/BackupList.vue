@@ -4,9 +4,9 @@ import { router } from "@inertiajs/core";
 
 // @ts-ignore: its my template
 import AtTable from "@/Components/shared/BaseTable.vue";
-import AppButton from "@/Components/shared/AppButton.vue";
+import AppButton from "@/Components/atoms/LogerButton.vue";
 
-import AppSearch from "@/Components/shared/AppSearch/AppSearch.vue";
+import AppSearch from "@/Components/AppSearch/AppSearch.vue";
 import AdminTemplate from "./Partials/AdminTemplate.vue";
 import { useForm } from "@inertiajs/vue3";
 

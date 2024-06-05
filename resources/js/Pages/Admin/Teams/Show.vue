@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { router } from "@inertiajs/core";
 
-import AppButton from "@/Components/shared/AppButton.vue";
+import AppButton from "@/Components/atoms/LogerButton.vue";
 import TeamMemberCard from "@/Pages/Teams/Partials/TeamMemberCard.vue";
 import AdminTemplate from "../Partials/AdminTemplate.vue";
 import TeamBillingSection from "@/Components/templates/TeamBillingSection.vue";
