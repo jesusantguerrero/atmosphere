@@ -2,16 +2,16 @@
 
 namespace App\Providers;
 
-use App\Domains\AppCore\Policies\FinanceAccountPolicy;
-use App\Domains\Journal\Policies\TransactionPolicy;
-use App\Domains\Transaction\Policies\ReconciliationPolicy;
 use App\Models\Team;
 use App\Models\User;
 use App\Policies\TeamPolicy;
-use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 use Insane\Journal\Models\Core\Account;
 use Insane\Journal\Models\Core\Transaction;
+use App\Domains\Journal\Policies\TransactionPolicy;
+use App\Domains\AppCore\Policies\FinanceAccountPolicy;
+use App\Domains\Transaction\Policies\ReconciliationPolicy;
+use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
 {

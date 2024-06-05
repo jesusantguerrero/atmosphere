@@ -33,6 +33,7 @@ declare module 'vue' {
     IMdiMail: typeof import('~icons/mdi/mail')['default']
     IMdiMinus: typeof import('~icons/mdi/minus')['default']
     IMdiPencil: typeof import('~icons/mdi/pencil')['default']
+    IMdiPlay: typeof import('~icons/mdi/play')['default']
     IMdiPlus: typeof import('~icons/mdi/plus')['default']
     IMdiPrinter: typeof import('~icons/mdi/printer')['default']
     IMdiSearch: typeof import('~icons/mdi/search')['default']
