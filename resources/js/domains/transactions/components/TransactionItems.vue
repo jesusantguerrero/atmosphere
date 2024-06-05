@@ -11,6 +11,7 @@ import { IAccount, ICategory } from "../models";
 import { formatMoney } from "@/utils";
 import LogerInput from "@/Components/atoms/LogerInput.vue";
 import { TRANSACTION_DIRECTIONS } from "..";
+import TagsSelect from "@/Components/shared/TagsSelect.vue";
 
 interface SplitItem {
     payee_id: null|number,
@@ -96,10 +97,7 @@ if (!props.items?.length) {
   addSplit();
 }
 
-const label = reactive({
-    label_id: "",
-    name: ""
-})
+const labels = ref([]);
 
 defineExpose({
   getSplits() {

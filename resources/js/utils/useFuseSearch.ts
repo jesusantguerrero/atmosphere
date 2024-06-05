@@ -24,7 +24,7 @@ export function useFuseSearch(searchRef, listRef, tagsRef, keys = []) {
       const result = search.value && listValue.length ? fuse.search(search.value).map(item => item.item) : listValue;
       const searchResult = result.sort((fist, second) => {
         fist.order > second.order ? 1 : -1;
-      })        
+      })
 
       return tags.value && tags.value.length ? searchResult.filter(item => {
          return item.tags && intersection(item.tags.map(tag => tag.uid),  tags.value)
@@ -34,8 +34,8 @@ export function useFuseSearch(searchRef, listRef, tagsRef, keys = []) {
     const filteredList = computed(() => {
       return getFilteredResults()
     })
-    
-    
+
+
 
     return {
       searchRef,

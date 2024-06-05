@@ -8,6 +8,7 @@
     import cols from "./cols"
     import { router } from '@inertiajs/vue3';
     import { formatDate } from '@/utils';
+import LogerButtonCircle from '@/Components/atoms/LogerButtonCircle.vue';
 
     defineProps({
         notifications: {
@@ -50,10 +51,13 @@
                     :section="section"
                 >
                 <template #header-actions v-if="notifications.length">
-                    <div class="flex items-center ml-auto space-x-2">
-                    <AtButton class="ml-auto text-white transition-colors rounded-md bg-primary" @click="markAllAsRead">
-                        Mark all as read
-                    </AtButton>
+                    <div class="flex items-center ml-auto space-x-2 justify-end mr-2">
+                        <LogerButtonCircle @click="markAllAsRead" :keep-active-mode="false" class="hover:text-primary">
+                            <span class="text-lg">
+                                <IMdiEmailCheck  />
+                            </span>
+                        </LogerButtonCircle>
+
                     </div>
                 </template>
                  <template #data="{ scope }">

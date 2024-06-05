@@ -55,12 +55,12 @@ class TransactionCreateEntry implements AutomationActionContract
             'direction' => FormulaHelper::parseFormula($taskData->direction, $payload),
             'total' => FormulaHelper::parseFormula($taskData->total, $payload),
             'items' => [],
-            'meta_data' => [
+            'meta_data' => json_encode([
                 'resource_id' => $payload['id'],
                 'resource_origin' => $previousTask->name,
                 'resource_type' => $trigger->name,
                 'resource_description' => $description
-            ],
+            ]),
         ];
 
         $transaction = Transaction::where([
