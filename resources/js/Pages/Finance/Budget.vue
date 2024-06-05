@@ -234,6 +234,7 @@ onMounted(() => {
           />
 
           <ExpenseIncome
+            v-else
             :value="readyToAssign.inflow + readyToAssign.budgetedSpending"
             :footer-stats="[
               {

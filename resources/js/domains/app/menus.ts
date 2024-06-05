@@ -3,7 +3,8 @@ export const MODULES = {
     MEAL: 'meal',
     FINANCE: 'finance',
     RELATIONSHIP: 'relationship',
-    TRENDS: 'trends'
+    TRENDS: 'trends',
+    ADMIN: 'admin',
 }
 
 const menus = {
@@ -88,7 +89,45 @@ const menus = {
         {
             label: 'Year summary',
             url: '/trends/year-summary'
-        }]
+        }
+    ],  [MODULES.ADMIN]: [
+        {
+          label: "Dashboard",
+          to: "/admin",
+          isActiveFunction(currentPath: string) {
+            return "/admin" == currentPath;
+          },
+        },
+        {
+          label: "Teams",
+          to: "/admin/teams",
+        },
+        {
+          label: "Subscriptions",
+          to: "/admin/subscriptions",
+        },
+        {
+          label: "Users",
+          to: "/admin/users",
+        },
+        {
+          label: "Commands",
+          to: "/admin/commands",
+        },
+        {
+          label: "Settings",
+          to: "/admin/settings/email",
+        },
+        {
+          label: "Backups",
+          to: "/admin/backups",
+        },
+        {
+          label: "Pulse",
+          url: "/pulse",
+          as: 'a'
+        },
+      ],
 }
 
 

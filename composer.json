@@ -17,9 +17,11 @@
         "inertiajs/inertia-laravel": "^0.6.3",
         "insane/journal": "dev-master",
         "insane/plan-module": "dev-master",
+        "insane/treasurer": "dev-master",
         "insane/watchlist-module": "dev-main",
         "joshbrw/laravel-module-installer": "^2.0",
         "kreait/laravel-firebase": "^5.2",
+        "lab404/laravel-impersonate": "^1.7",
         "laravel/cashier-paddle": "^1.8",
         "laravel/framework": "^10.0",
         "laravel/jetstream": "^2.3",
@@ -43,6 +45,7 @@
         "tightenco/ziggy": "^1.5.0"
     },
     "require-dev": {
+        "barryvdh/laravel-debugbar": "^3.13",
         "brianium/paratest": "^7.0",
         "fakerphp/faker": "^1.9.1",
         "insane/remotr": "dev-main",
@@ -102,6 +105,6 @@
             "joshbrw/laravel-module-installer": true
         }
     },
-    "minimum-stability": "beta",
+    "minimum-stability": "dev",
     "prefer-stable": true
 }

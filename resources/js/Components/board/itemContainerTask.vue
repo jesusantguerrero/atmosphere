@@ -24,13 +24,13 @@
             :id="task.id"
             @change="updateTask(task)"
         />
-        <el-tooltip class="item" effect="dark" :content="task.priority || 'none'" placement="left">
+        <ElTooltip class="item" effect="dark" :content="task.priority || 'none'" placement="left">
             <div class="inline-block ml-2 mr-4 priority-level">
                 <div class="priority-level__inner">
 
                 </div>
             </div>
-        </el-tooltip>
+        </ElTooltip>
         <span class="mr-2">
             {{ durationFromMs }}
         </span>

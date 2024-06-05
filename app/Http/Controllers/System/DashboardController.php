@@ -25,6 +25,7 @@ class DashboardController
     {
         $request = request();
         [$startDate, $endDate] = $this->getFilterDates();
+
         $team = $request->user()->currentTeam;
         $teamId = $request->user()->current_team_id;
         $budget = BudgetMonth::getMonthAssignmentTotal($teamId, $startDate);

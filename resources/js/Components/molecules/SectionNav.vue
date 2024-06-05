@@ -8,15 +8,20 @@ import { NDropdown } from 'naive-ui';
 
 interface NavSection {
     url?: string;
+    to?: string;
     action?: string;
     value: string;
     label: string;
+    isActiveFunction: Function,
+    as: any
 }
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
     sections: NavSection[];
     modelValue?: string;
-}>();
+}>(), {
+    selectedClass: "border-primary text-primary",
+});
 
 const emit = defineEmits(['update:modelValue', 'action']);
 
@@ -31,8 +36,9 @@ const isSelected = (section: NavSection) => {
 }
 
 const handleClick = (section: NavSection) => {
-    if (section?.url) {
-        router.visit(section.url)
+    if (section.as == "a") return;
+    if (section?.url || section?.to) {
+        router.visit(section.ur || section.to)
     } else if (section?.action) {
         emit('action', section.action)
     } else {
@@ -68,7 +74,13 @@ const handleOptionClick = (url: string) => {
         v-for="section in visibleTabs"
         @click="handleClick(section)"
         :is-selected="isSelected(section)"
-        :key="section.url"
+        :current-value="modelValue"
+        :key="section.url ?? section.value ?? sectionName"
+        :value="section.url ?? section.to ?? section.value ?? sectionName"
+        :is-active-function="section.isActiveFunction"
+        :selected-class="selectedClass"
+        :label="section.label"
+        :as="section.as"
         class="w-full text-xs text-center md:text-md md:w-auto"
     >
         {{ section.label }}

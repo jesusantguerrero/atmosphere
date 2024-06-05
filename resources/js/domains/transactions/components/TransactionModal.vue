@@ -136,7 +136,7 @@ watch(
     if (newValue.has_splits) {
         splits.value = props.transactionData?.splits ?? props.transactionData.lines?.filter((line: ITransactionLine) => line.is_split)
     } else {
-        const anchorLine = newValue.lines.find(item => item.anchor)
+        const anchorLine = newValue.lines?.find(item => item.anchor)
         splits.value = [{
             payee_id: newValue.payee_id ?? newValue.payee?.id,
             payee_label: newValue.payee?.name,

@@ -2,13 +2,15 @@
 
 namespace App\Providers;
 
-use App\Concerns\AppMenu;
-use App\Domains\Housing\Actions\RegisterOccurrence;
-use App\Jobs\RunTeamChecks;
 use App\Models\Team;
-use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Support\ServiceProvider;
+use App\Models\User;
+use App\Concerns\AppMenu;
+use App\Jobs\RunTeamChecks;
 use Spatie\Onboard\Facades\Onboard;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\ServiceProvider;
+use Illuminate\Contracts\Foundation\Application;
+use App\Domains\Housing\Actions\RegisterOccurrence;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -25,12 +27,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::define('superadmin', function (User $user) {
+            return $user->isSuperAdmin();
+        });
 
         $this->app->bindMethod([RunTeamChecks::class, 'handle'], function (RunTeamChecks $job, Application $app) {
             return $job->handle($app->make(RegisterOccurrence::class));
         });
 
-        $this->app->singleton('menu', function (Application $app) {
+        $this->app->singleton('menu', function () {
             return new AppMenu();
         });
 

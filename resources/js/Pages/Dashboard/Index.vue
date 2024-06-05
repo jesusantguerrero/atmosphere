@@ -50,7 +50,7 @@ const props = withDefaults(
       name: string;
     };
     netWorth: any;
-    budgetTotal: IBudgetStat;
+    budgetTotal: IBudgetStat[];
     nextPayments: any[];
     transactionTotal: Record<string, any>;
     categories: ICategory[];
@@ -189,9 +189,10 @@ const deleteBulkTransactions = () => {
             />
           </template>
         </WidgetContainer>
-        <BudgetWidget :budget="budgetTotal" />
+        <BudgetWidget :budgets="budgetTotal" />
       </section>
     </main>
+
     <BulkSelectionBar
       v-if="selectedItems.length"
       :selected-items="selectedItems"
