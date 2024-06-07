@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import AppButton from "@/Components/shared/AppButton.vue";
+import AppButton from "@/Components/atoms/LogerButton.vue";
 import AppFormField from "@/Components/shared/AppFormField.vue";
 import BaseSelect from "@/Components/shared/BaseSelect.vue";
 import { useForm } from "@inertiajs/vue3";

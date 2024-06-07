@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import SectionNav from "@/Components/SectionNav.vue";
-import NextPaymentsWidget from "@/Pages/Loans/NextPaymentsWidget.vue";
+import SectionNav from "@/Components/molecules/SectionNav.vue";
 import { ref } from "vue";
 
 const selectedTab = ref("next");

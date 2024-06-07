@@ -4,10 +4,10 @@ namespace App\Domains\Journal\Actions;
 
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Gate;
-use Insane\Journal\Contracts\CategoryListClientBalances;
 use Insane\Journal\Models\Core\Category;
+use Insane\Journal\Contracts\CategoryListClientBalances;
 
-class CategoryList implements CategoryListClientBalances
+class CategoryListWithBalance implements CategoryListClientBalances
 {
     public function list(User $user, string $uniqueField, int $clientId)
     {

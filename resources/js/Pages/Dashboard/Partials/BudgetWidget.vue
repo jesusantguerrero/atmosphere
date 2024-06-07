@@ -27,11 +27,11 @@ const stats = ref<{
     budgetedSpending: Stat;
 }>({
     budgeted: {
-        value: props.budgets?.at(-1).spending,
+        value: props.budgets?.at(-1)?.spending,
         label: 'Budgeted'
     },
     spending: {
-        value: props.budgets?.at(-1).savings,
+        value: props.budgets?.at(-1)?.savings,
         label: 'Savings'
     },
     budgetedSpending: {
@@ -96,17 +96,17 @@ interface MonthBudget {
 
 const currentBudget = computed<MonthBudget>(() => {
     return {
-        forSpending: props.budgets?.at(-1).spending,
-        forSavings: props.budgets?.at(-1).savings,
-        total: props.budgets?.at(-1).total,
+        forSpending: props.budgets?.at(-1)?.spending,
+        forSavings: props.budgets?.at(-1)?.savings,
+        total: props.budgets?.at(-1)?.total,
     }
 });
 
 const prevBudget = computed<MonthBudget>(() => {
     return {
-        forSpending: props.budgets?.at(0).spending,
-        forSavings: props.budgets?.at(0).savings,
-        total: props.budgets?.at(0).total,
+        forSpending: props.budgets?.at(0)?.spending,
+        forSavings: props.budgets?.at(0)?.savings,
+        total: props.budgets?.at(0)?.total,
     }
 });
 

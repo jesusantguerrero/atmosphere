@@ -20,6 +20,7 @@ declare module 'vue' {
     IMdiChevronRight: typeof import('~icons/mdi/chevron-right')['default']
     IMdiChevronUp: typeof import('~icons/mdi/chevron-up')['default']
     IMdiClose: typeof import('~icons/mdi/close')['default']
+    IMdiDownload: typeof import('~icons/mdi/download')['default']
     IMdiEdit: typeof import('~icons/mdi/edit')['default']
     IMdiEllipsisVertical: typeof import('~icons/mdi/ellipsis-vertical')['default']
     IMdiExport: typeof import('~icons/mdi/export')['default']

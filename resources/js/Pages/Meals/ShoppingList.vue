@@ -53,7 +53,7 @@ const onSearch = (query: string) => {
                     Lorem ipsum dolor sit amet consectetur adipiscing elit maecenas, ligula rutrum scelerisque vulputate netus urna dui facilisi, habitant auctor sapien a porta nisi arcu. Imperdiet curabitur accumsan torquent fusce mauris blandit fames mollis primis lacinia felis, interdum p.
                 </p>
                 <LogerButton variant="inverse" @click="isModalOpen = !isModalOpen">
-                    Add Loger profile
+                    Add shopping list
                 </LogerButton>
             </section>
         </WelcomeCard>

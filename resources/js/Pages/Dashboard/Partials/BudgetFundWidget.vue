@@ -10,13 +10,13 @@
 
     const fetchChecks = () => {
         return axios.get(`/budget-funds?json=true`).then(({ data }) => {
-            budgetData.value = data?.at(0);
+            budgetData.value = data?.at?.(0) || {};
         });
     }
 
 
     const fundMetrics = computed(() => ({
-        target: budgetData?.value.monthly_splits * budgetData?.value.target_times,
+        target: budgetData?.value?.monthly_splits * budgetData?.value?.target_times,
         balance: budgetData.value?.balance ?? 0
     }))
 
@@ -35,7 +35,7 @@
                     <MoneyPresenter :value="fundMetrics.target" />
                 </span>
                 <span class="group-hover:hidden">
-                    {{ budgetData.target_times }} Months
+                    {{ budgetData?.target_times }} Months
                 </span>
             </section>
         </template>

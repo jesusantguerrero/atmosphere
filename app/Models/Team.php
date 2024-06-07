@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use Laravel\Paddle\Billable;
+use Insane\Treasurer\Billable;
 use App\Domains\Meal\Models\Meal;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Payee;
@@ -15,7 +15,6 @@ use Laravel\Jetstream\Events\TeamUpdated;
 use Spatie\Onboard\Concerns\GetsOnboarded;
 use Laravel\Jetstream\Team as JetstreamTeam;
 use App\Domains\Transaction\Models\Transaction;
-use App\Domains\Transaction\Models\TransactionLine;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Team extends JetstreamTeam implements Onboardable
