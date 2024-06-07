@@ -99,7 +99,7 @@ const budgets = computed(() => {
                   <template #actions>
                       <div>
                         <LogerButton variant="inverse" @click="isModalOpen = !isModalOpen">
-                            Add Loger profile
+                            Add relation
                         </LogerButton>
                       </div>
                   </template>

@@ -4,6 +4,7 @@ import { NDropdown } from 'naive-ui';
 import { router, useForm } from '@inertiajs/vue3';
 
 import AppLayout from '@/Components/templates/AppLayout.vue';
+import WelcomeCard from '@/Components/organisms/WelcomeCard.vue';
 import HouseSectionNav from '@/Components/templates/HouseSectionNav.vue';
 import LogerButton from '@/Components/atoms/LogerButton.vue';
 import OccurrenceCheckModal from '@/Components/OccurrenceCheckModal.vue';
@@ -128,8 +129,8 @@ const currentStatus = ref(props.serverSearchOptions.filters?.is_liked || "all");
         </template>
 
         <main class="px-5 mx-auto mt-12 space-y-10 md:space-y-0 md:space-x-10 md:flex max-w-screen-2xl sm:px-6 lg:px-8">
-            <div class="space-y-2 w-full mt-6 mb-20">
-                <OccurrenceCard 
+            <section class="space-y-2 w-full mt-6 mb-20" v-if="occurrences.length">
+                <OccurrenceCard
                     v-for="occurrence in occurrences"
                     :occurrence
                     class="w-full border rounded-lg shadow-md cursor-pointer text-body bg-base-lvl-3 hover:bg-base-lvl-2"
@@ -152,9 +153,23 @@ const currentStatus = ref(props.serverSearchOptions.filters?.is_liked || "all");
                     </div>
                 </template>
                 </OccurrenceCard>
+            </section>
 
-            </div>
-            
+            <WelcomeCard  v-else  class="space-y-2 w-full mt-6 mb-20" borderless>
+                <section class="flex flex-col items-center pb-12 mx-auto">
+                    <span class=" font-bold text-2xl">
+                        <IMdiTimerStarOutline />
+                    </span>
+                    <h4 class="text-lg font-bold text-body-1"> Occurrence Checks</h4>
+                    <p class="max-w-lg my-3">
+                        Occurrences track the duration of events based on transactions or manual input
+                    </p>
+                    <LogerButton variant="inverse" @click="isModalOpen = !isModalOpen">
+                        Add occurrence check
+                    </LogerButton>
+                </section>
+            </WelcomeCard>
+
             <OccurrenceCheckModal
                 v-if="isModalOpen"
                 v-model:show="isModalOpen"

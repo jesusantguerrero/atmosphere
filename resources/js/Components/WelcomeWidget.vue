@@ -53,6 +53,7 @@ const titleClassBySize = computed(() => {
     <section
       class="items-center justify-between flex"
       :class="[!$slots.title && 'pb-2', verticalHeader && 'flex-col']"
+      v-if="$slots.title || message"
     >
       <slot name="title">
         <h1 class="font-bold text-body-1 capitalize w-full px-5 py-2" :class="titleClass">
