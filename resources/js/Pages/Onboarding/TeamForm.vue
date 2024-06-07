@@ -1,11 +1,8 @@
 <script setup lang="ts">
 import { NSelect } from "naive-ui";
 import { AtField} from "atmosphere-ui";
-import { useForm } from '@inertiajs/vue3';
 import { format } from "date-fns";
 
-import AcceptInvitation from "./AcceptInvitation.vue";
-import AppLayout from "@/Components/templates/AppLayout.vue";
 import LogerInput from "@/Components/atoms/LogerInput.vue";
 import LogerApiSelect from "@/Components/organisms/LogerApiSelect.vue";
 

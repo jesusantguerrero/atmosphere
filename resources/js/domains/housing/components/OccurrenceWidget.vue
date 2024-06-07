@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 
 import SectionTitle from "@/Components/atoms/SectionTitle.vue";
 import CategoryItem from '@/domains/transactions/components/CategoryItem.vue';
@@ -19,7 +19,7 @@ defineProps<{
                 Occurrence Checks
             </Link>
         </SectionTitle>
-        <section class="flex mt-4">
+        <section class="flex mt-4" v-if="checks">
           <CategoryItem
                 class="capitalize"
                 v-for="occurrence in checks"
@@ -27,6 +27,22 @@ defineProps<{
                 :value="getDayDiff(occurrence.last_date)"
                 wrap
           />
+        </section>
+        <section class="flex items-center flex-col justify-center" v-else">
+          <CategoryItem
+                class="capitalize"
+                label=""
+                value="NA"
+                wrap
+                @click="router.visit('/housing/occurrence')"
+          >
+            <template #icon>
+                <span class=" font-bold text-2xl">
+                    <IMdiTimerStarOutline />
+                </span>
+            </template>
+          </CategoryItem>
+          <p class="text-center text-sm -mt-6">Occurrences track the duration of events based on transactions or manual input</p>
         </section>
       </div>
 </template>

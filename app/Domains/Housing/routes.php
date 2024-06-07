@@ -13,6 +13,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     Route::controller(OccurrenceController::class)->group(function () {
         Route::post('/housing/occurrences/{occurrence}/instances', 'addInstance');
         Route::delete('/housing/occurrences/{occurrence}/instances', 'removeLastInstance');
+        Route::delete('/housing/occurrences/{occurrence}', 'destroy');
         Route::get('/housing/occurrences/{occurrence}/preview', 'automationPreview');
         Route::post('/housing/occurrences/{occurrence}/load', 'automationLoad');
         Route::post('/housing/occurrences/{occurrence}/sync', 'sync');

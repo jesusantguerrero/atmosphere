@@ -2,6 +2,7 @@
 
 import { ref, onMounted, computed } from 'vue';
 import { router } from "@inertiajs/vue3";
+import axios from 'axios';
 
 import AppLayout from '@/Components/templates/AppLayout.vue';
 import LogerProfileTemplate from '@/Components/templates/LogerProfileTemplate.vue';
@@ -19,7 +20,6 @@ import BudgetDetailForm from '@/domains/budget/components/BudgetDetailForm.vue';
 import { IOccurrenceCheck } from "@/domains/housing/models";
 import { ITransaction } from '@/domains/transactions/models';
 import { transactionLinesDBToTransaction } from '@/domains/transactions';
-import axios from 'axios';
 import { formatMoney } from '@/utils';
 
 
@@ -155,7 +155,7 @@ const budgets = computed(() => {
                     <article class="grid md:grid-cols-2 gap-2">
                         <BudgetDetailForm
                             v-for="budget in budgets"
-                         
+
                             full
                             compact
                             :category="budget.category"

@@ -22,7 +22,6 @@
         "joshbrw/laravel-module-installer": "^2.0",
         "kreait/laravel-firebase": "^5.2",
         "lab404/laravel-impersonate": "^1.7",
-        "laravel/cashier-paddle": "^1.8",
         "laravel/framework": "^10.0",
         "laravel/jetstream": "^2.3",
         "laravel/octane": "^2.2",

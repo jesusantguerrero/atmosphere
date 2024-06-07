@@ -42,6 +42,8 @@ declare module 'vue' {
     IMdiStar: typeof import('~icons/mdi/star')['default']
     IMdiStarOutline: typeof import('~icons/mdi/star-outline')['default']
     IMdiSync: typeof import('~icons/mdi/sync')['default']
+    IMdiTimerStarOutline: typeof import('~icons/mdi/timer-star-outline')['default']
+    IMdiTimerStartOutline: typeof import('~icons/mdi/timer-start-outline')['default']
     IMdiTrash: typeof import('~icons/mdi/trash')['default']
     IMdiWallet: typeof import('~icons/mdi/wallet')['default']
   }
