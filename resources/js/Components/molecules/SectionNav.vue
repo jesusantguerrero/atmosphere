@@ -38,7 +38,7 @@ const isSelected = (section: NavSection) => {
 const handleClick = (section: NavSection) => {
     if (section.as == "a") return;
     if (section?.url || section?.to) {
-        router.visit(section.ur || section.to)
+        router.visit(section.url || section.to)
     } else if (section?.action) {
         emit('action', section.action)
     } else {
