@@ -12,6 +12,7 @@
     import BudgetTargetForm from './BudgetTargetForm.vue';
     import BudgetMoneyLine from './BudgetMoneyLine.vue';
     import BudgetCategoryTransactions from './BudgetCategoryTransactions.vue';
+    import BudgetMatchForm from './BudgetMatchForm.vue';
 
     import { generateRandomColor } from "@/utils"
     import { ICategory } from '@/Modules/transactions/models/transactions';
@@ -125,6 +126,16 @@
             v-if="!compact"
             :parent-id="parentId"
             :item="item"
+            :category="category"
+            :editable="editable"
+            :compact="compact"
+            @delete="$emit('delete')"
+        />
+
+        <BudgetMatchForm
+            v-if="!compact"
+            :parent-id="parentId"
+            :item="category.match_account"
             :category="category"
             :editable="editable"
             :compact="compact"

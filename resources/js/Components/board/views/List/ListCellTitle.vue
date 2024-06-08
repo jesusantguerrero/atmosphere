@@ -49,8 +49,8 @@ function getFieldValue(item, name) {
                 class="checkbox-done"
                 name=""
                 id=""
-                v-model="item.done"
-                @change="$emit('saved', item, 'done', item.done)"
+                v-model="item.is_done"
+                @change="$emit('saved', item, 'done', item.is_done)"
             />
         </div>
         <!-- /Done checkbox -->

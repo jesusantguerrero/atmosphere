@@ -222,7 +222,6 @@ onMounted(() => {
         <div class="space-y-4 ">
           <BudgetDetailForm
             v-if="selectedBudget && !showCategoriesInMain"
-            class="mt-5"
             full
             :category="selectedBudget"
             :item="selectedBudget.budget"

@@ -1,27 +1,26 @@
 <script setup lang="ts">
-import { format, startOfMonth } from 'date-fns';
-import { ref, nextTick, onMounted, inject } from 'vue';
+import { format, startOfMonth, isThisMonth } from 'date-fns';
+import { ref, nextTick, onMounted, inject, computed } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { NDropdown } from 'naive-ui';
-import { computed } from 'vue';
+import autoAnimate from '@formkit/auto-animate';
 
 import IconDrag from '@/Components/icons/IconDrag.vue';
 import IconAllocated from '@/Components/icons/IconAllocated.vue';
 import BalanceInput from "@/Components/atoms/BalanceInput.vue";
 import BudgetTransaction from '@/Components/atoms/BudgetTransaction.vue';
 import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
-
-import { BudgetCategory } from '@/domains/budget/models/budget';
-import autoAnimate from '@formkit/auto-animate';
-
-import formatMoney from "@/utils/formatMoney";
-import { getBudgetTarget } from '@/domains/budget/budgetTotals';
 import ExpenseChartWidgetRow from '@/domains/transactions/components/ExpenseChartWidgetRow.vue';
 import BudgetItemHeader from './BudgetItemHeader.vue';
 import InputMoney from '@/Components/atoms/InputMoney.vue';
-import { ICategory } from '@/domains/transactions/models';
-import { useAppContextStore } from '@/store';
 
+import formatMoney from "@/utils/formatMoney";
+import { BudgetCategory } from '@/domains/budget/models/budget';
+import { getBudgetTarget } from '@/domains/budget/budgetTotals';
+import { ICategory } from '@/domains/transactions/models';
+
+import { useAppContextStore } from '@/store';
+import { useAccounts } from '@/utils/useAccounts';
 
 const props = defineProps<{
     item: BudgetCategory;
@@ -35,28 +34,56 @@ const budgetTarget = computed(() => {
     return props.item.budget ? getBudgetTarget(props.item.budget) : 0;
 })
 
+const { accounts } = useAccounts();
+const accountMatch = computed(() => {
+    return props.item.match_account && accounts?.find?.((account: any ) => props.item.match_account.account_id == account.id);
+});
+
 const lastMonthAmount = computed(() => {
     // @ts-ignore:
     return props.item.budgets?.at?.(2)?.budgeted ?? 0
 })
 
+enum BudgetAssignOptions {
+    Target = 'target',
+    MatchAccount = 'matchAccount',
+    Underfunded = 'underfunded',
+    LastMonth = 'lastMonth'
+}
+
+const isCurrentMonth = computed(() => {
+  return isThisMonth(startOfMonth(pageState.dates.endDate))
+})
+
 const assignOptions = computed(() => {
-    return [{
-        name: "setTarget",
+    const matchAccountDiffAmount = accountMatch.value?.balance - props.item.available;
+    const underfundedAmount = budgetTarget.value - props.item.available;
+    const options = [{
+        name: BudgetAssignOptions.Target,
         label: `Set Target (${formatMoney(budgetTarget.value)})`,
+        hidden: !budgetTarget.value
     },
     {
-        name: "underFundedTarget",
-        label: `Set underfunded (${formatMoney(budgetTarget.value - props.item.available)})`,
+        name: BudgetAssignOptions.MatchAccount,
+        label: `Set match account (${formatMoney(matchAccountDiffAmount)})`,
+        hidden: !accountMatch.value || !isCurrentMonth.value || !matchAccountDiffAmount
     },
     {
-        name: "setLastMonth",
+        name: BudgetAssignOptions.Underfunded,
+        label: `Set account match (${formatMoney(underfundedAmount)})`,
+        hidden: !budgetTarget.value || !underfundedAmount
+    },
+    {
+        name: BudgetAssignOptions.LastMonth,
         label: `Set last amount (${formatMoney(lastMonthAmount.value)})`,
+        hidden: !lastMonthAmount.value
     },
     {
         name: "clear",
         label: "Clear",
     }]
+
+    return options.filter((option) => !option.hidden)
 });
 
 const setAmount = (amount: number) => {
@@ -64,16 +91,18 @@ const setAmount = (amount: number) => {
 };
 
 const handleAssignOptions = (option: string) => {
-    const targetAmount = getBudgetTarget(props.item.budget);
-
-    switch (option) {
-    case "setTarget":
+  const targetAmount = props.item.budget ? getBudgetTarget(props.item.budget) : 0;
+switch (option) {
+    case BudgetAssignOptions.Target:
       setAmount(targetAmount);
       break;
-    case "underFundedTarget":
+    case BudgetAssignOptions.Underfunded:
       setAmount(targetAmount - props.item.available);
       break;
-    case "setLastMonth":
+    case BudgetAssignOptions.MatchAccount:
+      setAmount(accountMatch.value?.balance - props.item.available);
+      break;
+    case BudgetAssignOptions.LastMonth:
       setAmount(lastMonthAmount.value);
       break;
     default:

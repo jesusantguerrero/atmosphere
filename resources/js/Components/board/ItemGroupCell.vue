@@ -204,7 +204,6 @@ const {
                         @blur="saveChanges()"
                         @keydown.enter="saveItem"
                     />
-                    {{  value }}
                     <div class="flex h-full controls" v-if="showControls">
                         <BoardSelector
                             v-if="boards"
