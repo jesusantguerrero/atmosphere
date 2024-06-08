@@ -134,7 +134,7 @@ class BudgetRolloverService {
 
 
         $inflow = (new BudgetCategoryService($readyToAssignCategory))->getCategoryInflow($readyToAssignCategory, $month);
-        $TBB = $budgetMonth->left_from_last_month +  $inflow;
+        $TBB = $budgetMonth->left_from_last_month + $inflow;
 
         $nextMonth = Carbon::createFromFormat("Y-m-d", $month)->addMonthsWithNoOverflow(1)->format('Y-m-d');
         $overspending = abs($results?->overspendingInMonth);
@@ -194,25 +194,6 @@ class BudgetRolloverService {
             'moved_from_last_month' => $results?->available + $leftover,
             'overspending_previous_month' => $overspending,
         ]);
-    }
-
-    private function fixBudgetMovements($budgetMonth) {
-        (new BudgetMovementService(new BudgetCategoryService()))->registerAssignment(new BudgetAssignData(
-                $budgetMonth->team_id,
-                $budgetMonth->user_id,
-                $budgetMonth->month,
-                $budgetMonth->category_id,
-                $budgetMonth->budgeted,
-        ), true);
-    }
-
-    private function reduceOverspent() {
-        // If your category had been overspent in cash (negative red Available), that amount will be deducted from Ready to Assign in the new month.
-
-        // If your category had been overspent in credit (negative yellow Available), the amount you overspent will be represented as an Underfunded alert ↗️ in your Credit Card Payment category. If you can't cover this overspending in the month it happens, you'll need to assign funds directly to the Credit Card Payment category to pay back the debt.
-
-
-        // Not seeing an Underfunded Alert in your Credit Card Payment category? We're testing this new feature in stages and releasing it to everyone soon.
     }
 
     public function startFrom($teamId, $yearMonth, $limit = null) {

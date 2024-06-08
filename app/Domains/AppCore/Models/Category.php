@@ -7,6 +7,7 @@ use App\Concerns\Factory;
 use Database\Factories\CategoryFactory;
 use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Budget\Models\BudgetTarget;
+use App\Domains\Budget\Models\BudgetMatchAccount;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Insane\Journal\Models\Core\Category as CoreCategory;
 use App\Domains\Budget\Models\Traits\BudgetCategoryTrait;
@@ -16,7 +17,7 @@ class Category extends CoreCategory
     use BudgetCategoryTrait;
     use HasFactory;
 
-    protected $with = ['budget'];
+    protected $with = ['budget', 'matchAccount'];
 
     public function team()
     {
@@ -26,6 +27,11 @@ class Category extends CoreCategory
     public function budget()
     {
         return $this->hasOne(BudgetTarget::class);
+    }
+
+    public function matchAccount()
+    {
+        return $this->hasOne(BudgetMatchAccount::class);
     }
 
     public function budgets()

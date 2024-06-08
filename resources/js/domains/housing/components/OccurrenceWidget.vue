@@ -28,7 +28,7 @@ defineProps<{
                 wrap
           />
         </section>
-        <section class="flex items-center flex-col justify-center" v-else">
+        <section class="flex items-center flex-col justify-center" v-else>
           <CategoryItem
                 class="capitalize"
                 label=""
