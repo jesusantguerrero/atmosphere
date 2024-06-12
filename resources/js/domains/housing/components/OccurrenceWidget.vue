@@ -19,7 +19,7 @@ defineProps<{
                 Occurrence Checks
             </Link>
         </SectionTitle>
-        <section class="flex mt-4" v-if="checks">
+        <section class="flex mt-4" v-if="checks?.length">
           <CategoryItem
                 class="capitalize"
                 v-for="occurrence in checks"
