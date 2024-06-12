@@ -4,6 +4,7 @@ namespace App\Domains\Budget\Services;
 
 use Exception;
 use App\Models\User;
+use Illuminate\Support\Carbon;
 use App\Domains\AppCore\Models\Category;
 use App\Domains\Budget\Models\BudgetTarget;
 use App\Domains\Transaction\Models\TransactionLine;
@@ -53,9 +54,13 @@ class BudgetTargetService
 
     private function buildPlanned(BudgetTarget $target, $month, $endOfMonth = null)
     {
-        $date = $month.'-'.$target->frequency_month_date;
-        $date = ($endOfMonth && $date > $endOfMonth) ? $endOfMonth : $date;
+        $originalDate = $month.'-'. str_pad($target->frequency_month_date, 2, 0, STR_PAD_LEFT);
+        $date = ($endOfMonth && $originalDate > $endOfMonth) ? $endOfMonth : $originalDate;
         $data = PlannedTransactionDTO::fromTarget($target, $date);
+        if ($target->frequency_date) {
+            $targetDate = Carbon::createFromFormat('Y-m-d', $target->frequency_date);
+            if ($targetDate->month != now()->month) return;
+        }
 
         $transaction = TransactionLine::where([
             "transaction_lines.team_id" => $target->team_id,
@@ -63,8 +68,6 @@ class BudgetTargetService
         ])
         ->whereRaw("DATE_FORMAT(transaction_lines.date, '%Y-%m') like ?", [$month])
         ->first();
-
-        print_r($transaction);
 
         if (!$transaction) {
             $this->plannedService->add($data);
