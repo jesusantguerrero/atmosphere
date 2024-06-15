@@ -169,11 +169,6 @@ const deleteBulkTransactions = () => {
             controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
             next-mode="month"
           />
-          <div>
-            <LogerButton  variant="inverse">
-                Import Transactions
-            </LogerButton>
-          </div>
         </template>
       </FinanceSectionNav>
     </template>

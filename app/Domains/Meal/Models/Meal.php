@@ -12,6 +12,8 @@ class Meal extends Model
 
     protected $fillable = ['team_id', 'user_id', 'name', 'meal_type_id', 'menu_id', 'notes', 'is_liked'];
 
+    protected $with = ['mealType'];
+
     public function ingredients()
     {
         return $this->hasMany(Ingredient::class);

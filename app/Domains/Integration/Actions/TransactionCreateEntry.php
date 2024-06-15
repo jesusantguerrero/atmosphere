@@ -51,7 +51,7 @@ class TransactionCreateEntry implements AutomationActionContract
             'currency_code' => FormulaHelper::parseFormula($taskData->currency_code, $payload),
             'category_id' => $transactionCategoryId ?? null,
             'description' => $description,
-            'reference' => $description,
+            'reference' => $description.$payload['id'],
             'direction' => FormulaHelper::parseFormula($taskData->direction, $payload),
             'total' => FormulaHelper::parseFormula($taskData->total, $payload),
             'items' => [],
@@ -76,11 +76,9 @@ class TransactionCreateEntry implements AutomationActionContract
                         ->orWhere('reference', $transactionData['description'])
         )->first();
 
-        if ($transaction && $transaction->status == 'verified') {
+        if ($transaction) {
            return $transaction;
         }
-
-        print_r($transactionData);
 
         $transaction = Transaction::createTransaction($transactionData);
         User::find($automation->user_id)->notify(new EntryGenerated($transaction));
