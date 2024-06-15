@@ -10,6 +10,9 @@ import MealTemplate from "@/domains/meal/components/MealTemplate.vue";
 import MealSectionNav from "@/domains/meal/components/MealSectionNav.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 
+import { Meal } from "@/domains/meal/models";
+
+
 const props = withDefaults(defineProps<{
     meals: any[]
     shoppingList: Object,
@@ -22,7 +25,7 @@ const recipes = computed(() => {
   return props.meals?.data ?? [];
 });
 
-const onToggleLike = (meal) => {
+const onToggleLike = (meal: Meal) => {
   meal.is_liked = !Boolean(meal.is_liked);
   router.put(
     route("meals.update", meal),
@@ -51,6 +54,8 @@ const mealStatus = {
 };
 
 const currentStatus = ref(props.serverSearchOptions.filters?.is_liked || "all");
+
+const goToMeal = (meal: Meal ) => router.visit(route('meals.show', { meal }))
 </script>
 
 <template>
@@ -83,9 +88,7 @@ const currentStatus = ref(props.serverSearchOptions.filters?.is_liked || "all");
     <MealTemplate class="mx-auto">
       <MealSection
         :meals="recipes"
-        @click="router.visit(route('meals.edit', {
-          meal: $event
-        }))"
+        @click="goToMeal"
         @toggle-like="onToggleLike"
       />
     </MealTemplate>
