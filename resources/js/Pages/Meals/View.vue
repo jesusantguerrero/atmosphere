@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed } from "vue";
 import { router } from "@inertiajs/vue3";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
@@ -8,15 +7,11 @@ import LogerButton from '@/Components/atoms/LogerButton.vue';
 import MealView from "@/domains/meal/components/MealView.vue";
 import MealSectionNav from "@/domains/meal/components/MealSectionNav.vue";
 import MealTemplate from "@/domains/meal/components/MealTemplate.vue";
+import { Meal } from "@/domains/meal/models";
 
-withDefaults(defineProps<{
-    meals: null|{
-        name: string;
-        id: number;
-    }
-}>(), {
-    meals: null
-});
+defineProps<{
+    meals: Meal
+}>();
 </script>
 
 <template>

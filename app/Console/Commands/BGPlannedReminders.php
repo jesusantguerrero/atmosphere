@@ -33,10 +33,10 @@ class BGPlannedReminders extends Command
         $this->sendNotifications($plannedService->getForNotificationType());
     }
 
-    public function sendNotifications($occurrences)
+    public function sendNotifications($plannedTransactions)
     {
-        foreach ($occurrences as $occurrence) {
-            User::find($occurrence->user_id)->notify(new PlannedAlert($occurrence));
+        foreach ($plannedTransactions as $transaction) {
+            User::find($transaction->user_id)->notify(new PlannedAlert($transaction));
         }
     }
 }

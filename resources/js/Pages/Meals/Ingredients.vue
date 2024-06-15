@@ -55,7 +55,7 @@ const assignProductLabel = (label: Record<string, string>, product: Record<strin
       </MealSectionNav>
     </template>
     <MealTemplate class="mx-auto">
-      <MealSection :meals="productData" @tag-selected="assignProductLabel" />
+      <MealSection :meals="productData" @tag-selected="assignProductLabel" display="list" />
     </MealTemplate>
   </AppLayout>
 </template>

@@ -1,19 +1,4 @@
 <script lang="ts" setup>
-import { ref } from "vue";
-import { useForm, usePage, router } from "@inertiajs/vue3";
-import ActionMessage from "@/Components/atoms/ActionMessage.vue";
-import ActionSection from "@/Components/atoms/ActionSection.vue";
-import ConfirmationModal from "@/Components/atoms/ConfirmationModal.vue";
-import DangerButton from "@/Components/atoms/DangerButton.vue";
-import DialogModal from "@/Components/atoms/DialogModal.vue";
-import FormSection from "@/Components/atoms/FormSection.vue";
-import InputError from "@/Components/atoms/InputError.vue";
-import InputLabel from "@/Components/atoms/InputLabel.vue";
-import PrimaryButton from "@/Components/atoms/PrimaryButton.vue";
-import SecondaryButton from "@/Components/atoms/SecondaryButton.vue";
-import SectionBorder from "@/Components/atoms/SectionBorder.vue";
-import TextInput from "@/Components/atoms/TextInput.vue";
-
 const props = defineProps({
   user: Object,
   availableRoles: Array,

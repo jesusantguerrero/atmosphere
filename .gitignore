@@ -17,6 +17,8 @@ npm-debug.log
 yarn-error.log
 /packages/**
 rr
+docs/.vitepress/cache
+docs/.vitepress/dist/**
 .rr.yaml
 .env.testing
 Modules/*

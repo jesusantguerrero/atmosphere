@@ -199,7 +199,10 @@ const reconcileForm = useForm({
 
   <template #title>
     <section class="flex items-center">
-        <span>{{ selectedAccount.name }}</span>
+        <h1 class="font-bold">
+            <span class="text-body-1/60">Accounts / </span>
+            <span>{{ selectedAccount.name }}</span>
+        </h1>
         <button
             @click="router.visit(`/finance/accounts/${selectedAccount.id}/reconciliations/`)"
             title="reconciliations"

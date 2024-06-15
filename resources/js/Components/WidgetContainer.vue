@@ -10,6 +10,7 @@ interface Props {
   message: string;
   username?: string;
   cards?: ICard[];
+  clickable: boolean;
   actionLabel?: string;
   actionLink?: string;
   sectionClass?: string;
@@ -39,16 +40,7 @@ const cardSize = computed(() => {
   return sizes[props.size] ?? sizes["large"];
 });
 
-const titleClassBySize = computed(() => {
-  const sizes: Record<string, string> = {
-    large: "py-3",
-    normal: "h-16",
-    small: "py-1 text-sm",
-  };
-  return sizes[props.size] ?? sizes["large"];
-});
-
-const { isTab: isCurrentTab, selectedTab, tabs: widgetTabs } = useTabs(
+const { isTab: isCurrentTab, selectedTab} = useTabs(
   props.tabs,
   props.defaultTab
 );
@@ -64,7 +56,7 @@ const { isTab: isCurrentTab, selectedTab, tabs: widgetTabs } = useTabs(
       :class="[!$slots.title && 'pb-2', verticalHeader && 'flex-col']"
     >
       <slot name="title">
-        <h1 class="font-bold text-body-1 capitalize w-full px-5 flex items-center py-2 text-sm" :class="titleClass">
+        <h1 class="font-bold text-body-1 capitalize w-full px-5 flex items-center py-2 text-sm" :class="[titleClass, clickable && 'cursor-pointer']">
           {{ message }} <span class="text-primary">{{ username }}</span>
         </h1>
       </slot>
