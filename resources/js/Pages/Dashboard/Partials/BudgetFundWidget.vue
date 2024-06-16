@@ -1,10 +1,12 @@
 <script setup lang="ts">
     import { onMounted, ref, computed } from 'vue';
     import axios from 'axios';
+    import { router } from "@inertiajs/vue3"
 
     import WidgetContainer from '@/Components/WidgetContainer.vue';
     import BudgetProgress from '@/domains/budget/components/BudgetProgress.vue';
     import MoneyPresenter from '@/Components/molecules/MoneyPresenter.vue';
+    import CategoryItem from '@/domains/transactions/components/CategoryItem.vue';
 
     const budgetData = ref({})
 
@@ -29,7 +31,7 @@
     <WidgetContainer
         :message="$t('Emergency Fund Builder')"
     >
-        <template #actions>
+        <template #actions v-if="fundMetrics.target">
             <section class="group cursor-default mr-5">
                 <span class="group-hover:flex hidden">
                     <MoneyPresenter :value="fundMetrics.target" />
@@ -41,8 +43,8 @@
         </template>
 
         <template #content>
-            <section class="my-2">
                 <BudgetProgress
+                    v-if="fundMetrics.target"
                     class="h-1.5 rounded-sm"
                     :goal="fundMetrics.target"
                     :current="fundMetrics.balance"
@@ -68,7 +70,22 @@
                     </div>
                 </template>
                 </BudgetProgress>
-            </section>
+                <section class="flex items-center flex-col justify-center" v-else>
+                    <CategoryItem
+                          class="capitalize"
+                          label=""
+                          value="NA"
+                          wrap
+                          @click="router.visit('/budget-funds')"
+                    >
+                      <template #icon>
+                          <span class=" font-bold text-2xl">
+                              <IMdiMoney />
+                          </span>
+                      </template>
+                    </CategoryItem>
+                    <p class="text-center text-sm -mt-6">Emergency fund track basic expenses from watchlist to suggest the target</p>
+                  </section>
         </template>
     </WidgetContainer>
 </template>
