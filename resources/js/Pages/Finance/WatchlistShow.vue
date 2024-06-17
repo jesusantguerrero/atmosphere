@@ -16,30 +16,14 @@ import WatchlistSummaryCard from "@/domains/watchlist/components/WatchlistSummar
 
 import { useServerSearch } from "@/composables/useServerSearch";
 import { formatMoney, formatMonth, MonthTypeFormat } from "@/utils";
-import { IAccount } from "@/domains/transactions/models";
-import { IServerSearchData } from "@/composables/useServerSearchV2";
 import { router } from "@inertiajs/vue3";
 
-interface MonthStat {
-    total: number,
-    currency_code: string,
-    lastTransactionDate: string,
-    transactionsCount: number
-}
-
-interface WatchlistResource {
-    month: MonthStat;
-    prevMonth: MonthStat;
-    transactions: Record<string, {
-        data: Record<string, string>[]
-    }>
-}
+import { IServerSearchData } from "@/composables/useServerSearchV2";
+import { WatchlistResource } from "@/domains/watchlist/models";
 
 const props = withDefaults(defineProps<{
   user: Object,
   resource: WatchlistResource,
-  categories: Record<string, string>[],
-  accounts: IAccount[],
   serverSearchOptions: IServerSearchData,
   watchlist: Record<string, string>[]
 }>(), {
@@ -71,24 +55,24 @@ const statCards = computed(() => [
     }
 ]);
 
-const parser = (transactions: Record<string, string>[]) => {
-    const data = Object.values(transactions).reduce((allData, val) => {
-        console.log(val);
-        allData.push(...val?.data);
-        return allData;
-    }, []);
-
-    debugger
-
-    return data.map((transaction) => ({
+const parser = (transaction: Record<string, string>) => ({
         title: transaction.description,
         subtitle: `${transaction?.account_from?.name} -> ${transaction.cat_name}`,
         date: transaction.date,
         value: transaction.amount,
         currencyCode: transaction.currency_code,
         status: transaction.status,
-    }));
-}
+});
+
+const transactions = computed(() => {
+    const data = Object.values(props.resource.transactions).reduce((allData, val) => {
+        console.log(val);
+        allData.push(...val?.data);
+        return allData;
+    }, []);
+
+    return data.map(parser);
+})
 
 const onClick = (itemId: number) => {
     if (props.resource.id == itemId) return
@@ -96,7 +80,7 @@ const onClick = (itemId: number) => {
 }
 
 const categories = computed(() => {
-    return props.resource.categories;
+    return props.resource.transactions;
 })
 </script>
 
@@ -121,7 +105,7 @@ const categories = computed(() => {
       </FinanceSectionNav>
     </template>
 
-    <FinanceTemplate :accounts="accounts" ref="financeTemplateRef">
+    <FinanceTemplate  ref="financeTemplateRef">
       <article class="w-full">
 
         <section>
@@ -137,19 +121,20 @@ const categories = computed(() => {
                  </template>
                 </WidgetWatchlistStats>
             </section>
-            <!-- <ChartComparison
+            <ChartComparison
                 class="w-full mb-10 mt-4 overflow-hidden bg-white rounded-lg"
                 :title="`${resource.name} Report`"
                 ref="ComparisonRevenue"
                 :data="categories"
                 data-item-total="total_amount"
-            /> -->
+            />
+
         </section>
 
         <TransactionsList
             class="w-full"
             table-class="overflow-auto text-sm"
-            :transactions="parser(resource.transactions)"
+            :transactions="transactions"
         />
 
       </article>
@@ -161,7 +146,7 @@ const categories = computed(() => {
       />
 
       <template #panel>
-        <section class="grid grid-cols-2 gap-2 pt-4">
+        <section class="grid lg:grid-cols-1 gap-2 pt-4">
             <WatchlistSummaryCard
                 v-for="item in watchlist"
                 :startDate="pageState.dates.startDate"
