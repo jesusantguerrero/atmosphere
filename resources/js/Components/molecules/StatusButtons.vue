@@ -12,6 +12,13 @@ const props = defineProps({
 const isSelected = (itemValue: string) => {
     return itemValue == props.modelValue
 }
+
+const emit = defineEmits(["change", "update:model-value"]);
+
+const emitChange = (value: string) => {
+    emit('change', value)
+    emit('update:model-value', value)
+}
 </script>
 
 <template>
@@ -21,7 +28,7 @@ const isSelected = (itemValue: string) => {
             class="px-2 py-1.5 flex items-center border border-transparent hover:bg-primary/5"
             :class="{'text-white bg-primary border border-primary hover:text-primary': isSelected(statusName)}"
             :key="statusName"
-            @click="$emit('change', item.value || statusName)">
+            @click="emitChange(item.value || statusName)">
                 {{ item.label }}
         </button>
     </section>

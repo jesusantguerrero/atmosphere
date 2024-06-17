@@ -1,14 +1,54 @@
+<script lang="ts" setup>
+import { ref, computed, watch } from "vue";
+// import Tracker from "./../timeTracker/tracker";
+
+const props = defineProps<{
+    task: Object;
+    tracker: Object;
+}>();
+
+const originalDuration = ref(null)
+
+watch(() => props.tracker, (tracker?: Object) => {
+ originalDuration.value = props.task.duration
+}, { immediate: true });
+
+
+const  isTracker = computed(() => {
+    return props.tracker && props.tracker.timeEntry.item_id == props.task.id;
+});
+
+const durationFromMs = computed(() => {
+    const currentDuration = isTracker.value ? tracker.value.duration || 0: 0;
+
+    props.task.duration = originalDuration.value + currentDuration;
+    return  '--'; //Tracker?.durationFromMs(this.task.duration);
+});
+
+const priorityText = computed(() =>  {
+    const emojis = {
+        "high": "🔥🔥🔥",
+        "medium": "🔥🔥",
+        "low": "🔥"
+    }
+    return props.task.value && emojis[props.task.priority] || "";
+})
+const updateTask = () => {
+    emit('update-item', props.task)
+}
+</script>
+
 <template>
 <div  class="task-item">
     <div>
         <label class="checkbox-label">
             <span class="font-bold">
-            <inertia-link :href="`/boards/${task.board_id}`">
+            <Link :href="`/boards/${task.board_id}`">
                 <span class="font-bold">
                     <i class="mx-2 fas fa-layer-group"></i>
                     {{ task.stage }}
                 </span>
-            </inertia-link>
+            </Link>
         </span>
         <span>
             {{ task.title }}
@@ -45,66 +85,7 @@
 </div>
 </template>
 
-<script>
-import Tracker from "./../timeTracker/tracker";
 
-export default {
-    props: {
-        task: {
-            type: Object,
-            required: true
-        },
-        tracker: {
-            type: Object
-        }
-    },
-
-    data() {
-        return {
-            originalDuration: null
-        }
-    },
-
-    watch: {
-        tracker(tracker) {
-            if (tracker) {
-                this.originalDuration = this.task.duration
-            } else {
-                this.originalDuration = this.task.duration
-            }
-        }
-    },
-
-    created() {
-        this.originalDuration = this.task.duration;
-    },
-
-    computed: {
-        isTracker() {
-            return this.tracker && this.tracker.timeEntry.item_id == this.task.id;
-        },
-        durationFromMs() {
-            const currentDuration = this.isTracker ? this.tracker.duration || 0: 0;
-
-            this.task['duration'] = this.originalDuration + currentDuration;
-            return Tracker.durationFromMs(this.task.duration);
-        },
-        priorityText() {
-            const emojis = {
-                "high": "🔥🔥🔥",
-                "medium": "🔥🔥",
-                "low": "🔥"
-            }
-            return this.task && emojis[this.task.priority] || "";
-        }
-    },
-    methods: {
-         updateTask() {
-            this.$emit('update-item', this.task)
-        },
-    }
-}
-</script>
 
 <style lang="scss" scoped>
 .priority-level {

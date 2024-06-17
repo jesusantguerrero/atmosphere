@@ -1,14 +1,18 @@
 <script setup lang="ts">
+import { onMounted, provide, computed, watch, reactive, ref, toRefs } from "vue";
+import { router } from "@inertiajs/vue3";
+import Multiselect from "vue-multiselect";
+import { VueDraggableNext as Draggable } from "vue-draggable-next"
+import { throttle } from "lodash";
+
 import ListView from "./views/List/ListView.vue";
 import MatrixView from "./views/matrix/MatrixBoard.vue";
 import ItemModal from "./ItemModal.vue";
 import AutomationModal from "../AutomationModal.vue";
 import BulkSelectionBar from '../BulkSelectionBar.vue';
-import { VueDraggableNext as Draggable } from "vue-draggable-next"
-import { throttle } from "lodash";
-import { router } from "@inertiajs/vue3";
-import { onMounted, provide, computed, watch, reactive, ref, toRefs } from "vue";
+
 import BoardTitle from "./BoardTitle.vue";
+import BoardItemContainer from '@/Components/board/BoardItemContainer.vue';
 
 const emit = defineEmits(['search'])
 const props = withDefaults(defineProps<{
@@ -18,6 +22,7 @@ const props = withDefaults(defineProps<{
     filters: Record<string, any>
     multiStage: boolean;
     resourceName: string;
+    layout: string;
 }>(), {
     filters: () => ({
         search: '',
@@ -45,7 +50,7 @@ const views = {
 
 const state = reactive({
     createMode: false,
-    modeSelected: "list",
+    modeSelected: props.layout ?? "list",
     itemToDelete: false,
     items: [],
     comments: [],
@@ -63,6 +68,10 @@ const state = reactive({
     isEditMode: false,
     isItemModalOpen: false,
     isAutomationModalOpen: false
+});
+
+watch(() => props.layout, () => {
+    state.modeSelected = props.layout;
 });
 
 watch(state.searchOptions, throttle(() => {
@@ -209,8 +218,6 @@ function updateBoardName(board = {}, reload = true) {
         }
     });
 }
-
-
 function runAutomation(automationId) {
     return axios({
         url: `/api/automations/${automationId}/run`,
@@ -305,6 +312,18 @@ function confirmDeleteItems(items, reload = true) {
     });
 }
 
+const selectedStage = ref();
+const tasks = computed(() => {
+  return props.board.stages?.at?.(0)?.items
+});
+
+const inbox = computed(() => {
+const inbox = selectedStage.value
+    ? tasks.value.filter((task: Record<string, any>) => task.stage == selectedStage.value)
+    : tasks.value.filter((task: Record<string, any>) => task);
+  return inbox;
+});
+
 const {
     createMode,
     modeSelected,
@@ -319,11 +338,11 @@ const {
     <div class="px-8 pb-24">
         <header class="flex justify-between board__toolbar">
             <BoardTitle
-                v-if="board.title"
+                v-if="board"
                 class="w-full"
                 :board="board"
-                @saved="updateBoardName"
                 :automations="automations"
+                @saved="updateBoardName"
                 @run-automation="runAutomation"
             />
 
@@ -332,7 +351,6 @@ const {
                     <multiselect
                         v-model="modeSelected"
                         ref="input"
-                        v-if="false"
                         :show-labels="false"
                         :options="viewsKeys"
                         class="w-full"
@@ -360,21 +378,21 @@ const {
                     v-model="searchOptions.search"
                     placeholder="search"
                 />
-                <!-- <span class="ml-2 toolbar-buttons">
+                <span class="ml-2 toolbar-buttons">
                     <i class="fa fa-user"></i>
-                </span> -->
+                </span>
                 <span class="ml-2 toolbar-buttons"
                     :class="{active: searchOptions.done}"
                     @click="toggleDone()"
                     ><i class="fa fa-eye"></i
                 ></span>
-                <!-- <span class="ml-2 toolbar-buttons">
+                <span class="ml-2 toolbar-buttons">
                     <i class="fa fa-thumbtack"></i
                 ></span>
                 <span class="ml-2 toolbar-buttons">
                     <i class="fa fa-filter"></i>
                 </span>
-                -->
+
                 <span class="ml-2 toolbar-buttons" :class="{active: searchOptions.sort}" @click="clearSort()">
                     <i class="fa fa-sort"></i>
                 </span>
@@ -386,7 +404,6 @@ const {
             :selected-items="selectedItems"
             @delete-pressed="confirmDeleteItems(selectedItems, true)"
         />
-
         <div class="">
             <draggable
                 v-model="board.stages"
@@ -414,6 +431,24 @@ const {
                     />
                 </TransitionGroup>
             </draggable>
+
+            <BoardItemContainer
+                v-else-if="modeSelected == 'summary'"
+                :allow-add="true"
+                hide-board-name
+                :boards="[board]"
+                :tasks="inbox"
+            >
+
+                <template #empty>
+                <div class="w-full mx-auto prose prose-xl text-center">
+                    <img src="../../../img/undraw_empty.svg" class="w-4/12 mx-auto" />
+                    <small class="mt-4 text-gray-400">
+                    Nothing to do. Add new tasks from here or mark in your
+                    <a href="#" @click="">boards</a> as todo</small>
+                </div>
+                </template>
+            </BoardItemContainer>
 
             <component
                 v-else

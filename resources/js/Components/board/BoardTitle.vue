@@ -42,8 +42,8 @@ const checkChanges = (shouldToggle: boolean) => {
 
 <template>
 <div class="flex justify-between mr-2">
-    <span class="w-full px-2 text-3xl font-bold border border-transparent rounded-md hover:border-slate-300" 
-    v-if="!isEditMode" 
+    <span class="w-full px-2 text-3xl font-bold border border-transparent rounded-md hover:border-slate-300"
+    v-if="!isEditMode"
     @click="toggleEditMode()"
     >
         {{ boardName }}
@@ -58,7 +58,7 @@ const checkChanges = (shouldToggle: boolean) => {
         @blur="checkChanges(true)"
         @keypress.enter="checkChanges(true)"
     />
-    <div v-if="automations.length">
+    <div v-if="automations?.length">
         <span
             class="automation"
             v-for="automation in automations"
