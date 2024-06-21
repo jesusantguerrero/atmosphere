@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// @ts-expect-error
 import { AtAuthBox, AtAuthForm } from "atmosphere-ui";
 import { router } from "@inertiajs/vue3";
 import { useForm, Link } from "@inertiajs/vue3";

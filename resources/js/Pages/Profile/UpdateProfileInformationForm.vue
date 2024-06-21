@@ -62,14 +62,18 @@
                 Saved.
             </JetActionMessage>
 
-            <JetButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+            <LogerButton :processing="form.processing">
                 Save
-            </JetButton>
+            </LogerButton>
         </template>
     </JetFormSection>
 </template>
 
-<script>
+<script lang="ts" setup>
+    import { useForm, router } from '@inertiajs/vue3'
+    import { AtField } from "atmosphere-ui"
+    import { ref } from "vue";
+
     import JetButton from '@/Components/atoms/Button.vue'
     import JetFormSection from '@/Components/atoms/FormSection.vue'
     import JetInput from '@/Components/atoms/Input.vue'
@@ -77,80 +81,61 @@
     import JetLabel from '@/Components/atoms/Label.vue'
     import JetActionMessage from '@/Components/atoms/ActionMessage.vue'
     import JetSecondaryButton from '@/Components/atoms/SecondaryButton.vue'
-    import { AtField } from "atmosphere-ui"
     import LogerInput from '@/Components/atoms/LogerInput.vue'
-    import { useForm, router } from '@inertiajs/vue3'
+    import LogerButton from '@/Components/atoms/LogerButton.vue'
 
-    export default {
-        components: {
-            JetActionMessage,
-            JetButton,
-            JetFormSection,
-            JetInput,
-            JetInputError,
-            JetLabel,
-            JetSecondaryButton,
-            AtField,
-            LogerInput
-        },
+    const props = defineProps<{
+        user: Object
+    }>();
 
-        props: ['user'],
+    const form = useForm({
+        _method: 'PUT',
+        name: props.user.name,
+        email: props.user.email,
+        photo: null,
+    });
 
-        data() {
-            return {
-                form: useForm({
-                    _method: 'PUT',
-                    name: this.user.name,
-                    email: this.user.email,
-                    photo: null,
-                }),
+    const photoPreview = ref(null);
 
-                photoPreview: null,
-            }
-        },
+    const updateProfileInformation = () => {
+        if (photo.value) {
+            form.photo.value = photo.value.files[0]
+        }
 
-        methods: {
-            updateProfileInformation() {
-                if (this.$refs.photo) {
-                    this.form.photo = this.$refs.photo.files[0]
-                }
+        form.post(route('user-profile-information.update'), {
+            errorBag: 'updateProfileInformation',
+            preserveScroll: true,
+            onSuccess: () => (clearPhotoFileInput()),
+        });
+    };
 
-                this.form.post(route('user-profile-information.update'), {
-                    errorBag: 'updateProfileInformation',
-                    preserveScroll: true,
-                    onSuccess: () => (this.clearPhotoFileInput()),
-                });
+    const selectNewPhoto = () => {
+        photo.value.click();
+    };
+
+    const updatePhotoPreview = () => {
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+            photoPreview.value = e.target.result;
+        };
+
+        reader.readAsDataURL(photo.value.files[0]);
+    };
+
+    const deletePhoto = () => {
+        router.delete(route('current-user-photo.destroy'), {
+            preserveScroll: true,
+            onSuccess: () => {
+                photoPreview.value = null;
+                clearPhotoFileInput();
             },
+        });
+    };
 
-            selectNewPhoto() {
-                this.$refs.photo.click();
-            },
-
-            updatePhotoPreview() {
-                const reader = new FileReader();
-
-                reader.onload = (e) => {
-                    this.photoPreview = e.target.result;
-                };
-
-                reader.readAsDataURL(this.$refs.photo.files[0]);
-            },
-
-            deletePhoto() {
-                router.delete(route('current-user-photo.destroy'), {
-                    preserveScroll: true,
-                    onSuccess: () => {
-                        this.photoPreview = null;
-                        this.clearPhotoFileInput();
-                    },
-                });
-            },
-
-            clearPhotoFileInput() {
-                if (this.$refs.photo?.value) {
-                    this.$refs.photo.value = null;
-                }
-            },
-        },
-    }
+    const clearPhotoFileInput = () => {
+        if (photo?.value?.value) {
+            photo.value.value = null;
+        }
+    };
 </script>
