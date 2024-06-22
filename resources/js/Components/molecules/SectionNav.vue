@@ -19,6 +19,7 @@ interface NavSection {
 const props = withDefaults(defineProps<{
     sections: NavSection[];
     modelValue?: string;
+    selectedClass: string;
 }>(), {
     selectedClass: "border-primary text-primary",
 });

@@ -2,9 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use Closure;
 use App\Concerns\Facades\Menu;
 use App\Events\Menu\AppCreated;
-use Closure;
 
 class AppMenu
 {
@@ -17,7 +17,7 @@ class AppMenu
     public function handle($request, Closure $next)
     {
         // Check if logged in
-        if (! auth()->check()) {
+        if (!auth()->check()) {
             return $next($request);
         }
 

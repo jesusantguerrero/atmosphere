@@ -6,8 +6,7 @@ import InputPerson from "./cellTypes/Person.vue";
 import InputTime from "./cellTypes/Time.vue";
 import CellSummaryProgress from "./cellTypes/CellSummaryProgress.vue";
 import BoardSelector from './BoardSelector.vue';
-import { NTooltip } from "naive-ui";
-import { computed, inject, nextTick, reactive, toRefs, watch, onMounted, ref } from "vue";
+import { computed, inject, nextTick, reactive, toRefs, watch, ref } from "vue";
 import { formatValue } from "./cellTypes/mixin";
 
 const users = inject('users', [])
@@ -64,7 +63,7 @@ const state = reactive({
     isEditMode: false
 });
 
-watch(props.item, (item) => {
+watch(() => props.item, (item) => {
     if (item && item[props.fieldName] != state.value) {
         const field = item.fields && item.fields.find(field => field.field_name == props.fieldName);
         item[props.fieldName] = item[props.fieldName] || (field && field.value);
@@ -75,7 +74,7 @@ watch(props.item, (item) => {
     immediate: true
 });
 
-watch(state.selectValue, () => {
+watch(() => state.selectValue, () => {
     if (props.field.type == "person") {
         state.value = state.selectValue;
         saveChanges();

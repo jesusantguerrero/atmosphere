@@ -6,11 +6,17 @@
     import UpdateTeamNameForm from './UpdateTeamNameForm.vue'
     import SettingsSectionNav from '@/Components/templates/SettingsSectionNav.vue'
 
-    defineProps({
+    defineProps<{
         team: Object,
-        availableRoles: Array,
+        availableRoles: {
+            key: string;
+            description: string;
+            name: string;
+            permissions: string[]
+        }[],
         permissions: Object,
-    });
+        modules: []
+    }>();
 </script>
 
 
@@ -22,7 +28,7 @@
 
         <div>
             <div class="pt-16 pb-20 mx-auto max-w-7xl sm:px-6 lg:px-8">
-                <UpdateTeamNameForm :team="team" :permissions="permissions" />
+                <UpdateTeamNameForm :team="team" :permissions="permissions" :modules="modules" />
 
                 <TeamMemberManager class="mt-10 sm:mt-0"
                     :team="team"

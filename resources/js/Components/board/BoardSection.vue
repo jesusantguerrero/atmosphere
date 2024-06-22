@@ -206,7 +206,7 @@ function updateBoardName(board = {}, reload = true) {
     const param = board.id ? `/${board.id}` : "";
 
     return axios({
-        url: `/api/boards${param}`,
+        url: `/api/plans${param}`,
         method,
         data: {
             name: board.name

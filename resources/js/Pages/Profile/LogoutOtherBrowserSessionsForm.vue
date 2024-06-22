@@ -1,15 +1,62 @@
+<script lang="ts" setup>
+    import { useForm } from '@inertiajs/vue3'
+    import { ref } from "vue";
+
+    import ActionMessage from '@/Components/atoms/ActionMessage.vue'
+    import ActionSection from '@/Components/atoms/ActionSection.vue'
+    import LogerButton from '@/Components/atoms/LogerButton.vue'
+    import LogerInput from '@/Components/atoms/LogerInput.vue'
+    import Button from '@/Components/atoms/Button.vue'
+    import DialogModal from '@/Components/atoms/DialogModal.vue'
+    import Input from '@/Components/atoms/Input.vue'
+    import InputError from '@/Components/atoms/InputError.vue'
+    import SecondaryButton from '@/Components/atoms/SecondaryButton.vue'
+
+
+    defineProps<{
+        sessions: any[],
+    }>();
+
+
+    const confirmingLogout = ref(false);
+    const form = useForm({
+        password: '',
+    })
+
+    const password = ref();
+    const confirmLogout = () => {
+        confirmingLogout.value = true
+        setTimeout(() => password.value.focus(), 250)
+    }
+
+    const logoutOtherBrowserSessions = () =>  {
+        form.delete(route('other-browser-sessions.destroy'), {
+            preserveScroll: true,
+            onSuccess: () => closeModal(),
+            onError: () => password.value.focus(),
+            onFinish: () => form.reset(),
+        })
+    }
+
+    const closeModal = () => {
+        confirmingLogout.value = false
+
+        form.reset()
+    }
+</script>
+
 <template>
-    <JetActionSection
+    <ActionSection
         title="Browser Sessions"
         description="Manage and log out your active sessions on other browsers and devices.">
 
         <template #content>
-            <div class="max-w-xl text-sm">
+            <header class="max-w-xl text-sm">
                 If necessary, you may log out of all of your other browser sessions across all of your devices. Some of your recent sessions are listed below; however, this list may not be exhaustive. If you feel your account has been compromised, you should also update your password.
-            </div>
+            </header>
 
             <!-- Other Browser Sessions -->
-            <div class="mt-5 space-y-6" v-if="sessions.length > 0">
+            <section class="mt-5 space-y-6" v-if="sessions.length > 0">
                 <div class="flex items-center" v-for="(session, i) in sessions" :key="i">
                     <div>
                         <svg fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor" class="w-8 h-8 text-gray-500" v-if="session.agent.is_desktop">
@@ -36,20 +83,20 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </section>
 
             <div class="flex items-center mt-5">
-                <jet-button @click="confirmLogout">
+                <LogerButton @click="confirmLogout" variant="neutral">
                     Log Out Other Browser Sessions
-                </jet-button>
+                </LogerButton>
 
-                <jet-action-message :on="form.recentlySuccessful" class="ml-3">
+                <ActionMessage :on="form.recentlySuccessful" class="ml-3">
                     Done.
-                </jet-action-message>
+                </ActionMessage>
             </div>
 
             <!-- Log Out Other Devices Confirmation Modal -->
-            <jet-dialog-modal :show="confirmingLogout" @close="closeModal">
+            <DialogModal :show="confirmingLogout" @close="closeModal">
                 <template #title>
                     Log Out Other Browser Sessions
                 </template>
@@ -58,83 +105,27 @@
                     Please enter your password to confirm you would like to log out of your other browser sessions across all of your devices.
 
                     <div class="mt-4">
-                        <jet-input type="password" class="block w-3/4 mt-1" placeholder="Password"
-                                    ref="password"
-                                    v-model="form.password"
-                                    @keyup.enter="logoutOtherBrowserSessions" />
+                        <LogerInput type="password" class="block w-3/4 mt-1"
+                            placeholder="Password"
+                            ref="password"
+                            v-model="form.password"
+                            @keyup.enter="logoutOtherBrowserSessions"
+                        />
 
-                        <jet-input-error :message="form.errors.password" class="mt-2" />
+                        <InputError :message="form.errors.password" class="mt-2" />
                     </div>
                 </template>
 
                 <template #footer>
-                    <jet-secondary-button @click="closeModal">
+                    <LogerButton @click="closeModal" variant="neutral" class="inline-flex">
                         Cancel
-                    </jet-secondary-button>
+                    </LogerButton>
 
-                    <jet-button class="ml-2" @click="logoutOtherBrowserSessions" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+                    <LogerButton class="ml-2 inline-flex" @click="logoutOtherBrowserSessions" :processing="form.processing" :disabled="form.processing">
                         Log Out Other Browser Sessions
-                    </jet-button>
+                    </LogerButton>
                 </template>
-            </jet-dialog-modal>
+            </DialogModal>
         </template>
-    </JetActionSection>
+    </ActionSection>
 </template>
-
-<script>
-    import JetActionMessage from '@/Components/atoms/ActionMessage.vue'
-    import JetActionSection from '@/Components/atoms/ActionSection.vue'
-    import JetButton from '@/Components/atoms/Button.vue'
-    import JetDialogModal from '@/Components/atoms/DialogModal.vue'
-    import JetInput from '@/Components/atoms/Input.vue'
-    import JetInputError from '@/Components/atoms/InputError.vue'
-    import JetSecondaryButton from '@/Components/atoms/SecondaryButton.vue'
-import { useForm } from '@inertiajs/vue3'
-
-    export default {
-        props: ['sessions'],
-
-        components: {
-            JetActionMessage,
-            JetActionSection,
-            JetButton,
-            JetDialogModal,
-            JetInput,
-            JetInputError,
-            JetSecondaryButton,
-        },
-
-        data() {
-            return {
-                confirmingLogout: false,
-
-                form: useForm({
-                    password: '',
-                })
-            }
-        },
-
-        methods: {
-            confirmLogout() {
-                this.confirmingLogout = true
-
-                setTimeout(() => this.$refs.password.focus(), 250)
-            },
-
-            logoutOtherBrowserSessions() {
-                this.form.delete(route('other-browser-sessions.destroy'), {
-                    preserveScroll: true,
-                    onSuccess: () => this.closeModal(),
-                    onError: () => this.$refs.password.focus(),
-                    onFinish: () => this.form.reset(),
-                })
-            },
-
-            closeModal() {
-                this.confirmingLogout = false
-
-                this.form.reset()
-            },
-        },
-    }
-</script>

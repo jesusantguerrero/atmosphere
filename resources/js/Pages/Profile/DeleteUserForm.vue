@@ -1,19 +1,21 @@
 <template>
-    <jet-action-section title="Delete Account" description="Permanently delete your account.">
-
+    <JetActionSection
+        title="Delete Account"
+        description="Permanently delete your account."
+    >
         <template #content>
             <div class="max-w-xl text-sm">
                 Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.
             </div>
 
             <div class="mt-5">
-                <jet-danger-button @click="confirmUserDeletion">
+                <JetDangerButton @click="confirmUserDeletion">
                     Delete Account
-                </jet-danger-button>
+                </JetDangerButton>
             </div>
 
             <!-- Delete Account Confirmation Modal -->
-            <jet-dialog-modal :show="confirmingUserDeletion" @close="closeModal">
+            <JetDialogModal :show="confirmingUserDeletion" @close="closeModal">
                 <template #title>
                     Delete Account
                 </template>
@@ -32,17 +34,17 @@
                 </template>
 
                 <template #footer>
-                    <jet-secondary-button @click="closeModal">
+                    <JetSecondaryButton @click="closeModal">
                         Cancel
-                    </jet-secondary-button>
+                    </JetSecondaryButton>
 
-                    <jet-danger-button class="ml-2" @click="deleteUser" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+                    <jetDangerButton class="ml-2" @click="deleteUser" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
                         Delete Account
-                    </jet-danger-button>
+                    </jetDangerButton>
                 </template>
-            </jet-dialog-modal>
+            </JetDialogModal>
         </template>
-    </jet-action-section>
+    </JetActionSection>
 </template>
 
 <script>
@@ -52,7 +54,7 @@
     import JetInput from '@/Components/atoms/Input.vue'
     import JetInputError from '@/Components/atoms/InputError.vue'
     import JetSecondaryButton from '@/Components/atoms/SecondaryButton.vue'
-import { useForm } from '@inertiajs/vue3'
+    import { useForm } from '@inertiajs/vue3'
 
     export default {
         components: {
