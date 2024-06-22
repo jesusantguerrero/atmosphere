@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\System;
 
-use App\Actions\Jetstream\InviteTeamMember;
-use App\Models\TeamInvitation;
 use Illuminate\Http\Request;
+use App\Models\TeamInvitation;
 use Laravel\Jetstream\Features;
+use App\Actions\Jetstream\InviteTeamMember;
+use Laravel\Jetstream\Contracts\AddsTeamMembers;
 
 class TeamInvitationController
 {
