@@ -21,6 +21,7 @@ declare module 'vue' {
     IMdiChevronRight: typeof import('~icons/mdi/chevron-right')['default']
     IMdiChevronUp: typeof import('~icons/mdi/chevron-up')['default']
     IMdiClose: typeof import('~icons/mdi/close')['default']
+    IMdiDownload: typeof import('~icons/mdi/download')['default']
     IMdiEdit: typeof import('~icons/mdi/edit')['default']
     IMdiEllipsisVertical: typeof import('~icons/mdi/ellipsis-vertical')['default']
     IMdiEmailCheck: typeof import('~icons/mdi/email-check')['default']
@@ -30,9 +31,13 @@ declare module 'vue' {
     IMdiHistory: typeof import('~icons/mdi/history')['default']
     IMdiLink: typeof import('~icons/mdi/link')['default']
     IMdiLock: typeof import('~icons/mdi/lock')['default']
+    IMdiMail: typeof import('~icons/mdi/mail')['default']
     IMdiMinus: typeof import('~icons/mdi/minus')['default']
     IMdiMoney: typeof import('~icons/mdi/money')['default']
+    IMdiPencil: typeof import('~icons/mdi/pencil')['default']
+    IMdiPlay: typeof import('~icons/mdi/play')['default']
     IMdiPlus: typeof import('~icons/mdi/plus')['default']
+    IMdiPrinter: typeof import('~icons/mdi/printer')['default']
     IMdiSearch: typeof import('~icons/mdi/search')['default']
     IMdiSort: typeof import('~icons/mdi/sort')['default']
     IMdiStar: typeof import('~icons/mdi/star')['default']
@@ -40,5 +45,6 @@ declare module 'vue' {
     IMdiSync: typeof import('~icons/mdi/sync')['default']
     IMdiTimerStarOutline: typeof import('~icons/mdi/timer-star-outline')['default']
     IMdiTrash: typeof import('~icons/mdi/trash')['default']
+    IMdiWallet: typeof import('~icons/mdi/wallet')['default']
   }
 }

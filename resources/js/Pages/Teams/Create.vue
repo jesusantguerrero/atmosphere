@@ -1,6 +1,10 @@
 <script setup lang="ts">
     import AppLayout from '@/Components/templates/AppLayout.vue'
     import CreateTeamForm from './CreateTeamForm.vue'
+
+    defineProps<{
+        modules: []
+    }>();
 </script>
 
 <template>
@@ -13,7 +17,9 @@
 
 
         <main class="py-10 mx-auto mt-8 max-w-7xl sm:px-6 lg:px-8">
-            <CreateTeamForm />
+            <CreateTeamForm
+                :modules="modules"
+            />
         </main>
     </AppLayout>
 </template>

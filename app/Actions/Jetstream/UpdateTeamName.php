@@ -5,6 +5,7 @@ namespace App\Actions\Jetstream;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
+use App\Domains\AppCore\Models\CoreModule;
 use Laravel\Jetstream\Contracts\UpdatesTeamNames;
 
 class UpdateTeamName implements UpdatesTeamNames
@@ -33,6 +34,9 @@ class UpdateTeamName implements UpdatesTeamNames
             'team_id' => $team->id,
         ];
 
-        Setting::storeBulk($input, $entryData);
+        $settingData = array_filter($input, fn($row) => $row != "modules", ARRAY_FILTER_USE_KEY);
+
+        Setting::storeBulk($settingData, $entryData);
+        CoreModule::updateBulk($input['modules']);
     }
 }

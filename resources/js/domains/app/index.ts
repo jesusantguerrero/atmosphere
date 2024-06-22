@@ -3,7 +3,11 @@ import { Link } from "@inertiajs/vue3"
 import { cloneDeep } from "lodash";
 export * from "./menus";
 
-export const useAppMenu = t => {
+export const moduleEnabled = (modules: any[], moduleName: string) =>  modules.find(module => module.name.toLowerCase() == moduleName && module.enabled)
+export const useAppMenu = (t: any, modules: any[]) => {
+
+    const isModuleEnabled = moduleEnabled.bind(null, modules);
+
     const appMenu =  [
         {
             icon: 'fa fa-home',
@@ -18,7 +22,8 @@ export const useAppMenu = t => {
             name: 'mealPlanner',
             to: '/meals/overview',
             as: Link,
-            isActiveFunction(url, currentPath) {
+            hidden: !isModuleEnabled('meals'),
+            isActiveFunction(url: string, currentPath: string) {
                 return /meal-planner|meals|ingredients/.test(currentPath)
             }
         },
@@ -28,7 +33,8 @@ export const useAppMenu = t => {
             name: 'finance',
             to: '/finance',
             as: Link,
-            isActiveFunction(url, currentPath) {
+            hidden: !isModuleEnabled('finance'),
+            isActiveFunction(url: string, currentPath: string) {
                return /finance|budgets/.test(currentPath)
             }
         },
@@ -37,22 +43,18 @@ export const useAppMenu = t => {
             label: t('Housing'),
             to: '/housing',
             as: Link,
-            isActiveFunction(url, currentPath) {
+            hidden: !isModuleEnabled('housing'),
+            isActiveFunction(url:string, currentPath: string) {
                 return /housing/.test(currentPath)
              }
         },
-        // {
-        //     icon: 'fas fa-heart',
-        //     label: t('Relationship'),
-        //     to: '/relationships/partner',
-        //     as: Link
-        // },
         {
             icon: 'fas fa-users',
             label: t('Profiles'),
             to: '/loger-profiles',
             as: Link,
-            isActiveFunction(url, currentPath) {
+            hidden: !isModuleEnabled('profiles'),
+            isActiveFunction(url: string, currentPath: string) {
                 return /loger-profiles/.test(currentPath)
              }
         },
@@ -61,14 +63,14 @@ export const useAppMenu = t => {
             label: t('Trends'),
             to: '/trends',
             as: Link,
-            isActiveFunction(url, currentPath) {
+            isActiveFunction(url: string, currentPath: string) {
                 return /trends/.test(currentPath)
             }
         }
     ].filter(item => !item.hidden);
 
     let mobileMenu = cloneDeep(appMenu).splice(0, 4)
-    mobileMenu.splice(2, null, {
+    mobileMenu.splice(2, 0, {
         name: 'add',
         label: 'Add',
         icon: IconTransferVue,
@@ -104,13 +106,17 @@ export const useAppMenu = t => {
     }
 }
 
+export const useModuleEnabled = (modules: any[]) => ({
+    isModuleEnabled: moduleEnabled.bind(null, modules),
+})
+
 export const DEFAULT_TIMEZONE = "UTC";
 
 export const defaultDateFormats = ['dd MMM, yyyy', 'dd.MM.yyyy', 'MM/dd/yyyy', 'yyyy.MM.dd']
 
-export const mapTeamFormServer = (team, prefix="team_") => {
+export const mapTeamFormServer = (team: Record<string, any>, prefix="team_") => {
     const regPrefix = new RegExp(prefix);
-    return team.settings.reduce((acc, setting) => {
+    return team.settings.reduce((acc: Record<string, any>, setting: Record<string, any>) => {
         const fieldName = setting.name.replace(regPrefix, '')
         acc[fieldName] = setting.value;
         return acc;
@@ -123,8 +129,8 @@ export const mapTeamFormServer = (team, prefix="team_") => {
     })
 }
 
-export const parseTeamForm = (team, prefix="team_") => {
-    return Object.keys(team).reduce((acc, fieldName) => {
+export const parseTeamForm = (team: Record<string, any>, prefix="team_") => {
+    return Object.keys(team).reduce((acc: Record<string, any>, fieldName) => {
         acc[prefix+fieldName] = team[fieldName];
         return acc;
     }, {

@@ -25,6 +25,7 @@ import { useTransactionStore } from "@/store/transactions";
 import { IOccurrenceCheck } from "@/domains/housing/models";
 import { IAccount, ICategory } from "@/domains/transactions/models";
 import { IBudgetStat } from "@/domains/budget/models";
+import { useModuleEnabled } from '@/domains/app'
 
 const props = withDefaults(
   defineProps<{
@@ -57,10 +58,13 @@ const props = withDefaults(
     accounts: IAccount[];
     onboarding: Record<string, any>;
     checks: IOccurrenceCheck[];
+    modules: any[];
   }>(),
   {}
 );
 const contextStore = useAppContextStore();
+
+const { isModuleEnabled } = useModuleEnabled(props.modules)
 
 const selected = ref(null);
 
@@ -155,14 +159,17 @@ const deleteBulkTransactions = () => {
         </section>
 
         <DashboardSpending :expenses="expenses" :spending-summary="spendingSummary" />
-        <MealWidget :meals="meals?.data" />
+        <MealWidget :meals="meals?.data" v-if="isModuleEnabled('meals')" />
       </section>
       <section class="py-6 space-y-4 md:w-3/12">
-        <OccurrenceWidget :checks="dynamicStore.checks" :wrap="true" />
+        <OccurrenceWidget
+            :checks="dynamicStore.checks"
+            :wrap="true"
+            v-if="isModuleEnabled('housing')" />
 
         <OnboardingSteps
           v-if="onboarding.steps"
-          class="mt-5"
+          :class="{'mt-5': isModuleEnabled('housing')}"
           :steps="onboarding.steps"
           :percentage="onboarding.percentage"
         />

@@ -6,7 +6,6 @@ use Inertia\Middleware;
 use Tightenco\Ziggy\Ziggy;
 use Illuminate\Http\Request;
 use App\Concerns\Facades\Menu;
-use Nwidart\Modules\Facades\Module;
 use Insane\Journal\Models\Core\Account;
 use App\Domains\AppCore\Models\Category;
 use Insane\Journal\Models\Core\AccountDetailType;
@@ -63,6 +62,7 @@ class HandleInertiaRequests extends Middleware
             'unreadNotifications' => function () use ($user) {
                 return $user ? $user->unreadNotifications->count() : 0;
             },
+            'modules' => $team ? $team->modules : [],
             'menu' => $menu,
             'balance' => $team ? $team->balance() : 0,
             'accounts' => $team ? Account::getByDetailTypes($team->id) : [],
