@@ -55,6 +55,7 @@ Route::group([], app_path('/Domains/Housing/routes.php'));
 Route::group([], app_path('/Domains/LogerProfile/routes.php'));
 Route::group([], app_path('/Domains/Transaction/routes.php'));
 Route::group([], app_path('/Domains/Budget/routes.php'));
+Route::group([], app_path('/Domains/Meal/routes.php'));
 
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
     Route::get('/', fn () => redirect('/dashboard'));
@@ -87,29 +88,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     Route::get('/integrations', IntegrationController::class)->name('settings.integrations');
     Route::post('/integrations/google', [IntegrationController::class, 'google'])->name('services.google');
 
-    /**************************************************************************************
-     *                                  Meal Section
-    ***************************************************************************************/
 
-    //  Meal related routes
-    Route::get('/meals/overview', MealController::class)->name('meals.overview');
-    Route::controller(MealController::class)->group(function () {
-        Route::resource('/meals', MealController::class);
-        Route::post('/meals/add-plan', 'addPlan')->name('meals.addPlan');
-        Route::get('/meals-random', 'random')->name('meals.random');
-    });
-
-    Route::controller(MealShoppingListController::class)->group(function () {
-        Route::get('/shopping-list', 'index')->name('meals.shoppingList');
-        Route::put('/shopping-list', 'update')->name('meals.shoppingList.update');
-        Route::post('/meals/{meal}/shopping-list', 'store')->name('meals.shoppingList.add');
-    });
-
-    Route::controller(IngredientController::class)->group(function () {
-        Route::resource('/ingredients', IngredientController::class);
-    });
-
-    Route::resource('/meal-planner', MealPlannerController::class);
 
     /**************************************************************************************
       *                               Finance Section

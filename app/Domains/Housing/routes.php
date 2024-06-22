@@ -6,7 +6,7 @@ use App\Domains\Housing\Contracts\OccurrenceNotifyTypes;
 use App\Domains\Housing\Http\Controllers\ProjectController;
 use App\Domains\Housing\Http\Controllers\OccurrenceController;
 
-Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
+Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', 'loger.concerns:housing'])->group(function () {
     Route::get('/housing', ProjectController::class)->name('housing.overview');
     Route::resource('/housing/occurrence', OccurrenceController::class);
 

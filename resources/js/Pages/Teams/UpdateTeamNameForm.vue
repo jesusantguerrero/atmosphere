@@ -8,16 +8,27 @@
 
     import { mapTeamFormServer, parseTeamForm } from "@/domains/app"
 
-    const props = defineProps(['team', 'permissions']);
+    const props = defineProps<{
+        team: any;
+        permissions: string[];
+        modules: any[]
+    }>();
     const form = useForm(mapTeamFormServer(props.team))
 
     function updateTeamName() {
-        form.transform((data) => {
+        form.transform((data: any) => {
             data.primary_currency_code = data.primary_currency_code?.code || data.primary_currency_code
-            return parseTeamForm(data)
+
+            return {
+                ...parseTeamForm(data),
+                modules: props.modules
+            }
         }).put(route('teams.update', props.team), {
             errorBag: 'updateTeamName',
-            preserveScroll: true
+            preserveScroll: true,
+            onSuccess: () => {
+
+            }
         });
     };
 </script>
@@ -35,6 +46,7 @@
                 class="col-span-6 sm:col-span-4"
                 :currencies="[]"
                 :timezones="[]"
+                :modules="modules"
                 :form-data="form"
             />
         </template>

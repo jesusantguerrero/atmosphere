@@ -1,3 +1,75 @@
+<script lang="ts" setup>
+    import { useForm, router } from '@inertiajs/vue3'
+    import { AtField } from "atmosphere-ui"
+    import { ref } from "vue";
+
+    import JetButton from '@/Components/atoms/Button.vue'
+    import JetFormSection from '@/Components/atoms/FormSection.vue'
+    import JetInput from '@/Components/atoms/Input.vue'
+    import JetInputError from '@/Components/atoms/InputError.vue'
+    import JetLabel from '@/Components/atoms/Label.vue'
+    import JetActionMessage from '@/Components/atoms/ActionMessage.vue'
+    import JetSecondaryButton from '@/Components/atoms/SecondaryButton.vue'
+    import LogerInput from '@/Components/atoms/LogerInput.vue'
+    import LogerButton from '@/Components/atoms/LogerButton.vue'
+
+    const props = defineProps<{
+        user: Object
+    }>();
+
+    const form = useForm({
+        _method: 'PUT',
+        name: props.user.name,
+        email: props.user.email,
+        photo: null,
+    });
+
+    const photoPreview = ref(null);
+
+    const updateProfileInformation = () => {
+        if (photo.value) {
+            form.photo.value = photo.value.files[0]
+        }
+
+        form.post(route('user-profile-information.update'), {
+            errorBag: 'updateProfileInformation',
+            preserveScroll: true,
+            onSuccess: () => (clearPhotoFileInput()),
+        });
+    };
+
+    const selectNewPhoto = () => {
+        photo.value.click();
+    };
+
+    const updatePhotoPreview = () => {
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+            photoPreview.value = e.target.result;
+        };
+
+        reader.readAsDataURL(photo.value.files[0]);
+    };
+
+    const deletePhoto = () => {
+        router.delete(route('current-user-photo.destroy'), {
+            preserveScroll: true,
+            onSuccess: () => {
+                photoPreview.value = null;
+                clearPhotoFileInput();
+            },
+        });
+    };
+
+    const clearPhotoFileInput = () => {
+        if (photo?.value?.value) {
+            photo.value.value = null;
+        }
+    };
+</script>
+
+
 <template>
     <JetFormSection
         title="Profile Information"
@@ -62,95 +134,10 @@
                 Saved.
             </JetActionMessage>
 
-            <JetButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+            <LogerButton :processing="form.processing">
                 Save
-            </JetButton>
+            </LogerButton>
         </template>
     </JetFormSection>
 </template>
 
-<script>
-    import JetButton from '@/Components/atoms/Button.vue'
-    import JetFormSection from '@/Components/atoms/FormSection.vue'
-    import JetInput from '@/Components/atoms/Input.vue'
-    import JetInputError from '@/Components/atoms/InputError.vue'
-    import JetLabel from '@/Components/atoms/Label.vue'
-    import JetActionMessage from '@/Components/atoms/ActionMessage.vue'
-    import JetSecondaryButton from '@/Components/atoms/SecondaryButton.vue'
-    import { AtField } from "atmosphere-ui"
-    import LogerInput from '@/Components/atoms/LogerInput.vue'
-    import { useForm, router } from '@inertiajs/vue3'
-
-    export default {
-        components: {
-            JetActionMessage,
-            JetButton,
-            JetFormSection,
-            JetInput,
-            JetInputError,
-            JetLabel,
-            JetSecondaryButton,
-            AtField,
-            LogerInput
-        },
-
-        props: ['user'],
-
-        data() {
-            return {
-                form: useForm({
-                    _method: 'PUT',
-                    name: this.user.name,
-                    email: this.user.email,
-                    photo: null,
-                }),
-
-                photoPreview: null,
-            }
-        },
-
-        methods: {
-            updateProfileInformation() {
-                if (this.$refs.photo) {
-                    this.form.photo = this.$refs.photo.files[0]
-                }
-
-                this.form.post(route('user-profile-information.update'), {
-                    errorBag: 'updateProfileInformation',
-                    preserveScroll: true,
-                    onSuccess: () => (this.clearPhotoFileInput()),
-                });
-            },
-
-            selectNewPhoto() {
-                this.$refs.photo.click();
-            },
-
-            updatePhotoPreview() {
-                const reader = new FileReader();
-
-                reader.onload = (e) => {
-                    this.photoPreview = e.target.result;
-                };
-
-                reader.readAsDataURL(this.$refs.photo.files[0]);
-            },
-
-            deletePhoto() {
-                router.delete(route('current-user-photo.destroy'), {
-                    preserveScroll: true,
-                    onSuccess: () => {
-                        this.photoPreview = null;
-                        this.clearPhotoFileInput();
-                    },
-                });
-            },
-
-            clearPhotoFileInput() {
-                if (this.$refs.photo?.value) {
-                    this.$refs.photo.value = null;
-                }
-            },
-        },
-    }
-</script>

@@ -3,9 +3,11 @@ import { ref, computed, watch } from "vue";
 // import Tracker from "./../timeTracker/tracker";
 
 const props = defineProps<{
-    task: Object;
-    tracker: Object;
+    task: Record<string, any>;
+    tracker: Record<string, any>;
 }>();
+
+const emit = defineEmits(['update-item', 'item-clicked', 'item-deleted'])
 
 const originalDuration = ref(null)
 
@@ -31,7 +33,7 @@ const priorityText = computed(() =>  {
         "medium": "🔥🔥",
         "low": "🔥"
     }
-    return props.task.value && emojis[props.task.priority] || "";
+    return props.task && emojis[props.task.priority] || "";
 })
 const updateTask = () => {
     emit('update-item', props.task)
@@ -43,7 +45,7 @@ const updateTask = () => {
     <div>
         <label class="checkbox-label">
             <span class="font-bold">
-            <Link :href="`/boards/${task.board_id}`">
+            <Link :href="`/plans/${task.board_id}`">
                 <span class="font-bold">
                     <i class="mx-2 fas fa-layer-group"></i>
                     {{ task.stage }}
@@ -62,21 +64,23 @@ const updateTask = () => {
             name=""
             class="checkbox-done"
             :id="task.id"
-            @change="updateTask(task)"
+            @change="updateTask()"
         />
-        <ElTooltip class="item" effect="dark" :content="task.priority || 'none'" placement="left">
-            <div class="inline-block ml-2 mr-4 priority-level">
-                <div class="priority-level__inner">
+        <section v-if="isTracker">
+            <ElTooltip class="item" effect="dark" :content="task.priority || 'none'" placement="left">
+                <div class="inline-block ml-2 mr-4 priority-level">
+                    <div class="priority-level__inner">
 
+                    </div>
                 </div>
-            </div>
-        </ElTooltip>
-        <span class="mr-2">
-            {{ durationFromMs }}
-        </span>
-        <button @click="$emit('item-clicked', task)" class="play-button" v-if="!task.commit_date">
-            <i class="fa" :class="[isTracker ? 'fa-pause' : 'fa fa-play']"/>
-        </button>
+            </ElTooltip>
+            <span class="mr-2">
+                {{ durationFromMs }}
+            </span>
+            <button @click="$emit('item-clicked', task)" class="play-button" v-if="!task.commit_date">
+                <i class="fa" :class="[isTracker ? 'fa-pause' : 'fa fa-play']"/>
+            </button>
+        </section>
 
         <button @click="$emit('item-deleted', task)" class="ml-2 text-gray-300 hover:text-red-400">
             <i class="fa fa-trash"/>

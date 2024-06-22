@@ -12,6 +12,7 @@ use Spatie\Onboard\Concerns\Onboardable;
 use Laravel\Jetstream\Events\TeamCreated;
 use Laravel\Jetstream\Events\TeamDeleted;
 use Laravel\Jetstream\Events\TeamUpdated;
+use App\Domains\AppCore\Models\CoreModule;
 use Spatie\Onboard\Concerns\GetsOnboarded;
 use Laravel\Jetstream\Team as JetstreamTeam;
 use App\Domains\Transaction\Models\Transaction;
@@ -63,6 +64,11 @@ class Team extends JetstreamTeam implements Onboardable
     public function timezone()
     {
         return $this->hasOne(Setting::class)->where(['name' => 'team_timezone']);
+    }
+
+    public function modules()
+    {
+        return $this->hasMany(CoreModule::class);
     }
 
     public function accounts()
@@ -127,5 +133,10 @@ class Team extends JetstreamTeam implements Onboardable
         ->selectRaw("sum(amount * transaction_lines.type) as balance, transaction_lines.account_id, accounts.name")
         ->groupBy('accounts.id')
         ->get();
+    }
+
+    public function isModuleEnabled(string $moduleName)
+    {
+        return count($this->modules->filter(fn ($module) => lcfirst($module->name) == lcfirst($moduleName) && $module->enabled));
     }
 }

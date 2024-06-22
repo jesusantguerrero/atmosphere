@@ -136,7 +136,6 @@ const onAssignBudget = () => {
                 preserveScroll: true
             });
         }
-        console.log("here?");
         isEditing.value = false;
     })
 }

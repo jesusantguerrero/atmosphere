@@ -2,10 +2,10 @@
 
 namespace Tests\Feature\Finance;
 
-use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
+use App\Models\User;
+use Inertia\Testing\AssertableInertia as Assert;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class BudgetTest extends TestCase
 {
@@ -17,10 +17,5 @@ class BudgetTest extends TestCase
         $this->actingAs($user);
 
         $this->get('/budgets');
-        // ->assertInertia(fn (Assert $page) => $page
-        // ->component('Finance/Budget')
-        // ->has('budgets')
-        // ->has('accounts')
-        // ->has('categories'));
     }
 }

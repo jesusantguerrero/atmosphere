@@ -41,8 +41,9 @@
     })
 
     const context = useAppContextStore()
+    const pageProps = usePage().props
 
-    const { appMenu, headerMenu, mobileMenu } = useAppMenu(t)
+    const { appMenu, headerMenu, mobileMenu } = useAppMenu(t, pageProps.modules)
     const serverMenu = computed(() => {
         return pageProps.menu
     })
@@ -69,7 +70,7 @@
         // }))
     });
 
-    const pageProps = usePage().props
+
     const sectionTitle = computed(() => {
         return props.title || pageProps.sectionTitle
     })
@@ -156,7 +157,7 @@
                                 @switch-team="switchToTeam"
                                 :full-height="true"
                                 @create="router.visit(route('teams.create'))"
-                                resource-name="Budget"
+                                resource-name="Space"
                             />
 
                             <!-- Settings Dropdown -->

@@ -115,8 +115,8 @@
 
             <!-- Add Team Member -->
             <JetFormSection
-                title="Add Budget Member"
-                description="Add a member to your budget, allowing them to collaborate with you."
+                title="Add Space Member"
+                description="Add a member to your space, allowing them to collaborate with you."
                 @submitted="addTeamMember"
             >
                 <template #form>

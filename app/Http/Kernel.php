@@ -68,5 +68,6 @@ class Kernel extends HttpKernel
         'atmosphere.unteamed' => \Freesgen\Atmosphere\Http\Middleware\EnsureHasNoTeam::class,
         'treasurer.biller' => \Insane\Treasurer\Http\Middleware\EnsureIsBiller::class,
         'treasurer.subscribed' => \Insane\Treasurer\Http\Middleware\Subscribed::class,
+        'loger.concerns' => \App\Http\Middleware\EnsureCoreModulePermissions::class
     ];
 }

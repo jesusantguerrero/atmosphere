@@ -2,11 +2,12 @@
 
 namespace App\Listeners;
 
-use App\Actions\Loger\CreateDefaultMealTypes;
-use App\Domains\Journal\Actions\AccountCatalogCreate;
-use App\Domains\Journal\Actions\TransactionCategoriesCreate;
 use Carbon\Carbon;
 use Laravel\Jetstream\Events\TeamCreated;
+use App\Actions\Loger\CreateDefaultMealTypes;
+use App\Domains\AppCore\Data\CoreModuleTypeEnum;
+use App\Domains\Journal\Actions\AccountCatalogCreate;
+use App\Domains\Journal\Actions\TransactionCategoriesCreate;
 
 class CreateTeamSettings
 {
@@ -36,6 +37,7 @@ class CreateTeamSettings
         if ($team->personal_team) {
             $this->setTrialPeriod($team);
         }
+        $this->setAvailableModules($team);
     }
 
     public function setTrialPeriod($team)
@@ -45,5 +47,18 @@ class CreateTeamSettings
         $formattedDate = $date->format('Y-m-d');
         $team->trial_ends_at = $formattedDate;
         $team->save();
+    }
+
+    public function setAvailableModules($team)
+    {
+        foreach (CoreModuleTypeEnum::cases() as $module) {
+            $team->modules()->create([
+                "user_id" => $team->user_id,
+                "name" => $module->name,
+                "alias" => ucfirst($module->name),
+                "enabled" => true,
+                "created_from" => "app:console",
+            ]);
+        }
     }
 }

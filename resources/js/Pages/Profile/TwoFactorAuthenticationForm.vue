@@ -1,97 +1,29 @@
-<template>
-    <jet-action-section
-        title="Two Factor Authentication"
-        description="Add additional security to your account using two factor authentication.">
-        <template #content>
-            <h3 class="text-lg font-medium" >
-                {{ titleLabel }}
-            </h3>
+<script setup lang="ts">
+    import { router, usePage, useForm } from '@inertiajs/vue3'
+    import { computed, reactive, watch } from 'vue'
 
-            <div class="mt-3 max-w-xl text-sm text-body-1">
-                <p>
-                    When two factor authentication is enabled, you will be prompted for a secure, random token during authentication. You may retrieve this token from your phone's Google Authenticator application.
-                </p>
-            </div>
-
-            <div v-if="twoFactorEnabled">
-                <div v-if="qrCode">
-                    <div class="mt-4 max-w-xl text-sm text-gray-600">
-                        <p class="font-semibold">
-                            Two factor authentication is now enabled. Scan the following QR code using your phone's authenticator application.
-                        </p>
-                    </div>
-
-                    <div class="mt-4 dark:p-4 dark:w-56 dark:bg-base-lvl-1" v-html="qrCode">
-                    </div>
-                </div>
-
-                <div v-if="recoveryCodes.length > 0">
-                    <div class="mt-4 max-w-xl text-sm text-gray-600">
-                        <p class="font-semibold">
-                            Store these recovery codes in a secure password manager. They can be used to recover access to your account if your two factor authentication device is lost.
-                        </p>
-                    </div>
-
-                    <div class="grid gap-1 max-w-xl mt-4 px-4 py-4 font-mono text-sm bg-gray-100 rounded-lg">
-                        <div v-for="code in recoveryCodes" :key="code">
-                            {{ code }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mt-5">
-                <div v-if="! twoFactorEnabled">
-                    <jet-confirms-password @confirmed="enableTwoFactorAuthentication">
-                        <jet-button type="button" :class="{ 'opacity-25': enabling }" :disabled="enabling">
-                            Enable
-                        </jet-button>
-                    </jet-confirms-password>
-                </div>
-
-                <div v-else>
-                    <jet-confirms-password @confirmed="regenerateRecoveryCodes">
-                        <jet-secondary-button class="mr-3"
-                                        v-if="recoveryCodes.length > 0">
-                            Regenerate Recovery Codes
-                        </jet-secondary-button>
-                    </jet-confirms-password>
-
-                    <jet-confirms-password @confirmed="showRecoveryCodes">
-                        <jet-secondary-button class="mr-3" v-if="recoveryCodes.length === 0">
-                            Show Recovery Codes
-                        </jet-secondary-button>
-                    </jet-confirms-password>
-
-                    <jet-confirms-password @confirmed="disableTwoFactorAuthentication">
-                        <jet-danger-button
-                                        :class="{ 'opacity-25': disabling }"
-                                        :disabled="disabling">
-                            Disable
-                        </jet-danger-button>
-                    </jet-confirms-password>
-                </div>
-            </div>
-        </template>
-    </jet-action-section>
-</template>
-
-<script setup>
-    import JetActionSection from '@/Components/atoms/ActionSection.vue'
+    import ActionSection from '@/Components/atoms/ActionSection.vue'
     import JetButton from '@/Components/atoms/Button.vue'
+    import LogerButton from "@/Components/atoms/LogerButton.vue";
     import JetConfirmsPassword from '@/Components/atoms/ConfirmsPassword.vue'
     import JetDangerButton from '@/Components/atoms/DangerButton.vue'
     import JetSecondaryButton from '@/Components/atoms/SecondaryButton.vue'
-    import { router } from '@inertiajs/vue3'
-    import { usePage } from '@inertiajs/vue3'
-    import { computed, reactive } from 'vue'
+
+    const props = defineProps<{
+        requiresConfirmation: boolean,
+    }>();
 
     const state = reactive({
-            enabling: false,
-            disabling: false,
+        enabling: false,
+        confirming: false,
+        disabling: false,
+        qrCode: null,
+        setupKey: null,
+        recoveryCodes: [],
+    });
 
-            qrCode: null,
-            recoveryCodes: [],
+    const confirmationForm = useForm({
+        code: '',
     });
 
     const enableTwoFactorAuthentication = () => {
@@ -101,9 +33,13 @@
             preserveScroll: true,
             onSuccess: () => Promise.all([
                 showQrCode(),
+                showSetupKey(),
                 showRecoveryCodes(),
             ]),
-            onFinish: () => (state.enabling = false),
+            onFinish: () => {
+                state.enabling = false
+                state.confirming = props.requiresConfirmation;
+            },
         })
     }
 
@@ -112,6 +48,12 @@
         .then(response => {
             state.qrCode = response.data.svg
         })
+    }
+
+    const showSetupKey = () => {
+        return axios.get(route('two-factor.secret-key')).then(response => {
+            state.setupKey = response.data.secretKey;
+        });
     }
 
     const showRecoveryCodes = () => {
@@ -128,6 +70,19 @@
             })
     }
 
+    const confirmTwoFactorAuthentication = () => {
+        confirmationForm.post(route('two-factor.confirm'), {
+            errorBag: "confirmTwoFactorAuthentication",
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: () => {
+                state.confirming = false;
+                state.qrCode = null;
+                state.setupKey = null;
+            },
+        });
+    };
+
     const disableTwoFactorAuthentication = () => {
         state.disabling = true
 
@@ -137,11 +92,126 @@
         })
     }
 
-    const pageProps = usePage().props;
-    const twoFactorEnabled = computed(() => {
-        return ! state.enabling && pageProps.user.two_factor_enabled
+    const page = usePage();
+
+    const isTwoFactorEnabled = computed(() => {
+        return !state.enabling && page.props.user.two_factor_enabled
     })
+
+    watch(isTwoFactorEnabled, () => {
+        if (!isTwoFactorEnabled.value) {
+            confirmationForm.reset();
+            confirmationForm.clearErrors();
+        }
+    });
     const titleLabel = computed(() => {
-        return twoFactorEnabled.value ? "You have enabled two factor authentication." : " You have not enabled two factor authentication."
+        return isTwoFactorEnabled.value ? "You have enabled two factor authentication." : " You have not enabled two factor authentication."
     })
 </script>
+
+
+<template>
+    <ActionSection
+        title="Two Factor Authentication"
+        description="Add additional security to your account using two factor authentication."
+
+    >
+        <template #content>
+            <h3 v-if="isTwoFactorEnabled && state.confirming" class="text-lg font-medium text-gray-900">
+                Finish enabling two factor authentication.
+            </h3>
+            <h3 class="text-lg font-medium" v-else>
+                {{ titleLabel }}
+            </h3>
+
+            <div class="mt-3 max-w-xl text-sm text-body-1">
+                <p>
+                    When two factor authentication is enabled, you will be prompted for a secure, random token during authentication. You may retrieve this token from your phone's Google Authenticator application.
+                </p>
+            </div>
+
+            <div v-if="isTwoFactorEnabled">
+                <section v-if="state.qrCode">
+                    <div class="mt-4 max-w-xl text-sm text-gray-600">
+                        <p v-if="confirming" class="font-semibold">
+                            To finish enabling two factor authentication, scan the following QR code using your phone's authenticator application or enter the setup key and provide the generated OTP code.
+                        </p>
+                        <p v-else class="font-semibold">
+                            Two factor authentication is now enabled. Scan the following QR code using your phone's authenticator application.
+                        </p>
+                    </div>
+
+                    <div class="mt-4 dark:p-4 dark:w-56 dark:bg-base-lvl-1" v-html="state.qrCode" />
+
+                    <div v-if="confirming" class="mt-4">
+                        <AtField field="code" label="Code"
+                            :errors="confirmationForm.errors"
+                        >
+                            <LogerInput
+                                id="code"
+                                v-model="confirmationForm.code"
+                                type="text"
+                                name="code"
+                                class="block w-1/2 mt-1"
+                                inputmode="numeric"
+                                autofocus
+                                autocomplete="one-time-code"
+                                @keyup.enter="confirmTwoFactorAuthentication"
+                            />
+                        </AtField>
+                    </div>
+                </section>
+
+                <div v-if="state.recoveryCodes.length > 0 && !state.confirming">
+                    <div class="mt-4 max-w-xl text-sm text-gray-600">
+                        <p class="font-bold">
+                            Store these recovery codes in a secure password manager. They can be used to recover access to your account if your two factor authentication device is lost.
+                        </p>
+                    </div>
+
+                    <div class="grid gap-1 max-w-xl mt-4 px-4 py-4 font-mono text-sm bg-gray-100 rounded-lg">
+                        <div v-for="code in state.recoveryCodes" :key="code">
+                            {{ code }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-5">
+                <section v-if="!isTwoFactorEnabled">
+                    <JetConfirmsPassword @confirmed="enableTwoFactorAuthentication">
+                        <LogerButton type="button" :processing="state.enabling" variant="secondary">
+                            Enable
+                        </LogerButton>
+                    </JetConfirmsPassword>
+                </section>
+
+                <div v-else>
+                    <footer class="flex">
+                        <JetConfirmsPassword @confirmed="regenerateRecoveryCodes">
+                            <LogerButton class="mr-3" variant="neutral"
+                                v-if="state.recoveryCodes.length > 0">
+                                Regenerate Recovery Codes
+                            </LogerButton>
+                        </JetConfirmsPassword>
+
+                        <JetConfirmsPassword @confirmed="showRecoveryCodes">
+                            <LogerButton class="mr-3" v-if="state.recoveryCodes.length === 0" variant="neutral">
+                                Show Recovery Codes
+                            </LogerButton>
+                        </JetConfirmsPassword>
+
+                        <JetConfirmsPassword @confirmed="disableTwoFactorAuthentication">
+                            <LogerButton
+                                :processing="state.disabling"
+                                variant="error"
+                            >
+                                Disable
+                            </LogerButton>
+                        </JetConfirmsPassword>
+                    </footer>
+                </div>
+            </div>
+        </template>
+    </ActionSection>
+</template>

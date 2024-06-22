@@ -413,13 +413,13 @@ class TransactionService
             ->toArray();
     }
 
-    public static function getIncomeByPayeeInPeriod($teamId, $startDate, $endDate)
+    public static function getIncomeByPayeeInPeriod($teamId, $startDate, $endDate, $direction = Transaction::DIRECTION_DEBIT)
     {
         return DB::table('payees')
             ->selectRaw('sum(COALESCE(total,0)) as total, date_format(transactions.date, "%Y-%m-01") as date, payees.name, payees.id')
             ->where([
                 'payees.team_id' => $teamId,
-                'transactions.direction' => Transaction::DIRECTION_DEBIT,
+                'transactions.direction' => $direction,
                 'transactions.status' => 'verified',
             ])
             ->whereBetween('transactions.date', [$startDate, $endDate])

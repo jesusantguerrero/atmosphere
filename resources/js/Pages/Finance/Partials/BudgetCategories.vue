@@ -29,7 +29,6 @@ const {
   visibleCategories,
   filters,
   setSelectedBudget,
-
 } = useBudget(budgets);
 
 const categoryForm = useForm({

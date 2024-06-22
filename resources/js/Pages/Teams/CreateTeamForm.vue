@@ -2,14 +2,14 @@
     import { router } from '@inertiajs/vue3'
     import { AtField } from "atmosphere-ui";
 
-    import JetButton from '@/Components/atoms/Button.vue'
     import JetFormSection from '@/Components/atoms/FormSection.vue'
-    import JetInput from '@/Components/atoms/Input.vue'
-    import JetInputError from '@/Components/atoms/InputError.vue'
-    import JetLabel from '@/Components/atoms/Label.vue'
     import TeamForm from '../Onboarding/TeamForm.vue'
     import LogerButton from '@/Components/atoms/LogerButton.vue'
     import ProfilePicture from './ProfilePicture.vue'
+
+    defineProps<{
+        modules: []
+    }>();
 
     const form = router.form({
         name: '',
@@ -47,6 +47,7 @@
                 :timezones="timezones"
                 :currencies="currencies"
                 :formData="form"
+                :modules="modules"
             />
         </template>
 

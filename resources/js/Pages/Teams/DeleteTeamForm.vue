@@ -1,5 +1,5 @@
 <template>
-    <JetActionSection title="Delete Budget" description="Permanently delete this budget space.">
+    <JetActionSection title="Delete Space" description="Permanently delete this budget space.">
         <template #content>
             <div class="max-w-xl text-sm text-gray-600">
                 Once a team is deleted, all of its resources and data will be permanently deleted. Before deleting this team, please download any data or information regarding this team that you wish to retain.
@@ -7,18 +7,18 @@
 
             <div class="mt-5">
                 <JetDangerButton @click="confirmTeamDeletion">
-                    Delete Budget
+                    Delete Space
                 </JetDangerButton>
             </div>
 
             <!-- Delete Team Confirmation Modal -->
             <JetConfirmationModal :show="confirmingTeamDeletion" @close="confirmingTeamDeletion = false">
                 <template #title>
-                    Delete Budget
+                    Delete Space
                 </template>
 
                 <template #content>
-                    Are you sure you want to delete this team? Once a budget space is deleted, all of its resources and data will be permanently deleted.
+                    Are you sure you want to delete this space? Once a space is deleted, all of its resources and data will be permanently deleted.
                 </template>
 
                 <template #footer>
@@ -26,9 +26,9 @@
                         Cancel
                     </jet-secondary-button>
 
-                    <jet-danger-button class="ml-2" @click="deleteTeam" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                        Delete Budget
-                    </jet-danger-button>
+                    <JetDangerButton class="ml-2" @click="deleteTeam" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+                        Delete space
+                    </JetDangerButton>
                 </template>
             </JetConfirmationModal>
         </template>
@@ -37,7 +37,7 @@
 
 <script lang="ts">
     import { useForm } from '@inertiajs/vue3'
-    
+
     import JetActionSection from '@/Components/atoms/ActionSection.vue'
     import JetConfirmationModal from '@/Components/atoms/ConfirmationModal.vue'
     import JetDangerButton from '@/Components/atoms/DangerButton.vue'

@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Freesgen\Atmosphere\Http\Querify;
+use Insane\Journal\Models\Core\Transaction;
 use App\Domains\Transaction\Services\ReportService;
 use App\Domains\Transaction\Services\TransactionService;
 
@@ -112,10 +113,11 @@ class FinanceTrendController extends Controller
         $queryParams = $request->query();
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
         [$startDate, $endDate] = $this->getFilterDates($filters);
+        $direction = $filters['expenses'] ? Transaction::DIRECTION_CREDIT : Transaction::DIRECTION_DEBIT;
 
         $teamId = $request->user()->current_team_id;
 
-        $data = TransactionService::getIncomeByPayeeInPeriod($teamId, $startDate, $endDate);
+        $data = TransactionService::getIncomeByPayeeInPeriod($teamId, $startDate, $endDate, $direction);
 
         return [
             'data' => $data,

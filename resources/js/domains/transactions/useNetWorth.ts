@@ -4,7 +4,7 @@ export interface INetWorthEntry { assets: string, debts: string }
 export const useNetWorth = (netWorthData: Ref<INetWorthEntry[]>) => {
 
     const getEntryBalance = (monthEntry: INetWorthEntry = {  assets: "0", debts: "0"}) => {
-        return parseFloat(monthEntry.assets) + parseFloat(monthEntry.debts) ?? 0;
+        return parseFloat(monthEntry.assets) + parseFloat(monthEntry.debts);
     };
 
     const lastMonth = computed(() => {
