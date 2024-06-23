@@ -9,6 +9,7 @@ use Freesgen\Atmosphere\Http\Querify;
 use Insane\Journal\Models\Core\Transaction;
 use App\Domains\Transaction\Services\ReportService;
 use App\Domains\Transaction\Services\TransactionService;
+use App\Domains\Transaction\Services\CreditCardReportService;
 
 class FinanceTrendController extends Controller
 {
@@ -51,7 +52,7 @@ class FinanceTrendController extends Controller
         ]
     ];
 
-    public function __construct(private ReportService $reportService)
+    public function __construct(private ReportService $reportService, private CreditCardReportService $creditCardService)
     {
 
     }
@@ -267,7 +268,7 @@ class FinanceTrendController extends Controller
         [$startDate, $endDate] = $this->getFilterDates($filters);
 
         return [
-            'data' => $this->reportService->creditCards($teamId, $endDate),
+            'data' => $this->creditCardService->creditCards($teamId, $endDate),
             'metaData' => [
                 'name' => 'creditCards',
                 'title' => 'Credit Card Report',
