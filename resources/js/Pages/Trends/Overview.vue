@@ -8,6 +8,7 @@ import AppLayout from "@/Components/templates/AppLayout.vue";
 import ChartNetWorth from "@/Components/ChartNetworth.vue";
 import IncomeExpenses from "@/Components/IncomeExpenses.vue";
 
+import { trendOptions } from "./Partials/trendOptions";
 import TrendTemplate from "./Partials/TrendTemplate.vue";
 import TrendSectionNav from "./Partials/TrendSectionNav.vue";
 import ChartComparison from "@/Components/widgets/ChartComparison.vue";
@@ -53,36 +54,7 @@ const handleSelection = (index: number) => {
     }
 }
 
-const trends = [
-    {
-        label: 'Spending',
-        url: '/trends'
-    },
-    {
-        label: 'Income',
-        url: '/trends/payees'
-    },
-    {
-        label: 'Net Worth',
-        url: '/trends/net-worth'
-    },
-    {
-        label: 'Income v Expenses',
-        url: '/trends/income-expenses'
-    },
-    {
-        label: 'Income vs Expenses Graph',
-        url: '/trends/income-expenses-graph'
-    },
-    {
-        label: 'Year spending',
-        url: '/trends/spending-year'
-    },
-    {
-        label: 'Year assigned',
-        url: '/trends/assigned-year'
-    }
-]
+
 
 const components = {
     groups: ExpenseChartWidget,
@@ -130,7 +102,7 @@ const isFilterSelected = (filterValue: string) => {
 <template>
   <AppLayout :title="metaData.title">
     <template #header>
-      <TrendSectionNav :sections="trends">
+      <TrendSectionNav :sections="trendOptions">
         <template #actions>
                 <AtDatePager
                     class="w-full h-12 border-none bg-base-lvl-1 text-body"
@@ -150,6 +122,7 @@ const isFilterSelected = (filterValue: string) => {
     </template>
 
     <TrendTemplate title="Finance" ref="financeTemplateRef" :hide-panel="true">
+        {{ metaData }}
         <component
             class="mt-5"
             v-if="isYearSpending"

@@ -3,7 +3,6 @@ import { ref, computed, onMounted } from "vue";
 import { ITransaction } from "@/domains/transactions/models";
 import axios from "axios";
 import WidgetTitleCard from "@/Components/molecules/WidgetTitleCard.vue";
-import { useTransactionStore } from "@/store/transactions";
 import { useI18n } from "vue-i18n";
 import { formatMoney } from "@/utils";
 import BudgetProgress from "@/domains/budget/components/BudgetProgress.vue";

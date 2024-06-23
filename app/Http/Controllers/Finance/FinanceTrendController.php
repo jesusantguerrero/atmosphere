@@ -44,6 +44,10 @@ class FinanceTrendController extends Controller
         ],
         'year-summary' => [
             "handler" => 'yearSummary',
+        ],
+        'credit-cards' => [
+            "template" => "Trends/CreditCards",
+            "handler" => 'creditCards',
         ]
     ];
 
@@ -82,6 +86,7 @@ class FinanceTrendController extends Controller
             'data' => TransactionService::getCategoryExpensesGroup($teamId, $startDate, $endDate),
             'metaData' => [
                 'title' => 'Category Group Trends',
+                'name' => 'group'
             ],
         ];
     }
@@ -104,6 +109,7 @@ class FinanceTrendController extends Controller
                 'title' => $parentName.'Category Trends',
                 'parent_id' => $hasData ? $data[0]?->parent_id : null,
                 'parent_name' => $hasData ? $data[0]?->parent_name : null,
+                'name' => 'categories'
             ],
         ];
     }
@@ -113,7 +119,7 @@ class FinanceTrendController extends Controller
         $queryParams = $request->query();
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
         [$startDate, $endDate] = $this->getFilterDates($filters);
-        $direction = $filters['expenses'] ? Transaction::DIRECTION_CREDIT : Transaction::DIRECTION_DEBIT;
+        $direction = isset($filters['expenses']) ? Transaction::DIRECTION_CREDIT : Transaction::DIRECTION_DEBIT;
 
         $teamId = $request->user()->current_team_id;
 
@@ -123,6 +129,7 @@ class FinanceTrendController extends Controller
             'data' => $data,
             'metaData' => [
                 'title' => 'Payee Trends',
+                'name' => 'payee'
             ],
         ];
     }
@@ -248,6 +255,22 @@ class FinanceTrendController extends Controller
             'metaData' => [
                 'name' => 'yearSummary',
                 'title' => 'Results of the year',
+            ],
+        ];
+    }
+
+    public function creditCards()
+    {
+        $teamId = request()->user()->current_team_id;
+        $queryParams = request()->query();
+        $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
+        [$startDate, $endDate] = $this->getFilterDates($filters);
+
+        return [
+            'data' => $this->reportService->creditCards($teamId, $endDate),
+            'metaData' => [
+                'name' => 'creditCards',
+                'title' => 'Credit Card Report',
             ],
         ];
     }

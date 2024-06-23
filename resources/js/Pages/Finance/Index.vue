@@ -173,7 +173,7 @@ const deleteBulkTransactions = () => {
       </FinanceSectionNav>
     </template>
 
-    <FinanceTemplate title="Finance" :accounts="accounts" ref="financeTemplateRef">
+    <FinanceTemplate title="Finance" :accounts="accounts" ref="financeTemplateRef" :fixed="false">
       <section class="mt-4 space-y-4">
             <WidgetTitleCard title="Summary" class="w-full">
                 <div
