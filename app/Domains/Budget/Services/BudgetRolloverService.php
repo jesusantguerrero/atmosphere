@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Account;
 use Insane\Journal\Models\Core\Category;
 use App\Domains\Budget\Models\BudgetMonth;
-use App\Domains\Budget\Data\BudgetAssignData;
 use App\Domains\Budget\Data\BudgetReservedNames;
 use Insane\Journal\Models\Core\AccountDetailType;
 

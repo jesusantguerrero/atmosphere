@@ -11,34 +11,28 @@ import { trendOptions } from "./Partials/trendOptions";
 import TrendTemplate from "./Partials/TrendTemplate.vue";
 import TrendSectionNav from "./Partials/TrendSectionNav.vue";
 import ChartComparison from "@/Components/widgets/ChartComparison.vue";
+import ChartTopCreditCard from "@/Components//ChartTopCreditCard.vue";
 
 
 import { useServerSearch } from "@/composables/useServerSearch";
 import AccountFilters from "@/domains/transactions/components/AccountFilters.vue";
+import CreditCardRewardsWidget from "@/domains/transactions/components/CreditCardRewardsWidget.vue";
 import { formatMoney } from "@/utils";
 
-const props = defineProps({
-  user: {
-    type: Object,
-    required: true,
-  },
-  data: {
-    type: Array,
-    default() {
-      return [];
-    },
-  },
-  metaData: {
-    type: Object
-  },
-  serverSearchOptions: {
-    type: Object,
-    default: () => ({}),
-  },
-  section: {
-    type: String
-  }
-});
+const props = withDefaults(defineProps<{
+    user: Record<string, any>;
+    data: {
+        lastCycleBalances: any[];
+        billingCyclesByCard: {
+            data: any[];
+        }
+    };
+   metaData: Record<string, any>;
+   serverSearchOptions: Record<string, any>;
+    section: string;
+}>(), ({
+  serverSearchOptions: () => ({}),
+}));
 
 const { serverSearchOptions } = toRefs(props);
 const {state: pageState, executeSearchWithDelay } = useServerSearch(serverSearchOptions, {
@@ -91,13 +85,28 @@ const {state: pageState, executeSearchWithDelay } = useServerSearch(serverSearch
                 />
             </header>
             <ChartComparison
-                class="w-full mt-4 mb-10 overflow-hidden bg-white rounded-lg"
+                class="w-full mt-4  overflow-hidden bg-white rounded-lg"
                 :title="$t('Credit card spenses')"
                 ref="ComparisonRevenue"
                 :data="data.lastCycleBalances"
                 :header-title-date="false"
                 :data-item-label="(item: any) => {item.name}"
             />
+
+            <section class="mt-4 flex space-x-4">
+                <section class="w-4/12">
+                    <CreditCardRewardsWidget
+                        :legend="true"
+                        :credit-card-data="data.billingCyclesByCard.data"
+                    />
+                </section>
+                <section class="w-8/12">
+                    <ChartTopCreditCard
+                        class="bg-white rounded-md overflow-hidden"
+                        :data="data.topCategoriesByCard"
+                    />
+                </section>
+            </section>
         </article>
     </TrendTemplate>
   </AppLayout>

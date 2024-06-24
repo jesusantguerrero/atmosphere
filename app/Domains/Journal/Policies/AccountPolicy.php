@@ -3,8 +3,8 @@
 namespace App\Domains\Journal\Policies;
 
 use App\Models\User;
-use Illuminate\Auth\Access\HandlesAuthorization;
 use Insane\Journal\Models\Core\Account;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class AccountPolicy
 {
@@ -32,6 +32,7 @@ class AccountPolicy
 
     public function delete(User $user, Account $account)
     {
+        dd($account);
         return $user->team_id == $account->team_id;
     }
 }

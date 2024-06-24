@@ -31,6 +31,6 @@ class FinanceAccountPolicy
     public function delete(User $user, Account $account)
     {
 
-        return $user->id == $account->user_id;
+        return $user->current_team_id == $account->team_id;
     }
 }

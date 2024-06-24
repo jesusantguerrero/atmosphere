@@ -1,6 +1,6 @@
 
 <script setup lang="ts">
-import { generateRandomColor } from "@/utils";
+import { nameToColor} from "@/utils";
 import { Chart, registerables } from "chart.js/auto";
 import { computed, ref, toRefs } from "vue";
 import { Doughnut as DoughnutChart } from "vue-chartjs";
@@ -38,7 +38,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits("clicked");
+const emit = defineEmits(["clicked"]);
 
 const { series } = toRefs(props);
 
@@ -48,7 +48,7 @@ const chartData = computed(() => {
     datasets: [
       {
         data: series.value.map((item) => item[props.value]),
-        backgroundColor: series.value.map((item) => item.color || generateRandomColor()),
+        backgroundColor: series.value.map((item) => item.color || nameToColor(item[props.label])),
         borderJoinStyle: "mittr",
       },
     ],
@@ -63,6 +63,7 @@ const options = computed(() => ({
         position: props.legendPosition,
       },
     }),
+    responsive: true,
     title: {
       display: props.title,
       text: props.title,
@@ -81,7 +82,11 @@ const options = computed(() => ({
 
 <template>
     <div class="relative">
-      <DoughnutChart ref="chartRef" :data="chartData" :options="options" />
+      <DoughnutChart
+        ref="chartRef"
+        :data="chartData"
+        :options="options"
+       />
       <div class="absolute">
         {{ total }}
       </div>

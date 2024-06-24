@@ -163,3 +163,17 @@ export const getRangeData = (range: RangeValue[]|null, direction = 'back') => {
     }
     return rangeData;
 }
+
+export const nameToColor = (name: string) => {
+    let hash = 0;
+    for (let i = 0; i < name?.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const color = Math.abs(hash).toString(16).substring(0, 6);
+    return "#" + "0".repeat(6 - color.length) + color; // pad with zeros if necessary
+  }
+
+  export const getOrGenerateColor = (index: number, name: string) => {
+    const colors = ["#00C4B3", "#5B5293", "#FFB4AA"]
+    return colors[index] ?? nameToColor(name);
+  }
