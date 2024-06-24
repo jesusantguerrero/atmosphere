@@ -9,6 +9,7 @@ use App\Domains\Budget\Http\Controllers\BudgetMatchAccountController;
 
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
     Route::resource('/budgets', BudgetCategoryController::class);
+    Route::get('/budget-alerts', [BudgetCategoryController::class, 'budgetAlerts'])->name('budget-alerts');
     Route::controller(BudgetTargetController::class)->group(function () {
         Route::post('/budgets/{category}/targets/', 'store')->name('budget.target.store');
         Route::put('/budgets/{category}/targets/{budgetTarget}', 'update')->name('budget.target.update');

@@ -91,7 +91,7 @@ const handleOptions = (option: 'remove'|'selected') => {
       allowSelect &&
         'cursor-pointer hover:bg-base-lvl-3 border-2 border-transparent hover:border-primary',
       isSelected
-        ? 'odd:bg-primary-100 even:bg-primary'
+        ? 'odd:bg-primary/20 even:bg-primary/10'
         : 'odd:bg-base-lvl-2 even:bg-base-lvl-1',
     ]"
   >

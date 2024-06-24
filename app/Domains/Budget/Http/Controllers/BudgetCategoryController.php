@@ -67,6 +67,17 @@ class BudgetCategoryController extends InertiaController
         ]);
     }
 
+    protected function budgetAlerts() {
+        $queryParams = request()->query();
+        $teamId = auth()->user()->current_team_id;
+        $settings = Setting::getByTeam($teamId);
+        $timeZone = $settings['team_timezone'] ?? config('app.timezone');
+        $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
+        [$startDate] = $this->getFilterDates($filters, $timeZone);
+
+        return BudgetMonth::getMonthOverspendingCategories($teamId, $startDate);
+    }
+
     public function show(int $categoryId)
     {
         $queryParams = request()->query();

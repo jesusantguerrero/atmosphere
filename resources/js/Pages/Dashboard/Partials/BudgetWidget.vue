@@ -7,10 +7,12 @@ import { ElTooltip } from 'element-plus';
 
 import WidgetTitleCard from '@/Components/molecules/WidgetTitleCard.vue';
 import BudgetProgress from '@/domains/budget/components/BudgetProgress.vue';
+import PointAlert from "@/Components/atoms/PointAlert.vue";
 
 import { formatMoney } from '@/utils';
 import { IBudgetStat } from '@/domains/budget/models/budget';
 import { getVariances } from '@/domains/transactions';
+import axios from 'axios';
 
 interface Stat {
     label: string;
@@ -114,6 +116,17 @@ const variance = computed(() => {
     return getVariances(currentBudget.value.total, prevBudget.value.total)
 })
 
+const fetchBudgetAlerts = async () => {
+    return axios.get(`/budget-alerts`).then<Record<string, string>>(({ data }) => {
+        return data;
+    })
+}
+const alerts = ref<Record<string, string>>({})
+const hasAlerts = computed(() => Object.values(alerts.value).length)
+fetchBudgetAlerts().then(data => {
+    alerts.value = data;
+});
+
 </script>
 
 <template>
@@ -204,7 +217,13 @@ const variance = computed(() => {
         </section>
 
         <template #icon>
-            <IMdiCheck />
+            <ElTooltip effect="dark" :content="`Your budget has ${hasAlerts} overspent categories`" placement="top" v-if="hasAlerts">
+            <div class="cursor-pointer relative"  @click="router.visit('/budgets?custom[mode]=overspent')">
+                <IMdiBell />
+                <PointAlert />
+            </div>
+            </ElTooltip>
+            <IMdiCheck v-else />
         </template>
     </WidgetTitleCard>
 </template>
