@@ -71,7 +71,7 @@ const trendComponent = computed(() => {
 })
 
 const isCategoryTrend = computed(() => {
-    return ['group', 'categories', 'payees'].includes(props.metaData.name)
+    return ['group', 'categories', 'payee'].includes(props.metaData.name)
 })
 
 
@@ -122,7 +122,6 @@ const isFilterSelected = (filterValue: string) => {
     </template>
 
     <TrendTemplate title="Finance" ref="financeTemplateRef" :hide-panel="true">
-        {{ metaData }}
         <component
             class="mt-5"
             v-if="isYearSpending"

@@ -21,10 +21,10 @@ const sections = [
         label: 'Emergency Fund Builder',
         url: `/budget-funds/`
     },
-    // {
-    //     label: 'Integrations',
-    //     url: '/integrations'
-    // },
+    {
+        label: 'Integrations',
+        url: '/integrations'
+    },
     ]
 </script>
 

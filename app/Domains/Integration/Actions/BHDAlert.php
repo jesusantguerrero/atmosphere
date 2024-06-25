@@ -2,11 +2,10 @@
 
 namespace App\Domains\Integration\Actions;
 
+use Symfony\Component\DomCrawler\Crawler;
 use App\Domains\Automation\Models\Automation;
 use App\Domains\Integration\Concerns\MailToTransaction;
 use App\Domains\Integration\Concerns\TransactionDataDTO;
-use App\Domains\Transaction\Services\BHDService;
-use Symfony\Component\DomCrawler\Crawler;
 
 class BHDAlert implements MailToTransaction
 {
@@ -22,7 +21,7 @@ class BHDAlert implements MailToTransaction
         });
 
         $total = (int) str_replace(',', '', $tdValues[2]);
-        $type = BHDService::parseTypes(strtolower($tdValues[5])) ?? 1;
+        $type = BHD::parseTypes(strtolower($tdValues[5])) ?? 1;
 
         return new TransactionDataDTO([
             'id' => (int) $mail['id'],
@@ -32,7 +31,7 @@ class BHDAlert implements MailToTransaction
             'categoryGroup' => '',
             'description' => $product,
             'amount' => $total * $type,
-            'currencyCode' => BHDService::parseCurrency($tdValues[1]),
+            'currencyCode' => BHD::parseCurrency($tdValues[1]),
         ]);
     }
 }

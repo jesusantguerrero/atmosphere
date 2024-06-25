@@ -6,12 +6,21 @@ use Illuminate\Support\Facades\Log;
 use Google\Service\Gmail as ServiceGmail;
 use PhpMimeMailParser\Parser as EmailParser;
 use App\Domains\Automation\Models\Automation;
-use App\Domains\Transaction\Services\BHDService;
 use App\Domains\Integration\Services\GoogleService;
 use App\Domains\Automation\Concerns\AutomationActionContract;
 
 class GmailReceived implements AutomationActionContract
 {
+    const CONDITION_FROM = 'from';
+
+    const CONDITION_TO = 'to';
+
+    const CONDITION_SUBJECT = 'subject';
+
+    const CONDITION_INCLUDES = 'includes';
+
+    const CONDITION_CUSTOM = 'custom';
+
     /**
      * Validate and create a new team for the given user.
      *
@@ -22,14 +31,21 @@ class GmailReceived implements AutomationActionContract
         $maxResults = 15;
         $track = json_decode($automation->track, true);
         $trackId = $track['historyId'] ?? 0;
-        $config = json_decode($trigger->values);
+        $taskConditions = json_decode($trigger->values);
         $client = GoogleService::getClient($automation->integration_id);
         $service = new ServiceGmail($client);
-        $condition = isset($config->conditionType) && $config->value ? "$config->conditionType:$config->value" : '';
-        if (! $condition) {
-            $condition = $config->value ?? '';
+        $conditions = [];
+        foreach ($taskConditions as $taskCondition) {
+            if (isset($taskCondition->conditionType) && $taskCondition->value) {
+                $conditions[] = "$taskCondition->conditionType:$taskCondition->value";
+            }
         }
-        $results = $service->users_threads->listUsersThreads('me', ['maxResults' => $maxResults, 'q' => "$condition"]);
+        if (!count($conditions)) {
+            $queryOptions = '';
+        } else {
+            $queryOptions = implode(" ", $conditions);
+        }
+        $results = $service->users_threads->listUsersThreads('me', ['maxResults' => $maxResults, 'q' => "$queryOptions"]);
 
         foreach ($results->getThreads() as $index => $thread) {
             $theadResponse = $service->users_threads->get('me', $thread->id, ['format' => 'MINIMAL']);

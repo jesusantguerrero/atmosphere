@@ -38,15 +38,15 @@ const tabs = ref({
   //     ["Modal de pago", "/settings/payment"],
   //   ],
   // },
-  // integrations: {
-  //     label: "Integrations",
-  //     sections: [
-  //         ["Import Data", 'settings/integrations/import-data'],
-  //         ["Zen", '/integrations'],
-  //         ["Gmail", '/integrations'],
-  //         ["Calendar", '/integrations'],
-  //     ]
-  // },
+  integrations: {
+      label: "Integrations",
+      sections: [
+          ["Import Data", 'settings/integrations/import-data'],
+          ["Zen", '/integrations'],
+          ["Gmail", '/integrations'],
+          ["Calendar", '/integrations'],
+      ]
+  },
   // notifications: {
   //   label: "Notifications",
   //   sections: [

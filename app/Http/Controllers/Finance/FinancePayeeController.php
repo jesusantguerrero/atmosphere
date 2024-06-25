@@ -6,11 +6,8 @@ use App\Models\Setting;
 use Illuminate\Support\Facades\Gate;
 use Freesgen\Atmosphere\Http\Querify;
 use Insane\Journal\Models\Core\Payee;
-use Insane\Journal\Models\Core\Account;
 use Freesgen\Atmosphere\Http\InertiaController;
-use App\Domains\Transaction\Services\BHDService;
 use App\Domains\Transaction\Services\ReportService;
-use App\Domains\Automation\Models\AutomationService;
 
 class FinancePayeeController extends InertiaController
 {

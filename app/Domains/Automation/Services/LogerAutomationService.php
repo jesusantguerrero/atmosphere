@@ -6,8 +6,9 @@ use Google\Service\Gmail;
 use App\Domains\Integration\Actions\BHD;
 use App\Domains\Automation\Models\Automation;
 use App\Domains\Integration\Actions\BHDAlert;
-use App\Domains\Transaction\Services\BHDService;
+use App\Domains\Integration\Actions\APAP\APAP;
 use App\Domains\Automation\Models\AutomationTask;
+use App\Domains\Integration\Actions\MealPlanAutomation;
 use App\Domains\Integration\Actions\OccurrenceAutomation;
 use App\Domains\Integration\Actions\TransactionCreateEntry;
 
@@ -145,7 +146,7 @@ class LogerAutomationService
             ],
             'BHD' => [
                 'name' => 'BHD',
-                'entity' => BHDService::class,
+                'entity' => BHD::class,
                 'logo' => '/images/bhd.png',
                 'description' => 'BHD bank',
                 'components' => [
@@ -159,7 +160,23 @@ class LogerAutomationService
                     ],
                 ],
                 'type' => 'internal',
+            ],
+            'APAP' => [
+                'name' => 'BHD',
+                'entity' => APAP::class,
+                'logo' => '/images/bhd.png',
+                'description' => 'BHD bank',
+                'components' => [
+                    [
+                        'label' => 'Parse Alert',
+                        'name' => 'parseMessage',
+                        'entity' => BHD::class,
+                        'description' => 'Parse an email alert',
+                        'config' => json_encode(BHDAlert::getSchema()),
 
+                    ],
+                ],
+                'type' => 'internal',
             ],
             'transactions' => [
                 'name' => 'transactions',
