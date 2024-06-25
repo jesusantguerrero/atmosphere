@@ -1,17 +1,21 @@
 <?php
 
-namespace App\Domains\Integration\Actions;
+namespace App\Domains\Integration\Actions\APAP;
 
 use Exception;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\DomCrawler\Crawler;
 use App\Domains\Automation\Models\Automation;
+use App\Domains\Integration\Actions\GmailReceived;
 use App\Domains\Automation\Models\AutomationTaskAction;
 use App\Domains\Automation\Concerns\AutomationActionContract;
 
-class BHD implements AutomationActionContract
+class APAP implements AutomationActionContract
 {
-    const EMAIL_ALERT = 'alertas@bhd.com.do';
-    const EMAIL_NOTIFICATION = 'notificaciones@bhd.com.do';
+    const EMAIL_ALERT = 'NO-REPLY@apap.com.do';
+    const EMAIL_NOTIFICATION = 'NO-REPLY@apap.com.do';
+    const EMAIL_NOTIFICATION_SUBJECT = "APAP, Notificaciones";
+    const EMAIL_BCRD_SUBJECT = "APAP, Pago Al Instante BCRD";
 
     public static function handle(
         Automation $automation,
@@ -29,24 +33,24 @@ class BHD implements AutomationActionContract
 
             return $transaction?->toArray();
         } catch (Exception $e) {
-            null;
+            dd('hola', $e);
         }
 
     }
 
     public function getName(): string
     {
-        return 'BHDMessage';
+        return 'APAPMessage';
     }
 
     public function label(): string
     {
-        return 'BHD Message';
+        return 'APAP Message';
     }
 
     public function getDescription(): string
     {
-        return 'Parse an email alert or notification from BHD Leon Bank';
+        return 'Parse an email alert or notification from Asociacion Popular de Ahorros y Prestamos';
     }
 
     /**
@@ -63,7 +67,7 @@ class BHD implements AutomationActionContract
         AutomationTaskAction $trigger
     ) {
 
-        return (new BHDAlert())->handle($automation, $payload);
+        return (new APAPAlert())->handle($automation, $payload);
     }
 
     /**
@@ -80,7 +84,7 @@ class BHD implements AutomationActionContract
         AutomationTaskAction $trigger
     ) {
 
-        return (new BHDNotification())->handle($automation, $payload);
+        return (new APAPAlert())->handle($automation, $payload);
     }
 
     public static function getMessageType($mail)
@@ -101,6 +105,9 @@ class BHD implements AutomationActionContract
         return [[
                 'conditionType' => GmailReceived::CONDITION_FROM,
                 'value' => self::EMAIL_ALERT,
+            ], [
+                'conditionType' => GmailReceived::CONDITION_SUBJECT,
+                'value' => self::EMAIL_NOTIFICATION_SUBJECT,
             ]
         ];
     }
@@ -109,25 +116,18 @@ class BHD implements AutomationActionContract
     {
         try {
             $BHD_CURRENCY_CODES = [
-                'USD' => 'USD',
+                'USD dólar estadounidense' => 'USD',
                 'RD' => 'DOP',
             ];
 
             return $BHD_CURRENCY_CODES[$bhdCurrencyCode];
-        } catch (Exception) {
-            dd($bhdCurrencyCode, 'The code');
+        } catch (Exception $e) {
+            Log::error($e->getMessage(), [$bhdCurrencyCode]);
         }
     }
 
     public static function parseTypes($type)
     {
-        $types = [
-            'Compra' => 1,
-            'compra' => 1,
-            'retiro de efectivo' => 1,
-            "reserva de fondos (hold)" => 1
-        ];
-
-        return $types[$type];
+        return 1;
     }
 }

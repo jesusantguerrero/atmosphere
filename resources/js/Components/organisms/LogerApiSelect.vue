@@ -24,7 +24,7 @@ const handleSearch = debounce((query) => {
     }
     isLoading.value = true
     axios.get(`${props.endpoint}?q=${query}`).then(({ data }) => {
-        options.value = data.data;
+        options.value = data.data ?? data;
         isLoading.value = false
     })
 }, 200)

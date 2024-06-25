@@ -7,9 +7,9 @@ use Illuminate\Support\Facades\Gate;
 use Freesgen\Atmosphere\Http\Querify;
 use Insane\Journal\Models\Core\Account;
 use Freesgen\Atmosphere\Http\InertiaController;
-use App\Domains\Transaction\Services\BHDService;
 use App\Domains\Transaction\Services\ReportService;
 use App\Domains\Automation\Models\AutomationService;
+use App\Domains\Transaction\Services\BankConnectionService;
 
 class FinanceAccountController extends InertiaController
 {
@@ -58,10 +58,9 @@ class FinanceAccountController extends InertiaController
         ]);
     }
 
-    public function linkAccount(Account $account, BHDService $service)
+    public function linkAccount(Account $account, AutomationService $automationService, BankConnectionService $bankConnectionService)
     {
         $data = $this->getPostData(request());
-        $bankBHD = AutomationService::where('name', 'BHD')->first();
-        $service->linkAccount($account, $bankBHD->id, $data['integration_id']);
+        $bankConnectionService->linkAccount($account, $automationService, $data['integration_id']);
     }
 }

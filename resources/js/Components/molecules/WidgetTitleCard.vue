@@ -4,13 +4,13 @@ import { AtButton } from "atmosphere-ui";
 
 withDefaults(defineProps<{
     title: string;
-    action: {
+    action?: {
         label: string,
         iconClass?: string,
     },
-    hideDivider: boolean;
-    withPadding: boolean;
-    border: boolean
+    hideDivider?: boolean;
+    withPadding?: boolean;
+    border?: boolean
 }>(), {
     withPadding: true,
     border: true,

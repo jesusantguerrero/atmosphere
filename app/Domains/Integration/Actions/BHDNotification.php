@@ -15,7 +15,7 @@ class BHDNotification implements MailToTransaction
 {
     use BHDAction;
 
-    public function handle(Automation $automation, mixed $mail, int $index = 0): TransactionDataDTO
+    public function handle(Automation $automation, mixed $mail, int $index = 0): TransactionDataDTO | null
     {
 
         $body = new Crawler($mail['message']);
@@ -70,7 +70,8 @@ class BHDNotification implements MailToTransaction
                 'currencyCode' => $bhdOutput['amount']->currencyCode,
             ]);
         } catch (Exception $e) {
-            Log::error($e->getMessage(), $e);
+            echo $e->getMessage();
+            Log::error($e->getMessage(), [$e]);
             return null;
         }
     }

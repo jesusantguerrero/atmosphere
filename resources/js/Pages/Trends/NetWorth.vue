@@ -74,6 +74,10 @@ const trends = [
     {
         label: 'Year spending',
         url: '/trends/spending-year'
+    },
+    {
+        label: 'Credit Cards',
+        url: '/trends/credit-cards'
     }
 ]
 

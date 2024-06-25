@@ -1,10 +1,10 @@
 <script setup lang="ts">
     import { computed } from 'vue';
+    import axios from 'axios';
 
     import AccountsLedger from "@/domains/transactions/components/AccountsLedger.vue";
-
-    import { useImportModal } from '@/domains/transactions/useImportModal';
     import { PANEL_SIZES } from '@/utils/constants';
+    import { IAccount } from "@/domains/transactions/models";
 
     const props = defineProps({
         title: {
@@ -24,19 +24,23 @@
         },
         panelSize: {
             type: String,
-            validator(value) {
+            validator(value: string) {
                 return Object.keys(PANEL_SIZES).includes(value)
             }
         },
         forceShowPanel: {
             type: Boolean,
         },
+        fixed: {
+            type: Boolean,
+            default: true,
+        },
         hidePanel: {
             type: Boolean
         }
     });
 
-    function saveReorder(items) {
+    function saveReorder(items: IAccount[]) {
         const savedItems =  items?.reduce((accounts, account) => {
             accounts[account.id] = account;
             return accounts;
@@ -61,14 +65,14 @@
             <slot />
         </main>
 
-        <aside class="relative w-full h-screen overflow-auto md:px-2 md:block" :class="panelStyles" v-if="!hidePanel">
-            <section class="px-2 md:fixed aside-content md:pr-8">
+        <aside class="relative w-full overflow-auto md:px-2 md:block" :class="[panelStyles, fixed && 'h-screen']" v-if="!hidePanel">
+            <section class="px-2 w-full  aside-content" :class="{'md:fixed md:pr-8': fixed }">
                 <slot name="prepend-panel" />
                 <slot name="panel">
                     <AccountsLedger
                         :accounts="accounts"
                         :class="[cardShadow]"
-                        class="px-4 py-2 space-y-4 cursor-pointer md:mt-4 rounded-b-md md:rounded-md min-h-min bg-base-lvl-3"
+                        class="px-4 py-2 w-full space-y-4 cursor-pointer md:mt-4 rounded-b-md md:rounded-md min-h-min bg-base-lvl-3"
                         @reordered="saveReorder"
                     />
                 </slot>

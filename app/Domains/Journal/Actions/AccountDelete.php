@@ -4,9 +4,9 @@ namespace App\Domains\Journal\Actions;
 
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Validation\ValidationException;
-use Insane\Journal\Contracts\AccountDeletes;
 use Insane\Journal\Models\Core\Account;
+use Insane\Journal\Contracts\AccountDeletes;
+use Illuminate\Validation\ValidationException;
 
 class AccountDelete implements AccountDeletes
 {
@@ -18,7 +18,7 @@ class AccountDelete implements AccountDeletes
 
     public function validate(User $user, mixed $account)
     {
-        Gate::forUser($user)->authorize('delete-account', $account);
+        Gate::forUser($user)->authorize('delete', $account);
         if (count($account->transactions)) {
             throw ValidationException::withMessages([
                 'account' => __('You may not delete account with transactions.'),

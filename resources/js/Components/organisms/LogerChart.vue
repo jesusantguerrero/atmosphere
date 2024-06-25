@@ -2,7 +2,6 @@
 import { computed, watch, ref } from "vue";
 import { Chart, registerables } from "chart.js";
 import { Line, Bar } from "vue-chartjs";
-import { formatMoney } from "@/utils";
 
 const props = defineProps({
   type: {

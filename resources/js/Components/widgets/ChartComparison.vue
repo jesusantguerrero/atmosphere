@@ -42,6 +42,12 @@ const props = defineProps({
     },
     hideDivider: {
         type: Boolean
+    },
+    headerLabel: {
+        type: String,
+    },
+    headerTitleDate: {
+        default: true,
     }
 });
 
@@ -54,6 +60,7 @@ const currentSeries = computed(() => {
         data: Object.values(props.data).map(item => item[props.groupTotal]),
         labels: Object.keys(props.data).map(month => formatMonth(month))
     }]
+
     const dateSeries = selectedDate.value ? [{
         name: formatMonth(selectedDate.value),
         data: props.data[selectedDate.value].data.map(item => {
@@ -71,7 +78,7 @@ const hasHiddenValues = inject('hasHiddenValues', ref(false))
 const state = computed(() => {
     return {
         headers: Object.entries(props.data).map(([dateString, item]) => ({
-            label: formatMonth(dateString),
+            label: props.headerTitleDate ? formatMonth(dateString) : item[props.headerLabel ?? 'name'],
             value: item[props.groupTotal],
             id: dateString
         })),

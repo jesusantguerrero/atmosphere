@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed,  onMounted, reactive} from 'vue';
-import { router, useForm } from '@inertiajs/vue3';
+import {  useForm } from '@inertiajs/vue3';
 import { NSelect } from "naive-ui";
-// @ts-expect-error: no definitions
 import { AtField  } from 'atmosphere-ui';
 import Modal from '@/Components/atoms/Modal.vue'
 import LogerButton from '@/Components/atoms/LogerButton.vue';
+import LogerApiSimpleSelect from "@/Components/organisms/LogerApiSimpleSelect.vue";
 import { IAccount } from '../models';
 
 const props = defineProps<{
@@ -19,7 +19,7 @@ const props = defineProps<{
 const emit = defineEmits(['save', 'close'])
 
 const form = useForm({
-    service: null,
+    service_id: null,
     integration_id: null
 });
 
@@ -31,7 +31,7 @@ const state = reactive({
 
 
 function getIntegrations() {
-    axios({
+    return axios({
         url: "/api/integrations"
     }).then(({ data }) => {
         state.integrations = data;
@@ -39,10 +39,11 @@ function getIntegrations() {
     .catch((err) => console.log(err));
 }
 
-
-
-onMounted(() => {
-    getIntegrations();
+onMounted(async () => {
+    await getIntegrations();
+    if (state.integrations.length == 1) {
+        form.integration_id = state.integrations.at(0).id
+    }
 })
 
 const integrationOptions = computed(() => {
@@ -56,7 +57,7 @@ const integrationOptions = computed(() => {
 
 
 const submit = () => {
-    form.post(`/finance/accounts/${props.account.id}/link/`, {
+    form.post(`/finance/accounts/${props.account.id}/automation-services/${form.service_id}/link/`, {
         preserveScroll: true,
         preserveState: true,
         onSuccess() {
@@ -85,10 +86,21 @@ const close = () => emit('close');
                         <NSelect
                             filterable
                             clearable
+                            :disabled="state.integrations.length == 1"
                             :options="integrationOptions"
                             v-model:value="form.integration_id"
                         />
                     </AtField>
+                    <AtField label="Bank" >
+                        <LogerApiSimpleSelect
+                          v-model="form.service_id"
+                          v-model:label="form.service_label"
+                          custom-label="name"
+                          track-id="id"
+                          placeholder="Bank"
+                          endpoint="/api/automation-services"
+                        />
+                      </AtField>
                 </form>
             </div>
         </div>
