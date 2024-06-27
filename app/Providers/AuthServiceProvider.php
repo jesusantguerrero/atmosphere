@@ -7,7 +7,9 @@ use App\Models\User;
 use App\Policies\TeamPolicy;
 use Illuminate\Support\Facades\Gate;
 use Insane\Journal\Models\Core\Account;
+use Insane\Journal\Models\Core\Category;
 use Insane\Journal\Models\Core\Transaction;
+use App\Domains\Journal\Policies\CategoryPolicy;
 use App\Domains\Journal\Policies\TransactionPolicy;
 use App\Domains\AppCore\Policies\FinanceAccountPolicy;
 use App\Domains\Transaction\Policies\ReconciliationPolicy;
@@ -25,6 +27,7 @@ class AuthServiceProvider extends ServiceProvider
         Account::class => FinanceAccountPolicy::class,
         Reconciliation::class => ReconciliationPolicy::class,
         Transaction::class => TransactionPolicy::class,
+        Category::class => CategoryPolicy::class,
     ];
 
     /**

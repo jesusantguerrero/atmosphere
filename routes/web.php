@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Meal\MealController;
 use App\Http\Controllers\Api\LabelApiController;
 use App\Http\Controllers\Api\PayeeApiController;
 use App\Http\Controllers\Api\RecipeApiController;
@@ -12,9 +11,7 @@ use Freesgen\Atmosphere\Http\OnboardingController;
 use App\Http\Controllers\Api\CategoryApiController;
 use App\Http\Controllers\Api\CurrencyApiController;
 use App\Http\Controllers\Finance\FinanceController;
-use App\Http\Controllers\Meal\IngredientController;
 use App\Http\Controllers\Api\TimezonesApiController;
-use App\Http\Controllers\Meal\MealPlannerController;
 use App\Http\Controllers\System\DashboardController;
 use App\Http\Controllers\Api\IngredientApiController;
 use App\Http\Controllers\System\UserDeviceController;
@@ -22,7 +19,6 @@ use App\Http\Controllers\System\IntegrationController;
 use App\Http\Controllers\System\NotificationController;
 use App\Http\Controllers\Finance\FinanceLinesController;
 use App\Http\Controllers\Finance\FinanceTrendController;
-use App\Http\Controllers\Meal\MealShoppingListController;
 use App\Http\Controllers\System\TeamInvitationController;
 use App\Http\Controllers\Finance\FinanceAccountController;
 use Freesgen\Atmosphere\Http\Controllers\SettingsController;
@@ -49,6 +45,23 @@ Route::resource('onboarding', OnboardingController::class)->middleware(['auth:sa
 
 // Automation Services
 Route::get('/services/accept-oauth', [ServiceController::class, 'acceptOauth']);
+
+Route::middleware(['auth:sanctum', 'verified'])->prefix('/api')->name('api.')->group(function () {
+    //  accounts and transactions
+    Route::apiResource('/settings', SettingsController::class, [
+     "only" => ['index', 'store', 'update', 'delete']
+    ])->names([
+     'index' => 'api.settings.index',
+     'store' => 'api.settings.store',
+     'update' => 'api.settings.update',
+     'delete' => 'api.settings.delete',
+    ]);
+
+    Route::get('/accounts/{account}/unlinked-payments', [AccountApiController::class, 'unlinkedPayments']);
+    Route::apiResource('/accounts', AccountApiController::class);
+    Route::apiResource('/categories', CategoryApiController::class);
+
+});
 
 Route::group([], app_path('/Domains/Automation/routes.php'));
 Route::group([], app_path('/Domains/Housing/routes.php'));

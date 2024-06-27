@@ -2,12 +2,31 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Insane\Journal\Models\Core\Account;
+use App\Domains\Transaction\Services\CreditCardReportService;
 
-class AccountApiController extends Controller
+class AccountApiController extends BaseController
 {
+    public function __construct()
+    {
+        $this->model = new Account();
+        $this->searchable = ['name', 'display_id', 'alias'];
+        $this->validationRules = [];
+    }
+
+    public function index($accountId = null) {
+        if ($accountId) {
+          return Account::find($accountId);
+        }
+        return Account::getByDetailTypes(request()->user()->current_team_id);
+      }
+
+    public function unlinkedPayments(Account $account, CreditCardReportService $creditCardReportService) {
+        return $creditCardReportService->getUnlinkedPayments(request()->user()->current_team_id, $account);
+    }
+
+
     public function bulkUpdate(Request $request)
     {
         $accounts = $request->post('accounts');
