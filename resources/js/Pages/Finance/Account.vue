@@ -150,10 +150,12 @@ const defaultPaymentForm = {
 const setPaymentBill = (transaction: ITransaction) => {
   openModal(
     { data:{
-        resourceId: transaction.account_id,
+        documents: [transaction],
+        resourceId: transaction.id,
         title: `Payment of ${transaction.name}`,
         defaultConcept: `Payment of ${transaction.name}`,
         due: transaction.total,
+        transaction: transaction,
         endpoint: `/accounts/${transaction.account_id}/payments/`,
         paymentMethod: paymentMethods[0],
     }

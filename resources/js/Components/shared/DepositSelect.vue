@@ -35,7 +35,7 @@ watchEffect(async () => {
     :modelValue="modelValue"
     @update:modelValue="$emit('update:modelValue', $event)"
     :placeholder="$t('Select a deposit')"
-    label="concept"
+    label="description"
     track-by="transaction_id"
   >
     <template v-slot:singleLabel="{ option }">
@@ -46,9 +46,9 @@ watchEffect(async () => {
     </template>
     <template v-slot:option="{ option }">
       <div class="option__desc">
-        <span class="option__title">{{ option.cat_alias ?? option.cat_name }}</span>
+        <span class="option__title">{{ option.concept}}</span>
         <span class="option__small ml-2"
-          >({{ formatMoney(Math.abs(option.balance)) }})
+          >({{ formatMoney(Math.abs(option.amount)) }}/ {{  option.date }})
         </span>
       </div>
     </template>

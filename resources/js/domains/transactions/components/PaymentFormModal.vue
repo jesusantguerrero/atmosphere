@@ -33,10 +33,11 @@ const props = withDefaults(
     modelValue: boolean;
     defaultConcept: string;
     defaultAmount: string;
-    payment: Record<string, any> | null;
     due: Number;
     resourceId: Number;
     endpoint: string;
+    payment?: Record<string, any> | null;
+    transaction?: Record<string, any> | null;
     title?: string;
     documents?: any[];
     accountsEndpoint: string;
@@ -102,6 +103,18 @@ watch(
 );
 
 watch(
+  () => paymentForm.value.depositSource,
+  (depositSource: Record<string, any>) => {
+    if (!paymentForm.value?.id && depositSource) {
+      setPaymentAmount(depositSource.amount, `change of due ${props.due}`);
+    }
+  },
+  {
+    immediate: true,
+  }
+);
+
+watch(
   () => props.payment,
   (payment) => {
     if (payment) {
@@ -117,7 +130,7 @@ watch(
 const documentTotal = computed(() => {
   return paymentForm.value.documents?.reduce(
     (total: number, payment: Record<string, any>) => {
-      return MathHelper.sum(total, payment.payment);
+      return MathHelper.sum(total, parseFloat(payment.total?? 0));
     },
     0
   );
@@ -270,20 +283,19 @@ function applyDeposit() {
 
   isLoading.value = true;
 
+  const { transaction_id: transactionId } = paymentForm.value.depositSource
 
   const formData = {
-    client_id,
     total: paymentForm.value.amount,
-    rent_id: invoiceable_id,
     payment_date: formatDate(paymentForm.value.payment_date || new Date(), "yyyy-MM-dd"),
     concept: paymentForm.value.concept,
     payment_method_id: paymentForm.value.payment_method,
-    account_id: paymentForm.value.depositSource,
     reference: paymentForm.value.reference,
     notes: paymentForm.value.notes,
+    transaction_id: transactionId
   };
 
-  const endpoint = `/accounts/${props.resourceId}/link-payments`;
+  const endpoint = `/api/billing-cycles/${props.resourceId}/transactions/${transactionId}/link-payments/`;
   axios({
     method: paymentForm.value?.id ? "put" : "post",
     url: endpoint,
@@ -392,13 +404,13 @@ const dialogWidth = computed(() => {
           />
         </AppFormField>
         <AppFormField
-          v-else-if="paymentForm.payment_method_id?.id == 'deposit'"
+          v-else-if="paymentForm.payment_method_id?.id == 'deposit' && documents?.length"
           class="w-5/12 mb-5 text-left"
           label="Deposit"
           required
         >
           <DepositSelect
-            :account-id="resourceId"
+            :account-id="documents.at(0).account_id"
             category-name="security_deposits"
             v-model="paymentForm.depositSource"
             placeholder="Selecciona una cuenta"
@@ -430,7 +442,6 @@ const dialogWidth = computed(() => {
       </AppFormField>
 
       <PaymentGrid
-        v-if="isMultiple"
         :table-data="paymentForm.documents"
         :available-taxes="[]"
       />

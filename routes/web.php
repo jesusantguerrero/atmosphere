@@ -16,6 +16,7 @@ use App\Http\Controllers\System\DashboardController;
 use App\Http\Controllers\Api\IngredientApiController;
 use App\Http\Controllers\System\UserDeviceController;
 use App\Http\Controllers\System\IntegrationController;
+use App\Http\Controllers\Api\BillingCycleApiController;
 use App\Http\Controllers\System\NotificationController;
 use App\Http\Controllers\Finance\FinanceLinesController;
 use App\Http\Controllers\Finance\FinanceTrendController;
@@ -58,6 +59,7 @@ Route::middleware(['auth:sanctum', 'verified'])->prefix('/api')->name('api.')->g
     ]);
 
     Route::get('/accounts/{account}/unlinked-payments', [AccountApiController::class, 'unlinkedPayments']);
+    Route::post('/billing-cycles/{billingCycle}/transactions/{transaction}/link-payments', [BillingCycleApiController::class, 'linkPayments']);
     Route::apiResource('/accounts', AccountApiController::class);
     Route::apiResource('/categories', CategoryApiController::class);
 
