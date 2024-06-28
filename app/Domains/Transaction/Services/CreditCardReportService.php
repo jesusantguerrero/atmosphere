@@ -46,7 +46,7 @@ class CreditCardReportService
             ->leftJoin(DB::raw('transaction_lines tl'), fn ($q) => $q->on('a.id', 'tl.account_id')
                 ->whereRaw('(tl.type = ? or tl.category_id  = ?)', [-1, $readyToAssign->id])
             )
-            // ->where('account_id', $accountId)
+            ->when($creditCardId, fn($q) => $q->where('account_id', $creditCardId))
             ->whereRaw("(tl.date >= DATE_FORMAT(?, CONCAT('%Y-%m-', LPAD(a.credit_closing_day, 2, '0'))) and tl.type = -1
             AND
                 tl.date < DATE_FORMAT(?, CONCAT('%Y-%m-', LPAD(a.credit_closing_day, 2, '0')))
@@ -262,6 +262,7 @@ class CreditCardReportService
                         "end_at" => $creditCardAccount->until,
                     ], [
                         "minimum_payment" => $creditCardAccount->total,
+                        "debt" => $creditCardAccount->total,
                         "subtotal" => $creditCardAccount->subtotal,
                         "discounts" =>$creditCardAccount->discount,
                         "total" => $creditCardAccount->total,

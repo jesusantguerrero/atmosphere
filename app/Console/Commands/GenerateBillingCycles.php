@@ -4,8 +4,6 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use App\Domains\Loans\Actions\UpdateLatePayments;
-use Tests\Feature\CreditCard\Helpers\CreditCardBase;
 use App\Domains\Transaction\Services\CreditCardReportService;
 
 class GenerateBillingCycles extends Command

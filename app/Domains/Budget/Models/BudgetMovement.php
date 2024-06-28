@@ -31,7 +31,6 @@ class BudgetMovement extends Model
 
     protected static function booted()
     {
-
         static::saving(function ($movement) {
             $movement->destination_category_name = $movement->destination->name;
             $movement->source_category_name = $movement->source->name;

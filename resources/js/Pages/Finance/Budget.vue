@@ -73,7 +73,6 @@ const sectionTitle = computed(() => {
 const { budgets } = toRefs(props);
 const {
   readyToAssign,
-  available,
   filterGroups,
   filters,
   visibleFilters,
@@ -133,6 +132,14 @@ onMounted(() => {
         toggleFilter(currentStatus.value ?? "");
     })
 })
+
+const readyToAssignBalance = computed(() => {
+    return readyToAssign.value.balance
+})
+
+const readyToAssignLeft = computed(() => {
+    return readyToAssign.value.toAssign
+})
 </script>
 
 <template>
@@ -189,8 +196,8 @@ onMounted(() => {
       <BudgetBalanceAssign
         class="rounded-t-md"
         :class="[cardShadow, !visibleFilters.overspent && 'rounded-b-md']"
-        :value="readyToAssign.balance"
-        :category="readyToAssign.toAssign"
+        :value="readyToAssignBalance"
+        :category="readyToAssignLeft"
         :to-assign="readyToAssign"
       >
         <template #top>
