@@ -2,15 +2,15 @@
 
 namespace App\Domains\Transaction\Services;
 
-use App\Domains\AppCore\Models\Category;
-use App\Domains\Budget\Data\BudgetReservedNames;
-use App\Domains\Transaction\Data\ReconciliationParamsData;
-use App\Domains\Transaction\Models\Transaction;
-use App\Domains\Transaction\Models\TransactionLine;
 use Exception;
+use Insane\Journal\Models\Core\Account;
+use App\Domains\AppCore\Models\Category;
+use App\Domains\Transaction\Models\Transaction;
+use App\Domains\Budget\Data\BudgetReservedNames;
+use App\Domains\Transaction\Models\TransactionLine;
 use Insane\Journal\Models\Accounting\Reconciliation;
 use Insane\Journal\Models\Accounting\ReconciliationEntry;
-use Insane\Journal\Models\Core\Account;
+use App\Domains\Transaction\Data\ReconciliationParamsData;
 use Insane\Journal\Models\Core\Transaction as CoreTransaction;
 
 class ReconciliationService
@@ -20,7 +20,9 @@ class ReconciliationService
         return Reconciliation::where([
             'team_id' => $account->team_id,
             'account_id' => $account->id,
-        ])->get();
+        ])
+        ->orderByDesc('date')
+        ->get();
     }
 
     public function create(Account $account, ReconciliationParamsData $params)

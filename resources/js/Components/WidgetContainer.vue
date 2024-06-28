@@ -10,17 +10,17 @@ interface Props {
   message: string;
   username?: string;
   cards?: ICard[];
-  clickable: boolean;
+  clickable?: boolean;
   actionLabel?: string;
   actionLink?: string;
   sectionClass?: string;
   titleClass?: string;
   borderless?: boolean;
-  rounded: boolean;
-  size: string;
+  rounded?: boolean;
+  size?: string;
   verticalHeader?: boolean;
   tabs?: any[],
-  defaultTab: string;
+  defaultTab?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {

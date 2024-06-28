@@ -6,10 +6,12 @@ use App\Models\Setting;
 use Illuminate\Support\Facades\Gate;
 use Freesgen\Atmosphere\Http\Querify;
 use Insane\Journal\Models\Core\Account;
+use Insane\Journal\Models\Core\Transaction;
 use Freesgen\Atmosphere\Http\InertiaController;
 use App\Domains\Transaction\Services\ReportService;
 use App\Domains\Automation\Models\AutomationService;
 use App\Domains\Transaction\Services\BankConnectionService;
+use App\Domains\Transaction\Services\CreditCardReportService;
 
 class FinanceAccountController extends InertiaController
 {
@@ -19,7 +21,7 @@ class FinanceAccountController extends InertiaController
 
     private $reportService;
 
-    public function __construct(Account $account, ReportService $reportService)
+    public function __construct(Account $account, ReportService $reportService, private CreditCardReportService $creditCardReportService)
     {
         $this->reportService = $reportService;
         $this->model = $account;
@@ -53,6 +55,7 @@ class FinanceAccountController extends InertiaController
             'accountId' => $account->id,
             'resource' => $account,
             'transactions' => $account->transactionSplits(50, $startDate, $endDate, request()->only(['search', 'page', 'limit', 'direction'])),
+            'billingCycles' => $this->creditCardReportService->getBillingCyclesInPeriod($account->team_id, null, $endDate, $account->id, ['pending']),
             'stats' => $this->reportService->getAccountStats($account->id, $startDate, $endDate),
             'serverSearchOptions' => [],
         ]);
@@ -62,5 +65,11 @@ class FinanceAccountController extends InertiaController
     {
         $data = $this->getPostData(request());
         $bankConnectionService->linkAccount($account, $automationService, $data['integration_id']);
+    }
+
+    public function linkCreditCardPayment(Account $account, Transaction $transaction, BankConnectionService $bankConnectionService)
+    {
+        $data = $this->getPostData(request());
+        $bankConnectionService->linkCreditCardPayment($account, $transaction, $data['integration_id']);
     }
 }

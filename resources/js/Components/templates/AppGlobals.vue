@@ -1,18 +1,25 @@
 <script setup lang="ts">
-import TransactionModal from "@/domains/transactions/components/TransactionModal.vue";
-import { useTransactionModal, transactionModalState } from "@/domains/transactions";
-import { useImportModal } from "@/domains/transactions/useImportModal";
-import ImportResourceModal from "@/Components/ImportResourceModal.vue";
-import { useAppContextStore } from "@/store";
 import { computed } from "vue";
 import { router } from "@inertiajs/vue3";
+
 import MoreOptionsModal from "../MoreOptionsModal.vue";
+import TransactionModal from "@/domains/transactions/components/TransactionModal.vue";
+import PaymentFormModal from "@/domains/transactions/components/PaymentFormModal.vue";
+import ImportResourceModal from "@/Components/ImportResourceModal.vue";
+
+import { useTransactionModal, transactionModalState } from "@/domains/transactions";
+import { useImportModal } from "@/domains/transactions/useImportModal";
+import { useAppContextStore } from "@/store";
 import { config } from "@/config/index";
+import {
+  usePaymentModal,
+  modalState as paymentModalState,
+} from "@/domains/transactions/usePaymentModal";
 
 const { isOpen, closeTransactionModal } = useTransactionModal();
 const onTransactionSaved = () => {
-    closeTransactionModal();
-    router.reload();
+  closeTransactionModal();
+  router.reload();
 };
 const context = useAppContextStore();
 const modalMaxWidth = computed(() => {
@@ -22,15 +29,17 @@ const modalMaxWidth = computed(() => {
 const { isOpen: isImportModalOpen } = useImportModal();
 
 if (config.MERCURE_URL) {
-    const url = new URL(config.MERCURE_URL);
-    url.searchParams.append("topic", "https://example.com/main");
-    url.searchParams.append("topic", "https://example.com/users/jesus");
-    var es = new EventSource(url);
-    es.onmessage = (messageEvent) => {
-      var eventData = JSON.parse(messageEvent.data);
-      console.log(eventData);
-    };
+  const url = new URL(config.MERCURE_URL);
+  url.searchParams.append("topic", "https://example.com/main");
+  url.searchParams.append("topic", "https://example.com/users/jesus");
+  var es = new EventSource(url);
+  es.onmessage = (messageEvent) => {
+    var eventData = JSON.parse(messageEvent.data);
+    console.log(eventData);
+  };
 }
+
+const { isOpen: isPaymentModalOpen } = usePaymentModal();
 </script>
 
 <template>
@@ -47,6 +56,13 @@ if (config.MERCURE_URL) {
     v-model:show="context.isMoreOptionsModalOpen"
     :max-width="modalMaxWidth"
     v-if="context.isMobile"
+  />
+
+  <PaymentFormModal
+    v-if="paymentModalState"
+    v-bind="paymentModalState?.data"
+    v-model="isPaymentModalOpen"
+    @saved="onPaymentSaved"
   />
 
   <ImportResourceModal v-model:show="isImportModalOpen" />

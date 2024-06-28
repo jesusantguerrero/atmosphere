@@ -48,6 +48,10 @@ const localOptions = ref(props.options ?? []);
 const isLoading = ref(false);
 const selected = ref();
 
+watch(() => props.options, (options: []) => {
+    localOptions.value = options ?? []
+}, { immediate: true })
+
 const optionParser = (option: string | Record<string, string>) => {
   if (!option) return option;
 
