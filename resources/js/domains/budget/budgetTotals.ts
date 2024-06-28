@@ -6,7 +6,7 @@ import { getFrequencyMonthFactor } from "./getFrequencyMonthFactor";
 import { BudgetTarget, IBudgetCategory } from "./models/budget";
 import { useDatePager } from "vueuse-temporals";
 
-enum InflowCategories {
+export enum InflowCategories {
     READY_TO_ASSIGN = "Ready to Assign"
 }
 export const isSpendingTarget = (budgetMetaData: Record<string, any>) => {
@@ -36,7 +36,7 @@ export const getCategoriesTotals = (categories: Record<string, any>, config = {
         categoryTotals.fundedSpending = ExactMath.add(categoryTotals.fundedSpending ?? 0, category.name !== InflowCategories.READY_TO_ASSIGN  ? category.funded_spending : 0)
         categoryTotals.fundedSpendingPreviousMonth = ExactMath.add(categoryTotals.fundedSpendingPreviousMonth || 0, category.account_id && category.name !== InflowCategories.READY_TO_ASSIGN  ? (category.available || 0): 0)
 
-        if (Number(category.available) < 0 && category.name !== 'Inflow') {
+        if (Number(category.available) < 0 && category.name !== InflowCategories.READY_TO_ASSIGN) {
             category.budgeted
             config.onOverspent(category);
             categoryTotals.hasOverspent = true;

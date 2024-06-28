@@ -27,7 +27,7 @@ const props = defineProps<{
     showDelete: boolean;
 }>();
 
-const emit = defineEmits(['removed', 'edit'])
+const emit = defineEmits(['removed', 'edit', 'assign'])
 const budgeted = ref<number>(props.item.budgeted);
 
 const budgetTarget = computed(() => {
@@ -127,14 +127,10 @@ const onAssignBudget = () => {
         if (Number(props.item.budgeted) !== Number(budgeted.value) && budgeted.value !== null) {
             const month = format(startOfMonth(pageState.dates.endDate), 'yyyy-MM-dd');
 
-            router.post(`/budgets/${props.item.id}/months/${month}`, {
-                id: props.item.id,
+            emit('assign', {
+                month,
                 budgeted: Number(budgeted.value),
-                date: format(new Date(), 'yyyy-MM-dd')
-            }, {
-                preserveState: true,
-                preserveScroll: true
-            });
+            })
         }
         isEditing.value = false;
     })

@@ -29,6 +29,7 @@ const {
   visibleCategories,
   filters,
   setSelectedBudget,
+  assignBudget,
 } = useBudget(budgets);
 
 const categoryForm = useForm({
@@ -114,6 +115,11 @@ const saveReorder = (categories: ICategory[]) => {
                     :is-mobile="isMobile"
                     @open="router.visit(`/budgets/${item.id}`)"
                     @edit="setSelectedBudget(item.id, itemGroup.id)"
+                    @assign="assignBudget({
+                        category: item,
+                        categoryGroup: itemGroup,
+                        ...$event
+                    })"
                 />
             </Draggable>
 
