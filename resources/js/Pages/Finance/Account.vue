@@ -143,23 +143,27 @@ const payCreditCard = () => {
     })
 }
 
-const defaultPaymentForm = {
-  amount: 0,
-  account_id: "",
-};
 const setPaymentBill = (transaction: ITransaction) => {
   openModal(
-    { data:{
-        documents: [transaction],
-        resourceId: transaction.id,
-        title: `Payment of ${transaction.name}`,
-        defaultConcept: `Payment of ${transaction.name}`,
-        due: transaction.total,
-        transaction: transaction,
-        endpoint: `/accounts/${transaction.account_id}/payments/`,
-        paymentMethod: paymentMethods[0],
-    }
-})
+        { data:{
+            documents: [transaction],
+            resourceId: transaction.id,
+            title: `Payment of ${transaction.name}`,
+            defaultConcept: `Payment of ${transaction.name}`,
+            due: transaction.total,
+            transaction: transaction,
+            endpoint: `/accounts/${transaction.account_id}/payments/`,
+            paymentMethod: paymentMethods[0],
+        }
+    })
+}
+
+const billingCycleDetails = ref("");
+const fetchBillingCycleDetails = async (billingCycleId: string) => {
+    billingCycleDetails.value = "";
+    const response = await axios.get(`/api/billing-cycles/${billingCycleId}?relationships=transactions`)
+    console.log(response);
+    billingCycleDetails.value = response.data?.transactions;
 }
 
 </script>
@@ -280,8 +284,17 @@ const setPaymentBill = (transaction: ITransaction) => {
                     date: payment.due_at
                 }))"
                 emit-actions
+                emit-delete
                 @action="setPaymentBill"
-            />
+            >
+                <template v-slot:left-action-button="{  resourceId }">
+                    <button
+                    class="text-gray-400 hidden group-hover:inline-block transition cursor-pointer hover:text-red-400 focus:outline-none"
+                    @click="fetchBillingCycleDetails(resourceId)">
+                        <IMdiLink />
+                     </button>
+                </template>
+            </NextPaymentsWidget>
         </template>
 
       <AccountReconciliationForm

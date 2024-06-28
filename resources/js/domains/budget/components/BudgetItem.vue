@@ -142,8 +142,6 @@ const onAssignBudget = () => {
 
 const pageState = inject('pageState', {});
 
-
-
 const currentDetails = ref("");
 const fetchDetails = async (category: ICategory) => {
     const startDate = format(pageState.dates.startDate, 'yyyy-MM-dd');
