@@ -4,7 +4,6 @@ namespace App\Providers;
 
 use Insane\Journal\Journal;
 use Illuminate\Support\ServiceProvider;
-use App\Domains\Journal\Actions\CategoryList;
 use App\Domains\Journal\Actions\AccountCreate;
 use App\Domains\Journal\Actions\AccountDelete;
 use App\Domains\Journal\Actions\AccountUpdate;
@@ -22,6 +21,7 @@ use App\Domains\Journal\Actions\InvoicePaymentCreate;
 use App\Domains\Journal\Actions\InvoicePaymentDelete;
 use App\Domains\Journal\Actions\TransactionBulkDelete;
 use App\Domains\Journal\Actions\TransactionBulkApprove;
+use App\Domains\Journal\Actions\CategoryListWithBalance;
 use App\Domains\Journal\Actions\AccountDetailTypesCreate;
 use App\Domains\Journal\Actions\TransactionCategoriesCreate;
 
@@ -39,7 +39,7 @@ class JournalServiceProvider extends ServiceProvider
         Journal::listAccountStatementsUsing(AccountStatementList::class);
         Journal::showAccountStatementsUsing(AccountStatementShow::class);
 
-        Journal::listCategoryBalanceUsing(CategoryList::class);
+        Journal::listCategoryBalanceUsing(CategoryListWithBalance::class);
 
         Journal::payInvoiceUsing(InvoicePaymentPay::class);
         Journal::createInvoicePaymentUsing(InvoicePaymentCreate::class);

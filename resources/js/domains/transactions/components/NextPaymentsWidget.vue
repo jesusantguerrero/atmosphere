@@ -4,15 +4,24 @@ import { ITransaction } from '../models';
 import { useTransactionModal } from '../useTransactionModal';
 import NextPaymentItem from './NextPaymentItem.vue';
 
-defineProps<{
-    payments: ITransaction
-}>()
+const props = withDefaults(defineProps<{
+    payments: ITransaction[];
+    title: string
+    emitActions?: boolean
+}>(), {
+    title: 'Next Payments'
+})
 
+const emit = defineEmits(['action'])
 const { openTransactionModal } = useTransactionModal();
 const handleEdit = (transaction: ITransaction) => {
-    openTransactionModal({
-        transactionData: transaction
-    })
+    if (props.emitActions) {
+        emit('action', transaction);
+    } else {
+        openTransactionModal({
+            transactionData: transaction
+        })
+    }
 }
 </script>
 
@@ -21,7 +30,7 @@ const handleEdit = (transaction: ITransaction) => {
     class="mt-4 mb-4 overflow-hidden bg-white sm:rounded-lg"
     :class="cardShadow"
 >
-    <h4 class="pb-2 font-bold">Next Payments</h4>
+    <h4 class="pb-2 font-bold"> {{ title }} </h4>
     <section class="space-y-2">
         <NextPaymentItem
             v-for="transaction in payments"

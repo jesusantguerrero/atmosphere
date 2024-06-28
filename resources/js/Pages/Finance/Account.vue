@@ -3,9 +3,9 @@ import { computed, toRefs, provide, ref, onMounted, watch , nextTick } from "vue
 import { router, useForm, usePage } from "@inertiajs/vue3";
 import { format } from "date-fns";
 import { NDatePicker } from "naive-ui";
-// @ts-expect-error: no definitions
 import { AtField, AtDatePager } from "atmosphere-ui";
-// import { AtDatePager, useServerSearch, IServerSearchData, AtField } from "atmosphere-ui";
+import axios from "axios";
+
 import { useServerSearch, IServerSearchData } from "@/composables/useServerSearchV2";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
@@ -21,18 +21,19 @@ import AccountReconciliationBanner from "./Partials/AccountReconciliationBanner.
 import TransactionSearch from "@/domains/transactions/components/TransactionSearch.vue";
 import TransactionTable from "@/domains/transactions/components/TransactionTable.vue";
 import DraftButtons from "@/domains/transactions/components/DraftButtons.vue";
+import AccountReconciliationForm from "./AccountReconciliationForm.vue";
 
 import { useTransactionModal, TRANSACTION_DIRECTIONS, removeTransaction } from "@/domains/transactions";
-// import { IServerSearchData, useServerSearch } from "@/composables/useServerSearch";
 import { tableAccountCols } from "@/domains/transactions";
+import { paymentMethods } from "@/domains/transactions/constants";
 import { useAppContextStore } from "@/store";
 import { formatMoney } from "@/utils";
 import { IAccount, ICategory, ITransaction } from "@/domains/transactions/models";
-import axios from "axios";
-import AccountReconciliationForm from "./AccountReconciliationForm.vue";
-
+import NextPaymentsWidget from "@/domains/transactions/components/NextPaymentsWidget.vue";
+import { usePaymentModal } from "@/domains/transactions/usePaymentModal";
 
 const { openTransactionModal } = useTransactionModal();
+const { openModal } = usePaymentModal();
 
 
 interface CollectionData<T> {
@@ -41,6 +42,7 @@ interface CollectionData<T> {
 const props = withDefaults(defineProps<{
     accountDetailTypes: {label: string, id: number| string}[];
     transactions: ITransaction[];
+    billingCycles: ITransaction[];
     stats: CollectionData<Record<string, number>>;
     accounts: IAccount[];
     categories: ICategory[],
@@ -117,44 +119,48 @@ const reconcileForm = useForm({
 		balance: 0,
 })
 
-    const reconciliation = () => {
-        reconcileForm.transform(data => ({
-            ...data,
-            date: format(data.date, 'yyyy-MM-dd'),
-        })).post(`/finance/reconciliation/accounts/${selectedAccount.value?.id}`, {
-            preserveScroll: true,
-            only: ['transactions', 'accounts', 'stats'],
-            onFinish() {
-                reconcileForm.reset()
-                reconcileForm.isVisible = false;
+const  { TRANSFER } = TRANSACTION_DIRECTIONS;
+const page = usePage().props;
 
-            }
-        });
-    };
+const creditCard = computed(() => {
+    return props.accountDetailTypes.find((type) => type.label.toLowerCase() == "credit cards");
+});
+const isCreditCard = computed(() => {
+    return selectedAccount.value?.account_detail_type_id == creditCard.value?.id;
+});
 
-    const  { TRANSFER } = TRANSACTION_DIRECTIONS;
-    const page = usePage().props;
+const payCreditCard = () => {
+    const accountId = page.accountId
+    const debt = Math.abs(selectedAccount.value?.balance ?? 0);
+    openTransactionModal({
+        mode: TRANSFER,
+        transactionData: {
+            counter_account_id: accountId ?? "",
+            total: debt,
+            description: `Payment of ${selectedAccount.value?.name}`,
+            account_id: props.accounts.find((account) => account.balance > debt)?.id
+        },
+    })
+}
 
-    const creditCard = computed(() => {
-        return props.accountDetailTypes.find((type) => type.label.toLowerCase() == "credit cards");
-    });
-    const isCreditCard = computed(() => {
-        return selectedAccount.value?.account_detail_type_id == creditCard.value?.id;
-    });
-
-    const payCreditCard = () => {
-        const accountId = page.accountId
-        const debt = Math.abs(selectedAccount.value?.balance ?? 0);
-        openTransactionModal({
-            mode: TRANSFER,
-            transactionData: {
-                counter_account_id: accountId ?? "",
-                total: debt,
-                description: `Payment of ${selectedAccount.value?.name}`,
-                account_id: props.accounts.find((account) => account.balance > debt)?.id
-            },
-        })
+const defaultPaymentForm = {
+  amount: 0,
+  account_id: "",
+};
+const setPaymentBill = (transaction: ITransaction) => {
+  openModal(
+    { data:{
+        documents: [transaction],
+        resourceId: transaction.id,
+        title: `Payment of ${transaction.name}`,
+        defaultConcept: `Payment of ${transaction.name}`,
+        due: transaction.total,
+        transaction: transaction,
+        endpoint: `/accounts/${transaction.account_id}/payments/`,
+        paymentMethod: paymentMethods[0],
     }
+})
+}
 
 </script>
 
@@ -262,7 +268,21 @@ const reconcileForm = useForm({
                 @duplicate="handleDuplicate"
                 @edit="handleEdit"
             />
-      </section>
+
+        </section>
+
+        <template #prepend-panel class="">
+            <NextPaymentsWidget
+                class="w-full py-4 px-4"
+                title="Credit Card Payments"
+                :payments="billingCycles.map((payment) => ({
+                    ...payment,
+                    date: payment.due_at
+                }))"
+                emit-actions
+                @action="setPaymentBill"
+            />
+        </template>
 
       <AccountReconciliationForm
           :show="reconcileForm.isVisible"

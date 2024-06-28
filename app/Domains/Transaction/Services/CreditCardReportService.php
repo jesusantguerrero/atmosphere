@@ -5,7 +5,10 @@ namespace App\Domains\Transaction\Services;
 use Exception;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Insane\Journal\Models\Core\Account;
+use Insane\Journal\Models\Core\Payment;
 use App\Domains\AppCore\Models\Category;
+use Insane\Journal\Models\Core\Transaction;
 use App\Domains\Budget\Data\BudgetReservedNames;
 use App\Domains\Transaction\Models\BillingCycle;
 
@@ -177,6 +180,7 @@ class CreditCardReportService
                 a.name,
                 a.id
             ")
+            ->when($creditCardId, fn ($q) => $q->where('a.id', $creditCardId))
             ->leftJoin(DB::raw('billing_cycles bc'), 'a.id', 'bc.account_id')
             ->whereBetween("bc.end_at", [$startDate, $endDate])
             ->groupBy('a.id')
@@ -188,6 +192,24 @@ class CreditCardReportService
             "total" => $billingData->sum('total'),
             "subtotal" => $billingData->sum('subtotal')
         ];
+    }
+
+    public function getBillingCyclesInPeriod($teamId, $startDate, $endDate, $creditCardId = null, $statuses= null) {
+        return DB::table(DB::raw('accounts a'))
+            ->where("a.team_id", $teamId)
+            ->whereNotNull('a.credit_closing_day')
+            ->selectRaw("
+                bc.*,
+                a.name
+            ")
+            ->when($creditCardId, fn ($q) => $q->where('a.id', $creditCardId))
+            ->leftJoin(DB::raw('billing_cycles bc'), 'a.id', 'bc.account_id')
+            ->when($statuses, fn($q) => $q->whereIn("bc.status", $statuses))
+            ->when($startDate && $endDate, fn($q) => $q->whereBetween("bc.end_at", [$startDate, $endDate]))
+            ->when(!$startDate && $endDate, fn($q) => $q->where("bc.end_at", '<=', $endDate))
+            ->when($startDate && !$endDate, fn($q) => $q->where("bc.end_at", '>=', $startDate))
+            ->orderByDesc('bc.end_at')
+            ->get();
     }
 
     public function creditCards($teamId, $date)
@@ -251,4 +273,37 @@ class CreditCardReportService
         }
     }
 
+    public function getUnlinkedPayments($teamId, Account $account) {
+        $readyToAssign = Category::where([
+            'team_id' => $teamId,
+        ])
+        ->where('name', BudgetReservedNames::READY_TO_ASSIGN->value)
+        ->first();
+
+        return DB::table(DB::raw('transaction_lines tl'))
+            ->where([
+                "a.team_id" => $teamId,
+                "a.id" => $account->id,
+                "tl.payee_id" => 0
+            ])
+            ->selectRaw("
+                tl.*,
+                t.transactionable_type,
+                t.transactionable_id,
+                a.name
+            ")
+            ->whereRaw('(tl.type = ? or tl.category_id  = ?)', [1, $readyToAssign->id])
+            ->whereNull('t.transactionable_id')
+            ->join(DB::raw('accounts a'), fn ($q) => $q->on('a.id', 'tl.account_id'))
+            ->join(DB::raw('transactions t'), 'tl.transaction_id', 't.id')
+            ->orderByDesc('tl.date')
+            ->get();
+    }
+
+
+    public function linkCreditCardPayment(BillingCycle $billingCycle, Transaction $transaction, $postData)
+    {
+        $billingCycle->linkPayment($transaction, $postData);
+        $billingCycle->save();
+    }
 }
