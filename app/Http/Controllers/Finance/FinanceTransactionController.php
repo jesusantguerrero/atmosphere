@@ -47,6 +47,10 @@ class FinanceTransactionController extends InertiaController
     protected function list(Request $request)
     {
         $dates = $this->getFilterDates();
+        $filters = $request->query('filter');
+        $status = $filters['status'] ?? null;
+
+
         $query = new QuerifySlim([
             'searchable' => ['transactions.date', 'transactions.description'],
             'sorts' => ['-date'],
@@ -59,7 +63,7 @@ class FinanceTransactionController extends InertiaController
                 'counterLine.account',
             ],
             'filters' => [
-                'date' => "{$dates['0']}~{$dates['1']}",
+                'date' => $status == 'draft' ? null : "{$dates['0']}~{$dates['1']}",
                 'status' => Transaction::STATUS_VERIFIED,
             ],
         ]);

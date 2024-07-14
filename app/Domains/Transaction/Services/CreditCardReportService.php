@@ -6,7 +6,6 @@ use Exception;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Account;
-use Insane\Journal\Models\Core\Payment;
 use App\Domains\AppCore\Models\Category;
 use Insane\Journal\Models\Core\Transaction;
 use App\Domains\Budget\Data\BudgetReservedNames;
@@ -254,20 +253,21 @@ class CreditCardReportService
             $lastCycleBalances = $this->creditCardCycleByAccount($teamId, $month."-01", 0, null, true)->sortBy('from');
             $count++;
             foreach ($lastCycleBalances as $creditCardAccount) {
-                    BillingCycle::updateOrCreate([
-                        "account_id" => $creditCardAccount->id,
-                        "team_id" => $teamId,
-                        "user_id" => 0,
-                        "start_at" => $creditCardAccount->from,
-                        "end_at" => $creditCardAccount->until,
-                    ], [
-                        "minimum_payment" => $creditCardAccount->total,
-                        "debt" => $creditCardAccount->total,
-                        "subtotal" => $creditCardAccount->subtotal,
-                        "discounts" =>$creditCardAccount->discount,
-                        "total" => $creditCardAccount->total,
-                        "due_at" => $creditCardAccount->until
-                    ]);
+                echo "{$creditCardAccount->name} month {$creditCardAccount->from} {$creditCardAccount->until} generated".PHP_EOL;
+                BillingCycle::updateOrCreate([
+                    "account_id" => $creditCardAccount->id,
+                    "team_id" => $teamId,
+                    "user_id" => 0,
+                    "start_at" => $creditCardAccount->from,
+                    "end_at" => $creditCardAccount->until,
+                ], [
+                    "minimum_payment" => $creditCardAccount->total,
+                    "debt" => $creditCardAccount->total,
+                    "subtotal" => $creditCardAccount->subtotal,
+                    "discounts" =>$creditCardAccount->discount,
+                    "total" => $creditCardAccount->total,
+                    "due_at" => $creditCardAccount->until
+                ]);
             }
             echo "updated month {$month}".PHP_EOL;
             echo "{$count} of {$total}".PHP_EOL.PHP_EOL;
