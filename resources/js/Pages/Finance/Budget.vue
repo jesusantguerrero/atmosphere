@@ -76,6 +76,7 @@ const {
   filterGroups,
   filters,
   visibleFilters,
+  data: categories,
   setBudgetFilter,
   selectedBudget,
   setSelectedBudget,
@@ -102,7 +103,8 @@ const currentStatus = computed(() =>
     pageState?.custom?.mode
 );
 
-provide("categories", budgets);
+console.log(categories);
+provide("categories", categories);
 
 //  Budget Form
 const deleteBudget = (budget: ICategory) => {

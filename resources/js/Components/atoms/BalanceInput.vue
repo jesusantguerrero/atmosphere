@@ -91,19 +91,19 @@
         return status.value == BALANCE_STATUS.available
     })
 
-    const categories = inject('categories', ref({ data: []}))
+    const categories = inject('categories', ref([]))
     const categoryOptions = computed(() => {
-        return categories.value.data?.map(item => ({
+        return categories.value?.map?.(item => ({
             value: item.id,
             key: item.id,
             label: item.name,
             type: 'group',
-            children: item.subCategories.map(category => ({
+            children: item.subCategories?.map?.(category => ({
                 value: category.id,
                 label: category.name,
-                available: category.available,
-            })).filter((category: ICategory) => !hasAvailable.value ? category.available > 0 : true)
-        }))
+                available: category.available || 0,
+            })).filter((category: ICategory) => !hasAvailable.value ? category.available > 0 : true) ?? []
+        })) ?? []
     })
 
     const showPopover = ref(false)
@@ -155,8 +155,7 @@
                         <div class="flex justify-between text-sm group md:text-base">
                             <span class="text-body-1/80" :class="{'font-bold': option.$groupLabel }">{{ option.label || option.$groupLabel }}</span>
                             <span class="font-bold text-secondary" v-if="option.available">
-                                {{ formatMoney(option.available)
-                            }}</span>
+                                {{ formatMoney(option.available) }}</span>
                         </div>
                     </template>
                 </Multiselect>
