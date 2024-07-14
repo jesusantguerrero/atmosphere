@@ -2,10 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Team;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use App\Domains\Loans\Actions\UpdateLatePayments;
-use Tests\Feature\CreditCard\Helpers\CreditCardBase;
 use App\Domains\Transaction\Services\CreditCardReportService;
 
 class GenerateBillingCycles extends Command
@@ -15,7 +14,7 @@ class GenerateBillingCycles extends Command
      *
      * @var string
      */
-    protected $signature = 'bg:generate-billing-cycles {teamId} {date?}';
+    protected $signature = 'bg:generate-billing-cycles {date?} {--A|all}';
 
     /**
      * The console command description.
@@ -31,11 +30,23 @@ class GenerateBillingCycles extends Command
      */
     public function handle(CreditCardReportService $service)
     {
-        $teamId = $this->argument('teamId');
-        $date = $this->argument('date');
+        $date = $this->argument("date");
+        $shouldGenerateAll = $this->option("all");
+        $teams = Team::with(["timezone"])->without(["settings"])->get();
+        $thisMonth = now();
+        foreach ($teams as $team) {
+            $timezone = $team["timezone"] ?? null;
+            if ($timezone) {
+                $thisMonth->setTimezone($timezone["value"]);
+            };
 
-        $monthsWithTransactions = $this->getFirstTransaction($teamId);
-        return $service->generateBillingCycles($teamId, $date ?? $monthsWithTransactions->date);
+            if ($date || !$shouldGenerateAll) {
+                $service->generateBillingCycles($team->id, $date ?? $thisMonth->format("Y-m"));
+            } else {
+                $monthsWithTransactions = $this->getFirstTransaction($team->id);
+                $service->generateBillingCycles($team->id, $monthsWithTransactions->date);
+            }
+        }
     }
 
     private function getFirstTransaction(int $teamId) {

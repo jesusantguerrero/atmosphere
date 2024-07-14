@@ -65,6 +65,7 @@ const {
      state: pageState,
      executeSearch,
      reset,
+     hasFilters,
 } = useServerSearch(serverSearchOptions, { manual: false, defaultDates: true }, async (urlParams) => {
     if (isLoading.value) return;
     const url = `/api/finance/transactions?${urlParams}`;
@@ -176,15 +177,6 @@ const goToAccount = (accountId: number) => {
                 next-mode="month"
             />
             <DraftButtons v-if="isDraft" @submitted="fetchTransactions()" />
-            <StatusButtons
-              v-model="currentStatus"
-              :statuses="transactionStatus"
-              @change="router.visit($event)"
-            />
-            <LogerButton variant="secondary" :href="route('finance.export')"  target="_blank" as="a">
-                <IMdiExport class="mr-2" />
-                Export transactions
-            </LogerButton>
           </div>
         </template>
       </FinanceSectionNav>
@@ -208,7 +200,13 @@ const goToAccount = (accountId: number) => {
 
       <main class="mt-4 ">
         <header class="flex bg-base-lvl-3 justify-between px-6 py-2">
-            <section>
+
+            <section class="flex space-x-2 items-center">
+                <StatusButtons
+                    v-model="currentStatus"
+                    :statuses="transactionStatus"
+                    @change="router.visit($event)"
+                />
                 <AccountFilter
                     show-all
                     @update:model-value="goToAccount"
@@ -219,7 +217,7 @@ const goToAccount = (accountId: number) => {
                 <AppSearch
                     v-model.lazy="pageState.search"
                     class="w-full md:flex"
-                    :has-filters="true"
+                    :has-filters="hasFilters"
                     @clear="reset()"
                     @blur="executeSearch"
                 />

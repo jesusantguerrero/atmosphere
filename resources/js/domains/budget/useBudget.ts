@@ -1,8 +1,10 @@
 
 import { cloneDeep } from "lodash";
 import { computed, watch, reactive, toRefs, Ref } from "vue";
-import { getCategoriesTotals, getGroupTotals } from './index';
+import { getCategoriesTotals, getGroupTotals, InflowCategories } from './index';
 import { IBudgetCategory } from "./models/budget";
+import { format } from "date-fns";
+import axios from "axios";
 
 
 interface IFilterGroups {
@@ -65,9 +67,7 @@ export const BudgetState: IBudgetState = reactive({
         : null;
     }),
     // Balance
-    inflow: computed(() => {
-        return BudgetState.data.find((category: IBudgetCategory) => category.name == 'Inflow')
-    }),
+    inflow: computed(() =>BudgetState.data.find((category: IBudgetCategory) => category.name == 'Inflow')),
     outflow: computed(() => {
         return BudgetState.data?.filter((category: IBudgetCategory) => category.name != 'Inflow')
     }),
@@ -80,7 +80,7 @@ export const BudgetState: IBudgetState = reactive({
     }),
     readyToAssign: computed(() => {
         const budgetTotals = BudgetState.budgetTotals;
-        const category = BudgetState.inflow?.subCategories[0] ?? {}
+        const category = BudgetState.inflow?.subCategories.at(0) ?? {}
         const creditCardFunded = parseFloat(budgetTotals?.fundedSpendingPreviousMonth ?? 0)
         const availableForFunding = parseFloat(category.activity ?? 0);
         const fundedSpending = parseFloat(category?.funded_spending ?? 0);
@@ -89,6 +89,7 @@ export const BudgetState: IBudgetState = reactive({
         const leftOver = parseFloat(category.left_from_last_month ?? 0)
         const movedFromLastMonth = parseFloat(category.moved_from_last_month ?? 0)
         const balance = (parseFloat(category.activity ?? 0) + parseFloat(category.left_from_last_month ?? 0) - assigned)
+
 
        return {
             availableForFunding,
@@ -150,13 +151,23 @@ const getBudget = (budgetRawData: any) => {
     }
 }
 
+const parseAvailable = (budgetData: any[]) => {
+    return budgetData.map(group => ({
+        ...group,
+        subCategories: group.subCategories.map(subCat => ({
+            ...subCat,
+            available: subCat.account_id ? subCat.available : parseFloat(subCat.budgeted ?? 0) + parseFloat(subCat.left_from_last_month ?? 0) -  Math.abs(parseFloat(subCat.activity))
+        }))
+    }))
+}
+
 const setBudgetState = ({ filterGroups, categories, budgetData }:{
     filterGroups: IFilterGroups,
     categories: IBudgetCategory[],
     budgetData: any
     }
 ) => {
-    BudgetState.data = cloneDeep(budgetData);
+    BudgetState.data = cloneDeep(parseAvailable(budgetData));
     if (filterGroups) {
         BudgetState.filterGroups = filterGroups;
     }
@@ -174,7 +185,45 @@ enum FilterNames {
 const setVisibleCategories = () => {
     // @ts-ignore
     const visibleFilter = Object.keys(BudgetState.filters).find((name: string) => BudgetState.filters[name]) as FilterNames
-    BudgetState.visibleCategories = getVisibleCategories(BudgetState.data, visibleFilter)
+    BudgetState.visibleCategories = getVisibleCategories(parseAvailable(BudgetState.data), visibleFilter)
+}
+
+interface AssignBudgetProps {
+    category: IBudgetCategory,
+    categoryGroup: IBudgetCategory,
+    month: string,
+    budgeted: number
+}
+
+interface BudgetMovementProps {
+    category?: IBudgetCategory,
+    sourceCategoryId: number,
+    destinationCategoryId: number,
+    amount: number,
+    date: string;
+}
+
+
+const findCategory = (destinationId: number) => {
+    const catData: number[] = [];
+
+    for (let index = 0; index < BudgetState.data.length; index++) {
+        const cat = BudgetState.data[index];
+        const foundIndex = cat.subCategories.findIndex(subCat => subCat.id == destinationId)
+        if (foundIndex >= 0) {
+            catData.push(...[index, foundIndex])
+            return catData;
+        }
+    }
+
+    return catData;
+}
+
+const updateBalances = (destinationId: number, savedMovement:BudgetMovementProps , subtractMode: boolean = false) => {
+    const [groupIndex, index] = findCategory(destinationId);
+    BudgetState.data[groupIndex].subCategories[index].budgeted = subtractMode
+    ? BudgetState.data[groupIndex].subCategories[index].budgeted - savedMovement.amount
+    : parseFloat(BudgetState.data[groupIndex].subCategories[index].budgeted ?? 0) + savedMovement.amount
 }
 export const useBudget = (budgets: Ref<Record<string, any>>) => {
     if (budgets) {
@@ -192,11 +241,83 @@ export const useBudget = (budgets: Ref<Record<string, any>>) => {
         setVisibleCategories();
     }
 
+    const assignBudget = (assign: AssignBudgetProps) => {
+        axios.post(`/budgets/${assign.category.id}/months/${assign.month}`, {
+            id: assign.category.id,
+            budgeted: assign.budgeted,
+            date: format(new Date(), 'yyyy-MM-dd')
+        });
+
+        const source = BudgetState.categories.find( cat => cat.name == InflowCategories.READY_TO_ASSIGN);
+        const destination = assign.category;
+
+
+        if (destination?.id) {
+            const amount = assign.budgeted;
+            let rest = amount;
+
+            const formData: BudgetMovementProps = {
+                sourceCategoryId:  source.id,
+                destinationCategoryId: destination.id,
+                amount: amount,
+                date:  assign.month,
+            };
+
+
+            if (amount == 0) {
+                rest = -destination.budgeted
+            }
+
+            if (formData.sourceCategoryId) {
+                updateBalances(destination.id, formData);
+                updateBalances(source.id, {...formData, amount: rest }, true);
+            }
+        }
+        setBudgetState(getBudget(BudgetState.data));
+        setVisibleCategories()
+    }
+
+    const moveBudget = (movementData: BudgetMovementProps) => {
+            axios.post(`/budgets/${movementData.category?.id}/months/${movementData.date}` ,{
+                amount: movementData.amount,
+                source_category_id:  movementData.sourceCategoryId,
+                destination_category_id: movementData.destinationCategoryId,
+                type: 'movement',
+                date: movementData.date
+            });
+
+            const sourceCategory = BudgetState.categories.find( cat => cat.id == movementData.sourceCategoryId);
+            const destinationCategory = BudgetState.categories.find( cat => cat.id == movementData.destinationCategoryId);
+
+            const amount = movementData.amount > sourceCategory.available ? sourceCategory.available : movementData.amount;
+
+            const formData: BudgetMovementProps = {
+                sourceCategoryId:   sourceCategory.id,
+                destinationCategoryId:  destinationCategory.id,
+                amount: amount,
+                date:  movementData.date,
+            };
+
+            console.log(formData);
+
+            if (sourceCategory)  {
+                updateBalances(destinationCategory.id, formData);
+                setBudgetState(getBudget(BudgetState.data));
+                setVisibleCategories()
+                updateBalances(sourceCategory.id, formData, true);
+            }
+            setBudgetState(getBudget(BudgetState.data));
+            setVisibleCategories()
+    }
+
+
     return {
         ...toRefs(BudgetState),
         budgetState: BudgetState.outflow,
         setBudgetFilter,
         setSelectedBudget,
+        assignBudget,
+        moveBudget
     }
 }
 

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { format, startOfMonth, isThisMonth } from 'date-fns';
 import { ref, nextTick, onMounted, inject, computed } from 'vue';
-import { router } from '@inertiajs/vue3';
 import { NDropdown } from 'naive-ui';
 import autoAnimate from '@formkit/auto-animate';
 
@@ -27,7 +26,7 @@ const props = defineProps<{
     showDelete: boolean;
 }>();
 
-const emit = defineEmits(['removed', 'edit'])
+const emit = defineEmits(['removed', 'edit', 'assign', 'move']);
 const budgeted = ref<number>(props.item.budgeted);
 
 const budgetTarget = computed(() => {
@@ -122,27 +121,30 @@ const toggleEditing = () => {
     }
 }
 
+const pageState = inject('pageState', {});
+
+const currentMonth = computed(() => {
+    return format(startOfMonth(pageState.dates.endDate), 'yyyy-MM-dd');
+})
+
 const onAssignBudget = () => {
     nextTick(() => {
         if (Number(props.item.budgeted) !== Number(budgeted.value) && budgeted.value !== null) {
-            const month = format(startOfMonth(pageState.dates.endDate), 'yyyy-MM-dd');
-
-            router.post(`/budgets/${props.item.id}/months/${month}`, {
-                id: props.item.id,
+            emit('assign', {
+                month: currentMonth.value,
                 budgeted: Number(budgeted.value),
-                date: format(new Date(), 'yyyy-MM-dd')
-            }, {
-                preserveState: true,
-                preserveScroll: true
-            });
+            })
         }
         isEditing.value = false;
     })
 }
 
-const pageState = inject('pageState', {});
-
-
+const onMoveFromBudget = (movementData: any) => {
+    emit('move', {
+        ...movementData,
+        date: currentMonth.value,
+    })
+}
 
 const currentDetails = ref("");
 const fetchDetails = async (category: ICategory) => {
@@ -217,6 +219,7 @@ const context = useAppContextStore();
                 :value="item.available"
                 :formatter="formatMoney"
                 :category="item"
+                @move="onMoveFromBudget"
                 class="flex items-center h-full w-28"
             >
                 <template #suffix v-if="item.available">

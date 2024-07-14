@@ -93,7 +93,7 @@
 
 <template>
 <div class="w-full text-right">
-    <NPopover trigger="manual" placement="bottom"  @update:show="handleUpdateShow" :show="showPopover">
+    <NPopover trigger="manual" placement="bottom" :show="showPopover">
         <template #trigger>
             <button
                 class="px-5 py-1 cursor-pointer rounded-3xl text-body-1"

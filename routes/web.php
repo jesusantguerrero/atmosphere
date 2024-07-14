@@ -58,8 +58,11 @@ Route::middleware(['auth:sanctum', 'verified'])->prefix('/api')->name('api.')->g
      'delete' => 'api.settings.delete',
     ]);
 
-    Route::get('/accounts/{account}/unlinked-payments', [AccountApiController::class, 'unlinkedPayments']);
     Route::post('/billing-cycles/{billingCycle}/transactions/{transaction}/link-payments', [BillingCycleApiController::class, 'linkPayments']);
+    Route::apiResource('/billing-cycles', BillingCycleApiController::class);
+
+    Route::get('/accounts/{account}/unlinked-payments', [AccountApiController::class, 'unlinkedPayments']);
+
     Route::apiResource('/accounts', AccountApiController::class);
     Route::apiResource('/categories', CategoryApiController::class);
 

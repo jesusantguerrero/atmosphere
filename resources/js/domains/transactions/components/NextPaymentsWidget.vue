@@ -12,7 +12,7 @@ const props = withDefaults(defineProps<{
     title: 'Next Payments'
 })
 
-const emit = defineEmits(['action'])
+const emit = defineEmits(['action', 'delete'])
 const { openTransactionModal } = useTransactionModal();
 const handleEdit = (transaction: ITransaction) => {
     if (props.emitActions) {
@@ -21,6 +21,14 @@ const handleEdit = (transaction: ITransaction) => {
         openTransactionModal({
             transactionData: transaction
         })
+    }
+}
+
+const handleRemove = (transaction: ITransaction) => {
+    if (props.emitActions) {
+        emit('delete', transaction);
+    } else {
+        removeTransaction(transaction);
     }
 }
 </script>
@@ -37,8 +45,12 @@ const handleEdit = (transaction: ITransaction) => {
             :key="transaction.id"
             :payment="transaction"
             @edit="handleEdit"
-            @deleted="removeTransaction"
-        />
+            @deleted="handleRemove"
+        >
+            <template #left-action-button>
+                <slot name="left-action-button" :resource-id="transaction.id" />
+            </template>
+        </NextPaymentItem>
     </section>
 </div>
 </template>

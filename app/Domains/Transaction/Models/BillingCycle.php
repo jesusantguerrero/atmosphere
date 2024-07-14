@@ -2,7 +2,7 @@
 
 namespace App\Domains\Transaction\Models;
 
-use Exception;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 use Insane\Journal\Models\Core\Payment;
 use Insane\Journal\Models\Core\Transaction;
@@ -57,7 +57,14 @@ class BillingCycle extends Model implements IPayableDocument
 
     public function transactions() {
         return $this->hasMany(TransactionLine::class, 'account_id')
-        ->whereBetween("date", [$this->from, $this->until]);
+        ->join(DB::raw('accounts a'), 'a.id', 'account_id')
+        ->where(fn ($q) =>
+            $q->whereRaw("(transaction_lines.date >= DATE_FORMAT(date, CONCAT('%Y-%m-', LPAD(a.credit_closing_day, 2, '0'))) and transaction_lines.type = -1
+            AND
+                transaction_lines.date < DATE_FORMAT(date, CONCAT('%Y-%m-', LPAD(a.credit_closing_day, 2, '0')))
+            )
+            OR transaction_lines.date = DATE_FORMAT(date, CONCAT('%Y-%m-', LPAD(a.credit_closing_day, 2, '0'))) AND transaction_lines.type = 1")
+        );
     }
 
     // Transactionable config
@@ -101,7 +108,7 @@ class BillingCycle extends Model implements IPayableDocument
             $status = self::STATUS_PAID;
         } elseif ($debt > 0 && $debt < $payable->amount) {
             $status = self::STATUS_PARTIALLY_PAID;
-        } elseif ($debt && $payable->end_at < now()->format('Y-m-d')) {
+        } elseif ($debt && $payable->end_at < $payable->payments?->first()?->payment_date) {
             $status = self::STATUS_LATE;
         } elseif ($debt && !$payable->cancelled_at) {
             $status = self::STATUS_PENDING;
@@ -129,7 +136,7 @@ class BillingCycle extends Model implements IPayableDocument
         if ($payable && $payable->payments) {
             $totalPaid = $payable->payments()->sum('amount');
             $payable->paid = $totalPaid;
-            $payable->debt = $payable->amount - $totalPaid ;
+            $payable->debt = $payable->total - $totalPaid ;
             $statusField = $payable->getStatusField();
             $payable->$statusField = self::checkStatus($payable);
         }

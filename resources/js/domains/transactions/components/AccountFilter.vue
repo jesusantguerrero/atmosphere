@@ -4,6 +4,8 @@ import { inject, computed, h } from "vue";
 import { NSelect, SelectRenderLabel } from "naive-ui";
 import { IAccount } from "@/domains/transactions/models";
 import { formatMoney } from "@/utils";
+import MdiCreditCard from '~icons/mdi/credit-card'
+import MdiWallet from '~icons/mdi/wallet'
 
 const props = defineProps<{
     modelValue: IAccount,
@@ -26,6 +28,7 @@ const selectedAccount = computed({
 const renderLabel: SelectRenderLabel = (option) => {
       return h('div',{class: 'w-full flex justify-between space-x-4'},
         [
+          h(option.credit_limit > 0 ? MdiCreditCard : MdiWallet),
           h('span', option.label),
           h('div', formatMoney(option.balance))
         ]
@@ -42,6 +45,7 @@ const renderLabel: SelectRenderLabel = (option) => {
             tag
             size="large"
             class="w-full"
+            placeholder="Filter account"
             :multiple="multiple"
             v-model:value="selectedAccount"
             :default-expand-all="true"
