@@ -8,8 +8,9 @@
     import LogerButton from "./LogerButton.vue";
     import InputMoney from "./InputMoney.vue";
 
-    import { format, startOfMonth } from "date-fns";
     import { formatMoney } from "@/utils";
+
+    const emit = defineEmits(['move']);
 
     const props = defineProps({
         value: {
@@ -67,28 +68,22 @@
         destination_category_id: null,
     });
 
-    const pageState = inject('pageState', {});
-
-    const onAssignBudget = () => {
+    const onMoveFromBudget = () => {
         if (BALANCE_STATUS.available || Number(props.category.budgeted) !== Number(form.amount)) {
-            const month = format(startOfMonth(pageState.dates.endDate), 'yyyy-MM-dd');
-            const field = status.value == BALANCE_STATUS.available ? 'source_category_id' : 'destination_category_id'
+            const field = status.value == BALANCE_STATUS.available ? 'sourceCategoryId' : 'destinationCategoryId'
 
-            form.transform(data => ({
-                ...data,
+            const data = form.data();
+
+            emit('move', {
+                ...form.data(),
                 budgeted: BALANCE_STATUS.available ? data.amount : props.category.budgeted + data.amount,
-                source_category_id: data.source_category_id?.value,
-                destination_category_id: data.destination_category_id?.value,
+                sourceCategoryId: data.source_category_id?.value,
+                destinationCategoryId: data.destination_category_id?.value,
                 [field]: props.category.id,
-                type: 'movement',
-                date: month
-            })).post(`/budgets/${props.category.id}/months/${month}`, {
-                preserveState: true,
-                preserveScroll: true,
-                onSuccess() {
-                    showPopover.value = false;
-                }
-            });
+                category: props.category
+            })
+
+            showPopover.value = false;
         }
     }
 
@@ -124,7 +119,7 @@
 
 <template>
 <div class="flex justify-end text-right select-none" title="Money Available">
-    <NPopover trigger="manual" placement="bottom"  @update:show="handleUpdateShow" :show="showPopover">
+    <NPopover trigger="manual" placement="bottom"  :show="showPopover">
         <template #trigger>
             <div
                 class="inline-flex items-center px-4 py-1 font-bold cursor-pointer flex-nowrap rounded-3xl min-w-max"
@@ -192,7 +187,7 @@
                 </AtButton>
                 <LogerButton
                     class="text-white rounded-md bg-success"
-                    @click="onAssignBudget()"
+                    @click="onMoveFromBudget()"
                     :processing="form.processing"
                 >
                     Save

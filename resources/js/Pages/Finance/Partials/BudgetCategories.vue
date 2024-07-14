@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {  toRefs } from "vue";
+import {  toRefs , ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
 import { VueDraggableNext as Draggable } from "vue-draggable-next";
 import { useBreakpoints, breakpointsTailwind } from "@vueuse/core";
@@ -30,6 +30,7 @@ const {
   filters,
   setSelectedBudget,
   assignBudget,
+  moveBudget
 } = useBudget(budgets);
 
 const categoryForm = useForm({
@@ -44,7 +45,6 @@ const groupById = (items) =>
     items[item.id] = item;
     return items;
 }, {});
-
 
 const saveBudgetCategory = (parentId?: number, callback?: () => {}) => {
   if (!categoryForm.processing) {
@@ -62,6 +62,14 @@ const saveReorder = (categories: ICategory[]) => {
   const savedItems = groupById(items);
   axios.patch("/api/categories/", { data: savedItems });
 };
+
+const isRunningInBackground = ref(false);
+const handleBudgetMovement = (budgetMovementData: any) => {
+    isRunningInBackground.value = true;
+    moveBudget(budgetMovementData);
+    isRunningInBackground.value = false;
+
+}
 </script>
 
 <template>
@@ -120,6 +128,7 @@ const saveReorder = (categories: ICategory[]) => {
                         categoryGroup: itemGroup,
                         ...$event
                     })"
+                    @move="handleBudgetMovement"
                 />
             </Draggable>
 

@@ -9,7 +9,7 @@ interface IFooterStat {
 }
 
 withDefaults(defineProps<{
-    title: string;
+    title?: string;
     subtitle?: string;
     value: number;
     footerStats?: IFooterStat[];

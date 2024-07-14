@@ -24,7 +24,7 @@ export const getCategoriesTotals = (categories: Record<string, any>, config = {
 }) => {
     return Object.values(categories).reduce((categoryTotals, category) => {
         const { budget: budgetTarget } = category;
-        categoryTotals.budgeted = ExactMath.add(categoryTotals.budgeted ?? 0, category.budgeted || 0)
+        categoryTotals.budgeted = ExactMath.add(categoryTotals.budgeted ?? 0, parseFloat(category.budgeted ?? 0))
         categoryTotals.activity =  ExactMath.add(categoryTotals.activity ?? 0, category.activity || 0)
         categoryTotals.available = ExactMath.add(categoryTotals.available ?? 0, category.available || 0)
         categoryTotals.budgetAvailable = ExactMath.add(categoryTotals.budgetAvailable ?? 0, category.name !== InflowCategories.READY_TO_ASSIGN ? (category.available || 0) : 0)

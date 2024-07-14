@@ -70,9 +70,7 @@ export const BudgetState: IBudgetState = reactive({
     inflow: computed(() =>BudgetState.data.find((category: IBudgetCategory) => category.name == 'Inflow')),
     outflow: computed(() => {
         return BudgetState.data?.filter((category: IBudgetCategory) => category.name != 'Inflow')
-    }, { onTrigger: (event) => {
-        console.log("here we are", event)
-    }}),
+    }),
     budgetTotals: computed(() => {
         return getGroupTotals(BudgetState.outflow)
     }),
@@ -92,7 +90,6 @@ export const BudgetState: IBudgetState = reactive({
         const movedFromLastMonth = parseFloat(category.moved_from_last_month ?? 0)
         const balance = (parseFloat(category.activity ?? 0) + parseFloat(category.left_from_last_month ?? 0) - assigned)
 
-        console.log("recomputed", category, balance, assigned)
 
        return {
             availableForFunding,
@@ -199,6 +196,7 @@ interface AssignBudgetProps {
 }
 
 interface BudgetMovementProps {
+    category?: IBudgetCategory,
     sourceCategoryId: number,
     destinationCategoryId: number,
     amount: number,
@@ -220,11 +218,12 @@ const findCategory = (destinationId: number) => {
 
     return catData;
 }
+
 const updateBalances = (destinationId: number, savedMovement:BudgetMovementProps , subtractMode: boolean = false) => {
     const [groupIndex, index] = findCategory(destinationId);
     BudgetState.data[groupIndex].subCategories[index].budgeted = subtractMode
     ? BudgetState.data[groupIndex].subCategories[index].budgeted - savedMovement.amount
-    : savedMovement.amount
+    : parseFloat(BudgetState.data[groupIndex].subCategories[index].budgeted ?? 0) + savedMovement.amount
 }
 export const useBudget = (budgets: Ref<Record<string, any>>) => {
     if (budgets) {
@@ -253,7 +252,6 @@ export const useBudget = (budgets: Ref<Record<string, any>>) => {
         const destination = assign.category;
 
 
-
         if (destination?.id) {
             const amount = assign.budgeted;
             let rest = amount;
@@ -279,13 +277,47 @@ export const useBudget = (budgets: Ref<Record<string, any>>) => {
         setVisibleCategories()
     }
 
+    const moveBudget = (movementData: BudgetMovementProps) => {
+            axios.post(`/budgets/${movementData.category?.id}/months/${movementData.date}` ,{
+                amount: movementData.amount,
+                source_category_id:  movementData.sourceCategoryId,
+                destination_category_id: movementData.destinationCategoryId,
+                type: 'movement',
+                date: movementData.date
+            });
+
+            const sourceCategory = BudgetState.categories.find( cat => cat.id == movementData.sourceCategoryId);
+            const destinationCategory = BudgetState.categories.find( cat => cat.id == movementData.destinationCategoryId);
+
+            const amount = movementData.amount > sourceCategory.available ? sourceCategory.available : movementData.amount;
+
+            const formData: BudgetMovementProps = {
+                sourceCategoryId:   sourceCategory.id,
+                destinationCategoryId:  destinationCategory.id,
+                amount: amount,
+                date:  movementData.date,
+            };
+
+            console.log(formData);
+
+            if (sourceCategory)  {
+                updateBalances(destinationCategory.id, formData);
+                setBudgetState(getBudget(BudgetState.data));
+                setVisibleCategories()
+                updateBalances(sourceCategory.id, formData, true);
+            }
+            setBudgetState(getBudget(BudgetState.data));
+            setVisibleCategories()
+    }
+
 
     return {
         ...toRefs(BudgetState),
         budgetState: BudgetState.outflow,
         setBudgetFilter,
         setSelectedBudget,
-        assignBudget
+        assignBudget,
+        moveBudget
     }
 }
 
