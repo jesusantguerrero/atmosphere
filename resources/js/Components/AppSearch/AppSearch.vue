@@ -65,7 +65,6 @@ const isVisibleOption = (optionName: string) => {
 };
 
 const resetFilters = () => {
-  emit("clear");
   visibleOption.value = "";
 };
 
@@ -118,13 +117,14 @@ const emitBlur = () => {
         <button
           title="Reset all filters"
           class="hover:bg-red-400 bg-gray-100 h-6 transition-all mr-4 flex items-center justify-center w-6 my-auto hover:text-white px-2 rounded-full"
-          @click="resetFilters()"
+          @click.stop="resetFilters()"
           v-if="hasFilters"
         >
           <IMdiClose />
         </button>
       </template>
     </AtInput>
+    {{ hasFilers }}
     <AppSearchFilters
       v-if="!isVisibleOption('filter') && sorts"
       class="flex space-x-4 items-center"

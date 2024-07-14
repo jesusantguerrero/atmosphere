@@ -23,8 +23,8 @@ import LogerButton from "@/Components/atoms/LogerButton.vue";
 import { useAppContextStore } from "@/store";
 import { useTransactionStore } from "@/store/transactions";
 import { IOccurrenceCheck } from "@/domains/housing/models";
-import { IAccount, ICategory } from "@/domains/transactions/models";
-import { IBudgetStat } from "@/domains/budget/models";
+import { IAccount, ICategory, ITransaction } from "@/domains/transactions/models";
+import { IBudgetStat } from "@/domains/budget/models/budget";
 import { useModuleEnabled } from '@/domains/app'
 
 const props = withDefaults(
@@ -49,10 +49,11 @@ const props = withDefaults(
     meals: { data: any[] };
     user: {
       name: string;
+      current_team_id: number;
     };
     netWorth: any;
     budgetTotal: IBudgetStat[];
-    nextPayments: any[];
+    nextPayments: ITransaction[];
     transactionTotal: Record<string, any>;
     categories: ICategory[];
     accounts: IAccount[];
@@ -128,7 +129,7 @@ const deleteBulkTransactions = () => {
       onSuccess() {
         deleteTransactionsForm.isVisible = false;
         selectedItems.value = [];
-        router.reload({ preserveScroll: true });
+        router.reload();
         transactionStore.reload();
       },
     });

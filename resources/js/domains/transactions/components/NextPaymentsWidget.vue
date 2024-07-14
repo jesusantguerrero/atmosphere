@@ -4,15 +4,32 @@ import { ITransaction } from '../models';
 import { useTransactionModal } from '../useTransactionModal';
 import NextPaymentItem from './NextPaymentItem.vue';
 
-defineProps<{
-    payments: ITransaction
-}>()
+const props = withDefaults(defineProps<{
+    payments: ITransaction[];
+    title: string
+    emitActions?: boolean
+}>(), {
+    title: 'Next Payments'
+})
 
+const emit = defineEmits(['action', 'delete'])
 const { openTransactionModal } = useTransactionModal();
 const handleEdit = (transaction: ITransaction) => {
-    openTransactionModal({
-        transactionData: transaction
-    })
+    if (props.emitActions) {
+        emit('action', transaction);
+    } else {
+        openTransactionModal({
+            transactionData: transaction
+        })
+    }
+}
+
+const handleRemove = (transaction: ITransaction) => {
+    if (props.emitActions) {
+        emit('delete', transaction);
+    } else {
+        removeTransaction(transaction);
+    }
 }
 </script>
 
@@ -21,15 +38,19 @@ const handleEdit = (transaction: ITransaction) => {
     class="mt-4 mb-4 overflow-hidden bg-white sm:rounded-lg"
     :class="cardShadow"
 >
-    <h4 class="pb-2 font-bold">Next Payments</h4>
+    <h4 class="pb-2 font-bold"> {{ title }} </h4>
     <section class="space-y-2">
         <NextPaymentItem
             v-for="transaction in payments"
             :key="transaction.id"
             :payment="transaction"
             @edit="handleEdit"
-            @deleted="removeTransaction"
-        />
+            @deleted="handleRemove"
+        >
+            <template #left-action-button>
+                <slot name="left-action-button" :resource-id="transaction.id" />
+            </template>
+        </NextPaymentItem>
     </section>
 </div>
 </template>

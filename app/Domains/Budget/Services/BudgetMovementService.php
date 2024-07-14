@@ -59,7 +59,7 @@ class BudgetMovementService
         $formData = array_merge($session, [
             'source_category_id' => $isPositiveTransaction ? $sourceId : $destinationId,
             'destination_category_id' => $isPositiveTransaction ? $destinationId : $sourceId,
-            'amount' => $destinationBalance->available - $amount,
+            'amount' => $amount,
             'date' => $data->date,
         ]);
         DB::beginTransaction();

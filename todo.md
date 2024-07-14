@@ -41,6 +41,8 @@
 - [] Housing Plans
 - [] Housing Week Chopping Chore
 - [] Profiles Events / Updates / Activities
+- [] tooltip de fecha en el candado de conciliacion
+
 
 
 ## Categories / Goals

@@ -1,18 +1,15 @@
 <script setup lang="ts">
-import { computed, toRefs, provide, ref, onMounted, watch , nextTick } from "vue";
+import { computed, toRefs, provide, ref, onMounted } from "vue";
 import { router, useForm, usePage } from "@inertiajs/vue3";
 import { format } from "date-fns";
-import { NDatePicker } from "naive-ui";
-// @ts-expect-error: no definitions
-import { AtField, AtDatePager } from "atmosphere-ui";
-// import { AtDatePager, useServerSearch, IServerSearchData, AtField } from "atmosphere-ui";
+import { AtDatePager } from "atmosphere-ui";
+import axios from "axios";
+
 import { useServerSearch, IServerSearchData } from "@/composables/useServerSearchV2";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import AppSearch from "@/Components/AppSearch/AppSearch.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
-import ConfirmationModal from "@/Components/atoms/ConfirmationModal.vue";
-import LogerInput from "@/Components/atoms/LogerInput.vue";
 import BackgroundCard from "@/Components/molecules/BackgroundCard.vue";
 
 import FinanceTemplate from "./Partials/FinanceTemplate.vue";
@@ -20,19 +17,19 @@ import FinanceSectionNav from "./Partials/FinanceSectionNav.vue";
 import AccountReconciliationBanner from "./Partials/AccountReconciliationBanner.vue";
 import TransactionSearch from "@/domains/transactions/components/TransactionSearch.vue";
 import TransactionTable from "@/domains/transactions/components/TransactionTable.vue";
-import DraftButtons from "@/domains/transactions/components/DraftButtons.vue";
+import AccountReconciliationForm from "./AccountReconciliationForm.vue";
 
 import { useTransactionModal, TRANSACTION_DIRECTIONS, removeTransaction } from "@/domains/transactions";
-// import { IServerSearchData, useServerSearch } from "@/composables/useServerSearch";
 import { tableAccountCols } from "@/domains/transactions";
+import { paymentMethods } from "@/domains/transactions/constants";
 import { useAppContextStore } from "@/store";
 import { formatMoney } from "@/utils";
 import { IAccount, ICategory, ITransaction } from "@/domains/transactions/models";
-import axios from "axios";
-import AccountReconciliationForm from "./AccountReconciliationForm.vue";
-
+import NextPaymentsWidget from "@/domains/transactions/components/NextPaymentsWidget.vue";
+import { usePaymentModal } from "@/domains/transactions/usePaymentModal";
 
 const { openTransactionModal } = useTransactionModal();
+const { openModal } = usePaymentModal();
 
 
 interface CollectionData<T> {
@@ -41,6 +38,7 @@ interface CollectionData<T> {
 const props = withDefaults(defineProps<{
     accountDetailTypes: {label: string, id: number| string}[];
     transactions: ITransaction[];
+    billingCycles: ITransaction[];
     stats: CollectionData<Record<string, number>>;
     accounts: IAccount[];
     categories: ICategory[],
@@ -68,9 +66,7 @@ const listComponent = computed(() => {
 	return context.isMobile ? TransactionSearch : TransactionTable;
 });
 
-const isDraft = computed(() => {
-	return serverSearchOptions.value?.filters?.status == "draft";
-});
+
 
 const handleDuplicate = (transaction: ITransaction) => {
     axios.get(`/transactions/${transaction.id}?json=true`).then(({ data }) => {
@@ -105,11 +101,21 @@ onMounted(() => {
 
 const monthName = computed(() => format(pageState.dates.startDate, "MMMM"))
 
-// reconciliation
+// ## Reconciliation
+
 
 const hasReconciliation = computed(() => {
-    return selectedAccount.value?.reconciliations_last
+    return selectedAccount.value?.reconciliation_last
 })
+
+const hasPendingReconciliation = computed(() => {
+    return selectedAccount.value?.reconciliation_last?.status == 'pending';
+})
+
+const isReconciled = computed(() => {
+	return hasReconciliation.value && selectedAccount.value?.reconciliation_last.amount == selectedAccount.value.balance ;
+});
+
 
 const reconcileForm = useForm({
 		isVisible: false,
@@ -117,45 +123,69 @@ const reconcileForm = useForm({
 		balance: 0,
 })
 
-    const reconciliation = () => {
-        reconcileForm.transform(data => ({
-            ...data,
-            date: format(data.date, 'yyyy-MM-dd'),
-        })).post(`/finance/reconciliation/accounts/${selectedAccount.value?.id}`, {
-            preserveScroll: true,
-            only: ['transactions', 'accounts', 'stats'],
-            onFinish() {
-                reconcileForm.reset()
-                reconcileForm.isVisible = false;
+const  { TRANSFER } = TRANSACTION_DIRECTIONS;
+const page = usePage().props;
 
-            }
-        });
-    };
+// Credit cards
+const creditCard = computed(() => {
+    return props.accountDetailTypes.find((type) => type.label.toLowerCase() == "credit cards");
+});
 
-    const  { TRANSFER } = TRANSACTION_DIRECTIONS;
-    const page = usePage().props;
+const isCreditCard = computed(() => {
+    return selectedAccount.value?.account_detail_type_id == creditCard.value?.id;
+});
 
-    const creditCard = computed(() => {
-        return props.accountDetailTypes.find((type) => type.label.toLowerCase() == "credit cards");
-    });
-    const isCreditCard = computed(() => {
-        return selectedAccount.value?.account_detail_type_id == creditCard.value?.id;
-    });
+const payCreditCard = () => {
+    const accountId = page.accountId
+    const debt = Math.abs(selectedAccount.value?.balance ?? 0);
+    const transaction = currentBillingCycle.value;
 
-    const payCreditCard = () => {
-        const accountId = page.accountId
-        const debt = Math.abs(selectedAccount.value?.balance ?? 0);
-        openTransactionModal({
-            mode: TRANSFER,
-            transactionData: {
-                counter_account_id: accountId ?? "",
-                total: debt,
-                description: `Payment of ${selectedAccount.value?.name}`,
-                account_id: props.accounts.find((account) => account.balance > debt)?.id
-            },
-        })
-    }
+    openModal({
+        mode: TRANSFER,
+        data: {
+            counter_account_id: accountId ?? "",
+            due: debt,
+            description: `Payment of ${selectedAccount.value?.name}`,
+            account_id: props.accounts.find((account) => account.balance > debt)?.id,
+            documents: [transaction],
+            resourceId: transaction?.id,
+            title: `Payment of ${transaction?.name}`,
+            defaultConcept: `Payment of ${transaction?.name}`,
+            transaction: transaction,
+            endpoint: `/accounts/${transaction?.account_id}/payments/`,
+            paymentMethod: paymentMethods[0],
+        },
+    })
+}
 
+const setPaymentBill = (transaction: ITransaction) => {
+  openModal(
+        { data:{
+            documents: [transaction],
+            resourceId: transaction.id,
+            title: `Payment of ${transaction.name}`,
+            defaultConcept: `Payment of ${transaction.name}`,
+            due: transaction.total,
+            transaction: transaction,
+            endpoint: `/accounts/${transaction.account_id}/payments/`,
+            paymentMethod: paymentMethods[0],
+        }
+    })
+}
+
+const billingCycleDetails = ref("");
+const fetchBillingCycleDetails = async (billingCycleId: string) => {
+    billingCycleDetails.value = "";
+    const response = await axios.get(`/api/billing-cycles/${billingCycleId}?relationships=transactions`)
+    billingCycleDetails.value = response.data?.transactions;
+}
+
+const currentBillingCycle = computed(() => {
+    return props.billingCycles?.map((payment) => ({
+        ...payment,
+        date: payment.due_at
+    }))?.at(0)
+})
 </script>
 
 <template>
@@ -174,24 +204,23 @@ const reconcileForm = useForm({
           <LogerButton
           variant="inverse"
           @click="reconcileForm.isVisible = true"
-          v-if="!hasReconciliation">
-            Reconciliation
+          v-if="!isReconciled">
+            Reconciliation {{ isReconciled }}
           </LogerButton>
           <LogerButton
             variant="inverse"
-            @click="router.visit(`/finance/reconciliation/${selectedAccount?.reconciliations_last.id}`)"
-            v-else
+            @click="router.visit(`/finance/reconciliation/${selectedAccount?.reconciliation_last.id}`)"
+            v-else-if="hasPendingReconciliation"
           >
             Review Reconciliation
           </LogerButton>
           <LogerButton
             variant="neutral"
-            v-if="isCreditCard"
+            v-if="isCreditCard && currentBillingCycle"
             @click="payCreditCard"
           >
             Pay credit card
           </LogerButton>
-          <DraftButtons v-if="isDraft" />
         </div>
       </template>
     </FinanceSectionNav>
@@ -215,6 +244,28 @@ const reconcileForm = useForm({
 
   <FinanceTemplate title="Transactions" :accounts="accounts">
       <section class="flex w-full mt-4 space-x-4 flex-nowrap">
+        <BackgroundCard
+          class="w-full cursor-pointer text-body-1 bg-base-lvl-3"
+          :value="formatMoney(selectedAccount?.balance)"
+          :label="$t('Balance')"
+          label-class="capitalize text-secondary font-base"
+        >
+            <template #value>
+                <h4>
+                    {{ formatMoney(selectedAccount?.balance) }}
+                    <ElTooltip :content="formatMoney(selectedAccount?.reconciliation_last?.amount)"
+                        v-if="selectedAccount?.reconciliation_last"
+                    >
+                        <button
+                            @click="router.visit(`/finance/accounts/${selectedAccount.id}/reconciliations/`)"
+                            class="inline-block ml-2 font-bold text-secondary"
+                        >
+                            <IMdiHistory />
+                        </button>
+                    </ElTooltip>
+                </h4>
+            </template>
+        </BackgroundCard>
         <BackgroundCard
           class="w-full cursor-pointer text-body-1 bg-base-lvl-3"
           v-for="(stat, label) in stats"
@@ -251,6 +302,7 @@ const reconcileForm = useForm({
                 :account="selectedAccount"
             />
 
+
             <Component
                 :is="listComponent"
                 :cols="tableAccountCols(props.accountId)"
@@ -262,7 +314,30 @@ const reconcileForm = useForm({
                 @duplicate="handleDuplicate"
                 @edit="handleEdit"
             />
-      </section>
+
+        </section>
+
+        <template #prepend-panel class="">
+            <NextPaymentsWidget
+                class="w-full py-4 px-4"
+                title="Credit Card Payments"
+                :payments="billingCycles.map((payment) => ({
+                    ...payment,
+                    date: payment.due_at
+                }))"
+                emit-actions
+                emit-delete
+                @action="setPaymentBill"
+            >
+                <template v-slot:left-action-button="{  resourceId }">
+                    <button
+                    class="text-gray-400 hidden group-hover:inline-block transition cursor-pointer hover:text-red-400 focus:outline-none"
+                    @click="fetchBillingCycleDetails(resourceId)">
+                        <IMdiLink />
+                     </button>
+                </template>
+            </NextPaymentsWidget>
+        </template>
 
       <AccountReconciliationForm
           :show="reconcileForm.isVisible"

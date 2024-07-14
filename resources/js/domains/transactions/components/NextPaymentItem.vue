@@ -14,9 +14,11 @@ defineEmits(['edit', 'deleted']);
 <template>
     <article class="flex justify-between px-4 payment group">
         <section class="flex">
-            <button class="text-gray-400 hidden group-hover:inline-block transition cursor-pointer hover:text-red-400 focus:outline-none" @click="$emit('deleted', payment)">
-                <IMdiTrash />
-             </button>
+            <slot name="left-action-button">
+                <button class="text-gray-400 hidden group-hover:inline-block transition cursor-pointer hover:text-red-400 focus:outline-none" @click="$emit('deleted', payment)">
+                    <IMdiTrash />
+                 </button>
+            </slot>
              <section>
                  <SectionTitle>
                      <MoneyPresenter :value="payment.total" />

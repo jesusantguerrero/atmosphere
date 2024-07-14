@@ -10,7 +10,7 @@ import { IAccount } from '../models';
 
 const props = defineProps<{
     show: boolean;
-    maxWidth?: string;
+    maxWidth: string;
     closeable: boolean;
     title: string;
     account: IAccount;

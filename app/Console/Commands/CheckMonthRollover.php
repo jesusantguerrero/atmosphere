@@ -37,7 +37,7 @@ class CheckMonthRollover extends Command
             if (!$timezone) continue;
 
             $now->setTimezone($timezone['value']);
-            if ($now->format('H:i') === '00:00' && $now->format('Y-m-d')) {
+            if ($now->format('H:i') === '00:00' && $now->format('d') == "01") {
                 $previousMonth = $now->subMonth()->startOf('month')->format('Y-m');
                 $rolloverService->startFrom($team->id, $previousMonth);
             }

@@ -19,6 +19,6 @@ class CategoryListWithBalance implements CategoryListClientBalances
 
     public function validate(mixed $user)
     {
-        Gate::forUser($user)->authorize('update', Category::class);
+        Gate::forUser($user)->authorize('list', Category::class);
     }
 }

@@ -47,8 +47,8 @@ const listComponent = computed(() => {
   return context.isMobile ? TransactionSearch : TransactionTable;
 });
 
-const removeTransaction = (transaction: ITransaction) => {
-  router.delete(`/transactions/${transaction.id}`, {
+const removeReconciliation = (transaction: ITransaction) => {
+  router.delete(`/finance/reconciliation/${transaction.id}`, {
     onSuccess() {
       router.reload();
     },
@@ -56,7 +56,7 @@ const removeTransaction = (transaction: ITransaction) => {
 };
 
 const findLinked = (transaction: ITransaction) => {
-  router.patch(`/transactions/${transaction.id}/linked`, {
+  router.patch(`/finance/reconciliation/${transaction.id}/linked`, {
     // @ts-ignore
     onSuccess() {
       router.reload();
@@ -65,7 +65,7 @@ const findLinked = (transaction: ITransaction) => {
 };
 
 const handleEdit = (transaction: ITransaction) => {
-    axios.get(`/transactions/${transaction.id}?json=true`).then(({ data }) => {
+    axios.get(`/finance/recociliation/${transaction.id}?json=true`).then(({ data }) => {
         openTransactionModal({
             transactionData: data,
         });
@@ -120,7 +120,7 @@ onMounted(() => {
             :server-search-options="serverSearchOptions"
             :is-loading="isLoading"
             @findLinked="findLinked"
-            @removed="removeTransaction"
+            @removed="removeReconciliation"
             @edit="handleEdit"
           />
       </section>
