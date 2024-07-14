@@ -60,7 +60,7 @@
     <article class="relative flex flex-col-reverse w-full pt-16 pb-20 mx-auto md:flex-row md:space-x-2 md:max-w-screen-2xl">
         <main
             class="w-full overflow-hidden md:pr-5  md:pl-8"
-            :class="!hidePanel && 'md:w-7/12 lg:w-10/12'"
+            :class="!hidePanel && 'md:w-6/12 lg:w-7/12 xl:w-8/12 2xl:w-10/12'"
         >
             <slot />
         </main>

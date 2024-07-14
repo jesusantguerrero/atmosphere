@@ -21,6 +21,7 @@ const goToReconciliation = () => {
 const isMatched = computed(() => {
     return account.balance == account.reconciliation_last?.amount;
 })
+
 const adjustmentForm = useForm({
     date: account.reconciliation_last?.date,
     balance: account.balance,
@@ -43,11 +44,10 @@ const adjustAndFinish = () => {
 }
 
 const differenceStateText = computed(() => {
-
     return (account.balance || 0) > (account.reconciliation_last?.amount ?? 0) ? 'higher' : 'lower'
 })
-const differenceAmount = computed(() => {
 
+const differenceAmount = computed(() => {
     return account.reconciliation_last?.amount - account.balance
 })
 

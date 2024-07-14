@@ -40,7 +40,7 @@ export interface IAccount {
     name: string;
     color: string;
     balance: number;
-    reconciliations_last?: IReconciliation;
+    reconciliation_last?: IReconciliation;
     account_detail_type_id: number;
     currency_code: string;
 }
