@@ -49,13 +49,18 @@ export const formatValue = (value, type = "default", operation = "read") => {
                     : format(value, "yyyy-MM-dd");
             },
             read: (value = "") => {
-                if (value instanceof Date) {
-                    return value
-                }
-                else if (parseISO(value)) {
-                    return parseISO(value)
-                } else if (typeof value == "string") {
-                    return setDate(value)
+                try {
+                    if (value instanceof Date) {
+                        return value
+                    }
+                    else if (parseISO(value)) {
+                        return parseISO(value)
+                    } else if (typeof value == "string") {
+                        return setDate(value)
+                    }
+                } catch (err) {
+                    console.log(err)
+                    return value;
                 }
             },
             display: (value = "") => {
