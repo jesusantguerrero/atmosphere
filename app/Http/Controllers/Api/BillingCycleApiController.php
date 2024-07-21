@@ -29,4 +29,16 @@ class BillingCycleApiController extends BaseController
           }
     }
 
+    public function addPayment(CreditCardReportService $creditCardReportService, BillingCycle $billingCycle) {
+        try {
+            return $creditCardReportService->addPayment($billingCycle, request()->post());
+          } catch (Exception $e) {
+              return response([
+                'status' => [
+                    'message' => $e->getMessage()
+                ]
+              ], 400);
+          }
+    }
+
 }

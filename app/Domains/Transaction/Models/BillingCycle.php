@@ -2,6 +2,7 @@
 
 namespace App\Domains\Transaction\Models;
 
+use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 use Insane\Journal\Models\Core\Payment;
@@ -143,9 +144,9 @@ class BillingCycle extends Model implements IPayableDocument
     }
 
     public function linkPayment(Transaction $transaction, $formData) {
-        // if ($this->debt <= 0) {
-        //   throw new Exception("The document {$this->concept} is already paid");
-        // }
+        if ($this->debt <= 0) {
+          throw new Exception("The document {$this->concept} is already paid");
+        }
 
         $payment = $this->payments()->create([
             "amount" => $transaction->total,
@@ -170,5 +171,111 @@ class BillingCycle extends Model implements IPayableDocument
         $this->save();
 
         return $payment;
+    }
+
+    public function createPayment($formData)
+    {
+        $paid = $this->payments->sum('amount');
+        if ($paid >= $this->total) {
+            throw new Exception("This invoice is already paid");
+        }
+
+        $debt = $this->total - $paid;
+
+        $formData['amount'] = $formData['amount'] > $debt ? $debt : $formData['amount'];
+        $payment = $this->payments()->create([
+            ...$formData,
+            'user_id' => $formData['user_id'] ?? $this->user_id,
+            'team_id' => $formData['team_id'] ?? $this->team_id,
+            'client_id' => $formData['client_id'] ?? $this->user_id,
+        ]);
+
+        $this->save();
+        return $payment;
+    }
+
+    public function createPaymentTransaction(Payment $payment) {
+        $direction = Transaction::DIRECTION_CREDIT;
+        $counterAccountId = $this->account_id;
+
+        return [
+            "team_id" => $payment->team_id,
+            "user_id" => $payment->user_id,
+            "date" => $payment->payment_date,
+            "description" => $payment->concept,
+            "direction" => $direction,
+            "total" => $payment->amount,
+            "account_id" => $payment->account_id,
+            "counter_account_id" => $counterAccountId,
+            "items" => []
+        ];
+    }
+
+    protected function getBillPaymentItems($payment)
+    {
+        $isExpense = $this->isBill();
+        $items = [];
+
+        $mainAccount = $isExpense ? $this->invoice_account_id : Account::where([
+          "team_id" => $this->team_id,
+          "display_id" => "products"])->first()->id;
+
+        $lineCount = 0;
+        $taxAmount = 0;
+
+        foreach ($this->lines as $line) {
+            // debits
+            $lineTaxAmount = $line->taxes->sum('amount');
+            $items[] = [
+                "index" => $lineCount,
+                "account_id" =>  $mainAccount,
+                "category_id" => null,
+                "type" => 1,
+                "concept" => $line->concept ?? $this->formData['concept'],
+                "amount" => ($line->amount ?? $payment->total) - $lineTaxAmount,
+                "anchor" => false,
+            ];
+            echo $lineTaxAmount . PHP_EOL;
+
+            // taxes and retentions
+            $lineCount+= 1;
+            foreach ($line->taxes as $index => $tax) {
+                $lineCount+=$index;
+                $items[] = [
+                    "index" => $lineCount,
+                    "account_id" => $tax->tax->translate_account_id ?? Account::guessAccount($this, [$tax['name'], 'sales_taxes']),
+                    "category_id" => null,
+                    "type" => -1,
+                    "concept" => $tax['name'],
+                    "amount" => $tax['amount'],
+                    "anchor" => false,
+                ];
+
+                $taxAmount += $tax['amount'];
+
+                $items[] = [
+                    "index" => $lineCount + 1,
+                    "account_id" => $tax->tax->account_id ?? Account::guessAccount($this, [$tax['name'], 'sales_taxes']),
+                    "category_id" => null,
+                    "type" =>  1,
+                    "concept" => $tax['name'],
+                    "amount" => $tax['amount'],
+                    "anchor" => false,
+                ];
+            }
+        }
+
+          // credits
+          $items[] = [
+            "index" => count($items),
+            "account_id" => $payment->account_id,
+            "category_id" => null,
+            "type" => -1,
+            "concept" => $payment->concept,
+            "amount" => $payment->amount,
+            "anchor" => true,
+        ];
+
+        return $items;
     }
 }

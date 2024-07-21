@@ -62,7 +62,7 @@ const { isOpen: isPaymentModalOpen } = usePaymentModal();
     v-if="paymentModalState"
     v-bind="paymentModalState?.data"
     v-model="isPaymentModalOpen"
-    @saved="onPaymentSaved"
+    @saved="onTransactionSaved"
   />
 
   <ImportResourceModal v-model:show="isImportModalOpen" />
