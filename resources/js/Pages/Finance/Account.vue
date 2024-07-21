@@ -23,7 +23,7 @@ import { useTransactionModal, TRANSACTION_DIRECTIONS, removeTransaction } from "
 import { tableAccountCols } from "@/domains/transactions";
 import { paymentMethods } from "@/domains/transactions/constants";
 import { useAppContextStore } from "@/store";
-import { formatMoney } from "@/utils";
+import { formatDate, formatMoney } from "@/utils";
 import { IAccount, ICategory, ITransaction } from "@/domains/transactions/models";
 import NextPaymentsWidget from "@/domains/transactions/components/NextPaymentsWidget.vue";
 import { usePaymentModal } from "@/domains/transactions/usePaymentModal";
@@ -128,6 +128,12 @@ const  { TRANSFER } = TRANSACTION_DIRECTIONS;
 const page = usePage().props;
 
 // Credit cards
+const currentBillingCycle = computed(() => {
+    return props.billingCycles?.map((payment) => ({
+        ...payment,
+        date: payment.due_at
+    }))?.at(0)
+})
 const creditCard = computed(() => {
     return props.accountDetailTypes.find((type) => type.label.toLowerCase() == "credit cards");
 });
@@ -163,6 +169,7 @@ const setPaymentBill = (transaction: ITransaction) => {
   openModal(
         { data:{
             documents: [transaction],
+            transaction: transaction,
             resourceId: transaction.id,
             title: `Payment of ${transaction.name}`,
             defaultConcept: `Payment of ${transaction.name}`,
@@ -173,20 +180,6 @@ const setPaymentBill = (transaction: ITransaction) => {
         }
     })
 }
-
-const billingCycleDetails = ref("");
-const fetchBillingCycleDetails = async (billingCycleId: string) => {
-    billingCycleDetails.value = "";
-    const response = await axios.get(`/api/billing-cycles/${billingCycleId}?relationships=transactions`)
-    billingCycleDetails.value = response.data?.transactions;
-}
-
-const currentBillingCycle = computed(() => {
-    return props.billingCycles?.map((payment) => ({
-        ...payment,
-        date: payment.due_at
-    }))?.at(0)
-})
 
 const financeTabs = [{
       name: "transactions",
@@ -201,8 +194,6 @@ const financeTabs = [{
 const selectedTabName  = computed(() => {
     return  `All transactions ${monthName.value}`;
 })
-
-fetchBillingCycleDetails();
 
 </script>
 
@@ -346,12 +337,17 @@ fetchBillingCycleDetails();
                 emit-delete
                 @action="setPaymentBill"
             >
-                <template v-slot:left-action-button="{  resourceId }">
+                <template v-slot:left-action-button="{  resource }">
                     <button
                     class="text-gray-400 hidden group-hover:inline-block transition cursor-pointer hover:text-red-400 focus:outline-none"
-                    @click="fetchBillingCycleDetails(resourceId)">
+                    @click="setPaymentBill(resource)">
                         <IMdiLink />
                      </button>
+                </template>
+                <template v-slot:date="{ resource }">
+                    <span title="Approve transaction" class="text-secondary bg-secondary/10 px-4 rounded-3xl py-1.5 text-xs cursor-pointer" @click="$emit('edit', payment)">
+                        {{ formatDate(resource.date) }}
+                    </span>
                 </template>
             </NextPaymentsWidget>
         </template>

@@ -29,9 +29,11 @@ defineEmits(['edit', 'deleted']);
              </section>
         </section>
         <section class="items-center">
-            <span title="Approve transaction" class="text-secondary bg-secondary/10 px-4 rounded-3xl py-1.5 text-xs cursor-pointer" @click="$emit('edit', payment)">
-                {{ formatDate(payment.date) }}
-            </span>
+            <slot name="date">
+                <span title="Approve transaction" class="text-secondary bg-secondary/10 px-4 rounded-3xl py-1.5 text-xs cursor-pointer" @click="$emit('edit', payment)">
+                    {{ formatDate(payment.date) }}
+                </span>
+            </slot>
         </section>
     </article>
 </template>

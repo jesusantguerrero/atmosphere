@@ -48,7 +48,10 @@ const handleRemove = (transaction: ITransaction) => {
             @deleted="handleRemove"
         >
             <template #left-action-button>
-                <slot name="left-action-button" :resource-id="transaction.id" />
+                <slot name="left-action-button" :resource="transaction" />
+            </template>
+            <template #date>
+                <slot name="date" :resource="transaction" />
             </template>
         </NextPaymentItem>
     </section>
