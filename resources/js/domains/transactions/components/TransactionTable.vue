@@ -50,7 +50,7 @@ const options = (row: Record<string, any>) => {
     {
       name: "findLinked",
       label: "Find Linked",
-      hide: row.status != "draft",
+      hide: row.status !== "draft",
     },
   ];
 

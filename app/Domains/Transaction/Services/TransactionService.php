@@ -193,8 +193,12 @@ class TransactionService
         ];
     }
 
-    public static function getCategoryExpensesGroup($teamId, $startDate, $endDate, $limit = null)
+    public static function getCategoryExpensesGroup($teamId, $startDate, $endDate, $limit = null, $categories = [])
     {
+        $categories = collect($categories);
+        $excluded = $categories->filter( fn ($id) => $id < 0)->map(fn($item) => abs($item))->all();
+        $included = $categories->filter( fn ($id) => $id > 0)->all();
+
         $totals = DB::table('transaction_lines')->where([
             'transaction_lines.team_id' => $teamId,
             'transactions.status' => 'verified',
@@ -203,12 +207,13 @@ class TransactionService
             ->whereNot('catGroup.name', BudgetReservedNames::INFLOW->value)
             ->whereBetween('transactions.date', [$startDate, $endDate])
             ->select(DB::raw("
-            ABS(sum(transaction_lines.amount * transaction_lines.type)) as total,
-            catGroup.name,
-            catGroup.id,
-            group_concat(concat(transaction_lines.id, '/',accounts.name, '/', transactions.date, '/', payees.name, '/', transaction_lines.concept, '/', amount * transaction_lines.type) SEPARATOR '|') as details
-            ",
-            ))
+                ABS(sum(transaction_lines.amount * transaction_lines.type)) as total,
+                catGroup.name,
+                catGroup.id,
+                group_concat(concat(transaction_lines.id, '/',accounts.name, '/', transactions.date, '/', payees.name, '/', transaction_lines.concept, '/', amount * transaction_lines.type) SEPARATOR '|') as details
+            "))
+            ->when(count($excluded), fn($q) => $q->whereNotIn('transaction_lines.category_id', $excluded))
+            ->when(count($included), fn($q) => $q->whereIn('transaction_lines.category_id', $included))
             ->join('transactions', 'transactions.id', 'transaction_id')
             ->join('accounts', 'accounts.id', 'transaction_lines.account_id')
             ->join('categories', 'categories.id', 'transaction_lines.category_id')
@@ -514,5 +519,23 @@ class TransactionService
             'g.display_id' => 'liabilities',
           ])
         ->get();
-      }
+    }
+
+    public function findIfDuplicated($transactionData) {
+        print_r($transactionData);
+        return Transaction::where([
+            "team_id" => $transactionData['team_id'],
+            'date' => $transactionData['date'],
+            'total' => $transactionData['total'],
+            'currency_code' => $transactionData['currency_code'],
+            'direction' => $transactionData['direction'],
+            'payee_id' => $transactionData['payee_id'],
+        ])
+        ->where(
+            fn($q) => $q->where('description', $transactionData['description'])
+                        ->orWhere('reference', $transactionData['reference'])
+        )
+        ->orWhere("reference", $transactionData['reference'])
+        ->first();
+    }
 }
