@@ -80,11 +80,16 @@ class FinanceTrendController extends Controller
         $queryParams = $request->query();
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
         [$startDate, $endDate] = $this->getFilterDates($filters);
+        $excludedCategories = null;
+
+        if (isset($filters['category'])) {
+            $excludedCategories = collect(explode(',', $filters['category']))->map(fn ($id) => "-$id")->all();
+        }
 
         $teamId = $request->user()->current_team_id;
 
         return [
-            'data' => TransactionService::getCategoryExpensesGroup($teamId, $startDate, $endDate),
+            'data' => TransactionService::getCategoryExpensesGroup($teamId, $startDate, $endDate, null, $excludedCategories),
             'metaData' => [
                 'title' => 'Category Group Trends',
                 'name' => 'group'
@@ -198,7 +203,7 @@ class FinanceTrendController extends Controller
     {
         $queryParams = request()->query();
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
-        [$startDate, $endDate] = $this->getFilterDates($filters);
+        [ $startDate ] = $this->getFilterDates($filters);
         $teamId = request()->user()->current_team_id;
         $excludedAccounts = null;
         if (isset($filters['category'])) {
@@ -227,8 +232,6 @@ class FinanceTrendController extends Controller
         if (isset($filters['category'])) {
             $excludedAccounts = collect(explode(',', $filters['category']))->map(fn ($id) => "-$id")->all();
         }
-
-        // dd(ReportService::generateExpensesByPeriod($teamId, $startDate, 12, 'month', $excludedAccounts), ReportService::getAssignedByPeriod($teamId, $startDate, 12, 'month', $excludedAccounts));
 
         return [
             'data' => ReportService::getAssignedByPeriod($teamId, $startDate, 12, 'month', $excludedAccounts),

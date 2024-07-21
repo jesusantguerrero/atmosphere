@@ -6,7 +6,7 @@ import { useBreakpoints, breakpointsTailwind } from "@vueuse/core"
 import { NDropdown } from 'naive-ui';
 
 
-interface NavSection {
+export interface NavSection {
     url?: string;
     to?: string;
     action?: string;

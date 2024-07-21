@@ -4,10 +4,15 @@ import { inject, computed } from "vue";
 import { NSelect } from "naive-ui";
 import { IAccount, ICategory } from "@/domains/transactions/models";
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
     accounts: IAccount[],
-    categories: ICategory[]
-}>();
+    categories: ICategory[];
+    includeLabels: boolean;
+    col: boolean;
+    tagMaxCount: number;
+}>(), {
+    tagMaxCount: 3
+});
 
 const categoryOptions = inject("categoryOptions", []);
 const accountsOptions = inject("accountsOptions", []);
@@ -33,20 +38,23 @@ const selectedCategories = computed({
 </script>
 
 <template>
-        <section class="w-80">
+        <section class="w-full">
+            <label v-if="includeLabels">Accounts:</label>
             <NSelect
                 filterable
                 clearable
                 tag
                 size="large"
                 class="w-full"
+                placeholder="Exclude accounts"
                 multiple
                 v-model:value="selectedAccounts"
                 :default-expand-all="true"
                 :options="accountsOptions"
             />
         </section>
-        <section class="w-full bg-red-500">
+        <section class="w-full">
+            <label v-if="includeLabels">Categories:</label>
             <NSelect
                 filterable
                 clearable
@@ -54,6 +62,8 @@ const selectedCategories = computed({
                 size="large"
                 multiple
                 class="w-full"
+                placeholder="Exclude categories"
+                :max-tag-count="tagMaxCount"
                 v-model:value="selectedCategories"
                 :default-expand-all="true"
                 :options="categoryOptions"
