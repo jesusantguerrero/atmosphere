@@ -29,7 +29,8 @@
     "build:digitalocean": "npm install && npm run build",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:preview": "vitepress preview docs",
+    "release": "commit-and-tag-version"
   },
   "devDependencies": {
     "@headlessui/vue": "^1.7.22",
@@ -48,6 +49,7 @@
     "atmosphere-ui": "^1.3.5",
     "autoprefixer": "^10.4.19",
     "axios": "^1.7.2",
+    "commit-and-tag-version": "^12.4.1",
     "date-fns": "^3.6.0",
     "eslint": "^9.7.0",
     "eslint-config-prettier": "^9.1.0",
@@ -93,5 +95,6 @@
     "vue-i18n": "^9.13.1",
     "vue-temporal-components": "^0.5.0"
   },
-  "type": "module"
+  "type": "module",
+  "version": "2.0.0.alpha.5"
 }
