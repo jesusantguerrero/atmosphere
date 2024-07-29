@@ -312,7 +312,7 @@ class TransactionService
             return ["{$item->group_name}:{$item->name}" => $item];
         });
 
-        $income = self::getIncomeByPayeeInPeriod($teamId, $startDate, $endDate);
+        $income = self::getTransactionsByPayeeInPeriod($teamId, $startDate, $endDate);
         $incomeCategories = $income->unique('id')->sortBy('index_field')->values();
         $incomeCategoriesGroup = $income->sortBy('index_field')->mapToGroups(function ($item) {
             return [$item->name => $item];
@@ -418,7 +418,7 @@ class TransactionService
             ->toArray();
     }
 
-    public static function getIncomeByPayeeInPeriod($teamId, $startDate, $endDate, $direction = Transaction::DIRECTION_DEBIT)
+    public static function getTransactionsByPayeeInPeriod($teamId, $startDate, $endDate, $direction = Transaction::DIRECTION_DEBIT)
     {
         return DB::table('payees')
             ->selectRaw('sum(COALESCE(total,0)) as total, date_format(transactions.date, "%Y-%m-01") as date, payees.name, payees.id')

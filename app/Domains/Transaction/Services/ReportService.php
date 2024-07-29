@@ -90,7 +90,7 @@ class ReportService
 
 
 
-        $income = self::getIncomeByPayeeInPeriod($teamId, $startDate, $endDate);
+        $income = self::getTransactionsByPayeeInPeriod($teamId, $startDate, $endDate);
         $incomeCategories =  $income->groupBy($timeUnit);
 
         $dates = $expensesGroup->keys();
@@ -155,7 +155,7 @@ class ReportService
             ->get();
     }
 
-    public static function getIncomeByPayeeInPeriod($teamId, $startDate, $endDate)
+    public static function getTransactionsByPayeeInPeriod($teamId, $startDate, $endDate)
     {
         return TransactionLine::byTeam($teamId)
             ->balance()

@@ -67,9 +67,10 @@ class TransactionCreateEntry implements AutomationActionContract
         $transactionService = new TransactionService();
 
         if ($transaction = $transactionService->findIfDuplicated($transactionData)) {
-            print_r($transaction);
            return $transaction;
         }
+
+        print_r([$transaction, "new transaction"]);
 
         $transaction = Transaction::createTransaction($transactionData);
         User::find($automation->user_id)->notify(new EntryGenerated($transaction));
