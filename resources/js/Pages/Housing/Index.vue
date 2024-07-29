@@ -11,7 +11,6 @@ import CategoryItem from '@/domains/transactions/components/CategoryItem.vue';
 import MealTypeCell from '@/domains/meal/components/MealTypeCell.vue';
 
 import { IOccurrenceCheck } from "@/domains/housing/models";
-import WeatherWidget from '@/Components/widgets/WeatherWidget.vue';
 
 defineProps<{
     checks: IOccurrenceCheck
@@ -32,9 +31,9 @@ defineProps<{
         <main
             class="px-5 mx-auto mt-12 space-y-10 md:space-y-0 md:space-x-10 md:flex max-w-screen-2xl sm:px-6 lg:px-8"
         >
-            <div class="mt-6 md:w-9/12 space-y-4">
+            <div class="mt-6 md:w-6/12 space-y-4">
                 <section class="flex flex-col md:flex-row md:space-x-4">
-                    <WelcomeCard  message="Loger profiles" class="md:w-8/12 w-full order-1">
+                    <WelcomeCard  message="Loger profiles" class="w-full order-1">
                         <section class="mt-2 md:mt-0 flex flex-col items-center mx-auto">
                             <h4 class="text-lg font-bold text-body-1"> There are not profiles created</h4>
                             <p class="max-w-lg my-3">
@@ -42,10 +41,9 @@ defineProps<{
                             </p>
                         </section>
                     </WelcomeCard>
-                    <WeatherWidget class="md:w-4/12 md:order-1" />
                 </section>
             </div>
-            <div class="py-6 space-y-4 md:w-3/12">
+            <div class="py-6 space-y-4 md:w-6/12">
                 <OccurrenceWidget :checks="checks" />
                 <ChoreWidget :chores="[]">
                 <div class="mt-2">
