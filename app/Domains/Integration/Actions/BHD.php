@@ -49,12 +49,7 @@ class BHD implements AutomationActionContract
         return 'Parse an email alert or notification from BHD Leon Bank';
     }
 
-    /**
-     * Validate and create a new team for the given user.
-     *
-     * @param  Google_Calendar_Events  $calendarEvents
-     * @return void
-     */
+
     public static function parseAlert(
         Automation $automation,
         mixed $payload,
@@ -62,16 +57,11 @@ class BHD implements AutomationActionContract
         AutomationTaskAction $previousTask,
         AutomationTaskAction $trigger
     ) {
-
+        echo "\n Parsing alert \n\n";
         return (new BHDAlert())->handle($automation, $payload);
     }
 
-    /**
-     * Validate and create a new team for the given user.
-     *
-     * @param  Google_Calendar_Events  $calendarEvents
-     * @return void
-     */
+
     public static function parseNotification(
         Automation $automation,
         mixed $payload,
@@ -79,7 +69,7 @@ class BHD implements AutomationActionContract
         AutomationTaskAction $previousTask,
         AutomationTaskAction $trigger
     ) {
-
+        echo "\n Parsing notification";
         return (new BHDNotification())->handle($automation, $payload);
     }
 
@@ -87,12 +77,12 @@ class BHD implements AutomationActionContract
     {
         try {
             $body = new Crawler($mail['message']);
-            $tdValues = $body->filter('[class*=table_trans_body] td')->each(function (Crawler $node) {
+            $tdValues = $body->filter('[class*=alert_div] td')->each(function (Crawler $node) {
                 return $node->text();
             });
 
             return empty($tdValues) ? 'notification' : 'alert';
-        } catch (Exception) {
+        } catch (Exception $e) {
             return 'notification';
         }
     }

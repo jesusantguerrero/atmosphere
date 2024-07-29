@@ -54,26 +54,28 @@ class BHDNotification implements MailToTransaction
                 'name' => 'type',
             ],
         ];
-        try {
-            foreach ($tableIds as $fieldName => $field) {
-                $bhdOutput[$field['name']] = $this->{$field['processor']}($body->filter("[id*=${fieldName}]")->first()->text());
+        foreach ($tableIds as $fieldName => $field) {
+            try {
+                $bhdOutput[$field['name']] = $this->{$field['processor']}($body->filter("[id*=$fieldName]")->first()->text());
+            } catch (Exception $e) {
+                echo $e->getMessage() . "\n\n";
+                Log::error($e->getMessage(), [$e]);
+                continue;
             }
-
-            return new TransactionDataDTO([
-                'id' => (int) $mail['id'],
-                'date' => $bhdOutput['date'],
-                'payee' => $bhdOutput['seller'],
-                'category' => '',
-                'categoryGroup' => '',
-                'description' => $bhdOutput['product'].':'.$bhdOutput['description'],
-                'amount' => $bhdOutput['amount']->amount * 1,
-                'currencyCode' => $bhdOutput['amount']->currencyCode,
-            ]);
-        } catch (Exception $e) {
-            echo $e->getMessage();
-            Log::error($e->getMessage(), [$e]);
-            return null;
         }
+
+        print_r([$bhdOutput['amount']]);
+
+        return new TransactionDataDTO([
+            'id' => (int) $mail['id'],
+            'date' => $bhdOutput['date'],
+            'payee' => $bhdOutput['seller'],
+            'category' => '',
+            'categoryGroup' => '',
+            'description' => $bhdOutput['product'].':'.$bhdOutput['description'],
+            'amount' => $bhdOutput['amount']->amount * 1,
+            'currencyCode' => $bhdOutput['amount']->currencyCode,
+        ]);
     }
 
     public function processResult($value)

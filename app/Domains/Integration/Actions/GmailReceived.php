@@ -80,6 +80,7 @@ class GmailReceived implements AutomationActionContract
                         if ($taskIndex !== 0) {
                             $actionEntity = $task->entity;
                             try {
+                                echo "\n starting workflow-task:$task->id:$task->name";
                                 $payload = $actionEntity::handle($automation, $payload, $task, $previousTask, $tasks[0]);
                                 $previousTask = $task;
                             } catch (\Exception $e) {

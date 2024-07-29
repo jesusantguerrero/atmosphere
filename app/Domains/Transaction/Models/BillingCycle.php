@@ -144,7 +144,8 @@ class BillingCycle extends Model implements IPayableDocument
     }
 
     public function linkPayment(Transaction $transaction, $formData) {
-        if ($this->debt <= 0) {
+        $paid = $this->payments;
+        if ($paid >= $this->total) {
           throw new Exception("The document {$this->concept} is already paid");
         }
 

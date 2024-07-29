@@ -10,7 +10,7 @@ defineProps<{
 
 <template>
     <div class="pb-10"  :class="cardShadow">
-        <RandomMealCard class="rounded-b-none border-b mt-4" title="Get random chore" />
+        <RandomMealCard class="rounded-b-none border-b mt-4" title="Boards" />
         <div class="px-4 py-2 space-y-4 rounded-b-md cursor-pointer min-h-min bg-base-lvl-3">
             <div class="text-center">
                 <SectionTitle type="secondary"> {{ $t('Chores for today') }}</SectionTitle>
