@@ -7,8 +7,6 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    IIonEllipsisVertical: typeof import('~icons/ion/ellipsis-vertical')['default']
-    IMaterialSymbolsBrightnessAlertOutlineRounded: typeof import('~icons/material-symbols/brightness-alert-outline-rounded')['default']
     IMdiBankTransfer: typeof import('~icons/mdi/bank-transfer')['default']
     IMdiBankTransferIn: typeof import('~icons/mdi/bank-transfer-in')['default']
     IMdiBankTransferOut: typeof import('~icons/mdi/bank-transfer-out')['default']
@@ -18,18 +16,10 @@ declare module 'vue' {
     IMdiChevronLeft: typeof import('~icons/mdi/chevron-left')['default']
     IMdiChevronRight: typeof import('~icons/mdi/chevron-right')['default']
     IMdiClose: typeof import('~icons/mdi/close')['default']
-    IMdiEdit: typeof import('~icons/mdi/edit')['default']
     IMdiEllipsisVertical: typeof import('~icons/mdi/ellipsis-vertical')['default']
     IMdiEmailCheck: typeof import('~icons/mdi/email-check')['default']
     IMdiFile: typeof import('~icons/mdi/file')['default']
-    IMdiFilter: typeof import('~icons/mdi/filter')['default']
-    IMdiHistory: typeof import('~icons/mdi/history')['default']
-    IMdiLink: typeof import('~icons/mdi/link')['default']
-    IMdiLock: typeof import('~icons/mdi/lock')['default']
     IMdiMoney: typeof import('~icons/mdi/money')['default']
-    IMdiPlus: typeof import('~icons/mdi/plus')['default']
-    IMdiSearch: typeof import('~icons/mdi/search')['default']
-    IMdiSort: typeof import('~icons/mdi/sort')['default']
     IMdiStar: typeof import('~icons/mdi/star')['default']
     IMdiStarOutline: typeof import('~icons/mdi/star-outline')['default']
     IMdiSync: typeof import('~icons/mdi/sync')['default']
