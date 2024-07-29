@@ -4,7 +4,7 @@
 
     const props = defineProps<{
         modelValue: string;
-        type: boolean;
+        disabled: boolean;
     }>();
 
     const colors = [
@@ -29,8 +29,8 @@
     ]
 
     const styleColor = computed(() => {
-        return { 
-            backgroundColor:  props.modelValue || colors[0] 
+        return {
+            backgroundColor:  props.modelValue || colors[0]
         }
     })
 </script>

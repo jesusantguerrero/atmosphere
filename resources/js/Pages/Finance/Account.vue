@@ -23,10 +23,11 @@ import { useTransactionModal, TRANSACTION_DIRECTIONS, removeTransaction } from "
 import { tableAccountCols } from "@/domains/transactions";
 import { paymentMethods } from "@/domains/transactions/constants";
 import { useAppContextStore } from "@/store";
-import { formatMoney } from "@/utils";
+import { formatDate, formatMoney } from "@/utils";
 import { IAccount, ICategory, ITransaction } from "@/domains/transactions/models";
 import NextPaymentsWidget from "@/domains/transactions/components/NextPaymentsWidget.vue";
 import { usePaymentModal } from "@/domains/transactions/usePaymentModal";
+import WidgetContainer from "@/Components/WidgetContainer.vue";
 
 const { openTransactionModal } = useTransactionModal();
 const { openModal } = usePaymentModal();
@@ -127,6 +128,12 @@ const  { TRANSFER } = TRANSACTION_DIRECTIONS;
 const page = usePage().props;
 
 // Credit cards
+const currentBillingCycle = computed(() => {
+    return props.billingCycles?.map((payment) => ({
+        ...payment,
+        date: payment.due_at
+    }))?.at(0)
+})
 const creditCard = computed(() => {
     return props.accountDetailTypes.find((type) => type.label.toLowerCase() == "credit cards");
 });
@@ -146,13 +153,13 @@ const payCreditCard = () => {
             counter_account_id: accountId ?? "",
             due: debt,
             description: `Payment of ${selectedAccount.value?.name}`,
-            account_id: props.accounts.find((account) => account.balance > debt)?.id,
+            account_id: props.accounts?.find?.((account) => account.balance > debt)?.id,
             documents: [transaction],
             resourceId: transaction?.id,
             title: `Payment of ${transaction?.name}`,
             defaultConcept: `Payment of ${transaction?.name}`,
             transaction: transaction,
-            endpoint: `/accounts/${transaction?.account_id}/payments/`,
+            endpoint: `/api/billing-cycles/${currentBillingCycle.value.id}/payments/`,
             paymentMethod: paymentMethods[0],
         },
     })
@@ -162,30 +169,32 @@ const setPaymentBill = (transaction: ITransaction) => {
   openModal(
         { data:{
             documents: [transaction],
+            transaction: transaction,
             resourceId: transaction.id,
             title: `Payment of ${transaction.name}`,
             defaultConcept: `Payment of ${transaction.name}`,
             due: transaction.total,
             transaction: transaction,
-            endpoint: `/accounts/${transaction.account_id}/payments/`,
+            endpoint: `/api/billing-cycles/${currentBillingCycle.value.id}/payments/`,
             paymentMethod: paymentMethods[0],
         }
     })
 }
 
-const billingCycleDetails = ref("");
-const fetchBillingCycleDetails = async (billingCycleId: string) => {
-    billingCycleDetails.value = "";
-    const response = await axios.get(`/api/billing-cycles/${billingCycleId}?relationships=transactions`)
-    billingCycleDetails.value = response.data?.transactions;
-}
+const financeTabs = [{
+      name: "transactions",
+      label: "Transactions",
+    },
+    // {
+    //   name: "trends",
+    //   label: "Trends",
+    // }
+];
 
-const currentBillingCycle = computed(() => {
-    return props.billingCycles?.map((payment) => ({
-        ...payment,
-        date: payment.due_at
-    }))?.at(0)
+const selectedTabName  = computed(() => {
+    return  `All transactions ${monthName.value}`;
 })
+
 </script>
 
 <template>
@@ -243,12 +252,12 @@ const currentBillingCycle = computed(() => {
   </template>
 
   <FinanceTemplate title="Transactions" :accounts="accounts">
-      <section class="flex w-full mt-4 space-x-4 flex-nowrap">
+    <section class="lg:flex w-full mt-4 grid grid-cols-2 gap-2 lg:space-x-4 flex-nowrap">
         <BackgroundCard
-          class="w-full cursor-pointer text-body-1 bg-base-lvl-3"
-          :value="formatMoney(selectedAccount?.balance)"
-          :label="$t('Balance')"
-          label-class="capitalize text-secondary font-base"
+        class="w-full cursor-pointer text-body-1 bg-base-lvl-3"
+        :value="formatMoney(selectedAccount?.balance)"
+        :label="$t('Balance')"
+        label-class="capitalize text-secondary font-base"
         >
             <template #value>
                 <h4>
@@ -267,55 +276,54 @@ const currentBillingCycle = computed(() => {
             </template>
         </BackgroundCard>
         <BackgroundCard
-          class="w-full cursor-pointer text-body-1 bg-base-lvl-3"
-          v-for="(stat, label) in stats"
-          :value="formatMoney(stat)"
-          :label="label"
-          label-class="capitalize text-secondary font-base"
+        class="w-full cursor-pointer text-body-1 bg-base-lvl-3"
+        v-for="(stat, label) in stats"
+        :value="formatMoney(stat)"
+        :label="label"
+        label-class="capitalize text-secondary font-base"
         />
-      </section>
+    </section>
 
-      <section class="mt-4 bg-base-lvl-3">
-        <header class="flex items-center justify-between px-6 py-2">
-            <section>
-                <h4 class="text-lg font-bold text-body-1">
-                    All transactions in <span class="text-secondary">
-                        {{ monthName }}
+    <WidgetContainer
+        :message="selectedTabName"
+        :tabs="financeTabs"
+        default-tab="transactions"
+        class="mt-4"
+    >
+        <template v-slot:content="{ selectedTab }">
+        <section class="bg-base-lvl-3">
+            <header class="flex space-x-2 items-center justify-between py-2">
+                    <AppSearch
+                        v-model.lazy="pageState.search"
+                        class="w-full md:flex "
+                        :has-filters="hasFilters"
+                        @clear="reset()"
+                    />
+
+                    <span class="min-w-fit text-secondary font-bold">
+                        {{  transactions.length }} Results
                     </span>
-                </h4>
-            </section>
-            <section class="flex items-center space-x-2">
-                <AppSearch
-                    v-model.lazy="pageState.search"
-                    class="w-full md:flex "
-                    :has-filters="hasFilters"
-                    @clear="reset()"
+            </header>
+                <AccountReconciliationBanner
+                    v-if="selectedAccount"
+                    :account="selectedAccount"
                 />
 
-                <span class="min-w-fit text-secondary font-bold">
-                    {{  transactions.length }} Results
-                </span>
-            </section>
-        </header>
-            <AccountReconciliationBanner
-                v-if="selectedAccount"
-                :account="selectedAccount"
-            />
 
-
-            <Component
-                :is="listComponent"
-                :cols="tableAccountCols(props.accountId)"
-                :transactions="transactions"
-                :server-search-options="serverSearchOptions"
-                :is-loading="isLoading"
-                @findLinked="findLinked"
-                @removed="removeTransaction($event, ['verified'])"
-                @duplicate="handleDuplicate"
-                @edit="handleEdit"
-            />
-
+                <Component
+                    :is="listComponent"
+                    :cols="tableAccountCols(props.accountId)"
+                    :transactions="transactions"
+                    :server-search-options="serverSearchOptions"
+                    :is-loading="isLoading"
+                    @findLinked="findLinked"
+                    @removed="removeTransaction($event, ['verified'])"
+                    @duplicate="handleDuplicate"
+                    @edit="handleEdit"
+                />
         </section>
+        </template>
+    </WidgetContainer>
 
         <template #prepend-panel class="">
             <NextPaymentsWidget
@@ -329,12 +337,17 @@ const currentBillingCycle = computed(() => {
                 emit-delete
                 @action="setPaymentBill"
             >
-                <template v-slot:left-action-button="{  resourceId }">
+                <template v-slot:left-action-button="{  resource }">
                     <button
                     class="text-gray-400 hidden group-hover:inline-block transition cursor-pointer hover:text-red-400 focus:outline-none"
-                    @click="fetchBillingCycleDetails(resourceId)">
+                    @click="setPaymentBill(resource)">
                         <IMdiLink />
                      </button>
+                </template>
+                <template v-slot:date="{ resource }">
+                    <span title="Approve transaction" class="text-secondary bg-secondary/10 px-4 rounded-3xl py-1.5 text-xs cursor-pointer" @click="$emit('edit', payment)">
+                        {{ formatDate(resource.date) }}
+                    </span>
                 </template>
             </NextPaymentsWidget>
         </template>

@@ -59,6 +59,7 @@ Route::middleware(['auth:sanctum', 'verified'])->prefix('/api')->name('api.')->g
     ]);
 
     Route::post('/billing-cycles/{billingCycle}/transactions/{transaction}/link-payments', [BillingCycleApiController::class, 'linkPayments']);
+    Route::post('/billing-cycles/{billingCycle}/payments', [BillingCycleApiController::class, 'addPayment']);
     Route::apiResource('/billing-cycles', BillingCycleApiController::class);
 
     Route::get('/accounts/{account}/unlinked-payments', [AccountApiController::class, 'unlinkedPayments']);

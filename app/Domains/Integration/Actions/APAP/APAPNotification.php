@@ -10,7 +10,7 @@ use App\Domains\Automation\Models\Automation;
 use App\Domains\Integration\Concerns\MailToTransaction;
 use App\Domains\Integration\Concerns\TransactionDataDTO;
 
-class APAPAlert implements MailToTransaction
+class APAPNotification implements MailToTransaction
 {
     use APAPAction;
 

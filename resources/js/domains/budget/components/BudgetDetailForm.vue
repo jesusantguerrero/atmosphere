@@ -1,6 +1,5 @@
 <script setup lang="ts">
     import { watch , ref } from 'vue';
-    // @ts-ignore
     import { AtInput } from "atmosphere-ui";
     import { useForm } from '@inertiajs/vue3';
 

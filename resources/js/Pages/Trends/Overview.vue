@@ -112,16 +112,12 @@ const isFilterSelected = (filterValue: string) => {
                     controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
                     next-mode="month"
                 />
-                <AccountFilters
-                    class="w-full bg-red-500"
-                    v-model:accounts="pageState.filters.account"
-                    v-model:categories="pageState.filters.category"
-                />
+
         </template>
       </TrendSectionNav>
     </template>
 
-    <TrendTemplate title="Finance" ref="financeTemplateRef" :hide-panel="true">
+    <TrendTemplate title="Finance" ref="financeTemplateRef" :hide-panel="!isCategoryTrend">
         <component
             class="mt-5"
             v-if="isYearSpending"
@@ -130,6 +126,7 @@ const isFilterSelected = (filterValue: string) => {
             :type="section"
             :series="data"
             :data="data"
+            :cols="1"
             @selected="handleSelection"
             v-bind="metaData.props"
             :title="metaData.title"
@@ -143,35 +140,49 @@ const isFilterSelected = (filterValue: string) => {
             :title="metaData.title"
             class="mt-5"
         >
-        <section class="relative flex flex-wrap items-center justify-center w-full bg-base-lvl-3 md:flex-nowrap md:space-x-8">
-            <component
-                :is="trendComponent"
-                style="background: white; width: 100%"
-                :type="section"
-                :series="data"
-                :data="data"
-                @selected="handleSelection"
-                v-bind="metaData.props"
-                :title="metaData.title"
-                label="name"
-                value="total"
-                :legend="false"
-                data-item-total="total_amount"
+            <section class="relative flex flex-wrap items-center justify-center w-full bg-base-lvl-3 md:flex-nowrap md:space-x-8">
+                <component
+                    :is="trendComponent"
+                    style="background: white; width: 100%"
+                    :type="section"
+                    :series="data"
+                    :data="data"
+                    :cols="1"
+                    @selected="handleSelection"
+                    v-bind="metaData.props"
+                    :title="metaData.title"
+                    label="name"
+                    value="total"
+                    :legend="false"
+                    data-item-total="total_amount"
+                />
+            </section>
+            <template #afterActions v-if="isCategoryTrend">
+                <div class="flex overflow-hidden text-white border rounded-md bg-primary border-primary min-w-max">
+                    <button
+                        v-for="(item, statusName) in cashflowEntities"
+                        class="px-2 py-1.5 flex items-center border border-transparent hover:bg-accent"
+                        :class="{'bg-white text-primary border-primary hover:text-white': isFilterSelected(statusName)}"
+                        :key="statusName"
+                        @click="router.visit(item.value)">
+                        {{ item.label }}
+                    </button>
+                </div>
+            </template>
+      </WidgetTitleCard>
+      <template #panel>
+        <section class="mt-5 mr-4 px-5 pt-2 pb-4 space-y-4 text-left border-b rounded-md shadow-xl bg-base-lvl-3">
+            <h4 class="font-bold"> Filters </h4>
+            <AccountFilters
+                class="w-full bg-red-500"
+                include-labels
+                col
+                :tag-max-count="1"
+                v-model:accounts="pageState.filters.account"
+                v-model:categories="pageState.filters.category"
             />
         </section>
-        <template #afterActions v-if="isCategoryTrend">
-            <div class="flex overflow-hidden text-white border rounded-md bg-primary border-primary min-w-max">
-                <button
-                    v-for="(item, statusName) in cashflowEntities"
-                    class="px-2 py-1.5 flex items-center border border-transparent hover:bg-accent"
-                    :class="{'bg-white text-primary border-primary hover:text-white': isFilterSelected(statusName)}"
-                    :key="statusName"
-                    @click="router.visit(item.value)">
-                    {{ item.label }}
-                </button>
-            </div>
-        </template>
-      </WidgetTitleCard>
+      </template>
     </TrendTemplate>
   </AppLayout>
 </template>

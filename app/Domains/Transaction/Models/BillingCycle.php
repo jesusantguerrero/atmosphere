@@ -2,6 +2,7 @@
 
 namespace App\Domains\Transaction\Models;
 
+use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 use Insane\Journal\Models\Core\Payment;
@@ -143,9 +144,9 @@ class BillingCycle extends Model implements IPayableDocument
     }
 
     public function linkPayment(Transaction $transaction, $formData) {
-        // if ($this->debt <= 0) {
-        //   throw new Exception("The document {$this->concept} is already paid");
-        // }
+        if ($this->debt <= 0) {
+          throw new Exception("The document {$this->concept} is already paid");
+        }
 
         $payment = $this->payments()->create([
             "amount" => $transaction->total,
@@ -170,5 +171,43 @@ class BillingCycle extends Model implements IPayableDocument
         $this->save();
 
         return $payment;
+    }
+
+    public function createPayment($formData)
+    {
+        $paid = $this->payments->sum('amount');
+        if ($paid >= $this->total) {
+            throw new Exception("This invoice is already paid");
+        }
+
+        $debt = $this->total - $paid;
+
+        $formData['amount'] = $formData['amount'] > $debt ? $debt : $formData['amount'];
+        $payment = $this->payments()->create([
+            ...$formData,
+            'user_id' => $formData['user_id'] ?? $this->user_id,
+            'team_id' => $formData['team_id'] ?? $this->team_id,
+            'client_id' => $formData['client_id'] ?? $this->user_id,
+        ]);
+
+        $this->save();
+        return $payment;
+    }
+
+    public function createPaymentTransaction(Payment $payment) {
+        $direction = Transaction::DIRECTION_CREDIT;
+        $counterAccountId = $this->account_id;
+
+        return [
+            "team_id" => $payment->team_id,
+            "user_id" => $payment->user_id,
+            "date" => $payment->payment_date,
+            "description" => $payment->concept,
+            "direction" => $direction,
+            "total" => $payment->amount,
+            "account_id" => $payment->account_id,
+            "counter_account_id" => $counterAccountId,
+            "items" => []
+        ];
     }
 }

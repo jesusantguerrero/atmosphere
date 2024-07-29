@@ -81,6 +81,7 @@
             :transactions="transactionsDraft"
             :parser="draftsDBToTransaction"
             :allow-remove="true"
+            allow-match
             :allow-mark-as-approved="true"
             :hide-accounts="true"
             @approved="handleEdit"

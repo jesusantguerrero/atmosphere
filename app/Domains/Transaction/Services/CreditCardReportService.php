@@ -307,4 +307,11 @@ class CreditCardReportService
         $billingCycle->linkPayment($transaction, $postData);
         $billingCycle->save();
     }
+
+    public function addPayment(BillingCycle $billingCycle, $postData)
+    {
+        $payment = $billingCycle->createPayment($postData);
+        $billingCycle->save();
+        return $payment;
+    }
 }

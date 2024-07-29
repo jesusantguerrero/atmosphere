@@ -21,6 +21,7 @@ const props = defineProps<{
   allowEdit: boolean,
   allowRemove: boolean,
   allowSelect: boolean,
+  allowMatch: boolean,
   isSelected: boolean,
 }>();
 
@@ -63,6 +64,11 @@ const options = computed(() => {
       name: "removed",
       label: "Remove",
       hide: !props.allowRemove
+    },
+    {
+      name: "findLinked",
+      label: "Find Linked",
+      hide: !props.allowMatch,
     },
 
   ];

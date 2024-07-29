@@ -10,6 +10,7 @@ use Insane\Journal\Models\Core\Transaction;
 use App\Domains\Automation\Models\Automation;
 use App\Domains\Transaction\Models\TransactionLine;
 use App\Domains\Automation\Models\AutomationTaskAction;
+use App\Domains\Transaction\Services\TransactionService;
 use App\Domains\Automation\Concerns\AutomationActionContract;
 
 class TransactionCreateEntry implements AutomationActionContract
@@ -63,20 +64,10 @@ class TransactionCreateEntry implements AutomationActionContract
             ]),
         ];
 
-        $transaction = Transaction::where([
-            "team_id" => $transactionData['team_id'],
-            'date' => $transactionData['date'],
-            'total' => $transactionData['total'],
-            'currency_code' => $transactionData['currency_code'],
-            'direction' => $transactionData['direction'],
-            'payee_id' => $transactionData['payee_id'],
-        ])
-        ->where(
-            fn($q) => $q->where('description', $transactionData['description'])
-                        ->orWhere('reference', $transactionData['description'])
-        )->first();
+        $transactionService = new TransactionService();
 
-        if ($transaction) {
+        if ($transaction = $transactionService->findIfDuplicated($transactionData)) {
+            print_r($transaction);
            return $transaction;
         }
 

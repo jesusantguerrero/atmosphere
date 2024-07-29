@@ -29,6 +29,7 @@ use Insane\Journal\Events\TransactionUpdated;
 use Laravel\Jetstream\Events\TeamMemberAdded;
 use Insane\Journal\Listeners\CreateTeamAccounts;
 use App\Listeners\CreateBudgetTransactionMovement;
+use App\Domains\Transaction\Listeners\DeleteTransactionPayment;
 use App\Domains\Transaction\Listeners\UpdateOpenReconciliations;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -76,6 +77,7 @@ class EventServiceProvider extends ServiceProvider
         TransactionDeleted::class => [
             CreateBudgetTransactionMovement::class,
             UpdateBudgetAvailable::class,
+            DeleteTransactionPayment::class,
         ],
         AppCreated::class => [
             ShowInApp::class,

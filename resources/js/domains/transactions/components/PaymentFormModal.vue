@@ -392,7 +392,7 @@ const dialogWidth = computed(() => {
       <section class="md:flex md:space-x-4">
         <AppFormField
           v-if="!hideAccountSelector && paymentForm.payment_method_id?.id != 'deposit'"
-          class="w-5/12 mb-5 text-left"
+          class="w-4/12 mb-5 text-left"
           label="Cuenta de Pago"
           required
         >
@@ -405,7 +405,7 @@ const dialogWidth = computed(() => {
         </AppFormField>
         <AppFormField
           v-else-if="paymentForm.payment_method_id?.id == 'deposit' && documents?.length"
-          class="w-5/12 mb-5 text-left"
+          class="w-4/12 mb-5 text-left"
           label="Deposit"
           required
         >
@@ -416,7 +416,7 @@ const dialogWidth = computed(() => {
             placeholder="Selecciona una cuenta"
           />
         </AppFormField>
-        <AppFormField class="md:w-3/12 mb-5 text-left" label="Metodo de Pago" required>
+        <AppFormField class="md:w-4/12 mb-5 text-left" label="Metodo de Pago" required>
           <BaseSelect
             v-model="paymentForm.payment_method_id"
             :client-id="payment?.client_id"
@@ -427,12 +427,12 @@ const dialogWidth = computed(() => {
             track-by="id"
           />
         </AppFormField>
-        <AppFormField :label="$t('Payment date')" class="md:w-3/12 w-full" required>
+        <AppFormField :label="$t('Payment date')" class="md:w-4/12 w-full" required>
           <BaseDatePicker v-model="paymentForm.payment_date" />
         </AppFormField>
       </section>
 
-      <AppFormField class="w-full text-left" label="Notes">
+      <AppFormField class="w-full text-left" label="Notes" v-if="false">
         <textarea
           class="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:border-gray-400"
           v-model="paymentForm.notes"

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, reactive, watch } from 'vue';
-// @ts-expect-error: no definition
 import ExactMath from "@/plugins/exactMath"
 
 import TransactionCard from "@/Components/molecules/TransactionCard.vue";
@@ -19,6 +18,7 @@ const props = withDefaults(defineProps<{
     allowMarkAsPaid?: boolean;
     allowMarkAsApproved?: boolean;
     allowRemove?: boolean;
+    allowMatch?: boolean;
     allowSelect?: boolean;
     allowEdit?: boolean
 }>(), {
@@ -48,6 +48,7 @@ const isSelected = (transaction: ITransaction) => {
 const handleSelect = (transaction: ITransaction) => {
     if (props.allowSelect) {
         const id: number| string = transaction.id || transaction.title;
+
         if (isSelected(transaction)) {
             selectedItems.splice(selectedItems.indexOf(id), 1);
         } else {
@@ -60,7 +61,7 @@ const handleSelect = (transaction: ITransaction) => {
 const selectedSum = computed(() => {
     return calculateSum(selectedItems as ITransaction);
 })
-const calculateSum = (items: ITransaction[]) => {
+const calculateSum = (items: number[]|string[]) => {
      return items.reduce((sum: Record<string, number>, id: number|string) => {
         const transaction = transactionsParsed.value.find(
             (transaction: ITransaction) => transaction.id === id || transaction.title === id);
@@ -72,9 +73,7 @@ const calculateSum = (items: ITransaction[]) => {
             }
         }
         return sum;
-    }, {
-
-    });
+    }, {});
 }
 </script>
 
@@ -96,6 +95,7 @@ const calculateSum = (items: ITransaction[]) => {
                 :mark-as-approved="allowMarkAsApproved"
                 :allow-remove="allowRemove"
                 :allow-select="allowSelect"
+                :allow-match="allowMatch"
                 :allow-edit="allowEdit"
                 :key="transaction.id"
                 :isSelected="isSelected(transaction)"
@@ -109,8 +109,8 @@ const calculateSum = (items: ITransaction[]) => {
             <div class="flex items-center justify-between px-4 py-5 bg-base-lvl-1 text-body-1" v-if="showSum">
                 <div class="font-bold">Selected Items sum</div>
                 <div class="space-y-1 text-right">
-                    <div v-for="currencySum, currency in selectedSum">
-                    {{ formatMoney(currencySum, currency) }}
+                    <div v-for="(currencySum) in selectedSum">
+                    {{ formatMoney(currencySum) }}
                     </div>
                 </div>
             </div>

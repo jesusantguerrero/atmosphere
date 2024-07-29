@@ -7,12 +7,22 @@ import { formatMoney } from "@/utils";
 
 import ExpenseChartWidgetRow from "./ExpenseChartWidgetRow.vue";
 
-const props = defineProps<{
+
+const cols = {
+    1: "grid-cols-1",
+    2: "grid-cols-2",
+    3: "grid-cols-3"
+}
+
+const props = withDefaults(defineProps<{
   data: Record<string, number>[];
   componentProps: Record<string, string>;
   title?: string;
   type: 'categories' | 'groups';
-}>();
+  cols: keyof typeof cols;
+}>(), {
+    cols: 3
+});
 
 const emit = defineEmits(['selected']);
 
@@ -30,11 +40,13 @@ const total = computed(() => {
   }, 0);
 });
 
+const widgetDetailsCols = computed(() => cols[props.cols]);
+
 
 </script>
 
 <template>
-    <article class="">
+    <article class="flex">
         <section class="relative w-[550px] mx-auto ">
             <DonutChart
               style="background: white; width: 100%"
@@ -55,7 +67,7 @@ const total = computed(() => {
                 </h5>
             </section>
         </section>
-        <section class="space-y-1  grid grid-cols-4">
+        <section class="space-y-1 grid" :class="[widgetDetailsCols]">
             <ExpenseChartWidgetRow
                 v-for="item in data"
                 :item="item"

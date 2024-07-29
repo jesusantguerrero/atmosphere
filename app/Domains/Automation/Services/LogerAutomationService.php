@@ -22,7 +22,7 @@ class LogerAutomationService
 
     public static function run(Automation $automation, $eventData = null)
     {
-        echo "starting $automation->name with $automation->id \n";
+        echo "\n starting workflow:$automation->id:$automation->name";
         $tasks = $automation->tasks;
         $trigger = $automation->triggerTask;
 
@@ -32,12 +32,15 @@ class LogerAutomationService
                 $previousTask = null;
             }
             $entity = $task->entity;
+            echo "\n starting workflow-task:$task->id:$task->name";
             $lastData = $entity::handle($automation, $lastData, $task, $previousTask, $trigger);
             if (!$lastData) {
                 break;
             }
             $previousTask = $task;
         }
+
+        echo "\n \n";
     }
 
     public static function setupService($serviceId, $service)
