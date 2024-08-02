@@ -64,7 +64,7 @@ const components = {
     incomeExpenses: IncomeExpenses,
     incomeExpensesGraph:  ChartNetWorth,
     spendingYear: WidgetYearSpending,
-    assignedYear: ChartComparison,
+    assignedYear: WidgetYearSpending,
 }
 
 const trendComponent = computed(() => {
@@ -76,8 +76,8 @@ const isCategoryTrend = computed(() => {
 })
 
 
-const isYearSpending = computed(() => {
-    return ['spendingYear'].includes(props.metaData.name)
+const isYearReport = computed(() => {
+    return ['spendingYear', 'assignedYear'].includes(props.metaData.name)
 })
 
 const cashflowEntities = {
@@ -121,7 +121,7 @@ const isFilterSelected = (filterValue: string) => {
     <TrendTemplate title="Finance" ref="financeTemplateRef" :hide-panel="!isCategoryTrend">
         <component
             class="mt-5"
-            v-if="isYearSpending"
+            v-if="isYearReport"
             :is="trendComponent"
             style="background: white; width: 100%"
             :type="section"
