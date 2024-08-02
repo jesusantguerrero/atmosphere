@@ -210,13 +210,19 @@ class FinanceTrendController extends Controller
             $excludedAccounts = collect(explode(',', $filters['category']))->map(fn ($id) => "-$id")->all();
         }
 
+        $endDate = Carbon::createFromFormat('Y-m-d', $startDate)->endOfYear()->format('Y-m-d');
+        $startDate = Carbon::createFromFormat('Y-m-d', $startDate)->startOfYear()->format('Y-m-d');
+
+        $monthlyExpensesInYear = ReportService::generateExpensesByPeriodInDate($teamId, $startDate, $endDate, $excludedAccounts);
+
         return [
-            'data' => ReportService::generateExpensesByPeriod($teamId, $startDate, 12, 'month', $excludedAccounts),
+            'data' => $monthlyExpensesInYear,
             'metaData' => [
                 'name' => 'spendingYear',
-                'title' => 'Expenses',
+                'title' => 'Expenses this year',
                 'props' => [
                     'headerTemplate' => 'grid',
+                    'total' => $monthlyExpensesInYear->sum('total'),
                 ],
             ],
         ];
@@ -233,13 +239,19 @@ class FinanceTrendController extends Controller
             $excludedAccounts = collect(explode(',', $filters['category']))->map(fn ($id) => "-$id")->all();
         }
 
+        $endDate = Carbon::createFromFormat('Y-m-d', $startDate)->endOfYear()->format('Y-m-d');
+        $startDate = Carbon::createFromFormat('Y-m-d', $startDate)->startOfYear()->format('Y-m-d');
+
+        $assignedInYear = ReportService::getAssignedByPeriod($teamId, $startDate, $endDate, $excludedAccounts);
+
         return [
-            'data' => ReportService::getAssignedByPeriod($teamId, $startDate, 12, 'month', $excludedAccounts),
+            'data' => $assignedInYear,
             'metaData' => [
                 'name' => 'assignedYear',
                 'title' => 'Assigned in year',
                 'props' => [
                     'headerTemplate' => 'grid',
+                    'total' => $assignedInYear->sum('total'),
                 ],
             ],
         ];

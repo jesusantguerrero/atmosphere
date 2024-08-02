@@ -18,6 +18,7 @@ import ExpenseChartWidget from "@/domains/transactions/components/ExpenseChartWi
 
 import { useServerSearch } from "@/composables/useServerSearch";
 import AccountFilters from "@/domains/transactions/components/AccountFilters.vue";
+import WidgetYearSpending from "@/Components/widgets/WidgetYearSpending.vue";
 
 const props = defineProps({
   user: {
@@ -62,8 +63,8 @@ const components = {
     netWorth: ChartNetWorth,
     incomeExpenses: IncomeExpenses,
     incomeExpensesGraph:  ChartNetWorth,
-    spendingYear: ChartComparison,
-    assignedYear: ChartComparison,
+    spendingYear: WidgetYearSpending,
+    assignedYear: WidgetYearSpending,
 }
 
 const trendComponent = computed(() => {
@@ -75,8 +76,8 @@ const isCategoryTrend = computed(() => {
 })
 
 
-const isYearSpending = computed(() => {
-    return ['spendingYear'].includes(props.metaData.name)
+const isYearReport = computed(() => {
+    return ['spendingYear', 'assignedYear'].includes(props.metaData.name)
 })
 
 const cashflowEntities = {
@@ -120,7 +121,7 @@ const isFilterSelected = (filterValue: string) => {
     <TrendTemplate title="Finance" ref="financeTemplateRef" :hide-panel="!isCategoryTrend">
         <component
             class="mt-5"
-            v-if="isYearSpending"
+            v-if="isYearReport"
             :is="trendComponent"
             style="background: white; width: 100%"
             :type="section"

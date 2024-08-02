@@ -3,7 +3,7 @@
 import { AtButton } from "atmosphere-ui";
 
 withDefaults(defineProps<{
-    title: string;
+    title?: string;
     action?: {
         label: string,
         iconClass?: string,

@@ -58,10 +58,27 @@ class ReportService
         }, $resultGroup)->sortBy('date');
     }
 
-    public static function getAssignedByPeriod($teamId, $startDate, $timeUnitDiff = 2,  $timeUnit = 'month', $categories = null)
+    public static function generateExpensesByPeriodInDate($teamId, $startDate, $endDate, $categories = null)
     {
-        $rangeEndAt = Carbon::createFromFormat('Y-m-d', $startDate)->endOfMonth()->format('Y-m-d');
-        $rangeStartAt = Carbon::now()->subMonth($timeUnitDiff)->startOfMonth()->format('Y-m-d');
+        $rangeStartAt = Carbon::createFromFormat('Y-m-d', $startDate)->startOfMonth()->format('Y-m-d');
+        $rangeEndAt = Carbon::createFromFormat('Y-m-d', $endDate)->endOfMonth()->format('Y-m-d');
+
+        $results = self::getExpensesByCategoriesInPeriod($teamId, $rangeStartAt, $rangeEndAt, $categories);
+        $resultGroup = $results->groupBy('date');
+
+        return $resultGroup->map(function ($monthItems) {
+            return [
+                'date' => $monthItems->first()->date,
+                'data' => $monthItems->sortByDesc('total_amount')->values(),
+                'total' => $monthItems->sum('total_amount'),
+            ];
+        }, $resultGroup)->sortBy('date');
+    }
+
+    public static function getAssignedByPeriod($teamId, $startDate, $endDate, $categories = null)
+    {
+        $rangeStartAt = Carbon::createFromFormat('Y-m-d', $startDate)->startOfMonth()->format('Y-m-d');
+        $rangeEndAt = Carbon::createFromFormat('Y-m-d', $endDate)->endOfMonth()->format('Y-m-d');
 
         $results = self::getAssignedByCategoriesInPeriod($teamId, $rangeStartAt, $rangeEndAt, $categories);
         $resultGroup = $results->groupBy('date');

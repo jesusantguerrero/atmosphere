@@ -115,9 +115,9 @@
         }
     }
 
-    const categories = inject('categories', ref({ data: []}))
+    const categories = inject('categories', ref([]))
     const categoryOptions = computed(() => {
-        return categories.value.data?.map(item => ({
+        return categories.value?.map(item => ({
             value: item.id,
             key: item.id,
             label: item.name,
@@ -125,7 +125,7 @@
             children: item.subCategories.map(category => ({
                 value: category.id,
                 label: category.name,
-                available: category.available,
+                available: category.available || 0,
             }))
         }))
     })
@@ -134,9 +134,6 @@
     const clear = () => {
         form.reset();
         showPopover.value = false;
-    }
-    const toggle = () => {
-        showPopover.value = !showPopover.value
     }
 </script>
 
@@ -172,7 +169,7 @@
                         {{ description }}
                     </small>
 
-                    <NPopover v-if="isOverspent"  placement="bottom" >
+                    <NPopover v-if="isOverspent"  placement="bottom" trigger="click">
                         <template #trigger>
                             <AtButton class="text-white rounded-md bg-black/30">
                                 Fix this
