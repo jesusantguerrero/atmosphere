@@ -11,18 +11,19 @@ import formatMoney from "@/utils/formatMoney";
 import WidgetTitleCard from "../molecules/WidgetTitleCard.vue";
 
 const props = withDefaults(defineProps<{
-    title: string,
-    hideHeader: boolean
-    headerTemplate: "row" | "grid",
-    type: string,
-    data: Record<string, any>,
-    groupTotal: string,
-    dataItemTotal: string,
-    dataItemLabel: Function
-    hideDivider: boolean
-    headerLabel: string
-    headerTitleDate: boolean
-    withPadding: boolean
+    title: string;
+    hideHeader: boolean;
+    headerTemplate: "row" | "grid";
+    type: string;
+    data: Record<string, any>;
+    total: number;
+    groupTotal: string;
+    dataItemTotal: string;
+    dataItemLabel: Function;
+    hideDivider: boolean;
+    headerLabel: string;
+    headerTitleDate: boolean;
+    withPadding: boolean;
 }>(), {
     headerTemplate: 'row',
     type: "bar",
@@ -97,6 +98,10 @@ const handleSelection = (index: number) => {
             <LogerButtonTab  @click="selectedDate=null">
                 <IMdiChevronLeft />
             </LogerButtonTab>
+        </template>
+        <template #title>
+            <span>{{ title }}</span>
+            <span class="text-green-500 font-bold ml-4"> {{ formatMoney(total)}}</span>
         </template>
         <template #action v-if="selectedDate">
             <span v-if="selectedDate" class="capitalize text-primary">{{ formatMonth(selectedDate) }}</span>

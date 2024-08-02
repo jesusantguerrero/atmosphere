@@ -18,6 +18,7 @@ import ExpenseChartWidget from "@/domains/transactions/components/ExpenseChartWi
 
 import { useServerSearch } from "@/composables/useServerSearch";
 import AccountFilters from "@/domains/transactions/components/AccountFilters.vue";
+import WidgetYearSpending from "@/Components/widgets/WidgetYearSpending.vue";
 
 const props = defineProps({
   user: {
@@ -62,7 +63,7 @@ const components = {
     netWorth: ChartNetWorth,
     incomeExpenses: IncomeExpenses,
     incomeExpensesGraph:  ChartNetWorth,
-    spendingYear: ChartComparison,
+    spendingYear: WidgetYearSpending,
     assignedYear: ChartComparison,
 }
 
