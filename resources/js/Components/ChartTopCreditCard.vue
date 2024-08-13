@@ -7,25 +7,19 @@ import ChartHeaderScroller from "./ChartHeaderScroller.vue";
 import NumberHider from "./molecules/NumberHider.vue";
 import { formatMonth, nameToColor } from "@/utils";
 
-const props = defineProps({
-    title: {
-        type: String
-    },
-    type: {
-      type: String,
-      default: "bar"
-    },
-    data: {
-      type: Object,
-      required: true
-    },
-    hideHeaders: {
-        type: Boolean
-    }
+const props = withDefaults(defineProps<{
+    title?: string;
+    type: "bar" | "circle",
+    data: Record<string, string>[];
+    groupName?: string;
+    hideHeaders?: boolean;
+}>(), {
+    type: 'bar'
 });
 
 const selectedDate = ref()
 const currentSeries = computed(() => {
+    if (props.groupName) {
     const groupByCard =  props.data.reduce((creditCards, item) => {
         if (creditCards[item.name]) {
             creditCards[item.name].data.push(item.total),
@@ -41,7 +35,16 @@ const currentSeries = computed(() => {
     }, {});
 
     return Object.values(groupByCard);
+    }
+
+    return [{
+        name: 'Payees',
+        data: props.data.map(item => item.total),
+        labels: props.data.map(item => item.cat_name)
+    }];
 })
+
+const isGroup = computed(() => props.groupName);
 
 const state = computed(() => ({
     headers: Object.entries(props.data).map(([dateString, item]) => ({
@@ -52,8 +55,15 @@ const state = computed(() => ({
     options: {
         colors: currentSeries.value.map((series, i) => nameToColor(series.name)),
     },
-    series: currentSeries.value
+    series: isGroup.value ? currentSeries.value : currentSeries.value.map(item => {
+        console.log(item);
+        return item;
+    })
 }));
+
+const labels =computed(() => {
+    return currentSeries.value[0].labels.map(formatMonth)
+})
 
 const hasHiddenValues = inject('hasHiddenValues', ref(false))
 
@@ -84,7 +94,7 @@ const hasHiddenValues = inject('hasHiddenValues', ref(false))
         <LogerChart
             label="name"
             :type="type"
-            :labels="currentSeries[0].labels.map(formatMonth)"
+            :labels="labels"
             :options="state.options"
             :series="state.series"
             :has-hidden-values="hasHiddenValues"

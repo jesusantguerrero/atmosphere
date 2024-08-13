@@ -122,50 +122,36 @@ class CreditCardReportService
             ]);
     }
 
-    public function getTopPayeesByAccount($teamId, $date, $monthsBack = 1, $creditCardId = null, $asToday = null) {
-        $endCycleDate =  Carbon::createFromFormat('Y-m-d', $date)->startOfMonth()->subMonth($monthsBack)->format('Y-m-d');
-        $startCycleDate =  Carbon::createFromFormat('Y-m-d', $date)->startOfMonth()->subMonth($monthsBack+1)->format('Y-m-d');
-
+    public function getTopPayeesByAccount($teamId, $startDate, $endDate, $asToday = null) {
         $readyToAssign = Category::where([
             'team_id' => $teamId,
         ])
         ->where('name', BudgetReservedNames::READY_TO_ASSIGN->value)
         ->first();
 
-        return DB::table(DB::raw('accounts a'))
-            ->where("a.team_id", $teamId)
-            ->whereNotNull('a.credit_closing_day')
-            ->when($asToday, fn ($q) => $q->whereRaw("now() >= DATE_FORMAT(?, CONCAT('%Y-%m-', LPAD(a.credit_closing_day, 2, '0')))", [
-                    $endCycleDate
-            ]))
-            ->selectRaw("
-                ABS(COALESCE(SUM(CASE WHEN tl.type = -1 THEN tl.amount * tl.type ELSE 0 END), 0)) AS subtotal,
-                ABS(COALESCE(SUM(tl.amount * tl.type), 0)) AS total,
-                ABS(COALESCE(SUM(CASE WHEN tl.type = 1 THEN tl.amount * tl.type ELSE 0 END), 0)) AS discount,
-                a.name,
-                a.id,
-                a.credit_limit,
-                DATE_FORMAT(?, CONCAT('%Y-%m-', LPAD(a.credit_closing_day, 2, '0'))) AS `from`,
-                DATE_FORMAT(?, CONCAT('%Y-%m-', LPAD(a.credit_closing_day, 2, '0'))) AS `until`", [
-                    $startCycleDate,
-                    $endCycleDate
-            ])
-
-            ->leftJoin(DB::raw('transaction_lines tl'), fn ($q) => $q->on('a.id', 'tl.account_id')
-                ->whereRaw('(tl.type = ? or tl.category_id  = ?)', [-1, $readyToAssign->id])
-            )
-            // ->where('account_id', $accountId)
-            ->whereRaw("(tl.date >= DATE_FORMAT(?, CONCAT('%Y-%m-', LPAD(a.credit_closing_day, 2, '0'))) and tl.type = -1
-            AND
-                tl.date < DATE_FORMAT(?, CONCAT('%Y-%m-', LPAD(a.credit_closing_day, 2, '0')))
-            )
-            OR tl.date = DATE_FORMAT(?, CONCAT('%Y-%m-', LPAD(a.credit_closing_day, 2, '0'))) AND tl.type = 1", [
-                $startCycleDate,
-                $endCycleDate,
-                $endCycleDate
-            ])
-            ->groupBy('a.id')
-            ->get();
+        return DB::select("
+        SELECT
+            ABS(COALESCE(SUM(CASE WHEN tl.type = -1 THEN tl.amount * tl.type ELSE 0 END), 0)) AS subtotal,
+            ABS(COALESCE(SUM(tl.amount * tl.type), 0)) AS total,
+            ABS(COALESCE(SUM(CASE WHEN tl.type = 1 THEN tl.amount * tl.type ELSE 0 END), 0)) AS discount,
+            a.name,
+            a.id,
+            p.name as cat_name,
+            ROW_NUMBER() OVER (PARTITION BY tl.account_id ORDER BY SUM(tl.amount * tl.type)) AS rank
+        FROM transaction_lines tl
+        INNER JOIN transactions t on tl.transaction_id = t.id AND t.status = 'verified' AND tl.category_id <> :readyToAssign
+        INNER JOIN accounts a on tl.account_id = a.id AND a.credit_closing_day IS NOT NULL
+        INNER JOIN payees p on p.id = tl.payee_id
+        WHERE tl.date >= :startDate AND tl.date <= :endDate
+        AND tl.team_id = :teamId
+        GROUP BY tl.payee_id
+        ORDER BY ABS(COALESCE(SUM(tl.amount * tl.type), 0)) desc
+        ", [
+            'teamId' => $teamId,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'readyToAssign' => $readyToAssign->id
+        ]);
     }
 
     public function getBillingCyclesByCardInPeriod($teamId, $startDate = 1, $endDate, $creditCardId = null) {
@@ -226,7 +212,7 @@ class CreditCardReportService
             "creditLineUsage" =>  round($creditTotal / $lastCycleBalances->sum('credit_limit') * 100, 2),
             'topCategoriesByCard' => $this->getTopCategoriesByCreditCard($teamId, $startPeriodDate, $date),
             'billingCyclesByCard' => $this->getBillingCyclesByCardInPeriod($teamId, $startPeriodDate, $date),
-            'topPayeesByCard' => [],
+            'topPayeesByCard' => $this->getTopPayeesByAccount($teamId, $startPeriodDate->format('Y-m-d'), $date),
             'topTransaction' => [],
             'billingCyclePayments' => [],
         ];

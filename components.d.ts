@@ -7,6 +7,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    IFluentFoodApple20Filled: typeof import('~icons/fluent/food-apple20-filled')['default']
     IIonEllipsisVertical: typeof import('~icons/ion/ellipsis-vertical')['default']
     IMaterialSymbolsBrightnessAlertOutlineRounded: typeof import('~icons/material-symbols/brightness-alert-outline-rounded')['default']
     IMdiBankTransfer: typeof import('~icons/mdi/bank-transfer')['default']
@@ -15,8 +16,10 @@ declare module 'vue' {
     IMdiBell: typeof import('~icons/mdi/bell')['default']
     IMdiCallSplit: typeof import('~icons/mdi/call-split')['default']
     IMdiCheck: typeof import('~icons/mdi/check')['default']
+    IMdiChevronDown: typeof import('~icons/mdi/chevron-down')['default']
     IMdiChevronLeft: typeof import('~icons/mdi/chevron-left')['default']
     IMdiChevronRight: typeof import('~icons/mdi/chevron-right')['default']
+    IMdiChevronUp: typeof import('~icons/mdi/chevron-up')['default']
     IMdiClose: typeof import('~icons/mdi/close')['default']
     IMdiEdit: typeof import('~icons/mdi/edit')['default']
     IMdiEllipsisVertical: typeof import('~icons/mdi/ellipsis-vertical')['default']

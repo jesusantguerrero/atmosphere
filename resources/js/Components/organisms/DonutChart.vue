@@ -47,7 +47,7 @@ const chartData = computed(() => {
     labels: series.value.map((item) => item[props.label]),
     datasets: [
       {
-        data: series.value.map((item) => item[props.value]),
+        data: series.value.map((item) => item[props.value]).sort(),
         backgroundColor: series.value.map((item) => item.color || nameToColor(item[props.label])),
         borderJoinStyle: "mittr",
       },
