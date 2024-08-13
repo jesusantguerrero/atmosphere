@@ -103,9 +103,16 @@ const {state: pageState, executeSearchWithDelay } = useServerSearch(serverSearch
                 <section class="w-8/12">
                     <ChartTopCreditCard
                         class="bg-white rounded-md overflow-hidden"
+                        group-name="name"
                         :data="data.topCategoriesByCard"
                     />
                 </section>
+            </section>
+            <section class="w-full mt-4">
+                <ChartTopCreditCard
+                    class="bg-white rounded-md overflow-hidden"
+                    :data="data.topPayeesByCard"
+                />
             </section>
         </article>
     </TrendTemplate>

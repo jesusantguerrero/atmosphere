@@ -4,7 +4,7 @@ import { computed, ref } from 'vue';
 import DonutChart from '@/Components/organisms/DonutChart.vue';
 import WidgetTitleCard from '@/Components/molecules/WidgetTitleCard.vue';
 
-const props = withDefaults(defineProps<{
+withDefaults(defineProps<{
     creditCardData: any[];
 }>(), {});
 
