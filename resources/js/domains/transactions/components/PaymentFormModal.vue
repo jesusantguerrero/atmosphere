@@ -31,16 +31,16 @@ const defaultPaymentForm = {
 const props = withDefaults(
   defineProps<{
     modelValue: boolean;
-    defaultConcept: string;
-    defaultAmount: string;
-    due: Number;
-    resourceId: Number;
-    endpoint: string;
+    defaultConcept?: string;
+    defaultAmount?: string;
+    due?: number;
+    resourceId?: number;
+    endpoint?: string;
     payment?: Record<string, any> | null;
     transaction?: Record<string, any> | null;
     title?: string;
     documents?: any[];
-    accountsEndpoint: string;
+    accountsEndpoint?: string;
     hideAccountSelector?: boolean;
   }>(),
   {

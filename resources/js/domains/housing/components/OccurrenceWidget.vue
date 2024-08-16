@@ -7,9 +7,11 @@ import CategoryItem from '@/domains/transactions/components/CategoryItem.vue';
 import { IOccurrenceCheck } from "@/domains/housing/models";
 import { getDayDiff } from '@/utils';
 
-defineProps<{
-    checks: IOccurrenceCheck[];
-}>()
+withDefaults(defineProps<{
+    checks?: IOccurrenceCheck[];
+}>(), {
+    checks: () => ([])
+})
 </script>
 
 <template>

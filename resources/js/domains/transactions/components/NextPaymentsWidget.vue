@@ -6,7 +6,7 @@ import NextPaymentItem from './NextPaymentItem.vue';
 
 const props = withDefaults(defineProps<{
     payments: ITransaction[];
-    title: string
+    title?: string
     emitActions?: boolean
 }>(), {
     title: 'Next Payments'

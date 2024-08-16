@@ -37,7 +37,7 @@ const props = withDefaults(
         values: [];
       };
     };
-    drafts: number;
+    drafts?: number;
     expenses: {
       previousYear: {
         values: [];
@@ -58,7 +58,7 @@ const props = withDefaults(
     categories: ICategory[];
     accounts: IAccount[];
     onboarding: Record<string, any>;
-    checks: IOccurrenceCheck[];
+    checks?: IOccurrenceCheck[];
     modules: any[];
   }>(),
   {}
