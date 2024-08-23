@@ -242,6 +242,9 @@ export const useBudget = (budgets: Ref<Record<string, any>>) => {
     }
 
     const assignBudget = (assign: AssignBudgetProps) => {
+
+        debugger
+
         axios.post(`/budgets/${assign.category.id}/months/${assign.month}`, {
             id: assign.category.id,
             budgeted: assign.budgeted,
@@ -253,7 +256,7 @@ export const useBudget = (budgets: Ref<Record<string, any>>) => {
 
 
         if (destination?.id) {
-            const amount = assign.budgeted;
+            const amount = assign.budgeted - destination.budgeted;
             let rest = amount;
 
             const formData: BudgetMovementProps = {
@@ -262,7 +265,6 @@ export const useBudget = (budgets: Ref<Record<string, any>>) => {
                 amount: amount,
                 date:  assign.month,
             };
-
 
             if (amount == 0) {
                 rest = -destination.budgeted
