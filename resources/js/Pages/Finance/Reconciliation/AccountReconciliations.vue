@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, toRefs, provide, ref, onMounted, nextTick } from "vue";
 import { router } from "@inertiajs/vue3";
-import { AtBackgroundIconCard, IServerSearchData, AtField } from "atmosphere-ui";
+import { IServerSearchData } from "atmosphere-ui";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
 
@@ -14,15 +14,10 @@ import { useTransactionModal } from "@/domains/transactions";
 // import { IServerSearchData, useServerSearch } from "@/composables/useServerSearch";
 import { reconciliationCols } from "@/domains/transactions";
 import { useAppContextStore } from "@/store";
-import { formatMoney } from "@/utils";
 import { IAccount, ICategory, ITransaction } from "@/domains/transactions/models";
 
 const { openTransactionModal } = useTransactionModal();
 
-
-interface CollectionData<T> {
-    data: T[]
-}
 const props = withDefaults(defineProps<{
     transactions: ITransaction[];
     account: IAccount;
@@ -76,14 +71,6 @@ const handleEdit = (transaction: ITransaction) => {
 
 const isEditing = ref(false);
 const statementBalanceRef = ref()
-const toggleEditing = () => {
-    isEditing.value = !isEditing.value
-    if (isEditing.value) {
-        nextTick(() => {
-            statementBalanceRef.value.focus()
-        })
-    }
-}
 
 onMounted(() => {
     router.on('start', () => isLoading.value = true)
