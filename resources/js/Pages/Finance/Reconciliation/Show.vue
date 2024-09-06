@@ -274,6 +274,7 @@ const transactionsMatched = computed(() => {
             </article>
             <article></article>
         </section>
+
         <ReconciliationTable
           :cols="tableAccountCols(props.reconciliation.account_id)"
           :transactions="transactionList"
@@ -284,12 +285,13 @@ const transactionsMatched = computed(() => {
           @removed="removeTransaction"
           @edit="handleEdit"
         >
-          <template #footer>
-              <footer class="justify-end flex px-4 mt-4">
-                  <NPagination v-model:page="state.page" :page-count="Math.ceil(transactions.total / 25)" />
-              </footer>
-        </template>
+            <template #footer v-if="false">
+                <footer class="justify-end flex px-4 mt-4">
+                    <NPagination v-model:page="state.page" :page-count="Math.ceil(transactions.total / 25)" />
+                </footer>
+            </template>
         </ReconciliationTable>
+
       </section>
     </FinanceTemplate>
   </AppLayout>

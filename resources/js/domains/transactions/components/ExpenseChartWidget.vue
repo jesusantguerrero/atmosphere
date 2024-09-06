@@ -47,7 +47,7 @@ const widgetDetailsCols = computed(() => cols[props.cols]);
 
 <template>
     <article class="flex">
-        <section class="relative w-[550px] mx-auto ">
+        <section class="relative w-[550px] mx-auto flex items-center justify-center">
             <DonutChart
               style="background: white; width: 100%"
               :series="data"
@@ -57,15 +57,18 @@ const widgetDetailsCols = computed(() => cols[props.cols]);
               label="name"
               value="total"
               :legend="false"
-            />
-            <section class="absolute mx-auto font-bold text-center top-1/2 left-44 text-primary">
-                <h4>
-                    {{  title  }}
-                </h4>
-                <h5>
-                    {{ formatMoney(total) }}
-                </h5>
-            </section>
+            >
+                <template #total>
+                    <section class="font-bold text-center text-primary">
+                        <h4>
+                            {{  title  }}
+                        </h4>
+                        <h5>
+                            {{ formatMoney(total) }}
+                        </h5>
+                    </section>
+                </template>
+            </DonutChart>
         </section>
         <section class="space-y-1 grid" :class="[widgetDetailsCols]">
             <ExpenseChartWidgetRow

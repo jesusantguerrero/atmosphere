@@ -47,7 +47,7 @@ const chartData = computed(() => {
     labels: series.value.map((item) => item[props.label]),
     datasets: [
       {
-        data: series.value.map((item) => item[props.value]).sort(),
+        data: series.value.map((item) => item[props.value]),
         backgroundColor: series.value.map((item) => item.color || nameToColor(item[props.label])),
         borderJoinStyle: "mittr",
       },
@@ -81,14 +81,19 @@ const options = computed(() => ({
 </script>
 
 <template>
-    <div class="relative">
+    <div class="relative flex justify-center items-center min-h-96">
       <DoughnutChart
         ref="chartRef"
+        class="absolute"
         :data="chartData"
         :options="options"
+         width="100%"
+         height="100%"
        />
-      <div class="absolute">
-        {{ total }}
+      <div>
+        <slot name="total">
+            {{ total }}
+        </slot>
       </div>
     </div>
 </template>

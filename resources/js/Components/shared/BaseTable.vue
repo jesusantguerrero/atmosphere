@@ -39,7 +39,7 @@ const props = withDefaults(
   }
 );
 
-const emit = defineEmits(["selection-change"]);
+const emit = defineEmits(["selection-change", 'sort', 'row-click']);
 
 const getHeaderClass = (row: Record<string, any>) => {
   return row.headerClass;
@@ -91,7 +91,7 @@ defineExpose({
 </script>
 
 <template>
-  <section class="ic-base-table">
+  <section class="ic-base-table overflow-y-auto ic-scroller">
     <!-- Header and top pagination -->
     <section
       class="flex items-center justify-between px-4 md:px-0 bg-base-lvl-3"

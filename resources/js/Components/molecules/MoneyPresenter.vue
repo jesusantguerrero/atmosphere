@@ -2,14 +2,10 @@
 import { formatMoney } from '@/utils';
 import NumberHider from './NumberHider.vue';
 
-defineProps({
-    value: {
-        type: Number
-    },
-    bold: {
-        type: Boolean,
-    }
-})
+defineProps<{
+    value: number|string;
+    bold?: boolean;
+}>()
 </script>
 
 

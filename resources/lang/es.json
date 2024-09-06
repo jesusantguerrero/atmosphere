@@ -19,5 +19,7 @@
         "welcome": "Bienvenido a @:appName",
         "currentExpenses": "Gastos actuales",
         "monthlyBudget": "Presupuesto Mensual"
-    }
+    },
+    "Net-Worth Balance": "Balance patrimonio neto",
+    "Emergency Fund Builder": "Fondo de emergencia"
 }

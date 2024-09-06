@@ -214,7 +214,7 @@ const selectedTabName  = computed(() => {
           variant="inverse"
           @click="reconcileForm.isVisible = true"
           v-if="!isReconciled">
-            Reconciliation {{ isReconciled }}
+            Reconciliation
           </LogerButton>
           <LogerButton
             variant="inverse"

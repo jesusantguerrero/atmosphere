@@ -1,13 +1,17 @@
 export type TransactionStatus = "draft" | "verified" | "planned";
-
+export enum TransactionDirection {
+        WITHDRAW = 'WITHDRAW',
+        DEPOSIT = 'DEPOSIT',
+        TRANSFER = 'TRANSFER'
+}
 export interface ITransaction {
     id: number;
     date: string;
     title: string;
     currencyCode: string;
-    status: string;
     payee: IPayee;
-    direction: TransactionStatus;
+    direction: TransactionDirection;
+    status: TransactionStatus;
     total: number;
     currency_code: string;
     description: string;
