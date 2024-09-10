@@ -10,8 +10,6 @@ services:
     image: loger
     container_name: loger-app
     restart: unless-stopped
-    depends_on:
-      - db
     volumes:
       - ./:/app
       - ./Caddyfile:/etc/caddy/Caddyfile
