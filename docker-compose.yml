@@ -20,7 +20,7 @@ services:
     networks:
       - loger
     ports:
-      - 8080:80
+      - 3000:80
     environment:
         DEBUG: "debug"
         # Change the following value if you know how it works.
