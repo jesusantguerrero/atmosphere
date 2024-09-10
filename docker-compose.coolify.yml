@@ -12,8 +12,6 @@ services:
     restart: unless-stopped
     volumes:
       - ./:/app
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - loger_db:/var/lib/mysql
     networks:
       - loger
     ports:
@@ -34,18 +32,6 @@ services:
       - '${FORWARD_REDIS_PORT:-6379}:6379'
     volumes:
       - ./docker-compose/redis:/data
-    networks:
-      - loger
-  cron:
-    build:
-      context: .
-      dockerfile: cron.dockerfile
-    container_name: cron
-    volumes:
-      - ./:/app
-    working_dir: /app
-    depends_on:
-      - web
     networks:
       - loger
 networks:
