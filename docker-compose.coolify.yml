@@ -1,0 +1,55 @@
+version: "3.7"
+services:
+  web:
+    build:
+      args:
+        uid: 1000
+        TZ: America\New_York
+      context: ./
+      dockerfile: Dockerfile
+    image: loger
+    container_name: loger-app
+    restart: unless-stopped
+    depends_on:
+      - db
+    volumes:
+      - ./:/app
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - loger_db:/var/lib/mysql
+    networks:
+      - loger
+    ports:
+      - 3000:80
+    environment:
+        DEBUG: "debug"
+        # Change the following value if you know how it works.
+        # MERCURE_TRANSPORT_URL: "bolt://mercure.db"
+        MERCURE_PUBLISHER_JWT_KEY: "${MERCURE_PUBLISHER_JWT_KEY}"
+        MERCURE_SUBSCRIBER_JWT_KEY: "${MERCURE_SUBSCRIBER_JWT_KEY}"
+        # In the cors_origin, add your domain(s). Or just use *
+        MERCURE_EXTRA_DIRECTIVES: |-
+            cors_origins "*"
+            anonymous
+  redis:
+    image: 'redis:alpine'
+    ports:
+      - '${FORWARD_REDIS_PORT:-6379}:6379'
+    volumes:
+      - ./docker-compose/redis:/data
+    networks:
+      - loger
+  cron:
+    build:
+      context: .
+      dockerfile: cron.dockerfile
+    container_name: cron
+    volumes:
+      - ./:/app
+    working_dir: /app
+    depends_on:
+      - web
+    networks:
+      - loger
+networks:
+  loger:
+    driver: bridge
