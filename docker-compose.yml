@@ -21,7 +21,6 @@ services:
       - loger
     ports:
       - 80:80
-      - 443:443
     environment:
         DEBUG: "debug"
         # Change the following value if you know how it works.
