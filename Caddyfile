@@ -6,7 +6,7 @@
 }
 
 # The domain name of your server
-dev-loger.neatlancer.com {
+localhost {
 	root * public/
 	encode zstd gzip
 	php_server {
