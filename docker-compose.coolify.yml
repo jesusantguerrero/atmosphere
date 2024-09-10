@@ -12,10 +12,9 @@ services:
     restart: unless-stopped
     volumes:
       - ./:/app
+      - ./Caddyfile:/etc/caddy/Caddyfile
     networks:
       - loger
-    ports:
-      - 3000:80
     environment:
         DEBUG: "debug"
         # Change the following value if you know how it works.
