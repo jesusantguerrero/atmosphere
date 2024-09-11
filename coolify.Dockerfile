@@ -42,7 +42,7 @@ echo "max_execution_time=900" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug
 COPY . /app
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-RUN composer install --iginore-platform-reqs --no-dev --no-interaction --no-plugins --no-scripts --prefer-dist
+RUN composer install --ignore-platform-reqs --no-dev --no-interaction --no-plugins --no-scripts --prefer-dist
 
 COPY --from=static-assets --chown=9999:9999 /app/public/build ./public/build
 
