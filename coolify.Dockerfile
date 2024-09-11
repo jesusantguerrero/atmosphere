@@ -46,8 +46,8 @@ RUN composer install --ignore-platform-reqs --no-dev --no-interaction --no-plugi
 
 COPY --from=static-assets --chown=9999:9999 /app/public/build ./public/build
 
-RUN php artisan route:cache
-RUN php artisan view:cache
+# RUN php artisan route:cache
+# RUN php artisan view:cache
 
 RUN echo "alias ll='ls -al'" >>/etc/bash.bashrc
 RUN echo "alias a='php artisan'" >>/etc/bash.bashrc
