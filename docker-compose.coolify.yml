@@ -25,14 +25,6 @@ services:
         MERCURE_EXTRA_DIRECTIVES: |-
             cors_origins "*"
             anonymous
-  redis:
-    image: 'redis:alpine'
-    ports:
-      - '${FORWARD_REDIS_PORT:-6379}:6379'
-    volumes:
-      - ./docker-compose/redis:/data
-    networks:
-      - loger
 networks:
   loger:
     driver: bridge
