@@ -6,7 +6,7 @@ import "vue-multiselect/dist/vue-multiselect.css"
 import { createApp, h } from 'vue';
 import { createI18n } from 'vue-i18n';
 import { createInertiaApp, router } from '@inertiajs/vue3';;
-import { ZiggyVue } from '../../vendor/tightenco/ziggy/dist/vue.m';
+import { ZiggyVue } from './ziggy.mjs';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import VueMultiselect from 'vue-multiselect'
 import { autoAnimatePlugin } from '@formkit/auto-animate/vue'
