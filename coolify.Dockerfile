@@ -33,7 +33,7 @@ RUN apt-get update && apt-get install -y \
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* && \
 # Install PHP extensions
-docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip && \
+docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd && \
 #install mailparse
 pecl install mailparse && \
 echo extension=mailparse.so > /usr/local/etc/php/conf.d/mailparse.ini && \
@@ -42,7 +42,7 @@ echo "max_execution_time=900" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug
 COPY . /app
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-RUN composer install --no-dev --no-interaction --no-plugins --no-scripts --prefer-dist
+RUN composer install --iginore-platform-reqs --no-dev --no-interaction --no-plugins --no-scripts --prefer-dist
 
 COPY --from=static-assets --chown=9999:9999 /app/public/build ./public/build
 
