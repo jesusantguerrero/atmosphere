@@ -6,7 +6,7 @@ services:
         uid: 1000
         TZ: America\New_York
       context: ./
-      dockerfile: Dockerfile
+      dockerfile: coolify.Dockerfile
     image: loger
     container_name: loger-app
     restart: unless-stopped
