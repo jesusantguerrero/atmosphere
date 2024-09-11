@@ -14,6 +14,8 @@ ARG user
 ARG uid
 ARG TZ
 
+WORKDIR /app
+
 ENV user $user
 ENV uid $uid
 ENV TZ $TZ
@@ -37,6 +39,7 @@ pecl install mailparse && \
 echo extension=mailparse.so > /usr/local/etc/php/conf.d/mailparse.ini && \
 echo "max_execution_time=900" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
+COPY . /app
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN composer install --no-dev --no-interaction --no-plugins --no-scripts --prefer-dist
