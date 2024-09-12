@@ -169,7 +169,6 @@ const setPaymentBill = (transaction: ITransaction) => {
   openModal(
         { data:{
             documents: [transaction],
-            transaction: transaction,
             resourceId: transaction.id,
             title: `Payment of ${transaction.name}`,
             defaultConcept: `Payment of ${transaction.name}`,
