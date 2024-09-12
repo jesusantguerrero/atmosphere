@@ -25,6 +25,8 @@ services:
         MERCURE_EXTRA_DIRECTIVES: |-
             cors_origins "*"
             anonymous
+    ports:
+      - "80:3000"
 networks:
   loger:
-    driver: bridge
+    external: true
