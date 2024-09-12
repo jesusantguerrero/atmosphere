@@ -20,4 +20,3 @@ services:
         # In the cors_origin, add your domain(s). Or just use *
         MERCURE_EXTRA_DIRECTIVES: |-
             cors_origins "*"
-            anonymous
