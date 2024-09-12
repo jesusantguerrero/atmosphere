@@ -2,13 +2,12 @@
 
 namespace App\Domains\Integration\Actions;
 
-use App\Domains\Automation\Concerns\AutomationActionContract;
+use Illuminate\Support\Facades\Log;
 use App\Domains\Automation\Models\Automation;
 use App\Domains\Automation\Models\AutomationTaskAction;
 use App\Domains\Transaction\Models\Transaction as ModelsTransaction;
-use Illuminate\Support\Facades\Log;
 
-class TransactionCreateEntry implements AutomationActionContract
+class TransactionFetched
 {
     use TransactionAction;
 

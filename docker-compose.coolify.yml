@@ -23,5 +23,3 @@ services:
         MERCURE_EXTRA_DIRECTIVES: |-
             cors_origins "*"
             anonymous
-    ports:
-      - "3000:80"
