@@ -39,7 +39,7 @@ pecl install mailparse && \
 echo extension=mailparse.so > /usr/local/etc/php/conf.d/mailparse.ini && \
 echo "max_execution_time=900" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
-COPY . /app
+COPY . .
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN composer install --ignore-platform-reqs --no-dev --no-interaction --no-plugins --no-scripts --prefer-dist
