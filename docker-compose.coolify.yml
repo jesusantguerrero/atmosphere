@@ -11,9 +11,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./:/app
-      - ./Caddyfile:/etc/caddy/Caddyfile
     environment:
-        server_name: ${SERVER_NAME:-test.apps.neatlancer.com}, php:80
         DEBUG: "debug"
         # Change the following value if you know how it works.
         # MERCURE_TRANSPORT_URL: "bolt://mercure.db"
