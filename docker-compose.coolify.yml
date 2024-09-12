@@ -11,12 +11,12 @@ services:
     restart: unless-stopped
     volumes:
       - ./:/app
+      - ./Caddyfile:/etc/caddy/Caddyfile
+    ports:
+      "8888:80"
     environment:
         DEBUG: "debug"
         # Change the following value if you know how it works.
         # MERCURE_TRANSPORT_URL: "bolt://mercure.db"
         MERCURE_PUBLISHER_JWT_KEY: "${MERCURE_PUBLISHER_JWT_KEY}"
         MERCURE_SUBSCRIBER_JWT_KEY: "${MERCURE_SUBSCRIBER_JWT_KEY}"
-        # In the cors_origin, add your domain(s). Or just use *
-        MERCURE_EXTRA_DIRECTIVES: |-
-            cors_origins "*"
