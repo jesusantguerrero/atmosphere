@@ -402,13 +402,13 @@ h1 {
 .form-cell {
     .item-group-cell {
         @apply border-2 border-gray-200 px-0;
+        height: 37px;
 
         span {
             height: 100%;
             display: flex;
             align-items: center;
         }
-        height: 37px;
 
     }
 }

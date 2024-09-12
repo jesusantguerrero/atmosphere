@@ -6,7 +6,7 @@
 }
 
 # The domain name of your server
-localhost {
+{$SERVER_NAME:localhost} {
 	root * public/
 	encode zstd gzip
 	php_server {

@@ -1,4 +1,3 @@
-version: "3.7"
 services:
   web:
     build:
@@ -16,6 +15,7 @@ services:
     networks:
       - loger
     environment:
+        server_name: ${SERVER_NAME:-test.apps.neatlancer.com}, php:80
         DEBUG: "debug"
         # Change the following value if you know how it works.
         # MERCURE_TRANSPORT_URL: "bolt://mercure.db"
@@ -26,7 +26,7 @@ services:
             cors_origins "*"
             anonymous
     ports:
-      - "80:3000"
+      - "3000:80"
 networks:
   loger:
-    external: true
+    driver: bridge
