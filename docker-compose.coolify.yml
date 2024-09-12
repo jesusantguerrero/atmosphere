@@ -12,8 +12,6 @@ services:
     volumes:
       - ./:/app
       - ./Caddyfile:/etc/caddy/Caddyfile
-    networks:
-      - loger
     environment:
         server_name: ${SERVER_NAME:-test.apps.neatlancer.com}, php:80
         DEBUG: "debug"
@@ -27,6 +25,3 @@ services:
             anonymous
     ports:
       - "3000:80"
-networks:
-  loger:
-    driver: bridge
