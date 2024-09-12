@@ -6,7 +6,7 @@
 }
 
 # The domain name of your server
-localhost {
+{$SERVER_NAME:localhost} {
 	# Set the webroot to the public/ dir
 	root * public/
 	# Enable compression (optional)
