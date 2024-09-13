@@ -1,4 +1,21 @@
 services:
+  nginx:
+    image: nginx:alpine
+    container_name: neatlancer-nginx
+    restart: unless-stopped
+    ports:
+      - 8088:80
+    volumes:
+      - ./:/var/www
+      - ./docker-compose/nginx/vhosts:/etc/nginx/conf.d/
+      - ./:/usr/share/nginx/html
+    environment:
+      - VIRTUAL_PORT=8088
+      - VIRTUAL_HOST=${VIRTUAL_APP_HOST}
+      - LETSENCRYPT_HOST=${VIRTUAL_APP_HOST}
+      - LETSENCRYPT_EMAIL=jesusant.guerrero@gmail.com
+    networks:
+      - neatlancer
   web:
     build:
       args:
@@ -10,10 +27,8 @@ services:
     container_name: loger-app
     restart: unless-stopped
     volumes:
-      - ./:/app
-      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./:/var/www
     environment:
-        server_name: ${SERVER_NAME:-test.apps.neatlancer.com}, php:80
         DEBUG: "debug"
         # Change the following value if you know how it works.
         # MERCURE_TRANSPORT_URL: "bolt://mercure.db"
@@ -23,3 +38,10 @@ services:
         MERCURE_EXTRA_DIRECTIVES: |-
             cors_origins "*"
             anonymous
+        NODE_ENV: production
+        VIRTUAL_PORT: 8000
+        VIRTUAL_HOST: ${VIRTUAL_LANDING_HOST}
+        LETSENCRYPT_HOST: ${VIRTUAL_LANDING_HOST}
+        LETSENCRYPT_EMAIL: jesusant.guerrero@gmail.com
+    env_file:
+      - .env
