@@ -53,8 +53,6 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 #     chown -R $user:$user /var/www && \
 RUN chown -R www-data:www-data /var/www
 
-USER www-data
-
 RUN composer install --ignore-platform-reqs --no-dev --no-interaction --no-plugins --no-scripts --prefer-dist
 
 COPY --from=static-assets --chown=9999:9999 /var/www/public/build ./public/build
@@ -65,3 +63,5 @@ COPY --from=static-assets --chown=9999:9999 /var/www/public/build ./public/build
 RUN echo "alias ll='ls -al'" >>/etc/bash.bashrc
 RUN echo "alias a='php artisan'" >>/etc/bash.bashrc
 RUN echo "alias logs='tail -f storage/logs/laravel.log'" >>/etc/bash.bashrc
+
+USER www-data
