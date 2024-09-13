@@ -1,4 +1,5 @@
 ARG NODE_VERSION=20.9.0
+ARG PHP_VERSION=8.3.11
 FROM node:${NODE_VERSION}-alpine as static-assets
 
 RUN apk add --no-cache gcompat
@@ -8,7 +9,6 @@ COPY . /app
 
 RUN yarn install --frozen-lockfile && yarn && yarn build && npm prune --production
 
-ARG PHP_VERSION=8.3.11
 FROM php:${PHP_VERSION}-fpm as server
 
 ARG user
