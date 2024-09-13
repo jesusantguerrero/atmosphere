@@ -8,13 +8,15 @@ COPY . /app
 
 RUN yarn install --frozen-lockfile && yarn && yarn build && npm prune --production
 
-FROM dunglas/frankenphp as server
+ARG PHP_VERSION=8.3.11
+FROM php:${PHP_VERSION}-fpm as server
 
 ARG user
 ARG uid
 ARG TZ
 
-WORKDIR /app
+# Set working directory
+WORKDIR /var/www
 
 ENV user $user
 ENV uid $uid
@@ -42,6 +44,15 @@ echo "max_execution_time=900" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug
 COPY . .
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Create system user to run Composer and Artisan Commands
+RUN useradd -G www-data,root,crontab -u $uid -d /home/$user $user
+RUN mkdir -p /home/$user/.composer && \
+    chown -R $user:$user /home/$user && \
+    chown -R $user:$user /var/www && \
+    chown -R www-data:www-data /var/www
+
+USER $user
+
 RUN composer install --ignore-platform-reqs --no-dev --no-interaction --no-plugins --no-scripts --prefer-dist
 
 COPY --from=static-assets --chown=9999:9999 /app/public/build ./public/build
