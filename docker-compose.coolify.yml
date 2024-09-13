@@ -1,4 +1,19 @@
 services:
+  nginx:
+    image: nginx:alpine
+    container_name: loger-nginx
+    restart: unless-stopped
+    ports:
+      - 8088:80
+    volumes:
+      - ./:/var/www
+      - ./docker-compose/nginx/vhosts:/etc/nginx/conf.d/
+      - ./:/usr/share/nginx/html
+    environment:
+      - VIRTUAL_PORT=8088
+      - VIRTUAL_HOST=${VIRTUAL_APP_HOST}
+      - LETSENCRYPT_HOST=${VIRTUAL_APP_HOST}
+      - LETSENCRYPT_EMAIL=jesusant.guerrero@gmail.com
   loger:
     build:
       args:
@@ -9,25 +24,7 @@ services:
     image: loger
     container_name: loger-app
     restart: unless-stopped
-    ports:
-      - "8088:9000"
     volumes:
       - ./storage:/var/www/storage
-    environment:
-        DEBUG: "debug"
-        # Change the following value if you know how it works.
-        # MERCURE_TRANSPORT_URL: "bolt://mercure.db"
-        MERCURE_PUBLISHER_JWT_KEY: "${MERCURE_PUBLISHER_JWT_KEY}"
-        MERCURE_SUBSCRIBER_JWT_KEY: "${MERCURE_SUBSCRIBER_JWT_KEY}"
-        # In the cors_origin, add your domain(s). Or just use *
-        MERCURE_EXTRA_DIRECTIVES: |-
-            cors_origins "*"
-            anonymous
-        NODE_ENV: production
-        VIRTUAL_PORT: 8000
-        VIRTUAL_HOST: ${VIRTUAL_LANDING_HOST}
-        LETSENCRYPT_HOST: ${VIRTUAL_LANDING_HOST}
-        LETSENCRYPT_EMAIL: jesusant.guerrero@gmail.com
     env_file:
       - .env
-
