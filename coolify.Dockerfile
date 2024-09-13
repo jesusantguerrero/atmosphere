@@ -3,9 +3,9 @@ ARG PHP_VERSION=8.3.11
 FROM node:${NODE_VERSION}-alpine as static-assets
 
 RUN apk add --no-cache gcompat
-WORKDIR /app
+WORKDIR /var/www
 
-COPY . /app
+COPY . /var/www
 
 RUN yarn install --frozen-lockfile && yarn && yarn build && npm prune --production
 
@@ -55,7 +55,7 @@ USER $user
 
 RUN composer install --ignore-platform-reqs --no-dev --no-interaction --no-plugins --no-scripts --prefer-dist
 
-COPY --from=static-assets --chown=9999:9999 /app/public/build ./public/build
+COPY --from=static-assets --chown=9999:9999 /var/www/public/build ./public/build
 
 # RUN php artisan route:cache
 # RUN php artisan view:cache
