@@ -25,6 +25,9 @@ services:
     container_name: loger-app
     restart: unless-stopped
     volumes:
+      - ./:/var/www
+      - ./web/timezone:/etc/timezone
       - ./storage:/var/www/storage
+      - /var/www/public/build
     env_file:
       - .env
