@@ -1,7 +1,7 @@
 services:
   nginx:
     image: nginx:alpine
-    container_name: neatlancer-nginx
+    container_name: loger-nginx
     restart: unless-stopped
     ports:
       - 8088:80
@@ -14,8 +14,6 @@ services:
       - VIRTUAL_HOST=${VIRTUAL_APP_HOST}
       - LETSENCRYPT_HOST=${VIRTUAL_APP_HOST}
       - LETSENCRYPT_EMAIL=jesusant.guerrero@gmail.com
-    networks:
-      - neatlancer
   web:
     build:
       args:
