@@ -26,7 +26,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./:/var/www
-      - ./web/timezone:/etc/timezone
+      - ./docker-compose/web/timezone:/etc/timezone
       - ./storage:/var/www/storage
       - /var/www/public/build
     env_file:
