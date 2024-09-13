@@ -14,7 +14,7 @@ services:
       - VIRTUAL_HOST=${VIRTUAL_APP_HOST}
       - LETSENCRYPT_HOST=${VIRTUAL_APP_HOST}
       - LETSENCRYPT_EMAIL=jesusant.guerrero@gmail.com
-  loger:
+  web:
     build:
       args:
         uid: 1000
