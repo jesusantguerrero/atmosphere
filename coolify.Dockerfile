@@ -22,6 +22,7 @@ ENV user $user
 ENV uid $uid
 ENV TZ $TZ
 # Install system dependencies
+RUN curl -sL https://deb.nodesource.com/setup_20.x | bash -
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -31,7 +32,8 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     cron \
-    default-mysql-client
+    default-mysql-client \
+    nodejs
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* && \
 # Install PHP extensions
@@ -49,9 +51,9 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # RUN mkdir -p /home/$user/.composer && \
 #     chown -R $user:$user /home/$user && \
 #     chown -R $user:$user /var/www && \
-#     chown -R www-data:www-data /var/www
+RUN chown -R www-data:www-data /var/www
 
-# USER $user
+USER www-data
 
 RUN composer install --ignore-platform-reqs --no-dev --no-interaction --no-plugins --no-scripts --prefer-dist
 
