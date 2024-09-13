@@ -47,8 +47,6 @@ RUN chown -R www-data:www-data /var/www
 RUN composer install --ignore-platform-reqs --no-dev --no-interaction --no-plugins --no-scripts --prefer-dist
 RUN npx yarn install --frozen-lockfile && yarn && yarn build && npm prune --production
 
-COPY --from=static-assets --chown=9999:9999 /var/www/public/build ./public/build
-
 # RUN php artisan route:cache
 # RUN php artisan view:cache
 
