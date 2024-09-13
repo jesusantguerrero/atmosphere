@@ -26,6 +26,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./:/var/www
+      - ./storage:/var/www/storage
     environment:
         DEBUG: "debug"
         # Change the following value if you know how it works.
