@@ -45,7 +45,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN chown -R www-data:www-data /var/www
 
 RUN composer install --ignore-platform-reqs --no-dev --no-interaction --no-plugins --no-scripts --prefer-dist
-RUN npx yarn install --frozen-lockfile && yarn && yarn build && npm prune --production
+RUN npx yarn install --frozen-lockfile && npx yarn && npx yarn build && npm prune --production
 
 # RUN php artisan route:cache
 # RUN php artisan view:cache
