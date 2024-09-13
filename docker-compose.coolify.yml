@@ -9,6 +9,8 @@ services:
     image: loger
     container_name: loger-app
     restart: unless-stopped
+    ports:
+      - "8088:9000"
     volumes:
       - ./storage:/var/www/storage
     environment:
