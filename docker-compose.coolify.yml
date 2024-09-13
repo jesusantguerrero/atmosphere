@@ -1,20 +1,5 @@
 services:
-  nginx:
-    image: nginx:alpine
-    container_name: loger-nginx
-    restart: unless-stopped
-    ports:
-      - 8088:80
-    volumes:
-      - ./:/var/www
-      - ./docker-compose/nginx/vhosts:/etc/nginx/conf.d/
-      - ./:/usr/share/nginx/html
-    environment:
-      - VIRTUAL_PORT=8088
-      - VIRTUAL_HOST=${VIRTUAL_APP_HOST}
-      - LETSENCRYPT_HOST=${VIRTUAL_APP_HOST}
-      - LETSENCRYPT_EMAIL=jesusant.guerrero@gmail.com
-  web:
+  loger:
     build:
       args:
         uid: 1000
@@ -25,7 +10,6 @@ services:
     container_name: loger-app
     restart: unless-stopped
     volumes:
-      - ./:/var/www
       - ./storage:/var/www/storage
     environment:
         DEBUG: "debug"
