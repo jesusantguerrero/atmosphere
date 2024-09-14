@@ -26,7 +26,7 @@ RUN apt-get update && apt-get install -y \
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* && \
 # Install PHP extensions
-docker-php-ext-install pdo_mysql calendar mbstring exif pcntl bcmath gd && \
+docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd && \
 #install mailparse
 pecl install mailparse && \
 echo extension=mailparse.so > /usr/local/etc/php/conf.d/mailparse.ini && \
