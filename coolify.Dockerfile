@@ -1,5 +1,5 @@
 ARG NODE_VERSION=20.9.0
-ARG PHP_VERSION=8.3.11
+ARG PHP_VERSION=8.1.2
 FROM php:${PHP_VERSION}-fpm as server
 
 ARG user
@@ -13,7 +13,6 @@ ENV user $user
 ENV uid $uid
 ENV TZ $TZ
 # Install system dependencies
-RUN curl -sL https://deb.nodesource.com/setup_20.x | bash -
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -24,11 +23,10 @@ RUN apt-get update && apt-get install -y \
     unzip \
     cron \
     default-mysql-client \
-    nodejs
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* && \
 # Install PHP extensions
-docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd && \
+docker-php-ext-install pdo_mysql calendar mbstring exif pcntl bcmath gd && \
 #install mailparse
 pecl install mailparse && \
 echo extension=mailparse.so > /usr/local/etc/php/conf.d/mailparse.ini && \
@@ -45,7 +43,6 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN chown -R www-data:www-data /var/www
 
 RUN composer install --ignore-platform-reqs --no-dev --no-interaction --no-plugins --no-scripts --prefer-dist
-RUN npx yarn install --frozen-lockfile && npx yarn && npx yarn build && npm prune --production
 
 # RUN php artisan route:cache
 # RUN php artisan view:cache
