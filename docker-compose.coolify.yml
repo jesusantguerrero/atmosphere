@@ -30,6 +30,5 @@ services:
       - ./:/var/www
       - ./docker-compose/web/timezone:/etc/timezone
       - ./storage:/var/www/storage
-      - /var/www/public/build
     env_file:
       - .env
