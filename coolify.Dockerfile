@@ -1,17 +1,33 @@
 ARG NODE_VERSION=20.9.0
-ARG PHP_VERSION=8.1.2
-FROM php:${PHP_VERSION}-fpm as server
+ARG PHP_VERSION=8.2
+
+FROM serversideup/php:${PHP_VERSION}-fpm-nginx as base
+WORKDIR /var/www/html
+
+RUN PHP_OPCACHE_ENABLE=1
+
+COPY composer.json composer.lock ./
+RUN composer install --ignore-platform-reqs --no-dev --no-interaction --no-plugins --no-scripts --prefer-dist
+
+FROM node:${NODE_VERSION}-alpine as asset-files
+
+RUN apk add --no-cache gcompat
+WORKDIR /app
+
+COPY . .
+COPY --from=base --chown=9999:9999 /var/www/html .
+
+RUN yarn install --frozen-lockfile && yarn && yarn build && npm prune --production
+
+FROM base as runner
 
 ARG user
 ARG uid
 ARG TZ
 
-# Set working directory
-WORKDIR /var/www
+WORKDIR /var/www/html
 
-ENV user $user
-ENV uid $uid
-ENV TZ $TZ
+USER root
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     git \
@@ -22,27 +38,30 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     cron \
-    default-mysql-client
+    default-mysql-client \
+    vim
+
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* && \
 # Install PHP extensions
-docker-php-ext-install pdo_mysql calendar mbstring exif pcntl bcmath gd && \
+    docker-php-ext-install pdo_mysql mbstring calendar exif pcntl bcmath gd && \
 #install mailparse
-pecl install mailparse && \
-echo extension=mailparse.so > /usr/local/etc/php/conf.d/mailparse.ini && \
-echo "max_execution_time=900" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+    pecl install mailparse && \
+    echo extension=mailparse.so > /usr/local/etc/php/conf.d/mailparse.ini
 
-COPY . .
 # Get latest Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-# Create system user to run Composer and Artisan Commands
-# RUN useradd -G www-data,root,crontab -u $uid -d /home/$user $user
-# RUN mkdir -p /home/$user/.composer && \
-#     chown -R $user:$user /home/$user && \
-#     chown -R $user:$user /var/www && \
-RUN chown -R www-data:www-data /var/www
+COPY --from=base --chown=9999:9999 /var/www/html .
+COPY --chown=9999:9999 . .
+RUN composer dump-autoload
+RUN chown -R www-data:www-data .
 
-RUN composer install --ignore-platform-reqs --no-dev --no-interaction --no-plugins --no-scripts --prefer-dist
+COPY --from=asset-files --chown=www-data:www-data /app/public/build ./public/build
+
+RUN useradd -G www-data,root,crontab -u $uid -d /home/$user $user
+RUN mkdir -p /home/$user/.composer && \
+    chown -R $user:$user /home/$user && \
+    chown -R $user:$user /var/www && \
+    chown -R www-data:www-data /var/www
 
 # RUN php artisan route:cache
 # RUN php artisan view:cache
@@ -51,4 +70,4 @@ RUN echo "alias ll='ls -al'" >>/etc/bash.bashrc
 RUN echo "alias a='php artisan'" >>/etc/bash.bashrc
 RUN echo "alias logs='tail -f storage/logs/laravel.log'" >>/etc/bash.bashrc
 
-USER www-data
+USER $user
