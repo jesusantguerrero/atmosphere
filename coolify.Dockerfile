@@ -57,11 +57,7 @@ RUN chown -R www-data:www-data .
 
 COPY --from=asset-files --chown=www-data:www-data /app/public/build ./public/build
 
-RUN useradd -G www-data,root,crontab -u $uid -d /home/$user $user
-RUN mkdir -p /home/$user/.composer && \
-    chown -R $user:$user /home/$user && \
-    chown -R $user:$user /var/www && \
-    chown -R www-data:www-data /var/www
+RUN chown -R www-data:www-data /var/www
 
 # RUN php artisan route:cache
 # RUN php artisan view:cache
@@ -70,4 +66,4 @@ RUN echo "alias ll='ls -al'" >>/etc/bash.bashrc
 RUN echo "alias a='php artisan'" >>/etc/bash.bashrc
 RUN echo "alias logs='tail -f storage/logs/laravel.log'" >>/etc/bash.bashrc
 
-USER $user
+USER www-data
