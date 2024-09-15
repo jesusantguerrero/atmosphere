@@ -16,6 +16,7 @@ services:
       - .env
     environment:
       AUTORUN_ENABLED: true
+      AUTORUN_LARAVEL_MIGRATION_ISOLATION: true
       DB_CONNECTION: mysql
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
