@@ -1,0 +1,32 @@
+name: Update Version on Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  update-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2' # Use your PHP version
+
+      - name: Get latest release tag
+        run: echo "RELEASE_VERSION=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
+
+      - name: Update version in config/app.php
+        run: |
+          sed -i "s/'version' => env('APP_VERSION', .*/'version' => env('APP_VERSION', '${RELEASE_VERSION}'),/" config/app.php
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add config/app.php
+          git commit -m "Update app version to ${RELEASE_VERSION}"
+          git push origin HEAD

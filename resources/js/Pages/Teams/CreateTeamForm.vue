@@ -37,9 +37,9 @@
         <template #form>
             <AtField label="Space Owner">
                 <ProfilePicture
-                    :photoUrl="$page.props.user.profile_photo_url"
-                    :userName="$page.props.user.name"
-                    :email="$page.props.user.email"
+                    :photoUrl="$page.props.auth.user.profile_photo_url"
+                    :userName="$page.props.auth.user.name"
+                    :email="$page.props.auth.user.email"
                 />
             </AtField>
 

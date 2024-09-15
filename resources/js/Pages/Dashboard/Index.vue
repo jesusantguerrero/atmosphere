@@ -78,7 +78,7 @@ interface DynamicStore  {
     drafts: number
 }
 
-const dynamicStore = useSessionStorage<DynamicStore>(`dynamic-store::${props.user.current_team_id}`,{
+const dynamicStore = useSessionStorage<DynamicStore>(`dynamic-store::${`hola`}`,{
     checks: [],
     drafts: 0
 })
@@ -153,7 +153,7 @@ const deleteBulkTransactions = () => {
             :net-worth="netWorth"
             :expenses="transactionTotal.total_amount"
             :message="$t('dashboard.welcome')"
-            :username="user.name"
+            :username="user?.name"
             @section-click="selected = $event"
           />
           <BudgetFundWidget class="md:w-5/12 w-full order-1 mt-2 md:mt-0" />
