@@ -74,6 +74,7 @@ class HandleInertiaRequests extends Middleware
                 ->orderBy('index')
                 ->with('subCategories')
                 ->get() : [''],
+            'version' => config('app.version')
         ];
     }
 }

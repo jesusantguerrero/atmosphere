@@ -213,7 +213,8 @@
                                 <img src="/logotype.png" :style="{height: '24px'}" class="mx-auto"/>
                             </Link>
                             <Link href="/dashboard" class="mx-auto text-center " v-else>
-                                <AppIcon size="medium" />
+                                <AppIcon size="medium"  />
+                                <sup> {{ $page.props.version }}</sup>
                             </Link>
                         </div>
                     </template>
