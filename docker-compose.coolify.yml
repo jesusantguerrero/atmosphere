@@ -14,6 +14,14 @@ services:
       - ./storage:/var/www/storage
     env_file:
       - .env
+    environment:
+      AUTORUN_ENABLED: true
+      DB_CONNECTION: mysql
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
   task:
     image: freesgen/loger
     command: ["php", "/var/www/html/artisan", "schedule:work"]
