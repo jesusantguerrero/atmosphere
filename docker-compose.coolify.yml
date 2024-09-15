@@ -18,13 +18,13 @@ services:
     image: freesgen/loger
     command: ["php", "/var/www/html/artisan", "schedule:work"]
     environment:
-      PHP_PFM_POOL_NAME: "sunday_task"
+      PHP_PFM_POOL_NAME: "loger_task"
     depends_on:
-      - web
+      - loger
   queue:
     image: freesgen/loger
     command: ["php", "/var/www/html/artisan", "queue:work", "--tries=3"]
     environment:
-      PHP_FPM_POOL_NAME: "sunday_queue"
+      PHP_FPM_POOL_NAME: "loger_queue"
     depends_on:
-      - web
+      - loger
