@@ -242,9 +242,6 @@ export const useBudget = (budgets: Ref<Record<string, any>>) => {
     }
 
     const assignBudget = (assign: AssignBudgetProps) => {
-
-        debugger
-
         axios.post(`/budgets/${assign.category.id}/months/${assign.month}`, {
             id: assign.category.id,
             budgeted: assign.budgeted,

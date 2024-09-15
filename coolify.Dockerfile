@@ -7,7 +7,7 @@ WORKDIR /var/www/html
 RUN PHP_OPCACHE_ENABLE=1
 
 COPY composer.json composer.lock ./
-RUN composer update --ignore-platform-reqs --no-dev --no-interaction --no-plugins --no-scripts --prefer-dist
+RUN composer install --ignore-platform-reqs --no-dev --no-interaction --no-plugins --no-scripts --prefer-dist
 
 FROM node:${NODE_VERSION}-alpine as asset-files
 
@@ -52,7 +52,7 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/* && \
 # Get latest Composer
 COPY --from=base --chown=9999:9999 /var/www/html .
 COPY --chown=9999:9999 . .
-RUN composer dump-autoload
+RUN composer update --ignore-platform-reqs
 RUN chown -R www-data:www-data .
 
 COPY --from=asset-files --chown=www-data:www-data /app/public/build ./public/build
