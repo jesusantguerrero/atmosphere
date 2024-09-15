@@ -26,7 +26,7 @@
             <div class="max-w-7xl mx-auto space-y-5 [&>*]:pt-5 divide-y pt-16 pb-20 sm:px-6 lg:px-8">
                 <UpdateProfileInformationForm
                     v-if="$page.props.jetstream.canUpdateProfileInformation"
-                    :user="$page.props.user"
+                    :user="$page.props.auth.user"
                 />
 
                 <UpdatePasswordForm
