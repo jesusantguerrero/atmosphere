@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import SectionNav from "@/Components/molecules/SectionNav.vue";
 import { usePage } from "@inertiajs/vue3";
+import { computed } from "vue";
 
-const teamId = usePage().props.user.current_team_id;
+const teamId = computed(() => usePage().props.auth.user.current_team_id);
 
 const sections = [
     {

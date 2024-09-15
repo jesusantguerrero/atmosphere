@@ -27,18 +27,12 @@
     import { useAppContextStore } from '@/store'
     // import LogerAssistant from '../organisms/logerAssistant.vue'
 
-    const props = defineProps({
-        title: {
-            type: String
-        },
-        showBackButton: {
-            type: Boolean,
-        },
-        isOnboarding: {
-            type: Boolean,
-            default: false
-        },
-    })
+    const props = defineProps<{
+        title: string;
+        showBackButton: boolean;
+        isOnboarding: boolean;
+        user: Record<string, any>
+    }>()
 
     const context = useAppContextStore()
     const pageProps = usePage().props
@@ -149,23 +143,22 @@
                              />
                              <!-- <LogerAssistant /> -->
                              <AtTeamSelect
-                                v-if="$page.props.user.all_teams.length && !context.isMobile"
+                                v-if="$page.props.auth.user?.all_teams.length && !context.isMobile"
                                 :has-team-features="$page.props.jetstream.hasTeamFeatures"
                                 :can-create-teams="$page.props.jetstream.canCreateTeams"
-                                :current-team="$page.props.user.current_team"
-                                :teams="$page.props.user.all_teams"
+                                :current-team="$page.props.auth.user.current_team"
+                                :teams="$page.props.auth.user.all_teams"
                                 @switch-team="switchToTeam"
                                 :full-height="true"
                                 @create="router.visit(route('teams.create'))"
                                 resource-name="Space"
                             />
-
                             <!-- Settings Dropdown -->
-                            <div class="relative ml-3">
+                            <div class="relative ml-3"  v-if="$page.props.auth.user">
                                 <AppUserMenu
                                     :has-image="$page.props.jetstream.managesProfilePhotos"
-                                    :image-url="$page.props.user.profile_photo_url"
-                                    :user="$page.props.user"
+                                    :image-url="$page.props.auth.user.profile_photo_url"
+                                    :user="$page.props.auth.user"
                                     :has-api-features="$page.props.jetstream.hasApiFeatures"
                                     @logout="logout()"
                                 />
@@ -186,12 +179,12 @@
                     <div class="pt-4 pb-1 border-t border-gray-200">
                         <div class="flex items-center px-4">
                             <div v-if="$page.props.jetstream.managesProfilePhotos" class="flex-shrink-0 mr-3" >
-                                <img class="object-cover w-10 h-10 rounded-full" :src="$page.props.user.profile_photo_url" :alt="$page.props.user.name" />
+                                <img class="object-cover w-10 h-10 rounded-full" :src="$page.props.auth.user.profile_photo_url" :alt="$page.props.auth.user.name" />
                             </div>
 
                             <div>
-                                <div class="text-base font-medium text-gray-800">{{ $page.props.user.name }}</div>
-                                <div class="text-sm font-medium text-body">{{ $page.props.user.email }}</div>
+                                <div class="text-base font-medium text-gray-800">{{ $page.props.auth.user.name }}</div>
+                                <div class="text-sm font-medium text-body">{{ $page.props.auth.user.email }}</div>
                             </div>
                         </div>
                     </div>

@@ -46,15 +46,15 @@ class HandleInertiaRequests extends Middleware
         $team = $user ? $user->currentTeam : null;
         $menu = Menu::render('app');
 
-        return array_merge(parent::share($request), [
-            'auth' => [
-                'user' => $request->user(),
-            ],
-            'ziggy' => function () use ($request) {
-                return array_merge((new Ziggy)->toArray(), [
+        return [
+            ...parent::share($request),
+            'ziggy' => fn () =>[
+                    ...(new Ziggy)->toArray(),
                     'location' => $request->url(),
-                ]);
-            },
+            ],
+            // 'auth' => [
+            //     'user' => $request->user(),
+            // ],
             'locale' => app()->getLocale(),
             'settings' => $team ? $team->settings->mapWithKeys(fn ($setting) => [$setting['name'] => $setting['value']]) : [],
             'accountDetailTypes' => AccountDetailType::all(),
@@ -74,6 +74,6 @@ class HandleInertiaRequests extends Middleware
                 ->orderBy('index')
                 ->with('subCategories')
                 ->get() : [''],
-        ]);
+        ];
     }
 }
