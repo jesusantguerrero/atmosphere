@@ -37,8 +37,3 @@ services:
       PHP_FPM_POOL_NAME: "loger_queue"
     depends_on:
       - loger
-  horizon:
-    image: freesgen/loger
-    command: ["php", "/var/www/html/artisan", "horizon"]
-    environment:
-      PHP_FPM_POOL_NAME: "loger_horizon"
