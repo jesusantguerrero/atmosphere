@@ -3,7 +3,7 @@ import { formatMoney } from '@/utils';
 import NumberHider from './NumberHider.vue';
 
 defineProps<{
-    value: number|string;
+    value?: number|string;
     bold?: boolean;
 }>()
 </script>

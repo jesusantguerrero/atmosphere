@@ -1,6 +1,6 @@
 
 import { cloneDeep } from "lodash";
-import { computed, watch, reactive, toRefs, Ref } from "vue";
+import { computed, watch, reactive, toRefs, Ref, nextTick } from "vue";
 import { getCategoriesTotals, getGroupTotals, InflowCategories } from './index';
 import { IBudgetCategory } from "./models/budget";
 import { format } from "date-fns";
@@ -238,7 +238,9 @@ export const useBudget = (budgets: Ref<Record<string, any>>) => {
             // @ts-ignore:: its ok not to be ok
             BudgetState.filters[filter] = filterName == filter ? !value : false ;
         })
-        setVisibleCategories();
+        nextTick(() => {
+            setVisibleCategories()
+        })
     }
 
     const assignBudget = (assign: AssignBudgetProps) => {
@@ -273,7 +275,9 @@ export const useBudget = (budgets: Ref<Record<string, any>>) => {
             }
         }
         setBudgetState(getBudget(BudgetState.data));
-        setVisibleCategories()
+        nextTick(() => {
+            setVisibleCategories()
+        })
     }
 
     const moveBudget = (movementData: BudgetMovementProps) => {
@@ -323,7 +327,7 @@ export const useBudget = (budgets: Ref<Record<string, any>>) => {
 
 
 const filterConditions = {
-    overspent: (category: IBudgetCategory) =>  category.hasOverspent,
+    overspent: (category: IBudgetCategory) => {return (!category.subCategories && category.available < 0 ) || category.hasOverspent},
     funded: (category: IBudgetCategory) =>  category.hasFunded,
     underFunded: (category: IBudgetCategory) =>  category.hasUnderFunded,
 }
@@ -339,7 +343,11 @@ function getVisibleCategories(budgetData: Record<string, any>, filterName?: Filt
     const visibleGroups = data.reduce((groups: any, group: IBudgetCategory) => {
         const groupHasFilter = group.name != 'Inflow' && evaluateFilterCondition(group, filterName)
         if (groupHasFilter) {
-            group.subCategories = group.subCategories?.filter(subCategory => filterName ? evaluateFilterCondition(subCategory, filterName) : true)
+            console.log(`Grupo: ${group.name}`);
+            group.subCategories = group.subCategories?.filter(subCategory => {
+                console.log(`${group.name}: ${subCategory.name}`, subCategory);
+                return filterName ? evaluateFilterCondition(subCategory, filterName) : true
+            })
             groups.push(group)
         }
         return groups

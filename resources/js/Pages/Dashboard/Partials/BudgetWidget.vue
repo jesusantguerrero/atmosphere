@@ -141,8 +141,8 @@ fetchBudgetAlerts().then(data => {
         @action="router.visit('/budgets')"
     >
         <section class="w-full">
-            <section class="w-full  py-3 relative h-[155px] overflow-hidden">
-                <article style="width: 100%; height: 300px" class="relative py-1 mb-10">
+            <section class="w-full  pb-3 relative h-[80px]">
+                <article style="width: 100%; height: 190px" class="relative pb-1 mb-10">
                   <VueApexCharts
                     ref="chartRef"
                     width="100%"
@@ -162,7 +162,7 @@ fetchBudgetAlerts().then(data => {
                         Total
                     </h1>
                     <section class="space-x-2 ">
-                        <h2 class="flex items-center text-lg font-bold">
+                        <h2 class="flex items-center font-bold">
                             <ElTooltip :content="formatMoney(prevBudget.total)">
                                 <span class="bg-white inline-block cursor-pointer rounded-md text-error text-xs px-1 py-0.5 mr-1" >
                                     {{variance}} %
@@ -174,7 +174,7 @@ fetchBudgetAlerts().then(data => {
                         </h2>
                     </section>
               </header>
-              <article class="space-y-2 mt-4">
+              <article class="space-y-2 mt-2">
                 <BudgetProgress
                     class="h-2 rounded-sm"
                     :goal="currentBudget.total"
@@ -188,7 +188,7 @@ fetchBudgetAlerts().then(data => {
                             For spending
                         </section>
                         <section >
-                            {{ formatMoney(currentBudget.forSpending) }} / {{ formatMoney(currentBudget.total) }}
+                            {{ formatMoney(currentBudget.forSpending) }} 
                             ({{ progress }}%)
                         </section>
                         </header>
@@ -207,7 +207,7 @@ fetchBudgetAlerts().then(data => {
                         For savings
                     </section>
                     <section >
-                        {{ formatMoney(currentBudget.forSavings) }} / {{ formatMoney(currentBudget.total) }}
+                        {{ formatMoney(currentBudget.forSavings) }} 
                         ({{ progress }}%)
                     </section>
                     </header>

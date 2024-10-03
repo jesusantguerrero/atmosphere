@@ -17,6 +17,7 @@
     const isLoadingDrafts = ref(false);
     const selected = defineModel('selected');
     const emit = defineEmits(['re-loaded']);
+    
     const fetchTransactions = async () => {
         const url = `/api/finance/transactions?filter[status]=draft&limit=10&relationships=linked`;
         return axios.get(url).then<ITransaction[]>(({ data }) => {

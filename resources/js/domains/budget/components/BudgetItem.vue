@@ -23,7 +23,7 @@ import { useAccounts } from '@/utils/useAccounts';
 
 const props = defineProps<{
     item: BudgetCategory;
-    showDelete: boolean;
+    showDelete?: boolean;
 }>();
 
 const emit = defineEmits(['removed', 'edit', 'assign', 'move']);

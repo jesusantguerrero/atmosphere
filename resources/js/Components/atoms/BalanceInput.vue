@@ -12,21 +12,15 @@
 
     const emit = defineEmits(['move']);
 
-    const props = defineProps({
-        value: {
-            type: Number
-        },
-        formatter: {
-            type: Function,
-            default() {
+    const props = withDefaults(defineProps<{
+        value: number | string;
+        formatter: Function;
+        category: ICategory;
+    }>(), {
+        formatter: () => {
                 return (value: string) => {
                     return value
                 }
-            }
-        },
-        category: {
-            type: Object,
-            required: true
         }
     })
 

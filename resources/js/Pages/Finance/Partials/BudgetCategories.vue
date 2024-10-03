@@ -28,6 +28,7 @@ const { budgets } = toRefs(props);
 const {
   visibleCategories,
   filters,
+  selectedBudgetIds,
   setSelectedBudget,
   assignBudget,
   moveBudget
@@ -116,7 +117,7 @@ const handleBudgetMovement = (budgetMovementData: any) => {
                 <BudgetItem
                     class=" border-base-lvl-3 hover:bg-primary/20"
                     v-for="item in itemGroup.subCategories"
-                    :class="[selectedBudget?.id == item.id ?
+                    :class="[selectedBudgetIds?.id == item.id ?
                         'bg-base-lvl-2 border-base-lvl-3' : 'bg-base-lvl-3' ]"
                     :key="`${item.id}-${item.budgeted}`"
                     :item="item"

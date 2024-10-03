@@ -1,6 +1,6 @@
 
 <script setup lang="ts">
-import { ref, inject, computed, Ref } from "vue";
+import { ref, inject, computed, Ref, nextTick, watch } from "vue";
 import { router } from "@inertiajs/vue3";
 import { VueDraggableNext as Draggable } from "vue-draggable-next"
 // @ts-ignore
@@ -15,6 +15,7 @@ import { useAppContextStore } from "@/store";
 import { IAccount } from "@/domains/transactions/models/transactions";
 import AccountLinkModal from "./AccountLinkModal.vue";
 import SectionTitle from "@/Components/atoms/SectionTitle.vue";
+import { onMounted } from "vue";
 
 const selectedAccountId = inject<Ref<number|null>>('selectedAccountId', ref(null));
 const isSelectedAccount = (accountId: number) => {
@@ -64,6 +65,23 @@ const budgetAccountsTotal =  computed(() => {
         return exactMathNode.add(total, account?.balance)
     }, 0)
 })
+
+
+const updateScroll = () => {
+    nextTick(() => {
+        if (selectedAccountId?.value) {
+            document.querySelector(`#account-item-${selectedAccountId.value}`)?.scrollIntoView()
+        }
+    })
+}
+
+watch(() => selectedAccountId.value, () => {
+    updateScroll()
+})
+
+onMounted(() => {
+    updateScroll()
+})
 </script>
 
 <template>
@@ -84,6 +102,7 @@ const budgetAccountsTotal =  computed(() => {
         </header>
        <Draggable class="w-full space-y-1 dragArea list-group h-96 overflow-auto ic-scroller" ref="draggableRef" :list="accounts" handle=".handle"  @end="saveReorder" tag="div">
             <AccountItem
+                :id="`account-item-${account.id}`"
                 v-for="account in accounts"
                 :key="account.id"
                 :account="account"

@@ -30,11 +30,7 @@ const submit = (formData) => {
       password_confirmation: formData.confirmPassword,
       terms: true,
     }))
-    .post(route("register"), {
-      onFinish: () => {
-        form.reset("password", "password_confirmation");
-      },
-    });
+    .post(route("register"));
 };
 
 const fixedEmail = ref(null);
