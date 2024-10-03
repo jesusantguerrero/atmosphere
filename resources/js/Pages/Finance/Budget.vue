@@ -29,7 +29,7 @@ import { ICategory } from "@/domains/transactions/models";
 
 const props = defineProps({
   budgets: {
-    type: Object,
+    type: Array,
     required: true,
   },
   distribution: {
@@ -219,7 +219,7 @@ const readyToAssignLeft = computed(() => {
 
       <section class="mx-auto mt-4 rounded-lg text-body bg-base max-w-7xl">
           <article class="w-full space-y-4">
-            <p class="text-center" v-if="false">
+            <p class="text-center">
                 {{ formatMoney(accountTotal) }} {{ formatMoney(available)  }} = ({{ formatMoney(accountTotal - available)}})
             </p>
 

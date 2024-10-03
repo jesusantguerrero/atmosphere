@@ -11,7 +11,7 @@ const props = withDefaults(defineProps<{
   item: Record<string, any>;
   title?: string;
   type: 'categories' | 'groups';
-  value?: number|string;
+  value?: number;
   hideTitle?: boolean;
   classes?: string;
   details?: string;
@@ -33,6 +33,7 @@ const parseDetails = (details: any[]): any[] => {
     console.log({ details })
     return details?.map?.((row: any): Line | null => {
         return !row ? null : {
+            id: row.id,
             accountName: row.name,
             date: row.date,
             payeeName: row.payee_name,

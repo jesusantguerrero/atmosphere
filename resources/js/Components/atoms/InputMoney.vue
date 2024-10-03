@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { useCalculatorInput } from '@/utils/calculator';
+// @ts-expect-error: no definitions
 import { AtInput } from 'atmosphere-ui';
-import { watch, ref, toRefs, nextTick } from 'vue';
+import { watch } from 'vue';
+import { ref, toRefs, nextTick } from 'vue';
 
 const props = defineProps<{
     modelValue: string;
