@@ -32,6 +32,7 @@ declare module 'vue' {
     IMdiLock: typeof import('~icons/mdi/lock')['default']
     IMdiMinus: typeof import('~icons/mdi/minus')['default']
     IMdiMoney: typeof import('~icons/mdi/money')['default']
+    IMdiPencil: typeof import('~icons/mdi/pencil')['default']
     IMdiPlus: typeof import('~icons/mdi/plus')['default']
     IMdiSearch: typeof import('~icons/mdi/search')['default']
     IMdiSort: typeof import('~icons/mdi/sort')['default']
@@ -40,5 +41,6 @@ declare module 'vue' {
     IMdiSync: typeof import('~icons/mdi/sync')['default']
     IMdiTimerStarOutline: typeof import('~icons/mdi/timer-star-outline')['default']
     IMdiTrash: typeof import('~icons/mdi/trash')['default']
+    IMdiWallet: typeof import('~icons/mdi/wallet')['default']
   }
 }
