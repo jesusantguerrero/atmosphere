@@ -25,6 +25,7 @@ class CheckUpdate extends Command
         $latestVersion = $latestRelease['tag_name'];
 
         if (version_compare($latestVersion, $currentVersion, '>')) {
+           $this->info("update:run --tag=$latestVersion --endpoint={$latestRelease['zipball_url']}");
             Artisan::call('update:run', ['--tag' => $latestVersion, '--endpoint' => $latestRelease['zipball_url']]);
         }
     }
