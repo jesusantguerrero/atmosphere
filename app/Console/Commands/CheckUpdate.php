@@ -25,9 +25,7 @@ class CheckUpdate extends Command
         $latestVersion = $latestRelease['tag_name'];
 
         if (version_compare($latestVersion, $currentVersion, '>')) {
-            print_r("app:update-version --version $latestVersion --zipUrl {$latestRelease['zipball_url']}");
-            // Trigger the update process if the latest version is newer
-            Artisan::call('app:update-version', ['--version' => $latestVersion, '--zipUrl' => $latestRelease['zipball_url']]);
+            Artisan::call('update:run', ['--tag' => $latestVersion, '--endpoint' => $latestRelease['zipball_url']]);
         }
     }
 }
