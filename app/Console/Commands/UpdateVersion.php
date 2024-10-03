@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Artisan;
 
 class UpdateVersion extends Command
 {
-    protected $signature = 'app:update-version';
+    protected $signature = 'update:run {--tag=} {--endpoint=} ';
     protected $description = 'Check if there is any update available in the server';
 
     /**
@@ -19,13 +19,13 @@ class UpdateVersion extends Command
     public function handle()
     {
         $version = $this->option('version');
-        $zipUrl = $this->option('zipUrl');
+        $endpoint = $this->option('endpoint');
 
         $this->info("Starting update to version $version...");
 
         // Download the ZIP file from the GitHub release
         $updatePath = storage_path('app/update-package.zip');
-        $this->downloadUpdate($zipUrl, $updatePath);
+        $this->downloadUpdate($endpoint, $updatePath);
 
         // Unzip the update package
         $zip = new ZipArchive;
@@ -53,7 +53,14 @@ class UpdateVersion extends Command
 
     private function downloadUpdate($url, $path)
     {
-        $fileContent = file_get_contents($url);
+        $fileContent = file_get_contents($url, false, stream_context_create([
+            'http' => [
+                'method' => 'GET',
+                'header' => [
+                        'User-Agent: PHP'
+                ]
+        ]
+        ]));
         file_put_contents($path, $fileContent);
         $this->info('Update package downloaded.');
     }
