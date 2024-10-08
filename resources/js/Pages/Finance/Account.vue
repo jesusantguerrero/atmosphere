@@ -145,22 +145,13 @@ const isCreditCard = computed(() => {
 const payCreditCard = () => {
     const accountId = page.accountId
     const debt = Math.abs(selectedAccount.value?.balance ?? 0);
-    const transaction = currentBillingCycle.value;
-
-    openModal({
+    openTransactionModal({
         mode: TRANSFER,
-        data: {
+        transactionData: {
             counter_account_id: accountId ?? "",
-            due: debt,
+            total: debt,
             description: `Payment of ${selectedAccount.value?.name}`,
-            account_id: props.accounts?.find?.((account) => account.balance > debt)?.id,
-            documents: [transaction],
-            resourceId: transaction?.id,
-            title: `Payment of ${transaction?.name}`,
-            defaultConcept: `Payment of ${transaction?.name}`,
-            transaction: transaction,
-            endpoint: `/api/billing-cycles/${currentBillingCycle.value.id}/payments/`,
-            paymentMethod: paymentMethods[0],
+            account_id: props.accounts.find((account) => account.balance > debt)?.id
         },
     })
 }
@@ -224,7 +215,7 @@ const selectedTabName  = computed(() => {
           </LogerButton>
           <LogerButton
             variant="neutral"
-            v-if="isCreditCard && currentBillingCycle"
+            v-if="isCreditCard"
             @click="payCreditCard"
           >
             Pay credit card
