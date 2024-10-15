@@ -22,7 +22,6 @@
     import ApiTokenManager from './ApiTokenManager.vue'
     import AppLayout from '@/Components/templates/AppLayout.vue'
     import SettingsSectionNav from '@/Components/templates/SettingsSectionNav.vue'
-    import { useMessaging } from "@/composables/useFirebase";
     import { router } from '@inertiajs/vue3';
 
     const props = defineProps([
@@ -31,10 +30,4 @@
         'defaultPermissions',
         'user'
     ])
-
-    const allowMessages = () => {
-        useMessaging((deviceToken) => {
-            router.post(`/users/${props.user.id}/devices`, {deviceToken})
-        })
-    }
 </script>
