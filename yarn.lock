@@ -2897,10 +2897,10 @@ at-least-node@^1.0.0:
   resolved "https://registry.npmjs.org/at-least-node/-/at-least-node-1.0.0.tgz"
   integrity sha512-+q/t7Ekv1EDY2l6Gda6LLiX14rU9TV20Wa3ofeQmwPFZbOMo9DXrLbOjFaaclkXKWidIaopwAObQDqwWtGUjqg==
 
-atmosphere-ui@^1.4.0:
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/atmosphere-ui/-/atmosphere-ui-1.4.0.tgz#0ce691a0e982cde5a7944c5d063d35ae71652132"
-  integrity sha512-pZY1xXVlLmwijEScKk7dNG2IXoL5ZEv8RDgLY+A6splT2ktU01RDFkxQmSrHx+B4btn9nqKWkP5YC3NGYJub1g==
+atmosphere-ui@^1.4.1:
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/atmosphere-ui/-/atmosphere-ui-1.4.1.tgz#fd7ba4c9a8ae117186c88dfa1f4e41f71e7e86d1"
+  integrity sha512-ikok5/lCl6Yji+PtWIPQ4KdR07M+y++NNYLsTc5dJrYjWavdzlnvNRIh7fUpbAI4rKzuSOSWrLsmHTCoWI+7AQ==
   dependencies:
     "@popperjs/core" "^2.11.8"
     floating-vue "^5.2.2"
@@ -3259,9 +3259,9 @@ compare-func@^2.0.0:
     dot-prop "^5.1.0"
 
 complex.js@^2.1.1:
-  version "2.1.1"
-  resolved "https://registry.npmjs.org/complex.js/-/complex.js-2.1.1.tgz"
-  integrity sha512-8njCHOTtFFLtegk6zQo0kkVX1rngygb/KQI6z1qZxlFI3scluC+LVTCFbrkWjBv4vvLlbQ9t88IPMC6k95VTTg==
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/complex.js/-/complex.js-2.3.0.tgz#c5fb6e329cd853518402a18f499f4fb37f285e87"
+  integrity sha512-wWHzifVdUPbPBhh+ObvpVGIzrAQjTvmnnEJKBfLW5YbyAB6OXQ0r+Q92fByMIrSSlxUuCujqxriJSR6R/kVxPA==
 
 concat-map@0.0.1:
   version "0.0.1"
@@ -3610,7 +3610,7 @@ decamelize@^1.1.0:
 
 decimal.js@^10.4.3:
   version "10.4.3"
-  resolved "https://registry.npmjs.org/decimal.js/-/decimal.js-10.4.3.tgz"
+  resolved "https://registry.yarnpkg.com/decimal.js/-/decimal.js-10.4.3.tgz#1044092884d245d1b7f65725fa4ad4c6f781cc23"
   integrity sha512-VBBaLc1MgL5XpzgIP7ny5Z6Nx3UrRkIViUkPUdtl9aya5amy3De1gsUUSB1g3+3sExYNjCAsAznmukyxCb1GRA==
 
 deep-is@^0.1.3:
@@ -3895,7 +3895,7 @@ escape-html@^1.0.3:
 
 escape-latex@^1.2.0:
   version "1.2.0"
-  resolved "https://registry.npmjs.org/escape-latex/-/escape-latex-1.2.0.tgz"
+  resolved "https://registry.yarnpkg.com/escape-latex/-/escape-latex-1.2.0.tgz#07c03818cf7dac250cce517f4fda1b001ef2bca1"
   integrity sha512-nV5aVWW1K0wEiUIEdZ4erkGGH8mDxGyxSeqPzRNtWP7ataw+/olFObw7hujFWlVjNsaDFw5VZ5NzVSIqRgfTiw==
 
 escape-string-regexp@^1.0.5:
@@ -4269,7 +4269,7 @@ form-data@^4.0.0:
 
 fraction.js@^4.3.7:
   version "4.3.7"
-  resolved "https://registry.npmjs.org/fraction.js/-/fraction.js-4.3.7.tgz"
+  resolved "https://registry.yarnpkg.com/fraction.js/-/fraction.js-4.3.7.tgz#06ca0085157e42fda7f9e726e79fefc4068840f7"
   integrity sha512-ZsDfxO51wGAXREY55a7la9LScWpwv9RxIrYABrlvOFBlH/ShPnrtsXeuUIfXKKOVicNxQ+o8JTbJvjS4M89yew==
 
 fs-extra@^11.2.0:
@@ -5011,7 +5011,7 @@ jake@^10.8.5:
 
 javascript-natural-sort@^0.7.1:
   version "0.7.1"
-  resolved "https://registry.npmjs.org/javascript-natural-sort/-/javascript-natural-sort-0.7.1.tgz"
+  resolved "https://registry.yarnpkg.com/javascript-natural-sort/-/javascript-natural-sort-0.7.1.tgz#f9e2303d4507f6d74355a73664d1440fb5a0ef59"
   integrity sha512-nO6jcEfZWQXDhOiBtG2KvKyEptz7RVbpGP4vTD2hLBdmNQSsCiicO2Ioinv6UI4y9ukqnBpy+XZ9H6uLNgJTlw==
 
 jiti@^1.19.1, jiti@^1.21.0:
@@ -6284,9 +6284,9 @@ regenerate@^1.4.2:
   integrity sha512-zrceR/XhGYU/d/opr2EKO7aRHUeiBI8qjtfHqADTwZd6Szfy16la6kqD0MIUs5z5hx6AaKa+PixpPrR289+I0A==
 
 regenerator-runtime@^0.14.0:
-  version "0.14.0"
-  resolved "https://registry.npmjs.org/regenerator-runtime/-/regenerator-runtime-0.14.0.tgz"
-  integrity sha512-srw17NI0TUWHuGa5CFGGmhfNIeja30WMBfbslPNhf6JrqQlLN5gcrvig1oqPxiVaXb0oW0XRKtH6Nngs5lKCIA==
+  version "0.14.1"
+  resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.14.1.tgz#356ade10263f685dda125100cd862c1db895327f"
+  integrity sha512-dYnhHh0nJoMfnkZs6GmmhFknAGRrLznOu5nc9ML+EJxGvrx6H7teuevqVqCuPcPK//3eDrrjQhehXVx9cnkGdw==
 
 regenerator-transform@^0.15.1:
   version "0.15.1"
@@ -6476,7 +6476,7 @@ saxes@^6.0.0:
 
 seedrandom@^3.0.5:
   version "3.0.5"
-  resolved "https://registry.npmjs.org/seedrandom/-/seedrandom-3.0.5.tgz"
+  resolved "https://registry.yarnpkg.com/seedrandom/-/seedrandom-3.0.5.tgz#54edc85c95222525b0c7a6f6b3543d8e0b3aa0a7"
   integrity sha512-8OwmbklUNzwezjGInmZ+2clQmExQPvomqjL7LFqOYqtmuxRgQYqOD3mHaU+MvZn5FLUeVxVfQjwLZW/n/JFuqg==
 
 seemly@^0.3.6, seemly@^0.3.8:
@@ -6984,7 +6984,7 @@ through@2, "through@>=2.2.7 <3":
 
 tiny-emitter@^2.1.0:
   version "2.1.0"
-  resolved "https://registry.npmjs.org/tiny-emitter/-/tiny-emitter-2.1.0.tgz"
+  resolved "https://registry.yarnpkg.com/tiny-emitter/-/tiny-emitter-2.1.0.tgz#1d1a56edfc51c43e863cbb5382a72330e3555423"
   integrity sha512-NB6Dk1A9xgQPMoGqC5CVXn123gWyte215ONT5Pp5a0yt4nlEoO1ZWeCwpncaekPHXO60i47ihFnZPiRPjRMq4Q==
 
 tinyexec@^0.3.0:
