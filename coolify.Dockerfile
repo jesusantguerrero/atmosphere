@@ -17,7 +17,7 @@ WORKDIR /app
 COPY . .
 COPY --from=base --chown=9999:9999 /var/www/html .
 
-RUN yarn install --frozen-lockfile && yarn && yarn build && npm prune --production
+RUN yarn install && yarn && yarn build && npm prune --production
 
 FROM base as runner
 
