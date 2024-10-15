@@ -22,7 +22,6 @@
     import { useAppMenu } from '@/domains/app'
     import { useSelect } from '@/utils/useSelects'
     import { useTransactionModal } from '@/domains/transactions'
-    import { useOnMessage } from '@/composables/useFirebase'
     import AppProvider from './AppProvider.vue'
     import { useAppContextStore } from '@/store'
     // import LogerAssistant from '../organisms/logerAssistant.vue'
@@ -106,12 +105,6 @@
 
         actions[action]?.handler()
     }
-
-    onMounted(() => {
-        useOnMessage((payload) => {
-            console.log(payload, "Mi mensaje favorito")
-        })
-    })
 </script>
 
 <template>
