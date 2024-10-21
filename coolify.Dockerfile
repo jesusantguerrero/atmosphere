@@ -53,6 +53,7 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/* && \
 COPY --from=base --chown=9999:9999 /var/www/html .
 COPY --chown=9999:9999 . .
 RUN composer update --ignore-platform-reqs
+RUN composer dump-autoload
 RUN chown -R www-data:www-data .
 
 COPY --from=asset-files --chown=www-data:www-data /app/public/build ./public/build
