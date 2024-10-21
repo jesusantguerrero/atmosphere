@@ -12,7 +12,7 @@ services:
     volumes:
       - ./docker-compose/web/timezone:/etc/timezone
       - ./storage:/var/www/storage
-      - ~/.config/gcloud/loger/credentials.json:./credentials.json
+      - /var/.config/gcloud/loger/credentials.json:./credentials.json
     env_file:
       - .env
     environment:
