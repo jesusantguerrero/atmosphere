@@ -2,17 +2,19 @@
 
 namespace App\Domains\Integration\Services;
 
-use App\Domains\Integration\Models\Integration;
 use Exception;
-use Google\Client as GoogleClient;
 use Google\Service\Gmail;
 use Google\Service\Oauth2;
+use Google\Client as GoogleClient;
+use App\Domains\Integration\Models\Integration;
 
 class GoogleService
 {
     public static function getConfigPath()
     {
-        return base_path(config('integrations.google.credentials_path'));
+        return config('app.env') === 'local'
+        ? base_path(config('integrations.google.credentials_path'))
+        : config('integrations.google.credentials_path');
     }
 
     public static function setTokens($data, $user, $integrationId = null)
