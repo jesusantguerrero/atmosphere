@@ -24,6 +24,19 @@
         @routes
         @vite('resources/js/app.js')
         @inertiaHead
+        <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+        <script>
+        window.OneSignalDeferred = window.OneSignalDeferred || [];
+        OneSignalDeferred.push(async function(OneSignal) {
+            await OneSignal.init({
+            appId: "2079c6fb-f627-4132-893d-55a9df3d466d",
+            safari_web_id: "web.onesignal.auto.3f550615-46c0-4fa5-9ee8-42953ece3d19",
+            notifyButton: {
+                enable: true,
+            },
+            });
+        });
+        </script>
     </head>
     <body class="font-sans antialiased">
         @inertia
