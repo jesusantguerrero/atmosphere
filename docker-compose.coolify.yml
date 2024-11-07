@@ -29,6 +29,8 @@ services:
     command: ["php", "/var/www/html/artisan", "schedule:work"]
     environment:
       PHP_PFM_POOL_NAME: "loger_task"
+    volumes:
+      - /var/.config/gcloud/loger/credentials.json:/var/www/credentials.json
     depends_on:
       - loger
   queue:
