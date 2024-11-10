@@ -54,6 +54,7 @@ export interface IReconciliation {
     difference: number;
     amount: number;
     date: string;
+    status: string;
 }
 export interface IPayee {
     id: number;

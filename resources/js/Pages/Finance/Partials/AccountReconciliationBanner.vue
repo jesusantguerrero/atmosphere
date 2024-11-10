@@ -15,7 +15,7 @@ const { account } = defineProps<{
 }>();
 
 const goToReconciliation = () => {
-    router.visit(`/finance/reconciliation/${account?.reconciliation_last.id}`)
+    router.visit(`/finance/reconciliation/${account?.reconciliation_last?.id}`)
 }
 
 const isMatched = computed(() => {
@@ -28,14 +28,14 @@ const adjustmentForm = useForm({
 })
 const adjustAndFinish = () => {
     if (!isMatched.value) {
-        adjustmentForm.put(`/finance/reconciliation/${account?.reconciliation_last.id}/save-adjustment`)
+        adjustmentForm.put(`/finance/reconciliation/${account?.reconciliation_last?.id}/save-adjustment`)
     } else {
         adjustmentForm
     .transform((data) => ({
       ...data,
       date: account.reconciliation_last?.date,
     }))
-    .put(`/finance/reconciliation/${account.reconciliation_last.id}`, {
+    .put(`/finance/reconciliation/${account.reconciliation_last?.id}`, {
       onFinish() {
         adjustmentForm.reset();
       },
@@ -48,11 +48,11 @@ const differenceStateText = computed(() => {
 })
 
 const differenceAmount = computed(() => {
-    return account.reconciliation_last?.amount - account.balance
+    return Math.abs(account.reconciliation_last?.amount ?? 0 - account.balance)
 })
 
 const hasPendingReconciliation = computed(() => {
-    return account.reconciliation_last?.status == 'pending';
+    return account.reconciliation_last?.status  == 'pending';
 })
 
 </script>
