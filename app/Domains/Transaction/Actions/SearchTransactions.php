@@ -2,6 +2,10 @@
 
 namespace App\Domains\Transaction\Actions;
 
+use Exception;
+use function Illuminate\Log\log;
+use Illuminate\Support\Facades\Log;
+
 use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Transaction\Models\TransactionLine;
 
@@ -33,11 +37,17 @@ class SearchTransactions
             if (!$condition) {
                 continue;
             }
+            try {
             foreach ($condition as $param) {
-                if ($param && $param['operator'] &&  $param['value']) {
+                    if ($param && $param['operator'] &&  $param['value']) {
                         return true;
-                }
+                    }
 
+                }
+            } catch (Exception $e) {
+                print_r($param);
+                Log::error($e);
+                continue;
             }
         }
     }

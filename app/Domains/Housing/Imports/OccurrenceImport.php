@@ -3,7 +3,7 @@
 namespace App\Domains\Housing\Imports;
 
 use App\Models\User;
-use App\Domains\Imports\ImportConcern;
+use App\Domains\AppCore\Imports\ImportConcern;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use App\Domains\Housing\Data\OccurrenceData;
 use App\Domains\Housing\Actions\RegisterOccurrence;
