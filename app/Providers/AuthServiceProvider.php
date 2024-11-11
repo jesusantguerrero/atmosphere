@@ -11,6 +11,7 @@ use Insane\Journal\Models\Core\Category;
 use Insane\Journal\Models\Core\Transaction;
 use App\Domains\Journal\Policies\CategoryPolicy;
 use App\Domains\Journal\Policies\TransactionPolicy;
+use Insane\Journal\Models\Accounting\Reconciliation;
 use App\Domains\AppCore\Policies\FinanceAccountPolicy;
 use App\Domains\Transaction\Policies\ReconciliationPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;

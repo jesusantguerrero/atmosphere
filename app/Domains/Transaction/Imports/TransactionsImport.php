@@ -2,7 +2,7 @@
 
 namespace App\Domains\Transaction\Imports;
 
-use App\Domains\Imports\ImportConcern;
+use App\Domains\AppCore\Imports\ImportConcern;
 use App\Domains\Transaction\Actions\MapYnabToLoger;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Insane\Journal\Models\Core\Transaction;
