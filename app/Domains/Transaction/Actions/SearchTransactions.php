@@ -37,17 +37,16 @@ class SearchTransactions
             if (!$condition) {
                 continue;
             }
-            try {
             foreach ($condition as $param) {
+                try {
                     if ($param && $param['operator'] &&  $param['value']) {
                         return true;
                     }
-
+                } catch (Exception $e) {
+                    print_r($param);
+                    Log::error($e);
+                    continue;
                 }
-            } catch (Exception $e) {
-                print_r($param);
-                Log::error($e);
-                continue;
             }
         }
     }
