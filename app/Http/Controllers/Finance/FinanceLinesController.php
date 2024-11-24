@@ -6,6 +6,7 @@ use Inertia\Inertia;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Freesgen\Atmosphere\Http\Querify;
+use Insane\Journal\Models\Core\Payee;
 use Insane\Journal\Models\Core\Category;
 use Freesgen\Atmosphere\Http\InertiaController;
 use App\Domains\Transaction\Services\ReportService;
@@ -34,19 +35,28 @@ class FinanceLinesController extends InertiaController
     public function index(Request $request)
     {
         $queryParams = request()->query();
-        $settings = Setting::getByTeam(auth()->user()->current_team_id);
+        $teamId = auth()->user()->current_team_id;
+        $settings = Setting::getByTeam($teamId);
         $timeZone = $settings['team_timezone'] ?? config('app.timezone');
 
+        [$startDate, $endDate] = [null, null];
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
-        [$startDate, $endDate] = $this->getFilterDates($filters, $timeZone);
+        if (isset($filters['dates'])) {
+            [$startDate, $endDate] = $this->getFilterDates($filters, $timeZone);
+        }
 
+        $categoryId = $filters['category_id'] ?? $filters['group_id'] ?? null;
+        $payeeId = $filters['payee_id'] ?? null;
 
-        $category = Category::find($filters['category_id'] ?? $filters['group_id']);
+        $category = $categoryId ? Category::find($categoryId) : null;
+        $payee = $payeeId ? Payee::find($payeeId) : null;
+
         $splits = TransactionService::getSplits(
-            auth()->user()->current_team_id,
+            $teamId,
             [
-                'categoryId' => $category->parent_id ? $category->id : null,
-                'groupId' => ! $category->parent_id ? $category->id : null,
+                'categoryId' => $category && $category->parent_id ? $category->id : null,
+                'groupId' => $category && !$category->parent_id ? $category->id : null,
+                'payeeId' => $payee->id ?? null,
                 'limit' => 50,
                 'startDate' => $startDate,
                 'endDate' => $endDate,

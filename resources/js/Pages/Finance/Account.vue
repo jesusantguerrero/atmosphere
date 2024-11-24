@@ -250,14 +250,16 @@ const selectedTabName  = computed(() => {
         label-class="capitalize text-secondary font-base"
         >
             <template #value>
-                <h4>
-                    {{ formatMoney(selectedAccount?.balance) }}
+                <h4 class="flex">
+                    <span class="text-lg">
+                        {{ formatMoney(selectedAccount?.balance) }}
+                    </span>
                     <ElTooltip :content="formatMoney(selectedAccount?.reconciliation_last?.amount)"
                         v-if="selectedAccount?.reconciliation_last"
                     >
                         <button
                             @click="router.visit(`/finance/accounts/${selectedAccount.id}/reconciliations/`)"
-                            class="inline-block ml-2 font-bold text-secondary"
+                            class="inline-block ml-2 font-bold text-secondary text-xs"
                         >
                             <IMdiHistory />
                         </button>
@@ -270,6 +272,7 @@ const selectedTabName  = computed(() => {
         v-for="(stat, label) in stats"
         :value="formatMoney(stat)"
         :label="label"
+        text-class="text-lg"
         label-class="capitalize text-secondary font-base"
         />
     </section>

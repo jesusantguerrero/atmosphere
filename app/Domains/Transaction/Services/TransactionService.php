@@ -49,6 +49,7 @@ class TransactionService
                 transactions.counter_account_id,
                 transactions.payee_id,
                 categories.name category_name,
+                categories.id category_id,
                 payees.name payee_name,
                 ca.name counter_account_name,
                 accounts.name account_name,
@@ -464,7 +465,8 @@ class TransactionService
 
     public static function getBareSplits($teamId, $options)
     {
-        return Transaction::query()
+        $lines = Transaction::query()
+
             ->where([
                 'team_id' => $teamId,
                 'status' => Transaction::STATUS_VERIFIED,
@@ -481,11 +483,18 @@ class TransactionService
                         $query->where('parent_id', $options['groupId']);
                     });
                 }
+                if (isset($options['payeeId'])) {
+                    $query->whereHas('payee', function ($query) use ($options) {
+                        $query->where('payee_id', $options['payeeId']);
+                    });
+                }
             })
             ->with(['splits', 'payee', 'category', 'splits.payee', 'account', 'counterAccount'])
             ->orderByDesc('date')
-            ->whereBetween('date', [$options['startDate'], $options['endDate']])
+            ->when(isset($options['startDate']), fn ($q) => $q->whereBetween('date', [$options['startDate'], $options['endDate']]))
             ->when(isset($options['limit']), fn ($query) => $query->limit($options['limit']));
+
+            return $lines;
     }
 
     public function getCreditCardSpentTransactions(int $teamId) {

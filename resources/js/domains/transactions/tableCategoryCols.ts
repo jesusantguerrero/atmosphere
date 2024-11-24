@@ -1,9 +1,8 @@
 import { format, isAfter, parseISO, startOfDay } from "date-fns"
 import { h } from "vue"
-import IconTransfer from "@/Components/icons/IconTransfer.vue";
 import { Link } from "@inertiajs/vue3";
 
-export const tableAccountCols = (accountId: number, showSelects?: false) => [
+export const tableCategoryCols = (categoryId: number, showSelects?: false) => [
     ...( showSelects ? [{
         label: "",
         name: "selection",
@@ -38,14 +37,7 @@ export const tableAccountCols = (accountId: number, showSelects?: false) => [
         width: 200,
         render(row: any) {
             try {
-                const account = row.account_id === accountId ? row.counter_account : row.account
-                const children = () => [
-                    h(Link, { class: 'font-bold underline text-secondary', href: `/finance/accounts/${account.id}`}, `${account?.name}`),
-                    h(IconTransfer, { class: 'fa fa-right-left'})
-                ];
-                return row.payee
-                ? h(Link, { class: 'font-bold text-primary', href: `/finance/lines?filter[payee_id]=${row.payee.id}`}, row.payee.name)
-                : h('div', { class: "flex justify-between items-center text-body-1 h-4"}, children() )
+                return row.payee && h(Link, { class: 'font-bold text-primary', href: `/finance/lines?filter[payee_id]=${row.payee.id}`}, row.payee.name)
             } catch(e) {
                 return ''
             }
@@ -56,9 +48,12 @@ export const tableAccountCols = (accountId: number, showSelects?: false) => [
         name: "description",
         width: 220,
         render(row: any) {
+            const mainLine = row.splits ? row.splits.find((line: any) => line.category_id == categoryId) : null;
+            const category = mainLine?.category ?? row.category;
+
             return h('div', [
-                h('div', row.description),
-                h(Link, { class: 'text-primary font-bold', href: `/finance/lines?filter[category_id]=${row.category?.id ?? row.category_id}`},  row.category?.name ?? row.category_name)
+                h('div', mainLine?.concept ?? row.description),
+                h(Link, { class: 'text-primary font-bold', href: `/finance/lines?filter[category_id]=${category.id ?? row.category_id}`},  category?.name ?? row.category_name)
             ])
         }
     },
