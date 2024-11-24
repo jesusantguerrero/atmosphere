@@ -6,6 +6,7 @@ import { useTransactionStore } from "@/store/transactions"
 export * from "./formatters"
 export * from "./tableCols"
 export * from "./tableAccountCols"
+export * from "./tableCategoryCols"
 export * from "./reconciliationCols"
 export * from "./useTransactionModal"
 

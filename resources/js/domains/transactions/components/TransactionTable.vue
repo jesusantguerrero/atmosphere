@@ -86,7 +86,7 @@ const getTransactionColor = (row: ITransaction) => {
         </div>
       </template>
 
-      <template v-slot:description="{ scope: { row } }">
+      <!-- <template v-slot:description="{ scope: { row } }">
         <div class="text-xs capitalize">
           <p>
               {{ row.description }}
@@ -95,7 +95,7 @@ const getTransactionColor = (row: ITransaction) => {
               {{ row.category?.name ?? row.category_name }}
           </p>
         </div>
-      </template>
+      </template> -->
 
       <template v-slot:actions="{ scope: { row } }">
         <div>

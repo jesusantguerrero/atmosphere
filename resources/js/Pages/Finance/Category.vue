@@ -14,7 +14,7 @@ import DraftButtons from "@/domains/transactions/components/DraftButtons.vue";
 
 import { useTransactionModal } from "@/domains/transactions";
 import { useServerSearch, IServerSearchData } from "@/composables/useServerSearchV2";
-import { tableAccountCols } from "@/domains/transactions";
+import { tableCategoryCols } from "@/domains/transactions";
 import { useAppContextStore } from "@/store";
 import { ICategory, ITransaction, IAccount } from "@/domains/transactions/models";
 
@@ -30,7 +30,7 @@ const props = defineProps<{
 
 const { serverSearchOptions } = toRefs(props);
 const { state: pageState, hasFilters, reset } = useServerSearch(serverSearchOptions, {
-    defaultDates: true,
+    defaultDates: false,
 });
 
 const context = useAppContextStore();
@@ -38,8 +38,8 @@ const listComponent = computed(() => {
   return context.isMobile ? TransactionSearch : TransactionTable;
 });
 
-const isDraft = computed(() => {
-  return serverSearchOptions.value?.filters?.status == "draft";
+const categoryId = computed(() => {
+  return Number(pageState?.filters?.category_id ?? pageState?.filters?.group_id ?? 0);
 });
 
 const removeTransaction = (transaction: ITransaction) => {
@@ -96,17 +96,6 @@ const transactionStatus = {
             >
               {{ item.label }}
             </LogerButton>
-            <AtDatePager
-              class="w-full h-12 border-none bg-base-lvl-1 text-body"
-              v-model:startDate="pageState.dates.startDate"
-              v-model:endDate="pageState.dates.endDate"
-              controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
-              next-mode="month"
-            />
-            <LogerButton variant="inverse">
-                Import Transactions
-            </LogerButton>
-            <DraftButtons v-if="isDraft" />
           </div>
         </template>
       </FinanceSectionNav>
@@ -114,7 +103,7 @@ const transactionStatus = {
     <FinanceTemplate title="Transactions" :accounts="accounts">
       <Component
         :is="listComponent"
-        :cols="tableAccountCols(props.accountId)"
+        :cols="tableCategoryCols(categoryId)"
         :transactions="transactions"
         :server-search-options="serverSearchOptions"
         @findLinked="findLinked"
