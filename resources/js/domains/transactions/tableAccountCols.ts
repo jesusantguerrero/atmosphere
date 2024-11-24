@@ -43,7 +43,9 @@ export const tableAccountCols = (accountId: number, showSelects?: false) => [
                     h(Link, { class: 'font-bold underline text-secondary', href: `/finance/accounts/${account.id}`}, `${account?.name}`),
                     h(IconTransfer, { class: 'fa fa-right-left'})
                 ];
-                return row.payee?.name ?? h('div', { class: "flex justify-between items-center text-body-1 h-4"}, children() )
+                return row.payee
+                ? h(Link, { class: 'font-bold text-primary', href: `/finance/lines?filter[payee_id]=${row.payee.id}`}, row.payee.name)
+                : h('div', { class: "flex justify-between items-center text-body-1 h-4"}, children() )
             } catch(e) {
                 return ''
             }
