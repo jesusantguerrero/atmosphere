@@ -62,6 +62,7 @@
             class="w-full overflow-hidden md:pr-5  md:pl-8"
             :class="!hidePanel && 'md:w-6/12 lg:w-7/12 xl:w-8/12 2xl:w-10/12'"
         >
+            <slot name="prepend-panel" v-if="hidePanel" />
             <slot />
         </main>
 
