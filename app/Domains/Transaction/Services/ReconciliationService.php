@@ -22,6 +22,7 @@ class ReconciliationService
             'account_id' => $account->id,
         ])
         ->orderByDesc('date')
+        ->orderByDesc('id')
         ->get();
     }
 
@@ -29,9 +30,10 @@ class ReconciliationService
     {
         $transactions = $account->transactionsToReconcile(null, $params->date);
 
-        // if (!count($transactions)) {
-        //     throw new Exception("no transactions matched");
-        // }
+        if ($dateReconciliation = $this->getByDate($account->team_id, $account->id, $params->date)) {
+            $this->update($dateReconciliation, $params);
+            return $dateReconciliation;
+        }
 
         $diff = $account->balance - $params->balance;
         $reconciliation = Reconciliation::create([
@@ -140,5 +142,14 @@ class ReconciliationService
         }
 
         return $this->syncTransactions($reconciliation);
+    }
+
+    public function getByDate($teamId, $accountId, $date) {
+        return Reconciliation::where([
+            'team_id' => $teamId,
+            'account_id' => $accountId,
+            'date' => $date
+        ])
+        ->first();
     }
 }

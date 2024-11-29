@@ -171,18 +171,21 @@ const setPaymentBill = (transaction: ITransaction) => {
     })
 }
 
-const financeTabs = [{
+const financeTabs = computed(() => {
+
+    return [{
       name: "transactions",
-      label: "Transactions",
+      label: `Transactions ${props.transactions.length}`,
     },
-    // {
-    //   name: "trends",
-    //   label: "Trends",
-    // }
-];
+    {
+      name: "trends",
+      label: "Trends",
+    }
+    ];
+});
 
 const selectedTabName  = computed(() => {
-    return  `All transactions ${monthName.value}`;
+    return  `All transactions in ${monthName.value}`;
 })
 
 </script>
@@ -283,25 +286,24 @@ const selectedTabName  = computed(() => {
         default-tab="transactions"
         class="mt-4"
     >
+        <template #title>
+            <header class="flex space-x-2 pl-4 items-center justify-between py-2 w-full">
+                <AppSearch
+                    v-model.lazy="pageState.search"
+                    class="w-full md:flex "
+                    :has-filters="hasFilters"
+                    @clear="reset()"
+                    :placeholder="selectedTabName"
+                />
+
+        </header>
+        </template>
         <template v-slot:content="{ selectedTab }">
         <section class="bg-base-lvl-3">
-            <header class="flex space-x-2 items-center justify-between py-2">
-                    <AppSearch
-                        v-model.lazy="pageState.search"
-                        class="w-full md:flex "
-                        :has-filters="hasFilters"
-                        @clear="reset()"
-                    />
-
-                    <span class="min-w-fit text-secondary font-bold">
-                        {{  transactions.length }} Results
-                    </span>
-            </header>
                 <AccountReconciliationBanner
                     v-if="selectedAccount"
                     :account="selectedAccount"
                 />
-
 
                 <Component
                     :is="listComponent"

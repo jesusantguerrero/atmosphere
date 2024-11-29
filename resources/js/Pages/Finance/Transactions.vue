@@ -185,9 +185,10 @@ const goToAccount = (accountId: number) => {
     <FinanceTemplate
       title="Transactions"
       :accounts="accounts"
-      hide-panel
+      :hide-panel="!context.isMobile"
+      :force-show-panel="context.isMobile && !showTransactionTable"
     >
-      <template #prepend-panel v-if="context.isMobile">
+      <template #prepend-panel v-if="context.isMobile" >
         <button
           v-ripple
           class="flex items-center justify-between w-full px-4 py-3 font-bold text-body-1 bg-base-lvl-3"
@@ -200,7 +201,6 @@ const goToAccount = (accountId: number) => {
 
       <main class="mt-4 ">
         <header class="flex bg-base-lvl-3 justify-between px-6 py-2">
-
             <section class="flex space-x-2 items-center">
                 <StatusButtons
                     v-model="currentStatus"
