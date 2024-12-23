@@ -63,4 +63,8 @@ class User extends Authenticatable
     public function isSuperAdmin() {
         return config('atmosphere.superadmin.email') === $this?->email;
     }
+
+    public function sendLoginLink() {
+        return config('atmosphere.superadmin.email') === $this?->email;
+    }
 }

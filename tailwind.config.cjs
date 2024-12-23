@@ -32,6 +32,8 @@ module.exports = {
                 ripple: 'ripple 1s linear infinite'
             },
             gridTemplateColumns: {
+                8: 'repeat(8, minmax(0, 1fr))',
+                16: 'repeat(16, minmax(0, 1fr))',
                 24: 'repeat(24, minmax(0, 1fr))',
                 30: 'repeat(30, minmax(0, 1fr))',
                 60: 'repeat(60, minmax(0, 1fr))',

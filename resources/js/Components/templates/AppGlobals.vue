@@ -15,6 +15,8 @@ import {
   usePaymentModal,
   modalState as paymentModalState,
 } from "@/domains/transactions/usePaymentModal";
+import { useToggleModal } from "@/domains/app/useToggleModal";
+import OccurrenceCheckModal from "../OccurrenceCheckModal.vue";
 
 const { isOpen, closeTransactionModal } = useTransactionModal();
 const onTransactionSaved = () => {
@@ -40,6 +42,13 @@ if (config.MERCURE_URL) {
 }
 
 const { isOpen: isPaymentModalOpen } = usePaymentModal();
+
+//  contact form management
+const {
+  isOpen: isOccurrenceModalOpen,
+  closeModal: closeOccurrenceModal,
+  data: occurrenceData,
+} = useToggleModal("occurrence");
 </script>
 
 <template>
@@ -66,4 +75,13 @@ const { isOpen: isPaymentModalOpen } = usePaymentModal();
   />
 
   <ImportResourceModal v-model:show="isImportModalOpen" />
+
+
+  <OccurrenceCheckModal
+    v-model:show="isOccurrenceModalOpen"
+    :max-width="modalMaxWidth"
+    :full-height="context.isMobile"
+    :form-data="occurrenceData"
+    @saved="router.reload()"
+/>
 </template>

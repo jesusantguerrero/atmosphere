@@ -7,13 +7,13 @@ import AppLayout from '@/Components/templates/AppLayout.vue';
 import WelcomeCard from '@/Components/organisms/WelcomeCard.vue';
 import HouseSectionNav from '@/Components/templates/HouseSectionNav.vue';
 import LogerButton from '@/Components/atoms/LogerButton.vue';
-import OccurrenceCheckModal from '@/Components/OccurrenceCheckModal.vue';
 import OccurrenceCard from "@/domains/housing/components/OccurrenceCard.vue";
 
 import { useOccurrenceInstance, OccurrenceAction } from '@/domains/housing/useOccurrenceInstance';
 import { IOccurrenceCheck, OccurrenceItem } from '@/domains/housing/models';
 import { ITransaction } from '@/domains/transactions/models';
 import StatusButtons from '@/Components/molecules/StatusButtons.vue';
+import { useToggleModal } from '@/domains/app/useToggleModal';
 
 const props = defineProps({
     occurrences: {
@@ -56,9 +56,12 @@ const syncAll = () => {
     syncForm.post(`/housing/occurrences/sync-all`)
 }
 
+const { openModal } = useToggleModal('occurrence');
 const handleEdit = (resource: OccurrenceItem) => {
-    resourceToEdit.value = resource;
-    isModalOpen.value = true;
+    openModal({
+        isOpen: true,
+        data: resource
+    });
 }
 
 const defaultOptions = {
@@ -115,7 +118,7 @@ const currentStatus = ref(props.serverSearchOptions.filters?.is_liked || "all");
                             :statuses="dataStatus"
                             @change="router.visit($event)"
                         />
-                        <LogerButton variant="secondary"  class="flex" @click="isModalOpen = !isModalOpen">
+                        <LogerButton variant="secondary"  class="flex" @click="openModal()">
                             <IMdiPlus class="mr-2"/>
                             Add Check
                         </LogerButton>
@@ -164,19 +167,12 @@ const currentStatus = ref(props.serverSearchOptions.filters?.is_liked || "all");
                     <p class="max-w-lg my-3">
                         Occurrences track the duration of events based on transactions or manual input
                     </p>
-                    <LogerButton variant="inverse" @click="isModalOpen = !isModalOpen">
+                    <LogerButton variant="inverse" @click="openModal()">
                         Add occurrence check
                     </LogerButton>
                 </section>
             </WelcomeCard>
 
-            <OccurrenceCheckModal
-                v-if="isModalOpen"
-                v-model:show="isModalOpen"
-                :form-data="resourceToEdit"
-                @saved="onSaved"
-                @close="resourceToEdit=null"
-            />
         </main>
     </AppLayout>
 </template>
