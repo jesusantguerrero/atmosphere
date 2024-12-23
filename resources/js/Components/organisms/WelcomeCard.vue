@@ -5,7 +5,7 @@ const {
     message = 'Welcome to Loger'
  } = defineProps<{
     username?: string;
-    message: string;
+    message?: string;
 }>();
 
 const cardShadow = inject("cardShadow", '')

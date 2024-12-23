@@ -1,3 +1,61 @@
+<script setup lang="ts">
+import { reactive } from "vue";
+import { AtFieldCheck } from "atmosphere-ui";
+import { NSelect } from "naive-ui";
+
+import LogerInput from "@/Components/atoms/LogerInput.vue";
+import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
+
+const props = defineProps<{
+    label: string;
+    modelValue: {
+        value: string;
+        operator: string
+    }[]
+}>()
+
+const emit = defineEmits(['update:modelValue'])
+
+const options = [{
+    value: 'contains',
+    label: 'Contains'
+}, {
+    value: 'is',
+    label: 'Is'
+}]
+
+const state = reactive({
+    isActive: hasValues(props.modelValue)
+})
+
+const form = reactive({
+    conditions: props.modelValue
+})
+
+const updateValue = () => {
+    emit('update:modelValue', [...form.conditions])
+}
+
+const add = () => {
+    form.conditions.push({
+        operator: '',
+        value: ''
+    })
+}
+
+const remove = (index: number) => {
+    form.conditions.splice(index)
+}
+
+const isLast = (index: number) => {
+    return index != 0 && index == form.conditions.length - 1
+}
+
+function hasValues(conditions: any[]) {
+    return conditions.some(condition => condition.value);
+}
+</script>
+
 <template>
     <article class="rounded-md py-2">
         <header class="flex justify-between">
@@ -29,63 +87,3 @@
         </section>
     </article>
 </template>
-
-<script setup>
-import { reactive } from "vue";
-import { AtFieldCheck } from "atmosphere-ui";
-import { NSelect } from "naive-ui";
-
-import LogerInput from "@/Components/atoms/LogerInput.vue";
-import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
-
-const props = defineProps({
-    label: {
-        type: String
-    },
-    modelValue: {
-        type: Array,
-        required: true
-    }
-})
-
-const emit = defineEmits(['update:modelValue'])
-
-const options = [{
-    value: 'contains',
-    label: 'Contains'
-}, {
-    value: 'is',
-    label: 'Is'
-}]
-
-const state = reactive({
-    isActive: hasValues(props.modelValue)
-})
-
-const form = reactive({
-    conditions: props.modelValue
-})
-
-const updateValue = () => {
-    emit('update:modelValue', [...form.conditions])
-}
-
-const add = () => {
-    form.conditions.push({
-        operator: '',
-        value: ''
-    })
-}
-
-const remove = (index) => {
-    form.conditions.splice(index)
-}
-
-const isLast = (index) => {
-    return index != 0 && index == form.conditions.length - 1
-}
-
-function hasValues(conditions) {
-    return conditions.some(condition => condition.value);
-}
-</script>

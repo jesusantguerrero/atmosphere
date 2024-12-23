@@ -11,7 +11,6 @@ import { IAccount, ICategory } from "../models";
 import { formatMoney } from "@/utils";
 import LogerInput from "@/Components/atoms/LogerInput.vue";
 import { TRANSACTION_DIRECTIONS } from "..";
-import TagsSelect from "@/Components/shared/TagsSelect.vue";
 
 interface SplitItem {
     payee_id: null|number,
@@ -118,7 +117,7 @@ const isPickerOpen = ref(false);
     <section
       v-for="(split, index) in splits"
       :key="index"
-      class="px-4 -mx-4 rounded-md even:bg-base-lvl-2"
+      class="px-4 md:px-0 rounded-md even:bg-base-lvl-2"
     >
 
 
@@ -151,7 +150,7 @@ const isPickerOpen = ref(false);
         </button>
       </header>
 
-      <div class="px-4 md:flex md:space-x-3 md:px-0 md:-mt-4">
+      <div class="md:flex md:space-x-3 md:px-0 md:-mt-4">
         <AtField
           label="Payee"
           class="flex justify-between md:w-4/12 md:block md:space-x-0"
@@ -169,7 +168,7 @@ const isPickerOpen = ref(false);
           />
         </AtField>
         <section>
-            <AtField :label="categoryLabel" class="hidden md:block md:w-full">
+            <AtField :label="categoryLabel" v-if="isTransfer || !fullHeight" class="md:block md:w-full">
               <NSelect
                 filterable
                 clearable
@@ -201,7 +200,7 @@ const isPickerOpen = ref(false);
             </template>
           </InputMoney>
         </AtField>
-        <header v-if="fullHeight" class="flex justify-between px-4 py-3">
+        <header v-if="fullHeight && !isTransfer" class="flex justify-between px-4 py-3">
             <CategoryPicker
               class="w-full"
               v-model="split[categoryField]"

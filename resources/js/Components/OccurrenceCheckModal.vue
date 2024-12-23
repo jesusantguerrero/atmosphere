@@ -5,7 +5,6 @@ import { useForm } from "@inertiajs/vue3";
 
 import Modal from "@/Components/atoms/Modal.vue";
 import OccurrencePreview from "./OccurrencePreview.vue";
-import LogerButtonTab from "./atoms/LogerButtonTab.vue";
 import LogerButton from "./atoms/LogerButton.vue";
 import LogerInput from "./atoms/LogerInput.vue";
 import ConditionDescription from '@/Components/templates/ConditionDescription.vue';
@@ -28,7 +27,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(["update:show"]);
+const emit = defineEmits(["update:show", 'saved']);
 
 const form = useForm({
     id: null,
@@ -128,9 +127,6 @@ const tabs = [{
     @close="emitClose"
   >
     <header class="flex items-center px-6 py-2 font-bold bg-base-lvl-3">
-        <LogerButtonTab @click="selectedResource=''" v-if="selectedResource">
-            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--ic" width="32" height="32" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path fill="currentColor" d="M14.71 6.71a.996.996 0 0 0-1.41 0L8.71 11.3a.996.996 0 0 0 0 1.41l4.59 4.59a.996.996 0 1 0 1.41-1.41L10.83 12l3.88-3.88c.39-.39.38-1.03 0-1.41z"></path></svg>
-        </LogerButtonTab>
         <span class="py-4">
             {{ modalTitle }}
         </span>
@@ -159,10 +155,10 @@ const tabs = [{
                     multiple
                 />
             </section>
-            <OccurrencePreview 
-                v-if="activeTab == 'preview'" 
-                :occurrence="formData" 
-                :conditions="form.conditions" 
+            <OccurrencePreview
+                v-if="activeTab == 'preview'"
+                :occurrence="formData"
+                :conditions="form.conditions"
                 :logs="form.logs"
             />
         </section>

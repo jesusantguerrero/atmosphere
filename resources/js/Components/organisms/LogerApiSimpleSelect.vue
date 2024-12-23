@@ -14,9 +14,9 @@ const props = withDefaults(
     endpoint: string;
     placeholder?: string;
     allowCreate?: boolean;
-    customLabel: string;
+    customLabel?: string;
     renderLabel?: RenderLabel;
-    renderOption: (info: {
+    renderOption?: (info: {
       node: VNode;
       option: SelectOption | SelectGroupOption;
       selected: boolean;
