@@ -93,12 +93,13 @@ class Occurrence extends Model
     }
 
     public function isCloseToAvg() {
-
-        return $this->currentCount() >= $this->avg_days_passed - self::DAYS_BEFORE;
+        $days = $this->avg_days_passed - $this->currentCount();
+        return $days == self::DAYS_BEFORE || $days == 0;
     }
 
     public function isCloseToLastDuration() {
-        return $this->currentCount() >= $this->previous_days_count - self::DAYS_BEFORE;
+        $days = $this->previous_days_count - $this->currentCount();
+        return $days == self::DAYS_BEFORE || $days == 0;
     }
 
     public static function getForNotificationType(OccurrenceNotifyTypes $type)
