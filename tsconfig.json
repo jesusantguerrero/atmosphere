@@ -12,7 +12,7 @@
       "@/utils/*": ["resources/js/utils/*"],
       "~shared/*": ["resources/js/Components/shared/*"]
     },                                                   /* Specify a set of entries that re-map imports to additional lookup locations. */
-    "typeRoots": ["./node_modules/@types", "./src/types"],                                  /* Specify multiple folders that act like './node_modules/@types'. */
+    "typeRoots": ["./node_modules/@types", "./src/types"],                                   /* Specify multiple folders that act like './node_modules/@types'. */
     "isolatedModules": true,                          /* Ensure that each file can be safely transpiled without relying on other imports. */
     "esModuleInterop": true,                             /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */                       /* Disable resolving symlinks to their realpath. This correlates to the same flag in node. */
     "forceConsistentCasingInFileNames": true,            /* Ensure that casing is correct in imports. */

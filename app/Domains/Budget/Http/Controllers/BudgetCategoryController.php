@@ -57,6 +57,7 @@ class BudgetCategoryController extends InertiaController
             return $model->withCurrentSavings($startDate);
         }));
 
+
         return inertia($this->templates['index'],
         [
             $resourceName => $resources,

@@ -2,8 +2,10 @@
 
 namespace App\Domains\Budget\Services;
 
+use Exception;
 use App\Models\Team;
 use Brick\Money\Money;
+use Brick\Math\RoundingMode;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Account;
@@ -59,20 +61,29 @@ class BudgetRolloverService {
             return;
         }
 
+
         if ($budgetMonth->category->account_id) {
-            $available = Money::of($budgetMonth->left_from_last_month, $category->account->currency_code)
-                ->plus($budgetMonth->budgeted)
-                ->plus($budgetMonth->funded_spending)
-                ->minus(($budgetMonth->payments))
+            $available = Money::of($budgetMonth->left_from_last_month, $category->account->currency_code,null,  RoundingMode::HALF_UP)
+                ->plus($budgetMonth->budgeted, RoundingMode::HALF_UP)
+                ->plus($budgetMonth->funded_spending, RoundingMode::HALF_UP)
+                ->minus(($budgetMonth->payments), RoundingMode::HALF_UP)
                 ->getAmount()
                 ->toFloat();
 
-            $activity = Money::of($budgetMonth->funded_spending, $category->account->currency_code)
+            $activity = Money::of($budgetMonth->funded_spending, $category->account->currency_code, null, RoundingMode::HALF_UP)
             ->minus($budgetMonth->payments)
             ->getAmount()
             ->toFloat();
         } else {
-            $available = ($budgetMonth?->budgeted ?? 0) + ($budgetMonth->left_from_last_month ?? 0) -  abs($activity);
+            $available = Money::Of($budgetMonth?->budgeted ?? 0, 'USD', null, RoundingMode::HALF_UP)
+            ->plus(($budgetMonth->left_from_last_month ?? 0), RoundingMode::HALF_UP)
+            ->minus(abs($activity), RoundingMode::HALF_UP)
+            ->getAmount()
+            ->toFloat();
+        }
+
+        if ($category->id == 754) {
+            echo "The available amount for $category->name is $available";
         }
 
         // close current month
@@ -139,12 +150,13 @@ class BudgetRolloverService {
         $overspending = abs($results?->overspendingInMonth);
         $leftover = $TBB - $results?->budgeted;
 
-        $available = Money::of($budgetMonth->left_from_last_month, "DOP")
-        ->plus($results->budgeted)
-        ->plus($results->funded_spending)
-        ->minus(($results->payments))
+        $available = Money::of($budgetMonth->left_from_last_month, "DOP", null, RoundingMode::HALF_UP)
+        ->plus($results->budgeted, RoundingMode::HALF_UP)
+        ->plus($results->funded_spending, RoundingMode::HALF_UP)
+        ->minus(($results->payments), RoundingMode::HALF_UP)
         ->getAmount()
         ->toFloat();
+
 
         echo "TBB: " . $TBB . " budgeted: " . $results?->budgeted . " Available: " . $available . " Leftover: ". $leftover . " overspending: " . $overspending . PHP_EOL;
 
@@ -222,8 +234,12 @@ class BudgetRolloverService {
         $total = count($monthsWithTransactions);
         $count = 0;
         foreach ($monthsWithTransactions as $month) {
-            $count++;
-            $this->rollMonth($teamId, $month."-01", $categories);
+            try {
+                $count++;
+                $this->rollMonth($teamId, $month."-01", $categories);
+            } catch (Exception $e) {
+                echo $e->getMessage();
+            }
             echo "updated month {$month}".PHP_EOL;
             echo "{$count} of {$total}".PHP_EOL.PHP_EOL;
         }
