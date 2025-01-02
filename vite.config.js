@@ -9,8 +9,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 export default defineConfig({
     plugins: [
         laravel({
-            input: 'resources/js/app.js',
-            ssr: 'resources/js/ssr.js',
+            input: 'resources/js/app.ts',
         }),
         vue({
             template: {
@@ -20,7 +19,6 @@ export default defineConfig({
                 },
             },
         }),
-        vueDevTools(),
         Components({
             resolvers: [
                 IconsResolver(),

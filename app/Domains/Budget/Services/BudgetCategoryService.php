@@ -4,6 +4,7 @@ namespace App\Domains\Budget\Services;
 
 use Brick\Money\Money;
 use Illuminate\Support\Str;
+use Brick\Math\RoundingMode;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Helpers\RequestQueryHelper;
@@ -43,7 +44,10 @@ class BudgetCategoryService
             $funded = $monthBudget ? $monthBudget->funded_spending : 0;
             $monthPayment = $monthBudget ? $monthBudget->payments : 0;
 
-            $monthBalance = Money::of($funded, $category->account->currency_code)->minus($monthPayment)->getAmount()->toFloat();
+            $monthBalance = Money::of($funded, $category->account->currency_code)
+            ->minus($monthPayment)
+            ->getAmount()
+            ->toFloat();
             $available = Money::of($monthBalance, 'USD')
                 ->plus(($monthBudget->left_from_last_month * -1))
                 ->getAmount()
@@ -51,7 +55,7 @@ class BudgetCategoryService
         } else {
             $monthBalance = (float) $category->getMonthBalance($yearMonth)->balance;
 
-            $available = Money::of($budgeted, 'USD')
+            $available = Money::of($budgeted, 'USD', null, RoundingMode::HALF_UP)
                         ->plus($monthBudget?->left_from_last_month ?? 0)
                         ->plus($monthBalance)
                         ->getAmount()

@@ -28,9 +28,6 @@ const props = defineProps({
     },
 })
 
-const isModalOpen = ref(false);
-const resourceToEdit = ref({});
-
 const onSaved = () => {
     router.reload()
 }
