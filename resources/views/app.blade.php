@@ -22,7 +22,7 @@
         <!-- Scripts -->
         <script src="https://apis.google.com/js/api.js" defer></script>
         @routes
-        @vite('resources/js/app.js')
+        @vite(['resources/js/app.ts', "resources/js/Pages/{$page['component']}.vue"])
         @inertiaHead
         <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
         <script>
