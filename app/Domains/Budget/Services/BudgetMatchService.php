@@ -11,7 +11,7 @@ class BudgetMatchService
 {
     public function update(Category $category, BudgetMatchAccount $matchAccount, User $user, $postData) {
         if ($category->id !== $matchAccount->category_id){
-            throw new Exception(__("This target doent belongs to this category"));
+            throw new Exception(__("This match account doesn't belongs to this category $category->id and $matchAccount->category_id are different"));
         }
 
         $matchAccount->update([

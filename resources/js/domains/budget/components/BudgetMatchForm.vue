@@ -68,11 +68,11 @@ const onSubmit = () => {
   const methods = {
     update: {
       method: "put",
-      url: props.item?.id && `/budgets/${props.category.id}/match-accounts/${props.item.id}`,
+      url: props.item?.id && `/budgets/${props.category.id}/budget-match-accounts/${props.item.id}`,
     },
     save: {
       method: "post",
-      url: `/budgets/${props.category.id}/match-accounts`,
+      url: `/budgets/${props.category.id}/budget-match-accounts`,
     },
   };
   const endpoint = methods[props.item?.id ? "update" : "save"];

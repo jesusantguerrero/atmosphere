@@ -1,8 +1,42 @@
+<script setup lang="ts">
+import { watchEffect, reactive, computed } from "vue";
+import { usePage } from "@inertiajs/vue3"
+
+defineProps<{
+    activeClass: string
+}>()
+
+const state = reactive({
+    style: 'success',
+    message: '',
+    isVisible: false
+});
+
+
+const pageProps = computed(() => usePage().props);
+
+watchEffect(async () => {
+    state.style = pageProps.value.jetstream.flash?.bannerStyle || "success";
+    state.message = pageProps.value.jetstream.flash?.banner || "";
+    state.isVisible = true;
+})
+
+
+const isStyle = (styleName: 'danger'|'success'| 'info') => {
+    return state.style === styleName;
+}
+
+watch(() =>state.message, ( ) => {
+    state.isVisible = false;
+})
+
+</script>
+
 <template>
-  <div :class="show && activeClass">
+  <div :class="state.isVisible && activeClass">
     <div
-      :class="{ 'bg-indigo-500': style == 'success', 'bg-red-700': style == 'danger' }"
-      v-if="show && message"
+      :class="{ 'bg-indigo-500': isStyle('success'), 'bg-red-700': isStyle('danger') }"
+      v-if="state.isVisible && state.message"
     >
       <div class="max-w-screen-xl px-3 py-2 mx-auto sm:px-6 lg:px-8">
         <div class="flex flex-wrap items-center justify-between">
@@ -10,8 +44,8 @@
             <span
               class="flex p-2 rounded-lg"
               :class="{
-                'bg-indigo-600': style == 'success',
-                'bg-red-600': style == 'danger',
+                'bg-indigo-600': isStyle('success'),
+                'bg-red-600': isStyle('danger'),
               }"
             >
               <svg
@@ -20,7 +54,7 @@
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
-                v-if="style == 'success'"
+                v-if="isStyle('success')"
               >
                 <path
                   stroke-linecap="round"
@@ -36,7 +70,7 @@
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
-                v-if="style == 'danger'"
+                v-if="isStyle('danger')"
               >
                 <path
                   stroke-linecap="round"
@@ -48,7 +82,7 @@
             </span>
 
             <p class="ml-3 text-sm font-medium text-white truncate">
-              {{ message }}
+              {{ state.message }}
             </p>
           </div>
 
@@ -57,11 +91,11 @@
               type="button"
               class="flex p-2 -mr-1 transition rounded-md focus:outline-none sm:-mr-2"
               :class="{
-                'hover:bg-indigo-600 focus:bg-indigo-600': style == 'success',
-                'hover:bg-red-600 focus:bg-red-600': style == 'danger',
+                'hover:bg-indigo-600 focus:bg-indigo-600': isStyle('success'),
+                'hover:bg-red-600 focus:bg-red-600': isStyle('danger'),
               }"
               aria-label="Dismiss"
-              @click.prevent="show = false"
+              @click.prevent="state.isVisible = false"
             >
               <svg
                 class="w-5 h-5 text-white"
@@ -82,27 +116,5 @@
         </div>
       </div>
     </div>
-  </div>
+  </div> {{  state.isVisible }}
 </template>
-
-<script setup>
-import { ref, computed } from "vue";
-import { usePage } from "@inertiajs/vue3"
-
-defineProps({
-    activeClass: {
-        type: String
-    }
-})
-
-const show = ref(false);
-
-const pageProps = usePage().props;
-const style = computed(() => {
-    return pageProps.jetstream.flash?.bannerStyle || "success";
-})
-
-const message = computed(() => {
-    return pageProps.jetstream.flash?.banner || "";
-})
-</script>
