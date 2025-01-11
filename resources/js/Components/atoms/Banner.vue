@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watchEffect, reactive, computed } from "vue";
+import { watchEffect, reactive, computed, watch } from "vue";
 import { usePage } from "@inertiajs/vue3"
 
 defineProps<{
@@ -13,12 +13,12 @@ const state = reactive({
 });
 
 
-const pageProps = computed(() => usePage().props);
+const pageProps = computed<Record<string, any>>(() => usePage().props);
 
 watchEffect(async () => {
     state.style = pageProps.value.jetstream.flash?.bannerStyle || "success";
     state.message = pageProps.value.jetstream.flash?.banner || "";
-    state.isVisible = true;
+    state.isVisible = Boolean(state.message);
 })
 
 
@@ -33,10 +33,10 @@ watch(() =>state.message, ( ) => {
 </script>
 
 <template>
-  <div :class="state.isVisible && activeClass">
+  <div :class="state.isVisible && activeClass"   v-if="state.isVisible && state.message">
     <div
       :class="{ 'bg-indigo-500': isStyle('success'), 'bg-red-700': isStyle('danger') }"
-      v-if="state.isVisible && state.message"
+
     >
       <div class="max-w-screen-xl px-3 py-2 mx-auto sm:px-6 lg:px-8">
         <div class="flex flex-wrap items-center justify-between">
@@ -116,5 +116,5 @@ watch(() =>state.message, ( ) => {
         </div>
       </div>
     </div>
-  </div> {{  state.isVisible }}
+  </div>
 </template>

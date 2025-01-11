@@ -24,6 +24,7 @@
     import { useTransactionModal } from '@/domains/transactions'
     import AppProvider from './AppProvider.vue'
     import { useAppContextStore } from '@/store'
+    import FinanceWidget from '../SideWidget/FinanceWidget.vue'
     // import LogerAssistant from '../organisms/logerAssistant.vue'
 
     const props = defineProps<{
@@ -75,7 +76,7 @@
 
     // routing
     const showingNavigationDropdown = ref(false)
-    const switchToTeam = (team) => {
+    const switchToTeam = (team: any) => {
         router.put(route('current-team.update'), {
             'team_id': team.id
         }, {
@@ -87,12 +88,17 @@
         return document?.location?.pathname
     })
     const isExpanded = useLocalStorage('isMenuExpanded', true);
+    const isAsideExpanded = useLocalStorage('isAsideExpanded', false);
     const logout = () => router.post(route('logout'));
 
     //  categories
     const { categoryOptions: transformCategoryOptions } = useSelect()
     transformCategoryOptions(pageProps.categories, 'sub_categories', 'categoryOptions');
     transformCategoryOptions(pageProps.accounts, 'accounts', 'accountsOptions');
+
+    const accounts = computed(() => {
+        return pageProps.accounts;
+    })
 
     // useLogerConfig()
     const { openTransactionModal } = useTransactionModal()
@@ -109,7 +115,11 @@
 
 <template>
     <AppProvider>
-        <AppShell :is-expanded="isExpanded" :nav-class="[!$slots.header && `${panelShadow} border-b`]">
+        <AppShell
+            :is-expanded="isExpanded"
+            :nav-class="[!$slots.header && `${panelShadow} border-b`]"
+            :is-aside-expanded="isAsideExpanded"
+        >
             <template #navigation>
                 <!-- Primary Navigation Menu -->
                 <div class="px-2 mx-auto sm:pr-6 lg:pr-8 text-body-1/80">
@@ -128,7 +138,6 @@
                         <div class="flex space-x-2 sm:items-center sm:ml-6">
                             <TransactionAddButton class="hidden mr-4 md:inline-block" v-if="!isOnboarding" />
                             <!-- <TransactionQuickButton class="hidden mr-4 md:inline-block" v-if="!isOnboarding" /> -->
-                            <WatchlistButton class="hidden mr-4 md:inline-block" v-if="!isOnboarding" />
                             <PrivacyToggle v-model="isPrivacyMode" v-if="!isOnboarding" />
                             <AppNotificationBell
                                 :notifications="$page.props.unreadNotifications"
@@ -225,6 +234,17 @@
                     <slot />
                 </main>
                 <MobileMenuBar :menu="mobileMenu" @action="handleActions" />
+            </template>
+
+            <template #aside-widget>
+                <FinanceWidget
+                    v-model:is-expanded="isAsideExpanded"
+                    :show-assistant-button="true"
+                    :accounts="accounts"
+                    :style="''"
+                    :token="'abcde'"
+                    :user="{}"
+                />
             </template>
         </AppShell>
         <AppGlobals />

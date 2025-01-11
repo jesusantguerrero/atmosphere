@@ -12,22 +12,20 @@ import { makeOptions } from "@/utils/naiveui";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 import { ref } from "vue";
 import InputMoney from "@/Components/atoms/InputMoney.vue";
+import { IAccount } from "../models";
 
 const emit = defineEmits(["close"]);
-const props = defineProps({
-  show: {
-    default: false,
-  },
-  maxWidth: {
-    default: "2xl",
-  },
-  closeable: {
-    default: true,
-  },
-  formData: {
-    type: Object,
-    default: () => ({}),
-  },
+const props = withDefaults(defineProps<{
+    show: boolean;
+    maxWidth?: string;
+    closeable?: boolean;
+    formData?: Partial<IAccount>;
+
+}>(), {
+    show:false,
+    maxWidth: "2xl",
+    closeable: true,
+    formData:() => ({})
 });
 
 const state = reactive({

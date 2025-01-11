@@ -1,8 +1,24 @@
+<script setup>
+defineProps({
+  navClass: {
+    type: [String, Object],
+  },
+  isExpanded: {
+    type: Boolean,
+    default: true,
+  },
+  isAsideExpanded: {
+    type: Boolean,
+    default: true,
+  },
+});
+</script>
+
 <template>
   <main
     class="min-h-screen bg-base-lvl-3 home-container"
     v-auto-animate
-    :class="{ expanded: isExpanded }"
+    :class="{ expanded: isExpanded, 'aside-expanded': isAsideExpanded }"
   >
     <nav class="app-header md:pl-{var(--app)} bg-base-lvl-3 border-b" :class="navClass">
       <slot name="navigation" />
@@ -16,21 +32,14 @@
       <section class="app-content__inner ic-scroller bg-base border">
         <slot name="main-section" />
       </section>
+
+      <aside class="aside-widget-container">
+        <slot name="aside-widget" />
+      </aside>
     </article>
   </main>
 </template>
 
-<script setup>
-defineProps({
-  navClass: {
-    type: [String, Object],
-  },
-  isExpanded: {
-    type: Boolean,
-    default: true,
-  },
-});
-</script>
 
 <style lang="scss">
 body,
@@ -42,9 +51,14 @@ html {
   height: 100vh;
 
   --app-side-width: 74px;
+  --app-aside-width: 64px;
 
   &.expanded {
     --app-side-width: 230px;
+  }
+
+  &.aside-expanded {
+    --app-aside-width: 230px;
   }
 }
 
@@ -73,7 +87,7 @@ html {
 
 .app-content {
   display: grid;
-  grid-template-columns: var(--app-side-width) minmax(0, 1fr);
+  grid-template-columns: var(--app-side-width) minmax(0, 1fr) var(--app-aside-width);
   position: relative;
   height: 100vh;
   transition: all ease 0.3s;

@@ -28,7 +28,9 @@ const props = defineProps<{
 const emit = defineEmits(['reordered'])
 
 const isAccountModalOpen = ref(false);
-const accountToEdit = ref({})
+const accountToEdit = ref<Partial<IAccount>|null>()
+
+
 
 const openAccountModal = (account = {}) => {
     accountToEdit.value = account;
@@ -96,13 +98,12 @@ const budgetAccountsTotal =  computed(() => {
     </div>
 
     <AccountModal
-        v-if="isAccountModalOpen"
+        v-if="isAccountModalOpen && accountToEdit"
         :show="isAccountModalOpen"
         :max-width="modalMaxWidth"
         :form-data="accountToEdit"
         @close="isAccountModalOpen = false"
     />
-
 
     <AccountLinkModal
         v-if="accountToEdit"

@@ -1708,6 +1708,13 @@
   dependencies:
     "@iconify/types" "*"
 
+"@iconify-json/hugeicons@^1.2.3":
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/@iconify-json/hugeicons/-/hugeicons-1.2.3.tgz#94c3476c62dde081c50d5834f5fc51f2108578a7"
+  integrity sha512-EujzAC9jlyJY+iFA2ehXoTgGfjKxMMD9xWGQbbo0MlqZelkg/dmENlqIMJjLy9B1sZltw1ol5eYhhzY69TwkQw==
+  dependencies:
+    "@iconify/types" "*"
+
 "@iconify-json/ic@^1.2.1":
   version "1.2.1"
   resolved "https://registry.npmjs.org/@iconify-json/ic/-/ic-1.2.1.tgz"
@@ -1733,6 +1740,13 @@
   version "1.2.1"
   resolved "https://registry.npmjs.org/@iconify-json/mdi/-/mdi-1.2.1.tgz"
   integrity sha512-dSkQU78gsZV6Yxnq78+LuX7jzeFC/5NAmz7O3rh558GimGFcwMVY/OtqRowIzjqJBmMmWZft7wkFV4TrwRXjlg==
+  dependencies:
+    "@iconify/types" "*"
+
+"@iconify-json/ooui@^1.2.5":
+  version "1.2.5"
+  resolved "https://registry.yarnpkg.com/@iconify-json/ooui/-/ooui-1.2.5.tgz#53673d6d40face95b769a2c45962d4431fd7f4dd"
+  integrity sha512-Q91cOigbuDjOOH+Mm6ies/djOEZoSrrbt9HPwxoJYF0374RH4cQqMylTFZur4SlKgSGh3RVY8JOFB2yyo6g5Dg==
   dependencies:
     "@iconify/types" "*"
 

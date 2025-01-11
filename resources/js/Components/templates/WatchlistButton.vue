@@ -12,9 +12,7 @@
                     <h4 class="px-2 text-body-1/80"> Watchlist </h4>
                     <button class="px-2 text-primary"> See all </button>
                 </header>
-                <LogerButtonTab class="flex items-center justify-between w-full font-bold" v-for="item in items" @click="openTransactionModal({
-                    mode: DEPOSIT
-                })">
+                <LogerButtonTab class="flex items-center justify-between w-full font-bold" v-for="item in items">
                     <span class="flex items-center">
                         <IMdiStar class="mr-2 text-md text-secondary" />
                         {{  item.name  }}

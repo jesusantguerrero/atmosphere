@@ -40,6 +40,9 @@ export interface ICategory {
     budgeted: number;
 }
 export interface IAccount {
+    label(arg0: string, label: any): unknown | (string | number | boolean | void | import("vue").VNode<import("vue").RendererNode, import("vue").RendererElement, { [key: string]: any; }> | null | undefined) | import("vue").VNodeArrayChildren;
+    credit_limit: number;
+    credit_closing_day: any;
     id: number;
     name: string;
     color: string;
