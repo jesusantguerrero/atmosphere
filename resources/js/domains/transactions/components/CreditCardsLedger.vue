@@ -1,12 +1,10 @@
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
-import exactMathNode from '@/plugins/exactMath';
+import { ref, computed } from "vue";
 
 import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 import AccountModal from "./AccountModal.vue";
 
-import MoneyPresenter from '@/Components/molecules/MoneyPresenter.vue';
 import { useAppContextStore } from "@/store";
 import { IAccount } from "@/domains/transactions/models/transactions";
 import AccountLinkModal from "./AccountLinkModal.vue";
@@ -17,6 +15,8 @@ import CreditCardItem from "./CreditCardItem.vue";
 const props = defineProps<{
     accounts: IAccount[]
 }>();
+
+const emit = defineEmits(['update:model-value']);
 
 const selectedAccountId = ref(props.accounts?.at?.(0)?.id);
 const isSelectedAccount = (accountId: number) => {
@@ -44,13 +44,6 @@ const openLinkModal = (account = {}) => {
     isLinkModalOpen.value = true;
 };
 
-const budgetAccountsTotal =  computed(() => {
-    return props.accounts.reduce((total, account) => {
-        return exactMathNode.add(total, account?.balance)
-    }, 0)
-})
-
-
 const slideIndex = ref(0);
 
 const clonedCards = ref(props.accounts?.map?.(item => item) ?? []);
@@ -58,24 +51,15 @@ const clonedCards = ref(props.accounts?.map?.(item => item) ?? []);
 let setIndex = () => {
     clonedCards.value.unshift(clonedCards.value.pop())
     console.log('shift', clonedCards.value.map(item => item.name));
+    emit('update:model-value', clonedCards.value[0])
 }
+
+setIndex()
 
 </script>
 
 <template>
   <div class="border-l border-base-lvl-1 text-body-1">
-      <header class="rounded-t-md flex justify-between items-center">
-          <section class="flex items-center space-x-1">
-              <SectionTitle class="min-w-fit">
-                  Credit Cards ({{ clonedCards.length }})
-              </SectionTitle>
-          </section>
-          <section class="flex">
-              <LogerButtonTab class="w-full bg-base-lvl-3" @click="openAccountModal()">
-                  <IMdiPlus />
-              </LogerButtonTab>
-          </section>
-      </header>
     <div class="space-y-2 px-5">
        <section
             class="w-full cards-box relative px-5"
@@ -103,7 +87,6 @@ let setIndex = () => {
         @close="isAccountModalOpen = false"
     />
 
-
     <AccountLinkModal
         v-if="accountToEdit"
         :show="isLinkModalOpen"
@@ -123,7 +106,6 @@ let setIndex = () => {
 	transform: translateX(-15px);
     height: 160px;
 }
-
 
 .cards-box .card {
 	position: absolute;
