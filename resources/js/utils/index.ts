@@ -177,3 +177,8 @@ export const nameToColor = (name: string) => {
     const colors = ["#00C4B3", "#5B5293", "#FFB4AA"]
     return colors[index] ?? nameToColor(name);
   }
+
+
+  export const isJSONString = (jsonString: string) => {
+    return jsonString?.match(/(?<=\{)\s*[^{]*?(?=[\},])|\[\]/)
+}

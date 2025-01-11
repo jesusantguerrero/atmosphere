@@ -2,12 +2,12 @@
 
 namespace App\Domains\Budget\Http\Controllers;
 
+use Exception;
 use App\Http\Controllers\Controller;
 use App\Domains\AppCore\Models\Category;
-use App\Domains\Budget\Models\BudgetTarget;
+use App\Domains\Budget\Models\BudgetMatchAccount;
 use App\Domains\Budget\Services\BudgetFundService;
 use App\Domains\Budget\Services\BudgetMatchService;
-use App\Domains\Budget\Services\BudgetTargetService;
 
 class BudgetMatchAccountController extends Controller
 {
@@ -27,22 +27,27 @@ class BudgetMatchAccountController extends Controller
 
     public function store(BudgetMatchService $matchAccountService)
     {
-        $postData = request()->post();
-        $matchAccountService->add(request()->user(), $postData);
-        return redirect()->back();
+        try {
+            $postData = request()->post();
+            $matchAccountService->add(request()->user(), $postData);
+            return redirect()->back();
+        }catch (Exception $e) {
+            return back()->with('flash', [
+                'banner' => $e->getMessage(),
+            ]);
+        }
     }
 
-    public function update(Category $category, BudgetTarget $budgetTarget, BudgetTargetService $budgetTargetService)
+    public function update(Category $category, BudgetMatchAccount $budgetMatchAccount, BudgetMatchService $matchAccountService)
     {
-        $postData = request()->post();
-        $budgetTargetService->update($category, $budgetTarget, request()->user(), $postData);
-        return redirect()->back();
-    }
-
-    public function complete(Category $category, BudgetTarget $budgetTarget, BudgetTargetService $budgetTargetService)
-    {
-        $postData = request()->post();
-        $budgetTargetService->complete($budgetTarget, $category, $postData);
-        return redirect()->back();
+        try {
+            $postData = request()->post();
+            $matchAccountService->update($category, $budgetMatchAccount, request()->user(), $postData);
+            return redirect()->back();
+        } catch (Exception $e) {
+            return back()->with('flash', [
+                'banner' => $e->getMessage(),
+            ]);
+        }
     }
 }

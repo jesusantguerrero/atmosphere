@@ -23,11 +23,11 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     });
 
     Route::controller(BudgetMatchAccountController::class)->group(function () {
-        Route::get('/budgets/{category}/match-accounts/{id?}', 'index');
-        Route::get('/budgets/{category}/match-accounts/{matchAccount}', 'destroy');
-        Route::post('/budgets/{category}/match-accounts', 'store')->name('budget.match-account.store');
-        Route::put('/budgets/{category}/match-accounts/{matchAccount}', 'update');
-        Route::delete('/budgets/{category}/match-accounts/{matchAccount}', 'destroy');
+        Route::get('/budgets/{category}/budget-match-accounts/{id?}', 'index');
+        Route::get('/budgets/{category}/budget-match-accounts/{budgetMatchAccount}', 'destroy');
+        Route::post('/budgets/{category}/budget-match-accounts', 'store')->name('budget.match-account.store');
+        Route::put('/budgets/{category}/budget-match-accounts/{budgetMatchAccount}', 'update');
+        Route::delete('/budgets/{category}/budget-match-accounts/{budgetMatchAccount}', 'destroy');
     });
 
     Route::resource('/budget-funds', BudgetFundController::class);

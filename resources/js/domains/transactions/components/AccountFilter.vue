@@ -25,7 +25,7 @@ const selectedAccount = computed({
     }
 })
 
-const renderLabel: SelectRenderLabel = (option) => {
+const renderLabel: SelectRenderLabel = (option: IAccount) => {
       return h('div',{class: 'w-full flex justify-between space-x-4'},
         [
           h(option.credit_limit > 0 ? MdiCreditCard : MdiWallet),

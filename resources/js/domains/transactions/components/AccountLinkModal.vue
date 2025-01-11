@@ -13,7 +13,7 @@ const props = defineProps<{
     maxWidth?: string;
     closeable: boolean;
     title: string;
-    account: IAccount;
+    account: Partial<IAccount>;
 }>()
 
 const emit = defineEmits(['save', 'close'])

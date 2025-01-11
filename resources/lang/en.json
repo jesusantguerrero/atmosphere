@@ -5,6 +5,18 @@
         "currentExpenses": "Current Expenses",
         "monthlyBudget": "Monthly Budget"
     },
+    "creditCardTools": {
+        "title": "Credit Cards"
+    },
+    "accountTools": {
+        "title": "Accounts"
+    },
+    "watchlistTools": {
+        "title": "Watchlist"
+    },
+    "listTools": {
+        "title": "Shopping List"
+    },
     "Home": "Home",
     "Meal Planner": "Meal Planner",
     "Meals": "Meals",
