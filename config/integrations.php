@@ -5,4 +5,8 @@ return [
         'credentials_path' => env('GOOGLE_CREDENTIALS_PATH'),
         'client_id' => env('GOOGLE_CLIENT_ID'),
     ],
+    'whatsapp' => [
+        'token' => env("WA_TOKEN"),
+        'phoneId' => env("WA_PHONE_NUMBER_ID")
+    ]
 ];

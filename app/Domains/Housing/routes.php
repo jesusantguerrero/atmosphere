@@ -17,6 +17,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', 'loger.conce
         Route::get('/housing/occurrences/{occurrence}/preview', 'automationPreview');
         Route::post('/housing/occurrences/{occurrence}/load', 'automationLoad');
         Route::post('/housing/occurrences/{occurrence}/sync', 'sync');
+        Route::post('/housing/occurrences/{occurrence}/remind', 'remind');
         Route::post('/housing/occurrences/sync-all', 'syncAll');
         Route::get('housing/occurrence-export', 'export')->name('housing.occurrences.export');
         Route::post('housing/occurrence-import', 'import')->name('housing.occurrences.import');
