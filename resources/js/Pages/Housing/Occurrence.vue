@@ -78,6 +78,13 @@ const defaultOptions = {
         name: "removed",
         label: "Remove",
         handle: handleDelete
+    },
+    reminded: {
+        name: "reminded",
+        label: "Remind",
+        handle(resource: OccurrenceItem) {
+            router.post(`/housing/occurrences/${resource.id}/remind`)
+        }
     }
 }
 
@@ -86,8 +93,8 @@ const options = () => {
     return Object.values(defaultOptions).filter(option => !option.hide)
 };
 
-const handleOptions = (optionName: IOptionNames , transaction: ITransaction) => {
-    defaultOptions[optionName].handle(transaction)
+const handleOptions = (optionName: IOptionNames , occurrence: OccurrenceItem) => {
+    defaultOptions[optionName].handle(occurrence)
 };
 
 const dataStatus = {

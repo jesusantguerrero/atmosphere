@@ -57,17 +57,17 @@
 </script>
 
 <template>
-    <article class="relative flex flex-col-reverse w-full pt-16 pb-20 mx-auto md:flex-row md:space-x-2 md:max-w-screen-2xl">
+    <article class="px-5 mx-auto mt-12 space-y-10 md:space-y-0 md:space-x-10  relative md:flex max-w-screen-2xl sm:px-6 lg:px-8">
         <main
-            class="w-full overflow-hidden md:pr-5  md:pl-8"
+            class="md:w-9/12 overflow-hidden md:pr-5  md:pl-8"
             :class="!hidePanel && 'md:w-6/12 lg:w-7/12 xl:w-8/12 2xl:w-10/12'"
         >
             <slot name="prepend-panel" v-if="hidePanel" />
             <slot />
         </main>
 
-        <aside class="relative w-full overflow-auto md:px-2 md:block" :class="[panelStyles, fixed && 'h-screen']" v-if="!hidePanel">
-            <section class="px-2 w-full  aside-content" :class="{'md:fixed md:pr-8': fixed }">
+        <aside class="space-y-4 md:w-3/12 bg-blue sticky top-0" v-if="!hidePanel">
+            <section class="px-2 w-full aside-content">
                 <slot name="prepend-panel" />
                 <slot name="panel">
                     <AccountsLedger
