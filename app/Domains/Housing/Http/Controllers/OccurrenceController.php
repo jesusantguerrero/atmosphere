@@ -70,6 +70,11 @@ class OccurrenceController extends InertiaController
         return $registerer->sync($occurrence);
     }
 
+    public function remind(Occurrence $occurrence, RegisterOccurrence $registerer)
+    {
+        return $registerer->remind($occurrence);
+    }
+
     public function syncAll()
     {
         RunTeamChecks::dispatch(auth()->user()->current_team_id);
