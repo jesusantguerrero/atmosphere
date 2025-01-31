@@ -54,7 +54,7 @@ const {state: pageState, executeSearchWithDelay } = useServerSearch(serverSearch
                     next-mode="month"
                 />
                 <AccountFilters
-                    class="w-full bg-red-500"
+                    class="w-full"
                     v-model:accounts="pageState.filters.account"
                     v-model:categories="pageState.filters.category"
                 />

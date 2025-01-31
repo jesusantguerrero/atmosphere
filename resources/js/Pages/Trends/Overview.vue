@@ -175,7 +175,7 @@ const isFilterSelected = (filterValue: string) => {
         <section class="mt-5 mr-4 px-5 pt-2 pb-4 space-y-4 text-left border-b rounded-md shadow-xl bg-base-lvl-3">
             <h4 class="font-bold"> Filters </h4>
             <AccountFilters
-                class="w-full bg-red-500"
+                class="w-full"
                 include-labels
                 col
                 :tag-max-count="1"

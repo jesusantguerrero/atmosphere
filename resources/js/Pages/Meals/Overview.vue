@@ -50,7 +50,7 @@ const getMealByType = (mealTypeId) => {
     </template>
 
     <div
-      class="px-5 mx-auto mt-12 space-y-10 md:space-y-0 md:space-x-10 md:flex max-w-screen-2xl sm:px-6 lg:px-8 bg-red-500"
+      class="px-5 mx-auto mt-12 space-y-10 md:space-y-0 md:space-x-10 md:flex max-w-screen-2xl sm:px-6 lg:px-8"
     >
       <div class="md:w-9/12">
         <WelcomeCard class="mt-5">
