@@ -40,3 +40,10 @@ export interface IOccurrenceCheck {
     previous_days_count: number,
     status: string;
 }
+
+export interface IBoard {
+    id: number;
+    name: string;
+    color: string,
+    template: string,
+}

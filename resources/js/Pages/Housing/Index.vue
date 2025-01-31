@@ -10,10 +10,11 @@ import SectionTitle from '@/Components/atoms/SectionTitle.vue';
 import CategoryItem from '@/domains/transactions/components/CategoryItem.vue';
 import MealTypeCell from '@/domains/meal/components/MealTypeCell.vue';
 
-import { IOccurrenceCheck } from "@/domains/housing/models";
+import { IOccurrenceCheck, IBoard } from "@/domains/housing/models";
 
 defineProps<{
     checks: IOccurrenceCheck
+    boards: IBoard[]
 }>()
 </script>
 
@@ -45,30 +46,7 @@ defineProps<{
             </div>
             <div class="py-6 space-y-4 md:w-6/12">
                 <OccurrenceWidget :checks="checks" />
-                <ChoreWidget :chores="[]">
-                <div class="mt-2">
-                    <div
-                    v-for="mealType in [{id: '1'}]"
-                    class="w-full"
-                    :key="`${mealType.id}-${day}`"
-                    >
-                    <MealTypeCell
-                        v-model="recipe"
-                        :planned-meal="[]"
-                        :meal-type="mealType"
-                    />
-                    </div>
-
-                    <SectionTitle type="secondary" class="text-center"> Chores </SectionTitle>
-                    <section class="flex mt-4">
-                    <CategoryItem
-                        wrap
-                        v-for="mealType in [{ id: 1, name: 'Hola'}]"
-                        :label="`${mealType.name}`"
-                    />
-                    </section>
-                </div>
-                </ChoreWidget>
+                <ChoreWidget :boards="boards" />
             </div>
         </main>
     </AppLayout>
