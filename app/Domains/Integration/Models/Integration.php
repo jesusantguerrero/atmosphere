@@ -2,9 +2,11 @@
 
 namespace App\Domains\Integration\Models;
 
+use App\Models\Team;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use App\Domains\Automation\Models\Automation;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 
 class Integration extends Model
 {
@@ -15,5 +17,15 @@ class Integration extends Model
     public function automations()
     {
         return $this->hasMany(Automation::class, 'integration_id', 'id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function team()
+    {
+        return $this->belongsTo(Team::class);
     }
 }
