@@ -75,6 +75,7 @@ Route::group([], app_path('/Domains/LogerProfile/routes.php'));
 Route::group([], app_path('/Domains/Transaction/routes.php'));
 Route::group([], app_path('/Domains/Budget/routes.php'));
 Route::group([], app_path('/Domains/Meal/routes.php'));
+Route::group([], app_path('/Domains/Integration/routes.php'));
 
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
     Route::get('/', fn () => redirect('/dashboard'));
@@ -104,10 +105,6 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     ***************************************************************************************/
 
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
-    Route::get('/integrations', IntegrationController::class)->name('settings.integrations');
-    Route::post('/integrations/google', [IntegrationController::class, 'google'])->name('services.google');
-
-
 
     /**************************************************************************************
       *                               Finance Section
