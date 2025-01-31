@@ -1,9 +1,9 @@
 <?php
 
-namespace Tests\Feature\Loan;
+namespace Tests\Feature\Finance;
 
+use Tests\Feature\Helpers\CreditCardBase;
 use App\Domains\Transaction\Models\BillingCycle;
-use Tests\Feature\CreditCard\Helpers\CreditCardBase;
 
 class CreditCardCronsTest extends CreditCardBase {
   public function testItGeneratesLateFees() {
