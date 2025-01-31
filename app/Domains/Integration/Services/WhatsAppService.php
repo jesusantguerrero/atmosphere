@@ -9,30 +9,27 @@ use GuzzleHttp\Exception\RequestException;
 
 class WhatsAppService
 {
-    public function sendMessage($recipientPhone, $message)
+    private string $token;
+    private string $phoneNumberId;
+    private string $version = "v21.0";
+
+    public function __construct()
     {
-        $token =  config('integrations.whatsapp.token');
-        $phoneNumberId =  config('integrations.whatsapp.phoneId');
-        $version = "v21.0";
+        $this->token =  config('integrations.whatsapp.token');
+        $this->phoneNumberId =  config('integrations.whatsapp.phoneId');
+    }
+
+    public function send($messageBody)
+    {
 
         $client = new Client();
         try {
-            $response = $client->post("https://graph.facebook.com/{$version}/{$phoneNumberId}/messages", [
+            $response = $client->post("https://graph.facebook.com/{$this->version}/{$this->phoneNumberId}/messages", [
                 'headers' => [
-                    'Authorization' => "Bearer $token",
+                    'Authorization' => "Bearer $this->token",
                     'Content-Type' => 'application/json',
                 ],
-                'json' => [
-                    'messaging_product' => 'whatsapp',
-                    'to' => $recipientPhone,
-                    'type' => 'template',
-                    'template' => [
-                        'name' => 'hello_world',
-                        'language' => [
-                            "code" => "en_US"
-                        ]
-                    ],
-                ],
+                'json' => $messageBody,
             ]);
 
             return response()->json(json_decode($response->getBody(), true));
@@ -44,5 +41,32 @@ class WhatsAppService
             Log::alert($e->getMessage());
             throw new Exception($e->getMessage());
         }
+    }
+    public function sendMessage($recipientPhone, $message)
+    {
+
+        $this->send([
+            'messaging_product' => 'whatsapp',
+            'to' => $recipientPhone,
+            'type' => 'text',
+            'text' => [
+                'body' => $message,
+            ],
+        ]);
+    }
+
+    public function sendMessageFromTemplate($recipientPhone, $vars, $templateName = 'hello_world', $langCode = "en_US")
+    {
+        $this->send([
+            'messaging_product' => 'whatsapp',
+            'to' => $recipientPhone,
+            'type' => 'template',
+            'template' => [
+                'name' => $templateName,
+                'language' => [
+                    "code" => $langCode
+                ]
+            ],
+        ]);
     }
 }

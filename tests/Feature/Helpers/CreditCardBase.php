@@ -1,11 +1,9 @@
 <?php
 
-namespace Tests\Feature\CreditCard\Helpers;
+namespace Tests\Feature\Helpers;
 
 use Tests\TestCase;
 use App\Models\User;
-use App\Domains\CRM\Models\Client;
-use App\Domains\Loans\Models\Loan;
 use Insane\Journal\Models\Core\Account;
 use Illuminate\Foundation\Testing\WithFaker;
 use Insane\Journal\Models\Core\AccountDetailType;
