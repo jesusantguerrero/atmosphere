@@ -4,6 +4,8 @@ namespace App\Domains\Integration\Http\Controllers;
 
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Api\BaseController;
+use App\Domains\Integration\Models\Integration;
+use App\Domains\Integration\Actions\Whatsapp\CreateTaskFromMessage;
 
 class WhatsappController extends BaseController
 {
@@ -36,6 +38,19 @@ class WhatsappController extends BaseController
         // Process the incoming WhatsApp message
         $data = request()->json()->all();
 
+        // Extract phone_number_id from the webhook payload
+        $phoneNumberId = request()->input('entry.0.changes.0.value.metadata.phone_number_id');
+
+        if (!$phoneNumberId) {
+            return response()->json(['error' => 'Invalid payload'], 400);
+        }
+
+        $userIntegration = Integration::where('config->phone_number_id', $phoneNumberId)->first();
+
+        if (!$userIntegration) {
+            return response()->json(['error' => "Phone number ID {$phoneNumberId} not recognized "], 404);
+        }
+
         if (isset($data['entry'])) {
             foreach ($data['entry'] as $entry) {
                 foreach ($entry['changes'] as $change) {
@@ -48,7 +63,7 @@ class WhatsappController extends BaseController
 
                             // Example: Handle a text message
                             if ($messageType === 'text') {
-                                Log::info("Received message from $from: $content");
+                                (new CreateTaskFromMessage())->create($userIntegration->team, $from, $content, $messageType);
                             }
                         }
                     }
