@@ -14,17 +14,15 @@ class WhatsappController extends BaseController
      */
     public function verify()
     {
-        $verifyToken = config('integrations.whatsapp.verifyToken'); // Define your verification token in the .env file
-
-        $mode = request()->get('hub_mode');
+        $verifyToken = config('integrations.whatsapp.webhook.verifyToken'); // Define your verification token in the .env file
+        $mode = request()->get('hub_mode') ?? request()->get('hub.mode');
         $token = request()->get('hub_verify_token');
         $challenge = request()->get('hub_challenge');
-
-        if ($mode === 'subscribe' && $token === $verifyToken) {
+        if ($mode == 'subscribe' && $token == $verifyToken) {
             return response($challenge, 200);
         }
 
-        return response('Forbidden', 403);
+        return response($mode, 403);
     }
 
     /**
