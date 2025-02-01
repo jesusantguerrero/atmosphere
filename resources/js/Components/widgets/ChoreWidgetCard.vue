@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { Link } from "@inertiajs/vue3";
 
 // Props
 const props = withDefaults(defineProps<{
@@ -17,7 +18,7 @@ const cardStyle = computed(() => ({
 
 <template>
     <section class="wrapper">
-        <div class="bg-brand shadow-md rounded-lg p-4 text-center">
+        <Link class="bg-brand shadow-md rounded-lg p-4 text-center" :href="`/housing/boards/${board.id}`">
           <!-- Profile Image -->
           <div class="w-20 h-20 mx-auto rounded-full text-4xl bg-light flex items-center justify-center  overflow-hidden bg-white shadow py-4">
             <!-- Replace with actual image -->
@@ -33,7 +34,7 @@ const cardStyle = computed(() => ({
           <span class="mt-1 inline-block bg-light text-white text-sm px-4 py-1 rounded-full">
             {{ board.itemsCount ?? 0 }}
           </span>
-        </div>
+        </Link>
     </section>
 </template>
 
