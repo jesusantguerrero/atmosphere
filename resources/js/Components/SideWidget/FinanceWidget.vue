@@ -124,7 +124,7 @@ onMounted(() => {
 
 <template>
   <main
-    class="fixed top-0 right-0 z-50 flex h-screen overflow-hidden transition-all ease-linear border-t border-l border-secondary"
+    class="hidden md:fixed top-0 right-0 z-50 md:flex h-screen overflow-hidden transition-all ease-linear border-t border-l border-secondary"
     :class="{ 'border-t border-l rounded-tl-lg': applicationStore.selectedSection }"
   >
   <Transition name="slide">
