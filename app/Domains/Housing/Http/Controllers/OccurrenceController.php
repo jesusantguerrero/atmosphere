@@ -77,7 +77,7 @@ class OccurrenceController extends InertiaController
 
     public function syncAll()
     {
-        RunTeamChecks::dispatch(auth()->user()->current_team_id);
+        RunTeamChecks::dispatch(request()->user()->current_team_id);
     }
 
     public function export()

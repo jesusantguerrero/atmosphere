@@ -28,4 +28,8 @@ class Integration extends Model
     {
         return $this->belongsTo(Team::class);
     }
+
+    protected $casts = [
+        "config" => "object"
+    ];
 }

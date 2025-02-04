@@ -146,6 +146,7 @@ html {
 
   .app-content {
     height: auto;
+    grid-template-columns: var(--app-side-width) minmax(0, 1fr);
     &__inner {
       grid-column-start: 1;
       grid-column-end: 3;
