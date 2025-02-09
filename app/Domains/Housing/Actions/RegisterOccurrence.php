@@ -6,12 +6,14 @@ use Exception;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
+use App\Notifications\OccurrenceAlert;
 use App\Domains\Housing\Models\Occurrence;
 use App\Domains\Housing\Data\OccurrenceData;
 use App\Domains\Integration\Models\Integration;
 use App\Domains\Integration\Services\TelegramService;
 use App\Domains\Integration\Services\WhatsAppService;
 use App\Domains\Transaction\Actions\SearchTransactions;
+use App\Domains\Housing\Contracts\OccurrenceNotifyTypes;
 
 class RegisterOccurrence
 {
@@ -116,19 +118,8 @@ class RegisterOccurrence
 
     public function remind(Occurrence $occurrence)
     {
-        // $userIntegration = Integration::where([
-        //     "name" => "WhatsApp",
-        //     "user_id" => $occurrence->user_id
-        // ])->first();
-        // $waService = new WhatsAppService();
-        // $waService->sendMessage($userIntegration->phoneId, "Hello, this is a message from Laravel using WhatsApp Cloud API! " . $occurrence->name);
-        $userIntegration = Integration::where([
-            "name" => "telegram",
-            "user_id" => $occurrence->user_id
-        ])->first();
-        $telegramService = new TelegramService();
-        $telegramService->sendMessage($userIntegration->config->phone_id, "Hello, this is a message from Laravel using WhatsApp Cloud API! " . $occurrence->name);
-
+        User::find($occurrence->user_id)->notify(new OccurrenceAlert($occurrence, OccurrenceNotifyTypes::LAST));
+        User::find($occurrence->user_id)->notify(new OccurrenceAlert($occurrence, OccurrenceNotifyTypes::AVG));
     }
 
     private function getDaysDifference($startDate, $endDate, $format = 'Y-m-d')

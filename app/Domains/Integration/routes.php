@@ -7,6 +7,7 @@ use App\Domains\Integration\Http\Controllers\WhatsappController;
 
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
     Route::get('/integrations', IntegrationController::class)->name('settings.integrations');
+    Route::get('/integrations/social', [IntegrationController::class, 'social'])->name('settings.integrations.social');
     Route::post('/integrations/google', [IntegrationController::class, 'google'])->name('services.google');
 });
 
