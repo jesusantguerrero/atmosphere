@@ -31,7 +31,7 @@ class OccurrenceAlert extends LogerNotification
      */
     public function via($notifiable)
     {
-        return ['database', TelegramChannel::class, WhatsappChannel::class];
+        return ['database', TelegramChannel::class];
     }
 
     /**
@@ -121,7 +121,7 @@ class OccurrenceAlert extends LogerNotification
 
         return [
             ...$message,
-            'phone' => $userIntegration->phone
+            'chatId' => $userIntegration->config->phone_id
         ];
     }
 
@@ -144,7 +144,7 @@ class OccurrenceAlert extends LogerNotification
 
         return [
             ...$message,
-            'phoneId' => $userIntegration->phoneId
+            'phoneId' => $userIntegration->config->phone_number_id
         ];
     }
 }

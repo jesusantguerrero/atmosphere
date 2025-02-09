@@ -40,6 +40,7 @@ declare module 'vue' {
     IMdiPlus: typeof import('~icons/mdi/plus')['default']
     IMdiPrinter: typeof import('~icons/mdi/printer')['default']
     IMdiSearch: typeof import('~icons/mdi/search')['default']
+    IMdiSend: typeof import('~icons/mdi/send')['default']
     IMdiSort: typeof import('~icons/mdi/sort')['default']
     IMdiStar: typeof import('~icons/mdi/star')['default']
     IMdiStarOutline: typeof import('~icons/mdi/star-outline')['default']

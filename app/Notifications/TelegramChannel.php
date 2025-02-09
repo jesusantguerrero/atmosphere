@@ -16,6 +16,6 @@ class TelegramChannel
     public function send(object $notifiable, LogerNotification $notification): void
     {
             $messageData = $notification->toTelegram($notifiable);
-            $this->telegramService->sendMessage($messageData["phone"], $messageData["message"]);
+            $this->telegramService->sendMessage($messageData["chatId"], $messageData["message"]);
     }
 }

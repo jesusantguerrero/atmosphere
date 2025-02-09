@@ -16,6 +16,6 @@ class WhatsappChannel
     public function send(object $notifiable, LogerNotification $notification): void
     {
         $messageData = $notification->toWhatsapp($notifiable);
-        $this->whatsAppService->sendMessage($messageData['phone_id'], $messageData['message']);
+        $this->whatsAppService->sendMessage($messageData['phoneId'], $messageData['message']);
     }
 }
