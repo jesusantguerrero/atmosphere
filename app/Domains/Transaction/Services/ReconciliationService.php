@@ -21,6 +21,9 @@ class ReconciliationService
             'team_id' => $account->team_id,
             'account_id' => $account->id,
         ])
+        ->addSelect([
+            'total_transactions' => ReconciliationEntry::selectRaw('COUNT(id)')->whereColumn('reconciliation_id', 'reconciliations.id'),
+        ])
         ->orderByDesc('date')
         ->orderByDesc('id')
         ->get();

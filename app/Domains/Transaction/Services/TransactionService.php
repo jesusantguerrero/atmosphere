@@ -139,7 +139,7 @@ class TransactionService
             categories.name,
             categories.parent_id,
             group.name as parent_name,
-            group_concat(concat(transaction_lines.id, '/', accounts.name, '/', transactions.date, '/', payees.name, '/', transaction_lines.concept, '/', amount * transaction_lines.type) SEPARATOR '|') as details
+            group_concat(concat(transaction_lines.id, '/', transaction_lines.transaction_id, '/', accounts.name, '/', transactions.date, '/', payees.name, '/', transaction_lines.concept, '/', amount * transaction_lines.type) SEPARATOR '|') as details
         ", [
                 $DIRECTION_FACTOR,
             ])
@@ -171,7 +171,8 @@ class TransactionService
                 categories.parent_id,
                 accounts.id as account_id,
                 group.name as parent_name,
-                transaction_lines.id,
+                transaction_lines.id as line_id,
+                transactions.id as id,
                 accounts.name,
                 transactions.date,
                 payees.name payee_name,
@@ -211,7 +212,7 @@ class TransactionService
                 ABS(sum(transaction_lines.amount * transaction_lines.type)) as total,
                 catGroup.name,
                 catGroup.id,
-                group_concat(concat(transaction_lines.id, '/',accounts.name, '/', transactions.date, '/', payees.name, '/', transaction_lines.concept, '/', amount * transaction_lines.type) SEPARATOR '|') as details
+                group_concat(concat(transaction_lines.id, '/', transactions.id, '/', accounts.name, '/', transactions.date, '/', payees.name, '/', transaction_lines.concept, '/', amount * transaction_lines.type) SEPARATOR '|') as details
             "))
             ->when(count($excluded), fn($q) => $q->whereNotIn('transaction_lines.category_id', $excluded))
             ->when(count($included), fn($q) => $q->whereIn('transaction_lines.category_id', $included))

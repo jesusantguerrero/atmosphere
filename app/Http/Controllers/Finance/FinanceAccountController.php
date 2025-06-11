@@ -72,4 +72,13 @@ class FinanceAccountController extends InertiaController
         $data = $this->getPostData(request());
         $bankConnectionService->linkCreditCardPayment($account, $transaction, $data['integration_id']);
     }
+
+    public function closeAccount(Account $account)
+    {
+        $data = $this->getPostData(request());
+        $account->closed_at = $data['closed_at'];
+        $account->archived = $data['archived'];
+        $account->status = $data['status'];
+        $account->save();
+    }
 }

@@ -106,7 +106,7 @@ class RegisterOccurrence
                         $date
                     );
                     $occurrence->save();
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     throw $e;
                     Log::error($e->getMessage());
                     continue;

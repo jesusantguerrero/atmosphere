@@ -31,6 +31,7 @@ use Insane\Journal\Listeners\CreateTeamAccounts;
 use App\Listeners\CreateBudgetTransactionMovement;
 use App\Domains\Transaction\Listeners\DeleteTransactionPayment;
 use App\Domains\Transaction\Listeners\UpdateOpenReconciliations;
+use App\Domains\Transaction\Listeners\UpdatePlannedTransactions;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
@@ -67,17 +68,20 @@ class EventServiceProvider extends ServiceProvider
             CreateBudgetTransactionMovement::class,
             HandleTransactionCreated::class,
             CheckOccurrence::class,
+            UpdatePlannedTransactions::class,
             UpdateOpenReconciliations::class,
             UpdateBudgetAvailable::class,
         ],
         TransactionUpdated::class => [
             CreateBudgetTransactionMovement::class,
             UpdateBudgetAvailable::class,
+            UpdatePlannedTransactions::class,
         ],
         TransactionDeleted::class => [
             CreateBudgetTransactionMovement::class,
             UpdateBudgetAvailable::class,
             DeleteTransactionPayment::class,
+            UpdatePlannedTransactions::class,
         ],
         AppCreated::class => [
             ShowInApp::class,

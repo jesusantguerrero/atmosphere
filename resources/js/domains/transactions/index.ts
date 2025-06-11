@@ -27,7 +27,7 @@ export const getVariances = (current = 0, last = 0) => {
 
 
 export const removeTransaction = (transaction: ITransaction, only: string[] = []) => {
-    if (confirm("Are you sure you want to remove this transaction?")) {
+    if (confirm(`Are you sure you want to remove this transaction? ${JSON.stringify(transaction)}`)) {
         router.delete(`/transactions/${transaction.id}`, {
             preserveScroll: true,
             preserveState: true,

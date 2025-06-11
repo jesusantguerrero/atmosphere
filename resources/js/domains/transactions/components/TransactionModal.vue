@@ -251,6 +251,9 @@ const onSubmit = (addAnother = false) => {
         })
         .submit(action.method, action.url(), {
           preserveScroll: true,
+          before: () => {
+            
+          },
           onSuccess: () => {
             state.form.reset('description', 'category_id' , 'payee_id', 'payee_label', 'total', 'has_splits');
             const newData: ITransaction = lastSaved.value.lastSaved as ITransaction;

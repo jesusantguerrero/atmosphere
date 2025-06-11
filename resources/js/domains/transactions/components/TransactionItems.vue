@@ -11,6 +11,7 @@ import { IAccount, ICategory } from "../models";
 import { formatMoney } from "@/utils";
 import LogerInput from "@/Components/atoms/LogerInput.vue";
 import { TRANSACTION_DIRECTIONS } from "..";
+import axios from "axios";
 
 interface SplitItem {
     payee_id: null|number,
@@ -46,15 +47,14 @@ const categoryField = computed(() => {
   return props.isTransfer ? "counter_account_id" : "category_id";
 });
 
-const categoryOptions = inject("categoryOptions", []);
-const accountsOptions = inject("accountsOptions", []);
+const categoryOptions = inject<{ display_id?: string }[]>("categoryOptions", []);
+const accountsOptions = inject<{ id: number; label: string }[]>("accountsOptions", []);
 
 const categoryAccounts = computed(() => {
     if (props.isTransfer) {
         return accountsOptions;
-
     } else {
-        return categoryOptions.filter((category) => {
+        return categoryOptions.filter((category: { display_id?: string }) => {
             const isInflow = props.mode == TRANSACTION_DIRECTIONS.DEPOSIT;
             return (isInflow && category.display_id == "inflow") || !isInflow;
         });
@@ -64,7 +64,7 @@ const categoryAccounts = computed(() => {
 const splits = reactive<SplitItem[]>(props.items ?? []);
 const hasSplits = computed(() => splits.length > 1);
 
-const defaultRow = {
+const defaultRow: SplitItem = {
     payee_id: null,
     payee_label: "",
     label_id: null,
@@ -74,8 +74,9 @@ const defaultRow = {
     category_id: null,
     counter_account_id: null,
     account_id: null,
-    amount: 0,
-    history: 0
+    amount: "0",
+    history: [],
+    concept: ""
 };
 
 const splitsTotal = computed(() =>
@@ -85,7 +86,7 @@ const splitsTotal = computed(() =>
 )
 
 const addSplit = () => {
-  splits.push({...defaultRow});
+  splits.push({ ...defaultRow });
 };
 
 const removeSplit = (index: number) => {
@@ -103,12 +104,28 @@ defineExpose({
     return splits;
   },
   reset() {
-    const items = props.items.at?.(0) ?? structuredClone(defaultRow)
-    splits.splice(0, splits.length, {...items})
+    splits.splice(0, splits.length, { ...defaultRow });
   }
 });
 
 const isPickerOpen = ref(false);
+
+const showPlannedToggle = ref<{ [key: number]: boolean }>({});
+const relatedPlanned = ref<{ [key: number]: any }>({});
+
+async function fetchRelatedPlanned(index: number, split: SplitItem) {
+  if (!split.category_id) return;
+  // Replace with your actual API endpoint and params
+  const res = await axios.get(`/api/planned?category_id=${split.category_id}`);
+  relatedPlanned.value[index] = res.data;
+}
+
+async function markPlannedAsCompleted(index: number) {
+  const planned = relatedPlanned.value[index];
+  if (!planned) return;
+  await axios.post(`/api/planned/${planned.id}/complete`);
+  await fetchRelatedPlanned(index, splits[index]);
+}
 </script>
 
 
@@ -232,6 +249,41 @@ const isPickerOpen = ref(false);
             </span>
         </div>
       </footer>
+
+      <!-- Toggle Button -->
+      <LogerButton
+        size="tiny"
+        variant="neutral"
+        class="mt-2"
+        @click="() => {
+          showPlannedToggle[index] = !showPlannedToggle[index];
+          if (showPlannedToggle[index]) fetchRelatedPlanned(index, split);
+        }"
+      >
+        {{ showPlannedToggle[index] ? 'Hide' : 'Show' }} Planned Transaction Options
+      </LogerButton>
+
+      <!-- Hidden Section -->
+      <section v-if="showPlannedToggle[index]" class="mt-2 p-2 border rounded bg-base-lvl-2">
+        <div v-if="relatedPlanned[index]">
+          <p>
+            There is a planned transaction for this category.<br>
+            <strong>Planned Amount:</strong> {{ formatMoney(relatedPlanned[index].total) }}<br>
+            <strong>Status:</strong> {{ relatedPlanned[index].completion_status || relatedPlanned[index].status }}
+          </p>
+          <LogerButton
+            v-if="relatedPlanned[index].completion_status !== 'completed'"
+            @click="markPlannedAsCompleted(index)"
+            variant="success"
+            class="mt-2"
+          >
+            Mark Planned as Completed
+          </LogerButton>
+        </div>
+        <div v-else>
+          <p>No planned transaction found for this category.</p>
+        </div>
+      </section>
     </section>
 
     <LogerButton

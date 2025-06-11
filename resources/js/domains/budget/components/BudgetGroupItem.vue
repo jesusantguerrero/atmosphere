@@ -93,7 +93,6 @@ const handleOptions = (option: any) => {
 const pageState = inject('pageState', {});
 const details = ref("");
 const fetchDetails = async (category: ICategory) => {
-    console.log("Here")
     const startDate = format(pageState.dates.startDate, 'yyyy-MM-dd');
     const endDate = format(pageState.dates.endDate, 'yyyy-MM-dd');
 
@@ -106,7 +105,6 @@ const fetchDetails = async (category: ICategory) => {
     })
 
     details.value = response.data?.transactions.at(0).details;
-    console.log(details.value)
 }
 </script>
 

@@ -1,11 +1,14 @@
 <script lang="ts" setup>
 import { capitalize, computed, watch, ref } from "vue";
 import { formatMoney } from "@/utils";
-import { NDataTable, NPopover } from "naive-ui";
+import { NButton, NDataTable, NPopover } from "naive-ui";
 import { Link } from "@inertiajs/vue3";
 
 import { ITransactionLine } from "@/domains/transactions/models";
 import SectionTitle from "@/Components/atoms/SectionTitle.vue";
+import { h } from "vue";
+import LogerButton from "@/Components/atoms/LogerButton.vue";
+import { removeTransaction } from "..";
 
 const props = withDefaults(defineProps<{
   item: Record<string, any>;
@@ -23,6 +26,7 @@ defineEmits(['selected']);
 
 interface Line {
     id: string,
+    line_id: string,
     accountName: string,
     date: string,
     payeeName: string,
@@ -30,10 +34,11 @@ interface Line {
     amount: string,
 }
 const parseDetails = (details: any[]): any[] => {
-    console.log({ details })
     return details?.map?.((row: any): Line | null => {
+        console.log({ row })
         return !row ? null : {
             id: row.id,
+            line_id: row.line_id,
             accountName: row.name,
             date: row.date,
             payeeName: row.payee_name,
@@ -58,10 +63,27 @@ const itemDetail = computed(() => {
 });
 
 const detailColumn = computed(() => {
-    return itemDetail.value.length ? Object.keys(itemDetail.value?.at?.(0)).map(item => ({
+    const columns = itemDetail.value.length ? Object.keys(itemDetail.value?.at?.(0)).map(item => ({
         key: item,
         title: capitalize(item)
     })) : [{}]
+    columns.push({
+        key: 'actions',
+        title: 'Actions',
+        render: (row) => {
+        return h(
+          LogerButton,
+          {
+            strong: true,
+            tertiary: true,
+            size: 'small',
+            onClick: () => removeTransaction(row)
+          },
+          { default: () => 'Delete' }
+        )
+      }
+    })
+    return columns
 })
 </script>
 

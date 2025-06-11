@@ -22,9 +22,13 @@ class ReconciliationController extends Controller
     {
         [$startDate, $endDate] = $this->getFilterDates();
 
+        $reconciliations = $service->listHistoryOf($account);
+        $lastReconciliation = $reconciliations->last();
         return inertia('Finance/Reconciliation/AccountReconciliations', [
             'account' => $account,
-            'transactions' => $service->listHistoryOf($account),
+            'lastReconciliation' => $lastReconciliation,
+            'reconciliations' => $reconciliations,
+            'transactions' => $account->transactionsToReconcile(null, $lastReconciliation->date),
             'dates' => [$startDate, $endDate],
         ]);
     }

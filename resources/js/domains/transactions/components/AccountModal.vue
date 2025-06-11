@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { useForm, usePage } from "@inertiajs/vue3";
+import { useForm, usePage, router } from "@inertiajs/vue3";
 import { reactive, toRefs, computed, watch } from "vue";
 import { NSelect } from "naive-ui";
-import { AtField, AtButton } from "atmosphere-ui";
+import { AtField, AtButton, AtFieldCheck } from "atmosphere-ui";
 import Slug from "slug";
 
 import Modal from "@/Components/atoms/Modal.vue";
@@ -16,16 +16,16 @@ import { IAccount } from "../models";
 
 const emit = defineEmits(["close"]);
 const props = withDefaults(defineProps<{
-    show: boolean;
-    maxWidth?: string;
-    closeable?: boolean;
-    formData?: Partial<IAccount>;
+  show: boolean;
+  maxWidth?: string;
+  closeable?: boolean;
+  formData?: Partial<IAccount>;
 
 }>(), {
-    show:false,
-    maxWidth: "2xl",
-    closeable: true,
-    formData:() => ({})
+  show: false,
+  maxWidth: "2xl",
+  closeable: true,
+  formData: () => ({})
 });
 
 const state = reactive({
@@ -68,32 +68,47 @@ const close = () => {
 };
 
 const submit = () => {
-    console.time("started")
-    const actions = {
-        save: {
-        method: "post",
-        url: () => route("accounts.store"),
-        },
-        update: {
-        method: "put",
-        url: () => route("accounts.update", props.formData),
-        },
-    };
+  const actions = {
+    save: {
+      method: "post",
+      url: () => route("accounts.store"),
+    },
+    update: {
+      method: "put",
+      url: () => route("accounts.update", props.formData),
+    },
+  };
 
-    const method = props.formData && props.formData.id ? "update" : "save";
-    const action = actions[method];
-    console.timeEnd("actual Load")
-    state.form
-        .transform((form) => {
-            form.display_id = Slug(form.name, "_");
-            return form;
-        })
-        .submit(action.method, action.url(), {
-            onSuccess: ({ data }) => {
-                emit("close");
-                state.form.reset();
-            },
-        });
+  const method = props.formData && props.formData.id ? "update" : "save";
+  const action = actions[method];
+  state.form
+    .transform((form) => {
+      form.display_id = Slug(form.name, "_");
+      return form;
+    })
+    .submit(action.method, action.url(), {
+      onSuccess: ({ data }) => {
+        emit("close");
+        state.form.reset();
+      },
+    });
+};
+
+const closeAccount = (close: boolean) => {
+  state.form.closed_at = close ? new Date() : null;
+  state.form.archived = close;
+  state.form.status = close ? "disabled" : "active";
+
+  router.put(route("accounts.close", state.form), {
+    closed_at: state.form.closed_at,
+    archived: state.form.archived,
+    status: state.form.status,
+  }, {
+    onSuccess: () => {
+      emit("close");
+      state.form.reset();
+    },
+  });
 };
 
 const remove = () => {
@@ -135,96 +150,51 @@ const { form } = toRefs(state);
         <div class="px-4 pt-5 mt-2">
           <slot name="content">
             <div>
-              <AtField
-                label="Detail Type"
-                class="flex justify-between w-full space-x-4 md:space-x-0"
-                field-class="w-fullp"
-              >
-                <NSelect
-                  filterable
-                  clearable
-                  tag
-                  class="w-48 md:w-full"
-                  v-model:value="form.account_detail_type_id"
-                  :default-expand-all="true"
-                  :options="detailOptions"
-                />
+              <AtField label="Detail Type" class="flex justify-between w-full space-x-4 md:space-x-0"
+                field-class="w-fullp">
+                <NSelect filterable clearable tag class="w-48 md:w-full" v-model:value="form.account_detail_type_id"
+                  :default-expand-all="true" :options="detailOptions" />
               </AtField>
 
-              <AtField
-                label="Account Label"
-                class="flex justify-between w-full space-x-4 md:space-x-0"
-              >
+              <AtField label="Account Label" class="flex justify-between w-full space-x-4 md:space-x-0">
                 <LogerInput v-model="form.name" class="w-48 md:w-full" />
               </AtField>
 
-              <AtField
-                label="Closing day"
-                class="flex justify-between w-full space-x-4 md:space-x-0"
-                v-if="isCreditCard"
-              >
-                <LogerInput
-                  v-model="form.credit_closing_day"
-                  type="number"
-                  class="w-48 md:w-full"
-                />
+              <AtField label="Closing day" class="flex justify-between w-full space-x-4 md:space-x-0"
+                v-if="isCreditCard">
+                <LogerInput v-model="form.credit_closing_day" type="number" class="w-48 md:w-full" />
               </AtField>
 
-              <AtField
-                label="Credit limit"
-                class="flex justify-between w-full space-x-4 md:space-x-0"
-                v-if="isCreditCard"
-              >
+              <AtField label="Credit limit" class="flex justify-between w-full space-x-4 md:space-x-0"
+                v-if="isCreditCard">
                 <InputMoney v-model="form.credit_limit" class="w-48 md:w-full" />
               </AtField>
 
-              <AtField
-                label="Opening Balance"
-                class="flex justify-between w-full space-x-4 md:space-x-0"
-                v-if="!form.id"
-              >
-                <LogerInput
-                  v-model="form.opening_balance"
-                  type="number"
-                  class="w-48 md:w-full"
-                />
+              <AtField label="Opening Balance" class="flex justify-between w-full space-x-4 md:space-x-0"
+                v-if="!form.id">
+                <LogerInput v-model="form.opening_balance" type="number" class="w-48 md:w-full" />
               </AtField>
+
+              <AtFieldCheck label="Is Archived" v-model="form.archived" @update:model-value="closeAccount" />
+              <AtFieldCheck label="Close Account" v-model="form.closed_at" @update:model-value="closeAccount" />
             </div>
           </slot>
         </div>
       </div>
     </div>
 
-    <div
-      class="flex w-full px-6 py-4 md:space-x-3 space-between bg-base-lvl-2"
-      :class="[form.id ? 'space-between' : 'justify-end']"
-    >
-      <AtButton
-        type="secondary"
-        class="hidden text-danger md:block"
-        @click="remove"
-        rounded
-        v-if="form.id"
-        :disabled="form.processing"
-      >
+    <div class="flex w-full px-6 py-4 md:space-x-3 space-between bg-base-lvl-2"
+      :class="[form.id ? 'space-between' : 'justify-end']">
+      <AtButton type="secondary" class="hidden text-danger md:block" @click="remove" rounded v-if="form.id"
+        :disabled="form.processing">
         Delete
       </AtButton>
       <div class="flex items-center justify-end w-full md:space-x-2">
-        <AtButton
-          type="secondary"
-          class="hidden md:block"
-          @click="close"
-          rounded
-          :disabled="form.processing"
-        >
+        <AtButton type="secondary" class="hidden md:block" @click="close" rounded :disabled="form.processing">
           Cancel
         </AtButton>
-        <LogerButton
-          class="w-full text-white md:w-fit bg-primary"
-          @click="submit"
-          rounded
-          :processing="form.processing"
-        >
+        <LogerButton class="w-full text-white md:w-fit bg-primary" @click="submit" rounded
+          :processing="form.processing">
           Save
         </LogerButton>
       </div>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, toRefs, provide, ref, onMounted, nextTick } from "vue";
-import { router, useForm } from "@inertiajs/vue3";
+import { Link, router, useForm } from "@inertiajs/vue3";
 import { AtBackgroundIconCard, AtField } from "atmosphere-ui";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
@@ -180,6 +180,22 @@ const transactionsMatched = computed(() => {
     <template #header>
       <FinanceSectionNav />
     </template>
+
+    <template #title>
+    <section class="flex items-center">
+        <h1 class="font-bold">
+            <span class="text-body-1/60">Reconciliation of </span>
+            <span>{{ account.name }}</span>
+        </h1>
+        <Link :href="`/finance/accounts/${account.id}/reconciliations/`"
+            title="reconciliations"
+            class="inline-block ml-2 font-bold text-secondary"
+        >
+            <IMdiHistory />
+        </Link>
+    </section>
+  </template>
+
     <FinanceTemplate title="Transactions" :accounts="accounts">
       <div class="flex mt-4 space-x-4">
         <AtBackgroundIconCard

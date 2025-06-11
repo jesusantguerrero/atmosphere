@@ -15,11 +15,15 @@ import { useTransactionModal } from "@/domains/transactions";
 import { reconciliationCols } from "@/domains/transactions";
 import { useAppContextStore } from "@/store";
 import { IAccount, ICategory, ITransaction } from "@/domains/transactions/models";
+import { formatMoney } from "@/utils";
+import AccountReconciliationAlert from "@/domains/transactions/components/AccountReconciliationAlert.vue";
 
 const { openTransactionModal } = useTransactionModal();
 
 const props = withDefaults(defineProps<{
     transactions: ITransaction[];
+    lastReconciliation: ITransaction;
+    reconciliations: ITransaction[];
     account: IAccount;
     accounts: IAccount[];
     categories: ICategory[],
@@ -77,6 +81,19 @@ onMounted(() => {
     router.on('finish', () => isLoading.value = false)
 })
 
+const showAll = ref(false);
+const visibleReconciliations = computed(() => {
+  return showAll.value ? props.reconciliations.reverse() : props.reconciliations.slice(0, 4).reverse();
+});
+
+const lastReconciliationDate = computed(() => {
+  return visibleReconciliations.value.at(-1)?.date;
+});
+
+const hasPendingReconciliation = computed(() => {
+  return props.reconciliations.some((reconciliation: any) => reconciliation.status !== 'completed');
+});
+
 </script>
 
 <template>
@@ -99,17 +116,65 @@ onMounted(() => {
         </section>
     </template>
     <FinanceTemplate title="Transactions" :accounts="accounts">
-      <section class=" bg-base-lvl-3">
-          <Component
-            :is="listComponent"
-            :cols="reconciliationCols()"
-            :transactions="transactions"
-            :server-search-options="serverSearchOptions"
-            :is-loading="isLoading"
-            @findLinked="findLinked"
-            @removed="removeReconciliation"
-            @edit="handleEdit"
-          />
+      <section class="bg-base-lvl-3 p-6 rounded-lg shadow mt-6">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-xl font-bold">{{ account.name }}</h2>
+            <div class="mt-1">
+              <span class="bg-gray-200 text-gray-700 px-3 py-1 rounded font-semibold text-sm">
+                Reconciled up to {{ reconciliations.length ? lastReconciliationDate : '' }}
+              </span>
+            </div>
+          </div>
+          <div class="flex items-center space-x-6">
+            <span class="text-2xl font-bold text-right">{{ formatMoney(account.balance) }}</span>
+            <button class="bg-blue-600 text-white px-6 py-2 rounded-full font-bold shadow hover:bg-blue-700 transition">
+              Reconcile new transactions
+            </button>
+          </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="relative flex items-center justify-between mt-8 mb-4 overflow-x-auto">
+          <!-- Horizontal line -->
+          <div class="absolute left-0 right-0 top-1/2 h-0.5 bg-gray-200 z-0" style="transform: translateY(-50%);"></div>
+          <!-- Timeline items -->
+          <template v-for="(reconciliation, idx) in visibleReconciliations" :key="reconciliation.id">
+            <div class="flex flex-col items-center z-10 min-w-[120px]">
+              <!-- Completed icon -->
+              <div class="bg-white rounded-full border-4 w-12 h-12 flex items-center justify-center mb-2 shadow"
+              :class="{ 'border-green-400': reconciliation.status === 'completed', 'border-gray-400': reconciliation.status !== 'completed' }"
+              >
+                <svg class="w-7 h-7 text-green-500" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" v-if="reconciliation.status === 'completed'">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                <AccountReconciliationAlert v-else />
+              </div>
+              <span class="text-gray-600 font-medium mt-1">{{ reconciliation.date }}</span>
+              <span class="text-gray-400 font-medium mt-1" v-if="reconciliation.status !== 'completed'">{{ reconciliation.total_transactions }} new transactions</span>
+            </div>
+            <!-- Connector (except after last) -->
+            <div v-if="idx < visibleReconciliations.length - 1" class="flex-1"></div>
+          </template>
+          <!-- New period icon -->
+          <div class="flex flex-col items-center z-10 min-w-[120px]" v-if="!hasPendingReconciliation">
+            <div class="bg-white rounded-full border-2 border-gray-400 w-12 h-12 flex items-center justify-center mb-2 shadow">
+              <svg class="w-7 h-7 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="6" />
+                <line x1="12" y1="9" x2="12" y2="15" />
+                <line x1="9" y1="12" x2="15" y2="12" />
+              </svg>
+            </div>
+            <span class="text-gray-400 font-medium mt-1">{{ transactions.length }} new transaction</span>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex items-center space-x-6 mt-4">
+          <button class="text-blue-700 font-bold hover:underline" @click="showAll = !showAll">Show all periods</button>
+          <button class="text-blue-700 font-bold hover:underline">Add period</button>
+        </div>
       </section>
     </FinanceTemplate>
   </AppLayout>

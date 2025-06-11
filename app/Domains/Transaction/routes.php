@@ -6,6 +6,7 @@ use App\Domains\Transaction\Http\Controllers\ReconciliationController;
 
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
     Route::post('/finance/accounts/{account}/automation-services/{automationService}/link', [FinanceAccountController::class, 'linkAccount']);
+    Route::put('/finance/accounts/{account}/close', [FinanceAccountController::class, 'closeAccount'])->name('accounts.close');
 
     Route::get('/finance/reconciliation/accounts/{account}', [ReconciliationController::class, 'create']);
     Route::post('/finance/reconciliation/accounts/{account}', [ReconciliationController::class, 'store']);

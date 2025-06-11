@@ -3,7 +3,6 @@
 namespace App\Listeners;
 
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Insane\Journal\Events\TransactionEvent;
 use Insane\Journal\Events\TransactionCreated;
 use Insane\Journal\Events\TransactionUpdated;
 use App\Domains\Budget\Services\BudgetCategoryService;
