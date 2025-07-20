@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 use Insane\Journal\Models\Core\Payment;
 use Insane\Journal\Models\Core\Transaction;
+use Insane\Journal\Models\Core\Account;
 use Insane\Journal\Traits\IPayableDocument;
 
 class BillingCycle extends Model implements IPayableDocument
@@ -54,6 +55,10 @@ class BillingCycle extends Model implements IPayableDocument
     public function payments()
     {
         return $this->morphMany(Payment::class, 'payable');
+    }
+
+    public function account() {
+        return $this->belongsTo(Account::class);
     }
 
     public function transactions() {

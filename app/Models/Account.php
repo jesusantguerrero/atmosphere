@@ -8,40 +8,30 @@ use Insane\Journal\Models\Core\Account as BaseAccount;
 class Account extends BaseAccount
 {
     /**
-     * Additional fillable fields for multi-currency support
+     * Initialize the model and merge fillable fields
      */
-    protected $fillable = [
-        'team_id',
-        'user_id',
-        'category_id',
-        'account_detail_type_id',
-        'client_id',
-        'number',
-        'display_id',
-        'name',
-        'alias',
-        'description',
-        'currency_code',
-        'opening_balance',
-        'credit_limit',
-        'credit_closing_day',
-        'index',
-        'archivable',
-        'balance_type',
-        'type',
-        'archived',
-        // Multi-currency fields
-        'is_multi_currency',
-        'secondary_currencies'
-    ];
-
-    /**
-     * Additional casts for multi-currency fields
-     */
-    protected $casts = [
-        'is_multi_currency' => 'boolean',
-        'secondary_currencies' => 'array'
-    ];
+    public function __construct(array $attributes = [])
+    {
+        // Merge parent fillable with our additional fields
+        $this->fillable = array_merge(
+            $this->fillable ?? [],
+            [
+                'is_multi_currency',
+                'secondary_currencies'
+            ]
+        );
+        
+        // Merge parent casts with our additional casts
+        $this->casts = array_merge(
+            $this->casts ?? [],
+            [
+                'is_multi_currency' => 'boolean',
+                'secondary_currencies' => 'array'
+            ]
+        );
+        
+        parent::__construct($attributes);
+    }
 
     /**
      * Relationship to currency balances
@@ -237,7 +227,27 @@ class Account extends BaseAccount
      */
     public function supportsCurrency(string $currencyCode): bool
     {
-        return in_array($currencyCode, $this->getAllSupportedCurrencies());
+        // Primary currency is always supported
+        if ($currencyCode === $this->getPrimaryCurrency()) {
+            return true;
+        }
+        
+        // If not multi-currency, only primary currency is supported
+        if (!$this->isMultiCurrency()) {
+            return false;
+        }
+        
+        // For multi-currency accounts, check if currency is in secondary currencies
+        // OR if no secondary currencies are defined, allow any currency (dynamic support)
+        $secondaryCurrencies = $this->getSecondaryCurrencies();
+        
+        if (empty($secondaryCurrencies)) {
+            // If multi-currency is enabled but no specific currencies defined,
+            // we allow any currency and will auto-add it when used
+            return true;
+        }
+        
+        return in_array($currencyCode, $secondaryCurrencies);
     }
 
     /**

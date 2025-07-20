@@ -63,6 +63,7 @@ Route::middleware(['auth:sanctum', 'verified'])->prefix('/api')->name('api.')->g
     Route::apiResource('/billing-cycles', BillingCycleApiController::class);
 
     Route::get('/accounts/{account}/unlinked-payments', [AccountApiController::class, 'unlinkedPayments']);
+    Route::get('/accounts/{account}/multi-currency-balances', [AccountApiController::class, 'getMultiCurrencyBalances']);
 
     Route::apiResource('/accounts', AccountApiController::class);
     Route::apiResource('/categories', CategoryApiController::class);
