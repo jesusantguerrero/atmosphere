@@ -1,5 +1,5 @@
 ARG NODE_VERSION=20.9.0
-ARG PHP_VERSION=8.2
+ARG PHP_VERSION=8.3
 
 FROM serversideup/php:${PHP_VERSION}-fpm-nginx as base
 WORKDIR /var/www/html
