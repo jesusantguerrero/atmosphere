@@ -6,6 +6,7 @@ use Exception;
 use App\Domains\AppCore\Models\Planner;
 use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Integration\Concerns\PlannedTransactionDTO;
+use App\Domains\Transaction\Services\NextPaymentsService;
 use Insane\Journal\Models\Core\Transaction as CoreTransaction;
 
 class PlannedTransactionService
@@ -37,19 +38,9 @@ class PlannedTransactionService
 
     public function getPlanned($teamId)
     {
-        return Transaction::where([
-            'team_id' => $teamId,
-        ])
-            ->planned()
-            ->orderBy('date')
-            ->whereNull('resource_id')
-            ->whereHas('schedule', function ($query) {
-                $query->whereNull('completed_at');
-            })
-            ->get()
-            ->map(function ($transaction) {
-                return Transaction::parser($transaction);
-            });
+        // Use the new NextPaymentsService for unified next payments
+        $nextPaymentsService = app(NextPaymentsService::class);
+        return $nextPaymentsService->getNextPayments($teamId);
     }
 
     public function getForNotificationType()
