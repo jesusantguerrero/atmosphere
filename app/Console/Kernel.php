@@ -28,9 +28,10 @@ class Kernel extends ConsoleKernel
         $schedule->command('app:automation-check')->everyMinute()->runInBackground();
         $schedule->command('app:occurrence-reminders')->daily()->runInBackground();
         $schedule->command('app:check-month-rollover')->everyMinute()->runInBackground();
-        $schedule->command('app:planned-from-budget')->monthly()->runInBackground();
+        // Removed: $schedule->command('app:planned-from-budget')->monthly()->runInBackground();
+        // Now using dynamic aggregation instead of cron-based conversion
         $schedule->command('bg:generate-billing-cycles')->daily()->runInBackground();
-        $schedule->command('bg:planned-reminders')->monthly()->runInBackground();
+        $schedule->command('bg:planned-reminders')->daily()->runInBackground();
         if (config('app.demo')) {
             if ($scheduleTime) {
                 $schedule->command('app:demo-reset')->dailyAt($scheduleTime)->runInBackground();

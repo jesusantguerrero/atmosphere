@@ -137,6 +137,12 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
         Route::post('/finance/transactions', 'addPlanned')->name('transactions.store-planned');
     });
 
+    // Next Payments
+    Route::controller(\App\Http\Controllers\NextPaymentsController::class)->group(function () {
+        Route::get('/api/next-payments', 'index')->name('next-payments.index');
+        Route::patch('/api/next-payments/{paymentId}/mark-as-paid', 'markAsPaid')->name('next-payments.mark-as-paid');
+    });
+
     // Trends
     Route::get('/trends', [FinanceTrendController::class, 'index'])->name('finance.trends');
     Route::get('/trends/{name}', [FinanceTrendController::class, 'index'])->name('finance.trend-section');

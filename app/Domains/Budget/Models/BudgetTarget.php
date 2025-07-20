@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 use App\Domains\Transaction\Models\Transaction;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Domains\AppCore\Models\Category;
 
 class BudgetTarget extends Model
 {
@@ -29,6 +30,10 @@ class BudgetTarget extends Model
         'notify',
         'completed_at'
     ];
+
+    public function category() {
+        return $this->belongsTo(Category::class);
+    }
 
     public function getExpensesByPeriod($startDate, $endDate = null)
     {
