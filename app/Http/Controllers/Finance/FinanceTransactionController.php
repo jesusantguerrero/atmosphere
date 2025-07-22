@@ -15,6 +15,7 @@ use App\Domains\Transaction\Services\TransactionService;
 use App\Domains\Transaction\Resources\TransactionResource;
 use App\Domains\Transaction\Actions\FindLinkedTransactions;
 use App\Domains\Transaction\Services\PlannedTransactionService;
+use App\Services\MultiCurrencyDisplayService;
 
 class FinanceTransactionController extends InertiaController
 {
@@ -22,8 +23,11 @@ class FinanceTransactionController extends InertiaController
 
     const DateFormat = 'Y-m-d';
 
-    public function __construct(Transaction $transaction, private PlannedTransactionService $plannedService)
-    {
+    public function __construct(
+        Transaction $transaction, 
+        private PlannedTransactionService $plannedService,
+        private MultiCurrencyDisplayService $multiCurrencyDisplayService
+    ) {
         $this->model = $transaction;
         $this->templates = [
             'index' => 'Finance/Transactions',
@@ -121,7 +125,9 @@ class FinanceTransactionController extends InertiaController
 
     protected function parser($results)
     {
-        return TransactionResource::collection($results);
+        // Enhance transactions with multi-currency display information
+        $enhancedResults = $this->multiCurrencyDisplayService->enhanceTransactionDisplay($results);
+        return TransactionResource::collection($enhancedResults);
     }
 
     public function import(Request $request)

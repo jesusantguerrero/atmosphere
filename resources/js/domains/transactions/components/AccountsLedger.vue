@@ -27,7 +27,7 @@ const props = defineProps<{
 const emit = defineEmits(['reordered'])
 
 // Filter state
-type FilterType = 'all' | 'reconciled' | 'unreconciled';
+type FilterType = 'all' | 'reconciled' | 'unreconciled' | 'credit-cards';
 const selectedFilter = ref<FilterType>('all');
 
 const isAccountModalOpen = ref(false);
@@ -64,15 +64,19 @@ const openLinkModal = (account = {}) => {
     isLinkModalOpen.value = true;
 };
 
-// Filter accounts based on reconciliation status
+// Filter accounts based on reconciliation status and account type
 const filteredAccounts = computed(() => {
     if (selectedFilter.value === 'all') {
         return props.accounts;
     }
 
     return props.accounts.filter(account => {
+        // Credit card filter
+        if (selectedFilter.value === 'credit-cards') {
+            return account.credit_limit && account.credit_limit > 0;
+        }
 
-        console.log(account)
+        // Reconciliation filters
         const isReconciled = account.reconciliation_last &&
             account.reconciliation_last.status === 'completed' &&
             account.reconciliation_last.amount === account.balance;
@@ -91,7 +95,8 @@ const budgetAccountsTotal = computed(() => {
 const filterOptions = [
     { key: 'all', label: 'All' },
     { key: 'reconciled', label: 'Reconciled' },
-    { key: 'unreconciled', label: 'Unreconciled' }
+    { key: 'unreconciled', label: 'Unreconciled' },
+    { key: 'credit-cards', label: 'Credit Cards' }
 ] as const;
 </script>
 

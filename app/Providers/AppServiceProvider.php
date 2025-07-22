@@ -19,7 +19,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-
+        // Bind our extended Account model to override the Journal package's Account model
+        $this->app->bind(
+            \Insane\Journal\Models\Core\Account::class,
+            \App\Models\Account::class
+        );
     }
 
     /**

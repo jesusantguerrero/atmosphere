@@ -34,6 +34,24 @@ class TransactionResource extends JsonResource
             'linked' => $this->whenLoaded('linked', function () {
                 return $this->linked->toArray();
             }),
+            
+            // Multi-currency display information (if enhanced by MultiCurrencyDisplayService)
+            'display_currencies' => $this->when(
+                isset($this->display_currencies), 
+                $this->display_currencies
+            ),
+            'is_multi_currency_transaction' => $this->when(
+                isset($this->is_multi_currency_transaction), 
+                $this->is_multi_currency_transaction
+            ),
+            'conversion_info' => $this->when(
+                isset($this->conversion_info), 
+                $this->conversion_info
+            ),
+            
+            // Exchange rate information for converted transactions
+            'exchange_rate' => $this->when($this->exchange_rate, (float) $this->exchange_rate),
+            'exchange_amount' => $this->when($this->exchange_amount, (float) $this->exchange_amount),
         ];
     }
 }

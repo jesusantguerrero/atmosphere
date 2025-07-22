@@ -6,10 +6,11 @@ use Illuminate\Http\Request;
 use Insane\Journal\Models\Core\Account;
 use Insane\Journal\Models\Core\Transaction;
 use App\Domains\Transaction\Services\CreditCardReportService;
+use App\Services\MultiCurrencyDisplayService;
 
 class AccountApiController extends BaseController
 {
-    public function __construct()
+    public function __construct(private MultiCurrencyDisplayService $multiCurrencyDisplayService)
     {
         $this->model = new Account();
         $this->searchable = ['name', 'display_id', 'alias'];
@@ -42,5 +43,37 @@ class AccountApiController extends BaseController
         });
 
         return response()->json(['success' => true]);
+    }
+
+    /**
+     * Get multi-currency balances for an account
+     * 
+     * @param Account $account
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getMultiCurrencyBalances(Account $account)
+    {
+        try {
+            $balances = $this->multiCurrencyDisplayService->getFormattedCurrencyBalances($account);
+            $activitySummary = $this->multiCurrencyDisplayService->getMultiCurrencyActivitySummary($account, 'month');
+            
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'account_id' => $account->id,
+                    'account_name' => $account->name,
+                    'is_multi_currency' => $account->isMultiCurrency(),
+                    'primary_currency' => $account->getPrimaryCurrency(),
+                    'secondary_currencies' => $account->getSecondaryCurrencies(),
+                    'balances' => $balances,
+                    'activity_summary' => $activitySummary,
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve multi-currency balances: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
