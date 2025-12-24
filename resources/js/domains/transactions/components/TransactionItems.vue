@@ -105,7 +105,7 @@ defineExpose({
   },
   reset() {
     splits.splice(0, splits.length, { ...defaultRow });
-  }
+  },
 });
 
 const isPickerOpen = ref(false);

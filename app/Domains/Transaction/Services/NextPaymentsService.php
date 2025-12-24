@@ -76,30 +76,68 @@ class NextPaymentsService
 
     private function getUpcomingCreditCardPayments(int $teamId, Carbon $startDate, Carbon $endDate): array
     {
-        return BillingCycle::where('team_id', $teamId)
-            ->whereBetween('due_at', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
-            ->whereIn('status', ['pending', 'overdue'])
-            ->with(['account'])
-            ->get()
-            ->map(function ($cycle) {
-                return [
-                    'id' => "billing_{$cycle->id}",
-                    'type' => 'credit_card_payment',
-                    'title' => "Credit Card Payment - {$cycle->account->name}",
-                    'amount' => $cycle->minimum_payment ?? $cycle->total,
-                    'due_date' => $cycle->due_at,
-                    'account_id' => $cycle->account_id,
-                    'account_name' => $cycle->account->name,
-                    'status' => $cycle->status,
-                    'source' => 'billing_cycle',
-                    'metadata' => [
-                        'cycle_id' => $cycle->id,
-                        'total_debt' => $cycle->total,
-                        'minimum_payment' => $cycle->minimum_payment,
-                    ]
-                ];
-            })
-            ->toArray();
+        // Get all credit card accounts (accounts with credit_closing_day set)
+        $creditCardAccounts = \App\Models\Account::where([
+            'team_id' => $teamId,
+        ])
+        ->whereNull('closed_at')
+        ->whereNotNull('credit_closing_day')
+        ->get();
+
+        $upcomingPayments = [];
+        $closings = [];
+        foreach ($creditCardAccounts as $account) {
+            $closingDay = $account->credit_closing_day;
+            
+            // Get current balance of the credit card
+            $currentBalance = $account->balance;
+            
+            // For credit cards, negative balance means debt (money owed)
+            $currentDebt = abs(min(0, $currentBalance));
+            $closings[$account->name] = [
+                "name" => $account->name, 
+                "debt" => $currentDebt,
+            ];
+            if ($currentDebt > 0) {
+               
+                $today = Carbon::now();
+                $currentMonth = $today->copy()->startOfMonth();
+                
+                // Find the closing date for this month
+                $closingDate = $currentMonth->copy()->day(min($closingDay, $currentMonth->daysInMonth));
+                $closings[$account->name]["date"] = $closingDate;
+                // If we've passed this month's closing date, check if payment was made
+                if ($today->gte($closingDate)) {
+                    // Check if there was a payment (type = 1) after the closing date
+                    $paymentAfterClosing = \App\Domains\Transaction\Models\TransactionLine::where('account_id', $account->id)
+                        ->where('date', '>', $closingDate->format('Y-m-d'))
+                        ->where('type', 1) // type = 1 means payment/income
+                        ->exists();
+                    
+                    // Only show as overdue if no payment was made after closing
+                    if (!$paymentAfterClosing) {
+                        $upcomingPayments[] = [
+                            'id' => "cc_payment_{$account->id}_{$closingDate->format('Y-m')}",
+                            'type' => 'credit_card_payment',
+                            'title' => "Credit Card Payment - {$account->name}",
+                            'amount' => $currentDebt,
+                            'due_date' => $closingDate->format('Y-m-d'),
+                            'account_id' => $account->id,
+                            'account_name' => $account->name,
+                            'status' => 'overdue',
+                            'source' => 'dynamic_calculation',
+                            'metadata' => [
+                                'total_debt' => $currentDebt,
+                                'closing_day' => $closingDay,
+                                'current_balance' => $currentBalance,
+                            ]
+                        ];
+                    }
+                }
+            }
+        }
+
+        return $upcomingPayments;
     }
 
     private function getPlannedTransactions(int $teamId, Carbon $startDate, Carbon $endDate): array
@@ -136,7 +174,17 @@ class NextPaymentsService
 
     public function markAsPaid(string $paymentId, array $transactionData): bool
     {
-        [$type, $id] = explode('_', $paymentId, 2);
+        $parts = explode('_', $paymentId);
+        $type = $parts[0];
+        
+        // Handle different ID formats
+        if ($type === 'cc' && isset($parts[1]) && $parts[1] === 'payment') {
+            // Format: cc_payment_{account_id}_{month}
+            $accountId = $parts[2] ?? null;
+            return $this->markCreditCardPaymentAsPaid($accountId, $transactionData);
+        }
+        
+        $id = $parts[1] ?? null;
 
         switch ($type) {
             case 'budget':
@@ -199,5 +247,23 @@ class NextPaymentsService
         $plannedTransaction->schedule()->update(['completed_at' => now()]);
 
         return true;
+    }
+
+    private function markCreditCardPaymentAsPaid(?string $accountId, array $transactionData): bool
+    {
+        if (!$accountId) return false;
+        
+        $account = \App\Models\Account::find($accountId);
+        if (!$account) return false;
+
+        // Create payment transaction for the credit card
+        $transaction = Transaction::create([
+            ...$transactionData,
+            'account_id' => $account->id,
+            'team_id' => $account->team_id,
+            'status' => Transaction::STATUS_VERIFIED,
+        ]);
+
+        return $transaction->exists;
     }
 }

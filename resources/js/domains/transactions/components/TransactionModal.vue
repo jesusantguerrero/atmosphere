@@ -3,6 +3,7 @@ import { format, parseISO } from "date-fns";
 import { reactive, toRefs, watch, computed, inject, ref, nextTick } from "vue";
 import { AtField, AtFieldCheck, AtInput } from "atmosphere-ui";
 import { NSelect, NDatePicker } from "naive-ui";
+import { router } from "@inertiajs/vue3";
 
 import Modal from "@/Components/atoms/Modal.vue";
 import LogerInput from "@/Components/atoms/LogerInput.vue";
@@ -14,65 +15,78 @@ import MultiCurrencyInput from "./MultiCurrencyInput.vue";
 
 import { TRANSACTION_DIRECTIONS } from "@/domains/transactions";
 import { cloneDeep } from "lodash";
-import { ITransaction, ITransactionLine } from "../models";
+import { ITransactionLine } from "../models";
 import { useTransactionStore } from "@/store/transactions";
 import { useInertiaForm, validators } from "@/utils/useInertiaForm";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 import { useStorage } from "@vueuse/core";
 import { formatCurrency } from '../currency-constants';
-import { calculateExchangeRate, convertAmount } from '../multi-currency-utils';
+import { convertAmount } from '../multi-currency-utils';
 import { generateRandomColor } from "@/utils";
 import axios from "axios";
 
-const props = defineProps({
-  show: {
-    default: false,
-  },
-  maxWidth: {
-    default: "4xl",
-  },
-  closeable: {
-    default: true,
-  },
-  categories: {
-    type: Array,
-    default: [],
-  },
-  accounts: {
-    type: Array,
-    default: [],
-  },
-  recurrence: {
-    type: Boolean,
-    default: false,
-  },
-  transactionData: {
-    type: Object,
-    default: () => ({}),
-  },
-  mode: {
-    type: String,
-    default: "income",
-  },
-  fullHeight: {
-    type: Boolean,
-  },
-});
+interface Account {
+  id: number;
+  name: string;
+  currency_code: string;
+  is_multi_currency?: boolean;
+  secondary_currencies?: string[];
+}
 
-const emit = defineEmits(["close", "saved"]);
+interface TransactionData {
+  id?: number;
+  name?: string;
+  payee_id?: string;
+  payee_label?: string;
+  label_id?: string;
+  label_name?: string;
+  date?: string;
+  is_transfer?: boolean;
+  description?: string;
+  direction?: string;
+  category_id?: number;
+  counter_account_id?: number;
+  account_id?: number;
+  total?: number;
+  has_splits?: boolean;
+  currency_code?: string;
+  exchange_rate?: number;
+  exchange_amount?: number;
+  is_multi_currency?: boolean;
+  splits?: any[];
+  lines?: ITransactionLine[];
+  payee?: { id: string; name: string };
+  category?: { id: number };
+  account?: { id: number };
+  counter_account?: { id: number };
+}
+
+const props = defineProps<{
+  show?: boolean;
+  maxWidth?: string;
+  closeable?: boolean;
+  categories?: any[];
+  accounts?: Account[];
+  recurrence?: boolean;
+  transactionData?: TransactionData;
+  mode?: string;
+  fullHeight?: boolean;
+}>();
+
+const emit = defineEmits(["close", "saved", "update:show"]);
 
 const state = reactive({
   frequencyLabel: "every",
   schedule_settings: {
-    end_date: null,
-    count: null,
-    end_type: "NEVER",
-    final_item_date: null,
+    end_date: null as Date | null,
+    count: null as number | null,
+    end_type: "NEVER" as string,
+    final_item_date: null as Date | null,
     interval: 1,
-    frequency: "monthly",
+    frequency: "monthly" as string,
     repeat_at_end_of_month: false,
-    repeat_on_day_of_month: null,
-    start_date: null,
+    repeat_on_day_of_month: null as number | null,
+    start_date: null as Date | null,
     timezone_id: "America/Santo_Domingo",
   },
   form: useInertiaForm({
@@ -85,15 +99,15 @@ const state = reactive({
     is_transfer: false,
     description: "",
     direction: "WITHDRAW",
-    category_id: null,
-    counter_account_id: null,
-    account_id: null,
+    category_id: null as number | null,
+    counter_account_id: null as number | null,
+    account_id: null as number | null,
     total: 0,
     has_splits: false,
     // Multi-currency fields
     currency_code: 'USD',
-    exchange_rate: null,
-    exchange_amount: null,
+    exchange_rate: null as number | null,
+    exchange_amount: null as number | null,
     is_multi_currency: false
   })
 });
@@ -107,9 +121,9 @@ const splits = ref<Record<string, any>[]>([])
 // Multi-currency state
 const isMultiCurrency = ref(false);
 const transactionCurrency = ref('USD');
-const selectedAccountId = ref(null);
-const manualExchangeRate = ref(null);
-const currentExchangeRate = ref(null);
+const selectedAccountId = ref<number | null>(null);
+const manualExchangeRate = ref<number | null>(null);
+const currentExchangeRate = ref<number | null>(null);
 
 const currencyAmount = ref({
   amount: 0,
@@ -119,7 +133,7 @@ const currencyAmount = ref({
 watch(
   () => state.form.direction,
   (direction) => {
-    if (direction?.toLowerCase() == "transfer") {
+    if (typeof direction === 'string' && direction.toLowerCase() === "transfer") {
       state.form.is_transfer = true;
     } else {
       state.form.is_transfer = false;
@@ -136,15 +150,19 @@ const accountOptions = inject("accountsOptions", []);
 
 // Multi-currency computed properties
 const multiCurrencyAccounts = computed(() => {
-  return props.accounts.filter(account => account.is_multi_currency);
+  return (props.accounts || []).filter((account: Account) => account.is_multi_currency);
 });
 
 const hasMultiCurrencyAccounts = computed(() => {
   return multiCurrencyAccounts.value.length > 0;
 });
 
+const shouldShowMultiCurrency = computed(() => {
+  return isMultiCurrency.value || hasMultiCurrencyAccounts.value;
+});
+
 const multiCurrencyAccountOptions = computed(() => {
-  return multiCurrencyAccounts.value.map(account => ({
+  return multiCurrencyAccounts.value.map((account: Account) => ({
     value: account.id,
     label: `${account.name} (${account.currency_code})`,
     currency_code: account.currency_code,
@@ -153,7 +171,7 @@ const multiCurrencyAccountOptions = computed(() => {
 });
 
 const selectedAccount = computed(() => {
-  return multiCurrencyAccounts.value.find(account => account.id === selectedAccountId.value);
+  return multiCurrencyAccounts.value.find((account: Account) => account.id === selectedAccountId.value);
 });
 
 const accountPrimaryCurrency = computed(() => {
@@ -184,11 +202,13 @@ const gridSplitsRef = ref();
 watch(
   () => props.transactionData,
   () => {
+    if (!props.transactionData) return;
+
     const newValue = { ...props.transactionData };
     Object.keys(state.form.data()).forEach((field) => {
-      const fieldData = newValue[field]
+      const fieldData = newValue[field as keyof TransactionData];
       if (field == "date" && newValue[field]) {
-        state.form[field] = parseISO(fieldData);
+        state.form[field] = parseISO(fieldData as string);
       } else if (field == 'is_transfer') {
         state.form[field] = Boolean(fieldData);
       } else {
@@ -196,25 +216,40 @@ watch(
       }
     });
 
+    // Set multi-currency state if transaction has multi-currency data
+    if (newValue.is_multi_currency) {
+      isMultiCurrency.value = true;
+      transactionCurrency.value = newValue.currency_code || 'USD';
+      selectedAccountId.value = newValue.account_id || null;
+      currencyAmount.value = {
+        amount: newValue.total || 0,
+        currency: newValue.currency_code || 'USD'
+      };
+      if (newValue.exchange_rate) {
+        manualExchangeRate.value = newValue.exchange_rate;
+        currentExchangeRate.value = newValue.exchange_rate;
+      }
+    }
+
     if (isTransfer.value) {
       state.form.direction = TRANSACTION_DIRECTIONS.TRANSFER;
     }
 
     if (newValue.has_splits) {
-      splits.value = props.transactionData?.splits ?? props.transactionData.lines?.filter((line: ITransactionLine) => line.is_split)
+      splits.value = props.transactionData?.splits ?? props.transactionData.lines?.filter((line: ITransactionLine) => line.is_split) ?? [];
     } else {
-      const anchorLine = newValue.lines?.find(item => item.anchor)
+      const anchorLine = newValue.lines?.find((item: any) => item.anchor);
       splits.value = [{
-        payee_id: newValue.payee_id ?? newValue.payee?.id,
-        payee_label: newValue.payee?.name,
-        label_id: newValue.label_id ?? anchorLine?.labels?.at?.(0)?.id,
-        label_name: anchorLine?.labels?.at?.(0)?.name,
-        category_id: newValue.category_id ?? newValue.category?.id,
-        category: newValue.category,
-        counter_account_id: newValue.counter_account_id ?? newValue.counter_account?.id,
-        account_id: newValue.account_id ?? newValue.account?.id,
-        account: newValue.account,
-        amount: newValue.total,
+        payee_id: newValue.payee_id ?? newValue.payee?.id ?? '',
+        payee_label: newValue.payee?.name ?? '',
+        label_id: newValue.label_id ?? anchorLine?.labels?.at?.(0)?.id ?? '',
+        label_name: anchorLine?.labels?.at?.(0)?.name ?? '',
+        category_id: newValue.category_id ?? newValue.category?.id ?? '',
+        category: newValue.category ?? '',
+        counter_account_id: newValue.counter_account_id ?? newValue.counter_account?.id ?? '',
+        account_id: newValue.account_id ?? newValue.account?.id ?? '',
+        account: newValue.account ?? '',
+        amount: newValue.total ?? 0,
       }];
     }
   },
@@ -226,8 +261,22 @@ watch(
   (show) => {
     if (show && !props.transactionData?.id) {
       state.form.direction = props.mode?.toUpperCase() ?? "WITHDRAW";
+      // Reset multi-currency state for new transactions
+      isMultiCurrency.value = false;
+      transactionCurrency.value = 'USD';
+      selectedAccountId.value = null;
+      manualExchangeRate.value = null;
+      currentExchangeRate.value = null;
+      currencyAmount.value = { amount: 0, currency: 'USD' };
     } else if (!show) {
-      state.form.reset()
+      state.form.reset();
+      // Reset multi-currency state
+      isMultiCurrency.value = false;
+      transactionCurrency.value = 'USD';
+      selectedAccountId.value = null;
+      manualExchangeRate.value = null;
+      currentExchangeRate.value = null;
+      currencyAmount.value = { amount: 0, currency: 'USD' };
     }
   }
 );
@@ -302,37 +351,37 @@ const onSubmit = (addAnother = false) => {
 
         if (isMultiCurrency.value) {
           // Multi-currency transaction data
-          data.currency_code = transactionCurrency.value;
-          data.total = currencyAmount.value.amount;
-          data.is_multi_currency = true;
-          data.account_id = selectedAccountId.value;
+          (data as any).currency_code = transactionCurrency.value;
+          (data as any).total = currencyAmount.value.amount;
+          (data as any).is_multi_currency = true;
+          (data as any).account_id = selectedAccountId.value;
 
           // Only set exchange rate if manually provided
           if (manualExchangeRate.value) {
-            data.exchange_rate = manualExchangeRate.value;
-            data.exchange_amount = convertAmount(currencyAmount.value.amount, manualExchangeRate.value);
+            (data as any).exchange_rate = manualExchangeRate.value;
+            (data as any).exchange_amount = convertAmount(currencyAmount.value.amount, manualExchangeRate.value);
           }
 
           // For multi-currency, we don't use splits in the same way
-          data.has_splits = false;
+          (data as any).has_splits = false;
         } else {
           // Standard transaction
           const splitItem = splitItems[0];
-          data.category_id = splitItem.category_id;
-          data.label_id = splitItem.label_id;
-          data.payee_id = splitItem.payee_id;
-          data.counter_account_id = form.is_transfer ? splitItem.counter_account_id : null;
-          data.account_id = splitItem.account_id;
-          data.total = splitItem.amount;
-          data.has_splits = false;
+          (data as any).category_id = splitItem.category_id;
+          (data as any).label_id = splitItem.label_id;
+          (data as any).payee_id = splitItem.payee_id;
+          (data as any).counter_account_id = form.is_transfer ? splitItem.counter_account_id : null;
+          (data as any).account_id = splitItem.account_id;
+          (data as any).total = splitItem.amount;
+          (data as any).has_splits = false;
 
           if (splitItems?.length > 1) {
-            data.items = splitItems;
-            data.has_splits = true;
+            (data as any).items = splitItems;
+            (data as any).has_splits = true;
           }
         }
 
-        lastSaved.value.lastSaved = data;
+        lastSaved.value.lastSaved = data as any;
         return data;
       })
       .submit(action.method, action.url(), {
@@ -342,7 +391,7 @@ const onSubmit = (addAnother = false) => {
         },
         onSuccess: () => {
           state.form.reset('description', 'category_id', 'payee_id', 'payee_label', 'total', 'has_splits');
-          const newData: ITransaction = lastSaved.value.lastSaved as ITransaction;
+          const newData: any = lastSaved.value.lastSaved;
           resetSplits(newData);
           nextTick(() => {
             const items = splits.value;
@@ -371,13 +420,20 @@ const saveText = computed(() => {
 })
 
 // Multi-currency handler functions
-const handleTransactionCurrencyChange = (currency: string) => {
-  transactionCurrency.value = currency;
-  currencyAmount.value.currency = currency;
+const handleTransactionCurrencyChange = (currency: { code: string; name: string; symbol: string } | null) => {
+  if (currency) {
+    transactionCurrency.value = currency.code;
+    currencyAmount.value.currency = currency.code;
 
-  // Reset manual exchange rate when currency changes
-  manualExchangeRate.value = null;
-  currentExchangeRate.value = null;
+    // Auto-enable multicurrency mode if currency is different from USD
+    if (currency.code !== 'USD' && hasMultiCurrencyAccounts.value) {
+      isMultiCurrency.value = true;
+    }
+
+    // Reset manual exchange rate when currency changes
+    manualExchangeRate.value = null;
+    currentExchangeRate.value = null;
+  }
 };
 
 const handleAccountChange = (accountId: number) => {
@@ -389,7 +445,8 @@ const handleAccountChange = (accountId: number) => {
   currentExchangeRate.value = null;
 };
 
-const handleManualRateChange = (rate: number) => {
+const handleManualRateChange = (rate: number | null) => {
+  manualExchangeRate.value = rate;
   currentExchangeRate.value = rate;
 };
 
@@ -418,13 +475,19 @@ const assignTransactionLabel = (label: Record<string, string>, transaction: Reco
             <div>
               {{ form.error }}
               <div class="px-4 md:flex md:space-x-2 md:px-0">
-                <AtField label="Date" class="flex justify-between w-full md:w-4/12 md:block">
+                <AtField label="Date" class="flex justify-between w-full md:w-3/12 md:block">
                   <NDatePicker v-model:value="form.date" type="date" size="large" class="w-48 md:w-full" />
                 </AtField>
 
                 <AtField label="Description"
-                  class="flex justify-between w-full space-x-2 md:w-8/12 md:block md:space-x-0">
+                  class="flex justify-between w-full space-x-2 md:w-6/12 md:block md:space-x-0">
                   <LogerInput v-model="form.description" class="w-48 md:w-full" />
+                </AtField>
+
+                <AtField label="Currency" class="flex justify-between w-full md:w-3/12 md:block"
+                  v-if="hasMultiCurrencyAccounts">
+                  <CurrencySelector v-model="transactionCurrency" :exclude-currencies="[]"
+                    @change="handleTransactionCurrencyChange" />
                 </AtField>
               </div>
 
@@ -451,7 +514,7 @@ const assignTransactionLabel = (label: Record<string, string>, transaction: Reco
                     <AtField label="Amount">
                       <MultiCurrencyInput v-model="currencyAmount" :target-currency="accountPrimaryCurrency"
                         :exchange-rate="currentExchangeRate" :show-exchange-info="showConversionInfo"
-                        @currency-change="handleTransactionCurrencyChange" />
+                        @currency-change="(currency: string) => { transactionCurrency.value = currency; currencyAmount.value.currency = currency; }" />
                     </AtField>
 
                     <!-- Exchange Rate Display/Input -->
@@ -542,7 +605,7 @@ const assignTransactionLabel = (label: Record<string, string>, transaction: Reco
         <LogerButtonTab class="hidden rounded bg-base"> Use template</LogerButtonTab>
         <div class="flex space-x-2">
           <AtFieldCheck v-model="isRecurrence" label="Set recurrence" />
-          <AtFieldCheck v-if="hasMultiCurrencyAccounts" v-model="isMultiCurrency" label="Multi-currency transaction" />
+          <AtFieldCheck v-if="hasMultiCurrencyAccounts" v-model="isMultiCurrency" label="Multi-currency" />
         </div>
       </section>
       <div class="flex space-x-2">

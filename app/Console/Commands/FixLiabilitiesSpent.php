@@ -20,7 +20,6 @@ class FixLiabilitiesSpent extends Command
     {
 
        $transactions = $transactionService->getCreditCardSpentTransactions($this->argument('teamId'));
-       dd($transactions->sum('total'));
        foreach ($transactions as $transaction) {
         $transactions->id;
        }

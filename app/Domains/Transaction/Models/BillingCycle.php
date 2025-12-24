@@ -65,11 +65,15 @@ class BillingCycle extends Model implements IPayableDocument
         return $this->hasMany(TransactionLine::class, 'account_id')
         ->join(DB::raw('accounts a'), 'a.id', 'account_id')
         ->where(fn ($q) =>
-            $q->whereRaw("(transaction_lines.date >= DATE_FORMAT(date, CONCAT('%Y-%m-', LPAD(a.credit_closing_day, 2, '0'))) and transaction_lines.type = -1
-            AND
-                transaction_lines.date < DATE_FORMAT(date, CONCAT('%Y-%m-', LPAD(a.credit_closing_day, 2, '0')))
-            )
-            OR transaction_lines.date = DATE_FORMAT(date, CONCAT('%Y-%m-', LPAD(a.credit_closing_day, 2, '0'))) AND transaction_lines.type = 1")
+            $q->whereRaw("(
+                (transaction_lines.date >= ? AND transaction_lines.date < ? AND transaction_lines.type = -1)
+                OR 
+                (transaction_lines.date = ? AND transaction_lines.type = 1)
+            )", [
+                $this->start_at,
+                $this->end_at, 
+                $this->end_at
+            ])
         );
     }
 
