@@ -8,6 +8,7 @@ use PhpMimeMailParser\Parser as EmailParser;
 use App\Domains\Automation\Models\Automation;
 use App\Domains\Integration\Services\GoogleService;
 use App\Domains\Automation\Concerns\AutomationActionContract;
+use Exception;
 
 class GmailReceived implements AutomationActionContract
 {
@@ -48,7 +49,7 @@ class GmailReceived implements AutomationActionContract
         $results = $service->users_threads->listUsersThreads('me', ['maxResults' => $maxResults, 'q' => "$queryOptions"]);
 
         foreach ($results->getThreads() as $index => $thread) {
-            $theadResponse = $service->users_threads->get('me', $thread->id, ['format' => 'MINIMAL']);
+            $theadResponse = $service->users_threads->get('me', $thread->id, ['format' => 'METADATA']);
             foreach ($theadResponse->getMessages() as $message) {
 
                 if ($message && $message->getHistoryId() > $trackId) {
@@ -83,7 +84,7 @@ class GmailReceived implements AutomationActionContract
                                 echo "\n starting workflow-task:$task->id:$task->name";
                                 $payload = $actionEntity::handle($automation, $payload, $task, $previousTask, $tasks[0]);
                                 $previousTask = $task;
-                            } catch (\Exception $e) {
+                            } catch (Exception $e) {
                                 Log::error($e->getMessage(), $mail);
                                 continue;
                             }

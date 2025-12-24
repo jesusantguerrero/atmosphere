@@ -37,7 +37,7 @@ interface CollectionData<T> {
     data: T[]
 }
 const props = withDefaults(defineProps<{
-    accountDetailTypes: {label: string, id: number| string}[];
+    accountDetailTypes: { label: string, id: number | string }[];
     transactions: ITransaction[];
     billingCycles: ITransaction[];
     stats: CollectionData<Record<string, number>>;
@@ -47,24 +47,33 @@ const props = withDefaults(defineProps<{
     accountId?: number,
 }>(), {
     serverSearchOptions: () => {
-            return {}
+        return {}
     }
 });
 
 const isLoading = ref(false);
 const { serverSearchOptions, accountId, accounts } = toRefs(props);
-const { state: pageState, hasFilters, reset } =
-useServerSearch(serverSearchOptions);
+const { state: pageState, hasFilters: baseHasFilters, reset: baseReset } =
+    useServerSearch(serverSearchOptions);
+
+const hasFilters = computed(() => {
+    return baseHasFilters.value || Boolean(pageState.custom.direction);
+});
+
+const reset = () => {
+    pageState.custom.direction = null;
+    baseReset();
+};
 
 provide("selectedAccountId", accountId);
 
 const selectedAccount = computed(() => {
-	return accounts.value.find((account) => account.id === accountId?.value);
+    return accounts.value.find((account) => account.id === accountId?.value);
 });
 
 const context = useAppContextStore();
 const listComponent = computed(() => {
-	return context.isMobile ? TransactionSearch : TransactionTable;
+    return context.isMobile ? TransactionSearch : TransactionTable;
 });
 
 
@@ -73,24 +82,24 @@ const handleDuplicate = (transaction: ITransaction) => {
     axios.get(`/transactions/${transaction.id}?json=true`).then(({ data }) => {
         delete data.id;
         openTransactionModal({
-          transactionData: data,
+            transactionData: data,
         });
     })
 };
 
 const findLinked = (transaction: ITransaction) => {
-	router.patch(`/transactions/${transaction.id}/linked`, {
-		// @ts-ignore
-		onSuccess() {
-			router.reload();
-		},
-	});
+    router.patch(`/transactions/${transaction.id}/linked`, {
+        // @ts-ignore
+        onSuccess() {
+            router.reload();
+        },
+    });
 };
 
 const handleEdit = (transaction: ITransaction) => {
-	openTransactionModal({
-		transactionData: transaction,
-	});
+    openTransactionModal({
+        transactionData: transaction,
+    });
 };
 
 
@@ -114,17 +123,17 @@ const hasPendingReconciliation = computed(() => {
 })
 
 const isReconciled = computed(() => {
-	return hasReconciliation.value && selectedAccount.value?.reconciliation_last.amount == selectedAccount.value.balance ;
+    return hasReconciliation.value && selectedAccount.value?.reconciliation_last.amount == selectedAccount.value.balance;
 });
 
 
 const reconcileForm = useForm({
-		isVisible: false,
-		date: new Date(),
-		balance: 0,
+    isVisible: false,
+    date: new Date(),
+    balance: 0,
 })
 
-const  { TRANSFER } = TRANSACTION_DIRECTIONS;
+const { TRANSFER } = TRANSACTION_DIRECTIONS;
 const page = usePage().props;
 
 // Credit cards
@@ -157,201 +166,173 @@ const payCreditCard = () => {
 }
 
 const setPaymentBill = (transaction: ITransaction) => {
-  openModal(
-        { data:{
-            documents: [transaction],
-            resourceId: transaction.id,
-            title: `Payment of ${transaction.name}`,
-            defaultConcept: `Payment of ${transaction.name}`,
-            due: transaction.total,
-            transaction: transaction,
-            endpoint: `/api/billing-cycles/${currentBillingCycle.value.id}/payments/`,
-            paymentMethod: paymentMethods[0],
-        }
-    })
+    openModal(
+        {
+            data: {
+                documents: [transaction],
+                resourceId: transaction.id,
+                title: `Payment of ${transaction.name}`,
+                defaultConcept: `Payment of ${transaction.name}`,
+                due: transaction.total,
+                transaction: transaction,
+                endpoint: `/api/billing-cycles/${currentBillingCycle.value.id}/payments/`,
+                paymentMethod: paymentMethods[0],
+            }
+        })
 }
 
 const financeTabs = computed(() => {
 
     return [{
-      name: "transactions",
-      label: `Transactions ${props.transactions.length}`,
+        name: "transactions",
+        label: `Transactions ${props.transactions.length}`,
     },
     {
-      name: "trends",
-      label: "Trends",
+        name: "trends",
+        label: "Trends",
     }
     ];
 });
 
-const selectedTabName  = computed(() => {
-    return  `All transactions in ${monthName.value}`;
+const selectedTabName = computed(() => {
+    return `All transactions in ${monthName.value}`;
 })
 
 </script>
 
 <template>
-<AppLayout @back="router.visit('/finance/transactions')" :show-back-button="true">
-  <template #header>
-    <FinanceSectionNav>
-      <template #actions>
-        <div class="flex items-center w-full space-x-2">
-          <AtDatePager
-            class="w-full h-12 border-none bg-base-lvl-1 text-body"
-            v-model:startDate="pageState.dates.startDate"
-            v-model:endDate="pageState.dates.endDate"
-            controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
-            next-mode="month"
-          />
-          <LogerButton
-          variant="inverse"
-          @click="reconcileForm.isVisible = true"
-          v-if="!isReconciled">
-            Reconciliation
-          </LogerButton>
-          <LogerButton
-            variant="inverse"
-            @click="router.visit(`/finance/reconciliation/${selectedAccount?.reconciliation_last.id}`)"
-            v-else-if="hasPendingReconciliation"
-          >
-            Review Reconciliation
-          </LogerButton>
-          <LogerButton
-            variant="neutral"
-            v-if="isCreditCard"
-            @click="payCreditCard"
-          >
-            Pay credit card
-          </LogerButton>
-        </div>
-      </template>
-    </FinanceSectionNav>
-  </template>
+    <AppLayout @back="router.visit('/finance/transactions')" :show-back-button="true">
+        <template #header>
+            <FinanceSectionNav>
+                <template #actions>
+                    <div class="flex items-center w-full space-x-2">
+                        <AtDatePager class="w-full h-12 border-none bg-base-lvl-1 text-body"
+                            v-model:startDate="pageState.dates.startDate" v-model:endDate="pageState.dates.endDate"
+                            controlsClass="bg-transparent text-body hover:bg-base-lvl-1" next-mode="month" />
+                        <LogerButton variant="inverse" @click="reconcileForm.isVisible = true" v-if="!isReconciled">
+                            Reconciliation
+                        </LogerButton>
+                        <LogerButton variant="inverse"
+                            @click="router.visit(`/finance/reconciliation/${selectedAccount?.reconciliation_last.id}`)"
+                            v-else-if="hasPendingReconciliation">
+                            Review Reconciliation
+                        </LogerButton>
+                        <LogerButton variant="neutral" v-if="isCreditCard" @click="payCreditCard">
+                            Pay credit card
+                        </LogerButton>
+                    </div>
+                </template>
+            </FinanceSectionNav>
+        </template>
 
-  <template #title>
-    <section class="flex items-center">
-        <h1 class="font-bold">
-            <span class="text-body-1/60">Accounts / </span>
-            <span>{{ selectedAccount.name }}</span>
-        </h1>
-        <button
-            @click="router.visit(`/finance/accounts/${selectedAccount.id}/reconciliations/`)"
-            title="reconciliations"
-            class="inline-block ml-2 font-bold text-secondary"
-        >
-            <IMdiHistory />
-        </button>
-    </section>
-  </template>
-
-  <FinanceTemplate title="Transactions" :accounts="accounts">
-    <section class="lg:flex w-full mt-4 grid grid-cols-2 gap-2 lg:space-x-4 flex-nowrap">
-        <BackgroundCard
-        class="w-full cursor-pointer text-body-1 bg-base-lvl-3"
-        :value="formatMoney(selectedAccount?.balance)"
-        :label="$t('Balance')"
-        label-class="capitalize text-secondary font-base"
-        >
-            <template #value>
-                <h4 class="flex">
-                    <span class="text-lg">
-                        {{ formatMoney(selectedAccount?.balance) }}
-                    </span>
-                    <ElTooltip :content="formatMoney(selectedAccount?.reconciliation_last?.amount)"
-                        v-if="selectedAccount?.reconciliation_last"
-                    >
-                        <button
-                            @click="router.visit(`/finance/accounts/${selectedAccount.id}/reconciliations/`)"
-                            class="inline-block ml-2 font-bold text-secondary text-xs"
-                        >
-                            <IMdiHistory />
-                        </button>
-                    </ElTooltip>
-                </h4>
-            </template>
-        </BackgroundCard>
-        <BackgroundCard
-        class="w-full cursor-pointer text-body-1 bg-base-lvl-3"
-        v-for="(stat, label) in stats"
-        :value="formatMoney(stat)"
-        :label="label"
-        text-class="text-lg"
-        label-class="capitalize text-secondary font-base"
-        />
-    </section>
-
-    <WidgetContainer
-        :message="selectedTabName"
-        :tabs="financeTabs"
-        default-tab="transactions"
-        class="mt-4"
-    >
         <template #title>
-            <header class="flex space-x-2 pl-4 items-center justify-between py-2 w-full">
-                <AppSearch
-                    v-model.lazy="pageState.search"
-                    class="w-full md:flex "
-                    :has-filters="hasFilters"
-                    @clear="reset()"
-                    :placeholder="selectedTabName"
-                />
-
-        </header>
+            <section class="flex items-center">
+                <h1 class="font-bold">
+                    <span class="text-body-1/60">Accounts / </span>
+                    <span>{{ selectedAccount.name }}</span>
+                </h1>
+                <button @click="router.visit(`/finance/accounts/${selectedAccount.id}/reconciliations/`)"
+                    title="reconciliations" class="inline-block ml-2 font-bold text-secondary">
+                    <IMdiHistory />
+                </button>
+            </section>
         </template>
-        <template v-slot:content="{ selectedTab }">
-        <section class="bg-base-lvl-3">
-                <AccountReconciliationBanner
-                    v-if="selectedAccount"
-                    :account="selectedAccount"
-                />
 
-                <Component
-                    :is="listComponent"
-                    :cols="tableAccountCols(props.accountId)"
-                    :transactions="transactions"
-                    :server-search-options="serverSearchOptions"
-                    :is-loading="isLoading"
-                    @findLinked="findLinked"
-                    @removed="removeTransaction($event, ['verified'])"
-                    @duplicate="handleDuplicate"
-                    @edit="handleEdit"
-                />
-        </section>
-        </template>
-    </WidgetContainer>
+        <FinanceTemplate title="Transactions" :accounts="accounts">
+            <section class="lg:flex w-full mt-4 grid grid-cols-2 gap-2 lg:space-x-4 flex-nowrap">
+                <BackgroundCard class="w-full cursor-pointer text-body-1 bg-base-lvl-3"
+                    :value="formatMoney(selectedAccount?.balance)" :label="$t('Balance')"
+                    label-class="capitalize text-secondary font-base">
+                    <template #value>
+                        <h4 class="flex">
+                            <span class="text-lg">
+                                {{ formatMoney(selectedAccount?.balance) }}
+                            </span>
+                            <ElTooltip :content="formatMoney(selectedAccount?.reconciliation_last?.amount)"
+                                v-if="selectedAccount?.reconciliation_last">
+                                <button
+                                    @click="router.visit(`/finance/accounts/${selectedAccount.id}/reconciliations/`)"
+                                    class="inline-block ml-2 font-bold text-secondary text-xs">
+                                    <IMdiHistory />
+                                </button>
+                            </ElTooltip>
+                        </h4>
+                    </template>
+                </BackgroundCard>
+                <BackgroundCard class="w-full cursor-pointer text-body-1 bg-base-lvl-3" v-for="(stat, label) in stats"
+                    :value="formatMoney(stat)" :label="label" text-class="text-lg"
+                    label-class="capitalize text-secondary font-base" />
+            </section>
 
-        <template #prepend-panel class="">
-            <NextPaymentsWidget
-                class="w-full py-4 px-4"
-                title="Credit Card Payments"
-                :payments="billingCycles.map((payment) => ({
+            <WidgetContainer :message="selectedTabName" :tabs="financeTabs" default-tab="transactions" class="mt-4">
+                <template #title>
+                    <header class="flex space-x-2 pl-4 items-center justify-between py-2 w-full">
+                        <AppSearch v-model.lazy="pageState.search" class="w-full md:flex " :has-filters="hasFilters"
+                            @clear="reset()" :placeholder="selectedTabName" />
+
+                        <!-- Debit/Credit Filter -->
+                        <div class="flex space-x-1">
+                            <button
+                                @click="pageState.custom.direction = pageState.custom.direction === 'WITHDRAW' ? null : 'WITHDRAW'"
+                                :class="[
+                                    'px-3 py-1.5 text-xs rounded-full transition-colors',
+                                    pageState.custom.direction === 'WITHDRAW'
+                                        ? 'bg-red-100 text-red-700 border border-red-200'
+                                        : 'bg-base-lvl-1 text-body-1 hover:bg-base-lvl-2'
+                                ]">
+                                Débitos
+                            </button>
+                            <button
+                                @click="pageState.custom.direction = pageState.custom.direction === 'DEPOSIT' ? null : 'DEPOSIT'"
+                                :class="[
+                                    'px-3 py-1.5 text-xs rounded-full transition-colors',
+                                    pageState.custom.direction === 'DEPOSIT'
+                                        ? 'bg-green-100 text-green-700 border border-green-200'
+                                        : 'bg-base-lvl-1 text-body-1 hover:bg-base-lvl-2'
+                                ]">
+                                Créditos
+                            </button>
+                        </div>
+
+                    </header>
+                </template>
+                <template v-slot:content="{ selectedTab }">
+                    <section class="bg-base-lvl-3">
+                        <AccountReconciliationBanner v-if="selectedAccount" :account="selectedAccount" />
+
+                        <Component :is="listComponent" :cols="tableAccountCols(props.accountId)"
+                            :transactions="transactions" :server-search-options="serverSearchOptions"
+                            :is-loading="isLoading" @findLinked="findLinked"
+                            @removed="removeTransaction($event, ['verified'])" @duplicate="handleDuplicate"
+                            @edit="handleEdit" />
+                    </section>
+                </template>
+            </WidgetContainer>
+
+            <template #prepend-panel class="">
+                <NextPaymentsWidget class="w-full py-4 px-4" title="Credit Card Payments" :payments="billingCycles.map((payment) => ({
                     ...payment,
                     date: payment.due_at
-                }))"
-                emit-actions
-                emit-delete
-                @action="setPaymentBill"
-            >
-                <template v-slot:left-action-button="{  resource }">
-                    <button
-                    class="text-gray-400 hidden group-hover:inline-block transition cursor-pointer hover:text-red-400 focus:outline-none"
-                    @click="setPaymentBill(resource)">
-                        <IMdiLink />
-                     </button>
-                </template>
-                <template v-slot:date="{ resource }">
-                    <span title="Approve transaction" class="text-secondary bg-secondary/10 px-4 rounded-3xl py-1.5 text-xs cursor-pointer" @click="$emit('edit', payment)">
-                        {{ formatDate(resource.date) }}
-                    </span>
-                </template>
-            </NextPaymentsWidget>
-        </template>
+                }))" emit-actions emit-delete @action="setPaymentBill">
+                    <template v-slot:left-action-button="{ resource }">
+                        <button
+                            class="text-gray-400 hidden group-hover:inline-block transition cursor-pointer hover:text-red-400 focus:outline-none"
+                            @click="setPaymentBill(resource)">
+                            <IMdiLink />
+                        </button>
+                    </template>
+                    <template v-slot:date="{ resource }">
+                        <span title="Approve transaction"
+                            class="text-secondary bg-secondary/10 px-4 rounded-3xl py-1.5 text-xs cursor-pointer"
+                            @click="$emit('edit', payment)">
+                            {{ formatDate(resource.date) }}
+                        </span>
+                    </template>
+                </NextPaymentsWidget>
+            </template>
 
-      <AccountReconciliationForm
-          :show="reconcileForm.isVisible"
-          @close="reconcileForm.isVisible = false"
-          :account="selectedAccount"
-       />
-  </FinanceTemplate>
-</AppLayout>
+            <AccountReconciliationForm :show="reconcileForm.isVisible" @close="reconcileForm.isVisible = false"
+                :account="selectedAccount" />
+        </FinanceTemplate>
+    </AppLayout>
 </template>
