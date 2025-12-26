@@ -2,20 +2,23 @@
 
 namespace App\Domains\Integration\Actions\APAP;
 
+use App\Domains\Automation\Concerns\AutomationActionContract;
+use App\Domains\Automation\Models\Automation;
+use App\Domains\Automation\Models\AutomationTaskAction;
+use App\Domains\Integration\Actions\GmailReceived;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\DomCrawler\Crawler;
-use App\Domains\Automation\Models\Automation;
-use App\Domains\Integration\Actions\GmailReceived;
-use App\Domains\Automation\Models\AutomationTaskAction;
-use App\Domains\Automation\Concerns\AutomationActionContract;
 
 class APAP implements AutomationActionContract
 {
     const EMAIL_ALERT = 'NO-REPLY@apap.com.do';
+
     const EMAIL_NOTIFICATION = 'NO-REPLY@apap.com.do';
-    const EMAIL_NOTIFICATION_SUBJECT = "APAP, Notificaciones";
-    const EMAIL_BCRD_SUBJECT = "APAP, Pago Al Instante BCRD";
+
+    const EMAIL_NOTIFICATION_SUBJECT = 'APAP, Notificaciones';
+
+    const EMAIL_BCRD_SUBJECT = 'APAP, Pago Al Instante BCRD';
 
     public static function handle(
         Automation $automation,
@@ -67,7 +70,7 @@ class APAP implements AutomationActionContract
         AutomationTaskAction $trigger
     ) {
 
-        return (new APAPAlert())->handle($automation, $payload);
+        return (new APAPAlert)->handle($automation, $payload);
     }
 
     /**
@@ -84,7 +87,7 @@ class APAP implements AutomationActionContract
         AutomationTaskAction $trigger
     ) {
 
-        return (new APAPAlert())->handle($automation, $payload);
+        return (new APAPAlert)->handle($automation, $payload);
     }
 
     public static function getMessageType($mail)
@@ -101,28 +104,31 @@ class APAP implements AutomationActionContract
         }
     }
 
-    public static function getConditions() {
+    public static function getConditions()
+    {
         return [[
-                'conditionType' => GmailReceived::CONDITION_FROM,
-                'value' => self::EMAIL_ALERT,
-            ], [
-                'conditionType' => GmailReceived::CONDITION_SUBJECT,
-                'value' => self::EMAIL_NOTIFICATION_SUBJECT,
-            ]
+            'conditionType' => GmailReceived::CONDITION_FROM,
+            'value' => self::EMAIL_ALERT,
+        ], [
+            'conditionType' => GmailReceived::CONDITION_SUBJECT,
+            'value' => self::EMAIL_NOTIFICATION_SUBJECT,
+        ],
         ];
     }
 
-    public static function parseCurrency($bhdCurrencyCode)
+    public static function parseCurrency($nankCurrencyCode)
     {
         try {
-            $BHD_CURRENCY_CODES = [
+            $APAP_CURRENCY_CODES = [
                 'USD dólar estadounidense' => 'USD',
                 'RD' => 'DOP',
+                'RD pesos dominicanos' => 'DOP',
+                'USD dólar estadounidense' => 'USD',
             ];
 
-            return $BHD_CURRENCY_CODES[$bhdCurrencyCode];
+            return $APAP_CURRENCY_CODES[$nankCurrencyCode];
         } catch (Exception $e) {
-            Log::error($e->getMessage(), [$bhdCurrencyCode]);
+            Log::error($e->getMessage(), [$nankCurrencyCode]);
         }
     }
 

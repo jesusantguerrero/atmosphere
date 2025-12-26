@@ -13,7 +13,7 @@ class AutomationCheck extends Command
      *
      * @var string
      */
-    protected $signature = 'app:automation-check';
+    protected $signature = 'app:automation-check {--backfill : Backfill mode to process older emails}';
 
     /**
      * The console command description.
@@ -30,8 +30,11 @@ class AutomationCheck extends Command
     public function handle()
     {
         $automations = Automation::whereNotNull('is_background')->get();
+        $backfillMode = $this->option('backfill');
+
         foreach ($automations as $automation) {
-            LogerAutomationService::run($automation);
+            $eventData = $backfillMode ? ['backfill' => true] : null;
+            LogerAutomationService::run($automation, $eventData);
         }
     }
 }

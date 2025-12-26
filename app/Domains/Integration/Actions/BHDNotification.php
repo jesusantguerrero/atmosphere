@@ -9,7 +9,6 @@ use App\Domains\Transaction\Services\YNABService;
 use Exception;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 use Symfony\Component\DomCrawler\Crawler;
 
 class BHDNotification implements MailToTransaction
@@ -66,8 +65,11 @@ class BHDNotification implements MailToTransaction
             }
         }
 
-        $product = Str::of($bhdOutput['product'])->replace('X', '');
-        $seller = Str::of($bhdOutput['seller'] ?? '')->replace('X', '');
+        $product = str_replace('X', '', $bhdOutput['product']);
+        $seller = str_replace('X', '', $bhdOutput['seller'] ?? '');
+
+        // get the last 4 digits of the product
+        $productLast4 = substr($product, -4);
 
         return new TransactionDataDTO([
             'id' => (int) $mail['id'],
@@ -80,7 +82,7 @@ class BHDNotification implements MailToTransaction
             'amount' => $bhdOutput['amount']->amount * 1,
             'currencyCode' => $bhdOutput['amount']->currencyCode,
             'productName' => $product,
-            'productCode' => $product,
+            'productCode' => $productLast4,
             'productBrand' => 'BHD',
         ]);
     }

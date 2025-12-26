@@ -69,7 +69,7 @@ class TransactionCreateEntry implements AutomationActionContract
             'currency_code' => FormulaHelper::parseFormula($taskData->currency_code, $payload),
             'category_id' => $transactionCategoryId ?? null,
             'description' => $description,
-            'reference' => $payload['messageId'] ?? ("{$payload['id']}:{$description}:${$date}") ?? null,
+            'reference' => $payload['messageId'] ?? ("{$payload['id']}:{$description}:{$date}") ?? null,
             'direction' => FormulaHelper::parseFormula($taskData->direction, $payload),
             'total' => FormulaHelper::parseFormula($taskData->total, $payload),
             'items' => [],
