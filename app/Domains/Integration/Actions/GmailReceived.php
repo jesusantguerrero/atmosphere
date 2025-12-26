@@ -2,13 +2,13 @@
 
 namespace App\Domains\Integration\Actions;
 
-use Illuminate\Support\Facades\Log;
-use Google\Service\Gmail as ServiceGmail;
-use PhpMimeMailParser\Parser as EmailParser;
+use App\Domains\Automation\Concerns\AutomationActionContract;
 use App\Domains\Automation\Models\Automation;
 use App\Domains\Integration\Services\GoogleService;
-use App\Domains\Automation\Concerns\AutomationActionContract;
 use Exception;
+use Google\Service\Gmail as ServiceGmail;
+use Illuminate\Support\Facades\Log;
+use PhpMimeMailParser\Parser as EmailParser;
 
 class GmailReceived implements AutomationActionContract
 {
@@ -41,10 +41,10 @@ class GmailReceived implements AutomationActionContract
                 $conditions[] = "$taskCondition->conditionType:$taskCondition->value";
             }
         }
-        if (!count($conditions)) {
+        if (! count($conditions)) {
             $queryOptions = '';
         } else {
-            $queryOptions = implode(" ", $conditions);
+            $queryOptions = implode(' ', $conditions);
         }
         $results = $service->users_threads->listUsersThreads('me', ['maxResults' => $maxResults, 'q' => "$queryOptions"]);
 
@@ -57,7 +57,7 @@ class GmailReceived implements AutomationActionContract
                     $parser = self::parseEmail($raw);
 
                     $body = $parser->getMessageBody('html');
-                     $mail = [
+                    $mail = [
                         'index' => $index,
                         'from' => $parser->getHeader('from'),
                         'subject' => $parser->getHeader('subject'),
