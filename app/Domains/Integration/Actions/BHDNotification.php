@@ -64,10 +64,9 @@ class BHDNotification implements MailToTransaction
             }
         }
 
-        print_r([$bhdOutput['amount']]);
-
         return new TransactionDataDTO([
             'id' => (int) $mail['id'],
+            "messageId" => $mail['messageId'],
             'date' => $bhdOutput['date'],
             'payee' => $bhdOutput['seller'],
             'category' => '',

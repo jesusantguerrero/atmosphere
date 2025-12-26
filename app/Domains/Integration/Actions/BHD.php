@@ -69,7 +69,6 @@ class BHD implements AutomationActionContract
         AutomationTaskAction $previousTask,
         AutomationTaskAction $trigger
     ) {
-        echo "\n Parsing notification";
         return (new BHDNotification())->handle($automation, $payload);
     }
 
