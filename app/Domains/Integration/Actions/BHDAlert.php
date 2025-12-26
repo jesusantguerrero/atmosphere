@@ -8,6 +8,7 @@ use App\Domains\Automation\Models\Automation;
 use App\Domains\Transaction\Services\YNABService;
 use App\Domains\Integration\Concerns\MailToTransaction;
 use App\Domains\Integration\Concerns\TransactionDataDTO;
+use Illuminate\Support\Str;
 
 class BHDAlert implements MailToTransaction
 {
@@ -25,8 +26,13 @@ class BHDAlert implements MailToTransaction
             $total = YNABService::extractMoneyCurrency($tdValues[2]);
             $type = BHD::parseTypes(strtolower($tdValues[5])) ?? 1;
 
+            $rawProduct = Str::of($product)->replace(' ', '')->split('#');
+            $productName = $rawProduct->get(0);
+            $productCode = $rawProduct->get(1) ?? null;
+
             return new TransactionDataDTO([
                 'id' => (int) $mail['id'],
+                "messageId" => $mail['messageId'],
                 'date' => date('Y-m-d', strtotime($mail['date'])),
                 'payee' => $tdValues[3],
                 'category' => '',
@@ -34,6 +40,8 @@ class BHDAlert implements MailToTransaction
                 'description' => $product,
                 'amount' => $total->amount * $type,
                 'currencyCode' => BHD::parseCurrency($tdValues[1]),
+                'productName' => $productName,
+                'productCode' => $productCode,
             ]);
         } catch (Exception $e) {
             throw $e;

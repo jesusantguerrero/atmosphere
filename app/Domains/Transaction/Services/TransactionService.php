@@ -2,14 +2,14 @@
 
 namespace App\Domains\Transaction\Services;
 
-use Brick\Money\Money;
+use App\Domains\Budget\Data\BudgetReservedNames;
+use App\Domains\Transaction\Imports\TransactionsImport;
+use App\Domains\Transaction\Models\Transaction;
+use App\Domains\Transaction\Models\TransactionLine;
 use Brick\Math\RoundingMode;
+use Brick\Money\Money;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use App\Domains\Transaction\Models\Transaction;
-use App\Domains\Budget\Data\BudgetReservedNames;
-use App\Domains\Transaction\Models\TransactionLine;
-use App\Domains\Transaction\Imports\TransactionsImport;
 use Insane\Journal\Models\Core\Category as CoreCategory;
 
 class TransactionService
@@ -23,7 +23,7 @@ class TransactionService
 
     public function __construct()
     {
-        $this->model = new Transaction();
+        $this->model = new Transaction;
     }
 
     public function getList($teamId, $options)
@@ -153,7 +153,7 @@ class TransactionService
             ->get();
     }
 
-    public static function getCategoryExpenseDetails($teamId, $startDate, $endDate, $limit = null, CoreCategory $category = null, $parentId = null)
+    public static function getCategoryExpenseDetails($teamId, $startDate, $endDate, $limit = null, ?CoreCategory $category = null, $parentId = null)
     {
 
         $result = DB::table('transaction_lines')->where([
@@ -162,10 +162,10 @@ class TransactionService
         ])
             ->whereNot('categories.name', BudgetReservedNames::READY_TO_ASSIGN->value)
             ->whereBetween('transactions.date', [$startDate, $endDate])
-            ->when($category && !$category?->account_id, fn ($q) => $q->where('categories.id', $category->id))
+            ->when($category && ! $category?->account_id, fn ($q) => $q->where('categories.id', $category->id))
             ->when($category?->account_id, fn ($q) => $q->where('accounts.id', $category->account_id))
             ->when($parentId, fn ($q) => $q->where('group.id', $parentId)->groupBy('group.id'))
-            ->selectRaw("
+            ->selectRaw('
                 transaction_lines.category_id,
                 categories.name,
                 categories.parent_id,
@@ -179,7 +179,7 @@ class TransactionService
                 transactions.description transactionConcept,
                 transaction_lines.concept,
                 amount * transaction_lines.type total
-            ")
+            ')
             ->leftJoin('transactions', 'transactions.id', 'transaction_id')
             ->leftJoin('categories', 'categories.id', 'transaction_lines.category_id')
             ->leftJoin('accounts', 'accounts.id', 'transaction_lines.account_id')
@@ -188,18 +188,17 @@ class TransactionService
             ->orderByDesc('transaction_lines.date')
             ->get();
 
-
         return [
-            "total" => $result->sum('total'),
-            "data" => $result
+            'total' => $result->sum('total'),
+            'data' => $result,
         ];
     }
 
     public static function getCategoryExpensesGroup($teamId, $startDate, $endDate, $limit = null, $categories = [])
     {
         $categories = collect($categories);
-        $excluded = $categories->filter( fn ($id) => $id < 0)->map(fn($item) => abs($item))->all();
-        $included = $categories->filter( fn ($id) => $id > 0)->all();
+        $excluded = $categories->filter(fn ($id) => $id < 0)->map(fn ($item) => abs($item))->all();
+        $included = $categories->filter(fn ($id) => $id > 0)->all();
 
         $totals = DB::table('transaction_lines')->where([
             'transaction_lines.team_id' => $teamId,
@@ -214,8 +213,8 @@ class TransactionService
                 catGroup.id,
                 group_concat(concat(transaction_lines.id, '/', transactions.id, '/', accounts.name, '/', transactions.date, '/', payees.name, '/', transaction_lines.concept, '/', amount * transaction_lines.type) SEPARATOR '|') as details
             "))
-            ->when(count($excluded), fn($q) => $q->whereNotIn('transaction_lines.category_id', $excluded))
-            ->when(count($included), fn($q) => $q->whereIn('transaction_lines.category_id', $included))
+            ->when(count($excluded), fn ($q) => $q->whereNotIn('transaction_lines.category_id', $excluded))
+            ->when(count($included), fn ($q) => $q->whereIn('transaction_lines.category_id', $included))
             ->join('transactions', 'transactions.id', 'transaction_id')
             ->join('accounts', 'accounts.id', 'transaction_lines.account_id')
             ->join('categories', 'categories.id', 'transaction_lines.category_id')
@@ -298,7 +297,7 @@ class TransactionService
         ", [
             'teamId' => $teamId,
             'monthDate' => $endDate,
-            'limit' => Carbon::createFromFormat("Y-m-d", $endDate)->diffInMonths(Carbon::createFromFormat("Y-m-d", $startDate)) + 1,
+            'limit' => Carbon::createFromFormat('Y-m-d', $endDate)->diffInMonths(Carbon::createFromFormat('Y-m-d', $startDate)) + 1,
         ]);
     }
 
@@ -495,12 +494,13 @@ class TransactionService
             ->when(isset($options['startDate']), fn ($q) => $q->whereBetween('date', [$options['startDate'], $options['endDate']]))
             ->when(isset($options['limit']), fn ($query) => $query->limit($options['limit']));
 
-            return $lines;
+        return $lines;
     }
 
-    public function getCreditCardSpentTransactions(int $teamId) {
-        return  DB::table(DB::raw('categories g'))
-        ->selectRaw('SUM(transaction_lines.amount * transaction_lines.type) as total,
+    public function getCreditCardSpentTransactions(int $teamId)
+    {
+        return DB::table(DB::raw('categories g'))
+            ->selectRaw('SUM(transaction_lines.amount * transaction_lines.type) as total,
           accounts.id account_id,
           date_format(transactions.date, "%Y-%m-01") as date,
           accounts.display_id account_display_id,
@@ -513,39 +513,36 @@ class TransactionService
           g.display_id groupName,
           g.alias groupAlias,
           MONTH(transactions.date) as months'
-        )
-        ->groupByRaw('transactions.id')
-        ->join('categories', 'g.id', '=', 'categories.parent_id')
-        ->join('accounts', 'accounts.category_id', '=', 'categories.id')
-        ->join('transaction_lines', 'transaction_lines.account_id', '=', 'accounts.id')
-        ->join('transactions', fn ($q)=> $q->on('transactions.id',  'transaction_lines.transaction_id'))
-        ->orderByRaw('g.index,categories.index, accounts.index,accounts.number')
-        ->where(fn ($q) => $q->where([
-            'transactions.status' => Transaction::STATUS_VERIFIED,
-          ])->orWhereNull('transactions.status')
-        )
-        ->where([
-            'accounts.team_id' => $teamId,
-            'g.display_id' => 'liabilities',
-          ])
-        ->get();
+            )
+            ->groupByRaw('transactions.id')
+            ->join('categories', 'g.id', '=', 'categories.parent_id')
+            ->join('accounts', 'accounts.category_id', '=', 'categories.id')
+            ->join('transaction_lines', 'transaction_lines.account_id', '=', 'accounts.id')
+            ->join('transactions', fn ($q) => $q->on('transactions.id', 'transaction_lines.transaction_id'))
+            ->orderByRaw('g.index,categories.index, accounts.index,accounts.number')
+            ->where(fn ($q) => $q->where([
+                'transactions.status' => Transaction::STATUS_VERIFIED,
+            ])->orWhereNull('transactions.status')
+            )
+            ->where([
+                'accounts.team_id' => $teamId,
+                'g.display_id' => 'liabilities',
+            ])
+            ->get();
     }
 
-    public function findIfDuplicated($transactionData) {
-        print_r($transactionData);
-        return Transaction::where([
-            "team_id" => $transactionData['team_id'],
-            'date' => $transactionData['date'],
-            'total' => $transactionData['total'],
-            'currency_code' => $transactionData['currency_code'],
-            'direction' => $transactionData['direction'],
-            'payee_id' => $transactionData['payee_id'],
-        ])
-        ->where(
-            fn($q) => $q->where('description', $transactionData['description'])
-                        ->orWhere('reference', $transactionData['reference'])
-        )
-        ->orWhere("reference", $transactionData['reference'])
-        ->first();
+    public function findIfDuplicated(array $transactionData): ?Transaction
+    {
+        return Transaction::where('team_id', $transactionData['team_id'])
+            ->where('date', $transactionData['date'])
+            ->where('total', $transactionData['total'])
+            ->where('currency_code', $transactionData['currency_code'])
+            ->where('direction', $transactionData['direction'])
+            ->where('payee_id', $transactionData['payee_id'])
+            ->where(function ($q) use ($transactionData) {
+                $q->where('description', $transactionData['description'])
+                    ->orWhere('reference', $transactionData['reference']);
+            })
+            ->first();
     }
 }

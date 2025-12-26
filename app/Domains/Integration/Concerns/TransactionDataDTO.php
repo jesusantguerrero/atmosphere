@@ -22,6 +22,12 @@ class TransactionDataDTO extends Data
 
     public string $currencyCode;
 
+    public ?string $messageId;
+
+    public ?string $productName;
+
+    public ?string $productCode;
+
     public function __construct($data)
     {
         $this->id = $data['id'];
@@ -32,5 +38,8 @@ class TransactionDataDTO extends Data
         $this->category = $data['category'];
         $this->amount = $data['amount'];
         $this->currencyCode = $data['currencyCode'];
+        $this->messageId = $data['messageId'] ?? null;
+        $this->productName = $data['productName'] ?? null;
+        $this->productCode = $data['productCode'] ?? null;
     }
 }

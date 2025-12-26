@@ -57,7 +57,7 @@ class GmailReceived implements AutomationActionContract
                     $parser = self::parseEmail($raw);
 
                     $body = $parser->getMessageBody('html');
-                    $mail = [
+                     $mail = [
                         'index' => $index,
                         'from' => $parser->getHeader('from'),
                         'subject' => $parser->getHeader('subject'),

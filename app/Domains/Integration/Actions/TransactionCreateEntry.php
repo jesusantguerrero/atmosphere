@@ -2,16 +2,17 @@
 
 namespace App\Domains\Integration\Actions;
 
-use App\Models\User;
+use App\Domains\Automation\Concerns\AutomationActionContract;
+use App\Domains\Automation\Models\Automation;
+use App\Domains\Automation\Models\AutomationTaskAction;
+use App\Domains\Transaction\Models\TransactionLine;
+use App\Domains\Transaction\Services\TransactionService;
 use App\Helpers\FormulaHelper;
+use App\Models\Account;
+use App\Models\User;
 use App\Notifications\EntryGenerated;
 use Insane\Journal\Models\Core\Payee;
 use Insane\Journal\Models\Core\Transaction;
-use App\Domains\Automation\Models\Automation;
-use App\Domains\Transaction\Models\TransactionLine;
-use App\Domains\Automation\Models\AutomationTaskAction;
-use App\Domains\Transaction\Services\TransactionService;
-use App\Domains\Automation\Concerns\AutomationActionContract;
 
 class TransactionCreateEntry implements AutomationActionContract
 {
@@ -41,6 +42,17 @@ class TransactionCreateEntry implements AutomationActionContract
 
         $description = FormulaHelper::parseFormula($taskData->description, $payload);
 
+        if ($payload['productCode'] ?? false) {
+            $account = Account::where('team_id', $automation->team_id)
+                ->where('number', $payload['productCode'])
+                ->whereRaw('LENGTH(number) > 0 and name like "%?%"', [$payload['productName']])
+                ->first();
+
+            if ($account) {
+                $accountId = $account->id;
+            }
+        }
+
         $transactionData = [
             'team_id' => $automation->team_id,
             'user_id' => $automation->user_id,
@@ -52,7 +64,7 @@ class TransactionCreateEntry implements AutomationActionContract
             'currency_code' => FormulaHelper::parseFormula($taskData->currency_code, $payload),
             'category_id' => $transactionCategoryId ?? null,
             'description' => $description,
-            'reference' => $description.$payload['id'],
+            'reference' => $payload['messageId'],
             'direction' => FormulaHelper::parseFormula($taskData->direction, $payload),
             'total' => FormulaHelper::parseFormula($taskData->total, $payload),
             'items' => [],
@@ -60,17 +72,15 @@ class TransactionCreateEntry implements AutomationActionContract
                 'resource_id' => $payload['id'],
                 'resource_origin' => $previousTask->name,
                 'resource_type' => $trigger->name,
-                'resource_description' => $description
+                'resource_description' => $description,
             ]),
         ];
 
-        $transactionService = new TransactionService();
+        $transactionService = new TransactionService;
 
         if ($transaction = $transactionService->findIfDuplicated($transactionData)) {
-           return $transaction;
+            return $transaction;
         }
-
-        print_r([$transaction, "new transaction"]);
 
         $transaction = Transaction::createTransaction($transactionData);
         User::find($automation->user_id)->notify(new EntryGenerated($transaction));
