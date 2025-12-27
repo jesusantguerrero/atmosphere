@@ -21,6 +21,15 @@ class Automation extends Model
         'entity',
         'sentence',
         'track',
+        'config',
+        'status',
+    ];
+
+    protected $casts = [
+        'config' => 'array',
+        'track' => 'array',
+        'status' => 'boolean',
+        'is_background' => 'boolean',
     ];
 
     public function recipe()

@@ -12,13 +12,13 @@ use Symfony\Component\DomCrawler\Crawler;
 
 class BSC implements AutomationActionContract
 {
-    const EMAIL_ALERT = 'NO-REPLY@apap.com.do';
+    const EMAIL_ALERT = 'notificaciones@bsc.com.do';
 
-    const EMAIL_NOTIFICATION = 'NO-REPLY@apap.com.do';
+    const EMAIL_NOTIFICATION = 'notificaciones@bsc.com.do';
 
-    const EMAIL_NOTIFICATION_SUBJECT = 'APAP, Notificaciones';
+    const EMAIL_NOTIFICATION_SUBJECT = 'BSC, Notificaciones';
 
-    const EMAIL_BCRD_SUBJECT = 'APAP, Pago Al Instante BCRD';
+    const EMAIL_BCRD_SUBJECT = 'BSC, Pago Al Instante BCRD';
 
     public static function handle(
         Automation $automation,
@@ -70,7 +70,7 @@ class BSC implements AutomationActionContract
         AutomationTaskAction $trigger
     ) {
 
-        return (new APAPAlert)->handle($automation, $payload);
+        return (new BSCAlert)->handle($automation, $payload);
     }
 
     /**
@@ -135,5 +135,24 @@ class BSC implements AutomationActionContract
     public static function parseTypes($type)
     {
         return 1;
+    }
+
+    /**
+     * Get email patterns for bank detection in Universal Bank Parser.
+     *
+     * @return array Email patterns configuration
+     */
+    public static function getEmailPatterns(): array
+    {
+        return [
+            'email_addresses' => [
+                self::EMAIL_ALERT,
+                self::EMAIL_NOTIFICATION,
+            ],
+            'email_domains' => [
+                '@bsc.com.do',
+            ],
+            'subject_patterns' => [],
+        ];
     }
 }

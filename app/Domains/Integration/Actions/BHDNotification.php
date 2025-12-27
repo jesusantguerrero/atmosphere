@@ -6,6 +6,7 @@ use App\Domains\Automation\Models\Automation;
 use App\Domains\Integration\Concerns\MailToTransaction;
 use App\Domains\Integration\Concerns\TransactionDataDTO;
 use App\Domains\Transaction\Services\YNABService;
+use App\Exceptions\TransactionInProgressException;
 use Exception;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -17,8 +18,20 @@ class BHDNotification implements MailToTransaction
 
     public function handle(Automation $automation, mixed $mail, int $index = 0): ?TransactionDataDTO
     {
-
         $body = new Crawler($mail['message']);
+
+        // Check if this is a completed transaction (has confirmation number)
+        // In-progress transactions don't have idNumeroConfirmacion and will be followed by a confirmation email
+        $confirmationElement = $body->filter('[id*=idNumeroConfirmacion]');
+        if ($confirmationElement->count() === 0) {
+            Log::info('BHD notification skipped - transaction in progress (no confirmation number)', [
+                'email_id' => $mail['id'] ?? null,
+                'subject' => $mail['subject'] ?? null,
+            ]);
+
+            throw new TransactionInProgressException('BHD transaction in progress - confirmation number not found');
+        }
+
         $tableIds = [
             'idProductoOrigen' => [
                 'processor' => 'processResult',
@@ -58,8 +71,12 @@ class BHDNotification implements MailToTransaction
             try {
                 $bhdOutput[$field['name']] = $this->{$field['processor']}($body->filter("[id*=$fieldName]")->first()->text());
             } catch (Exception $e) {
-                echo $e->getMessage()."\n\n";
-                Log::error($e->getMessage(), [$e]);
+                if (in_array($fieldName, ['idBeneficiario', 'idProductoDestino'])) {
+                    continue;
+                }
+                $message = $e->getMessage().'( '.$field['name'].' '.$fieldName.")\n\n";
+                echo $mail['message']."\n\n";
+                Log::error($message, [$e]);
 
                 continue;
             }

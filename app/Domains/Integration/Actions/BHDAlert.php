@@ -7,6 +7,7 @@ use App\Domains\Integration\Concerns\MailToTransaction;
 use App\Domains\Integration\Concerns\TransactionDataDTO;
 use App\Domains\Transaction\Services\YNABService;
 use Exception;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -18,10 +19,21 @@ class BHDAlert implements MailToTransaction
     {
         try {
             $body = new Crawler($mail['message']);
-            $product = $body->filter('[class*=titleA] + p')->first()->text();
+
+            // Check if the expected elements exist
+            $productElement = $body->filter('[class*=titleA] + p');
+            if ($productElement->count() === 0) {
+                throw new Exception('BHD email structure not recognized - missing product element. Email from: '.$mail['from'].', Subject: '.$mail['subject']);
+            }
+
+            $product = $productElement->first()->text();
             $tdValues = $body->filter('[class*=table_trans] tbody td')->each(function (Crawler $node) {
                 return $node->text();
             });
+
+            if (count($tdValues) < 6) {
+                throw new Exception('BHD email structure not recognized - insufficient table data ('.count($tdValues).' columns found). Email from: '.$mail['from'].', Subject: '.$mail['subject']);
+            }
 
             $total = YNABService::extractMoneyCurrency($tdValues[2]);
             $type = BHD::parseTypes(strtolower($tdValues[5])) ?? 1;
@@ -45,7 +57,13 @@ class BHDAlert implements MailToTransaction
                 'productBrand' => 'BHD',
             ]);
         } catch (Exception $e) {
-            dump($e->getMessage());
+            Log::error('BHD Alert parsing failed', [
+                'error' => $e->getMessage(),
+                'email_id' => $mail['id'] ?? null,
+                'from' => $mail['from'] ?? null,
+                'subject' => $mail['subject'] ?? null,
+                'date' => $mail['date'] ?? null,
+            ]);
             throw $e;
         }
     }

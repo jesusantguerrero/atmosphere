@@ -36,7 +36,7 @@ class APAP implements AutomationActionContract
 
             return $transaction?->toArray();
         } catch (Exception $e) {
-            dd('hola', $e);
+            Log::error($e->getMessage(), [$e, $payload['message']]);
         }
 
     }
@@ -135,5 +135,25 @@ class APAP implements AutomationActionContract
     public static function parseTypes($type)
     {
         return 1;
+    }
+
+    /**
+     * Get email patterns for bank detection in Universal Bank Parser.
+     *
+     * @return array Email patterns configuration
+     */
+    public static function getEmailPatterns(): array
+    {
+        return [
+            'email_addresses' => [
+                self::EMAIL_ALERT,
+            ],
+            'email_domains' => [
+                '@apap.com.do',
+            ],
+            'subject_patterns' => [
+                'Alerta de Transacción',
+            ],
+        ];
     }
 }

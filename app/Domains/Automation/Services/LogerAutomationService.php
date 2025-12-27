@@ -2,15 +2,16 @@
 
 namespace App\Domains\Automation\Services;
 
-use Google\Service\Gmail;
-use App\Domains\Integration\Actions\BHD;
 use App\Domains\Automation\Models\Automation;
-use App\Domains\Integration\Actions\BHDAlert;
-use App\Domains\Integration\Actions\APAP\APAP;
 use App\Domains\Automation\Models\AutomationTask;
+use App\Domains\Integration\Actions\APAP\APAP;
+use App\Domains\Integration\Actions\BHD;
+use App\Domains\Integration\Actions\BHDAlert;
 use App\Domains\Integration\Actions\MealPlanAutomation;
 use App\Domains\Integration\Actions\OccurrenceAutomation;
 use App\Domains\Integration\Actions\TransactionCreateEntry;
+use App\Domains\Integration\Actions\UniversalBankParser;
+use Google\Service\Gmail;
 
 class LogerAutomationService
 {
@@ -34,7 +35,7 @@ class LogerAutomationService
             $entity = $task->entity;
             echo "\n starting workflow-task:$task->id:$task->name";
             $lastData = $entity::handle($automation, $lastData, $task, $previousTask, $trigger);
-            if (!$lastData) {
+            if (! $lastData) {
                 break;
             }
             $previousTask = $task;
@@ -48,7 +49,7 @@ class LogerAutomationService
         $taskTypes = [
             'triggers' => 'trigger',
             'components' => 'component',
-            'actions' => 'action'
+            'actions' => 'action',
         ];
         foreach ($taskTypes as $taskTypeName => $taskType) {
             if (isset($service[$taskType])) {
@@ -177,6 +178,32 @@ class LogerAutomationService
                         'description' => 'Parse an email alert',
                         'config' => json_encode(BHDAlert::getSchema()),
 
+                    ],
+                ],
+                'type' => 'internal',
+            ],
+            'UniversalBankParser' => [
+                'name' => 'UniversalBankParser',
+                'label' => 'Universal Bank Parser',
+                'entity' => UniversalBankParser::class,
+                'logo' => 'https://img.icons8.com/color/48/000000/bank-building.png',
+                'description' => 'Automatically detects and parses transaction emails from multiple banks (BHD, APAP, etc.) in a single automation',
+                'fields' => json_encode([
+                    'bank_patterns' => [
+                        'type' => 'json',
+                        'label' => 'Bank Email Patterns',
+                        'description' => 'Configuration for bank detection (email addresses, domains, subject patterns)',
+                        'required' => false,
+                    ],
+                ]),
+                'components' => [
+                    [
+                        'label' => 'Parse Bank Email',
+                        'name' => 'parseBankEmail',
+                        'entity' => UniversalBankParser::class,
+                        'description' => 'Automatically detect bank and parse transaction email',
+                        'config' => json_encode([]),
+                        'accepts_config' => true,
                     ],
                 ],
                 'type' => 'internal',

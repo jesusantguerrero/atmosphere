@@ -2,11 +2,12 @@
 
 namespace App\Domains\Integration\Models;
 
+use App\Domains\Automation\Models\Automation;
+use App\Domains\Automation\Models\AutomationService;
 use App\Models\Team;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Model;
-use App\Domains\Automation\Models\Automation;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Integration extends Model
 {
@@ -29,7 +30,12 @@ class Integration extends Model
         return $this->belongsTo(Team::class);
     }
 
+    public function service()
+    {
+        return $this->belongsTo(AutomationService::class, 'automation_service_id', 'id');
+    }
+
     protected $casts = [
-        "config" => "object"
+        'config' => 'object',
     ];
 }
