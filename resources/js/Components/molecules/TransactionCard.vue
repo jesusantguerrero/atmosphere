@@ -37,9 +37,9 @@ const percentage = computed(() => {
   return percentage.toFixed(2);
 });
 
-const handleSelect = () => {
+const handleSelect = (domEvent: MouseEvent) => {
   if (props.allowSelect) {
-    emit("selected");
+    emit("selected", domEvent);
   }
 };
 
@@ -104,7 +104,7 @@ const handleOptions = (option: 'remove'|'selected') => {
     <div class="flex justify-between px-5 py-2 space-x-2">
       <div class="flex w-6/12 space-x-3 truncate">
         <div v-if="allowSelect" class="flex items-center h-full">
-          <input type="checkbox" :checked="isSelected" @change="handleSelect()" />
+          <input type="checkbox" :checked="isSelected" @click="handleSelect" />
         </div>
         <div>
           <h4 class="font-bold truncate">{{ title }}</h4>
