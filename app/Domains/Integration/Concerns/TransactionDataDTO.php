@@ -28,6 +28,8 @@ class TransactionDataDTO extends Data
 
     public ?string $productCode;
 
+    public ?string $productBrand;
+
     public function __construct($data)
     {
         $this->id = $data['id'];
@@ -41,5 +43,6 @@ class TransactionDataDTO extends Data
         $this->messageId = $data['messageId'] ?? null;
         $this->productName = $data['productName'] ?? null;
         $this->productCode = $data['productCode'] ?? null;
+        $this->productBrand = $data['productBrand'] ?? null;
     }
 }

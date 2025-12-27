@@ -2,15 +2,17 @@
 
 namespace App\Domains\Integration\Actions;
 
-use Exception;
-use Symfony\Component\DomCrawler\Crawler;
+use App\Domains\Automation\Concerns\AutomationActionContract;
 use App\Domains\Automation\Models\Automation;
 use App\Domains\Automation\Models\AutomationTaskAction;
-use App\Domains\Automation\Concerns\AutomationActionContract;
+use Exception;
+use Illuminate\Support\Facades\Log;
+use Symfony\Component\DomCrawler\Crawler;
 
 class BHD implements AutomationActionContract
 {
     const EMAIL_ALERT = 'alertas@bhd.com.do';
+
     const EMAIL_NOTIFICATION = 'notificaciones@bhd.com.do';
 
     public static function handle(
@@ -29,7 +31,8 @@ class BHD implements AutomationActionContract
 
             return $transaction?->toArray();
         } catch (Exception $e) {
-            null;
+            Log::error('BHD Message parsing error: '.$e->getMessage());
+
         }
 
     }
@@ -49,7 +52,6 @@ class BHD implements AutomationActionContract
         return 'Parse an email alert or notification from BHD Leon Bank';
     }
 
-
     public static function parseAlert(
         Automation $automation,
         mixed $payload,
@@ -58,9 +60,9 @@ class BHD implements AutomationActionContract
         AutomationTaskAction $trigger
     ) {
         echo "\n Parsing alert \n\n";
-        return (new BHDAlert())->handle($automation, $payload);
-    }
 
+        return (new BHDAlert)->handle($automation, $payload);
+    }
 
     public static function parseNotification(
         Automation $automation,
@@ -69,7 +71,9 @@ class BHD implements AutomationActionContract
         AutomationTaskAction $previousTask,
         AutomationTaskAction $trigger
     ) {
-        return (new BHDNotification())->handle($automation, $payload);
+        echo "\n Parsing notification";
+
+        return (new BHDNotification)->handle($automation, $payload);
     }
 
     public static function getMessageType($mail)
@@ -86,11 +90,12 @@ class BHD implements AutomationActionContract
         }
     }
 
-    public static function getConditions() {
+    public static function getConditions()
+    {
         return [[
-                'conditionType' => GmailReceived::CONDITION_FROM,
-                'value' => self::EMAIL_ALERT,
-            ]
+            'conditionType' => GmailReceived::CONDITION_FROM,
+            'value' => self::EMAIL_ALERT,
+        ],
         ];
     }
 
@@ -114,7 +119,7 @@ class BHD implements AutomationActionContract
             'Compra' => 1,
             'compra' => 1,
             'retiro de efectivo' => 1,
-            "reserva de fondos (hold)" => 1
+            'reserva de fondos (hold)' => 1,
         ];
 
         return $types[$type];

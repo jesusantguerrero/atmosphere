@@ -2,20 +2,20 @@
 
 namespace App\Domains\Integration\Actions;
 
+use App\Domains\Automation\Models\Automation;
+use App\Domains\Integration\Concerns\MailToTransaction;
+use App\Domains\Integration\Concerns\TransactionDataDTO;
+use App\Domains\Transaction\Services\YNABService;
 use Exception;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\DomCrawler\Crawler;
-use App\Domains\Automation\Models\Automation;
-use App\Domains\Transaction\Services\YNABService;
-use App\Domains\Integration\Concerns\MailToTransaction;
-use App\Domains\Integration\Concerns\TransactionDataDTO;
 
 class BHDNotification implements MailToTransaction
 {
     use BHDAction;
 
-    public function handle(Automation $automation, mixed $mail, int $index = 0): TransactionDataDTO | null
+    public function handle(Automation $automation, mixed $mail, int $index = 0): ?TransactionDataDTO
     {
 
         $body = new Crawler($mail['message']);
@@ -58,22 +58,32 @@ class BHDNotification implements MailToTransaction
             try {
                 $bhdOutput[$field['name']] = $this->{$field['processor']}($body->filter("[id*=$fieldName]")->first()->text());
             } catch (Exception $e) {
-                echo $e->getMessage() . "\n\n";
+                echo $e->getMessage()."\n\n";
                 Log::error($e->getMessage(), [$e]);
+
                 continue;
             }
         }
 
+        $product = str_replace('X', '', $bhdOutput['product']);
+        $seller = str_replace('X', '', $bhdOutput['seller'] ?? '');
+
+        // get the last 4 digits of the product
+        $productLast4 = substr($product, -4);
+
         return new TransactionDataDTO([
             'id' => (int) $mail['id'],
-            "messageId" => $mail['messageId'],
+            'messageId' => $mail['messageId'],
             'date' => $bhdOutput['date'],
-            'payee' => $bhdOutput['seller'],
+            'payee' => $seller ?? $bhdOutput['seller'] ?? 'BHD Notification',
             'category' => '',
             'categoryGroup' => '',
             'description' => $bhdOutput['product'].':'.$bhdOutput['description'],
             'amount' => $bhdOutput['amount']->amount * 1,
             'currencyCode' => $bhdOutput['amount']->currencyCode,
+            'productName' => $product,
+            'productCode' => $productLast4,
+            'productBrand' => 'BHD',
         ]);
     }
 

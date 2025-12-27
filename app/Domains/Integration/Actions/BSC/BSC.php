@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Domains\Integration\Actions\APAP;
+namespace App\Domains\Integration\Actions\BSC;
 
 use App\Domains\Automation\Concerns\AutomationActionContract;
 use App\Domains\Automation\Models\Automation;
@@ -10,7 +10,7 @@ use Exception;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\DomCrawler\Crawler;
 
-class APAP implements AutomationActionContract
+class BSC implements AutomationActionContract
 {
     const EMAIL_ALERT = 'NO-REPLY@apap.com.do';
 
@@ -87,7 +87,7 @@ class APAP implements AutomationActionContract
         AutomationTaskAction $trigger
     ) {
 
-        return (new APAPAlert)->handle($automation, $payload);
+        return (new BSCAlert)->handle($automation, $payload);
     }
 
     public static function getMessageType($mail)

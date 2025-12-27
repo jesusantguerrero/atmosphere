@@ -1,18 +1,15 @@
 <?php
 
-namespace App\Domains\Integration\Actions\APAP;
+namespace App\Domains\Integration\Actions\BSC;
 
-use Exception;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Log;
 use Symfony\Component\DomCrawler\Crawler;
 use App\Domains\Automation\Models\Automation;
 use App\Domains\Integration\Concerns\MailToTransaction;
 use App\Domains\Integration\Concerns\TransactionDataDTO;
 
-class APAPAlert implements MailToTransaction
+class BSCAlert implements MailToTransaction
 {
-    use APAPAction;
+    use BSCAction;
 
     public function handle(Automation $automation, mixed $mail, int $index = 0): TransactionDataDTO | null
     {
@@ -22,7 +19,7 @@ class APAPAlert implements MailToTransaction
         $body = new Crawler($html, true, null , true);
         // try {
             if (!$body) return null;
-            $productLine = $body->filter('table p:nth-child(2)')->first()->text();
+            $productLine = $body->filter('table p')->first()->text();
             // the product line is like this: "Tu tarjeta de Crédito titular-Visa Gold APAP terminada en 7106 presenta\n                                        una transacción, con el siguiente detalle:"
             // we need to extract the product name between "titular-" and "terminada"
             // and the number after "terminada en"
@@ -32,33 +29,45 @@ class APAPAlert implements MailToTransaction
             $productLine = preg_replace('/[\s\n\r]+/', ' ', $productLine); // Replace multiple whitespace/newlines with single space
             $productLine = trim($productLine);
 
-            // Use regex to extract product name between "titular-" and "terminada"
-            preg_match('/titular-(.*?)\s+terminada/', $productLine, $matches);
+            // Extract product name: "tarjeta de Crédito {ProductName} terminada en"
+            preg_match('/tarjeta de Crédito\s+(.*?)\s+terminada/', $productLine, $matches);
             $product = isset($matches[1]) ? trim($matches[1]) : '';
 
             // Extract product code after "terminada en"
             preg_match('/terminada en\s+(\d+)/', $productLine, $codeMatches);
             $productCode = isset($codeMatches[1]) ? $codeMatches[1] : '';
 
+            // Extract amount: "Monto: RD$ 4,115.00"
+            preg_match('/Monto:\s*(RD\$|USD\$)?\s*([\d,]+\.?\d*)/', $productLine, $amountMatches);
+            $total = isset($amountMatches[2]) ? (int) str_replace(',', '', $amountMatches[2]) : 0;
+            $currencyCode = isset($amountMatches[1]) ? str_replace('$', '', $amountMatches[1]) : 'RD$';
 
-            $tdValues = $body->filter('table td')->each(function (Crawler $node) {
-                return $node->text();
-            });
+            // Extract payee/location: "Lugar de transacción: {location}"
+            preg_match('/Lugar de transacción:\s*(.*?)(?=Fecha y hora|$)/', $productLine, $payeeMatches);
+            $seller = isset($payeeMatches[1]) ? trim($payeeMatches[1]) : '';
 
-            $total = (int) str_replace(',', '', $tdValues[13]);
-            $type =  1;
+            // Extract date and time: "Fecha y hora: 17/12/2025  20:13:47"
+            preg_match('/Fecha y hora:\s*(\d{1,2}\/\d{1,2}\/\d{4})\s+/', $productLine, $dateMatches);
+            $date = isset($dateMatches[1]) ? date('Y-m-d', strtotime(str_replace('/', '-', $dateMatches[1]))) : date('Y-m-d', strtotime($mail['date']));
+
+            // Extract status: "Estado: Aprobada"
+            preg_match('/Estado:\s*(.*?)(?:\n|$)/', $productLine, $statusMatches);
+            $status = isset($statusMatches[1]) ? trim($statusMatches[1]) : '';
+
+            $type = 1;
+
+            dump($product, $productCode, $total, $seller, $date, $status, $currencyCode);
 
             return new TransactionDataDTO([
                 'id' => (int) $mail['id'],
-                'date' => date('Y-m-d', strtotime($mail['date'])),
-                'payee' => $tdValues[15],
+                'date' => $date,
+                'payee' => $seller,
                 'category' => '',
                 'categoryGroup' => '',
                 'description' => $product,
                 'productCode' => $productCode,
-                'productName' => $product,
                 'amount' => $total * $type,
-                'currencyCode' => APAP::parseCurrency($tdValues[11]) ?? "DOP",
+                'currencyCode' => $currencyCode,
             ]);
         // } catch (Exception $e) {
         //     Log::error($e->getMessage(), [$e]);

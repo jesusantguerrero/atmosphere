@@ -2,13 +2,13 @@
 
 namespace App\Domains\Integration\Actions;
 
-use Exception;
-use Symfony\Component\DomCrawler\Crawler;
 use App\Domains\Automation\Models\Automation;
-use App\Domains\Transaction\Services\YNABService;
 use App\Domains\Integration\Concerns\MailToTransaction;
 use App\Domains\Integration\Concerns\TransactionDataDTO;
+use App\Domains\Transaction\Services\YNABService;
+use Exception;
 use Illuminate\Support\Str;
+use Symfony\Component\DomCrawler\Crawler;
 
 class BHDAlert implements MailToTransaction
 {
@@ -26,13 +26,13 @@ class BHDAlert implements MailToTransaction
             $total = YNABService::extractMoneyCurrency($tdValues[2]);
             $type = BHD::parseTypes(strtolower($tdValues[5])) ?? 1;
 
-            $rawProduct = Str::of($product)->replace(' ', '')->split('#');
+            $rawProduct = Str::of($product)->replace(' ', '')->explode('#');
             $productName = $rawProduct->get(0);
             $productCode = $rawProduct->get(1) ?? null;
 
             return new TransactionDataDTO([
                 'id' => (int) $mail['id'],
-                "messageId" => $mail['messageId'],
+                'messageId' => $mail['messageId'],
                 'date' => date('Y-m-d', strtotime($mail['date'])),
                 'payee' => $tdValues[3],
                 'category' => '',
@@ -42,8 +42,10 @@ class BHDAlert implements MailToTransaction
                 'currencyCode' => BHD::parseCurrency($tdValues[1]),
                 'productName' => $productName,
                 'productCode' => $productCode,
+                'productBrand' => 'BHD',
             ]);
         } catch (Exception $e) {
+            dump($e->getMessage());
             throw $e;
         }
     }
