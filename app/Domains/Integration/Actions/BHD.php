@@ -33,8 +33,8 @@ class BHD implements AutomationActionContract
         } catch (Exception $e) {
             Log::error('BHD Message parsing error: '.$e->getMessage());
 
+            return null;
         }
-
     }
 
     public function getName(): string
@@ -123,5 +123,24 @@ class BHD implements AutomationActionContract
         ];
 
         return $types[$type];
+    }
+
+    /**
+     * Get email patterns for bank detection in Universal Bank Parser.
+     *
+     * @return array Email patterns configuration
+     */
+    public static function getEmailPatterns(): array
+    {
+        return [
+            'email_addresses' => [
+                self::EMAIL_ALERT,
+                self::EMAIL_NOTIFICATION,
+            ],
+            'email_domains' => [
+                '@bhd.com.do',
+            ],
+            'subject_patterns' => [],
+        ];
     }
 }

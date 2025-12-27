@@ -44,7 +44,7 @@ class TransactionCreateEntry implements AutomationActionContract
             $counterAccountId = $payee->account_id;
         }
 
-        $description = FormulaHelper::parseFormula($taskData->description, $payload);
+        $description = FormulaHelper::parseFormula($taskData?->description, $payload);
 
         if ($payload['productCode'] ?? false) {
             $account = Account::where('team_id', $automation->team_id)
@@ -57,7 +57,7 @@ class TransactionCreateEntry implements AutomationActionContract
             }
         }
 
-        $date = FormulaHelper::parseFormula($taskData->date, $payload);
+        $date = FormulaHelper::parseFormula($taskData?->date, $payload);
         $transactionData = [
             'team_id' => $automation->team_id,
             'user_id' => $automation->user_id,
@@ -66,12 +66,12 @@ class TransactionCreateEntry implements AutomationActionContract
             'payee_name' => $payee ? $payee->name : null,
             'counter_account_id' => $counterAccountId ?? null,
             'date' => $date,
-            'currency_code' => FormulaHelper::parseFormula($taskData->currency_code, $payload),
+            'currency_code' => FormulaHelper::parseFormula($taskData?->currency_code, $payload),
             'category_id' => $transactionCategoryId ?? null,
             'description' => $description,
             'reference' => $payload['messageId'] ?? ("{$payload['id']}:{$description}:{$date}") ?? null,
-            'direction' => FormulaHelper::parseFormula($taskData->direction, $payload),
-            'total' => FormulaHelper::parseFormula($taskData->total, $payload),
+            'direction' => FormulaHelper::parseFormula($taskData?->direction, $payload),
+            'total' => FormulaHelper::parseFormula($taskData?->total, $payload),
             'items' => [],
             'meta_data' => json_encode([
                 'resource_id' => $payload['id'],

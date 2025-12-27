@@ -5,6 +5,7 @@ namespace App\Domains\Integration\Actions;
 use App\Domains\Automation\Concerns\AutomationActionContract;
 use App\Domains\Automation\Models\Automation;
 use App\Domains\Integration\Services\GoogleService;
+use App\Exceptions\TransactionInProgressException;
 use Exception;
 use Google\Service\Gmail as ServiceGmail;
 use Illuminate\Support\Facades\Log;
@@ -34,24 +35,40 @@ class GmailReceived implements AutomationActionContract
         $trackId = is_array($track) ? ($track['historyId'] ?? 0) : 0;
         $latestMailData = null;
 
-        // Check if in backfill mode from command flag or stored pageToken
-        $backfillMode = (is_array($lastData) && ($lastData['backfill'] ?? false)) ||
-                        (is_array($track) && isset($track['pageToken']));
+        // Check if backfill is explicitly requested via command flag
+        $backfillRequested = is_array($lastData) && ($lastData['backfill'] ?? false);
+
+        // Continue backfill only if requested OR if there's an active pageToken from previous backfill
         $pageToken = is_array($track) ? ($track['pageToken'] ?? null) : null;
+        $backfillMode = $backfillRequested || ($pageToken !== null);
+
+        // If backfill was not requested but pageToken exists, clear it to exit backfill mode
+        if (! $backfillRequested && $pageToken !== null) {
+            $backfillMode = false;
+            $pageToken = null;
+        }
 
         $taskConditions = json_decode($trigger->values);
         $client = GoogleService::getClient($automation->integration_id);
         $service = new ServiceGmail($client);
-        $conditions = [];
-        foreach ($taskConditions as $taskCondition) {
-            if (isset($taskCondition->conditionType) && $taskCondition->value) {
-                $conditions[] = "$taskCondition->conditionType:$taskCondition->value";
-            }
-        }
-        if (! count($conditions)) {
-            $queryOptions = '';
+
+        // Support both query formats:
+        // 1. New format: {"query": "from:(email1 OR email2)"}
+        // 2. Old format: [{"conditionType":"from","value":"email"}]
+        if (is_object($taskConditions) && isset($taskConditions->query)) {
+            // New query string format (Universal Bank Parser)
+            $queryOptions = $taskConditions->query;
         } else {
-            $queryOptions = implode(' ', $conditions);
+            // Old conditions array format (legacy bank-specific automations)
+            $conditions = [];
+            if (is_array($taskConditions)) {
+                foreach ($taskConditions as $taskCondition) {
+                    if (isset($taskCondition->conditionType) && $taskCondition->value) {
+                        $conditions[] = "$taskCondition->conditionType:$taskCondition->value";
+                    }
+                }
+            }
+            $queryOptions = count($conditions) ? implode(' ', $conditions) : '';
         }
 
         $listParams = ['maxResults' => $maxResults, 'q' => $queryOptions];
@@ -92,6 +109,12 @@ class GmailReceived implements AutomationActionContract
                             if ($taskIndex !== 0) {
                                 $actionEntity = $task->entity;
                                 echo "\n running workflow-task:$task->id:$task->name";
+                                if (! $payload) {
+                                    // Payload is null - task returned null (e.g., transaction in progress)
+                                    // Skip remaining tasks for this email and move to next email
+                                    echo "\n payload is null, skipping remaining tasks for this email";
+                                    break;
+                                }
                                 $payload = $actionEntity::handle($automation, $payload, $task, $previousTask, $tasks[0]);
                                 $previousTask = $task;
                             }
@@ -121,6 +144,11 @@ class GmailReceived implements AutomationActionContract
                             $automation->track = json_encode($latestMailData);
                         }
                         $automation->save();
+                    } catch (TransactionInProgressException $e) {
+                        // Transaction is in progress - this is expected, skip without error logging
+                        echo "\n transaction in progress, skipping remaining tasks for this email";
+
+                        continue;
                     } catch (Exception $e) {
                         Log::error($e->getMessage(), [$e]);
 
