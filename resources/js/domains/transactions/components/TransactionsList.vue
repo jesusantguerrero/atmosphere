@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, watch } from 'vue';
+import { computed, reactive, watch, ref } from 'vue';
 import ExactMath from "@/plugins/exactMath"
 
 import TransactionCard from "@/Components/molecules/TransactionCard.vue";
@@ -39,22 +39,39 @@ watch(() => props.transactions, () => {
 })
 
 const selectedItems: number[]|string[] = reactive<number[]|string[]>([]);
+const lastSelectedIndex = ref<number>(-1);
 
 const isSelected = (transaction: ITransaction) => {
     // @ts-expect-error: includes inst available they said
     return selectedItems?.includes(transaction.id || transaction.title);
 }
 
-const handleSelect = (transaction: ITransaction) => {
-    if (props.allowSelect) {
-        const id: number| string = transaction.id || transaction.title;
+const handleSelect = (transaction: ITransaction, index: number, event: MouseEvent) => {
+    if (!props.allowSelect) return;
 
+    const id: number| string = transaction.id || transaction.title;
+
+    if (event.shiftKey && lastSelectedIndex.value !== -1) {
+        // Shift+click: select range
+        const start = Math.min(lastSelectedIndex.value, index);
+        const end = Math.max(lastSelectedIndex.value, index);
+
+        for (let i = start; i <= end; i++) {
+            const itemId = transactionsParsed.value[i].id || transactionsParsed.value[i].title;
+            if (!selectedItems.includes(itemId)) {
+                selectedItems.push(itemId);
+            }
+        }
+    } else {
+        // Regular click: toggle selection
         if (isSelected(transaction)) {
             selectedItems.splice(selectedItems.indexOf(id), 1);
         } else {
             selectedItems.push(id);
         }
     }
+
+    lastSelectedIndex.value = index;
     emit('update:selected', selectedItems);
 }
 
@@ -100,7 +117,7 @@ const calculateSum = (items: number[]|string[]) => {
                 :key="transaction.id"
                 :isSelected="isSelected(transaction)"
                 class="odd:bg-base-lvl-1 even:bg-base-lvl-2"
-                @selected="handleSelect(transaction)"
+                @selected="handleSelect(transaction, index, $event)"
                 @paid-clicked="$emit('paid-clicked', transaction)"
                 @approved="$emit('approved', transactions[index])"
                 @removed="$emit('removed', transactions[index])"
