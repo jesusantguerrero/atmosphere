@@ -7,6 +7,9 @@ import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 
 import AccountReconciliationAlert from "./AccountReconciliationAlert.vue";
 import { computed, onMounted, ref, toRefs } from "vue";
+import IMdiCheckCircle from "~icons/mdi/check-circle";
+import IMdiEdit from "~icons/mdi/pencil";
+import IMdiLink from "~icons/mdi/link";
 
 const props = defineProps<{
   account: Record<string, any>,
@@ -58,46 +61,62 @@ onMounted(() => {
 
 <template>
   <div
-    class="card w-full bg-base border-2 border-[dodgerblue] cursor-pointer rounded-md h-[160px] px-6 py-3"
-    :class="{ 'bg-base': isSelected }"
+    class="card w-full rounded-lg border border-gray-200 bg-white p-4 cursor-pointer hover:border-gray-300 transition-all relative overflow-hidden"
+    :class="{ 'border-primary border-2 ring-1 ring-primary': isSelected }"
     ref="CreditCardView"
     v-bind="$attrs"
     v-on="$attrs"
     :title="account.balance"
     :data-slide="index"
   >
-    <div class="w-4 hidden h-10 group-hover:inline-block handle cursor-grab">
-      <IconDrag class="h-10" />
+    <!-- Header -->
+    <div class="flex justify-between items-start gap-2 mb-3 pb-3 border-b border-gray-100">
+      <div class="flex-1 min-w-0">
+        <p class="text-xs text-gray-500 font-medium truncate">{{ account.name }}</p>
+      </div>
+
+      <!-- Status Indicator -->
+      <div class="flex-shrink-0">
+        <AccountReconciliationAlert v-if="hasPendingReconciliation" />
+        <div v-else-if="isReconciled" class="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
+          <IMdiCheckCircle class="text-green-600 text-xs" />
+        </div>
+      </div>
     </div>
-    <section class="w-full pl-2">
-      <header class="flex flex-wrap items-center overflow-hidden overflow-ellipsis">
-        <AccountReconciliationAlert v-if="hasPendingReconciliation" class="mr-1" />
-        <IMdiLock v-if="isReconciled" class="mr-1 text-success opacity-70 text-xs" />
-        <span>
-            {{ account.name }} {{ creditLimitDate }}
-        </span>
-      </header>
-      <p class="relative text-xs" :class="{ 'text-red-400': isDebt(account.balance) }">
+
+    <!-- Balance Section -->
+    <div class="mb-3">
+      <p class="text-xs text-gray-500 mb-0.5">Current Balance</p>
+      <p class="text-lg font-bold text-gray-900">
         <NumberHider />
         {{ formatMoney(account.balance, account.currency_code) }}
-        <span v-if="creditLimitDate" class="text-success">
-            ({{ formatMoney(availableCredit, account.currency_code) }} )
-        </span>
       </p>
-    </section>
-    <div class="hidden group-hover:flex transaction">
-      <LogerButtonTab
-        class="h-full flex items-center justify-center px-0.5 rounded-md hover:text-primary hover:bg-base-lvl-2"
-        @click.stop="$emit('edit')"
-      >
-        <IMdiEdit />
-      </LogerButtonTab>
-      <LogerButtonTab
-        class="h-full flex items-center justify-center px-0.5 rounded-md hover:text-primary hover:bg-base-lvl-2"
-        @click.stop="$emit('link')"
-      >
-        <IMdiLink />
-      </LogerButtonTab>
+    </div>
+
+    <!-- Available Credit -->
+    <div class="flex justify-between items-end">
+      <div class="flex-1">
+        <p class="text-xs text-gray-500">Available</p>
+        <p class="text-sm font-semibold text-gray-700">{{ formatMoney(availableCredit, account.currency_code) }}</p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex gap-1">
+        <button
+          class="p-1.5 text-gray-400 hover:text-primary hover:bg-primary/5 rounded transition-colors flex-shrink-0"
+          @click.stop="$emit('edit')"
+          title="Edit account"
+        >
+          <IMdiEdit class="w-4 h-4" />
+        </button>
+        <button
+          class="p-1.5 text-gray-400 hover:text-primary hover:bg-primary/5 rounded transition-colors flex-shrink-0"
+          @click.stop="$emit('link')"
+          title="Link account"
+        >
+          <IMdiLink class="w-4 h-4" />
+        </button>
+      </div>
     </div>
   </div>
 </template>

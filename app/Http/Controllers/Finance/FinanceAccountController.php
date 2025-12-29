@@ -55,6 +55,7 @@ class FinanceAccountController extends InertiaController
             'accountId' => $account->id,
             'resource' => $account,
             'transactions' => $account->transactionSplits(50, $startDate, $endDate, request()->only(['search', 'page', 'limit', 'direction'])),
+            'drafts' => $account->transactionSplits(100, $startDate, $endDate, ['status' => 'draft']),
             'billingCycles' => $this->creditCardReportService->getBillingCyclesInPeriod($account->team_id, $startDate, $endDate, $account->id),
             'stats' => $this->reportService->getAccountStats($account->id, $startDate, $endDate),
             'serverSearchOptions' => [],

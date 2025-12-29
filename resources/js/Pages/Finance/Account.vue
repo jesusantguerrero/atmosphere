@@ -39,6 +39,7 @@ interface CollectionData<T> {
 const props = withDefaults(defineProps<{
     accountDetailTypes: { label: string, id: number | string }[];
     transactions: ITransaction[];
+    drafts?: ITransaction[];
     billingCycles: ITransaction[];
     stats: CollectionData<Record<string, number>>;
     accounts: IAccount[];
@@ -48,11 +49,21 @@ const props = withDefaults(defineProps<{
 }>(), {
     serverSearchOptions: () => {
         return {}
-    }
+    },
+    drafts: () => []
 });
 
 const isLoading = ref(false);
-const { serverSearchOptions, accountId, accounts } = toRefs(props);
+const { serverSearchOptions, accountId, accounts, transactions: verifiedTransactions } = toRefs(props);
+
+// Merge verified and draft transactions for display
+const displayTransactions = computed(() => {
+    const draftsWithBadge = (props.drafts || []).map(t => ({
+              ...t,
+              _isDraft: true
+    }));
+    return [...verifiedTransactions.value, ...draftsWithBadge];
+});
 const { state: pageState, hasFilters: baseHasFilters, reset: baseReset } =
     useServerSearch(serverSearchOptions);
 
@@ -181,11 +192,16 @@ const setPaymentBill = (transaction: ITransaction) => {
         })
 }
 
+const draftCount = computed(() => (props.drafts || []).length);
+
 const financeTabs = computed(() => {
+    const transactionLabel = draftCount.value > 0
+        ? `Transactions ${props.transactions.length} (${draftCount.value} pending)`
+        : `Transactions ${props.transactions.length}`;
 
     return [{
         name: "transactions",
-        label: `Transactions ${props.transactions.length}`,
+        label: transactionLabel,
     },
     {
         name: "trends",
@@ -301,7 +317,7 @@ const selectedTabName = computed(() => {
                         <AccountReconciliationBanner v-if="selectedAccount" :account="selectedAccount" />
 
                         <Component :is="listComponent" :cols="tableAccountCols(props.accountId)"
-                            :transactions="transactions" :server-search-options="serverSearchOptions"
+                            :transactions="displayTransactions" :server-search-options="serverSearchOptions"
                             :is-loading="isLoading" @findLinked="findLinked"
                             @removed="removeTransaction($event, ['verified'])" @duplicate="handleDuplicate"
                             @edit="handleEdit" />
