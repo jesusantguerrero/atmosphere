@@ -76,32 +76,12 @@ onMounted(() => {
       </div>
 
       <!-- Status Indicator -->
-      <div class="flex-shrink-0">
+      <div class="flex-shrink-0 flex items-center gap-2">
         <AccountReconciliationAlert v-if="hasPendingReconciliation" />
         <div v-else-if="isReconciled" class="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
           <IMdiCheckCircle class="text-green-600 text-xs" />
         </div>
-      </div>
-    </div>
-
-    <!-- Balance Section -->
-    <div class="mb-3">
-      <p class="text-xs text-gray-500 mb-0.5">Current Balance</p>
-      <p class="text-lg font-bold text-gray-900">
-        <NumberHider />
-        {{ formatMoney(account.balance, account.currency_code) }}
-      </p>
-    </div>
-
-    <!-- Available Credit -->
-    <div class="flex justify-between items-end">
-      <div class="flex-1">
-        <p class="text-xs text-gray-500">Available</p>
-        <p class="text-sm font-semibold text-gray-700">{{ formatMoney(availableCredit, account.currency_code) }}</p>
-      </div>
-
-      <!-- Action Buttons -->
-      <div class="flex gap-1">
+         <div class="flex gap-1">
         <button
           class="p-1.5 text-gray-400 hover:text-primary hover:bg-primary/5 rounded transition-colors flex-shrink-0"
           @click.stop="$emit('edit')"
@@ -117,6 +97,17 @@ onMounted(() => {
           <IMdiLink class="w-4 h-4" />
         </button>
       </div>
+      </div>
+    </div>
+
+    <!-- Balance Section -->
+    <div class="mb-3">
+      <p class="text-xs text-gray-500 mb-0.5">Current Balance</p>
+      <p class="text-base font-bold text-gray-900">
+        <NumberHider />
+        {{ formatMoney(account.balance, account.currency_code) }}
+        / {{ formatMoney(availableCredit, account.currency_code) }}
+      </p>
     </div>
   </div>
 </template>
