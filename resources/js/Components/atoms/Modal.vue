@@ -3,26 +3,18 @@ import { computed, onMounted, onUnmounted, watch } from "vue";
 
 const emit = defineEmits(['close'])
 
-const props = defineProps({
-    show: {
-        default: false
-    },
-    maxWidth: {
-        default: '2xl'
-    },
-    closeable: {
-        default: true
-    },
-    isOpen: {
-        type: Boolean
-    },
-    automatic: {
-        type: Boolean
-    },
-    fullHeight: {
-        type: Boolean,
-    }
-});
+const props = withDefaults(defineProps<{
+    show: boolean;
+    maxWidth: string;
+    closeable: boolean;
+    isOpen: boolean;
+    automatic: boolean;
+    fullHeight: boolean;
+    }>(), {
+        show: false,
+        maxWidth: '2xl',
+        closeable: true,
+    });
 
 watch(() => props.show, (show) => {
   if (show) {
@@ -35,6 +27,7 @@ watch(() => props.show, (show) => {
 })
 
 const close = () => {
+    debugger
     if (props.closeable) {
         emit('close')
     }

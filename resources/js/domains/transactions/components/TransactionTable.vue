@@ -81,8 +81,13 @@ const getTransactionColor = (row: ITransaction) => {
       @edit="handleEdit"
     >
       <template v-slot:total="{ scope: { row } }">
-        <div class="font-bold" :class="[getTransactionColor(row)]">
-          {{ formatMoney(row.total, row.currency_code) }}
+        <div class="flex items-center gap-2">
+          <span v-if="row._isDraft" class="px-2 py-1 text-xs font-medium bg-amber-100 text-amber-800 rounded-full">
+            Draft
+          </span>
+          <div class="font-bold" :class="[getTransactionColor(row)]">
+            {{ formatMoney(row.total, row.currency_code) }}
+          </div>
         </div>
       </template>
 

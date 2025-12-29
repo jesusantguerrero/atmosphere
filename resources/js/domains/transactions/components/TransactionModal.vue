@@ -61,7 +61,7 @@ interface TransactionData {
   counter_account?: { id: number };
 }
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   show?: boolean;
   maxWidth?: string;
   closeable?: boolean;
@@ -71,7 +71,9 @@ const props = defineProps<{
   transactionData?: TransactionData;
   mode?: string;
   fullHeight?: boolean;
-}>();
+}>(), {
+    closeable: true,
+});
 
 const emit = defineEmits(["close", "saved", "update:show"]);
 
