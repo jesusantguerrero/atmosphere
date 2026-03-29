@@ -120,6 +120,15 @@ const handleEdit = (transaction: ITransaction) => {
     });
 };
 
+const handleApprove = (transaction: ITransaction) => {
+    router.post(`/transactions/${transaction.id}/approve`, {}, {
+        preserveScroll: true,
+        onSuccess() {
+            router.reload();
+        },
+    });
+};
+
 
 
 onMounted(() => {
@@ -327,7 +336,7 @@ const selectedTabName = computed(() => {
                             :transactions="displayTransactions" :server-search-options="serverSearchOptions"
                             :is-loading="isLoading" @findLinked="findLinked"
                             @removed="removeTransaction($event, ['verified'])" @duplicate="handleDuplicate"
-                            @edit="handleEdit" />
+                            @edit="handleEdit" @approved="handleApprove" />
                     </section>
                 </template>
             </WidgetContainer>

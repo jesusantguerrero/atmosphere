@@ -36,6 +36,11 @@ const handleEdit = (transaction: ITransaction) => {
 const options = (row: Record<string, any>) => {
   const defaultOptions = [
     {
+      name: "approved",
+      label: "Approve",
+      hide: row.status !== "draft",
+    },
+    {
       name: "edit",
       label: "Edit",
     },
@@ -82,9 +87,14 @@ const getTransactionColor = (row: ITransaction) => {
     >
       <template v-slot:total="{ scope: { row } }">
         <div class="flex items-center gap-2">
-          <span v-if="row._isDraft" class="px-2 py-1 text-xs font-medium bg-amber-100 text-amber-800 rounded-full">
-            Draft
-          </span>
+          <button
+            v-if="row._isDraft"
+            @click.stop="emit('approved', row)"
+            class="px-2 py-1 text-xs font-medium bg-amber-100 text-amber-800 rounded-full hover:bg-green-100 hover:text-green-700 transition-colors"
+            title="Click to approve"
+          >
+            Approve
+          </button>
           <div class="font-bold" :class="[getTransactionColor(row)]">
             {{ formatMoney(row.total, row.currency_code) }}
           </div>
