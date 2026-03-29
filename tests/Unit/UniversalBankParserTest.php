@@ -4,9 +4,9 @@ namespace Tests\Unit;
 
 use App\Domains\Automation\Models\Automation;
 use App\Domains\Automation\Models\AutomationTaskAction;
-use App\Domains\Integration\Actions\APAP\APAPAlert;
-use App\Domains\Integration\Actions\BHDAlert;
-use App\Domains\Integration\Actions\BSC\BSCAlert;
+use App\Domains\Integration\Actions\APAP\APAP;
+use App\Domains\Integration\Actions\BHD;
+use App\Domains\Integration\Actions\BSC\BSC;
 use App\Domains\Integration\Actions\UniversalBankParser;
 use App\Exceptions\UnsupportedBankException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -163,39 +163,39 @@ class UniversalBankParserTest extends TestCase
     }
 
     /** @test */
-    public function it_returns_bhd_parser_for_bhd_code()
+    public function it_returns_bhd_handler_for_bhd_code()
     {
         $reflection = new ReflectionClass(UniversalBankParser::class);
-        $method = $reflection->getMethod('getBankParser');
+        $method = $reflection->getMethod('getBankHandler');
         $method->setAccessible(true);
 
-        $parser = $method->invoke(null, 'BHD');
+        $handler = $method->invoke(null, 'BHD');
 
-        $this->assertInstanceOf(BHDAlert::class, $parser);
+        $this->assertEquals(BHD::class, $handler);
     }
 
     /** @test */
-    public function it_returns_apap_parser_for_apap_code()
+    public function it_returns_apap_handler_for_apap_code()
     {
         $reflection = new ReflectionClass(UniversalBankParser::class);
-        $method = $reflection->getMethod('getBankParser');
+        $method = $reflection->getMethod('getBankHandler');
         $method->setAccessible(true);
 
-        $parser = $method->invoke(null, 'APAP');
+        $handler = $method->invoke(null, 'APAP');
 
-        $this->assertInstanceOf(APAPAlert::class, $parser);
+        $this->assertEquals(APAP::class, $handler);
     }
 
     /** @test */
-    public function it_returns_bsc_parser_for_bsc_code()
+    public function it_returns_bsc_handler_for_bsc_code()
     {
         $reflection = new ReflectionClass(UniversalBankParser::class);
-        $method = $reflection->getMethod('getBankParser');
+        $method = $reflection->getMethod('getBankHandler');
         $method->setAccessible(true);
 
-        $parser = $method->invoke(null, 'BSC');
+        $handler = $method->invoke(null, 'BSC');
 
-        $this->assertInstanceOf(BSCAlert::class, $parser);
+        $this->assertEquals(BSC::class, $handler);
     }
 
     /** @test */
@@ -205,7 +205,7 @@ class UniversalBankParserTest extends TestCase
         $this->expectExceptionMessage("Bank 'UNKNOWN' is not supported by the parser registry");
 
         $reflection = new ReflectionClass(UniversalBankParser::class);
-        $method = $reflection->getMethod('getBankParser');
+        $method = $reflection->getMethod('getBankHandler');
         $method->setAccessible(true);
 
         $method->invoke(null, 'UNKNOWN');
@@ -321,5 +321,62 @@ class UniversalBankParserTest extends TestCase
 
         $this->assertIsArray($config);
         $this->assertEmpty($config);
+    }
+
+    /** @test */
+    public function it_extracts_email_from_display_name_format()
+    {
+        $reflection = new ReflectionClass(UniversalBankParser::class);
+        $method = $reflection->getMethod('extractEmailAddress');
+        $method->setAccessible(true);
+
+        $email = $method->invoke(null, 'BHD <Alertas@bhd.com.do>');
+
+        $this->assertEquals('Alertas@bhd.com.do', $email);
+    }
+
+    /** @test */
+    public function it_extracts_email_from_plain_format()
+    {
+        $reflection = new ReflectionClass(UniversalBankParser::class);
+        $method = $reflection->getMethod('extractEmailAddress');
+        $method->setAccessible(true);
+
+        $email = $method->invoke(null, 'alertas@bhd.com.do');
+
+        $this->assertEquals('alertas@bhd.com.do', $email);
+    }
+
+    /** @test */
+    public function it_detects_bank_from_email_with_display_name()
+    {
+        $reflection = new ReflectionClass(UniversalBankParser::class);
+        $method = $reflection->getMethod('extractEmailAddress');
+        $method->setAccessible(true);
+
+        $cleanEmail = $method->invoke(null, 'BHD <Alertas@bhd.com.do>');
+
+        $detectMethod = $reflection->getMethod('detectBank');
+        $detectMethod->setAccessible(true);
+
+        $bankCode = $detectMethod->invoke(null, $this->automation, $cleanEmail, '');
+
+        $this->assertEquals('BHD', $bankCode);
+    }
+
+    /** @test */
+    public function it_validates_email_with_display_name()
+    {
+        $reflection = new ReflectionClass(UniversalBankParser::class);
+        $method = $reflection->getMethod('validateEmailData');
+        $method->setAccessible(true);
+
+        // Should not throw exception
+        $method->invoke(null, [
+            'from' => 'BHD <Alertas@bhd.com.do>',
+            'subject' => 'Test',
+        ]);
+
+        $this->assertTrue(true); // If we get here, validation passed
     }
 }

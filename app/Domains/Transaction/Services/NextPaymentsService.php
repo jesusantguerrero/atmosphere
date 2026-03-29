@@ -2,12 +2,11 @@
 
 namespace App\Domains\Transaction\Services;
 
+use App\Domains\Budget\Models\BudgetTarget;
+use App\Domains\Transaction\Models\BillingCycle;
+use App\Domains\Transaction\Models\Transaction;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
-use App\Domains\Budget\Models\BudgetMonth;
-use App\Domains\Budget\Models\BudgetTarget;
-use App\Domains\Transaction\Models\Transaction;
-use App\Domains\Transaction\Models\BillingCycle;
 
 class NextPaymentsService
 {
@@ -21,8 +20,8 @@ class NextPaymentsService
             ...$this->getUpcomingCreditCardPayments($teamId, $currentDate, $endDate),
             ...$this->getPlannedTransactions($teamId, $currentDate, $endDate),
         ])
-        ->sortBy('due_date')
-        ->values();
+            ->sortBy('due_date')
+            ->values();
     }
 
     private function getUnpaidBudgetCategories(int $teamId, Carbon $startDate, Carbon $endDate): array
@@ -33,7 +32,7 @@ class NextPaymentsService
         $unpaidBudgets = BudgetTarget::where('team_id', $teamId)
             ->where([
                 'target_type' => 'spending',
-                'notify' => 1
+                'notify' => 1,
             ])
             ->whereNotNull('frequency_month_date')
             ->with(['category'])
@@ -45,7 +44,7 @@ class NextPaymentsService
                     ->whereRaw("DATE_FORMAT(date, '%Y-%m') = ?", [substr($currentMonth, 0, 7)])
                     ->exists();
 
-                return !$hasTransaction;
+                return ! $hasTransaction;
             })
             ->map(function ($target) use ($startDate) {
                 $dueDay = min($target->frequency_month_date, $startDate->daysInMonth);
@@ -66,7 +65,7 @@ class NextPaymentsService
                     'metadata' => [
                         'target_id' => $target->id,
                         'frequency' => $target->frequency,
-                    ]
+                    ],
                 ];
             })
             ->toArray();
@@ -80,9 +79,9 @@ class NextPaymentsService
         $creditCardAccounts = \App\Models\Account::where([
             'team_id' => $teamId,
         ])
-        ->whereNull('closed_at')
-        ->whereNotNull('credit_closing_day')
-        ->get();
+            ->whereNull('closed_at')
+            ->whereNotNull('credit_closing_day')
+            ->get();
 
         $upcomingPayments = [];
         $closings = [];
@@ -95,8 +94,8 @@ class NextPaymentsService
             // For credit cards, negative balance means debt (money owed)
             $currentDebt = abs(min(0, $currentBalance));
             $closings[$account->name] = [
-                "name" => $account->name,
-                "debt" => $currentDebt,
+                'name' => $account->name,
+                'debt' => $currentDebt,
             ];
             if ($currentDebt > 0) {
 
@@ -105,10 +104,11 @@ class NextPaymentsService
 
                 // Find the closing date for this month
                 $closingDate = $currentMonth->copy()->day(min($closingDay, $currentMonth->daysInMonth));
-                $closings[$account->name]["date"] = $closingDate;
+                $closings[$account->name]['date'] = $closingDate;
 
                 // Find the previous closing date (last month)
-                $previousClosingDate = $currentMonth->copy()->subMonth()->day(min($closingDay, $currentMonth->subMonth()->daysInMonth));
+                $previousMonth = $currentMonth->copy()->subMonth();
+                $previousClosingDate = $previousMonth->copy()->day(min($closingDay, $previousMonth->daysInMonth));
 
                 // Check if there was a payment (type = 1) since the previous closing date (i.e., during current statement period)
                 $paymentInCurrentPeriod = \App\Domains\Transaction\Models\TransactionLine::where('account_id', $account->id)
@@ -117,7 +117,7 @@ class NextPaymentsService
                     ->exists();
 
                 // Only show if no payment was made during this statement period
-                if (!$paymentInCurrentPeriod) {
+                if (! $paymentInCurrentPeriod) {
                     $upcomingPayments[] = [
                         'id' => "cc_payment_{$account->id}_{$closingDate->format('Y-m')}",
                         'type' => 'credit_card_payment',
@@ -134,7 +134,7 @@ class NextPaymentsService
                             'total_debt' => $currentDebt,
                             'closing_day' => $closingDay,
                             'current_balance' => $currentBalance,
-                        ]
+                        ],
                     ];
                 }
             }
@@ -171,7 +171,7 @@ class NextPaymentsService
                     'metadata' => [
                         'transaction_id' => $transaction->id,
                         'description' => $transaction->description,
-                    ]
+                    ],
                 ];
             })
             ->toArray();
@@ -186,6 +186,7 @@ class NextPaymentsService
         if ($type === 'cc' && isset($parts[1]) && $parts[1] === 'payment') {
             // Format: cc_payment_{account_id}_{month}
             $accountId = $parts[2] ?? null;
+
             return $this->markCreditCardPaymentAsPaid($accountId, $transactionData);
         }
 
@@ -206,7 +207,9 @@ class NextPaymentsService
     private function markBudgetCategoryAsPaid(int $targetId, array $transactionData): bool
     {
         $target = BudgetTarget::find($targetId);
-        if (!$target) return false;
+        if (! $target) {
+            return false;
+        }
 
         // Create actual transaction
         $transaction = Transaction::create([
@@ -222,7 +225,9 @@ class NextPaymentsService
     private function markBillingCycleAsPaid(int $cycleId, array $transactionData): bool
     {
         $cycle = BillingCycle::find($cycleId);
-        if (!$cycle) return false;
+        if (! $cycle) {
+            return false;
+        }
 
         // Create payment transaction and link to billing cycle
         $transaction = Transaction::create([
@@ -240,7 +245,9 @@ class NextPaymentsService
     private function markPlannedTransactionAsPaid(int $transactionId, array $transactionData): bool
     {
         $plannedTransaction = Transaction::find($transactionId);
-        if (!$plannedTransaction) return false;
+        if (! $plannedTransaction) {
+            return false;
+        }
 
         // Update planned transaction or create new verified transaction
         $plannedTransaction->update([
@@ -256,10 +263,14 @@ class NextPaymentsService
 
     private function markCreditCardPaymentAsPaid(?string $accountId, array $transactionData): bool
     {
-        if (!$accountId) return false;
+        if (! $accountId) {
+            return false;
+        }
 
         $account = \App\Models\Account::find($accountId);
-        if (!$account) return false;
+        if (! $account) {
+            return false;
+        }
 
         // Create payment transaction for the credit card
         $transaction = Transaction::create([

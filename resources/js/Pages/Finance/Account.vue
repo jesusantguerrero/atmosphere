@@ -62,7 +62,14 @@ const displayTransactions = computed(() => {
               ...t,
               _isDraft: true
     }));
-    return [...verifiedTransactions.value, ...draftsWithBadge];
+    const allTransactions = [...verifiedTransactions.value, ...draftsWithBadge];
+
+    // Filter by direction if set
+    if (pageState.custom.direction) {
+        return allTransactions.filter(t => t.direction === pageState.custom.direction);
+    }
+
+    return allTransactions;
 });
 const { state: pageState, hasFilters: baseHasFilters, reset: baseReset } =
     useServerSearch(serverSearchOptions);

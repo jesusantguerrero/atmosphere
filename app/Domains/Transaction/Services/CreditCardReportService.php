@@ -2,32 +2,34 @@
 
 namespace App\Domains\Transaction\Services;
 
-use Exception;
+use App\Domains\AppCore\Models\Category;
+use App\Domains\Budget\Data\BudgetReservedNames;
+use App\Domains\Transaction\Models\BillingCycle;
+use App\Models\User;
+use App\Notifications\BillingCycleCutAlert;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Account;
-use App\Domains\AppCore\Models\Category;
 use Insane\Journal\Models\Core\Transaction;
-use App\Domains\Budget\Data\BudgetReservedNames;
-use App\Domains\Transaction\Models\BillingCycle;
 
 class CreditCardReportService
 {
-    public function creditCardCycleByAccount($teamId, $date, $monthsBack = 1, $creditCardId = null, $asToday = null) {
-        $endCycleDate =  Carbon::createFromFormat('Y-m-d', $date)->startOfMonth()->subMonth($monthsBack)->format('Y-m-d');
-        $startCycleDate =  Carbon::createFromFormat('Y-m-d', $date)->startOfMonth()->subMonth($monthsBack+1)->format('Y-m-d');
+    public function creditCardCycleByAccount($teamId, $date, $monthsBack = 1, $creditCardId = null, $asToday = null)
+    {
+        $endCycleDate = Carbon::createFromFormat('Y-m-d', $date)->startOfMonth()->subMonth($monthsBack)->format('Y-m-d');
+        $startCycleDate = Carbon::createFromFormat('Y-m-d', $date)->startOfMonth()->subMonth($monthsBack + 1)->format('Y-m-d');
 
         $readyToAssign = Category::where([
             'team_id' => $teamId,
         ])
-        ->where('name', BudgetReservedNames::READY_TO_ASSIGN->value)
-        ->first();
+            ->where('name', BudgetReservedNames::READY_TO_ASSIGN->value)
+            ->first();
 
         return DB::table(DB::raw('accounts a'))
-            ->where("a.team_id", $teamId)
+            ->where('a.team_id', $teamId)
             ->whereNotNull('a.credit_closing_day')
             ->when($asToday, fn ($q) => $q->whereRaw("now() >= DATE_FORMAT(?, CONCAT('%Y-%m-', LPAD(a.credit_closing_day, 2, '0')))", [
-                    $endCycleDate
+                $endCycleDate,
             ]))
             ->selectRaw("
                 ABS(COALESCE(SUM(CASE WHEN tl.type = -1 THEN tl.amount * tl.type ELSE 0 END), 0)) AS subtotal,
@@ -38,14 +40,14 @@ class CreditCardReportService
                 a.credit_limit,
                 DATE_FORMAT(?, CONCAT('%Y-%m-', LPAD(a.credit_closing_day, 2, '0'))) AS `from`,
                 DATE_FORMAT(?, CONCAT('%Y-%m-', LPAD(a.credit_closing_day, 2, '0'))) AS `until`", [
-                    $startCycleDate,
-                    $endCycleDate
+                $startCycleDate,
+                $endCycleDate,
             ])
 
             ->leftJoin(DB::raw('transaction_lines tl'), fn ($q) => $q->on('a.id', 'tl.account_id')
                 ->whereRaw('(tl.type = ? or tl.category_id  = ?)', [-1, $readyToAssign->id])
             )
-            ->when($creditCardId, fn($q) => $q->where('account_id', $creditCardId))
+            ->when($creditCardId, fn ($q) => $q->where('account_id', $creditCardId))
             ->whereRaw("(tl.date >= DATE_FORMAT(?, CONCAT('%Y-%m-', LPAD(a.credit_closing_day, 2, '0'))) and tl.type = -1
             AND
                 tl.date < DATE_FORMAT(?, CONCAT('%Y-%m-', LPAD(a.credit_closing_day, 2, '0')))
@@ -53,40 +55,42 @@ class CreditCardReportService
             OR tl.date = DATE_FORMAT(?, CONCAT('%Y-%m-', LPAD(a.credit_closing_day, 2, '0'))) AND tl.type = 1", [
                 $startCycleDate,
                 $endCycleDate,
-                $endCycleDate
+                $endCycleDate,
             ])
             ->groupBy('a.id')
             ->get();
     }
 
-    public function getTopCategoriesByAccount($teamId, $startDate = 1, $endDate, $creditCardId = null) {
+    public function getTopCategoriesByAccount($teamId, $startDate, $endDate, $creditCardId = null)
+    {
         return DB::table(DB::raw('accounts a'))
-            ->where("a.team_id", $teamId)
+            ->where('a.team_id', $teamId)
             ->whereNotNull('a.credit_closing_day')
-            ->selectRaw("
+            ->selectRaw('
                 ABS(COALESCE(SUM(CASE WHEN tl.type = -1 THEN tl.amount * tl.type ELSE 0 END), 0)) AS subtotal,
                 ABS(COALESCE(SUM(tl.amount * tl.type), 0)) AS total,
                 ABS(COALESCE(SUM(CASE WHEN tl.type = 1 THEN tl.amount * tl.type ELSE 0 END), 0)) AS discount,
                 a.name,
                 a.id,
                 c.name as cat_name
-            ")
+            ')
             ->leftJoin(DB::raw('transaction_lines tl'), fn ($q) => $q->on('a.id', 'tl.account_id')
                 ->whereNotNull('tl.category_id')
             )
-            ->join(DB::raw('categories c'),'tl.category_id', 'c.id')
-            ->whereBetween("tl.date", [$startDate, $endDate])
+            ->join(DB::raw('categories c'), 'tl.category_id', 'c.id')
+            ->whereBetween('tl.date', [$startDate, $endDate])
             ->groupBy(DB::raw('a.id, c.name'))
             ->orderBy('total', 'desc')
             ->get();
     }
 
-    public function getTopCategoriesByCreditCard($teamId, $startDate = 1, $endDate, $creditCardId = null) {
+    public function getTopCategoriesByCreditCard($teamId, $startDate, $endDate, $creditCardId = null)
+    {
         $readyToAssign = Category::where([
             'team_id' => $teamId,
         ])
-        ->where('name', BudgetReservedNames::READY_TO_ASSIGN->value)
-        ->first();
+            ->where('name', BudgetReservedNames::READY_TO_ASSIGN->value)
+            ->first();
 
         return DB::select("
          WITH TopCategories as (
@@ -115,19 +119,20 @@ class CreditCardReportService
             WHERE tc.rank <= 4
             GROUP BY tc.id, tc.cat_name
             ORDER BY tc.id, tc.rank", [
-                'teamId' => $teamId,
-                'startDate' => $startDate,
-                'endDate' => $endDate,
-                'readyToAssign' => $readyToAssign->id
-            ]);
+            'teamId' => $teamId,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'readyToAssign' => $readyToAssign->id,
+        ]);
     }
 
-    public function getTopPayeesByAccount($teamId, $startDate, $endDate, $asToday = null) {
+    public function getTopPayeesByAccount($teamId, $startDate, $endDate, $asToday = null)
+    {
         $readyToAssign = Category::where([
             'team_id' => $teamId,
         ])
-        ->where('name', BudgetReservedNames::READY_TO_ASSIGN->value)
-        ->first();
+            ->where('name', BudgetReservedNames::READY_TO_ASSIGN->value)
+            ->first();
 
         return DB::select("
         SELECT
@@ -150,49 +155,51 @@ class CreditCardReportService
             'teamId' => $teamId,
             'startDate' => $startDate,
             'endDate' => $endDate,
-            'readyToAssign' => $readyToAssign->id
+            'readyToAssign' => $readyToAssign->id,
         ]);
     }
 
-    public function getBillingCyclesByCardInPeriod($teamId, $startDate = 1, $endDate, $creditCardId = null) {
+    public function getBillingCyclesByCardInPeriod($teamId, $startDate, $endDate, $creditCardId = null)
+    {
         $billingData = DB::table(DB::raw('accounts a'))
-            ->where("a.team_id", $teamId)
+            ->where('a.team_id', $teamId)
             ->whereNotNull('a.credit_closing_day')
-            ->selectRaw("
+            ->selectRaw('
                 ABS(COALESCE(SUM(bc.subtotal), 0)) AS subtotal,
                 ABS(COALESCE(SUM(bc.total), 0)) AS total,
                 ABS(COALESCE(SUM(bc.discounts), 0)) AS discounts,
                 a.name,
                 a.id
-            ")
+            ')
             ->when($creditCardId, fn ($q) => $q->where('a.id', $creditCardId))
             ->leftJoin(DB::raw('billing_cycles bc'), 'a.id', 'bc.account_id')
-            ->whereBetween("bc.end_at", [$startDate, $endDate])
+            ->whereBetween('bc.end_at', [$startDate, $endDate])
             ->groupBy('a.id')
             ->get();
 
         return [
-            "data" => $billingData,
-            "discountTotal" => $billingData->sum('discount'),
-            "total" => $billingData->sum('total'),
-            "subtotal" => $billingData->sum('subtotal')
+            'data' => $billingData,
+            'discountTotal' => $billingData->sum('discount'),
+            'total' => $billingData->sum('total'),
+            'subtotal' => $billingData->sum('subtotal'),
         ];
     }
 
-    public function getBillingCyclesInPeriod($teamId, $startDate, $endDate, $creditCardId = null, $statuses= null) {
+    public function getBillingCyclesInPeriod($teamId, $startDate, $endDate, $creditCardId = null, $statuses = null)
+    {
         return DB::table(DB::raw('accounts a'))
-            ->where("a.team_id", $teamId)
+            ->where('a.team_id', $teamId)
             ->whereNotNull('a.credit_closing_day')
-            ->selectRaw("
+            ->selectRaw('
                 bc.*,
                 a.name
-            ")
+            ')
             ->when($creditCardId, fn ($q) => $q->where('a.id', $creditCardId))
             ->leftJoin(DB::raw('billing_cycles bc'), 'a.id', 'bc.account_id')
-            ->when($statuses, fn($q) => $q->whereIn("bc.status", $statuses))
-            ->when($startDate && $endDate, fn($q) => $q->whereBetween("bc.end_at", [$startDate, $endDate]))
-            ->when(!$startDate && $endDate, fn($q) => $q->where("bc.end_at", '<=', $endDate))
-            ->when($startDate && !$endDate, fn($q) => $q->where("bc.end_at", '>=', $startDate))
+            ->when($statuses, fn ($q) => $q->whereIn('bc.status', $statuses))
+            ->when($startDate && $endDate, fn ($q) => $q->whereBetween('bc.end_at', [$startDate, $endDate]))
+            ->when(! $startDate && $endDate, fn ($q) => $q->where('bc.end_at', '<=', $endDate))
+            ->when($startDate && ! $endDate, fn ($q) => $q->where('bc.end_at', '>=', $startDate))
             ->orderByDesc('bc.end_at')
             ->get();
     }
@@ -208,8 +215,8 @@ class CreditCardReportService
 
         $data = [
             'lastCycleBalances' => $lastCycleBalances,
-            "creditTotal" =>  $creditTotal,
-            "creditLineUsage" =>  round($creditTotal / $lastCycleBalances->sum('credit_limit') * 100, 2),
+            'creditTotal' => $creditTotal,
+            'creditLineUsage' => round($creditTotal / $lastCycleBalances->sum('credit_limit') * 100, 2),
             'topCategoriesByCard' => $this->getTopCategoriesByCreditCard($teamId, $startPeriodDate, $date),
             'billingCyclesByCard' => $this->getBillingCyclesByCardInPeriod($teamId, $startPeriodDate, $date),
             'topPayeesByCard' => $this->getTopPayeesByAccount($teamId, $startPeriodDate->format('Y-m-d'), $date),
@@ -220,13 +227,14 @@ class CreditCardReportService
         return $data;
     }
 
-    public function generateBillingCycles($teamId, $yearMonth) {
+    public function generateBillingCycles($teamId, $yearMonth)
+    {
         $monthsWithTransactions = DB::table('transaction_lines')
-        ->selectRaw("date_format(transaction_lines.date, '%Y-%m') AS date")
-        ->groupBy(DB::raw("date_format(transaction_lines.date, '%Y-%m')"))
-        ->whereRaw("date_format(transaction_lines.date, '%Y-%m') >= ?", [$yearMonth])
-        ->get()
-        ->pluck('date');
+            ->selectRaw("date_format(transaction_lines.date, '%Y-%m') AS date")
+            ->groupBy(DB::raw("date_format(transaction_lines.date, '%Y-%m')"))
+            ->whereRaw("date_format(transaction_lines.date, '%Y-%m') >= ?", [$yearMonth])
+            ->get()
+            ->pluck('date');
 
         $monthsWithTransactions = [
             ...$monthsWithTransactions,
@@ -236,49 +244,62 @@ class CreditCardReportService
         $count = 0;
 
         foreach ($monthsWithTransactions as $month) {
-            $lastCycleBalances = $this->creditCardCycleByAccount($teamId, $month."-01", 0, null, true)->sortBy('from');
+            $lastCycleBalances = $this->creditCardCycleByAccount($teamId, $month.'-01', 0, null, true)->sortBy('from');
             $count++;
             foreach ($lastCycleBalances as $creditCardAccount) {
                 echo "{$creditCardAccount->name} month {$creditCardAccount->from} {$creditCardAccount->until} generated".PHP_EOL;
-                BillingCycle::updateOrCreate([
-                    "account_id" => $creditCardAccount->id,
-                    "team_id" => $teamId,
-                    "user_id" => 0,
-                    "start_at" => $creditCardAccount->from,
-                    "end_at" => $creditCardAccount->until,
+                $billingCycle = BillingCycle::updateOrCreate([
+                    'account_id' => $creditCardAccount->id,
+                    'team_id' => $teamId,
+                    'user_id' => 0,
+                    'start_at' => $creditCardAccount->from,
+                    'end_at' => $creditCardAccount->until,
                 ], [
-                    "minimum_payment" => $creditCardAccount->total,
-                    "debt" => $creditCardAccount->total,
-                    "subtotal" => $creditCardAccount->subtotal,
-                    "discounts" =>$creditCardAccount->discount,
-                    "total" => $creditCardAccount->total,
-                    "due_at" => $creditCardAccount->until
+                    'minimum_payment' => $creditCardAccount->total,
+                    'debt' => $creditCardAccount->total,
+                    'subtotal' => $creditCardAccount->subtotal,
+                    'discounts' => $creditCardAccount->discount,
+                    'total' => $creditCardAccount->total,
+                    'due_at' => $creditCardAccount->until,
                 ]);
+
+                // Notify via Telegram when a new billing cycle is created and the cut date has passed
+                if ($billingCycle->wasRecentlyCreated && Carbon::parse($creditCardAccount->until)->lte(now())) {
+                    $teamUser = User::where('current_team_id', $teamId)->first();
+                    if ($teamUser) {
+                        $teamUser->notify(new BillingCycleCutAlert(
+                            $billingCycle,
+                            $creditCardAccount->name,
+                            $teamUser->id
+                        ));
+                    }
+                }
             }
             echo "updated month {$month}".PHP_EOL;
             echo "{$count} of {$total}".PHP_EOL.PHP_EOL;
         }
     }
 
-    public function getUnlinkedPayments($teamId, Account $account) {
+    public function getUnlinkedPayments($teamId, Account $account)
+    {
         $readyToAssign = Category::where([
             'team_id' => $teamId,
         ])
-        ->where('name', BudgetReservedNames::READY_TO_ASSIGN->value)
-        ->first();
+            ->where('name', BudgetReservedNames::READY_TO_ASSIGN->value)
+            ->first();
 
         return DB::table(DB::raw('transaction_lines tl'))
             ->where([
-                "a.team_id" => $teamId,
-                "a.id" => $account->id,
-                "tl.payee_id" => 0
+                'a.team_id' => $teamId,
+                'a.id' => $account->id,
+                'tl.payee_id' => 0,
             ])
-            ->selectRaw("
+            ->selectRaw('
                 tl.*,
                 t.transactionable_type,
                 t.transactionable_id,
                 a.name
-            ")
+            ')
             ->whereRaw('(tl.type = ? or tl.category_id  = ?)', [1, $readyToAssign->id])
             ->whereNull('t.transactionable_id')
             ->join(DB::raw('accounts a'), fn ($q) => $q->on('a.id', 'tl.account_id'))
@@ -286,7 +307,6 @@ class CreditCardReportService
             ->orderByDesc('tl.date')
             ->get();
     }
-
 
     public function linkCreditCardPayment(BillingCycle $billingCycle, Transaction $transaction, $postData)
     {
@@ -298,6 +318,7 @@ class CreditCardReportService
     {
         $payment = $billingCycle->createPayment($postData);
         $billingCycle->save();
+
         return $payment;
     }
 }
