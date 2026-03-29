@@ -3,20 +3,17 @@
 namespace App\Domains\Housing\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Modules\Plan\Entities\PlanTypes;
+use Modules\Plan\Services\PlanService;
 
 class ChoreController extends Controller
 {
-    public function __invoke()
+    public function __invoke(PlanService $service)
     {
         $user = request()->user();
-        $date = request()->query('date') ?? now()->format('Y-m-d');
 
-        return inertia('Housing/Plans', [
-            'notebooks' => BoardResource::collection(Board::where([
-                'team_id' => $user->current_team_id,
-                'user_id' => $user->id,
-                'board_type_id' => 2,
-            ])->get()),
+        return inertia('Housing/Chores', [
+            'chores' => [$service->getPlanType($user->current_team_id, PlanTypes::CHORES, request())],
         ]);
     }
 }

@@ -84,6 +84,12 @@ class TransactionCreateEntry implements AutomationActionContract
             ]),
         ];
 
+        // Auto-confirm transactions for credit card accounts (email is the confirmation)
+        $account = Account::find($accountId);
+        if ($account && $account->credit_closing_day) {
+            $transactionData['status'] = Transaction::STATUS_VERIFIED;
+        }
+
         $transactionService = new TransactionService;
 
         if ($transaction = $transactionService->findIfDuplicated($transactionData)) {

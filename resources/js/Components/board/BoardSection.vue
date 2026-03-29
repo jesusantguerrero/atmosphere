@@ -4,12 +4,15 @@ import { router } from "@inertiajs/vue3";
 import Multiselect from "vue-multiselect";
 import { VueDraggableNext as Draggable } from "vue-draggable-next"
 import { throttle } from "lodash";
+import { ElNotification } from 'element-plus';
+import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts';
 
 import ListView from "./views/List/ListView.vue";
 import MatrixView from "./views/matrix/MatrixBoard.vue";
 import ItemModal from "./ItemModal.vue";
 import AutomationModal from "../AutomationModal.vue";
 import BulkSelectionBar from '../BulkSelectionBar.vue';
+import KeyboardShortcutsHelp from "./KeyboardShortcutsHelp.vue";
 
 import BoardTitle from "./BoardTitle.vue";
 import BoardItemContainer from '@/Components/board/BoardItemContainer.vue';
@@ -159,12 +162,32 @@ onMounted(() => {
     }
 });
 
-const isLoading = ref(false)
+// Granular loading states
+const loadingStates = reactive({
+    addingItem: false,
+    updatingItem: null as number | null, // ID of item being updated
+    deletingItem: null as number | null, // ID of item being deleted
+    deletingItems: false, // Bulk delete
+    reordering: false,
+    addingStage: false,
+    updatingBoard: false,
+});
+
+// Provide to child components
+provide('loadingStates', loadingStates);
+
 function addItem(item: Record<string, string>, stage: Record<string, string>, reload = true) {
     const method = item.id ? "PUT" : "POST";
     const param = item.id ? `/${item.id}` : "";
-    if (isLoading.value) return
-    isLoading.value = true;
+    const isUpdate = !!item.id;
+
+    if (isUpdate) {
+        if (loadingStates.updatingItem) return;
+        loadingStates.updatingItem = item.id as number;
+    } else {
+        if (loadingStates.addingItem) return;
+        loadingStates.addingItem = true;
+    }
 
     item.order = stage.items.length;
 
@@ -173,14 +196,32 @@ function addItem(item: Record<string, string>, stage: Record<string, string>, re
         method,
         data: item
     }).then(() => {
+        ElNotification({
+            title: 'Success',
+            message: isUpdate ? 'Task updated successfully' : 'Task created successfully',
+            type: 'success',
+            duration: 3000,
+        });
+
         if (reload) {
             router.reload({
-                preserveScroll: true ,
+                preserveScroll: true,
                 preserveState: true
             });
         }
+    }).catch((error) => {
+        ElNotification({
+            title: 'Error',
+            message: error.response?.data?.message || (isUpdate ? 'Failed to update task' : 'Failed to create task'),
+            type: 'error',
+            duration: 5000,
+        });
     }).finally(() => {
-        isLoading.value = false
+        if (isUpdate) {
+            loadingStates.updatingItem = null;
+        } else {
+            loadingStates.addingItem = false;
+        }
     });
 }
 
@@ -233,11 +274,23 @@ function runAutomation(automationId) {
 }
 
 function saveReorder() {
+    if (loadingStates.reordering) return;
+    loadingStates.reordering = true;
+
     props.board.stages.forEach(async (stage: Record<string, string|number>, index: number) => {
         stage.order = index;
         await addStage(stage, false);
     });
+
+    ElNotification({
+        title: 'Success',
+        message: 'Stages reordered successfully',
+        type: 'success',
+        duration: 3000,
+    });
+
     router.reload({ preserveScroll: true });
+    loadingStates.reordering = false;
 }
 
 function toggleDone() {
@@ -279,17 +332,36 @@ function openItem(item) {
 function confirmDeleteItem(item, reload = true) {
     showConfirm({
         title: `Deleting ${item.title} task`,
-        content: "Are you sure you want to delete this tasks?",
+        content: "Are you sure you want to delete this task?",
         confirmationButtonText: "Yes, delete",
         confirm: () => {
+            if (loadingStates.deletingItem) return;
+            loadingStates.deletingItem = item.id;
+
             axios({
                 url: `/housing/plans/${props.board.id}/items/${item.id}`,
                 method: "delete"
             }).then(() => {
+                ElNotification({
+                    title: 'Success',
+                    message: 'Task deleted successfully',
+                    type: 'success',
+                    duration: 3000,
+                });
+
                 if (reload) {
-                    this.itemToDelete = false;
-                    this.$router.reload({ preserveScroll: true });
+                    state.itemToDelete = false;
+                    router.reload({ preserveScroll: true });
                 }
+            }).catch((error) => {
+                ElNotification({
+                    title: 'Error',
+                    message: error.response?.data?.message || 'Failed to delete task',
+                    type: 'error',
+                    duration: 5000,
+                });
+            }).finally(() => {
+                loadingStates.deletingItem = null;
             });
         }
     });
@@ -332,6 +404,35 @@ const {
     isEditMode,
     isItemModalOpen
 } = toRefs(state)
+
+// Keyboard shortcuts
+const searchInputRef = ref<HTMLInputElement>();
+const showHelpModal = ref(false);
+
+const { isMac, modKey } = useKeyboardShortcuts({
+    onNewTask: () => {
+        state.isItemModalOpen = true;
+        state.openedItem = {};
+        state.isEditMode = false;
+    },
+    onFocusSearch: () => {
+        searchInputRef.value?.focus();
+    },
+    onToggleView: () => {
+        state.modeSelected = state.modeSelected === 'list' ? 'matrix' : 'list';
+    },
+    onDelete: () => {
+        if (selectedItems.value.length > 0) {
+            confirmDeleteItems(selectedItems.value, true);
+        }
+    },
+    onCloseModal: () => {
+        state.isItemModalOpen = false;
+    },
+    onHelp: () => {
+        showHelpModal.value = true;
+    }
+});
 </script>
 
  <template>
@@ -371,12 +472,13 @@ const {
                     </multiselect>
                 </div>
                 <input
+                    ref="searchInputRef"
                     type="search"
                     class="w-48 ml-2 form-input"
                     name=""
                     id=""
                     v-model="searchOptions.search"
-                    placeholder="search"
+                    :placeholder="`Search (${modKey}+K)`"
                 />
                 <span class="ml-2 toolbar-buttons">
                     <i class="fa fa-user"></i>
@@ -484,6 +586,12 @@ const {
             :record-data="{}"
             :board="board"
             :is-open="state.isAutomationModalOpen"
+        />
+
+        <KeyboardShortcutsHelp
+            :show="showHelpModal"
+            :mod-key="modKey"
+            @close="showHelpModal = false"
         />
     </div>
 </template>
