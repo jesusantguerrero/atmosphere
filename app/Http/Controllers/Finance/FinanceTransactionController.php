@@ -2,20 +2,20 @@
 
 namespace App\Http\Controllers\Finance;
 
+use App\Domains\Transaction\Actions\FindLinkedDrafts;
+use App\Domains\Transaction\Actions\FindLinkedTransactions;
+use App\Domains\Transaction\Exports\TransactionExport;
+use App\Domains\Transaction\Models\Transaction;
+use App\Domains\Transaction\Resources\TransactionResource;
+use App\Domains\Transaction\Services\PlannedTransactionService;
+use App\Domains\Transaction\Services\TransactionService;
+use App\Http\Controllers\Traits\QuerifySlim;
+use App\Services\MultiCurrencyDisplayService;
+use Freesgen\Atmosphere\Http\InertiaController;
+use Freesgen\Atmosphere\Http\Querify;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
-use Freesgen\Atmosphere\Http\Querify;
-use App\Http\Controllers\Traits\QuerifySlim;
-use App\Domains\Transaction\Models\Transaction;
-use Freesgen\Atmosphere\Http\InertiaController;
-use App\Domains\Transaction\Actions\FindLinkedDrafts;
-use App\Domains\Transaction\Exports\TransactionExport;
-use App\Domains\Transaction\Services\TransactionService;
-use App\Domains\Transaction\Resources\TransactionResource;
-use App\Domains\Transaction\Actions\FindLinkedTransactions;
-use App\Domains\Transaction\Services\PlannedTransactionService;
-use App\Services\MultiCurrencyDisplayService;
 
 class FinanceTransactionController extends InertiaController
 {
@@ -24,7 +24,7 @@ class FinanceTransactionController extends InertiaController
     const DateFormat = 'Y-m-d';
 
     public function __construct(
-        Transaction $transaction, 
+        Transaction $transaction,
         private PlannedTransactionService $plannedService,
         private MultiCurrencyDisplayService $multiCurrencyDisplayService
     ) {
@@ -53,7 +53,6 @@ class FinanceTransactionController extends InertiaController
         $dates = $this->getFilterDates();
         $filters = $request->query('filter');
         $status = $filters['status'] ?? null;
-
 
         $query = new QuerifySlim([
             'searchable' => ['transactions.date', 'transactions.description'],
@@ -127,6 +126,7 @@ class FinanceTransactionController extends InertiaController
     {
         // Enhance transactions with multi-currency display information
         $enhancedResults = $this->multiCurrencyDisplayService->enhanceTransactionDisplay($results);
+
         return TransactionResource::collection($enhancedResults);
     }
 
@@ -156,13 +156,13 @@ class FinanceTransactionController extends InertiaController
 
         if ($transaction->team_id == $request->user()->current_team_id) {
             $schedule = $transaction->schedule;
-            $rule = (new \Recurr\Rule())
+            $rule = (new \Recurr\Rule)
                 ->setStartDate(new \DateTime($schedule['date']))
                 ->setTimezone($schedule->timezone)
                 ->setFreq($schedule->frequency);
 
-            $transformer = new \Recurr\Transformer\ArrayTransformer();
-            $transformerConfig = new \Recurr\Transformer\ArrayTransformerConfig();
+            $transformer = new \Recurr\Transformer\ArrayTransformer;
+            $transformerConfig = new \Recurr\Transformer\ArrayTransformerConfig;
             $transformerConfig->enableLastDayOfMonthFix();
             $transformer->setConfig($transformerConfig);
 
@@ -203,6 +203,7 @@ class FinanceTransactionController extends InertiaController
     public function findLinkedDrafts()
     {
         (new FindLinkedDrafts(request()->user()->current_team_id))->handle();
+
         return redirect()->back();
     }
 
@@ -219,5 +220,13 @@ class FinanceTransactionController extends InertiaController
     {
         $items = $request->post('data');
         Transaction::whereIn('id', $items)->delete();
+    }
+
+    public function approve(Transaction $transaction)
+    {
+        $this->authorize('update', $transaction);
+        $transaction->approve();
+
+        return response()->json(['message' => 'Transaction approved']);
     }
 }

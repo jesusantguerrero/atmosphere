@@ -121,11 +121,8 @@ const handleEdit = (transaction: ITransaction) => {
 };
 
 const handleApprove = (transaction: ITransaction) => {
-    router.post(`/transactions/${transaction.id}/approve`, {}, {
-        preserveScroll: true,
-        onSuccess() {
-            router.reload();
-        },
+    axios.post(`/finance/transactions/${transaction.id}/approve`).then(() => {
+        router.reload();
     });
 };
 
