@@ -10,7 +10,6 @@ import { useServerSearch, IServerSearchData } from "@/composables/useServerSearc
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import AppSearch from "@/Components/AppSearch/AppSearch.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
-import BackgroundCard from "@/Components/molecules/BackgroundCard.vue";
 
 import FinanceTemplate from "./Partials/FinanceTemplate.vue";
 import FinanceSectionNav from "./Partials/FinanceSectionNav.vue";
@@ -36,19 +35,17 @@ const { openTransactionModal } = useTransactionModal();
 const { openModal } = usePaymentModal();
 
 
-interface CollectionData<T> {
-    data: T[]
-}
 const props = withDefaults(defineProps<{
     accountDetailTypes: { label: string, id: number | string }[];
     transactions: ITransaction[];
     drafts?: ITransaction[];
     billingCycles: ITransaction[];
-    stats: CollectionData<Record<string, number>>;
+    stats: { total: number, credit: number, debit: number };
     accounts: IAccount[];
     categories: ICategory[],
     serverSearchOptions: Partial<IServerSearchData>,
     accountId?: number,
+    startingBalance?: number,
 }>(), {
     serverSearchOptions: () => {
         return {}
@@ -287,29 +284,40 @@ const selectedTabName = computed(() => {
         </template>
 
         <FinanceTemplate title="Transactions" :accounts="accounts">
-            <section class="lg:flex w-full mt-4 grid grid-cols-2 gap-2 lg:space-x-4 flex-nowrap">
-                <BackgroundCard class="w-full cursor-pointer text-body-1 bg-base-lvl-3"
-                    :value="formatMoney(selectedAccount?.balance)" :label="$t('Balance')"
-                    label-class="capitalize text-secondary font-base">
-                    <template #value>
-                        <h4 class="flex">
-                            <span class="text-lg">
-                                {{ formatMoney(selectedAccount?.balance) }}
-                            </span>
-                            <ElTooltip :content="formatMoney(selectedAccount?.reconciliation_last?.amount)"
-                                v-if="selectedAccount?.reconciliation_last">
-                                <button
-                                    @click="router.visit(`/finance/accounts/${selectedAccount.id}/reconciliations/`)"
-                                    class="inline-block ml-2 font-bold text-secondary text-xs">
-                                    <IMdiHistory />
-                                </button>
-                            </ElTooltip>
-                        </h4>
-                    </template>
-                </BackgroundCard>
-                <BackgroundCard class="w-full cursor-pointer text-body-1 bg-base-lvl-3" v-for="(stat, label) in stats"
-                    :value="formatMoney(stat)" :label="label" text-class="text-lg"
-                    label-class="capitalize text-secondary font-base" />
+            <section class="flex items-center gap-4 mt-4 px-4 py-3 rounded-lg bg-base-lvl-3 flex-wrap">
+                <!-- Primary: Balance -->
+                <div class="flex items-center gap-2 mr-auto">
+                    <div>
+                        <span class="text-xs text-secondary">{{ $t('Balance') }}</span>
+                        <h3 class="text-xl font-bold text-body">
+                            {{ formatMoney(selectedAccount?.balance) }}
+                        </h3>
+                    </div>
+                    <ElTooltip :content="formatMoney(selectedAccount?.reconciliation_last?.amount)"
+                        v-if="selectedAccount?.reconciliation_last">
+                        <button
+                            @click="router.visit(`/finance/accounts/${selectedAccount.id}/reconciliations/`)"
+                            class="text-secondary hover:text-primary transition-colors">
+                            <IMdiHistory />
+                        </button>
+                    </ElTooltip>
+                </div>
+
+                <!-- Secondary stats: compact inline -->
+                <div class="flex items-center gap-4 text-sm text-body-1/80 flex-wrap">
+                    <div class="text-center" v-if="startingBalance !== undefined">
+                        <span class="block text-xs text-secondary">Start {{ monthName }}</span>
+                        <span class="font-medium">{{ formatMoney(startingBalance) }}</span>
+                    </div>
+                    <div class="text-center" v-if="stats?.debit">
+                        <span class="block text-xs text-secondary">Debit</span>
+                        <span class="font-medium text-red-500">{{ formatMoney(stats.debit) }}</span>
+                    </div>
+                    <div class="text-center" v-if="stats?.credit">
+                        <span class="block text-xs text-secondary">Credit</span>
+                        <span class="font-medium text-green-600">{{ formatMoney(stats.credit) }}</span>
+                    </div>
+                </div>
             </section>
 
             <WidgetContainer :message="selectedTabName" :tabs="financeTabs" default-tab="transactions" class="mt-4">

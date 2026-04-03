@@ -2,17 +2,19 @@
 
 namespace App\Domains\Transaction\Models;
 
-use App\Models\Team;
-use App\Models\CurrencyBalance;
 use App\Domains\AppCore\Models\Planner;
-use Insane\Journal\Models\Core\Category;
 use App\Domains\Transaction\Traits\TransactionTrait;
+use App\Models\CurrencyBalance;
+use App\Models\Team;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Insane\Journal\Models\Core\Category;
 use Insane\Journal\Models\Core\Transaction as CoreTransaction;
 
 class Transaction extends CoreTransaction
 {
     use HasFactory;
+    use SoftDeletes;
     use TransactionTrait;
 
     /**
@@ -20,7 +22,7 @@ class Transaction extends CoreTransaction
      */
     protected $fillable = [
         'exchange_rate',
-        'exchange_amount'
+        'exchange_amount',
     ];
 
     const STATUS_PLANNED = 'planned';
@@ -58,25 +60,25 @@ class Transaction extends CoreTransaction
     public static function matchedFor($teamId, $searchParams)
     {
         return Transaction::select('id')
-        ->where([
-            'team_id' => $teamId,
-            'total' => $searchParams['total'],
-        ])
-        ->whereIn("status", [Transaction::STATUS_DRAFT, Transaction::STATUS_VERIFIED])
-        ->whereRaw('date >= SUBDATE(?, interval ? DAY) and date <= ADDDATE(?, INTERVAL ? DAY)',
-        [
-            $searchParams['date'],
-            $searchParams['datesBefore'] ?? 1,
-            $searchParams['date'],
-            $searchParams['datesAfter'] ?? 1,
-        ])->get();
+            ->where([
+                'team_id' => $teamId,
+                'total' => $searchParams['total'],
+            ])
+            ->whereIn('status', [Transaction::STATUS_DRAFT, Transaction::STATUS_VERIFIED])
+            ->whereRaw('date >= SUBDATE(?, interval ? DAY) and date <= ADDDATE(?, INTERVAL ? DAY)',
+                [
+                    $searchParams['date'],
+                    $searchParams['datesBefore'] ?? 1,
+                    $searchParams['date'],
+                    $searchParams['datesAfter'] ?? 1,
+                ])->get();
     }
 
     /**
      * Calculate exchange rate from total and exchange amount
-     * 
-     * @param float $total The amount in the secondary currency
-     * @param float $exchangeAmount The amount in the primary currency
+     *
+     * @param  float  $total  The amount in the secondary currency
+     * @param  float  $exchangeAmount  The amount in the primary currency
      * @return float The calculated exchange rate
      */
     public function calculateExchangeRate(float $total, float $exchangeAmount): float
@@ -84,7 +86,7 @@ class Transaction extends CoreTransaction
         if ($total == 0) {
             throw new \InvalidArgumentException('Total amount cannot be zero for exchange rate calculation');
         }
-        
+
         return round($exchangeAmount / $total, 6);
     }
 
@@ -105,13 +107,13 @@ class Transaction extends CoreTransaction
 
     /**
      * Get pending balance for a specific currency from the transaction's account
-     * 
-     * @param string $currencyCode The currency code to get pending balance for
+     *
+     * @param  string  $currencyCode  The currency code to get pending balance for
      * @return float The pending balance amount
      */
     public function getPendingBalanceInCurrency(string $currencyCode): float
     {
-        if (!$this->account) {
+        if (! $this->account) {
             return 0.0;
         }
 
@@ -124,17 +126,17 @@ class Transaction extends CoreTransaction
 
     /**
      * Get all pending balances by currency for the transaction's account
-     * 
+     *
      * @return array Array of currency codes and their pending balances
      */
     public function getAllPendingBalances(): array
     {
-        if (!$this->account) {
+        if (! $this->account) {
             return [];
         }
 
         $balances = [];
-        
+
         // Get all currency balances for this account
         $currencyBalances = $this->account->currencyBalances()
             ->where('pending_balance', '!=', 0)
@@ -149,14 +151,13 @@ class Transaction extends CoreTransaction
 
     /**
      * Update pending balance for a specific currency
-     * 
-     * @param string $currencyCode The currency code
-     * @param float $amount The amount to add to pending balance
-     * @return void
+     *
+     * @param  string  $currencyCode  The currency code
+     * @param  float  $amount  The amount to add to pending balance
      */
     public function updatePendingBalanceInCurrency(string $currencyCode, float $amount): void
     {
-        if (!$this->account) {
+        if (! $this->account) {
             throw new \RuntimeException('Transaction must have an associated account to update currency balances');
         }
 
@@ -166,14 +167,14 @@ class Transaction extends CoreTransaction
 
     /**
      * Transfer pending balance to regular balance for a specific currency
-     * 
-     * @param string $currencyCode The currency code
-     * @param float|null $amount The amount to transfer (null for all pending)
+     *
+     * @param  string  $currencyCode  The currency code
+     * @param  float|null  $amount  The amount to transfer (null for all pending)
      * @return float The amount transferred
      */
     public function transferPendingToBalance(string $currencyCode, ?float $amount = null): float
     {
-        if (!$this->account) {
+        if (! $this->account) {
             throw new \RuntimeException('Transaction must have an associated account to transfer currency balances');
         }
 
@@ -181,7 +182,7 @@ class Transaction extends CoreTransaction
             ->where('currency_code', $currencyCode)
             ->first();
 
-        if (!$currencyBalance) {
+        if (! $currencyBalance) {
             return 0.0;
         }
 
@@ -190,17 +191,17 @@ class Transaction extends CoreTransaction
 
     /**
      * Check if this transaction has currency conversion data
-     * 
+     *
      * @return bool True if exchange_rate and exchange_amount are set
      */
     public function hasCurrencyConversion(): bool
     {
-        return !is_null($this->exchange_rate) && !is_null($this->exchange_amount);
+        return ! is_null($this->exchange_rate) && ! is_null($this->exchange_amount);
     }
 
     /**
      * Get the converted amount in the primary currency
-     * 
+     *
      * @return float|null The converted amount or null if no conversion data
      */
     public function getConvertedAmount(): ?float
@@ -210,7 +211,7 @@ class Transaction extends CoreTransaction
 
     /**
      * Get the exchange rate used for this transaction
-     * 
+     *
      * @return float|null The exchange rate or null if no conversion data
      */
     public function getExchangeRate(): ?float
