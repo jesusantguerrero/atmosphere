@@ -14,8 +14,11 @@ withDefaults(defineProps<{
     title?: string,
     cols?: Record<string, any>[],
     isLoading: boolean;
+    emptyText?: string;
+    rowClass?: (row: any, index: number) => string;
 }>(), {
-    cols: () => tableCols
+    cols: () => tableCols,
+    emptyText: 'No data found',
 });
 
 const emit = defineEmits(["removed", "edit", "approved", "duplicate"]);
@@ -83,6 +86,8 @@ const getTransactionColor = (row: ITransaction) => {
       :show-prepend="true"
       :table-data="transactions"
       :is-loading="isLoading"
+      :empty-text="emptyText"
+      :row-class="rowClass"
       @edit="handleEdit"
     >
       <template v-slot:total="{ scope: { row } }">

@@ -18,6 +18,8 @@ import TransactionSearch from "@/domains/transactions/components/TransactionSear
 import TransactionTable from "@/domains/transactions/components/TransactionTable.vue";
 import AccountReconciliationForm from "./AccountReconciliationForm.vue";
 
+import { NDropdown } from "naive-ui";
+
 import { useTransactionModal, TRANSACTION_DIRECTIONS, removeTransaction } from "@/domains/transactions";
 import { tableAccountCols } from "@/domains/transactions";
 import { paymentMethods } from "@/domains/transactions/constants";
@@ -29,7 +31,6 @@ import { usePaymentModal } from "@/domains/transactions/usePaymentModal";
 import WidgetContainer from "@/Components/WidgetContainer.vue";
 import Modal from "@/Components/atoms/Modal.vue";
 import ImportHolder from "@/Components/organisms/ImportHolder.vue";
-import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 
 const { openTransactionModal } = useTransactionModal();
 const { openModal } = usePaymentModal();
@@ -62,11 +63,23 @@ const displayTransactions = computed(() => {
               ...t,
               _isDraft: true
     }));
-    const allTransactions = [...verifiedTransactions.value, ...draftsWithBadge];
+    let allTransactions = [...verifiedTransactions.value, ...draftsWithBadge];
 
     // Filter by direction if set
     if (pageState.custom.direction) {
-        return allTransactions.filter(t => t.direction === pageState.custom.direction);
+        allTransactions = allTransactions.filter(t => t.direction === pageState.custom.direction);
+    }
+
+    // Calculate running balance (transactions are newest-first)
+    // End balance = startingBalance + sum of all movements in period
+    if (props.startingBalance !== undefined) {
+        const periodTotal = props.stats?.total ?? 0;
+        let balance = (props.startingBalance ?? 0) + periodTotal;
+        for (const t of allTransactions) {
+            (t as any)._runningBalance = balance;
+            const amount = t.direction === 'WITHDRAW' ? -(t.total ?? 0) : (t.total ?? 0);
+            balance -= amount;
+        }
     }
 
     return allTransactions;
@@ -218,6 +231,35 @@ const submitPdfImport = () => {
     });
 };
 
+// More actions menu
+const moreActions = computed(() => {
+    const actions: any[] = [
+        { key: 'import-pdf', label: 'Import PDF' },
+    ];
+    if (!isReconciled.value) {
+        actions.push({ key: 'reconciliation', label: 'Reconciliation' });
+    } else if (hasPendingReconciliation.value) {
+        actions.push({ key: 'review-reconciliation', label: 'Review Reconciliation' });
+    }
+    if (isCreditCard.value) {
+        actions.push({ key: 'pay-credit-card', label: 'Pay credit card' });
+    }
+    return actions;
+});
+
+const handleMoreAction = (key: string) => {
+    switch (key) {
+        case 'import-pdf': showImportPdf.value = true; break;
+        case 'reconciliation': reconcileForm.isVisible = true; break;
+        case 'review-reconciliation': router.visit(`/finance/reconciliation/${selectedAccount.value?.reconciliation_last?.id}`); break;
+        case 'pay-credit-card': payCreditCard(); break;
+    }
+};
+
+const transactionRowClass = (row: any) => {
+    return row._isDraft ? 'border-l-4 border-l-amber-400' : '';
+};
+
 const draftCount = computed(() => (props.drafts || []).length);
 
 const financeTabs = computed(() => {
@@ -228,12 +270,7 @@ const financeTabs = computed(() => {
     return [{
         name: "transactions",
         label: transactionLabel,
-    },
-    {
-        name: "trends",
-        label: "Trends",
-    }
-    ];
+    }];
 });
 
 const selectedTabName = computed(() => {
@@ -251,20 +288,11 @@ const selectedTabName = computed(() => {
                         <AtDatePager class="w-full h-12 border-none bg-base-lvl-1 text-body"
                             v-model:startDate="pageState.dates.startDate" v-model:endDate="pageState.dates.endDate"
                             controlsClass="bg-transparent text-body hover:bg-base-lvl-1" next-mode="month" />
-                        <LogerButton variant="inverse" @click="reconcileForm.isVisible = true" v-if="!isReconciled">
-                            Reconciliation
-                        </LogerButton>
-                        <LogerButton variant="inverse"
-                            @click="router.visit(`/finance/reconciliation/${selectedAccount?.reconciliation_last.id}`)"
-                            v-else-if="hasPendingReconciliation">
-                            Review Reconciliation
-                        </LogerButton>
-                        <LogerButton variant="inverse" @click="showImportPdf = true">
-                            Import PDF
-                        </LogerButton>
-                        <LogerButton variant="neutral" v-if="isCreditCard" @click="payCreditCard">
-                            Pay credit card
-                        </LogerButton>
+                        <NDropdown trigger="click" key-field="key" :options="moreActions" @select="handleMoreAction">
+                            <LogerButton variant="inverse">
+                                <IMdiDotsVertical />
+                            </LogerButton>
+                        </NDropdown>
                     </div>
                 </template>
             </FinanceSectionNav>
@@ -320,6 +348,8 @@ const selectedTabName = computed(() => {
                 </div>
             </section>
 
+            <AccountReconciliationBanner v-if="selectedAccount" :account="selectedAccount" class="mt-2" />
+
             <WidgetContainer :message="selectedTabName" :tabs="financeTabs" default-tab="transactions" class="mt-4">
                 <template #title>
                     <header class="flex space-x-2 pl-4 items-center justify-between py-2 w-full">
@@ -354,11 +384,10 @@ const selectedTabName = computed(() => {
                 </template>
                 <template v-slot:content="{ selectedTab }">
                     <section class="bg-base-lvl-3">
-                        <AccountReconciliationBanner v-if="selectedAccount" :account="selectedAccount" />
-
                         <Component :is="listComponent" :cols="tableAccountCols(props.accountId)"
                             :transactions="displayTransactions" :server-search-options="serverSearchOptions"
-                            :is-loading="isLoading" @findLinked="findLinked"
+                            :is-loading="isLoading" :empty-text="`No transactions in ${monthName}`"
+                            :row-class="transactionRowClass" @findLinked="findLinked"
                             @removed="removeTransaction($event, ['verified'])" @duplicate="handleDuplicate"
                             @edit="handleEdit" @approved="handleApprove" />
                     </section>

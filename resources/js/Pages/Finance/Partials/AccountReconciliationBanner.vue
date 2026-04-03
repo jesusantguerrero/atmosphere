@@ -58,39 +58,36 @@ const hasPendingReconciliation = computed(() => {
 </script>
 
 <template>
-        <section class="flex justify-between w-full px-4 py-2 text-white cursor-pointer bg-secondary"
-            v-if="hasPendingReconciliation"
-        >
-        <article class="flex items-center">
-            <AccountReconciliationAlert class="mr-2 text-white" />
+    <section class="flex items-center justify-between w-full gap-3 px-4 py-3 border rounded-md border-amber-200 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800"
+        v-if="hasPendingReconciliation"
+    >
+        <article class="flex items-center gap-2 text-sm text-amber-800 dark:text-amber-200">
+            <AccountReconciliationAlert class="shrink-0" />
             <p v-if="!isMatched">
-                This account's cleared balance in
-                <strong>Loger</strong> is {{ formatMoney(differenceAmount) }}  {{ differenceStateText }} than your
-                <strong>
-                    bank account.
-                </strong>
+                Difference of
+                <strong>{{ formatMoney(differenceAmount) }}</strong>
+                — Loger balance is {{ differenceStateText }} than your bank statement.
+            </p>
+            <p v-else>
+                Reconciliation is balanced and ready to complete.
             </p>
         </article>
-        <article class="flex space-x-2">
-            <LogerButton
-                variant="secondary"
+        <article class="flex items-center gap-2 shrink-0">
+            <button
                 v-if="!isMatched"
                 @click="goToReconciliation()"
                 :disabled="adjustmentForm.processing"
-                :processing="adjustmentForm.processing"
+                class="px-3 py-1.5 text-xs font-medium rounded-md bg-amber-200 text-amber-900 hover:bg-amber-300 transition-colors dark:bg-amber-800 dark:text-amber-100 dark:hover:bg-amber-700"
             >
                 Review
-            </LogerButton>
-            <LogerButton variant="secondary"
+            </button>
+            <button
                 @click="adjustAndFinish()"
                 :disabled="adjustmentForm.processing"
-                :processing="adjustmentForm.processing"
+                class="px-3 py-1.5 text-xs font-medium rounded-md bg-amber-600 text-white hover:bg-amber-700 transition-colors"
             >
-                <template #icon>
-                    <IMdiCheck />
-                </template>
                 Save adjustment and finish
-            </LogerButton>
+            </button>
         </article>
     </section>
 </template>

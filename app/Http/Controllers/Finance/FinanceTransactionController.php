@@ -219,7 +219,23 @@ class FinanceTransactionController extends InertiaController
     public function bulkDelete(Request $request)
     {
         $items = $request->post('data');
-        Transaction::whereIn('id', $items)->delete();
+
+        $reconciledIds = \Insane\Journal\Models\Accounting\ReconciliationEntry::whereIn('transaction_id', $items)
+            ->where('matched', true)
+            ->pluck('transaction_id')
+            ->toArray();
+
+        $deletable = array_diff($items, $reconciledIds);
+
+        if (! empty($deletable)) {
+            Transaction::whereIn('id', $deletable)->delete();
+        }
+
+        if (! empty($reconciledIds)) {
+            return response()->json([
+                'message' => count($reconciledIds).' reconciled transaction(s) were skipped',
+            ], 422);
+        }
     }
 
     public function approve(Transaction $transaction)

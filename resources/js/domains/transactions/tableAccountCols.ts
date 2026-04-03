@@ -2,6 +2,7 @@ import { format, isAfter, parseISO, startOfDay } from "date-fns"
 import { h } from "vue"
 import IconTransfer from "@/Components/icons/IconTransfer.vue";
 import { Link } from "@inertiajs/vue3";
+import formatMoney from "@/utils/formatMoney";
 
 export const tableAccountCols = (accountId: number, showSelects?: false) => [
     ...( showSelects ? [{
@@ -68,8 +69,20 @@ export const tableAccountCols = (accountId: number, showSelects?: false) => [
         type: "custom",
         align: 'right',
         class: 'text-right',
-        width: 200,
+        width: 150,
         headerClass: 'text-right',
+    },
+    {
+        label: "Balance",
+        name: "_runningBalance",
+        align: 'right',
+        class: 'text-right',
+        width: 150,
+        headerClass: 'text-right',
+        render(row: any) {
+            if (row._runningBalance === undefined) return '';
+            return h('span', { class: 'text-xs text-body-1/70' }, formatMoney(row._runningBalance, row.currency_code));
+        }
     },
     {
         label: "",
