@@ -118,6 +118,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     Route::resource('/finance/accounts', FinanceAccountController::class, [
         'as' => 'finance',
     ]);
+    Route::post('/finance/accounts/{account}/import-pdf', [FinanceAccountController::class, 'importPdf'])->name('finance.accounts.import-pdf');
 
     Route::resource('/finance/lines', FinanceLinesController::class, [
         'as' => 'finance',
