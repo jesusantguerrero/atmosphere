@@ -13,7 +13,6 @@ import MoneyPresenter from '@/Components/molecules/MoneyPresenter.vue';
 import { useAppContextStore } from "@/store";
 import { IAccount } from "@/domains/transactions/models/transactions";
 import AccountLinkModal from "./AccountLinkModal.vue";
-import SectionTitle from "@/Components/atoms/SectionTitle.vue";
 
 const selectedAccountId = inject<Ref<number | null>>('selectedAccountId', ref(null));
 const isSelectedAccount = (accountId: number) => {
@@ -32,8 +31,6 @@ const selectedFilter = ref<FilterType>('all');
 
 const isAccountModalOpen = ref(false);
 const accountToEdit = ref<Partial<IAccount> | null>()
-
-
 
 const openAccountModal = (account = {}) => {
     accountToEdit.value = account;
@@ -64,26 +61,29 @@ const openLinkModal = (account = {}) => {
     isLinkModalOpen.value = true;
 };
 
+// Separate credit cards from regular accounts
+const isCreditCard = (account: IAccount) => {
+    return account.credit_limit && account.credit_limit > 0;
+};
+
 // Filter accounts based on reconciliation status and account type
 const filteredAccounts = computed(() => {
-    if (selectedFilter.value === 'all') {
-        return props.accounts;
+    let accounts = props.accounts;
+
+    if (selectedFilter.value === 'credit-cards') {
+        return accounts.filter(isCreditCard);
     }
-
-    return props.accounts.filter(account => {
-        // Credit card filter
-        if (selectedFilter.value === 'credit-cards') {
-            return account.credit_limit && account.credit_limit > 0;
-        }
-
-        // Reconciliation filters
-        const isReconciled = account.reconciliation_last &&
-            account.reconciliation_last.status === 'completed' &&
-            account.reconciliation_last.amount === account.balance;
-
-        return selectedFilter.value === 'reconciled' ? isReconciled : !isReconciled;
-    });
+    if (selectedFilter.value === 'reconciled') {
+        return accounts.filter(a => a.reconciliation_last?.status === 'completed' && a.reconciliation_last?.amount === a.balance);
+    }
+    if (selectedFilter.value === 'unreconciled') {
+        return accounts.filter(a => !a.reconciliation_last || a.reconciliation_last?.status !== 'completed' || a.reconciliation_last?.amount !== a.balance);
+    }
+    return accounts;
 });
+
+const bankAccounts = computed(() => filteredAccounts.value.filter(a => !isCreditCard(a)));
+const creditCards = computed(() => filteredAccounts.value.filter(isCreditCard));
 
 const budgetAccountsTotal = computed(() => {
     return filteredAccounts.value.reduce((total, account) => {
@@ -96,44 +96,65 @@ const filterOptions = [
     { key: 'all', label: 'All' },
     { key: 'reconciled', label: 'Reconciled' },
     { key: 'unreconciled', label: 'Unreconciled' },
-    { key: 'credit-cards', label: 'Credit Cards' }
+    { key: 'credit-cards', label: 'Cards' }
 ] as const;
 </script>
 
 <template>
-    <div class="px-5 border-l border-base-lvl-1 text-body-1">
-        <div class="space-y-2">
-            <header class="rounded-t-md flex justify-between items-center">
-                <section class="flex items-center space-x-1">
-                    <SectionTitle class="min-w-fit">
-                        Accounts
-                    </SectionTitle>
-                    <MoneyPresenter :value="budgetAccountsTotal" class="mr-2 w-full text-primary" />
-                </section>
-                <section class="flex">
-                    <LogerButtonTab class="w-full bg-base-lvl-3" @click="openAccountModal()">
-                        <IMdiPlus />
-                    </LogerButtonTab>
-                </section>
-            </header>
-
-            <!-- Filter Toggle -->
-            <div class="flex space-x-1 mb-2">
-                <button v-for="option in filterOptions" :key="option.key" @click="selectedFilter = option.key" :class="[
-                    'px-3 py-1 text-xs rounded-full transition-colors',
-                    selectedFilter === option.key
-                        ? 'bg-primary text-white'
-                        : 'bg-base-lvl-2 text-body-1 hover:bg-base-lvl-3'
-                ]">
-                    {{ option.label }}
-                </button>
+    <div class="text-body-1">
+        <!-- Header -->
+        <header class="flex items-center justify-between pb-2">
+            <div class="flex items-center gap-1">
+                <h3 class="text-sm font-bold text-body">Accounts</h3>
+                <MoneyPresenter :value="budgetAccountsTotal" class="text-xs text-primary" />
             </div>
-            <Draggable class="w-full space-y-1 dragArea list-group h-96 overflow-auto ic-scroller" ref="draggableRef"
-                :list="filteredAccounts" handle=".handle" @end="saveReorder" tag="div">
-                <AccountItem v-for="account in filteredAccounts" :key="account.id" :account="account"
-                    :is-selected="isSelectedAccount(account.id)" @click="onClick(account.id)"
-                    @edit="openAccountModal(account)" @link="openLinkModal(account)" />
-            </Draggable>
+            <LogerButtonTab class="w-7 h-7 flex items-center justify-center rounded hover:bg-base-lvl-2" @click="openAccountModal()">
+                <IMdiPlus class="text-sm" />
+            </LogerButtonTab>
+        </header>
+
+        <!-- Compact filter -->
+        <div class="flex gap-1 pb-2 overflow-x-auto">
+            <button v-for="option in filterOptions" :key="option.key" @click="selectedFilter = option.key" :class="[
+                'px-2 py-0.5 text-[11px] rounded-full transition-colors whitespace-nowrap',
+                selectedFilter === option.key
+                    ? 'bg-primary/15 text-primary font-medium'
+                    : 'text-body-1/60 hover:bg-base-lvl-2'
+            ]">
+                {{ option.label }}
+            </button>
+        </div>
+
+        <!-- Account list -->
+        <div class="h-[calc(100vh-280px)] overflow-auto ic-scroller space-y-3">
+            <!-- Bank accounts group -->
+            <section v-if="bankAccounts.length">
+                <h4 v-if="creditCards.length" class="text-[10px] uppercase tracking-wider text-body-1/50 font-semibold px-2 pb-1">
+                    Bank Accounts
+                </h4>
+                <Draggable class="space-y-0.5" :list="bankAccounts" handle=".handle" @end="saveReorder" tag="div">
+                    <AccountItem v-for="account in bankAccounts" :key="account.id" :account="account"
+                        :is-selected="isSelectedAccount(account.id)" @click="onClick(account.id)"
+                        @edit="openAccountModal(account)" @link="openLinkModal(account)" />
+                </Draggable>
+            </section>
+
+            <!-- Credit cards group -->
+            <section v-if="creditCards.length">
+                <h4 class="text-[10px] uppercase tracking-wider text-body-1/50 font-semibold px-2 pb-1">
+                    Credit Cards
+                </h4>
+                <Draggable class="space-y-0.5" :list="creditCards" handle=".handle" @end="saveReorder" tag="div">
+                    <AccountItem v-for="account in creditCards" :key="account.id" :account="account"
+                        :is-selected="isSelectedAccount(account.id)" @click="onClick(account.id)"
+                        @edit="openAccountModal(account)" @link="openLinkModal(account)" />
+                </Draggable>
+            </section>
+
+            <!-- Empty state -->
+            <p v-if="!filteredAccounts.length" class="text-xs text-center text-body-1/40 py-4">
+                No accounts match this filter
+            </p>
         </div>
 
         <AccountModal v-if="isAccountModalOpen && accountToEdit" :show="isAccountModalOpen" :max-width="modalMaxWidth"

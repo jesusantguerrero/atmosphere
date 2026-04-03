@@ -17,6 +17,7 @@ const props = withDefaults(defineProps<{
     showAppend?: boolean;
     hideEmptyText?: boolean;
     skeletonLines?: number;
+    rowClass?: (row: T, index: number) => string;
 }>(), {
     emptyText: "No data found",
     config() { return { }},
@@ -79,7 +80,7 @@ const range = computed(() => {
             <tr v-for="(data, index) in tableData"
                 :key="`data-row-${index}`"
                 class="text-body"
-                :class="{'bg-base-lvl-2': index % 2}"
+                :class="[index % 2 ? 'bg-base-lvl-2' : '', rowClass?.(data, index) ?? '']"
             >
                 <td v-for="col in cols" :key="col.name" class="h-full align-baseline" :style="{width: col.width, maxWidth: col.maxWidth}">
                     <div class="flex flex-col w-full h-full px-2 py-1 text-left" :class="col.class">
