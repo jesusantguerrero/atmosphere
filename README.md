@@ -14,8 +14,6 @@
 		<a href="https://loger.vercel.app/" target="_blank">Website</a>
 		•
 		<a href="https://jesusantguerrero.github.io/atmosphere" target="_blank">Docs</a>
-		•
-		<a href="https://loger.neatlancer.com" target="_blank">Demo</a>
 	</strong>
 </p>
 
