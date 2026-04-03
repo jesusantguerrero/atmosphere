@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, inject, computed, Ref } from "vue";
+import { ref, inject, computed, Ref, onMounted, watch } from "vue";
 import { router } from "@inertiajs/vue3";
 import { VueDraggableNext as Draggable } from "vue-draggable-next"
 // @ts-ignore
@@ -25,9 +25,16 @@ const props = defineProps<{
 
 const emit = defineEmits(['reordered'])
 
-// Filter state
+// Filter state — persist via localStorage
 type FilterType = 'all' | 'reconciled' | 'unreconciled' | 'credit-cards';
-const selectedFilter = ref<FilterType>('all');
+const FILTER_KEY = 'loger:accounts-filter';
+const validFilters: FilterType[] = ['all', 'reconciled', 'unreconciled', 'credit-cards'];
+const stored = localStorage.getItem(FILTER_KEY) as FilterType | null;
+const selectedFilter = ref<FilterType>(stored && validFilters.includes(stored) ? stored : 'all');
+
+watch(selectedFilter, (val) => {
+    localStorage.setItem(FILTER_KEY, val);
+});
 
 const isAccountModalOpen = ref(false);
 const accountToEdit = ref<Partial<IAccount> | null>()
@@ -127,6 +134,18 @@ const filterOptions = [
 
         <!-- Account list -->
         <div class="h-[calc(100vh-280px)] overflow-auto ic-scroller space-y-3">
+            <!-- Credit cards group (first — late fees) -->
+            <section v-if="creditCards.length">
+                <h4 v-if="bankAccounts.length" class="text-[10px] uppercase tracking-wider text-body-1/50 font-semibold px-2 pb-1">
+                    Credit Cards
+                </h4>
+                <Draggable class="space-y-0.5" :list="creditCards" handle=".handle" @end="saveReorder" tag="div">
+                    <AccountItem v-for="account in creditCards" :key="account.id" :account="account"
+                        :is-selected="isSelectedAccount(account.id)" @click="onClick(account.id)"
+                        @edit="openAccountModal(account)" @link="openLinkModal(account)" />
+                </Draggable>
+            </section>
+
             <!-- Bank accounts group -->
             <section v-if="bankAccounts.length">
                 <h4 v-if="creditCards.length" class="text-[10px] uppercase tracking-wider text-body-1/50 font-semibold px-2 pb-1">
@@ -134,18 +153,6 @@ const filterOptions = [
                 </h4>
                 <Draggable class="space-y-0.5" :list="bankAccounts" handle=".handle" @end="saveReorder" tag="div">
                     <AccountItem v-for="account in bankAccounts" :key="account.id" :account="account"
-                        :is-selected="isSelectedAccount(account.id)" @click="onClick(account.id)"
-                        @edit="openAccountModal(account)" @link="openLinkModal(account)" />
-                </Draggable>
-            </section>
-
-            <!-- Credit cards group -->
-            <section v-if="creditCards.length">
-                <h4 class="text-[10px] uppercase tracking-wider text-body-1/50 font-semibold px-2 pb-1">
-                    Credit Cards
-                </h4>
-                <Draggable class="space-y-0.5" :list="creditCards" handle=".handle" @end="saveReorder" tag="div">
-                    <AccountItem v-for="account in creditCards" :key="account.id" :account="account"
                         :is-selected="isSelectedAccount(account.id)" @click="onClick(account.id)"
                         @edit="openAccountModal(account)" @link="openLinkModal(account)" />
                 </Draggable>
