@@ -2,11 +2,11 @@
 
 namespace App\Domains\Transaction\Services;
 
-use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Transaction\Models\TransactionLine;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class ReportService
 {
@@ -41,7 +41,7 @@ class ReportService
         return $results;
     }
 
-    public static function generateExpensesByPeriod($teamId, $startDate, $timeUnitDiff = 2,  $timeUnit = 'month', $categories = null)
+    public static function generateExpensesByPeriod($teamId, $startDate, $timeUnitDiff = 2, $timeUnit = 'month', $categories = null)
     {
         $rangeEndAt = Carbon::createFromFormat('Y-m-d', $startDate)->endOfMonth()->format('Y-m-d');
         $rangeStartAt = Carbon::now()->subMonth($timeUnitDiff)->startOfMonth()->format('Y-m-d');
@@ -105,22 +105,20 @@ class ReportService
         $expenses = self::getExpensesByCategoriesInPeriod($teamId, $startDate, $endDate);
         $expensesGroup = $expenses->groupBy($timeUnit);
 
-
-
         $income = self::getTransactionsByPayeeInPeriod($teamId, $startDate, $endDate);
-        $incomeCategories =  $income->groupBy($timeUnit);
+        $incomeCategories = $income->groupBy($timeUnit);
 
         $dates = $expensesGroup->keys();
-
 
         return $dates->map(function ($dateUnit) use ($incomeCategories, $expensesGroup) {
             $incomeData = $incomeCategories->get($dateUnit);
             $expenseData = $expensesGroup->get($dateUnit);
+
             return [
                 'date' => $dateUnit,
                 'date_unit' => $dateUnit,
                 'income' => $incomeData?->values()->all() ?? [],
-                "expense" => $expenseData?->values()->all() ?? [],
+                'expense' => $expenseData?->values()->all() ?? [],
                 'assets' => $incomeData?->sum('total_amount') ?? 0,
                 'debts' => $expenseData?->sum('total') ?? 0,
             ];
@@ -137,7 +135,6 @@ class ReportService
 
         return $resultGroup->map(function ($monthItems) {
             [$year, $month] = explode('-', $monthItems->first()->month);
-
 
             return [
                 'date' => $monthItems->first()->date,
@@ -207,7 +204,7 @@ class ReportService
             ->leftJoin('budget_targets', 'budget_targets.category_id', 'categories.id')
             ->get();
 
-            return $cats;
+        return $cats;
     }
 
     public static function getAssignedByCategoriesInPeriod($teamId, $startDate, $endDate, $categories = null)
@@ -231,7 +228,7 @@ class ReportService
             ->leftJoin('budget_targets', 'budget_targets.category_id', 'categories.id')
             ->get();
 
-            return $cats;
+        return $cats;
     }
 
     public static function getExpensesInPeriod($teamId, $startDate, $endDate)
@@ -255,6 +252,20 @@ class ReportService
             ])
             ->selectRaw('sum(amount * type)  as total')
             ->get();
+    }
+
+    public function getAccountBalanceBefore(int $accountId, string $date): float
+    {
+        $result = DB::table('transaction_lines')
+            ->join('transactions', 'transactions.id', 'transaction_lines.transaction_id')
+            ->where('transaction_lines.account_id', $accountId)
+            ->where('transactions.status', 'verified')
+            ->whereNull('transactions.deleted_at')
+            ->where('transaction_lines.date', '<', $date)
+            ->selectRaw('COALESCE(sum(transaction_lines.amount * transaction_lines.type), 0) as total')
+            ->first();
+
+        return (float) ($result->total ?? 0);
     }
 
     public function getAccountStats($accountId, $startDate, $endDate)
