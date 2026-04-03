@@ -24,11 +24,20 @@ class ReconciliationController extends Controller
 
         $reconciliations = $service->listHistoryOf($account);
         $lastReconciliation = $reconciliations->last();
+        $unreconciledTransactions = $lastReconciliation
+            ? $account->transactionsToReconcile(null, $lastReconciliation->date)
+            : collect();
+
+        // Get recent unreconciled transactions with full details for preview
+        $lastDate = $lastReconciliation?->date ?? $startDate;
+        $previewTransactions = $account->transactionSplits(10, $lastDate, $endDate);
+
         return inertia('Finance/Reconciliation/AccountReconciliations', [
             'account' => $account,
             'lastReconciliation' => $lastReconciliation,
             'reconciliations' => $reconciliations,
-            'transactions' => $account->transactionsToReconcile(null, $lastReconciliation->date),
+            'transactions' => $unreconciledTransactions,
+            'previewTransactions' => $previewTransactions,
             'dates' => [$startDate, $endDate],
         ]);
     }

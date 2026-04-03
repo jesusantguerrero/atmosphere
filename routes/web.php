@@ -1,31 +1,30 @@
 <?php
 
-use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Facades\Route;
+use App\Domains\Integration\Http\Controllers\ApiIntegrationController;
+use App\Http\Controllers\Api\AccountApiController;
+use App\Http\Controllers\Api\BillingCycleApiController;
+use App\Http\Controllers\Api\CategoryApiController;
+use App\Http\Controllers\Api\CurrencyApiController;
+use App\Http\Controllers\Api\IngredientApiController;
 use App\Http\Controllers\Api\LabelApiController;
 use App\Http\Controllers\Api\PayeeApiController;
 use App\Http\Controllers\Api\RecipeApiController;
-use App\Http\Controllers\Api\AccountApiController;
-use App\Http\Controllers\System\ServiceController;
-use Freesgen\Atmosphere\Http\OnboardingController;
-use App\Http\Controllers\Api\CategoryApiController;
-use App\Http\Controllers\Api\CurrencyApiController;
-use App\Http\Controllers\Finance\FinanceController;
 use App\Http\Controllers\Api\TimezonesApiController;
-use App\Http\Controllers\System\DashboardController;
-use App\Http\Controllers\Api\IngredientApiController;
-use App\Http\Controllers\System\UserDeviceController;
-use App\Http\Controllers\System\IntegrationController;
-use App\Http\Controllers\Api\BillingCycleApiController;
-use App\Http\Controllers\System\NotificationController;
-use App\Http\Controllers\Finance\FinanceLinesController;
-use App\Http\Controllers\Finance\FinanceTrendController;
-use App\Http\Controllers\System\TeamInvitationController;
 use App\Http\Controllers\Finance\FinanceAccountController;
-use Freesgen\Atmosphere\Http\Controllers\SettingsController;
-use App\Http\Controllers\Relationship\RelationshipController;
+use App\Http\Controllers\Finance\FinanceController;
+use App\Http\Controllers\Finance\FinanceLinesController;
 use App\Http\Controllers\Finance\FinanceTransactionController;
-use App\Domains\Integration\Http\Controllers\ApiIntegrationController;
+use App\Http\Controllers\Finance\FinanceTrendController;
+use App\Http\Controllers\Relationship\RelationshipController;
+use App\Http\Controllers\System\DashboardController;
+use App\Http\Controllers\System\NotificationController;
+use App\Http\Controllers\System\ServiceController;
+use App\Http\Controllers\System\TeamInvitationController;
+use App\Http\Controllers\System\UserDeviceController;
+use Freesgen\Atmosphere\Http\Controllers\SettingsController;
+use Freesgen\Atmosphere\Http\OnboardingController;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\URL;
 
 /*
 |--------------------------------------------------------------------------
@@ -50,12 +49,12 @@ Route::get('/services/accept-oauth', [ServiceController::class, 'acceptOauth']);
 Route::middleware(['auth:sanctum', 'verified'])->prefix('/api')->name('api.')->group(function () {
     //  accounts and transactions
     Route::apiResource('/settings', SettingsController::class, [
-     "only" => ['index', 'store', 'update', 'delete']
+        'only' => ['index', 'store', 'update', 'delete'],
     ])->names([
-     'index' => 'api.settings.index',
-     'store' => 'api.settings.store',
-     'update' => 'api.settings.update',
-     'delete' => 'api.settings.delete',
+        'index' => 'api.settings.index',
+        'store' => 'api.settings.store',
+        'update' => 'api.settings.update',
+        'delete' => 'api.settings.delete',
     ]);
 
     Route::post('/billing-cycles/{billingCycle}/transactions/{transaction}/link-payments', [BillingCycleApiController::class, 'linkPayments']);
@@ -119,6 +118,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     Route::resource('/finance/accounts', FinanceAccountController::class, [
         'as' => 'finance',
     ]);
+    Route::post('/finance/accounts/{account}/import-pdf', [FinanceAccountController::class, 'importPdf'])->name('finance.accounts.import-pdf');
 
     Route::resource('/finance/lines', FinanceLinesController::class, [
         'as' => 'finance',
@@ -136,6 +136,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
         Route::get('/finance/export', 'export')->name('finance.export');
         Route::patch('/finance/transactions/{id}/mark-as-paid', 'markPlannedAsPaid')->name('transactions.mark-as-paid');
         Route::post('/finance/transactions', 'addPlanned')->name('transactions.store-planned');
+        Route::post('/finance/transactions/{transaction}/approve', 'approve')->name('finance.transactions.approve');
     });
 
     // Next Payments
@@ -165,7 +166,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
  ***************************************************************************************/
 
 Route::middleware(['auth:sanctum'])->prefix('/api')->name('api.')->group(function () {
-    //timezones
+    // timezones
     Route::get('/timezones', [TimezonesApiController::class, 'index']);
     // currencies
     Route::get('/currencies', [CurrencyApiController::class, 'index']);

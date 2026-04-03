@@ -2,16 +2,20 @@
 
 namespace App\Http\Controllers\Finance;
 
-use App\Models\Setting;
-use Illuminate\Support\Facades\Gate;
-use Freesgen\Atmosphere\Http\Querify;
-use Insane\Journal\Models\Core\Account;
-use Insane\Journal\Models\Core\Transaction;
-use Freesgen\Atmosphere\Http\InertiaController;
-use App\Domains\Transaction\Services\ReportService;
 use App\Domains\Automation\Models\AutomationService;
+use App\Domains\Transaction\Actions\MapBankPdfToLoger;
+use App\Domains\Transaction\Actions\ParseBankPdf;
 use App\Domains\Transaction\Services\BankConnectionService;
 use App\Domains\Transaction\Services\CreditCardReportService;
+use App\Domains\Transaction\Services\ReportService;
+use App\Domains\Transaction\Services\TransactionService;
+use App\Models\Setting;
+use Freesgen\Atmosphere\Http\InertiaController;
+use Freesgen\Atmosphere\Http\Querify;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use Insane\Journal\Models\Core\Account;
+use Insane\Journal\Models\Core\Transaction;
 
 class FinanceAccountController extends InertiaController
 {
@@ -72,6 +76,56 @@ class FinanceAccountController extends InertiaController
     {
         $data = $this->getPostData(request());
         $bankConnectionService->linkCreditCardPayment($account, $transaction, $data['integration_id']);
+    }
+
+    public function importPdf(Request $request, Account $account): \Illuminate\Http\RedirectResponse
+    {
+        $this->authorize('update', $account);
+
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:pdf', 'max:10240'],
+        ]);
+
+        $file = $request->file('file')->store('temp');
+        $path = storage_path('app').'/'.$file;
+
+        $rows = ParseBankPdf::parse($path);
+        unlink($path);
+
+        if (empty($rows)) {
+            return back()->with('flash', [
+                'banner' => 'No transactions found in the PDF',
+                'bannerStyle' => 'danger',
+            ]);
+        }
+
+        $user = $request->user();
+        $session = [
+            'team_id' => $user->current_team_id,
+            'user_id' => $user->id,
+        ];
+
+        $imported = 0;
+        $skipped = 0;
+        $transactionService = new TransactionService;
+
+        foreach ($rows as $row) {
+            $transactionData = MapBankPdfToLoger::parse($row, $session, $account->id);
+
+            $duplicate = $transactionService->findIfDuplicated($transactionData);
+            if ($duplicate) {
+                $skipped++;
+
+                continue;
+            }
+
+            Transaction::createTransaction($transactionData);
+            $imported++;
+        }
+
+        return back()->with('flash', [
+            'banner' => "Imported {$imported} transactions as drafts".($skipped ? " ({$skipped} duplicates skipped)" : ''),
+        ]);
     }
 
     public function closeAccount(Account $account)

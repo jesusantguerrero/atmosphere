@@ -2,15 +2,14 @@
 
 namespace App\Domains\Transaction\Services;
 
-use Exception;
-use Insane\Journal\Models\Core\Account;
 use App\Domains\AppCore\Models\Category;
-use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Budget\Data\BudgetReservedNames;
+use App\Domains\Transaction\Data\ReconciliationParamsData;
+use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Transaction\Models\TransactionLine;
 use Insane\Journal\Models\Accounting\Reconciliation;
 use Insane\Journal\Models\Accounting\ReconciliationEntry;
-use App\Domains\Transaction\Data\ReconciliationParamsData;
+use Insane\Journal\Models\Core\Account;
 use Insane\Journal\Models\Core\Transaction as CoreTransaction;
 
 class ReconciliationService
@@ -21,12 +20,13 @@ class ReconciliationService
             'team_id' => $account->team_id,
             'account_id' => $account->id,
         ])
-        ->addSelect([
-            'total_transactions' => ReconciliationEntry::selectRaw('COUNT(id)')->whereColumn('reconciliation_id', 'reconciliations.id'),
-        ])
-        ->orderByDesc('date')
-        ->orderByDesc('id')
-        ->get();
+            ->addSelect([
+                'total_transactions' => ReconciliationEntry::selectRaw('COUNT(id)')->whereColumn('reconciliation_id', 'reconciliations.id'),
+                'matched_transactions' => ReconciliationEntry::selectRaw('COUNT(id)')->whereColumn('reconciliation_id', 'reconciliations.id')->where('matched', true),
+            ])
+            ->orderByDesc('date')
+            ->orderByDesc('id')
+            ->get();
     }
 
     public function create(Account $account, ReconciliationParamsData $params)
@@ -35,6 +35,7 @@ class ReconciliationService
 
         if ($dateReconciliation = $this->getByDate($account->team_id, $account->id, $params->date)) {
             $this->update($dateReconciliation, $params);
+
             return $dateReconciliation;
         }
 
@@ -147,12 +148,13 @@ class ReconciliationService
         return $this->syncTransactions($reconciliation);
     }
 
-    public function getByDate($teamId, $accountId, $date) {
+    public function getByDate($teamId, $accountId, $date)
+    {
         return Reconciliation::where([
             'team_id' => $teamId,
             'account_id' => $accountId,
-            'date' => $date
+            'date' => $date,
         ])
-        ->first();
+            ->first();
     }
 }

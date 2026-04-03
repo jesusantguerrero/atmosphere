@@ -28,6 +28,9 @@ import { IAccount, ICategory, ITransaction } from "@/domains/transactions/models
 import NextPaymentsWidget from "@/domains/transactions/components/NextPaymentsWidget.vue";
 import { usePaymentModal } from "@/domains/transactions/usePaymentModal";
 import WidgetContainer from "@/Components/WidgetContainer.vue";
+import Modal from "@/Components/atoms/Modal.vue";
+import ImportHolder from "@/Components/organisms/ImportHolder.vue";
+import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 
 const { openTransactionModal } = useTransactionModal();
 const { openModal } = usePaymentModal();
@@ -121,11 +124,8 @@ const handleEdit = (transaction: ITransaction) => {
 };
 
 const handleApprove = (transaction: ITransaction) => {
-    router.post(`/transactions/${transaction.id}/approve`, {}, {
-        preserveScroll: true,
-        onSuccess() {
-            router.reload();
-        },
+    axios.post(`/finance/transactions/${transaction.id}/approve`).then(() => {
+        router.reload();
     });
 };
 
@@ -208,6 +208,19 @@ const setPaymentBill = (transaction: ITransaction) => {
         })
 }
 
+// PDF Import
+const showImportPdf = ref(false);
+const importPdfForm = useForm<{ file: any }>({ file: null });
+const submitPdfImport = () => {
+    if (!importPdfForm.file || importPdfForm.processing) return;
+    importPdfForm.post(`/finance/accounts/${accountId.value}/import-pdf`, {
+        onSuccess() {
+            showImportPdf.value = false;
+            importPdfForm.reset();
+        }
+    });
+};
+
 const draftCount = computed(() => (props.drafts || []).length);
 
 const financeTabs = computed(() => {
@@ -248,6 +261,9 @@ const selectedTabName = computed(() => {
                             @click="router.visit(`/finance/reconciliation/${selectedAccount?.reconciliation_last.id}`)"
                             v-else-if="hasPendingReconciliation">
                             Review Reconciliation
+                        </LogerButton>
+                        <LogerButton variant="inverse" @click="showImportPdf = true">
+                            Import PDF
                         </LogerButton>
                         <LogerButton variant="neutral" v-if="isCreditCard" @click="payCreditCard">
                             Pay credit card
@@ -366,5 +382,33 @@ const selectedTabName = computed(() => {
             <AccountReconciliationForm :show="reconcileForm.isVisible" @close="reconcileForm.isVisible = false"
                 :account="selectedAccount" />
         </FinanceTemplate>
+
+        <Modal :show="showImportPdf" max-width="lg" :closeable="true" :is-open="showImportPdf" :automatic="false" :full-height="false" @close="showImportPdf = false">
+            <header class="flex items-center px-6 py-4 font-bold bg-base-lvl-3">
+                Import PDF Statement
+            </header>
+            <section class="px-6 py-4 bg-base-lvl-3 text-body">
+                <p class="mb-4 text-sm text-body-1/80">
+                    Upload a bank statement PDF (BHD format) to import transactions as drafts into this account.
+                </p>
+                <ImportHolder
+                    v-model:file="importPdfForm.file"
+                    :endpoint="`/finance/accounts/${accountId}/import-pdf`"
+                    :processing="importPdfForm.processing"
+                    placeholder="Drag a PDF bank statement here or click to browse"
+                />
+            </section>
+            <footer class="flex justify-end px-6 py-4 space-x-3 bg-base">
+                <LogerButton variant="secondary" class="h-10" @click="showImportPdf = false"
+                    :disabled="importPdfForm.processing">
+                    Cancel
+                </LogerButton>
+                <LogerButton class="h-10 text-white bg-primary" @click="submitPdfImport"
+                    :disabled="!importPdfForm.file || importPdfForm.processing"
+                    :processing="importPdfForm.processing">
+                    Import
+                </LogerButton>
+            </footer>
+        </Modal>
     </AppLayout>
 </template>
