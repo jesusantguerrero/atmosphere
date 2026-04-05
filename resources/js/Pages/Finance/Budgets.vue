@@ -115,7 +115,10 @@ transformCategoryOptions(props.accounts, "accounts", "accountsOptions");
     </template>
 
     <FinanceTemplate title="Finance" :accounts="accounts" ref="financeTemplateRef">
-      Hola
+      <div class="py-12 text-center text-body-1/60">
+        <h3 class="text-lg font-semibold text-body-1">No budgets yet</h3>
+        <p class="mt-1 text-sm">Create your first budget to start tracking your spending by category.</p>
+      </div>
     </FinanceTemplate>
   </AppLayout>
 </template>

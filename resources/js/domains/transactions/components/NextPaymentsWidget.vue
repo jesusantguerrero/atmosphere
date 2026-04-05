@@ -39,7 +39,7 @@ const handleRemove = (transaction: ITransaction) => {
     :class="cardShadow"
 >
     <h4 class="pb-2 font-bold"> {{ title }} </h4>
-    <section class="space-y-2">
+    <section class="space-y-2" v-if="payments?.length">
         <NextPaymentItem
             v-for="transaction in payments"
             :key="transaction.id"
@@ -55,5 +55,8 @@ const handleRemove = (transaction: ITransaction) => {
             </template>
         </NextPaymentItem>
     </section>
+    <div v-else class="py-6 text-center text-body-1/60 text-sm">
+        No upcoming payments scheduled.
+    </div>
 </div>
 </template>
