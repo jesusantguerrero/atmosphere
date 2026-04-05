@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, computed } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
 import { useSessionStorage } from "@vueuse/core";
 
@@ -78,7 +78,7 @@ interface DynamicStore  {
     drafts: number
 }
 
-const dynamicStore = useSessionStorage<DynamicStore>(`dynamic-store::${`hola`}`,{
+const dynamicStore = useSessionStorage<DynamicStore>(`dynamic-store::${props.user.current_team_id}`,{
     checks: [],
     drafts: 0
 })
@@ -92,10 +92,6 @@ const fetchChecks = () => {
     },
   });
 };
-
-watch(() => props.expenses, (expenses) => {
-    console.log({ expenses })
-});
 
 onMounted(() => {
   fetchChecks();

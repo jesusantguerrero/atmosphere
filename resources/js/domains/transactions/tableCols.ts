@@ -14,8 +14,8 @@ export const tableCols = [
             let date = new Date()
             try {
                 date = parseISO(row.date)
-            } catch (e) {
-                console.log(e, row.date)
+            } catch {
+                // fallback to current date
             }
             const hasPassed = isAfter(startOfDay(date), startOfDay(new Date()))
             return h('div', {class: hasPassed ? 'text-danger' : 'text-info cursor-pointer'} ,format(date, "dd MMM, yyyy"))
@@ -44,8 +44,7 @@ export const tableCols = [
                     h(IconTransfer, { class: 'fa fa-right-left'})
                 ];
                 return payeeName ?? h('div', { class: "flex justify-between items-center text-secondary text-body-1 h-4"}, children() )
-            } catch(e) {
-                console.log(e)
+            } catch {
                 return ''
             }
         }

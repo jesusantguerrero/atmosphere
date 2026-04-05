@@ -41,7 +41,6 @@ const config = reactive({
 })
 
 function integrate(platform) {
-  console.log(`Integrating with ${platform}`);
   // Add API calls or form submission logic here
 }
 

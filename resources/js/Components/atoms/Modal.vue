@@ -27,7 +27,6 @@ watch(() => props.show, (show) => {
 })
 
 const close = () => {
-    debugger
     if (props.closeable) {
         emit('close')
     }

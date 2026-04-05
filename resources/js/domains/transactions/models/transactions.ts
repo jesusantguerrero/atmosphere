@@ -15,7 +15,8 @@ export interface ITransaction {
     total: number;
     currency_code: string;
     description: string;
-    linked: Record<string, any>[]
+    linked: Record<string, any>[];
+    is_reconciled?: boolean;
 }
 
 export interface ITransactionLine {
