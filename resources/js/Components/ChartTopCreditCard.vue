@@ -56,7 +56,6 @@ const state = computed(() => ({
         colors: currentSeries.value.map((series, i) => nameToColor(series.name)),
     },
     series: isGroup.value ? currentSeries.value : currentSeries.value.map(item => {
-        console.log(item);
         return item;
     })
 }));

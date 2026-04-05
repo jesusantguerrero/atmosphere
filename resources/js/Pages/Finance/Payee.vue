@@ -170,21 +170,21 @@ const reconcileForm = useForm({
           variant="inverse"
           @click="reconcileForm.isVisible = true"
           v-if="!hasReconciliation">
-            Reconciliation
+            {{ $t('Reconciliation') }}
           </LogerButton>
           <LogerButton
             variant="inverse"
             @click="router.visit(`/finance/reconciliation/${selectedAccount?.reconciliation_last.id}`)"
             v-else
           >
-            Review Reconciliation
+            {{ $t('Review Reconciliation') }}
           </LogerButton>
           <LogerButton
             variant="neutral"
             v-if="isCreditCard"
             @click="payCreditCard"
           >
-            Pay credit card
+            {{ $t('Pay credit card') }}
           </LogerButton>
           <DraftButtons v-if="isDraft" />
         </div>
@@ -205,7 +205,7 @@ const reconcileForm = useForm({
     </section>
   </template>
 
-  <FinanceTemplate title="Transactions" :accounts="accounts">
+  <FinanceTemplate :title="$t('Transactions')" :accounts="accounts">
       <section class="flex w-full mt-4 space-x-4 flex-nowrap">
         <BackgroundCard
           class="w-full cursor-pointer text-body-1 bg-base-lvl-3"
@@ -220,7 +220,7 @@ const reconcileForm = useForm({
         <header class="flex items-center justify-between px-6 py-2">
             <section>
                 <h4 class="text-lg font-bold text-body-1">
-                    All transactions in <span class="text-secondary">
+                    {{ $t('All transactions in') }} <span class="text-secondary">
                         {{ monthName }}
                     </span>
                 </h4>
@@ -234,7 +234,7 @@ const reconcileForm = useForm({
                 />
 
                 <span class="min-w-fit text-secondary font-bold">
-                    {{  transactions.length }} Results
+                    {{  transactions.length }} {{ $t('Results') }}
                 </span>
             </section>
         </header>

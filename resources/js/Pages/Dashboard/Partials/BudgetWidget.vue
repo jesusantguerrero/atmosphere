@@ -131,11 +131,11 @@ fetchBudgetAlerts().then(data => {
 
 <template>
     <WidgetTitleCard
-        title="Budget balance"
+        :title="$t('Budget balance')"
         class="hidden md:block bg-primary text-white overflow-hidden"
         :hide-divider="true"
         :action="{
-            label: 'Budget',
+            label: $t('Budget'),
             iconClass: 'fa fa-chevron-right text-white'
         }"
         @action="router.visit('/budgets')"
@@ -159,7 +159,7 @@ fetchBudgetAlerts().then(data => {
                         >
                             <IMdiBankTransfer />
                         </section>
-                        Total
+                        {{ $t('Total') }}
                     </h1>
                     <section class="space-x-2 ">
                         <h2 class="flex items-center text-lg font-bold">
@@ -185,7 +185,7 @@ fetchBudgetAlerts().then(data => {
                     <template v-slot:before="{ progress }">
                         <header class="mb-1 font-bold text-xs flex justify-between w-full ">
                         <section>
-                            For spending
+                            {{ $t('For spending') }}
                         </section>
                         <section >
                             {{ formatMoney(currentBudget.forSpending) }} / {{ formatMoney(currentBudget.total) }}
@@ -204,7 +204,7 @@ fetchBudgetAlerts().then(data => {
                 <template v-slot:before="{ progress }">
                     <header class="mb-1 font-bold text-xs flex justify-between w-full ">
                     <section>
-                        For savings
+                        {{ $t('For savings') }}
                     </section>
                     <section >
                         {{ formatMoney(currentBudget.forSavings) }} / {{ formatMoney(currentBudget.total) }}
@@ -217,7 +217,7 @@ fetchBudgetAlerts().then(data => {
         </section>
 
         <template #icon>
-            <ElTooltip effect="dark" :content="`Your budget has ${hasAlerts} overspent categories`" placement="top" v-if="hasAlerts">
+            <ElTooltip effect="dark" :content="t('Your budget has {count} overspent categories', { count: hasAlerts })" placement="top" v-if="hasAlerts">
             <div class="cursor-pointer relative"  @click="router.visit('/budgets?custom[mode]=overspent')">
                 <IMdiBell />
                 <PointAlert />

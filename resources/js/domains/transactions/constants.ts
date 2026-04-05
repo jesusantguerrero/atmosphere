@@ -87,6 +87,5 @@ export const getLoanStatus = (status: string): string => {
 
 export  type stateTypes =  'info'| 'danger'|'warning'|'primary'
 export const getLoanStatusColor = (status: string): stateTypes => {
-    console.log(status, loanStatus[status])
     return loanStatus[status] ? loanStatus[status].color as stateTypes : 'info' as stateTypes;
 }

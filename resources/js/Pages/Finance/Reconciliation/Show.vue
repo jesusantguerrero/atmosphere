@@ -196,7 +196,7 @@ const transactionsMatched = computed(() => {
     </section>
   </template>
 
-    <FinanceTemplate title="Transactions" :accounts="accounts">
+    <FinanceTemplate :title="$t('Transactions')" :accounts="accounts">
       <div class="flex mt-4 space-x-4">
         <AtBackgroundIconCard
           class="w-full cursor-pointer text-body-1 bg-base-lvl-3"

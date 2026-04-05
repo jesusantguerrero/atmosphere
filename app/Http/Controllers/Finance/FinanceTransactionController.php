@@ -12,6 +12,8 @@ use App\Domains\Transaction\Services\PlannedTransactionService;
 use App\Domains\Transaction\Services\TransactionService;
 use App\Http\Controllers\Traits\QuerifySlim;
 use App\Services\MultiCurrencyDisplayService;
+use Dompdf\Dompdf;
+use Dompdf\Options as DompdfOptions;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Freesgen\Atmosphere\Http\Querify;
 use Illuminate\Http\Request;
@@ -184,10 +186,122 @@ class FinanceTransactionController extends InertiaController
 
     public function export()
     {
-        $dataToExport = new TransactionExport(TransactionService::getForExport(request()->user()->current_team_id));
+        $teamId = request()->user()->current_team_id;
         $today = now()->format('Y-m-d');
 
-        return Excel::download($dataToExport, "transactions_as_of_{$today}.xlsx");
+        return Excel::download(new TransactionExport($teamId), "transactions_as_of_{$today}.xlsx");
+    }
+
+    public function exportCsv(Request $request)
+    {
+        $teamId = $request->user()->current_team_id;
+        [$startDate, $endDate] = $this->parseDateRangeFilter($request);
+        $accountId = $request->query('filter')['account_id'] ?? null;
+
+        $filename = $this->buildExportFilename('transactions', $startDate, $endDate, 'csv');
+
+        return Excel::download(
+            new TransactionExport($teamId, $startDate, $endDate, $accountId ? (int) $accountId : null),
+            $filename
+        );
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $teamId = $request->user()->current_team_id;
+        [$startDate, $endDate] = $this->parseDateRangeFilter($request);
+        $accountId = $request->query('filter')['account_id'] ?? null;
+
+        $query = DB::table('transactions')
+            ->select([
+                'transactions.date',
+                'payees.name as payee_name',
+                'transactions.description',
+                'categories.name as category_name',
+                'accounts.name as account_name',
+                'transactions.direction',
+                'transactions.total',
+                'transactions.currency_code',
+            ])
+            ->leftJoin('payees', 'payees.id', 'transactions.payee_id')
+            ->leftJoin('categories', 'categories.id', 'transactions.category_id')
+            ->leftJoin('accounts', 'accounts.id', 'transactions.account_id')
+            ->where('transactions.team_id', $teamId)
+            ->where('transactions.status', 'verified')
+            ->orderBy('transactions.date', 'desc');
+
+        if ($startDate && $endDate) {
+            $query->whereBetween('transactions.date', [$startDate, $endDate]);
+        }
+
+        if ($accountId) {
+            $query->where('transactions.account_id', (int) $accountId);
+        }
+
+        $transactions = $query->get();
+
+        $income = $transactions->where('direction', 'DEPOSIT')->sum('total');
+        $expenses = $transactions->where('direction', 'WITHDRAW')->sum('total');
+
+        $accountName = $accountId
+            ? DB::table('accounts')->where('id', $accountId)->value('name')
+            : null;
+
+        $filename = $this->buildExportFilename('transactions', $startDate, $endDate, 'pdf');
+
+        $html = view('exports.transactions', [
+            'transactions' => $transactions,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'accountName' => $accountName,
+            'income' => $income,
+            'expenses' => $expenses,
+            'net' => $income - $expenses,
+        ])->render();
+
+        $dompdfOptions = new DompdfOptions;
+        $dompdfOptions->set('isHtml5ParserEnabled', true);
+        $dompdfOptions->set('isPhpEnabled', false);
+
+        $dompdf = new Dompdf($dompdfOptions);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        $pdfOutput = $dompdf->output();
+
+        return response()->streamDownload(
+            fn () => print ($pdfOutput),
+            $filename,
+            ['Content-Type' => 'application/pdf']
+        );
+    }
+
+    private function parseDateRangeFilter(Request $request): array
+    {
+        $dateFilter = $request->query('filter')['date'] ?? null;
+
+        if (! $dateFilter) {
+            return [null, null];
+        }
+
+        $parts = explode('~', $dateFilter);
+
+        return [
+            $parts[0] ?? null,
+            $parts[1] ?? $parts[0] ?? null,
+        ];
+    }
+
+    private function buildExportFilename(string $prefix, ?string $startDate, ?string $endDate, string $extension): string
+    {
+        $today = now()->format('Y-m-d');
+
+        if ($startDate && $endDate) {
+            return "{$prefix}_{$startDate}_to_{$endDate}.{$extension}";
+        }
+
+        return "{$prefix}_as_of_{$today}.{$extension}";
     }
 
     // linked transactions

@@ -35,7 +35,6 @@ const transactionsParsed = computed(() => {
 })
 
 watch(() => props.transactions, () => {
-    console.log(" I have changed", props.transactions)
 })
 
 const selectedItems: number[]|string[] = reactive<number[]|string[]>([]);

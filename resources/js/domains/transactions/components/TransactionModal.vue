@@ -412,7 +412,6 @@ const onSubmit = (addAnother = false) => {
         },
       });
   } catch (err) {
-    console.log(err)
   }
 };
 

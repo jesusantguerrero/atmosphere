@@ -100,8 +100,7 @@ const fetchAssetFiles = () => {
   return fetch(`${endpoint.value}/core/assets/${assetInternalCode}/files?hostname=${hostname.value}`, requestOptions)
     .then(async (response) => {
       if (!response.ok) {
-       console.log(await response.json());
-      } 
+      }
       return response.json();
     })
     .then((result) => {

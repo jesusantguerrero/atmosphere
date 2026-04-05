@@ -42,7 +42,6 @@ const components: Record<string, ConcreteComponent> = {
 }
 
 const getRenderComponent = (item: PlanItem, field: LogerField) => {
-    console.log(item, field.name)
     return item?.type ? components[item[field.name]] : ItemGroupCell
 }
 </script>

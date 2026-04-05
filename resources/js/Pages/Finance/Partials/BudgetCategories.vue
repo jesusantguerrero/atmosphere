@@ -99,7 +99,7 @@ const handleBudgetMovement = (budgetMovementData: any) => {
             <div class="bg-base-lvl-3">
             <div v-if="isAdding" class="px-4 pt-2" :class="{'pb-4': !isExpanded}">
                 <LogerInput
-                    placeholder="Add subcategory"
+                    :placeholder="$t('Add subcategory')"
                     v-model="categoryForm.name"
                     :disabled="categoryForm.processing"
                     @keydown.enter="saveBudgetCategory(itemGroup.id, toggleAdding)"

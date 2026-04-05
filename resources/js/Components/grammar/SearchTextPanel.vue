@@ -84,8 +84,6 @@ const onSubmit = () => {
   fetch(finalUrl, requestOptions)
     .then(async (response) => {
       if (!response.ok) {
-       console.log(await response.json());
-
       }
       return response.json();
     })

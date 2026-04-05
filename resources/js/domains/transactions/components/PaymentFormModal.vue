@@ -84,7 +84,6 @@ watch(
 );
 
 const setPaymentAmount = (amount: number, source: string) => {
-  console.log("source: ", source);
   nextTick(() => {
     paymentForm.value.amount = amount;
   });
@@ -245,7 +244,6 @@ function createPayment() {
       emit("saved");
     })
     .catch((err) => {
-      console.log(err);
       ElNotification({
         type: "error",
         message: err.response ? err.response.data.status.message : "Ha ocurrido un error",
@@ -306,7 +304,6 @@ function applyDeposit() {
       emit("saved");
     })
     .catch((err) => {
-      console.log(err);
       ElNotification({
         type: "error",
         message: err.response ? err.response.data.status.message : "Ha ocurrido un error",

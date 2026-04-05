@@ -119,7 +119,7 @@ const pluralize = (count: number, singular: string, plural: string) => {
             </section>
         </template>
 
-        <FinanceTemplate title="Reconciliation History" :accounts="accounts">
+        <FinanceTemplate :title="$t('Reconciliation History')" :accounts="accounts">
             <!-- Stats Row -->
             <section class="grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-4 mt-4">
                 <BackgroundCard

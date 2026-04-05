@@ -5,18 +5,14 @@ import { computed } from "vue";
 
 const teamId = computed(() => usePage().props.auth.user.current_team_id);
 
-const sections = [
+const sections = computed(() => [
     {
         label: 'Profile',
         url: '/user/profile'
     },
-    // {
-    //     label: 'Api Tokens',
-    //     url: '/user/api-tokens'
-    // },
     {
         label: 'Budget',
-        url: `/teams/${teamId}`
+        url: `/teams/${teamId.value}`
     },
     {
         label: 'Emergency Fund Builder',
@@ -26,7 +22,7 @@ const sections = [
         label: 'Integrations',
         url: '/integrations'
     },
-    ]
+])
 </script>
 
 

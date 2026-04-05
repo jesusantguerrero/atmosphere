@@ -100,7 +100,6 @@ function addItem(stage, reload) {
   state.newItem.order = lastItemOrder + 1;
   emit("saved", { ...state.newItem }, reload);
   state.newItem = {};
-  console.log(state.newItem, "here")
 }
 
 function handleSelect() {}

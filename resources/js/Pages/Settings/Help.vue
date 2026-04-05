@@ -11,22 +11,22 @@
             >
                 <main class="w-full divide-y flex flex-col">
                     <LogerButtonTab class="w-full text-center font-bold">
-                        Get Started
+                        {{ $t('Get Started') }}
                     </LogerButtonTab>
                     <LogerButtonTab class="w-full text-center font-bold">
-                        Documentation
+                        {{ $t('Documentation') }}
                     </LogerButtonTab>
                     <LogerButtonTab class="w-full text-center font-bold">
-                        Release Notes
+                        {{ $t('Release Notes') }}
                     </LogerButtonTab>
                     <LogerButtonTab class="w-full text-center font-bold">
-                        Video Tutorials
+                        {{ $t('Video Tutorials') }}
                     </LogerButtonTab>
                     <LogerButtonTab class="w-full text-center font-bold">
-                        Feature Request
+                        {{ $t('Feature Request') }}
                     </LogerButtonTab>
                     <LogerButtonTab class="w-full text-center font-bold">
-                        Report an issue
+                        {{ $t('Report an issue') }}
                     </LogerButtonTab>
                 </main>
             </ProductInfo>

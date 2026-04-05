@@ -37,7 +37,6 @@ export default [
             try {
                 differenceInCalendarDays(new Date(), parseISO(row.created_at))
             } catch (err) {
-                console.log(err)
             }
             return h(Link, {href: `/contacts/${row.client?.id}/tenants/rents/${row.id}/renew`} , h(ElTag, { type: 'primary' }, daysLeft))
         }

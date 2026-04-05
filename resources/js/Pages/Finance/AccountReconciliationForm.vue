@@ -57,25 +57,25 @@ const doQuickReconciliation = () => {
     :show="isVisible"
     @close="onClose"
     :max-width="reconcileForm.hasDifference ? 'md' : 'sm'"
-    title="Ending statement balance"
+    :title="$t('Ending statement balance')"
 >
 
     <template #content>
         <article v-if="!reconcileForm.hasDifference">
-            <h4>Is your current account balance</h4>
+            <h4>{{ $t('Is your current account balance') }}</h4>
             <h2 class="text-lg"> {{ formatMoney(account.balance) }} </h2>
             <footer class="flex justify-end">
                 <LogerButton @click="reconcileForm.hasDifference = true" variant="neutral">
-                    No
+                    {{ $t('No') }}
                 </LogerButton>
-    
+
                 <LogerButton
                     class="ml-2"
                     @click="doQuickReconciliation"
                     :class="{ 'opacity-25': reconcileForm.processing }"
                     :disabled="reconcileForm.processing"
                 >
-                    Yes
+                    {{ $t('Yes') }}
                 </LogerButton>
             </footer>
         </article>
@@ -84,7 +84,7 @@ const doQuickReconciliation = () => {
             {{ account.name }}
             </h4>
             <AtField
-            label="Ending balance Date"
+            :label="$t('Ending balance Date')"
             class="flex justify-between w-full md:block"
         >
             
@@ -96,7 +96,7 @@ const doQuickReconciliation = () => {
             />
         </AtField>
 
-        <AtField label="statement balance">
+        <AtField :label="$t('statement balance')">
             <LogerInput
                 ref="input"
                 class="opacity-100 cursor-text"
@@ -116,7 +116,7 @@ const doQuickReconciliation = () => {
     <template #footer v-if="reconcileForm.hasDifference">
         <section class="flex justify-between">
             <LogerButton @click="onClose" variant="neutral">
-                Cancel
+                {{ $t('Cancel') }}
             </LogerButton>
 
             <LogerButton
@@ -125,7 +125,7 @@ const doQuickReconciliation = () => {
                 :class="{ 'opacity-25': reconcileForm.processing }"
                 :disabled="reconcileForm.processing"
             >
-                Save
+                {{ $t('Save') }}
             </LogerButton>
         </section>
     </template>

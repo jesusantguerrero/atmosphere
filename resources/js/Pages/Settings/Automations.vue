@@ -8,13 +8,13 @@
                 <div
                     class="flex items-center justify-between mb-5 border-4 border-white rounded-md bg-gray-50"
                 >
-                    <div class="px-5 font-bold text-gray-600">Automations</div>
+                    <div class="px-5 font-bold text-gray-600">{{ $t('Automations') }}</div>
 
 
                     <AtButton class="text-white bg-primary"
                         @click="openAutomationModal"
                     >
-                        Add Automation
+                        {{ $t('Add Automation') }}
                     </AtButton>
 
                 </div>
@@ -60,7 +60,7 @@
                     :show="state.isAutomationModalOpen"
                     :record-data="openedAutomation"
                     :closeable="true"
-                    title="Add a new automation"
+                    :title="$t('Add a new automation')"
                     :services="services"
                     :integrations="integrations"
                     :recipes="recipes"

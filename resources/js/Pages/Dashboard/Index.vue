@@ -19,6 +19,7 @@ import BudgetWidget from "./Partials/BudgetWidget.vue";
 import BulkSelectionBar from "@/Components/BulkSelectionBar.vue";
 import ConfirmationModal from "@/Components/atoms/ConfirmationModal.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
+import WelcomeModal from "@/Components/organisms/WelcomeModal.vue";
 
 import { useAppContextStore } from "@/store";
 import { useTransactionStore } from "@/store/transactions";
@@ -202,6 +203,8 @@ const deleteBulkTransactions = () => {
       :selected-items="selectedItems"
       @delete-pressed="deleteTransactionsForm.isVisible = true"
     />
+    <WelcomeModal :modules="modules" />
+
     <ConfirmationModal
       :show="deleteTransactionsForm.isVisible"
       @close="deleteTransactionsForm.isVisible = false"

@@ -53,7 +53,7 @@ const state = reactive({
         thanks: "Thanks to",
         licence: "License",
         support: "Support",
-    },
+    }
 });
 
 </script>

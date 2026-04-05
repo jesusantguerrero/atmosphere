@@ -16,7 +16,7 @@
                         @click="selectedSection=sectionName"
                         class="m-0 mt-8 px-4 py-2 bg-base-lvl-2/80 border-base border-2 border-solid"
                     >
-                        {{ section }}
+                        {{ $t(section) }}
                     </button>
                 </p>
             </header>
@@ -32,7 +32,7 @@
             <div class="logos"></div>
             <div class="block-container">
                 <p class="app-version">
-                    Developed by
+                    {{ $t('Developed by') }}
                     <span class="author">{{ developer }}</span>
                 </p>
             </div>
