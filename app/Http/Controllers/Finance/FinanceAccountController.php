@@ -3,7 +3,8 @@
 namespace App\Http\Controllers\Finance;
 
 use App\Domains\Automation\Models\AutomationService;
-use App\Domains\Transaction\Actions\MapBankPdfToLoger;
+use App\Domains\Transaction\Actions\MapBankStatementToLoger;
+use App\Domains\Transaction\Actions\ParseBankCsv;
 use App\Domains\Transaction\Actions\ParseBankPdf;
 use App\Domains\Transaction\Services\BankConnectionService;
 use App\Domains\Transaction\Services\CreditCardReportService;
@@ -125,7 +126,57 @@ class FinanceAccountController extends InertiaController
         $transactionService = new TransactionService;
 
         foreach ($rows as $row) {
-            $transactionData = MapBankPdfToLoger::parse($row, $session, $account->id);
+            $transactionData = MapBankStatementToLoger::parse($row, $session, $account->id);
+
+            $duplicate = $transactionService->findIfDuplicated($transactionData);
+            if ($duplicate) {
+                $skipped++;
+
+                continue;
+            }
+
+            Transaction::createTransaction($transactionData);
+            $imported++;
+        }
+
+        return back()->with('flash', [
+            'banner' => "Imported {$imported} transactions as drafts".($skipped ? " ({$skipped} duplicates skipped)" : ''),
+        ]);
+    }
+
+    public function importCsv(Request $request, Account $account): RedirectResponse
+    {
+        $this->authorize('update', $account);
+
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:csv,txt', 'max:10240'],
+        ]);
+
+        $file = $request->file('file')->store('temp');
+        $path = storage_path('app').'/'.$file;
+
+        $rows = ParseBankCsv::parse($path);
+        unlink($path);
+
+        if (empty($rows)) {
+            return back()->with('flash', [
+                'banner' => 'No transactions found in the CSV',
+                'bannerStyle' => 'danger',
+            ]);
+        }
+
+        $user = $request->user();
+        $session = [
+            'team_id' => $user->current_team_id,
+            'user_id' => $user->id,
+        ];
+
+        $imported = 0;
+        $skipped = 0;
+        $transactionService = new TransactionService;
+
+        foreach ($rows as $row) {
+            $transactionData = MapBankStatementToLoger::parse($row, $session, $account->id);
 
             $duplicate = $transactionService->findIfDuplicated($transactionData);
             if ($duplicate) {

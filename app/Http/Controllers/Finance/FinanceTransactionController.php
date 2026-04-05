@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Finance;
 
+use App\Domains\Integration\Concerns\PlannedTransactionDTO;
 use App\Domains\Transaction\Actions\FindLinkedDrafts;
 use App\Domains\Transaction\Actions\FindLinkedTransactions;
 use App\Domains\Transaction\Exports\TransactionExport;
@@ -149,7 +150,8 @@ class FinanceTransactionController extends InertiaController
 
     public function addPlanned(Request $request)
     {
-        $this->plannedService($this->getPostData($request));
+        $postData = $this->getPostData($request);
+        $this->plannedService->add(PlannedTransactionDTO::from($postData));
 
         return redirect()->back();
     }

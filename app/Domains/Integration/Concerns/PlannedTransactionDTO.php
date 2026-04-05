@@ -2,9 +2,9 @@
 
 namespace App\Domains\Integration\Concerns;
 
-use Spatie\LaravelData\Data;
 use App\Domains\Budget\Models\BudgetTarget;
 use App\Domains\Transaction\Models\Transaction;
+use Spatie\LaravelData\Data;
 
 class PlannedTransactionDTO extends Data
 {
@@ -15,24 +15,22 @@ class PlannedTransactionDTO extends Data
         public ?int $counter_account_id,
         public ?int $payee_id,
         public string $date,
-        public string $currency_code,
-        public int $category_id,
-        public string $description,
-        public string $direction,
-        public int $total,
-        public array $items,
-        public TransactionMetaData $metaData,
-        public string $end_type,
-        public string $frequency,
-        public string $interval,
-        public bool $repeat_at_end_of_month,
-        public string $repeat_on_day_of_month,
-        public string $resource_type_id,
-        public string $status,
-        public string $timezone_id
-    ) {
-
-    }
+        public string $currency_code = 'USD',
+        public ?int $category_id = null,
+        public string $description = '',
+        public string $direction = 'WITHDRAW',
+        public int $total = 0,
+        public array $items = [],
+        public ?TransactionMetaData $metaData = null,
+        public string $end_type = 'NEVER',
+        public string $frequency = 'MONTHLY',
+        public int $interval = 1,
+        public bool $repeat_at_end_of_month = false,
+        public ?string $repeat_on_day_of_month = null,
+        public string $resource_type_id = 'MANUAL',
+        public string $status = 'planned',
+        public string $timezone_id = 'America/Santo_Domingo'
+    ) {}
 
     public static function fromTarget(BudgetTarget $target, $date)
     {

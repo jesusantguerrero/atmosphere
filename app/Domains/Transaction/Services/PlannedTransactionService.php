@@ -2,11 +2,10 @@
 
 namespace App\Domains\Transaction\Services;
 
-use Exception;
 use App\Domains\AppCore\Models\Planner;
-use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Integration\Concerns\PlannedTransactionDTO;
-use App\Domains\Transaction\Services\NextPaymentsService;
+use App\Domains\Transaction\Models\Transaction;
+use Exception;
 use Insane\Journal\Models\Core\Transaction as CoreTransaction;
 
 class PlannedTransactionService
@@ -21,7 +20,7 @@ class PlannedTransactionService
         ])->first();
 
         try {
-            if (!$transaction) {
+            if (! $transaction) {
                 $transaction = Transaction::create($plannedData->toArray());
                 $transaction->createLines($plannedData->items ?? []);
             } else {
@@ -31,7 +30,7 @@ class PlannedTransactionService
                 'dateable_type' => Transaction::class,
                 'dateable_id' => $transaction->id,
             ]));
-        } catch ( Exception $e) {
+        } catch (Exception $e) {
             dd($plannedData);
         }
     }
@@ -40,16 +39,17 @@ class PlannedTransactionService
     {
         // Use the new NextPaymentsService for unified next payments
         $nextPaymentsService = app(NextPaymentsService::class);
+
         return $nextPaymentsService->getNextPayments($teamId);
     }
 
     public function getForNotificationType()
     {
         return Transaction::where([
-            "status" => Transaction::STATUS_PLANNED
+            'status' => Transaction::STATUS_PLANNED,
         ])
-        ->whereRaw("DATEDIFF(date, now()) <= 3")
-        ->get();
+            ->whereRaw('DATEDIFF(date, now()) <= 3')
+            ->get();
 
     }
 
@@ -60,12 +60,12 @@ class PlannedTransactionService
             'status' => Transaction::STATUS_PLANNED,
             'team_id' => $transaction->team_id,
         ])
-        ->whereHas('schedule', function ($query) {
-            $query->whereNull('completed_at');
-        })
-        ->whereRaw("total <= ?", [$transaction->total])
-        ->whereRaw("format(date, 'YYYY-MM') >= ?", '2025-06')
-        ->first();
+            ->whereHas('schedule', function ($query) {
+                $query->whereNull('completed_at');
+            })
+            ->whereRaw('total <= ?', [$transaction->total])
+            ->whereRaw("DATE_FORMAT(date, '%Y-%m') >= ?", [now()->format('Y-m')])
+            ->first();
     }
 
     public function update(PlannedTransactionDTO $plannedData)
@@ -78,7 +78,7 @@ class PlannedTransactionService
         ])->first();
 
         try {
-            if (!$transaction) {
+            if (! $transaction) {
                 $transaction = Transaction::create($plannedData->toArray());
                 $transaction->createLines($plannedData->items ?? []);
             } else {
@@ -88,9 +88,8 @@ class PlannedTransactionService
                 'dateable_type' => Transaction::class,
                 'dateable_id' => $transaction->id,
             ]));
-        } catch ( Exception $e) {
+        } catch (Exception $e) {
             dd($plannedData);
         }
     }
-
 }

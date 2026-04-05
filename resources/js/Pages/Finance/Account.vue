@@ -232,10 +232,24 @@ const submitPdfImport = () => {
     });
 };
 
+// CSV Import
+const showImportCsv = ref(false);
+const importCsvForm = useForm<{ file: any }>({ file: null });
+const submitCsvImport = () => {
+    if (!importCsvForm.file || importCsvForm.processing) return;
+    importCsvForm.post(`/finance/accounts/${accountId.value}/import-csv`, {
+        onSuccess() {
+            showImportCsv.value = false;
+            importCsvForm.reset();
+        }
+    });
+};
+
 // More actions menu
 const moreActions = computed(() => {
     const actions: any[] = [
         { key: 'import-pdf', label: 'Import PDF' },
+        { key: 'import-csv', label: 'Import CSV' },
     ];
     if (!isReconciled.value) {
         actions.push({ key: 'reconciliation', label: 'Reconciliation' });
@@ -251,6 +265,7 @@ const moreActions = computed(() => {
 const handleMoreAction = (key: string) => {
     switch (key) {
         case 'import-pdf': showImportPdf.value = true; break;
+        case 'import-csv': showImportCsv.value = true; break;
         case 'reconciliation': reconcileForm.isVisible = true; break;
         case 'review-reconciliation': router.visit(`/finance/reconciliation/${selectedAccount.value?.reconciliation_last?.id}`); break;
         case 'pay-credit-card': payCreditCard(); break;
@@ -444,6 +459,35 @@ const selectedTabName = computed(() => {
                 <LogerButton class="h-10 text-white bg-primary" @click="submitPdfImport"
                     :disabled="!importPdfForm.file || importPdfForm.processing"
                     :processing="importPdfForm.processing">
+                    Import
+                </LogerButton>
+            </footer>
+        </Modal>
+
+        <Modal :show="showImportCsv" max-width="lg" :closeable="true" :is-open="showImportCsv" :automatic="false" :full-height="false" @close="showImportCsv = false">
+            <header class="flex items-center px-6 py-4 font-bold bg-base-lvl-3">
+                Import CSV Statement
+            </header>
+            <section class="px-6 py-4 bg-base-lvl-3 text-body">
+                <p class="mb-4 text-sm text-body-1/80">
+                    Upload a bank statement CSV to import transactions as drafts into this account. Comma and semicolon delimiters are supported.
+                </p>
+                <ImportHolder
+                    v-model:file="importCsvForm.file"
+                    :endpoint="`/finance/accounts/${accountId}/import-csv`"
+                    :processing="importCsvForm.processing"
+                    placeholder="Drag a CSV bank statement here or click to browse"
+                    accept=".csv,.txt"
+                />
+            </section>
+            <footer class="flex justify-end px-6 py-4 space-x-3 bg-base">
+                <LogerButton variant="secondary" class="h-10" @click="showImportCsv = false"
+                    :disabled="importCsvForm.processing">
+                    Cancel
+                </LogerButton>
+                <LogerButton class="h-10 text-white bg-primary" @click="submitCsvImport"
+                    :disabled="!importCsvForm.file || importCsvForm.processing"
+                    :processing="importCsvForm.processing">
                     Import
                 </LogerButton>
             </footer>

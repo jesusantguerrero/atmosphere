@@ -15,6 +15,7 @@ use App\Http\Controllers\Finance\FinanceController;
 use App\Http\Controllers\Finance\FinanceLinesController;
 use App\Http\Controllers\Finance\FinanceTransactionController;
 use App\Http\Controllers\Finance\FinanceTrendController;
+use App\Http\Controllers\NextPaymentsController;
 use App\Http\Controllers\Relationship\RelationshipController;
 use App\Http\Controllers\System\DashboardController;
 use App\Http\Controllers\System\NotificationController;
@@ -40,6 +41,14 @@ use Illuminate\Support\Facades\URL;
 if (config('app.env') == 'production') {
     URL::forceScheme('https');
 }
+
+Route::get('/', function () {
+    if (auth()->check()) {
+        return redirect('/dashboard');
+    }
+
+    return view('landing');
+})->name('landing');
 
 Route::resource('onboarding', OnboardingController::class)->middleware(['auth:sanctum', 'atmosphere.unteamed', 'verified']);
 
@@ -78,8 +87,6 @@ Route::group([], app_path('/Domains/Meal/routes.php'));
 Route::group([], app_path('/Domains/Integration/routes.php'));
 
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
-    Route::get('/', fn () => redirect('/dashboard'));
-
     /**
      *  Jetstream & Settings Section
      */
@@ -119,6 +126,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
         'as' => 'finance',
     ]);
     Route::post('/finance/accounts/{account}/import-pdf', [FinanceAccountController::class, 'importPdf'])->name('finance.accounts.import-pdf');
+    Route::post('/finance/accounts/{account}/import-csv', [FinanceAccountController::class, 'importCsv'])->name('finance.accounts.import-csv');
 
     Route::resource('/finance/lines', FinanceLinesController::class, [
         'as' => 'finance',
@@ -140,7 +148,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     });
 
     // Next Payments
-    Route::controller(\App\Http\Controllers\NextPaymentsController::class)->group(function () {
+    Route::controller(NextPaymentsController::class)->group(function () {
         Route::get('/api/next-payments', 'index')->name('next-payments.index');
         Route::patch('/api/next-payments/{paymentId}/mark-as-paid', 'markAsPaid')->name('next-payments.mark-as-paid');
     });
