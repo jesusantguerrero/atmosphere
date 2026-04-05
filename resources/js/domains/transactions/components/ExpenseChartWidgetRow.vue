@@ -35,7 +35,6 @@ interface Line {
 }
 const parseDetails = (details: any[]): any[] => {
     return details?.map?.((row: any): Line | null => {
-        console.log({ row })
         return !row ? null : {
             id: row.id,
             line_id: row.line_id,

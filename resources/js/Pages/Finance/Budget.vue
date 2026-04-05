@@ -141,6 +141,17 @@ const readyToAssignBalance = computed(() => {
 const readyToAssignLeft = computed(() => {
     return readyToAssign.value.toAssign
 })
+
+const budgetCsvExportUrl = computed(() => {
+    const { startDate } = pageState.dates;
+    if (startDate) {
+        const month = startDate instanceof Date
+            ? startDate.toISOString().slice(0, 7) + '-01'
+            : String(startDate).slice(0, 7) + '-01';
+        return `${route('budget.export-csv')}?month=${month}`;
+    }
+    return route('budget.export-csv');
+})
 </script>
 
 <template>
@@ -175,12 +186,18 @@ const readyToAssignLeft = computed(() => {
               @change="toggleFilter"
             />
 
-            <LogerButton variant="inverse" @click="goToday"> Today </LogerButton>
+            <LogerButton variant="inverse" @click="goToday"> {{ $t('Today') }} </LogerButton>
 
+            <a :href="budgetCsvExportUrl" target="_blank">
+                <LogerButton variant="inverse" as="span">
+                    <IMdiDownload class="mr-1" />
+                    CSV
+                </LogerButton>
+            </a>
 
             <LogerButton variant="secondary" :href="route('budget.export')"  target="_blank" as="a">
                 <IMdiExport class="mr-2" />
-                Export Budget
+                {{ $t('Export') }} {{ $t('Budget') }}
             </LogerButton>
           </div>
         </template>
@@ -190,8 +207,8 @@ const readyToAssignLeft = computed(() => {
     <FinanceTemplate :accounts="accounts" :panel-size="panelSize">
       <!-- Budget to assign -->
       <MessageBox
-        title="This is your budget."
-        content="Create new category groups and categories and organize them to suit your needs"
+        :title="$t('This is your budget.')"
+        :content="$t('Create new category groups and categories and organize them to suit your needs')"
       />
 
       <BudgetBalanceAssign

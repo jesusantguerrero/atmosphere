@@ -37,6 +37,5 @@ const iconPicker = new IconPicker({
 })
 
 iconPicker.on('select', instance => {
-    console.log('Select:', instance);
 });
 </script>

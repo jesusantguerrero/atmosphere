@@ -34,8 +34,8 @@
 
 <template>
     <JetFormSection
-        title="Emergency fund"
-        description="Take a watchlist and a category to measure how many months of expenses cover your emergency allocation."
+        :title="$t('Emergency fund')"
+        :description="$t('Take a watchlist and a category to measure how many months of expenses cover your emergency allocation.')"
         @submitted="updateProfileInformation"
     >
         <template #form>

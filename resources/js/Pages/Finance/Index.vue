@@ -1,6 +1,7 @@
 
 <script setup lang="ts">
 import { computed, toRefs, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { router, useForm } from "@inertiajs/vue3";
 import { format, subMonths } from "date-fns";
 // @ts-ignore
@@ -32,6 +33,8 @@ import formatMoney from "@/utils/formatMoney";
 import { ITransaction } from "@/domains/transactions/models";
 import BulkSelectionBar from "@/Components/BulkSelectionBar.vue";
 import ConfirmationModal from "@/Components/atoms/ConfirmationModal.vue";
+
+const { t } = useI18n();
 
 const props = defineProps({
   user: {
@@ -174,25 +177,25 @@ const deleteBulkTransactions = () => {
     </template>
 
     <FinanceTemplate
-        title="Finance"
+        :title="$t('Finance')"
         :accounts="accounts"
         ref="financeTemplateRef"
     >
       <section class="mt-4 space-y-4">
-            <WidgetTitleCard title="Summary" class="w-full">
+            <WidgetTitleCard :title="$t('Summary')" class="w-full">
                 <div
                     class="flex flex-wrap justify-between w-full overflow-hidden lg:space-x-4 lg:flex-nowrap"
                 >
                     <div class="w-full mx-auto space-y-2">
                         <FinanceCard
                             class="text-body-1 bg-base-lvl-1"
-                            title="Income"
+                            :title="$t('Income')"
                             :value="formatMoney(income)"
                             :subtitle="`${lastMonthName}: ${incomeVariance}%`"
                         />
                         <FinanceCard
                             class="text-body-1 bg-base-lvl-1"
-                            title="Savings"
+                            :title="$t('Savings')"
                             :value="formatMoney(savings)"
                             :subtitle="`Total: ${formatMoney(savings)}`"
                         />
@@ -204,7 +207,7 @@ const deleteBulkTransactions = () => {
                     </div>
                     <FinanceVarianceCard
                         class="w-full"
-                        title="Expenses"
+                        :title="$t('Expenses')"
                         :variance-title="lastMonthName"
                         :value="formatMoney(transactionTotal)"
                         :variance="expenseVariance"
@@ -215,7 +218,7 @@ const deleteBulkTransactions = () => {
             </WidgetTitleCard>
 
             <section class="grid md:grid-cols-2 gap-2">
-                <WidgetTitleCard title="Planned Transactions" class="hidden md:block">
+                <WidgetTitleCard :title="$t('Planned Transactions')" class="hidden md:block">
                     <TransactionsList
                       class="w-full"
                       table-class="w-full p-2 overflow-auto text-sm rounded-t-lg shadow-md bg-base-lvl-3"
@@ -234,7 +237,7 @@ const deleteBulkTransactions = () => {
                           class="flex items-center text-primary"
                           @click="router.visit('/transactions?filter[status]=planned')"
                         >
-                          <span> See scheduled</span>
+                          <span> {{ $t('See scheduled') }}</span>
                           <i class="ml-2 fa fa-chevron-right"></i>
                         </AtButton>
                     </template>
@@ -248,7 +251,7 @@ const deleteBulkTransactions = () => {
                 />
             </section>
 
-            <WidgetTitleCard title="Transaction history" class="w-full">
+            <WidgetTitleCard :title="$t('Transaction history')" class="w-full">
                 <TransactionsList
                     class="w-full"
                     table-class="overflow-auto text-sm"
@@ -259,7 +262,7 @@ const deleteBulkTransactions = () => {
 
                 <template #action>
                     <button class="text-primary" @click="''">
-                        <i class="fa fa-plus"></i> Add transaction
+                        <i class="fa fa-plus"></i> {{ $t('Add transaction') }}
                     </button>
                 </template>
             </WidgetTitleCard>
@@ -275,13 +278,13 @@ const deleteBulkTransactions = () => {
     <ConfirmationModal
         :show="deleteTransactionsForm.isVisible"
         @close="deleteTransactionsForm.isVisible = false"
-        title="Delete transactions"
-        content="Once transactions are deleted, all of its resources and data will be permanently deleted."
+        :title="$t('Delete transactions')"
+        :content="$t('Once transactions are deleted, all of its resources and data will be permanently deleted.')"
     >
         <template #footer>
             <footer class="flex justify-end">
                 <LogerButton @click="deleteTransactionsForm.isVisible = false" variant="neutral">
-                    Cancel
+                    {{ $t('Cancel') }}
                 </LogerButton>
 
                 <LogerButton
@@ -289,7 +292,7 @@ const deleteBulkTransactions = () => {
                     @click="deleteBulkTransactions"
                     :class="{ 'opacity-25': deleteTransactionsForm.processing }"
                     :disabled="deleteTransactionsForm.processing">
-                    Delete Transactions
+                    {{ $t('Delete Transactions') }}
                 </LogerButton>
             </footer>
         </template>

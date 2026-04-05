@@ -42,7 +42,7 @@ const getMealByType = (mealTypeId) => {
           />
           <div>
             <LogerButton variant="inverse" @click="router.visit(route('meals.create'))">
-              New Meal</LogerButton
+              {{ $t('New Meal') }}</LogerButton
             >
           </div>
         </template>
@@ -78,7 +78,7 @@ const getMealByType = (mealTypeId) => {
       <div class="py-6 space-y-4 md:w-3/12">
         <div class="px-2 py-2 bg-white rounded-md">
           <SectionTitle type="secondary" class="text-center">
-            Most liked meals
+            {{ $t('Most liked meals') }}
           </SectionTitle>
           <section class="flex mt-4">
             <CategoryItem
@@ -106,7 +106,7 @@ const getMealByType = (mealTypeId) => {
               />
             </div>
 
-            <SectionTitle type="secondary" class="text-center"> Tomorrow </SectionTitle>
+            <SectionTitle type="secondary" class="text-center"> {{ $t('Tomorrow') }} </SectionTitle>
             <section class="flex mt-4">
               <CategoryItem
                 wrap

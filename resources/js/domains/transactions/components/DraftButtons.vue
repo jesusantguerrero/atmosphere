@@ -11,7 +11,6 @@ const runAutomation = () => {
             emit('submitted')
         })
         .catch(() => {
-            console.log(error)
         })
 }
 

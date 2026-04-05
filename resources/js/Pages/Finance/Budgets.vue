@@ -107,17 +107,17 @@ transformCategoryOptions(props.accounts, "accounts", "accountsOptions");
           />
           <div>
             <LogerButton  variant="inverse">
-                Import Transactions
+                {{ $t('Import') }} {{ $t('Transactions') }}
             </LogerButton>
           </div>
         </template>
       </FinanceSectionNav>
     </template>
 
-    <FinanceTemplate title="Finance" :accounts="accounts" ref="financeTemplateRef">
+    <FinanceTemplate :title="$t('Finance')" :accounts="accounts" ref="financeTemplateRef">
       <div class="py-12 text-center text-body-1/60">
-        <h3 class="text-lg font-semibold text-body-1">No budgets yet</h3>
-        <p class="mt-1 text-sm">Create your first budget to start tracking your spending by category.</p>
+        <h3 class="text-lg font-semibold text-body-1">{{ $t('No budgets yet') }}</h3>
+        <p class="mt-1 text-sm">{{ $t('Create your first budget to start tracking your spending by category.') }}</p>
       </div>
     </FinanceTemplate>
   </AppLayout>

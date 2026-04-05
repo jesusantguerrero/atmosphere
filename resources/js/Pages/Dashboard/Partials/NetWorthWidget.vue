@@ -106,7 +106,7 @@ onMounted(() => {
 
 <template>
   <WidgetTitleCard
-    title="Net-Worth Balance"
+    :title="$t('Net-Worth Balance')"
     class="hidden md:block base-lvl-3 text-body-1"
     :hide-divider="true"
   >
@@ -114,7 +114,7 @@ onMounted(() => {
       <IMdiCheck />
     </template>
     <section class="w-full">
-      <WidgetHeaderRow title="Net-worth" :value="20000">
+      <WidgetHeaderRow :title="$t('Net-worth')" :value="20000">
         <template #icon>
           <IMdiBankTransfer />
         </template>

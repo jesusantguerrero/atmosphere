@@ -131,7 +131,6 @@ const getMonthInstanceCount = (frequency: string, weekDay: string, date = new Da
             );
           })?.length: 1
     } catch (e) {
-        console.log(selectedSpan, e);
     }
 
   return timesMultiplier

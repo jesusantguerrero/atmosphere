@@ -37,7 +37,6 @@ if (config.MERCURE_URL) {
     var es = new EventSource(url);
     es.onmessage = (messageEvent) => {
         var eventData = JSON.parse(messageEvent.data);
-        console.log(eventData);
     };
 }
 

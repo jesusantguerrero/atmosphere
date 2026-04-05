@@ -10,7 +10,7 @@
 
 
 <template>
-    <AppLayout  title="Emergency Fund Builder">
+    <AppLayout  :title="$t('Emergency Fund Builder')">
         <template #header>
             <SettingsSectionNav />
         </template>

@@ -345,10 +345,13 @@ const onSubmit = (addAnother = false) => {
           ...cloneDeep(form),
           resource_type_id: "MANUAL",
           date: format(new Date(form.date), "yyyy-MM-dd"),
-          status: "verified",
+          status: isRecurrence.value ? "planned" : "verified",
           direction: form.is_transfer ? TRANSACTION_DIRECTIONS.WITHDRAW : form.direction,
           category_id: form.is_transfer ? null : form.category_id,
-          ...state.schedule_settings,
+          ...(isRecurrence.value ? {
+            ...state.schedule_settings,
+            start_date: format(new Date(form.date), "yyyy-MM-dd"),
+          } : {}),
         };
 
         if (isMultiCurrency.value) {
@@ -409,7 +412,6 @@ const onSubmit = (addAnother = false) => {
         },
       });
   } catch (err) {
-    console.log(err)
   }
 };
 

@@ -2,6 +2,7 @@
     import { format, startOfDay } from "date-fns";
     // @ts-ignore
     import { AtDatePager } from "atmosphere-ui";
+    import { useI18n } from "vue-i18n";
     import { useForm, usePage } from "@inertiajs/vue3";
     import { router } from '@inertiajs/vue3';
     import { computed, reactive } from "vue";
@@ -14,6 +15,7 @@
     import MealSectionNav from "@/domains/meal/components/MealSectionNav.vue";
     import MealTypeCell from "@/domains/meal/components/MealTypeCell.vue";
 
+    const { t } = useI18n();
     const pageProps = usePage().props;
 
     const props = defineProps({
@@ -48,7 +50,7 @@
             return props.mode == 'grocery-list';
         }),
         toggleBtnText: computed(() => {
-            return state.isGroceryList ? 'Meal planner' : 'Grocery List';
+            return state.isGroceryList ? t('Meal Planner') : t('Grocery List');
         })
     })
 
@@ -143,7 +145,7 @@
                             next-mode="week"
                         />
                         <LogerButton variant="inverse" class="w-64 h-10" @click="openRandomModal()">
-                            Random Meal
+                            {{ $t('Random Meal') }}
                         </LogerButton>
                         <LogerButton class="h-10 w-52" variant="secondary" @click="toggleMode()">
                             {{ state.toggleBtnText }}

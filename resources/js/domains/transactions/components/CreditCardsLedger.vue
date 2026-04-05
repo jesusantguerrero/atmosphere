@@ -50,7 +50,6 @@ const clonedCards = ref(props.accounts?.map?.(item => item) ?? []);
 
 let setIndex = () => {
     clonedCards.value.unshift(clonedCards.value.pop())
-    console.log('shift', clonedCards.value.map(item => item.name));
     emit('update:model-value', clonedCards.value[0])
 }
 

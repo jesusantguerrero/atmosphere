@@ -24,8 +24,6 @@
             }
         })
 
-        console.log(response)
-        
         spending.value = response.data;
     }
 

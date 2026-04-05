@@ -114,7 +114,7 @@ const toggleEditing = () => {
     <template #header>
       <FinanceSectionNav />
     </template>
-    <FinanceTemplate title="Transactions" :accounts="accounts">
+    <FinanceTemplate :title="$t('Transactions')" :accounts="accounts">
       <div class="flex mt-4 space-x-4">
         <AtBackgroundIconCard
           class="w-full cursor-pointer text-body-1 bg-base-lvl-3"
@@ -126,11 +126,11 @@ const toggleEditing = () => {
       <section class="mt-4 bg-base-lvl-3">
         <header class="flex items-center justify-between px-6 py-2">
 
-              <AtField label="transaction matched">
+              <AtField :label="$t('transaction matched')">
                  0 of {{  transactions.length }}
               </AtField>
 
-              <AtField label="statement balance">
+              <AtField :label="$t('statement balance')">
                 <LogerInput
                     ref="input"
                     class="opacity-100 cursor-text"
@@ -149,14 +149,14 @@ const toggleEditing = () => {
                 </LogerInput>
               </AtField>
 
-              <AtField label="Loger balance">
+              <AtField :label="$t('Loger balance')">
                 {{  formatMoney(account.balance, account.currency_code ) }}
              </AtField>
-              <AtField label="Loger balance">
+              <AtField :label="$t('Loger balance')">
                 {{  formatMoney(account.balance - statementBalance) }}
              </AtField>
              <LogerButton variant="inverse" @click="reconciliation()">
-                Complete
+                {{ $t('Complete') }}
               </LogerButton>
         </header>
           <Component

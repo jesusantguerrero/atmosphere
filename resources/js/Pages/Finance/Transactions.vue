@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, toRefs, reactive, provide, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import { router } from "@inertiajs/vue3";
 import { format } from "date-fns";
 import axios from "axios";
@@ -24,6 +25,7 @@ import { useAppContextStore } from "@/store";
 import { IAccount, ITransaction } from "@/domains/transactions/models";
 import AccountFilter from "@/domains/transactions/components/AccountFilter.vue";
 
+const { t } = useI18n();
 
 const props = withDefaults(defineProps<{
   accounts: IAccount[],
@@ -46,9 +48,9 @@ const listComponent = computed(() => {
 });
 const sectionTitle = computed(() => {
   if (context.isMobile) {
-    return showTransactionTable.value ? "All transactions" : "Accounts";
+    return showTransactionTable.value ? t("All transactions") : t("Accounts");
   }
-  return "Transactions";
+  return t("Transactions");
 });
 
 const handleBackButton = () => {
@@ -131,15 +133,15 @@ const handleDuplicate = (transaction: ITransaction) => {
 
 const transactionStatus = {
   verified: {
-    label: "Verified",
+    label: t("Verified"),
     value: "/finance/transactions?",
   },
   scheduled: {
-    label: "Scheduled",
+    label: t("Scheduled"),
     value: "/finance/transactions?filter[status]=scheduled",
   },
   draft: {
-    label: "Drafts",
+    label: t("Drafts"),
     value: "/finance/transactions?filter[status]=draft&relationships=linked",
   },
 };
@@ -160,6 +162,22 @@ const listData = computed(() => {
 const goToAccount = (accountId: number) => {
     router.visit(`/finance/accounts/${accountId}`)
 }
+
+const buildExportUrl = (base: string): string => {
+    const params = new URLSearchParams();
+    const { startDate, endDate } = pageState.dates;
+    if (startDate && endDate) {
+        params.set('filter[date]', `${format(startDate, 'yyyy-MM-dd')}~${format(endDate, 'yyyy-MM-dd')}`);
+    }
+    if (pageState.filters?.account_id) {
+        params.set('filter[account_id]', String(pageState.filters.account_id));
+    }
+    const query = params.toString();
+    return query ? `${base}?${query}` : base;
+};
+
+const csvExportUrl = computed(() => buildExportUrl('/finance/transactions/export/csv'));
+const pdfExportUrl = computed(() => buildExportUrl('/finance/transactions/export/pdf'));
 </script>
 
 
@@ -183,7 +201,7 @@ const goToAccount = (accountId: number) => {
     </template>
 
     <FinanceTemplate
-      title="Transactions"
+      :title="$t('Transactions')"
       :accounts="accounts"
       :hide-panel="!context.isMobile"
       :force-show-panel="context.isMobile && !showTransactionTable"
@@ -194,7 +212,7 @@ const goToAccount = (accountId: number) => {
           class="flex items-center justify-between w-full px-4 py-3 font-bold text-body-1 bg-base-lvl-3"
           @click="showAllTransactions = true"
         >
-          All accounts
+          {{ $t('All accounts') }}
           <IconBack class="transform rotate-180" />
         </button>
       </template>
@@ -221,14 +239,47 @@ const goToAccount = (accountId: number) => {
                     @clear="reset()"
                     @blur="executeSearch"
                 />
-            <span>
-                {{  listData.length }}
-            </span>
+                <span>
+                    {{ listData.length }}
+                </span>
+                <a :href="csvExportUrl" target="_blank">
+                    <LogerButton variant="inverse" as="span">
+                        <IMdiDownload class="mr-1" />
+                        CSV
+                    </LogerButton>
+                </a>
+                <a :href="pdfExportUrl" target="_blank">
+                    <LogerButton variant="inverse" as="span">
+                        <IMdiFilePdfBox class="mr-1" />
+                        PDF
+                    </LogerButton>
+                </a>
             </section>
         </header>
 
+        <div
+            v-if="!isLoading && listData.length === 0 && accounts.length === 0"
+            class="mx-6 my-8 flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-base-lvl-2 px-6 py-12 text-center"
+        >
+            <div class="flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 text-primary mb-4">
+                <i class="fas fa-university text-2xl" />
+            </div>
+            <h3 class="text-lg font-bold text-body-1 mb-1">No accounts yet</h3>
+            <p class="text-sm text-body-1/60 mb-5 max-w-xs">
+                Start by adding your first account to track your transactions and balances.
+            </p>
+            <LogerButton
+                variant="primary"
+                :as="'a'"
+                href="/finance/accounts/create"
+            >
+                <i class="fas fa-plus mr-2" />
+                Add your first account
+            </LogerButton>
+        </div>
+
         <component
-            v-if="showTransactionTable"
+            v-else-if="showTransactionTable"
             :is="listComponent"
             :transactions="listData"
             :server-search-options="serverSearchOptions"

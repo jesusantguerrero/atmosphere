@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, toRefs } from "vue";
+import { useI18n } from "vue-i18n";
 import { router } from "@inertiajs/vue3";
 import { AtDatePager } from "atmosphere-ui";
 
@@ -19,6 +20,7 @@ import { useAppContextStore } from "@/store";
 import { ICategory, ITransaction, IAccount } from "@/domains/transactions/models";
 
 const { openTransactionModal } = useTransactionModal();
+const { t } = useI18n();
 
 const props = defineProps<{
   transactions: ITransaction[],
@@ -66,15 +68,15 @@ const handleEdit = (transaction: ITransaction) => {
 
 const transactionStatus = {
   draft: {
-    label: "Drafts",
+    label: t("Drafts"),
     value: "/finance/transactions?filter[status]=draft&relationships=linked",
   },
   verified: {
-    label: "Verified",
+    label: t("Verified"),
     value: "/finance/transactions?",
   },
   scheduled: {
-    label: "Scheduled",
+    label: t("Scheduled"),
     value: "/finance/transactions?filter[status]=scheduled",
   },
 };
@@ -100,7 +102,7 @@ const transactionStatus = {
         </template>
       </FinanceSectionNav>
     </template>
-    <FinanceTemplate title="Transactions" :accounts="accounts">
+    <FinanceTemplate :title="$t('Transactions')" :accounts="accounts">
       <Component
         :is="listComponent"
         :cols="tableCategoryCols(categoryId)"

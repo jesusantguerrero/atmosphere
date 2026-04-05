@@ -4,15 +4,15 @@
             <div class="flex justify-between">
                 <div>
                 <h2 class="text-xl font-semibold leading-tight text-primary">
-                    Goals
+                    {{ $t('Goals') }}
                 </h2>
-                <span>There a total of {{ goals.data.length || 0 }} goals</span>
+                <span>There a total of {{ goals.data.length || 0 }} {{ $t('Goals').toLowerCase() }}</span>
 
                 </div>
 
                 <div>
                     <AtButton class="text-white bg-primary" @click="router.visit(route('goals.create'))">
-                        Create goal
+                        {{ $t('Create goal') }}
                     </AtButton>
                 </div>
             </div>
@@ -32,8 +32,8 @@
                         <n-progress :percentage="getPercentage(goal.amount, goal.target)" :stroke-width="1"  border-radius="0" />
                     </div>
                     <div class="flex justify-between goal_foot">
-                        <span class="font-bold text-green-500"> Saved: {{ formatMoney(goal.amount) }}</span>
-                        <span class="font-bold text-gray-500"> Goal: {{ formatMoney(goal.target) }}</span>
+                        <span class="font-bold text-green-500"> {{ $t('Saved') }}: {{ formatMoney(goal.amount) }}</span>
+                        <span class="font-bold text-gray-500"> {{ $t('Goal') }}: {{ formatMoney(goal.target) }}</span>
                     </div>
                 </div>
             </div>
@@ -42,10 +42,13 @@
 </template>
 
 <script setup>
+    import { useI18n } from "vue-i18n";
     import { AtButton } from "atmosphere-ui";
     import { NProgress } from "naive-ui"
     import AppLayout from '@/Components/templates/AppLayout.vue';
     import formatMoney from '@/utils/formatMoney';
+
+    const { t } = useI18n();
 
     const getPercentage = (actual, target) => {
         const percentage = Number(actual||0) / Number(target||0) * 100

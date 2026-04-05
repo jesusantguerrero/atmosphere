@@ -11,14 +11,14 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 
 class BudgetExport implements FromQuery, WithHeadings, WithMapping
 {
-    public function __construct(protected int $teamId)
-    {
-
-    }
+    public function __construct(
+        protected int $teamId,
+        protected ?string $month = null,
+    ) {}
 
     public function query()
     {
-        return BudgetMonth::query()
+        $query = BudgetMonth::query()
             ->select([
                 'budget_months.*',
                 'c.name as categoryName',
@@ -32,6 +32,12 @@ class BudgetExport implements FromQuery, WithHeadings, WithMapping
             ->orderBy('month')
             ->orderBy('g.index')
             ->orderBy('c.index');
+
+        if ($this->month) {
+            $query->where('budget_months.month', $this->month);
+        }
+
+        return $query;
     }
 
     public function map($budgetMonth): array

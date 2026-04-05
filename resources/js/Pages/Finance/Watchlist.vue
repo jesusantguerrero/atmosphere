@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, toRefs, computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { router } from "@inertiajs/vue3";
 // @ts-ignore
 import { AtDatePager } from "atmosphere-ui";
@@ -14,6 +15,8 @@ import WatchlistModal from "@/domains/watchlist/components/WatchlistModal.vue";
 
 import { useServerSearch } from "@/composables/useServerSearch";
 import { formatMonth, MonthTypeFormat } from "@/utils";
+
+const { t } = useI18n();
 
 const props = defineProps({
   user: {
@@ -52,7 +55,7 @@ const { state: pageState, executeSearchWithDelay } = useServerSearch(serverSearc
 
 
 const sectionTitle = computed(() => {
-    return "Spending watchlist for " + formatMonth(pageState.dates.startDate, MonthTypeFormat.long);
+    return t("Spending watchlist for") + " " + formatMonth(pageState.dates.startDate, MonthTypeFormat.long);
 })
 const isModalOpen = ref(false);
 const resourceToEdit = ref(null);
@@ -74,13 +77,13 @@ const resourceToEdit = ref(null);
             {{ formatMonth(pageState.dates.startDate, "MMMM") }}
           </AtDatePager>
           <div>
-            <LogerButton variant="inverse" @click="isModalOpen=!isModalOpen"> Add WatchList </LogerButton>
+            <LogerButton variant="inverse" @click="isModalOpen=!isModalOpen"> {{ $t('Add WatchList') }} </LogerButton>
           </div>
         </template>
       </FinanceSectionNav>
     </template>
 
-    <FinanceTemplate title="Finance" :accounts="accounts" ref="financeTemplateRef">
+    <FinanceTemplate :title="$t('Finance')" :accounts="accounts" ref="financeTemplateRef">
       <article class="w-full">
         <section class="grid gap-4 mt-4 lg:grid-cols-3">
           <WatchlistCard

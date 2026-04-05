@@ -101,7 +101,6 @@ export const formatDate = (dateISOString: string|Date, placeholder?: string, for
         : format(dateISOString, formatString);
     }
     catch (e) {
-        console.log("There")
         return dateISOString ?? emptyDate;
     }
 };

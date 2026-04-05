@@ -37,7 +37,7 @@
                     <MoneyPresenter :value="fundMetrics.target" />
                 </span>
                 <span class="group-hover:hidden">
-                    {{ budgetData?.target_times }} Months
+                    {{ budgetData?.target_times }} {{ $t('Months') }}
                 </span>
             </section>
         </template>
@@ -58,14 +58,14 @@
                             <span  class="group-hover:hidden"> {{ progress}}% </span>
                         </section>
                         <span>
-                            {{ budgetData.total?.toFixed?.(2) }} Months
+                            {{ budgetData.total?.toFixed?.(2) }} {{ $t('Months') }}
                         </span>
                     </header>
                 </template>
 
                     <template v-slot:after="{ progress }">
                     <div class="flex justify-between w-full mt-1">
-                        <span>Monthly Splits </span>
+                        <span>{{ $t('Monthly Splits') }} </span>
                         <span> <MoneyPresenter :value="budgetData.monthly_splits" /></span>
                     </div>
                 </template>
@@ -84,7 +84,7 @@
                           </span>
                       </template>
                     </CategoryItem>
-                    <p class="text-center text-sm -mt-6">Emergency fund track basic expenses from watchlist to suggest the target</p>
+                    <p class="text-center text-sm -mt-6">{{ $t('Emergency fund track basic expenses from watchlist to suggest the target') }}</p>
                   </section>
         </template>
     </WidgetContainer>

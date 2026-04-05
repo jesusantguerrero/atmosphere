@@ -34,7 +34,6 @@ const toggleListen = () => {
 
 function play() {
   if (status.value === 'pause') {
-    console.log('resume')
     window.speechSynthesis.resume()
   }
   else {

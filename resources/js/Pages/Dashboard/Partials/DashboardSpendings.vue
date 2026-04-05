@@ -1,6 +1,6 @@
 <script setup lang="ts">
     import { ref, onMounted } from 'vue';
-
+    import { useI18n } from "vue-i18n";
 
     import ChartComparison from "@/Components/widgets/ChartComparison.vue";
     import ChartCurrentVsPrevious from "@/Components/widgets/ChartCurrentVsPrevious.vue";
@@ -8,6 +8,8 @@
     import WidgetContainer from '@/Components/WidgetContainer.vue';
 
     import { router } from '@inertiajs/vue3';
+
+    const { t } = useI18n();
 
     withDefaults(defineProps<{
         spendingSummary: {
@@ -53,10 +55,10 @@
 
     const financeTabs = [{
       name: "monthVsPrevious",
-      label: "Previous",
+      label: t("Previous"),
     },{
       name: "spendingSummary",
-      label: "Spending",
+      label: t("Spending"),
     }];
 
 
@@ -93,7 +95,7 @@
             hide-divider
             :data-item-label="itemLabel"
             :action="{
-                label: 'Go to Trends',
+                label: $t('Go to Trends'),
                 iconClass: 'fa fa-chevron-right',
             }"
             @action="router.visit('/trends/income-expenses-graph')"

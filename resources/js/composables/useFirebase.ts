@@ -32,11 +32,8 @@ const init = () => {
     }
 }
 function requestPermission() {
-    console.log('Requesting permission...');
     Notification.requestPermission().then((permission) => {
-      if (permission === 'granted') {
-        console.log('Notification permission granted.');
-    }})
+    })
 }
 
 export const useMessaging = (onTokenGenerated) => {
@@ -48,10 +45,7 @@ export const useMessaging = (onTokenGenerated) => {
         } else {
             requestPermission()
         }
-    }).catch((err) => {
-        console.log('An error occurred while retrieving token. ', err);
-        // ...
-    });
+    }).catch(() => {});
 
     return firebase.messaging;
 }

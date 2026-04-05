@@ -2,18 +2,18 @@
 
 namespace App\Domains\Budget\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use Maatwebsite\Excel\Facades\Excel;
-use Illuminate\Support\Facades\Redirect;
-use Insane\Journal\Models\Core\Category;
-use App\Domains\Budget\Exports\BudgetExport;
-use App\Domains\Budget\Imports\BudgetImport;
 use App\Domains\Budget\Data\BudgetAssignData;
 use App\Domains\Budget\Data\BudgetMovementData;
-use App\Http\Controllers\Traits\HasEnrichedRequest;
+use App\Domains\Budget\Exports\BudgetExport;
+use App\Domains\Budget\Imports\BudgetImport;
 use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Domains\Budget\Services\BudgetMovementService;
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\Traits\HasEnrichedRequest;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
+use Insane\Journal\Models\Core\Category;
+use Maatwebsite\Excel\Facades\Excel;
 
 class BudgetMonthController extends Controller
 {
@@ -23,7 +23,7 @@ class BudgetMonthController extends Controller
     {
         $isMovement = request()->post('type');
         $postData = $this->getPostData();
-        if (!$isMovement && $postData && $postData['budgeted'] !== null) {
+        if (! $isMovement && $postData && $postData['budgeted'] !== null) {
             $service->registerAssignment(new BudgetAssignData(
                 $postData['team_id'],
                 $postData['user_id'],
@@ -57,5 +57,17 @@ class BudgetMonthController extends Controller
         $today = now()->format('Y-m-d');
 
         return Excel::download(new BudgetExport(auth()->user()->current_team_id), "budget_as_of_{$today}.xlsx");
+    }
+
+    public function exportCsv(Request $request)
+    {
+        $teamId = $request->user()->current_team_id;
+        $month = $request->query('month');
+
+        $filename = $month
+            ? "budget_{$month}.csv"
+            : 'budget_all_months.csv';
+
+        return Excel::download(new BudgetExport($teamId, $month ?: null), $filename);
     }
 }

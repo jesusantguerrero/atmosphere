@@ -59,7 +59,6 @@ export const formatValue = (value, type = "default", operation = "read") => {
                         return setDate(value)
                     }
                 } catch (err) {
-                    console.log(err)
                     return value;
                 }
             },

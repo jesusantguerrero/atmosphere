@@ -194,9 +194,7 @@ function deleteBoard(id) {
             return router.visit('dashboard')
         }
             router.reload();
-    }).catch((err) => {
-        console.log(err)
-    });
+    }).catch(() => {});
 }
 </script>
 

@@ -84,7 +84,7 @@ const handleOptionClick = (url: string) => {
         :as="section.as"
         class="w-full text-xs text-center md:text-md md:w-auto"
     >
-        {{ section.label }}
+        {{ $t(section.label) }}
     </SubmenuTab>
     <NDropdown
         trigger="click"
@@ -98,7 +98,7 @@ const handleOptionClick = (url: string) => {
             key="more"
             class="w-full text-xs text-center md:text-md md:w-auto"
         >
-            More
+            {{ $t('More') }}
         </SubmenuTab>
     </NDropdown>
     <div class="items-center justify-end hidden py-1 ml-auto space-x-2 text-xs md:flex">

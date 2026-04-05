@@ -62,7 +62,6 @@
 
     const spendingAmount = computed(() => {
         if (!props.data) return 0;
-        if (!props.data.target_type) console.log(props.data)
         return props.data.target_type?.includes?.('spending') ? props.data?.amount : 0
     })
 

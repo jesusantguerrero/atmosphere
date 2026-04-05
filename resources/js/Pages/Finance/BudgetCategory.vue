@@ -49,10 +49,10 @@ const { state: pageState } = useServerSearch(serverSearchOptions);
               controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
               next-mode="month"
             />
-            <LogerButton variant="inverse">Import</LogerButton>
+            <LogerButton variant="inverse">{{ $t('Import') }}</LogerButton>
             <LogerButton variant="inverse">
               <a :href="route('budget.export')" class="block w-full" target="_blank">
-                Export
+                {{ $t('Export') }}
               </a>
             </LogerButton>
           </div>
@@ -73,7 +73,7 @@ const { state: pageState } = useServerSearch(serverSearchOptions);
         </section>
 
         <section class="px-4 py-2 bg-white rounded-md">
-            <SectionTitle>Transactions</SectionTitle>
+            <SectionTitle>{{ $t('Transactions') }}</SectionTitle>
             <TransactionSearch
                 :transactions="transactions"
                 :server-search-options="serverSearchOptions"

@@ -36,7 +36,7 @@ function getIntegrations() {
     }).then(({ data }) => {
         state.integrations = data;
     })
-    .catch((err) => console.log(err));
+    .catch(() => {});
 }
 
 onMounted(async () => {

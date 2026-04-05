@@ -297,8 +297,6 @@ export const useBudget = (budgets: Ref<Record<string, any>>) => {
                 date:  movementData.date,
             };
 
-            console.log(formData);
-
             if (sourceCategory)  {
                 updateBalances(destinationCategory.id, formData);
                 setBudgetState(getBudget(BudgetState.data));
