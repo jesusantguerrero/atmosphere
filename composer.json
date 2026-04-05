@@ -2,7 +2,10 @@
     "name": "laravel/laravel",
     "type": "project",
     "description": "The Laravel Framework.",
-    "keywords": ["framework", "laravel"],
+    "keywords": [
+        "framework",
+        "laravel"
+    ],
     "license": "MIT",
     "require": {
         "php": "^8.2",
@@ -15,7 +18,7 @@
         "google/apiclient": "^2.12",
         "guzzlehttp/guzzle": "^7.0.2",
         "inertiajs/inertia-laravel": "^1.0",
-        "insane/journal": "dev-master",
+        "insane/journal": "dev-master@dev",
         "insane/plan-module": "dev-master",
         "insane/treasurer": "dev-master",
         "insane/watchlist-module": "dev-main",
@@ -33,6 +36,7 @@
         "phpoffice/phpspreadsheet": "^1.27",
         "rlanvin/php-rrule": "^2.4",
         "simshaun/recurr": "^5.0",
+        "smalot/pdfparser": "*",
         "spatie/laravel-data": "^4.0",
         "spatie/laravel-navigation": "^1.2",
         "spatie/laravel-onboard": "^2.4",
@@ -46,6 +50,7 @@
         "brianium/paratest": "^7.0",
         "fakerphp/faker": "^1.9.1",
         "insane/remotr": "dev-main",
+        "laravel/boost": "^1.1",
         "laravel/pint": "^1.13",
         "mockery/mockery": "^1.4.2",
         "nunomaduro/collision": "^8.1",
