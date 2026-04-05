@@ -58,11 +58,11 @@ const hasPendingReconciliation = computed(() => {
 </script>
 
 <template>
-    <section class="flex items-center justify-between w-full gap-3 px-4 py-3 border rounded-md border-amber-200 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800"
+    <section class="flex justify-between w-full px-4 py-2 text-white cursor-pointer bg-secondary"
         v-if="hasPendingReconciliation"
     >
-        <article class="flex items-center gap-2 text-sm text-amber-800 dark:text-amber-200">
-            <AccountReconciliationAlert class="shrink-0" />
+        <article class="flex items-center">
+            <AccountReconciliationAlert class="mr-2 text-white" />
             <p v-if="!isMatched">
                 Difference of
                 <strong>{{ formatMoney(differenceAmount) }}</strong>
@@ -72,22 +72,26 @@ const hasPendingReconciliation = computed(() => {
                 Reconciliation is balanced and ready to complete.
             </p>
         </article>
-        <article class="flex items-center gap-2 shrink-0">
-            <button
+        <article class="flex space-x-2">
+            <LogerButton
+                variant="secondary"
                 v-if="!isMatched"
                 @click="goToReconciliation()"
                 :disabled="adjustmentForm.processing"
-                class="px-3 py-1.5 text-xs font-medium rounded-md bg-amber-200 text-amber-900 hover:bg-amber-300 transition-colors dark:bg-amber-800 dark:text-amber-100 dark:hover:bg-amber-700"
+                :processing="adjustmentForm.processing"
             >
                 Review
-            </button>
-            <button
+            </LogerButton>
+            <LogerButton variant="secondary"
                 @click="adjustAndFinish()"
                 :disabled="adjustmentForm.processing"
-                class="px-3 py-1.5 text-xs font-medium rounded-md bg-amber-600 text-white hover:bg-amber-700 transition-colors"
+                :processing="adjustmentForm.processing"
             >
+                <template #icon>
+                    <IMdiCheck />
+                </template>
                 Save adjustment and finish
-            </button>
+            </LogerButton>
         </article>
     </section>
 </template>

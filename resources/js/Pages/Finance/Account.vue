@@ -75,11 +75,12 @@ const displayTransactions = computed(() => {
     if (props.startingBalance !== undefined) {
         const periodTotal = props.stats?.total ?? 0;
         let balance = (props.startingBalance ?? 0) + periodTotal;
-        for (const t of allTransactions) {
-            (t as any)._runningBalance = balance;
+        allTransactions = allTransactions.map(t => {
+            const withBalance = { ...t, _runningBalance: balance };
             const amount = t.direction === 'WITHDRAW' ? -(t.total ?? 0) : (t.total ?? 0);
             balance -= amount;
-        }
+            return withBalance;
+        });
     }
 
     return allTransactions;
