@@ -5,6 +5,7 @@ namespace App\Domains\Journal\Actions;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Gate;
 use Insane\Journal\Contracts\TransactionDeletes;
+use Insane\Journal\Models\Accounting\ReconciliationEntry;
 use Insane\Journal\Models\Core\Transaction;
 
 class TransactionDelete implements TransactionDeletes
@@ -17,6 +18,9 @@ class TransactionDelete implements TransactionDeletes
     public function delete(User $user, Transaction $transaction)
     {
         $this->validate($user, $transaction);
+
+        ReconciliationEntry::where('transaction_id', $transaction->id)->delete();
+
         $transaction->remove();
     }
 }

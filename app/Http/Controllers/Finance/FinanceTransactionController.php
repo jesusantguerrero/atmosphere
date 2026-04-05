@@ -15,7 +15,11 @@ use Freesgen\Atmosphere\Http\InertiaController;
 use Freesgen\Atmosphere\Http\Querify;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Insane\Journal\Models\Accounting\ReconciliationEntry;
 use Maatwebsite\Excel\Facades\Excel;
+use Recurr\Rule;
+use Recurr\Transformer\ArrayTransformer;
+use Recurr\Transformer\ArrayTransformerConfig;
 
 class FinanceTransactionController extends InertiaController
 {
@@ -156,13 +160,13 @@ class FinanceTransactionController extends InertiaController
 
         if ($transaction->team_id == $request->user()->current_team_id) {
             $schedule = $transaction->schedule;
-            $rule = (new \Recurr\Rule)
+            $rule = (new Rule)
                 ->setStartDate(new \DateTime($schedule['date']))
                 ->setTimezone($schedule->timezone)
                 ->setFreq($schedule->frequency);
 
-            $transformer = new \Recurr\Transformer\ArrayTransformer;
-            $transformerConfig = new \Recurr\Transformer\ArrayTransformerConfig;
+            $transformer = new ArrayTransformer;
+            $transformerConfig = new ArrayTransformerConfig;
             $transformerConfig->enableLastDayOfMonthFix();
             $transformer->setConfig($transformerConfig);
 
@@ -220,13 +224,9 @@ class FinanceTransactionController extends InertiaController
     {
         $items = $request->post('data');
 
-        $reconciledIds = \Insane\Journal\Models\Accounting\ReconciliationEntry::whereIn('transaction_id', $items)
-            ->where('matched', true)
-            ->pluck('transaction_id');
+        ReconciliationEntry::whereIn('transaction_id', $items)->delete();
 
-        $deletable = collect($items)->reject(fn ($id) => $reconciledIds->contains($id))->values();
-
-        Transaction::whereIn('id', $deletable)->delete();
+        Transaction::whereIn('id', $items)->delete();
     }
 
     public function approve(Transaction $transaction)

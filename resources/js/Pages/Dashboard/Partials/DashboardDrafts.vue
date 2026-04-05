@@ -74,7 +74,7 @@
 <template>
     <WidgetTitleCard class="md:block" :with-padding="false" :border="false">
         <TransactionsList
-            v-if="!isLoadingDrafts"
+            v-if="!isLoadingDrafts && transactionsDraft.length"
             class="w-full"
             table-class="w-full p-2 overflow-auto text-sm rounded-t-lg shadow-md bg-base-lvl-3"
             v-model:selected="selected"
@@ -87,6 +87,10 @@
             @approved="handleEdit"
             @removed="removeTransaction($event, ['draft'])"
         />
+
+        <div v-if="!isLoadingDrafts && !transactionsDraft.length" class="py-6 text-center text-body-1/60 text-sm">
+            No draft transactions to review.
+        </div>
 
         <template #top>
             <section class="w-full">

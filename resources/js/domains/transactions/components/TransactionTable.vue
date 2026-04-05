@@ -119,6 +119,7 @@ const getTransactionColor = (row: ITransaction) => {
 
       <template v-slot:actions="{ scope: { row } }">
         <div>
+          <span class="text-green-600" title="Reconciled" v-if="row.is_reconciled"><IMdiCheckCircle /></span>
           <span><IMdiLink v-if="row.linked_transaction_id" /></span>
           <NDropdown
             trigger="click"

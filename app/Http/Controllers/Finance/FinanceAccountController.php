@@ -12,8 +12,10 @@ use App\Domains\Transaction\Services\TransactionService;
 use App\Models\Setting;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Freesgen\Atmosphere\Http\Querify;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Insane\Journal\Models\Accounting\ReconciliationEntry;
 use Insane\Journal\Models\Core\Account;
 use Insane\Journal\Models\Core\Transaction;
 
@@ -54,12 +56,24 @@ class FinanceAccountController extends InertiaController
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
         [$startDate, $endDate] = $this->getFilterDates($filters, $timeZone);
 
+        $transactions = $account->transactionSplits(50, $startDate, $endDate, request()->only(['search', 'page', 'limit', 'direction']));
+        $drafts = $account->transactionSplits(100, $startDate, $endDate, ['status' => 'draft']);
+
+        $allTransactionIds = $transactions->pluck('id')->merge($drafts->pluck('id'))->unique();
+        $reconciledIds = ReconciliationEntry::whereIn('transaction_id', $allTransactionIds)
+            ->where('matched', true)
+            ->pluck('transaction_id')
+            ->flip();
+
+        $transactions->each(fn ($t) => $t->is_reconciled = $reconciledIds->has($t->id));
+        $drafts->each(fn ($t) => $t->is_reconciled = $reconciledIds->has($t->id));
+
         return inertia($this->templates['show'], [
             'sectionTitle' => $account->name,
             'accountId' => $account->id,
             'resource' => $account,
-            'transactions' => $account->transactionSplits(50, $startDate, $endDate, request()->only(['search', 'page', 'limit', 'direction'])),
-            'drafts' => $account->transactionSplits(100, $startDate, $endDate, ['status' => 'draft']),
+            'transactions' => $transactions,
+            'drafts' => $drafts,
             'billingCycles' => $this->creditCardReportService->getBillingCyclesInPeriod($account->team_id, $startDate, $endDate, $account->id),
             'stats' => $this->reportService->getAccountStats($account->id, $startDate, $endDate),
             'startingBalance' => $this->reportService->getAccountBalanceBefore($account->id, $startDate),
@@ -79,7 +93,7 @@ class FinanceAccountController extends InertiaController
         $bankConnectionService->linkCreditCardPayment($account, $transaction, $data['integration_id']);
     }
 
-    public function importPdf(Request $request, Account $account): \Illuminate\Http\RedirectResponse
+    public function importPdf(Request $request, Account $account): RedirectResponse
     {
         $this->authorize('update', $account);
 

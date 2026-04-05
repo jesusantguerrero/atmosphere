@@ -66,7 +66,6 @@ const parser = (transaction: Record<string, string>) => ({
 
 const transactions = computed(() => {
     const data = Object.values(props.resource.transactions).reduce((allData, val) => {
-        console.log(val);
         allData.push(...val?.data);
         return allData;
     }, []);

@@ -103,7 +103,6 @@ const currentStatus = computed(() =>
     pageState?.custom?.mode
 );
 
-console.log(categories);
 provide("categories", categories);
 
 //  Budget Form
