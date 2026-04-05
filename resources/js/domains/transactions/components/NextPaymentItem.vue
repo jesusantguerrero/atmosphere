@@ -100,7 +100,7 @@ const dateBadgeConfig = computed(() => {
     >
         <section class="flex gap-3 flex-1">
             <slot name="left-action-button">
-                <button class="text-gray-400 hidden group-hover:inline-block transition cursor-pointer hover:text-red-400 focus:outline-none" @click="$emit('deleted', payment)">
+                <button class="text-gray-400 inline-block md:opacity-0 md:group-hover:opacity-100 transition cursor-pointer hover:text-red-400 focus:outline-none" @click="$emit('deleted', payment)">
                     <IMdiTrash />
                  </button>
             </slot>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, inject, computed, Ref, onMounted, watch } from "vue";
+import { ref, inject, computed, Ref, reactive, watch } from "vue";
 import { router } from "@inertiajs/vue3";
 import { VueDraggableNext as Draggable } from "vue-draggable-next"
 // @ts-ignore
@@ -45,7 +45,9 @@ const openAccountModal = (account = {}) => {
 };
 
 const saveReorder = () => {
-    const items = props.accounts.map((item, index: number) => ({
+    // Combine both groups in visual order: credit cards first, then bank accounts
+    const ordered = [...creditCards.value, ...bankAccounts.value];
+    const items = ordered.map((item, index: number) => ({
         ...item,
         index
     }));
@@ -105,6 +107,11 @@ const filterOptions = [
     { key: 'unreconciled', label: 'Unreconciled' },
     { key: 'credit-cards', label: 'Cards' }
 ] as const;
+
+const collapsed = reactive<Record<string, boolean>>({});
+const toggleGroup = (group: string) => {
+    collapsed[group] = !collapsed[group];
+};
 </script>
 
 <template>
@@ -136,10 +143,13 @@ const filterOptions = [
         <div class="h-[calc(100vh-280px)] overflow-auto ic-scroller space-y-3">
             <!-- Credit cards group (first — late fees) -->
             <section v-if="creditCards.length">
-                <h4 v-if="bankAccounts.length" class="text-[10px] uppercase tracking-wider text-body-1/50 font-semibold px-2 pb-1">
-                    Credit Cards
-                </h4>
-                <Draggable class="space-y-0.5" :list="creditCards" handle=".handle" @end="saveReorder" tag="div">
+                <button v-if="bankAccounts.length" class="w-full flex items-center justify-between px-2 pb-1 cursor-pointer" @click="toggleGroup('credit-cards')">
+                    <h4 class="text-[10px] uppercase tracking-wider text-body-1/50 font-semibold">
+                        Credit Cards
+                    </h4>
+                    <IMdiChevronDown class="text-body-1/40 text-xs transition-transform" :class="{ '-rotate-90': collapsed['credit-cards'] }" />
+                </button>
+                <Draggable v-show="!collapsed['credit-cards']" class="space-y-0.5" :list="creditCards" handle=".handle" @end="saveReorder" tag="div">
                     <AccountItem v-for="account in creditCards" :key="account.id" :account="account"
                         :is-selected="isSelectedAccount(account.id)" @click="onClick(account.id)"
                         @edit="openAccountModal(account)" @link="openLinkModal(account)" />
@@ -148,10 +158,13 @@ const filterOptions = [
 
             <!-- Bank accounts group -->
             <section v-if="bankAccounts.length">
-                <h4 v-if="creditCards.length" class="text-[10px] uppercase tracking-wider text-body-1/50 font-semibold px-2 pb-1">
-                    Bank Accounts
-                </h4>
-                <Draggable class="space-y-0.5" :list="bankAccounts" handle=".handle" @end="saveReorder" tag="div">
+                <button v-if="creditCards.length" class="w-full flex items-center justify-between px-2 pb-1 cursor-pointer" @click="toggleGroup('bank')">
+                    <h4 class="text-[10px] uppercase tracking-wider text-body-1/50 font-semibold">
+                        Bank Accounts
+                    </h4>
+                    <IMdiChevronDown class="text-body-1/40 text-xs transition-transform" :class="{ '-rotate-90': collapsed['bank'] }" />
+                </button>
+                <Draggable v-show="!collapsed['bank']" class="space-y-0.5" :list="bankAccounts" handle=".handle" @end="saveReorder" tag="div">
                     <AccountItem v-for="account in bankAccounts" :key="account.id" :account="account"
                         :is-selected="isSelectedAccount(account.id)" @click="onClick(account.id)"
                         @edit="openAccountModal(account)" @link="openLinkModal(account)" />

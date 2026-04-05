@@ -12,6 +12,32 @@ withDefaults(defineProps<{
 }>(), {
     checks: () => ([])
 })
+
+const getUrgencyColor = (occurrence: IOccurrenceCheck): string => {
+    const days = typeof getDayDiff(occurrence.last_date) === 'number'
+        ? getDayDiff(occurrence.last_date) as number
+        : 0;
+    const avg = occurrence.avg_days_passed;
+
+    if (!avg || avg <= 0) return '#9ca3af'; // gray — not enough data
+
+    if (days >= avg + 3) return '#ef4444';   // red — overdue
+    if (days >= avg) return '#f59e0b';        // amber — due now
+    if (days >= avg - 3) return '#fb923c';    // orange — approaching
+    return '#22c55e';                          // green — on track
+};
+
+const getUrgencyLabel = (occurrence: IOccurrenceCheck): string => {
+    const days = typeof getDayDiff(occurrence.last_date) === 'number'
+        ? getDayDiff(occurrence.last_date) as number
+        : 0;
+    const avg = occurrence.avg_days_passed;
+
+    if (!avg || avg <= 0) return `${days}d`;
+    const diff = days - avg;
+    if (diff > 0) return `+${diff}d`;
+    return `${days}d`;
+};
 </script>
 
 <template>
@@ -26,7 +52,9 @@ withDefaults(defineProps<{
                 class="capitalize"
                 v-for="occurrence in checks"
                 :label="occurrence.name"
-                :value="getDayDiff(occurrence.last_date)"
+                :value="getUrgencyLabel(occurrence)"
+                :color="getUrgencyColor(occurrence)"
+                :color-class="''"
                 wrap
           />
         </section>

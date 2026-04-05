@@ -75,6 +75,15 @@ const getTransactionColor = (row: ITransaction) => {
   if (row.payee?.name || row.payee_name) {
     return row.direction == "WITHDRAW" ? "text-red-400" : "text-green-500";
   }
+  // Transfers: if this account is the source (account_id), money is leaving (red)
+  // If this account is the destination (counter_account_id), money is coming in (green)
+  if (row.is_transfer || row.counter_account_id) {
+    const viewingAccountId = (row as any)._viewingAccountId;
+    if (viewingAccountId) {
+      return row.account_id === viewingAccountId ? "text-red-400" : "text-green-500";
+    }
+    return row.direction == "WITHDRAW" ? "text-red-400" : "text-green-500";
+  }
   return "text-body-1";
 };
 </script>

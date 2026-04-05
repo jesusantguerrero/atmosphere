@@ -127,6 +127,7 @@ const handleDuplicate = (transaction: ITransaction) => {
         delete data.id;
         openTransactionModal({
           transactionData: data,
+          mode: data.direction,
         });
     })
 };

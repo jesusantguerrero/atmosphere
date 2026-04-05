@@ -85,7 +85,7 @@ const displayTransactions = computed(() => {
         });
     }
 
-    return allTransactions;
+    return allTransactions.map(t => ({ ...t, _viewingAccountId: props.accountId }));
 });
 const { state: pageState, hasFilters: baseHasFilters, reset: baseReset } =
     useServerSearch(serverSearchOptions);
@@ -117,6 +117,7 @@ const handleDuplicate = (transaction: ITransaction) => {
         delete data.id;
         openTransactionModal({
             transactionData: data,
+            mode: data.direction,
         });
     })
 };
