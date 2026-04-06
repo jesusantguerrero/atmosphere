@@ -130,6 +130,66 @@ fetchBudgetAlerts().then(data => {
 </script>
 
 <template>
+    <!-- Mobile compact card (visible below md) -->
+    <div
+        class="md:hidden bg-primary text-white rounded-lg overflow-hidden border border-white/10 cursor-pointer"
+        @click="router.visit('/budgets')"
+    >
+        <div class="flex items-center justify-between px-4 py-3">
+            <div class="flex items-center gap-2">
+                <section class="bg-white text-primary w-7 h-7 rounded-full flex items-center justify-center">
+                    <IMdiBankTransfer class="text-sm" />
+                </section>
+                <span class="font-bold text-sm">{{ $t('Budget balance') }}</span>
+                <ElTooltip effect="dark" :content="t('Your budget has {count} overspent categories', { count: hasAlerts })" placement="top" v-if="hasAlerts">
+                    <div class="cursor-pointer relative" @click.stop="router.visit('/budgets?custom[mode]=overspent')">
+                        <IMdiBell class="text-xs" />
+                        <PointAlert />
+                    </div>
+                </ElTooltip>
+            </div>
+            <div class="flex items-center gap-1 text-sm font-bold">
+                <ElTooltip :content="formatMoney(prevBudget.total)">
+                    <span class="bg-white text-error text-xs px-1 py-0.5 rounded-md cursor-pointer">
+                        {{ variance }} %
+                    </span>
+                </ElTooltip>
+                <span>{{ formatMoney(stats.budgeted.value) }}</span>
+            </div>
+        </div>
+        <div class="px-4 pb-3 space-y-2">
+            <BudgetProgress
+                class="h-1.5 rounded-sm"
+                :goal="currentBudget.total"
+                :current="currentBudget.forSpending"
+                :progress-class="['bg-white', 'bg-white/30']"
+                :show-labels="false"
+            >
+                <template v-slot:before="{ progress }">
+                    <div class="flex justify-between text-xs font-semibold mb-1 opacity-90">
+                        <span>{{ $t('For spending') }}</span>
+                        <span>{{ progress }}%</span>
+                    </div>
+                </template>
+            </BudgetProgress>
+            <BudgetProgress
+                class="h-1.5 rounded-sm"
+                :goal="currentBudget.total"
+                :current="currentBudget.forSavings"
+                :progress-class="['bg-white', 'bg-white/30']"
+                :show-labels="false"
+            >
+                <template v-slot:before="{ progress }">
+                    <div class="flex justify-between text-xs font-semibold mb-1 opacity-90">
+                        <span>{{ $t('For savings') }}</span>
+                        <span>{{ progress }}%</span>
+                    </div>
+                </template>
+            </BudgetProgress>
+        </div>
+    </div>
+
+    <!-- Desktop donut chart card (visible at md+) -->
     <WidgetTitleCard
         :title="$t('Budget balance')"
         class="hidden md:block bg-primary text-white overflow-hidden"

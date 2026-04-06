@@ -2,24 +2,23 @@
 
 namespace App\Http\Controllers\System;
 
-use Inertia\Inertia;
 use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Housing\Models\Occurrence;
 use App\Domains\Meal\Services\MealService;
-use App\Http\Resources\PlannedMealResource;
-use App\Domains\Transaction\Services\ReportService;
-use App\Http\Controllers\Traits\HasEnrichedRequest;
-use App\Domains\Transaction\Services\TransactionService;
 use App\Domains\Transaction\Services\PlannedTransactionService;
+use App\Domains\Transaction\Services\ReportService;
+use App\Domains\Transaction\Services\TransactionService;
+use App\Http\Controllers\Traits\HasEnrichedRequest;
+use App\Http\Resources\PlannedMealResource;
+use Inertia\Inertia;
+use Insane\Journal\Models\Core\Account;
+use Insane\Journal\Models\Core\AccountDetailType;
 
 class DashboardController
 {
     use HasEnrichedRequest;
 
-    public function __construct(private MealService $mealService, private PlannedTransactionService $plannedService)
-    {
-
-    }
+    public function __construct(private MealService $mealService, private PlannedTransactionService $plannedService) {}
 
     public function __invoke()
     {
@@ -34,6 +33,8 @@ class DashboardController
         $plannedMeals = $this->mealService->getMealSchedule($teamId);
         $nextPayments = $this->plannedService->getPlanned($teamId);
 
+        $accounts = Account::getByDetailTypes($teamId, AccountDetailType::ALL)->load('detailType');
+
         return inertia('Dashboard/Index', [
             'sectionTitle' => 'Dashboard',
             'meals' => PlannedMealResource::collection($plannedMeals),
@@ -42,6 +43,7 @@ class DashboardController
             'netWorth' => $netWorth,
             'expenses' => ReportService::generateCurrentPreviousReport($teamId, 'month', 1),
             'spendingSummary' => ReportService::generateExpensesByPeriod($teamId, $startDate),
+            'accounts' => $accounts,
             'onboarding' => function () use ($team) {
                 $onboarding = $team->onboarding();
 

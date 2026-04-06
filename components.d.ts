@@ -31,6 +31,7 @@ declare module 'vue' {
     IMdiEmailCheck: typeof import('~icons/mdi/email-check')['default']
     IMdiExport: typeof import('~icons/mdi/export')['default']
     IMdiFile: typeof import('~icons/mdi/file')['default']
+    IMdiFilePdfBox: typeof import('~icons/mdi/file-pdf-box')['default']
     IMdiFilter: typeof import('~icons/mdi/filter')['default']
     IMdiHistory: typeof import('~icons/mdi/history')['default']
     IMdiLink: typeof import('~icons/mdi/link')['default']
@@ -46,8 +47,12 @@ declare module 'vue' {
     IMdiSend: typeof import('~icons/mdi/send')['default']
     IMdiSort: typeof import('~icons/mdi/sort')['default']
     IMdiStar: typeof import('~icons/mdi/star')['default']
+    IMdiSwapHorizontal: typeof import('~icons/mdi/swap-horizontal')['default']
     IMdiSync: typeof import('~icons/mdi/sync')['default']
     IMdiTimerStarOutline: typeof import('~icons/mdi/timer-star-outline')['default']
     IMdiTrash: typeof import('~icons/mdi/trash')['default']
+    IMdiTrashCanOutline: typeof import('~icons/mdi/trash-can-outline')['default']
+    IMdiTrendingDown: typeof import('~icons/mdi/trending-down')['default']
+    IMdiTrendingUp: typeof import('~icons/mdi/trending-up')['default']
   }
 }
