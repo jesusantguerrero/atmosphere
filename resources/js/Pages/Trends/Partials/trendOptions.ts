@@ -30,5 +30,9 @@ export const trendOptions = [
     {
         label: 'Credit Cards',
         url: '/trends/credit-cards'
+    },
+    {
+        label: 'Financial Overview',
+        url: '/trends/financial-overview'
     }
 ]

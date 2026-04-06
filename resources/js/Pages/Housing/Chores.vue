@@ -6,6 +6,7 @@ import AppLayout from '@/Components/templates/AppLayout.vue';
 import HouseSectionNav from '@/Components/templates/HouseSectionNav.vue';
 import LogerButton from '@/Components/atoms/LogerButton.vue';
 import BoardSection from '@/Components/board/BoardSection.vue';
+import WelcomeCard from '@/Components/organisms/WelcomeCard.vue';
 
 interface Plan {
     id: number;
