@@ -54,7 +54,7 @@
 
 <template>
     <article class="relative flex flex-col-reverse w-full pt-16 pb-20 mx-auto md:flex-row md:space-x-2 md:max-w-screen-2xl">
-        <main class="w-full overflow-hidden md:pr-5 md:w-7/12 lg:w-10/12 md:pl-8">
+        <main class="w-full overflow-hidden md:pl-8" :class="hidePanel ? 'md:pr-8' : 'md:pr-5 md:w-7/12 lg:w-10/12'">
             <slot />
         </main>
 

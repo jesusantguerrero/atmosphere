@@ -1,7 +1,6 @@
 
 <script setup lang="ts">
 import { computed, toRefs, ref } from "vue";
-import { useI18n } from "vue-i18n";
 import { router, useForm } from "@inertiajs/vue3";
 import { format, subMonths } from "date-fns";
 // @ts-ignore
@@ -11,8 +10,6 @@ import AppLayout from "@/Components/templates/AppLayout.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 import WidgetTitleCard from "@/Components/molecules/WidgetTitleCard.vue";
 
-import FinanceCard from "@/Components/molecules/FinanceCard.vue";
-import FinanceVarianceCard from "@/Components/molecules/FinanceVarianceCard.vue";
 import BudgetProgress from "@/domains/budget/components/BudgetProgress.vue";
 
 import FinanceTemplate from "./Partials/FinanceTemplate.vue";
@@ -33,8 +30,6 @@ import formatMoney from "@/utils/formatMoney";
 import { ITransaction } from "@/domains/transactions/models";
 import BulkSelectionBar from "@/Components/BulkSelectionBar.vue";
 import ConfirmationModal from "@/Components/atoms/ConfirmationModal.vue";
-
-const { t } = useI18n();
 
 const props = defineProps({
   user: {
@@ -60,26 +55,27 @@ const props = defineProps({
     },
   },
   budgetTotal: {
-    type: [Number, String],
-    default: 0,
+    type: Object,
+    default: () => ({ spending: 0, total: 0 }),
   },
   income: {
-    type: [Number, String],
+    type: Number,
     default: 0,
   },
   savings: {
-    type: [Number, String],
+    type: Number,
+    default: 0,
   },
   lastMonthIncome: {
-    type: [Number, String],
+    type: Number,
     default: 0,
   },
   transactionTotal: {
-    type: [Number, String],
+    type: Number,
     default: 0,
   },
   lastMonthExpenses: {
-    type: [Number, String],
+    type: Number,
     default: 0,
   },
   transactions: {
@@ -182,47 +178,49 @@ const deleteBulkTransactions = () => {
         ref="financeTemplateRef"
     >
       <section class="mt-4 space-y-4">
-            <WidgetTitleCard :title="$t('Summary')" class="w-full">
-                <div
-                    class="flex flex-wrap justify-between w-full overflow-hidden lg:space-x-4 lg:flex-nowrap"
-                >
-                    <div class="w-full mx-auto space-y-2">
-                        <FinanceCard
-                            class="text-body-1 bg-base-lvl-1"
-                            :title="$t('Income')"
-                            :value="formatMoney(income)"
-                            :subtitle="`${lastMonthName}: ${incomeVariance}%`"
-                        />
-                        <FinanceCard
-                            class="text-body-1 bg-base-lvl-1"
-                            :title="$t('Savings')"
-                            :value="formatMoney(savings)"
-                            :subtitle="`Total: ${formatMoney(savings)}`"
-                        />
-                        <BudgetProgress
-                            :goal="budgetTotal.spending"
-                            :current="transactionTotal"
-                            class="h-8 text-white border-t rounded-b-lg"
-                        />
-                    </div>
-                    <FinanceVarianceCard
-                        class="w-full"
-                        :title="$t('Expenses')"
-                        :variance-title="lastMonthName"
-                        :value="formatMoney(transactionTotal)"
-                        :variance="expenseVariance"
-                        :variance-amount="formatMoney(lastMonthExpenses)"
-                        @click="router.visit('/finance/transactions')"
-                    />
+            <!-- Summary stat cards -->
+            <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-base-lvl-3 border border-base rounded-lg p-4 cursor-pointer hover:border-primary/30 transition overflow-hidden"
+                    @click="router.visit('/finance/transactions?filter[direction]=DEPOSIT')">
+                    <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">{{ $t('Income') }}</p>
+                    <p class="text-lg font-bold text-green-500 mt-2 break-all leading-tight">{{ formatMoney(income) }}</p>
+                    <p class="text-xs text-body-1/40 mt-1">vs {{ lastMonthName }}: <span :class="incomeVariance >= 0 ? 'text-green-500' : 'text-red-400'">{{ incomeVariance }}%</span></p>
                 </div>
-            </WidgetTitleCard>
 
-            <section class="grid md:grid-cols-2 gap-2">
+                <div class="bg-base-lvl-3 border border-base rounded-lg p-4 cursor-pointer hover:border-primary/30 transition overflow-hidden"
+                    @click="router.visit('/finance/transactions')">
+                    <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">{{ $t('Expenses') }}</p>
+                    <p class="text-lg font-bold text-red-400 mt-2 break-all leading-tight">{{ formatMoney(transactionTotal) }}</p>
+                    <p class="text-xs text-body-1/40 mt-1">vs {{ lastMonthName }}: <span :class="expenseVariance <= 0 ? 'text-green-500' : 'text-red-400'">{{ expenseVariance }}%</span></p>
+                </div>
+
+                <div class="bg-base-lvl-3 border border-base rounded-lg p-4 cursor-pointer hover:border-primary/30 transition overflow-hidden"
+                    @click="router.visit('/finance/transactions')">
+                    <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">{{ $t('Savings') }}</p>
+                    <p class="text-lg font-bold mt-2 break-all leading-tight" :class="Number(savings) >= 0 ? 'text-green-500' : 'text-red-400'">{{ formatMoney(savings) }}</p>
+                    <p class="text-xs text-body-1/40 mt-1">{{ $t('Income') }} - {{ $t('Expenses') }}</p>
+                </div>
+
+                <div class="bg-base-lvl-3 border border-base rounded-lg p-4 cursor-pointer hover:border-primary/30 transition overflow-hidden"
+                    @click="router.visit('/budgets')">
+                    <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">{{ $t('Budget') }}</p>
+                    <p class="text-lg font-bold text-body mt-2 break-all leading-tight">{{ formatMoney(transactionTotal) }}</p>
+                    <BudgetProgress
+                        :goal="budgetTotal.spending"
+                        :current="transactionTotal"
+                        class="h-1.5 rounded-full mt-2"
+                        :show-labels="false"
+                    />
+                    <p class="text-xs text-body-1/40 mt-1">{{ $t('of') }} {{ formatMoney(budgetTotal.spending) }}</p>
+                </div>
+            </section>
+
+            <section class="grid md:grid-cols-2 gap-4">
                 <WidgetTitleCard :title="$t('Planned Transactions')" class="hidden md:block">
                     <TransactionsList
                       class="w-full"
-                      table-class="w-full p-2 overflow-auto text-sm rounded-t-lg shadow-md bg-base-lvl-3"
-                      :transactions="planned"
+                      table-class="w-full p-2 overflow-auto text-sm rounded-t-lg bg-base-lvl-3"
+                      :transactions="planned.slice(0, 5)"
                       v-model:selected="selectedItems"
                       :parser="plannedDBToTransaction"
                       :allow-remove="true"
@@ -252,18 +250,25 @@ const deleteBulkTransactions = () => {
             </section>
 
             <WidgetTitleCard :title="$t('Transaction history')" class="w-full">
+                <div
+                    v-if="!transactions || transactions.length === 0"
+                    class="flex flex-col items-center justify-center py-8 w-full"
+                >
+                    <p class="text-sm text-body-1/50">{{ $t('No transactions for this period.') }}</p>
+                </div>
                 <TransactionsList
+                    v-else
                     class="w-full"
                     table-class="overflow-auto text-sm"
                     :transactions="transactions"
                     :parser="transactionDBToTransaction"
-                    @edit="''"
+                    @edit="handleEdit"
                 />
 
                 <template #action>
-                    <button class="text-primary" @click="''">
-                        <i class="fa fa-plus"></i> {{ $t('Add transaction') }}
-                    </button>
+                    <LogerButton variant="inverse" class="text-xs" @click="openTransactionModal()">
+                        <IMdiPlus class="mr-1" /> {{ $t('Add transaction') }}
+                    </LogerButton>
                 </template>
             </WidgetTitleCard>
       </section>

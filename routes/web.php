@@ -15,6 +15,7 @@ use App\Http\Controllers\Finance\FinanceController;
 use App\Http\Controllers\Finance\FinanceLinesController;
 use App\Http\Controllers\Finance\FinanceTransactionController;
 use App\Http\Controllers\Finance\FinanceTrendController;
+use App\Http\Controllers\Finance\FinancialOverviewController;
 use App\Http\Controllers\NextPaymentsController;
 use App\Http\Controllers\Relationship\RelationshipController;
 use App\Http\Controllers\System\DashboardController;
@@ -157,6 +158,9 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
 
     // Trends
     Route::get('/trends', [FinanceTrendController::class, 'index'])->name('finance.trends');
+    Route::get('/trends/financial-overview', [FinancialOverviewController::class, 'index'])->name('finance.financial-overview');
+    Route::post('/trends/financial-overview/settings', [FinancialOverviewController::class, 'updateSettings'])->name('finance.financial-overview.settings');
+    Route::post('/trends/financial-overview/pinned-goals', [FinancialOverviewController::class, 'updatePinnedGoals'])->name('finance.financial-overview.pinned-goals');
     Route::get('/trends/{name}', [FinanceTrendController::class, 'index'])->name('finance.trend-section');
 
     /**************************************************************************************
