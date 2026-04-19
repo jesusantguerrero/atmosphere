@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -19,12 +19,12 @@ return new class extends Migration
             $table->date('start_at');
             $table->date('end_at');
             $table->date('due_at');
-            $table->decimal('minimum_payment', 11, 4)->default(0);;
-            $table->decimal('debt', 11, 4)->default(0);;
-            $table->decimal('paid', 11, 4)->default(0);;
-            $table->decimal('subtotal', 11, 4)->default(0);;
-            $table->decimal('discount', 11, 4)->default(0);;
-            $table->decimal('total', 11, 4)->default(0);;
+            $table->decimal('minimum_payment', 11, 4)->default(0);
+            $table->decimal('debt', 11, 4)->default(0);
+            $table->decimal('paid', 11, 4)->default(0);
+            $table->decimal('subtotal', 11, 4)->default(0);
+            $table->decimal('discounts', 11, 4)->default(0);
+            $table->decimal('total', 11, 4)->default(0);
             $table->string('status')->default('pending');
             $table->timestamps();
         });

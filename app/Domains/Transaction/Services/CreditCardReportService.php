@@ -8,12 +8,20 @@ use App\Domains\Transaction\Models\BillingCycle;
 use App\Models\User;
 use App\Notifications\BillingCycleCutAlert;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Account;
 use Insane\Journal\Models\Core\Transaction;
 
 class CreditCardReportService
 {
+    const REPORT_CACHE_TTL_SECONDS = 600;
+
+    private function reportCacheKey(string $method, array $parts): string
+    {
+        return 'cc_report:'.$method.':'.md5(json_encode($parts));
+    }
+
     public function creditCardCycleByAccount($teamId, $date, $monthsBack = 1, $creditCardId = null, $asToday = null)
     {
         $endCycleDate = Carbon::createFromFormat('Y-m-d', $date)->startOfMonth()->subMonth($monthsBack)->format('Y-m-d');
@@ -86,13 +94,21 @@ class CreditCardReportService
 
     public function getTopCategoriesByCreditCard($teamId, $startDate, $endDate, $creditCardId = null)
     {
-        $readyToAssign = Category::where([
-            'team_id' => $teamId,
-        ])
-            ->where('name', BudgetReservedNames::READY_TO_ASSIGN->value)
-            ->first();
+        $cacheKey = $this->reportCacheKey('topCategoriesByCreditCard', [
+            $teamId,
+            (string) $startDate,
+            (string) $endDate,
+            $creditCardId,
+        ]);
 
-        return DB::select("
+        return Cache::remember($cacheKey, self::REPORT_CACHE_TTL_SECONDS, function () use ($teamId, $startDate, $endDate) {
+            $readyToAssign = Category::where([
+                'team_id' => $teamId,
+            ])
+                ->where('name', BudgetReservedNames::READY_TO_ASSIGN->value)
+                ->first();
+
+            return DB::select("
          WITH TopCategories as (
             SELECT
                 ABS(COALESCE(SUM(CASE WHEN tl.type = -1 THEN tl.amount * tl.type ELSE 0 END), 0)) AS subtotal,
@@ -119,22 +135,30 @@ class CreditCardReportService
             WHERE tc.rank <= 4
             GROUP BY tc.id, tc.cat_name
             ORDER BY tc.id, tc.rank", [
-            'teamId' => $teamId,
-            'startDate' => $startDate,
-            'endDate' => $endDate,
-            'readyToAssign' => $readyToAssign->id,
-        ]);
+                'teamId' => $teamId,
+                'startDate' => $startDate,
+                'endDate' => $endDate,
+                'readyToAssign' => $readyToAssign->id,
+            ]);
+        });
     }
 
     public function getTopPayeesByAccount($teamId, $startDate, $endDate, $asToday = null)
     {
-        $readyToAssign = Category::where([
-            'team_id' => $teamId,
-        ])
-            ->where('name', BudgetReservedNames::READY_TO_ASSIGN->value)
-            ->first();
+        $cacheKey = $this->reportCacheKey('topPayeesByAccount', [
+            $teamId,
+            (string) $startDate,
+            (string) $endDate,
+        ]);
 
-        return DB::select("
+        return Cache::remember($cacheKey, self::REPORT_CACHE_TTL_SECONDS, function () use ($teamId, $startDate, $endDate) {
+            $readyToAssign = Category::where([
+                'team_id' => $teamId,
+            ])
+                ->where('name', BudgetReservedNames::READY_TO_ASSIGN->value)
+                ->first();
+
+            return DB::select("
         SELECT
             ABS(COALESCE(SUM(CASE WHEN tl.type = -1 THEN tl.amount * tl.type ELSE 0 END), 0)) AS subtotal,
             ABS(COALESCE(SUM(tl.amount * tl.type), 0)) AS total,
@@ -152,37 +176,47 @@ class CreditCardReportService
         GROUP BY tl.payee_id
         ORDER BY ABS(COALESCE(SUM(tl.amount * tl.type), 0)) desc
         ", [
-            'teamId' => $teamId,
-            'startDate' => $startDate,
-            'endDate' => $endDate,
-            'readyToAssign' => $readyToAssign->id,
-        ]);
+                'teamId' => $teamId,
+                'startDate' => $startDate,
+                'endDate' => $endDate,
+                'readyToAssign' => $readyToAssign->id,
+            ]);
+        });
     }
 
     public function getBillingCyclesByCardInPeriod($teamId, $startDate, $endDate, $creditCardId = null)
     {
-        $billingData = DB::table(DB::raw('accounts a'))
-            ->where('a.team_id', $teamId)
-            ->whereNotNull('a.credit_closing_day')
-            ->selectRaw('
+        $cacheKey = $this->reportCacheKey('billingCyclesByCardInPeriod', [
+            $teamId,
+            (string) $startDate,
+            (string) $endDate,
+            $creditCardId,
+        ]);
+
+        return Cache::remember($cacheKey, self::REPORT_CACHE_TTL_SECONDS, function () use ($teamId, $startDate, $endDate, $creditCardId) {
+            $billingData = DB::table(DB::raw('accounts a'))
+                ->where('a.team_id', $teamId)
+                ->whereNotNull('a.credit_closing_day')
+                ->selectRaw('
                 ABS(COALESCE(SUM(bc.subtotal), 0)) AS subtotal,
                 ABS(COALESCE(SUM(bc.total), 0)) AS total,
                 ABS(COALESCE(SUM(bc.discounts), 0)) AS discounts,
                 a.name,
                 a.id
             ')
-            ->when($creditCardId, fn ($q) => $q->where('a.id', $creditCardId))
-            ->leftJoin(DB::raw('billing_cycles bc'), 'a.id', 'bc.account_id')
-            ->whereBetween('bc.end_at', [$startDate, $endDate])
-            ->groupBy('a.id')
-            ->get();
+                ->when($creditCardId, fn ($q) => $q->where('a.id', $creditCardId))
+                ->leftJoin(DB::raw('billing_cycles bc'), 'a.id', 'bc.account_id')
+                ->whereBetween('bc.end_at', [$startDate, $endDate])
+                ->groupBy('a.id')
+                ->get();
 
-        return [
-            'data' => $billingData,
-            'discountTotal' => $billingData->sum('discount'),
-            'total' => $billingData->sum('total'),
-            'subtotal' => $billingData->sum('subtotal'),
-        ];
+            return [
+                'data' => $billingData,
+                'discountTotal' => $billingData->sum('discounts'),
+                'total' => $billingData->sum('total'),
+                'subtotal' => $billingData->sum('subtotal'),
+            ];
+        });
     }
 
     public function getBillingCyclesInPeriod($teamId, $startDate, $endDate, $creditCardId = null, $statuses = null)
@@ -204,27 +238,36 @@ class CreditCardReportService
             ->get();
     }
 
-    public function creditCards($teamId, $date)
+    public function creditCards($teamId, $date, ?string $startDate = null, ?array $accountIds = null)
     {
         $lastCycleBalances = $this->creditCardCycleByAccount($teamId, $date);
-        $creditTotal = $lastCycleBalances->sum('total');
+        $previousCycleBalances = $this->creditCardCycleByAccount($teamId, $date, 2);
 
-        $startPeriodDate = Carbon::createFromFormat('Y-m-d', $date)->startOfMonth()->subMonths(12);
+        if (! empty($accountIds)) {
+            $lastCycleBalances = $lastCycleBalances->whereIn('id', $accountIds)->values();
+            $previousCycleBalances = $previousCycleBalances->whereIn('id', $accountIds)->values();
+        }
 
-        // dd($this->getTopCategoriesByCreditCard($teamId, $startPeriodDate, $date));
+        $creditTotal = (float) $lastCycleBalances->sum('total');
+        $creditCapacity = (float) $lastCycleBalances->sum('credit_limit');
+        $creditTotalPrevious = (float) $previousCycleBalances->sum('total');
+        $creditTotalDelta = $creditTotal - $creditTotalPrevious;
 
-        $data = [
+        $startPeriodDate = $startDate
+            ? Carbon::createFromFormat('Y-m-d', $startDate)
+            : Carbon::createFromFormat('Y-m-d', $date)->startOfMonth()->subMonths(12);
+
+        return [
             'lastCycleBalances' => $lastCycleBalances,
             'creditTotal' => $creditTotal,
-            'creditLineUsage' => round($creditTotal / $lastCycleBalances->sum('credit_limit') * 100, 2),
+            'creditTotalPrevious' => $creditTotalPrevious,
+            'creditTotalDelta' => $creditTotalDelta,
+            'creditCapacity' => $creditCapacity,
+            'creditLineUsage' => $creditCapacity > 0 ? round($creditTotal / $creditCapacity * 100, 2) : 0.0,
             'topCategoriesByCard' => $this->getTopCategoriesByCreditCard($teamId, $startPeriodDate, $date),
             'billingCyclesByCard' => $this->getBillingCyclesByCardInPeriod($teamId, $startPeriodDate, $date),
-            'topPayeesByCard' => $this->getTopPayeesByAccount($teamId, $startPeriodDate->format('Y-m-d'), $date),
-            'topTransaction' => [],
-            'billingCyclePayments' => [],
+            'topPayeesByCard' => $this->getTopPayeesByAccount($teamId, is_string($startPeriodDate) ? $startPeriodDate : $startPeriodDate->format('Y-m-d'), $date),
         ];
-
-        return $data;
     }
 
     public function generateBillingCycles($teamId, $yearMonth)
