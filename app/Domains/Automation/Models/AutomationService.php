@@ -8,4 +8,15 @@ use Illuminate\Database\Eloquent\Model;
 class AutomationService extends Model
 {
     use HasFactory;
+
+    protected $fillable = [
+        'name',
+        'label',
+        'type',
+        'entity',
+        'handler',
+        'description',
+        'logo',
+        'fields',
+    ];
 }

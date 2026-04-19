@@ -34,8 +34,8 @@ class TransactionDataDTO extends Data
     {
         $this->id = $data['id'];
         $this->date = $data['date'];
-        $this->payee = $data['payee'];
-        $this->description = $data['description'];
+        $this->payee = self::redactCardNumbers($data['payee']);
+        $this->description = self::redactCardNumbers($data['description']);
         $this->categoryGroup = $data['categoryGroup'];
         $this->category = $data['category'];
         $this->amount = $data['amount'];
@@ -44,5 +44,21 @@ class TransactionDataDTO extends Data
         $this->productName = $data['productName'] ?? null;
         $this->productCode = $data['productCode'] ?? null;
         $this->productBrand = $data['productBrand'] ?? null;
+    }
+
+    /**
+     * Strip any 13-19 digit sequence (with optional spaces/dashes) from text.
+     * Why: some banks occasionally leak the full PAN into merchant names/descriptions;
+     * masked formats like "53*************3861" are untouched because they contain asterisks.
+     */
+    private static function redactCardNumbers(?string $text): string
+    {
+        if (! $text) {
+            return '';
+        }
+
+        $cleaned = preg_replace('/\b(?:\d[ -]?){12,18}\d\b/', '', $text);
+
+        return trim(preg_replace('/\s+/', ' ', $cleaned));
     }
 }
