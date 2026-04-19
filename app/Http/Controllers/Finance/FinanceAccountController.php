@@ -128,7 +128,8 @@ class FinanceAccountController extends InertiaController
         foreach ($rows as $row) {
             $transactionData = MapBankStatementToLoger::parse($row, $session, $account->id);
 
-            $duplicate = $transactionService->findIfDuplicated($transactionData);
+            $duplicate = $transactionService->findDuplicateByBankReference($transactionData)
+                ?? $transactionService->findIfDuplicated($transactionData);
             if ($duplicate) {
                 $skipped++;
 
@@ -178,7 +179,8 @@ class FinanceAccountController extends InertiaController
         foreach ($rows as $row) {
             $transactionData = MapBankStatementToLoger::parse($row, $session, $account->id);
 
-            $duplicate = $transactionService->findIfDuplicated($transactionData);
+            $duplicate = $transactionService->findDuplicateByBankReference($transactionData)
+                ?? $transactionService->findIfDuplicated($transactionData);
             if ($duplicate) {
                 $skipped++;
 
