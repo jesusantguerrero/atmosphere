@@ -220,6 +220,11 @@ const excludedCurrencies = computed(() => {
               <AtField label="Account Label" class="space-y-2">
                 <LogerInput v-model="form.name" class="w-full" placeholder="Enter account name" />
               </AtField>
+
+              <AtField label="Last 4 digits" class="space-y-2">
+                <LogerInput v-model="form.number" type="number" class="w-full" placeholder="e.g., 3861"
+                  min="0" max="9999" />
+              </AtField>
             </div>
 
             <!-- Credit Card Specific Fields -->
@@ -242,11 +247,6 @@ const excludedCurrencies = computed(() => {
 
                 <AtField label="Credit Limit" class="space-y-2">
                   <InputMoney v-model="form.credit_limit" class="w-full" placeholder="0.00" />
-                </AtField>
-
-                <AtField label="Card last 4 digits" class="space-y-2">
-                  <LogerInput v-model="form.number" type="number" class="w-full" placeholder="e.g., 3861"
-                    min="0" max="9999" />
                 </AtField>
               </div>
             </div>

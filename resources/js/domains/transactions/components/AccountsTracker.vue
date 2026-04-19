@@ -73,13 +73,13 @@ const isMultiple = (value: any) => {
           class="flex flex-col mt-2 space-y-2"
           v-if="isMultiple(section.value)"
         >
-          <span class="relative w-72" v-for="currency in section.value" :key="currency">
+          <span class="relative block w-full" v-for="currency in section.value" :key="currency">
             <NumberHider />
             {{ formatMoney(currency.total, currency.currency_code) }}
           </span>
         </SectionTitle>
         <SectionTitle class="mt-2" v-else>
-          <span class="relative w-72">
+          <span class="relative block w-full">
             <MoneyPresenter :value="section.value" />
           </span>
         </SectionTitle>

@@ -19,8 +19,13 @@ interface AccountGroup {
     group: string; accounts: AccountEntry[];
     subtotals: { base: number; quote: number; base_in_quote: number };
 }
+interface LinkedAccount { id: number; name: string; balance_in_quote: number; }
 interface Goal {
     id: string; name: string; target_amount: number; current_balance: number;
+    linked_accounts: LinkedAccount[];
+}
+interface BankBreakdownEntry {
+    bank_code: string | null; label: string; total_in_quote: number; account_count: number;
 }
 interface Totals {
     total_base: number; total_quote: number; base_in_quote: number;
@@ -33,13 +38,16 @@ const props = withDefaults(defineProps<{
     pinnedGoals: Goal[];
     availableGoals: Goal[];
     pinnedGoalIds: string[];
+    goalAccountLinks: Record<string, number[]>;
+    bankBreakdown: BankBreakdownEntry[];
     exchangeRate: number;
     baseCurrency: string;
     quoteCurrency: string;
     totals: Totals;
 }>(), {
     accounts: () => [], pinnedGoals: () => [], availableGoals: () => [],
-    pinnedGoalIds: () => [], exchangeRate: 59.8, baseCurrency: 'USD', quoteCurrency: 'DOP',
+    pinnedGoalIds: () => [], goalAccountLinks: () => ({}), bankBreakdown: () => [],
+    exchangeRate: 59.8, baseCurrency: 'USD', quoteCurrency: 'DOP',
 });
 
 const localExchangeRate = ref(props.exchangeRate);
@@ -59,6 +67,33 @@ const groupLabel = (group: string) => {
 const goalsTotal = computed(() =>
     props.pinnedGoals.reduce((sum, g) => sum + g.current_balance, 0)
 );
+
+const flatAccounts = computed(() =>
+    props.accounts.flatMap(g => g.accounts.map(a => ({ id: a.id, name: a.name, group: groupLabel(g.group) })))
+);
+
+const editingGoalLinkId = ref<string | null>(null);
+
+function isAccountLinkedToGoal(goal: Goal, accountId: number): boolean {
+    return goal.linked_accounts.some(a => a.id === accountId);
+}
+
+async function toggleGoalAccountLink(goal: Goal, accountId: number) {
+    const current = goal.linked_accounts.map(a => a.id);
+    const next = { ...props.goalAccountLinks };
+    const updated = current.includes(accountId)
+        ? current.filter(id => id !== accountId)
+        : [...current, accountId];
+
+    if (updated.length) {
+        next[goal.id] = updated;
+    } else {
+        delete next[goal.id];
+    }
+
+    await axios.post('/trends/financial-overview/goal-account-links', { links: next });
+    router.reload();
+}
 
 const isGoalPinned = (id: string) => localPinnedIds.value.includes(id);
 
@@ -188,30 +223,66 @@ async function saveExchangeRate() {
                                 <thead>
                                     <tr class="text-xs uppercase text-body-1/50 bg-base-lvl-2">
                                         <th class="text-left px-5 py-2 font-medium">Goal</th>
-                                        <th class="text-right px-5 py-2 font-medium">Balance</th>
-                                        <th class="text-right px-5 py-2 font-medium">Target</th>
+                                        <th class="text-right px-5 py-2 font-medium">Balance / Target</th>
                                         <th class="text-right px-5 py-2 font-medium">Diff</th>
                                         <th class="w-8"></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr v-for="goal in pinnedGoals" :key="goal.id" class="border-b border-base">
-                                        <td class="px-5 py-2 text-body">{{ goal.name }}</td>
-                                        <td class="px-5 py-2 text-right tabular-nums">
-                                            {{ formatMoney(goal.current_balance, quoteCurrency) }}
+                                        <td class="px-5 py-3 text-body align-top">
+                                            <div class="font-medium">{{ goal.name }}</div>
+                                            <div class="mt-1.5 flex flex-wrap items-center gap-1">
+                                                <span
+                                                    v-for="acc in goal.linked_accounts"
+                                                    :key="acc.id"
+                                                    class="inline-flex items-center gap-1 text-[11px] leading-none px-2 py-1 rounded-full bg-primary/10 text-primary max-w-[160px]"
+                                                >
+                                                    <span class="truncate">{{ acc.name }}</span>
+                                                    <button class="opacity-50 hover:opacity-100 hover:text-red-400 transition flex-shrink-0" @click="toggleGoalAccountLink(goal, acc.id)" title="Unlink">
+                                                        <IMdiClose class="text-[10px]" />
+                                                    </button>
+                                                </span>
+                                                <button
+                                                    class="inline-flex items-center gap-0.5 text-[11px] leading-none px-2 py-1 rounded-full border border-dashed border-base text-body-1/50 hover:text-primary hover:border-primary transition"
+                                                    @click="editingGoalLinkId = editingGoalLinkId === goal.id ? null : goal.id"
+                                                >
+                                                    <IMdiPlus class="text-[10px]" />
+                                                    <span>{{ editingGoalLinkId === goal.id ? 'Done' : (goal.linked_accounts.length ? 'Add' : 'Link account') }}</span>
+                                                </button>
+                                            </div>
+                                            <div v-if="editingGoalLinkId === goal.id" class="mt-2 max-h-40 overflow-y-auto border border-base rounded bg-base-lvl-1 p-2 space-y-1">
+                                                <label
+                                                    v-for="a in flatAccounts"
+                                                    :key="a.id"
+                                                    class="flex items-center gap-2 text-xs text-body hover:text-primary cursor-pointer"
+                                                >
+                                                    <input
+                                                        type="checkbox"
+                                                        :checked="isAccountLinkedToGoal(goal, a.id)"
+                                                        @change="toggleGoalAccountLink(goal, a.id)"
+                                                        class="rounded border-base text-primary focus:ring-primary"
+                                                    />
+                                                    <span>{{ a.name }}</span>
+                                                    <span class="text-body-1/40 ml-auto">{{ a.group }}</span>
+                                                </label>
+                                            </div>
                                         </td>
-                                        <td class="px-5 py-2 text-right text-body-1/60 tabular-nums">
-                                            <span v-if="goal.target_amount">{{ formatMoney(goal.target_amount, quoteCurrency) }}</span>
-                                            <span v-else>—</span>
+                                        <td class="px-5 py-3 text-right tabular-nums align-top">
+                                            <div>{{ formatMoney(goal.current_balance, quoteCurrency) }}</div>
+                                            <div class="text-xs text-body-1/50">
+                                                <span v-if="goal.target_amount">/ {{ formatMoney(goal.target_amount, quoteCurrency) }}</span>
+                                                <span v-else>—</span>
+                                            </div>
                                         </td>
-                                        <td class="px-5 py-2 text-right tabular-nums font-semibold"
+                                        <td class="px-5 py-3 text-right tabular-nums font-semibold align-top"
                                             :class="(goal.current_balance - goal.target_amount) >= 0 ? 'text-green-500' : 'text-red-400'">
                                             <span v-if="goal.target_amount">
                                                 {{ formatMoney(goal.current_balance - goal.target_amount, quoteCurrency) }}
                                             </span>
                                             <span v-else class="text-body-1/40 font-normal">—</span>
                                         </td>
-                                        <td class="pr-3">
+                                        <td class="pr-3 align-top py-3">
                                             <button @click="removeGoal(goal.id)" class="text-body-1/30 hover:text-red-400 transition" title="Remove from view">
                                                 <IMdiClose class="text-xs" />
                                             </button>
@@ -222,7 +293,7 @@ async function saveExchangeRate() {
                                     <tr class="bg-base-lvl-2 font-bold">
                                         <td class="px-5 py-2 text-body">Total</td>
                                         <td class="px-5 py-2 text-right tabular-nums">{{ formatMoney(goalsTotal, quoteCurrency) }}</td>
-                                        <td></td><td></td><td></td>
+                                        <td></td><td></td>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -295,6 +366,43 @@ async function saveExchangeRate() {
                             </table>
                         </div>
                     </div>
+                </section>
+
+                <!-- By Bank breakdown -->
+                <section v-if="bankBreakdown.length" class="bg-base-lvl-3 border border-base rounded-lg overflow-hidden">
+                    <div class="px-5 py-3 border-b border-base">
+                        <h2 class="font-bold text-body text-sm">By Bank</h2>
+                    </div>
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-xs uppercase text-body-1/50 bg-base-lvl-2">
+                                <th class="text-left px-5 py-2 font-medium">Bank</th>
+                                <th class="text-right px-5 py-2 font-medium">Accounts</th>
+                                <th class="text-right px-5 py-2 font-medium">{{ quoteCurrency }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="entry in bankBreakdown" :key="entry.label" class="border-b border-base">
+                                <td class="px-5 py-2 text-body">
+                                    <span v-if="entry.bank_code" class="inline-block px-2 py-0.5 rounded text-xs font-semibold bg-primary/10 text-primary">
+                                        {{ entry.bank_code }}
+                                    </span>
+                                    <span v-else class="italic text-body-1/50">Unlinked</span>
+                                </td>
+                                <td class="px-5 py-2 text-right text-body-1/60 tabular-nums">{{ entry.account_count }}</td>
+                                <td class="px-5 py-2 text-right tabular-nums">{{ formatMoney(entry.total_in_quote, quoteCurrency) }}</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr class="bg-base-lvl-2 font-bold">
+                                <td class="px-5 py-2 text-body">Net Worth</td>
+                                <td></td>
+                                <td class="px-5 py-2 text-right tabular-nums">
+                                    {{ formatMoney(totals.total_quote + totals.base_in_quote, quoteCurrency) }}
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
                 </section>
 
             </div>

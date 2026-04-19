@@ -196,11 +196,11 @@ const deleteBulkTransactions = () => {
       />
 
       <!-- DETAILED VIEW (original layout) -->
-      <div v-else class="md:space-y-0 md:space-x-10 md:flex">
-        <section class="mt-2 md:w-9/12 space-y-4">
-          <section class="flex flex-col md:flex-row md:space-x-4">
+      <div v-else class="space-y-4 lg:space-y-0 lg:space-x-4 lg:flex">
+        <section class="mt-2 min-w-0 lg:w-8/12 2xl:w-9/12 space-y-4">
+          <section class="flex flex-col lg:flex-row lg:space-x-4">
             <AccountsTracker
-              class="md:w-7/12 w-full order-1 mt-2 md:mt-0"
+              class="lg:w-7/12 w-full order-1 mt-2 lg:mt-0 min-w-0"
               ref="AccountsTrackerRef"
               :net-worth="netWorth"
               :expenses="transactionTotal.total_amount"
@@ -208,13 +208,13 @@ const deleteBulkTransactions = () => {
               :username="user?.name"
               @section-click="selected = $event"
             />
-            <BudgetFundWidget class="md:w-5/12 w-full order-1 mt-2 md:mt-0" />
+            <BudgetFundWidget class="lg:w-5/12 w-full order-1 mt-2 lg:mt-0 min-w-0" />
           </section>
 
           <DashboardSpending :expenses="expenses" :spending-summary="spendingSummary" />
           <MealWidget :meals="meals?.data" v-if="isModuleEnabled('meals')" />
         </section>
-        <section class="py-6 space-y-4 md:w-3/12">
+        <section class="min-w-0 py-6 space-y-4 lg:w-4/12 2xl:w-3/12">
           <OccurrenceWidget
               :checks="dynamicStore.checks"
               :wrap="true"

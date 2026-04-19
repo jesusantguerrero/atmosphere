@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers\Finance;
 
-use Carbon\Carbon;
-use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use Freesgen\Atmosphere\Http\Querify;
-use Insane\Journal\Models\Core\Transaction;
+use App\Domains\Transaction\Services\CreditCardReportService;
 use App\Domains\Transaction\Services\ReportService;
 use App\Domains\Transaction\Services\TransactionService;
-use App\Domains\Transaction\Services\CreditCardReportService;
+use App\Http\Controllers\Controller;
+use Carbon\Carbon;
+use Freesgen\Atmosphere\Http\Querify;
+use Illuminate\Http\Request;
+use Insane\Journal\Models\Core\Transaction;
 
 class FinanceTrendController extends Controller
 {
@@ -19,51 +19,48 @@ class FinanceTrendController extends Controller
 
     const sections = [
         'groups' => [
-            "handler" => 'group'
+            'handler' => 'group',
         ],
         'categories' => [
-            "handler" => 'category'
+            'handler' => 'category',
         ],
         'payees' => [
-            "handler" => 'payee',
+            'handler' => 'payee',
         ],
         'net-worth' => [
-            "template" => "Trends/NetWorth",
-            "handler" =>'NetWorth',
+            'template' => 'Trends/NetWorth',
+            'handler' => 'NetWorth',
         ],
         'income-expenses' => [
-            "handler" => 'IncomeExpenses',
+            'handler' => 'IncomeExpenses',
         ],
         'spending-year' => [
-            "handler" => 'spendingYear'
+            'handler' => 'spendingYear',
         ],
         'assigned-year' => [
-            "handler" => 'assignedInYear'
+            'handler' => 'assignedInYear',
         ],
         'income-expenses-graph' => [
-            "handler" => 'IncomeExpensesGraph'
+            'handler' => 'IncomeExpensesGraph',
         ],
         'year-summary' => [
-            "handler" => 'yearSummary',
+            'handler' => 'yearSummary',
         ],
         'credit-cards' => [
-            "template" => "Trends/CreditCards",
-            "handler" => 'creditCards',
-        ]
+            'template' => 'Trends/CreditCards',
+            'handler' => 'creditCards',
+        ],
     ];
 
-    public function __construct(private ReportService $reportService, private CreditCardReportService $creditCardService)
-    {
-
-    }
+    public function __construct(private ReportService $reportService, private CreditCardReportService $creditCardService) {}
 
     public function index(Request $request, $sectionName = 'groups')
     {
         $queryParams = $request->query();
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
         $section = self::sections[$sectionName];
-        $sectionHandler = $section["handler"];
-        $sectionTemplate = $section["template"] ?? 'Trends/Overview';
+        $sectionHandler = $section['handler'];
+        $sectionTemplate = $section['template'] ?? 'Trends/Overview';
         $data = $this->$sectionHandler($request);
 
         return inertia($sectionTemplate,
@@ -72,7 +69,7 @@ class FinanceTrendController extends Controller
                 'section' => $sectionName,
             ],
                 $data
-        ));
+            ));
     }
 
     public function group(Request $request)
@@ -92,7 +89,7 @@ class FinanceTrendController extends Controller
             'data' => TransactionService::getCategoryExpensesGroup($teamId, $startDate, $endDate, null, $excludedCategories),
             'metaData' => [
                 'title' => 'Category Group Trends',
-                'name' => 'group'
+                'name' => 'group',
             ],
         ];
     }
@@ -115,7 +112,7 @@ class FinanceTrendController extends Controller
                 'title' => $parentName.'Category Trends',
                 'parent_id' => $hasData ? $data[0]?->parent_id : null,
                 'parent_name' => $hasData ? $data[0]?->parent_name : null,
-                'name' => 'categories'
+                'name' => 'categories',
             ],
         ];
     }
@@ -135,7 +132,7 @@ class FinanceTrendController extends Controller
             'data' => $data->sortByDesc('total')->values(),
             'metaData' => [
                 'title' => 'Payee Trends',
-                'name' => 'payee'
+                'name' => 'payee',
             ],
         ];
     }
@@ -181,8 +178,8 @@ class FinanceTrendController extends Controller
         $teamId = request()->user()->current_team_id;
 
         $span = [
-            "month" => 12,
-            "year" => 2
+            'month' => 12,
+            'year' => 2,
         ];
 
         return [
@@ -192,8 +189,8 @@ class FinanceTrendController extends Controller
                 'title' => 'Income vs Expenses',
                 'props' => [
                     'headerTemplate' => 'grid',
-                    "assetsLabel" => "income",
-                    "debtsLabel" => "expense"
+                    'assetsLabel' => 'income',
+                    'debtsLabel' => 'expense',
                 ],
             ],
         ];
@@ -203,7 +200,7 @@ class FinanceTrendController extends Controller
     {
         $queryParams = request()->query();
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
-        [ $startDate ] = $this->getFilterDates($filters);
+        [$startDate] = $this->getFilterDates($filters);
         $teamId = request()->user()->current_team_id;
         $excludedAccounts = null;
         if (isset($filters['category'])) {
@@ -257,8 +254,6 @@ class FinanceTrendController extends Controller
         ];
     }
 
-
-
     public function yearSummary()
     {
         // $queryParams = request()->query();
@@ -282,8 +277,12 @@ class FinanceTrendController extends Controller
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
         [$startDate, $endDate] = $this->getFilterDates($filters);
 
+        $accountIds = isset($filters['account']) && ! empty($filters['account'])
+            ? array_map('intval', is_array($filters['account']) ? $filters['account'] : explode(',', $filters['account']))
+            : null;
+
         return [
-            'data' => $this->creditCardService->creditCards($teamId, $endDate),
+            'data' => $this->creditCardService->creditCards($teamId, $endDate, $startDate, $accountIds),
             'metaData' => [
                 'name' => 'creditCards',
                 'title' => 'Credit Card Report',
