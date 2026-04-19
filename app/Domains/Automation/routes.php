@@ -3,6 +3,7 @@
 use App\Domains\Automation\Http\Controllers\AutomationController;
 use App\Domains\Automation\Http\Controllers\AutomationRecipeController;
 use App\Domains\Automation\Http\Controllers\AutomationServiceController;
+use App\Http\Controllers\Finance\BankController;
 use Illuminate\Support\Facades\Route;
 
 /**************************************************************************************
@@ -18,4 +19,5 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('/a
 
     Route::apiResource('/automation-services', AutomationServiceController::class);
     Route::apiResource('/automation-recipes', AutomationRecipeController::class);
+    Route::get('/banks', [BankController::class, 'index']);
 });

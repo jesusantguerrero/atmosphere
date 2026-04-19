@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Finance;
 
+use App\Domains\Automation\Models\Automation;
 use App\Domains\Automation\Models\AutomationService;
+use App\Domains\Automation\Services\LogerAutomationService;
 use App\Domains\Transaction\Actions\MapBankStatementToLoger;
 use App\Domains\Transaction\Actions\ParseBankCsv;
 use App\Domains\Transaction\Actions\ParseBankPdf;
@@ -86,6 +88,44 @@ class FinanceAccountController extends InertiaController
     {
         $data = $this->getPostData(request());
         $bankConnectionService->linkAccount($account, $automationService, $data['integration_id']);
+    }
+
+    public function linkAccountToBank(Account $account, Request $request, BankConnectionService $bankConnectionService)
+    {
+        $data = $request->validate([
+            'bank_code' => ['required', 'string'],
+            'integration_id' => ['required', 'integer'],
+        ]);
+
+        $bankConnectionService->linkAccountToBank($account, $data['bank_code'], $data['integration_id']);
+    }
+
+    public function syncEmails(Account $account, Request $request): RedirectResponse
+    {
+        $this->authorize('update', $account);
+
+        $data = $request->validate([
+            'startDate' => ['required', 'date_format:Y-m-d'],
+            'endDate' => ['required', 'date_format:Y-m-d', 'after_or_equal:startDate'],
+        ]);
+
+        abort_unless($account->bank_code, 422, 'Account is not linked to a bank');
+
+        $automation = Automation::where('automatable_id', $account->id)
+            ->where('automatable_type', get_class($account))
+            ->first();
+
+        abort_unless($automation, 404, 'No automation linked to this account');
+
+        ob_start();
+        LogerAutomationService::run($automation, [
+            'backfill' => true,
+            'startDate' => $data['startDate'],
+            'endDate' => $data['endDate'],
+        ]);
+        ob_end_clean();
+
+        return back();
     }
 
     public function linkCreditCardPayment(Account $account, Transaction $transaction, BankConnectionService $bankConnectionService)

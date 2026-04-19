@@ -280,12 +280,34 @@ const accountCsvExportUrl = computed(() => {
     return `/finance/transactions/export/csv?${params.toString()}`;
 });
 
+const isSyncingEmails = ref(false);
+
+const syncEmails = () => {
+    if (isSyncingEmails.value) return;
+    const { startDate, endDate } = pageState.dates;
+    isSyncingEmails.value = true;
+    router.post(`/finance/accounts/${accountId.value}/sync-emails`, {
+        startDate: format(startDate, 'yyyy-MM-dd'),
+        endDate: format(endDate, 'yyyy-MM-dd'),
+    }, {
+        preserveScroll: true,
+        onFinish: () => { isSyncingEmails.value = false; },
+    });
+};
+
 const moreActions = computed(() => {
     const actions: any[] = [
         { key: 'import-pdf', label: 'Import PDF' },
         { key: 'import-csv', label: 'Import CSV' },
         { key: 'export-csv', label: 'Export CSV' },
     ];
+    if (selectedAccount.value?.bank_code) {
+        actions.push({
+            key: 'sync-emails',
+            label: isSyncingEmails.value ? 'Syncing emails…' : `Sync ${monthName.value} emails`,
+            disabled: isSyncingEmails.value,
+        });
+    }
     if (!isReconciled.value) {
         actions.push({ key: 'reconciliation', label: 'Reconciliation' });
     } else if (hasPendingReconciliation.value) {
@@ -302,6 +324,7 @@ const handleMoreAction = (key: string) => {
         case 'import-pdf': showImportPdf.value = true; break;
         case 'import-csv': showImportCsv.value = true; break;
         case 'export-csv': window.open(accountCsvExportUrl.value, '_blank'); break;
+        case 'sync-emails': syncEmails(); break;
         case 'reconciliation': reconcileForm.isVisible = true; break;
         case 'review-reconciliation': router.visit(`/finance/reconciliation/${selectedAccount.value?.reconciliation_last?.id}`); break;
         case 'pay-credit-card': payCreditCard(); break;

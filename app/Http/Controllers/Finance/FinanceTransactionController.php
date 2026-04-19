@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Finance;
 
 use App\Domains\Integration\Concerns\PlannedTransactionDTO;
+use App\Domains\Journal\Actions\TransactionDelete;
 use App\Domains\Transaction\Actions\FindLinkedDrafts;
 use App\Domains\Transaction\Actions\FindLinkedTransactions;
 use App\Domains\Transaction\Exports\TransactionExport;
@@ -18,7 +19,6 @@ use Freesgen\Atmosphere\Http\InertiaController;
 use Freesgen\Atmosphere\Http\Querify;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Insane\Journal\Models\Accounting\ReconciliationEntry;
 use Maatwebsite\Excel\Facades\Excel;
 use Recurr\Rule;
 use Recurr\Transformer\ArrayTransformer;
@@ -336,13 +336,25 @@ class FinanceTransactionController extends InertiaController
         return $queryParams;
     }
 
-    public function bulkDelete(Request $request)
+    public function bulkDelete(Request $request, TransactionDelete $transactionDelete)
     {
-        $items = $request->post('data');
+        $data = $request->validate([
+            'data' => 'required|array|min:1',
+            'data.*' => 'integer',
+        ]);
 
-        ReconciliationEntry::whereIn('transaction_id', $items)->delete();
+        $user = $request->user();
+        $this->authorize('deleteBulk', Transaction::class);
 
-        Transaction::whereIn('id', $items)->delete();
+        $transactions = Transaction::whereIn('id', $data['data'])
+            ->where('team_id', $user->current_team_id)
+            ->get();
+
+        foreach ($transactions as $transaction) {
+            $transactionDelete->delete($user, $transaction);
+        }
+
+        return back();
     }
 
     public function approve(Transaction $transaction)

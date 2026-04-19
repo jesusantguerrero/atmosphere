@@ -7,6 +7,7 @@ use App\Domains\Automation\Models\AutomationTaskAction;
 use App\Domains\Integration\Actions\APAP\APAP;
 use App\Domains\Integration\Actions\BHD;
 use App\Domains\Integration\Actions\BSC\BSC;
+use App\Domains\Integration\Actions\Qik\Qik;
 use App\Domains\Integration\Actions\UniversalBankParser;
 use App\Exceptions\UnsupportedBankException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -135,6 +136,30 @@ class UniversalBankParserTest extends TestCase
     }
 
     /** @test */
+    public function it_detects_qik_bank_from_email()
+    {
+        $reflection = new ReflectionClass(UniversalBankParser::class);
+        $method = $reflection->getMethod('detectBank');
+        $method->setAccessible(true);
+
+        $bankCode = $method->invoke(null, $this->automation, 'notificaciones@qik.do', '');
+
+        $this->assertEquals('QIK', $bankCode);
+    }
+
+    /** @test */
+    public function it_detects_qik_bank_from_domain()
+    {
+        $reflection = new ReflectionClass(UniversalBankParser::class);
+        $method = $reflection->getMethod('detectBank');
+        $method->setAccessible(true);
+
+        $bankCode = $method->invoke(null, $this->automation, 'alerts@qik.do', '');
+
+        $this->assertEquals('QIK', $bankCode);
+    }
+
+    /** @test */
     public function it_returns_null_for_unknown_bank()
     {
         $reflection = new ReflectionClass(UniversalBankParser::class);
@@ -196,6 +221,18 @@ class UniversalBankParserTest extends TestCase
         $handler = $method->invoke(null, 'BSC');
 
         $this->assertEquals(BSC::class, $handler);
+    }
+
+    /** @test */
+    public function it_returns_qik_handler_for_qik_code()
+    {
+        $reflection = new ReflectionClass(UniversalBankParser::class);
+        $method = $reflection->getMethod('getBankHandler');
+        $method->setAccessible(true);
+
+        $handler = $method->invoke(null, 'QIK');
+
+        $this->assertEquals(Qik::class, $handler);
     }
 
     /** @test */
