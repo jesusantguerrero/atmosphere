@@ -240,6 +240,12 @@ class CreditCardReportService
 
     public function creditCards($teamId, $date, ?string $startDate = null, ?array $accountIds = null)
     {
+        $hasCreditCards = Account::query()
+            ->where('team_id', $teamId)
+            ->whereNotNull('credit_closing_day')
+            ->when(! empty($accountIds), fn ($q) => $q->whereIn('id', $accountIds))
+            ->exists();
+
         $lastCycleBalances = $this->creditCardCycleByAccount($teamId, $date);
         $previousCycleBalances = $this->creditCardCycleByAccount($teamId, $date, 2);
 
@@ -258,6 +264,7 @@ class CreditCardReportService
             : Carbon::createFromFormat('Y-m-d', $date)->startOfMonth()->subMonths(12);
 
         return [
+            'hasCreditCards' => $hasCreditCards,
             'lastCycleBalances' => $lastCycleBalances,
             'creditTotal' => $creditTotal,
             'creditTotalPrevious' => $creditTotalPrevious,
