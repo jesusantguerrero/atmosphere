@@ -545,4 +545,26 @@ class TransactionService
             })
             ->first();
     }
+
+    /**
+     * Match an already-imported bank row by its bank-side identifiers.
+     *
+     * The bank's confirmation number (stored in `reference`) is unique per
+     * transaction per account. A single confirmation can appear twice in a
+     * statement — once for the transaction, once for its tax/fee — so we
+     * disambiguate by amount and direction.
+     */
+    public function findDuplicateByBankReference(array $transactionData): ?Transaction
+    {
+        if (empty($transactionData['reference']) || empty($transactionData['account_id'])) {
+            return null;
+        }
+
+        return Transaction::where('account_id', $transactionData['account_id'])
+            ->where('reference', $transactionData['reference'])
+            ->where('total', $transactionData['total'])
+            ->where('direction', $transactionData['direction'])
+            ->where('date', $transactionData['date'])
+            ->first();
+    }
 }
