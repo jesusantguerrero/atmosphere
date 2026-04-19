@@ -40,6 +40,7 @@ const state = reactive({
     description: "",
     opening_balance: 0,
     number: null,
+    bank_code: null,
     credit_closing_day: null,
     credit_limit: null,
     // Multi-currency fields
@@ -224,6 +225,18 @@ const excludedCurrencies = computed(() => {
               <AtField label="Last 4 digits" class="space-y-2">
                 <LogerInput v-model="form.number" type="number" class="w-full" placeholder="e.g., 3861"
                   min="0" max="9999" />
+              </AtField>
+
+              <AtField label="Bank" class="space-y-2" hint="Short code used in reports (e.g., BHD, BDI, APAP)">
+                <LogerInput v-model="form.bank_code" class="w-full" placeholder="e.g., BHD" list="bank-code-suggestions" />
+                <datalist id="bank-code-suggestions">
+                  <option value="BHD" />
+                  <option value="BDI" />
+                  <option value="APAP" />
+                  <option value="BSC" />
+                  <option value="Qik" />
+                  <option value="Ban. Caribe" />
+                </datalist>
               </AtField>
             </div>
 
