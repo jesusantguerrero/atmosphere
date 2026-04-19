@@ -22,6 +22,7 @@ import { formatMoney } from "@/utils";
 const props = withDefaults(defineProps<{
     user: Record<string, any>;
     data: {
+        hasCreditCards: boolean;
         lastCycleBalances: any[];
         creditTotal: number;
         creditTotalPrevious: number;
@@ -56,7 +57,7 @@ const usageColorClass = computed(() => {
     return 'text-green-500';
 });
 
-const hasCards = computed(() => (props.data.lastCycleBalances?.length ?? 0) > 0);
+const hasCards = computed(() => props.data.hasCreditCards === true);
 
 function cardUsageClass(used: number, limit: number): string {
     if (!limit || limit <= 0) return 'bg-gray-300';

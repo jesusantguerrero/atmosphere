@@ -74,4 +74,15 @@ class CreditCardReportTest extends TestCase
                 ->where('data.creditTotal', 0)
             );
     }
+
+    public function test_has_credit_cards_flag_is_false_when_team_has_none(): void
+    {
+        $user = User::factory()->withPersonalTeam()->create();
+        $this->actingAs($user);
+
+        $this->get('/trends/credit-cards')
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('data.hasCreditCards', false)
+            );
+    }
 }
