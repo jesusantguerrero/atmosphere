@@ -42,4 +42,17 @@ class AuthenticationTest extends TestCase
 
         $this->assertGuest();
     }
+
+    public function test_logout_from_inertia_request_returns_inertia_location_redirect()
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)
+            ->withHeaders(['X-Inertia' => 'true'])
+            ->post('/logout');
+
+        $this->assertGuest();
+        $response->assertStatus(409);
+        $response->assertHeader('X-Inertia-Location');
+    }
 }
