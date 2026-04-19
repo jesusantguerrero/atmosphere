@@ -2,22 +2,25 @@
 
 namespace App\Domains\Transaction\Listeners;
 
+use App\Domains\Transaction\Models\Transaction;
+use App\Domains\Transaction\Services\PlannedTransactionService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Insane\Journal\Events\TransactionCreated;
+use Insane\Journal\Events\TransactionDeleted;
 use Insane\Journal\Events\TransactionUpdated;
-use App\Domains\Transaction\Services\PlannedTransactionService;
-use App\Domains\Transaction\Models\Transaction;
 
 class UpdatePlannedTransactions implements ShouldQueue
 {
-    public function __construct(private PlannedTransactionService $plannedTransactionService)
-    {
-    }
+    public function __construct(private PlannedTransactionService $plannedTransactionService) {}
 
-    public function handle(TransactionCreated|TransactionUpdated $event)
+    public function handle(TransactionCreated|TransactionUpdated|TransactionDeleted $event)
     {
+        if ($event instanceof TransactionDeleted) {
+            return;
+        }
+
         $transaction = $event->transaction;
-        
+
         // Only process verified transactions
         if ($transaction->status !== Transaction::STATUS_VERIFIED) {
             return;

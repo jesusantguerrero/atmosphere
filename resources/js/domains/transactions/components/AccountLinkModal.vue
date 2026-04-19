@@ -5,7 +5,6 @@ import { NSelect } from "naive-ui";
 import { AtField  } from 'atmosphere-ui';
 import Modal from '@/Components/atoms/Modal.vue'
 import LogerButton from '@/Components/atoms/LogerButton.vue';
-import LogerApiSimpleSelect from "@/Components/organisms/LogerApiSimpleSelect.vue";
 import { IAccount } from '../models';
 
 const props = defineProps<{
@@ -19,14 +18,14 @@ const props = defineProps<{
 const emit = defineEmits(['save', 'close'])
 
 const form = useForm({
-    service_id: null,
+    bank_code: null,
     integration_id: null
 });
 
 
 const state = reactive({
     integrations: [],
-
+    banks: [] as { id: string; name: string }[],
 })
 
 
@@ -39,8 +38,17 @@ function getIntegrations() {
     .catch(() => {});
 }
 
+function getBanks() {
+    return axios({
+        url: "/api/banks"
+    }).then(({ data }) => {
+        state.banks = data;
+    })
+    .catch(() => {});
+}
+
 onMounted(async () => {
-    await getIntegrations();
+    await Promise.all([getIntegrations(), getBanks()]);
     if (state.integrations.length == 1) {
         form.integration_id = state.integrations.at(0).id
     }
@@ -55,9 +63,16 @@ const integrationOptions = computed(() => {
     });
 })
 
+const bankOptions = computed(() => {
+    return state.banks.map((bank) => ({
+        label: bank.name,
+        value: bank.id,
+    }));
+})
+
 
 const submit = () => {
-    form.post(`/finance/accounts/${props.account.id}/automation-services/${form.service_id}/link/`, {
+    form.post(`/finance/accounts/${props.account.id}/link-bank`, {
         preserveScroll: true,
         preserveState: true,
         onSuccess() {
@@ -92,15 +107,14 @@ const close = () => emit('close');
                         />
                     </AtField>
                     <AtField label="Bank" >
-                        <LogerApiSimpleSelect
-                          v-model="form.service_id"
-                          v-model:label="form.service_label"
-                          custom-label="name"
-                          track-id="id"
-                          placeholder="Bank"
-                          endpoint="/api/automation-services"
+                        <NSelect
+                            filterable
+                            clearable
+                            placeholder="Bank"
+                            :options="bankOptions"
+                            v-model:value="form.bank_code"
                         />
-                      </AtField>
+                    </AtField>
                 </form>
             </div>
         </div>

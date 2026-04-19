@@ -2,24 +2,23 @@
 
 namespace App\Listeners;
 
+use App\Domains\Budget\Services\BudgetCategoryService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Insane\Journal\Events\TransactionCreated;
+use Insane\Journal\Events\TransactionDeleted;
 use Insane\Journal\Events\TransactionUpdated;
-use App\Domains\Budget\Services\BudgetCategoryService;
 
 class CreateBudgetTransactionMovement implements ShouldQueue
 {
-    public function __construct(private BudgetCategoryService $budgetCategoryService)
-    {
-    }
+    public function __construct(private BudgetCategoryService $budgetCategoryService) {}
 
-    public function handle(TransactionCreated|TransactionUpdated $event)
+    public function handle(TransactionCreated|TransactionUpdated|TransactionDeleted $event)
     {
         $transaction = $event->transaction;
         $account = $transaction->account;
         $month = substr($transaction->date, 0, 7).'-01';
 
-        if ($categoryAccount = $this->budgetCategoryService->findByAccount($account)) {
+        if ($account && $categoryAccount = $this->budgetCategoryService->findByAccount($account)) {
             $this->budgetCategoryService->updateFundedSpending($categoryAccount, $month);
             $this->budgetCategoryService->updateActivity($categoryAccount, $month);
         }

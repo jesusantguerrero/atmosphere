@@ -7,6 +7,7 @@ use App\Domains\Automation\Models\Automation;
 use App\Domains\Automation\Models\AutomationTaskAction;
 use App\Domains\Integration\Actions\APAP\APAP;
 use App\Domains\Integration\Actions\BSC\BSC;
+use App\Domains\Integration\Actions\Qik\Qik;
 use App\Exceptions\UnsupportedBankException;
 use Exception;
 use Illuminate\Support\Facades\Log;
@@ -192,6 +193,7 @@ class UniversalBankParser implements AutomationActionContract
             'BHD' => BHD::class,
             'APAP' => APAP::class,
             'BSC' => BSC::class,
+            'QIK' => Qik::class,
             // Future banks can be added here
             // 'POPULAR' => Popular::class,
             // 'BANRESERVAS' => Banreservas::class,
@@ -221,7 +223,7 @@ class UniversalBankParser implements AutomationActionContract
      *
      * @param  array  $data  Email payload data
      *
-     * @throws \InvalidArgumentException If validation fails
+     * @throws InvalidArgumentException If validation fails
      */
     protected static function validateEmailData($data): void
     {
@@ -280,7 +282,7 @@ class UniversalBankParser implements AutomationActionContract
      */
     public function getDescription(): string
     {
-        return 'Automatically detects and parses transaction emails from multiple banks (BHD, APAP, BSC, etc.) in a single automation';
+        return 'Automatically detects and parses transaction emails from multiple banks (BHD, APAP, BSC, Qik, etc.) in a single automation';
     }
 
     /**
@@ -295,8 +297,9 @@ class UniversalBankParser implements AutomationActionContract
     {
         return [
             'BHD' => BHD::getEmailPatterns(),
-            'APAP' => \App\Domains\Integration\Actions\APAP\APAP::getEmailPatterns(),
-            'BSC' => \App\Domains\Integration\Actions\BSC\BSC::getEmailPatterns(),
+            'APAP' => APAP::getEmailPatterns(),
+            'BSC' => BSC::getEmailPatterns(),
+            'QIK' => Qik::getEmailPatterns(),
         ];
     }
 

@@ -71,6 +71,15 @@ class GmailReceived implements AutomationActionContract
             $queryOptions = count($conditions) ? implode(' ', $conditions) : '';
         }
 
+        if (is_array($lastData)) {
+            if (! empty($lastData['startDate'])) {
+                $queryOptions = trim($queryOptions.' after:'.str_replace('-', '/', $lastData['startDate']));
+            }
+            if (! empty($lastData['endDate'])) {
+                $queryOptions = trim($queryOptions.' before:'.str_replace('-', '/', $lastData['endDate']));
+            }
+        }
+
         $listParams = ['maxResults' => $maxResults, 'q' => $queryOptions];
         if ($backfillMode && $pageToken) {
             $listParams['pageToken'] = $pageToken;
