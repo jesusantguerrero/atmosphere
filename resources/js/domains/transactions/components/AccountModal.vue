@@ -39,6 +39,7 @@ const state = reactive({
     display_id: "",
     description: "",
     opening_balance: 0,
+    number: null,
     credit_closing_day: null,
     credit_limit: null,
     // Multi-currency fields
@@ -241,6 +242,11 @@ const excludedCurrencies = computed(() => {
 
                 <AtField label="Credit Limit" class="space-y-2">
                   <InputMoney v-model="form.credit_limit" class="w-full" placeholder="0.00" />
+                </AtField>
+
+                <AtField label="Card last 4 digits" class="space-y-2">
+                  <LogerInput v-model="form.number" type="number" class="w-full" placeholder="e.g., 3861"
+                    min="0" max="9999" />
                 </AtField>
               </div>
             </div>
