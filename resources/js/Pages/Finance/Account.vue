@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, toRefs, provide, ref, onMounted } from "vue";
+import { computed, toRefs, provide, reactive, ref, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { router, useForm, usePage } from "@inertiajs/vue3";
 import { format } from "date-fns";
@@ -57,6 +57,8 @@ const props = withDefaults(defineProps<{
 });
 
 const isLoading = ref(false);
+const approvingIds = reactive(new Set<number>());
+const suppressNextLoading = ref(false);
 const { serverSearchOptions, accountId, accounts, transactions: verifiedTransactions } = toRefs(props);
 
 // Merge verified and draft transactions for display
@@ -138,15 +140,32 @@ const handleEdit = (transaction: ITransaction) => {
 };
 
 const handleApprove = (transaction: ITransaction) => {
-    axios.post(`/finance/transactions/${transaction.id}/approve`).then(() => {
-        router.reload();
-    });
+    approvingIds.add(transaction.id);
+    axios.post(`/finance/transactions/${transaction.id}/approve`)
+        .then(() => {
+            suppressNextLoading.value = true;
+            router.reload({
+                preserveState: true,
+                preserveScroll: true,
+                onFinish: () => {
+                    approvingIds.delete(transaction.id);
+                    suppressNextLoading.value = false;
+                },
+            });
+        })
+        .catch(() => {
+            approvingIds.delete(transaction.id);
+        });
 };
 
 
 
 onMounted(() => {
-    router.on('start', () => isLoading.value = true)
+    router.on('start', () => {
+        if (!suppressNextLoading.value) {
+            isLoading.value = true;
+        }
+    })
     router.on('finish', () => isLoading.value = false)
 })
 
@@ -290,7 +309,14 @@ const handleMoreAction = (key: string) => {
 };
 
 const transactionRowClass = (row: any) => {
-    return row._isDraft ? 'border-l-4 border-l-amber-400' : '';
+    const classes: string[] = [];
+    if (row._isDraft) {
+        classes.push('border-l-4 border-l-amber-400');
+    }
+    if (approvingIds.has(row.id)) {
+        classes.push('opacity-50 pointer-events-none');
+    }
+    return classes.join(' ');
 };
 
 const draftCount = computed(() => (props.drafts || []).length);
