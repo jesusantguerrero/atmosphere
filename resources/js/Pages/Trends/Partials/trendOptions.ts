@@ -1,38 +1,50 @@
-export const trendOptions = [
+export interface TrendSubTab {
+    label: string;
+    url: string;
+}
+
+export interface TrendOption {
+    label: string;
+    url?: string;
+    subTabs?: TrendSubTab[];
+}
+
+export const trendOptions: TrendOption[] = [
     {
-        label: 'Spending',
-        url: '/trends'
-    },
-    {
-        label: 'Income',
-        url: '/trends/payees'
+        label: 'Cash flow',
+        subTabs: [
+            { label: 'Spending', url: '/trends' },
+            { label: 'Income', url: '/trends/payees' },
+        ],
     },
     {
         label: 'Net Worth',
-        url: '/trends/net-worth'
+        url: '/trends/net-worth',
     },
     {
         label: 'Income v Expenses',
-        url: '/trends/income-expenses'
+        subTabs: [
+            { label: 'Table', url: '/trends/income-expenses' },
+            { label: 'Graph', url: '/trends/income-expenses-graph' },
+        ],
     },
     {
-        label: 'Income vs Expenses Graph',
-        url: '/trends/income-expenses-graph'
-    },
-    {
-        label: 'Year spending',
-        url: '/trends/spending-year'
-    },
-    {
-        label: 'Year assigned',
-        url: '/trends/assigned-year'
+        label: 'Year',
+        subTabs: [
+            { label: 'Spending', url: '/trends/spending-year' },
+            { label: 'Assigned', url: '/trends/assigned-year' },
+        ],
     },
     {
         label: 'Credit Cards',
-        url: '/trends/credit-cards'
+        url: '/trends/credit-cards',
     },
     {
         label: 'Financial Overview',
-        url: '/trends/financial-overview'
-    }
-]
+        url: '/trends/financial-overview',
+    },
+    {
+        label: 'Relationships',
+        url: '/trends/relationships',
+    },
+];

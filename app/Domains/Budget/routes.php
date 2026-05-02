@@ -5,12 +5,14 @@ use App\Domains\Budget\Http\Controllers\BudgetFundController;
 use App\Domains\Budget\Http\Controllers\BudgetMatchAccountController;
 use App\Domains\Budget\Http\Controllers\BudgetMonthController;
 use App\Domains\Budget\Http\Controllers\BudgetTargetController;
+use App\Domains\Budget\Http\Controllers\GoalsController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
     Route::resource('/budgets', BudgetCategoryController::class);
     Route::patch('/budgets/{category}/default-role', [BudgetCategoryController::class, 'setDefaultRole'])->name('budget.set-default-role');
     Route::get('/budget-alerts', [BudgetCategoryController::class, 'budgetAlerts'])->name('budget-alerts');
+    Route::get('/finance/goals', [GoalsController::class, 'index'])->name('finance.goals.index');
     Route::controller(BudgetTargetController::class)->group(function () {
         Route::post('/budgets/{category}/targets/', 'store')->name('budget.target.store');
         Route::put('/budgets/{category}/targets/{budgetTarget}', 'update')->name('budget.target.update');

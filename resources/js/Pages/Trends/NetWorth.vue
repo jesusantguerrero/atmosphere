@@ -7,6 +7,7 @@ import AppLayout from "@/Components/templates/AppLayout.vue";
 import TrendTemplate from "./Partials/TrendTemplate.vue";
 import ChartNetWorth from "@/Components/ChartNetworth.vue";
 import TrendSectionNav from "./Partials/TrendSectionNav.vue";
+import { trendOptions } from "./Partials/trendOptions";
 import WidgetTitleCard from "@/Components/molecules/WidgetTitleCard.vue";
 
 
@@ -50,37 +51,6 @@ const handleSelection = (index: number) => {
     }
 }
 
-const trends = [
-    {
-        label: 'Spending',
-        url: '/trends'
-    },
-    {
-        label: 'Income',
-        url: '/trends/payees'
-    },
-    {
-        label: 'Net Worth',
-        url: '/trends/net-worth'
-    },
-    {
-        label: 'Income v Expenses',
-        url: '/trends/income-expenses'
-    },
-    {
-        label: 'Income vs Expenses Graph',
-        url: '/trends/income-expenses-graph'
-    },
-    {
-        label: 'Year spending',
-        url: '/trends/spending-year'
-    },
-    {
-        label: 'Credit Cards',
-        url: '/trends/credit-cards'
-    }
-]
-
 const { data } = toRefs(props)
 const { lastMonth, thisMonth, monthMovement, monthMovementVariance } = useNetWorth(data);
 </script>
@@ -88,7 +58,7 @@ const { lastMonth, thisMonth, monthMovement, monthMovementVariance } = useNetWor
 <template>
   <AppLayout :title="metaData.title">
     <template #header>
-      <TrendSectionNav :sections="trends" />
+      <TrendSectionNav :sections="trendOptions" />
     </template>
 
     <TrendTemplate title="Finance" ref="financeTemplateRef" :hide-panel="true">

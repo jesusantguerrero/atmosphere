@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import {
   onMounted,
+  onBeforeUnmount,
+  ref,
   shallowRef,
   computed,
 } from "vue";
+import { onClickOutside } from "@vueuse/core";
 
 import ToolsAccountsWidget from "./ToolsAccountsWidget.vue";
 import { THEME_FINI } from "@/utils/constants";
-import IconClose from "../icons/IconClose.vue";
 import { setTheme } from "@/composables/useTheme";
 import { useApplicationStore, type AssistantSection } from "@/store/application.store";
 import { useI18n } from "vue-i18n";
@@ -18,6 +20,7 @@ import OouiWatchlistLtr from '~icons/ooui/watchlist-ltr';
 import MdiWallet from '~icons/mdi/wallet';
 import MdiCreditCard from '~icons/mdi/credit-card';
 import MdiPiggyBank from '~icons/mdi/piggy-bank';
+import MdiClose from '~icons/mdi/close';
 import HugeiconsShoppingBasketAdd03 from '~icons/hugeicons/shopping-basket-add-03'
 
 
@@ -103,27 +106,60 @@ onMounted(() => {
 })
 
 
-const onSetSelectSection = async (newSection?: string|null) => {
-  applicationStore.selectedSection = newSection;
+const closePanel = () => {
+  applicationStore.selectedSection = null;
+  applicationStore.onCloseWidget();
+  emit('update:is-expanded', false);
+};
 
-  if (newSection) {
-    //   startReplacer()
-    emit('update:is-expanded', true)
-} else {
-    applicationStore.onCloseWidget()
-    emit('update:is-expanded', false)
-    }
-}
+const onSetSelectSection = async (newSection?: AssistantSection | null, index?: number) => {
+  const isSameSection = newSection
+    && applicationStore.selectedSection
+    && applicationStore.selectedSection.name === newSection.name
+    && applicationStore.selectedSection.title === newSection.title;
+
+  if (!newSection || isSameSection) {
+    closePanel();
+    return;
+  }
+
+  applicationStore.selectedSection = { ...newSection, _index: index } as AssistantSection;
+  emit('update:is-expanded', true);
+};
+
+const isActiveSection = (section: AssistantSection, index: number) => {
+  const selected = applicationStore.selectedSection as (AssistantSection & { _index?: number }) | null;
+  if (!selected) return false;
+  if (selected._index !== undefined) return selected._index === index;
+  return selected.name === section.name && selected.title === section.title;
+};
+
+const panelRef = ref<HTMLElement | null>(null);
+onClickOutside(panelRef, () => {
+  if (applicationStore.selectedSection) closePanel();
+});
+
+const onKeydown = (event: KeyboardEvent) => {
+  if (event.key === 'Escape' && applicationStore.selectedSection) {
+    closePanel();
+  }
+};
 
 onMounted(() => {
-    if (props.isExpanded) {
-        onSetSelectSection(sections.value[0]);
-    }
-})
+  document.addEventListener('keydown', onKeydown);
+  if (props.isExpanded) {
+    onSetSelectSection(sections.value[0], 0);
+  }
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener('keydown', onKeydown);
+});
 </script>
 
 <template>
   <main
+    ref="panelRef"
     class="hidden md:fixed top-0 right-0 z-50 md:flex h-screen overflow-hidden transition-all ease-linear"
     :class="{ 'rounded-tl-lg': applicationStore.selectedSection }"
   >
@@ -133,14 +169,17 @@ onMounted(() => {
         class="container px-4 py-4 duration-75 bg-white border-l border-base shadow-xl rounded-tl-lg mt-[60px] w-96"
         v-if="applicationStore.selectedSection?.name"
       >
-        <header class="flex items-center">
-          <button
-            class="flex items-center h-full mr-2 text-lg font-bold text-body-1/60 hover:text-body-1 transition"
-            @click="onSetSelectSection(null)"
-          >
-            <IconClose />
-          </button>
+        <header class="flex items-center justify-between border-b border-base pb-3 mb-3">
           <h4 class="font-bold text-primary">{{ applicationStore.selectedSection.title }}</h4>
+          <button
+            type="button"
+            class="inline-flex items-center justify-center h-8 w-8 rounded-md text-body-1/60 hover:bg-base-lvl-2 hover:text-body-1 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            :aria-label="$t('Close')"
+            :title="$t('Close')"
+            @click="closePanel"
+          >
+            <MdiClose class="h-5 w-5" />
+          </button>
         </header>
         <keep-alive>
           <component
@@ -156,23 +195,23 @@ onMounted(() => {
     <section class="flex flex-col widget-main-menu bg-base-lvl-3 border-l border-base pt-[60px]">
       <section class="flex flex-col gap-1 px-2 py-3">
         <button
-          v-for="section in topSections"
-          :key="section.name + section.title"
+          v-for="(section, index) in topSections"
+          :key="`top-${index}`"
           class="group relative flex items-center justify-center h-10 w-10 mx-auto rounded-lg transition-all duration-150"
           :class="[
-            applicationStore.selectedSection?.name === section.name
+            isActiveSection(section, index)
               ? 'bg-primary/10 text-primary'
               : 'text-body-1/60 hover:bg-base-lvl-2 hover:text-primary',
             { 'opacity-40 cursor-not-allowed': section.disabled }
           ]"
           :disabled="section.disabled"
-          @click="onSetSelectSection(section)"
+          @click="onSetSelectSection(section, index)"
           :title="section.title"
           :aria-label="section.title"
-          :aria-pressed="applicationStore.selectedSection?.name === section.name"
+          :aria-pressed="isActiveSection(section, index)"
         >
           <span
-            v-if="applicationStore.selectedSection?.name === section.name"
+            v-if="isActiveSection(section, index)"
             class="absolute -left-2 top-1/2 -translate-y-1/2 h-5 w-1 rounded-r-full bg-primary"
             aria-hidden="true"
           />
@@ -183,23 +222,23 @@ onMounted(() => {
 
       <section v-if="bottomSections.length" class="mt-auto flex flex-col gap-1 px-2 py-3 border-t border-base">
         <button
-          v-for="section in bottomSections"
-          :key="section.name + section.title"
+          v-for="(section, index) in bottomSections"
+          :key="`bottom-${index}`"
           class="group relative flex items-center justify-center h-10 w-10 mx-auto rounded-lg transition-all duration-150"
           :class="[
-            applicationStore.selectedSection?.name === section.name
+            isActiveSection(section, topSections.length + index)
               ? 'bg-primary/10 text-primary'
               : 'text-body-1/60 hover:bg-base-lvl-2 hover:text-primary',
             { 'opacity-40 cursor-not-allowed': section.disabled }
           ]"
           :disabled="section.disabled"
-          @click="onSetSelectSection(section)"
+          @click="onSetSelectSection(section, topSections.length + index)"
           :title="section.title"
           :aria-label="section.title"
-          :aria-pressed="applicationStore.selectedSection?.name === section.name"
+          :aria-pressed="isActiveSection(section, topSections.length + index)"
         >
           <span
-            v-if="applicationStore.selectedSection?.name === section.name"
+            v-if="isActiveSection(section, topSections.length + index)"
             class="absolute -left-2 top-1/2 -translate-y-1/2 h-5 w-1 rounded-r-full bg-primary"
             aria-hidden="true"
           />
