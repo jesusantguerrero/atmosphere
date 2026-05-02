@@ -12,6 +12,7 @@ use App\Domains\Budget\Services\BudgetTargetService;
 use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Transaction\Services\NextPaymentsService;
 use App\Domains\Transaction\Services\ReportService;
+use App\Domains\Transaction\Services\TransactionService;
 use App\Http\Resources\CategoryGroupCollection;
 use App\Models\Setting;
 use Freesgen\Atmosphere\Http\InertiaController;
@@ -67,6 +68,7 @@ class BudgetCategoryController extends InertiaController
                 'accountTotal' => $this->accountService->getBalanceAs($teamId, $endDate),
                 'scheduledTotal' => $this->getScheduledTotal($teamId, $startDate, $endDate),
                 'budgetDefaults' => BudgetCategoryService::getDefaultsByRole($teamId),
+                'categoryAverages' => TransactionService::getCategoryAverages($teamId, 3),
             ]);
     }
 

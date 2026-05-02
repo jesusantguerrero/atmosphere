@@ -363,6 +363,22 @@ class TransactionService
         ];
     }
 
+    /**
+     * Average spending per category over the last N completed months (excluding current month).
+     *
+     * @return array<int, float> category_id => average
+     */
+    public static function getCategoryAverages(int $teamId, int $months = 3): array
+    {
+        $endDate = Carbon::now()->subMonth()->endOfMonth()->format('Y-m-d');
+        $startDate = Carbon::now()->subMonths($months)->startOfMonth()->format('Y-m-d');
+
+        return self::getInPeriod($teamId, $startDate, $endDate)
+            ->groupBy('id')
+            ->map(fn ($items) => round($items->sum('total') / max($months, 1), 2))
+            ->all();
+    }
+
     public static function getInPeriod($teamId, $startDate, $endDate)
     {
         return DB::table('categories')
