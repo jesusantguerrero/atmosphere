@@ -2,11 +2,13 @@
 import { ref, computed } from "vue";
 import { router } from "@inertiajs/vue3";
 import axios from "axios";
+import { NPopover } from "naive-ui";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import TrendTemplate from "./Partials/TrendTemplate.vue";
 import TrendSectionNav from "./Partials/TrendSectionNav.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
+import LogerInput from "@/Components/atoms/LogerInput.vue";
 import { trendOptions } from "./Partials/trendOptions";
 import { formatMoney } from "@/utils";
 
@@ -119,6 +121,46 @@ function removeGoal(id: string) {
     axios.post('/trends/financial-overview/pinned-goals', {
         pinned_goals: localPinnedIds.value,
     }).then(() => router.reload());
+}
+
+const editingBankAccountId = ref<number | null>(null);
+const bankCodeDraft = ref<string>("");
+
+const knownBankCodes = computed<string[]>(() => {
+    const set = new Set<string>();
+    for (const group of props.accounts) {
+        for (const acc of group.accounts) {
+            if (acc.bank_code) {
+                set.add(acc.bank_code);
+            }
+        }
+    }
+    return Array.from(set).sort();
+});
+
+function openBankEditor(account: AccountEntry): void {
+    editingBankAccountId.value = account.id;
+    bankCodeDraft.value = account.bank_code ?? "";
+}
+
+function closeBankEditor(): void {
+    editingBankAccountId.value = null;
+    bankCodeDraft.value = "";
+}
+
+function saveBankCode(account: AccountEntry): void {
+    const value = bankCodeDraft.value.trim();
+    router.patch(
+        route("finance.accounts.bank-code", { account: account.id }),
+        { bank_code: value === "" ? null : value },
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                closeBankEditor();
+                router.reload();
+            },
+        }
+    );
 }
 
 async function saveExchangeRate() {
@@ -336,7 +378,46 @@ async function saveExchangeRate() {
                                             @click="router.visit(`/finance/accounts/${account.id}`)"
                                         >
                                             <td class="px-5 py-2 text-body pl-8">
-                                                {{ account.name }}<span v-if="account.bank_code" class="ml-1.5 text-xs text-body-1/60">· {{ account.bank_code }}</span>
+                                                <span>{{ account.name }}</span>
+                                                <NPopover
+                                                    trigger="manual"
+                                                    :show="editingBankAccountId === account.id"
+                                                    placement="bottom-start"
+                                                    @clickoutside="closeBankEditor"
+                                                >
+                                                    <template #trigger>
+                                                        <button
+                                                            type="button"
+                                                            class="ml-1.5 text-xs"
+                                                            :class="account.bank_code ? 'text-body-1/60 hover:text-primary' : 'text-body-1/40 hover:text-primary'"
+                                                            @click.stop="openBankEditor(account)"
+                                                        >
+                                                            <span v-if="account.bank_code">· {{ account.bank_code }}</span>
+                                                            <span v-else class="opacity-60">+ Bank</span>
+                                                        </button>
+                                                    </template>
+                                                    <div class="space-y-2 min-w-[220px]" @click.stop>
+                                                        <p class="text-xs text-body-1">{{ $t('Bank') }}</p>
+                                                        <LogerInput
+                                                            v-model="bankCodeDraft"
+                                                            placeholder="BHD / APAP / Popular"
+                                                            list="known-bank-codes"
+                                                            @keydown.enter="saveBankCode(account)"
+                                                            @keydown.esc="closeBankEditor"
+                                                        />
+                                                        <datalist id="known-bank-codes">
+                                                            <option v-for="code in knownBankCodes" :key="code" :value="code" />
+                                                        </datalist>
+                                                        <div class="flex justify-end gap-2 pt-1">
+                                                            <button type="button" class="text-xs text-body-1 hover:text-body" @click="closeBankEditor">
+                                                                {{ $t('Cancel') }}
+                                                            </button>
+                                                            <button type="button" class="text-xs font-semibold text-primary hover:text-primary/80" @click="saveBankCode(account)">
+                                                                {{ $t('Save') }}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </NPopover>
                                             </td>
                                             <td class="px-5 py-2 text-right tabular-nums">
                                                 <span v-if="account.base_balance !== null">{{ formatMoney(account.base_balance, baseCurrency) }}</span>

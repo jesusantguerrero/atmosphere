@@ -28,6 +28,7 @@ use App\Http\Controllers\System\UserDeviceController;
 use Freesgen\Atmosphere\Http\Controllers\SettingsController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
+use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------
@@ -131,6 +132,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     ]);
     Route::post('/finance/accounts/{account}/import-pdf', [FinanceAccountController::class, 'importPdf'])->name('finance.accounts.import-pdf');
     Route::post('/finance/accounts/{account}/import-csv', [FinanceAccountController::class, 'importCsv'])->name('finance.accounts.import-csv');
+    Route::patch('/finance/accounts/{account}/bank-code', [FinanceAccountController::class, 'updateBankCode'])->name('finance.accounts.bank-code');
 
     Route::resource('/finance/lines', FinanceLinesController::class, [
         'as' => 'finance',
@@ -166,6 +168,13 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     Route::post('/trends/financial-overview/pinned-goals', [FinancialOverviewController::class, 'updatePinnedGoals'])->name('finance.financial-overview.pinned-goals');
     Route::post('/trends/financial-overview/goal-account-links', [FinancialOverviewController::class, 'updateGoalAccountLinks'])->name('finance.financial-overview.goal-account-links');
     Route::get('/trends/{name}', [FinanceTrendController::class, 'index'])->name('finance.trend-section');
+
+    /**************************************************************************************
+     *                               Planners (preview, frontend-only)
+    ***************************************************************************************/
+    Route::get('/finance/planners/house-buyer', function () {
+        return Inertia::render('Finance/Planners/HouseBuyer');
+    })->name('finance.planners.house-buyer');
 
     /**************************************************************************************
      *                               Extras Section
