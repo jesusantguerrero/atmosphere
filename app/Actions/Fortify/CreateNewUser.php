@@ -16,7 +16,7 @@ class CreateNewUser implements CreatesNewUsers
     /**
      * Create a newly registered user.
      *
-     * @return \App\Models\User
+     * @return User
      */
     public function create(array $input)
     {
@@ -31,7 +31,15 @@ class CreateNewUser implements CreatesNewUsers
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => Hash::make($input['password']),
+            'language' => $this->detectLanguage(),
         ]);
+    }
+
+    protected function detectLanguage(): string
+    {
+        $accept = request()?->getPreferredLanguage(['en', 'es']);
+
+        return in_array($accept, ['en', 'es'], true) ? $accept : 'en';
     }
 
     /**

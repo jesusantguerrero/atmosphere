@@ -19,6 +19,7 @@
         _method: 'PUT',
         name: props.user.name,
         email: props.user.email,
+        language: props.user.language ?? 'en',
         photo: null,
     });
 
@@ -124,6 +125,23 @@
                 :errors="form.errors"
             >
                 <LogerInput id="email" type="email" v-model="form.email" />
+            </AtField>
+
+            <!-- Language -->
+            <AtField
+                class="col-span-6 sm:col-span-4"
+                :label="$t('Language')"
+                field="language"
+                :errors="form.errors"
+            >
+                <select
+                    id="language"
+                    v-model="form.language"
+                    class="w-full px-3 py-2 border rounded-md bg-base-lvl-3 border-base-lvl-2 focus:outline-none focus:ring focus:ring-primary"
+                >
+                    <option value="en">English</option>
+                    <option value="es">Español</option>
+                </select>
             </AtField>
         </template>
 

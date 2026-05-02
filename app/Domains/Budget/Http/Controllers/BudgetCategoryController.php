@@ -2,20 +2,21 @@
 
 namespace App\Domains\Budget\Http\Controllers;
 
-use App\Models\Setting;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use App\Domains\AppCore\Models\Category;
-use Illuminate\Support\Facades\Redirect;
 use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Budget\Models\BudgetMovement;
-use App\Domains\Transaction\Models\Transaction;
-use App\Http\Resources\CategoryGroupCollection;
-use Freesgen\Atmosphere\Http\InertiaController;
-use App\Domains\Transaction\Services\ReportService;
-use App\Domains\Budget\Services\BudgetTargetService;
 use App\Domains\Budget\Services\BudgetAccountService;
 use App\Domains\Budget\Services\BudgetCategoryService;
+use App\Domains\Budget\Services\BudgetTargetService;
+use App\Domains\Transaction\Models\Transaction;
+use App\Domains\Transaction\Services\NextPaymentsService;
+use App\Domains\Transaction\Services\ReportService;
+use App\Http\Resources\CategoryGroupCollection;
+use App\Models\Setting;
+use Freesgen\Atmosphere\Http\InertiaController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Validation\Rule;
 
 class BudgetCategoryController extends InertiaController
 {
@@ -44,7 +45,8 @@ class BudgetCategoryController extends InertiaController
         $this->resourceName = 'budgets';
     }
 
-    protected function index(Request $request) {
+    protected function index(Request $request)
+    {
         $resourceName = $this->resourceName ?? $this->model->getTable();
         $queryParams = request()->query();
         $teamId = auth()->user()->current_team_id;
@@ -57,18 +59,28 @@ class BudgetCategoryController extends InertiaController
             return $model->withCurrentSavings($startDate);
         }));
 
-
         return inertia($this->templates['index'],
-        [
-            $resourceName => $resources,
-            "serverSearchOptions" => $this->getServerParams(),
-            "accountTotal" => $this->accountService->getBalanceAs($teamId, $endDate),
-            "distribution" => fn () => BudgetMonth::getMonthAssignmentByGroup($teamId, $startDate),
-            "available" => fn () => BudgetMonth::getMonthAssignmentTotal($teamId, $startDate, null, 'available')
-        ]);
+            [
+                $resourceName => $resources,
+                'serverSearchOptions' => $this->getServerParams(),
+                'accountTotal' => $this->accountService->getBalanceAs($teamId, $endDate),
+                'scheduledTotal' => $this->getScheduledTotal($teamId, $startDate, $endDate),
+            ]);
     }
 
-    protected function budgetAlerts() {
+    protected function getScheduledTotal(int $teamId, string $startDate, string $endDate): float
+    {
+        return app(NextPaymentsService::class)
+            ->getNextPayments($teamId, $startDate)
+            ->filter(fn ($payment) => isset($payment['due_date'])
+                && $payment['due_date'] >= $startDate
+                && $payment['due_date'] <= $endDate
+            )
+            ->sum('total');
+    }
+
+    protected function budgetAlerts()
+    {
         $queryParams = request()->query();
         $teamId = auth()->user()->current_team_id;
         $settings = Setting::getByTeam($teamId);

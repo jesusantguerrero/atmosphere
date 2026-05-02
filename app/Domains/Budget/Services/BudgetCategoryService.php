@@ -2,24 +2,22 @@
 
 namespace App\Domains\Budget\Services;
 
-use Brick\Money\Money;
-use Illuminate\Support\Str;
-use Brick\Math\RoundingMode;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
-use App\Helpers\RequestQueryHelper;
-use Insane\Journal\Models\Core\Account;
-use Insane\Journal\Models\Core\Category;
+use App\Domains\Budget\Data\BudgetReservedNames;
 use App\Domains\Budget\Data\CategoryData;
 use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Transaction\Models\Transaction;
-use App\Domains\Budget\Data\BudgetReservedNames;
+use App\Helpers\RequestQueryHelper;
+use Brick\Math\RoundingMode;
+use Brick\Money\Money;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Insane\Journal\Models\Core\Account;
+use Insane\Journal\Models\Core\Category;
 
 class BudgetCategoryService
 {
-    public function __construct()
-    {
-    }
+    public function __construct() {}
 
     public function getLastTransactionMonth($category)
     {
@@ -37,7 +35,7 @@ class BudgetCategoryService
     public function getBudgetInfo($category, string $month)
     {
         $yearMonth = substr((string) $month, 0, 7);
-        $monthBudget = (new BudgetMonthService())->getMonthByCategory($category, $yearMonth.'-01');
+        $monthBudget = (new BudgetMonthService)->getMonthByCategory($category, $yearMonth.'-01');
         $budgeted = $monthBudget ? $monthBudget->budgeted : 0;
 
         if ($category->account_id) {
@@ -45,9 +43,9 @@ class BudgetCategoryService
             $monthPayment = $monthBudget ? $monthBudget->payments : 0;
 
             $monthBalance = Money::of($funded, $category->account->currency_code)
-            ->minus($monthPayment)
-            ->getAmount()
-            ->toFloat();
+                ->minus($monthPayment)
+                ->getAmount()
+                ->toFloat();
             $available = Money::of($monthBalance, 'USD')
                 ->plus(($monthBudget->left_from_last_month * -1))
                 ->getAmount()
@@ -56,14 +54,14 @@ class BudgetCategoryService
             $monthBalance = (float) $category->getMonthBalance($yearMonth)->balance;
 
             $available = Money::of($budgeted, 'USD', null, RoundingMode::HALF_UP)
-                        ->plus($monthBudget?->left_from_last_month ?? 0)
-                        ->plus($monthBalance)
-                        ->getAmount()
-                        ->toFloat();
+                ->plus($monthBudget?->left_from_last_month ?? 0)
+                ->plus($monthBalance)
+                ->getAmount()
+                ->toFloat();
 
             if ($category->display_id == 'ready_to_assign') {
                 $available = $monthBudget?->available;
-                $monthBalance =  $monthBudget?->activity;
+                $monthBalance = $monthBudget?->activity;
             }
         }
 
@@ -78,14 +76,14 @@ class BudgetCategoryService
             'name' => $category->name,
             'month' => $yearMonth,
         ];
+
         return $data;
     }
 
     public function getBudgetData($category, string $month)
     {
         $yearMonth = substr((string) $month, 0, 7);
-        $monthBudget = (new BudgetMonthService())->getMonthByCategory($category, $yearMonth.'-01');
-
+        $monthBudget = (new BudgetMonthService)->getMonthByCategory($category, $yearMonth.'-01');
 
         $data = [
             'budgeted' => $monthBudget?->budgeted,
@@ -185,7 +183,6 @@ class BudgetCategoryService
 
         if ($category->account) {
             $transactions = $category->account->getMonthBalance($monthDate->format('Y-m'))->balance;
-            echo "$category->name:$transactions";
         } else {
             $activity = $category->getMonthBalance($monthDate->format('Y-m'))?->balance;
         }
@@ -211,7 +208,7 @@ class BudgetCategoryService
             'name' => $month,
         ], [
             'available' => $monthBudgetInfo['available'],
-            'payments' =>  $monthBudgetInfo['payments'],
+            'payments' => $monthBudgetInfo['payments'],
             'left_from_last_month' => $monthBudgetInfo['left_from_last_month'],
             'funded_spending_previous_month' => 0,
             'funded_spending' => $monthBudgetInfo['funded_spending'],
@@ -230,39 +227,39 @@ class BudgetCategoryService
             $activity = $category->getMonthBalance($monthDate->format('Y-m'))?->balance;
         }
 
-        return  ($activity + $transactions) ?? 0;
+        return ($activity + $transactions) ?? 0;
     }
 
     public function getCreditCardBalance(Account $account, string $yearMonth, bool $hasCategories = false)
     {
-        if (!$account->resource_type_id) {
+        if (! $account->resource_type_id) {
             return $account->transactionLines()
-            ->whereHas('transaction', fn ($q) => $q->where('status', Transaction::STATUS_VERIFIED))
-            ->whereRaw("date_format(transaction_lines.date, '%Y-%m') = '$yearMonth'")
-            ->selectRaw("COALESCE(SUM(amount * transaction_lines.type), 0) as balance")
-            ->whereNot('categories.name', BudgetReservedNames::READY_TO_ASSIGN->value)
-            ->leftJoin('categories', 'categories.id', '=', 'transaction_lines.category_id')
-            ->when($hasCategories, fn ($q) => $q->whereRaw('(category_id IS NOT NULL AND category_id != 0)'))
-            ->first();
+                ->whereHas('transaction', fn ($q) => $q->where('status', Transaction::STATUS_VERIFIED))
+                ->whereRaw("date_format(transaction_lines.date, '%Y-%m') = '$yearMonth'")
+                ->selectRaw('COALESCE(SUM(amount * transaction_lines.type), 0) as balance')
+                ->whereNot('categories.name', BudgetReservedNames::READY_TO_ASSIGN->value)
+                ->leftJoin('categories', 'categories.id', '=', 'transaction_lines.category_id')
+                ->when($hasCategories, fn ($q) => $q->whereRaw('(category_id IS NOT NULL AND category_id != 0)'))
+                ->first();
         } else {
             return $account->creditLines()
-            ->leftJoin('categories', 'categories.id', '=', 'transaction_lines.category_id')
-            ->whereNot('categories.name', BudgetReservedNames::READY_TO_ASSIGN->value)
-            ->whereRaw("date_format(date, '%Y-%m') = '$yearMonth'")
-            ->sum(DB::raw("amount * type"));
+                ->leftJoin('categories', 'categories.id', '=', 'transaction_lines.category_id')
+                ->whereNot('categories.name', BudgetReservedNames::READY_TO_ASSIGN->value)
+                ->whereRaw("date_format(date, '%Y-%m') = '$yearMonth'")
+                ->sum(DB::raw('amount * type'));
         }
     }
 
     public function getMonthPayments(Account $account, string $yearMonth)
     {
-        if (!$account->resource_type_id) {
+        if (! $account->resource_type_id) {
             $result = $account->getVerifiedTransactionLines()
             // ->where(fn ($q) =>
             //     $q->where('transaction_lines.category_id', 0)
             //     ->orWhereNull('transaction_lines.category_id')
             // )
-            ->whereRaw("date_format(transaction_lines.date, '%Y-%m') = '$yearMonth'")
-            ->where('transaction_lines.type', 1);
+                ->whereRaw("date_format(transaction_lines.date, '%Y-%m') = '$yearMonth'")
+                ->where('transaction_lines.type', 1);
 
             return $result->first();
         }
@@ -273,19 +270,18 @@ class BudgetCategoryService
         $yearMonth = Carbon::createFromFormat('Y-m-d', $month)->format('Y-m');
         $inflow = 0;
 
-        if (!$category->resource_type_id) {
+        if (! $category->resource_type_id) {
             $inflow = $category->transactionLines()
-            ->whereHas('transaction', fn ($q) => $q->where('status', Transaction::STATUS_VERIFIED))
-            ->whereRaw("date_format(transaction_lines.date, '%Y-%m') = '$yearMonth'")
-            ->selectRaw("COALESCE(SUM(amount * type), 0) as balance")
+                ->whereHas('transaction', fn ($q) => $q->where('status', Transaction::STATUS_VERIFIED))
+                ->whereRaw("date_format(transaction_lines.date, '%Y-%m') = '$yearMonth'")
+                ->selectRaw('COALESCE(SUM(amount * type), 0) as balance')
             // ->where('type', 1)
-            ->first()?->balance;
+                ->first()?->balance;
         } else {
             return $category->creditLines()
-            ->whereRaw("date_format(date, '%Y-%m') = '$yearMonth'")
-            ->sum(DB::raw("amount * type"));
+                ->whereRaw("date_format(date, '%Y-%m') = '$yearMonth'")
+                ->sum(DB::raw('amount * type'));
         }
-
 
         return $inflow;
     }
@@ -311,8 +307,6 @@ class BudgetCategoryService
 
             $fundedSpending = ($transactions * -1) ?? 0;
 
-            echo "$fundedSpending/$payments" . PHP_EOL;
-
             BudgetMonth::updateOrCreate([
                 'category_id' => $category->id,
                 'team_id' => $category->team_id,
@@ -323,10 +317,11 @@ class BudgetCategoryService
                 'funded_spending' => $fundedSpending,
                 'activity' => $fundedSpending - $payments,
                 'payments' => $payments,
-                'available' =>  DB::raw("($fundedSpending + available)  - $payments"),
+                'available' => DB::raw("($fundedSpending + available)  - $payments"),
             ]);
             $fromBudgets = $fundedSpending - $payments;
         }
+
         return $fromBudgets;
     }
 

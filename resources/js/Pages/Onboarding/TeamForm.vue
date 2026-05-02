@@ -52,6 +52,16 @@ const currencyLocaleOptions = [{
             <LogerInput placeholder="Eg. Family" v-model="formData.name" required />
         </AtField>
 
+        <AtField :label="$t('Language')">
+            <select
+                v-model="formData.language"
+                class="w-full px-3 py-2 border rounded-md bg-base-lvl-3 border-base-lvl-2 focus:outline-none focus:ring focus:ring-primary"
+            >
+                <option value="en">English</option>
+                <option value="es">Español</option>
+            </select>
+        </AtField>
+
         <AtField label="Timezone">
             <LogerApiSelect
                 v-model="formData.timezone"

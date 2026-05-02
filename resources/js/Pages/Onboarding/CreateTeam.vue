@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { reactive } from "vue";
-import { useForm } from '@inertiajs/vue3';
+import { useForm, usePage } from '@inertiajs/vue3';
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
@@ -22,19 +22,24 @@ const state = reactive({
 
 const defaultTimezone = "UTC";
 
+const userLanguage = (usePage().props.auth?.user?.language as string) ?? 'en';
+
 const formData = useForm({
     name: '',
     timezone: defaultTimezone,
     primary_currency_code: 'USD',
     currency_symbol_option: 'before',
-    date_format: ''
+    date_format: '',
+    language: userLanguage,
 });
 
 
 const createBudget = () => {
     formData.transform((data) => {
         data.primary_currency_code = data.primary_currency_code.code || data.primary_currency_code
-        return parseTeamForm(data)
+        const parsed = parseTeamForm(data)
+        parsed.language = data.language
+        return parsed
     }).post('/onboarding')
 }
 </script>

@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-use Laravel\Jetstream\HasTeams;
-use Laravel\Sanctum\HasApiTokens;
-use Laravel\Jetstream\HasProfilePhoto;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Lab404\Impersonate\Models\Impersonate;
 use Laravel\Fortify\TwoFactorAuthenticatable;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Jetstream\HasProfilePhoto;
+use Laravel\Jetstream\HasTeams;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
@@ -17,9 +17,9 @@ class User extends Authenticatable
     use HasFactory;
     use HasProfilePhoto;
     use HasTeams;
+    use Impersonate;
     use Notifiable;
     use TwoFactorAuthenticatable;
-    use Impersonate;
 
     /**
      * The attributes that are mass assignable.
@@ -27,7 +27,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password',
+        'name', 'email', 'password', 'language',
     ];
 
     /**
@@ -60,11 +60,13 @@ class User extends Authenticatable
         'profile_photo_url',
     ];
 
-    public function isSuperAdmin() {
+    public function isSuperAdmin()
+    {
         return config('atmosphere.superadmin.email') === $this?->email;
     }
 
-    public function sendLoginLink() {
+    public function sendLoginLink()
+    {
         return config('atmosphere.superadmin.email') === $this?->email;
     }
 }

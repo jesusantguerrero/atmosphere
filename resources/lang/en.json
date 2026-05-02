@@ -17,6 +17,16 @@
     "listTools": {
         "title": "Shopping List"
     },
+    "Language": "Language",
+    "Available modules": "Available modules",
+    "Enable only the modules you want to see in the navigation.": "Enable only the modules you want to see in the navigation.",
+    "After scheduled": "After scheduled",
+    "Scheduled this period": "Scheduled this period",
+    "Allocate leftover": "Allocate leftover",
+    "Available": "Available",
+    "Ahorro": "Savings",
+    "Gasto Personal": "Personal Spending",
+    "Total exceeds available amount": "Total exceeds available amount",
     "Home": "Home",
     "Meal Planner": "Meal Planner",
     "Meals": "Meals",

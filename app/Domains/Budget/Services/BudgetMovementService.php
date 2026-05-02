@@ -2,15 +2,15 @@
 
 namespace App\Domains\Budget\Services;
 
+use App\Domains\Budget\Data\BudgetAssignData;
+use App\Domains\Budget\Data\BudgetMovementData;
+use App\Domains\Budget\Data\BudgetReservedNames;
+use App\Domains\Budget\Models\BudgetMonth;
+use App\Domains\Budget\Models\BudgetMovement;
 use App\Events\BudgetAssigned;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Category;
-use App\Domains\Budget\Models\BudgetMonth;
-use App\Domains\Budget\Data\BudgetAssignData;
-use App\Domains\Budget\Models\BudgetMovement;
-use App\Domains\Budget\Data\BudgetMovementData;
-use App\Domains\Budget\Data\BudgetReservedNames;
 
 class BudgetMovementService
 {
@@ -35,10 +35,9 @@ class BudgetMovementService
             'month' => $month,
             'name' => $month,
         ], [
-            'budgeted' => $mode ? DB::raw("budgeted $modeSign $amount") : $amount
+            'budgeted' => $mode ? DB::raw("budgeted $modeSign $amount") : $amount,
         ]);
     }
-
 
     public function registerMovement(BudgetMovementData $data, $quietly = false, $fromReadyToAssign = false)
     {
@@ -52,7 +51,7 @@ class BudgetMovementService
         $destinationBalance = self::getBalanceOfCategory($destinationId, $data->date);
 
         $sourceCategoryBalance = self::getBalanceOfCategory($sourceId, $data->date); // 2000
-        $amount = $data->amount > $sourceCategoryBalance->available && !$fromReadyToAssign ? $sourceCategoryBalance->available : $data->amount; // 2096 > 2000 ? 2000 : 2096
+        $amount = $data->amount > $sourceCategoryBalance->available && ! $fromReadyToAssign ? $sourceCategoryBalance->available : $data->amount; // 2096 > 2000 ? 2000 : 2096
 
         $isPositiveTransaction = $amount > 0;
 
@@ -66,13 +65,13 @@ class BudgetMovementService
 
         $savedMovement = BudgetMovement::create($formData);
 
-        if ($savedMovement->source_category_id && !$quietly)  {
+        if ($savedMovement->source_category_id && ! $quietly) {
             $this->updateBalances($destinationId, $savedMovement, $savedMovement->date, $amount, self::MODE_ADD);
             $this->updateBalances($sourceId, $savedMovement, $savedMovement->date, $amount, self::MODE_SUBTRACT);
         }
         DB::commit();
         $this->budgetRolloverService->startFrom($data->team_id, substr($data->date, 0, 7), 1);
-        if (!now()->isSameMonth(Carbon::createFromFormat("Y-m-d", $data->date))) {
+        if (! now()->isSameMonth(Carbon::createFromFormat('Y-m-d', $data->date))) {
             BudgetAssigned::dispatch($data, $formData);
         }
     }
@@ -98,13 +97,13 @@ class BudgetMovementService
         ]);
 
         $savedMovement = BudgetMovement::create($formData);
-        if ($savedMovement->source_category_id && !$quietly) {
+        if ($savedMovement->source_category_id && ! $quietly) {
             $this->updateBalances($destinationId, $savedMovement, $savedMovement->date, $amount);
             $this->updateBalances($sourceId, $savedMovement, $savedMovement->date, $amount, self::MODE_SUBTRACT);
         }
         DB::commit();
         $this->budgetRolloverService->startFrom($data->team_id, substr($data->date, 0, 7), 1);
-        if (!now()->isSameMonth(Carbon::createFromFormat("Y-m-d", $data->date))) {
+        if (! now()->isSameMonth(Carbon::createFromFormat('Y-m-d', $data->date))) {
             BudgetAssigned::dispatch($data, $formData);
         }
     }
@@ -112,5 +111,33 @@ class BudgetMovementService
     public function getBalanceOfCategory($categoryId, string $month)
     {
         return (object) $this->budgetService->getBudgetInfo(Category::find($categoryId), $month);
+    }
+
+    /**
+     * Distribute an amount from one source category across multiple destinations in a single transaction.
+     *
+     * @param  array<int, array{destination_category_id:int, amount:float}>  $splits
+     */
+    public function registerSplit(int $teamId, int $userId, ?int $sourceCategoryId, string $date, array $splits): void
+    {
+        DB::transaction(function () use ($teamId, $userId, $sourceCategoryId, $date, $splits) {
+            foreach ($splits as $split) {
+                $amount = (float) ($split['amount'] ?? 0);
+                if ($amount <= 0) {
+                    continue;
+                }
+
+                $this->registerMovement(BudgetMovementData::from([
+                    'id' => null,
+                    'team_id' => $teamId,
+                    'user_id' => $userId,
+                    'source_category_id' => $sourceCategoryId,
+                    'destination_category_id' => (int) $split['destination_category_id'],
+                    'type' => 'movement',
+                    'date' => $date,
+                    'amount' => $amount,
+                ]), false, true);
+            }
+        });
     }
 }

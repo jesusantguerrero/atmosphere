@@ -29,5 +29,41 @@ return [
                 ],
             ],
         ],
+        [
+            'resource_type' => 'transactions',
+            'display_id' => 'savings',
+            'name' => 'Savings',
+            'description' => 'Money set aside for future goals',
+            'depth' => 1,
+            'type' => 1,
+            'childs' => [
+                [
+                    'resource_type' => 'transactions',
+                    'display_id' => 'savings_general',
+                    'type' => 1,
+                    'name' => 'Ahorro',
+                    'description' => 'General savings allocation',
+                    'depth' => 1,
+                ],
+            ],
+        ],
+        [
+            'resource_type' => 'transactions',
+            'display_id' => 'personal',
+            'name' => 'Personal',
+            'description' => 'Discretionary personal spending',
+            'depth' => 1,
+            'type' => 1,
+            'childs' => [
+                [
+                    'resource_type' => 'transactions',
+                    'display_id' => 'personal_spending',
+                    'type' => 1,
+                    'name' => 'Gasto Personal',
+                    'description' => 'Free-spend money for the period',
+                    'depth' => 1,
+                ],
+            ],
+        ],
     ],
 ];

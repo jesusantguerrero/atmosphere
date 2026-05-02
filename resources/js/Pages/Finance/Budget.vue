@@ -32,9 +32,6 @@ const props = defineProps({
     type: Array,
     required: true,
   },
-  distribution: {
-    type: Object
-  },
   accounts: {
     type: Array,
     default() {
@@ -42,6 +39,10 @@ const props = defineProps({
     },
   },
   accountTotal: {
+    type: Number,
+    default: 0
+  },
+  scheduledTotal: {
     type: Number,
     default: 0
   },
@@ -213,10 +214,11 @@ const budgetCsvExportUrl = computed(() => {
 
       <BudgetBalanceAssign
         class="rounded-t-md"
-        :class="[cardShadow, !visibleFilters.overspent && 'rounded-b-md']"
+        :class="[!visibleFilters.overspent && 'rounded-b-md']"
         :value="readyToAssignBalance"
         :category="readyToAssignLeft"
         :to-assign="readyToAssign"
+        :scheduled-total="scheduledTotal"
       >
         <template #top>
             <AtDatePager
@@ -235,10 +237,6 @@ const budgetCsvExportUrl = computed(() => {
 
       <section class="mx-auto mt-4 rounded-lg text-body bg-base max-w-7xl">
           <article class="w-full space-y-4">
-            <p class="text-center">
-                {{ formatMoney(accountTotal) }} {{ formatMoney(available)  }} = ({{ formatMoney(accountTotal - available)}})
-            </p>
-
             <BudgetCategories :budgets="budgets" />
         </article>
       </section>

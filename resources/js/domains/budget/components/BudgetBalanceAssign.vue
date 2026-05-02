@@ -28,8 +28,14 @@
         toAssign: {
             type: Object,
             required: true
+        },
+        scheduledTotal: {
+            type: Number,
+            default: 0
         }
     })
+
+    const afterScheduled = computed(() => Number(props.value ?? 0) - Number(props.scheduledTotal ?? 0))
 
     const theme = {
         good: 'bg-success/80 text-white',
@@ -135,6 +141,68 @@
         form.reset();
         showPopover.value = false;
     }
+
+    // ----- One-shot split: Ahorro / Gasto Personal -----
+    const findCategoryByName = (name: string) => {
+        for (const group of categories.value || []) {
+            const found = group.subCategories?.find((c: any) => c.name === name)
+            if (found) {
+                return found
+            }
+        }
+        return null
+    }
+
+    const splitTargets = computed(() => ({
+        savings: findCategoryByName('Ahorro'),
+        personal: findCategoryByName('Gasto Personal'),
+    }))
+
+    const canSplit = computed(() => Number(props.value) > 0
+        && splitTargets.value.savings
+        && splitTargets.value.personal
+    )
+
+    const splitForm = useForm({
+        savings_amount: 0,
+        personal_amount: 0,
+    })
+
+    const splitTotal = computed(() => Number(splitForm.savings_amount || 0) + Number(splitForm.personal_amount || 0))
+
+    const splitExceedsAvailable = computed(() => splitTotal.value > Number(props.value || 0))
+
+    const showSplitPopover = ref(false)
+
+    const openSplit = () => {
+        const half = Math.round((Number(props.value || 0) / 2) * 100) / 100
+        splitForm.savings_amount = half
+        splitForm.personal_amount = Number(props.value || 0) - half
+        showSplitPopover.value = true
+    }
+
+    const submitSplit = () => {
+        if (!canSplit.value || splitTotal.value <= 0 || splitExceedsAvailable.value) {
+            return
+        }
+        const month = format(startOfMonth(pageState?.dates?.endDate), 'yyyy-MM-dd')
+        const sourceId = props.category.id
+
+        splitForm.transform(() => ({
+            date: month,
+            splits: [
+                { destination_category_id: splitTargets.value.savings.id, amount: Number(splitForm.savings_amount) },
+                { destination_category_id: splitTargets.value.personal.id, amount: Number(splitForm.personal_amount) },
+            ].filter(s => s.amount > 0),
+        })).post(`/budgets/${sourceId}/months/${month}/split`, {
+            preserveScroll: true,
+            onSuccess() {
+                showSplitPopover.value = false
+                splitForm.reset()
+                router.reload({ preserveScroll: true })
+            },
+        })
+    }
 </script>
 
 <template>
@@ -149,8 +217,14 @@
                     <slot name="top" />
                     <header class="flex w-full ">
                         <section class="w-full h-10 " />
-                        <h4 class="flex items-center justify-center w-full mt-0 text-lg font-bold text-center">
-                             {{ formatter(value) }}
+                        <h4 class="flex flex-col items-center justify-center w-full mt-0 font-bold text-center">
+                            <span class="text-lg">{{ formatter(value) }}</span>
+                            <span
+                                v-if="scheduledTotal > 0"
+                                class="text-xs font-normal opacity-80"
+                            >
+                                {{ $t('After scheduled') }}: {{ formatter(afterScheduled) }}
+                            </span>
                         </h4>
                         <BudgetProgress
                             class="text-center rounded-lg "
@@ -168,6 +242,63 @@
                     <small class="mb-4">
                         {{ description }}
                     </small>
+
+                    <NPopover
+                        v-if="canSplit"
+                        v-model:show="showSplitPopover"
+                        placement="bottom"
+                        trigger="click"
+                    >
+                        <template #trigger>
+                            <AtButton
+                                class="mb-3 text-white rounded-md bg-black/30"
+                                @click.stop="openSplit"
+                            >
+                                {{ $t('Allocate leftover') }}
+                            </AtButton>
+                        </template>
+                        <div class="w-72 md:w-96 space-y-3">
+                            <p class="text-sm font-bold">
+                                {{ $t('Available') }}: {{ formatter(value) }}
+                            </p>
+                            <AtField :label="$t('Ahorro')">
+                                <input
+                                    v-model.number="splitForm.savings_amount"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    class="w-full px-3 py-2 border rounded-md bg-base-lvl-3 border-base-lvl-2 focus:outline-none focus:ring focus:ring-primary"
+                                />
+                            </AtField>
+                            <AtField :label="$t('Gasto Personal')">
+                                <input
+                                    v-model.number="splitForm.personal_amount"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    class="w-full px-3 py-2 border rounded-md bg-base-lvl-3 border-base-lvl-2 focus:outline-none focus:ring focus:ring-primary"
+                                />
+                            </AtField>
+                            <p
+                                v-if="splitExceedsAvailable"
+                                class="text-xs text-error"
+                            >
+                                {{ $t('Total exceeds available amount') }}
+                            </p>
+                            <div class="flex items-center justify-end space-x-2">
+                                <AtButton class="text-body-1" @click="showSplitPopover = false">
+                                    {{ $t('Cancel') }}
+                                </AtButton>
+                                <AtButton
+                                    class="text-white rounded-md bg-success"
+                                    :disabled="splitExceedsAvailable || splitTotal <= 0"
+                                    @click="submitSplit"
+                                >
+                                    {{ $t('Save') }}
+                                </AtButton>
+                            </div>
+                        </div>
+                    </NPopover>
 
                     <NPopover v-if="isOverspent"  placement="bottom" trigger="click">
                         <template #trigger>
@@ -207,6 +338,8 @@
                 <p>From last month: <MoneyPresenter :value="toAssign.movedFromLastMonth"/> </p>
                 <p>Inflow: <MoneyPresenter :value="toAssign.availableForFunding"/> </p>
                 <p>left over: <MoneyPresenter :value="toAssign.leftOver"/> </p>
+                <p>{{ $t('Scheduled this period') }}: <MoneyPresenter :value="scheduledTotal"/> </p>
+                <p class="text-blue-300">{{ $t('After scheduled') }}: <MoneyPresenter :value="afterScheduled"/> </p>
                 <p class="text-green-300">Total Available: <MoneyPresenter :value="toAssign.availableForFunding + toAssign.leftOver + toAssign.movedFromLastMonth"/> </p>
                 <p class="text-green-500">Total to budget: <MoneyPresenter :value="toAssign.availableForFunding + toAssign.leftOver"/> </p>
                 <p>Budgeted: <MoneyPresenter :value="toAssign.budgeted"/> </p>
