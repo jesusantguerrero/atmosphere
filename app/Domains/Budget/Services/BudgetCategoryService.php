@@ -4,6 +4,7 @@ namespace App\Domains\Budget\Services;
 
 use App\Domains\Budget\Data\BudgetReservedNames;
 use App\Domains\Budget\Data\CategoryData;
+use App\Domains\Budget\Models\BudgetDefaultCategory;
 use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Transaction\Models\Transaction;
 use App\Helpers\RequestQueryHelper;
@@ -323,6 +324,40 @@ class BudgetCategoryService
         }
 
         return $fromBudgets;
+    }
+
+    public function setDefaultRole(Category $category, ?string $role): void
+    {
+        if ($role !== null && ! in_array($role, BudgetDefaultCategory::SUPPORTED_ROLES, true)) {
+            throw new \InvalidArgumentException("Unsupported default_role: {$role}");
+        }
+
+        DB::transaction(function () use ($category, $role) {
+            BudgetDefaultCategory::where('team_id', $category->team_id)
+                ->where('category_id', $category->id)
+                ->delete();
+
+            if ($role === null) {
+                return;
+            }
+
+            BudgetDefaultCategory::where('team_id', $category->team_id)
+                ->where('role', $role)
+                ->delete();
+
+            BudgetDefaultCategory::create([
+                'team_id' => $category->team_id,
+                'role' => $role,
+                'category_id' => $category->id,
+            ]);
+        });
+    }
+
+    public static function getDefaultsByRole(int $teamId): array
+    {
+        return BudgetDefaultCategory::where('team_id', $teamId)
+            ->pluck('category_id', 'role')
+            ->all();
     }
 
     public static function findOrCreateByName(CategoryData $params)

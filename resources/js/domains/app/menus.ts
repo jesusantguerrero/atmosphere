@@ -58,8 +58,12 @@ const menus = {
         url: '/finance'
     },
     {
-        label: 'Budget & Goals',
+        label: 'Budget',
         url: '/budgets'
+    },
+    {
+        label: 'Goals',
+        url: '/finance/goals'
     },
     {
         label: 'Watchlist',

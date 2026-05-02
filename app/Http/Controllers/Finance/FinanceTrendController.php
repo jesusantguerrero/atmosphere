@@ -50,6 +50,10 @@ class FinanceTrendController extends Controller
             'template' => 'Trends/CreditCards',
             'handler' => 'creditCards',
         ],
+        'relationships' => [
+            'template' => 'Trends/Relationships',
+            'handler' => 'relationships',
+        ],
     ];
 
     public function __construct(private ReportService $reportService, private CreditCardReportService $creditCardService) {}
@@ -286,6 +290,17 @@ class FinanceTrendController extends Controller
             'metaData' => [
                 'name' => 'creditCards',
                 'title' => 'Credit Card Report',
+            ],
+        ];
+    }
+
+    public function relationships(Request $request)
+    {
+        return [
+            'data' => [],
+            'metaData' => [
+                'name' => 'relationships',
+                'title' => 'Relationships',
             ],
         ];
     }

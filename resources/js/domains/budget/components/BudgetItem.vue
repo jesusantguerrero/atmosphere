@@ -2,6 +2,7 @@
 import { format, startOfMonth, isThisMonth } from 'date-fns';
 import { ref, nextTick, onMounted, inject, computed } from 'vue';
 import { NDropdown } from 'naive-ui';
+import { router, usePage } from '@inertiajs/vue3';
 import autoAnimate from '@formkit/auto-animate';
 
 import IconDrag from '@/Components/icons/IconDrag.vue';
@@ -47,16 +48,31 @@ enum BudgetAssignOptions {
     Target = 'target',
     MatchAccount = 'matchAccount',
     Underfunded = 'underfunded',
-    LastMonth = 'lastMonth'
+    LastMonth = 'lastMonth',
+    SetSavingsDefault = 'set_savings_default',
+    SetSpendingDefault = 'set_spending_default',
+    ClearDefaultRole = 'clear_default_role',
 }
 
 const isCurrentMonth = computed(() => {
   return isThisMonth(startOfMonth(pageState.dates.endDate))
 })
 
+const currentDefaultRole = computed<string | null>(() => {
+    const defaults = (usePage().props.budgetDefaults || {}) as Record<string, number>
+    if (defaults.savings === props.item.id) {
+        return 'savings'
+    }
+    if (defaults.spending === props.item.id) {
+        return 'spending'
+    }
+    return null
+})
+
 const assignOptions = computed(() => {
     const matchAccountDiffAmount = accountMatch.value?.balance - props.item.available;
     const underfundedAmount = budgetTarget.value - props.item.available;
+    const role = currentDefaultRole.value
     const options = [{
         name: BudgetAssignOptions.Target,
         label: `Set Target (${formatMoney(budgetTarget.value)})`,
@@ -78,8 +94,24 @@ const assignOptions = computed(() => {
         hidden: !lastMonthAmount.value
     },
     {
-        name: "clear",
-        label: "Clear",
+        name: 'clear',
+        label: 'Clear',
+    },
+    { type: 'divider', key: 'divider-1' } as any,
+    {
+        name: BudgetAssignOptions.SetSavingsDefault,
+        label: 'Use as default Savings target',
+        hidden: role === 'savings',
+    },
+    {
+        name: BudgetAssignOptions.SetSpendingDefault,
+        label: 'Use as default Spending target',
+        hidden: role === 'spending',
+    },
+    {
+        name: BudgetAssignOptions.ClearDefaultRole,
+        label: 'Remove default role',
+        hidden: role === null,
     }]
 
     return options.filter((option) => !option.hidden)
@@ -89,9 +121,17 @@ const setAmount = (amount: number) => {
     budgeted.value = amount;
 };
 
+const setDefaultRole = (role: string | null) => {
+    router.patch(`/budgets/${props.item.id}/default-role`, { role }, {
+        preserveScroll: true,
+        preserveState: true,
+        only: ['budgetDefaults'],
+    })
+}
+
 const handleAssignOptions = (option: string) => {
   const targetAmount = props.item.budget ? getBudgetTarget(props.item.budget) : 0;
-switch (option) {
+  switch (option) {
     case BudgetAssignOptions.Target:
       setAmount(targetAmount);
       break;
@@ -104,6 +144,15 @@ switch (option) {
     case BudgetAssignOptions.LastMonth:
       setAmount(lastMonthAmount.value);
       break;
+    case BudgetAssignOptions.SetSavingsDefault:
+      setDefaultRole('savings');
+      return;
+    case BudgetAssignOptions.SetSpendingDefault:
+      setDefaultRole('spending');
+      return;
+    case BudgetAssignOptions.ClearDefaultRole:
+      setDefaultRole(null);
+      return;
     default:
       setAmount(0);
       break;

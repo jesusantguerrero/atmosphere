@@ -22,6 +22,7 @@ class BudgetExport implements FromQuery, WithHeadings, WithMapping
             ->select([
                 'budget_months.*',
                 'c.name as categoryName',
+                'c.display_id as categoryDisplayId',
                 'g.name as groupName',
                 'c.index as categoryIndex',
                 'g.index as groupIndex',
@@ -49,15 +50,31 @@ class BudgetExport implements FromQuery, WithHeadings, WithMapping
             "{$budgetMonth->categoryName}",
             $this->formatMoney($budgetMonth, 'budgeted'),
             $this->formatMoney($budgetMonth, 'activity'),
-            $this->formatMoney($budgetMonth, 'available'),
+            $this->formatMoneyValue($budgetMonth, $this->resolveAvailable($budgetMonth)),
         ];
+    }
+
+    private function resolveAvailable($budgetMonth): float
+    {
+        if ($budgetMonth->categoryDisplayId === 'ready_to_assign') {
+            return (float) ($budgetMonth->activity ?? 0)
+                + (float) ($budgetMonth->left_from_last_month ?? 0)
+                - (float) ($budgetMonth->budgeted ?? 0);
+        }
+
+        return (float) $budgetMonth->available;
     }
 
     private function formatMoney($budget, $property)
     {
-        $sign = $budget->$property < 0 ? '-' : '';
+        return $this->formatMoneyValue($budget, (float) $budget->$property);
+    }
 
-        return $sign.$budget->currency_code.'$'.abs($budget->$property);
+    private function formatMoneyValue($budget, float $value): string
+    {
+        $sign = $value < 0 ? '-' : '';
+
+        return $sign.$budget->currency_code.'$'.abs($value);
     }
 
     public function headings(): array

@@ -12,3 +12,8 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', 'loger.conce
     Route::get('/relationships/overview', [LogerProfileController::class, 'overview'])->name('relationships-overview');
     Route::get('/relationships/{profileName}', [LogerProfileController::class, 'relationships'])->name("relationships.index");
 });
+
+Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
+    Route::get('/relationships-mock', fn () => inertia('Relationships/CoupleSupportMock'))
+        ->name('relationships.mock');
+});

@@ -4,6 +4,8 @@ namespace App\Listeners;
 
 use App\Actions\Loger\CreateDefaultMealTypes;
 use App\Domains\AppCore\Data\CoreModuleTypeEnum;
+use App\Domains\AppCore\Models\Category;
+use App\Domains\Budget\Models\BudgetDefaultCategory;
 use App\Domains\Journal\Actions\AccountCatalogCreate;
 use App\Domains\Journal\Actions\TransactionCategoriesCreate;
 use Carbon\Carbon;
@@ -36,6 +38,31 @@ class CreateTeamSettings
             $this->setTrialPeriod($team);
         }
         $this->setAvailableModules($team);
+        $this->setBudgetSplitDefaults($team);
+    }
+
+    public function setBudgetSplitDefaults($team): void
+    {
+        $mapping = [
+            'savings_general' => BudgetDefaultCategory::ROLE_SAVINGS,
+            'personal_spending' => BudgetDefaultCategory::ROLE_SPENDING,
+        ];
+
+        foreach ($mapping as $displayId => $role) {
+            $category = Category::where([
+                'team_id' => $team->id,
+                'display_id' => $displayId,
+            ])->first();
+
+            if (! $category) {
+                continue;
+            }
+
+            BudgetDefaultCategory::updateOrCreate(
+                ['team_id' => $team->id, 'role' => $role],
+                ['category_id' => $category->id]
+            );
+        }
     }
 
     public function setTrialPeriod($team)

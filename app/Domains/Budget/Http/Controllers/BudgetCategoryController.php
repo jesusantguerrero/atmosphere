@@ -3,6 +3,7 @@
 namespace App\Domains\Budget\Http\Controllers;
 
 use App\Domains\AppCore\Models\Category;
+use App\Domains\Budget\Models\BudgetDefaultCategory;
 use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Budget\Models\BudgetMovement;
 use App\Domains\Budget\Services\BudgetAccountService;
@@ -65,7 +66,19 @@ class BudgetCategoryController extends InertiaController
                 'serverSearchOptions' => $this->getServerParams(),
                 'accountTotal' => $this->accountService->getBalanceAs($teamId, $endDate),
                 'scheduledTotal' => $this->getScheduledTotal($teamId, $startDate, $endDate),
+                'budgetDefaults' => BudgetCategoryService::getDefaultsByRole($teamId),
             ]);
+    }
+
+    public function setDefaultRole(Request $request, BudgetCategoryService $service, Category $category)
+    {
+        $data = $request->validate([
+            'role' => ['nullable', 'string', Rule::in(BudgetDefaultCategory::SUPPORTED_ROLES)],
+        ]);
+
+        $service->setDefaultRole($category, $data['role'] ?? null);
+
+        return Redirect::back();
     }
 
     protected function getScheduledTotal(int $teamId, string $startDate, string $endDate): float

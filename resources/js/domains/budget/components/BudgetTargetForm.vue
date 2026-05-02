@@ -4,9 +4,10 @@ import { AtButton, AtField, AtInput, AtErrorBag, AtButtonGroup, AtFieldCheck } f
 import { useDatePager } from "vueuse-temporals";
 import { NSelect, NDropdown, NDatePicker } from "naive-ui";
 import { useForm } from "@inertiajs/vue3";
-import { monthDays, WEEK_DAYS, FREQUENCY_TYPE, generateRandomColor, getDateFromIso } from "@/utils";
+import { useI18n } from "vue-i18n";
+import { monthDays, WEEK_DAYS, FREQUENCY_TYPE, generateRandomColor, getDateFromIso, formatMoney } from "@/utils";
 import { makeOptions } from "@/utils/naiveui";
-import { format, parseISO } from "date-fns";
+import { differenceInCalendarMonths, format, parseISO } from "date-fns";
 import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 import IconTarget from "@/Components/icons/IconTarget.vue";
 import { budgetFrequencies, isSavingBalance, targetTypes } from "@/domains/budget";
@@ -25,6 +26,8 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits(["cancel", "deleted"]);
+
+const { t } = useI18n();
 
 const state = reactive({
   form: useForm({
@@ -176,6 +179,25 @@ const clear = () => {
   form.value.amount = 0;
 };
 
+const monthlyContributionHint = computed(() => {
+  const { frequency, frequency_date, amount, target_type } = state.form;
+  if (frequency !== "DATE" || !frequency_date || !amount) {
+    return null;
+  }
+  const targetDate = frequency_date instanceof Date ? frequency_date : new Date(frequency_date);
+  if (isNaN(targetDate.getTime())) {
+    return null;
+  }
+  const monthsRemaining = differenceInCalendarMonths(targetDate, new Date());
+  if (monthsRemaining <= 0) {
+    return t("Need {amount} / month to reach this goal", { amount: formatMoney(amount) });
+  }
+  const isSavings = ["saving_balance", "savings_monthly"].includes(target_type);
+  const remaining = isSavings ? amount - (props.category?.available ?? 0) : amount;
+  const perMonth = Math.max(0, remaining) / monthsRemaining;
+  return t("Need {amount} / month to reach this goal", { amount: formatMoney(perMonth) });
+});
+
 const handleOptions = (option: string) => {
   switch (option) {
     case "setAssigned":
@@ -278,6 +300,12 @@ const handleOptions = (option: string) => {
           size="large"
           v-model:value="form.frequency_date"
         />
+        <p
+          v-if="monthlyContributionHint"
+          class="mt-2 text-sm font-medium text-primary"
+        >
+          {{ monthlyContributionHint }}
+        </p>
       </AtField>
 
       <AtFieldCheck v-model="form.notify" label="Notify on AVG" />
