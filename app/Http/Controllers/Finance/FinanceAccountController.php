@@ -102,7 +102,11 @@ class FinanceAccountController extends InertiaController
 
     public function updateBankCode(Account $account, Request $request): RedirectResponse
     {
-        $this->authorize('update', $account);
+        abort_unless(
+            $request->user()->belongsToTeam($account->team),
+            403,
+            'You do not own this account.'
+        );
 
         $data = $request->validate([
             'bank_code' => ['nullable', 'string', 'max:64'],
