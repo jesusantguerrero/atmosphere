@@ -124,18 +124,18 @@ onMounted(() => {
 
 <template>
   <main
-    class="hidden md:fixed top-0 right-0 z-50 md:flex h-screen overflow-hidden transition-all ease-linear border-t border-l border-secondary"
-    :class="{ 'border-t border-l rounded-tl-lg': applicationStore.selectedSection }"
+    class="hidden md:fixed top-0 right-0 z-50 md:flex h-screen overflow-hidden transition-all ease-linear"
+    :class="{ 'rounded-tl-lg': applicationStore.selectedSection }"
   >
   <Transition name="slide">
     <keep-alive>
       <article
-        class="container px-4 py-4 duration-75 bg-white border-t border-l rounded-tl-lg mt-[60px] w-96"
+        class="container px-4 py-4 duration-75 bg-white border-l border-base shadow-xl rounded-tl-lg mt-[60px] w-96"
         v-if="applicationStore.selectedSection?.name"
       >
         <header class="flex items-center">
           <button
-            class="flex items-center h-full mr-2 text-lg font-bold"
+            class="flex items-center h-full mr-2 text-lg font-bold text-body-1/60 hover:text-body-1 transition"
             @click="onSetSelectSection(null)"
           >
             <IconClose />
@@ -153,54 +153,58 @@ onMounted(() => {
       </article>
     </keep-alive>
   </Transition>
-    <section class="flex flex-col widget-main-menu bg-base-lvl-3">
-      <section class="w-[64px] h-[60px] bg-primary flex items-center justify-center">
-
-      </section>
-      <section class="flex flex-col">
+    <section class="flex flex-col widget-main-menu bg-base-lvl-3 border-l border-base pt-[60px]">
+      <section class="flex flex-col gap-1 px-2 py-3">
         <button
-          class="py-2 transition-colors"
           v-for="section in topSections"
-          :class="{ 'hover:bg-black/20': !section.disabled }"
+          :key="section.name + section.title"
+          class="group relative flex items-center justify-center h-10 w-10 mx-auto rounded-lg transition-all duration-150"
+          :class="[
+            applicationStore.selectedSection?.name === section.name
+              ? 'bg-primary/10 text-primary'
+              : 'text-body-1/60 hover:bg-base-lvl-2 hover:text-primary',
+            { 'opacity-40 cursor-not-allowed': section.disabled }
+          ]"
           :disabled="section.disabled"
           @click="onSetSelectSection(section)"
           :title="section.title"
+          :aria-label="section.title"
+          :aria-pressed="applicationStore.selectedSection?.name === section.name"
         >
           <span
-            class="inline-flex items-center justify-center w-10 py-2 mx-auto rounded-md text-secondary"
-            v-if="section.icon"
-            :class="{
-              'bg-primary-light': applicationStore.selectedSection && applicationStore.selectedSection.name == section.name,
-            }"
-          >
-            <component :is="section.icon" class="h-[18px]" />
-          </span>
-          <span v-else>
-            {{ section.label }}
-          </span>
+            v-if="applicationStore.selectedSection?.name === section.name"
+            class="absolute -left-2 top-1/2 -translate-y-1/2 h-5 w-1 rounded-r-full bg-primary"
+            aria-hidden="true"
+          />
+          <component v-if="section.icon" :is="section.icon" class="h-[18px] w-[18px]" />
+          <span v-else class="text-xs font-semibold">{{ section.label }}</span>
         </button>
       </section>
 
-      <section class="flex flex-col">
+      <section v-if="bottomSections.length" class="mt-auto flex flex-col gap-1 px-2 py-3 border-t border-base">
         <button
-          class="py-2 transition-colors text-secondary"
-          :class="{ 'hover:bg-black/20': !section.disabled }"
           v-for="section in bottomSections"
+          :key="section.name + section.title"
+          class="group relative flex items-center justify-center h-10 w-10 mx-auto rounded-lg transition-all duration-150"
+          :class="[
+            applicationStore.selectedSection?.name === section.name
+              ? 'bg-primary/10 text-primary'
+              : 'text-body-1/60 hover:bg-base-lvl-2 hover:text-primary',
+            { 'opacity-40 cursor-not-allowed': section.disabled }
+          ]"
           :disabled="section.disabled"
           @click="onSetSelectSection(section)"
+          :title="section.title"
+          :aria-label="section.title"
+          :aria-pressed="applicationStore.selectedSection?.name === section.name"
         >
           <span
-            class="inline-flex justify-center w-10 mx-auto rounded-md text-secondary hola"
-            v-if="section.icon"
-            :class="{
-              'bg-primary-light': applicationStore.selectedSection && applicationStore.selectedSection.name == section.name,
-            }"
-          >
-            <component :is="section.icon" class="text-secondary" />
-          </span>
-          <span v-else>
-            {{ section.label }}
-          </span>
+            v-if="applicationStore.selectedSection?.name === section.name"
+            class="absolute -left-2 top-1/2 -translate-y-1/2 h-5 w-1 rounded-r-full bg-primary"
+            aria-hidden="true"
+          />
+          <component v-if="section.icon" :is="section.icon" class="h-[18px] w-[18px]" />
+          <span v-else class="text-xs font-semibold">{{ section.label }}</span>
         </button>
       </section>
     </section>

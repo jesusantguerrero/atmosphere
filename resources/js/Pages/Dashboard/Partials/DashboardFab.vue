@@ -34,7 +34,7 @@ const openTransfer = () => {
 </script>
 
 <template>
-    <div ref="fabRef" class="fixed bottom-20 right-6 z-50 flex flex-col items-end gap-3">
+    <div ref="fabRef" class="fixed bottom-20 right-6 z-50 flex flex-col items-end gap-3 md:hidden">
         <!-- Action items (expanded state) -->
         <transition
             enter-active-class="transition-all duration-200 ease-out"

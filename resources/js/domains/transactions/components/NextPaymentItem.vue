@@ -37,20 +37,23 @@ const badgeConfig = computed(() => {
     if (level === 'critical') {
         return {
             text: 'Critical',
-            bgColor: 'bg-red-600',
+            classes: 'bg-red-50 text-red-700 ring-red-100',
+            dotColor: 'bg-red-500',
             icon: 'IMdiAlertCircle'
         };
     }
     if (level === 'notice') {
         return {
             text: 'Notice',
-            bgColor: 'bg-amber-500',
+            classes: 'bg-amber-50 text-amber-700 ring-amber-100',
+            dotColor: 'bg-amber-500',
             icon: 'IMdiAlert'
         };
     }
     return {
         text: 'Credit Card',
-        bgColor: 'bg-blue-500',
+        classes: 'bg-blue-50 text-blue-700 ring-blue-100',
+        dotColor: 'bg-blue-500',
         icon: 'IMdiCreditCard'
     };
 });
@@ -80,12 +83,12 @@ const borderBgConfig = computed(() => {
 const dateBadgeConfig = computed(() => {
     const level = urgencyLevel.value;
     if (level === 'critical') {
-        return 'text-red-700 bg-red-100 hover:bg-red-200';
+        return 'text-red-700 bg-red-50 ring-red-100 hover:bg-red-100/70';
     }
     if (level === 'notice') {
-        return 'text-amber-700 bg-amber-100 hover:bg-amber-200';
+        return 'text-amber-700 bg-amber-50 ring-amber-100 hover:bg-amber-100/70';
     }
-    return 'text-blue-700 bg-blue-100 hover:bg-blue-200';
+    return 'text-blue-700 bg-blue-50 ring-blue-100 hover:bg-blue-100/70';
 });
 </script>
 
@@ -104,38 +107,39 @@ const dateBadgeConfig = computed(() => {
                     <IMdiTrash />
                  </button>
             </slot>
-            <section class="flex-1">
-                <div class="flex items-center gap-2">
-                    <SectionTitle>
+            <section class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <SectionTitle class="tabular-nums">
                         <MoneyPresenter :value="payment.total" />
                     </SectionTitle>
                     <span
                         v-if="payment.type === 'credit_card_payment'"
-                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold text-white"
-                        :class="badgeConfig.bgColor"
+                        class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-semibold uppercase tracking-wide ring-1 ring-inset"
+                        :class="badgeConfig.classes"
                         :title="`${badgeConfig.text}${daysOverdue > 0 ? ` - ${daysOverdue} days overdue` : ''}`"
                     >
                         <component :is="badgeConfig.icon" class="w-3 h-3" />
                         {{ badgeConfig.text }}
                     </span>
                 </div>
-                <span class="text-sm text-body-1/80">
+                <span class="text-sm text-body-1/70 truncate block">
                     {{ payment.description }}
                 </span>
             </section>
         </section>
-        <section class="flex items-center">
+        <section class="flex items-center pl-2">
             <slot name="date">
-                <span
+                <button
+                    type="button"
                     title="Approve transaction"
-                    class="px-4 rounded-3xl py-1.5 text-xs cursor-pointer transition"
+                    class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium tabular-nums whitespace-nowrap ring-1 ring-inset transition cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     :class="payment.type === 'credit_card_payment'
                         ? dateBadgeConfig
-                        : 'text-secondary bg-secondary/10 hover:bg-secondary/20'"
+                        : 'text-body-1/70 bg-base-lvl-2 ring-base hover:bg-base-lvl-1 hover:text-body'"
                     @click="$emit('edit', payment)"
                 >
                     {{ formatDate(payment.date) }}
-                </span>
+                </button>
             </slot>
         </section>
     </article>

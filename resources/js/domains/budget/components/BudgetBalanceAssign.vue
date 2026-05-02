@@ -1,6 +1,6 @@
 <script lang="ts" setup>
     import { useForm } from "@inertiajs/vue3";
-    import { router } from "@inertiajs/vue3";
+    import { router, usePage } from "@inertiajs/vue3";
     import { computed, inject, ref } from "vue"
     import { NPopover, } from "naive-ui";
     // @ts-ignore
@@ -144,10 +144,13 @@
         showPopover.value = false;
     }
 
-    // ----- One-shot split: Ahorro / Gasto Personal -----
-    const findCategoryByName = (name: string) => {
+    // ----- One-shot split: configurable savings / spending defaults -----
+    const findCategoryById = (id: number | undefined | null) => {
+        if (!id) {
+            return null
+        }
         for (const group of categories.value || []) {
-            const found = group.subCategories?.find((c: any) => c.name === name)
+            const found = group.subCategories?.find((c: any) => c.id === id)
             if (found) {
                 return found
             }
@@ -155,10 +158,13 @@
         return null
     }
 
-    const splitTargets = computed(() => ({
-        savings: findCategoryByName('Ahorro'),
-        personal: findCategoryByName('Gasto Personal'),
-    }))
+    const splitTargets = computed(() => {
+        const defaults = (usePage().props.budgetDefaults || {}) as Record<string, number>
+        return {
+            savings: findCategoryById(defaults.savings),
+            personal: findCategoryById(defaults.spending),
+        }
+    })
 
     const canSplit = computed(() => Number(props.value) > 0
         && splitTargets.value.savings
@@ -300,7 +306,9 @@
 
                             <div class="space-y-3">
                                 <div>
-                                    <label class="block mb-1 text-xs font-medium text-gray-600">{{ $t('Ahorro') }}</label>
+                                    <label class="block mb-1 text-xs font-medium text-gray-600">
+                                        {{ splitTargets.savings?.name ?? $t('Savings') }}
+                                    </label>
                                     <div class="relative">
                                         <span class="absolute text-gray-400 -translate-y-1/2 left-3 top-1/2">$</span>
                                         <input
@@ -313,7 +321,9 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block mb-1 text-xs font-medium text-gray-600">{{ $t('Gasto Personal') }}</label>
+                                    <label class="block mb-1 text-xs font-medium text-gray-600">
+                                        {{ splitTargets.personal?.name ?? $t('Personal Spending') }}
+                                    </label>
                                     <div class="relative">
                                         <span class="absolute text-gray-400 -translate-y-1/2 left-3 top-1/2">$</span>
                                         <input

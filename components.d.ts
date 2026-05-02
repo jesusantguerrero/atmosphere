@@ -29,6 +29,7 @@ declare module 'vue' {
     IMdiEllipsisVertical: typeof import('~icons/mdi/ellipsis-vertical')['default']
     IMdiExport: typeof import('~icons/mdi/export')['default']
     IMdiFile: typeof import('~icons/mdi/file')['default']
+    IMdiFilePdfBox: typeof import('~icons/mdi/file-pdf-box')['default']
     IMdiFilter: typeof import('~icons/mdi/filter')['default']
     IMdiHistory: typeof import('~icons/mdi/history')['default']
     IMdiLink: typeof import('~icons/mdi/link')['default']
