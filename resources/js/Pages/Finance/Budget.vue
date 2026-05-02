@@ -83,6 +83,8 @@ const {
   setSelectedBudget,
 } = useBudget();
 
+provide("readyToAssign", readyToAssign);
+
 const panelSize = computed(() => {
   return !selectedBudget.value ? "large" : "large";
 });
