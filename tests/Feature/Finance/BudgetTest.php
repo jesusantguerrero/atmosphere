@@ -40,4 +40,14 @@ class BudgetTest extends TestCase
         $this->assertStringNotContainsString('TBB:', $content);
         $this->assertStringNotContainsString('updated month', $content);
     }
+
+    public function test_budgets_page_exposes_category_averages_prop(): void
+    {
+        $user = User::factory()->withPersonalTeam()->create();
+        $this->actingAs($user);
+
+        $this->get('/budgets')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->has('categoryAverages'));
+    }
 }

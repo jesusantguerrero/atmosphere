@@ -180,6 +180,7 @@ class FinancialOverviewController extends Controller
             $grouped[$detailTypeName]['accounts'][] = [
                 'id' => $account->id,
                 'name' => $account->name,
+                'bank_code' => $account->bank_code,
                 'currency_code' => $primaryCurrency,
                 'balance' => $primaryBalance,
                 'base_balance' => $baseBalance,
@@ -288,6 +289,7 @@ class FinancialOverviewController extends Controller
             foreach ($group['accounts'] as $account) {
                 $accountIndex[$account['id']] = [
                     'name' => $account['name'],
+                    'bank_code' => $account['bank_code'] ?? null,
                     'balance_in_quote' => ($account['quote_balance'] ?? 0) + ($account['base_in_quote'] ?? 0),
                 ];
             }
@@ -309,6 +311,7 @@ class FinancialOverviewController extends Controller
                 $linkedAccounts[] = [
                     'id' => (int) $accountId,
                     'name' => $accountIndex[$accountId]['name'],
+                    'bank_code' => $accountIndex[$accountId]['bank_code'],
                     'balance_in_quote' => $accountIndex[$accountId]['balance_in_quote'],
                 ];
                 $total += $accountIndex[$accountId]['balance_in_quote'];

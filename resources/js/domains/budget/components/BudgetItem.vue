@@ -44,11 +44,57 @@ const lastMonthAmount = computed(() => {
     return props.item.budgets?.at?.(2)?.budgeted ?? 0
 })
 
+const categoryAverages = computed<Record<number, number>>(() => {
+    return (usePage().props.categoryAverages || {}) as Record<number, number>
+})
+
+const averageAmount = computed<number>(() => {
+    const raw = categoryAverages.value[props.item.id]
+    return raw ? Number(raw) : 0
+})
+
+const showAveragePill = computed<boolean>(() => {
+    return averageAmount.value > 0 && Number(props.item.budgeted) === 0
+})
+
+const spentPercent = computed(() => {
+    const budgeted = Number(props.item.budgeted) || 0;
+    if (budgeted <= 0) {
+        return null;
+    }
+    const activity = Math.abs(Number(props.item.activity) || 0);
+    return Math.min(100, Math.round((activity / budgeted) * 100));
+});
+
+const overspentPercent = computed(() => {
+    const budgeted = Number(props.item.budgeted) || 0;
+    if (budgeted <= 0) {
+        return 0;
+    }
+    const activity = Math.abs(Number(props.item.activity) || 0);
+    return activity > budgeted ? Math.min(100, Math.round(((activity - budgeted) / budgeted) * 100)) : 0;
+});
+
+const progressBarClass = computed(() => {
+    const pct = spentPercent.value;
+    if (pct === null) {
+        return '';
+    }
+    if (overspentPercent.value > 0) {
+        return 'bg-error';
+    }
+    if (pct >= 90) {
+        return 'bg-warning';
+    }
+    return 'bg-success';
+});
+
 enum BudgetAssignOptions {
     Target = 'target',
     MatchAccount = 'matchAccount',
     Underfunded = 'underfunded',
     LastMonth = 'lastMonth',
+    Average = 'average',
     SetSavingsDefault = 'set_savings_default',
     SetSpendingDefault = 'set_spending_default',
     ClearDefaultRole = 'clear_default_role',
@@ -94,6 +140,11 @@ const assignOptions = computed(() => {
         hidden: !lastMonthAmount.value
     },
     {
+        name: BudgetAssignOptions.Average,
+        label: `Set 3-month avg (${formatMoney(averageAmount.value)})`,
+        hidden: !averageAmount.value
+    },
+    {
         name: 'clear',
         label: 'Clear',
     },
@@ -121,6 +172,11 @@ const setAmount = (amount: number) => {
     budgeted.value = amount;
 };
 
+const useAverage = () => {
+    setAmount(averageAmount.value);
+    onAssignBudget();
+};
+
 const setDefaultRole = (role: string | null) => {
     router.patch(`/budgets/${props.item.id}/default-role`, { role }, {
         preserveScroll: true,
@@ -143,6 +199,9 @@ const handleAssignOptions = (option: string) => {
       break;
     case BudgetAssignOptions.LastMonth:
       setAmount(lastMonthAmount.value);
+      break;
+    case BudgetAssignOptions.Average:
+      setAmount(averageAmount.value);
       break;
     case BudgetAssignOptions.SetSavingsDefault:
       setDefaultRole('savings');
@@ -253,6 +312,15 @@ const context = useAppContextStore();
                         </NDropdown>
                     </template>
                 </InputMoney>
+                <button
+                    v-if="showAveragePill"
+                    type="button"
+                    class="mt-1 px-2 py-0.5 text-[11px] leading-none rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition"
+                    :title="$t('Click to use this amount')"
+                    @click.stop="useAverage"
+                >
+                    {{ $t('Avg') }}: {{ formatMoney(averageAmount) }}
+                </button>
             </div>
             <ExpenseChartWidgetRow
                 :value="item.activity"
@@ -281,6 +349,13 @@ const context = useAppContextStore();
             </BalanceInput>
         </div>
     </section>
+    <div
+        v-if="spentPercent !== null"
+        class="relative w-full h-1 mt-1 overflow-hidden rounded-sm bg-base-lvl-2"
+        :title="`${spentPercent}% spent`"
+    >
+        <div class="absolute inset-y-0 left-0" :class="progressBarClass" :style="{ width: spentPercent + '%' }" />
+    </div>
 </div>
 </template>
 
