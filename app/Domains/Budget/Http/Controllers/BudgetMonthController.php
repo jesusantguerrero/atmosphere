@@ -45,6 +45,26 @@ class BudgetMonthController extends Controller
         return Redirect::back();
     }
 
+    public function copyFromPrevious(Request $request, BudgetMovementService $service, string $month)
+    {
+        $request->validate([
+            'overwrite' => ['sometimes', 'boolean'],
+        ]);
+
+        $result = $service->copyFromPrevious(
+            $request->user()->current_team_id,
+            $request->user()->id,
+            $month,
+            (bool) $request->boolean('overwrite'),
+        );
+
+        return Redirect::back()->with('flash', [
+            'type' => 'success',
+            'message' => "Copied {$result['copied']} categories from previous month",
+            'meta' => $result,
+        ]);
+    }
+
     public function split(Request $request, BudgetMovementService $service, Category $category, string $month)
     {
         $data = $request->validate([

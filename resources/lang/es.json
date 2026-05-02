@@ -234,5 +234,7 @@
     "Graph": "Gráfico",
     "Assigned": "Asignado",
     "Avg": "Promedio",
-    "Click to use this amount": "Click para usar este monto"
+    "Click to use this amount": "Click para usar este monto",
+    "Use last month's plan": "Usar plan del mes pasado",
+    "Copy budgeted amounts from last month": "Copia los montos presupuestados del mes anterior"
 }

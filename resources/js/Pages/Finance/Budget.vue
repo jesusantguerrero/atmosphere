@@ -125,6 +125,52 @@ const goToday = () => {
   executeSearchWithDelay();
 };
 
+const monthIsEmpty = computed(() => {
+    const groups = (categories.value ?? []) as any[];
+    for (const group of groups) {
+        for (const cat of group.subCategories ?? []) {
+            if (Number(cat.budgeted) > 0) {
+                return false;
+            }
+        }
+    }
+    return true;
+});
+
+const currentMonthIso = computed(() => {
+    const start = pageState.dates.startDate;
+    if (!start) {
+        return null;
+    }
+    const date = start instanceof Date ? start : new Date(start);
+    return startOfMonth(date).toISOString().slice(0, 10);
+});
+
+const copyFromPrevious = (overwrite: boolean = false) => {
+    if (!currentMonthIso.value) {
+        return;
+    }
+    if (!monthIsEmpty.value && !overwrite) {
+        const ok = window.confirm(
+            'This month already has a plan. Overwrite with last month\'s amounts?'
+        );
+        if (!ok) {
+            return;
+        }
+        overwrite = true;
+    }
+    router.post(
+        `/budgets/months/${currentMonthIso.value}/copy-from-previous`,
+        { overwrite },
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                router.reload({ only: ['budgets'] });
+            },
+        }
+    );
+};
+
 const toggleFilter = async (value: string) => {
     setBudgetFilter(value)
     const status = Object.keys(filters.value).find((key) => filters.value[key]) ?? "";
@@ -188,6 +234,15 @@ const budgetCsvExportUrl = computed(() => {
               :statuses="budgetStatus"
               @change="toggleFilter"
             />
+
+            <LogerButton
+                variant="inverse"
+                @click="copyFromPrevious(false)"
+                :title="$t('Copy budgeted amounts from last month')"
+            >
+                <IMdiContentCopy class="mr-1" />
+                {{ $t('Use last month\'s plan') }}
+            </LogerButton>
 
             <LogerButton variant="inverse" @click="goToday"> {{ $t('Today') }} </LogerButton>
 

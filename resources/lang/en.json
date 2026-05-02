@@ -234,5 +234,7 @@
     "Graph": "Graph",
     "Assigned": "Assigned",
     "Avg": "Avg",
-    "Click to use this amount": "Click to use this amount"
+    "Click to use this amount": "Click to use this amount",
+    "Use last month's plan": "Use last month's plan",
+    "Copy budgeted amounts from last month": "Copy budgeted amounts from last month"
 }
