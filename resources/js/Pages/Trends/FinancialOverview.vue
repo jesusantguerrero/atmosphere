@@ -11,7 +11,8 @@ import { trendOptions } from "./Partials/trendOptions";
 import { formatMoney } from "@/utils";
 
 interface AccountEntry {
-    id: number; name: string; currency_code: string; balance: number;
+    id: number; name: string; bank_code: string | null;
+    currency_code: string; balance: number;
     base_balance: number | null; quote_balance: number | null;
     base_in_quote: number | null; is_multi_currency: boolean;
 }
@@ -19,7 +20,7 @@ interface AccountGroup {
     group: string; accounts: AccountEntry[];
     subtotals: { base: number; quote: number; base_in_quote: number };
 }
-interface LinkedAccount { id: number; name: string; balance_in_quote: number; }
+interface LinkedAccount { id: number; name: string; bank_code: string | null; balance_in_quote: number; }
 interface Goal {
     id: string; name: string; target_amount: number; current_balance: number;
     linked_accounts: LinkedAccount[];
@@ -236,9 +237,11 @@ async function saveExchangeRate() {
                                                 <span
                                                     v-for="acc in goal.linked_accounts"
                                                     :key="acc.id"
-                                                    class="inline-flex items-center gap-1 text-[11px] leading-none px-2 py-1 rounded-full bg-primary/10 text-primary max-w-[160px]"
+                                                    class="inline-flex items-center gap-1 text-[11px] leading-none px-2 py-1 rounded-full bg-primary/10 text-primary max-w-[200px]"
                                                 >
-                                                    <span class="truncate">{{ acc.name }}</span>
+                                                    <span class="truncate">
+                                                        {{ acc.name }}<span v-if="acc.bank_code" class="opacity-60"> · {{ acc.bank_code }}</span>
+                                                    </span>
                                                     <button class="opacity-50 hover:opacity-100 hover:text-red-400 transition flex-shrink-0" @click="toggleGoalAccountLink(goal, acc.id)" title="Unlink">
                                                         <IMdiClose class="text-[10px]" />
                                                     </button>
@@ -332,7 +335,9 @@ async function saveExchangeRate() {
                                             class="border-b border-base hover:bg-base-lvl-1/50 transition cursor-pointer"
                                             @click="router.visit(`/finance/accounts/${account.id}`)"
                                         >
-                                            <td class="px-5 py-2 text-body pl-8">{{ account.name }}</td>
+                                            <td class="px-5 py-2 text-body pl-8">
+                                                {{ account.name }}<span v-if="account.bank_code" class="ml-1.5 text-xs text-body-1/60">· {{ account.bank_code }}</span>
+                                            </td>
                                             <td class="px-5 py-2 text-right tabular-nums">
                                                 <span v-if="account.base_balance !== null">{{ formatMoney(account.base_balance, baseCurrency) }}</span>
                                             </td>

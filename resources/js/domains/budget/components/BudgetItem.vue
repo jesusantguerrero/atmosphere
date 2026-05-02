@@ -44,6 +44,38 @@ const lastMonthAmount = computed(() => {
     return props.item.budgets?.at?.(2)?.budgeted ?? 0
 })
 
+const spentPercent = computed(() => {
+    const budgeted = Number(props.item.budgeted) || 0;
+    if (budgeted <= 0) {
+        return null;
+    }
+    const activity = Math.abs(Number(props.item.activity) || 0);
+    return Math.min(100, Math.round((activity / budgeted) * 100));
+});
+
+const overspentPercent = computed(() => {
+    const budgeted = Number(props.item.budgeted) || 0;
+    if (budgeted <= 0) {
+        return 0;
+    }
+    const activity = Math.abs(Number(props.item.activity) || 0);
+    return activity > budgeted ? Math.min(100, Math.round(((activity - budgeted) / budgeted) * 100)) : 0;
+});
+
+const progressBarClass = computed(() => {
+    const pct = spentPercent.value;
+    if (pct === null) {
+        return '';
+    }
+    if (overspentPercent.value > 0) {
+        return 'bg-error';
+    }
+    if (pct >= 90) {
+        return 'bg-warning';
+    }
+    return 'bg-success';
+});
+
 enum BudgetAssignOptions {
     Target = 'target',
     MatchAccount = 'matchAccount',
@@ -281,6 +313,13 @@ const context = useAppContextStore();
             </BalanceInput>
         </div>
     </section>
+    <div
+        v-if="spentPercent !== null"
+        class="relative w-full h-1 mt-1 overflow-hidden rounded-sm bg-base-lvl-2"
+        :title="`${spentPercent}% spent`"
+    >
+        <div class="absolute inset-y-0 left-0" :class="progressBarClass" :style="{ width: spentPercent + '%' }" />
+    </div>
 </div>
 </template>
 
