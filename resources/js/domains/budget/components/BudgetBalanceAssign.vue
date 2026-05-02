@@ -181,7 +181,10 @@
         showSplitPopover.value = true
     }
 
+    const splitError = ref<string | null>(null)
+
     const submitSplit = () => {
+        splitError.value = null
         if (!canSplit.value || splitTotal.value <= 0 || splitExceedsAvailable.value) {
             return
         }
@@ -200,6 +203,10 @@
                 showSplitPopover.value = false
                 splitForm.reset()
                 router.reload({ preserveScroll: true })
+            },
+            onError(errors) {
+                const first = Object.values(errors)[0]
+                splitError.value = (Array.isArray(first) ? first[0] : first) || 'Request failed'
             },
         })
     }
@@ -285,14 +292,23 @@
                             >
                                 {{ $t('Total exceeds available amount') }}
                             </p>
+                            <p
+                                v-if="splitError"
+                                class="text-xs text-error"
+                            >
+                                {{ splitError }}
+                            </p>
                             <div class="flex items-center justify-end space-x-2">
-                                <AtButton class="text-body-1" @click="showSplitPopover = false">
+                                <AtButton
+                                    class="text-body-1"
+                                    @click.stop="showSplitPopover = false"
+                                >
                                     {{ $t('Cancel') }}
                                 </AtButton>
                                 <AtButton
                                     class="text-white rounded-md bg-success"
-                                    :disabled="splitExceedsAvailable || splitTotal <= 0"
-                                    @click="submitSplit"
+                                    :disabled="splitExceedsAvailable || splitTotal <= 0 || splitForm.processing"
+                                    @click.stop="submitSplit"
                                 >
                                     {{ $t('Save') }}
                                 </AtButton>

@@ -23,11 +23,12 @@
         photo: null,
     });
 
+    const photo = ref<HTMLInputElement | null>(null);
     const photoPreview = ref(null);
 
     const updateProfileInformation = () => {
-        if (photo.value) {
-            form.photo.value = photo.value.files[0]
+        if (photo.value?.files?.[0]) {
+            form.photo = photo.value.files[0]
         }
 
         form.post(route('user-profile-information.update'), {
