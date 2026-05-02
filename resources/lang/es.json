@@ -1,5 +1,30 @@
 {
     "appName": "Loger",
+    "creditCardTools": {
+        "title": "Tarjetas de crédito"
+    },
+    "accountTools": {
+        "title": "Cuentas"
+    },
+    "watchlistTools": {
+        "title": "Seguimiento"
+    },
+    "listTools": {
+        "title": "Lista de compras"
+    },
+    "Language": "Idioma",
+    "Available modules": "Módulos disponibles",
+    "Enable only the modules you want to see in the navigation.": "Habilita sólo los módulos que quieres ver en la navegación.",
+    "After scheduled": "Después de pagos",
+    "Scheduled this period": "Pagos programados",
+    "Allocate leftover": "Asignar sobrante",
+    "Available": "Disponible",
+    "Ahorro": "Ahorro",
+    "Gasto Personal": "Gasto personal",
+    "Total exceeds available amount": "El total excede el monto disponible",
+    "Unassigned": "Sin asignar",
+    "All to Savings": "Todo a Ahorro",
+    "All to Spending": "Todo a Gasto",
     "Home": "Inicio",
     "Meal Planner": "Planificador",
     "Finance": "Finanzas",

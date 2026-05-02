@@ -4,6 +4,7 @@
     import DeleteUserForm from './DeleteUserForm.vue'
     import LogoutOtherBrowserSessionsForm from './LogoutOtherBrowserSessionsForm.vue'
     import TwoFactorAuthenticationForm from './TwoFactorAuthenticationForm.vue'
+    import UpdateModulesForm from './UpdateModulesForm.vue'
     import UpdatePasswordForm from './UpdatePasswordForm.vue'
     import UpdateProfileInformationForm from './UpdateProfileInformationForm.vue'
     import SettingsSectionNav from '@/Components/templates/SettingsSectionNav.vue'
@@ -28,6 +29,8 @@
                     v-if="$page.props.jetstream.canUpdateProfileInformation"
                     :user="$page.props.auth.user"
                 />
+
+                <UpdateModulesForm class="mt-10 sm:mt-0" />
 
                 <UpdatePasswordForm
                     v-if="$page.props.jetstream.canUpdatePassword"

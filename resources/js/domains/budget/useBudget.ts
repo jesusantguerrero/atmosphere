@@ -5,6 +5,9 @@ import { getCategoriesTotals, getGroupTotals, InflowCategories } from './index';
 import { IBudgetCategory } from "./models/budget";
 import { format } from "date-fns";
 import axios from "axios";
+import { router } from "@inertiajs/vue3";
+
+const reloadBudgets = () => router.reload({ only: ['budgets'], preserveScroll: true });
 
 
 interface IFilterGroups {
@@ -156,7 +159,9 @@ const parseAvailable = (budgetData: any[]) => {
         ...group,
         subCategories: group.subCategories.map(subCat => ({
             ...subCat,
-            available: subCat.account_id ? subCat.available : parseFloat(subCat.budgeted ?? 0) + parseFloat(subCat.left_from_last_month ?? 0) -  Math.abs(parseFloat(subCat.activity))
+            available: (subCat.account_id || subCat.display_id === 'ready_to_assign')
+                ? subCat.available
+                : parseFloat(subCat.budgeted ?? 0) + parseFloat(subCat.left_from_last_month ?? 0) -  Math.abs(parseFloat(subCat.activity))
         }))
     }))
 }
@@ -246,7 +251,7 @@ export const useBudget = (budgets: Ref<Record<string, any>>) => {
             id: assign.category.id,
             budgeted: assign.budgeted,
             date: format(new Date(), 'yyyy-MM-dd')
-        });
+        }).then(reloadBudgets);
 
         const source = BudgetState.categories.find( cat => cat.name == InflowCategories.READY_TO_ASSIGN);
         const destination = assign.category;
@@ -283,7 +288,7 @@ export const useBudget = (budgets: Ref<Record<string, any>>) => {
                 destination_category_id: movementData.destinationCategoryId,
                 type: 'movement',
                 date: movementData.date
-            });
+            }).then(reloadBudgets);
 
             const sourceCategory = BudgetState.categories.find( cat => cat.id == movementData.sourceCategoryId);
             const destinationCategory = BudgetState.categories.find( cat => cat.id == movementData.destinationCategoryId);

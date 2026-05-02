@@ -28,8 +28,14 @@
         toAssign: {
             type: Object,
             required: true
+        },
+        scheduledTotal: {
+            type: Number,
+            default: 0
         }
     })
+
+    const afterScheduled = computed(() => Number(props.value ?? 0) - Number(props.scheduledTotal ?? 0))
 
     const theme = {
         good: 'bg-success/80 text-white',
@@ -125,7 +131,9 @@
             children: item.subCategories.map(category => ({
                 value: category.id,
                 label: category.name,
-                available: category.available || 0,
+                available: category.display_id === 'ready_to_assign'
+                    ? Number(props.toAssign?.balance ?? 0)
+                    : (category.available || 0),
             }))
         }))
     })
@@ -134,6 +142,83 @@
     const clear = () => {
         form.reset();
         showPopover.value = false;
+    }
+
+    // ----- One-shot split: Ahorro / Gasto Personal -----
+    const findCategoryByName = (name: string) => {
+        for (const group of categories.value || []) {
+            const found = group.subCategories?.find((c: any) => c.name === name)
+            if (found) {
+                return found
+            }
+        }
+        return null
+    }
+
+    const splitTargets = computed(() => ({
+        savings: findCategoryByName('Ahorro'),
+        personal: findCategoryByName('Gasto Personal'),
+    }))
+
+    const canSplit = computed(() => Number(props.value) > 0
+        && splitTargets.value.savings
+        && splitTargets.value.personal
+    )
+
+    const splitForm = useForm({
+        savings_amount: 0,
+        personal_amount: 0,
+    })
+
+    const splitTotal = computed(() => Number(splitForm.savings_amount || 0) + Number(splitForm.personal_amount || 0))
+
+    const splitRemaining = computed(() => Number(props.value || 0) - splitTotal.value)
+
+    const splitExceedsAvailable = computed(() => splitTotal.value > Number(props.value || 0))
+
+    const presetSplit = (savingsRatio: number, personalRatio: number) => {
+        const total = Number(props.value || 0)
+        splitForm.savings_amount = Math.round(total * savingsRatio * 100) / 100
+        splitForm.personal_amount = Math.round(total * personalRatio * 100) / 100
+    }
+
+    const showSplitPopover = ref(false)
+
+    const openSplit = () => {
+        const half = Math.round((Number(props.value || 0) / 2) * 100) / 100
+        splitForm.savings_amount = half
+        splitForm.personal_amount = Number(props.value || 0) - half
+        showSplitPopover.value = true
+    }
+
+    const splitError = ref<string | null>(null)
+
+    const submitSplit = () => {
+        splitError.value = null
+        if (!canSplit.value || splitTotal.value <= 0 || splitExceedsAvailable.value) {
+            return
+        }
+        const month = format(startOfMonth(pageState?.dates?.endDate), 'yyyy-MM-dd')
+        const sourceId = props.category.id
+
+        splitForm.transform(() => ({
+            date: month,
+            splits: [
+                { destination_category_id: splitTargets.value.savings.id, amount: Number(splitForm.savings_amount) },
+                { destination_category_id: splitTargets.value.personal.id, amount: Number(splitForm.personal_amount) },
+            ].filter(s => s.amount > 0),
+        })).post(`/budgets/${sourceId}/months/${month}/split`, {
+            preserveScroll: true,
+            onSuccess() {
+                showSplitPopover.value = false
+                splitForm.reset()
+                router.reload({ preserveScroll: true })
+            },
+            onError(errors) {
+                const first = Object.values(errors)[0]
+                splitError.value = (Array.isArray(first) ? first[0] : first) || 'Request failed'
+            },
+        })
     }
 </script>
 
@@ -149,8 +234,14 @@
                     <slot name="top" />
                     <header class="flex w-full ">
                         <section class="w-full h-10 " />
-                        <h4 class="flex items-center justify-center w-full mt-0 text-lg font-bold text-center">
-                             {{ formatter(value) }}
+                        <h4 class="flex flex-col items-center justify-center w-full mt-0 font-bold text-center">
+                            <span class="text-lg">{{ formatter(value) }}</span>
+                            <span
+                                v-if="scheduledTotal > 0"
+                                class="text-xs font-normal opacity-80"
+                            >
+                                {{ $t('After scheduled') }}: {{ formatter(afterScheduled) }}
+                            </span>
                         </h4>
                         <BudgetProgress
                             class="text-center rounded-lg "
@@ -168,6 +259,105 @@
                     <small class="mb-4">
                         {{ description }}
                     </small>
+
+                    <NPopover
+                        v-if="canSplit"
+                        v-model:show="showSplitPopover"
+                        placement="bottom"
+                        trigger="click"
+                    >
+                        <template #trigger>
+                            <AtButton
+                                class="mb-3 text-white rounded-md bg-black/30"
+                                @click.stop="openSplit"
+                            >
+                                {{ $t('Allocate leftover') }}
+                            </AtButton>
+                        </template>
+                        <div class="w-80 md:w-96 space-y-4 text-gray-800">
+                            <div class="flex items-center justify-between pb-2 border-b border-gray-200">
+                                <span class="text-sm font-medium text-gray-600">{{ $t('Available') }}</span>
+                                <span class="text-base font-bold text-success">{{ formatter(value) }}</span>
+                            </div>
+
+                            <div class="grid grid-cols-3 gap-2">
+                                <button
+                                    type="button"
+                                    class="px-2 py-1.5 text-xs font-medium rounded-md border border-gray-200 hover:bg-gray-50 hover:border-primary"
+                                    @click.stop="presetSplit(0.5, 0.5)"
+                                >50 / 50</button>
+                                <button
+                                    type="button"
+                                    class="px-2 py-1.5 text-xs font-medium rounded-md border border-gray-200 hover:bg-gray-50 hover:border-primary"
+                                    @click.stop="presetSplit(1, 0)"
+                                >{{ $t('All to Savings') }}</button>
+                                <button
+                                    type="button"
+                                    class="px-2 py-1.5 text-xs font-medium rounded-md border border-gray-200 hover:bg-gray-50 hover:border-primary"
+                                    @click.stop="presetSplit(0, 1)"
+                                >{{ $t('All to Spending') }}</button>
+                            </div>
+
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block mb-1 text-xs font-medium text-gray-600">{{ $t('Ahorro') }}</label>
+                                    <div class="relative">
+                                        <span class="absolute text-gray-400 -translate-y-1/2 left-3 top-1/2">$</span>
+                                        <input
+                                            v-model.number="splitForm.savings_amount"
+                                            type="number"
+                                            min="0"
+                                            step="0.01"
+                                            class="w-full py-2 pl-7 pr-3 text-gray-800 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block mb-1 text-xs font-medium text-gray-600">{{ $t('Gasto Personal') }}</label>
+                                    <div class="relative">
+                                        <span class="absolute text-gray-400 -translate-y-1/2 left-3 top-1/2">$</span>
+                                        <input
+                                            v-model.number="splitForm.personal_amount"
+                                            type="number"
+                                            min="0"
+                                            step="0.01"
+                                            class="w-full py-2 pl-7 pr-3 text-gray-800 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between pt-2 text-sm border-t border-gray-200">
+                                <span class="text-gray-600">{{ $t('Unassigned') }}</span>
+                                <span
+                                    class="font-bold"
+                                    :class="Math.abs(splitRemaining) < 0.01 ? 'text-success' : splitRemaining < 0 ? 'text-error' : 'text-warning'"
+                                >
+                                    {{ formatter(splitRemaining) }}
+                                </span>
+                            </div>
+
+                            <p v-if="splitError" class="text-xs text-error">{{ splitError }}</p>
+
+                            <div class="flex items-center justify-end pt-2 space-x-2">
+                                <button
+                                    type="button"
+                                    class="px-4 py-2 text-sm text-gray-600 rounded-md hover:text-gray-900 hover:bg-gray-100"
+                                    @click.stop="showSplitPopover = false"
+                                >
+                                    {{ $t('Cancel') }}
+                                </button>
+                                <button
+                                    type="button"
+                                    class="px-4 py-2 text-sm font-medium text-white rounded-md bg-success hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    :disabled="splitExceedsAvailable || splitTotal <= 0 || splitForm.processing"
+                                    @click.stop="submitSplit"
+                                >
+                                    {{ $t('Save') }}
+                                </button>
+                            </div>
+                        </div>
+                    </NPopover>
 
                     <NPopover v-if="isOverspent"  placement="bottom" trigger="click">
                         <template #trigger>
@@ -189,8 +379,15 @@
                                 >
                                     <template v-slot:option="{ option }">
                                         <div class="flex justify-between text-sm group md:text-base">
-                                            <span class="">{{ option.label || option.$groupLabel }}</span>
-                                            <span class="text-success group-hover:text-white" v-if="option.available">{{ formatMoney(option.available) }}</span>
+                                            <span :class="option.$groupLabel ? 'text-gray-500 font-bold' : 'text-gray-800'">
+                                                {{ option.label || option.$groupLabel }}
+                                            </span>
+                                            <span
+                                                v-if="option.available !== undefined && option.available !== null && option.available !== 0"
+                                                :class="option.available > 0 ? 'text-success group-hover:text-white' : 'text-error group-hover:text-white'"
+                                            >
+                                                {{ formatMoney(option.available) }}
+                                            </span>
                                         </div>
                                 </template>
                                 </Multiselect>
@@ -207,6 +404,8 @@
                 <p>From last month: <MoneyPresenter :value="toAssign.movedFromLastMonth"/> </p>
                 <p>Inflow: <MoneyPresenter :value="toAssign.availableForFunding"/> </p>
                 <p>left over: <MoneyPresenter :value="toAssign.leftOver"/> </p>
+                <p>{{ $t('Scheduled this period') }}: <MoneyPresenter :value="scheduledTotal"/> </p>
+                <p class="text-blue-300">{{ $t('After scheduled') }}: <MoneyPresenter :value="afterScheduled"/> </p>
                 <p class="text-green-300">Total Available: <MoneyPresenter :value="toAssign.availableForFunding + toAssign.leftOver + toAssign.movedFromLastMonth"/> </p>
                 <p class="text-green-500">Total to budget: <MoneyPresenter :value="toAssign.availableForFunding + toAssign.leftOver"/> </p>
                 <p>Budgeted: <MoneyPresenter :value="toAssign.budgeted"/> </p>

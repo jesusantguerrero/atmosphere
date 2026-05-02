@@ -56,7 +56,7 @@ const options = [{
     label: 'Delete'
 }, {
     name: 'transactions',
-    label: 'Transactionss'
+    label: 'Transactions'
 }]
 
 const removeCategory = () => {

@@ -92,7 +92,10 @@
     })
 
     const categories = inject('categories', ref([]))
+    const readyToAssignInfo = inject('readyToAssign', ref({ balance: 0 }))
+
     const categoryOptions = computed(() => {
+        const rtaBalance = Number(readyToAssignInfo.value?.balance ?? 0)
         return categories.value?.map?.(item => ({
             value: item.id,
             key: item.id,
@@ -101,7 +104,9 @@
             children: item.subCategories?.map?.(category => ({
                 value: category.id,
                 label: category.name,
-                available: category.available || 0,
+                available: category.display_id === 'ready_to_assign'
+                    ? rtaBalance
+                    : (category.available || 0),
             })).filter((category: ICategory) => !hasAvailable.value ? category.available > 0 : true) ?? []
         })) ?? []
     })
@@ -153,7 +158,9 @@
                 >
                     <template v-slot:option="{ option }">
                         <div class="flex justify-between text-sm group md:text-base">
-                            <span class="text-body-1/80" :class="{'font-bold': option.$groupLabel }">{{ option.label || option.$groupLabel }}</span>
+                            <span :class="option.$groupLabel ? 'text-gray-500 font-bold' : 'text-gray-800'">
+                                {{ option.label || option.$groupLabel }}
+                            </span>
                             <span class="font-bold text-secondary" v-if="option.available">
                                 {{ formatMoney(option.available) }}</span>
                         </div>
@@ -174,7 +181,9 @@
                 >
                     <template v-slot:option="{ option }">
                         <div class="flex justify-between text-sm group md:text-base">
-                            <span class="text-body-1/80" :class="{'font-bold': option.$groupLabel }">{{ option.label || option.$groupLabel }}</span>
+                            <span :class="option.$groupLabel ? 'text-gray-500 font-bold' : 'text-gray-800'">
+                                {{ option.label || option.$groupLabel }}
+                            </span>
                             <span class="font-bold text-secondary" v-if="option.available">{{ formatMoney(option.available) }}</span>
                         </div>
                     </template>

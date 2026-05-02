@@ -18,13 +18,14 @@ use App\Http\Controllers\Finance\FinanceTrendController;
 use App\Http\Controllers\Finance\FinancialOverviewController;
 use App\Http\Controllers\NextPaymentsController;
 use App\Http\Controllers\Relationship\RelationshipController;
+use App\Http\Controllers\System\CoreModuleController;
 use App\Http\Controllers\System\DashboardController;
 use App\Http\Controllers\System\NotificationController;
+use App\Http\Controllers\System\OnboardingController;
 use App\Http\Controllers\System\ServiceController;
 use App\Http\Controllers\System\TeamInvitationController;
 use App\Http\Controllers\System\UserDeviceController;
 use Freesgen\Atmosphere\Http\Controllers\SettingsController;
-use Freesgen\Atmosphere\Http\OnboardingController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
 
@@ -101,6 +102,8 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
         Route::get('/settings/tab/{tabName}', 'index');
         Route::get('/settings/{name}', 'section');
     });
+
+    Route::patch('/user/modules', [CoreModuleController::class, 'update'])->name('user.modules.update');
 
     Route::controller(NotificationController::class)->group(function () {
         Route::get('/notifications', 'index')->name('notifications');

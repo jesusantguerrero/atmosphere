@@ -45,6 +45,26 @@ class BudgetMonthController extends Controller
         return Redirect::back();
     }
 
+    public function split(Request $request, BudgetMovementService $service, Category $category, string $month)
+    {
+        $data = $request->validate([
+            'date' => ['required', 'date'],
+            'splits' => ['required', 'array', 'min:1'],
+            'splits.*.destination_category_id' => ['required', 'integer', 'exists:categories,id'],
+            'splits.*.amount' => ['required', 'numeric', 'min:0.01'],
+        ]);
+
+        $service->registerSplit(
+            $request->user()->current_team_id,
+            $request->user()->id,
+            $category->id,
+            $data['date'],
+            $data['splits'],
+        );
+
+        return Redirect::back();
+    }
+
     public function import(Request $request)
     {
         Excel::import(new BudgetImport($request->user()), $request->file('file'));
