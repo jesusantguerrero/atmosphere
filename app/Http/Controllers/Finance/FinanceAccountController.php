@@ -100,6 +100,25 @@ class FinanceAccountController extends InertiaController
         $bankConnectionService->linkAccountToBank($account, $data['bank_code'], $data['integration_id']);
     }
 
+    public function updateBankCode(Account $account, Request $request): RedirectResponse
+    {
+        abort_unless(
+            $request->user()->belongsToTeam($account->team),
+            403,
+            'You do not own this account.'
+        );
+
+        $data = $request->validate([
+            'bank_code' => ['nullable', 'string', 'max:64'],
+        ]);
+
+        $account->update([
+            'bank_code' => $data['bank_code'] ? trim($data['bank_code']) : null,
+        ]);
+
+        return back();
+    }
+
     public function syncEmails(Account $account, Request $request): RedirectResponse
     {
         $this->authorize('update', $account);

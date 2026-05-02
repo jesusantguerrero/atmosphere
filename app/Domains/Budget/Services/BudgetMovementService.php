@@ -114,6 +114,69 @@ class BudgetMovementService
     }
 
     /**
+     * Copy each category's `budgeted` from the previous month to a target month using the same
+     * assignment primitive the per-row input uses, so rollover recomputation stays consistent.
+     *
+     * @return array{copied:int, skipped:int}
+     */
+    public function copyFromPrevious(int $teamId, int $userId, string $targetMonth, bool $overwrite = false): array
+    {
+        $previousMonth = Carbon::createFromFormat('Y-m-d', $targetMonth)
+            ->subMonthNoOverflow()
+            ->startOfMonth()
+            ->format('Y-m-d');
+
+        $reserved = array_map(fn (BudgetReservedNames $n) => $n->value, BudgetReservedNames::cases());
+
+        $previousRows = BudgetMonth::query()
+            ->where('budget_months.team_id', $teamId)
+            ->where('budget_months.month', $previousMonth)
+            ->where('budget_months.budgeted', '>', 0)
+            ->join('categories', 'categories.id', 'budget_months.category_id')
+            ->whereNotIn('categories.name', $reserved)
+            ->select('budget_months.category_id', 'budget_months.budgeted')
+            ->get();
+
+        $copied = 0;
+        $skipped = 0;
+
+        foreach ($previousRows as $row) {
+            $existing = BudgetMonth::where([
+                'team_id' => $teamId,
+                'category_id' => $row->category_id,
+                'month' => $targetMonth,
+            ])->first();
+
+            $current = (float) ($existing?->budgeted ?? 0);
+            $target = (float) $row->budgeted;
+
+            if ($current > 0 && ! $overwrite) {
+                $skipped++;
+
+                continue;
+            }
+
+            if (abs($current - $target) < 0.01) {
+                $skipped++;
+
+                continue;
+            }
+
+            $this->registerAssignment(new BudgetAssignData(
+                $teamId,
+                $userId,
+                $targetMonth,
+                $row->category_id,
+                $target,
+            ));
+
+            $copied++;
+        }
+
+        return ['copied' => $copied, 'skipped' => $skipped];
+    }
+
+    /**
      * Distribute an amount from one source category across multiple destinations in a single transaction.
      *
      * @param  array<int, array{destination_category_id:int, amount:float}>  $splits
