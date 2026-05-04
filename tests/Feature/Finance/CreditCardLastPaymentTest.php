@@ -212,4 +212,60 @@ class CreditCardLastPaymentTest extends TestCase
         $service = new CreditCardReportService;
         $this->assertNull($service->getLastPayment($user->current_team_id, $card->id));
     }
+
+    public function test_batch_returns_last_payment_per_card(): void
+    {
+        [$user, $cardA, $bank] = $this->newUserWithAccounts();
+        $teamId = $user->current_team_id;
+
+        // Second card in the same team
+        $bankType = AccountDetailType::where('name', AccountDetailType::BANK)->value('id');
+        $creditCardType = AccountDetailType::where('name', AccountDetailType::CREDIT_CARD)->value('id');
+        $cardB = Account::create([
+            'team_id' => $teamId,
+            'user_id' => $user->id,
+            'name' => 'Mastercard Black',
+            'currency_code' => 'DOP',
+            'account_detail_type_id' => $creditCardType,
+            'credit_closing_day' => 20,
+            'credit_limit' => 80000,
+        ]);
+
+        $this->recordPayment($teamId, $user->id, $bank, $cardA, '2026-04-10', 1000.00);
+        $this->recordPayment($teamId, $user->id, $bank, $cardA, '2026-04-25', 2500.00);
+        $this->recordPayment($teamId, $user->id, $bank, $cardB, '2026-04-22', 4000.00);
+
+        $service = new CreditCardReportService;
+        $payments = $service->getLastPaymentsForAccounts($teamId, [$cardA->id, $cardB->id]);
+
+        $this->assertArrayHasKey($cardA->id, $payments);
+        $this->assertArrayHasKey($cardB->id, $payments);
+        $this->assertSame('2026-04-25', $payments[$cardA->id]['date']);
+        $this->assertSame(2500.00, $payments[$cardA->id]['amount']);
+        $this->assertSame('2026-04-22', $payments[$cardB->id]['date']);
+        $this->assertSame(4000.00, $payments[$cardB->id]['amount']);
+    }
+
+    public function test_batch_omits_cards_with_no_payments(): void
+    {
+        [$user, $cardA, $bank] = $this->newUserWithAccounts();
+        $teamId = $user->current_team_id;
+
+        $creditCardType = AccountDetailType::where('name', AccountDetailType::CREDIT_CARD)->value('id');
+        $cardWithoutPayments = Account::create([
+            'team_id' => $teamId,
+            'user_id' => $user->id,
+            'name' => 'Unused card',
+            'currency_code' => 'DOP',
+            'account_detail_type_id' => $creditCardType,
+        ]);
+
+        $this->recordPayment($teamId, $user->id, $bank, $cardA, '2026-04-10', 1000.00);
+
+        $service = new CreditCardReportService;
+        $payments = $service->getLastPaymentsForAccounts($teamId, [$cardA->id, $cardWithoutPayments->id]);
+
+        $this->assertArrayHasKey($cardA->id, $payments);
+        $this->assertArrayNotHasKey($cardWithoutPayments->id, $payments);
+    }
 }

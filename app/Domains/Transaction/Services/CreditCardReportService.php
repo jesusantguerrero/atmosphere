@@ -381,6 +381,62 @@ class CreditCardReportService
         ];
     }
 
+    /**
+     * Batch version of getLastPayment — returns a map [accountId => payment|null] for
+     * a set of credit card account IDs. Same "true payment" definition as the single
+     * version: source must be a cash/bank-type Loger account.
+     *
+     * Pulls all matching lines in one query and reduces in PHP. For a typical dashboard
+     * (handful of cards × years of payments) that's well below thousands of rows; if it
+     * ever becomes slow, swap for a windowed subquery limited to the latest row per
+     * account_id.
+     *
+     * @param  array<int>  $accountIds
+     * @return array<int, array{date: string, amount: float, source_account: ?string, is_linked: bool}>
+     */
+    public function getLastPaymentsForAccounts(int $teamId, array $accountIds): array
+    {
+        if (empty($accountIds)) {
+            return [];
+        }
+
+        $rows = DB::table('transaction_lines as tl')
+            ->join('transactions as t', 'tl.transaction_id', '=', 't.id')
+            ->join('accounts as src', 'src.id', '=', 't.account_id')
+            ->join('account_detail_types as srcType', 'srcType.id', '=', 'src.account_detail_type_id')
+            ->where('tl.team_id', $teamId)
+            ->whereIn('tl.account_id', $accountIds)
+            ->where('tl.type', 1)
+            ->where('t.status', 'verified')
+            ->whereColumn('t.account_id', '!=', 'tl.account_id')
+            ->whereIn('srcType.name', AccountDetailType::ALL_CASH)
+            ->orderByDesc('tl.date')
+            ->orderByDesc('tl.id')
+            ->select([
+                'tl.account_id',
+                'tl.date',
+                'tl.amount',
+                'src.name as source_account_name',
+                't.transactionable_type',
+            ])
+            ->get();
+
+        $byAccount = [];
+        foreach ($rows as $row) {
+            // Collection is already sorted desc; first row wins per account_id.
+            if (! isset($byAccount[$row->account_id])) {
+                $byAccount[$row->account_id] = [
+                    'date' => $row->date,
+                    'amount' => (float) $row->amount,
+                    'source_account' => $row->source_account_name,
+                    'is_linked' => ! empty($row->transactionable_type),
+                ];
+            }
+        }
+
+        return $byAccount;
+    }
+
     public function getUnlinkedPayments($teamId, Account $account)
     {
         $readyToAssign = Category::where([

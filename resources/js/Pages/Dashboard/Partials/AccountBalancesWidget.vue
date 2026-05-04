@@ -5,7 +5,7 @@ import { useI18n } from 'vue-i18n';
 
 import WidgetContainer from '@/Components/WidgetContainer.vue';
 import MoneyPresenter from '@/Components/molecules/MoneyPresenter.vue';
-import { formatMoney } from '@/utils';
+import { formatDate, formatMoney } from '@/utils';
 
 import { IAccount } from '@/domains/transactions/models';
 
@@ -38,7 +38,12 @@ const groupedAccounts = computed(() => {
 });
 
 const groupTotal = (accounts: IAccount[]): number => {
-    return accounts.reduce((sum, a) => sum + (a.balance ?? 0), 0);
+    // balance arrives from the server as a string ("-7822.50") which would silently
+    // coerce `+` into string concat. Coerce to number per row.
+    return accounts.reduce((sum, a) => {
+        const value = parseFloat(String(a.balance ?? 0));
+        return sum + (Number.isFinite(value) ? value : 0);
+    }, 0);
 };
 
 // Start collapsed by default
@@ -86,12 +91,23 @@ const navigateToAccount = (account: IAccount) => {
                                 class="w-full flex items-center justify-between px-5 pl-10 py-1.5 hover:bg-base-lvl-2 transition text-left"
                                 @click="navigateToAccount(account)"
                             >
-                                <div class="flex items-center gap-2 min-w-0">
+                                <div class="flex items-start gap-2 min-w-0">
                                     <span
-                                        class="w-2 h-2 rounded-full flex-shrink-0"
+                                        class="w-2 h-2 mt-1.5 rounded-full flex-shrink-0"
                                         :style="{ backgroundColor: account.color || '#6366f1' }"
                                     />
-                                    <span class="text-sm text-body-1 truncate">{{ account.name }}</span>
+                                    <div class="min-w-0">
+                                        <div class="text-sm text-body-1 truncate">{{ account.name }}</div>
+                                        <div
+                                            v-if="(account as any).last_payment"
+                                            class="text-xs text-body-1/60 truncate"
+                                        >
+                                            {{ $t('Last paid') }}
+                                            {{ formatDate((account as any).last_payment.date) }}
+                                            ·
+                                            {{ formatMoney((account as any).last_payment.amount, account.currency_code) }}
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="flex items-center gap-1 flex-shrink-0 ml-2">
                                     <span

@@ -404,7 +404,11 @@
                             </AtField>
                             <div class="flex items-center justify-end space-x-2">
                                 <AtButton class="text-body-1" @click="clear">Cancel</AtButton>
-                                <AtButton class="text-white rounded-md bg-success" @click="onAssignBudget()"> Save</AtButton>
+                                <AtButton
+                                    class="text-white rounded-md bg-success"
+                                    :class="form.processing ? 'pointer-events-none opacity-50' : ''"
+                                    :disabled="form.processing"
+                                    @click="onAssignBudget()"> Save</AtButton>
                             </div>
                         </div>
                     </NPopover>

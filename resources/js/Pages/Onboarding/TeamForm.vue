@@ -9,7 +9,6 @@ import LogerApiSelect from "@/Components/organisms/LogerApiSelect.vue";
 import { DEFAULT_TIMEZONE, defaultDateFormats } from "@/domains/app/index";
 
 withDefaults(defineProps<{
-    modules: any[];
     formData: Object;
 }>(), {
     formData: () => ({
@@ -101,41 +100,6 @@ const currencyLocaleOptions = [{
                     :options="dateFormats"
                     placeholder="Select"
                 />
-            </AtField>
-        </section>
-
-        <section>
-            <AtField
-                class="col-span-6 lg:col-span-4"
-                field="roles"
-                label="Modules"
-            >
-                <div class="relative z-0 mt-1 border border-gray-200 grid grid-cols-2 rounded-lg cursor-pointer">
-                    <button
-                        v-for="module, in modules"
-                        type="button"
-                        class="relative inline-flex w-full px-4 py-3 rounded-lg focus:z-10 focus:outline-none focus:border-blue-300 focus:ring focus:ring-blue-200"
-                        :class="{'border-t border-gray-200 rounded-t-none': module.enabled, 'rounded-b-none': module.enabled}"
-                        @click="module.enabled = !module.enabled"
-                        :key="module.key"
-                    >
-                        <div :class="{'opacity-50': !module.enabled}">
-                            <!-- Role Name -->
-                            <div class="flex items-center">
-                                <div class="text-sm text-gray-600" :class="{'font-semibold': module.enabled}">
-                                    {{ module.alias }}
-                                </div>
-
-                                <svg v-if="module.enabled" class="w-5 h-5 ml-2 text-green-400" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            </div>
-
-                            <!-- Role Description -->
-                            <div class="mt-2 text-xs text-gray-600">
-                                {{ module.description }}
-                            </div>
-                        </div>
-                    </button>
-                </div>
             </AtField>
         </section>
 

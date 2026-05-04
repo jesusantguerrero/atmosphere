@@ -5,6 +5,7 @@ namespace App\Http\Controllers\System;
 use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Housing\Models\Occurrence;
 use App\Domains\Meal\Services\MealService;
+use App\Domains\Transaction\Services\CreditCardReportService;
 use App\Domains\Transaction\Services\PlannedTransactionService;
 use App\Domains\Transaction\Services\ReportService;
 use App\Domains\Transaction\Services\TransactionService;
@@ -18,7 +19,11 @@ class DashboardController
 {
     use HasEnrichedRequest;
 
-    public function __construct(private MealService $mealService, private PlannedTransactionService $plannedService) {}
+    public function __construct(
+        private MealService $mealService,
+        private PlannedTransactionService $plannedService,
+        private CreditCardReportService $creditCardReportService,
+    ) {}
 
     public function __invoke()
     {
@@ -34,6 +39,15 @@ class DashboardController
         $nextPayments = $this->plannedService->getPlanned($teamId);
 
         $accounts = Account::getByDetailTypes($teamId, AccountDetailType::ALL)->load('detailType');
+
+        $creditCardIds = $accounts
+            ->filter(fn ($a) => $a->detailType?->name === AccountDetailType::CREDIT_CARD)
+            ->pluck('id')
+            ->all();
+        $lastPayments = $this->creditCardReportService->getLastPaymentsForAccounts($teamId, $creditCardIds);
+        foreach ($accounts as $account) {
+            $account->last_payment = $lastPayments[$account->id] ?? null;
+        }
 
         return inertia('Dashboard/Index', [
             'sectionTitle' => 'Dashboard',
