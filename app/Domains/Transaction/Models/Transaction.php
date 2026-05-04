@@ -6,8 +6,11 @@ use App\Domains\AppCore\Models\Planner;
 use App\Domains\Transaction\Traits\TransactionTrait;
 use App\Models\CurrencyBalance;
 use App\Models\Team;
+use Database\Factories\TransactionFactory;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Insane\Journal\Models\Core\Account;
 use Insane\Journal\Models\Core\Category;
 use Insane\Journal\Models\Core\Transaction as CoreTransaction;
 
@@ -17,15 +20,25 @@ class Transaction extends CoreTransaction
     use SoftDeletes;
     use TransactionTrait;
 
+    const STATUS_PLANNED = 'planned';
+
     /**
-     * Additional fillable fields for multi-currency support
+     * Loger-specific fillable additions to the journal package's Transaction.
+     *
+     * @var array<int, string>
      */
-    protected $fillable = [
+    protected array $logerFillable = [
         'exchange_rate',
         'exchange_amount',
     ];
 
-    const STATUS_PLANNED = 'planned';
+    /**
+     * @return array<int, string>
+     */
+    public function getFillable(): array
+    {
+        return array_values(array_unique(array_merge(parent::getFillable(), $this->logerFillable)));
+    }
 
     public function schedule()
     {
@@ -97,7 +110,7 @@ class Transaction extends CoreTransaction
     {
         return $this->hasManyThrough(
             CurrencyBalance::class,
-            \Insane\Journal\Models\Core\Account::class,
+            Account::class,
             'id', // Foreign key on accounts table
             'account_id', // Foreign key on currency_balances table
             'account_id', // Local key on transactions table
@@ -222,10 +235,10 @@ class Transaction extends CoreTransaction
     /**
      * Create a new factory instance for the model.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     protected static function newFactory()
     {
-        return \Database\Factories\TransactionFactory::new();
+        return TransactionFactory::new();
     }
 }

@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Account;
+use Insane\Journal\Models\Core\AccountDetailType;
 use Insane\Journal\Models\Core\Transaction;
 
 class CreditCardReportService
@@ -328,6 +329,56 @@ class CreditCardReportService
             echo "updated month {$month}".PHP_EOL;
             echo "{$count} of {$total}".PHP_EOL.PHP_EOL;
         }
+    }
+
+    /**
+     * Last payment made against a credit card account, regardless of whether it
+     * was linked to a billing cycle yet. A "payment" specifically means a transfer
+     * from another cash/bank-type account — cashback, refunds, and manual adjustments
+     * also reduce debt but are not payments in the verb sense.
+     *
+     * Filter: type = 1 line on the card AND the transaction's source `account_id` is
+     * a Loger account whose detail type is one of `AccountDetailType::ALL_CASH`
+     * (bank, cash, cash_on_hand, savings). Cashback typically has the card itself
+     * as `account_id` (income posted directly to the card), so the join+filter
+     * excludes it automatically.
+     *
+     * Returns null when the account has no payments yet — caller renders an empty state.
+     *
+     * @return array{date: string, amount: float, source_account: ?string, is_linked: bool}|null
+     */
+    public function getLastPayment(int $teamId, int $accountId): ?array
+    {
+        $line = DB::table('transaction_lines as tl')
+            ->join('transactions as t', 'tl.transaction_id', '=', 't.id')
+            ->join('accounts as src', 'src.id', '=', 't.account_id')
+            ->join('account_detail_types as srcType', 'srcType.id', '=', 'src.account_detail_type_id')
+            ->where('tl.team_id', $teamId)
+            ->where('tl.account_id', $accountId)
+            ->where('tl.type', 1)
+            ->where('t.status', 'verified')
+            ->where('t.account_id', '!=', $accountId)
+            ->whereIn('srcType.name', AccountDetailType::ALL_CASH)
+            ->orderByDesc('tl.date')
+            ->orderByDesc('tl.id')
+            ->select([
+                'tl.date',
+                'tl.amount',
+                'src.name as source_account_name',
+                't.transactionable_type',
+            ])
+            ->first();
+
+        if (! $line) {
+            return null;
+        }
+
+        return [
+            'date' => $line->date,
+            'amount' => (float) $line->amount,
+            'source_account' => $line->source_account_name,
+            'is_linked' => ! empty($line->transactionable_type),
+        ];
     }
 
     public function getUnlinkedPayments($teamId, Account $account)
