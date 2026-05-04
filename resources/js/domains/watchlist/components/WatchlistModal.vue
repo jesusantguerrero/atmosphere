@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, inject, watch, type Ref } from "vue";
-import { AtButton, AtField } from "atmosphere-ui";
+import { AtField } from "atmosphere-ui";
 import { router, useForm } from "@inertiajs/vue3";
 import { NSelect } from "naive-ui";
 
@@ -120,6 +120,25 @@ const pickType = (value: string) => {
   form.type = value;
 };
 
+interface Template {
+  name: string;
+  type: string;
+  icon: string;
+}
+
+const templates: Template[] = [
+  { name: "Restaurants", type: "categories", icon: "fa fa-utensils" },
+  { name: "Subscriptions", type: "payees", icon: "fa fa-rotate" },
+  { name: "Delivery", type: "payees", icon: "fa fa-truck-fast" },
+  { name: "Coffee", type: "payees", icon: "fa fa-mug-hot" },
+  { name: "Transport", type: "categories", icon: "fa fa-car" },
+];
+
+const pickTemplate = (template: Template) => {
+  form.name = template.name;
+  form.type = template.type;
+};
+
 const categoryOptions = inject<any[] | Ref<any[]>>("categoryOptions", []);
 
 // Top-level (parent) categories — used when type=groups
@@ -166,24 +185,44 @@ const isType = (typeName: string) => form.type == typeName;
     </header>
 
     <section class="pb-4 bg-base-lvl-3 sm:p-6 sm:pb-4 text-body">
-      <div v-if="!form.type" class="space-y-3">
-        <p class="text-sm text-body-1 mb-2">What do you want to track?</p>
-        <button
-          v-for="option in options"
-          :key="option.value"
-          type="button"
-          class="w-full text-left flex items-start gap-4 p-4 border border-base rounded-md hover:border-primary hover:bg-primary/5 transition group"
-          @click="pickType(option.value)"
-        >
-          <span class="w-10 h-10 rounded-full flex items-center justify-center bg-base-lvl-2 text-primary group-hover:bg-primary group-hover:text-white transition shrink-0">
-            <i :class="option.icon" />
-          </span>
-          <span class="min-w-0 flex-1">
-            <span class="block font-bold text-body">{{ option.label }}</span>
-            <span class="block text-sm text-body-1 mt-0.5">{{ option.description }}</span>
-            <span class="block text-xs text-body-1 italic mt-1 opacity-75">{{ option.example }}</span>
-          </span>
-        </button>
+      <div v-if="!form.type" class="space-y-5">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-body-1 mb-2">Quick start</p>
+          <div class="flex flex-wrap gap-2">
+            <button
+              v-for="tpl in templates"
+              :key="tpl.name"
+              type="button"
+              class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-semibold hover:bg-primary/20 transition"
+              @click="pickTemplate(tpl)"
+            >
+              <i :class="tpl.icon" />
+              {{ tpl.name }}
+            </button>
+          </div>
+        </div>
+
+        <div class="border-t border-base pt-4">
+          <p class="text-xs font-semibold uppercase tracking-wide text-body-1 mb-3">Or start from scratch</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <button
+              v-for="option in options"
+              :key="option.value"
+              type="button"
+              class="text-left flex items-start gap-3 p-3 border border-base rounded-md hover:border-primary hover:bg-primary/5 transition group"
+              @click="pickType(option.value)"
+              :title="option.example"
+            >
+              <span class="w-8 h-8 rounded-full flex items-center justify-center bg-base-lvl-2 text-primary group-hover:bg-primary group-hover:text-white transition shrink-0">
+                <i :class="option.icon" />
+              </span>
+              <span class="min-w-0 flex-1">
+                <span class="block font-bold text-body text-sm">{{ option.label }}</span>
+                <span class="block text-xs text-body-1 mt-0.5 leading-snug">{{ option.description }}</span>
+              </span>
+            </button>
+          </div>
+        </div>
       </div>
       <section v-else ref="importHolderRef">
         <AtField label="Name">
@@ -252,7 +291,7 @@ const isType = (typeName: string) => form.type == typeName;
     </section>
 
     <footer class="flex justify-end w-full px-6 py-4 space-x-3 text-right bg-base">
-      <AtButton type="secondary" @click="close" rounded class="h-10"> Cancel </AtButton>
+      <LogerButton type="button" variant="secondary" @click="emitClose">Cancel</LogerButton>
       <LogerButton variant="inverse" @click="submit" :disabled="!form.type">
         {{ submitLabel }}
       </LogerButton>

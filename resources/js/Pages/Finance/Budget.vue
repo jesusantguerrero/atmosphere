@@ -5,8 +5,11 @@ import { AtButton, AtDatePager } from "atmosphere-ui";
 import { useBreakpoints, breakpointsTailwind } from "@vueuse/core";
 import { startOfMonth } from "date-fns";
 
+import { AtDropdownLink } from "atmosphere-ui";
+
 import IconClose from "@/Components/icons/IconClose.vue";
 import Modal from "@/Components/atoms/Modal.vue";
+import JetDropdown from "@/Components/atoms/Dropdown.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 import PointAlert from "@/Components/atoms/PointAlert.vue";
 import StatusButtons from "@/Components/molecules/StatusButtons.vue";
@@ -235,28 +238,41 @@ const budgetCsvExportUrl = computed(() => {
               @change="toggleFilter"
             />
 
-            <LogerButton
-                variant="inverse"
-                @click="copyFromPrevious(false)"
-                :title="$t('Copy budgeted amounts from last month')"
-            >
-                <IMdiContentCopy class="mr-1" />
-                {{ $t('Use last month\'s plan') }}
-            </LogerButton>
-
             <LogerButton variant="inverse" @click="goToday"> {{ $t('Today') }} </LogerButton>
 
-            <a :href="budgetCsvExportUrl" target="_blank">
-                <LogerButton variant="inverse" as="span">
-                    <IMdiDownload class="mr-1" />
-                    CSV
-                </LogerButton>
-            </a>
+            <JetDropdown align="right" width="56">
+                <template #trigger>
+                    <LogerButton variant="inverse" :title="$t('More actions')">
+                        <IMdiDotsVertical />
+                    </LogerButton>
+                </template>
 
-            <LogerButton variant="secondary" :href="route('budget.export')"  target="_blank" as="a">
-                <IMdiExport class="mr-2" />
-                {{ $t('Export') }} {{ $t('Budget') }}
-            </LogerButton>
+                <template #content>
+                    <AtDropdownLink
+                        as="button"
+                        @click="copyFromPrevious(false)"
+                    >
+                        <section class="flex items-center w-full">
+                            <IMdiContentCopy class="mr-2" />
+                            <span>{{ $t('Use last month\'s plan') }}</span>
+                        </section>
+                    </AtDropdownLink>
+
+                    <AtDropdownLink :href="budgetCsvExportUrl" target="_blank" as="a">
+                        <section class="flex items-center w-full">
+                            <IMdiDownload class="mr-2" />
+                            <span>{{ $t('Export') }} CSV</span>
+                        </section>
+                    </AtDropdownLink>
+
+                    <AtDropdownLink :href="route('budget.export')" target="_blank" as="a">
+                        <section class="flex items-center w-full">
+                            <IMdiExport class="mr-2" />
+                            <span>{{ $t('Export') }} {{ $t('Budget') }}</span>
+                        </section>
+                    </AtDropdownLink>
+                </template>
+            </JetDropdown>
           </div>
         </template>
       </FinanceSectionNav>

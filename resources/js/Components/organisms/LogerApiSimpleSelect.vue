@@ -10,7 +10,7 @@ import { VNodeChild } from "vue";
 
 const props = withDefaults(
   defineProps<{
-    modelValue: string | number | null;
+    modelValue: string | number | (string | number)[] | null;
     endpoint: string;
     placeholder?: string;
     allowCreate?: boolean;
@@ -69,6 +69,10 @@ const optionParser = (option: string | Record<string, string>) => {
 const selected = ref();
 
 const selectedText = computed(() => {
+  // Multi-select: NSelect expects an array of values, pass through as-is
+  if (Array.isArray(props.modelValue)) {
+    return props.modelValue;
+  }
   return optionParser(selected.value ?? props.modelValue);
 });
 
@@ -145,19 +149,46 @@ const fetchInitialValue = (id: string | number) => {
   });
 };
 
+const fetchInitialValues = async (ids: (string | number)[]) => {
+  const missing = ids.filter(
+    (id) => !options.value.find((option) => String(option.value) === String(id))
+  );
+  if (!missing.length) return;
+
+  isLoading.value = true;
+  const results = await Promise.all(
+    missing.map((id) =>
+      axios
+        .get(`${props.endpoint}/${id}`)
+        .then(({ data }) => data?.data || data)
+        .catch(() => null)
+    )
+  );
+  setOptions(resultParser(results.filter(Boolean)));
+  isLoading.value = false;
+};
+
 watch(
   () => props.modelValue,
   (value, oldValue) => {
-    if (value !== oldValue && typeof value == "string") {
+    if (value === oldValue) return;
+    if (Array.isArray(value)) {
+      fetchInitialValues(value);
+      return;
+    }
+    if (typeof value == "string") {
       fetchInitialValue(value);
     }
   }
 );
 
 onMounted(() => {
-  if (props.modelValue) {
-    fetchInitialValue(props.modelValue);
+  if (!props.modelValue) return;
+  if (Array.isArray(props.modelValue)) {
+    fetchInitialValues(props.modelValue);
+    return;
   }
+  fetchInitialValue(props.modelValue);
 });
 </script>
 

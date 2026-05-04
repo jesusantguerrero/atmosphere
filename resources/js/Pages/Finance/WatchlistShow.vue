@@ -2,22 +2,22 @@
 import { ref, toRefs, computed } from "vue";
 // @ts-ignore
 import { AtDatePager } from "atmosphere-ui";
+import { NDropdown } from "naive-ui";
+import { router } from "@inertiajs/vue3";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
-import ChartComparison from "@/Components/widgets/ChartComparison.vue";
-import WidgetStats from "@/Components/widgets/WidgetStats.vue";
-
 import FinanceTemplate from "./Partials/FinanceTemplate.vue";
 import FinanceSectionNav from "./Partials/FinanceSectionNav.vue";
 
 import TransactionsList from "@/domains/transactions/components/TransactionsList.vue";
 import WatchlistModal from "@/domains/watchlist/components/WatchlistModal.vue";
 import WatchlistSummaryCard from "@/domains/watchlist/components/WatchlistSummaryCard.vue";
+import WatchlistTimelineChart from "@/domains/watchlist/components/WatchlistTimelineChart.vue";
 
 import { useServerSearch } from "@/composables/useServerSearch";
-import { formatMoney, formatMonth, MonthTypeFormat } from "@/utils";
-import { router } from "@inertiajs/vue3";
+import { formatMoney, formatDate, formatMonth, MonthTypeFormat } from "@/utils";
+import { getVariances } from "@/domains/transactions";
 
 import { IServerSearchData } from "@/composables/useServerSearchV2";
 import { WatchlistResource } from "@/domains/watchlist/models";
@@ -27,41 +27,33 @@ const props = withDefaults(defineProps<{
   resource: WatchlistResource,
   serverSearchOptions: IServerSearchData,
   watchlist: Record<string, string>[]
-}>(), {
+}>(), {});
 
-});
 const { serverSearchOptions } = toRefs(props);
 const { state: pageState, executeSearchWithDelay } = useServerSearch(serverSearchOptions, {
     manual: true,
-    defaultDates: true
+    defaultDates: true,
 });
 
 const isModalOpen = ref(false);
-const resourceToEdit = ref(null);
+const resourceToEdit = ref<Record<string, unknown> | null>(null);
 
 const sectionName = computed(() => {
-    return  `${props.resource.name} : ${formatMonth(pageState?.dates.startDate, MonthTypeFormat.long)}`
-})
-
-const statCards = computed(() => [
-    {
-        value: props.resource.month.transactionsCount,
-        label: 'transactions'
-    }, {
-        value: props.resource.month.lastTransactionDate,
-        label: 'date'
-    }, {
-        value: formatMoney(props.resource.prevMonth.total, props.resource.prevMonth.currency_code),
-        label: "last month"
-    }
-]);
+    const month = formatMonth(pageState?.dates.startDate, MonthTypeFormat.long);
+    return `${props.resource.name} in ${month}`;
+});
 
 const target = computed(() => Number(props.resource.target ?? 0));
 const monthTotal = computed(() => Number(props.resource.month?.total ?? 0));
+const prevMonthTotal = computed(() => Number(props.resource.prevMonth?.total ?? 0));
 const monthProjected = computed(() => Number(props.resource.month?.projected ?? 0));
 const isCurrentPeriod = computed(() => Boolean(props.resource.month?.is_current_period));
 const daysElapsed = computed(() => Number(props.resource.month?.days_elapsed ?? 0));
 const daysInPeriod = computed(() => Number(props.resource.month?.days_in_period ?? 0));
+
+const transactionsCount = computed(() => Number(props.resource.month?.transactionsCount ?? 0));
+const lastTransactionDate = computed(() => props.resource.month?.lastTransactionDate ?? null);
+const hasActivity = computed(() => transactionsCount.value > 0);
 
 const hasTarget = computed(() => target.value > 0);
 const targetRatio = computed(() => hasTarget.value ? monthTotal.value / target.value : 0);
@@ -81,37 +73,99 @@ const projectionTone = computed(() => {
     return 'text-success font-bold';
 });
 
+// Variance vs last month (positive = spending more = bad for expenses)
+const variance = computed(() => {
+    if (prevMonthTotal.value === 0) return null;
+    return getVariances(monthTotal.value, prevMonthTotal.value) || 0;
+});
+
+const varianceLabel = computed(() => {
+    if (variance.value === null) return null;
+    const sign = variance.value > 0 ? '+' : '';
+    return `${sign}${variance.value}% vs last month`;
+});
+
+const varianceTone = computed(() => {
+    if (variance.value === null || variance.value === 0) return 'text-body-1';
+    return variance.value > 0 ? 'text-error' : 'text-success';
+});
+
+const transactionMeta = computed(() => {
+    const parts: string[] = [];
+    if (transactionsCount.value > 0) {
+        parts.push(`${transactionsCount.value} ${transactionsCount.value === 1 ? 'transaction' : 'transactions'}`);
+    }
+    if (lastTransactionDate.value) {
+        parts.push(`last on ${formatDate(lastTransactionDate.value, '--')}`);
+    }
+    return parts.join(' · ');
+});
+
+const headerMenuOptions = [
+    { key: 'edit', label: 'Edit' },
+    { key: 'delete', label: 'Delete', props: { class: 'text-error' } },
+];
+
+const openEdit = () => {
+    resourceToEdit.value = {
+        id: (props.resource as any).id,
+        name: props.resource.name,
+        type: (props.resource as any).type,
+        input: (props.resource as any).input ?? [],
+        target: props.resource.target,
+    };
+    isModalOpen.value = true;
+};
+
+const goBack = () => {
+    const search = typeof window !== 'undefined' ? window.location.search : '';
+    router.visit(`/finance/watchlist${search}`);
+};
+
+const handleDelete = () => {
+    if (!window.confirm(`Delete watchlist "${props.resource.name}"?`)) {
+        return;
+    }
+    router.delete(`/finance/watchlist/${(props.resource as any).id}`, {
+        onSuccess: goBack,
+    });
+};
+
+const onHeaderMenuSelect = (key: string) => {
+    if (key === 'edit') openEdit();
+    if (key === 'delete') handleDelete();
+};
 
 const parser = (transaction: Record<string, string>) => ({
-        title: transaction.description,
-        subtitle: `${transaction?.account_from?.name} -> ${transaction.cat_name}`,
-        date: transaction.date,
-        value: transaction.amount,
-        currencyCode: transaction.currency_code,
-        status: transaction.status,
+    title: transaction.description,
+    subtitle: `${transaction?.account_from?.name} -> ${transaction.cat_name}`,
+    date: transaction.date,
+    value: transaction.amount,
+    currencyCode: transaction.currency_code,
+    status: transaction.status,
 });
 
 const transactions = computed(() => {
-    const data = Object.values(props.resource.transactions).reduce((allData, val) => {
-        allData.push(...val?.data);
+    const data = Object.values(props.resource.transactions).reduce((allData: any[], val: any) => {
+        allData.push(...(val?.data ?? []));
         return allData;
     }, []);
-
     return data.map(parser);
-})
+});
 
 const onClick = (itemId: number) => {
-    if (props.resource.id == itemId) return
-    router.visit(`/finance/watchlist/${itemId}?${location.search}`)
-}
+    if ((props.resource as any).id == itemId) return;
+    router.visit(`/finance/watchlist/${itemId}?${location.search}`);
+};
 
-const categories = computed(() => {
-    return props.resource.transactions;
-})
+const monthlySeries = computed(() => {
+    const raw = (props.resource as any).monthlySeries ?? [];
+    return Array.isArray(raw) ? raw : [];
+});
 </script>
 
 <template>
-  <AppLayout :title="sectionName">
+  <AppLayout :title="sectionName" :show-back-button="true" @back="goBack">
     <template #header>
       <FinanceSectionNav>
         <template #actions>
@@ -122,78 +176,87 @@ const categories = computed(() => {
             controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
             next-mode="month"
             @change="executeSearchWithDelay(5)"
-          >
-          </AtDatePager>
-          <div>
-            <LogerButton variant="inverse" @click="isModalOpen=!isModalOpen"> Add WatchList </LogerButton>
-          </div>
+          />
+          <LogerButton variant="inverse" @click="openEdit">Edit</LogerButton>
+          <NDropdown trigger="click" :options="headerMenuOptions" @select="onHeaderMenuSelect">
+            <button type="button" class="text-body-1 hover:text-body p-1 rounded" aria-label="More actions">
+              <i class="fa fa-ellipsis-v" />
+            </button>
+          </NDropdown>
         </template>
       </FinanceSectionNav>
     </template>
 
-    <FinanceTemplate  ref="financeTemplateRef">
-      <article class="w-full">
+    <FinanceTemplate ref="financeTemplateRef">
+      <article class="w-full space-y-4">
+        <header class="bg-base-lvl-3 rounded-md px-5 py-4 border border-base">
+          <p class="text-xs uppercase tracking-wide text-body-1 font-semibold">This month</p>
+          <div class="flex items-baseline gap-3 mt-1 flex-wrap">
+            <h1 class="text-3xl font-extrabold text-body leading-none">
+              {{ formatMoney(monthTotal) }}
+            </h1>
+            <span v-if="varianceLabel" class="text-sm font-semibold" :class="varianceTone">
+              {{ varianceLabel }}
+            </span>
+            <span v-if="prevMonthTotal > 0" class="text-xs text-body-1">
+              (last month {{ formatMoney(prevMonthTotal) }})
+            </span>
+          </div>
+          <p v-if="hasActivity" class="text-xs text-body-1 mt-2">{{ transactionMeta }}</p>
+          <p v-else class="text-xs text-body-1 mt-2">No transactions this month yet.</p>
+        </header>
 
-        <section>
-            <section class="w-full">
-                <WidgetStats
-                  class="w-full"
-                  :total="formatMoney(resource.month.total, resource.month.currency_code)"
-                  description="This month"
-                  :cards="statCards"
-                >
-                 <template #icon>
-                  <IIcRoundQueryStats />
-                 </template>
-                </WidgetStats>
-            </section>
-
-            <section v-if="hasTarget" class="bg-base-lvl-3 rounded-md p-4 mt-4 border" :class="trafficLight.chip">
-                <div class="flex items-center justify-between mb-2">
-                    <div>
-                        <h4 class="font-bold text-body">Monthly target</h4>
-                        <p class="text-xs text-body-1">{{ trafficLight.label }} — {{ Math.round(targetRatio * 100) }}% del límite</p>
-                    </div>
-                    <div class="text-right">
-                        <div class="text-lg font-bold">{{ formatMoney(monthTotal) }}</div>
-                        <div class="text-xs text-body-1">de {{ formatMoney(target) }}</div>
-                    </div>
-                </div>
-                <div class="h-2 rounded-full bg-base-lvl-2 overflow-hidden">
-                    <div
-                        class="h-full rounded-full transition-all"
-                        :class="trafficLight.bar"
-                        :style="{ width: Math.min(100, targetRatio * 100) + '%' }"
-                    />
-                </div>
-                <div v-if="isCurrentPeriod" class="mt-3 pt-3 border-t border-base/40 flex items-baseline justify-between text-sm">
-                    <div>
-                        <span class="text-body-1">Proyección fin de mes</span>
-                        <span class="text-xs text-body-1 ml-2">(día {{ daysElapsed }} de {{ daysInPeriod }})</span>
-                    </div>
-                    <div class="text-right">
-                        <span :class="projectionTone">{{ formatMoney(monthProjected) }}</span>
-                        <span class="text-xs text-body-1 ml-1">({{ Math.round(projectedRatio * 100) }}%)</span>
-                    </div>
-                </div>
-            </section>
-
-            <ChartComparison
-                class="w-full mb-10 mt-4 overflow-hidden bg-white rounded-lg"
-                :title="`${resource.name} Report`"
-                ref="ComparisonRevenue"
-                :data="categories"
-                data-item-total="total_amount"
+        <section v-if="hasTarget" class="bg-base-lvl-3 rounded-md p-4 border" :class="trafficLight.chip">
+          <div class="flex items-center justify-between mb-2">
+            <div>
+              <h4 class="font-bold text-body">Monthly target</h4>
+              <p class="text-xs text-body-1">{{ trafficLight.label }} — {{ Math.round(targetRatio * 100) }}% of limit</p>
+            </div>
+            <div class="text-right">
+              <div class="text-lg font-bold">{{ formatMoney(monthTotal) }}</div>
+              <div class="text-xs text-body-1">of {{ formatMoney(target) }}</div>
+            </div>
+          </div>
+          <div class="h-2 rounded-full bg-base-lvl-2 overflow-hidden">
+            <div
+              class="h-full rounded-full transition-all"
+              :class="trafficLight.bar"
+              :style="{ width: Math.min(100, targetRatio * 100) + '%' }"
             />
-
+          </div>
+          <div v-if="isCurrentPeriod" class="mt-3 pt-3 border-t border-base/40 flex items-baseline justify-between text-sm">
+            <div>
+              <span class="text-body-1">End-of-month projection</span>
+              <span class="text-xs text-body-1 ml-2">(day {{ daysElapsed }} of {{ daysInPeriod }})</span>
+            </div>
+            <div class="text-right">
+              <span :class="projectionTone">{{ formatMoney(monthProjected) }}</span>
+              <span class="text-xs text-body-1 ml-1">({{ Math.round(projectedRatio * 100) }}%)</span>
+            </div>
+          </div>
         </section>
 
-        <TransactionsList
-            class="w-full"
-            table-class="overflow-auto text-sm"
-            :transactions="transactions"
+        <section v-else class="bg-base-lvl-3 rounded-md p-4 border border-base flex items-center justify-between gap-4 flex-wrap">
+          <div>
+            <h4 class="font-bold text-body">No monthly target set</h4>
+            <p class="text-xs text-body-1 mt-1 max-w-md">
+              Set a target to get a status indicator, end-of-month projection, and a notification when you cross your limit.
+            </p>
+          </div>
+          <LogerButton variant="inverse" @click="openEdit">+ Set monthly target</LogerButton>
+        </section>
+
+        <WatchlistTimelineChart
+          v-if="monthlySeries.length"
+          :series="monthlySeries"
+          :target="target"
         />
 
+        <TransactionsList
+          class="w-full"
+          table-class="overflow-auto text-sm"
+          :transactions="transactions"
+        />
       </article>
 
       <WatchlistModal
@@ -204,17 +267,16 @@ const categories = computed(() => {
 
       <template #panel>
         <section class="grid lg:grid-cols-1 gap-2 pt-4">
-            <WatchlistSummaryCard
-                v-for="item in watchlist"
-                :startDate="pageState.dates.startDate"
-                :item="item"
-                @click="onClick(item.id)"
-                class="w-full"
-            />
+          <WatchlistSummaryCard
+            v-for="item in watchlist"
+            :key="(item as any).id"
+            :startDate="pageState.dates.startDate"
+            :item="item"
+            class="w-full"
+            @click="onClick((item as any).id)"
+          />
         </section>
       </template>
     </FinanceTemplate>
   </AppLayout>
 </template>
-
-

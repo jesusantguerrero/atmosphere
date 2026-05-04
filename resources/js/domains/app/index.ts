@@ -17,6 +17,18 @@ export const useAppMenu = (t: any, modules: any[]) => {
             as: Link
         },
         {
+            icon: 'fas fa-chart-bar',
+            label: t('Trends'),
+            to: '/trends',
+            as: Link,
+            isActiveFunction(url: string, currentPath: string) {
+                return /trends/.test(currentPath)
+            }
+        },
+        {
+            separator: true
+        },
+        {
             icon: 'far fa-calendar-alt',
             label: t('Meals'),
             name: 'mealPlanner',
@@ -57,19 +69,13 @@ export const useAppMenu = (t: any, modules: any[]) => {
             isActiveFunction(url: string, currentPath: string) {
                 return /loger-profiles/.test(currentPath)
              }
-        },
-        {
-            icon: 'fas fa-chart-bar',
-            label: t('Trends'),
-            to: '/trends',
-            as: Link,
-            isActiveFunction(url: string, currentPath: string) {
-                return /trends/.test(currentPath)
-            }
         }
     ].filter(item => !item.hidden);
 
-    let mobileMenu = cloneDeep(appMenu).splice(0, 4)
+    const mobileTargets = ['/dashboard', '/meals/overview', '/finance', '/housing'];
+    let mobileMenu = cloneDeep(appMenu)
+        .filter(item => mobileTargets.includes(item.to))
+        .sort((a, b) => mobileTargets.indexOf(a.to) - mobileTargets.indexOf(b.to));
     mobileMenu.splice(2, 0, {
         name: 'add',
         label: 'Add',

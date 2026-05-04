@@ -156,4 +156,90 @@ class WatchlistScopesTest extends TestCase
 
         $this->actingAs($user)->get('/finance/watchlist')->assertOk();
     }
+
+    public function test_monthly_series_returns_n_consecutive_months_filling_zero_for_empty(): void
+    {
+        $user = User::factory()->withPersonalTeam()->create();
+        $team = $user->ownedTeams()->first();
+        $category = Category::where('team_id', $team->id)->whereNotNull('parent_id')->first();
+
+        $watchlist = Watchlist::create([
+            'team_id' => $team->id,
+            'user_id' => $user->id,
+            'name' => 'Series',
+            'type' => Watchlist::TYPE_CATEGORY,
+            'input' => [$category->id],
+            'target' => null,
+        ]);
+
+        // Seed a single transaction in the current month
+        Transaction::forceCreate([
+            'team_id' => $team->id,
+            'user_id' => $user->id,
+            'category_id' => $category->id,
+            'status' => 'verified',
+            'direction' => Transaction::DIRECTION_CREDIT,
+            'date' => now()->startOfMonth()->addDays(5)->format('Y-m-d'),
+            'total' => 150.00,
+            'description' => 'current month tx',
+            'currency_code' => 'DOP',
+        ]);
+
+        $endOfMonth = now()->endOfMonth()->format('Y-m-d');
+        $series = Watchlist::monthlySeries(12, $team->id, $watchlist, $endOfMonth);
+
+        $this->assertCount(12, $series, 'should return exactly 12 months');
+
+        // Last entry corresponds to the current month and contains the seeded total
+        $lastEntry = end($series);
+        $expectedKey = now()->startOfMonth()->format('Y-m-01');
+        $this->assertSame($expectedKey, $lastEntry['month']);
+        $this->assertSame(150.0, (float) $lastEntry['total']);
+
+        // First entry should be 11 months before, total = 0 (no seeded data)
+        $firstEntry = $series[0];
+        $expectedFirst = now()->copy()->subMonths(11)->startOfMonth()->format('Y-m-01');
+        $this->assertSame($expectedFirst, $firstEntry['month']);
+        $this->assertSame(0.0, (float) $firstEntry['total']);
+
+        // Months in between with no activity also report 0
+        $middleZeros = array_filter($series, fn ($p) => $p['total'] == 0.0);
+        $this->assertGreaterThan(10, count($middleZeros), 'most months should be zero in this scenario');
+    }
+
+    public function test_monthly_series_aggregates_multiple_transactions_in_same_month(): void
+    {
+        $user = User::factory()->withPersonalTeam()->create();
+        $team = $user->ownedTeams()->first();
+        $category = Category::where('team_id', $team->id)->whereNotNull('parent_id')->first();
+
+        $watchlist = Watchlist::create([
+            'team_id' => $team->id,
+            'user_id' => $user->id,
+            'name' => 'Series multi',
+            'type' => Watchlist::TYPE_CATEGORY,
+            'input' => [$category->id],
+            'target' => null,
+        ]);
+
+        $base = now()->startOfMonth();
+        foreach ([10.00, 20.00, 30.00] as $amount) {
+            Transaction::forceCreate([
+                'team_id' => $team->id,
+                'user_id' => $user->id,
+                'category_id' => $category->id,
+                'status' => 'verified',
+                'direction' => Transaction::DIRECTION_CREDIT,
+                'date' => $base->copy()->addDays(2)->format('Y-m-d'),
+                'total' => $amount,
+                'description' => 'tx '.$amount,
+                'currency_code' => 'DOP',
+            ]);
+        }
+
+        $series = Watchlist::monthlySeries(12, $team->id, $watchlist, now()->endOfMonth()->format('Y-m-d'));
+        $current = end($series);
+
+        $this->assertSame(60.0, (float) $current['total'], 'three transactions of 10+20+30 should sum to 60');
+    }
 }

@@ -5,6 +5,8 @@ import { router } from "@inertiajs/vue3";
 // @ts-ignore
 import { AtDatePager } from "atmosphere-ui";
 
+import { NTooltip } from "naive-ui";
+
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 import FinanceTemplate from "./Partials/FinanceTemplate.vue";
@@ -101,6 +103,12 @@ const handleDelete = (item: Record<string, any>) => {
     });
 };
 
+const goToWatchlist = (item: Record<string, any>) => {
+    const url = route('watchlist.show', item);
+    const search = typeof window !== 'undefined' ? window.location.search : '';
+    router.visit(search ? `${url}${search}` : url);
+};
+
 const overTargetItems = computed(() => {
     return (props.data as any[]).filter((item) => {
         const target = Number(item.target ?? 0);
@@ -145,7 +153,28 @@ const projectedOverItems = computed(() => {
     <FinanceTemplate :title="$t('Finance')" :accounts="accounts" ref="financeTemplateRef">
       <article class="w-full">
         <header class="px-2 mt-4 mb-4">
-          <h2 class="text-lg font-bold text-body">{{ $t('Spending watchlists') }}</h2>
+          <div class="flex items-center gap-2">
+            <h2 class="text-lg font-bold text-body">{{ $t('Spending watchlists') }}</h2>
+            <NTooltip trigger="hover" placement="right">
+              <template #trigger>
+                <button type="button" class="text-body-1 hover:text-primary" aria-label="How thresholds work">
+                  <i class="fa fa-circle-info" />
+                </button>
+              </template>
+              <div class="text-xs space-y-1.5">
+                <p class="font-semibold mb-1">Status colors</p>
+                <p class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-success" /> On track — under 70% of target
+                </p>
+                <p class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-warning" /> Approaching — 70% to 100%
+                </p>
+                <p class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-error" /> Over target — above 100%
+                </p>
+              </div>
+            </NTooltip>
+          </div>
           <p class="text-sm text-body-1 mt-1 max-w-2xl">
             {{ $t('Track categories, payees or tags with monthly targets and get alerted when you cross them.') }}
           </p>
@@ -175,7 +204,7 @@ const projectedOverItems = computed(() => {
             :key="item.id ?? item.name"
             :item="item"
             class="cursor-pointer"
-            @click="router.visit(route('watchlist.show', item))"
+            @click="goToWatchlist(item)"
             @edit="handleEdit"
             @delete="handleDelete"
           />

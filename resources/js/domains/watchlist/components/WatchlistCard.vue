@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { NDropdown } from "naive-ui";
+import { NDropdown, NTooltip } from "naive-ui";
 
 import { formatMoney, formatDate } from "@/utils";
 import { getVariances } from "@/domains/transactions";
@@ -93,6 +93,21 @@ const trafficLightText = computed(() => {
     default: return 'text-body-1';
   }
 });
+
+const trafficLightLabel = computed(() => {
+  switch (trafficLight.value) {
+    case 'red': return 'Over target';
+    case 'amber': return 'Approaching limit';
+    case 'green': return 'On track';
+    default: return '';
+  }
+});
+
+const trafficLightTooltip = computed(() => {
+  if (!hasTarget.value) return '';
+  const pct = Math.round(targetRatio.value * 100);
+  return `${trafficLightLabel.value} — ${pct}% of ${formatMoney(target.value)}`;
+});
 </script>
 
 <template>
@@ -103,12 +118,15 @@ const trafficLightText = computed(() => {
         <p class="text-xs text-body-1 mt-0.5">{{ subtitle }}</p>
       </div>
       <div class="flex items-center gap-2 shrink-0 ml-2">
-        <span
-          v-if="hasTarget"
-          class="w-2.5 h-2.5 rounded-full"
-          :class="trafficLightClass"
-          :title="`${Math.round(targetRatio * 100)}% del target`"
-        />
+        <NTooltip v-if="hasTarget" trigger="hover" placement="top">
+          <template #trigger>
+            <span
+              class="w-2.5 h-2.5 rounded-full cursor-help"
+              :class="trafficLightClass"
+            />
+          </template>
+          {{ trafficLightTooltip }}
+        </NTooltip>
         <NDropdown
           trigger="click"
           :options="menuOptions"
