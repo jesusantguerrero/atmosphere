@@ -15,14 +15,18 @@ class BudgetTarget extends Model
     use HasFactory;
 
     const TYPE_SPENDING = 'spending';
+
     const TYPE_SAVING_BALANCE = 'saving_balance';
+
     const TYPE_SAVING_MONTHLY = 'savings_monthly';
+
     // WL-7: "Spend less than X in this watchlist for N consecutive months"
     const TYPE_CHALLENGE_UNDER_AMOUNT = 'challenge_under_amount';
 
     protected $fillable = [
         'team_id',
         'user_id',
+        'category_id',
         'color',
         'amount',
         'name',
@@ -32,6 +36,8 @@ class BudgetTarget extends Model
         'frequency_date',
         'frequency_week_day',
         'frequency_month_date',
+        'frequency_interval',
+        'frequency_interval_unit',
         'notify',
         'completed_at',
     ];

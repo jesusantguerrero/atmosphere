@@ -33,6 +33,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('bg:generate-billing-cycles')->daily()->runInBackground();
         $schedule->command('bg:planned-reminders')->daily()->runInBackground();
         $schedule->command('watchlists:check-thresholds')->daily()->runInBackground();
+        $schedule->command('watchlists:suggest-untracked-payees')->weekly()->runInBackground();
         if (config('app.demo')) {
             if ($scheduleTime) {
                 $schedule->command('app:demo-reset')->dailyAt($scheduleTime)->runInBackground();
