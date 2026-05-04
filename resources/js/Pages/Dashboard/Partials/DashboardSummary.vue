@@ -8,6 +8,7 @@ import NextPaymentsWidget from "@/domains/transactions/components/NextPaymentsWi
 import AccountBalancesWidget from "./AccountBalancesWidget.vue";
 import OccurrenceWidget from "@/domains/housing/components/OccurrenceWidget.vue";
 import MealWidget from "@/domains/meal/components/MealWidget.vue";
+import WatchlistDashboardWidget from "@/domains/watchlist/components/WatchlistDashboardWidget.vue";
 
 import { useNetWorth, INetWorthEntry } from "@/domains/transactions/useNetWorth";
 import { formatMoney } from "@/utils";
@@ -24,6 +25,7 @@ const props = defineProps<{
     checks: IOccurrenceCheck[];
     meals: { data: any[] };
     user: { name: string; current_team_id: number };
+    topWatchlists: any[];
     isMealsEnabled: boolean;
     isHousingEnabled: boolean;
 }>();
@@ -146,6 +148,9 @@ const movementIsPositive = computed(() => Number(monthMovement.value) >= 0);
                     v-if="isMealsEnabled"
                     :meals="meals?.data ?? []"
                 />
+
+                <!-- Top watchlists -->
+                <WatchlistDashboardWidget :watchlists="topWatchlists" />
 
                 <!-- Credit card debt callout -->
                 <div

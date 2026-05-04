@@ -2,18 +2,31 @@
 
 namespace App\Domains\Budget\Services;
 
-use Exception;
-use App\Models\User;
-use Illuminate\Support\Carbon;
 use App\Domains\AppCore\Models\Category;
 use App\Domains\Budget\Models\BudgetTarget;
-use App\Domains\Transaction\Models\TransactionLine;
 use App\Domains\Integration\Concerns\PlannedTransactionDTO;
+use App\Domains\Transaction\Models\TransactionLine;
 use App\Domains\Transaction\Services\PlannedTransactionService;
+use App\Models\User;
+use Exception;
+use Illuminate\Support\Carbon;
 
 class BudgetTargetService
 {
     public function __construct(private PlannedTransactionService $plannedService, private BudgetCategoryService $budgetCategoryService) {}
+
+    /**
+     * Strip UI-only keys before mass-assigning to BudgetTarget. The target form
+     * carries `assigned` (current spent helper) and `parent_id` (group context)
+     * that have no matching column. Without this, Model::preventSilentlyDiscardingAttributes
+     * would throw at the mass-assign call.
+     */
+    private function fillableData(array $data): array
+    {
+        unset($data['assigned'], $data['parent_id']);
+
+        return $data;
+    }
 
     public function createPlannedTransactionsFor(int $teamId)
     {
@@ -35,12 +48,12 @@ class BudgetTargetService
     public function createPlannedTransactions()
     {
         $targets = BudgetTarget::whereNotNull('frequency_month_date')
-        ->whereNotNull('frequency')
-        ->where([
-            "target_type" => 'spending',
-            "notify" => 1
-        ])
-        ->get();
+            ->whereNotNull('frequency')
+            ->where([
+                'target_type' => 'spending',
+                'notify' => 1,
+            ])
+            ->get();
 
         $months = [now()];
 
@@ -54,58 +67,62 @@ class BudgetTargetService
 
     private function buildPlanned(BudgetTarget $target, $month, $endOfMonth = null)
     {
-        $originalDate = $month.'-'. str_pad($target->frequency_month_date, 2, 0, STR_PAD_LEFT);
+        $originalDate = $month.'-'.str_pad($target->frequency_month_date, 2, 0, STR_PAD_LEFT);
         $date = ($endOfMonth && $originalDate > $endOfMonth) ? $endOfMonth : $originalDate;
         $data = PlannedTransactionDTO::fromTarget($target, $date);
         if ($target->frequency_date) {
             $targetDate = Carbon::createFromFormat('Y-m-d', $target->frequency_date);
-            if ($targetDate->month != now()->month) return;
+            if ($targetDate->month != now()->month) {
+                return;
+            }
         }
 
         $transaction = TransactionLine::where([
-            "transaction_lines.team_id" => $target->team_id,
-            "category_id" => $target->category_id,
+            'transaction_lines.team_id' => $target->team_id,
+            'category_id' => $target->category_id,
         ])
-        ->whereRaw("DATE_FORMAT(transaction_lines.date, '%Y-%m') like ?", [$month])
-        ->first();
+            ->whereRaw("DATE_FORMAT(transaction_lines.date, '%Y-%m') like ?", [$month])
+            ->first();
 
-        if (!$transaction) {
+        if (! $transaction) {
             $this->plannedService->add($data);
         }
     }
 
-    public function complete(BudgetTarget $budgetTarget, Category $category,  array $postData) {
-        $budgetTarget->update([
+    public function complete(BudgetTarget $budgetTarget, Category $category, array $postData)
+    {
+        $budgetTarget->update($this->fillableData([
             ...$postData,
             'completed_at' => $postData['completed_at'] ?? $this->budgetCategoryService->getLastTransactionMonth($category)?->month,
-        ]);
+        ]));
     }
 
-    public function update(Category $category, BudgetTarget $budgetTarget, User $user, $postData) {
-        if ($category->id !== $budgetTarget->category_id){
-            throw new Exception(__("This target doent belongs to this category"));
+    public function update(Category $category, BudgetTarget $budgetTarget, User $user, $postData)
+    {
+        if ($category->id !== $budgetTarget->category_id) {
+            throw new Exception(__('This target doent belongs to this category'));
         }
 
-        $budgetTarget->update([
+        $budgetTarget->update($this->fillableData([
             ...$postData,
             'team_id' => $user->current_team_id,
             'user_id' => $user->id,
             'name' => $category->name,
             'category_id' => $budgetTarget->category_id,
-        ]);
+        ]));
     }
 
-    public function add(Category $category,User $user, mixed $postData)
+    public function add(Category $category, User $user, mixed $postData)
     {
-        if ($category->team_id !== $user->current_team_id){
-            throw new Exception(__("This category does not belongs to this team"));
+        if ($category->team_id !== $user->current_team_id) {
+            throw new Exception(__('This category does not belongs to this team'));
         }
 
-        return $category->budget()->create([
+        return $category->budget()->create($this->fillableData([
             ...$postData,
             'name' => $category->name ?? $category->display_id,
             'team_id' => $user->current_team_id,
-            "user_id" => $user->id
-        ]);
+            'user_id' => $user->id,
+        ]));
     }
 }

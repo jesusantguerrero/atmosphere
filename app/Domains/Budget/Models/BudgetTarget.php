@@ -2,37 +2,91 @@
 
 namespace App\Domains\Budget\Models;
 
-use Illuminate\Support\Facades\DB;
-use Illuminate\Database\Eloquent\Model;
-use App\Domains\Transaction\Models\Transaction;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Domains\AppCore\Models\Category;
+use App\Domains\Transaction\Models\Transaction;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+use Modules\Watchlist\Models\Watchlist;
 
 class BudgetTarget extends Model
 {
     use HasFactory;
 
     const TYPE_SPENDING = 'spending';
+
     const TYPE_SAVING_BALANCE = 'saving_balance';
+
     const TYPE_SAVING_MONTHLY = 'savings_monthly';
+
+    // WL-7: "Spend less than X in this watchlist for N consecutive months"
+    const TYPE_CHALLENGE_UNDER_AMOUNT = 'challenge_under_amount';
 
     protected $fillable = [
         'team_id',
         'user_id',
+        'category_id',
         'color',
         'amount',
         'name',
         'target_type',
+        'watchlist_id',
         'frequency',
         'frequency_date',
         'frequency_week_day',
         'frequency_month_date',
+        'frequency_interval',
+        'frequency_interval_unit',
         'notify',
-        'completed_at'
+        'completed_at',
     ];
 
-    public function category() {
+    public function category()
+    {
         return $this->belongsTo(Category::class);
+    }
+
+    public function watchlist()
+    {
+        return $this->belongsTo(Watchlist::class);
+    }
+
+    /**
+     * For a `challenge_under_amount` target tied to a watchlist, count how many
+     * consecutive months ending at $endDate (default: now) the watchlist's monthly
+     * total stayed strictly below `amount`. Returns 0 when current month already broke,
+     * positive integer for active streak.
+     */
+    public function streakInMonths(?Carbon $endDate = null, int $maxLookback = 24): int
+    {
+        if ($this->target_type !== self::TYPE_CHALLENGE_UNDER_AMOUNT || ! $this->watchlist_id) {
+            return 0;
+        }
+        $watchlist = $this->watchlist;
+        if (! $watchlist) {
+            return 0;
+        }
+        $endCarbon = ($endDate ?? Carbon::now())->copy()->endOfMonth();
+        $series = Watchlist::monthlySeries(
+            $maxLookback,
+            (int) $this->team_id,
+            $watchlist,
+            $endCarbon->format('Y-m-d')
+        );
+
+        $threshold = (float) $this->amount;
+        $streak = 0;
+        // Walk from most recent backwards while still under threshold.
+        foreach (array_reverse($series) as $point) {
+            if ((float) $point['total'] < $threshold) {
+                $streak++;
+            } else {
+                break;
+            }
+        }
+
+        return $streak;
     }
 
     public function getExpensesByPeriod($startDate, $endDate = null)

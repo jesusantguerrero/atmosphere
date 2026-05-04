@@ -26,12 +26,14 @@ const form = useForm<{
   type: string;
   input: any[];
   target: number | null;
+  direction: string;
 }>({
   id: null,
   name: "",
   type: "",
   input: [],
   target: null,
+  direction: "outflow",
 });
 
 // Pre-fill from formData (edit mode or example pre-fill)
@@ -44,12 +46,19 @@ watch(
       form.type = (data.type as string) ?? "";
       form.input = Array.isArray(data.input) ? data.input : [];
       form.target = (data.target as number) ?? null;
+      form.direction = (data.direction as string) ?? "outflow";
     } else {
       form.reset();
     }
   },
   { immediate: true }
 );
+
+const directionOptions = [
+  { value: "outflow", label: "Outflow", description: "Track spending (default)" },
+  { value: "inflow", label: "Inflow", description: "Track income — e.g. freelance from these payees" },
+  { value: "both", label: "Both", description: "Net flow — useful for transfers" },
+];
 
 const isEditMode = computed(() => Boolean(form.id));
 
@@ -277,6 +286,24 @@ const isType = (typeName: string) => form.type == typeName;
             placeholder="Choose tags"
             endpoint="/api/labels"
           />
+        </AtField>
+
+        <AtField label="Direction">
+          <div class="grid grid-cols-3 gap-2">
+            <button
+              v-for="opt in directionOptions"
+              :key="opt.value"
+              type="button"
+              class="px-3 py-2 text-left rounded-md border transition"
+              :class="form.direction === opt.value
+                ? 'border-primary bg-primary/10 text-primary'
+                : 'border-base bg-base-lvl-3 text-body-1 hover:border-primary/50'"
+              @click="form.direction = opt.value"
+            >
+              <div class="text-sm font-medium">{{ opt.label }}</div>
+              <div class="text-xs text-body-1/70">{{ opt.description }}</div>
+            </button>
+          </div>
         </AtField>
 
         <AtField label="Monthly target (opcional)">
