@@ -58,7 +58,66 @@ const sectionTitle = computed(() => {
     return t("Spending watchlist for") + " " + formatMonth(pageState.dates.startDate, MonthTypeFormat.long);
 })
 const isModalOpen = ref(false);
-const resourceToEdit = ref(null);
+const resourceToEdit = ref<Record<string, unknown> | null>(null);
+
+const examples = [
+    { name: 'Restaurants', type: 'categories', hint: 'Pick your dining categories' },
+    { name: 'Subscriptions', type: 'payees', hint: 'Pick Netflix, Spotify, etc.' },
+    { name: 'Delivery', type: 'payees', hint: 'Pick UberEats, PedidosYa, etc.' },
+];
+
+const openWithExample = (example: { name: string; type: string; hint: string }) => {
+    resourceToEdit.value = {
+        name: example.name,
+        type: example.type,
+        input: [],
+        target: null,
+    };
+    isModalOpen.value = true;
+};
+
+const openBlankModal = () => {
+    resourceToEdit.value = null;
+    isModalOpen.value = true;
+};
+
+const handleEdit = (item: Record<string, any>) => {
+    resourceToEdit.value = {
+        id: item.id,
+        name: item.name,
+        type: item.type,
+        input: item.input ?? [],
+        target: item.target,
+    };
+    isModalOpen.value = true;
+};
+
+const handleDelete = (item: Record<string, any>) => {
+    if (!window.confirm(t('Delete watchlist "{name}"?', { name: item.name }))) {
+        return;
+    }
+    router.delete(route('watchlist.destroy', item), {
+        preserveScroll: true,
+    });
+};
+
+const overTargetItems = computed(() => {
+    return (props.data as any[]).filter((item) => {
+        const target = Number(item.target ?? 0);
+        const total = Number(item.data?.month?.total ?? 0);
+        return target > 0 && total > target;
+    });
+});
+
+const projectedOverItems = computed(() => {
+    return (props.data as any[]).filter((item) => {
+        const target = Number(item.target ?? 0);
+        const total = Number(item.data?.month?.total ?? 0);
+        const projected = Number(item.data?.month?.projected ?? 0);
+        const isCurrent = Boolean(item.data?.month?.is_current_period);
+        return isCurrent && target > 0 && total <= target && projected > target;
+    });
+});
 </script>
 
 <template>
@@ -85,14 +144,64 @@ const resourceToEdit = ref(null);
 
     <FinanceTemplate :title="$t('Finance')" :accounts="accounts" ref="financeTemplateRef">
       <article class="w-full">
-        <section class="grid gap-4 mt-4 lg:grid-cols-3">
+        <header class="px-2 mt-4 mb-4">
+          <h2 class="text-lg font-bold text-body">{{ $t('Spending watchlists') }}</h2>
+          <p class="text-sm text-body-1 mt-1 max-w-2xl">
+            {{ $t('Track categories, payees or tags with monthly targets and get alerted when you cross them.') }}
+          </p>
+        </header>
+
+        <div v-if="overTargetItems.length" class="mb-4 px-4 py-3 rounded-md bg-error/10 border border-error/30 flex items-center gap-3">
+          <i class="fa fa-circle-exclamation text-error" />
+          <p class="text-sm text-error font-semibold flex-1">
+            {{ overTargetItems.length === 1
+              ? `1 watchlist crossed its target this month`
+              : `${overTargetItems.length} watchlists crossed their targets this month` }}
+          </p>
+        </div>
+
+        <div v-else-if="projectedOverItems.length" class="mb-4 px-4 py-3 rounded-md bg-warning/10 border border-warning/30 flex items-center gap-3">
+          <i class="fa fa-triangle-exclamation text-warning" />
+          <p class="text-sm text-warning font-semibold flex-1">
+            {{ projectedOverItems.length === 1
+              ? `1 watchlist is projected to exceed its target this month`
+              : `${projectedOverItems.length} watchlists are projected to exceed their targets this month` }}
+          </p>
+        </div>
+
+        <section v-if="data.length" class="grid gap-4 lg:grid-cols-3">
           <WatchlistCard
             v-for="item in data"
-            :key="item.name"
+            :key="item.id ?? item.name"
             :item="item"
             class="cursor-pointer"
             @click="router.visit(route('watchlist.show', item))"
+            @edit="handleEdit"
+            @delete="handleDelete"
           />
+        </section>
+
+        <section v-else class="bg-base-lvl-3 rounded-md p-8 text-center border border-base">
+          <h3 class="text-lg font-bold text-body">{{ $t('No watchlists yet') }}</h3>
+          <p class="text-sm text-body-1 mt-1 max-w-md mx-auto">
+            {{ $t('Pick something to track. Most people start with a category they want to spend less on.') }}
+          </p>
+
+          <div class="flex flex-wrap justify-center gap-2 mt-5">
+            <button
+              v-for="example in examples"
+              :key="example.name"
+              type="button"
+              class="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-semibold hover:bg-primary/20 transition"
+              @click="openWithExample(example)"
+            >
+              {{ example.name }}
+            </button>
+          </div>
+
+          <LogerButton variant="inverse" class="mt-5" @click="openBlankModal">
+            {{ $t('Or start from scratch') }}
+          </LogerButton>
         </section>
       </article>
 

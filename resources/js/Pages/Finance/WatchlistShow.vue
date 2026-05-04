@@ -6,6 +6,7 @@ import { AtDatePager } from "atmosphere-ui";
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 import ChartComparison from "@/Components/widgets/ChartComparison.vue";
+import WidgetStats from "@/Components/widgets/WidgetStats.vue";
 
 import FinanceTemplate from "./Partials/FinanceTemplate.vue";
 import FinanceSectionNav from "./Partials/FinanceSectionNav.vue";
@@ -54,6 +55,32 @@ const statCards = computed(() => [
         label: "last month"
     }
 ]);
+
+const target = computed(() => Number(props.resource.target ?? 0));
+const monthTotal = computed(() => Number(props.resource.month?.total ?? 0));
+const monthProjected = computed(() => Number(props.resource.month?.projected ?? 0));
+const isCurrentPeriod = computed(() => Boolean(props.resource.month?.is_current_period));
+const daysElapsed = computed(() => Number(props.resource.month?.days_elapsed ?? 0));
+const daysInPeriod = computed(() => Number(props.resource.month?.days_in_period ?? 0));
+
+const hasTarget = computed(() => target.value > 0);
+const targetRatio = computed(() => hasTarget.value ? monthTotal.value / target.value : 0);
+const projectedRatio = computed(() => hasTarget.value ? monthProjected.value / target.value : 0);
+
+const trafficLight = computed(() => {
+    if (!hasTarget.value) return null;
+    if (targetRatio.value > 1) return { label: 'Over target', bar: 'bg-error', chip: 'bg-error/10 text-error border-error' };
+    if (targetRatio.value > 0.7) return { label: 'Close to target', bar: 'bg-warning', chip: 'bg-warning/10 text-warning border-warning' };
+    return { label: 'On track', bar: 'bg-success', chip: 'bg-success/10 text-success border-success' };
+});
+
+const projectionTone = computed(() => {
+    if (!hasTarget.value || !isCurrentPeriod.value) return 'text-body-1';
+    if (projectedRatio.value > 1) return 'text-error font-bold';
+    if (projectedRatio.value > 0.7) return 'text-warning font-bold';
+    return 'text-success font-bold';
+});
+
 
 const parser = (transaction: Record<string, string>) => ({
         title: transaction.description,
@@ -109,7 +136,7 @@ const categories = computed(() => {
 
         <section>
             <section class="w-full">
-                <WidgetWatchlistStats
+                <WidgetStats
                   class="w-full"
                   :total="formatMoney(resource.month.total, resource.month.currency_code)"
                   description="This month"
@@ -118,8 +145,39 @@ const categories = computed(() => {
                  <template #icon>
                   <IIcRoundQueryStats />
                  </template>
-                </WidgetWatchlistStats>
+                </WidgetStats>
             </section>
+
+            <section v-if="hasTarget" class="bg-base-lvl-3 rounded-md p-4 mt-4 border" :class="trafficLight.chip">
+                <div class="flex items-center justify-between mb-2">
+                    <div>
+                        <h4 class="font-bold text-body">Monthly target</h4>
+                        <p class="text-xs text-body-1">{{ trafficLight.label }} — {{ Math.round(targetRatio * 100) }}% del límite</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-lg font-bold">{{ formatMoney(monthTotal) }}</div>
+                        <div class="text-xs text-body-1">de {{ formatMoney(target) }}</div>
+                    </div>
+                </div>
+                <div class="h-2 rounded-full bg-base-lvl-2 overflow-hidden">
+                    <div
+                        class="h-full rounded-full transition-all"
+                        :class="trafficLight.bar"
+                        :style="{ width: Math.min(100, targetRatio * 100) + '%' }"
+                    />
+                </div>
+                <div v-if="isCurrentPeriod" class="mt-3 pt-3 border-t border-base/40 flex items-baseline justify-between text-sm">
+                    <div>
+                        <span class="text-body-1">Proyección fin de mes</span>
+                        <span class="text-xs text-body-1 ml-2">(día {{ daysElapsed }} de {{ daysInPeriod }})</span>
+                    </div>
+                    <div class="text-right">
+                        <span :class="projectionTone">{{ formatMoney(monthProjected) }}</span>
+                        <span class="text-xs text-body-1 ml-1">({{ Math.round(projectedRatio * 100) }}%)</span>
+                    </div>
+                </div>
+            </section>
+
             <ChartComparison
                 class="w-full mb-10 mt-4 overflow-hidden bg-white rounded-lg"
                 :title="`${resource.name} Report`"

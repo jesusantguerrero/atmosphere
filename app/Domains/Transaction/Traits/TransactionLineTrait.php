@@ -2,9 +2,9 @@
 
 namespace App\Domains\Transaction\Traits;
 
+use App\Domains\Budget\Data\BudgetReservedNames;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Transaction;
-use App\Domains\Budget\Data\BudgetReservedNames;
 
 trait TransactionLineTrait
 {
@@ -79,14 +79,14 @@ trait TransactionLineTrait
             ->when($categories, fn ($query) => $query->whereIn('transaction_lines.category_id', $categories));
     }
 
-    public function scopeExpenseCategories($query, array $categories = null)
+    public function scopeExpenseCategories($query, ?array $categories = null)
     {
         $query->whereNot('categories.name', BudgetReservedNames::READY_TO_ASSIGN->value)
             ->join('categories', 'transaction_lines.category_id', '=', 'categories.id');
 
         $categories = collect($categories);
-        $excluded = $categories->filter( fn ($id) => $id < 0)->all();
-        $included = $categories->filter( fn ($id) => $id > 0)->all();
+        $excluded = $categories->filter(fn ($id) => $id < 0)->all();
+        $included = $categories->filter(fn ($id) => $id > 0)->all();
 
         if (count($excluded)) {
             $query->whereNotIn('transaction_lines.category_id', $excluded);
@@ -98,15 +98,15 @@ trait TransactionLineTrait
         return $query;
     }
 
-    public function scopeAllCategories($query, array $categories = null)
+    public function scopeAllCategories($query, ?array $categories = null)
     {
         $query
             ->whereNot('categories.name', BudgetReservedNames::READY_TO_ASSIGN->value)
             ->join('categories', 'transaction_lines.category_id', '=', 'categories.id');
 
         $categories = collect($categories);
-        $excluded = $categories->filter( fn ($id) => $id < 0)->all();
-        $included = $categories->filter( fn ($id) => $id > 0)->all();
+        $excluded = $categories->filter(fn ($id) => $id < 0)->all();
+        $included = $categories->filter(fn ($id) => $id > 0)->all();
 
         if (count($excluded)) {
             $query->whereNotIn('transaction_lines.category_id', $excluded);
@@ -118,7 +118,7 @@ trait TransactionLineTrait
         return $query;
     }
 
-    public function scopeIncomePayees($query, array $payees = null)
+    public function scopeIncomePayees($query, ?array $payees = null)
     {
         $query->where('categories.name', BudgetReservedNames::READY_TO_ASSIGN->value)
             ->join('categories', 'transaction_lines.category_id', '=', 'categories.id')
@@ -134,6 +134,20 @@ trait TransactionLineTrait
     public function scopePayees($query, array $payees)
     {
         return $query->whereIn('transaction_lines.payee_id', $payees)
-        ->join('categories', 'transaction_lines.category_id', '=', 'categories.id');
+            ->join('categories', 'transaction_lines.category_id', '=', 'categories.id');
+    }
+
+    public function scopeGroups($query, array $groupIds)
+    {
+        return $query->whereHas('category', function ($q) use ($groupIds) {
+            $q->whereIn('parent_id', $groupIds);
+        });
+    }
+
+    public function scopeTags($query, array $labelIds)
+    {
+        return $query->whereHas('labels', function ($q) use ($labelIds) {
+            $q->whereIn('labels.id', $labelIds);
+        });
     }
 }
