@@ -5,15 +5,24 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title>{{ config('app.name', 'Loger') }}</title>
         <link rel="manifest" href="/manifest.json" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="icon" href="/favicon.ico">
         {{-- @laravelPWA --}}
-        <meta name="description" content="Loger">
+        <meta name="description" content="Loger — personal finance and home management for the rest of the world.">
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
         <link rel="mask-icon" href="/mask-icon.svg" color="#FFFFFF">
         <meta name="theme-color" content="#ffffff">
+
+        <meta property="og:type" content="website">
+        <meta property="og:site_name" content="Loger">
+        <meta property="og:title" content="Loger">
+        <meta property="og:description" content="Personal finance and home management for the rest of the world.">
+        <meta property="og:image" content="{{ url('/logo.png') }}">
+        <meta name="twitter:card" content="summary_large_image">
+
+        @include('partials.analytics')
 
         <!-- Fonts -->
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap">

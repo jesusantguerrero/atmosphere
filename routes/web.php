@@ -45,13 +45,65 @@ if (config('app.env') == 'production') {
     URL::forceScheme('https');
 }
 
-Route::get('/', function () {
+$marketingLocale = function (): void {
+    $supported = ['en', 'es'];
+    $requested = request('lang');
+
+    if (in_array($requested, $supported, true)) {
+        session(['marketing_locale' => $requested]);
+        app()->setLocale($requested);
+
+        return;
+    }
+
+    $stored = session('marketing_locale');
+
+    if (in_array($stored, $supported, true)) {
+        app()->setLocale($stored);
+    }
+};
+
+Route::get('/', function () use ($marketingLocale) {
     if (auth()->check()) {
         return redirect('/dashboard');
     }
 
+    $marketingLocale();
+
     return view('landing');
 })->name('landing');
+
+Route::get('/pricing', function () use ($marketingLocale) {
+    $marketingLocale();
+
+    return view('pricing');
+})->name('pricing');
+
+Route::get('/privacy-policy', function () use ($marketingLocale) {
+    $marketingLocale();
+
+    return view('legal.privacy-policy');
+})->name('privacy-policy');
+
+Route::get('/terms-of-service', function () use ($marketingLocale) {
+    $marketingLocale();
+
+    return view('legal.terms-of-service');
+})->name('terms-of-service');
+
+Route::get('/sitemap.xml', function () {
+    $now = now()->toAtomString();
+
+    $urls = [
+        ['loc' => route('landing'), 'lastmod' => $now, 'changefreq' => 'weekly', 'priority' => '1.0'],
+        ['loc' => route('pricing'), 'lastmod' => $now, 'changefreq' => 'monthly', 'priority' => '0.8'],
+        ['loc' => route('privacy-policy'), 'lastmod' => $now, 'changefreq' => 'yearly', 'priority' => '0.3'],
+        ['loc' => route('terms-of-service'), 'lastmod' => $now, 'changefreq' => 'yearly', 'priority' => '0.3'],
+    ];
+
+    return response()->view('sitemap', ['urls' => $urls])
+        ->header('Content-Type', 'application/xml');
+})->name('sitemap');
 
 Route::resource('onboarding', OnboardingController::class)->middleware(['auth:sanctum', 'atmosphere.unteamed', 'verified']);
 
