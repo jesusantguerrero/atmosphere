@@ -42,14 +42,20 @@ const spentPercentage = computed(() => {
     return Math.round((currentBudget.value.spending / currentBudget.value.total) * 100);
 });
 
+// balance arrives from the server as a string; `+` would coerce to concat.
+const numericBalance = (a: IAccount): number => {
+    const value = parseFloat(String(a.balance ?? 0));
+    return Number.isFinite(value) ? value : 0;
+};
+
 const totalBalance = computed(() => {
-    return props.accounts?.reduce((sum, a) => sum + (a.balance ?? 0), 0) ?? 0;
+    return props.accounts?.reduce((sum, a) => sum + numericBalance(a), 0) ?? 0;
 });
 
 const creditCardDebt = computed(() => {
     return props.accounts
         ?.filter(a => a.credit_limit && a.credit_limit > 0)
-        ?.reduce((sum, a) => sum + Math.abs(a.balance ?? 0), 0) ?? 0;
+        ?.reduce((sum, a) => sum + Math.abs(numericBalance(a)), 0) ?? 0;
 });
 
 const movementIsPositive = computed(() => Number(monthMovement.value) >= 0);

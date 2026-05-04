@@ -7,6 +7,8 @@ use App\Domains\Transaction\Models\BillingCycle;
 use App\Domains\Transaction\Models\Transaction;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Insane\Journal\Models\Core\AccountDetailType;
 
 class NextPaymentsService
 {
@@ -110,10 +112,21 @@ class NextPaymentsService
                 $previousMonth = $currentMonth->copy()->subMonth();
                 $previousClosingDate = $previousMonth->copy()->day(min($closingDay, $previousMonth->daysInMonth));
 
-                // Check if there was a payment (type = 1) since the previous closing date (i.e., during current statement period)
-                $paymentInCurrentPeriod = \App\Domains\Transaction\Models\TransactionLine::where('account_id', $account->id)
-                    ->where('date', '>', $previousClosingDate->format('Y-m-d'))
-                    ->where('type', 1) // type = 1 means payment/income
+                // Check if a real payment (transfer from a cash/bank-type account) was made
+                // since the previous closing. A type=1 line alone isn't enough — that also
+                // matches cashback, refunds, and manual adjustments, which would falsely
+                // suppress the card from "next payments" while debt remains. Mirrors the
+                // narrowing applied in CreditCardReportService::getLastPayment (q-1).
+                $paymentInCurrentPeriod = DB::table('transaction_lines as tl')
+                    ->join('transactions as t', 'tl.transaction_id', '=', 't.id')
+                    ->join('accounts as src', 'src.id', '=', 't.account_id')
+                    ->join('account_detail_types as srcType', 'srcType.id', '=', 'src.account_detail_type_id')
+                    ->where('tl.account_id', $account->id)
+                    ->where('tl.date', '>', $previousClosingDate->format('Y-m-d'))
+                    ->where('tl.type', 1)
+                    ->where('t.status', 'verified')
+                    ->whereColumn('t.account_id', '!=', 'tl.account_id')
+                    ->whereIn('srcType.name', AccountDetailType::ALL_CASH)
                     ->exists();
 
                 // Only show if no payment was made during this statement period
