@@ -27,6 +27,7 @@ import { useBudget } from "@/domains/budget";
 import { SearchFilterMode, useServerSearch } from "@/composables/useServerSearchV2";
 import MessageBox from "@/Components/organisms/MessageBox.vue";
 import BudgetCategories from "./Partials/BudgetCategories.vue";
+import BudgetErrorBanner from "@/domains/budget/components/BudgetErrorBanner.vue";
 
 import { MonthTypeFormat, formatMonth, formatMoney } from "@/utils";
 import { ICategory } from "@/domains/transactions/models";
@@ -313,6 +314,7 @@ const budgetCsvExportUrl = computed(() => {
 
       <section class="mx-auto mt-4 rounded-lg text-body bg-base max-w-7xl">
           <article class="w-full space-y-4">
+            <BudgetErrorBanner />
             <BudgetCategories :budgets="budgets" />
         </article>
       </section>

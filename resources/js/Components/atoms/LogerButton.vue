@@ -28,12 +28,18 @@ const props = withDefaults(defineProps<{
 const typeClasses = computed(() => {
     return variants[props.variant as ButtonVariants] || variants.primary
 })
+
+// AtButton (atmosphere-ui) only uses :disabled for styling — clicks still go through.
+// Add pointer-events-none so processing/disabled actually blocks the second click.
+const blockedClasses = computed(() => {
+    return (props.processing || props.disabled) ? 'pointer-events-none opacity-50' : ''
+})
 </script>
 
 <template>
  <component
     :is="as" class="relative flex items-center px-5 py-2 font-bold transition border rounded-md min-w-max"
-    :class="[typeClasses]"
+    :class="[typeClasses, blockedClasses]"
     :disabled="processing || disabled"
 >
     <section class="flex items-center">
