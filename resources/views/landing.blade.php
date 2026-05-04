@@ -1,89 +1,69 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Loger — Digital Home Management</title>
-    <meta name="description" content="Loger is a personal finance and home management tool built for people outside the traditional US banking system. Track budgets, transactions, meals, and more.">
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="icon" href="/favicon.ico">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&family=Pacifico&display=swap">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        brand: ['Pacifico', 'cursive'],
-                        sans: ['Nunito', 'sans-serif'],
-                    },
-                    colors: {
-                        primary: '#F37EA1',
-                        'primary-dark': '#d4617f',
-                        'primary-light': '#fce4ec',
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        body { font-family: 'Nunito', sans-serif; }
-    </style>
+    @include('partials.marketing-head')
+
+    @php
+        $structuredData = [
+            '@context' => 'https://schema.org',
+            '@type' => 'SoftwareApplication',
+            'name' => 'Loger',
+            'description' => __('landing.meta.description'),
+            'applicationCategory' => 'FinanceApplication',
+            'operatingSystem' => 'Web',
+            'url' => url('/'),
+            'image' => url('/logo.png'),
+            'offers' => [
+                '@type' => 'Offer',
+                'price' => '0',
+                'priceCurrency' => 'USD',
+            ],
+            'author' => [
+                '@type' => 'Person',
+                'name' => 'Jesus Guerrero',
+            ],
+        ];
+    @endphp
+    <script type="application/ld+json">{!! json_encode($structuredData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
 </head>
 <body class="bg-gray-950 text-gray-100 antialiased">
 
-    {{-- Navigation --}}
-    <header class="border-b border-gray-800 bg-gray-950/80 backdrop-blur-sm sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-            <a href="/" class="flex items-center gap-3">
-                <img src="/logo.svg" alt="Loger" class="h-8 w-auto brightness-0 invert">
-            </a>
-            <nav class="flex items-center gap-6">
-                <a href="https://loger.neatlancer.com"
-                   target="_blank"
-                   rel="noopener noreferrer"
-                   class="text-sm text-gray-400 hover:text-gray-100 transition-colors">
-                    Demo
-                </a>
-                <a href="{{ route('login') }}"
-                   class="text-sm font-medium text-gray-100 hover:text-primary transition-colors">
-                    Login
-                </a>
-            </nav>
-        </div>
-    </header>
+    @include('partials.marketing-nav')
 
     <main>
-        {{-- Hero Section --}}
+        {{-- Hero --}}
         <section class="max-w-6xl mx-auto px-6 pt-24 pb-20 text-center">
             <div class="inline-flex items-center gap-2 bg-gray-800 border border-gray-700 rounded-full px-4 py-1.5 text-sm text-gray-400 mb-8">
                 <span class="w-2 h-2 rounded-full bg-primary inline-block"></span>
-                Personal finance, reimagined
+                {{ __('landing.hero.badge') }}
             </div>
 
             <h1 class="text-5xl sm:text-6xl font-bold leading-tight tracking-tight mb-6">
-                The Digital Home<br>
-                <span class="text-primary">Management Software</span>
+                {{ __('landing.hero.headline_a') }}<br>
+                <span class="text-primary">{{ __('landing.hero.headline_b') }}</span>
             </h1>
 
             <p class="text-lg sm:text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-                Loger gives you full control over your finances without depending on US-centric banking integrations.
-                Built for real-world budgeting — multi-currency, flexible, and entirely yours.
+                {{ __('landing.hero.subhead') }}
             </p>
 
             <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <a href="{{ route('register') }}"
-                   class="w-full sm:w-auto inline-block bg-primary hover:bg-primary-dark text-white font-semibold px-8 py-3.5 rounded-lg transition-colors text-base">
-                    Get Started Free
+                   data-cta="hero-primary"
+                   class="w-full sm:w-auto inline-block bg-primary hover:bg-primary-dark text-white font-semibold px-8 py-3.5 rounded-lg transition-colors text-base shadow-lg shadow-primary/20">
+                    {{ __('landing.hero.cta_primary') }}
                 </a>
                 <a href="https://loger.neatlancer.com"
                    target="_blank"
                    rel="noopener noreferrer"
-                   class="w-full sm:w-auto inline-block border border-gray-700 hover:border-gray-500 text-gray-300 hover:text-white font-medium px-8 py-3.5 rounded-lg transition-colors text-base">
-                    Try the Demo
+                   data-cta="hero-secondary"
+                   class="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-gray-300 hover:text-white font-medium px-4 py-3.5 transition-colors text-base">
+                    {{ __('landing.hero.cta_secondary') }}
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                 </a>
             </div>
+
+            <p class="text-xs text-gray-500 mt-6">{{ __('landing.hero.reassurance') }}</p>
         </section>
 
         {{-- Feature Grid --}}
@@ -98,28 +78,16 @@
                         </svg>
                     </div>
                     <div>
-                        <h2 class="text-lg font-semibold text-white mb-2">Personal Finance</h2>
-                        <p class="text-gray-400 text-sm leading-relaxed">
-                            Full budget management with transaction tracking, account reconciliation, and multi-currency support. Works with any bank, anywhere in the world.
-                        </p>
+                        <h2 class="text-lg font-semibold text-white mb-2">{{ __('landing.features.finance.title') }}</h2>
+                        <p class="text-gray-400 text-sm leading-relaxed">{{ __('landing.features.finance.description') }}</p>
                     </div>
                     <ul class="mt-auto space-y-2 text-sm text-gray-500">
-                        <li class="flex items-center gap-2">
-                            <span class="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></span>
-                            Budgets and spending categories
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <span class="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></span>
-                            Multi-currency account balances
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <span class="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></span>
-                            Bank statement reconciliation
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <span class="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></span>
-                            PDF statement import
-                        </li>
+                        @foreach ((array) __('landing.features.finance.items') as $item)
+                            <li class="flex items-center gap-2">
+                                <span class="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></span>
+                                {{ $item }}
+                            </li>
+                        @endforeach
                     </ul>
                 </div>
 
@@ -131,28 +99,16 @@
                         </svg>
                     </div>
                     <div>
-                        <h2 class="text-lg font-semibold text-white mb-2">Meal Planning</h2>
-                        <p class="text-gray-400 text-sm leading-relaxed">
-                            Plan weekly meals, manage recipes, and track ingredients. Connect food spending directly to your household budget for a complete picture.
-                        </p>
+                        <h2 class="text-lg font-semibold text-white mb-2">{{ __('landing.features.meals.title') }}</h2>
+                        <p class="text-gray-400 text-sm leading-relaxed">{{ __('landing.features.meals.description') }}</p>
                     </div>
                     <ul class="mt-auto space-y-2 text-sm text-gray-500">
-                        <li class="flex items-center gap-2">
-                            <span class="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></span>
-                            Recipe and ingredient library
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <span class="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></span>
-                            Weekly meal calendar
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <span class="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></span>
-                            Grocery cost tracking
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <span class="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></span>
-                            Food budget integration
-                        </li>
+                        @foreach ((array) __('landing.features.meals.items') as $item)
+                            <li class="flex items-center gap-2">
+                                <span class="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></span>
+                                {{ $item }}
+                            </li>
+                        @endforeach
                     </ul>
                 </div>
 
@@ -165,29 +121,44 @@
                         </svg>
                     </div>
                     <div>
-                        <h2 class="text-lg font-semibold text-white mb-2">Housing Management</h2>
-                        <p class="text-gray-400 text-sm leading-relaxed">
-                            Keep your home organized. Track recurring bills, services, and household tasks all in one place alongside your finances.
-                        </p>
+                        <h2 class="text-lg font-semibold text-white mb-2">{{ __('landing.features.housing.title') }}</h2>
+                        <p class="text-gray-400 text-sm leading-relaxed">{{ __('landing.features.housing.description') }}</p>
                     </div>
                     <ul class="mt-auto space-y-2 text-sm text-gray-500">
-                        <li class="flex items-center gap-2">
-                            <span class="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></span>
-                            Recurring bill tracking
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <span class="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></span>
-                            Home service records
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <span class="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></span>
-                            Household task management
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <span class="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></span>
-                            Utility expense history
-                        </li>
+                        @foreach ((array) __('landing.features.housing.items') as $item)
+                            <li class="flex items-center gap-2">
+                                <span class="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></span>
+                                {{ $item }}
+                            </li>
+                        @endforeach
                     </ul>
+                </div>
+            </div>
+        </section>
+
+        {{-- Social proof (placeholders — replace with real testimonials) --}}
+        <section class="border-t border-gray-800 bg-gray-900/30">
+            <div class="max-w-6xl mx-auto px-6 py-20">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-white mb-3">{{ __('landing.social_proof.title') }}</h2>
+                    <p class="text-gray-400">{{ __('landing.social_proof.subtitle') }}</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    @for ($i = 0; $i < 3; $i++)
+                        <figure class="bg-gray-900 border border-dashed border-gray-700 rounded-2xl p-6 flex flex-col gap-4">
+                            <svg class="w-8 h-8 text-gray-700" fill="currentColor" viewBox="0 0 24 24"><path d="M9.983 3v7.391c0 5.704-3.731 9.57-8.983 10.609l-.995-2.151c2.432-.917 3.995-3.638 3.995-5.849h-4v-10h9.983zm14.017 0v7.391c0 5.704-3.748 9.571-9 10.609l-.996-2.151c2.433-.917 3.996-3.638 3.996-5.849h-3.983v-10h9.983z"/></svg>
+                            <blockquote class="text-gray-400 text-sm leading-relaxed flex-grow">
+                                {{ __('landing.social_proof.placeholder_quote') }}
+                            </blockquote>
+                            <figcaption class="text-xs text-gray-600">{{ __('landing.social_proof.placeholder_attribution') }}</figcaption>
+                        </figure>
+                    @endfor
+                </div>
+                <div class="text-center mt-10">
+                    <a href="mailto:jesusant.guerrero@gmail.com?subject=Loger%20testimonial"
+                       class="text-sm text-primary hover:text-primary-dark transition-colors">
+                        {{ __('landing.social_proof.cta') }} →
+                    </a>
                 </div>
             </div>
         </section>
@@ -195,34 +166,24 @@
         {{-- Why Loger --}}
         <section class="border-t border-gray-800 bg-gray-900/50">
             <div class="max-w-6xl mx-auto px-6 py-20 text-center">
-                <h2 class="text-3xl font-bold text-white mb-4">Built for the rest of the world</h2>
-                <p class="text-gray-400 max-w-xl mx-auto leading-relaxed">
-                    Most personal finance apps assume you have a US bank account with automatic import. Loger is different —
-                    it works with any financial institution, supports multiple currencies natively, and puts you in control of your own data.
-                </p>
+                <h2 class="text-3xl font-bold text-white mb-4">{{ __('landing.why.title') }}</h2>
+                <p class="text-gray-400 max-w-xl mx-auto leading-relaxed">{{ __('landing.why.body') }}</p>
             </div>
         </section>
 
         {{-- Final CTA --}}
         <section class="max-w-6xl mx-auto px-6 py-20 text-center">
-            <h2 class="text-3xl font-bold text-white mb-4">Ready to take control?</h2>
-            <p class="text-gray-400 mb-8">Create a free account and start managing your finances today.</p>
+            <h2 class="text-3xl font-bold text-white mb-4">{{ __('landing.final_cta.title') }}</h2>
+            <p class="text-gray-400 mb-8">{{ __('landing.final_cta.subtitle') }}</p>
             <a href="{{ route('register') }}"
-               class="inline-block bg-primary hover:bg-primary-dark text-white font-semibold px-10 py-4 rounded-lg transition-colors text-base">
-                Create Free Account
+               data-cta="footer-primary"
+               class="inline-block bg-primary hover:bg-primary-dark text-white font-semibold px-10 py-4 rounded-lg transition-colors text-base shadow-lg shadow-primary/20">
+                {{ __('landing.final_cta.cta') }}
             </a>
         </section>
     </main>
 
-    {{-- Footer --}}
-    <footer class="border-t border-gray-800 bg-gray-950">
-        <div class="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500">
-            <div class="flex items-center gap-3">
-                <img src="/logo.svg" alt="Loger" class="h-5 w-auto brightness-0 invert opacity-50">
-            </div>
-            <p>Built by Jesus Guerrero &mdash; Released under the BSD-3-Clause License</p>
-        </div>
-    </footer>
+    @include('partials.marketing-footer')
 
 </body>
 </html>
