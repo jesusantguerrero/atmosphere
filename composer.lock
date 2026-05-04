@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1c4000889feb1612a80f143f2dfec887",
+    "content-hash": "55507eff523b96bc9931b02e1c879521",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -2328,16 +2328,10 @@
         {
             "name": "insane/journal",
             "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/insane-code/journal.git",
-                "reference": "e3a7a17c91c759a6f92fbf15ee2e3c3792b32e65"
-            },
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/insane-code/journal/zipball/e3a7a17c91c759a6f92fbf15ee2e3c3792b32e65",
-                "reference": "e3a7a17c91c759a6f92fbf15ee2e3c3792b32e65",
-                "shasum": ""
+                "type": "path",
+                "url": "../journal",
+                "reference": "e3a7a17c91c759a6f92fbf15ee2e3c3792b32e65"
             },
             "require": {
                 "staudenmeir/belongs-to-through": "^2.5"
@@ -2351,16 +2345,15 @@
                 "phpunit/phpunit": "^7.4@dev",
                 "symfony/thanks": "^1.0"
             },
-            "default-branch": true,
             "type": "library",
             "extra": {
                 "laravel": {
-                    "aliases": {
-                        "Insane": "Insane\\Journal\\JournalFacade"
-                    },
                     "providers": [
                         "Insane\\Journal\\JournalServiceProvider"
-                    ]
+                    ],
+                    "aliases": {
+                        "Insane": "Insane\\Journal\\JournalFacade"
+                    }
                 }
             },
             "autoload": {
@@ -2368,7 +2361,19 @@
                     "Insane\\Journal\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "Insane\\Journal\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "vendor/bin/phpunit"
+                ],
+                "test-coverage": [
+                    "vendor/bin/phpunit --coverage-html coverage"
+                ]
+            },
             "license": [
                 "MIT"
             ],
@@ -2380,14 +2385,13 @@
             ],
             "description": "Accounting module for atmosphere and laravel",
             "keywords": [
-                "Accounting",
+                "accounting",
                 "invoicing"
             ],
-            "support": {
-                "issues": "https://github.com/insane-code/journal/issues",
-                "source": "https://github.com/insane-code/journal/tree/master"
-            },
-            "time": "2025-12-30T00:35:23+00:00"
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         },
         {
             "name": "insane/plan-module",

@@ -7,9 +7,10 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    IFluentFoodApple20Filled: typeof import('~icons/fluent/food-apple20-filled')['default']
+    IIcRoundQueryStats: typeof import('~icons/ic/round-query-stats')['default']
     IIonEllipsisVertical: typeof import('~icons/ion/ellipsis-vertical')['default']
     IMaterialSymbolsBrightnessAlertOutlineRounded: typeof import('~icons/material-symbols/brightness-alert-outline-rounded')['default']
+    IMaterialSymbolsHomeWorkOutline: typeof import('~icons/material-symbols/home-work-outline')['default']
     IMdiBankTransfer: typeof import('~icons/mdi/bank-transfer')['default']
     IMdiBankTransferIn: typeof import('~icons/mdi/bank-transfer-in')['default']
     IMdiBankTransferOut: typeof import('~icons/mdi/bank-transfer-out')['default']
@@ -20,8 +21,8 @@ declare module 'vue' {
     IMdiChevronDown: typeof import('~icons/mdi/chevron-down')['default']
     IMdiChevronLeft: typeof import('~icons/mdi/chevron-left')['default']
     IMdiChevronRight: typeof import('~icons/mdi/chevron-right')['default']
-    IMdiChevronUp: typeof import('~icons/mdi/chevron-up')['default']
     IMdiClose: typeof import('~icons/mdi/close')['default']
+    IMdiContentCopy: typeof import('~icons/mdi/content-copy')['default']
     IMdiCreditCard: typeof import('~icons/mdi/credit-card')['default']
     IMdiDotsVertical: typeof import('~icons/mdi/dots-vertical')['default']
     IMdiDownload: typeof import('~icons/mdi/download')['default']
@@ -29,7 +30,6 @@ declare module 'vue' {
     IMdiEllipsisVertical: typeof import('~icons/mdi/ellipsis-vertical')['default']
     IMdiExport: typeof import('~icons/mdi/export')['default']
     IMdiFile: typeof import('~icons/mdi/file')['default']
-    IMdiFilePdfBox: typeof import('~icons/mdi/file-pdf-box')['default']
     IMdiFilter: typeof import('~icons/mdi/filter')['default']
     IMdiHistory: typeof import('~icons/mdi/history')['default']
     IMdiLink: typeof import('~icons/mdi/link')['default']
@@ -37,7 +37,6 @@ declare module 'vue' {
     IMdiMinus: typeof import('~icons/mdi/minus')['default']
     IMdiMoney: typeof import('~icons/mdi/money')['default']
     IMdiPlus: typeof import('~icons/mdi/plus')['default']
-    IMdiReceiptTextOutline: typeof import('~icons/mdi/receipt-text-outline')['default']
     IMdiSearch: typeof import('~icons/mdi/search')['default']
     IMdiSort: typeof import('~icons/mdi/sort')['default']
     IMdiStar: typeof import('~icons/mdi/star')['default']

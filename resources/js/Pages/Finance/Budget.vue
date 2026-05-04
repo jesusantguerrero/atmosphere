@@ -11,6 +11,7 @@ import IconClose from "@/Components/icons/IconClose.vue";
 import Modal from "@/Components/atoms/Modal.vue";
 import JetDropdown from "@/Components/atoms/Dropdown.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
+import LogerButtonCircle from "@/Components/atoms/LogerButtonCircle.vue";
 import PointAlert from "@/Components/atoms/PointAlert.vue";
 import StatusButtons from "@/Components/molecules/StatusButtons.vue";
 import AppLayout from "@/Components/templates/AppLayout.vue";
@@ -240,37 +241,39 @@ const budgetCsvExportUrl = computed(() => {
 
             <LogerButton variant="inverse" @click="goToday"> {{ $t('Today') }} </LogerButton>
 
-            <JetDropdown align="right" width="56">
+            <JetDropdown align="right" width="48">
                 <template #trigger>
-                    <LogerButton variant="inverse" :title="$t('More actions')">
+                    <LogerButtonCircle :title="$t('More actions')">
                         <IMdiDotsVertical />
-                    </LogerButton>
+                    </LogerButtonCircle>
                 </template>
 
                 <template #content>
-                    <AtDropdownLink
-                        as="button"
-                        @click="copyFromPrevious(false)"
-                    >
-                        <section class="flex items-center w-full">
-                            <IMdiContentCopy class="mr-2" />
-                            <span>{{ $t('Use last month\'s plan') }}</span>
-                        </section>
-                    </AtDropdownLink>
+                    <div class="w-56 py-1">
+                        <AtDropdownLink
+                            as="button"
+                            @click="copyFromPrevious(false)"
+                        >
+                            <section class="flex items-center w-full">
+                                <IMdiContentCopy class="mr-2" />
+                                <span>{{ $t('Use last month\'s plan') }}</span>
+                            </section>
+                        </AtDropdownLink>
 
-                    <AtDropdownLink :href="budgetCsvExportUrl" target="_blank" as="a">
-                        <section class="flex items-center w-full">
-                            <IMdiDownload class="mr-2" />
-                            <span>{{ $t('Export') }} CSV</span>
-                        </section>
-                    </AtDropdownLink>
+                        <AtDropdownLink :href="budgetCsvExportUrl" target="_blank" as="a">
+                            <section class="flex items-center w-full">
+                                <IMdiDownload class="mr-2" />
+                                <span>{{ $t('Export') }} CSV</span>
+                            </section>
+                        </AtDropdownLink>
 
-                    <AtDropdownLink :href="route('budget.export')" target="_blank" as="a">
-                        <section class="flex items-center w-full">
-                            <IMdiExport class="mr-2" />
-                            <span>{{ $t('Export') }} {{ $t('Budget') }}</span>
-                        </section>
-                    </AtDropdownLink>
+                        <AtDropdownLink :href="route('budget.export')" target="_blank" as="a">
+                            <section class="flex items-center w-full">
+                                <IMdiExport class="mr-2" />
+                                <span>{{ $t('Export') }} {{ $t('Budget') }}</span>
+                            </section>
+                        </AtDropdownLink>
+                    </div>
                 </template>
             </JetDropdown>
           </div>
