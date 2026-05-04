@@ -6,6 +6,7 @@ use App\Domains\Journal\Actions\AccountDetailTypesCreate;
 use App\Domains\Transaction\Services\NextPaymentsService;
 use App\Models\Account;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\AccountDetailType;
@@ -193,19 +194,83 @@ class NextPaymentsCashbackSuppressionTest extends TestCase
 
     public function test_real_payment_suppresses_card(): void
     {
-        [$user, $card, $bank] = $this->setupCardWithDebt();
-        $teamId = $user->current_team_id;
+        // Today is May 6; relevantCutDate (closingDay=3) → May 3.
+        // Payment May 4 is strictly after the cut → suppression applies.
+        Carbon::setTestNow(Carbon::create(2026, 5, 6, 10, 0, 0));
 
-        // Pay the card in the current period — should suppress.
-        // The balance still reflects partial debt because the payment ($6,900) is less
-        // than total debt ($7,000). This exercises both gates: debt > 0 AND suppression.
-        $this->recordPayment($teamId, $user->id, $bank, $card, now()->subDay()->format('Y-m-d'), 6900.00);
+        try {
+            [$user, $card, $bank] = $this->setupCardWithDebt();
+            $teamId = $user->current_team_id;
 
-        $payments = (new NextPaymentsService)->getNextPayments($teamId);
+            // Partial payment leaves $100 debt — exercises both gates: debt > 0 AND suppression.
+            $this->recordPayment($teamId, $user->id, $bank, $card, '2026-05-04', 6900.00);
 
-        $this->assertFalse(
-            $payments->contains(fn ($p) => $p['type'] === 'credit_card_payment' && $p['account_id'] === $card->id),
-            'A real payment in the current period should suppress the card from next payments.'
-        );
+            $payments = (new NextPaymentsService)->getNextPayments($teamId);
+
+            $this->assertFalse(
+                $payments->contains(fn ($p) => $p['type'] === 'credit_card_payment' && $p['account_id'] === $card->id),
+                'A real payment after the most recent cut should suppress the card from next payments.'
+            );
+        } finally {
+            Carbon::setTestNow();
+        }
+    }
+
+    /**
+     * Real-world case from prod: card with closingDay=3, today=May 4. User paid the
+     * April-3 statement on April 15. That payment satisfied the previous cycle, NOT
+     * the cycle that just closed May 3. The card must still appear in next payments.
+     */
+    public function test_payment_for_previous_cycle_does_not_suppress_current_cycle(): void
+    {
+        // Force "today" to a date past the current month's closing.
+        $today = Carbon::create(2026, 5, 4, 10, 0, 0);
+        Carbon::setTestNow($today);
+
+        try {
+            [$user, $card, $bank] = $this->setupCardWithDebt(closingDay: 3);
+            $teamId = $user->current_team_id;
+
+            // Paid the previous cycle on April 15 — between previousClosing (Apr 3) and
+            // currentClosing (May 3). Old code suppressed; new code must not.
+            $this->recordPayment($teamId, $user->id, $bank, $card, '2026-04-15', 5000.00);
+
+            $payments = (new NextPaymentsService)->getNextPayments($teamId);
+
+            $this->assertTrue(
+                $payments->contains(fn ($p) => $p['type'] === 'credit_card_payment' && $p['account_id'] === $card->id),
+                'A payment between previous and current closing satisfies the previous statement, not the just-closed one. Card must still appear.'
+            );
+        } finally {
+            Carbon::setTestNow();
+        }
+    }
+
+    /**
+     * Counterpart: when the cut for this month is in the future, a payment between
+     * the previous cut and today legitimately satisfies the just-passed statement.
+     */
+    public function test_payment_after_previous_cut_suppresses_when_current_cut_is_future(): void
+    {
+        $today = Carbon::create(2026, 5, 4, 10, 0, 0);
+        Carbon::setTestNow($today);
+
+        try {
+            // closingDay 20 → current month's closing is May 20 (future).
+            // previousClosingDate = April 20.
+            [$user, $card, $bank] = $this->setupCardWithDebt(closingDay: 20);
+            $teamId = $user->current_team_id;
+
+            $this->recordPayment($teamId, $user->id, $bank, $card, '2026-04-25', 6900.00);
+
+            $payments = (new NextPaymentsService)->getNextPayments($teamId);
+
+            $this->assertFalse(
+                $payments->contains(fn ($p) => $p['type'] === 'credit_card_payment' && $p['account_id'] === $card->id),
+                'When the next cut is still in the future, a payment after the previous cut correctly suppresses.'
+            );
+        } finally {
+            Carbon::setTestNow();
+        }
     }
 }

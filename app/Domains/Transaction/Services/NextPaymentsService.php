@@ -5,6 +5,7 @@ namespace App\Domains\Transaction\Services;
 use App\Domains\Budget\Models\BudgetTarget;
 use App\Domains\Transaction\Models\BillingCycle;
 use App\Domains\Transaction\Models\Transaction;
+use App\Models\Account;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -78,7 +79,7 @@ class NextPaymentsService
     private function getUpcomingCreditCardPayments(int $teamId, Carbon $startDate, Carbon $endDate): array
     {
         // Get all credit card accounts (accounts with credit_closing_day set)
-        $creditCardAccounts = \App\Models\Account::where([
+        $creditCardAccounts = Account::where([
             'team_id' => $teamId,
         ])
             ->whereNull('closed_at')
@@ -108,21 +109,28 @@ class NextPaymentsService
                 $closingDate = $currentMonth->copy()->day(min($closingDay, $currentMonth->daysInMonth));
                 $closings[$account->name]['date'] = $closingDate;
 
-                // Find the previous closing date (last month)
-                $previousMonth = $currentMonth->copy()->subMonth();
-                $previousClosingDate = $previousMonth->copy()->day(min($closingDay, $previousMonth->daysInMonth));
+                // The "relevant cut" is the most recent closing that has already passed.
+                // A payment AFTER this date satisfies the just-closed statement; a payment
+                // BEFORE it satisfied the previous statement and should not suppress this one.
+                // Without this, an April 15 payment (for the cycle that closed April 3) would
+                // hide the May 3 cut from next payments.
+                if ($today->gte($closingDate)) {
+                    $relevantCutDate = $closingDate;
+                } else {
+                    $previousMonth = $currentMonth->copy()->subMonth();
+                    $relevantCutDate = $previousMonth->copy()->day(min($closingDay, $previousMonth->daysInMonth));
+                }
 
                 // Check if a real payment (transfer from a cash/bank-type account) was made
-                // since the previous closing. A type=1 line alone isn't enough — that also
-                // matches cashback, refunds, and manual adjustments, which would falsely
-                // suppress the card from "next payments" while debt remains. Mirrors the
-                // narrowing applied in CreditCardReportService::getLastPayment (q-1).
+                // since the relevant cut. A type=1 line alone isn't enough — that also matches
+                // cashback, refunds, and manual adjustments, which would falsely suppress the
+                // card while debt remains. Mirrors CreditCardReportService::getLastPayment (q-1).
                 $paymentInCurrentPeriod = DB::table('transaction_lines as tl')
                     ->join('transactions as t', 'tl.transaction_id', '=', 't.id')
                     ->join('accounts as src', 'src.id', '=', 't.account_id')
                     ->join('account_detail_types as srcType', 'srcType.id', '=', 'src.account_detail_type_id')
                     ->where('tl.account_id', $account->id)
-                    ->where('tl.date', '>', $previousClosingDate->format('Y-m-d'))
+                    ->where('tl.date', '>', $relevantCutDate->format('Y-m-d'))
                     ->where('tl.type', 1)
                     ->where('t.status', 'verified')
                     ->whereColumn('t.account_id', '!=', 'tl.account_id')
@@ -280,7 +288,7 @@ class NextPaymentsService
             return false;
         }
 
-        $account = \App\Models\Account::find($accountId);
+        $account = Account::find($accountId);
         if (! $account) {
             return false;
         }
