@@ -66,6 +66,10 @@ const menus = {
         url: '/finance/goals'
     },
     {
+        label: 'Planners',
+        url: '/finance/planners/house-buyer'
+    },
+    {
         label: 'Watchlist',
         url: '/finance/watchlist'
     },

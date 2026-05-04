@@ -32,6 +32,7 @@ class Kernel extends ConsoleKernel
         // Now using dynamic aggregation instead of cron-based conversion
         $schedule->command('bg:generate-billing-cycles')->daily()->runInBackground();
         $schedule->command('bg:planned-reminders')->daily()->runInBackground();
+        $schedule->command('watchlists:check-thresholds')->daily()->runInBackground();
         if (config('app.demo')) {
             if ($scheduleTime) {
                 $schedule->command('app:demo-reset')->dailyAt($scheduleTime)->runInBackground();

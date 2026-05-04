@@ -1,7 +1,7 @@
 
 <script setup lang="ts">
 import { computed, toRefs, ref } from "vue";
-import { router, useForm } from "@inertiajs/vue3";
+import { Link, router, useForm } from "@inertiajs/vue3";
 import { format, subMonths } from "date-fns";
 // @ts-ignore
 import { AtButton, AtDatePager } from "atmosphere-ui";
@@ -214,6 +214,22 @@ const deleteBulkTransactions = () => {
                     <p class="text-xs text-body-1/40 mt-1">{{ $t('of') }} {{ formatMoney(budgetTotal.spending) }}</p>
                 </div>
             </section>
+
+            <Link
+                href="/budget-funds/"
+                class="flex items-center justify-between gap-3 bg-base-lvl-3 border border-base rounded-lg px-4 py-3 hover:border-primary/30 transition group"
+            >
+                <div class="flex items-center gap-3">
+                    <div class="bg-primary/10 rounded-full w-9 h-9 flex items-center justify-center">
+                        <i class="fas fa-shield-alt text-primary"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-body">{{ $t('Emergency Fund Builder') }}</p>
+                        <p class="text-xs text-body-1/50">{{ $t('Plan and track your safety net') }}</p>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-right text-body-1/40 group-hover:text-primary transition"></i>
+            </Link>
 
             <section class="grid md:grid-cols-2 gap-4">
                 <WidgetTitleCard :title="$t('Planned Transactions')" class="hidden md:block">

@@ -40,9 +40,9 @@ const { toggleModal: toggleImportModal } = useImportModal();
         </template>
 
         <template #content>
-            <!-- Account Management -->
+            <!-- Account -->
             <div class="block px-4 py-2 text-xs text-gray-400">
-                Manage Account
+                Account
             </div>
 
             <JetDropdownLink :href="route('profile.show')">
@@ -52,9 +52,14 @@ const { toggleModal: toggleImportModal } = useImportModal();
             <JetDropdownLink :href="route('api-tokens.index')" v-if="hasApiFeatures">
                 API Tokens
             </JetDropdownLink>
+
+            <!-- Data -->
             <div class="block px-4 py-2 text-xs text-gray-400">
-                Exports
+                Data
             </div>
+            <AtDropdownLink as="button" target="_blank" @click="toggleImportModal()">
+                Import
+            </AtDropdownLink>
             <AtDropdownLink :href="route('finance.export')"  target="_blank" as="a">
                 Export transactions
             </AtDropdownLink>
@@ -62,15 +67,9 @@ const { toggleModal: toggleImportModal } = useImportModal();
                 <section class="flex w-full">
                     <IMdiFile  class="mr-2" />
                     <span>
-                        Export occurrence
+                        Export occurrences
                     </span>
                 </section>
-            </AtDropdownLink>
-            <div class="block px-4 py-2 text-xs text-gray-400">
-                Import
-            </div>
-            <AtDropdownLink as="button" target="_blank" @click="toggleImportModal()">
-                Import
             </AtDropdownLink>
 
             <div class="border-t border-gray-100"></div>

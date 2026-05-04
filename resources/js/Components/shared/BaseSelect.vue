@@ -245,11 +245,11 @@ watch(
 
 .multiselect__content-wrapper {
   &::-webkit-scrollbar-thumb {
-    background-color: transparentize($color: #000000, $amount: 0.8);
+    background-color: rgba(0, 0, 0, 0.2);
     border-radius: 4px;
 
     &:hover {
-      background-color: transparentize($color: #000000, $amount: 0.8);
+      background-color: rgba(0, 0, 0, 0.2);
     }
   }
 

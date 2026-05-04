@@ -185,11 +185,11 @@ html {
 
 .ic-scroller {
   &::-webkit-scrollbar-thumb {
-    background-color: transparentize($color: #000000, $amount: 0.7);
+    background-color: rgba(0, 0, 0, 0.3);
     border-radius: 4px;
 
     &:hover {
-      background-color: transparentize($color: #000000, $amount: 0.7);
+      background-color: rgba(0, 0, 0, 0.3);
     }
   }
 

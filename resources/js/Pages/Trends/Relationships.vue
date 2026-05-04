@@ -2,19 +2,20 @@
 import { ref, computed, toRefs } from 'vue';
 // @ts-ignore
 import { AtDatePager } from 'atmosphere-ui';
+
 import AppLayout from '@/Components/templates/AppLayout.vue';
+import SectionTitle from '@/Components/atoms/SectionTitle.vue';
 import { trendOptions } from './Partials/trendOptions';
 import TrendSectionNav from './Partials/TrendSectionNav.vue';
 import TrendTemplate from './Partials/TrendTemplate.vue';
 import { useServerSearch } from '@/composables/useServerSearch';
+import { formatMoney } from '@/utils';
 
 interface Member {
     id: string;
     name: string;
     initial: string;
-    color: string;
-    bgColor: string;
-    accent: string;
+    accent: 'emerald' | 'blue' | 'slate';
     spend: number;
     topCategories: { name: string; amount: number }[];
 }
@@ -41,31 +42,51 @@ const { state: pageState, executeSearchWithDelay } = useServerSearch(serverSearc
     manual: true,
 });
 
-const fmt = (value: number) => {
-    const code = (window as any)?.logerAppSettings?.currency_code ?? 'USD';
-    try {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: code,
-            maximumFractionDigits: 0,
-            minimumFractionDigits: 0,
-        }).format(Number(value) || 0);
-    } catch {
-        return `$${value}`;
-    }
-};
-
 const proportional = ref(false);
 const activeFilter = ref<string>('all');
+
+interface Accent {
+    dot: string;
+    chip: string;
+    bar: string;
+    avatar: string;
+    pillActive: string;
+    pillInactive: string;
+}
+
+const accents: Record<string, Accent> = {
+    emerald: {
+        dot: 'bg-emerald-500',
+        chip: 'bg-emerald-500 text-white',
+        bar: 'bg-emerald-500',
+        avatar: 'bg-emerald-500 text-white',
+        pillActive: 'bg-emerald-500 text-white',
+        pillInactive: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100',
+    },
+    blue: {
+        dot: 'bg-blue-500',
+        chip: 'bg-blue-500 text-white',
+        bar: 'bg-blue-500',
+        avatar: 'bg-blue-500 text-white',
+        pillActive: 'bg-blue-500 text-white',
+        pillInactive: 'bg-blue-50 text-blue-700 hover:bg-blue-100',
+    },
+    slate: {
+        dot: 'bg-slate-500',
+        chip: 'bg-slate-500 text-white',
+        bar: 'bg-slate-500',
+        avatar: 'bg-slate-500 text-white',
+        pillActive: 'bg-slate-500 text-white',
+        pillInactive: 'bg-slate-50 text-slate-700 hover:bg-slate-100',
+    },
+};
 
 const members = ref<Member[]>([
     {
         id: 'alice',
         name: 'Alice',
         initial: 'A',
-        color: '#3C3489',
-        bgColor: '#EEEDFE',
-        accent: '#7F77DD',
+        accent: 'emerald',
         spend: 612,
         topCategories: [
             { name: 'Comida', amount: 180 },
@@ -77,9 +98,7 @@ const members = ref<Member[]>([
         id: 'bob',
         name: 'Bob',
         initial: 'B',
-        color: '#085041',
-        bgColor: '#E1F5EE',
-        accent: '#1D9E75',
+        accent: 'blue',
         spend: 488,
         topCategories: [
             { name: 'Comida', amount: 145 },
@@ -91,9 +110,7 @@ const members = ref<Member[]>([
         id: 'household',
         name: 'Hogar',
         initial: 'H',
-        color: '#444441',
-        bgColor: '#F1EFE8',
-        accent: '#888780',
+        accent: 'slate',
         spend: 230,
         topCategories: [
             { name: 'Renta', amount: 200 },
@@ -162,7 +179,7 @@ const usagePct = (row: CategoryRow) => Math.min(100, Math.round((row.spent / row
 </script>
 
 <template>
-    <AppLayout :title="metaData?.title ?? 'Relaciones'">
+    <AppLayout :title="metaData?.title ?? 'Relationships'">
         <template #header>
             <TrendSectionNav :sections="trendOptions">
                 <template #actions>
@@ -178,26 +195,27 @@ const usagePct = (row: CategoryRow) => Math.min(100, Math.round((row.spent / row
             </TrendSectionNav>
         </template>
 
-        <TrendTemplate title="Relaciones" :hide-panel="true">
-            <div class="space-y-6 pb-8">
-
-                <header class="flex items-end justify-between gap-4">
-                    <div>
-                        <h1 class="text-2xl font-bold text-body-1 leading-tight">Relaciones</h1>
-                        <p class="text-sm text-body-3 mt-1">Cuánto aporta cada miembro al gasto del hogar</p>
+        <TrendTemplate title="Relationships" :hide-panel="true">
+            <main class="py-3 space-y-4">
+                <section class="px-5 py-4 bg-base-lvl-3 rounded-md">
+                    <div class="flex items-center justify-between flex-wrap gap-4">
+                        <div>
+                            <SectionTitle>Relaciones</SectionTitle>
+                            <p class="text-sm text-body-1 mt-1">Cuánto aporta cada miembro al gasto del hogar</p>
+                        </div>
+                        <label class="flex items-center gap-2 text-sm text-body-1 cursor-pointer select-none">
+                            <input type="checkbox" v-model="proportional" class="rounded border-base" />
+                            Vista proporcional
+                        </label>
                     </div>
-                </header>
 
-                <section class="flex items-center justify-between flex-wrap gap-4">
-                    <div class="flex gap-1.5">
+                    <div class="flex flex-wrap gap-1.5 mt-4">
                         <button
                             @click="activeFilter = 'all'"
-                            :class="[
-                                'px-3.5 py-1.5 text-sm rounded-full transition-colors',
-                                activeFilter === 'all'
-                                    ? 'bg-body-1 text-white font-medium'
-                                    : 'bg-base-lvl-1 border border-base-lvl-2 text-body-3 hover:text-body-1'
-                            ]"
+                            class="px-3.5 py-1.5 text-sm rounded-full transition-colors font-medium"
+                            :class="activeFilter === 'all'
+                                ? 'bg-body text-white'
+                                : 'bg-base-lvl-2 text-body-1 hover:bg-base-lvl-1'"
                         >
                             Todos
                         </button>
@@ -205,131 +223,125 @@ const usagePct = (row: CategoryRow) => Math.min(100, Math.round((row.spent / row
                             v-for="member in members"
                             :key="member.id"
                             @click="activeFilter = member.id"
-                            class="px-3.5 py-1.5 text-sm rounded-full font-medium transition-opacity"
-                            :class="activeFilter !== member.id && activeFilter !== 'all' ? 'opacity-50 hover:opacity-100' : ''"
-                            :style="{ background: member.bgColor, color: member.color }"
+                            class="px-3.5 py-1.5 text-sm rounded-full font-medium transition-colors"
+                            :class="activeFilter === member.id
+                                ? accents[member.accent].pillActive
+                                : accents[member.accent].pillInactive"
                         >
                             {{ member.name }}
                         </button>
                     </div>
-                    <label class="flex items-center gap-2 text-sm text-body-3 cursor-pointer select-none">
-                        <input type="checkbox" v-model="proportional" class="rounded border-base-lvl-2" />
-                        Vista proporcional
-                    </label>
                 </section>
 
                 <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <article
                         v-for="member in members"
                         :key="member.id"
-                        class="bg-base-lvl-1 rounded-xl p-5 border border-base-lvl-2 hover:border-base-lvl-3 transition-colors"
+                        class="bg-base-lvl-3 rounded-md border border-base p-5 hover:border-base-deep-1 transition-colors"
                     >
                         <div class="flex items-center justify-between mb-4">
                             <div class="flex items-center gap-2.5">
                                 <div
-                                    class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold"
-                                    :style="{ background: member.bgColor, color: member.color }"
+                                    class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold"
+                                    :class="accents[member.accent].avatar"
                                 >
                                     {{ member.initial }}
                                 </div>
-                                <span class="text-sm font-medium text-body-1">{{ member.name }}</span>
+                                <span class="text-sm font-semibold text-body">{{ member.name }}</span>
                             </div>
                             <span
-                                class="text-xs font-medium px-2 py-0.5 rounded-full"
-                                :style="{ background: member.bgColor, color: member.color }"
+                                class="text-xs font-bold px-2 py-0.5 rounded-full"
+                                :class="accents[member.accent].chip"
                             >
                                 {{ sharePct(member.spend) }}%
                             </span>
                         </div>
 
-                        <div class="text-3xl font-bold text-body-1 leading-none tabular-nums">
-                            {{ fmt(member.spend) }}
+                        <div class="text-3xl font-bold text-body leading-none tabular-nums">
+                            {{ formatMoney(member.spend) }}
                         </div>
-                        <div class="text-xs text-body-3 mt-1.5 mb-4">
-                            {{ member.id === 'household' ? 'Sin atribuir' : `de ${fmt(totalSpend)} total` }}
+                        <div class="text-xs text-body-1 mt-1.5 mb-4">
+                            {{ member.id === 'household' ? 'Sin atribuir' : `de ${formatMoney(totalSpend)} total` }}
                         </div>
 
-                        <div class="h-2 rounded-full bg-base-lvl-3 overflow-hidden mb-5">
+                        <div class="h-2 rounded-full bg-base-lvl-2 overflow-hidden mb-5">
                             <div
                                 class="h-full rounded-full transition-all"
-                                :style="{ width: sharePct(member.spend) + '%', background: member.accent }"
+                                :class="accents[member.accent].bar"
+                                :style="{ width: sharePct(member.spend) + '%' }"
                             ></div>
                         </div>
 
                         <div class="space-y-1.5">
-                            <p class="text-xs font-medium text-body-3 uppercase tracking-wide mb-1">Top categorías</p>
+                            <p class="text-xs font-semibold text-body-1 uppercase tracking-wide mb-1">Top categorías</p>
                             <div
                                 v-for="cat in member.topCategories"
                                 :key="cat.name"
                                 class="flex justify-between items-baseline text-sm"
                             >
-                                <span class="text-body-1">{{ cat.name }}</span>
-                                <span class="text-body-3 tabular-nums">{{ fmt(cat.amount) }}</span>
+                                <span class="text-body">{{ cat.name }}</span>
+                                <span class="text-body-1 tabular-nums">{{ formatMoney(cat.amount) }}</span>
                             </div>
                         </div>
                     </article>
                 </section>
 
-                <section class="bg-base-lvl-1 rounded-xl border border-base-lvl-2 overflow-hidden">
-                    <div class="flex items-center justify-between px-5 py-4 border-b border-base-lvl-2">
+                <section class="bg-base-lvl-3 rounded-md border border-base overflow-hidden">
+                    <div class="flex items-center justify-between flex-wrap gap-3 px-5 py-4 border-b border-base">
                         <div>
-                            <h2 class="text-base font-semibold text-body-1">Por categoría</h2>
-                            <p class="text-xs text-body-3 mt-0.5">Cuota de consumo por miembro</p>
+                            <SectionTitle>Por categoría</SectionTitle>
+                            <p class="text-xs text-body-1 mt-0.5">Cuota de consumo por miembro</p>
                         </div>
-                        <div class="flex gap-4 text-xs text-body-3">
+                        <div class="flex flex-wrap gap-3 text-xs text-body-1">
                             <span
                                 v-for="member in members"
                                 :key="member.id"
                                 class="inline-flex items-center gap-1.5"
                             >
-                                <span class="inline-block w-2.5 h-2.5 rounded-sm" :style="{ background: member.accent }"></span>
+                                <span class="inline-block w-2.5 h-2.5 rounded-sm" :class="accents[member.accent].dot"></span>
                                 {{ member.name }}
                             </span>
                         </div>
                     </div>
 
-                    <div class="divide-y divide-base-lvl-2">
+                    <div class="divide-y divide-base">
                         <div
                             v-for="row in categoryRows"
                             :key="row.name"
-                            class="px-5 py-3.5 hover:bg-base-lvl-3/40 transition-colors"
+                            class="px-5 py-3.5 hover:bg-base-lvl-2/40 transition-colors"
                         >
                             <div class="flex items-baseline justify-between mb-2">
-                                <span class="text-sm font-medium text-body-1">{{ row.name }}</span>
-                                <span class="text-xs text-body-3 tabular-nums">
-                                    <span class="text-body-1 font-medium">{{ fmt(row.spent) }}</span>
+                                <span class="text-sm font-semibold text-body">{{ row.name }}</span>
+                                <span class="text-xs text-body-1 tabular-nums">
+                                    <span class="text-body font-semibold">{{ formatMoney(row.spent) }}</span>
                                     <span class="mx-1">·</span>
-                                    {{ usagePct(row) }}% de {{ fmt(row.assigned) }}
+                                    {{ usagePct(row) }}% de {{ formatMoney(row.assigned) }}
                                 </span>
                             </div>
-                            <div class="flex h-3 rounded-full overflow-hidden bg-base-lvl-3">
+                            <div class="flex h-3 rounded-full overflow-hidden bg-base-lvl-2">
                                 <div
                                     v-for="split in row.splits"
                                     :key="split.memberId"
                                     class="h-full flex-shrink-0 transition-all"
-                                    :style="{
-                                        width: splitPct(row, split.amount) + '%',
-                                        background: memberById[split.memberId]?.accent || '#888780',
-                                    }"
-                                    :title="`${memberById[split.memberId]?.name}: ${fmt(split.amount)}`"
+                                    :class="accents[memberById[split.memberId]?.accent || 'slate'].bar"
+                                    :style="{ width: splitPct(row, split.amount) + '%' }"
+                                    :title="`${memberById[split.memberId]?.name}: ${formatMoney(split.amount)}`"
                                 ></div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="px-5 py-3 bg-base-lvl-3/50 border-t border-base-lvl-2">
-                        <p class="text-xs text-body-3 leading-relaxed">
-                            Las cuotas son el monto de cada transacción dividido entre los miembros atribuidos.
-                            Las transacciones sin atribuir cuentan como Hogar — eso es el default honesto, no un tag faltante.
+                    <div class="px-5 py-3 bg-base-lvl-2/50 border-t border-base">
+                        <p class="text-xs text-body-1 leading-relaxed">
+                            Las cuotas son el monto de cada transacción dividido entre los miembros atribuidos. Las transacciones sin atribuir cuentan como Hogar — eso es el default honesto, no un tag faltante.
                         </p>
                     </div>
                 </section>
 
-                <p class="text-xs text-body-3 italic text-center">
-                    Mock — ver <code class="bg-base-lvl-1 px-1.5 py-0.5 rounded text-body-3">.planning/features/couple-support.md</code> para el plan del backend
+                <p class="text-xs text-body-1 italic text-center px-2">
+                    Mock — backend pendiente. Ver <code class="bg-base-lvl-2 px-1.5 py-0.5 rounded">.planning/features/couple-support.md</code>.
                 </p>
-
-            </div>
+            </main>
         </TrendTemplate>
     </AppLayout>
 </template>

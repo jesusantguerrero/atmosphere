@@ -2503,12 +2503,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/jesusantguerrero/watchlist-module.git",
-                "reference": "e83d2f9ef7d63016e0c0afcbef465435a9786882"
+                "reference": "23c540d74a3158191ace27680a8824839bdecb8e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jesusantguerrero/watchlist-module/zipball/e83d2f9ef7d63016e0c0afcbef465435a9786882",
-                "reference": "e83d2f9ef7d63016e0c0afcbef465435a9786882",
+                "url": "https://api.github.com/repos/jesusantguerrero/watchlist-module/zipball/23c540d74a3158191ace27680a8824839bdecb8e",
+                "reference": "23c540d74a3158191ace27680a8824839bdecb8e",
                 "shasum": ""
             },
             "default-branch": true,
@@ -2534,9 +2534,9 @@
             "description": "Watchlist module for loger",
             "support": {
                 "issues": "https://github.com/jesusantguerrero/watchlist-module/issues",
-                "source": "https://github.com/jesusantguerrero/watchlist-module/tree/v0.1.2"
+                "source": "https://github.com/jesusantguerrero/watchlist-module/tree/main"
             },
-            "time": "2025-01-30T01:50:05+00:00"
+            "time": "2026-05-04T06:10:06+00:00"
         },
         {
             "name": "joshbrw/laravel-module-installer",

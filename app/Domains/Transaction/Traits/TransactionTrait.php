@@ -2,9 +2,9 @@
 
 namespace App\Domains\Transaction\Traits;
 
+use App\Domains\Budget\Data\BudgetReservedNames;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Transaction;
-use App\Domains\Budget\Data\BudgetReservedNames;
 
 trait TransactionTrait
 {
@@ -65,8 +65,8 @@ trait TransactionTrait
         return $query->where([
             'transactions.status' => 'verified',
         ])
-            ->when($uptoDate, fn($q) => $q->whereRaw('transactions.date <= ?', [$uptoDate]))
-            ->when(count($accountIds), fn($q) => $q->whereIn('transactions.account_id', [$uptoDate]))
+            ->when($uptoDate, fn ($q) => $q->whereRaw('transactions.date <= ?', [$uptoDate]))
+            ->when(count($accountIds), fn ($q) => $q->whereIn('transactions.account_id', [$uptoDate]))
             ->whereNotNull('category_id')
             ->selectRaw($transactionsTotalSum);
     }
@@ -81,18 +81,16 @@ trait TransactionTrait
         return $query->whereIn('category_id', $categories);
     }
 
-    public function scopeExpenseCategories($query, array $categories = null)
+    public function scopeExpenseCategories($query, ?array $categories = null)
     {
         $categories = collect($categories);
-        $excluded = $categories->filter( fn ($id) => $id < 0)->map(fn ($id) => abs($id))->all();
-        $included = $categories->filter( fn ($id) => $id > 0)->all();
-
+        $excluded = $categories->filter(fn ($id) => $id < 0)->map(fn ($id) => abs($id))->all();
+        $included = $categories->filter(fn ($id) => $id > 0)->all();
 
         $query->whereNot('categories.name', BudgetReservedNames::READY_TO_ASSIGN->value)
             ->join('categories', 'transactions.category_id', '=', 'categories.id')
-            ->where(fn ($q) =>
-                $q->when(count($excluded),fn ($q) => $q->whereNotIn('categories.id', $excluded))
-                ->when(count($included), fn ($q) =>  $q->whereIn('categories.id', $included))
+            ->where(fn ($q) => $q->when(count($excluded), fn ($q) => $q->whereNotIn('categories.id', $excluded))
+                ->when(count($included), fn ($q) => $q->whereIn('categories.id', $included))
             );
 
         return $query;
@@ -101,5 +99,19 @@ trait TransactionTrait
     public function scopePayees($query, array $payees)
     {
         return $query->whereIn('payee_id', $payees);
+    }
+
+    public function scopeGroups($query, array $groupIds)
+    {
+        return $query->whereHas('category', function ($q) use ($groupIds) {
+            $q->whereIn('parent_id', $groupIds);
+        });
+    }
+
+    public function scopeTags($query, array $labelIds)
+    {
+        return $query->whereHas('lines.labels', function ($q) use ($labelIds) {
+            $q->whereIn('labels.id', $labelIds);
+        });
     }
 }

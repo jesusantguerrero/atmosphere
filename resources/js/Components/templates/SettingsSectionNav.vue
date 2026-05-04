@@ -15,10 +15,6 @@ const sections = computed(() => [
         url: `/teams/${teamId.value}`
     },
     {
-        label: 'Emergency Fund Builder',
-        url: `/budget-funds/`
-    },
-    {
         label: 'Integrations',
         url: '/integrations'
     },
