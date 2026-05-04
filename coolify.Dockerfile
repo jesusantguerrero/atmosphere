@@ -52,7 +52,7 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/* && \
 # Get latest Composer
 COPY --from=base --chown=9999:9999 /var/www/html .
 COPY --chown=9999:9999 . .
-RUN composer update --ignore-platform-reqs
+RUN composer install --ignore-platform-reqs
 RUN composer dump-autoload
 RUN chown -R www-data:www-data .
 
