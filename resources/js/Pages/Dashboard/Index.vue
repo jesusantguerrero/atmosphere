@@ -18,6 +18,7 @@ import BudgetFundWidget from "./Partials/BudgetFundWidget.vue";
 import BudgetWidget from "./Partials/BudgetWidget.vue";
 import AccountBalancesWidget from "./Partials/AccountBalancesWidget.vue";
 import DashboardSummary from "./Partials/DashboardSummary.vue";
+import WatchlistDashboardWidget from "@/domains/watchlist/components/WatchlistDashboardWidget.vue";
 import DashboardFab from "./Partials/DashboardFab.vue";
 import BulkSelectionBar from "@/Components/BulkSelectionBar.vue";
 import ConfirmationModal from "@/Components/atoms/ConfirmationModal.vue";
@@ -64,6 +65,7 @@ const props = withDefaults(
     onboarding: Record<string, any>;
     checks?: IOccurrenceCheck[];
     modules: any[];
+    topWatchlists: any[];
   }>(),
   {}
 );
@@ -191,6 +193,7 @@ const deleteBulkTransactions = () => {
         :checks="dynamicStore.checks"
         :meals="meals"
         :user="user"
+        :top-watchlists="topWatchlists"
         :is-meals-enabled="isModuleEnabled('meals')"
         :is-housing-enabled="isModuleEnabled('housing')"
       />
@@ -221,6 +224,7 @@ const deleteBulkTransactions = () => {
               v-if="isModuleEnabled('housing')" />
 
           <AccountBalancesWidget :accounts="accounts" />
+          <WatchlistDashboardWidget :watchlists="topWatchlists" />
           <WidgetContainer
             :message="$t('Transactions')"
             :tabs="transactionsTabs"

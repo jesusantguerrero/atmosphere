@@ -14,6 +14,7 @@ use App\Http\Resources\PlannedMealResource;
 use Inertia\Inertia;
 use Insane\Journal\Models\Core\Account;
 use Insane\Journal\Models\Core\AccountDetailType;
+use Modules\Watchlist\Services\WatchlistService;
 
 class DashboardController
 {
@@ -23,6 +24,7 @@ class DashboardController
         private MealService $mealService,
         private PlannedTransactionService $plannedService,
         private CreditCardReportService $creditCardReportService,
+        private WatchlistService $watchlistService,
     ) {}
 
     public function __invoke()
@@ -48,6 +50,8 @@ class DashboardController
         foreach ($accounts as $account) {
             $account->last_payment = $lastPayments[$account->id] ?? null;
         }
+
+        $topWatchlists = $this->getTopWatchlists($teamId, $startDate, $endDate);
 
         return inertia('Dashboard/Index', [
             'sectionTitle' => 'Dashboard',
@@ -77,6 +81,34 @@ class DashboardController
             'drafts' => Inertia::lazy(fn () => TransactionService::getDraftCount($teamId)),
             'checks' => Inertia::lazy(fn () => Occurrence::where('team_id', $teamId)->limit(4)->get()),
             'nextPayments' => $nextPayments,
+            'topWatchlists' => $topWatchlists,
         ]);
+    }
+
+    /**
+     * Pick the 3 watchlists most worth surfacing on the dashboard.
+     *
+     * Ranking: watchlists with a target come first, ordered by % of target consumed
+     * this month (highest first → most actionable). Untargeted watchlists are excluded
+     * — without a threshold there's no semáforo to render. Returns at most 3 entries.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function getTopWatchlists(int $teamId, string $startDate, string $endDate): array
+    {
+        $all = $this->watchlistService->list($teamId, $startDate, $endDate);
+
+        $withTarget = array_values(array_filter($all, function ($item) {
+            return (float) ($item['target'] ?? 0) > 0;
+        }));
+
+        usort($withTarget, function ($a, $b) {
+            $aRatio = ((float) ($a['data']['month']['total'] ?? 0)) / (float) $a['target'];
+            $bRatio = ((float) ($b['data']['month']['total'] ?? 0)) / (float) $b['target'];
+
+            return $bRatio <=> $aRatio;
+        });
+
+        return array_slice($withTarget, 0, 3);
     }
 }

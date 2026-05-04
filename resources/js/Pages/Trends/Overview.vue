@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, toRefs } from "vue";
+import { computed, ref, toRefs } from "vue";
 import { router } from "@inertiajs/vue3";
 // @ts-ignore
 import { AtDatePager } from "atmosphere-ui";
@@ -19,6 +19,8 @@ import ExpenseChartWidget from "@/domains/transactions/components/ExpenseChartWi
 import { useServerSearch } from "@/composables/useServerSearch";
 import AccountFilters from "@/domains/transactions/components/AccountFilters.vue";
 import WidgetYearSpending from "@/Components/widgets/WidgetYearSpending.vue";
+import LogerButton from "@/Components/atoms/LogerButton.vue";
+import WatchlistModal from "@/domains/watchlist/components/WatchlistModal.vue";
 
 const props = defineProps({
   user: {
@@ -99,6 +101,32 @@ const isFilterSelected = (filterValue: string) => {
     const currentStatus = location.pathname;
     return currentStatus.includes(filterValue);
 }
+
+// WL-5: save current Trends filter state as a reusable Watchlist.
+// Section drives the watchlist type; the category filter (when present) becomes its input.
+const sectionToWatchlistType: Record<string, string> = {
+    groups: 'groups',
+    categories: 'categories',
+    payees: 'payees',
+};
+
+const canSaveAsReport = computed(() => Boolean(sectionToWatchlistType[props.section]));
+
+const isWatchlistModalOpen = ref(false);
+const watchlistFormData = ref<Record<string, any> | null>(null);
+
+const openSaveAsReport = () => {
+    const filterCategories = pageState.filters?.category;
+    const input = Array.isArray(filterCategories) ? filterCategories : [];
+    watchlistFormData.value = {
+        id: null,
+        name: '',
+        type: sectionToWatchlistType[props.section] ?? 'categories',
+        input,
+        target: null,
+    };
+    isWatchlistModalOpen.value = true;
+};
 </script>
 
 <template>
@@ -106,14 +134,23 @@ const isFilterSelected = (filterValue: string) => {
     <template #header>
       <TrendSectionNav :sections="trendOptions">
         <template #actions>
-                <AtDatePager
-                    class="w-full h-12 border-none bg-base-lvl-1 text-body"
-                    v-model:startDate="pageState.dates.startDate"
-                    v-model:endDate="pageState.dates.endDate"
-                    @change="executeSearchWithDelay(500)"
-                    controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
-                    next-mode="month"
-                />
+                <div class="flex items-center w-full gap-2">
+                    <AtDatePager
+                        class="flex-1 h-12 border-none bg-base-lvl-1 text-body"
+                        v-model:startDate="pageState.dates.startDate"
+                        v-model:endDate="pageState.dates.endDate"
+                        @change="executeSearchWithDelay(500)"
+                        controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
+                        next-mode="month"
+                    />
+                    <LogerButton
+                        v-if="canSaveAsReport"
+                        variant="inverse"
+                        @click="openSaveAsReport"
+                    >
+                        {{ $t('Save as report') }}
+                    </LogerButton>
+                </div>
 
         </template>
       </TrendSectionNav>
@@ -186,5 +223,11 @@ const isFilterSelected = (filterValue: string) => {
         </section>
       </template>
     </TrendTemplate>
+
+    <WatchlistModal
+        v-if="isWatchlistModalOpen"
+        v-model:show="isWatchlistModalOpen"
+        :form-data="watchlistFormData"
+    />
   </AppLayout>
 </template>
