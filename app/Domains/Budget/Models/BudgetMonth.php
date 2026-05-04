@@ -2,19 +2,19 @@
 
 namespace App\Domains\Budget\Models;
 
-use DateTime;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Database\Eloquent\Model;
-use Insane\Journal\Models\Core\Account;
 use App\Domains\AppCore\Models\Category;
 use App\Domains\Budget\Data\BudgetReservedNames;
 use App\Domains\Budget\Models\Traits\BudgetMonthTrait;
+use DateTime;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Insane\Journal\Models\Core\Account;
 
 class BudgetMonth extends Model
 {
-    use HasFactory, BudgetMonthTrait;
+    use BudgetMonthTrait, HasFactory;
 
     protected $fillable = [
         'team_id',
@@ -22,6 +22,7 @@ class BudgetMonth extends Model
         'category_id',
         'month',
         'name',
+        'currency_code',
         'budgeted',
         'activity',
         'available',
@@ -31,11 +32,11 @@ class BudgetMonth extends Model
         'moved_from_last_month',
         'overspending_previous_month',
         'accounts_balance',
-        'meta_data'
+        'meta_data',
     ];
 
     protected $casts = [
-        'meta_data' => 'array'
+        'meta_data' => 'array',
     ];
 
     public function category()
@@ -75,7 +76,7 @@ class BudgetMonth extends Model
             ->leftJoin('budget_targets', 'budget_targets.category_id', 'budget_months.category_id')
             ->orderBy('month')
             ->orderBy('g.index')
-            ->groupBy("month")
+            ->groupBy('month')
             ->get();
 
         return $balance->toArray();
@@ -85,9 +86,9 @@ class BudgetMonth extends Model
     {
         $yearMonth = (new DateTime($date))->format('Y-m').'-01';
 
-        $balance = self::selectRaw("
+        $balance = self::selectRaw('
             sum(budgeted) as total, categories.name
-        ")
+        ')
             ->where('budget_months.team_id', $teamId)
             ->where('month', $yearMonth)
             ->join('categories', fn ($q) => $q->on('categories.id', 'category_id')
@@ -108,9 +109,9 @@ class BudgetMonth extends Model
     {
         $yearMonth = (new DateTime($date))->format('Y-m').'-01';
 
-        $balance = self::selectRaw("
+        $balance = self::selectRaw('
             sum(budgeted) as total, categories.name
-        ")
+        ')
             ->where('budget_months.team_id', $teamId)
             ->where('month', $yearMonth)
             ->join('categories', fn ($q) => $q->on('categories.id', 'category_id')
@@ -120,7 +121,7 @@ class BudgetMonth extends Model
             ->leftJoin('budget_targets', 'budget_targets.category_id', 'budget_months.category_id')
             ->orderBy('g.index')
             ->groupBy('g.name')
-            ->where("budget_months.available", '<', 0)
+            ->where('budget_months.available', '<', 0)
             ->get();
 
         $balance = $balance->mapWithKeys(fn ($item) => [$item['name'] => $item['total']])->toArray();

@@ -5,7 +5,7 @@
 </p>
 
 <h3 align="center">
-    The Digital Home Management Software
+    The Family Operating System
 </h3>
 
  <p align="center">
@@ -20,17 +20,18 @@
 
 ## About Loger
 
-Loger (_House_ in French) — managing a family and home is almost like being CEO of a company. Budgeting, expenses, subscriptions, savings goals, emergency funds, meal planning, grocery lists... we all do it in our heads, on paper, or scattered across multiple apps.
+Loger (_House_ in French) is one app to run the financial, logistical, and relational machinery of a household. Budgeting, expenses, savings goals, meal planning, groceries, chores, home maintenance, family schedules — all the things we juggle in our heads, on paper, or across half a dozen apps.
 
-Loger is the central point to manage all of that and more. Built for people who want real budgeting tools — especially those outside the US where bank-sync services like Plaid don't exist.
+Built for people who want real budgeting and household tools — especially those outside the US, where bank-sync services like Plaid don't exist.
 
-## Features
+## The 5 Pillars
 
-Loger is organized in **concerns** (modules you can enable/disable per team):
+Loger is organized around five pillars (concerns you can enable/disable per team):
 
 ### 💵 Finance
-- Monthly Budget (YNAB-style envelope budgeting)
-- Accounts & Transactions (multi-currency support)
+YNAB-style envelope budgeting with multi-currency support out of the box.
+- Monthly Budget (zero-based / envelope)
+- Accounts & Transactions (per-profile base currency, native + converted)
 - Bank statement import (PDF)
 - Account Reconciliation
 - Emergency Funds & Savings Goals
@@ -38,20 +39,43 @@ Loger is organized in **concerns** (modules you can enable/disable per team):
 - Credit Card management
 - Watchlists
 
-### 🍗 Meal Planner
+### 🍽️ Food
+Plan what you eat, what to buy, and what's already in the pantry.
 - Recipes & Ingredients
-- Weekly Meal Planner
-- Random Meal Generator
-- Shopping Lists
+- Weekly Meal Planner & Random Meal Generator
+- Shopping Lists (with shareable public links)
+- Reusable weekly menus (templates that re-date themselves)
+- Pantry / inventory & expiration tracking
+- Favorite meals
+- Cost per recipe & per-week food budget
 
-### 🏡 Housing
-- Chores & Occurrence Checks
-- Equipment tracking
-- Plans (events, repairs, activities)
+### 🏡 Home
+Run the house like the asset it is.
+- Chores & Occurrence Checks ("when did we last…?")
+- Equipment & home inventory
+- Maintenance schedule (recurring services)
+- Warranty documents
+- Service provider contacts
+- Recurring bills & utilities
+- Plans (repairs, projects, events)
 
-### 👨‍👩‍👧 Relationships
+### 👨‍👩‍👧 Family
+The people side of the house.
 - Family member profiles
-- Activity tracking & reminders
+- Important dates (birthdays, anniversaries)
+- Health notes (allergies, medications, visits)
+- School / work activity log
+- Personal preferences (sizes, gift ideas, foods they hate)
+- One-on-one time reminders
+- Responsibilities & assigned chores
+
+### 📅 Calendar & Routines
+The integrating layer. Pulls dated items from every other pillar into one timeline.
+- Weekly schedule across meals, chores, bills, family events
+- Appointments
+- Recurring routines (morning / evening checklists)
+- Shared family agenda
+- Reminders (push, email, WhatsApp)
 
 ## Tech Stack
 

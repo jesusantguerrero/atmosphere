@@ -43,6 +43,7 @@ const props = withDefaults(defineProps<{
     transactions: ITransaction[];
     drafts?: ITransaction[];
     billingCycles: ITransaction[];
+    lastCreditCardPayment?: { date: string, amount: number, source_account: string | null, is_linked: boolean } | null;
     stats: { total: number, credit: number, debit: number };
     accounts: IAccount[];
     categories: ICategory[],
@@ -518,6 +519,33 @@ const selectedTabName = computed(() => {
             </WidgetContainer>
 
             <template #prepend-panel class="">
+                <section
+                    v-if="isCreditCard"
+                    class="w-full px-4 pt-4">
+                    <div class="rounded-lg bg-base-lvl-3 px-4 py-3">
+                        <header class="flex items-center justify-between text-xs text-body-1/70">
+                            <span>{{ $t('Last payment') }}</span>
+                            <span v-if="lastCreditCardPayment && !lastCreditCardPayment.is_linked"
+                                class="text-warning">
+                                {{ $t('Not linked to a cycle') }}
+                            </span>
+                        </header>
+                        <div v-if="lastCreditCardPayment" class="mt-1 flex items-baseline justify-between gap-3">
+                            <span class="text-lg font-semibold text-body">
+                                {{ formatMoney(lastCreditCardPayment.amount, selectedAccount?.currency_code) }}
+                            </span>
+                            <span class="text-xs text-body-1">
+                                {{ formatDate(lastCreditCardPayment.date) }}
+                            </span>
+                        </div>
+                        <div v-if="lastCreditCardPayment?.source_account" class="mt-1 text-xs text-body-1/70 truncate">
+                            {{ $t('From') }} {{ lastCreditCardPayment.source_account }}
+                        </div>
+                        <p v-if="!lastCreditCardPayment" class="mt-1 text-sm text-body-1">
+                            {{ $t('No payments yet') }}
+                        </p>
+                    </div>
+                </section>
                 <NextPaymentsWidget class="w-full py-4 px-4" :title="$t('Credit Card Payments')" :payments="billingCycles.map((payment) => ({
                     ...payment,
                     date: payment.due_at

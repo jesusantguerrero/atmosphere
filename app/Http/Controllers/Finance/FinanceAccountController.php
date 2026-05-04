@@ -78,6 +78,7 @@ class FinanceAccountController extends InertiaController
             'transactions' => $transactions,
             'drafts' => $drafts,
             'billingCycles' => $this->creditCardReportService->getBillingCyclesInPeriod($account->team_id, $startDate, $endDate, $account->id),
+            'lastCreditCardPayment' => $this->creditCardReportService->getLastPayment($account->team_id, $account->id),
             'stats' => $this->reportService->getAccountStats($account->id, $startDate, $endDate),
             'startingBalance' => $this->reportService->getAccountBalanceBefore($account->id, $startDate),
             'serverSearchOptions' => [],

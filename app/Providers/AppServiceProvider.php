@@ -2,15 +2,17 @@
 
 namespace App\Providers;
 
+use App\Concerns\AppMenu;
+use App\Domains\Housing\Actions\RegisterOccurrence;
+use App\Jobs\RunTeamChecks;
+use App\Models\Account;
 use App\Models\Team;
 use App\Models\User;
-use App\Concerns\AppMenu;
-use App\Jobs\RunTeamChecks;
-use Spatie\Onboard\Facades\Onboard;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Contracts\Foundation\Application;
-use App\Domains\Housing\Actions\RegisterOccurrence;
+use Spatie\Onboard\Facades\Onboard;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,7 +24,7 @@ class AppServiceProvider extends ServiceProvider
         // Bind our extended Account model to override the Journal package's Account model
         $this->app->bind(
             \Insane\Journal\Models\Core\Account::class,
-            \App\Models\Account::class
+            Account::class
         );
     }
 
@@ -31,6 +33,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Model::preventSilentlyDiscardingAttributes(! $this->app->isProduction());
+
         Gate::define('superadmin', function (User $user) {
             return $user->isSuperAdmin();
         });
@@ -40,7 +44,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton('menu', function () {
-            return new AppMenu();
+            return new AppMenu;
         });
 
         Onboard::addStep('Step 1: Add accounts')
