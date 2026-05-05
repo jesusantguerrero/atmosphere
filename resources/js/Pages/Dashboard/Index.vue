@@ -238,6 +238,7 @@ const deleteBulkTransactions = () => {
               <NextPaymentsWidget
                 v-if="selectedTab == 'next'"
                 class="w-full"
+                hide-title
                 :payments="nextPayments"
               />
 

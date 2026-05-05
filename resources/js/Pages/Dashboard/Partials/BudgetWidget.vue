@@ -191,15 +191,38 @@ fetchBudgetAlerts().then(data => {
 
     <!-- Desktop donut chart card (visible at md+) -->
     <WidgetTitleCard
-        :title="$t('Budget balance')"
         class="hidden md:block bg-primary text-white overflow-hidden"
         :hide-divider="true"
-        :action="{
-            label: $t('Budget'),
-            iconClass: 'fa fa-chevron-right text-white'
-        }"
-        @action="router.visit('/budgets')"
     >
+        <template #title>
+            <span class="font-bold">{{ $t('Budget balance') }}</span>
+            <ElTooltip
+                v-if="hasAlerts"
+                effect="dark"
+                :content="t('Your budget has {count} overspent categories', { count: hasAlerts })"
+                placement="top"
+            >
+                <button
+                    type="button"
+                    class="ml-2 relative inline-flex items-center cursor-pointer"
+                    @click="router.visit('/budgets?custom[mode]=overspent')"
+                >
+                    <IMdiBell class="text-base" />
+                    <PointAlert />
+                </button>
+            </ElTooltip>
+        </template>
+
+        <template #action>
+            <button
+                type="button"
+                class="text-white p-1.5 rounded hover:bg-white/10 transition"
+                :aria-label="$t('Open budget')"
+                @click="router.visit('/budgets')"
+            >
+                <i class="fa fa-chevron-right" />
+            </button>
+        </template>
         <section class="w-full">
             <section class="w-full  py-3 relative h-[155px] overflow-hidden">
                 <article style="width: 100%; height: 300px" class="relative py-1 mb-10">
@@ -276,15 +299,6 @@ fetchBudgetAlerts().then(data => {
               </article>
         </section>
 
-        <template #icon>
-            <ElTooltip effect="dark" :content="t('Your budget has {count} overspent categories', { count: hasAlerts })" placement="top" v-if="hasAlerts">
-            <div class="cursor-pointer relative"  @click="router.visit('/budgets?custom[mode]=overspent')">
-                <IMdiBell />
-                <PointAlert />
-            </div>
-            </ElTooltip>
-            <IMdiCheck v-else />
-        </template>
     </WidgetTitleCard>
 </template>
 

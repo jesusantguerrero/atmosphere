@@ -1,88 +1,243 @@
 <script setup lang="ts">
-    import { Link } from '@inertiajs/vue3';
-    import { AtButton } from "atmosphere-ui"
+import { computed } from 'vue';
+import { Link, router } from '@inertiajs/vue3';
+import { format, formatDistanceToNow, parseISO } from 'date-fns';
 
-    import AppLayout from '@/Components/templates/AppLayout.vue'
-    import CustomTable from "@/Components/atoms/CustomTable.vue";
+import AppLayout from '@/Components/templates/AppLayout.vue';
+import CustomTable from '@/Components/atoms/CustomTable.vue';
+import LogerButton from '@/Components/atoms/LogerButton.vue';
 
-    import cols from "./cols"
-    import { router } from '@inertiajs/vue3';
-    import { formatDate } from '@/utils';
-import LogerButtonCircle from '@/Components/atoms/LogerButtonCircle.vue';
+import cols from './cols';
 
-    defineProps({
-        notifications: {
-            type: Array,
-            default() {
-                return []
-            }
-        }
-    });
+interface NotificationItem {
+    id: string;
+    type: string;
+    read_at: string | null;
+    created_at: string;
+    data: {
+        message?: string;
+        cta?: string;
+        link?: string;
+    };
+}
 
-    interface INotification {
-        id: number;
+interface PaginatedNotifications {
+    data: NotificationItem[];
+    current_page: number;
+    last_page: number;
+    total: number;
+}
+
+const props = defineProps<{
+    notifications: PaginatedNotifications;
+    filter: 'unread' | 'all';
+    unreadCount: number;
+}>();
+
+// Map notification class -> icon + color + label so users can triage at a glance.
+// Falls back to a generic info treatment for any type not listed.
+const TYPE_META: Record<string, { icon: string; color: string; label: string }> = {
+    'App\\Notifications\\WatchlistThresholdAlert': { icon: 'fa-bell', color: 'text-error border-error', label: 'Watchlist alert' },
+    'App\\Notifications\\WatchlistAutoSuggestionAlert': { icon: 'fa-lightbulb', color: 'text-secondary border-secondary', label: 'Suggestion' },
+    'App\\Notifications\\BillingCycleCutAlert': { icon: 'fa-credit-card', color: 'text-warning border-warning', label: 'Billing cycle' },
+    'App\\Notifications\\OccurrenceAlert': { icon: 'fa-clock', color: 'text-primary border-primary', label: 'Reminder' },
+    'App\\Notifications\\PlannedAlert': { icon: 'fa-calendar', color: 'text-primary border-primary', label: 'Planned' },
+    'App\\Notifications\\TransactionsImported': { icon: 'fa-file-import', color: 'text-success border-success', label: 'Imported' },
+    'App\\Notifications\\EntryGenerated': { icon: 'fa-file', color: 'text-body-1 border-base', label: 'Entry' },
+};
+
+const meta = (type: string) => TYPE_META[type] ?? { icon: 'fa-info-circle', color: 'text-body-1 border-base-lvl-1', label: 'Info' };
+
+const list = computed(() => props.notifications?.data ?? []);
+
+const titleLabel = computed(() => {
+    return props.unreadCount > 0 ? `Notifications (${props.unreadCount})` : 'Notifications';
+});
+
+const safeRelative = (iso: string) => {
+    try {
+        return formatDistanceToNow(parseISO(iso), { addSuffix: true });
+    } catch (e) {
+        return iso;
     }
+};
 
-    const markAllAsRead = () => {
-        router.patch(`/notifications`, {
-            read_at: new Date()
-        })
+const safeFullDate = (iso: string) => {
+    try {
+        return format(parseISO(iso), 'PPp');
+    } catch (e) {
+        return iso;
     }
+};
 
-    const markAsRead = (notification: INotification ) => {
-        router.put(`/notifications/${notification.id}`, {
-            read_at: new Date()
-        })
+const setFilter = (filter: 'unread' | 'all') => {
+    if (filter === props.filter) return;
+    router.get('/notifications', { filter }, { preserveScroll: false, replace: true });
+};
+
+const goToPage = (page: number) => {
+    router.get('/notifications', { filter: props.filter, page }, { preserveScroll: false });
+};
+
+const markAllAsRead = () => {
+    router.patch('/notifications', { read_at: new Date() }, { preserveScroll: true });
+};
+
+const markAsRead = (notification: NotificationItem) => {
+    if (notification.read_at) return;
+    router.put(`/notifications/${notification.id}`, { read_at: new Date() }, { preserveScroll: true });
+};
+
+// Click CTA → mark as read in the background, then navigate.
+// Two-button friction (open then mark read) is the #1 reported UX issue here.
+const visitCta = (notification: NotificationItem) => {
+    if (!notification.data?.link) return;
+    markAsRead(notification);
+    router.visit(notification.data.link);
+};
+
+const rowClass = (row: NotificationItem) => {
+    const m = meta(row.type);
+    if (row.read_at) {
+        return 'border-l-4 border-transparent opacity-60';
     }
+    // Unread rows get a colored stripe matching their type.
+    return `border-l-4 ${m.color.split(' ').find((c) => c.startsWith('border-')) || ''}`;
+};
 </script>
 
-
 <template>
-    <AppLayout title="Notifications">
-        <main
-        class="px-5 mx-auto mt-5 mb-10 md:space-y-0 md:space-x-10 md:flex max-w-screen-2xl sm:px-6 lg:px-8"
-      >
+    <AppLayout :title="titleLabel">
+        <main class="px-5 mx-auto mt-5 mb-10 md:flex max-w-screen-2xl sm:px-6 lg:px-8">
             <div class="w-full mt-6 rounded-md bg-base-lvl-3">
+                <header class="flex items-center justify-between px-5 py-3 border-b border-base">
+                    <div class="flex items-center gap-1 bg-base-lvl-2 rounded-md p-1">
+                        <button
+                            type="button"
+                            class="px-3 py-1 text-sm rounded transition"
+                            :class="filter === 'unread' ? 'bg-primary text-white shadow' : 'text-body-1 hover:text-body'"
+                            @click="setFilter('unread')"
+                        >
+                            {{ $t('Unread') }}
+                            <span v-if="unreadCount > 0" class="ml-1 text-xs opacity-80">{{ unreadCount }}</span>
+                        </button>
+                        <button
+                            type="button"
+                            class="px-3 py-1 text-sm rounded transition"
+                            :class="filter === 'all' ? 'bg-primary text-white shadow' : 'text-body-1 hover:text-body'"
+                            @click="setFilter('all')"
+                        >
+                            {{ $t('All') }}
+                        </button>
+                    </div>
+                    <LogerButton
+                        v-if="unreadCount > 0"
+                        variant="inverse"
+                        @click="markAllAsRead"
+                    >
+                        {{ $t('Mark all as read') }}
+                    </LogerButton>
+                </header>
+
                 <CustomTable
-                    ref="AtTable"
-                    :config="tableConfig"
+                    v-if="list.length"
                     :cols="cols"
-                    :table-data="notifications"
-                    :section="section"
+                    :table-data="list"
+                    :row-class="rowClass"
+                    hide-empty-text
                 >
-                <template #header-actions v-if="notifications.length">
-                    <div class="flex items-center ml-auto space-x-2 justify-end mr-2">
-                        <LogerButtonCircle @click="markAllAsRead" :keep-active-mode="false" class="hover:text-primary">
-                            <span class="text-lg">
-                                <IMdiEmailCheck  />
-                            </span>
-                        </LogerButtonCircle>
+                    <template #data="{ scope: { row } }">
+                        <article class="flex items-start gap-3 px-2 py-3">
+                            <div class="mt-0.5 text-lg">
+                                <i class="fa" :class="[meta(row.type).icon, meta(row.type).color.split(' ').find((c) => c.startsWith('text-'))]" />
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-body break-words" :class="row.read_at ? 'font-normal' : 'font-semibold'">
+                                    {{ row.data.message || $t('Notification') }}
+                                </p>
+                                <p class="mt-1 text-xs text-body-1/70">
+                                    <span class="uppercase tracking-wide font-medium">{{ meta(row.type).label }}</span>
+                                    <span class="mx-2">·</span>
+                                    <span :title="safeFullDate(row.created_at)">{{ safeRelative(row.created_at) }}</span>
+                                </p>
+                            </div>
+                        </article>
+                    </template>
 
-                    </div>
-                </template>
-                 <template #data="{ scope }">
-                    <article class="w-full py-2 pl-4 space-between">
-                        <header>
-                            {{ scope.row.data.message }}
-                        </header>
-                        <footer class="mt-4 font-bold border-t border-base-lvl-2 text-secondary">
-                            {{ formatDate(scope.row.created_at.slice(0, 10)) }}
-                        </footer>
-                    </article>
-
-                </template>
-                 <template #actions="{ scope : { row } }">
-                    <div class="flex items-center ml-auto space-x-2">
-                    <Link :href="row.data.link" class="ml-auto transition-colors rounded-md text-primary">
-                        {{ row.data.cta }}
-                    </Link>
-
-                    <AtButton :href="row.data.link" class="ml-auto text-white transition-colors rounded-md bg-primary" @click="markAsRead(row)" v-if="!row.read_at">
-                        Mark as read
-                    </AtButton>
-                    </div>
-                </template>
+                    <template #actions="{ scope: { row } }">
+                        <div class="flex items-center justify-end gap-3 px-2 py-3">
+                            <button
+                                v-if="row.data.link"
+                                type="button"
+                                class="text-sm text-primary hover:underline"
+                                @click="visitCta(row)"
+                            >
+                                {{ row.data.cta || $t('Open') }}
+                            </button>
+                            <button
+                                v-if="!row.read_at"
+                                type="button"
+                                class="text-xs text-body-1 hover:text-body"
+                                :title="$t('Mark as read')"
+                                :aria-label="$t('Mark as read')"
+                                @click="markAsRead(row)"
+                            >
+                                <i class="fa fa-check" />
+                            </button>
+                        </div>
+                    </template>
                 </CustomTable>
+
+                <!-- Empty state lives OUTSIDE CustomTable so it gets a proper full-width
+                     centered layout. Inside CustomTable, the empty slot renders inside a
+                     <td colspan> with display:flex applied, which collides with the fixed
+                     col widths and offsets the content visually. -->
+                <div
+                    v-else
+                    class="flex flex-col items-center justify-center w-full py-16 px-6 text-center"
+                >
+                    <div class="text-5xl mb-3">{{ filter === 'unread' ? '🎉' : '📭' }}</div>
+                    <h3 class="text-lg font-bold text-body">
+                        {{ filter === 'unread' ? $t('All caught up') : $t('No notifications yet') }}
+                    </h3>
+                    <p class="mt-1 text-sm text-body-1 max-w-md">
+                        {{ filter === 'unread'
+                            ? $t('Watchlist alerts, billing cycle reminders, and other updates show up here.')
+                            : $t('Notifications appear here when watchlist thresholds, billing cycles, or reminders trigger.')
+                        }}
+                    </p>
+                    <Link
+                        href="/dashboard"
+                        class="mt-4 px-4 py-2 text-sm rounded-md text-primary border border-primary hover:bg-primary hover:text-white transition"
+                    >
+                        {{ $t('Back to Dashboard') }}
+                    </Link>
+                </div>
+
+                <footer
+                    v-if="notifications.last_page > 1"
+                    class="flex items-center justify-between px-5 py-3 border-t border-base"
+                >
+                    <button
+                        type="button"
+                        class="text-sm text-body-1 hover:text-body disabled:opacity-30 disabled:cursor-not-allowed"
+                        :disabled="notifications.current_page <= 1"
+                        @click="goToPage(notifications.current_page - 1)"
+                    >
+                        ← {{ $t('Previous') }}
+                    </button>
+                    <span class="text-xs text-body-1">
+                        {{ $t('Page') }} {{ notifications.current_page }} {{ $t('of') }} {{ notifications.last_page }}
+                    </span>
+                    <button
+                        type="button"
+                        class="text-sm text-body-1 hover:text-body disabled:opacity-30 disabled:cursor-not-allowed"
+                        :disabled="notifications.current_page >= notifications.last_page"
+                        @click="goToPage(notifications.current_page + 1)"
+                    >
+                        {{ $t('Next') }} →
+                    </button>
+                </footer>
             </div>
         </main>
     </AppLayout>

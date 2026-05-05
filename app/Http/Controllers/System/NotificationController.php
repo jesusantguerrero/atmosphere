@@ -1,12 +1,29 @@
 <?php
 
 namespace App\Http\Controllers\System;
+
+use Illuminate\Http\Request;
+
 class NotificationController
 {
-    public function index()
+    public function index(Request $request)
     {
+        $user = $request->user();
+        $filter = $request->query('filter', 'unread');
+
+        $query = $filter === 'all'
+            ? $user->notifications()
+            : $user->unreadNotifications();
+
+        $notifications = $query
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
+
         return inertia('System/Notifications/Index', [
-            'notifications' => request()->user()->unreadNotifications,
+            'notifications' => $notifications,
+            'filter' => $filter,
+            'unreadCount' => $user->unreadNotifications()->count(),
         ]);
     }
 

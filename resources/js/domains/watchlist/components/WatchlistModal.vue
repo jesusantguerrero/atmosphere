@@ -75,14 +75,22 @@ const emitClose = () => {
 
 const submit = () => {
   if (isEditMode.value) {
-    router.put(route("watchlist.update", { watchlist: form.id }), form.data(), {
+    // Strip `id` — the URL already carries it and mass-assigning the primary key
+    // throws under Model::preventSilentlyDiscardingAttributes.
+    const { id, ...payload } = form.data();
+    router.put(route("watchlist.update", { watchlist: form.id }), payload, {
       onSuccess: emitClose,
       preserveScroll: true,
     });
   } else {
-    form.submit("post", route("watchlist.store"), {
-      onSuccess: emitClose,
-    });
+    form
+      .transform((data: Record<string, any>) => {
+        const { id, ...payload } = data;
+        return payload;
+      })
+      .submit("post", route("watchlist.store"), {
+        onSuccess: emitClose,
+      });
   }
 };
 

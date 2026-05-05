@@ -1,13 +1,16 @@
 <script setup lang="ts">
 
-import { computed, ref, onMounted, watchEffect }  from "vue";
+import { computed, ref, onMounted, watchEffect, watch }  from "vue";
 import autoAnimate from "@formkit/auto-animate"
 import { NDropdown } from "naive-ui";
 import { router } from "@inertiajs/vue3";
+import { useStorage } from "@vueuse/core";
 
 import IconDrag from "@/Components/icons/IconDrag.vue";
 import PointAlert from "@/Components/atoms/PointAlert.vue";
 import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
+import LogerButton from "@/Components/atoms/LogerButton.vue";
+import ConfirmationModal from "@/Components/atoms/ConfirmationModal.vue";
 
 import { ICategory, getCategoryLink } from "@/domains/transactions/models/transactions";
 import MoneyPresenter from "@/Components/molecules/MoneyPresenter.vue";
@@ -15,6 +18,10 @@ import ExpenseChartWidgetRow from "@/domains/transactions/components/ExpenseChar
 import { format } from "date-fns";
 import { inject } from "vue";
 import axios from "axios";
+
+// Shared storage across all BudgetGroupItem instances. Keyed by group id so
+// expanding "Vivienda" persists independently of "Comida". Survives reload.
+const groupExpandedState = useStorage<Record<string, boolean>>('loger-budget-group-expanded', {});
 
 const emit = defineEmits(['removed'])
 
@@ -35,13 +42,24 @@ const props = defineProps({
     }
 })
 
-const isExpanded = ref(props.forceExpanded);
-const toggleIcon = computed(() => isExpanded.value ? 'fa-chevron-up' : 'fa-chevron-down')
+// Initialize from persisted state if we have one for this group, otherwise fall back
+// to forceExpanded (which the parent uses to e.g. expand all when filter is active).
+const groupKey = computed(() => String(props.item.id));
+const isExpanded = ref(
+    groupExpandedState.value[groupKey.value] ?? props.forceExpanded
+);
+const toggleIcon = computed(() => isExpanded.value ? 'fa-chevron-up' : 'fa-chevron-down');
+
+// Mirror state to storage on change.
+watch(isExpanded, (open) => {
+    groupExpandedState.value[groupKey.value] = open;
+});
+
 watchEffect(() => {
-    if(props.forceExpanded) {
-        isExpanded.value = true
+    if (props.forceExpanded) {
+        isExpanded.value = true;
     }
-})
+});
 
 const isAdding = ref(false);
 const toggleAdding = () => isAdding.value = !isAdding.value;
@@ -59,31 +77,39 @@ const options = [{
     label: 'Transactions'
 }]
 
-const removeCategory = () => {
-    if (confirm("Are you sure you want to remove this category group?")) {
-        router.delete(`budgets/${props.item.id}`, {
-            onSuccess() {
-                emit('removed', props.item.id)
-                router.reload({
-                    only: ['budgets'],
-                    preserveScroll: true,
-                })
-            }
-        })
-    }
-}
+const isConfirmingRemove = ref(false);
+
+const requestRemove = () => {
+    isConfirmingRemove.value = true;
+};
+
+const cancelRemove = () => {
+    isConfirmingRemove.value = false;
+};
+
+const confirmRemove = () => {
+    isConfirmingRemove.value = false;
+    router.delete(`/budgets/${props.item.id}`, {
+        onSuccess() {
+            emit('removed', props.item.id);
+            router.reload({
+                only: ['budgets'],
+                preserveScroll: true,
+            });
+        },
+    });
+};
 
 const handleOptions = (option: any) => {
-    switch(option) {
+    switch (option) {
         case 'delete':
-            removeCategory()
+            requestRemove();
             break;
         case 'add':
-            toggleAdding()
+            toggleAdding();
             break;
         case 'transactions':
-            const link = getCategoryLink(props.item.id, 'groups');
-            router.visit(link)
+            router.visit(getCategoryLink(props.item.id, 'groups'));
             break;
         default:
             break;
@@ -122,7 +148,13 @@ const fetchDetails = async (category: ICategory) => {
                 <h4 class="relative font-bold text-primary cursor-grab" :class="{'handle': !isMobile }">
                     {{ item.name }}
                     <PointAlert
-                        v-if="item.hasOverspent || item.hasUnderfunded"
+                        v-if="item.hasOverspent"
+                        :title="$t('Has overspent categories')"
+                    />
+                    <PointAlert
+                        v-else-if="item.hasUnderfunded"
+                        color="warning"
+                        :title="$t('Has underfunded categories')"
                     />
                 </h4>
                 <button class="ml-2 font-bold text-secondary" @click=" toggleAdding()">
@@ -157,6 +189,29 @@ const fetchDetails = async (category: ICategory) => {
     <section class="border-l-4 border-primary bg-base-lvl-3" ref="dropdown">
         <slot v-if="isExpanded || isAdding" :isExpanded="isExpanded" :toggleAdding="toggleAdding" :isAdding="isAdding" name="content"/>
     </section>
+
+    <ConfirmationModal
+        :show="isConfirmingRemove"
+        :title="$t('Remove category group')"
+        @close="cancelRemove"
+    >
+        <template #content>
+            <p>{{ $t('Are you sure you want to remove') }} <strong>{{ item.name }}</strong>?</p>
+            <p class="mt-2 text-sm text-body-1/70">
+                {{ $t('Subcategories will remain but lose their group association.') }}
+            </p>
+        </template>
+        <template #footer>
+            <div class="flex items-center justify-end gap-2">
+                <LogerButton variant="neutral" rounded @click="cancelRemove">
+                    {{ $t('Cancel') }}
+                </LogerButton>
+                <LogerButton variant="error" rounded @click="confirmRemove">
+                    {{ $t('Remove') }}
+                </LogerButton>
+            </div>
+        </template>
+    </ConfirmationModal>
 </article>
 </template>
 

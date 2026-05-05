@@ -28,6 +28,13 @@ const modalMaxWidth = computed(() => {
     return context.isMobile ? "mobile" : null;
 });
 
+// Transaction modal needs more horizontal room than the default 2xl: Date + Description
+// + Currency in one row + Source/Destination/Amount/Tags in the body all benefit from
+// breathing room. 4xl (~896px) is the sweet spot.
+const transactionModalMaxWidth = computed(() => {
+    return context.isMobile ? "mobile" : "4xl";
+});
+
 const { isOpen: isImportModalOpen } = useImportModal();
 
 if (config.MERCURE_URL) {
@@ -51,7 +58,7 @@ const {
 </script>
 
 <template>
-    <TransactionModal v-model:show="isOpen" v-bind="transactionModalState" :max-width="modalMaxWidth"
+    <TransactionModal v-model:show="isOpen" v-bind="transactionModalState" :max-width="transactionModalMaxWidth"
         :full-height="context.isMobile" @saved="onTransactionSaved" @close="onTransactionSaved" />
 
     <MoreOptionsModal v-model:show="context.isMoreOptionsModalOpen" :max-width="modalMaxWidth"

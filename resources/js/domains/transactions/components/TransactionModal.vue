@@ -7,7 +7,6 @@ import { router } from "@inertiajs/vue3";
 
 import Modal from "@/Components/atoms/Modal.vue";
 import LogerInput from "@/Components/atoms/LogerInput.vue";
-import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 import TransactionTypesPicker from "./TransactionTypesPicker.vue";
 import TransactionItems from "./TransactionItems.vue";
 import CurrencySelector from "./CurrencySelector.vue";
@@ -120,6 +119,23 @@ state.form.validationSchema({
 
 const splits = ref<Record<string, any>[]>([])
 
+// Autofocus the description field when the modal opens — keyboard-first usability.
+const descriptionInputRef = ref<HTMLInputElement | null>(null);
+
+// Lightweight self-contained success toast. Project has no global notification
+// provider, so we render a teleported chip directly from this component. Auto-
+// clears after 2.5s. Survives the modal close because it lives at the template root.
+const successToast = ref<string | null>(null);
+let toastTimer: ReturnType<typeof setTimeout> | null = null;
+const showSuccessToast = (message: string) => {
+  successToast.value = message;
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    successToast.value = null;
+    toastTimer = null;
+  }, 2500);
+};
+
 // Multi-currency state
 const isMultiCurrency = ref(false);
 const transactionCurrency = ref('USD');
@@ -148,7 +164,48 @@ const isTransfer = computed(() => {
 });
 
 const categoryOptions = inject("categoryOptions", []);
-const accountOptions = inject("accountsOptions", []);
+const accountOptions = inject<{ value: number; label: string }[]>("accountsOptions", []);
+
+// Read the live first-split state from the TransactionItems child via its exposed
+// reactive `splits`. Used for the transfer preview readback.
+const firstSplit = computed<Record<string, any> | null>(() => {
+  const grid: any = gridSplitsRef.value;
+  return grid?.getSplits?.()?.[0] ?? null;
+});
+
+// Date presets — most transactions are entered for today or yesterday.
+// `form.date` is stored as a Date instance; comparison is by yyyy-mm-dd to avoid
+// time-of-day false negatives.
+const dateAsIso = (date: Date | null | undefined) => {
+  if (!date) return '';
+  const d = date instanceof Date ? date : new Date(date as any);
+  return isNaN(d.getTime()) ? '' : format(d, 'yyyy-MM-dd');
+};
+
+const setDatePreset = (preset: 'today' | 'yesterday') => {
+  const d = new Date();
+  if (preset === 'yesterday') d.setDate(d.getDate() - 1);
+  d.setHours(0, 0, 0, 0);
+  state.form.date = d;
+};
+
+const isDatePreset = (preset: 'today' | 'yesterday') => {
+  const target = new Date();
+  if (preset === 'yesterday') target.setDate(target.getDate() - 1);
+  return dateAsIso(state.form.date as any) === dateAsIso(target);
+};
+
+const transferPreview = computed(() => {
+  if (!isTransfer.value) return null;
+  const split = firstSplit.value;
+  if (!split?.account_id || !split?.counter_account_id) return null;
+  const amount = Number(split.amount ?? 0);
+  if (!amount) return null;
+  const source = accountOptions.find((a) => a.value === split.account_id);
+  const destination = accountOptions.find((a) => a.value === split.counter_account_id);
+  if (!source || !destination) return null;
+  return { source: source.label, destination: destination.label, amount };
+});
 
 // Multi-currency computed properties
 const multiCurrencyAccounts = computed(() => {
@@ -270,7 +327,15 @@ watch(
       manualExchangeRate.value = null;
       currentExchangeRate.value = null;
       currencyAmount.value = { amount: 0, currency: 'USD' };
-    } else if (!show) {
+    }
+    if (show) {
+      // Autofocus the description after the modal transition settles.
+      nextTick(() => {
+        const el: any = descriptionInputRef.value;
+        const input = el?.$el?.querySelector?.('input') ?? el?.querySelector?.('input') ?? el;
+        input?.focus?.();
+      });
+    } else {
       state.form.reset();
       // Reset multi-currency state
       isMultiCurrency.value = false;
@@ -303,6 +368,31 @@ const lastSaved = useStorage('lastTransactionSaved', {
   lastSaved: null,
   addAnother: false,
 });
+// Client-side validation surface. Replaces the legacy `alert("...")` on amount
+// and adds checks the backend would otherwise reject silently.
+const validationError = ref<string | null>(null);
+
+const validateBeforeSubmit = (splitItems: Record<string, any>[]): boolean => {
+  validationError.value = null;
+  for (const split of splitItems) {
+    if (!split.amount || Number(split.amount) <= 0) {
+      validationError.value = 'Every split must have an amount greater than 0.';
+      return false;
+    }
+    if (state.form.is_transfer) {
+      if (!split.account_id || !split.counter_account_id) {
+        validationError.value = 'Transfers need both source and destination accounts.';
+        return false;
+      }
+      if (Number(split.account_id) === Number(split.counter_account_id)) {
+        validationError.value = 'Source and destination cannot be the same account.';
+        return false;
+      }
+    }
+  }
+  return true;
+};
+
 const onSubmit = (addAnother = false) => {
   lastSaved.value.addAnother = addAnother;
   const actions = {
@@ -332,11 +422,7 @@ const onSubmit = (addAnother = false) => {
   const action = actions[actionType][method];
   const splitItems = gridSplitsRef.value.getSplits();
 
-
-  if (!splitItems.every((split: Record<string, string>) => split.amount)) {
-    alert("Every split most have an amount");
-    return;
-  }
+  if (!validateBeforeSubmit(splitItems)) return;
 
   try {
     state.form
@@ -402,10 +488,14 @@ const onSubmit = (addAnother = false) => {
             const items = splits.value;
             gridSplitsRef.value?.reset(items);
           })
+
+          // Confirm the save so the user knows it landed — modal closes silently otherwise.
+          const verb = props.transactionData?.id ? 'updated' : 'saved';
+          showSuccessToast(`Transaction ${verb}`);
+
           if (!lastSaved.value.addAnother) {
             emit("close");
           }
-
 
           transactionStore.emitTransaction(newData, action.method, props.transactionData);
           lastSaved.value.addAnother = false;
@@ -469,8 +559,26 @@ const assignTransactionLabel = (label: Record<string, string>, transaction: Reco
     @close="$emit('update:show', false)">
     <div class="flex-1 pb-4 bg-base-lvl-3 sm:p-6 sm:pb-4 text-body">
       <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-        <header v-if="fullHeight" class="pb-4 text-lg font-bold border-b">
-          Create a transaction
+        <header v-if="fullHeight" class="flex items-center justify-between pb-4 text-lg font-bold border-b">
+          <span>{{ $t('Create a transaction') }}</span>
+          <button
+            type="button"
+            class="text-body-1/60 hover:text-body p-1 -mr-1 rounded transition"
+            :aria-label="$t('Close')"
+            @click="close"
+          >
+            <i class="fa fa-times text-base" />
+          </button>
+        </header>
+        <header v-else class="flex justify-end -mt-1 -mr-2">
+          <button
+            type="button"
+            class="text-body-1/60 hover:text-body p-1 rounded transition"
+            :aria-label="$t('Close')"
+            @click="close"
+          >
+            <i class="fa fa-times text-base" />
+          </button>
         </header>
         <TransactionTypesPicker v-model="form.direction" />
 
@@ -481,11 +589,34 @@ const assignTransactionLabel = (label: Record<string, string>, transaction: Reco
               <div class="px-4 md:flex md:space-x-2 md:px-0">
                 <AtField label="Date" class="flex justify-between w-full md:w-3/12 md:block">
                   <NDatePicker v-model:value="form.date" type="date" size="large" class="w-48 md:w-full" />
+                  <!-- Quick presets — most transactions are entered for today or yesterday. -->
+                  <div class="flex gap-1.5 mt-1.5">
+                    <button
+                      type="button"
+                      class="px-2 py-0.5 text-xs rounded transition"
+                      :class="isDatePreset('today') ? 'bg-primary text-white' : 'bg-base-lvl-2 text-body-1 hover:bg-base-lvl-1'"
+                      @click="setDatePreset('today')"
+                    >
+                      {{ $t('Today') }}
+                    </button>
+                    <button
+                      type="button"
+                      class="px-2 py-0.5 text-xs rounded transition"
+                      :class="isDatePreset('yesterday') ? 'bg-primary text-white' : 'bg-base-lvl-2 text-body-1 hover:bg-base-lvl-1'"
+                      @click="setDatePreset('yesterday')"
+                    >
+                      {{ $t('Yesterday') }}
+                    </button>
+                  </div>
                 </AtField>
 
                 <AtField label="Description"
                   class="flex justify-between w-full space-x-2 md:w-6/12 md:block md:space-x-0">
-                  <LogerInput v-model="form.description" class="w-48 md:w-full" />
+                  <LogerInput
+                    ref="descriptionInputRef"
+                    v-model="form.description"
+                    class="w-48 md:w-full"
+                  />
                 </AtField>
 
                 <AtField label="Currency" class="flex justify-between w-full md:w-3/12 md:block"
@@ -604,28 +735,92 @@ const assignTransactionLabel = (label: Record<string, string>, transaction: Reco
       </div>
     </div>
 
-    <footer class="flex items-center justify-between w-full px-6 py-4 space-x-3 bg-base-lvl-2">
-      <section class="flex">
-        <LogerButtonTab class="hidden rounded bg-base"> Use template</LogerButtonTab>
-        <div class="flex space-x-2">
-          <AtFieldCheck v-model="isRecurrence" label="Set recurrence" />
-          <AtFieldCheck v-if="hasMultiCurrencyAccounts" v-model="isMultiCurrency" label="Multi-currency" />
-        </div>
-      </section>
-      <div class="flex space-x-2">
-        <LogerButton @click="close" rounded class="h-10 text-body" :disabled="form.processing">
-          Cancel
-        </LogerButton>
-        <LogerButton class="h-10 text-white capitalize bg-primary" :processing="lastSaved.addAnother && form.processing"
-          :disabled="form.processing" @click="onSubmit(true)" rounded>
-          {{ saveText }} and another
-        </LogerButton>
-        <LogerButton class="h-10 text-white capitalize bg-primary"
-          :processing="form.processing && !lastSaved.addAnother" :disabled="form.processing" @click="onSubmit()"
-          rounded>
-          {{ saveText }}
-        </LogerButton>
-      </div>
+    <!-- Transfer readback — confirms the source → destination + amount before submit. -->
+    <section
+      v-if="transferPreview"
+      class="flex items-center gap-2 px-6 py-2 text-sm bg-secondary/10 border-t border-secondary/20 text-secondary"
+    >
+      <i class="fa fa-arrow-right" />
+      <span class="font-medium">{{ formatCurrency(transferPreview.amount) }}</span>
+      <span class="text-body-1/70">{{ $t('from') }}</span>
+      <span class="font-medium">{{ transferPreview.source }}</span>
+      <span class="text-body-1/70">{{ $t('to') }}</span>
+      <span class="font-medium">{{ transferPreview.destination }}</span>
+    </section>
+
+    <!-- Options live above the footer now (was buried in footer-left as small toggles).
+         Recurrence and multi-currency are major mode changes — they deserve to live in
+         the form area, not next to Cancel. -->
+    <section class="flex flex-wrap items-center gap-x-6 gap-y-2 px-6 py-2 text-sm border-t border-base bg-base-lvl-3">
+      <AtFieldCheck v-model="isRecurrence" :label="$t('Set recurrence')" />
+      <AtFieldCheck
+        v-if="hasMultiCurrencyAccounts"
+        v-model="isMultiCurrency"
+        :label="$t('Multi-currency')"
+      />
+    </section>
+
+    <!-- Inline validation surface — appears only when validateBeforeSubmit fails. -->
+    <div
+      v-if="validationError"
+      class="px-6 py-2 text-sm text-error bg-error/10 border-t border-error/30"
+      role="alert"
+    >
+      {{ validationError }}
+    </div>
+
+    <footer class="flex items-center justify-end w-full px-6 py-4 gap-2 bg-base-lvl-2">
+      <LogerButton
+        variant="neutral"
+        rounded
+        class="h-10"
+        :disabled="form.processing"
+        @click="close"
+      >
+        {{ $t('Cancel') }}
+      </LogerButton>
+      <LogerButton
+        variant="inverse"
+        rounded
+        class="h-10"
+        :processing="lastSaved.addAnother && form.processing"
+        :disabled="form.processing"
+        @click="onSubmit(true)"
+      >
+        {{ saveText === 'save' ? $t('Save and add another') : $t('Update and add another') }}
+      </LogerButton>
+      <LogerButton
+        variant="primary"
+        rounded
+        class="h-10"
+        :processing="form.processing && !lastSaved.addAnother"
+        :disabled="form.processing"
+        @click="onSubmit()"
+      >
+        {{ saveText === 'save' ? $t('Save') : $t('Update') }}
+      </LogerButton>
     </footer>
   </modal>
+
+  <!-- Self-contained success toast. Lives at template root (outside the modal teleport)
+       so it persists after the modal closes. Auto-clears after 2.5s via showSuccessToast. -->
+  <Teleport to="body">
+    <transition
+      enter-active-class="transition duration-200 ease-out"
+      enter-from-class="opacity-0 translate-y-2"
+      enter-to-class="opacity-100 translate-y-0"
+      leave-active-class="transition duration-150 ease-in"
+      leave-from-class="opacity-100 translate-y-0"
+      leave-to-class="opacity-0 translate-y-2"
+    >
+      <div
+        v-if="successToast"
+        class="fixed bottom-6 right-6 z-[2000] flex items-center gap-2 px-4 py-2.5 rounded-md shadow-lg bg-success text-white text-sm font-medium"
+        role="status"
+      >
+        <i class="fa fa-check-circle" />
+        <span>{{ successToast }}</span>
+      </div>
+    </transition>
+  </Teleport>
 </template>

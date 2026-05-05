@@ -23,10 +23,14 @@ interface AccountGroup {
     subtotals: { base: number; quote: number; base_in_quote: number };
 }
 interface LinkedAccount { id: number; name: string; bank_code: string | null; balance_in_quote: number; }
+interface LinkedCategory { id: number; name: string; team_name: string; available_in_quote: number; }
 interface Goal {
     id: string; name: string; target_amount: number; current_balance: number;
     linked_accounts: LinkedAccount[];
+    linked_categories: LinkedCategory[];
 }
+interface AvailableCategoryEntry { id: number; name: string; team_id: number; available_in_quote: number; }
+interface AvailableCategoryGroup { team_name: string; categories: AvailableCategoryEntry[]; }
 interface BankBreakdownEntry {
     bank_code: string | null; label: string; total_in_quote: number; account_count: number;
 }
@@ -42,6 +46,8 @@ const props = withDefaults(defineProps<{
     availableGoals: Goal[];
     pinnedGoalIds: string[];
     goalAccountLinks: Record<string, number[]>;
+    goalCategoryLinks: Record<string, number[]>;
+    availableCategories: AvailableCategoryGroup[];
     bankBreakdown: BankBreakdownEntry[];
     exchangeRate: number;
     baseCurrency: string;
@@ -49,7 +55,8 @@ const props = withDefaults(defineProps<{
     totals: Totals;
 }>(), {
     accounts: () => [], pinnedGoals: () => [], availableGoals: () => [],
-    pinnedGoalIds: () => [], goalAccountLinks: () => ({}), bankBreakdown: () => [],
+    pinnedGoalIds: () => [], goalAccountLinks: () => ({}), goalCategoryLinks: () => ({}),
+    availableCategories: () => [], bankBreakdown: () => [],
     exchangeRate: 59.8, baseCurrency: 'USD', quoteCurrency: 'DOP',
 });
 
@@ -95,6 +102,27 @@ async function toggleGoalAccountLink(goal: Goal, accountId: number) {
     }
 
     await axios.post('/trends/financial-overview/goal-account-links', { links: next });
+    router.reload();
+}
+
+function isCategoryLinkedToGoal(goal: Goal, categoryId: number): boolean {
+    return goal.linked_categories.some(c => c.id === categoryId);
+}
+
+async function toggleGoalCategoryLink(goal: Goal, categoryId: number) {
+    const current = goal.linked_categories.map(c => c.id);
+    const next = { ...props.goalCategoryLinks };
+    const updated = current.includes(categoryId)
+        ? current.filter(id => id !== categoryId)
+        : [...current, categoryId];
+
+    if (updated.length) {
+        next[goal.id] = updated;
+    } else {
+        delete next[goal.id];
+    }
+
+    await axios.post('/trends/financial-overview/goal-category-links', { links: next });
     router.reload();
 }
 
@@ -288,15 +316,28 @@ async function saveExchangeRate() {
                                                         <IMdiClose class="text-[10px]" />
                                                     </button>
                                                 </span>
+                                                <span
+                                                    v-for="cat in goal.linked_categories"
+                                                    :key="`cat-${cat.id}`"
+                                                    class="inline-flex items-center gap-1 text-[11px] leading-none px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 max-w-[200px]"
+                                                >
+                                                    <IMdiFolder class="text-[10px] flex-shrink-0" />
+                                                    <span class="truncate">{{ cat.name }}</span>
+                                                    <span v-if="cat.team_name" class="opacity-60 truncate"> · {{ cat.team_name }}</span>
+                                                    <button class="opacity-50 hover:opacity-100 hover:text-red-400 transition flex-shrink-0" @click="toggleGoalCategoryLink(goal, cat.id)" title="Unlink">
+                                                        <IMdiClose class="text-[10px]" />
+                                                    </button>
+                                                </span>
                                                 <button
                                                     class="inline-flex items-center gap-0.5 text-[11px] leading-none px-2 py-1 rounded-full border border-dashed border-base text-body-1/50 hover:text-primary hover:border-primary transition"
                                                     @click="editingGoalLinkId = editingGoalLinkId === goal.id ? null : goal.id"
                                                 >
                                                     <IMdiPlus class="text-[10px]" />
-                                                    <span>{{ editingGoalLinkId === goal.id ? 'Done' : (goal.linked_accounts.length ? 'Add' : 'Link account') }}</span>
+                                                    <span>{{ editingGoalLinkId === goal.id ? 'Done' : (goal.linked_accounts.length || goal.linked_categories.length ? 'Add' : 'Link') }}</span>
                                                 </button>
                                             </div>
-                                            <div v-if="editingGoalLinkId === goal.id" class="mt-2 max-h-40 overflow-y-auto border border-base rounded bg-base-lvl-1 p-2 space-y-1">
+                                            <div v-if="editingGoalLinkId === goal.id" class="mt-2 max-h-48 overflow-y-auto border border-base rounded bg-base-lvl-1 p-2 space-y-1">
+                                                <p class="text-[10px] font-semibold uppercase tracking-wide text-body-1/40 px-1 pt-1">Accounts</p>
                                                 <label
                                                     v-for="a in flatAccounts"
                                                     :key="a.id"
@@ -311,6 +352,25 @@ async function saveExchangeRate() {
                                                     <span>{{ a.name }}</span>
                                                     <span class="text-body-1/40 ml-auto">{{ a.group }}</span>
                                                 </label>
+                                                <template v-if="availableCategories.length">
+                                                    <p class="text-[10px] font-semibold uppercase tracking-wide text-body-1/40 px-1 pt-2">Categories</p>
+                                                    <template v-for="group in availableCategories" :key="group.team_name">
+                                                        <label
+                                                            v-for="cat in group.categories"
+                                                            :key="cat.id"
+                                                            class="flex items-center gap-2 text-xs text-body hover:text-emerald-600 dark:hover:text-emerald-400 cursor-pointer"
+                                                        >
+                                                            <input
+                                                                type="checkbox"
+                                                                :checked="isCategoryLinkedToGoal(goal, cat.id)"
+                                                                @change="toggleGoalCategoryLink(goal, cat.id)"
+                                                                class="rounded border-base text-emerald-500 focus:ring-emerald-400"
+                                                            />
+                                                            <span>{{ cat.name }}</span>
+                                                            <span class="text-body-1/40 ml-auto">{{ group.team_name }}</span>
+                                                        </label>
+                                                    </template>
+                                                </template>
                                             </div>
                                         </td>
                                         <td class="px-5 py-3 text-right tabular-nums align-top">

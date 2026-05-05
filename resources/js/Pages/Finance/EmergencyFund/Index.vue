@@ -4,7 +4,7 @@
     import BudgetFundForm from './Partials/BudgetFundForm.vue'
     import SettingsSectionNav from '@/Components/templates/SettingsSectionNav.vue'
 
-    defineProps(['sessions'])
+    defineProps(['sessions', 'crossTeamCategoryOptions'])
     const pageProps = usePage().props
 </script>
 
@@ -16,7 +16,7 @@
         </template>
 
         <section  class="max-w-7xl mx-auto space-y-5 [&>*]:pt-5 divide-y pt-16 pb-20 sm:px-6 lg:px-8">
-            <BudgetFundForm :user="pageProps.user" />
+            <BudgetFundForm :user="pageProps.user" :cross-team-category-options="$page.props.crossTeamCategoryOptions" />
         </section>
     </AppLayout>
 </template>

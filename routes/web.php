@@ -219,6 +219,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     Route::post('/trends/financial-overview/settings', [FinancialOverviewController::class, 'updateSettings'])->name('finance.financial-overview.settings');
     Route::post('/trends/financial-overview/pinned-goals', [FinancialOverviewController::class, 'updatePinnedGoals'])->name('finance.financial-overview.pinned-goals');
     Route::post('/trends/financial-overview/goal-account-links', [FinancialOverviewController::class, 'updateGoalAccountLinks'])->name('finance.financial-overview.goal-account-links');
+    Route::post('/trends/financial-overview/goal-category-links', [FinancialOverviewController::class, 'updateGoalCategoryLinks'])->name('finance.financial-overview.goal-category-links');
     Route::get('/trends/{name}', [FinanceTrendController::class, 'index'])->name('finance.trend-section');
 
     /**************************************************************************************
