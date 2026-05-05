@@ -2,17 +2,17 @@
 
 namespace App\Domains\Housing\Models;
 
-use App\Events\OccurrenceCreated;
-use Illuminate\Database\Eloquent\Model;
-use App\Domains\Transaction\Models\Transaction;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Domains\Housing\Contracts\OccurrenceNotifyTypes;
+use App\Domains\Transaction\Models\Transaction;
+use App\Events\OccurrenceCreated;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Occurrence extends Model
 {
     use HasFactory;
 
-    protected $table ="occurrence_checks";
+    protected $table = 'occurrence_checks';
 
     protected $fillable = [
         'team_id',
@@ -33,6 +33,10 @@ class Occurrence extends Model
 
     const DAYS_BEFORE = 3;
 
+    // HM-1: marks an Occurrence as a recurring utility bill so /today's UPCOMING widget
+    // can surface "water due in 3 days" alongside credit card billing cycles.
+    const TYPE_UTILITY = 'utility';
+
     const NOTIFY_FIELDS = [
         'last' => [
             'activatedField' => 'notify_on_last_count',
@@ -47,7 +51,7 @@ class Occurrence extends Model
     protected $casts = [
         'conditions' => 'array',
         'log' => 'array',
-        'last_date' => 'date'
+        'last_date' => 'date',
     ];
 
     protected static function booted()
@@ -68,37 +72,67 @@ class Occurrence extends Model
         ];
     }
 
-    public static function scopeByTeam($query, int $teamId) {
+    public static function scopeByTeam($query, int $teamId)
+    {
         return $query->where([
             'team_id' => $teamId,
         ]);
     }
 
-    public static function scopeByName($query, string $name) {
+    public static function scopeByName($query, string $name)
+    {
         $query->where([
             'name' => $name,
         ]);
     }
 
-    public function currentCount() {
+    public static function scopeOfType($query, string $type)
+    {
+        return $query->where('type', $type);
+    }
+
+    /**
+     * Days remaining until the next expected occurrence based on avg cadence.
+     * Negative when overdue. Null when there's no last_date yet (brand new).
+     */
+    public function daysUntilNext(): ?int
+    {
+        if (! $this->last_date || ! $this->avg_days_passed) {
+            return null;
+        }
+
+        return (int) round(now()->startOfDay()->diffInDays(
+            $this->last_date->copy()->addDays((int) $this->avg_days_passed),
+            false
+        ));
+    }
+
+    public function currentCount()
+    {
         return $this->last_date->diffInDays(now());
     }
 
-    public function diffWithAvg() {
+    public function diffWithAvg()
+    {
         return $this->currentCount() - $this->avg_days_passed;
     }
 
-    public function diffWithLastDuration() {
+    public function diffWithLastDuration()
+    {
         return $this->currentCount() - $this->previous_days_count;
     }
 
-    public function isCloseToAvg() {
+    public function isCloseToAvg()
+    {
         $days = $this->avg_days_passed - $this->currentCount();
+
         return $days == self::DAYS_BEFORE || $days == 0;
     }
 
-    public function isCloseToLastDuration() {
+    public function isCloseToLastDuration()
+    {
         $days = $this->previous_days_count - $this->currentCount();
+
         return $days == self::DAYS_BEFORE || $days == 0;
     }
 
@@ -108,11 +142,11 @@ class Occurrence extends Model
         $countField = self::NOTIFY_FIELDS[$type->value]['countField'];
 
         return Occurrence::where($activatedField, true)
-        ->where($countField, '>', 1)
+            ->where($countField, '>', 1)
             ->get()
             ->filter(fn ($occurrence) => $type->value == OccurrenceNotifyTypes::AVG->value
             ? $occurrence->isCloseToAvg()
-            :$occurrence->isCloseToLastDuration()
-        );
+            : $occurrence->isCloseToLastDuration()
+            );
     }
 }

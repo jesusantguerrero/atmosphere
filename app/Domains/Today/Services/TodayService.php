@@ -4,6 +4,7 @@ namespace App\Domains\Today\Services;
 
 use App\Domains\AppCore\Models\Planner;
 use App\Domains\Budget\Models\BudgetMonth;
+use App\Domains\Housing\Models\Occurrence;
 use App\Domains\Transaction\Models\BillingCycle;
 use App\Domains\Transaction\Services\TransactionService;
 use App\Notifications\WatchlistThresholdAlert;
@@ -117,32 +118,73 @@ class TodayService
     }
 
     /**
-     * UPCOMING: BillingCycle records due in the next 7 days (not yet paid).
-     * Read-only at v0.1 — HM-1 will replace this with the Occurrence + utility hybrid.
+     * UPCOMING: bills + utilities due in the next 7 days.
+     *
+     * Two sources:
+     *   - BillingCycle (credit cards) — `due_at` BETWEEN today and +7d, not paid
+     *   - Occurrence with type=utility (HM-1) — recurrence due by `last_date + avg_days_passed` ≤ +7d
+     *
+     * Each item is tagged with `kind` so the UI can render appropriate icon/copy.
      *
      * @return array<int, array<string, mixed>>
      */
     private function upcoming(int $teamId, Carbon $today): array
     {
-        return BillingCycle::query()
+        $windowEnd = $today->copy()->addDays(7)->endOfDay();
+
+        $cycles = BillingCycle::query()
             ->where('team_id', $teamId)
             ->whereBetween('due_at', [
                 $today->copy()->startOfDay()->format('Y-m-d'),
-                $today->copy()->addDays(7)->endOfDay()->format('Y-m-d'),
+                $windowEnd->format('Y-m-d'),
             ])
             ->where('status', '!=', BillingCycle::STATUS_PAID)
             ->with('account:id,name')
             ->orderBy('due_at')
-            ->limit(10)
             ->get()
             ->map(fn ($cycle) => [
-                'id' => $cycle->id,
-                'account_name' => $cycle->account?->name,
+                'kind' => 'billing_cycle',
+                'id' => 'cycle-'.$cycle->id,
+                'name' => $cycle->account?->name,
                 'account_id' => $cycle->account_id,
                 'total' => (float) $cycle->total,
-                'due_at' => $cycle->due_at,
-                'status' => $cycle->status,
-            ])
+                'due_at' => optional($cycle->due_at)->format('Y-m-d'),
+                'days_until' => $today->copy()->startOfDay()->diffInDays($cycle->due_at, false),
+            ]);
+
+        $utilities = Occurrence::query()
+            ->byTeam($teamId)
+            ->ofType(Occurrence::TYPE_UTILITY)
+            ->where('is_active', true)
+            ->whereNotNull('last_date')
+            ->where('avg_days_passed', '>', 0)
+            ->get()
+            ->filter(function ($occurrence) {
+                $days = $occurrence->daysUntilNext();
+
+                // Include overdue (≤0) AND within next 7 days. Overdue stays surfaced
+                // until the user logs the next occurrence so it doesn't silently fall off.
+                return $days !== null && $days <= 7;
+            })
+            ->map(function ($occurrence) {
+                $nextDate = $occurrence->last_date->copy()->addDays((int) $occurrence->avg_days_passed);
+
+                return [
+                    'kind' => 'utility',
+                    'id' => 'utility-'.$occurrence->id,
+                    'name' => $occurrence->name,
+                    'account_id' => null,
+                    'total' => null,
+                    'due_at' => $nextDate->format('Y-m-d'),
+                    'days_until' => $occurrence->daysUntilNext(),
+                ];
+            });
+
+        return $cycles
+            ->concat($utilities)
+            ->sortBy('days_until')
+            ->take(10)
+            ->values()
             ->all();
     }
 }

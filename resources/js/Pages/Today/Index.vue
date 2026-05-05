@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
-import { format, formatDistanceToNow, parseISO } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 
 import AppLayout from '@/Components/templates/AppLayout.vue';
 import LogerButton from '@/Components/atoms/LogerButton.vue';
@@ -30,12 +30,13 @@ interface TodayItem {
 }
 
 interface UpcomingItem {
-    id: number;
-    account_name: string | null;
-    account_id: number;
-    total: number;
+    kind: 'billing_cycle' | 'utility';
+    id: string;
+    name: string | null;
+    account_id: number | null;
+    total: number | null;
     due_at: string;
-    status: string;
+    days_until: number;
 }
 
 const props = defineProps<{
@@ -63,20 +64,21 @@ const monthProgressClass = computed(() => {
     return 'bg-success';
 });
 
-const safeRelative = (iso: string) => {
-    try {
-        return formatDistanceToNow(parseISO(iso), { addSuffix: true });
-    } catch (e) {
-        return iso;
-    }
-};
-
 const formatDueDate = (iso: string) => {
     try {
         return format(parseISO(iso), 'MMM d');
     } catch (e) {
         return iso;
     }
+};
+
+// "in 3 days" / "tomorrow" / "today" / "2 days overdue" — without depending on the
+// raw date string (server already computed days_until against its own `now`).
+const relativeDueLabel = (daysUntil: number) => {
+    if (daysUntil < 0) return Math.abs(daysUntil) === 1 ? '1 day overdue' : `${Math.abs(daysUntil)} days overdue`;
+    if (daysUntil === 0) return 'today';
+    if (daysUntil === 1) return 'tomorrow';
+    return `in ${daysUntil} days`;
 };
 
 const todayLabel = computed(() => format(new Date(), 'EEEE, MMM d'));
@@ -203,34 +205,56 @@ const openQuickAdd = () => {
                     </div>
                 </article>
 
-                <!-- UPCOMING widget — bills due in next 7 days -->
+                <!-- UPCOMING widget — bills + utilities due in next 7 days. v0.2 (HM-1):
+                     also surfaces Occurrence type=utility records (water/electricity/etc.). -->
                 <article class="bg-base-lvl-3 rounded-lg border border-base p-5">
                     <header class="flex items-center justify-between mb-3">
                         <h2 class="text-xs font-semibold uppercase tracking-wide text-body-1/60">
-                            {{ $t('Upcoming bills') }}
+                            {{ $t('Upcoming') }}
                             <span v-if="today.upcoming.length" class="ml-1 text-body-1">({{ today.upcoming.length }})</span>
                         </h2>
                     </header>
                     <div v-if="today.upcoming.length" class="space-y-2">
-                        <button
-                            v-for="bill in today.upcoming"
-                            :key="bill.id"
+                        <component
+                            :is="item.kind === 'billing_cycle' ? 'button' : 'div'"
+                            v-for="item in today.upcoming"
+                            :key="item.id"
                             type="button"
-                            class="w-full flex items-center justify-between gap-3 px-3 py-2 rounded-md bg-base-lvl-2 hover:bg-base-lvl-1 transition text-left"
-                            @click="router.visit(`/finance/accounts/${bill.account_id}`)"
+                            class="w-full flex items-center justify-between gap-3 px-3 py-2 rounded-md bg-base-lvl-2 transition text-left"
+                            :class="item.kind === 'billing_cycle' ? 'hover:bg-base-lvl-1 cursor-pointer' : ''"
+                            @click="item.kind === 'billing_cycle' && item.account_id ? router.visit(`/finance/accounts/${item.account_id}`) : null"
                         >
-                            <div class="min-w-0">
-                                <p class="text-sm font-medium text-body truncate">{{ bill.account_name ?? $t('Account') }}</p>
-                                <p class="text-xs text-body-1/60">{{ formatDueDate(bill.due_at) }} · {{ safeRelative(bill.due_at) }}</p>
+                            <div class="flex items-center gap-2 min-w-0">
+                                <i
+                                    class="fa text-sm"
+                                    :class="item.kind === 'billing_cycle'
+                                        ? 'fa-credit-card text-warning'
+                                        : 'fa-bolt text-secondary'"
+                                />
+                                <div class="min-w-0">
+                                    <p class="text-sm font-medium text-body truncate">{{ item.name ?? $t('Item') }}</p>
+                                    <p class="text-xs text-body-1/60">
+                                        {{ formatDueDate(item.due_at) }}
+                                        <span class="mx-1">·</span>
+                                        <span :class="item.days_until < 0 ? 'text-error font-medium' : ''">
+                                            {{ relativeDueLabel(item.days_until) }}
+                                        </span>
+                                    </p>
+                                </div>
                             </div>
-                            <span class="text-sm font-bold text-error flex-shrink-0">{{ formatMoney(bill.total) }}</span>
-                        </button>
+                            <span
+                                v-if="item.total !== null"
+                                class="text-sm font-bold text-error flex-shrink-0"
+                            >
+                                {{ formatMoney(item.total) }}
+                            </span>
+                        </component>
                     </div>
                     <div v-else class="flex flex-col items-center justify-center py-6 text-center">
                         <div class="text-3xl mb-1.5">📅</div>
-                        <p class="text-sm text-body-1">{{ $t('No bills due this week') }}</p>
+                        <p class="text-sm text-body-1">{{ $t('Nothing due this week') }}</p>
                         <p class="text-xs text-body-1/60 mt-1 max-w-xs">
-                            {{ $t('Credit card billing cycles appear here within 7 days of their due date.') }}
+                            {{ $t('Credit card cycles and recurring utilities show up here within 7 days of their due date.') }}
                         </p>
                     </div>
                 </article>

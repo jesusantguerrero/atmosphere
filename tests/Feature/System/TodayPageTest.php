@@ -4,6 +4,7 @@ namespace Tests\Feature\System;
 
 use App\Domains\AppCore\Models\Category;
 use App\Domains\AppCore\Models\Planner;
+use App\Domains\Housing\Models\Occurrence;
 use App\Domains\Transaction\Models\BillingCycle;
 use App\Domains\Transaction\Models\Transaction;
 use App\Models\User;
@@ -183,6 +184,101 @@ class TodayPageTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->has('today.upcoming', 1)
                 ->where('today.upcoming.0.total', 500)
+            );
+    }
+
+    public function test_upcoming_includes_utility_occurrences_due_within_window(): void
+    {
+        $user = User::factory()->withPersonalTeam()->create();
+        $team = $user->ownedTeams()->first();
+
+        // Water bill — last paid 28 days ago, recurs every 30 days → due in 2 days, in window
+        Occurrence::create([
+            'team_id' => $team->id,
+            'user_id' => $user->id,
+            'name' => 'Water bill',
+            'type' => Occurrence::TYPE_UTILITY,
+            'last_date' => now()->subDays(28)->format('Y-m-d'),
+            'avg_days_passed' => 30,
+            'is_active' => true,
+        ]);
+
+        // Internet — last paid yesterday, recurs every 30 days → due in 29 days, OUTSIDE window
+        Occurrence::create([
+            'team_id' => $team->id,
+            'user_id' => $user->id,
+            'name' => 'Internet',
+            'type' => Occurrence::TYPE_UTILITY,
+            'last_date' => now()->subDay()->format('Y-m-d'),
+            'avg_days_passed' => 30,
+            'is_active' => true,
+        ]);
+
+        // Inactive utility — must not appear
+        Occurrence::create([
+            'team_id' => $team->id,
+            'user_id' => $user->id,
+            'name' => 'Old gym subscription',
+            'type' => Occurrence::TYPE_UTILITY,
+            'last_date' => now()->subDays(28)->format('Y-m-d'),
+            'avg_days_passed' => 30,
+            'is_active' => false,
+        ]);
+
+        $this->actingAs($user)
+            ->get('/today')
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('today.upcoming', 1)
+                ->where('today.upcoming.0.kind', 'utility')
+                ->where('today.upcoming.0.name', 'Water bill')
+            );
+    }
+
+    public function test_upcoming_keeps_overdue_utilities_visible(): void
+    {
+        $user = User::factory()->withPersonalTeam()->create();
+        $team = $user->ownedTeams()->first();
+
+        // Last paid 35 days ago, recurs every 30 → 5 days overdue, must STILL appear
+        Occurrence::create([
+            'team_id' => $team->id,
+            'user_id' => $user->id,
+            'name' => 'Power',
+            'type' => Occurrence::TYPE_UTILITY,
+            'last_date' => now()->subDays(35)->format('Y-m-d'),
+            'avg_days_passed' => 30,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($user)
+            ->get('/today')
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('today.upcoming', 1)
+                ->where('today.upcoming.0.kind', 'utility')
+                ->where('today.upcoming.0.name', 'Power')
+            );
+    }
+
+    public function test_upcoming_excludes_non_utility_occurrences(): void
+    {
+        $user = User::factory()->withPersonalTeam()->create();
+        $team = $user->ownedTeams()->first();
+
+        // Some other occurrence type — recurring chore — must NOT appear in UPCOMING
+        Occurrence::create([
+            'team_id' => $team->id,
+            'user_id' => $user->id,
+            'name' => 'Vacuum the house',
+            'type' => 'chore',
+            'last_date' => now()->subDays(2)->format('Y-m-d'),
+            'avg_days_passed' => 7,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($user)
+            ->get('/today')
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('today.upcoming', [])
             );
     }
 }
