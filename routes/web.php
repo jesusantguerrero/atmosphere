@@ -24,6 +24,7 @@ use App\Http\Controllers\System\NotificationController;
 use App\Http\Controllers\System\OnboardingController;
 use App\Http\Controllers\System\ServiceController;
 use App\Http\Controllers\System\TeamInvitationController;
+use App\Http\Controllers\System\TodayController;
 use App\Http\Controllers\System\UserDeviceController;
 use Freesgen\Atmosphere\Http\Controllers\SettingsController;
 use Illuminate\Support\Facades\Route;
@@ -169,6 +170,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     ***************************************************************************************/
 
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
+    Route::get('/today', TodayController::class)->name('today');
 
     /**************************************************************************************
       *                               Finance Section
