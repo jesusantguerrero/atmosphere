@@ -101,10 +101,51 @@ const transactionMeta = computed(() => {
     return parts.join(' · ');
 });
 
-const headerMenuOptions = [
-    { key: 'edit', label: 'Edit' },
-    { key: 'delete', label: 'Delete', props: { class: 'text-error' } },
-];
+const headerMenuOptions = computed(() => {
+    const opts: any[] = [{ key: 'edit', label: 'Edit' }];
+    const hasShare = Boolean((props.resource as any).share_token);
+    opts.push({
+        key: 'share',
+        label: hasShare ? 'Copy share link' : 'Enable public link',
+    });
+    if (hasShare) {
+        opts.push({ key: 'unshare', label: 'Disable public link' });
+    }
+    opts.push({ key: 'delete', label: 'Delete', props: { class: 'text-error' } });
+    return opts;
+});
+
+const shareUrl = computed(() => {
+    const token = (props.resource as any).share_token;
+    if (!token || typeof window === 'undefined') return null;
+    return `${window.location.origin}/share/watchlist/${token}`;
+});
+
+const enableShareAndCopy = () => {
+    const id = (props.resource as any).id;
+    router.post(`/finance/watchlist/${id}/share`, {}, {
+        preserveScroll: true,
+        onSuccess: () => {
+            // After reload, share_token is set; copy on next tick.
+            setTimeout(() => {
+                if (shareUrl.value && navigator.clipboard) {
+                    navigator.clipboard.writeText(shareUrl.value);
+                }
+            }, 100);
+        },
+    });
+};
+
+const copyExistingShareLink = () => {
+    if (shareUrl.value && navigator.clipboard) {
+        navigator.clipboard.writeText(shareUrl.value);
+    }
+};
+
+const disableShare = () => {
+    const id = (props.resource as any).id;
+    router.delete(`/finance/watchlist/${id}/share`, { preserveScroll: true });
+};
 
 const openEdit = () => {
     resourceToEdit.value = {
@@ -134,6 +175,14 @@ const handleDelete = () => {
 const onHeaderMenuSelect = (key: string) => {
     if (key === 'edit') openEdit();
     if (key === 'delete') handleDelete();
+    if (key === 'share') {
+        if ((props.resource as any).share_token) {
+            copyExistingShareLink();
+        } else {
+            enableShareAndCopy();
+        }
+    }
+    if (key === 'unshare') disableShare();
 };
 
 const parser = (transaction: Record<string, string>) => ({
