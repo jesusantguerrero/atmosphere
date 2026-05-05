@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\Finance;
 
+use App\Domains\AppCore\Models\Category;
 use App\Domains\Budget\Models\BudgetFund;
+use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Budget\Models\BudgetTarget;
 use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Models\Setting;
+use App\Models\Team;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Response;
@@ -26,6 +29,8 @@ class FinancialOverviewController extends Controller
 
     const SETTING_GOAL_ACCOUNT_LINKS = 'financial_overview_goal_account_links';
 
+    const SETTING_GOAL_CATEGORY_LINKS = 'financial_overview_goal_category_links';
+
     public function index(Request $request): Response
     {
         $user = $request->user();
@@ -38,9 +43,11 @@ class FinancialOverviewController extends Controller
         $quoteCurrency = $settings[self::SETTING_QUOTE_CURRENCY] ?? 'DOP';
         $pinnedGoalIds = json_decode($settings[self::SETTING_PINNED_GOALS] ?? '[]', true) ?: [];
         $goalAccountLinks = json_decode($settings[self::SETTING_GOAL_ACCOUNT_LINKS] ?? '{}', true) ?: [];
+        $goalCategoryLinks = json_decode($settings[self::SETTING_GOAL_CATEGORY_LINKS] ?? '{}', true) ?: [];
 
         $accounts = $this->buildAccountsData($teamIds, $exchangeRate, $baseCurrency, $quoteCurrency);
-        $pinnedGoals = $this->buildPinnedGoals($teamIds, $pinnedGoalIds, $accounts, $goalAccountLinks);
+        $categoryIndex = $this->buildCategoryIndex($teamIds, $exchangeRate, $baseCurrency, $quoteCurrency);
+        $pinnedGoals = $this->buildPinnedGoals($teamIds, $pinnedGoalIds, $accounts, $goalAccountLinks, $goalCategoryLinks, $categoryIndex);
         $availableGoals = $this->buildAllGoals($teamIds);
         $totals = $this->calculateTotals($accounts, $exchangeRate, $baseCurrency, $quoteCurrency);
         $bankBreakdown = $this->buildBankBreakdown($teamIds, $exchangeRate, $baseCurrency, $quoteCurrency);
@@ -51,6 +58,8 @@ class FinancialOverviewController extends Controller
             'availableGoals' => $availableGoals,
             'pinnedGoalIds' => $pinnedGoalIds,
             'goalAccountLinks' => (object) $goalAccountLinks,
+            'goalCategoryLinks' => (object) $goalCategoryLinks,
+            'availableCategories' => $this->groupCategoryIndexByTeam($categoryIndex),
             'bankBreakdown' => $bankBreakdown,
             'exchangeRate' => $exchangeRate,
             'baseCurrency' => $baseCurrency,
@@ -131,6 +140,53 @@ class FinancialOverviewController extends Controller
 
         Setting::storeBulk([
             self::SETTING_GOAL_ACCOUNT_LINKS => json_encode((object) $links),
+        ], [
+            'team_id' => $teamId,
+            'user_id' => $userId,
+        ]);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function updateGoalCategoryLinks(Request $request): JsonResponse
+    {
+        $request->validate([
+            'links' => ['present', 'array'],
+            'links.*' => ['array'],
+            'links.*.*' => ['integer'],
+        ]);
+
+        $user = $request->user();
+        $teamId = $user->current_team_id;
+        $userId = $user->id;
+
+        $allowedCategoryIds = Category::query()
+            ->whereIn('team_id', $user->allTeams()->pluck('id')->toArray())
+            ->where('resource_type', 'transactions')
+            ->whereNotNull('parent_id')
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        $links = [];
+        foreach ($request->input('links', []) as $goalId => $categoryIds) {
+            $clean = array_values(array_unique(array_map('intval', $categoryIds)));
+            $unauthorized = array_diff($clean, $allowedCategoryIds);
+
+            if (! empty($unauthorized)) {
+                return response()->json([
+                    'message' => 'The given data was invalid.',
+                    'errors' => ['links' => ['One or more category IDs do not belong to your teams.']],
+                ], 422);
+            }
+
+            if (! empty($clean)) {
+                $links[$goalId] = $clean;
+            }
+        }
+
+        Setting::storeBulk([
+            self::SETTING_GOAL_CATEGORY_LINKS => json_encode((object) $links),
         ], [
             'team_id' => $teamId,
             'user_id' => $userId,
@@ -278,8 +334,17 @@ class FinancialOverviewController extends Controller
         return $goals;
     }
 
-    private function buildPinnedGoals(array $teamIds, array $pinnedIds, array $accounts = [], array $goalAccountLinks = []): array
-    {
+    /**
+     * @param  array<int, array{id: int, name: string, team_id: int, team_name: string, available_in_quote: float}>  $categoryIndex
+     */
+    private function buildPinnedGoals(
+        array $teamIds,
+        array $pinnedIds,
+        array $accounts = [],
+        array $goalAccountLinks = [],
+        array $goalCategoryLinks = [],
+        array $categoryIndex = [],
+    ): array {
         if (empty($pinnedIds)) {
             return [];
         }
@@ -295,12 +360,17 @@ class FinancialOverviewController extends Controller
             }
         }
 
+        $categoryIndexById = [];
+        foreach ($categoryIndex as $entry) {
+            $categoryIndexById[$entry['id']] = $entry;
+        }
+
         $all = $this->buildAllGoals($teamIds);
         $pinned = array_values(array_filter($all, fn ($goal) => in_array($goal['id'], $pinnedIds)));
 
-        return array_map(function ($goal) use ($goalAccountLinks, $accountIndex) {
-            $raw = $goalAccountLinks[$goal['id']] ?? [];
-            $accountIds = is_array($raw) ? $raw : [$raw];
+        return array_map(function ($goal) use ($goalAccountLinks, $accountIndex, $goalCategoryLinks, $categoryIndexById) {
+            $rawAccountIds = $goalAccountLinks[$goal['id']] ?? [];
+            $accountIds = is_array($rawAccountIds) ? $rawAccountIds : [$rawAccountIds];
 
             $linkedAccounts = [];
             $total = 0.0;
@@ -317,11 +387,97 @@ class FinancialOverviewController extends Controller
                 $total += $accountIndex[$accountId]['balance_in_quote'];
             }
 
+            $rawCategoryIds = $goalCategoryLinks[$goal['id']] ?? [];
+            $categoryIds = is_array($rawCategoryIds) ? $rawCategoryIds : [$rawCategoryIds];
+
+            $linkedCategories = [];
+            foreach ($categoryIds as $categoryId) {
+                if (! isset($categoryIndexById[$categoryId])) {
+                    continue;
+                }
+                $entry = $categoryIndexById[$categoryId];
+                $linkedCategories[] = [
+                    'id' => (int) $categoryId,
+                    'name' => $entry['name'],
+                    'team_name' => $entry['team_name'],
+                    'available_in_quote' => $entry['available_in_quote'],
+                ];
+                $total += $entry['available_in_quote'];
+            }
+
             $goal['linked_accounts'] = $linkedAccounts;
+            $goal['linked_categories'] = $linkedCategories;
             $goal['current_balance'] = $total;
 
             return $goal;
         }, $pinned);
+    }
+
+    /**
+     * @return array<int, array{id: int, name: string, team_id: int, team_name: string, available_in_quote: float}>
+     */
+    private function buildCategoryIndex(array $teamIds, float $exchangeRate, string $baseCurrency, string $quoteCurrency): array
+    {
+        $currentMonth = now()->startOfMonth()->format('Y-m-d');
+
+        $teams = Team::query()->whereIn('id', $teamIds)->get()->keyBy('id');
+
+        $budgetMonths = BudgetMonth::query()
+            ->whereIn('budget_months.team_id', $teamIds)
+            ->where('month', $currentMonth)
+            ->join('categories', 'categories.id', '=', 'budget_months.category_id')
+            ->whereNotNull('categories.parent_id')
+            ->where('categories.resource_type', 'transactions')
+            ->select([
+                'budget_months.category_id',
+                'budget_months.team_id',
+                'budget_months.available',
+                'categories.name',
+            ])
+            ->get();
+
+        $index = [];
+        foreach ($budgetMonths as $row) {
+            $team = $teams->get($row->team_id);
+            $teamName = $team?->name ?? '';
+
+            $index[] = [
+                'id' => (int) $row->category_id,
+                'name' => $row->name,
+                'team_id' => (int) $row->team_id,
+                'team_name' => $teamName,
+                'available_in_quote' => (float) $row->available,
+            ];
+        }
+
+        return $index;
+    }
+
+    /**
+     * @param  array<int, array{id: int, name: string, team_id: int, team_name: string, available_in_quote: float}>  $categoryIndex
+     * @return array<int, array{team_name: string, categories: array<int, array{id: int, name: string, available_in_quote: float}>}>
+     */
+    private function groupCategoryIndexByTeam(array $categoryIndex): array
+    {
+        $grouped = [];
+
+        foreach ($categoryIndex as $entry) {
+            $teamName = $entry['team_name'];
+            if (! isset($grouped[$teamName])) {
+                $grouped[$teamName] = [
+                    'team_name' => $teamName,
+                    'categories' => [],
+                ];
+            }
+            $grouped[$teamName]['categories'][] = [
+                'id' => $entry['id'],
+                'name' => $entry['name'],
+                'team_id' => $entry['team_id'],
+                'available_in_quote' => $entry['available_in_quote'],
+            ];
+        }
+
+        return array_values($grouped);
     }
 
     private function calculateTotals(array $accounts, float $exchangeRate, string $baseCurrency, string $quoteCurrency): array

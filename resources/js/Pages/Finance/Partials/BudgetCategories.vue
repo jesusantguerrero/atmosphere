@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import {  toRefs , ref } from "vue";
-import { useForm } from "@inertiajs/vue3";
+import { toRefs, ref } from "vue";
+import { router, useForm } from "@inertiajs/vue3";
 import { VueDraggableNext as Draggable } from "vue-draggable-next";
 import { useBreakpoints, breakpointsTailwind } from "@vueuse/core";
+import axios from "axios";
 
 import LogerInput from "@/Components/atoms/LogerInput.vue";
 
@@ -28,9 +29,10 @@ const { budgets } = toRefs(props);
 const {
   visibleCategories,
   filters,
+  selectedBudget,
   setSelectedBudget,
   assignBudget,
-  moveBudget
+  moveBudget,
 } = useBudget(budgets);
 
 const categoryForm = useForm({
@@ -80,7 +82,32 @@ const handleBudgetMovement = (budgetMovementData: any) => {
         @save="saveBudgetCategory()"
         @cancel=""
     />
+
+    <!-- Empty state: new account with no budget categories yet. -->
+    <div
+        v-if="!visibleCategories?.length"
+        class="flex flex-col items-center justify-center py-12 px-6 mt-4 rounded-md bg-base-lvl-3 border border-base"
+    >
+        <div class="text-4xl mb-3">📊</div>
+        <h3 class="text-lg font-bold text-body">{{ $t('No categories yet') }}</h3>
+        <p class="mt-1 text-sm text-body-1 text-center max-w-sm">
+            {{ $t('Create your first category group above to start budgeting. Group ideas: Vivienda, Comida, Transporte.') }}
+        </p>
+    </div>
+
+    <!-- Column legend — small visual key so users know what each amount means. -->
+    <header
+        v-if="visibleCategories?.length"
+        class="hidden md:flex items-center justify-end gap-2 px-4 py-2 text-xs uppercase tracking-wide text-body-1/50 font-medium"
+    >
+        <span class="w-36 text-right">{{ $t('Assigned') }}</span>
+        <span class="w-44 text-right">{{ $t('Spent') }}</span>
+        <span class="w-28 text-right">{{ $t('Available') }}</span>
+        <span class="w-8" aria-hidden="true"></span>
+    </header>
+
     <Draggable
+        v-if="visibleCategories?.length"
         class="w-full space-y-0.5 overflow-auto dragArea list-group ic-scroller"
         :list="visibleCategories"
         handle=".handle"

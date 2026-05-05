@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, computed, inject, ref } from "vue";
+import { reactive, computed, inject, ref, watch } from "vue";
 import { AtField } from "atmosphere-ui";
 import { NSelect } from "naive-ui";
 
@@ -110,22 +110,41 @@ defineExpose({
 
 const isPickerOpen = ref(false);
 
-const showPlannedToggle = ref<{ [key: number]: boolean }>({});
+// Auto-fetch any planned transaction matching the picked category and surface it
+// inline as a passive notice. Replaces the old "Show Planned Transaction Options"
+// click-to-reveal toggle — the info should be visible the moment a category is set.
 const relatedPlanned = ref<{ [key: number]: any }>({});
 
-async function fetchRelatedPlanned(index: number, split: SplitItem) {
-  if (!split.category_id) return;
-  // Replace with your actual API endpoint and params
-  const res = await axios.get(`/api/planned?category_id=${split.category_id}`);
-  relatedPlanned.value[index] = res.data;
+async function fetchRelatedPlanned(index: number, categoryId: number | null) {
+  if (!categoryId) {
+    relatedPlanned.value[index] = null;
+    return;
+  }
+  try {
+    const res = await axios.get(`/api/planned?category_id=${categoryId}`);
+    relatedPlanned.value[index] = res.data || null;
+  } catch (e) {
+    relatedPlanned.value[index] = null;
+  }
 }
 
 async function markPlannedAsCompleted(index: number) {
   const planned = relatedPlanned.value[index];
   if (!planned) return;
   await axios.post(`/api/planned/${planned.id}/complete`);
-  await fetchRelatedPlanned(index, splits[index]);
+  await fetchRelatedPlanned(index, splits[index].category_id);
 }
+
+// Re-fetch the planned info when the category changes on any split. Skip for transfers
+// (no category concept) so we don't fire useless requests.
+watch(
+  () => splits.map((s) => s.category_id),
+  (categoryIds) => {
+    if (props.isTransfer) return;
+    categoryIds.forEach((catId, idx) => fetchRelatedPlanned(idx, catId));
+  },
+  { deep: true }
+);
 </script>
 
 
@@ -211,7 +230,7 @@ async function markPlannedAsCompleted(index: number) {
             </AtField>
         </section>
         <AtField label="Amount" class="hidden md:block md:w-5/12">
-          <InputMoney :number-format="true" v-model="split.amount" v-model:history="split.history">
+          <InputMoney :number-format="true" v-model="split.amount" v-model:history="split.history" placeholder="">
             <template #prefix>
               <span class="flex items-center pl-2"> RD$ </span>
             </template>
@@ -250,39 +269,25 @@ async function markPlannedAsCompleted(index: number) {
         </div>
       </footer>
 
-      <!-- Toggle Button -->
-      <LogerButton
-        size="tiny"
-        variant="neutral"
-        class="mt-2"
-        @click="() => {
-          showPlannedToggle[index] = !showPlannedToggle[index];
-          if (showPlannedToggle[index]) fetchRelatedPlanned(index, split);
-        }"
+      <!-- Inline planned-transaction notice. Hidden for transfers (no category concept).
+           Passive — appears the moment a category is selected, no click required. -->
+      <section
+        v-if="!isTransfer && relatedPlanned[index] && relatedPlanned[index].completion_status !== 'completed'"
+        class="flex items-center justify-between gap-3 mt-2 px-3 py-2 text-sm rounded bg-secondary/10 border border-secondary/30"
       >
-        {{ showPlannedToggle[index] ? 'Hide' : 'Show' }} Planned Transaction Options
-      </LogerButton>
-
-      <!-- Hidden Section -->
-      <section v-if="showPlannedToggle[index]" class="mt-2 p-2 border rounded bg-base-lvl-2">
-        <div v-if="relatedPlanned[index]">
-          <p>
-            There is a planned transaction for this category.<br>
-            <strong>Planned Amount:</strong> {{ formatMoney(relatedPlanned[index].total) }}<br>
-            <strong>Status:</strong> {{ relatedPlanned[index].completion_status || relatedPlanned[index].status }}
-          </p>
-          <LogerButton
-            v-if="relatedPlanned[index].completion_status !== 'completed'"
-            @click="markPlannedAsCompleted(index)"
-            variant="success"
-            class="mt-2"
-          >
-            Mark Planned as Completed
-          </LogerButton>
+        <div class="flex items-center gap-2 text-secondary">
+          <i class="fa fa-calendar-check" />
+          <span>
+            {{ $t('Planned') }} {{ formatMoney(relatedPlanned[index].total) }} —
+            <span class="opacity-70">{{ $t('mark this as the planned transaction?') }}</span>
+          </span>
         </div>
-        <div v-else>
-          <p>No planned transaction found for this category.</p>
-        </div>
+        <LogerButton
+          variant="inverse-secondary"
+          @click="markPlannedAsCompleted(index)"
+        >
+          {{ $t('Mark planned as paid') }}
+        </LogerButton>
       </section>
     </section>
 

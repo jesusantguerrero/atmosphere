@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, provide, toRefs, onMounted, nextTick } from "vue";
+import { computed, provide, ref, toRefs, onMounted, nextTick } from "vue";
 import { router } from "@inertiajs/vue3";
 import { AtButton, AtDatePager } from "atmosphere-ui";
 import { useBreakpoints, breakpointsTailwind } from "@vueuse/core";
@@ -9,6 +9,7 @@ import { AtDropdownLink } from "atmosphere-ui";
 
 import IconClose from "@/Components/icons/IconClose.vue";
 import Modal from "@/Components/atoms/Modal.vue";
+import ConfirmationModal from "@/Components/atoms/ConfirmationModal.vue";
 import JetDropdown from "@/Components/atoms/Dropdown.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 import LogerButtonCircle from "@/Components/atoms/LogerButtonCircle.vue";
@@ -151,19 +152,10 @@ const currentMonthIso = computed(() => {
     return startOfMonth(date).toISOString().slice(0, 10);
 });
 
-const copyFromPrevious = (overwrite: boolean = false) => {
-    if (!currentMonthIso.value) {
-        return;
-    }
-    if (!monthIsEmpty.value && !overwrite) {
-        const ok = window.confirm(
-            'This month already has a plan. Overwrite with last month\'s amounts?'
-        );
-        if (!ok) {
-            return;
-        }
-        overwrite = true;
-    }
+const isConfirmingCopyOverwrite = ref(false);
+
+const performCopyFromPrevious = (overwrite: boolean) => {
+    if (!currentMonthIso.value) return;
     router.post(
         `/budgets/months/${currentMonthIso.value}/copy-from-previous`,
         { overwrite },
@@ -174,6 +166,21 @@ const copyFromPrevious = (overwrite: boolean = false) => {
             },
         }
     );
+};
+
+const copyFromPrevious = () => {
+    if (!currentMonthIso.value) return;
+    if (!monthIsEmpty.value) {
+        // Existing plan present — gate the destructive overwrite behind a styled modal.
+        isConfirmingCopyOverwrite.value = true;
+        return;
+    }
+    performCopyFromPrevious(false);
+};
+
+const confirmCopyOverwrite = () => {
+    isConfirmingCopyOverwrite.value = false;
+    performCopyFromPrevious(true);
 };
 
 const toggleFilter = async (value: string) => {
@@ -253,7 +260,7 @@ const budgetCsvExportUrl = computed(() => {
                     <div class="w-56 py-1">
                         <AtDropdownLink
                             as="button"
-                            @click="copyFromPrevious(false)"
+                            @click="copyFromPrevious()"
                         >
                             <section class="flex items-center w-full">
                                 <IMdiContentCopy class="mr-2" />
@@ -283,8 +290,10 @@ const budgetCsvExportUrl = computed(() => {
     </template>
 
     <FinanceTemplate :accounts="accounts" :panel-size="panelSize">
-      <!-- Budget to assign -->
+      <!-- Budget intro tutorial — dismissable. Storage key is stable across locales
+           so dismissing in Spanish doesn't re-surface the box when switched to English. -->
       <MessageBox
+        storage-key="loger-budget-intro-dismissed"
         :title="$t('This is your budget.')"
         :content="$t('Create new category groups and categories and organize them to suit your needs')"
       />
@@ -369,6 +378,29 @@ const budgetCsvExportUrl = computed(() => {
         @close="setSelectedBudget()"
       />
     </modal>
+
+    <ConfirmationModal
+        :show="isConfirmingCopyOverwrite"
+        :title="$t('Overwrite this month\'s plan?')"
+        @close="isConfirmingCopyOverwrite = false"
+    >
+        <template #content>
+            <p>{{ $t('This month already has assignments.') }}</p>
+            <p class="mt-2 text-sm text-body-1/70">
+                {{ $t('Copying from last month will replace the current amounts. This cannot be undone.') }}
+            </p>
+        </template>
+        <template #footer>
+            <div class="flex items-center justify-end gap-2">
+                <LogerButton variant="neutral" rounded @click="isConfirmingCopyOverwrite = false">
+                    {{ $t('Cancel') }}
+                </LogerButton>
+                <LogerButton variant="error" rounded @click="confirmCopyOverwrite">
+                    {{ $t('Overwrite') }}
+                </LogerButton>
+            </div>
+        </template>
+    </ConfirmationModal>
   </AppLayout>
 </template>
 

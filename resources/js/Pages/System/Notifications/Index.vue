@@ -140,9 +140,11 @@ const rowClass = (row: NotificationItem) => {
                 </header>
 
                 <CustomTable
+                    v-if="list.length"
                     :cols="cols"
                     :table-data="list"
                     :row-class="rowClass"
+                    hide-empty-text
                 >
                     <template #data="{ scope: { row } }">
                         <article class="flex items-start gap-3 px-2 py-3">
@@ -184,28 +186,33 @@ const rowClass = (row: NotificationItem) => {
                             </button>
                         </div>
                     </template>
-
-                    <template #empty>
-                        <div class="flex flex-col items-center justify-center py-12 px-6">
-                            <div class="text-5xl mb-3">{{ filter === 'unread' ? '🎉' : '📭' }}</div>
-                            <h3 class="text-lg font-bold text-body">
-                                {{ filter === 'unread' ? $t('All caught up') : $t('No notifications yet') }}
-                            </h3>
-                            <p class="mt-1 text-sm text-body-1 text-center max-w-md">
-                                {{ filter === 'unread'
-                                    ? $t('Watchlist alerts, billing cycle reminders, and other updates show up here.')
-                                    : $t('Notifications appear here when watchlist thresholds, billing cycles, or reminders trigger.')
-                                }}
-                            </p>
-                            <Link
-                                href="/dashboard"
-                                class="mt-4 px-4 py-2 text-sm rounded-md text-primary border border-primary hover:bg-primary hover:text-white transition"
-                            >
-                                {{ $t('Back to Dashboard') }}
-                            </Link>
-                        </div>
-                    </template>
                 </CustomTable>
+
+                <!-- Empty state lives OUTSIDE CustomTable so it gets a proper full-width
+                     centered layout. Inside CustomTable, the empty slot renders inside a
+                     <td colspan> with display:flex applied, which collides with the fixed
+                     col widths and offsets the content visually. -->
+                <div
+                    v-else
+                    class="flex flex-col items-center justify-center w-full py-16 px-6 text-center"
+                >
+                    <div class="text-5xl mb-3">{{ filter === 'unread' ? '🎉' : '📭' }}</div>
+                    <h3 class="text-lg font-bold text-body">
+                        {{ filter === 'unread' ? $t('All caught up') : $t('No notifications yet') }}
+                    </h3>
+                    <p class="mt-1 text-sm text-body-1 max-w-md">
+                        {{ filter === 'unread'
+                            ? $t('Watchlist alerts, billing cycle reminders, and other updates show up here.')
+                            : $t('Notifications appear here when watchlist thresholds, billing cycles, or reminders trigger.')
+                        }}
+                    </p>
+                    <Link
+                        href="/dashboard"
+                        class="mt-4 px-4 py-2 text-sm rounded-md text-primary border border-primary hover:bg-primary hover:text-white transition"
+                    >
+                        {{ $t('Back to Dashboard') }}
+                    </Link>
+                </div>
 
                 <footer
                     v-if="notifications.last_page > 1"

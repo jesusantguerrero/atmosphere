@@ -18,7 +18,9 @@ const props = defineProps({
     }
 })
 
-const isOpen = useLocalStorage(props.title || props.storageKey || "isOpen", true);
+// Explicit storageKey wins over title — title can change with locale and would
+// re-surface a dismissed message when the user switches language.
+const isOpen = useLocalStorage(props.storageKey || props.title || "isOpen", true);
 </script>
 
 

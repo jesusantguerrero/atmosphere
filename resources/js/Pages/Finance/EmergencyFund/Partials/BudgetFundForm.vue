@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-    import { inject } from "vue";
+    import { inject, computed } from "vue";
     import { AtField } from "atmosphere-ui"
     import { NSelect } from "naive-ui";
-    import { useForm  } from '@inertiajs/vue3'
+    import { useForm, usePage  } from '@inertiajs/vue3'
 
     import JetFormSection from '@/Components/atoms/FormSection.vue'
     import JetActionMessage from '@/Components/atoms/ActionMessage.vue'
@@ -10,9 +10,11 @@
     import LogerButton from "@/Components/atoms/LogerButton.vue";
 
     const props = defineProps<{
-        user: Record<string, any>
+        user: Record<string, any>;
+        crossTeamCategoryOptions?: Array<Record<string, any>>;
     }>();
 
+    const pageProps = usePage().props;
 
     const form =  useForm({
         name: "Emergency fund",
@@ -21,13 +23,30 @@
         category_id: null
     });
 
-    const categoryOptions = inject("categoryOptions", []);
+    const injectedCategoryOptions = inject("categoryOptions", []);
+    const categorySelectOptions = computed(() => {
+        return props.crossTeamCategoryOptions?.length
+            ? props.crossTeamCategoryOptions
+            : injectedCategoryOptions;
+    });
+
+    const selectedTeamLabel = computed(() => {
+        if (!form.category_id || !props.crossTeamCategoryOptions?.length) return null;
+        const currentTeamId = pageProps.auth?.user?.current_team?.id;
+        for (const group of props.crossTeamCategoryOptions) {
+            const match = group.children?.find((c: any) => c.value === form.category_id);
+            if (match) {
+                const groupTeamId = Number(String(group.key).replace('team-', ''));
+                return groupTeamId !== currentTeamId ? group.label : null;
+            }
+        }
+        return null;
+    });
 
     const updateProfileInformation = () => {
         form.post(route('budget-funds.store'), {
             errorBag: 'updateProfileInformation',
             preserveScroll: true,
-            onSuccess: () => (this.clearPhotoFileInput()),
         });
     }
 </script>
@@ -53,8 +72,11 @@
                     class="w-full"
                     v-model:value="form.category_id"
                     :default-expand-all="true"
-                    :options="categoryOptions"
+                    :options="categorySelectOptions"
                 />
+                <p v-if="selectedTeamLabel" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    {{ $t('Pulling balance from') }}: {{ selectedTeamLabel }}
+                </p>
             </AtField>
 
             <!-- Email -->

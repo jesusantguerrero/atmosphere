@@ -283,7 +283,12 @@ const context = useAppContextStore();
 <div class="px-4 py-2 cursor-pointer group" @click.stop="$emit('edit')">
     <section class="md:flex space-between">
         <div class="flex items-center w-full space-x-4 ">
-            <div class="hidden mr-4 cursor-grab group-hover:inline-block">
+            <!-- On mobile (no hover state), show the drag handle always so reorder is
+                 discoverable. Desktop keeps the hover-reveal pattern. -->
+            <div class="mr-4 cursor-grab inline-block md:hidden">
+                <IconDrag class="handle" />
+            </div>
+            <div class="hidden mr-4 cursor-grab md:group-hover:inline-block">
                 <IconDrag class="handle" />
             </div>
             <BudgetItemHeader :item="item" :show-delete="showDelete" />
@@ -338,6 +343,7 @@ const context = useAppContextStore();
                 :category="item"
                 @move="onMoveFromBudget"
                 class="flex items-center h-full w-28"
+                :class="Number(item.available) < 0 ? 'text-error font-semibold' : ''"
             >
                 <template #suffix v-if="item.available">
                     <BudgetTransaction
