@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers\Meal;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use App\Domains\Meal\Models\Meal;
-use App\Http\Resources\MealResource;
-use Modules\Plan\Entities\PlanTypes;
 use App\Domains\Meal\Models\MealType;
-use Modules\Plan\Services\PlanService;
-use Illuminate\Support\Facades\Redirect;
 use App\Domains\Meal\Services\MealService;
+use App\Http\Resources\MealResource;
 use App\Http\Resources\PlannedMealResource;
 use Freesgen\Atmosphere\Http\InertiaController;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Redirect;
+use Modules\Plan\Entities\PlanTypes;
+use Modules\Plan\Services\PlanService;
 
 class MealController extends InertiaController
 {
@@ -58,7 +59,7 @@ class MealController extends InertiaController
                 'user_id' => $request->user()->id,
             ])->get(),
             'meals' => PlannedMealResource::collection($plannedMeals),
-            'shoppingList' => $service->getPlanType($teamId, PlanTypes::SHOPPING_LIST, request())
+            'shoppingList' => $service->getPlanType($teamId, PlanTypes::SHOPPING_LIST, request()),
         ]);
     }
 
@@ -94,14 +95,32 @@ class MealController extends InertiaController
 
     public function random(Request $request)
     {
-        $meals = Meal::where([
+        $teamMeals = Meal::where([
             'team_id' => $request->user()->current_team_id,
-        ])->get();
+        ]);
 
-        return count($meals) ? $meals->random() : 'Noting to show';
+        // FD-1: bias toward favorites when they exist. Falls back to all meals if
+        // the user hasn't liked anything yet.
+        $favorites = (clone $teamMeals)->favorites()->get();
+        $pool = $favorites->isNotEmpty() ? $favorites : $teamMeals->get();
+
+        return count($pool) ? $pool->random() : 'Noting to show';
     }
 
-    public function show(Request $request, int $id) {
+    public function show(Request $request, int $id)
+    {
         return inertia($this->templates['view'], $this->getEditProps($request, $id));
+    }
+
+    /**
+     * FD-1: toggle is_liked on a meal so it surfaces in the favorites filter
+     * and biases the random meal generator.
+     */
+    public function toggleFavorite(Meal $meal): RedirectResponse
+    {
+        abort_unless((int) $meal->team_id === (int) request()->user()->current_team_id, 403);
+        $meal->toggleFavorite();
+
+        return back();
     }
 }

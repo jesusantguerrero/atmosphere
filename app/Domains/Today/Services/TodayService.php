@@ -3,8 +3,8 @@
 namespace App\Domains\Today\Services;
 
 use App\Domains\AppCore\Models\Planner;
-use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Housing\Models\Occurrence;
+use App\Domains\Meal\Services\MealService;
 use App\Domains\Transaction\Models\BillingCycle;
 use App\Domains\Transaction\Services\TransactionService;
 use App\Notifications\WatchlistThresholdAlert;
@@ -18,7 +18,9 @@ use Illuminate\Notifications\DatabaseNotification;
  */
 class TodayService
 {
-    public function __construct() {}
+    public function __construct(
+        private MealService $mealService,
+    ) {}
 
     /**
      * @return array<string, mixed>
@@ -32,14 +34,40 @@ class TodayService
             'attention' => $this->attention($userId, $today),
             'today' => $this->today($teamId, $today),
             'upcoming' => $this->upcoming($teamId, $today),
+            'meal' => $this->meal($teamId),
         ];
     }
 
     /**
-     * MONEY: today's spend + this month's assigned/spent/remaining.
-     * Uses BudgetMonth aggregates and TransactionService for the daily total.
+     * MEAL HOY: today's planned meals (from MealPlan via Planner). FD-1 v0.2.
+     * Empty array when no meals scheduled — widget renders empty state with link
+     * to /meal-planner. Each entry exposes the meal type label so the UI can
+     * group "Breakfast / Lunch / Dinner" in order.
      *
-     * @return array{today_spent: float, month_assigned: float, month_spent: float, month_remaining: float, currency_code: ?string}
+     * @return array<int, array<string, mixed>>
+     */
+    private function meal(int $teamId): array
+    {
+        return $this->mealService->getMealSchedule($teamId)
+            ->map(fn ($plan) => [
+                'id' => $plan->id,
+                'meal_id' => $plan->dateable?->meal_id,
+                'name' => $plan->dateable?->name,
+                'meal_type' => $plan->dateable?->mealType?->name,
+                'is_liked' => (bool) ($plan->dateable?->meal?->is_liked ?? false),
+            ])
+            ->all();
+    }
+
+    /**
+     * MONEY (today-only): a single number — what was spent today.
+     *
+     * Intentionally narrow: Dashboard owns the comprehensive "how am I doing
+     * this month" view (budget donut, % spent, totals, charts). Today is the
+     * action surface — "log what you spent" is the action this card invites.
+     * Showing the same month aggregates here was design overlap.
+     *
+     * @return array{today_spent: float, currency_code: ?string}
      */
     private function money(int $teamId, Carbon $today): array
     {
@@ -48,20 +76,9 @@ class TodayService
             $today->copy()->startOfDay()->format('Y-m-d'),
             $today->copy()->endOfDay()->format('Y-m-d')
         );
-        $todaySpent = (float) abs($todayRow?->total_amount ?? 0);
-
-        $monthAggregates = BudgetMonth::getMonthAssignmentTotal($teamId, $today->format('Y-m-d'));
-        $current = collect($monthAggregates)->last() ?? [];
-
-        $monthAssigned = (float) ($current['total'] ?? 0);
-        $monthSpent = (float) ($current['spending'] ?? 0);
-        $monthRemaining = $monthAssigned - $monthSpent;
 
         return [
-            'today_spent' => $todaySpent,
-            'month_assigned' => $monthAssigned,
-            'month_spent' => $monthSpent,
-            'month_remaining' => $monthRemaining,
+            'today_spent' => (float) abs($todayRow?->total_amount ?? 0),
             'currency_code' => null,
         ];
     }
@@ -93,27 +110,57 @@ class TodayService
     }
 
     /**
-     * TODAY: items with a Planner record dated today that aren't completed.
-     * Generic filter — covers planned transactions and anything else hooked into
-     * the Planner morphTo (FM-1 will land here when relationship reminders ship).
+     * TODAY: two sources tagged with `kind`:
+     *   - `planner`: Planner records dated today (planned transactions etc.) not completed
+     *   - `relationship`: FM-1 — Occurrence type=relationship that is overdue or due today
      *
      * @return array<int, array<string, mixed>>
      */
     private function today(int $teamId, Carbon $today): array
     {
-        return Planner::query()
+        $plannerItems = Planner::query()
             ->where('team_id', $teamId)
             ->whereDate('date', $today->format('Y-m-d'))
             ->whereNull('completed_at')
             ->orderBy('date')
-            ->limit(10)
             ->get()
             ->map(fn ($p) => [
-                'id' => $p->id,
-                'dateable_type' => $p->dateable_type,
-                'date' => $p->date,
+                'kind' => 'planner',
+                'id' => 'planner-'.$p->id,
+                'name' => $p->dateable_type ? class_basename($p->dateable_type) : null,
+                'subtitle' => null,
                 'status' => $p->status,
-            ])
+            ]);
+
+        $relationships = Occurrence::query()
+            ->byTeam($teamId)
+            ->ofType(Occurrence::TYPE_RELATIONSHIP)
+            ->where('is_active', true)
+            ->whereNotNull('last_date')
+            ->where('avg_days_passed', '>', 0)
+            ->get()
+            ->filter(function ($occurrence) {
+                $days = $occurrence->daysUntilNext();
+
+                // Overdue (≤0) — surface so the user knows it's been longer than usual.
+                return $days !== null && $days <= 0;
+            })
+            ->map(function ($occurrence) {
+                $days = $occurrence->daysUntilNext() ?? 0;
+
+                return [
+                    'kind' => 'relationship',
+                    'id' => 'relationship-'.$occurrence->id,
+                    'name' => $occurrence->name,
+                    'subtitle' => $days < 0 ? abs($days).' days overdue' : 'due today',
+                    'status' => null,
+                ];
+            });
+
+        return $plannerItems
+            ->concat($relationships)
+            ->take(10)
+            ->values()
             ->all();
     }
 

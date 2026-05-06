@@ -37,6 +37,10 @@ class Occurrence extends Model
     // can surface "water due in 3 days" alongside credit card billing cycles.
     const TYPE_UTILITY = 'utility';
 
+    // FM-1: marks an Occurrence as a relationship reminder so /relationships can surface
+    // "last saw Hope 12 days ago" and nudge when it's been longer than usual.
+    const TYPE_RELATIONSHIP = 'relationship';
+
     const NOTIFY_FIELDS = [
         'last' => [
             'activatedField' => 'notify_on_last_count',

@@ -10,9 +10,7 @@ import { useTransactionModal } from '@/domains/transactions/useTransactionModal'
 
 interface MoneyPayload {
     today_spent: number;
-    month_assigned: number;
-    month_spent: number;
-    month_remaining: number;
+    currency_code: string | null;
 }
 
 interface AttentionItem {
@@ -23,10 +21,11 @@ interface AttentionItem {
 }
 
 interface TodayItem {
-    id: number;
-    dateable_type: string | null;
-    date: string;
-    status: string;
+    kind: 'planner' | 'relationship';
+    id: string;
+    name: string | null;
+    subtitle: string | null;
+    status: string | null;
 }
 
 interface UpcomingItem {
@@ -39,30 +38,25 @@ interface UpcomingItem {
     days_until: number;
 }
 
+interface MealItem {
+    id: number;
+    meal_id: number | null;
+    name: string | null;
+    meal_type: string | null;
+    is_liked: boolean;
+}
+
 const props = defineProps<{
     today: {
         money: MoneyPayload;
         attention: AttentionItem[];
         today: TodayItem[];
         upcoming: UpcomingItem[];
+        meal: MealItem[];
     };
 }>();
 
 const { openTransactionModal } = useTransactionModal();
-
-const monthProgressPercent = computed(() => {
-    const assigned = props.today.money.month_assigned;
-    if (assigned <= 0) return 0;
-    const ratio = props.today.money.month_spent / assigned;
-    return Math.min(100, Math.max(0, Math.round(ratio * 100)));
-});
-
-const monthProgressClass = computed(() => {
-    const pct = monthProgressPercent.value;
-    if (pct > 100 || props.today.money.month_remaining < 0) return 'bg-error';
-    if (pct > 70) return 'bg-warning';
-    return 'bg-success';
-});
 
 const formatDueDate = (iso: string) => {
     try {
@@ -103,44 +97,30 @@ const openQuickAdd = () => {
             </header>
 
             <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- MONEY widget — today's spend + month progress -->
-                <article class="bg-base-lvl-3 rounded-lg border border-base p-5">
+                <!-- TODAY'S SPEND widget — single number + log-an-expense action.
+                     Intentionally narrow vs Dashboard's budget donut: Today is about
+                     "did you log it?", not "where am I in the month". -->
+                <article class="bg-base-lvl-3 rounded-lg border border-base p-5 flex flex-col">
                     <header class="flex items-center justify-between mb-3">
                         <h2 class="text-xs font-semibold uppercase tracking-wide text-body-1/60">
-                            {{ $t('Money') }}
+                            {{ $t("Today's spend") }}
                         </h2>
                         <Link href="/budgets" class="text-xs text-primary hover:underline">
-                            {{ $t('Open budget') }}
+                            {{ $t('Open budget') }} →
                         </Link>
                     </header>
-                    <div class="space-y-3">
-                        <div>
-                            <p class="text-xs text-body-1/60 uppercase tracking-wide">{{ $t('Spent today') }}</p>
-                            <p class="text-2xl font-bold text-body mt-1">{{ formatMoney(today.money.today_spent) }}</p>
-                        </div>
-                        <div>
-                            <div class="flex items-baseline justify-between mb-1.5">
-                                <span class="text-xs text-body-1/60 uppercase tracking-wide">
-                                    {{ $t('This month') }}
-                                </span>
-                                <span class="text-sm font-medium" :class="today.money.month_remaining < 0 ? 'text-error' : 'text-body-1'">
-                                    {{ formatMoney(today.money.month_spent) }} / {{ formatMoney(today.money.month_assigned) }}
-                                </span>
-                            </div>
-                            <div class="h-2 rounded-full bg-base-lvl-1 overflow-hidden">
-                                <div
-                                    class="h-full transition-all"
-                                    :class="monthProgressClass"
-                                    :style="{ width: `${monthProgressPercent}%` }"
-                                />
-                            </div>
-                            <p class="text-xs text-body-1/60 mt-1.5">
-                                {{ today.money.month_remaining >= 0
-                                    ? $t('{amount} left', { amount: formatMoney(today.money.month_remaining) })
-                                    : $t('Over by {amount}', { amount: formatMoney(Math.abs(today.money.month_remaining)) })
-                                }}
-                            </p>
-                        </div>
+                    <p class="text-3xl font-bold text-body">{{ formatMoney(today.money.today_spent) }}</p>
+                    <p class="text-xs text-body-1/60 mt-1">
+                        {{ today.money.today_spent > 0
+                            ? $t('logged so far')
+                            : $t('Nothing logged yet — log it before you forget.')
+                        }}
+                    </p>
+                    <div class="mt-auto pt-4">
+                        <LogerButton variant="inverse" rounded class="w-full" @click="openQuickAdd">
+                            <i class="fa fa-plus mr-2" />
+                            {{ $t('Log an expense') }}
+                        </LogerButton>
                     </div>
                 </article>
 
@@ -175,13 +155,16 @@ const openQuickAdd = () => {
                     </div>
                 </article>
 
-                <!-- TODAY widget — Planner items due today -->
+                <!-- TODAY widget — Planner items due + overdue relationship reminders (FM-1) -->
                 <article class="bg-base-lvl-3 rounded-lg border border-base p-5">
                     <header class="flex items-center justify-between mb-3">
                         <h2 class="text-xs font-semibold uppercase tracking-wide text-body-1/60">
                             {{ $t('Due today') }}
                             <span v-if="today.today.length" class="ml-1 text-body-1">({{ today.today.length }})</span>
                         </h2>
+                        <Link href="/relationships" class="text-xs text-primary hover:underline">
+                            {{ $t('Relationships') }}
+                        </Link>
                     </header>
                     <div v-if="today.today.length" class="space-y-2">
                         <div
@@ -189,18 +172,64 @@ const openQuickAdd = () => {
                             :key="item.id"
                             class="flex items-center gap-3 px-3 py-2 rounded-md bg-base-lvl-2"
                         >
-                            <i class="fa fa-circle text-xs text-primary" />
-                            <span class="flex-1 text-sm text-body">
-                                {{ item.dateable_type?.split('\\').pop() ?? $t('Item') }}
+                            <i
+                                class="fa text-sm"
+                                :class="item.kind === 'relationship'
+                                    ? 'fa-heart text-error'
+                                    : 'fa-circle text-primary'"
+                            />
+                            <span class="flex-1 text-sm text-body truncate">
+                                {{ item.name ?? $t('Item') }}
                             </span>
-                            <span class="text-xs text-body-1/60 capitalize">{{ item.status }}</span>
+                            <span
+                                class="text-xs capitalize"
+                                :class="item.kind === 'relationship' ? 'text-error font-medium' : 'text-body-1/60'"
+                            >
+                                {{ item.subtitle ?? item.status }}
+                            </span>
                         </div>
                     </div>
                     <div v-else class="flex flex-col items-center justify-center py-6 text-center">
                         <div class="text-3xl mb-1.5">🎯</div>
                         <p class="text-sm text-body-1">{{ $t('No scheduled items today') }}</p>
                         <p class="text-xs text-body-1/60 mt-1 max-w-xs">
-                            {{ $t('Reminders, planned transactions, and chores show up here as they come due.') }}
+                            {{ $t('Planned transactions and overdue relationship reminders show up here.') }}
+                        </p>
+                    </div>
+                </article>
+
+                <!-- MEAL HOY widget — today's planned meals. v0.2 (FD-1). -->
+                <article class="bg-base-lvl-3 rounded-lg border border-base p-5">
+                    <header class="flex items-center justify-between mb-3">
+                        <h2 class="text-xs font-semibold uppercase tracking-wide text-body-1/60">
+                            {{ $t('On the menu today') }}
+                            <span v-if="today.meal.length" class="ml-1 text-body-1">({{ today.meal.length }})</span>
+                        </h2>
+                        <Link href="/meal-planner" class="text-xs text-primary hover:underline">
+                            {{ $t('Open planner') }}
+                        </Link>
+                    </header>
+                    <div v-if="today.meal.length" class="space-y-2">
+                        <div
+                            v-for="meal in today.meal"
+                            :key="meal.id"
+                            class="flex items-center gap-3 px-3 py-2 rounded-md bg-base-lvl-2"
+                        >
+                            <i class="fa fa-utensils text-sm text-secondary" />
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-body truncate">
+                                    {{ meal.name ?? $t('Meal') }}
+                                </p>
+                                <p v-if="meal.meal_type" class="text-xs text-body-1/60 capitalize">{{ meal.meal_type }}</p>
+                            </div>
+                            <i v-if="meal.is_liked" class="fa fa-heart text-error" :title="$t('Favorite')" />
+                        </div>
+                    </div>
+                    <div v-else class="flex flex-col items-center justify-center py-6 text-center">
+                        <div class="text-3xl mb-1.5">🍽️</div>
+                        <p class="text-sm text-body-1">{{ $t('Nothing planned for today') }}</p>
+                        <p class="text-xs text-body-1/60 mt-1 max-w-xs">
+                            {{ $t('Schedule a meal from the planner — favorites get prioritized in the random meal picker.') }}
                         </p>
                     </div>
                 </article>

@@ -237,7 +237,9 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
 
     Route::post('/users/{user}/devices', [UserDeviceController::class, 'store']);
     Route::get('/users/{user}/devices', [UserDeviceController::class, 'index']);
-    Route::get('/relationships', RelationshipController::class);
+    Route::get('/relationships', [RelationshipController::class, 'index'])->name('relationships.index');
+    Route::post('/relationships', [RelationshipController::class, 'store'])->name('relationships.store');
+    Route::post('/relationships/{occurrence}/mark-as-occurred', [RelationshipController::class, 'markAsOccurred'])->name('relationships.mark-as-occurred');
     // Automation Services
     Route::post('/services/google', [ServiceController::class, 'google']);
     Route::get('/services/messages', [ServiceController::class, 'getMessages']);

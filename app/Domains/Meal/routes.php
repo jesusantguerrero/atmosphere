@@ -19,6 +19,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', 'loger.conce
         Route::resource('/meals', MealController::class);
         Route::post('/meals/add-plan', 'addPlan')->name('meals.addPlan');
         Route::get('/meals-random', 'random')->name('meals.random');
+        Route::post('/meals/{meal}/toggle-favorite', 'toggleFavorite')->name('meals.toggleFavorite');
     });
 
     Route::controller(MealShoppingListController::class)->group(function () {

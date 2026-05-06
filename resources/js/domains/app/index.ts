@@ -10,6 +10,13 @@ export const useAppMenu = (t: any, modules: any[]) => {
 
     const appMenu =  [
         {
+            icon: 'fas fa-bolt',
+            name: 'Today',
+            label: t('Today'),
+            to: '/today',
+            as: Link
+        },
+        {
             icon: 'fa fa-home',
             name: 'Dashboard',
             label: t('Dashboard'),
@@ -28,9 +35,12 @@ export const useAppMenu = (t: any, modules: any[]) => {
         {
             separator: true
         },
+        // Pillar labels follow .planning/family-os-structure.md naming:
+        // Food (was Meal Planner), Home (was Housing), Family (was Profiles).
+        // Routes stay unchanged — only the visible labels move.
         {
-            icon: 'far fa-calendar-alt',
-            label: t('Meals'),
+            icon: 'fas fa-utensils',
+            label: t('Food'),
             name: 'mealPlanner',
             to: '/meals/overview',
             as: Link,
@@ -52,7 +62,7 @@ export const useAppMenu = (t: any, modules: any[]) => {
         },
         {
             icon: 'fas fa-home',
-            label: t('Housing'),
+            label: t('Home'),
             to: '/housing',
             as: Link,
             hidden: !isModuleEnabled('housing'),
@@ -62,7 +72,7 @@ export const useAppMenu = (t: any, modules: any[]) => {
         },
         {
             icon: 'fas fa-users',
-            label: t('Profiles'),
+            label: t('Family'),
             to: '/loger-profiles',
             as: Link,
             hidden: !isModuleEnabled('profiles'),
@@ -72,7 +82,10 @@ export const useAppMenu = (t: any, modules: any[]) => {
         }
     ].filter(item => !item.hidden);
 
-    const mobileTargets = ['/dashboard', '/meals/overview', '/finance', '/housing'];
+    // Mobile bottom-nav: Today is the daily entry point (replaces Dashboard slot
+    // on mobile — Dashboard remains reachable via desktop sidebar and Today's
+    // "Open budget" link).
+    const mobileTargets = ['/today', '/meals/overview', '/finance', '/housing'];
     let mobileMenu = cloneDeep(appMenu)
         .filter(item => mobileTargets.includes(item.to))
         .sort((a, b) => mobileTargets.indexOf(a.to) - mobileTargets.indexOf(b.to));

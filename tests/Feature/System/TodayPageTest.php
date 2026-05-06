@@ -34,12 +34,16 @@ class TodayPageTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Today/Index')
                 ->has('today.money.today_spent')
-                ->has('today.money.month_assigned')
-                ->has('today.money.month_spent')
-                ->has('today.money.month_remaining')
+                ->has('today.money.currency_code')
+                // Month-level aggregates intentionally NOT here — Dashboard owns those.
+                // Today is the action surface ("did you log it?"), not the state view.
+                ->missing('today.money.month_assigned')
+                ->missing('today.money.month_spent')
+                ->missing('today.money.month_remaining')
                 ->has('today.attention')
                 ->has('today.today')
                 ->has('today.upcoming')
+                ->has('today.meal')
             );
     }
 
@@ -54,6 +58,7 @@ class TodayPageTest extends TestCase
                 ->where('today.attention', [])
                 ->where('today.today', [])
                 ->where('today.upcoming', [])
+                ->where('today.meal', [])
             );
     }
 
@@ -156,6 +161,43 @@ class TodayPageTest extends TestCase
             ->get('/today')
             ->assertInertia(fn (Assert $page) => $page
                 ->has('today.today', 1)
+                ->where('today.today.0.kind', 'planner')
+            );
+    }
+
+    public function test_today_widget_includes_overdue_relationships(): void
+    {
+        $user = User::factory()->withPersonalTeam()->create();
+        $team = $user->ownedTeams()->first();
+
+        // Hope — last seen 35 days ago, expects every 7 days → 28 days overdue
+        Occurrence::create([
+            'team_id' => $team->id,
+            'user_id' => $user->id,
+            'name' => 'Date with Hope',
+            'type' => Occurrence::TYPE_RELATIONSHIP,
+            'last_date' => now()->subDays(35)->format('Y-m-d'),
+            'avg_days_passed' => 7,
+            'is_active' => true,
+        ]);
+
+        // Mom — within cadence (last 5 days, expects every 14) → NOT overdue, must NOT appear
+        Occurrence::create([
+            'team_id' => $team->id,
+            'user_id' => $user->id,
+            'name' => 'Call Mom',
+            'type' => Occurrence::TYPE_RELATIONSHIP,
+            'last_date' => now()->subDays(5)->format('Y-m-d'),
+            'avg_days_passed' => 14,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($user)
+            ->get('/today')
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('today.today', 1)
+                ->where('today.today.0.kind', 'relationship')
+                ->where('today.today.0.name', 'Date with Hope')
             );
     }
 
