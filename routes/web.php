@@ -22,6 +22,7 @@ use App\Http\Controllers\System\CoreModuleController;
 use App\Http\Controllers\System\DashboardController;
 use App\Http\Controllers\System\NotificationController;
 use App\Http\Controllers\System\OnboardingController;
+use App\Http\Controllers\System\PlannerController;
 use App\Http\Controllers\System\ServiceController;
 use App\Http\Controllers\System\TeamInvitationController;
 use App\Http\Controllers\System\TodayController;
@@ -171,6 +172,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
 
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
     Route::get('/today', TodayController::class)->name('today');
+    Route::post('/planner/bulk', [PlannerController::class, 'bulkStore'])->name('planner.bulk');
 
     /**************************************************************************************
       *                               Finance Section

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import { format, parseISO } from 'date-fns';
 
@@ -7,6 +7,7 @@ import AppLayout from '@/Components/templates/AppLayout.vue';
 import LogerButton from '@/Components/atoms/LogerButton.vue';
 import { formatMoney } from '@/utils';
 import { useTransactionModal } from '@/domains/transactions/useTransactionModal';
+import BulkAddPlannerModal from '@/Pages/Today/Partials/BulkAddPlannerModal.vue';
 
 interface MoneyPayload {
     today_spent: number;
@@ -26,16 +27,20 @@ interface TodayItem {
     name: string | null;
     subtitle: string | null;
     status: string | null;
+    total?: number | null;
+    source?: string | null;
 }
 
 interface UpcomingItem {
-    kind: 'billing_cycle' | 'utility';
+    kind: 'billing_cycle' | 'utility' | 'planner';
     id: string;
     name: string | null;
     account_id: number | null;
     total: number | null;
     due_at: string;
     days_until: number;
+    source?: string | null;
+    notes?: string | null;
 }
 
 interface MealItem {
@@ -80,19 +85,23 @@ const todayLabel = computed(() => format(new Date(), 'EEEE, MMM d'));
 const openQuickAdd = () => {
     openTransactionModal({ mode: 'WITHDRAW' });
 };
+
+const showBulkPlannerModal = ref(false);
+const openBulkPlanner = () => { showBulkPlannerModal.value = true; };
+const closeBulkPlanner = () => { showBulkPlannerModal.value = false; };
 </script>
 
 <template>
     <AppLayout :title="$t('Today')">
         <main class="px-4 mx-auto mt-5 mb-10 max-w-screen-2xl sm:px-6 lg:px-8 space-y-4">
-            <header class="flex items-center justify-between">
+            <header class="flex items-end justify-between gap-4">
                 <div>
                     <h1 class="text-2xl font-bold text-body">{{ $t('Today') }}</h1>
                     <p class="text-sm text-body-1/70 capitalize">{{ todayLabel }}</p>
                 </div>
-                <LogerButton variant="primary" rounded @click="openQuickAdd">
-                    <i class="fa fa-plus mr-2" />
-                    {{ $t('Add expense') }}
+                <LogerButton variant="neutral" rounded @click="openBulkPlanner">
+                    <i class="fa fa-calendar-plus mr-2" />
+                    {{ $t('Plan a batch') }}
                 </LogerButton>
             </header>
 
@@ -173,19 +182,31 @@ const openQuickAdd = () => {
                             class="flex items-center gap-3 px-3 py-2 rounded-md bg-base-lvl-2"
                         >
                             <i
-                                class="fa text-sm"
+                                class="fa text-sm flex-shrink-0"
                                 :class="item.kind === 'relationship'
                                     ? 'fa-heart text-error'
                                     : 'fa-circle text-primary'"
                             />
-                            <span class="flex-1 text-sm text-body truncate">
-                                {{ item.name ?? $t('Item') }}
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm text-body truncate">{{ item.name ?? $t('Item') }}</p>
+                                <p v-if="item.subtitle" class="text-xs text-body-1/60 truncate">
+                                    <span v-if="item.source" class="uppercase tracking-wide mr-1 text-body-1/40">{{ item.source }}</span>
+                                    {{ item.subtitle }}
+                                </p>
+                                <p v-else-if="item.source" class="text-xs uppercase tracking-wide text-body-1/40">{{ item.source }}</p>
+                            </div>
+                            <span
+                                v-if="item.total"
+                                class="text-sm font-bold text-error flex-shrink-0"
+                            >
+                                {{ formatMoney(item.total) }}
                             </span>
                             <span
-                                class="text-xs capitalize"
+                                v-else
+                                class="text-xs capitalize flex-shrink-0"
                                 :class="item.kind === 'relationship' ? 'text-error font-medium' : 'text-body-1/60'"
                             >
-                                {{ item.subtitle ?? item.status }}
+                                {{ item.kind === 'relationship' ? item.subtitle : item.status }}
                             </span>
                         </div>
                     </div>
@@ -256,18 +277,27 @@ const openQuickAdd = () => {
                             <div class="flex items-center gap-2 min-w-0">
                                 <i
                                     class="fa text-sm"
-                                    :class="item.kind === 'billing_cycle'
-                                        ? 'fa-credit-card text-warning'
-                                        : 'fa-bolt text-secondary'"
+                                    :class="{
+                                        'fa-credit-card text-warning': item.kind === 'billing_cycle',
+                                        'fa-bolt text-secondary': item.kind === 'utility',
+                                        'fa-calendar-day text-primary': item.kind === 'planner',
+                                    }"
                                 />
                                 <div class="min-w-0">
-                                    <p class="text-sm font-medium text-body truncate">{{ item.name ?? $t('Item') }}</p>
+                                    <p class="text-sm font-medium text-body truncate">
+                                        <span v-if="item.kind === 'planner' && item.source" class="text-xs uppercase tracking-wide text-body-1/40 mr-1">{{ item.source }}</span>
+                                        {{ item.name ?? $t('Item') }}
+                                    </p>
                                     <p class="text-xs text-body-1/60">
                                         {{ formatDueDate(item.due_at) }}
                                         <span class="mx-1">·</span>
                                         <span :class="item.days_until < 0 ? 'text-error font-medium' : ''">
                                             {{ relativeDueLabel(item.days_until) }}
                                         </span>
+                                        <template v-if="item.kind === 'planner' && item.notes">
+                                            <span class="mx-1">·</span>
+                                            <span class="italic">{{ item.notes }}</span>
+                                        </template>
                                     </p>
                                 </div>
                             </div>
@@ -281,13 +311,15 @@ const openQuickAdd = () => {
                     </div>
                     <div v-else class="flex flex-col items-center justify-center py-6 text-center">
                         <div class="text-3xl mb-1.5">📅</div>
-                        <p class="text-sm text-body-1">{{ $t('Nothing due this week') }}</p>
+                        <p class="text-sm text-body-1">{{ $t('Nothing on the horizon') }}</p>
                         <p class="text-xs text-body-1/60 mt-1 max-w-xs">
-                            {{ $t('Credit card cycles and recurring utilities show up here within 7 days of their due date.') }}
+                            {{ $t('Credit card cycles, utilities, and scheduled items planned for the next month show up here.') }}
                         </p>
                     </div>
                 </article>
             </section>
         </main>
+
+        <BulkAddPlannerModal :show="showBulkPlannerModal" @close="closeBulkPlanner" />
     </AppLayout>
 </template>

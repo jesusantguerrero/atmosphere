@@ -2,12 +2,12 @@
 
 namespace App\Domains\LogerProfile\Http\Controllers;
 
-use Exception;
-use App\Http\Controllers\Controller;
 use App\Domains\LogerProfile\Data\LogerProfileData;
-use App\Http\Controllers\Traits\HasEnrichedRequest;
 use App\Domains\LogerProfile\Exceptions\ProfileNotFound;
 use App\Domains\LogerProfile\Services\LogerProfileService;
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\Traits\HasEnrichedRequest;
+use Exception;
 
 class LogerProfileController extends Controller
 {
@@ -53,25 +53,27 @@ class LogerProfileController extends Controller
     {
         try {
             $profile = $profileService->getByName(request()->user()->current_team_id, $profileName);
+
             return inertia('Relationships/RelationshipView', [
                 'profile' => $profile,
-                'entities' => fn () =>  $profileService->getEntitiesByProfileId($profile->id),
+                'entities' => fn () => $profileService->getEntitiesByProfileId($profile->id),
             ]);
         } catch (Exception $e) {
             if ($e instanceof ProfileNotFound) {
-               return to_route("relationships-overview");
+                return to_route('relationships-overview');
             }
         }
     }
 
     public function overview(LogerProfileService $profileService)
     {
-        $profileName = "partner";
+        $profileName = 'partner';
         $profile = $profileService->checkByName(request()->user()->current_team_id, $profileName);
 
         if ($profile) {
-            to_route("relationships.index", [ "profileName" => $profileName]);
+            to_route('profile.relationships', ['profileName' => $profileName]);
         }
+
         return inertia('Relationships/NotFound', [
             'profiles' => [],
         ]);
