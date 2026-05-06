@@ -10,6 +10,8 @@ class ShowInApp
     {
         $menu = $event->menu;
 
+        // Today (TODAY-1 v0.1 — daily-first command center; coexists with Dashboard)
+        $menu->add('Today', route('today'));
         // Dashboard
         $menu->add('Dashboard', route('dashboard'));
         // Meal

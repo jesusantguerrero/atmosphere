@@ -24,6 +24,7 @@ use App\Http\Controllers\System\NotificationController;
 use App\Http\Controllers\System\OnboardingController;
 use App\Http\Controllers\System\ServiceController;
 use App\Http\Controllers\System\TeamInvitationController;
+use App\Http\Controllers\System\TodayController;
 use App\Http\Controllers\System\UserDeviceController;
 use Freesgen\Atmosphere\Http\Controllers\SettingsController;
 use Illuminate\Support\Facades\Route;
@@ -169,6 +170,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     ***************************************************************************************/
 
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
+    Route::get('/today', TodayController::class)->name('today');
 
     /**************************************************************************************
       *                               Finance Section
@@ -235,7 +237,9 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
 
     Route::post('/users/{user}/devices', [UserDeviceController::class, 'store']);
     Route::get('/users/{user}/devices', [UserDeviceController::class, 'index']);
-    Route::get('/relationships', RelationshipController::class);
+    Route::get('/relationships', [RelationshipController::class, 'index'])->name('relationships.index');
+    Route::post('/relationships', [RelationshipController::class, 'store'])->name('relationships.store');
+    Route::post('/relationships/{occurrence}/mark-as-occurred', [RelationshipController::class, 'markAsOccurred'])->name('relationships.mark-as-occurred');
     // Automation Services
     Route::post('/services/google', [ServiceController::class, 'google']);
     Route::get('/services/messages', [ServiceController::class, 'getMessages']);

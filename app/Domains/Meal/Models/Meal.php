@@ -2,9 +2,9 @@
 
 namespace App\Domains\Meal\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Insane\Journal\Models\Product\Product;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Meal extends Model
 {
@@ -24,14 +24,31 @@ class Meal extends Model
         return $this->belongsTo(MealType::class);
     }
 
+    /**
+     * FD-1: scope to surface only favorites. The `is_liked` column already
+     * existed on `meals`; this scope just makes it queryable cleanly.
+     */
+    public function scopeFavorites($query)
+    {
+        return $query->where('is_liked', true);
+    }
+
+    public function toggleFavorite(): bool
+    {
+        $this->is_liked = ! (bool) $this->is_liked;
+        $this->save();
+
+        return (bool) $this->is_liked;
+    }
+
     public function saveIngredients($items)
     {
         Ingredient::query()->where('meal_id', $this->id)->delete();
         foreach ($items as $item) {
-            if (isset($item['product_id']) && !str_contains($item['product_id'], "new::")) {
+            if (isset($item['product_id']) && ! str_contains($item['product_id'], 'new::')) {
                 $product = Product::find($item['product_id']);
             } else {
-                $ingredientName = str_replace("new::", "", $item['product_id']);
+                $ingredientName = str_replace('new::', '', $item['product_id']);
                 $product = Product::firstOrCreate([
                     'name' => $ingredientName,
                     'team_id' => $this->team_id,
@@ -45,7 +62,7 @@ class Meal extends Model
                 'product_id' => $product->id,
                 'quantity' => $item['quantity'] ?? 1,
                 'name' => $product->name,
-                'unit' => $item['unit'] ?? "",
+                'unit' => $item['unit'] ?? '',
             ]);
         }
     }
