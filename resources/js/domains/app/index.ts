@@ -50,6 +50,16 @@ export const useAppMenu = (t: any, modules: any[]) => {
             }
         },
         {
+            icon: 'fas fa-cart-shopping',
+            label: t('Shopping'),
+            name: 'shopping',
+            to: '/shopping',
+            as: Link,
+            isActiveFunction(url: string, currentPath: string) {
+                return /^\/shopping/.test(currentPath)
+            }
+        },
+        {
             icon: 'fas fa-dollar-sign',
             label: t('Finance'),
             name: 'finance',
