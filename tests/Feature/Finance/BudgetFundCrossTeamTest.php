@@ -52,7 +52,7 @@ class BudgetFundCrossTeamTest extends TestCase
 
         $otherTeam = $this->createTeamForUser($owner, $user);
 
-        $user->switchTeam($user->personalTeam);
+        $user->switchTeam($user->personalTeam());
 
         $categoryGroup = $this->createCategoryInTeam($otherTeam, $user);
         $category = $this->createCategoryInTeam($otherTeam, $user, $categoryGroup->id);
@@ -108,7 +108,7 @@ class BudgetFundCrossTeamTest extends TestCase
 
         $service = app(BudgetFundService::class);
 
-        $personalTeamFunds = $service->list($user->personalTeam->id);
+        $personalTeamFunds = $service->list($user->personalTeam()->id);
         $this->assertCount(0, $personalTeamFunds, 'Cross-team EF must not appear in the personal team list');
 
         $otherTeamFunds = $service->list($otherTeam->id);
@@ -179,8 +179,8 @@ class BudgetFundCrossTeamTest extends TestCase
         $stranger = User::factory()->withPersonalTeam()->create();
         $user = User::factory()->withPersonalTeam()->create();
 
-        $categoryGroup = $this->createCategoryInTeam($stranger->personalTeam, $stranger);
-        $foreignCategory = $this->createCategoryInTeam($stranger->personalTeam, $stranger, $categoryGroup->id);
+        $categoryGroup = $this->createCategoryInTeam($stranger->personalTeam(), $stranger);
+        $foreignCategory = $this->createCategoryInTeam($stranger->personalTeam(), $stranger, $categoryGroup->id);
 
         $this->actingAs($user)
             ->post(route('budget-funds.store'), [

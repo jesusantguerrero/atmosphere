@@ -23,6 +23,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
         Route::put('/budgets/{category}/months/{month}', 'updateActivity')->name('budget.update-activity');
         Route::post('/budgets/{category}/months/{month}/split', 'split')->name('budget.split');
         Route::post('/budgets/months/{month}/copy-from-previous', 'copyFromPrevious')->name('budget.copy-from-previous');
+        Route::delete('/budget-movements/{movement}', 'destroyMovement')->name('budget-movements.destroy');
         Route::post('/budgets-import', 'import')->name('budget.import');
         Route::get('/budgets-export', 'export')->name('budget.export');
         Route::get('/budgets-export-csv', 'exportCsv')->name('budget.export-csv');

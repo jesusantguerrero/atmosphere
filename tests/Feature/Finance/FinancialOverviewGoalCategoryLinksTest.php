@@ -26,7 +26,6 @@ class FinancialOverviewGoalCategoryLinksTest extends TestCase
             'team_id' => $user->current_team_id,
             'user_id' => $user->id,
             'name' => 'Emergency Fund',
-            'amount' => 10000,
         ]);
 
         $goalId = "fund-{$fund->id}";
@@ -64,7 +63,6 @@ class FinancialOverviewGoalCategoryLinksTest extends TestCase
             'team_id' => $user->current_team_id,
             'user_id' => $user->id,
             'name' => 'Emergency Fund',
-            'amount' => 10000,
         ]);
 
         $goalId = "fund-{$fund->id}";
@@ -95,12 +93,13 @@ class FinancialOverviewGoalCategoryLinksTest extends TestCase
     public function test_goal_category_links_endpoint_rejects_category_from_foreign_team(): void
     {
         $user = User::factory()->withPersonalTeam()->create();
-        $foreignTeam = Team::factory()->create(['user_id' => $user->id, 'personal_team' => false]);
+        $stranger = User::factory()->withPersonalTeam()->create();
         $this->actingAs($user);
 
+        // Category lives in a team the test user does NOT own and is NOT a member of.
         $foreignCategory = Category::create([
-            'team_id' => $foreignTeam->id,
-            'user_id' => $user->id,
+            'team_id' => $stranger->personalTeam()->id,
+            'user_id' => $stranger->id,
             'name' => 'Foreign Category',
             'display_id' => 'foreign_category',
             'resource_type' => 'transactions',
@@ -123,7 +122,6 @@ class FinancialOverviewGoalCategoryLinksTest extends TestCase
             'team_id' => $user->current_team_id,
             'user_id' => $user->id,
             'name' => 'House Fund',
-            'amount' => 5000,
         ]);
 
         $goalId = "fund-{$fund->id}";

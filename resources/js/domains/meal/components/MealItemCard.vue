@@ -8,7 +8,7 @@
 
     import { Meal } from "../models";
 
-    defineEmits(['close', 'click']);
+    defineEmits(['close', 'click', 'toggle-like']);
 
     const props = defineProps<{
         meal: Meal;
@@ -58,6 +58,15 @@
             <span class="absolute bg-primary/10 font-bold text-sm text-primary top-2.5 right-5 rounded-md px-2 capitalize">
                 {{  meal.meal_type }}
             </span>
+            <button
+                type="button"
+                class="absolute top-2.5 left-2.5 w-9 h-9 flex items-center justify-center rounded-full bg-white/80 hover:bg-white shadow-md transition"
+                :class="meal.is_liked ? 'text-error' : 'text-body-1/60 hover:text-error'"
+                :title="meal.is_liked ? 'Remove from favorites' : 'Add to favorites'"
+                @click.stop="$emit('toggle-like', meal)"
+            >
+                <i class="fa-heart" :class="meal.is_liked ? 'fas' : 'far'" />
+            </button>
         </section>
 
         <WidgetContainer

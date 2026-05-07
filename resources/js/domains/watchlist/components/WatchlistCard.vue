@@ -108,6 +108,12 @@ const trafficLightTooltip = computed(() => {
   const pct = Math.round(targetRatio.value * 100);
   return `${trafficLightLabel.value} — ${pct}% of ${formatMoney(target.value)}`;
 });
+
+const streakMonths = computed(() => Number(props.item.streak_months ?? 0));
+const streakLabel = computed(() => {
+  const n = streakMonths.value;
+  return n === 1 ? '1 month under target' : `${n} months under target`;
+});
 </script>
 
 <template>
@@ -116,6 +122,15 @@ const trafficLightTooltip = computed(() => {
       <div class="min-w-0">
         <h4 class="font-bold text-primary truncate">{{ item.name }}</h4>
         <p class="text-xs text-body-1 mt-0.5">{{ subtitle }}</p>
+        <NTooltip v-if="streakMonths > 0" trigger="hover" placement="bottom-start">
+          <template #trigger>
+            <span class="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-warning/15 text-warning text-xs font-semibold cursor-help">
+              <span aria-hidden="true">🔥</span>
+              {{ streakMonths }}
+            </span>
+          </template>
+          {{ streakLabel }}
+        </NTooltip>
       </div>
       <div class="flex items-center gap-2 shrink-0 ml-2">
         <NTooltip v-if="hasTarget" trigger="hover" placement="top">

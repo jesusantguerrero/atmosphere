@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -15,12 +15,12 @@ return new class extends Migration
             $table->id();
             $table->foreignId('team_id');
             $table->foreignId('user_id');
-            $table->foreignId('watchlist_team_id');
-            $table->foreignId('watchlist_id');
-            $table->foreignId('category_team_id');
+            $table->foreignId('watchlist_team_id')->nullable();
+            $table->foreignId('watchlist_id')->nullable();
+            $table->foreignId('category_team_id')->nullable();
             $table->foreignId('category_id');
             $table->string('name');
-            $table->decimal('monthly_split', 11, 4)->default(0);
+            $table->integer('monthly_splits')->default(0);
             $table->text('description')->nullable();
             $table->json('meta_data')->nullable();
             $table->integer('index')->default(0);

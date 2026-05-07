@@ -2,10 +2,10 @@
 
 namespace App\Domains\Budget\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Modules\Watchlist\Models\Watchlist;
 use App\Domains\AppCore\Models\Category;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Modules\Watchlist\Models\Watchlist;
 
 class BudgetFund extends Model
 {
@@ -14,7 +14,6 @@ class BudgetFund extends Model
     protected $fillable = [
         'team_id',
         'user_id',
-        'amount',
         'name',
         'monthly_splits',
         'category_id',
@@ -30,6 +29,4 @@ class BudgetFund extends Model
     {
         return $this->belongsTo(Watchlist::class);
     }
-
-
 }
