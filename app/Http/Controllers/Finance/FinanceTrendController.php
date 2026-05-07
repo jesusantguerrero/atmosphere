@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Freesgen\Atmosphere\Http\Querify;
 use Illuminate\Http\Request;
 use Insane\Journal\Models\Core\Transaction;
+use Modules\Watchlist\Models\Watchlist;
 
 class FinanceTrendController extends Controller
 {
@@ -67,13 +68,43 @@ class FinanceTrendController extends Controller
         $sectionTemplate = $section['template'] ?? 'Trends/Overview';
         $data = $this->$sectionHandler($request);
 
+        $teamId = $request->user()->current_team_id;
+
         return inertia($sectionTemplate,
             array_merge([
                 'serverSearchOptions' => $filters,
                 'section' => $sectionName,
+                'activeWatchlist' => $this->resolveActiveWatchlist($request, $teamId),
+                'watchlists' => $this->teamWatchlists($teamId),
             ],
                 $data
             ));
+    }
+
+    private function resolveActiveWatchlist(Request $request, int $teamId): ?array
+    {
+        $id = $request->query('watchlist');
+        if (! $id) {
+            return null;
+        }
+
+        $watchlist = Watchlist::query()
+            ->where('team_id', $teamId)
+            ->find($id);
+
+        return $watchlist?->only(['id', 'name', 'type', 'input', 'direction']);
+    }
+
+    /**
+     * @return array<int, array{id:int,name:string,type:string,input:array,direction:?string}>
+     */
+    private function teamWatchlists(int $teamId): array
+    {
+        return Watchlist::query()
+            ->where('team_id', $teamId)
+            ->orderBy('name')
+            ->get(['id', 'name', 'type', 'input', 'direction'])
+            ->toArray();
     }
 
     public function group(Request $request)

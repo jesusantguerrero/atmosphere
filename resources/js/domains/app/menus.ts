@@ -27,6 +27,10 @@ const menus = {
     {
         label: 'Equipment',
         url: '/housing/equipments'
+    },
+    {
+        label: 'Utilities',
+        url: '/housing/utilities'
     }
     ],
     [MODULES.MEAL]: [
@@ -48,11 +52,12 @@ const menus = {
         {
             label: 'Shopping List',
             url: '/shopping-list'
-        }, {
-            label: 'Menus',
-            url: '/meals/menus',
-            hidden: true
-    }],
+        },
+        {
+            label: 'Templates',
+            url: '/meals/menus/templates',
+        },
+    ],
     [MODULES.FINANCE]: [{
         label: 'Overview',
         url: '/finance'

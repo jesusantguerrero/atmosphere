@@ -8,9 +8,25 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class MealMenuController
 {
+    public function templates(Request $request): Response
+    {
+        $templates = MealMenu::query()
+            ->where('team_id', $request->user()->current_team_id)
+            ->where('is_template', true)
+            ->withCount('mealPlans')
+            ->latest()
+            ->get();
+
+        return Inertia::render('Meals/Templates', [
+            'templates' => $templates,
+        ]);
+    }
+
     public function index(Request $request): JsonResponse
     {
         $menus = MealMenu::where('team_id', $request->user()->current_team_id)

@@ -6,11 +6,24 @@ use App\Http\Controllers\Meal\MealMenuController;
 use App\Http\Controllers\Meal\MealPlannerController;
 use App\Http\Controllers\Meal\MealShoppingListController;
 use App\Http\Controllers\Meal\SharedShoppingListController;
+use App\Http\Controllers\ShoppingListController;
 use Illuminate\Support\Facades\Route;
 
-// Public shared list routes (no auth required)
+// Public shared list routes (no auth required) — token IS the auth.
 Route::get('/shared/list/{token}', [SharedShoppingListController::class, 'show'])->name('shared.list');
 Route::post('/shared/list/{token}/toggle/{item}', [SharedShoppingListController::class, 'toggleItem'])->name('shared.list.toggle');
+Route::post('/shared/list/{token}/items', [SharedShoppingListController::class, 'addItem'])->name('shared.list.add');
+Route::post('/shared/list/{token}/reset', [SharedShoppingListController::class, 'resetTrip'])->name('shared.list.reset');
+
+// Authed chat-style shopping list (chat-style mobile UI on top of Plan module).
+Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
+    Route::get('/shopping', [ShoppingListController::class, 'index'])->name('shopping.index');
+    Route::post('/shopping/{plan}/items', [ShoppingListController::class, 'addItem'])->name('shopping.items.add');
+    Route::post('/shopping/{plan}/items/{item}/cycle', [ShoppingListController::class, 'cycleItem'])->name('shopping.items.cycle');
+    Route::delete('/shopping/{plan}/items/{item}', [ShoppingListController::class, 'destroyItem'])->name('shopping.items.destroy');
+    Route::post('/shopping/{plan}/reset', [ShoppingListController::class, 'reset'])->name('shopping.reset');
+    Route::post('/shopping/{plan}/share', [ShoppingListController::class, 'toggleShare'])->name('shopping.share');
+});
 
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', 'loger.concerns:meals'])->group(function () {
     //  Meal related routes
@@ -38,6 +51,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', 'loger.conce
     Route::resource('/meal-planner', MealPlannerController::class);
 
     Route::controller(MealMenuController::class)->group(function () {
+        Route::get('/meals/menus/templates', 'templates')->name('meals.menus.templates');
         Route::get('/meals/menus', 'index')->name('meals.menus.index');
         Route::post('/meals/menus', 'store')->name('meals.menus.store');
         Route::post('/meals/menus/{menu}/load', 'load')->name('meals.menus.load');

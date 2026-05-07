@@ -1,13 +1,15 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Domains\Housing\Models\Occurrence;
 use App\Domains\Housing\Contracts\OccurrenceNotifyTypes;
-use App\Domains\Housing\Http\Controllers\ProjectController;
 use App\Domains\Housing\Http\Controllers\OccurrenceController;
+use App\Domains\Housing\Http\Controllers\ProjectController;
+use App\Domains\Housing\Http\Controllers\UtilityController;
+use App\Domains\Housing\Models\Occurrence;
+use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', 'loger.concerns:housing'])->group(function () {
     Route::get('/housing', ProjectController::class)->name('housing.overview');
+    Route::get('/housing/utilities', UtilityController::class)->name('housing.utilities.index');
     Route::resource('/housing/occurrence', OccurrenceController::class);
 
     Route::controller(OccurrenceController::class)->group(function () {
