@@ -2,10 +2,10 @@
 
 return [
     'meta' => [
-        'title' => 'Loger — Finanzas personales sin bancos de EE.UU.',
-        'description' => 'Loger es una app de finanzas personales y gestión del hogar pensada para quienes están fuera del sistema bancario de EE.UU. Presupuestos multi-moneda, importación de estados de cuenta en PDF, planificación de comidas y gestión del hogar.',
-        'og_title' => 'Loger — Finanzas personales multi-moneda para el resto del mundo',
-        'og_description' => 'Lleva tus presupuestos, concilia tus cuentas, planifica tus comidas y gestiona tu casa. Sin necesidad de un banco de EE.UU.',
+        'title' => 'Loger — El Sistema Operativo del Hogar',
+        'description' => 'Loger es una sola app para correr la maquinaria financiera, logística y relacional de tu hogar. Presupuesto, comidas, tareas, agenda familiar, mantenimiento — todo lo que hoy llevas en la cabeza, en hojas de Excel o en seis apps distintas, en un solo sistema.',
+        'og_title' => 'Loger — El Sistema Operativo del Hogar',
+        'og_description' => 'Presupuesto, comidas, tareas, familia, calendario. Maneja tu casa como funciona de verdad — como un sistema, no como una hoja de cálculo.',
     ],
 
     'nav' => [
@@ -16,44 +16,70 @@ return [
     ],
 
     'hero' => [
-        'badge' => 'Finanzas personales, repensadas',
-        'headline_a' => 'Finanzas personales para',
-        'headline_b' => 'el resto del mundo',
-        'subhead' => 'La mayoría de las apps asumen que tienes un banco en EE.UU. con importación automática. Loger funciona con cualquier institución, soporta varias monedas de forma nativa y te deja con el control de tus datos.',
+        'badge' => 'El Sistema Operativo del Hogar',
+        'headline_a' => 'Maneja tu casa',
+        'headline_b' => 'como el sistema que es.',
+        'subhead' => 'Presupuesto, comidas, tareas, agenda familiar, mantenimiento — todo lo que llevas en la cabeza, en Excel, o repartido en seis apps distintas. Loger lo une en un sistema que funciona de verdad para hogares fuera del mundo bancario de EE.UU.',
         'cta_primary' => 'Empezar gratis',
         'cta_secondary' => 'Ver el demo',
         'reassurance' => 'Sin tarjeta de crédito · Gratis para siempre para uso personal',
     ],
 
+    'pillars' => [
+        'eyebrow' => 'Cinco pilares, un sistema',
+        'title' => 'Todo lo que mueve a tu hogar',
+        'subtitle' => 'Cinco áreas que activas por equipo. Las finanzas son donde la mayoría de apps se detienen — Loger sigue.',
+    ],
+
     'features' => [
         'finance' => [
-            'title' => 'Finanzas personales',
-            'description' => 'Gestión completa de presupuestos con seguimiento de transacciones, conciliación de cuentas y soporte multi-moneda. Funciona con cualquier banco, en cualquier país.',
+            'title' => 'Finanzas',
+            'description' => 'Presupuesto por sobres estilo YNAB, multi-moneda de fábrica. Concilia estados de cuenta sin depender de Plaid ni de bancos exclusivos de EE.UU.',
             'items' => [
-                'Presupuestos y categorías de gasto',
-                'Saldos en varias monedas',
-                'Conciliación de estados de cuenta',
-                'Importación de estados de cuenta en PDF',
+                'Presupuesto mensual base cero',
+                'Cuentas multi-moneda (nativa y convertida)',
+                'Importación y conciliación de PDF',
+                'Patrimonio neto, metas de ahorro, watchlists',
             ],
         ],
         'meals' => [
-            'title' => 'Planificación de comidas',
-            'description' => 'Planifica las comidas de la semana, organiza recetas y controla los ingredientes. Conecta el gasto en comida con el presupuesto del hogar para una vista completa.',
+            'title' => 'Comida',
+            'description' => 'Planifica qué comen, qué hay que comprar y qué ya tienes en la despensa. Conecta cada compra directamente al presupuesto del hogar.',
             'items' => [
-                'Biblioteca de recetas e ingredientes',
-                'Calendario semanal de comidas',
-                'Seguimiento del costo de la compra',
-                'Integración con presupuesto de comida',
+                'Recetas, ingredientes y favoritos',
+                'Plan semanal y listas de compras',
+                'Despensa con fechas de vencimiento',
+                'Costo por receta y presupuesto semanal',
             ],
         ],
         'housing' => [
-            'title' => 'Gestión del hogar',
-            'description' => 'Mantén tu casa organizada. Lleva facturas recurrentes, servicios y tareas del hogar en un solo lugar, junto a tus finanzas.',
+            'title' => 'Hogar',
+            'description' => 'Maneja la casa como el activo que es. Tareas, mantenimiento, equipos, facturas recurrentes y contactos de servicios en un solo lugar.',
             'items' => [
-                'Facturas recurrentes',
-                'Registro de servicios del hogar',
-                'Tareas del hogar',
-                'Historial de gastos de servicios',
+                'Tareas y "¿cuándo fue la última vez…?"',
+                'Inventario de equipos y garantías',
+                'Calendario de mantenimiento y proveedores',
+                'Facturas recurrentes, servicios, planes',
+            ],
+        ],
+        'family' => [
+            'title' => 'Familia',
+            'description' => 'El lado humano de la casa. Perfiles, fechas importantes, notas de salud y todas esas cosas pequeñas que siempre se te olvidan.',
+            'items' => [
+                'Perfiles y fechas importantes',
+                'Notas de salud (alergias, medicamentos)',
+                'Bitácora de escuela / trabajo',
+                'Preferencias, tallas, ideas de regalos',
+            ],
+        ],
+        'calendar' => [
+            'title' => 'Calendario y Rutinas',
+            'description' => 'La capa que une todo. Trae los eventos con fecha de los demás pilares — comidas, tareas, facturas, familia — a una sola vista semanal.',
+            'items' => [
+                'Agenda semanal de todos los pilares',
+                'Rutinas y checklists recurrentes',
+                'Agenda familiar compartida',
+                'Recordatorios push, email, WhatsApp',
             ],
         ],
     ],
@@ -67,8 +93,8 @@ return [
     ],
 
     'why' => [
-        'title' => 'Hecho para el resto del mundo',
-        'body' => 'La mayoría de las apps de finanzas personales asumen que tienes un banco en EE.UU. con importación automática. Loger es diferente — funciona con cualquier institución financiera, soporta varias monedas de forma nativa y te deja con el control de tus datos.',
+        'title' => 'El hogar no es un presupuesto. Es un sistema.',
+        'body' => 'La mayoría de las apps asumen que tienes un banco en EE.UU. con importación automática — y se quedan en el dinero. Loger va más allá: funciona con cualquier institución, soporta varias monedas de forma nativa y se mete en el trabajo logístico y relacional de manejar la casa. Un solo sistema, en lugar de seis apps distintas.',
     ],
 
     'final_cta' => [
@@ -78,7 +104,7 @@ return [
     ],
 
     'footer' => [
-        'tagline' => 'Finanzas personales para el resto del mundo',
+        'tagline' => 'El Sistema Operativo del Hogar',
         'product' => 'Producto',
         'pricing' => 'Precios',
         'demo' => 'Demo',

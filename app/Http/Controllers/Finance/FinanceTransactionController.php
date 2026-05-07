@@ -364,4 +364,46 @@ class FinanceTransactionController extends InertiaController
 
         return response()->json(['message' => 'Transaction approved']);
     }
+
+    /**
+     * Remove every draft transaction for the current team.
+     *
+     * Backs the dashboard "Remove" button on draft batches (e.g. PDF imports
+     * the user wants to discard wholesale instead of curating row by row).
+     */
+    public function removeAllDrafts(Request $request, TransactionDelete $transactionDelete)
+    {
+        $this->authorize('deleteBulk', Transaction::class);
+
+        $user = $request->user();
+
+        $drafts = Transaction::query()
+            ->where('team_id', $user->current_team_id)
+            ->where('status', Transaction::STATUS_DRAFT)
+            ->get();
+
+        foreach ($drafts as $transaction) {
+            $transactionDelete->delete($user, $transaction);
+        }
+
+        return back();
+    }
+
+    /**
+     * Approve every draft transaction for the current team in one shot.
+     */
+    public function approveAllDrafts(Request $request)
+    {
+        $this->authorize('deleteBulk', Transaction::class);
+
+        $user = $request->user();
+
+        Transaction::query()
+            ->where('team_id', $user->current_team_id)
+            ->where('status', Transaction::STATUS_DRAFT)
+            ->get()
+            ->each(fn (Transaction $transaction) => $transaction->approve());
+
+        return back();
+    }
 }

@@ -209,6 +209,8 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
         Route::patch('/finance/transactions/{id}/mark-as-paid', 'markPlannedAsPaid')->name('transactions.mark-as-paid');
         Route::post('/finance/transactions', 'addPlanned')->name('transactions.store-planned');
         Route::post('/finance/transactions/{transaction}/approve', 'approve')->name('finance.transactions.approve');
+        Route::post('/transactions/remove-all-drafts', 'removeAllDrafts')->name('transactions.remove-all-drafts');
+        Route::post('/transactions/approve-all-drafts', 'approveAllDrafts')->name('transactions.approve-all-drafts');
     });
 
     // Next Payments
