@@ -71,7 +71,7 @@ class LogerProfileController extends Controller
         $profile = $profileService->checkByName(request()->user()->current_team_id, $profileName);
 
         if ($profile) {
-            to_route('profile.relationships', ['profileName' => $profileName]);
+            to_route('relationships.profile', ['profileName' => $profileName]);
         }
 
         return inertia('Relationships/NotFound', [
