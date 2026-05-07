@@ -92,10 +92,12 @@ export const useAppMenu = (t: any, modules: any[]) => {
         }
     ].filter(item => !item.hidden);
 
-    // Mobile bottom-nav: Today is the daily entry point (replaces Dashboard slot
-    // on mobile — Dashboard remains reachable via desktop sidebar and Today's
-    // "Open budget" link).
-    const mobileTargets = ['/today', '/meals/overview', '/finance', '/housing'];
+    // Mobile bottom-nav: Today is the daily entry point (replaces Dashboard
+    // slot on mobile — Dashboard remains reachable via desktop sidebar and
+    // Today's "Open budget" link). Shopping is mobile-first by design (the
+    // wife uses it in the supermarket); Household is desktop-only since most
+    // chores/equipment edits happen at home.
+    const mobileTargets = ['/today', '/meals/overview', '/shopping', '/finance'];
     let mobileMenu = cloneDeep(appMenu)
         .filter(item => mobileTargets.includes(item.to))
         .sort((a, b) => mobileTargets.indexOf(a.to) - mobileTargets.indexOf(b.to));
