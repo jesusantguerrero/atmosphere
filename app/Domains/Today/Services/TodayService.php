@@ -127,9 +127,13 @@ class TodayService
             ->map(fn ($p) => [
                 'kind' => 'planner',
                 'id' => 'planner-'.$p->id,
-                'name' => $p->dateable_type ? class_basename($p->dateable_type) : null,
-                'subtitle' => null,
+                // Free-form `name` wins (school/family TODOs); fall back to the
+                // dateable type label for legacy rows that depend on the polymorph.
+                'name' => $p->name ?: ($p->dateable_type ? class_basename($p->dateable_type) : null),
+                'subtitle' => $p->notes,
                 'status' => $p->status,
+                'total' => $p->total !== null ? (float) $p->total : null,
+                'source' => $p->source,
             ]);
 
         $relationships = Occurrence::query()
@@ -165,11 +169,15 @@ class TodayService
     }
 
     /**
-     * UPCOMING: bills + utilities due in the next 7 days.
+     * UPCOMING: things to plan ahead for.
      *
-     * Two sources:
+     * Three sources:
      *   - BillingCycle (credit cards) — `due_at` BETWEEN today and +7d, not paid
      *   - Occurrence with type=utility (HM-1) — recurrence due by `last_date + avg_days_passed` ≤ +7d
+     *   - Planner rows with a free-form `name` set (no dateable) — date > today
+     *     within the next 30 days, not completed. Wider window than financial items
+     *     because school/family TODOs are batched monthly and the user needs to
+     *     see the whole month for "anticipation" (their original ask).
      *
      * Each item is tagged with `kind` so the UI can render appropriate icon/copy.
      *
@@ -178,6 +186,7 @@ class TodayService
     private function upcoming(int $teamId, Carbon $today): array
     {
         $windowEnd = $today->copy()->addDays(7)->endOfDay();
+        $plannerWindowEnd = $today->copy()->addDays(30)->endOfDay();
 
         $cycles = BillingCycle::query()
             ->where('team_id', $teamId)
@@ -227,10 +236,31 @@ class TodayService
                 ];
             });
 
+        $plannerUpcoming = Planner::query()
+            ->where('team_id', $teamId)
+            ->whereNotNull('name')
+            ->whereDate('date', '>', $today->format('Y-m-d'))
+            ->whereDate('date', '<=', $plannerWindowEnd->format('Y-m-d'))
+            ->whereNull('completed_at')
+            ->orderBy('date')
+            ->get()
+            ->map(fn ($p) => [
+                'kind' => 'planner',
+                'id' => 'planner-up-'.$p->id,
+                'name' => $p->name,
+                'account_id' => null,
+                'total' => $p->total !== null ? (float) $p->total : null,
+                'due_at' => $p->date->format('Y-m-d'),
+                'days_until' => (int) $today->copy()->startOfDay()->diffInDays($p->date->copy()->startOfDay(), false),
+                'source' => $p->source,
+                'notes' => $p->notes,
+            ]);
+
         return $cycles
             ->concat($utilities)
+            ->concat($plannerUpcoming)
             ->sortBy('days_until')
-            ->take(10)
+            ->take(20)
             ->values()
             ->all();
     }

@@ -61,8 +61,8 @@ export const useAppMenu = (t: any, modules: any[]) => {
             }
         },
         {
-            icon: 'fas fa-home',
-            label: t('Home'),
+            icon: 'fas fa-house-user',
+            label: t('Household'),
             to: '/housing',
             as: Link,
             hidden: !isModuleEnabled('housing'),

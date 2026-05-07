@@ -177,6 +177,45 @@ class BudgetMovementService
     }
 
     /**
+     * Reverse a single movement: subtract the amount from the destination,
+     * add it back to the source, delete the movement row, then re-trigger
+     * rollover for the affected month so dependent months stay consistent.
+     *
+     * Treats the movement amount as the magnitude that was applied at registration
+     * time (registerMovement clamps amount to source available, so the stored
+     * `amount` is what actually moved — the right value to invert).
+     */
+    public function revertMovement(BudgetMovement $movement): void
+    {
+        DB::transaction(function () use ($movement) {
+            $amount = (float) $movement->amount;
+
+            $this->updateBalances(
+                $movement->destination_category_id,
+                $movement,
+                $movement->date,
+                $amount,
+                self::MODE_SUBTRACT,
+            );
+            $this->updateBalances(
+                $movement->source_category_id,
+                $movement,
+                $movement->date,
+                $amount,
+                self::MODE_ADD,
+            );
+
+            $movement->delete();
+        });
+
+        $this->budgetRolloverService->startFrom(
+            $movement->team_id,
+            substr($movement->date, 0, 7),
+            1,
+        );
+    }
+
+    /**
      * Distribute an amount from one source category across multiple destinations in a single transaction.
      *
      * @param  array<int, array{destination_category_id:int, amount:float}>  $splits

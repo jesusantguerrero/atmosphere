@@ -2,10 +2,10 @@
 
 return [
     'meta' => [
-        'title' => 'Loger — Personal Finance Without US Banking',
-        'description' => 'Loger is a personal finance and home management app built for people outside the US banking system. Multi-currency budgets, PDF statement import, meal planning and household tracking — all in one place.',
-        'og_title' => 'Loger — Multi-currency personal finance for the rest of the world',
-        'og_description' => 'Track budgets, reconcile statements, plan meals and manage your home. No US bank required.',
+        'title' => 'Loger — The Family Operating System',
+        'description' => 'Loger is one app to run the financial, logistical and relational machinery of a household. Budgets, meals, chores, family schedules, home maintenance — all the things you juggle across half a dozen apps, in one system.',
+        'og_title' => 'Loger — The Family Operating System',
+        'og_description' => 'Budgets, meals, chores, family, calendar. Run your household the way it actually works — as a system, not a spreadsheet.',
     ],
 
     'nav' => [
@@ -16,44 +16,70 @@ return [
     ],
 
     'hero' => [
-        'badge' => 'Personal finance, reimagined',
-        'headline_a' => 'Personal finance built for',
-        'headline_b' => 'the rest of the world',
-        'subhead' => 'Most apps assume you have a US bank with automatic import. Loger works with any institution, supports multiple currencies natively, and keeps you in control of your data.',
+        'badge' => 'The Family Operating System',
+        'headline_a' => 'Run your house',
+        'headline_b' => 'like the system it is.',
+        'subhead' => 'Budget, meals, chores, family schedules, home maintenance — all the things you juggle in your head, in spreadsheets, or across half a dozen apps. Loger pulls them into one system that actually works for households outside the US banking world.',
         'cta_primary' => 'Get started — it\'s free',
         'cta_secondary' => 'See it in action',
         'reassurance' => 'No credit card required · Free forever for personal use',
     ],
 
+    'pillars' => [
+        'eyebrow' => 'Five pillars, one system',
+        'title' => 'Everything that runs your household',
+        'subtitle' => 'Five concerns you can enable per team. Finance is the one most apps stop at — Loger keeps going.',
+    ],
+
     'features' => [
         'finance' => [
-            'title' => 'Personal Finance',
-            'description' => 'Full budget management with transaction tracking, account reconciliation, and multi-currency support. Works with any bank, anywhere in the world.',
+            'title' => 'Finance',
+            'description' => 'YNAB-style envelope budgeting with multi-currency support out of the box. Reconcile statements without depending on Plaid or US-only bank syncs.',
             'items' => [
-                'Budgets and spending categories',
-                'Multi-currency account balances',
-                'Bank statement reconciliation',
-                'PDF statement import',
+                'Zero-based monthly budget',
+                'Multi-currency accounts (native + converted)',
+                'PDF statement import & reconciliation',
+                'Net worth, savings goals, watchlists',
             ],
         ],
         'meals' => [
-            'title' => 'Meal Planning',
-            'description' => 'Plan weekly meals, manage recipes, and track ingredients. Connect food spending directly to your household budget for a complete picture.',
+            'title' => 'Food',
+            'description' => 'Plan what you eat, what to buy, and what\'s already in the pantry. Connect every grocery run directly to your household budget.',
             'items' => [
-                'Recipe and ingredient library',
-                'Weekly meal calendar',
-                'Grocery cost tracking',
-                'Food budget integration',
+                'Recipes, ingredients & favorites',
+                'Weekly meal planner & shopping lists',
+                'Pantry inventory & expirations',
+                'Cost per recipe & weekly food budget',
             ],
         ],
         'housing' => [
-            'title' => 'Housing Management',
-            'description' => 'Keep your home organized. Track recurring bills, services, and household tasks all in one place alongside your finances.',
+            'title' => 'Home',
+            'description' => 'Run the house like the asset it is. Chores, maintenance, equipment, recurring bills and service contacts in one place.',
             'items' => [
-                'Recurring bill tracking',
-                'Home service records',
-                'Household task management',
-                'Utility expense history',
+                'Chores & "when did we last…?" checks',
+                'Equipment inventory & warranties',
+                'Maintenance schedule & service contacts',
+                'Recurring bills, utilities, plans',
+            ],
+        ],
+        'family' => [
+            'title' => 'Family',
+            'description' => 'The people side of the house. Profiles, important dates, health notes and the small things you keep meaning to remember.',
+            'items' => [
+                'Member profiles & important dates',
+                'Health notes (allergies, meds, visits)',
+                'School / work activity log',
+                'Preferences, sizes, gift ideas',
+            ],
+        ],
+        'calendar' => [
+            'title' => 'Calendar & Routines',
+            'description' => 'The integrating layer. Pulls dated items from every other pillar — meals, chores, bills, family events — into one weekly view.',
+            'items' => [
+                'Weekly schedule across all pillars',
+                'Recurring routines & checklists',
+                'Shared family agenda',
+                'Reminders by push, email, WhatsApp',
             ],
         ],
     ],
@@ -67,8 +93,8 @@ return [
     ],
 
     'why' => [
-        'title' => 'Built for the rest of the world',
-        'body' => 'Most personal finance apps assume you have a US bank account with automatic import. Loger is different — it works with any financial institution, supports multiple currencies natively, and puts you in control of your own data.',
+        'title' => 'The home isn\'t a budget. It\'s a system.',
+        'body' => 'Most apps assume you have a US bank with automatic import — and they stop at money. Loger goes further: it works with any institution, supports multiple currencies natively, and reaches beyond money into the relational and logistical work of running a household. One system, instead of half a dozen apps.',
     ],
 
     'final_cta' => [
@@ -78,7 +104,7 @@ return [
     ],
 
     'footer' => [
-        'tagline' => 'Personal finance for the rest of the world',
+        'tagline' => 'The Family Operating System',
         'product' => 'Product',
         'pricing' => 'Pricing',
         'demo' => 'Demo',

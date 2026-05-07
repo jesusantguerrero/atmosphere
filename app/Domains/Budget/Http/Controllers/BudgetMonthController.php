@@ -6,6 +6,7 @@ use App\Domains\Budget\Data\BudgetAssignData;
 use App\Domains\Budget\Data\BudgetMovementData;
 use App\Domains\Budget\Exports\BudgetExport;
 use App\Domains\Budget\Imports\BudgetImport;
+use App\Domains\Budget\Models\BudgetMovement;
 use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Domains\Budget\Services\BudgetMovementService;
 use App\Http\Controllers\Controller;
@@ -81,6 +82,19 @@ class BudgetMonthController extends Controller
             $data['date'],
             $data['splits'],
         );
+
+        return Redirect::back();
+    }
+
+    public function destroyMovement(Request $request, BudgetMovementService $service, BudgetMovement $movement)
+    {
+        // Authorization: users can only undo movements that belong to a team they
+        // have access to. `$movement->team_id` is set by registerMovement.
+        if (! $request->user()->allTeams()->pluck('id')->contains($movement->team_id)) {
+            abort(403);
+        }
+
+        $service->revertMovement($movement);
 
         return Redirect::back();
     }

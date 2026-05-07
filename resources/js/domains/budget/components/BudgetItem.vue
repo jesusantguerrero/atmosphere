@@ -229,6 +229,17 @@ const toggleEditing = () => {
     }
 }
 
+// On mobile the side panel covers the input and the on-screen keyboard fights
+// for space; tapping the row should focus the inline input instead. Desktop
+// keeps the row→panel pattern.
+const onRowClick = () => {
+    if (context.isMobile) {
+        toggleEditing();
+        return;
+    }
+    emit('edit');
+}
+
 const pageState = inject('pageState', {});
 
 const currentMonth = computed(() => {
@@ -280,7 +291,7 @@ const context = useAppContextStore();
 
 
 <template>
-<div class="px-4 py-2 cursor-pointer group" @click.stop="$emit('edit')">
+<div class="px-4 py-2 cursor-pointer group" @click.stop="onRowClick">
     <section class="md:flex space-between">
         <div class="flex items-center w-full space-x-4 ">
             <!-- On mobile (no hover state), show the drag handle always so reorder is
@@ -294,7 +305,7 @@ const context = useAppContextStore();
             <BudgetItemHeader :item="item" :show-delete="showDelete" />
         </div>
         <div class="flex items-center md:justify-end justify-between text-right flex-nowrap">
-            <div ref="inputContainer"  title="Money Assigned" class="w-36">
+            <div ref="inputContainer" title="Money Assigned" class="w-36" @click.stop>
                 <InputMoney
                     ref="input"
                     class="opacity-100 cursor-text"

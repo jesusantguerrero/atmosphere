@@ -17,19 +17,27 @@ class Planner extends Model
     use SupportsDateFrame;
 
     const STATUS_PLANNED = 'planned';
+
     const STATUS_PENDING = 'pending';
+
     const STATUS_COMPLETED = 'completed';
+
     const STATUS_CANCELLED = 'cancelled';
 
     protected $fillable = [
-        'team_id', 
-        'user_id', 
-        'dateable_id', 
-        'dateable_type', 
-        'date', 
-        'frequency', 
-        'automatic', 
-        'is_liked', 
+        'team_id',
+        'user_id',
+        'dateable_id',
+        'dateable_type',
+        'name',
+        'notes',
+        'total',
+        'source',
+        'date',
+        'end_date',
+        'frequency',
+        'automatic',
+        'is_liked',
         'status',
         'completed_at',
         'completed_by',
@@ -40,6 +48,9 @@ class Planner extends Model
 
     protected $casts = [
         'completed_at' => 'datetime',
+        'date' => 'date',
+        'end_date' => 'date',
+        'total' => 'decimal:2',
     ];
 
     /**
@@ -57,7 +68,6 @@ class Planner extends Model
             return $updatedModel;
         });
     }
-
 
     public function dateable()
     {
@@ -82,7 +92,7 @@ class Planner extends Model
             'completed_resource_id' => $resource?->id,
             'completed_resource_type' => $resource?->getMorphClass(),
             'completion_notes' => $notes,
-            'status' => self::STATUS_COMPLETED
+            'status' => self::STATUS_COMPLETED,
         ]);
 
         return $this;
@@ -94,7 +104,7 @@ class Planner extends Model
             'completed_at' => now(),
             'completed_by' => auth()->id(),
             'completion_notes' => $notes,
-            'status' => self::STATUS_CANCELLED
+            'status' => self::STATUS_CANCELLED,
         ]);
 
         return $this;

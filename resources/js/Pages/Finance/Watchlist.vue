@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, toRefs, computed } from "vue";
+import { ref, toRefs, computed, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { router } from "@inertiajs/vue3";
 // @ts-ignore
@@ -125,6 +125,30 @@ const projectedOverItems = computed(() => {
         const isCurrent = Boolean(item.data?.month?.is_current_period);
         return isCurrent && target > 0 && total <= target && projected > target;
     });
+});
+
+// WL-8 — auto-open the create modal pre-filled with suggested payees when the
+// URL carries `?suggest=1,2,3` (deep-link from the weekly auto-suggestion email).
+onMounted(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const raw = params.get('suggest');
+    if (!raw) return;
+
+    const ids = raw
+        .split(',')
+        .map((v) => Number(v.trim()))
+        .filter((v) => Number.isFinite(v) && v > 0);
+
+    if (ids.length === 0) return;
+
+    resourceToEdit.value = {
+        type: 'payees',
+        input: ids,
+        name: t('Untracked spending'),
+        target: null,
+    };
+    isModalOpen.value = true;
 });
 </script>
 

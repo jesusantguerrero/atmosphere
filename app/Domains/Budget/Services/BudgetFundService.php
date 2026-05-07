@@ -57,13 +57,15 @@ class BudgetFundService
     public function getData(BudgetFund $budgetFund)
     {
         $available = $budgetFund->category->budgets[1]?->available ?? 0;
-        $expenses = $budgetFund->watchlist->fullData();
+        // watchlist is optional — a fund can be created without one, in which
+        // case there is no monthly-expense reference to compare against.
+        $expenses = $budgetFund->watchlist?->fullData();
         $expenseTotal = $expenses['month']?->total ?? 0;
 
         return [
             'balance' => $available,
             'monthlyExpense' => $expenseTotal,
-            'total' => $available / $budgetFund->monthly_splits,
+            'total' => $budgetFund->monthly_splits > 0 ? $available / $budgetFund->monthly_splits : 0,
         ];
     }
 }
