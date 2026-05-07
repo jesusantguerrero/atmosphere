@@ -6,7 +6,7 @@
     import WidgetContainer from "@/Components/WidgetContainer.vue";
     import LogerButton from "@/Components/atoms/LogerButton.vue";
 
-    defineEmits(['close']);
+    defineEmits(['close', 'toggle-like']);
     const props = defineProps({
         meal: {
             type: Object,
@@ -56,7 +56,18 @@
 <template>
     <article class="text-body">
         <section class="rounded-t-md h-64 w-full bg-gray-300 relative">
-            <span class="absolute bg-primary/10 font-bold text-sm text-primary top-2.5 right-5 rounded-md px-2"> Hola</span>
+            <span class="absolute bg-primary/10 font-bold text-sm text-primary top-2.5 right-5 rounded-md px-2 capitalize">
+                {{ meal.meal_type }}
+            </span>
+            <button
+                type="button"
+                class="absolute top-2.5 left-2.5 w-9 h-9 flex items-center justify-center rounded-full bg-white/80 hover:bg-white shadow-md transition"
+                :class="meal.is_liked ? 'text-error' : 'text-body-1/60 hover:text-error'"
+                :title="meal.is_liked ? 'Remove from favorites' : 'Add to favorites'"
+                @click.stop="$emit('toggle-like', meal)"
+            >
+                <i class="fa-heart" :class="meal.is_liked ? 'fas' : 'far'" />
+            </button>
         </section>
 
         <WidgetContainer

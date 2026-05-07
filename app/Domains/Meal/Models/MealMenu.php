@@ -3,6 +3,8 @@
 namespace App\Domains\Meal\Models;
 
 use App\Models\Team;
+use Database\Factories\MealMenuFactory;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -26,6 +28,11 @@ class MealMenu extends Model
         return [
             'is_template' => 'boolean',
         ];
+    }
+
+    protected static function newFactory(): Factory
+    {
+        return MealMenuFactory::new();
     }
 
     public function team(): BelongsTo

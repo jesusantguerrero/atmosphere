@@ -12,6 +12,20 @@ import { Meal } from "@/domains/meal/models";
 defineProps<{
     meals: Meal
 }>();
+
+const onToggleLike = (meal: Meal) => {
+    meal.is_liked = !Boolean(meal.is_liked);
+    router.put(
+        route("meals.update", meal),
+        // @ts-ignore — matches Pages/Meals/Index.vue
+        { is_liked: meal.is_liked },
+        {
+            onSuccess() {
+                router.reload({ preserveScroll: true });
+            },
+        }
+    );
+};
 </script>
 
 <template>
@@ -37,6 +51,7 @@ defineProps<{
         ref="mealForm"
         :meal="meals"
         class="rounded-md bg-base-lvl-3"
+        @toggle-like="onToggleLike"
       />
     </MealTemplate>
   </AppLayout>

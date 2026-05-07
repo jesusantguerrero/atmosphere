@@ -42,7 +42,15 @@ const props = defineProps({
   },
   section: {
     type: String
-  }
+  },
+  activeWatchlist: {
+    type: Object,
+    default: () => null,
+  },
+  watchlists: {
+    type: Array,
+    default: () => [],
+  },
 });
 
 const { serverSearchOptions } = toRefs(props);
@@ -127,6 +135,32 @@ const openSaveAsReport = () => {
     };
     isWatchlistModalOpen.value = true;
 };
+
+// WL-5 sub 2-3: a watchlist's `type` maps 1:1 to a Trends section URL.
+const watchlistTypeToSection: Record<string, string> = {
+    categories: 'categories',
+    groups: 'groups',
+    payees: 'payees',
+};
+
+const watchlistsForSidebar = computed(() => {
+    return (props.watchlists ?? []).filter(
+        (w: any) => watchlistTypeToSection[w.type]
+    );
+});
+
+const watchlistHref = (watchlist: any) => {
+    const sectionName = watchlistTypeToSection[watchlist.type];
+    return `/trends/${sectionName}?watchlist=${watchlist.id}`;
+};
+
+const isActiveWatchlist = (watchlist: any) => {
+    return props.activeWatchlist?.id === watchlist.id;
+};
+
+const clearActiveWatchlist = () => {
+    router.visit(`/trends/${props.section}`, { preserveState: false });
+};
 </script>
 
 <template>
@@ -143,6 +177,21 @@ const openSaveAsReport = () => {
                         controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
                         next-mode="month"
                     />
+                    <div
+                        v-if="activeWatchlist"
+                        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-semibold"
+                    >
+                        <i class="fa fa-bookmark" />
+                        <span>{{ activeWatchlist.name }}</span>
+                        <button
+                            type="button"
+                            class="text-primary/70 hover:text-primary"
+                            @click="clearActiveWatchlist"
+                            :aria-label="$t('Clear report filter')"
+                        >
+                            <i class="fa fa-times" />
+                        </button>
+                    </div>
                     <LogerButton
                         v-if="canSaveAsReport"
                         variant="inverse"
@@ -209,6 +258,23 @@ const openSaveAsReport = () => {
                 </div>
             </template>
       </WidgetTitleCard>
+      <template #prepend-panel v-if="watchlistsForSidebar.length">
+        <section class="mt-5 mr-4 px-5 pt-2 pb-4 space-y-2 text-left border-b rounded-md shadow-xl bg-base-lvl-3">
+            <h4 class="font-bold"> {{ $t('My Reports') }} </h4>
+            <ul class="space-y-1">
+                <li v-for="w in watchlistsForSidebar" :key="w.id">
+                    <a
+                        :href="watchlistHref(w)"
+                        class="flex items-center justify-between px-2 py-1.5 rounded-md text-sm hover:bg-base-lvl-2 transition"
+                        :class="isActiveWatchlist(w) ? 'bg-primary/10 text-primary font-semibold' : 'text-body'"
+                    >
+                        <span class="truncate">{{ w.name }}</span>
+                        <span class="text-xs text-body-1/70 ml-2 capitalize">{{ w.type }}</span>
+                    </a>
+                </li>
+            </ul>
+        </section>
+      </template>
       <template #panel>
         <section class="mt-5 mr-4 px-5 pt-2 pb-4 space-y-4 text-left border-b rounded-md shadow-xl bg-base-lvl-3">
             <h4 class="font-bold"> {{ $t('Filters') }} </h4>
