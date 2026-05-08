@@ -35,6 +35,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('watchlists:check-thresholds')->daily()->runInBackground();
         $schedule->command('watchlists:check-streaks')->dailyAt('06:30')->runInBackground();
         $schedule->command('watchlists:suggest-untracked-payees')->weekly()->runInBackground();
+        $schedule->command('loger:nudge-credit-cards')->dailyAt('07:00')->runInBackground();
         if (config('app.demo')) {
             if ($scheduleTime) {
                 $schedule->command('app:demo-reset')->dailyAt($scheduleTime)->runInBackground();

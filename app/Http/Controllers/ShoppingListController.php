@@ -56,7 +56,7 @@ class ShoppingListController extends Controller
             $item->setState($next);
         }
 
-        ShoppingListItemUpdated::dispatch($plan, $item->fresh(), 'updated');
+        ShoppingListItemUpdated::dispatch($plan, $item->fresh(), 'updated', $this->actorSubscriptionId($request));
 
         return response()->json([
             'id' => $item->id,
@@ -88,7 +88,7 @@ class ShoppingListController extends Controller
             'order' => ((int) $stage->items()->max('order')) + 1,
         ]);
 
-        ShoppingListItemUpdated::dispatch($plan, $item, 'created');
+        ShoppingListItemUpdated::dispatch($plan, $item, 'created', $this->actorSubscriptionId($request));
 
         return response()->json([
             'id' => $item->id,
@@ -108,7 +108,7 @@ class ShoppingListController extends Controller
 
         $item->delete();
 
-        ShoppingListItemUpdated::dispatch($plan, $snapshot, 'deleted');
+        ShoppingListItemUpdated::dispatch($plan, $snapshot, 'deleted', $this->actorSubscriptionId($request));
 
         return response()->json(['deleted' => true]);
     }
@@ -125,7 +125,7 @@ class ShoppingListController extends Controller
                 'commit_date' => null,
             ]);
 
-        ShoppingListItemUpdated::dispatch($plan, null, 'reset');
+        ShoppingListItemUpdated::dispatch($plan, null, 'reset', $this->actorSubscriptionId($request));
 
         return response()->json(['reset' => true]);
     }
@@ -152,6 +152,17 @@ class ShoppingListController extends Controller
             'token' => $plan->share_token,
             'url' => route('shared.list', $plan->share_token),
         ]);
+    }
+
+    /**
+     * Extracts the OneSignal subscription ID the frontend sends with each
+     * mutation so the listener can suppress an echo push back to the actor.
+     */
+    private function actorSubscriptionId(Request $request): ?string
+    {
+        $value = $request->header('X-OneSignal-Subscription-Id');
+
+        return is_string($value) && $value !== '' ? $value : null;
     }
 
     private function guard(Request $request, Plan $plan): void

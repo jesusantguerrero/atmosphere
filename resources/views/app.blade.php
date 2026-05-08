@@ -33,19 +33,25 @@
         @routes
         @vite(['resources/js/app.ts', "resources/js/Pages/{$page['component']}.vue"])
         @inertiaHead
+        @if (config('services.onesignal.app_id'))
         <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
         <script>
         window.OneSignalDeferred = window.OneSignalDeferred || [];
         OneSignalDeferred.push(async function(OneSignal) {
             await OneSignal.init({
-            appId: "2079c6fb-f627-4132-893d-55a9df3d466d",
-            safari_web_id: "web.onesignal.auto.3f550615-46c0-4fa5-9ee8-42953ece3d19",
-            notifyButton: {
-                enable: true,
-            },
+                appId: @json(config('services.onesignal.app_id')),
+                safari_web_id: "web.onesignal.auto.3f550615-46c0-4fa5-9ee8-42953ece3d19",
+                notifyButton: { enable: true },
             });
+            // Link this subscription to a Loger user_id so the server can
+            // target push notifications at a specific person (credit-card
+            // nudges, overdue relationships, etc.) via `include_aliases`.
+            @auth
+            try { await OneSignal.login(@json((string) auth()->id())); } catch (e) { /* best-effort */ }
+            @endauth
         });
         </script>
+        @endif
     </head>
     <body class="font-sans antialiased">
         @inertia
