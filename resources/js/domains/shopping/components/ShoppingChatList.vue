@@ -156,12 +156,6 @@ const stateClass = (state: Item['state']) => {
     return 'bg-base-lvl-2 text-body border-base';
 };
 
-const stateIcon = (state: Item['state']) => {
-    if (state === 'buy') return 'fa-check text-success';
-    if (state === 'skip') return 'fa-xmark text-error';
-    return 'fa-circle text-body-1/30';
-};
-
 // Tag the OneSignal subscription with this list's share token so the backend
 // listener can target push notifications to everyone viewing this list. We
 // only tag when sharing is enabled (i.e. there's a token to address). The
@@ -317,7 +311,7 @@ onBeforeUnmount(() => {
                         :title="$t('Back to home')"
                         :aria-label="$t('Back to home')"
                     >
-                        <i class="fa fa-arrow-left text-sm" />
+                        <IMdiArrowLeft class="text-sm" />
                     </a>
                     <div class="min-w-0">
                         <h1 class="text-lg font-bold text-body truncate">{{ plan.name }}</h1>
@@ -329,11 +323,11 @@ onBeforeUnmount(() => {
                 <div v-if="showOwnerControls" class="flex items-center gap-2 shrink-0">
                     <button
                         type="button"
-                        class="text-xs px-2 py-1 rounded-md bg-base-lvl-2 text-body-1 hover:bg-base-lvl-1 transition"
+                        class="text-xs px-2 py-1 rounded-md bg-base-lvl-2 text-body-1 hover:bg-base-lvl-1 transition inline-flex items-center"
                         :title="$t('Reset all items to pending')"
                         @click="reset"
                     >
-                        <i class="fa fa-rotate-left mr-1" />
+                        <IMdiRefresh class="mr-1" />
                         {{ $t('Reset') }}
                     </button>
                 </div>
@@ -375,7 +369,9 @@ onBeforeUnmount(() => {
                 :class="stateClass(item.state)"
                 @click="cycleItem(item)"
             >
-                <i class="fa text-base shrink-0" :class="stateIcon(item.state)" />
+                <IMdiCheck v-if="item.state === 'buy'" class="text-base shrink-0 text-success" />
+                <IMdiClose v-else-if="item.state === 'skip'" class="text-base shrink-0 text-error" />
+                <IMdiCircleOutline v-else class="text-base shrink-0 text-body-1/30" />
                 <span class="flex-1 text-sm break-words">{{ item.title }}</span>
                 <button
                     v-if="endpoints.destroy"
@@ -384,7 +380,7 @@ onBeforeUnmount(() => {
                     :title="$t('Remove item')"
                     @click.stop="removeItem(item)"
                 >
-                    <i class="fa fa-trash text-xs" />
+                    <IMdiTrashCanOutline class="text-xs" />
                 </button>
             </div>
         </main>
@@ -409,7 +405,7 @@ onBeforeUnmount(() => {
                     :disabled="!composer.trim() || sending"
                     :title="$t('Send')"
                 >
-                    <i class="fa fa-paper-plane text-sm" />
+                    <IMdiSend class="text-sm" />
                 </button>
             </form>
         </footer>
