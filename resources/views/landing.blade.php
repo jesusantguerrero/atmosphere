@@ -95,15 +95,15 @@
                                 <span class="w-2.5 h-2.5 rounded-full bg-amber-500/70"></span>
                                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/70"></span>
                             </div>
-                            <span class="text-[11px] uppercase tracking-wider text-gray-500 font-semibold">May 2026 · Budget</span>
+                            <span class="text-[11px] uppercase tracking-wider text-gray-500 font-semibold">{{ __('landing.mockups.hero_titlebar') }}</span>
                         </div>
 
                         {{-- Ready-to-Assign card --}}
                         <div class="rounded-xl bg-gradient-to-br from-emerald-500/15 to-emerald-500/5 border border-emerald-500/20 p-5 mb-3">
                             <div class="text-3xl font-bold text-white tabular-nums leading-none">$1,000.00</div>
-                            <div class="text-xs text-emerald-300/80 mt-1.5">To budget · all money assigned</div>
+                            <div class="text-xs text-emerald-300/80 mt-1.5">{{ __('landing.mockups.hero_to_budget') }}</div>
                             <button class="mt-4 w-full text-xs font-semibold py-2 rounded-lg bg-emerald-500/90 text-emerald-950 hover:bg-emerald-400 transition-colors">
-                                Asignar sobrante
+                                {{ __('landing.mockups.hero_assign_button') }}
                             </button>
                         </div>
 
@@ -112,21 +112,21 @@
                             <div class="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-gray-800/40 transition-colors">
                                 <div class="flex items-center gap-2.5">
                                     <span class="w-1 h-6 rounded-full bg-primary"></span>
-                                    <span class="text-sm text-gray-200">Ahorro</span>
+                                    <span class="text-sm text-gray-200">{{ __('landing.mockups.category_savings') }}</span>
                                 </div>
                                 <span class="text-sm font-medium text-emerald-400 tabular-nums">$500</span>
                             </div>
                             <div class="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-gray-800/40 transition-colors">
                                 <div class="flex items-center gap-2.5">
                                     <span class="w-1 h-6 rounded-full bg-primary"></span>
-                                    <span class="text-sm text-gray-200">Gasto Personal</span>
+                                    <span class="text-sm text-gray-200">{{ __('landing.mockups.category_personal') }}</span>
                                 </div>
                                 <span class="text-sm font-medium text-emerald-400 tabular-nums">$300</span>
                             </div>
                             <div class="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-gray-800/40 transition-colors">
                                 <div class="flex items-center gap-2.5">
                                     <span class="w-1 h-6 rounded-full bg-gray-600"></span>
-                                    <span class="text-sm text-gray-200">Renta</span>
+                                    <span class="text-sm text-gray-200">{{ __('landing.mockups.category_rent') }}</span>
                                 </div>
                                 <span class="text-sm font-medium text-gray-400 tabular-nums">$200</span>
                             </div>
@@ -136,7 +136,7 @@
                     {{-- Floating accent card behind --}}
                     <div aria-hidden="true" class="hidden lg:block absolute -bottom-6 -left-6 w-40 h-24 rounded-xl bg-gray-900/80 border border-gray-800 -z-10"></div>
                     <div aria-hidden="true" class="hidden lg:block absolute -top-4 -right-4 px-3 py-2 rounded-lg bg-primary text-white text-[11px] font-semibold shadow-lg shadow-primary/30">
-                        +$50 → Ahorro
+                        {{ __('landing.mockups.hero_floating_chip') }}
                     </div>
                 </div>
 
@@ -144,10 +144,10 @@
 
             {{-- Trust strip --}}
             <div class="mt-20 pt-10 border-t border-gray-900 flex flex-col sm:flex-row items-center justify-between gap-6">
-                <p class="text-xs uppercase tracking-widest text-gray-600 font-semibold">Built for budgets in</p>
+                <p class="text-xs uppercase tracking-widest text-gray-600 font-semibold">{{ __('landing.mockups.trust_strip_label') }}</p>
                 <div class="flex items-center gap-6 sm:gap-8 text-sm text-gray-500">
-                    <span class="flex items-center gap-2">🇩🇴 <span>Dom. Republic</span></span>
-                    <span class="flex items-center gap-2">🌎 <span>Anywhere</span></span>
+                    <span class="flex items-center gap-2">🇩🇴 <span>{{ __('landing.mockups.trust_strip_dr') }}</span></span>
+                    <span class="flex items-center gap-2">🌎 <span>{{ __('landing.mockups.trust_strip_anywhere') }}</span></span>
                 </div>
             </div>
         </section>
@@ -176,7 +176,7 @@
 
                     {{-- Embedded mini-mockup: net-worth bars --}}
                     <div class="rounded-xl bg-gray-950/60 border border-gray-800/60 p-4 mb-5">
-                        <div class="text-[11px] uppercase tracking-wider text-gray-500 mb-1">Net worth</div>
+                        <div class="text-[11px] uppercase tracking-wider text-gray-500 mb-1">{{ __('landing.mockups.finance_networth') }}</div>
                         <div class="text-xl font-bold text-white mb-3 tabular-nums">$1,331,211</div>
                         <div class="flex items-end gap-1 h-12">
                             <div class="flex-1 bg-primary/30 rounded-sm" style="height: 30%"></div>
@@ -215,22 +215,22 @@
                     {{-- Embedded mini-mockup: weekly meal grid --}}
                     <div class="rounded-xl bg-gray-950/60 border border-gray-800/60 p-4 mb-5 space-y-2">
                         <div class="flex items-center justify-between text-xs">
-                            <span class="text-gray-500">Mon</span>
-                            <span class="text-gray-200">Pasta primavera</span>
+                            <span class="text-gray-500">{{ __('landing.mockups.meal_monday') }}</span>
+                            <span class="text-gray-200">{{ __('landing.mockups.meal_dish_1') }}</span>
                             <span class="text-amber-400/80 tabular-nums">$8</span>
                         </div>
                         <div class="flex items-center justify-between text-xs">
-                            <span class="text-gray-500">Tue</span>
-                            <span class="text-gray-200">Chicken bowl</span>
+                            <span class="text-gray-500">{{ __('landing.mockups.meal_tuesday') }}</span>
+                            <span class="text-gray-200">{{ __('landing.mockups.meal_dish_2') }}</span>
                             <span class="text-amber-400/80 tabular-nums">$12</span>
                         </div>
                         <div class="flex items-center justify-between text-xs">
-                            <span class="text-gray-500">Wed</span>
-                            <span class="text-gray-200">Tacos</span>
+                            <span class="text-gray-500">{{ __('landing.mockups.meal_wednesday') }}</span>
+                            <span class="text-gray-200">{{ __('landing.mockups.meal_dish_3') }}</span>
                             <span class="text-amber-400/80 tabular-nums">$10</span>
                         </div>
                         <div class="flex items-center justify-between text-xs pt-2 mt-2 border-t border-gray-800/60">
-                            <span class="text-gray-500">Week budget</span>
+                            <span class="text-gray-500">{{ __('landing.mockups.meal_week_budget') }}</span>
                             <span></span>
                             <span class="text-white font-medium tabular-nums">$84 / $120</span>
                         </div>
@@ -264,24 +264,24 @@
                         <div class="flex items-center gap-3">
                             <div class="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-300 flex items-center justify-center text-[10px] font-bold">02</div>
                             <div class="flex-1">
-                                <div class="text-xs text-gray-200">Internet</div>
-                                <div class="text-[10px] text-gray-500">May 02 · auto-pay</div>
+                                <div class="text-xs text-gray-200">{{ __('landing.mockups.bill_internet') }}</div>
+                                <div class="text-[10px] text-gray-500">{{ __('landing.mockups.bill_internet_meta') }}</div>
                             </div>
                             <span class="text-xs text-gray-300 tabular-nums">$45</span>
                         </div>
                         <div class="flex items-center gap-3">
                             <div class="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-300 flex items-center justify-center text-[10px] font-bold">15</div>
                             <div class="flex-1">
-                                <div class="text-xs text-gray-200">Electricity</div>
-                                <div class="text-[10px] text-gray-500">May 15 · estimate</div>
+                                <div class="text-xs text-gray-200">{{ __('landing.mockups.bill_electricity') }}</div>
+                                <div class="text-[10px] text-gray-500">{{ __('landing.mockups.bill_electricity_meta') }}</div>
                             </div>
                             <span class="text-xs text-gray-300 tabular-nums">$78</span>
                         </div>
                         <div class="flex items-center gap-3">
                             <div class="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-300 flex items-center justify-center text-[10px] font-bold">28</div>
                             <div class="flex-1">
-                                <div class="text-xs text-gray-200">Water</div>
-                                <div class="text-[10px] text-gray-500">May 28 · scheduled</div>
+                                <div class="text-xs text-gray-200">{{ __('landing.mockups.bill_water') }}</div>
+                                <div class="text-[10px] text-gray-500">{{ __('landing.mockups.bill_water_meta') }}</div>
                             </div>
                             <span class="text-xs text-gray-300 tabular-nums">$22</span>
                         </div>
@@ -319,22 +319,22 @@
                         <div class="flex items-center gap-3">
                             <div class="w-8 h-8 rounded-full bg-purple-500/25 text-purple-200 flex items-center justify-center text-xs font-semibold">A</div>
                             <div class="flex-1 min-w-0">
-                                <div class="text-xs text-gray-200">Ana</div>
-                                <div class="text-[10px] text-gray-500">Allergic to peanuts · check-up Jun 2</div>
+                                <div class="text-xs text-gray-200">{{ __('landing.mockups.family_member_1_name') }}</div>
+                                <div class="text-[10px] text-gray-500">{{ __('landing.mockups.family_member_1_meta') }}</div>
                             </div>
                         </div>
                         <div class="flex items-center gap-3">
                             <div class="w-8 h-8 rounded-full bg-amber-500/25 text-amber-200 flex items-center justify-center text-xs font-semibold">D</div>
                             <div class="flex-1 min-w-0">
-                                <div class="text-xs text-gray-200">Diana <span class="text-[10px] text-gray-500">· 8 yrs</span></div>
-                                <div class="text-[10px] text-gray-500">School trip · permission slip due</div>
+                                <div class="text-xs text-gray-200">{{ __('landing.mockups.family_member_2_name') }} <span class="text-[10px] text-gray-500">· {{ __('landing.mockups.family_member_2_age') }}</span></div>
+                                <div class="text-[10px] text-gray-500">{{ __('landing.mockups.family_member_2_meta') }}</div>
                             </div>
                         </div>
                         <div class="flex items-center gap-3">
                             <div class="w-8 h-8 rounded-full bg-sky-500/25 text-sky-200 flex items-center justify-center text-xs font-semibold">P</div>
                             <div class="flex-1 min-w-0">
-                                <div class="text-xs text-gray-200">Pedro</div>
-                                <div class="text-[10px] text-gray-500">Birthday · May 24 — likes mate / size L</div>
+                                <div class="text-xs text-gray-200">{{ __('landing.mockups.family_member_3_name') }}</div>
+                                <div class="text-[10px] text-gray-500">{{ __('landing.mockups.family_member_3_meta') }}</div>
                             </div>
                         </div>
                     </div>
@@ -360,34 +360,34 @@
                             <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                         </div>
                         <h2 class="text-lg font-semibold text-white">{{ __('landing.features.calendar.title') }}</h2>
-                        <span class="ml-auto text-[10px] uppercase tracking-wider text-emerald-300/80 font-semibold">Integrating layer</span>
+                        <span class="ml-auto text-[10px] uppercase tracking-wider text-emerald-300/80 font-semibold">{{ __('landing.mockups.integrating_layer') }}</span>
                     </div>
 
                     {{-- Embedded mini-mockup: weekly cross-pillar timeline --}}
                     <div class="rounded-xl bg-gray-950/60 border border-gray-800/60 p-4 mb-5 space-y-2">
                         <div class="flex items-center gap-3 text-xs">
-                            <span class="text-gray-500 w-7 font-medium">Mon</span>
+                            <span class="text-gray-500 w-7 font-medium">{{ __('landing.mockups.meal_monday') }}</span>
                             <span class="w-1.5 h-4 rounded-full bg-amber-500"></span>
-                            <span class="flex-1 text-gray-200">Pasta primavera</span>
-                            <span class="text-amber-400/80">Food</span>
+                            <span class="flex-1 text-gray-200">{{ __('landing.mockups.cal_event_food') }}</span>
+                            <span class="text-amber-400/80">{{ __('landing.mockups.cal_pillar_food') }}</span>
                         </div>
                         <div class="flex items-center gap-3 text-xs">
-                            <span class="text-gray-500 w-7 font-medium">Mon</span>
+                            <span class="text-gray-500 w-7 font-medium">{{ __('landing.mockups.meal_monday') }}</span>
                             <span class="w-1.5 h-4 rounded-full bg-sky-500"></span>
-                            <span class="flex-1 text-gray-200">Take trash out</span>
-                            <span class="text-sky-400/80">Home</span>
+                            <span class="flex-1 text-gray-200">{{ __('landing.mockups.cal_event_home') }}</span>
+                            <span class="text-sky-400/80">{{ __('landing.mockups.cal_pillar_home') }}</span>
                         </div>
                         <div class="flex items-center gap-3 text-xs">
-                            <span class="text-gray-500 w-7 font-medium">Tue</span>
+                            <span class="text-gray-500 w-7 font-medium">{{ __('landing.mockups.meal_tuesday') }}</span>
                             <span class="w-1.5 h-4 rounded-full bg-primary"></span>
-                            <span class="flex-1 text-gray-200">Internet bill — $45</span>
-                            <span class="text-primary/90">Finance</span>
+                            <span class="flex-1 text-gray-200">{{ __('landing.mockups.cal_event_finance') }}</span>
+                            <span class="text-primary/90">{{ __('landing.mockups.cal_pillar_finance') }}</span>
                         </div>
                         <div class="flex items-center gap-3 text-xs">
-                            <span class="text-gray-500 w-7 font-medium">Wed</span>
+                            <span class="text-gray-500 w-7 font-medium">{{ __('landing.mockups.meal_wednesday') }}</span>
                             <span class="w-1.5 h-4 rounded-full bg-purple-500"></span>
-                            <span class="flex-1 text-gray-200">Diana — doctor visit</span>
-                            <span class="text-purple-400/90">Family</span>
+                            <span class="flex-1 text-gray-200">{{ __('landing.mockups.cal_event_family') }}</span>
+                            <span class="text-purple-400/90">{{ __('landing.mockups.cal_pillar_family') }}</span>
                         </div>
                     </div>
 
@@ -413,7 +413,7 @@
             <div class="max-w-6xl mx-auto px-6 py-24 lg:py-32">
                 <div class="grid lg:grid-cols-2 gap-16 items-center">
                     <div>
-                        <div class="inline-block text-xs uppercase tracking-widest text-primary font-semibold mb-4">Why Loger</div>
+                        <div class="inline-block text-xs uppercase tracking-widest text-primary font-semibold mb-4">{{ __('landing.why.eyebrow') }}</div>
                         <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight mb-6 tracking-tight">
                             {{ __('landing.why.title') }}
                         </h2>
@@ -425,12 +425,12 @@
                     {{-- Multi-currency mockup --}}
                     <div class="relative">
                         <div class="rounded-2xl bg-gray-900/60 border border-gray-800 p-6">
-                            <div class="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-4">Accounts in 4 currencies</div>
+                            <div class="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-4">{{ __('landing.mockups.why_accounts_label') }}</div>
                             <div class="space-y-3">
                                 <div class="flex items-center justify-between p-3 rounded-lg bg-gray-950/60 border border-gray-800/60">
                                     <div class="flex items-center gap-3">
                                         <span class="w-9 h-9 rounded-lg bg-primary/15 text-primary flex items-center justify-center font-bold text-xs">DOP</span>
-                                        <span class="text-sm text-gray-200">BHD Cuenta de ahorros</span>
+                                        <span class="text-sm text-gray-200">{{ __('landing.mockups.why_account_bhd') }}</span>
                                     </div>
                                     <span class="text-sm font-semibold text-white tabular-nums">RD$ 45,210</span>
                                 </div>
@@ -457,39 +457,11 @@
                                 </div>
                             </div>
                             <div class="mt-4 pt-4 border-t border-gray-800/60 flex items-center justify-between">
-                                <span class="text-xs text-gray-500">Net worth (USD)</span>
+                                <span class="text-xs text-gray-500">{{ __('landing.mockups.why_networth_label') }}</span>
                                 <span class="text-base font-bold text-white tabular-nums">$ 3,425</span>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </section>
-
-        {{-- ─── SOCIAL PROOF (kept structure) ────────────────── --}}
-        <section class="border-t border-gray-900 bg-gray-900/30">
-            <div class="max-w-6xl mx-auto px-6 py-20">
-                <div class="text-center mb-12">
-                    <h2 class="text-3xl sm:text-4xl font-bold text-white mb-3 tracking-tight">{{ __('landing.social_proof.title') }}</h2>
-                    <p class="text-gray-400">{{ __('landing.social_proof.subtitle') }}</p>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                    @for ($i = 0; $i < 3; $i++)
-                        <figure class="bg-gray-900/60 border border-dashed border-gray-700 rounded-2xl p-6 flex flex-col gap-4">
-                            <svg class="w-6 h-6 text-gray-700" fill="currentColor" viewBox="0 0 24 24"><path d="M9.983 3v7.391c0 5.704-3.731 9.57-8.983 10.609l-.995-2.151c2.432-.917 3.995-3.638 3.995-5.849h-4v-10h9.983zm14.017 0v7.391c0 5.704-3.748 9.571-9 10.609l-.996-2.151c2.433-.917 3.996-3.638 3.996-5.849h-3.983v-10h9.983z"/></svg>
-                            <blockquote class="text-gray-400 text-sm leading-relaxed flex-grow">
-                                {{ __('landing.social_proof.placeholder_quote') }}
-                            </blockquote>
-                            <figcaption class="text-xs text-gray-600">{{ __('landing.social_proof.placeholder_attribution') }}</figcaption>
-                        </figure>
-                    @endfor
-                </div>
-                <div class="text-center mt-10">
-                    <a href="mailto:jesusant.guerrero@gmail.com?subject=Loger%20testimonial"
-                       class="inline-flex items-center gap-1.5 text-sm text-primary hover:text-primary-dark transition-colors font-medium">
-                        {{ __('landing.social_proof.cta') }}
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                    </a>
                 </div>
             </div>
         </section>
