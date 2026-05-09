@@ -47,7 +47,7 @@ class SharedShoppingListController extends Controller
             $item->setState($next);
         }
 
-        ShoppingListItemUpdated::dispatch($plan, $item->fresh(), 'updated');
+        ShoppingListItemUpdated::dispatch($plan, $item->fresh(), 'updated', $this->actorSubscriptionId($request));
 
         return response()->json([
             'id' => $item->id,
@@ -83,7 +83,7 @@ class SharedShoppingListController extends Controller
             'order' => ((int) $stage->items()->max('order')) + 1,
         ]);
 
-        ShoppingListItemUpdated::dispatch($plan, $item, 'created');
+        ShoppingListItemUpdated::dispatch($plan, $item, 'created', $this->actorSubscriptionId($request));
 
         return response()->json([
             'id' => $item->id,
@@ -97,7 +97,7 @@ class SharedShoppingListController extends Controller
      * item resets to `pending`. Matches the wife's weekly workflow — same
      * list, fresh checkboxes.
      */
-    public function resetTrip(string $token): JsonResponse
+    public function resetTrip(Request $request, string $token): JsonResponse
     {
         $plan = $this->planByToken($token);
 
@@ -105,9 +105,21 @@ class SharedShoppingListController extends Controller
             ->whereHas('stage', fn ($q) => $q->where('plan_id', $plan->id))
             ->update(['state' => PlanItem::STATE_PENDING, 'is_done' => false, 'commit_date' => null]);
 
-        ShoppingListItemUpdated::dispatch($plan, null, 'reset');
+        ShoppingListItemUpdated::dispatch($plan, null, 'reset', $this->actorSubscriptionId($request));
 
         return response()->json(['reset' => true]);
+    }
+
+    /**
+     * Same X-OneSignal-Subscription-Id extraction as the authed controller —
+     * keeps the public mutating endpoints from echoing pushes back to the
+     * partner's own device when they make the change.
+     */
+    private function actorSubscriptionId(Request $request): ?string
+    {
+        $value = $request->header('X-OneSignal-Subscription-Id');
+
+        return is_string($value) && $value !== '' ? $value : null;
     }
 
     private function planByToken(string $token): Plan

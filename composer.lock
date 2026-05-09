@@ -2395,12 +2395,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/jesusantguerrero/plan-module.git",
-                "reference": "0513095557dc9ff08efa3c7b3356dbcc2a9ac534"
+                "reference": "9b7be787102a21617d83738d715cc79035b3852b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jesusantguerrero/plan-module/zipball/0513095557dc9ff08efa3c7b3356dbcc2a9ac534",
-                "reference": "0513095557dc9ff08efa3c7b3356dbcc2a9ac534",
+                "url": "https://api.github.com/repos/jesusantguerrero/plan-module/zipball/9b7be787102a21617d83738d715cc79035b3852b",
+                "reference": "9b7be787102a21617d83738d715cc79035b3852b",
                 "shasum": ""
             },
             "default-branch": true,
@@ -2431,7 +2431,7 @@
                 "issues": "https://github.com/jesusantguerrero/plan-module/issues",
                 "source": "https://github.com/jesusantguerrero/plan-module/tree/master"
             },
-            "time": "2025-02-01T00:51:26+00:00"
+            "time": "2026-05-08T23:58:49+00:00"
         },
         {
             "name": "insane/treasurer",
@@ -2503,12 +2503,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/jesusantguerrero/watchlist-module.git",
-                "reference": "23c540d74a3158191ace27680a8824839bdecb8e"
+                "reference": "6dadff5ec9fce807d8fd5d0e1e1624d0c409c2ef"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jesusantguerrero/watchlist-module/zipball/23c540d74a3158191ace27680a8824839bdecb8e",
-                "reference": "23c540d74a3158191ace27680a8824839bdecb8e",
+                "url": "https://api.github.com/repos/jesusantguerrero/watchlist-module/zipball/6dadff5ec9fce807d8fd5d0e1e1624d0c409c2ef",
+                "reference": "6dadff5ec9fce807d8fd5d0e1e1624d0c409c2ef",
                 "shasum": ""
             },
             "default-branch": true,
@@ -2536,7 +2536,7 @@
                 "issues": "https://github.com/jesusantguerrero/watchlist-module/issues",
                 "source": "https://github.com/jesusantguerrero/watchlist-module/tree/main"
             },
-            "time": "2026-05-04T06:10:06+00:00"
+            "time": "2026-05-08T23:46:23+00:00"
         },
         {
             "name": "joshbrw/laravel-module-installer",

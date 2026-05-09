@@ -29,6 +29,10 @@ class ShoppingListItemUpdated implements ShouldBroadcastNow
         public Plan $plan,
         public ?PlanItem $item,
         public string $action,
+        /** OneSignal subscription ID of the actor who triggered the change.
+         *  Listener passes this to the push service as an exclusion so the
+         *  actor's own device doesn't echo a notification back at them. */
+        public ?string $actorSubscriptionId = null,
     ) {}
 
     /**

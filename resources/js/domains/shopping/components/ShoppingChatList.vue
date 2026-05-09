@@ -98,7 +98,7 @@ const cycleItem = async (item: Item) => {
     applyItemUpdate({ id: item.id, state: next, is_done: next === 'buy' });
 
     try {
-        await axios.post(props.endpoints.cycle(item.id), { state: next });
+        await axios.post(props.endpoints.cycle(item.id), { state: next }, requestConfig());
     } catch {
         applyItemUpdate({ id: item.id, state: previous, is_done: previous === 'buy' });
     }
@@ -110,7 +110,7 @@ const submitComposer = async () => {
 
     sending.value = true;
     try {
-        const response = await axios.post(props.endpoints.add, { title });
+        const response = await axios.post(props.endpoints.add, { title }, requestConfig());
         const created: Item = {
             id: response.data.id,
             title: response.data.title,
@@ -133,7 +133,7 @@ const removeItem = async (item: Item) => {
     removeItemLocally(item.id);
 
     try {
-        await axios.delete(props.endpoints.destroy(item.id));
+        await axios.delete(props.endpoints.destroy(item.id), requestConfig());
     } catch {
         stages.value = snapshot;
     }
@@ -141,7 +141,7 @@ const removeItem = async (item: Item) => {
 
 const reset = async () => {
     if (!window.confirm('Reset every item to pending? This starts a fresh trip.')) return;
-    await axios.post(props.endpoints.reset);
+    await axios.post(props.endpoints.reset, {}, requestConfig());
     for (const stage of stages.value) {
         for (const item of stage.items) {
             item.state = 'pending';
@@ -160,6 +160,79 @@ const stateIcon = (state: Item['state']) => {
     if (state === 'buy') return 'fa-check text-success';
     if (state === 'skip') return 'fa-xmark text-error';
     return 'fa-circle text-body-1/30';
+};
+
+// Tag the OneSignal subscription with this list's share token so the backend
+// listener can target push notifications to everyone viewing this list. We
+// only tag when sharing is enabled (i.e. there's a token to address). The
+// global OneSignal SDK is loaded by app.blade.php and exposed on `window`.
+const oneSignalTagKey = 'shopping_list';
+const tagToken = computed<string | null>(() => {
+    if (!props.mercureUrl) return null;
+    const match = props.mercureUrl.match(/\/shared\/list\/([^?&/]+)/);
+    return match ? match[1] : null;
+});
+
+declare global {
+    interface Window {
+        OneSignalDeferred?: Array<(os: any) => Promise<void> | void>;
+    }
+}
+
+// We capture this device's OneSignal subscription ID so the server can pass
+// it to OneSignal as `excluded_subscription_ids` when broadcasting our own
+// changes — otherwise we'd echo a push back to the device that just made the
+// change. Stored in a ref so axios picks up changes when the SDK resolves.
+const oneSignalSubscriptionId = ref<string | null>(null);
+
+const captureOneSignalSubscriptionId = () => {
+    if (typeof window === 'undefined' || !window.OneSignalDeferred) return;
+    window.OneSignalDeferred.push(async (OneSignal: any) => {
+        try {
+            const id = OneSignal?.User?.PushSubscription?.id;
+            if (id) oneSignalSubscriptionId.value = String(id);
+            // The id may not be available right away (subscription not opted-in
+            // yet). Listen for the `change` event so we capture it on opt-in.
+            OneSignal?.User?.PushSubscription?.addEventListener?.('change', (event: any) => {
+                const next = event?.current?.id ?? OneSignal?.User?.PushSubscription?.id ?? null;
+                oneSignalSubscriptionId.value = next ? String(next) : null;
+            });
+        } catch {
+            // Silent — exclusion is best-effort.
+        }
+    });
+};
+
+const tagOneSignal = (token: string) => {
+    if (typeof window === 'undefined' || !window.OneSignalDeferred) return;
+    window.OneSignalDeferred.push(async (OneSignal: any) => {
+        try {
+            await OneSignal.User.addTag(oneSignalTagKey, token);
+        } catch {
+            // Silent — push is best-effort; nothing should break shopping.
+        }
+    });
+};
+
+const untagOneSignal = () => {
+    if (typeof window === 'undefined' || !window.OneSignalDeferred) return;
+    window.OneSignalDeferred.push(async (OneSignal: any) => {
+        try {
+            await OneSignal.User.removeTag(oneSignalTagKey);
+        } catch {
+            // Silent — see above.
+        }
+    });
+};
+
+/** Adds the subscription-ID exclusion header so the server can suppress an
+ *  echo push back to this device. Returns config object for axios. */
+const requestConfig = () => {
+    const headers: Record<string, string> = {};
+    if (oneSignalSubscriptionId.value) {
+        headers['X-OneSignal-Subscription-Id'] = oneSignalSubscriptionId.value;
+    }
+    return { headers };
 };
 
 // Mercure subscription — re-applies updates from other tabs/devices in real time.
@@ -213,10 +286,21 @@ const wireMercure = () => {
     };
 };
 
-onMounted(wireMercure);
+onMounted(() => {
+    wireMercure();
+    captureOneSignalSubscriptionId();
+    if (tagToken.value) tagOneSignal(tagToken.value);
+});
+
+watch(tagToken, (next, prev) => {
+    if (next && next !== prev) tagOneSignal(next);
+    if (!next && prev) untagOneSignal();
+});
+
 onBeforeUnmount(() => {
     eventSource?.close();
     eventSource = null;
+    untagOneSignal();
 });
 </script>
 
