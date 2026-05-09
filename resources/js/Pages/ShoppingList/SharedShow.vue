@@ -43,6 +43,7 @@ const endpoints = {
         :api-base="`/shared/list/${token}`"
         :mercure-url="mercureUrl"
         :show-owner-controls="false"
+        :show-home-link="true"
         :endpoints="endpoints"
     />
 </template>

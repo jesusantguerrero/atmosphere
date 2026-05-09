@@ -31,6 +31,9 @@ const props = defineProps<{
     mercureUrl?: string | null;
     /** When true, renders the share / reset / settings buttons in the header. */
     showOwnerControls?: boolean;
+    /** When true, renders a back-to-home arrow on the left of the header.
+     *  Used by the public share view since it has no surrounding nav shell. */
+    showHomeLink?: boolean;
     /** Endpoint paths differ slightly between authed/shared views. */
     endpoints: {
         cycle: (itemId: number) => string;
@@ -305,15 +308,26 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <div class="flex flex-col h-screen bg-base-lvl-1">
+    <div class="shopping-shell flex flex-col bg-base-lvl-1">
         <!-- Header: list name + filter chips + owner controls -->
         <header class="px-4 py-3 bg-base-lvl-3 border-b border-base">
             <div class="flex items-start justify-between gap-3">
-                <div class="min-w-0">
-                    <h1 class="text-lg font-bold text-body truncate">{{ plan.name }}</h1>
-                    <p class="text-xs text-body-1/60 mt-0.5">
-                        {{ counts.buy }} buying · {{ counts.skip }} skipped · {{ counts.pending }} pending
-                    </p>
+                <div class="flex items-start gap-2 min-w-0 flex-1">
+                    <a
+                        v-if="showHomeLink"
+                        href="/"
+                        class="shrink-0 mt-0.5 w-8 h-8 -ml-1 flex items-center justify-center rounded-full text-body-1/70 hover:bg-base-lvl-2 transition"
+                        :title="$t('Back to home')"
+                        :aria-label="$t('Back to home')"
+                    >
+                        <i class="fa fa-arrow-left" />
+                    </a>
+                    <div class="min-w-0">
+                        <h1 class="text-lg font-bold text-body truncate">{{ plan.name }}</h1>
+                        <p class="text-xs text-body-1/60 mt-0.5">
+                            {{ counts.buy }} buying · {{ counts.skip }} skipped · {{ counts.pending }} pending
+                        </p>
+                    </div>
                 </div>
                 <div v-if="showOwnerControls" class="flex items-center gap-2 shrink-0">
                     <button
@@ -405,6 +419,16 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+/* Use dynamic viewport height so the sticky composer doesn't fall behind
+ * the mobile browser's address/toolbar. `100vh` is the full possible
+ * viewport (URL bar collapsed) which on mobile leaves the footer below
+ * the visible area while the URL bar is showing. `100dvh` adjusts as the
+ * bars hide/show. The vh declaration stays as a fallback for browsers
+ * that don't support dvh yet. */
+.shopping-shell {
+    height: 100vh;
+    height: 100dvh;
+}
 .pb-safe {
     padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
 }
