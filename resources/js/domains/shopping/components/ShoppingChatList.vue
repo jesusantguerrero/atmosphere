@@ -305,15 +305,26 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <div class="flex flex-col h-screen bg-base-lvl-1">
+    <div class="flex flex-col min-h-screen bg-base-lvl-1">
         <!-- Header: list name + filter chips + owner controls -->
         <header class="px-4 py-3 bg-base-lvl-3 border-b border-base">
             <div class="flex items-start justify-between gap-3">
-                <div class="min-w-0">
-                    <h1 class="text-lg font-bold text-body truncate">{{ plan.name }}</h1>
-                    <p class="text-xs text-body-1/60 mt-0.5">
-                        {{ counts.buy }} buying · {{ counts.skip }} skipped · {{ counts.pending }} pending
-                    </p>
+                <div class="flex items-start gap-3 min-w-0">
+                    <a
+                        v-if="!showOwnerControls"
+                        href="/"
+                        class="shrink-0 mt-1 w-8 h-8 flex items-center justify-center rounded-full bg-base-lvl-2 text-body-1 hover:bg-base-lvl-1 transition"
+                        :title="$t('Back to home')"
+                        :aria-label="$t('Back to home')"
+                    >
+                        <i class="fa fa-arrow-left text-sm" />
+                    </a>
+                    <div class="min-w-0">
+                        <h1 class="text-lg font-bold text-body truncate">{{ plan.name }}</h1>
+                        <p class="text-xs text-body-1/60 mt-0.5">
+                            {{ counts.buy }} buying · {{ counts.skip }} skipped · {{ counts.pending }} pending
+                        </p>
+                    </div>
                 </div>
                 <div v-if="showOwnerControls" class="flex items-center gap-2 shrink-0">
                     <button
@@ -345,7 +356,7 @@ onBeforeUnmount(() => {
         </header>
 
         <!-- Item list — scrolls behind the sticky composer -->
-        <main class="flex-1 overflow-y-auto px-3 py-3 space-y-2">
+        <main class="flex-1 px-3 py-3 pb-28 space-y-2">
             <div
                 v-if="visibleItems.length === 0"
                 class="flex flex-col items-center justify-center text-center text-body-1/60 py-16 px-6"
@@ -378,10 +389,11 @@ onBeforeUnmount(() => {
             </div>
         </main>
 
-        <!-- Sticky composer at the bottom — WhatsApp-style. The keyboard pushes
-             this up naturally on iOS/Android because it's flex-positioned, not
-             fixed. -->
-        <footer class="border-t border-base bg-base-lvl-3 px-3 py-2 pb-safe">
+        <!-- Composer pinned to the viewport bottom so it stays visible while
+             the item list scrolls. `fixed` is more reliable than flex on
+             mobile, where dynamic viewport height (URL bar collapse) was
+             pushing the flex footer below the visible area. -->
+        <footer class="fixed bottom-0 left-0 right-0 z-10 border-t border-base bg-base-lvl-3 px-3 py-2 pb-safe">
             <form class="flex items-center gap-2" @submit.prevent="submitComposer">
                 <input
                     v-model="composer"
