@@ -181,30 +181,31 @@
             </div>
         </section>
 
-        {{-- ─── PILLARS ──────────────────────────────────────── --}}
-        <section class="max-w-6xl mx-auto px-6 pb-32">
+        {{-- ─── PILLARS (light section) ──────────────────────── --}}
+        <div class="bg-gray-50 text-gray-900">
+        <section class="max-w-6xl mx-auto px-6 pt-24 pb-32">
 
             <div class="text-center max-w-2xl mx-auto mb-16">
                 <div class="inline-block text-xs uppercase tracking-widest text-primary font-semibold mb-4">{{ __('landing.pillars.eyebrow') }}</div>
-                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight mb-4 leading-tight">
+                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 tracking-tight mb-4 leading-tight">
                     {{ __('landing.pillars.title') }}
                 </h2>
-                <p class="text-gray-400 leading-relaxed">{{ __('landing.pillars.subtitle') }}</p>
+                <p class="text-gray-600 leading-relaxed">{{ __('landing.pillars.subtitle') }}</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
 
                 {{-- Finance card with embedded chart mockup --}}
-                <div class="group relative bg-gray-900/60 border border-gray-800 hover:border-gray-700 rounded-2xl p-6 lg:p-7 flex flex-col transition-colors">
+                <div class="group relative bg-white border border-gray-200 hover:border-gray-300 hover:shadow-lg shadow-sm rounded-2xl p-6 lg:p-7 flex flex-col transition-all">
                     <div class="flex items-center gap-3 mb-5">
                         <div class="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
                             <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         </div>
-                        <h2 class="text-lg font-semibold text-white">{{ __('landing.features.finance.title') }}</h2>
+                        <h2 class="text-lg font-semibold text-gray-900">{{ __('landing.features.finance.title') }}</h2>
                     </div>
 
                     {{-- Embedded mini-mockup: net-worth bars --}}
-                    <div class="rounded-xl bg-white border border-gray-200 p-4 mb-5">
+                    <div class="rounded-xl bg-gray-50 border border-gray-200 p-4 mb-5">
                         <div class="text-[11px] uppercase tracking-wider text-gray-500 mb-1">Net worth</div>
                         <div class="text-xl font-bold text-gray-900 mb-3 tabular-nums">$1,331,211</div>
                         <div class="flex items-end gap-1 h-12">
@@ -218,11 +219,11 @@
                         </div>
                     </div>
 
-                    <p class="text-gray-400 text-sm leading-relaxed mb-5">
+                    <p class="text-gray-600 text-sm leading-relaxed mb-5">
                         {{ __('landing.features.finance.description') }}
                     </p>
 
-                    <ul class="mt-auto space-y-2 text-sm text-gray-300">
+                    <ul class="mt-auto space-y-2 text-sm text-gray-700">
                         @foreach ((array) __('landing.features.finance.items') as $item)
                             <li class="flex items-start gap-2">
                                 <svg class="w-4 h-4 text-primary mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
@@ -233,16 +234,16 @@
                 </div>
 
                 {{-- Meals card with mini meal list --}}
-                <div class="group relative bg-gray-900/60 border border-gray-800 hover:border-gray-700 rounded-2xl p-6 lg:p-7 flex flex-col transition-colors">
+                <div class="group relative bg-white border border-gray-200 hover:border-gray-300 hover:shadow-lg shadow-sm rounded-2xl p-6 lg:p-7 flex flex-col transition-all">
                     <div class="flex items-center gap-3 mb-5">
-                        <div class="w-10 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                        <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                         </div>
-                        <h2 class="text-lg font-semibold text-white">{{ __('landing.features.meals.title') }}</h2>
+                        <h2 class="text-lg font-semibold text-gray-900">{{ __('landing.features.meals.title') }}</h2>
                     </div>
 
                     {{-- Embedded mini-mockup: weekly meal grid --}}
-                    <div class="rounded-xl bg-white border border-gray-200 p-4 mb-5 space-y-2">
+                    <div class="rounded-xl bg-gray-50 border border-gray-200 p-4 mb-5 space-y-2">
                         <div class="flex items-center justify-between text-xs">
                             <span class="text-gray-500">Mon</span>
                             <span class="text-gray-800">Pasta primavera</span>
@@ -265,14 +266,14 @@
                         </div>
                     </div>
 
-                    <p class="text-gray-400 text-sm leading-relaxed mb-5">
+                    <p class="text-gray-600 text-sm leading-relaxed mb-5">
                         {{ __('landing.features.meals.description') }}
                     </p>
 
-                    <ul class="mt-auto space-y-2 text-sm text-gray-300">
+                    <ul class="mt-auto space-y-2 text-sm text-gray-700">
                         @foreach ((array) __('landing.features.meals.items') as $item)
                             <li class="flex items-start gap-2">
-                                <svg class="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                <svg class="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                                 <span>{{ $item }}</span>
                             </li>
                         @endforeach
@@ -280,16 +281,16 @@
                 </div>
 
                 {{-- Housing card with bills mockup --}}
-                <div class="group relative bg-gray-900/60 border border-gray-800 hover:border-gray-700 rounded-2xl p-6 lg:p-7 flex flex-col transition-colors">
+                <div class="group relative bg-white border border-gray-200 hover:border-gray-300 hover:shadow-lg shadow-sm rounded-2xl p-6 lg:p-7 flex flex-col transition-all">
                     <div class="flex items-center gap-3 mb-5">
-                        <div class="w-10 h-10 rounded-xl bg-sky-500/15 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                        <div class="w-10 h-10 rounded-xl bg-sky-100 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
                         </div>
-                        <h2 class="text-lg font-semibold text-white">{{ __('landing.features.housing.title') }}</h2>
+                        <h2 class="text-lg font-semibold text-gray-900">{{ __('landing.features.housing.title') }}</h2>
                     </div>
 
                     {{-- Embedded mini-mockup: bill timeline --}}
-                    <div class="rounded-xl bg-white border border-gray-200 p-4 mb-5 space-y-2.5">
+                    <div class="rounded-xl bg-gray-50 border border-gray-200 p-4 mb-5 space-y-2.5">
                         <div class="flex items-center gap-3">
                             <div class="w-8 h-8 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center text-[10px] font-bold">02</div>
                             <div class="flex-1">
@@ -316,14 +317,14 @@
                         </div>
                     </div>
 
-                    <p class="text-gray-400 text-sm leading-relaxed mb-5">
+                    <p class="text-gray-600 text-sm leading-relaxed mb-5">
                         {{ __('landing.features.housing.description') }}
                     </p>
 
-                    <ul class="mt-auto space-y-2 text-sm text-gray-300">
+                    <ul class="mt-auto space-y-2 text-sm text-gray-700">
                         @foreach ((array) __('landing.features.housing.items') as $item)
                             <li class="flex items-start gap-2">
-                                <svg class="w-4 h-4 text-sky-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                <svg class="w-4 h-4 text-sky-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                                 <span>{{ $item }}</span>
                             </li>
                         @endforeach
@@ -335,16 +336,16 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
 
                 {{-- Family card with member roster mockup --}}
-                <div class="group relative bg-gray-900/60 border border-gray-800 hover:border-gray-700 rounded-2xl p-6 lg:p-7 flex flex-col transition-colors">
+                <div class="group relative bg-white border border-gray-200 hover:border-gray-300 hover:shadow-lg shadow-sm rounded-2xl p-6 lg:p-7 flex flex-col transition-all">
                     <div class="flex items-center gap-3 mb-5">
-                        <div class="w-10 h-10 rounded-xl bg-purple-500/15 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                        <div class="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                         </div>
-                        <h2 class="text-lg font-semibold text-white">{{ __('landing.features.family.title') }}</h2>
+                        <h2 class="text-lg font-semibold text-gray-900">{{ __('landing.features.family.title') }}</h2>
                     </div>
 
                     {{-- Embedded mini-mockup: family roster --}}
-                    <div class="rounded-xl bg-white border border-gray-200 p-4 mb-5 space-y-2.5">
+                    <div class="rounded-xl bg-gray-50 border border-gray-200 p-4 mb-5 space-y-2.5">
                         <div class="flex items-center gap-3">
                             <div class="w-8 h-8 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-xs font-semibold">A</div>
                             <div class="flex-1 min-w-0">
@@ -368,14 +369,14 @@
                         </div>
                     </div>
 
-                    <p class="text-gray-400 text-sm leading-relaxed mb-5">
+                    <p class="text-gray-600 text-sm leading-relaxed mb-5">
                         {{ __('landing.features.family.description') }}
                     </p>
 
-                    <ul class="mt-auto space-y-2 text-sm text-gray-300">
+                    <ul class="mt-auto space-y-2 text-sm text-gray-700">
                         @foreach ((array) __('landing.features.family.items') as $item)
                             <li class="flex items-start gap-2">
-                                <svg class="w-4 h-4 text-purple-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                <svg class="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                                 <span>{{ $item }}</span>
                             </li>
                         @endforeach
@@ -383,17 +384,17 @@
                 </div>
 
                 {{-- Calendar card showing the integrating layer (multi-color week) --}}
-                <div class="group relative bg-gray-900/60 border border-gray-800 hover:border-gray-700 rounded-2xl p-6 lg:p-7 flex flex-col transition-colors">
+                <div class="group relative bg-white border border-gray-200 hover:border-gray-300 hover:shadow-lg shadow-sm rounded-2xl p-6 lg:p-7 flex flex-col transition-all">
                     <div class="flex items-center gap-3 mb-5">
-                        <div class="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                         </div>
-                        <h2 class="text-lg font-semibold text-white">{{ __('landing.features.calendar.title') }}</h2>
-                        <span class="ml-auto text-[10px] uppercase tracking-wider text-emerald-300/80 font-semibold">Integrating layer</span>
+                        <h2 class="text-lg font-semibold text-gray-900">{{ __('landing.features.calendar.title') }}</h2>
+                        <span class="ml-auto text-[10px] uppercase tracking-wider text-emerald-700 font-semibold">Integrating layer</span>
                     </div>
 
                     {{-- Embedded mini-mockup: weekly cross-pillar timeline --}}
-                    <div class="rounded-xl bg-white border border-gray-200 p-4 mb-5 space-y-2">
+                    <div class="rounded-xl bg-gray-50 border border-gray-200 p-4 mb-5 space-y-2">
                         <div class="flex items-center gap-3 text-xs">
                             <span class="text-gray-500 w-7 font-medium">Mon</span>
                             <span class="w-1.5 h-4 rounded-full bg-amber-500"></span>
@@ -420,14 +421,14 @@
                         </div>
                     </div>
 
-                    <p class="text-gray-400 text-sm leading-relaxed mb-5">
+                    <p class="text-gray-600 text-sm leading-relaxed mb-5">
                         {{ __('landing.features.calendar.description') }}
                     </p>
 
-                    <ul class="mt-auto space-y-2 text-sm text-gray-300">
+                    <ul class="mt-auto space-y-2 text-sm text-gray-700">
                         @foreach ((array) __('landing.features.calendar.items') as $item)
                             <li class="flex items-start gap-2">
-                                <svg class="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                <svg class="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                                 <span>{{ $item }}</span>
                             </li>
                         @endforeach
@@ -436,6 +437,7 @@
 
             </div>
         </section>
+        </div>
 
         {{-- ─── WHY LOGER (with stat strip) ──────────────────── --}}
         <section class="border-t border-gray-900 bg-gray-950">
@@ -495,25 +497,24 @@
             </div>
         </section>
 
-        {{-- ─── FOUNDER NOTE (replaces placeholder testimonials until real ones exist) --}}
-        <section class="border-t border-gray-900 bg-gray-900/30">
-            <div class="max-w-3xl mx-auto px-6 py-20">
+        {{-- ─── FOUNDER NOTE (light island) ──────────────────── --}}
+        <section class="bg-gradient-to-b from-stone-50 to-white text-gray-900">
+            <div class="max-w-3xl mx-auto px-6 py-24">
                 <div class="text-center mb-10">
                     <div class="inline-block text-xs uppercase tracking-widest text-primary font-semibold mb-3">{{ __('landing.social_proof.title') }}</div>
-                    <p class="text-gray-400">{{ __('landing.social_proof.subtitle') }}</p>
+                    <p class="text-gray-600">{{ __('landing.social_proof.subtitle') }}</p>
                 </div>
 
-                <figure class="bg-gray-900/60 border border-gray-800 rounded-2xl p-8 lg:p-10 flex flex-col gap-6 shadow-xl shadow-black/30">
-                    <svg class="w-8 h-8 text-primary/70" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <figure class="bg-white border border-gray-200 rounded-2xl p-8 lg:p-10 flex flex-col gap-6 shadow-xl shadow-gray-200/60">
+                    <svg class="w-8 h-8 text-primary/80" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M9.983 3v7.391c0 5.704-3.731 9.57-8.983 10.609l-.995-2.151c2.432-.917 3.995-3.638 3.995-5.849h-4v-10h9.983zm14.017 0v7.391c0 5.704-3.748 9.571-9 10.609l-.996-2.151c2.433-.917 3.996-3.638 3.996-5.849h-3.983v-10h9.983z"/>
                     </svg>
-                    <blockquote class="text-gray-200 text-base sm:text-lg leading-relaxed">
+                    <blockquote class="text-gray-800 text-base sm:text-lg leading-relaxed">
                         {{ __('landing.social_proof.founder_quote') }}
                     </blockquote>
-                    <figcaption class="flex items-center gap-4 pt-4 border-t border-gray-800/60">
-                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-primary/40 to-primary-dark/40 flex items-center justify-center text-white font-semibold text-lg" aria-hidden="true">
+                    <figcaption class="flex items-center gap-4 pt-4 border-t border-gray-200">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white font-semibold text-lg shadow-md shadow-primary/30" aria-hidden="true">
                             JG
                         </div>
                         <div>
-                            <div class="text-sm font-semibold text-white">{{ __('landing.social_proof.founder_name') }}</div>
-                            <div class="text-xs text-gray-500">{{ __('landing.social_proof.fou
+                            <div class
