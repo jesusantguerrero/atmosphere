@@ -1,5 +1,8 @@
 {
     "appName": "Loger",
+    "budgetTools": {
+        "title": "Presupuesto"
+    },
     "creditCardTools": {
         "title": "Tarjetas de crédito"
     },

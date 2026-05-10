@@ -16,9 +16,11 @@ import { useI18n } from "vue-i18n";
 import ToolsCreditCardWidget from "./ToolsCreditCardWidget.vue";
 import ToolsWatchlistWidget from "./ToolsWatchlistWidget.vue";
 import ToolsShoppingListWidget from "./ToolsShoppingListWidget.vue";
+import ToolsBudgetWidget from "./ToolsBudgetWidget.vue";
 import OouiWatchlistLtr from '~icons/ooui/watchlist-ltr';
 import MdiWallet from '~icons/mdi/wallet';
 import MdiCreditCard from '~icons/mdi/credit-card';
+import MdiPiggyBank from '~icons/mdi/piggy-bank';
 import MdiClose from '~icons/mdi/close';
 import HugeiconsShoppingBasketAdd03 from '~icons/hugeicons/shopping-basket-add-03'
 
@@ -44,6 +46,15 @@ const { t } = useI18n();
 // constantly but that live inside a pillar — surfaced here so they're one click
 // from any page. (Order roughly matches reach frequency.)
 const sections = computed<AssistantSection[]>(() => ([
+  {
+    name: "budget",
+    label: "$",
+    title: t("budgetTools.title"),
+    container: "top",
+    component: shallowRef(ToolsBudgetWidget),
+    icon: MdiPiggyBank,
+    hideMargin: true,
+  },
   {
     name: "credit-cards",
     label: "Aa",

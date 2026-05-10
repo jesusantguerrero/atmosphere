@@ -77,7 +77,7 @@ class TodayService
      *
      * @return array{today_spent: float, daily_remaining: float, month_remaining: float, days_in_month_left: int, currency_code: ?string}
      */
-    private function money(int $teamId, Carbon $today): array
+    public function money(int $teamId, Carbon $today): array
     {
         $todayRow = TransactionService::getExpensesTotal(
             $teamId,

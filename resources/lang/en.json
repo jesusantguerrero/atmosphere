@@ -5,6 +5,9 @@
         "currentExpenses": "Current Expenses",
         "monthlyBudget": "Monthly Budget"
     },
+    "budgetTools": {
+        "title": "Budget"
+    },
     "creditCardTools": {
         "title": "Credit Cards"
     },
