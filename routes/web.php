@@ -81,6 +81,8 @@ Route::get('/pricing', function () use ($marketingLocale) {
     return view('pricing');
 })->name('pricing');
 
+Route::redirect('/demo', 'https://loger.neatlancer.com', 302)->name('demo');
+
 Route::get('/privacy-policy', function () use ($marketingLocale) {
     $marketingLocale();
 
@@ -284,7 +286,3 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('/a
         Route::resource('ingredients', IngredientApiController::class);
         Route::post('/ingredients/{id}/labels', 'addLabel')->name('ingredients.label.add');
     });
-
-    // Labels
-    Route::resource('labels', LabelApiController::class);
-});
