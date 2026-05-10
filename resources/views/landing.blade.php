@@ -86,55 +86,55 @@
 
                 {{-- Right: floating product preview card (Loger budget UI mockup) --}}
                 <div class="lg:col-span-5 relative">
-                    <div class="relative rounded-2xl border border-gray-800/80 bg-gray-900/70 backdrop-blur-sm shadow-2xl shadow-black/40 p-5 transform lg:rotate-1 hover:rotate-0 transition-transform duration-500">
+                    <div class="relative rounded-2xl border border-gray-200 bg-white shadow-2xl shadow-black/40 p-5 transform lg:rotate-1 hover:rotate-0 transition-transform duration-500">
 
                         {{-- Mini-app titlebar --}}
-                        <div class="flex items-center justify-between mb-5 pb-4 border-b border-gray-800">
+                        <div class="flex items-center justify-between mb-5 pb-4 border-b border-gray-200">
                             <div class="flex items-center gap-2">
-                                <span class="w-2.5 h-2.5 rounded-full bg-red-500/70"></span>
-                                <span class="w-2.5 h-2.5 rounded-full bg-amber-500/70"></span>
-                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/70"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-red-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-amber-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></span>
                             </div>
                             <span class="text-[11px] uppercase tracking-wider text-gray-500 font-semibold">May 2026 · Budget</span>
                         </div>
 
                         {{-- Ready-to-Assign card --}}
-                        <div class="rounded-xl bg-gradient-to-br from-emerald-500/15 to-emerald-500/5 border border-emerald-500/20 p-5 mb-3">
-                            <div class="text-3xl font-bold text-white tabular-nums leading-none">$1,000.00</div>
-                            <div class="text-xs text-emerald-300/80 mt-1.5">To budget · all money assigned</div>
-                            <button class="mt-4 w-full text-xs font-semibold py-2 rounded-lg bg-emerald-500/90 text-emerald-950 hover:bg-emerald-400 transition-colors">
+                        <div class="rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100/40 border border-emerald-200 p-5 mb-3">
+                            <div class="text-3xl font-bold text-gray-900 tabular-nums leading-none">$1,000.00</div>
+                            <div class="text-xs text-emerald-700 mt-1.5">To budget · all money assigned</div>
+                            <button class="mt-4 w-full text-xs font-semibold py-2 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition-colors">
                                 Asignar sobrante
                             </button>
                         </div>
 
                         {{-- Category rows --}}
                         <div class="space-y-1.5">
-                            <div class="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-gray-800/40 transition-colors">
+                            <div class="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-gray-50 transition-colors">
                                 <div class="flex items-center gap-2.5">
                                     <span class="w-1 h-6 rounded-full bg-primary"></span>
-                                    <span class="text-sm text-gray-200">Ahorro</span>
+                                    <span class="text-sm text-gray-800">Ahorro</span>
                                 </div>
-                                <span class="text-sm font-medium text-emerald-400 tabular-nums">$500</span>
+                                <span class="text-sm font-medium text-emerald-600 tabular-nums">$500</span>
                             </div>
-                            <div class="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-gray-800/40 transition-colors">
+                            <div class="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-gray-50 transition-colors">
                                 <div class="flex items-center gap-2.5">
                                     <span class="w-1 h-6 rounded-full bg-primary"></span>
-                                    <span class="text-sm text-gray-200">Gasto Personal</span>
+                                    <span class="text-sm text-gray-800">Gasto Personal</span>
                                 </div>
-                                <span class="text-sm font-medium text-emerald-400 tabular-nums">$300</span>
+                                <span class="text-sm font-medium text-emerald-600 tabular-nums">$300</span>
                             </div>
-                            <div class="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-gray-800/40 transition-colors">
+                            <div class="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-gray-50 transition-colors">
                                 <div class="flex items-center gap-2.5">
-                                    <span class="w-1 h-6 rounded-full bg-gray-600"></span>
-                                    <span class="text-sm text-gray-200">Renta</span>
+                                    <span class="w-1 h-6 rounded-full bg-gray-400"></span>
+                                    <span class="text-sm text-gray-800">Renta</span>
                                 </div>
-                                <span class="text-sm font-medium text-gray-400 tabular-nums">$200</span>
+                                <span class="text-sm font-medium text-gray-500 tabular-nums">$200</span>
                             </div>
                         </div>
                     </div>
 
                     {{-- Floating accent card behind --}}
-                    <div aria-hidden="true" class="hidden lg:block absolute -bottom-6 -left-6 w-40 h-24 rounded-xl bg-gray-900/80 border border-gray-800 -z-10"></div>
+                    <div aria-hidden="true" class="hidden lg:block absolute -bottom-6 -left-6 w-40 h-24 rounded-xl bg-white/10 border border-white/15 -z-10"></div>
                     <div aria-hidden="true" class="hidden lg:block absolute -top-4 -right-4 px-3 py-2 rounded-lg bg-primary text-white text-[11px] font-semibold shadow-lg shadow-primary/30">
                         +$50 → Ahorro
                     </div>
@@ -204,16 +204,16 @@
                     </div>
 
                     {{-- Embedded mini-mockup: net-worth bars --}}
-                    <div class="rounded-xl bg-gray-950/60 border border-gray-800/60 p-4 mb-5">
+                    <div class="rounded-xl bg-white border border-gray-200 p-4 mb-5">
                         <div class="text-[11px] uppercase tracking-wider text-gray-500 mb-1">Net worth</div>
-                        <div class="text-xl font-bold text-white mb-3 tabular-nums">$1,331,211</div>
+                        <div class="text-xl font-bold text-gray-900 mb-3 tabular-nums">$1,331,211</div>
                         <div class="flex items-end gap-1 h-12">
-                            <div class="flex-1 bg-primary/30 rounded-sm" style="height: 30%"></div>
-                            <div class="flex-1 bg-primary/40 rounded-sm" style="height: 45%"></div>
-                            <div class="flex-1 bg-primary/50 rounded-sm" style="height: 55%"></div>
-                            <div class="flex-1 bg-primary/60 rounded-sm" style="height: 70%"></div>
-                            <div class="flex-1 bg-primary/70 rounded-sm" style="height: 60%"></div>
-                            <div class="flex-1 bg-primary/80 rounded-sm" style="height: 85%"></div>
+                            <div class="flex-1 bg-primary/40 rounded-sm" style="height: 30%"></div>
+                            <div class="flex-1 bg-primary/55 rounded-sm" style="height: 45%"></div>
+                            <div class="flex-1 bg-primary/65 rounded-sm" style="height: 55%"></div>
+                            <div class="flex-1 bg-primary/75 rounded-sm" style="height: 70%"></div>
+                            <div class="flex-1 bg-primary/85 rounded-sm" style="height: 60%"></div>
+                            <div class="flex-1 bg-primary/95 rounded-sm" style="height: 85%"></div>
                             <div class="flex-1 bg-primary rounded-sm" style="height: 100%"></div>
                         </div>
                     </div>
@@ -242,26 +242,26 @@
                     </div>
 
                     {{-- Embedded mini-mockup: weekly meal grid --}}
-                    <div class="rounded-xl bg-gray-950/60 border border-gray-800/60 p-4 mb-5 space-y-2">
+                    <div class="rounded-xl bg-white border border-gray-200 p-4 mb-5 space-y-2">
                         <div class="flex items-center justify-between text-xs">
                             <span class="text-gray-500">Mon</span>
-                            <span class="text-gray-200">Pasta primavera</span>
-                            <span class="text-amber-400/80 tabular-nums">$8</span>
+                            <span class="text-gray-800">Pasta primavera</span>
+                            <span class="text-amber-600 tabular-nums">$8</span>
                         </div>
                         <div class="flex items-center justify-between text-xs">
                             <span class="text-gray-500">Tue</span>
-                            <span class="text-gray-200">Chicken bowl</span>
-                            <span class="text-amber-400/80 tabular-nums">$12</span>
+                            <span class="text-gray-800">Chicken bowl</span>
+                            <span class="text-amber-600 tabular-nums">$12</span>
                         </div>
                         <div class="flex items-center justify-between text-xs">
                             <span class="text-gray-500">Wed</span>
-                            <span class="text-gray-200">Tacos</span>
-                            <span class="text-amber-400/80 tabular-nums">$10</span>
+                            <span class="text-gray-800">Tacos</span>
+                            <span class="text-amber-600 tabular-nums">$10</span>
                         </div>
-                        <div class="flex items-center justify-between text-xs pt-2 mt-2 border-t border-gray-800/60">
+                        <div class="flex items-center justify-between text-xs pt-2 mt-2 border-t border-gray-200">
                             <span class="text-gray-500">Week budget</span>
                             <span></span>
-                            <span class="text-white font-medium tabular-nums">$84 / $120</span>
+                            <span class="text-gray-900 font-medium tabular-nums">$84 / $120</span>
                         </div>
                     </div>
 
@@ -289,30 +289,30 @@
                     </div>
 
                     {{-- Embedded mini-mockup: bill timeline --}}
-                    <div class="rounded-xl bg-gray-950/60 border border-gray-800/60 p-4 mb-5 space-y-2.5">
+                    <div class="rounded-xl bg-white border border-gray-200 p-4 mb-5 space-y-2.5">
                         <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-300 flex items-center justify-center text-[10px] font-bold">02</div>
+                            <div class="w-8 h-8 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center text-[10px] font-bold">02</div>
                             <div class="flex-1">
-                                <div class="text-xs text-gray-200">Internet</div>
+                                <div class="text-xs text-gray-800">Internet</div>
                                 <div class="text-[10px] text-gray-500">May 02 · auto-pay</div>
                             </div>
-                            <span class="text-xs text-gray-300 tabular-nums">$45</span>
+                            <span class="text-xs text-gray-700 tabular-nums">$45</span>
                         </div>
                         <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-300 flex items-center justify-center text-[10px] font-bold">15</div>
+                            <div class="w-8 h-8 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center text-[10px] font-bold">15</div>
                             <div class="flex-1">
-                                <div class="text-xs text-gray-200">Electricity</div>
+                                <div class="text-xs text-gray-800">Electricity</div>
                                 <div class="text-[10px] text-gray-500">May 15 · estimate</div>
                             </div>
-                            <span class="text-xs text-gray-300 tabular-nums">$78</span>
+                            <span class="text-xs text-gray-700 tabular-nums">$78</span>
                         </div>
                         <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-300 flex items-center justify-center text-[10px] font-bold">28</div>
+                            <div class="w-8 h-8 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center text-[10px] font-bold">28</div>
                             <div class="flex-1">
-                                <div class="text-xs text-gray-200">Water</div>
+                                <div class="text-xs text-gray-800">Water</div>
                                 <div class="text-[10px] text-gray-500">May 28 · scheduled</div>
                             </div>
-                            <span class="text-xs text-gray-300 tabular-nums">$22</span>
+                            <span class="text-xs text-gray-700 tabular-nums">$22</span>
                         </div>
                     </div>
 
@@ -344,25 +344,25 @@
                     </div>
 
                     {{-- Embedded mini-mockup: family roster --}}
-                    <div class="rounded-xl bg-gray-950/60 border border-gray-800/60 p-4 mb-5 space-y-2.5">
+                    <div class="rounded-xl bg-white border border-gray-200 p-4 mb-5 space-y-2.5">
                         <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-purple-500/25 text-purple-200 flex items-center justify-center text-xs font-semibold">A</div>
+                            <div class="w-8 h-8 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-xs font-semibold">A</div>
                             <div class="flex-1 min-w-0">
-                                <div class="text-xs text-gray-200">Ana</div>
+                                <div class="text-xs text-gray-800">Ana</div>
                                 <div class="text-[10px] text-gray-500">Allergic to peanuts · check-up Jun 2</div>
                             </div>
                         </div>
                         <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-amber-500/25 text-amber-200 flex items-center justify-center text-xs font-semibold">D</div>
+                            <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-semibold">D</div>
                             <div class="flex-1 min-w-0">
-                                <div class="text-xs text-gray-200">Diana <span class="text-[10px] text-gray-500">· 8 yrs</span></div>
+                                <div class="text-xs text-gray-800">Diana <span class="text-[10px] text-gray-500">· 8 yrs</span></div>
                                 <div class="text-[10px] text-gray-500">School trip · permission slip due</div>
                             </div>
                         </div>
                         <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-sky-500/25 text-sky-200 flex items-center justify-center text-xs font-semibold">P</div>
+                            <div class="w-8 h-8 rounded-full bg-sky-100 text-sky-700 flex items-center justify-center text-xs font-semibold">P</div>
                             <div class="flex-1 min-w-0">
-                                <div class="text-xs text-gray-200">Pedro</div>
+                                <div class="text-xs text-gray-800">Pedro</div>
                                 <div class="text-[10px] text-gray-500">Birthday · May 24 — likes mate / size L</div>
                             </div>
                         </div>
@@ -393,30 +393,30 @@
                     </div>
 
                     {{-- Embedded mini-mockup: weekly cross-pillar timeline --}}
-                    <div class="rounded-xl bg-gray-950/60 border border-gray-800/60 p-4 mb-5 space-y-2">
+                    <div class="rounded-xl bg-white border border-gray-200 p-4 mb-5 space-y-2">
                         <div class="flex items-center gap-3 text-xs">
                             <span class="text-gray-500 w-7 font-medium">Mon</span>
                             <span class="w-1.5 h-4 rounded-full bg-amber-500"></span>
-                            <span class="flex-1 text-gray-200">Pasta primavera</span>
-                            <span class="text-amber-400/80">Food</span>
+                            <span class="flex-1 text-gray-800">Pasta primavera</span>
+                            <span class="text-amber-600">Food</span>
                         </div>
                         <div class="flex items-center gap-3 text-xs">
                             <span class="text-gray-500 w-7 font-medium">Mon</span>
                             <span class="w-1.5 h-4 rounded-full bg-sky-500"></span>
-                            <span class="flex-1 text-gray-200">Take trash out</span>
-                            <span class="text-sky-400/80">Home</span>
+                            <span class="flex-1 text-gray-800">Take trash out</span>
+                            <span class="text-sky-600">Home</span>
                         </div>
                         <div class="flex items-center gap-3 text-xs">
                             <span class="text-gray-500 w-7 font-medium">Tue</span>
                             <span class="w-1.5 h-4 rounded-full bg-primary"></span>
-                            <span class="flex-1 text-gray-200">Internet bill — $45</span>
-                            <span class="text-primary/90">Finance</span>
+                            <span class="flex-1 text-gray-800">Internet bill — $45</span>
+                            <span class="text-primary">Finance</span>
                         </div>
                         <div class="flex items-center gap-3 text-xs">
                             <span class="text-gray-500 w-7 font-medium">Wed</span>
                             <span class="w-1.5 h-4 rounded-full bg-purple-500"></span>
-                            <span class="flex-1 text-gray-200">Diana — doctor visit</span>
-                            <span class="text-purple-400/90">Family</span>
+                            <span class="flex-1 text-gray-800">Diana — doctor visit</span>
+                            <span class="text-purple-600">Family</span>
                         </div>
                     </div>
 
@@ -453,41 +453,41 @@
 
                     {{-- Multi-currency mockup --}}
                     <div class="relative">
-                        <div class="rounded-2xl bg-gray-900/60 border border-gray-800 p-6">
+                        <div class="rounded-2xl bg-white border border-gray-200 p-6 shadow-2xl shadow-black/40">
                             <div class="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-4">Accounts in 4 currencies</div>
                             <div class="space-y-3">
-                                <div class="flex items-center justify-between p-3 rounded-lg bg-gray-950/60 border border-gray-800/60">
+                                <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50 border border-gray-200">
                                     <div class="flex items-center gap-3">
                                         <span class="w-9 h-9 rounded-lg bg-primary/15 text-primary flex items-center justify-center font-bold text-xs">DOP</span>
-                                        <span class="text-sm text-gray-200">BHD Cuenta de ahorros</span>
+                                        <span class="text-sm text-gray-800">BHD Cuenta de ahorros</span>
                                     </div>
-                                    <span class="text-sm font-semibold text-white tabular-nums">RD$ 45,210</span>
+                                    <span class="text-sm font-semibold text-gray-900 tabular-nums">RD$ 45,210</span>
                                 </div>
-                                <div class="flex items-center justify-between p-3 rounded-lg bg-gray-950/60 border border-gray-800/60">
+                                <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50 border border-gray-200">
                                     <div class="flex items-center gap-3">
-                                        <span class="w-9 h-9 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center font-bold text-xs">USD</span>
-                                        <span class="text-sm text-gray-200">Wise — Multi</span>
+                                        <span class="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">USD</span>
+                                        <span class="text-sm text-gray-800">Wise — Multi</span>
                                     </div>
-                                    <span class="text-sm font-semibold text-white tabular-nums">$ 1,820</span>
+                                    <span class="text-sm font-semibold text-gray-900 tabular-nums">$ 1,820</span>
                                 </div>
-                                <div class="flex items-center justify-between p-3 rounded-lg bg-gray-950/60 border border-gray-800/60">
+                                <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50 border border-gray-200">
                                     <div class="flex items-center gap-3">
-                                        <span class="w-9 h-9 rounded-lg bg-sky-500/15 text-sky-400 flex items-center justify-center font-bold text-xs">EUR</span>
-                                        <span class="text-sm text-gray-200">Revolut</span>
+                                        <span class="w-9 h-9 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center font-bold text-xs">EUR</span>
+                                        <span class="text-sm text-gray-800">Revolut</span>
                                     </div>
-                                    <span class="text-sm font-semibold text-white tabular-nums">€ 340</span>
+                                    <span class="text-sm font-semibold text-gray-900 tabular-nums">€ 340</span>
                                 </div>
-                                <div class="flex items-center justify-between p-3 rounded-lg bg-gray-950/60 border border-gray-800/60">
+                                <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50 border border-gray-200">
                                     <div class="flex items-center gap-3">
-                                        <span class="w-9 h-9 rounded-lg bg-amber-500/15 text-amber-400 flex items-center justify-center font-bold text-xs">MXN</span>
-                                        <span class="text-sm text-gray-200">Banorte</span>
+                                        <span class="w-9 h-9 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs">MXN</span>
+                                        <span class="text-sm text-gray-800">Banorte</span>
                                     </div>
-                                    <span class="text-sm font-semibold text-white tabular-nums">MX$ 8,900</span>
+                                    <span class="text-sm font-semibold text-gray-900 tabular-nums">MX$ 8,900</span>
                                 </div>
                             </div>
-                            <div class="mt-4 pt-4 border-t border-gray-800/60 flex items-center justify-between">
+                            <div class="mt-4 pt-4 border-t border-gray-200 flex items-center justify-between">
                                 <span class="text-xs text-gray-500">Net worth (USD)</span>
-                                <span class="text-base font-bold text-white tabular-nums">$ 3,425</span>
+                                <span class="text-base font-bold text-gray-900 tabular-nums">$ 3,425</span>
                             </div>
                         </div>
                     </div>
@@ -515,4 +515,5 @@
                             JG
                         </div>
                         <div>
-                            <div class="text-sm font-semibold text-white">{{ __
+                            <div class="text-sm font-semibold text-white">{{ __('landing.social_proof.founder_name') }}</div>
+                            <div class="text-xs text-gray-500">{{ __('landing.social_proof.fou
