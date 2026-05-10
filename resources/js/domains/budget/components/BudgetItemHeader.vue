@@ -94,6 +94,13 @@ const handleOptions = (option: string) => {
             <PointAlert
                 v-if="item.hasOverspent || item.hasUnderFunded"
             />
+            <span
+                v-if="item.description"
+                class="ml-1 text-body-1/40"
+                :title="item.description"
+            >
+                <IMdiNoteOutline class="text-xs" />
+            </span>
         </h4>
     </section>
     <button class="text-gray-400 hidden group-hover:inline-block transition cursor-pointer hover:text-red-400 focus:outline-none" @click="$emit('deleted', $event)">

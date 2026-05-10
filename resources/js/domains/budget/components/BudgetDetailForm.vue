@@ -39,6 +39,7 @@
         parent_id: null,
         color: props.category.color || generateRandomColor(),
         name: props.category.name,
+        description: props.category.description || '',
         amount: 0,
         assigned: 0,
         target_type: '',
@@ -61,6 +62,7 @@
                 })
                 form.color = props.category.color ??  generateRandomColor();
                 form.name = props.category.name;
+                form.description = props.category.description || '';
             } else {
                 form.reset()
             }
@@ -120,6 +122,18 @@
                 </LogerButtonTab>
             </section>
         </header>
+
+        <textarea
+            v-if="editable"
+            v-model="category.description"
+            @blur="onBlur(category)"
+            :placeholder="$t('Add a note...')"
+            rows="2"
+            class="w-full px-3 py-2 text-sm border rounded-md resize-none bg-base-lvl-2 border-base text-body placeholder:text-body-1/40 focus:outline-none focus:ring-1 focus:ring-primary"
+        />
+        <p v-else-if="category.description" class="px-1 text-sm text-body-1/70">
+            {{ category.description }}
+        </p>
 
         <BudgetTargetForm
             v-if="!compact"

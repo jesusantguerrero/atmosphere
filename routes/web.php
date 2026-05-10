@@ -92,6 +92,12 @@ Route::get('/pricing', function () use ($marketingLocale) {
 
 Route::redirect('/demo', 'https://loger.neatlancer.com', 302)->name('demo');
 
+Route::get('/open-source', function () use ($marketingLocale) {
+    $marketingLocale();
+
+    return view('open-source');
+})->name('open-source');
+
 Route::get('/privacy-policy', function () use ($marketingLocale) {
     $marketingLocale();
 
@@ -110,6 +116,7 @@ Route::get('/sitemap.xml', function () {
     $urls = [
         ['loc' => route('landing'), 'lastmod' => $now, 'changefreq' => 'weekly', 'priority' => '1.0'],
         ['loc' => route('pricing'), 'lastmod' => $now, 'changefreq' => 'monthly', 'priority' => '0.8'],
+        ['loc' => route('open-source'), 'lastmod' => $now, 'changefreq' => 'monthly', 'priority' => '0.7'],
         ['loc' => route('privacy-policy'), 'lastmod' => $now, 'changefreq' => 'yearly', 'priority' => '0.3'],
         ['loc' => route('terms-of-service'), 'lastmod' => $now, 'changefreq' => 'yearly', 'priority' => '0.3'],
     ];
@@ -201,6 +208,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     Route::put('/planner/{planner}', [PlannerController::class, 'update'])->name('planner.update');
     Route::delete('/planner/{planner}', [PlannerController::class, 'destroy'])->name('planner.destroy');
     Route::patch('/planner/{planner}/complete', [PlannerController::class, 'complete'])->name('planner.complete');
+    Route::patch('/planner/{planner}/cancel', [PlannerController::class, 'cancel'])->name('planner.cancel');
 
     /**************************************************************************************
       *                               Finance Section

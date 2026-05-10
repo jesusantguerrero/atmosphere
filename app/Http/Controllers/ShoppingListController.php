@@ -25,6 +25,34 @@ class ShoppingListController extends Controller
 {
     public function index(Request $request, PlanService $planService): Response
     {
+        $plan = $this->resolveActivePlan($request, $planService);
+
+        return inertia('ShoppingList/Index', [
+            'plan' => $this->planPayload($plan),
+            'shareUrl' => $plan->share_token ? route('shared.list', $plan->share_token) : null,
+            'shareToken' => $plan->share_token,
+            'mercureUrl' => $this->mercureSubscribeUrl($plan),
+        ]);
+    }
+
+    /**
+     * JSON payload for the right-side shopping widget — same data the inertia
+     * page uses, minus the mercure URL the widget doesn't subscribe to.
+     * Lazy-loaded on widget open so we don't pay this on every navigation.
+     */
+    public function current(Request $request, PlanService $planService): JsonResponse
+    {
+        $plan = $this->resolveActivePlan($request, $planService);
+
+        return response()->json([
+            'plan' => $this->planPayload($plan),
+            'shareUrl' => $plan->share_token ? route('shared.list', $plan->share_token) : null,
+            'shareToken' => $plan->share_token,
+        ]);
+    }
+
+    private function resolveActivePlan(Request $request, PlanService $planService): Plan
+    {
         $user = $request->user();
         $plan = $planService->getPlanTypeModel($user->current_team_id, PlanTypes::SHOPPING_LIST);
 
@@ -36,12 +64,7 @@ class ShoppingListController extends Controller
             );
         }
 
-        return inertia('ShoppingList/Index', [
-            'plan' => $this->planPayload($plan),
-            'shareUrl' => $plan->share_token ? route('shared.list', $plan->share_token) : null,
-            'shareToken' => $plan->share_token,
-            'mercureUrl' => $this->mercureSubscribeUrl($plan),
-        ]);
+        return $plan;
     }
 
     public function cycleItem(Request $request, Plan $plan, PlanItem $item): JsonResponse

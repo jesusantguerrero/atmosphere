@@ -65,6 +65,16 @@ const saveReorder = (categories: ICategory[]) => {
   axios.patch("/api/categories/", { data: savedItems });
 };
 
+const onSubCategoryChange = (event: any, group: any) => {
+  if (event.added) {
+    const movedItem = event.added.element;
+    axios.patch(`/budgets/${movedItem.id}/move-to-group/${group.id}`, {
+      index: event.added.newIndex,
+    });
+  }
+  saveReorder(group.subCategories);
+};
+
 const isRunningInBackground = ref(false);
 const handleBudgetMovement = (budgetMovementData: any) => {
     isRunningInBackground.value = true;
@@ -138,7 +148,8 @@ const handleBudgetMovement = (budgetMovementData: any) => {
                 class="py-2 space-y-2"
                 :list="itemGroup.subCategories"
                 handle=".handle"
-                @end="saveReorder(itemGroup.subCategories)"
+                group="budget-categories"
+                @change="onSubCategoryChange($event, itemGroup)"
             >
                 <BudgetItem
                     class=" border-base-lvl-3 hover:bg-primary/20"

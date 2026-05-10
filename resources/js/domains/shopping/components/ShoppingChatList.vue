@@ -43,7 +43,6 @@ const props = defineProps<{
 const stages = ref<Stage[]>(JSON.parse(JSON.stringify(props.plan.stages)));
 const composer = ref<string>('');
 const sending = ref(false);
-const filter = ref<'all' | 'pending' | 'buy' | 'skip'>('all');
 
 watch(
     () => props.plan,
@@ -55,10 +54,19 @@ watch(
 
 const allItems = computed<Item[]>(() => stages.value.flatMap((s) => s.items));
 
-const visibleItems = computed<Item[]>(() => {
-    if (filter.value === 'all') return allItems.value;
-    return allItems.value.filter((i) => i.state === filter.value);
-});
+// LM-9: every state stays visible until "reset trip" — supermarket flow is
+// mark-while-you-shop, confirm-at-the-end. Items group: pending (still to buy)
+// → buy (already in cart) → skip (not getting today). The previous filter tabs
+// hard-removed items on tap, which felt like the row was being deleted.
+const STATE_ORDER = { pending: 0, buy: 1, skip: 2 } as const;
+const visibleItems = computed<Item[]>(() =>
+    [...allItems.value].sort((a, b) => {
+        const sa = STATE_ORDER[a.state];
+        const sb = STATE_ORDER[b.state];
+        if (sa !== sb) return sa - sb;
+        return a.order - b.order;
+    })
+);
 
 const counts = computed(() => ({
     total: allItems.value.length,
@@ -307,82 +315,86 @@ onBeforeUnmount(() => {
 <template>
     <div class="flex flex-col h-screen bg-base-lvl-1">
         <!-- Header: list name + filter chips + owner controls -->
-        <header class="px-4 py-3 bg-base-lvl-3 border-b border-base">
-            <div class="flex items-start justify-between gap-3">
-                <div class="min-w-0">
-                    <h1 class="text-lg font-bold text-body truncate">{{ plan.name }}</h1>
-                    <p class="text-xs text-body-1/60 mt-0.5">
-                        {{ counts.buy }} buying · {{ counts.skip }} skipped · {{ counts.pending }} pending
-                    </p>
+        <header class="bg-base-lvl-3 border-b border-base">
+            <div class="max-w-2xl mx-auto px-4 py-3 w-full">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                        <h1 class="text-lg font-bold text-body truncate">{{ plan.name }}</h1>
+                        <p class="text-xs text-body-1/60 mt-0.5">
+                            {{ counts.buy }} buying · {{ counts.skip }} skipped · {{ counts.pending }} pending
+                        </p>
+                    </div>
+                    <div v-if="showOwnerControls" class="flex items-center gap-2 shrink-0">
+                        <button
+                            type="button"
+                            class="text-xs px-2 py-1 rounded-md bg-base-lvl-2 text-body-1 hover:bg-base-lvl-1 transition"
+                            :title="$t('Reset all items to pending')"
+                            @click="reset"
+                        >
+                            <i class="fa fa-rotate-left mr-1" />
+                            {{ $t('Reset') }}
+                        </button>
+                    </div>
                 </div>
-                <div v-if="showOwnerControls" class="flex items-center gap-2 shrink-0">
-                    <button
-                        type="button"
-                        class="text-xs px-2 py-1 rounded-md bg-base-lvl-2 text-body-1 hover:bg-base-lvl-1 transition"
-                        :title="$t('Reset all items to pending')"
-                        @click="reset"
-                    >
-                        <i class="fa fa-rotate-left mr-1" />
-                        {{ $t('Reset') }}
-                    </button>
-                </div>
-            </div>
-            <div class="flex gap-2 mt-3 overflow-x-auto -mx-1 px-1">
-                <button
-                    v-for="tab in (['all', 'pending', 'buy', 'skip'] as const)"
-                    :key="tab"
-                    type="button"
-                    class="px-3 py-1 rounded-full text-xs font-semibold transition whitespace-nowrap border"
-                    :class="filter === tab
-                        ? 'bg-primary text-white border-primary'
-                        : 'bg-base-lvl-2 text-body-1 border-base hover:bg-base-lvl-1'"
-                    @click="filter = tab"
-                >
-                    {{ tab === 'all' ? $t('All') : tab === 'buy' ? $t('Buy') : tab === 'skip' ? $t('Skip') : $t('Pending') }}
-                    <span v-if="tab !== 'all'" class="ml-1 opacity-70">{{ counts[tab] }}</span>
-                </button>
             </div>
         </header>
 
         <!-- Item list — scrolls behind the sticky composer -->
-        <main class="flex-1 overflow-y-auto px-3 py-3 space-y-2">
-            <div
-                v-if="visibleItems.length === 0"
-                class="flex flex-col items-center justify-center text-center text-body-1/60 py-16 px-6"
-            >
-                <div class="text-4xl mb-2">🛒</div>
-                <p class="text-sm">{{ $t('Nothing here yet.') }}</p>
-                <p class="text-xs text-body-1/40 mt-1">
-                    {{ $t('Type an item below and hit send.') }}
-                </p>
-            </div>
-
-            <div
-                v-for="item in visibleItems"
-                :key="item.id"
-                class="flex items-center gap-3 px-3 py-2.5 rounded-xl border transition cursor-pointer select-none"
-                :class="stateClass(item.state)"
-                @click="cycleItem(item)"
-            >
-                <i class="fa text-base shrink-0" :class="stateIcon(item.state)" />
-                <span class="flex-1 text-sm break-words">{{ item.title }}</span>
-                <button
-                    v-if="endpoints.destroy"
-                    type="button"
-                    class="text-body-1/30 hover:text-error transition shrink-0 px-1"
-                    :title="$t('Remove item')"
-                    @click.stop="removeItem(item)"
+        <main class="flex-1 overflow-y-auto">
+            <div class="max-w-2xl mx-auto px-3 py-3 space-y-2 w-full">
+                <div
+                    v-if="visibleItems.length === 0"
+                    class="flex flex-col items-center justify-center text-center text-body-1/60 py-16 px-6"
                 >
-                    <i class="fa fa-trash text-xs" />
-                </button>
+                    <div class="text-4xl mb-2">🛒</div>
+                    <p class="text-sm">{{ $t('Nothing here yet.') }}</p>
+                    <p class="text-xs text-body-1/40 mt-1">
+                        {{ $t('Type an item below and hit send.') }}
+                    </p>
+                </div>
+
+                <div
+                    v-for="item in visibleItems"
+                    :key="item.id"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl border transition cursor-pointer select-none"
+                    :class="stateClass(item.state)"
+                    @click="cycleItem(item)"
+                >
+                    <i class="fa text-base shrink-0" :class="stateIcon(item.state)" />
+                    <span class="flex-1 text-sm break-words">{{ item.title }}</span>
+                    <span
+                        v-if="item.state === 'buy'"
+                        class="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide bg-success/20 text-success"
+                    >
+                        {{ $t('Buying') }}
+                    </span>
+                    <span
+                        v-else-if="item.state === 'skip'"
+                        class="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide bg-error/15 text-error/70"
+                    >
+                        {{ $t('Skip') }}
+                    </span>
+                    <button
+                        v-if="endpoints.destroy"
+                        type="button"
+                        class="text-body-1/30 hover:text-error transition shrink-0 px-1"
+                        :title="$t('Remove item')"
+                        @click.stop="removeItem(item)"
+                    >
+                        <i class="fa fa-trash text-xs" />
+                    </button>
+                </div>
             </div>
         </main>
 
         <!-- Sticky composer at the bottom — WhatsApp-style. The keyboard pushes
              this up naturally on iOS/Android because it's flex-positioned, not
              fixed. -->
-        <footer class="border-t border-base bg-base-lvl-3 px-3 py-2 pb-safe">
-            <form class="flex items-center gap-2" @submit.prevent="submitComposer">
+        <footer class="border-t border-base bg-base-lvl-3 pb-safe">
+            <form
+                class="max-w-2xl mx-auto px-3 py-2 flex items-center gap-2 w-full"
+                @submit.prevent="submitComposer"
+            >
                 <input
                     v-model="composer"
                     type="text"

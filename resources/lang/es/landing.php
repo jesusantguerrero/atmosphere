@@ -94,7 +94,7 @@ return [
             ],
             [
                 'q' => '¿Mis datos financieros están seguros?',
-                'a' => 'Tus datos quedan en tu cuenta, encriptados, nunca se venden. El motor es open-source en GitHub, así que puedes leer exactamente qué hace Loger con tus datos — o auto-alojarlo si prefieres no confiar en nosotros del todo.',
+                'a' => 'Tus datos son tuyos: nunca se venden, nunca se usan para publicidad. El motor es open-source en GitHub, así que puedes leer exactamente qué hace Loger con tus datos — o auto-alojarlo en tu propio servidor si prefieres no confiar en nosotros del todo.',
             ],
             [
                 'q' => '¿Puedo usar Loger en el celular?',
@@ -146,4 +146,190 @@ return [
         ],
         'housing' => [
             'title' => 'Hogar',
-            'description' => 'Maneja la casa como el activo que es. Tareas, mantenimiento,
+            'description' => 'Maneja la casa como el activo que es. Tareas, mantenimiento, equipos, facturas recurrentes y contactos de servicios en un solo lugar.',
+            'items' => [
+                'Tareas y "¿cuándo fue la última vez…?"',
+                'Inventario de equipos y garantías',
+                'Calendario de mantenimiento y proveedores',
+                'Facturas recurrentes, servicios, planes',
+            ],
+        ],
+        'family' => [
+            'title' => 'Familia',
+            'description' => 'El lado humano de la casa. Perfiles, fechas importantes, notas de salud y todas esas cosas pequeñas que siempre se te olvidan.',
+            'items' => [
+                'Perfiles y fechas importantes',
+                'Notas de salud (alergias, medicamentos)',
+                'Bitácora de escuela / trabajo',
+                'Preferencias, tallas, ideas de regalos',
+            ],
+        ],
+        'calendar' => [
+            'title' => 'Calendario y Rutinas',
+            'description' => 'La capa que une todo. Trae los eventos con fecha de los demás pilares — comidas, tareas, facturas, familia — a una sola vista semanal.',
+            'items' => [
+                'Agenda semanal de todos los pilares',
+                'Rutinas y checklists recurrentes',
+                'Agenda familiar compartida',
+                'Recordatorios push, email, WhatsApp',
+            ],
+        ],
+    ],
+
+    'social_proof' => [
+        'title' => 'Una nota del fundador',
+        'subtitle' => 'Loger es un proyecto pequeño y honesto. Aquí está por qué lo construyo.',
+        'founder_quote' => 'Construí Loger porque manejaba mi propio hogar entre cuatro monedas, tres bancos, dos idiomas y media docena de apps. Ninguna conectaba con la otra. Loger es lo que yo quería que existiera — y Atmosphere, el motor open-source debajo, también es tuyo.',
+        'founder_name' => 'Jesus Guerrero',
+        'founder_role' => 'Fundador en solitario · Hecho en la RD',
+        'cta' => 'Comparte tu historia',
+    ],
+
+    'why' => [
+        'title' => 'El hogar no es un presupuesto. Es un sistema.',
+        'body' => 'La mayoría de las apps asumen que tienes un banco en EE.UU. con importación automática — y se quedan en el dinero. Loger va más allá: funciona con cualquier institución, soporta varias monedas de forma nativa y se mete en el trabajo logístico y relacional de manejar la casa. Un solo sistema, en lugar de seis apps distintas.',
+    ],
+
+    'final_cta' => [
+        'title' => '¿Listo para manejar tu casa como un sistema?',
+        'subtitle' => 'Gratis para siempre para uso personal. Sin tarjeta. Sin Plaid. Sin Excel.',
+        'cta' => 'Crear mi Loger gratis',
+    ],
+
+    'footer' => [
+        'tagline' => 'El Sistema Operativo del Hogar',
+        'product' => 'Producto',
+        'pricing' => 'Precios',
+        'demo' => 'Demo',
+        'legal' => 'Legal',
+        'privacy' => 'Política de privacidad',
+        'terms' => 'Términos de servicio',
+        'open_source' => 'Open Source',
+        'atmosphere' => 'Atmosphere en GitHub',
+        'self_host' => 'Auto-alójalo gratis',
+        'open_source_page' => 'Sobre nuestro OSS',
+        'powered_by' => 'Loger corre sobre Atmosphere — nuestro motor open-source para el hogar.',
+        'built_by' => 'Hecho por Jesus Guerrero — Publicado bajo licencia BSD-3-Clause',
+    ],
+
+    'pricing' => [
+        'meta_title' => 'Precios — Loger',
+        'meta_description' => 'Loger es gratis para uso personal. El plan Plus está enfocado en usuarios de República Dominicana con funciones bancarias locales.',
+        'title' => 'Precios simples y honestos',
+        'subtitle' => 'Gratis para todos, en cualquier país. Plus añade funciones bancarias afinadas para República Dominicana.',
+        'free' => [
+            'name' => 'Gratis',
+            'price' => '$0',
+            'cadence' => 'para siempre',
+            'tagline' => 'Todo lo que necesitas para presupuestar — funciona en cualquier país.',
+            'cta' => 'Empezar',
+            'features' => [
+                'Presupuestos y cuentas multi-moneda',
+                'Entrada manual de transacciones e importación de PDF',
+                'Planificación de comidas y recetas',
+                'Tareas y facturas del hogar',
+                'Categorías, pagadores y metas ilimitados',
+            ],
+        ],
+        'plus' => [
+            'name' => 'Plus',
+            'price' => 'RD$299',
+            'cadence' => '/ mes',
+            'tagline' => 'Pensado para República Dominicana — bancos y contexto locales.',
+            'cta' => 'Probar Plus',
+            'badge' => 'Para 🇩🇴 República Dominicana',
+            'features' => [
+                'Todo lo del plan Gratis',
+                'Lectura optimizada de estados de cuenta BHD',
+                'Auto-categorización de pagadores locales',
+                'Ciclos de facturación de tarjetas de crédito multi-cuenta',
+                'Soporte prioritario en español',
+                'Acceso anticipado a nuevas funciones',
+            ],
+        ],
+        'note' => 'Plus está en acceso anticipado para usuarios de República Dominicana. Contáctanos si quieres que añadamos soporte local para tu país.',
+    ],
+
+    'open_source' => [
+        'meta' => [
+            'title' => 'Open Source — Loger corre sobre Atmosphere',
+            'description' => 'Loger es la distribución hospedada de Atmosphere, nuestro motor open-source para el hogar. Licencia BSD-3, en GitHub. Auto-alójalo, o que lo corramos nosotros.',
+        ],
+        'hero' => [
+            'eyebrow' => 'Open source',
+            'title' => 'Loger corre sobre Atmosphere. Atmosphere es open source.',
+            'subhead_1' => 'Atmosphere es el motor del sistema operativo del hogar — BSD-3, en GitHub, cualquiera puede hacerle fork y auto-alojarlo.',
+            'subhead_2' => 'Loger es la distribución que corremos por ti, con funciones bancarias y actualizaciones manejadas. Mismo código, dos formas de usarlo.',
+            'cta_signup' => 'Crear cuenta en Loger',
+            'cta_github' => 'Dale star a Atmosphere en GitHub',
+        ],
+        'split' => [
+            'eyebrow' => 'Por qué dos cosas',
+            'title' => 'Dos productos, una sola base de código.',
+            'subtitle' => 'Tomamos el camino de WordPress.org / WordPress.com a propósito. Esto es lo que te da cada lado.',
+            'engine' => [
+                'tag' => 'Atmosphere',
+                'title' => 'El motor',
+                'body' => 'Licencia BSD-3. Público en GitHub. Cualquiera puede hacerle fork, auditarlo, extenderlo o correrlo en su propia infraestructura — sin permisos, sin pagos, sin lock-in.',
+            ],
+            'distribution' => [
+                'tag' => 'Loger',
+                'title' => 'La distribución hospedada',
+                'body' => 'Hospedamos Atmosphere por ti, lo mantenemos actualizado y le sumamos funciones bancarias (lectura BHD, ciclos multi-moneda DOP/USD, respaldos manejados). Te registras, lo corremos.',
+            ],
+            'same_code' => [
+                'tag' => 'Mismo código',
+                'title' => 'Dos formas de usarlo',
+                'body' => 'Como Chromium y Chrome. El motor es el proyecto open-source. La distribución es el producto manejado, pulido, encima del motor. Tú eliges cuál te queda.',
+            ],
+        ],
+        'when' => [
+            'eyebrow' => 'Cómo elegir',
+            'title' => 'Auto-alojado u hospedado — ambas son opciones honestas.',
+            'self_host' => [
+                'title' => 'Auto-aloja Atmosphere si…',
+                'items' => [
+                    'Eres dev y te sientes cómodo corriendo una app Laravel',
+                    'Quieres control total de tus datos y tu infraestructura',
+                    'Quieres extender o hacerle fork al motor para tu propio hogar',
+                    'Prefieres no confiar tus finanzas a un servicio hospedado — BSD-3 te deja salir',
+                ],
+            ],
+            'hosted' => [
+                'title' => 'Usa Loger si…',
+                'items' => [
+                    'Quieres que simplemente funcione — sin servidores, sin deploys',
+                    'Quieres actualizaciones, respaldos y uptime manejados por nosotros',
+                    'Estás en RD y quieres las funciones bancarias para BHD',
+                    'Prefieres pagar una suscripción pequeña antes que correr una app Laravel tú mismo',
+                ],
+            ],
+            'note' => 'Ambos corren el mismo motor. Puedes moverte de un lado al otro — tus datos son tuyos.',
+        ],
+        'getting_started' => [
+            'eyebrow' => 'Cómo empezar',
+            'title' => 'Elige tu camino.',
+            'self_host' => [
+                'title' => 'Auto-aloja Atmosphere',
+                'body' => 'Clona el repo, sigue el README y córrelo en tu propio servidor. Gratis, BSD-3, sin amarres.',
+                'code' => 'git clone https://github.com/jesusantguerrero/atmosphere.git',
+                'cta' => 'Abrir el repo en GitHub',
+            ],
+            'hosted' => [
+                'title' => 'Regístrate en Loger',
+                'body' => 'Sáltate la instalación. Gratis para uso personal, con funciones Plus opcionales para usuarios en RD.',
+                'cta' => 'Crear una cuenta gratis',
+            ],
+        ],
+        'closing' => [
+            'title' => 'Nuestro código es tuyo, lo corras tú o lo corramos nosotros.',
+            'cta' => 'Regístrate gratis',
+        ],
+    ],
+
+    'errors' => [
+        '404_title' => 'Página no encontrada',
+        '404_body' => 'La página que buscas no existe o fue movida.',
+        '404_cta' => 'Volver al inicio',
+    ],
+];

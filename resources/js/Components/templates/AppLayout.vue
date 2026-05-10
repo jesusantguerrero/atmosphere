@@ -216,7 +216,11 @@
                             </Link>
                             <Link href="/dashboard" class="mx-auto text-center " v-else>
                                 <AppIcon size="medium"  />
-                                <sup> {{ $page.props.version }}</sup>
+                                <sup
+                                    v-if="$page.props.environment !== 'production'"
+                                    class="text-[10px] text-body-1/40 font-mono"
+                                    :title="$page.props.version"
+                                > {{ $page.props.version }}</sup>
                             </Link>
                         </div>
                     </template>

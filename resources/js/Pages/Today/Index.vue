@@ -5,6 +5,7 @@ import { format, parseISO } from 'date-fns';
 
 import AppLayout from '@/Components/templates/AppLayout.vue';
 import LogerButton from '@/Components/atoms/LogerButton.vue';
+import DayMonthToggle from '@/Components/molecules/DayMonthToggle.vue';
 import { formatMoney } from '@/utils';
 import { useTransactionModal } from '@/domains/transactions/useTransactionModal';
 import BulkAddPlannerModal from '@/Pages/Today/Partials/BulkAddPlannerModal.vue';
@@ -126,6 +127,7 @@ const closeBulkPlanner = () => { showBulkPlannerModal.value = false; };
                     <p class="text-sm text-body-1/70 capitalize">{{ todayLabel }}</p>
                 </div>
                 <div class="flex items-center gap-2">
+                    <DayMonthToggle />
                     <button
                         type="button"
                         class="text-xs px-3 py-1.5 rounded-full border transition"

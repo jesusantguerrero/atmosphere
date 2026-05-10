@@ -12,6 +12,9 @@
     "listTools": {
         "title": "Lista de compras"
     },
+    "Calendar": "Calendario",
+    "Day": "Día",
+    "Month": "Mes",
     "Language": "Idioma",
     "Available modules": "Módulos disponibles",
     "Enable only the modules you want to see in the navigation.": "Habilita sólo los módulos que quieres ver en la navegación.",

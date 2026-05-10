@@ -35,6 +35,7 @@ export interface ICategory {
     month: string;
     id?: number;
     name: string;
+    description?: string;
     color: string;
     available: number;
     left_from_last_month: number;

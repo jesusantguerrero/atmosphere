@@ -17,6 +17,7 @@ import {
 
 import AppLayout from '@/Components/templates/AppLayout.vue';
 import LogerButton from '@/Components/atoms/LogerButton.vue';
+import DayMonthToggle from '@/Components/molecules/DayMonthToggle.vue';
 
 interface CalendarEvent {
     id: string;
@@ -164,6 +165,7 @@ const monthLabel = computed(() => format(currentDate.value, 'MMMM yyyy'));
                     <p class="text-sm text-body-1/70">{{ monthLabel }}</p>
                 </div>
                 <div class="flex items-center gap-3">
+                    <DayMonthToggle />
                     <AtDatePager
                         :model-value="currentDate"
                         next-mode="month"

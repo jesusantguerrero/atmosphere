@@ -18,6 +18,8 @@ interface NotificationItem {
         message?: string;
         cta?: string;
         link?: string;
+        planner_id?: number;
+        planner_name?: string;
     };
 }
 
@@ -96,6 +98,32 @@ const visitCta = (notification: NotificationItem) => {
     router.visit(notification.data.link);
 };
 
+// Inline planner actions for PlannedAlert notifications. Both endpoints
+// flip the schedule's completed_at, which is what the reminder cron now
+// (post-bug-fix) checks before re-firing. Once flipped, no more daily
+// notifications for this bill.
+const isPlannedAlert = (notification: NotificationItem) =>
+    notification.type === 'App\\Notifications\\PlannedAlert' && !!notification.data.planner_id;
+
+const markPlannerAsPaid = (notification: NotificationItem) => {
+    const id = notification.data.planner_id;
+    if (!id) return;
+    router.patch(`/planner/${id}/complete`, {}, {
+        preserveScroll: true,
+        onSuccess: () => markAsRead(notification),
+    });
+};
+
+const cancelPlannerReminders = (notification: NotificationItem) => {
+    const id = notification.data.planner_id;
+    if (!id) return;
+    if (!confirm('Stop reminders for this planned item? You can still find it in the planner.')) return;
+    router.patch(`/planner/${id}/cancel`, {}, {
+        preserveScroll: true,
+        onSuccess: () => markAsRead(notification),
+    });
+};
+
 const rowClass = (row: NotificationItem) => {
     const m = meta(row.type);
     if (row.read_at) {
@@ -166,6 +194,30 @@ const rowClass = (row: NotificationItem) => {
 
                     <template #actions="{ scope: { row } }">
                         <div class="flex items-center justify-end gap-3 px-2 py-3">
+                            <!-- Inline planner actions: only render for PlannedAlert
+                                 notifications that have a planner_id. Older notifications
+                                 (created before the bug fix that added planner_id to the
+                                 payload) won't show these and will rely on the Open CTA. -->
+                            <template v-if="isPlannedAlert(row)">
+                                <button
+                                    type="button"
+                                    class="text-sm text-success hover:underline font-medium"
+                                    :title="$t('Mark this bill as paid — stops daily reminders')"
+                                    @click="markPlannerAsPaid(row)"
+                                >
+                                    <i class="fa fa-check-circle mr-1" />
+                                    {{ $t('Mark as paid') }}
+                                </button>
+                                <button
+                                    type="button"
+                                    class="text-xs text-body-1/60 hover:text-body-1"
+                                    :title="$t('Stop reminders for this item')"
+                                    @click="cancelPlannerReminders(row)"
+                                >
+                                    {{ $t('Stop reminders') }}
+                                </button>
+                            </template>
+
                             <button
                                 v-if="row.data.link"
                                 type="button"

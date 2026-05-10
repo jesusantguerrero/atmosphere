@@ -16,6 +16,7 @@ use App\Domains\Transaction\Services\TransactionService;
 use App\Http\Resources\CategoryGroupCollection;
 use App\Models\Setting;
 use Freesgen\Atmosphere\Http\InertiaController;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\Rule;
@@ -70,6 +71,26 @@ class BudgetCategoryController extends InertiaController
                 'budgetDefaults' => BudgetCategoryService::getDefaultsByRole($teamId),
                 'categoryAverages' => TransactionService::getCategoryAverages($teamId, 3),
             ]);
+    }
+
+    public function moveToGroup(Request $request, Category $category, Category $group): RedirectResponse
+    {
+        $teamId = auth()->user()->current_team_id;
+
+        abort_unless(
+            $category->team_id === $teamId && $group->team_id === $teamId,
+            403
+        );
+        abort_unless($group->parent_id === null, 422, 'Target must be a group.');
+
+        $index = $request->input('index', $group->subCategories()->count());
+
+        $category->update([
+            'parent_id' => $group->id,
+            'index' => $index,
+        ]);
+
+        return Redirect::back();
     }
 
     public function setDefaultRole(Request $request, BudgetCategoryService $service, Category $category)

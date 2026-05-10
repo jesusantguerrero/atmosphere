@@ -50,11 +50,16 @@ export const useAppMenu = (t: any, modules: any[]) => {
             }
         },
         {
+            // Shopping list is reachable from the right-side widget on desktop
+            // and the mobile bottom-nav (mobileTargets below). Hidden from the
+            // desktop sidebar to keep that rail focused on top-level pillars —
+            // shopping isn't a pillar, it's a tool that lives inside Food.
             icon: 'fas fa-cart-shopping',
             label: t('Shopping'),
             name: 'shopping',
             to: '/shopping',
             as: Link,
+            mobileOnly: true,
             isActiveFunction(url: string, currentPath: string) {
                 return /^\/shopping/.test(currentPath)
             }
@@ -90,7 +95,11 @@ export const useAppMenu = (t: any, modules: any[]) => {
                 return /loger-profiles/.test(currentPath)
              }
         }
-    ].filter(item => !item.hidden);
+    ];
+
+    // Desktop sidebar: visible items minus mobile-only entries (Shopping lives
+    // in the right widget panel on desktop, see FinanceWidget).
+    const desktopMenu = appMenu.filter(item => !item.hidden && !item.mobileOnly);
 
     // Mobile bottom-nav: Today is the daily entry point (replaces Dashboard
     // slot on mobile — Dashboard remains reachable via desktop sidebar and
@@ -99,7 +108,7 @@ export const useAppMenu = (t: any, modules: any[]) => {
     // chores/equipment edits happen at home.
     const mobileTargets = ['/today', '/meals/overview', '/shopping', '/finance'];
     let mobileMenu = cloneDeep(appMenu)
-        .filter(item => mobileTargets.includes(item.to))
+        .filter(item => !item.hidden && mobileTargets.includes(item.to))
         .sort((a, b) => mobileTargets.indexOf(a.to) - mobileTargets.indexOf(b.to));
     mobileMenu.splice(2, 0, {
         name: 'add',
@@ -131,7 +140,7 @@ export const useAppMenu = (t: any, modules: any[]) => {
     ];
 
     return {
-        appMenu,
+        appMenu: desktopMenu,
         mobileMenu,
         headerMenu
     }

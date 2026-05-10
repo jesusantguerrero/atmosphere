@@ -88,7 +88,7 @@
                 <div class="lg:col-span-5 relative">
                     <div class="relative rounded-2xl border border-gray-200 bg-white shadow-2xl shadow-black/40 p-5 transform lg:rotate-1 hover:rotate-0 transition-transform duration-500">
 
-                        {{-- Mini-app titlebar --}}
+                        {{-- mini-app titlebar --}}
                         <div class="flex items-center justify-between mb-5 pb-4 border-b border-gray-200">
                             <div class="flex items-center gap-2">
                                 <span class="w-2.5 h-2.5 rounded-full bg-red-500/80"></span>
@@ -216,7 +216,7 @@
                 <p class="text-sm text-gray-500 mt-3 italic">{{ __('landing.pillars_caveat') }}</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
                 {{-- Finance card with embedded chart mockup --}}
                 <div class="group relative bg-white border border-gray-200 hover:border-gray-300 hover:shadow-lg shadow-sm rounded-2xl p-6 lg:p-7 flex flex-col transition-all">
@@ -475,7 +475,7 @@
                         </p>
 
                         {{-- 4-cell differentiator matrix --}}
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             @foreach (['institution' => '🏦', 'currency' => '💱', 'beyond' => '🏠', 'oss' => '⭐'] as $key => $icon)
                                 <div class="rounded-xl border border-gray-800 bg-gray-900/40 p-4">
                                     <div class="text-xl mb-2" aria-hidden="true">{{ $icon }}</div>
@@ -518,3 +518,189 @@
                                         <span class="text-sm text-gray-800">Banorte</span>
                                     </div>
                                     <span class="text-sm font-semibold text-gray-900 tabular-nums">MX$ 8,900</span>
+                                </div>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-gray-200 flex items-center justify-between">
+                                <span class="text-xs text-gray-500">Net worth (USD)</span>
+                                <span class="text-base font-bold text-gray-900 tabular-nums">$ 3,425</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {{-- ─── DR PLUS BANNER (dark, geo-friendly) ──────────── --}}
+        <section class="border-t border-gray-900 bg-gradient-to-br from-primary/15 via-gray-950 to-gray-950">
+            <div class="max-w-5xl mx-auto px-6 py-16 lg:py-20">
+                <div class="grid lg:grid-cols-5 gap-8 items-center">
+                    <div class="lg:col-span-3">
+                        <div class="inline-flex items-center gap-2 border border-primary/30 bg-primary/10 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-primary mb-4">
+                            {{ __('landing.plus_banner.eyebrow') }}
+                        </div>
+                        <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight mb-3 leading-tight">
+                            {{ __('landing.plus_banner.title') }}
+                        </h2>
+                        <p class="text-gray-300 leading-relaxed">
+                            {{ __('landing.plus_banner.body') }}
+                        </p>
+                    </div>
+                    <div class="lg:col-span-2 flex flex-col gap-3">
+                        <a href="{{ route('register') }}"
+                           data-cta="plus-banner-primary"
+                           class="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white font-semibold px-6 py-3.5 rounded-xl transition-colors text-sm shadow-lg shadow-primary/30">
+                            {{ __('landing.plus_banner.cta') }}
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                        </a>
+                        <p class="text-xs text-gray-500 leading-relaxed">
+                            {{ __('landing.plus_banner.note_other') }}
+                            <a href="mailto:jesusant.guerrero@gmail.com?subject=Loger%20Plus%20-%20country%20request" class="text-primary hover:text-primary-dark transition-colors font-medium whitespace-nowrap">
+                                {{ __('landing.plus_banner.cta_other') }} →
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {{-- ─── ATMOSPHERE RELATIONSHIP STRIP §6b ─────────────── --}}
+        <section class="bg-white border-y border-gray-200">
+            <div class="max-w-5xl mx-auto px-6 py-20 lg:py-24">
+                <div class="grid lg:grid-cols-5 gap-10 items-center">
+                    <div class="lg:col-span-3">
+                        <div class="inline-block text-xs uppercase tracking-widest text-primary font-semibold mb-4">{{ __('landing.atmosphere.eyebrow') }}</div>
+                        <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 tracking-tight mb-4 leading-tight">
+                            {{ __('landing.atmosphere.title') }}
+                        </h2>
+                        <p class="text-gray-600 leading-relaxed mb-3">
+                            {{ __('landing.atmosphere.body_1') }}
+                        </p>
+                        <p class="text-gray-700 leading-relaxed font-medium">
+                            {{ __('landing.atmosphere.body_2') }}
+                        </p>
+                    </div>
+                    <div class="lg:col-span-2 flex flex-col gap-3">
+                        <a href="https://github.com/jesusantguerrero/atmosphere"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           class="inline-flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-800 text-white font-semibold px-6 py-3.5 rounded-xl transition-colors text-sm shadow-md">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.07 3.29 9.37 7.86 10.89.58.11.79-.25.79-.56v-2.16c-3.2.69-3.88-1.37-3.88-1.37-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.68 1.24 3.34.95.1-.74.4-1.24.72-1.53-2.55-.29-5.24-1.28-5.24-5.71 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.46.11-3.04 0 0 .96-.31 3.15 1.18a10.93 10.93 0 0 1 5.74 0c2.19-1.49 3.15-1.18 3.15-1.18.62 1.58.23 2.75.11 3.04.74.81 1.18 1.84 1.18 3.1 0 4.44-2.7 5.41-5.27 5.7.41.36.78 1.06.78 2.13v3.16c0 .31.21.67.8.56 4.56-1.52 7.85-5.82 7.85-10.89C23.5 5.65 18.35.5 12 .5z"/></svg>
+                            {{ __('landing.atmosphere.cta_self_host') }}
+                        </a>
+                        <a href="{{ route('register') }}"
+                           class="inline-flex items-center justify-center gap-2 border border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 font-medium px-6 py-3.5 rounded-xl transition-colors text-sm">
+                            {{ __('landing.atmosphere.cta_signup') }} →
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {{-- ─── FAQ (light) ──────────────────────────────────── --}}
+        <section class="bg-gray-50">
+            <div class="max-w-3xl mx-auto px-6 py-20 lg:py-24">
+                <div class="text-center mb-12">
+                    <div class="inline-block text-xs uppercase tracking-widest text-primary font-semibold mb-3">{{ __('landing.faq.eyebrow') }}</div>
+                    <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight mb-3 leading-tight">
+                        {{ __('landing.faq.title') }}
+                    </h2>
+                    <p class="text-gray-600">{{ __('landing.faq.subtitle') }}</p>
+                </div>
+
+                <dl class="space-y-3">
+                    @foreach ((array) __('landing.faq.items') as $item)
+                        <details class="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-gray-300 transition-colors">
+                            <summary class="flex items-center justify-between gap-4 px-6 py-5 cursor-pointer list-none">
+                                <dt class="text-base font-semibold text-gray-900 leading-snug">{{ $item['q'] }}</dt>
+                                <svg class="w-5 h-5 flex-shrink-0 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </summary>
+                            <dd class="px-6 pb-5 -mt-1 text-sm text-gray-600 leading-relaxed">{{ $item['a'] }}</dd>
+                        </details>
+                    @endforeach
+                </dl>
+            </div>
+        </section>
+
+        {{-- ─── FOUNDER NOTE (light island) ──────────────────── --}}
+        <section class="bg-gradient-to-b from-stone-50 to-white text-gray-900">
+            <div class="max-w-3xl mx-auto px-6 py-24">
+                <div class="text-center mb-10">
+                    <div class="inline-block text-xs uppercase tracking-widest text-primary font-semibold mb-3">{{ __('landing.social_proof.title') }}</div>
+                    <p class="text-gray-600">{{ __('landing.social_proof.subtitle') }}</p>
+                </div>
+
+                <figure class="bg-white border border-gray-200 rounded-2xl p-8 lg:p-10 flex flex-col gap-6 shadow-xl shadow-gray-200/60">
+                    <svg class="w-8 h-8 text-primary/80" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M9.983 3v7.391c0 5.704-3.731 9.57-8.983 10.609l-.995-2.151c2.432-.917 3.995-3.638 3.995-5.849h-4v-10h9.983zm14.017 0v7.391c0 5.704-3.748 9.571-9 10.609l-.996-2.151c2.433-.917 3.996-3.638 3.996-5.849h-3.983v-10h9.983z"/>
+                    </svg>
+                    <blockquote class="text-gray-800 text-base sm:text-lg leading-relaxed">
+                        {{ __('landing.social_proof.founder_quote') }}
+                    </blockquote>
+                    <figcaption class="flex items-center gap-4 pt-4 border-t border-gray-200">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white font-semibold text-lg shadow-md shadow-primary/30" aria-hidden="true">
+                            JG
+                        </div>
+                        <div class="min-w-0">
+                            <div class="text-sm font-semibold text-gray-900">{{ __('landing.social_proof.founder_name') }}</div>
+                            <div class="text-xs text-gray-500 mb-1">{{ __('landing.social_proof.founder_role') }}</div>
+                            <div class="flex items-center gap-2 text-xs">
+                                <a href="https://www.linkedin.com/in/jesus-guerrero-alvarez/"
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   class="inline-flex items-center gap-1 text-primary hover:text-primary-dark transition-colors font-medium">
+                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 0h-14C2.239 0 0 2.239 0 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5V5c0-2.761-2.238-5-5-5zM8 19H5V8h3v11zM6.5 6.732c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zM20 19h-3v-5.604c0-3.368-4-3.113-4 0V19h-3V8h3v1.765c1.396-2.586 7-2.777 7 2.476V19z"/></svg>
+                                    LinkedIn
+                                </a>
+                                <span class="text-gray-300" aria-hidden="true">·</span>
+                                <a href="https://jesusantguerrero.com"
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   class="text-primary hover:text-primary-dark transition-colors font-medium">
+                                    jesusantguerrero.com
+                                </a>
+                            </div>
+                        </div>
+                    </figcaption>
+                </figure>
+
+                <div class="text-center mt-10">
+                    <a href="mailto:jesusant.guerrero@gmail.com?subject=Loger%20testimonial"
+                       class="inline-flex items-center gap-1.5 text-sm text-primary hover:text-primary-dark transition-colors font-medium">
+                        {{ __('landing.social_proof.cta') }}
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        {{-- ─── FINAL CTA ────────────────────────────────────── --}}
+        <section class="relative overflow-hidden">
+            <div aria-hidden="true" class="absolute inset-0 -z-10">
+                <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[500px] rounded-full opacity-20 blur-3xl"
+                     style="background: radial-gradient(closest-side, rgba(243,126,161,0.7), transparent 70%);"></div>
+            </div>
+            <div class="max-w-4xl mx-auto px-6 py-28 text-center">
+                <h2 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 tracking-tight leading-tight">
+                    {{ __('landing.final_cta.title') }}
+                </h2>
+                <p class="text-gray-400 text-lg mb-10 max-w-xl mx-auto">
+                    {{ __('landing.final_cta.subtitle') }}
+                </p>
+                <a href="{{ route('register') }}"
+                   data-cta="footer-primary"
+                   class="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white font-semibold px-10 py-4 rounded-xl transition-all duration-200 text-base shadow-2xl shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-0.5">
+                    {{ __('landing.final_cta.cta') }}
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                </a>
+                <p class="text-xs text-gray-500 mt-6">{{ __('landing.hero.reassurance') }}</p>
+            </div>
+        </section>
+
+    </main>
+
+    @include('partials.marketing-footer')
+
+</body>
+</html>

@@ -39,7 +39,7 @@ class BudgetMovementService
         ]);
     }
 
-    public function registerMovement(BudgetMovementData $data, $quietly = false, $fromReadyToAssign = false)
+    public function registerMovement(BudgetMovementData $data, $quietly = false, $fromReadyToAssign = false): ?BudgetMovement
     {
         $session = [
             'team_id' => $data->team_id,
@@ -74,9 +74,11 @@ class BudgetMovementService
         if (! now()->isSameMonth(Carbon::createFromFormat('Y-m-d', $data->date))) {
             BudgetAssigned::dispatch($data, $formData);
         }
+
+        return $savedMovement;
     }
 
-    public function registerAssignment(BudgetAssignData $data, $quietly = false)
+    public function registerAssignment(BudgetAssignData $data, $quietly = false): ?BudgetMovement
     {
         DB::beginTransaction();
         $session = [
@@ -106,6 +108,8 @@ class BudgetMovementService
         if (! now()->isSameMonth(Carbon::createFromFormat('Y-m-d', $data->date))) {
             BudgetAssigned::dispatch($data, $formData);
         }
+
+        return $savedMovement;
     }
 
     public function getBalanceOfCategory($categoryId, string $month)

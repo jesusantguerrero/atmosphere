@@ -2,13 +2,13 @@
 
 namespace App\Http\Middleware;
 
-use Inertia\Middleware;
-use Tightenco\Ziggy\Ziggy;
-use Illuminate\Http\Request;
 use App\Concerns\Facades\Menu;
-use Insane\Journal\Models\Core\Account;
 use App\Domains\AppCore\Models\Category;
+use Illuminate\Http\Request;
+use Inertia\Middleware;
+use Insane\Journal\Models\Core\Account;
 use Insane\Journal\Models\Core\AccountDetailType;
+use Tightenco\Ziggy\Ziggy;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -48,9 +48,9 @@ class HandleInertiaRequests extends Middleware
 
         return [
             ...parent::share($request),
-            'ziggy' => fn () =>[
-                    ...(new Ziggy)->toArray(),
-                    'location' => $request->url(),
+            'ziggy' => fn () => [
+                ...(new Ziggy)->toArray(),
+                'location' => $request->url(),
             ],
             // 'auth' => [
             //     'user' => $request->user(),
@@ -62,6 +62,7 @@ class HandleInertiaRequests extends Middleware
             'unreadNotifications' => function () use ($user) {
                 return $user ? $user->unreadNotifications->count() : 0;
             },
+            'flash' => fn () => $request->session()->get('flash'),
             'modules' => $team ? $team->modules : [],
             'menu' => $menu,
             'balance' => $team ? $team->balance() : 0,
@@ -74,7 +75,8 @@ class HandleInertiaRequests extends Middleware
                 ->orderBy('index')
                 ->with('subCategories')
                 ->get() : [''],
-            'version' => config('app.version')
+            'version' => config('app.version'),
+            'environment' => config('app.env'),
         ];
     }
 }

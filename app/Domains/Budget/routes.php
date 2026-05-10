@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
     Route::resource('/budgets', BudgetCategoryController::class);
     Route::patch('/budgets/{category}/default-role', [BudgetCategoryController::class, 'setDefaultRole'])->name('budget.set-default-role');
+    Route::patch('/budgets/{category}/move-to-group/{group}', [BudgetCategoryController::class, 'moveToGroup'])->name('budget.move-to-group');
     Route::get('/budget-alerts', [BudgetCategoryController::class, 'budgetAlerts'])->name('budget-alerts');
     Route::get('/finance/goals', [GoalsController::class, 'index'])->name('finance.goals.index');
     Route::controller(BudgetTargetController::class)->group(function () {

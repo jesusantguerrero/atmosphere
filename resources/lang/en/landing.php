@@ -94,7 +94,7 @@ return [
             ],
             [
                 'q' => 'Is my financial data safe?',
-                'a' => 'Your data stays in your account, encrypted at rest, never sold. The engine is open source on GitHub, so you can read exactly what Loger does with your data — or self-host it if you\'d rather not trust us at all.',
+                'a' => 'Your data is yours: never sold, never used for ads. The engine is open source on GitHub, so you can read exactly what Loger does with your data — or self-host it on your own server if you\'d rather not trust us at all.',
             ],
             [
                 'q' => 'Can I use Loger on my phone?',
@@ -149,4 +149,187 @@ return [
             'description' => 'Run the house like the asset it is. Chores, maintenance, equipment, recurring bills and service contacts in one place.',
             'items' => [
                 'Chores & "when did we last…?" checks',
-                'Equipment invento
+                'Equipment inventory & warranties',
+                'Maintenance schedule & service contacts',
+                'Recurring bills, utilities, plans',
+            ],
+        ],
+        'family' => [
+            'title' => 'Family',
+            'description' => 'The people side of the house. Profiles, important dates, health notes and the small things you keep meaning to remember.',
+            'items' => [
+                'Member profiles & important dates',
+                'Health notes (allergies, meds, visits)',
+                'School / work activity log',
+                'Preferences, sizes, gift ideas',
+            ],
+        ],
+        'calendar' => [
+            'title' => 'Calendar & Routines',
+            'description' => 'The integrating layer. Pulls dated items from every other pillar — meals, chores, bills, family events — into one weekly view.',
+            'items' => [
+                'Weekly schedule across all pillars',
+                'Recurring routines & checklists',
+                'Shared family agenda',
+                'Reminders by push, email, WhatsApp',
+            ],
+        ],
+    ],
+
+    'social_proof' => [
+        'title' => 'A note from the founder',
+        'subtitle' => 'Loger is a small, honest project. Here\'s why I\'m building it.',
+        'founder_quote' => 'I built Loger because I was running my own household across four currencies, three banks, two languages, and a half-dozen apps. None of them worked together. Loger is what I wished existed — and Atmosphere, the open-source engine underneath, is yours to use too.',
+        'founder_name' => 'Jesus Guerrero',
+        'founder_role' => 'Solo founder · Built in the DR',
+        'cta' => 'Share your story',
+    ],
+
+    'why' => [
+        'title' => 'The home isn\'t a budget. It\'s a system.',
+        'body' => 'Most apps assume you have a US bank with automatic import — and they stop at money. Loger goes further: it works with any institution, supports multiple currencies natively, and reaches beyond money into the relational and logistical work of running a household. One system, instead of half a dozen apps.',
+    ],
+
+    'final_cta' => [
+        'title' => 'Ready to run your house like a system?',
+        'subtitle' => 'Free forever for personal use. No card. No Plaid. No spreadsheets.',
+        'cta' => 'Create my free Loger',
+    ],
+
+    'footer' => [
+        'tagline' => 'The Family Operating System',
+        'product' => 'Product',
+        'pricing' => 'Pricing',
+        'demo' => 'Demo',
+        'legal' => 'Legal',
+        'privacy' => 'Privacy Policy',
+        'terms' => 'Terms of Service',
+        'open_source' => 'Open Source',
+        'atmosphere' => 'Atmosphere on GitHub',
+        'self_host' => 'Self-host it free',
+        'open_source_page' => 'About our OSS',
+        'powered_by' => 'Loger runs on Atmosphere — our open-source household OS engine.',
+        'built_by' => 'Built by Jesus Guerrero — Released under the BSD-3-Clause License',
+    ],
+
+    'pricing' => [
+        'meta_title' => 'Pricing — Loger',
+        'meta_description' => 'Loger is free for personal use. The Plus plan is targeted at users in the Dominican Republic with localized banking features.',
+        'title' => 'Simple, honest pricing',
+        'subtitle' => 'Free for everyone, everywhere. Plus adds bank-aware features tuned for the Dominican Republic.',
+        'free' => [
+            'name' => 'Free',
+            'price' => '$0',
+            'cadence' => 'forever',
+            'tagline' => 'Everything you need to budget — works anywhere in the world.',
+            'cta' => 'Get started',
+            'features' => [
+                'Multi-currency budgets and accounts',
+                'Manual transaction entry and PDF statement import',
+                'Meal planning and recipes',
+                'Household task and bill tracking',
+                'Unlimited categories, payees, and goals',
+            ],
+        ],
+        'plus' => [
+            'name' => 'Plus',
+            'price' => 'RD$299',
+            'cadence' => '/ month',
+            'tagline' => 'Built for the Dominican Republic — local banks, local context.',
+            'cta' => 'Start Plus',
+            'badge' => 'For 🇩🇴 Dominican Republic',
+            'features' => [
+                'Everything in Free',
+                'Optimized BHD bank statement parsing',
+                'Local payee auto-categorization',
+                'Multi-account credit card billing cycles',
+                'Priority support in Spanish',
+                'Early access to new features',
+            ],
+        ],
+        'note' => 'Plus is currently in early access for Dominican Republic users. Contact us if you\'d like local support added for your country.',
+    ],
+
+    'open_source' => [
+        'meta' => [
+            'title' => 'Open Source — Loger runs on Atmosphere',
+            'description' => 'Loger is the hosted distribution of Atmosphere, our open-source household OS. BSD-3 licensed, on GitHub. Self-host the engine, or let us run it for you.',
+        ],
+        'hero' => [
+            'eyebrow' => 'Open source',
+            'title' => 'Loger runs on Atmosphere. Atmosphere is open source.',
+            'subhead_1' => 'Atmosphere is the household OS engine — BSD-3, on GitHub, anyone can fork it and self-host.',
+            'subhead_2' => 'Loger is the distribution we run for you, with bank-aware features and managed updates. Same code, two ways to use it.',
+            'cta_signup' => 'Sign up for Loger',
+            'cta_github' => 'Star Atmosphere on GitHub',
+        ],
+        'split' => [
+            'eyebrow' => 'Why the split',
+            'title' => 'Two products, one codebase.',
+            'subtitle' => 'We took the WordPress.org / WordPress.com path on purpose. Here\'s what each side gives you.',
+            'engine' => [
+                'tag' => 'Atmosphere',
+                'title' => 'The engine',
+                'body' => 'BSD-3 licensed. Public on GitHub. Anyone can fork it, audit it, extend it, or run it on their own infrastructure — no permission needed, no fees, no lock-in.',
+            ],
+            'distribution' => [
+                'tag' => 'Loger',
+                'title' => 'The hosted distribution',
+                'body' => 'We host Atmosphere for you, keep it patched, and add bank-aware features (BHD parsing, DOP/USD multi-currency billing cycles, managed backups). You sign up, we run it.',
+            ],
+            'same_code' => [
+                'tag' => 'Same code',
+                'title' => 'Two ways to use it',
+                'body' => 'Like Chromium and Chrome. The engine is the open-source project. The distribution is the polished, managed product on top of it. You pick what fits.',
+            ],
+        ],
+        'when' => [
+            'eyebrow' => 'How to choose',
+            'title' => 'Self-host or hosted — both are honest options.',
+            'self_host' => [
+                'title' => 'Self-host Atmosphere if…',
+                'items' => [
+                    'You\'re a developer comfortable running a Laravel app',
+                    'You want full control of your data and infrastructure',
+                    'You want to extend or fork the engine for your own household',
+                    'You\'d rather not trust a hosted service with your finances — BSD-3 lets you walk away',
+                ],
+            ],
+            'hosted' => [
+                'title' => 'Use Loger if…',
+                'items' => [
+                    'You want it to just work — no servers, no deploys',
+                    'You want managed updates, backups and uptime',
+                    'You\'re in the DR and want the BHD bank-aware features',
+                    'You\'d rather pay a small subscription than run a Laravel app yourself',
+                ],
+            ],
+            'note' => 'Both run the same engine. You can move between them — your data is yours.',
+        ],
+        'getting_started' => [
+            'eyebrow' => 'How to get started',
+            'title' => 'Pick your path.',
+            'self_host' => [
+                'title' => 'Self-host Atmosphere',
+                'body' => 'Clone the repo, follow the README, and run it on your own server. Free, BSD-3, no strings.',
+                'code' => 'git clone https://github.com/jesusantguerrero/atmosphere.git',
+                'cta' => 'Open the repo on GitHub',
+            ],
+            'hosted' => [
+                'title' => 'Sign up for Loger',
+                'body' => 'Skip the setup. Free for personal use, with optional Plus features for users in the DR.',
+                'cta' => 'Create a free account',
+            ],
+        ],
+        'closing' => [
+            'title' => 'Our code is yours, whether you run it or we do.',
+            'cta' => 'Sign up free',
+        ],
+    ],
+
+    'errors' => [
+        '404_title' => 'Page not found',
+        '404_body' => 'The page you\'re looking for doesn\'t exist or has moved.',
+        '404_cta' => 'Back to home',
+    ],
+];

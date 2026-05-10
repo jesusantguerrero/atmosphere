@@ -93,4 +93,18 @@ class PlannerController
 
         return back();
     }
+
+    /**
+     * Stop sending reminders for this planner without asserting it was paid.
+     * Use when the user wants to dismiss a recurring notification (e.g. paid
+     * via untracked cash) but doesn't want to log a transaction.
+     */
+    public function cancel(Request $request, Planner $planner): RedirectResponse
+    {
+        abort_if($planner->team_id !== $request->user()->current_team_id, 403);
+
+        $planner->markAsCancelled($request->input('notes'));
+
+        return back();
+    }
 }
