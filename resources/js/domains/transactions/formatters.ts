@@ -36,6 +36,7 @@ export const draftsDBToTransaction = (transactions: any[]) => {
 export const fromDBToAllAccounts = (transactions) => {
     return transactions.map(transaction => ({
         id: transaction.id || v4(),
+        date: transaction.date,
         title: transaction.description,
         subtitle: transaction.category?.name,
         value: transaction.total,

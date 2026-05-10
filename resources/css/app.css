@@ -16,6 +16,11 @@
 
 .aside-content {
     width: -webkit-fill-available;
-    height: 100%;
-    overflow: auto;
+}
+
+@media (min-width: 768px) {
+    .aside-content {
+        height: 100%;
+        overflow: auto;
+    }
 }
