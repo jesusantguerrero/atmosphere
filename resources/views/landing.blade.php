@@ -181,6 +181,28 @@
             </div>
         </section>
 
+        {{-- ─── THE PROBLEM (dark narrative) ─────────────────── --}}
+        <section class="border-t border-gray-900 bg-gray-950">
+            <div class="max-w-4xl mx-auto px-6 py-24 lg:py-32">
+                <div class="inline-block text-xs uppercase tracking-widest text-primary font-semibold mb-6">{{ __('landing.problem.eyebrow') }}</div>
+                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-[1.15] mb-3">
+                    {{ __('landing.problem.line_1') }}
+                </h2>
+                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-[1.15] mb-3">
+                    {{ __('landing.problem.line_2') }}
+                </h2>
+                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-[1.15] mb-10">
+                    {{ __('landing.problem.line_3') }}
+                </h2>
+                <p class="text-gray-400 text-lg leading-relaxed max-w-2xl">
+                    {{ __('landing.problem.body_1') }}
+                </p>
+                <p class="text-gray-200 text-lg leading-relaxed mt-2 max-w-2xl">
+                    <strong class="font-semibold">{{ __('landing.problem.body_2') }}</strong>
+                </p>
+            </div>
+        </section>
+
         {{-- ─── PILLARS (light section) ──────────────────────── --}}
         <div class="bg-gray-50 text-gray-900">
         <section class="max-w-6xl mx-auto px-6 pt-24 pb-32">
@@ -191,6 +213,7 @@
                     {{ __('landing.pillars.title') }}
                 </h2>
                 <p class="text-gray-600 leading-relaxed">{{ __('landing.pillars.subtitle') }}</p>
+                <p class="text-sm text-gray-500 mt-3 italic">{{ __('landing.pillars_caveat') }}</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -233,47 +256,51 @@
                     </ul>
                 </div>
 
-                {{-- Meals card with mini meal list --}}
+                {{-- Calendar card showing the integrating layer (in top row to surface cross-pillar magic) --}}
                 <div class="group relative bg-white border border-gray-200 hover:border-gray-300 hover:shadow-lg shadow-sm rounded-2xl p-6 lg:p-7 flex flex-col transition-all">
                     <div class="flex items-center gap-3 mb-5">
-                        <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                        <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                         </div>
-                        <h2 class="text-lg font-semibold text-gray-900">{{ __('landing.features.meals.title') }}</h2>
+                        <h2 class="text-lg font-semibold text-gray-900">{{ __('landing.features.calendar.title') }}</h2>
                     </div>
 
-                    {{-- Embedded mini-mockup: weekly meal grid --}}
+                    {{-- Embedded mini-mockup: weekly cross-pillar timeline --}}
                     <div class="rounded-xl bg-gray-50 border border-gray-200 p-4 mb-5 space-y-2">
-                        <div class="flex items-center justify-between text-xs">
-                            <span class="text-gray-500">Mon</span>
-                            <span class="text-gray-800">Pasta primavera</span>
-                            <span class="text-amber-600 tabular-nums">$8</span>
+                        <div class="flex items-center gap-3 text-xs">
+                            <span class="text-gray-500 w-7 font-medium">Mon</span>
+                            <span class="w-1.5 h-4 rounded-full bg-amber-500"></span>
+                            <span class="flex-1 text-gray-800 truncate">Pasta primavera</span>
+                            <span class="text-amber-600">Food</span>
                         </div>
-                        <div class="flex items-center justify-between text-xs">
-                            <span class="text-gray-500">Tue</span>
-                            <span class="text-gray-800">Chicken bowl</span>
-                            <span class="text-amber-600 tabular-nums">$12</span>
+                        <div class="flex items-center gap-3 text-xs">
+                            <span class="text-gray-500 w-7 font-medium">Mon</span>
+                            <span class="w-1.5 h-4 rounded-full bg-sky-500"></span>
+                            <span class="flex-1 text-gray-800 truncate">Take trash out</span>
+                            <span class="text-sky-600">Home</span>
                         </div>
-                        <div class="flex items-center justify-between text-xs">
-                            <span class="text-gray-500">Wed</span>
-                            <span class="text-gray-800">Tacos</span>
-                            <span class="text-amber-600 tabular-nums">$10</span>
+                        <div class="flex items-center gap-3 text-xs">
+                            <span class="text-gray-500 w-7 font-medium">Tue</span>
+                            <span class="w-1.5 h-4 rounded-full bg-primary"></span>
+                            <span class="flex-1 text-gray-800 truncate">Internet bill — $45</span>
+                            <span class="text-primary">Finance</span>
                         </div>
-                        <div class="flex items-center justify-between text-xs pt-2 mt-2 border-t border-gray-200">
-                            <span class="text-gray-500">Week budget</span>
-                            <span></span>
-                            <span class="text-gray-900 font-medium tabular-nums">$84 / $120</span>
+                        <div class="flex items-center gap-3 text-xs">
+                            <span class="text-gray-500 w-7 font-medium">Wed</span>
+                            <span class="w-1.5 h-4 rounded-full bg-purple-500"></span>
+                            <span class="flex-1 text-gray-800 truncate">Diana — doctor visit</span>
+                            <span class="text-purple-600">Family</span>
                         </div>
                     </div>
 
                     <p class="text-gray-600 text-sm leading-relaxed mb-5">
-                        {{ __('landing.features.meals.description') }}
+                        {{ __('landing.features.calendar.description') }}
                     </p>
 
                     <ul class="mt-auto space-y-2 text-sm text-gray-700">
-                        @foreach ((array) __('landing.features.meals.items') as $item)
+                        @foreach ((array) __('landing.features.calendar.items') as $item)
                             <li class="flex items-start gap-2">
-                                <svg class="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                <svg class="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                                 <span>{{ $item }}</span>
                             </li>
                         @endforeach
@@ -332,8 +359,55 @@
                 </div>
             </div>
 
-            {{-- Bottom row: Family + Calendar (2 wider cards) --}}
+            {{-- Bottom row: Food + Family (2 wider cards) --}}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
+
+                {{-- Food card with mini meal list --}}
+                <div class="group relative bg-white border border-gray-200 hover:border-gray-300 hover:shadow-lg shadow-sm rounded-2xl p-6 lg:p-7 flex flex-col transition-all">
+                    <div class="flex items-center gap-3 mb-5">
+                        <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                        </div>
+                        <h2 class="text-lg font-semibold text-gray-900">{{ __('landing.features.meals.title') }}</h2>
+                    </div>
+
+                    {{-- Embedded mini-mockup: weekly meal grid --}}
+                    <div class="rounded-xl bg-gray-50 border border-gray-200 p-4 mb-5 space-y-2">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-gray-500">Mon</span>
+                            <span class="text-gray-800">Pasta primavera</span>
+                            <span class="text-amber-600 tabular-nums">$8</span>
+                        </div>
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-gray-500">Tue</span>
+                            <span class="text-gray-800">Chicken bowl</span>
+                            <span class="text-amber-600 tabular-nums">$12</span>
+                        </div>
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-gray-500">Wed</span>
+                            <span class="text-gray-800">Tacos</span>
+                            <span class="text-amber-600 tabular-nums">$10</span>
+                        </div>
+                        <div class="flex items-center justify-between text-xs pt-2 mt-2 border-t border-gray-200">
+                            <span class="text-gray-500">Week budget</span>
+                            <span></span>
+                            <span class="text-gray-900 font-medium tabular-nums">$84 / $120</span>
+                        </div>
+                    </div>
+
+                    <p class="text-gray-600 text-sm leading-relaxed mb-5">
+                        {{ __('landing.features.meals.description') }}
+                    </p>
+
+                    <ul class="mt-auto space-y-2 text-sm text-gray-700">
+                        @foreach ((array) __('landing.features.meals.items') as $item)
+                            <li class="flex items-start gap-2">
+                                <svg class="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                <span>{{ $item }}</span>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
 
                 {{-- Family card with member roster mockup --}}
                 <div class="group relative bg-white border border-gray-200 hover:border-gray-300 hover:shadow-lg shadow-sm rounded-2xl p-6 lg:p-7 flex flex-col transition-all">
@@ -383,58 +457,6 @@
                     </ul>
                 </div>
 
-                {{-- Calendar card showing the integrating layer (multi-color week) --}}
-                <div class="group relative bg-white border border-gray-200 hover:border-gray-300 hover:shadow-lg shadow-sm rounded-2xl p-6 lg:p-7 flex flex-col transition-all">
-                    <div class="flex items-center gap-3 mb-5">
-                        <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                        </div>
-                        <h2 class="text-lg font-semibold text-gray-900">{{ __('landing.features.calendar.title') }}</h2>
-                        <span class="ml-auto text-[10px] uppercase tracking-wider text-emerald-700 font-semibold">Integrating layer</span>
-                    </div>
-
-                    {{-- Embedded mini-mockup: weekly cross-pillar timeline --}}
-                    <div class="rounded-xl bg-gray-50 border border-gray-200 p-4 mb-5 space-y-2">
-                        <div class="flex items-center gap-3 text-xs">
-                            <span class="text-gray-500 w-7 font-medium">Mon</span>
-                            <span class="w-1.5 h-4 rounded-full bg-amber-500"></span>
-                            <span class="flex-1 text-gray-800">Pasta primavera</span>
-                            <span class="text-amber-600">Food</span>
-                        </div>
-                        <div class="flex items-center gap-3 text-xs">
-                            <span class="text-gray-500 w-7 font-medium">Mon</span>
-                            <span class="w-1.5 h-4 rounded-full bg-sky-500"></span>
-                            <span class="flex-1 text-gray-800">Take trash out</span>
-                            <span class="text-sky-600">Home</span>
-                        </div>
-                        <div class="flex items-center gap-3 text-xs">
-                            <span class="text-gray-500 w-7 font-medium">Tue</span>
-                            <span class="w-1.5 h-4 rounded-full bg-primary"></span>
-                            <span class="flex-1 text-gray-800">Internet bill — $45</span>
-                            <span class="text-primary">Finance</span>
-                        </div>
-                        <div class="flex items-center gap-3 text-xs">
-                            <span class="text-gray-500 w-7 font-medium">Wed</span>
-                            <span class="w-1.5 h-4 rounded-full bg-purple-500"></span>
-                            <span class="flex-1 text-gray-800">Diana — doctor visit</span>
-                            <span class="text-purple-600">Family</span>
-                        </div>
-                    </div>
-
-                    <p class="text-gray-600 text-sm leading-relaxed mb-5">
-                        {{ __('landing.features.calendar.description') }}
-                    </p>
-
-                    <ul class="mt-auto space-y-2 text-sm text-gray-700">
-                        @foreach ((array) __('landing.features.calendar.items') as $item)
-                            <li class="flex items-start gap-2">
-                                <svg class="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                                <span>{{ $item }}</span>
-                            </li>
-                        @endforeach
-                    </ul>
-                </div>
-
             </div>
         </section>
         </div>
@@ -444,13 +466,24 @@
             <div class="max-w-6xl mx-auto px-6 py-24 lg:py-32">
                 <div class="grid lg:grid-cols-2 gap-16 items-center">
                     <div>
-                        <div class="inline-block text-xs uppercase tracking-widest text-primary font-semibold mb-4">Why Loger</div>
+                        <div class="inline-block text-xs uppercase tracking-widest text-primary font-semibold mb-4">{{ __('landing.why_diff.eyebrow') }}</div>
                         <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight mb-6 tracking-tight">
-                            {{ __('landing.why.title') }}
+                            {{ __('landing.why_diff.title') }}
                         </h2>
-                        <p class="text-gray-400 leading-relaxed text-lg">
-                            {{ __('landing.why.body') }}
+                        <p class="text-gray-400 leading-relaxed text-lg mb-8">
+                            {{ __('landing.why_diff.body') }}
                         </p>
+
+                        {{-- 4-cell differentiator matrix --}}
+                        <div class="grid grid-cols-2 gap-4">
+                            @foreach (['institution' => '🏦', 'currency' => '💱', 'beyond' => '🏠', 'oss' => '⭐'] as $key => $icon)
+                                <div class="rounded-xl border border-gray-800 bg-gray-900/40 p-4">
+                                    <div class="text-xl mb-2" aria-hidden="true">{{ $icon }}</div>
+                                    <div class="text-sm font-semibold text-white mb-1">{{ __('landing.why_diff.cells.' . $key . '.title') }}</div>
+                                    <div class="text-xs text-gray-400 leading-relaxed">{{ __('landing.why_diff.cells.' . $key . '.body') }}</div>
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
 
                     {{-- Multi-currency mockup --}}
@@ -485,36 +518,3 @@
                                         <span class="text-sm text-gray-800">Banorte</span>
                                     </div>
                                     <span class="text-sm font-semibold text-gray-900 tabular-nums">MX$ 8,900</span>
-                                </div>
-                            </div>
-                            <div class="mt-4 pt-4 border-t border-gray-200 flex items-center justify-between">
-                                <span class="text-xs text-gray-500">Net worth (USD)</span>
-                                <span class="text-base font-bold text-gray-900 tabular-nums">$ 3,425</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        {{-- ─── FOUNDER NOTE (light island) ──────────────────── --}}
-        <section class="bg-gradient-to-b from-stone-50 to-white text-gray-900">
-            <div class="max-w-3xl mx-auto px-6 py-24">
-                <div class="text-center mb-10">
-                    <div class="inline-block text-xs uppercase tracking-widest text-primary font-semibold mb-3">{{ __('landing.social_proof.title') }}</div>
-                    <p class="text-gray-600">{{ __('landing.social_proof.subtitle') }}</p>
-                </div>
-
-                <figure class="bg-white border border-gray-200 rounded-2xl p-8 lg:p-10 flex flex-col gap-6 shadow-xl shadow-gray-200/60">
-                    <svg class="w-8 h-8 text-primary/80" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M9.983 3v7.391c0 5.704-3.731 9.57-8.983 10.609l-.995-2.151c2.432-.917 3.995-3.638 3.995-5.849h-4v-10h9.983zm14.017 0v7.391c0 5.704-3.748 9.571-9 10.609l-.996-2.151c2.433-.917 3.996-3.638 3.996-5.849h-3.983v-10h9.983z"/>
-                    </svg>
-                    <blockquote class="text-gray-800 text-base sm:text-lg leading-relaxed">
-                        {{ __('landing.social_proof.founder_quote') }}
-                    </blockquote>
-                    <figcaption class="flex items-center gap-4 pt-4 border-t border-gray-200">
-                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white font-semibold text-lg shadow-md shadow-primary/30" aria-hidden="true">
-                            JG
-                        </div>
-                        <div>
-                            <div class
