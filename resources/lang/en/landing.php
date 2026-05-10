@@ -32,6 +32,91 @@ return [
         'made_by' => 'Made by a household, for households',
     ],
 
+    'problem' => [
+        'eyebrow' => 'Why Loger exists',
+        'line_1' => 'Your bank isn\'t on Plaid.',
+        'line_2' => 'Your spouse uses a different one.',
+        'line_3' => 'The kids\' school charges in DOP.',
+        'body_1' => 'Most household apps were built for a US family with one Chase account.',
+        'body_2' => 'Loger was built for the rest of us.',
+    ],
+
+    'why_diff' => [
+        'eyebrow' => 'Why Loger',
+        'title' => 'The home isn\'t a budget. It\'s a system.',
+        'body' => 'Most apps assume you have a US bank with automatic import — and they stop at money. Loger goes further.',
+        'cells' => [
+            'institution' => [
+                'title' => 'Any institution',
+                'body' => 'No Plaid, no US-only sync. PDF import, manual entry, CSV.',
+            ],
+            'currency' => [
+                'title' => 'Multi-currency native',
+                'body' => 'DOP, USD, EUR, MXN side-by-side. No conversion gymnastics.',
+            ],
+            'beyond' => [
+                'title' => 'Beyond money',
+                'body' => 'Meals, chores, bills, family — the actual work of running a home.',
+            ],
+            'oss' => [
+                'title' => 'Open-source engine',
+                'body' => 'Loger runs on Atmosphere. BSD-3 on GitHub. Self-host or let us host.',
+            ],
+        ],
+    ],
+
+    'plus_banner' => [
+        'eyebrow' => 'For 🇩🇴 Dominican Republic',
+        'title' => 'Bank-aware features for users in the DR',
+        'body' => 'Loger Plus auto-categorizes BHD payees, parses bank statements, and handles multi-account credit-card billing cycles — RD$299/month, free for 30 days.',
+        'cta' => 'Try Plus free for 30 days',
+        'note_other' => 'Not in the DR? Plus is rolling out country by country — tell us where you bank to vote for the next country.',
+        'cta_other' => 'Tell us where you bank',
+    ],
+
+    'atmosphere' => [
+        'eyebrow' => 'How Loger is built',
+        'title' => 'Loger is hosted Atmosphere.',
+        'body_1' => 'Atmosphere is our open-source household OS — BSD-3, on GitHub. Anyone can fork it and self-host. Loger is the distribution we run for you, with bank-aware features and managed updates.',
+        'body_2' => 'Same code, two ways to use it. Like Chromium and Chrome.',
+        'cta_self_host' => 'Self-host on GitHub',
+        'cta_signup' => 'Or just sign up free',
+    ],
+
+    'faq' => [
+        'eyebrow' => 'FAQ',
+        'title' => 'Common questions',
+        'subtitle' => 'If yours isn\'t here, write to us.',
+        'items' => [
+            [
+                'q' => 'What if my bank isn\'t supported?',
+                'a' => 'All banks are supported. Loger doesn\'t depend on bank APIs — drop in a PDF statement or enter transactions manually. We don\'t connect to your bank, so we don\'t even see credentials.',
+            ],
+            [
+                'q' => 'Is my financial data safe?',
+                'a' => 'Your data stays in your account, encrypted at rest, never sold. The engine is open source on GitHub, so you can read exactly what Loger does with your data — or self-host it if you\'d rather not trust us at all.',
+            ],
+            [
+                'q' => 'Can I use Loger on my phone?',
+                'a' => 'Yes — Loger is a responsive web app that works on any device. You can add it to your home screen on iOS and Android for an app-like experience.',
+            ],
+            [
+                'q' => 'What happens if I cancel Plus?',
+                'a' => 'You keep all your data and downgrade to Free. Nothing is locked behind the paywall except the DR-specific bank parsing and a few automation features. Your budget, history, and accounts stay yours.',
+            ],
+            [
+                'q' => 'Do I need all five pillars?',
+                'a' => 'No — enable only what your household uses. Most people start with Finance and add Calendar. You can turn pillars on or off any time.',
+            ],
+            [
+                'q' => 'Can my partner or family see this too?',
+                'a' => 'Yes — household teams let you share access with the people you live with. Each member gets their own profile, and you choose who sees what.',
+            ],
+        ],
+    ],
+
+    'pillars_caveat' => 'Enable only the pillars your household needs.',
+
     'pillars' => [
         'eyebrow' => 'Five pillars, one system',
         'title' => 'Everything that runs your household',
@@ -64,93 +149,4 @@ return [
             'description' => 'Run the house like the asset it is. Chores, maintenance, equipment, recurring bills and service contacts in one place.',
             'items' => [
                 'Chores & "when did we last…?" checks',
-                'Equipment inventory & warranties',
-                'Maintenance schedule & service contacts',
-                'Recurring bills, utilities, plans',
-            ],
-        ],
-        'family' => [
-            'title' => 'Family',
-            'description' => 'The people side of the house. Profiles, important dates, health notes and the small things you keep meaning to remember.',
-            'items' => [
-                'Member profiles & important dates',
-                'Health notes (allergies, meds, visits)',
-                'School / work activity log',
-                'Preferences, sizes, gift ideas',
-            ],
-        ],
-        'calendar' => [
-            'title' => 'Calendar & Routines',
-            'description' => 'The integrating layer. Pulls dated items from every other pillar — meals, chores, bills, family events — into one weekly view.',
-            'items' => [
-                'Weekly schedule across all pillars',
-                'Recurring routines & checklists',
-                'Shared family agenda',
-                'Reminders by push, email, WhatsApp',
-            ],
-        ],
-    ],
-
-    'social_proof' => [
-        'title' => 'A note from the founder',
-        'subtitle' => 'Loger is a small, honest project. Here\'s why I\'m building it.',
-        'founder_quote' => 'I built Loger because I was running my own household across four currencies, three banks, two languages, and a half-dozen apps. None of them worked together. Loger is what I wished existed — and Atmosphere, the open-source engine underneath, is yours to use too.',
-        'founder_name' => 'Jesus Guerrero',
-        'founder_role' => 'Solo founder · Built in the DR',
-        'cta' => 'Share your story',
-    ],
-
-    'why' => [
-        'title' => 'The home isn\'t a budget. It\'s a system.',
-        'body' => 'Most apps assume you have a US bank with automatic import — and they stop at money. Loger goes further: it works with any institution, supports multiple currencies natively, and reaches beyond money into the relational and logistical work of running a household. One system, instead of half a dozen apps.',
-    ],
-
-    'final_cta' => [
-        'title' => 'Ready to run your house like a system?',
-        'subtitle' => 'Free forever for personal use. No card. No Plaid. No spreadsheets.',
-        'cta' => 'Create my free Loger',
-    ],
-
-    'footer' => [
-        'tagline' => 'The Family Operating System',
-        'product' => 'Product',
-        'pricing' => 'Pricing',
-        'demo' => 'Demo',
-        'legal' => 'Legal',
-        'privacy' => 'Privacy Policy',
-        'terms' => 'Terms of Service',
-        'open_source' => 'Open Source',
-        'atmosphere' => 'Atmosphere on GitHub',
-        'self_host' => 'Self-host it free',
-        'powered_by' => 'Loger runs on Atmosphere — our open-source household OS engine.',
-        'built_by' => 'Built by Jesus Guerrero — Released under the BSD-3-Clause License',
-    ],
-
-    'pricing' => [
-        'meta_title' => 'Pricing — Loger',
-        'meta_description' => 'Loger is free for personal use. The Plus plan is targeted at users in the Dominican Republic with localized banking features.',
-        'title' => 'Simple, honest pricing',
-        'subtitle' => 'Free for everyone, everywhere. Plus adds bank-aware features tuned for the Dominican Republic.',
-        'free' => [
-            'name' => 'Free',
-            'price' => '$0',
-            'cadence' => 'forever',
-            'tagline' => 'Everything you need to budget — works anywhere in the world.',
-            'cta' => 'Get started',
-            'features' => [
-                'Multi-currency budgets and accounts',
-                'Manual transaction entry and PDF statement import',
-                'Meal planning and recipes',
-                'Household task and bill tracking',
-                'Unlimited categories, payees, and goals',
-            ],
-        ],
-        'plus' => [
-            'name' => 'Plus',
-            'price' => 'RD$299',
-            'cadence' => '/ month',
-            'tagline' => 'Built for the Dominican Republic — local banks, local context.',
-            'cta' => 'Start Plus',
-            'badge' => 'For 🇩🇴 Dominican Republic',
-            'features' => [
-                '
+                'Equipment invento
