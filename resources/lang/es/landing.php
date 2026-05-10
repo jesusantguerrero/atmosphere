@@ -17,12 +17,19 @@ return [
 
     'hero' => [
         'badge' => 'El Sistema Operativo del Hogar',
-        'headline_a' => 'Maneja tu casa',
-        'headline_b' => 'como el sistema que es.',
-        'subhead' => 'Presupuesto, comidas, tareas, agenda familiar, mantenimiento — todo lo que llevas en la cabeza, en Excel, o repartido en seis apps distintas. Loger lo une en un sistema que funciona de verdad para hogares fuera del mundo bancario de EE.UU.',
-        'cta_primary' => 'Empezar gratis',
+        'headline_a' => 'Tu hogar funciona en caos.',
+        'headline_b' => 'Reemplaza el caos.',
+        'subhead' => 'Un solo lugar para el presupuesto, las facturas, el plan de comidas y la agenda familiar — pensado para hogares cuyo banco no se conecta con las apps de presupuesto gringas.',
+        'cta_primary' => 'Empezar gratis — en menos de 5 min',
         'cta_secondary' => 'Ver el demo',
-        'reassurance' => 'Sin tarjeta de crédito · Gratis para siempre para uso personal',
+        'reassurance' => 'Sin tarjeta · Funciona con cualquier banco · DOP, USD, EUR y más',
+    ],
+
+    'social_bar' => [
+        'built_in' => 'Hecho en 🇩🇴 República Dominicana',
+        'open_source' => 'Motor open-source — Atmosphere en GitHub',
+        'license' => 'Licencia BSD-3 · auto-alójalo gratis',
+        'made_by' => 'Hecho por un hogar, para hogares',
     ],
 
     'pillars' => [
@@ -85,11 +92,12 @@ return [
     ],
 
     'social_proof' => [
-        'title' => 'Para quienes ya superaron Excel',
-        'subtitle' => 'Personas reales, presupuestos reales. Suma el tuyo.',
-        'placeholder_quote' => '"Tu testimonio aquí — cuéntanos qué cambió cuando empezaste a presupuestar en Loger."',
-        'placeholder_attribution' => 'Sé el primero en compartir tu historia',
-        'cta' => 'Enviar tu testimonio',
+        'title' => 'Una nota del fundador',
+        'subtitle' => 'Loger es un proyecto pequeño y honesto. Aquí está por qué lo construyo.',
+        'founder_quote' => 'Construí Loger porque manejaba mi propio hogar entre cuatro monedas, tres bancos, dos idiomas y media docena de apps. Ninguna conectaba con la otra. Loger es lo que yo quería que existiera — y Atmosphere, el motor open-source debajo, también es tuyo.',
+        'founder_name' => 'Jesus Guerrero',
+        'founder_role' => 'Fundador en solitario · Hecho en la RD',
+        'cta' => 'Comparte tu historia',
     ],
 
     'why' => [
@@ -98,9 +106,9 @@ return [
     ],
 
     'final_cta' => [
-        'title' => '¿Listo para tomar el control?',
-        'subtitle' => 'Crea una cuenta gratis y empieza a gestionar tus finanzas hoy.',
-        'cta' => 'Crear cuenta gratis',
+        'title' => '¿Listo para manejar tu casa como un sistema?',
+        'subtitle' => 'Gratis para siempre para uso personal. Sin tarjeta. Sin Plaid. Sin Excel.',
+        'cta' => 'Crear mi Loger gratis',
     ],
 
     'footer' => [
@@ -111,6 +119,10 @@ return [
         'legal' => 'Legal',
         'privacy' => 'Política de privacidad',
         'terms' => 'Términos de servicio',
+        'open_source' => 'Open Source',
+        'atmosphere' => 'Atmosphere en GitHub',
+        'self_host' => 'Auto-alójalo gratis',
+        'powered_by' => 'Loger corre sobre Atmosphere — nuestro motor open-source para el hogar.',
         'built_by' => 'Hecho por Jesus Guerrero — Publicado bajo licencia BSD-3-Clause',
     ],
 
@@ -141,20 +153,4 @@ return [
             'cta' => 'Probar Plus',
             'badge' => 'Para 🇩🇴 República Dominicana',
             'features' => [
-                'Todo lo del plan Gratis',
-                'Lectura optimizada de estados de cuenta BHD',
-                'Auto-categorización de pagadores locales',
-                'Ciclos de facturación de tarjetas de crédito multi-cuenta',
-                'Soporte prioritario en español',
-                'Acceso anticipado a nuevas funciones',
-            ],
-        ],
-        'note' => 'Plus está en acceso anticipado para usuarios de República Dominicana. Contáctanos si quieres que añadamos soporte local para tu país.',
-    ],
-
-    'errors' => [
-        '404_title' => 'Página no encontrada',
-        '404_body' => 'La página que buscas no existe o fue movida.',
-        '404_cta' => 'Volver al inicio',
-    ],
-];
+                '

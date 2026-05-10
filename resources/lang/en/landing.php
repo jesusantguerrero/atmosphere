@@ -17,12 +17,19 @@ return [
 
     'hero' => [
         'badge' => 'The Family Operating System',
-        'headline_a' => 'Run your house',
-        'headline_b' => 'like the system it is.',
-        'subhead' => 'Budget, meals, chores, family schedules, home maintenance — all the things you juggle in your head, in spreadsheets, or across half a dozen apps. Loger pulls them into one system that actually works for households outside the US banking world.',
-        'cta_primary' => 'Get started — it\'s free',
+        'headline_a' => 'Your household runs on chaos.',
+        'headline_b' => 'Replace the chaos.',
+        'subhead' => 'One place for the budget, the bills, the meal plan, and the family calendar — built for households whose bank doesn\'t sync with American budgeting apps.',
+        'cta_primary' => 'Start free — under 5 min',
         'cta_secondary' => 'See it in action',
-        'reassurance' => 'No credit card required · Free forever for personal use',
+        'reassurance' => 'No credit card · Works with any bank · DOP, USD, EUR & more',
+    ],
+
+    'social_bar' => [
+        'built_in' => 'Built in 🇩🇴 the Dominican Republic',
+        'open_source' => 'Open-source engine — Atmosphere on GitHub',
+        'license' => 'BSD-3 licensed · self-host it free',
+        'made_by' => 'Made by a household, for households',
     ],
 
     'pillars' => [
@@ -85,11 +92,12 @@ return [
     ],
 
     'social_proof' => [
-        'title' => 'Loved by people who outgrew spreadsheets',
-        'subtitle' => 'Real people, real budgets. Add yours to the list.',
-        'placeholder_quote' => '"Your testimonial here — share what changed when you started budgeting in Loger."',
-        'placeholder_attribution' => 'Be the first to share your story',
-        'cta' => 'Submit your testimonial',
+        'title' => 'A note from the founder',
+        'subtitle' => 'Loger is a small, honest project. Here\'s why I\'m building it.',
+        'founder_quote' => 'I built Loger because I was running my own household across four currencies, three banks, two languages, and a half-dozen apps. None of them worked together. Loger is what I wished existed — and Atmosphere, the open-source engine underneath, is yours to use too.',
+        'founder_name' => 'Jesus Guerrero',
+        'founder_role' => 'Solo founder · Built in the DR',
+        'cta' => 'Share your story',
     ],
 
     'why' => [
@@ -98,9 +106,9 @@ return [
     ],
 
     'final_cta' => [
-        'title' => 'Ready to take control?',
-        'subtitle' => 'Create a free account and start managing your finances today.',
-        'cta' => 'Create free account',
+        'title' => 'Ready to run your house like a system?',
+        'subtitle' => 'Free forever for personal use. No card. No Plaid. No spreadsheets.',
+        'cta' => 'Create my free Loger',
     ],
 
     'footer' => [
@@ -111,6 +119,10 @@ return [
         'legal' => 'Legal',
         'privacy' => 'Privacy Policy',
         'terms' => 'Terms of Service',
+        'open_source' => 'Open Source',
+        'atmosphere' => 'Atmosphere on GitHub',
+        'self_host' => 'Self-host it free',
+        'powered_by' => 'Loger runs on Atmosphere — our open-source household OS engine.',
         'built_by' => 'Built by Jesus Guerrero — Released under the BSD-3-Clause License',
     ],
 
@@ -141,20 +153,4 @@ return [
             'cta' => 'Start Plus',
             'badge' => 'For 🇩🇴 Dominican Republic',
             'features' => [
-                'Everything in Free',
-                'Optimized BHD bank statement parsing',
-                'Local payee auto-categorization',
-                'Multi-account credit card billing cycles',
-                'Priority support in Spanish',
-                'Early access to new features',
-            ],
-        ],
-        'note' => 'Plus is currently in early access for Dominican Republic users. Contact us if you\'d like local support added for your country.',
-    ],
-
-    'errors' => [
-        '404_title' => 'Page not found',
-        '404_body' => 'The page you\'re looking for doesn\'t exist or has moved.',
-        '404_cta' => 'Back to home',
-    ],
-];
+                '
