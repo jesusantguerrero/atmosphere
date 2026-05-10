@@ -3,6 +3,8 @@
 namespace App\Domains\Today\Services;
 
 use App\Domains\AppCore\Models\Planner;
+use App\Domains\Budget\Data\BudgetReservedNames;
+use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Housing\Models\Occurrence;
 use App\Domains\Meal\Services\MealService;
 use App\Domains\Transaction\Models\BillingCycle;
@@ -39,35 +41,41 @@ class TodayService
     }
 
     /**
-     * MEAL HOY: today's planned meals (from MealPlan via Planner). FD-1 v0.2.
-     * Empty array when no meals scheduled — widget renders empty state with link
-     * to /meal-planner. Each entry exposes the meal type label so the UI can
-     * group "Breakfast / Lunch / Dinner" in order.
+     * MEAL THIS WEEK: week's planned meals grouped by day (from MealPlan via Planner).
+     * Widened from today-only to start-of-week → end-of-week so the user sees
+     * "this week's menu" at a glance. Each entry includes the date for UI grouping.
      *
      * @return array<int, array<string, mixed>>
      */
     private function meal(int $teamId): array
     {
-        return $this->mealService->getMealSchedule($teamId)
+        $weekStart = Carbon::now()->startOfWeek(Carbon::MONDAY)->format('Y-m-d');
+        $weekEnd = Carbon::now()->endOfWeek(Carbon::SUNDAY)->format('Y-m-d');
+
+        return $this->mealService->getMealScheduleInFrame($teamId, $weekStart, $weekEnd)
+            ->sortBy(fn ($plan) => $plan->date)
             ->map(fn ($plan) => [
                 'id' => $plan->id,
                 'meal_id' => $plan->dateable?->meal_id,
                 'name' => $plan->dateable?->name,
                 'meal_type' => $plan->dateable?->mealType?->name,
                 'is_liked' => (bool) ($plan->dateable?->meal?->is_liked ?? false),
+                'date' => $plan->date->format('Y-m-d'),
+                'day_label' => $plan->date->isToday() ? 'Today' : $plan->date->format('D'),
             ])
+            ->values()
             ->all();
     }
 
     /**
-     * MONEY (today-only): a single number — what was spent today.
+     * MONEY: today's spend + daily remaining budget.
      *
-     * Intentionally narrow: Dashboard owns the comprehensive "how am I doing
-     * this month" view (budget donut, % spent, totals, charts). Today is the
-     * action surface — "log what you spent" is the action this card invites.
-     * Showing the same month aggregates here was design overlap.
+     * `today_spent` — action surface ("did you log it?").
+     * `daily_remaining` — (month_budgeted − month_spent) / days_left — gives
+     * a "safe to spend per day" number without duplicating Dashboard's full
+     * budget donut. Spending-only (excludes savings targets).
      *
-     * @return array{today_spent: float, currency_code: ?string}
+     * @return array{today_spent: float, daily_remaining: float, month_remaining: float, days_in_month_left: int, currency_code: ?string}
      */
     private function money(int $teamId, Carbon $today): array
     {
@@ -77,8 +85,38 @@ class TodayService
             $today->copy()->endOfDay()->format('Y-m-d')
         );
 
+        $monthStart = $today->copy()->startOfMonth()->format('Y-m-d');
+
+        // Total budgeted for spending categories this month (excludes savings)
+        $monthBudgeted = (float) BudgetMonth::query()
+            ->where('budget_months.team_id', $teamId)
+            ->where('month', $monthStart)
+            ->join('categories', fn ($q) => $q->on('categories.id', 'budget_months.category_id')
+                ->whereNot('categories.name', BudgetReservedNames::READY_TO_ASSIGN->value)
+            )
+            ->leftJoin('budget_targets', 'budget_targets.category_id', 'budget_months.category_id')
+            ->where(fn ($q) => $q
+                ->whereNull('budget_targets.target_type')
+                ->orWhereNotIn('budget_targets.target_type', ['saving_balance', 'savings_monthly'])
+            )
+            ->sum('budget_months.budgeted');
+
+        // Total spent this month so far
+        $monthSpentRow = TransactionService::getExpensesTotal(
+            $teamId,
+            $monthStart,
+            $today->format('Y-m-d')
+        );
+
+        $daysRemaining = max(1, $today->copy()->endOfMonth()->startOfDay()->diffInDays($today->copy()->startOfDay()) + 1); // includes today
+        $monthRemaining = $monthBudgeted - abs($monthSpentRow?->total_amount ?? 0);
+        $dailyRemaining = $monthRemaining / $daysRemaining;
+
         return [
             'today_spent' => (float) abs($todayRow?->total_amount ?? 0),
+            'daily_remaining' => round($dailyRemaining, 2),
+            'month_remaining' => round($monthRemaining, 2),
+            'days_in_month_left' => $daysRemaining,
             'currency_code' => null,
         ];
     }

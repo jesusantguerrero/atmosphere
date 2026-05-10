@@ -11,6 +11,9 @@ import BulkAddPlannerModal from '@/Pages/Today/Partials/BulkAddPlannerModal.vue'
 
 interface MoneyPayload {
     today_spent: number;
+    daily_remaining: number;
+    month_remaining: number;
+    days_in_month_left: number;
     currency_code: string | null;
 }
 
@@ -49,6 +52,8 @@ interface MealItem {
     name: string | null;
     meal_type: string | null;
     is_liked: boolean;
+    date: string;
+    day_label: string;
 }
 
 const props = defineProps<{
@@ -59,7 +64,16 @@ const props = defineProps<{
         upcoming: UpcomingItem[];
         meal: MealItem[];
     };
+    landingPage: 'dashboard' | 'today';
 }>();
+
+const isLandingPage = computed(() => props.landingPage === 'today');
+
+const toggleLandingPage = () => {
+    router.patch(route('settings.landing-page'), {
+        landing_page: isLandingPage.value ? 'dashboard' : 'today',
+    }, { preserveScroll: true });
+};
 
 const { openTransactionModal } = useTransactionModal();
 
@@ -86,6 +100,18 @@ const openQuickAdd = () => {
     openTransactionModal({ mode: 'WITHDRAW' });
 };
 
+// Group meals by day for weekly view
+const mealsByDay = computed(() => {
+    const groups: Record<string, { label: string; meals: MealItem[] }> = {};
+    for (const meal of props.today.meal) {
+        if (!groups[meal.date]) {
+            groups[meal.date] = { label: meal.day_label, meals: [] };
+        }
+        groups[meal.date].meals.push(meal);
+    }
+    return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b));
+});
+
 const showBulkPlannerModal = ref(false);
 const openBulkPlanner = () => { showBulkPlannerModal.value = true; };
 const closeBulkPlanner = () => { showBulkPlannerModal.value = false; };
@@ -99,10 +125,24 @@ const closeBulkPlanner = () => { showBulkPlannerModal.value = false; };
                     <h1 class="text-2xl font-bold text-body">{{ $t('Today') }}</h1>
                     <p class="text-sm text-body-1/70 capitalize">{{ todayLabel }}</p>
                 </div>
-                <LogerButton variant="neutral" rounded @click="openBulkPlanner">
-                    <i class="fa fa-calendar-plus mr-2" />
-                    {{ $t('Plan a batch') }}
-                </LogerButton>
+                <div class="flex items-center gap-2">
+                    <button
+                        type="button"
+                        class="text-xs px-3 py-1.5 rounded-full border transition"
+                        :class="isLandingPage
+                            ? 'border-primary/30 bg-primary/10 text-primary'
+                            : 'border-base text-body-1/60 hover:border-primary/30 hover:text-primary'"
+                        :title="isLandingPage ? $t('Today is your landing page') : $t('Set Today as landing page')"
+                        @click="toggleLandingPage"
+                    >
+                        <i class="fa fa-home mr-1" />
+                        {{ isLandingPage ? $t('Landing page') : $t('Set as home') }}
+                    </button>
+                    <LogerButton variant="neutral" rounded @click="openBulkPlanner">
+                        <i class="fa fa-calendar-plus mr-2" />
+                        {{ $t('Plan a batch') }}
+                    </LogerButton>
+                </div>
             </header>
 
             <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -124,6 +164,18 @@ const closeBulkPlanner = () => { showBulkPlannerModal.value = false; };
                             ? $t('logged so far')
                             : $t('Nothing logged yet — log it before you forget.')
                         }}
+                    </p>
+                    <p
+                        v-if="today.money.daily_remaining > 0"
+                        class="text-sm mt-2"
+                        :class="today.money.daily_remaining < today.money.today_spent
+                            ? 'text-error font-medium'
+                            : 'text-body-1/70'"
+                    >
+                        {{ formatMoney(today.money.daily_remaining) }}/{{ $t('day remaining') }}
+                        <span class="text-xs text-body-1/50 ml-1">
+                            ({{ today.money.days_in_month_left }}d left)
+                        </span>
                     </p>
                     <div class="mt-auto pt-4">
                         <LogerButton variant="inverse" rounded class="w-full" @click="openQuickAdd">
@@ -219,36 +271,43 @@ const closeBulkPlanner = () => { showBulkPlannerModal.value = false; };
                     </div>
                 </article>
 
-                <!-- MEAL HOY widget — today's planned meals. v0.2 (FD-1). -->
+                <!-- MEAL THIS WEEK widget — week's planned meals grouped by day. -->
                 <article class="bg-base-lvl-3 rounded-lg border border-base p-5">
                     <header class="flex items-center justify-between mb-3">
                         <h2 class="text-xs font-semibold uppercase tracking-wide text-body-1/60">
-                            {{ $t('On the menu today') }}
+                            {{ $t("This week's menu") }}
                             <span v-if="today.meal.length" class="ml-1 text-body-1">({{ today.meal.length }})</span>
                         </h2>
                         <Link href="/meal-planner" class="text-xs text-primary hover:underline">
                             {{ $t('Open planner') }}
                         </Link>
                     </header>
-                    <div v-if="today.meal.length" class="space-y-2">
-                        <div
-                            v-for="meal in today.meal"
-                            :key="meal.id"
-                            class="flex items-center gap-3 px-3 py-2 rounded-md bg-base-lvl-2"
-                        >
-                            <i class="fa fa-utensils text-sm text-secondary" />
-                            <div class="flex-1 min-w-0">
-                                <p class="text-sm font-medium text-body truncate">
-                                    {{ meal.name ?? $t('Meal') }}
-                                </p>
-                                <p v-if="meal.meal_type" class="text-xs text-body-1/60 capitalize">{{ meal.meal_type }}</p>
+                    <div v-if="mealsByDay.length" class="space-y-3">
+                        <div v-for="[date, group] in mealsByDay" :key="date">
+                            <p class="text-xs font-semibold text-body-1/50 uppercase tracking-wide mb-1">
+                                {{ group.label }}
+                            </p>
+                            <div class="space-y-1">
+                                <div
+                                    v-for="meal in group.meals"
+                                    :key="meal.id"
+                                    class="flex items-center gap-3 px-3 py-2 rounded-md bg-base-lvl-2"
+                                >
+                                    <i class="fa fa-utensils text-sm text-secondary" />
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-body truncate">
+                                            {{ meal.name ?? $t('Meal') }}
+                                        </p>
+                                        <p v-if="meal.meal_type" class="text-xs text-body-1/60 capitalize">{{ meal.meal_type }}</p>
+                                    </div>
+                                    <i v-if="meal.is_liked" class="fa fa-heart text-error" :title="$t('Favorite')" />
+                                </div>
                             </div>
-                            <i v-if="meal.is_liked" class="fa fa-heart text-error" :title="$t('Favorite')" />
                         </div>
                     </div>
                     <div v-else class="flex flex-col items-center justify-center py-6 text-center">
                         <div class="text-3xl mb-1.5">🍽️</div>
-                        <p class="text-sm text-body-1">{{ $t('Nothing planned for today') }}</p>
+                        <p class="text-sm text-body-1">{{ $t('Nothing planned this week') }}</p>
                         <p class="text-xs text-body-1/60 mt-1 max-w-xs">
                             {{ $t('Schedule a meal from the planner — favorites get prioritized in the random meal picker.') }}
                         </p>

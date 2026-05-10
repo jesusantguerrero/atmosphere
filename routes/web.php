@@ -18,6 +18,7 @@ use App\Http\Controllers\Finance\FinanceTrendController;
 use App\Http\Controllers\Finance\FinancialOverviewController;
 use App\Http\Controllers\NextPaymentsController;
 use App\Http\Controllers\Relationship\RelationshipController;
+use App\Http\Controllers\System\CalendarController;
 use App\Http\Controllers\System\CoreModuleController;
 use App\Http\Controllers\System\DashboardController;
 use App\Http\Controllers\System\NotificationController;
@@ -27,7 +28,9 @@ use App\Http\Controllers\System\ServiceController;
 use App\Http\Controllers\System\TeamInvitationController;
 use App\Http\Controllers\System\TodayController;
 use App\Http\Controllers\System\UserDeviceController;
+use App\Models\Setting;
 use Freesgen\Atmosphere\Http\Controllers\SettingsController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
@@ -67,7 +70,13 @@ $marketingLocale = function (): void {
 
 Route::get('/', function () use ($marketingLocale) {
     if (auth()->check()) {
-        return redirect('/dashboard');
+        $landingPage = Setting::where([
+            'user_id' => auth()->id(),
+            'team_id' => auth()->user()->current_team_id,
+            'name' => 'landing_page',
+        ])->value('value');
+
+        return redirect($landingPage === 'today' ? '/today' : '/dashboard');
     }
 
     $marketingLocale();
@@ -153,6 +162,18 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     // Jetstream teams invitations override
     Route::put('/team-invitations/{invitation}', [TeamInvitationController::class, 'resend'])->name('team-invitations.resend');
 
+    // Landing page preference (before settings resource to avoid route conflict)
+    Route::patch('/settings/landing-page', function (Request $request) {
+        $request->validate(['landing_page' => ['required', 'in:dashboard,today']]);
+        $user = $request->user();
+        Setting::updateOrCreate(
+            ['user_id' => $user->id, 'team_id' => $user->current_team_id, 'name' => 'landing_page'],
+            ['value' => $request->landing_page]
+        );
+
+        return back();
+    })->name('settings.landing-page');
+
     // Settings routes
     Route::controller(SettingsController::class)->group(function () {
         Route::resource('/settings', SettingsController::class);
@@ -174,7 +195,12 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
 
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
     Route::get('/today', TodayController::class)->name('today');
+    Route::get('/calendar', CalendarController::class)->name('calendar');
     Route::post('/planner/bulk', [PlannerController::class, 'bulkStore'])->name('planner.bulk');
+    Route::post('/planner', [PlannerController::class, 'store'])->name('planner.store');
+    Route::put('/planner/{planner}', [PlannerController::class, 'update'])->name('planner.update');
+    Route::delete('/planner/{planner}', [PlannerController::class, 'destroy'])->name('planner.destroy');
+    Route::patch('/planner/{planner}/complete', [PlannerController::class, 'complete'])->name('planner.complete');
 
     /**************************************************************************************
       *                               Finance Section
@@ -286,3 +312,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('/a
         Route::resource('ingredients', IngredientApiController::class);
         Route::post('/ingredients/{id}/labels', 'addLabel')->name('ingredients.label.add');
     });
+
+    // Labels
+    Route::resource('labels', LabelApiController::class);
+});

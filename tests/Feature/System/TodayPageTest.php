@@ -4,9 +4,11 @@ namespace Tests\Feature\System;
 
 use App\Domains\AppCore\Models\Category;
 use App\Domains\AppCore\Models\Planner;
+use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Housing\Models\Occurrence;
 use App\Domains\Transaction\Models\BillingCycle;
 use App\Domains\Transaction\Models\Transaction;
+use App\Models\Setting;
 use App\Models\User;
 use App\Notifications\WatchlistThresholdAlert;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -34,12 +36,10 @@ class TodayPageTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Today/Index')
                 ->has('today.money.today_spent')
+                ->has('today.money.daily_remaining')
+                ->has('today.money.month_remaining')
+                ->has('today.money.days_in_month_left')
                 ->has('today.money.currency_code')
-                // Month-level aggregates intentionally NOT here — Dashboard owns those.
-                // Today is the action surface ("did you log it?"), not the state view.
-                ->missing('today.money.month_assigned')
-                ->missing('today.money.month_spent')
-                ->missing('today.money.month_remaining')
                 ->has('today.attention')
                 ->has('today.today')
                 ->has('today.upcoming')
@@ -55,6 +55,8 @@ class TodayPageTest extends TestCase
             ->get('/today')
             ->assertInertia(fn (Assert $page) => $page
                 ->where('today.money.today_spent', 0)
+                ->where('today.money.daily_remaining', 0)
+                ->where('today.money.month_remaining', 0)
                 ->where('today.attention', [])
                 ->where('today.today', [])
                 ->where('today.upcoming', [])
@@ -301,6 +303,50 @@ class TodayPageTest extends TestCase
             );
     }
 
+    public function test_daily_remaining_reflects_budget_minus_spending(): void
+    {
+        $user = User::factory()->withPersonalTeam()->create();
+        $team = $user->ownedTeams()->first();
+
+        // Create a proper category hierarchy for budgeting
+        $group = Category::create([
+            'team_id' => $team->id,
+            'name' => 'Groceries Group',
+            'depth' => 0,
+            'index' => 0,
+            'resource_type' => 'transactions',
+        ]);
+        $subcategory = Category::create([
+            'team_id' => $team->id,
+            'name' => 'Food',
+            'parent_id' => $group->id,
+            'depth' => 1,
+            'index' => 0,
+            'resource_type' => 'transactions',
+        ]);
+
+        // Budget $3000 for the month (spending, not savings)
+        BudgetMonth::create([
+            'team_id' => $team->id,
+            'user_id' => $user->id,
+            'month' => now()->startOfMonth()->format('Y-m-d'),
+            'category_id' => $subcategory->id,
+            'name' => 'Food',
+            'budgeted' => 3000,
+            'activity' => 0,
+        ]);
+
+        $this->actingAs($user)
+            ->get('/today')
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('today.money.month_remaining', 3000)
+                ->where(
+                    'today.money.days_in_month_left',
+                    max(1, now()->endOfMonth()->startOfDay()->diffInDays(now()->startOfDay()) + 1)
+                )
+            );
+    }
+
     public function test_upcoming_excludes_non_utility_occurrences(): void
     {
         $user = User::factory()->withPersonalTeam()->create();
@@ -322,5 +368,73 @@ class TodayPageTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->where('today.upcoming', [])
             );
+    }
+
+    public function test_landing_page_toggle_persists_setting(): void
+    {
+        $user = User::factory()->withPersonalTeam()->create();
+        $team = $user->ownedTeams()->first();
+
+        $this->actingAs($user)
+            ->patch(route('settings.landing-page'), ['landing_page' => 'today'])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('settings', [
+            'user_id' => $user->id,
+            'team_id' => $team->id,
+            'name' => 'landing_page',
+            'value' => 'today',
+        ]);
+
+        // Today page exposes the current setting
+        $this->get('/today')
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('landingPage', 'today')
+            );
+
+        // Toggle back to dashboard
+        $this->patch(route('settings.landing-page'), ['landing_page' => 'dashboard'])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('settings', [
+            'user_id' => $user->id,
+            'name' => 'landing_page',
+            'value' => 'dashboard',
+        ]);
+    }
+
+    public function test_landing_page_rejects_invalid_value(): void
+    {
+        $user = User::factory()->withPersonalTeam()->create();
+
+        $this->actingAs($user)
+            ->patch(route('settings.landing-page'), ['landing_page' => 'invalid'])
+            ->assertSessionHasErrors('landing_page');
+    }
+
+    public function test_root_redirects_to_today_when_setting_is_today(): void
+    {
+        $user = User::factory()->withPersonalTeam()->create();
+        $team = $user->ownedTeams()->first();
+
+        Setting::create([
+            'user_id' => $user->id,
+            'team_id' => $team->id,
+            'name' => 'landing_page',
+            'value' => 'today',
+        ]);
+
+        $this->actingAs($user)
+            ->get('/')
+            ->assertRedirect('/today');
+    }
+
+    public function test_root_redirects_to_dashboard_by_default(): void
+    {
+        $user = User::factory()->withPersonalTeam()->create();
+
+        $this->actingAs($user)
+            ->get('/')
+            ->assertRedirect('/dashboard');
     }
 }
