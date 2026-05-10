@@ -12,6 +12,8 @@ class ShowInApp
 
         // Today (TODAY-1 v0.1 — daily-first command center; coexists with Dashboard)
         $menu->add('Today', route('today'));
+        // Calendar (unified view across domains)
+        $menu->add('Calendar', route('calendar'));
         // Dashboard
         $menu->add('Dashboard', route('dashboard'));
         // Meal

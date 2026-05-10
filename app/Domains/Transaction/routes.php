@@ -1,10 +1,13 @@
 <?php
 
 use App\Domains\Transaction\Http\Controllers\ReconciliationController;
+use App\Http\Controllers\Api\CreditCardSummaryController;
 use App\Http\Controllers\Finance\FinanceAccountController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
+    Route::get('/credit-card-summary', CreditCardSummaryController::class)->name('credit-card-summary');
+
     Route::post('/finance/accounts/{account}/automation-services/{automationService}/link', [FinanceAccountController::class, 'linkAccount']);
     Route::post('/finance/accounts/{account}/link-bank', [FinanceAccountController::class, 'linkAccountToBank'])->name('accounts.link-bank');
     Route::post('/finance/accounts/{account}/sync-emails', [FinanceAccountController::class, 'syncEmails'])->name('accounts.sync-emails');

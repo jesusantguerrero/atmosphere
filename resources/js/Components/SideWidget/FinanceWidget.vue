@@ -15,7 +15,8 @@ import { useApplicationStore, type AssistantSection } from "@/store/application.
 import { useI18n } from "vue-i18n";
 import ToolsCreditCardWidget from "./ToolsCreditCardWidget.vue";
 import ToolsWatchlistWidget from "./ToolsWatchlistWidget.vue";
-import ToolsListWidget from "./ToolsListWidget.vue";
+import ToolsShoppingListWidget from "./ToolsShoppingListWidget.vue";
+import ToolsBudgetWidget from "./ToolsBudgetWidget.vue";
 import OouiWatchlistLtr from '~icons/ooui/watchlist-ltr';
 import MdiWallet from '~icons/mdi/wallet';
 import MdiCreditCard from '~icons/mdi/credit-card';
@@ -41,9 +42,21 @@ const props = defineProps<{
 
 const { t } = useI18n();
 
+// Cross-pillar quick-access widgets in the right rail. Things you reach for
+// constantly but that live inside a pillar — surfaced here so they're one click
+// from any page. (Order roughly matches reach frequency.)
 const sections = computed<AssistantSection[]>(() => ([
   {
-    name: "text-tools",
+    name: "budget",
+    label: "$",
+    title: t("budgetTools.title"),
+    container: "top",
+    component: shallowRef(ToolsBudgetWidget),
+    icon: MdiPiggyBank,
+    hideMargin: true,
+  },
+  {
+    name: "credit-cards",
     label: "Aa",
     title: t("creditCardTools.title"),
     container: "top",
@@ -52,7 +65,7 @@ const sections = computed<AssistantSection[]>(() => ([
     hideMargin: true,
   },
   {
-    name: "Assistant",
+    name: "accounts",
     label: "bot",
     title: t("accountTools.title"),
     container: "top",
@@ -61,7 +74,7 @@ const sections = computed<AssistantSection[]>(() => ([
     hideMargin: true
   },
   {
-    name: "Watchlist",
+    name: "watchlist",
     label: "bot",
     title: t("watchlistTools.title"),
     container: "top",
@@ -70,20 +83,11 @@ const sections = computed<AssistantSection[]>(() => ([
     hideMargin: true
   },
   {
-    name: "Watchlist",
-    label: "bot",
-    title: t("watchlistTools.title"),
-    container: "top",
-    component: shallowRef(ToolsWatchlistWidget),
-    icon: MdiPiggyBank,
-    hideMargin: true
-  },
-  {
-    name: "text-tools",
-    label: "Aa",
+    name: "shopping-list",
+    label: "shop",
     title: t("listTools.title"),
     container: "top",
-    component: shallowRef(ToolsListWidget),
+    component: shallowRef(ToolsShoppingListWidget),
     icon: HugeiconsShoppingBasketAdd03,
     hideMargin: true,
   },
@@ -166,10 +170,10 @@ onBeforeUnmount(() => {
   <Transition name="slide">
     <keep-alive>
       <article
-        class="container px-4 py-4 duration-75 bg-white border-l border-base shadow-xl rounded-tl-lg mt-[60px] w-96"
+        class="container flex flex-col h-[calc(100vh-60px)] px-4 py-4 duration-75 bg-white border-l border-base shadow-xl rounded-tl-lg mt-[60px] w-96"
         v-if="applicationStore.selectedSection?.name"
       >
-        <header class="flex items-center justify-between border-b border-base pb-3 mb-3">
+        <header class="flex items-center justify-between border-b border-base pb-3 mb-3 shrink-0">
           <h4 class="font-bold text-primary">{{ applicationStore.selectedSection.title }}</h4>
           <button
             type="button"
@@ -183,7 +187,10 @@ onBeforeUnmount(() => {
         </header>
         <keep-alive>
           <component
-            :class="!applicationStore.selectedSection.hideMargin && 'mt-11'"
+            :class="[
+              !applicationStore.selectedSection.hideMargin && 'mt-11',
+              'flex-1 min-h-0 flex flex-col'
+            ]"
             :is="applicationStore.selectedSection.component"
             :accounts="accounts"
             :auto="true"

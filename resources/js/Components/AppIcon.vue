@@ -53,7 +53,7 @@ const isHuge = computed(() => props.size == "huge");
     <small
       class="inline-block font-brand"
       :class="[isHuge ? 'text-sm mt-4' : 'text-xs text-body-1/80']"
-      >The Digital Home</small
+      >The Family Operating System</small
     >
   </div>
 </template>

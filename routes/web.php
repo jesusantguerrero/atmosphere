@@ -18,6 +18,7 @@ use App\Http\Controllers\Finance\FinanceTrendController;
 use App\Http\Controllers\Finance\FinancialOverviewController;
 use App\Http\Controllers\NextPaymentsController;
 use App\Http\Controllers\Relationship\RelationshipController;
+use App\Http\Controllers\System\CalendarController;
 use App\Http\Controllers\System\CoreModuleController;
 use App\Http\Controllers\System\DashboardController;
 use App\Http\Controllers\System\NotificationController;
@@ -27,7 +28,9 @@ use App\Http\Controllers\System\ServiceController;
 use App\Http\Controllers\System\TeamInvitationController;
 use App\Http\Controllers\System\TodayController;
 use App\Http\Controllers\System\UserDeviceController;
+use App\Models\Setting;
 use Freesgen\Atmosphere\Http\Controllers\SettingsController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
@@ -67,7 +70,13 @@ $marketingLocale = function (): void {
 
 Route::get('/', function () use ($marketingLocale) {
     if (auth()->check()) {
-        return redirect('/dashboard');
+        $landingPage = Setting::where([
+            'user_id' => auth()->id(),
+            'team_id' => auth()->user()->current_team_id,
+            'name' => 'landing_page',
+        ])->value('value');
+
+        return redirect($landingPage === 'today' ? '/today' : '/dashboard');
     }
 
     $marketingLocale();
@@ -80,6 +89,14 @@ Route::get('/pricing', function () use ($marketingLocale) {
 
     return view('pricing');
 })->name('pricing');
+
+Route::redirect('/demo', 'https://loger.neatlancer.com', 302)->name('demo');
+
+Route::get('/open-source', function () use ($marketingLocale) {
+    $marketingLocale();
+
+    return view('open-source');
+})->name('open-source');
 
 Route::get('/privacy-policy', function () use ($marketingLocale) {
     $marketingLocale();
@@ -99,6 +116,7 @@ Route::get('/sitemap.xml', function () {
     $urls = [
         ['loc' => route('landing'), 'lastmod' => $now, 'changefreq' => 'weekly', 'priority' => '1.0'],
         ['loc' => route('pricing'), 'lastmod' => $now, 'changefreq' => 'monthly', 'priority' => '0.8'],
+        ['loc' => route('open-source'), 'lastmod' => $now, 'changefreq' => 'monthly', 'priority' => '0.7'],
         ['loc' => route('privacy-policy'), 'lastmod' => $now, 'changefreq' => 'yearly', 'priority' => '0.3'],
         ['loc' => route('terms-of-service'), 'lastmod' => $now, 'changefreq' => 'yearly', 'priority' => '0.3'],
     ];
@@ -151,6 +169,18 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     // Jetstream teams invitations override
     Route::put('/team-invitations/{invitation}', [TeamInvitationController::class, 'resend'])->name('team-invitations.resend');
 
+    // Landing page preference (before settings resource to avoid route conflict)
+    Route::patch('/settings/landing-page', function (Request $request) {
+        $request->validate(['landing_page' => ['required', 'in:dashboard,today']]);
+        $user = $request->user();
+        Setting::updateOrCreate(
+            ['user_id' => $user->id, 'team_id' => $user->current_team_id, 'name' => 'landing_page'],
+            ['value' => $request->landing_page]
+        );
+
+        return back();
+    })->name('settings.landing-page');
+
     // Settings routes
     Route::controller(SettingsController::class)->group(function () {
         Route::resource('/settings', SettingsController::class);
@@ -172,7 +202,13 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
 
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
     Route::get('/today', TodayController::class)->name('today');
+    Route::get('/calendar', CalendarController::class)->name('calendar');
     Route::post('/planner/bulk', [PlannerController::class, 'bulkStore'])->name('planner.bulk');
+    Route::post('/planner', [PlannerController::class, 'store'])->name('planner.store');
+    Route::put('/planner/{planner}', [PlannerController::class, 'update'])->name('planner.update');
+    Route::delete('/planner/{planner}', [PlannerController::class, 'destroy'])->name('planner.destroy');
+    Route::patch('/planner/{planner}/complete', [PlannerController::class, 'complete'])->name('planner.complete');
+    Route::patch('/planner/{planner}/cancel', [PlannerController::class, 'cancel'])->name('planner.cancel');
 
     /**************************************************************************************
       *                               Finance Section

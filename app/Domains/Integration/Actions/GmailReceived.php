@@ -4,6 +4,7 @@ namespace App\Domains\Integration\Actions;
 
 use App\Domains\Automation\Concerns\AutomationActionContract;
 use App\Domains\Automation\Models\Automation;
+use App\Domains\Integration\Models\Integration;
 use App\Domains\Integration\Services\GoogleService;
 use App\Exceptions\TransactionInProgressException;
 use Exception;
@@ -86,6 +87,8 @@ class GmailReceived implements AutomationActionContract
         }
 
         $results = $service->users_threads->listUsersThreads('me', $listParams);
+
+        Integration::find($automation->integration_id)?->markSynced();
 
         foreach ($results->getThreads() as $thread) {
             $theadResponse = $service->users_threads->get('me', $thread->id, ['format' => 'METADATA']);

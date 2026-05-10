@@ -26,7 +26,7 @@ export const tableCols = [
         name: "account",
         render(row: Record<string, any>) {
             return h('div', {}, [
-                h(Link, { class: 'font-bold border-b-2 border-body-1 border-dashed text-body-1', href: `/finance/accounts/${row.account_id}`}, row.account?.name ?? row.account_name),
+                h(Link, { class: 'font-medium text-body-1/80 hover:text-primary hover:underline transition-colors', href: `/finance/accounts/${row.account_id}`}, row.account?.name ?? row.account_name),
             ])
         }
     },

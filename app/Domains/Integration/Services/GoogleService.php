@@ -2,11 +2,12 @@
 
 namespace App\Domains\Integration\Services;
 
+use App\Domains\Integration\Models\Integration;
 use Exception;
+use Google\Client as GoogleClient;
 use Google\Service\Gmail;
 use Google\Service\Oauth2;
-use Google\Client as GoogleClient;
-use App\Domains\Integration\Models\Integration;
+use Illuminate\Support\Facades\Log;
 
 class GoogleService
 {
@@ -59,7 +60,7 @@ class GoogleService
     public static function getClient($integrationId)
     {
         $integration = Integration::find($integrationId);
-        $client = new GoogleClient();
+        $client = new GoogleClient;
         $client->setAuthConfig(self::getConfigPath());
 
         if (! $accessToken = session('g_token') && $integration->token) {
@@ -97,6 +98,39 @@ class GoogleService
         ]);
     }
 
+    /**
+     * Best-effort revoke of the OAuth token on Google's side. Returns true if
+     * Google confirmed the revoke, false otherwise. Failures are swallowed
+     * because the user-facing disconnect should still proceed even if the
+     * remote token was already invalid or unreachable.
+     */
+    public static function revokeToken(Integration $integration): bool
+    {
+        if (! $integration->token) {
+            return false;
+        }
+
+        try {
+            $tokenData = json_decode($integration->token, true);
+            $accessToken = is_array($tokenData) ? ($tokenData['access_token'] ?? null) : null;
+
+            if (! $accessToken) {
+                return false;
+            }
+
+            $client = new GoogleClient;
+            $client->setAuthConfig(self::getConfigPath());
+
+            return (bool) $client->revokeToken($accessToken);
+        } catch (Exception $e) {
+            Log::warning('Failed to revoke Google token: '.$e->getMessage(), [
+                'integration_id' => $integration->id,
+            ]);
+
+            return false;
+        }
+    }
+
     public static function requestAccessToken($data, $user)
     {
         $client = new GoogleClient([
@@ -104,8 +138,8 @@ class GoogleService
         ]);
         $client->addScope([
             Gmail::GMAIL_READONLY,
-            "https://www.googleapis.com/auth/userinfo.profile",
-            "https://www.googleapis.com/auth/userinfo.email"
+            'https://www.googleapis.com/auth/userinfo.profile',
+            'https://www.googleapis.com/auth/userinfo.email',
         ]);
         $client->setRedirectUri(config('app.url').'/services/accept-oauth');
         $client->setAccessType('offline');

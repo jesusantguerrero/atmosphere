@@ -121,6 +121,36 @@ class BudgetMovementUndoTest extends TestCase
         $this->assertNotNull(BudgetMovement::find($movement->id), 'Movement must remain when caller is unauthorized');
     }
 
+    public function test_assign_endpoint_flashes_movement_id_for_undo_toast(): void
+    {
+        $user = $this->seededUserWithReadyToAssign();
+        $team = $user->ownedTeams()->first();
+        $category = $this->categoryFor($team->id, $user->id, 'Groceries');
+        $month = now()->startOfMonth()->format('Y-m-d');
+
+        $response = $this->actingAs($user)->post("/budgets/{$category->id}/months/{$month}", [
+            'team_id' => $team->id,
+            'user_id' => $user->id,
+            'budgeted' => 250,
+            'date' => now()->format('Y-m-d'),
+        ]);
+
+        $response->assertRedirect();
+
+        $movement = BudgetMovement::latest('id')->first();
+        $this->assertNotNull($movement, 'Assign should have created a BudgetMovement');
+
+        $response->assertSessionHas('flash', [
+            'type' => 'movement_created',
+            'movement_id' => $movement->id,
+        ]);
+    }
+
+    private function seededUserWithReadyToAssign(): User
+    {
+        return User::factory()->withPersonalTeam()->create();
+    }
+
     public function test_revert_endpoint_requires_authentication(): void
     {
         $owner = User::factory()->withPersonalTeam()->create();

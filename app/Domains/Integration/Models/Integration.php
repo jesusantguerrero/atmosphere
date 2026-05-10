@@ -13,7 +13,7 @@ class Integration extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'team_id', 'automation_service_id', 'name', 'token', 'hash'];
+    protected $fillable = ['user_id', 'team_id', 'automation_service_id', 'name', 'token', 'hash', 'last_synced_at'];
 
     public function automations()
     {
@@ -35,7 +35,16 @@ class Integration extends Model
         return $this->belongsTo(AutomationService::class, 'automation_service_id', 'id');
     }
 
-    protected $casts = [
-        'config' => 'object',
-    ];
+    public function markSynced(): void
+    {
+        $this->forceFill(['last_synced_at' => now()])->save();
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'config' => 'object',
+            'last_synced_at' => 'datetime',
+        ];
+    }
 }

@@ -45,12 +45,22 @@ class PlannedTransactionService
 
     public function getForNotificationType()
     {
+        // Notify for planned transactions that:
+        //   - are still PLANNED (status check)
+        //   - haven't been completed (schedule.completed_at IS NULL)
+        //   - are due within 3 days OR up to 14 days past due
+        // The completed_at filter is what stops notifications from firing
+        // forever after a bill has been paid; the lower bound stops
+        // ancient unmatched bills from spamming the user daily.
         return Transaction::where([
             'status' => Transaction::STATUS_PLANNED,
         ])
+            ->whereHas('schedule', function ($query) {
+                $query->whereNull('completed_at');
+            })
             ->whereRaw('DATEDIFF(date, now()) <= 3')
+            ->whereRaw('DATEDIFF(date, now()) >= -14')
             ->get();
-
     }
 
     public function find(Transaction|CoreTransaction $transaction, string $month): ?Transaction

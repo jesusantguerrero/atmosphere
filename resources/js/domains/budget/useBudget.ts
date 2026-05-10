@@ -1,10 +1,11 @@
 
 import { cloneDeep } from "lodash";
-import { computed, watch, reactive, toRefs, Ref, ref } from "vue";
+import { computed, watch, reactive, toRefs, Ref, ref, h } from "vue";
 import { getCategoriesTotals, getGroupTotals } from './index';
 import { IBudgetCategory } from "./models/budget";
 import { format } from "date-fns";
 import { router } from "@inertiajs/vue3";
+import { ElNotification } from "element-plus";
 
 // Surface for unexpected errors during budget mutations (network failures, 500s).
 // Validation errors (422) flow through Inertia's $page.props.errors automatically.
@@ -14,6 +15,56 @@ export const budgetMutationError = ref<string | null>(null);
 const handleBudgetError = (errors: Record<string, string>) => {
     const firstError = Object.values(errors)[0];
     budgetMutationError.value = firstError ?? 'Could not save the change. Please try again.';
+};
+
+// Singleton handle so a fresh assign always replaces the previous undo toast.
+// Without this a user clicking Deshacer on a stale toast could revert the wrong
+// movement when two assigns land within the toast window.
+let activeUndoNotification: { close: () => void } | null = null;
+
+const showUndoToast = (movementId: number) => {
+    if (activeUndoNotification) {
+        activeUndoNotification.close();
+        activeUndoNotification = null;
+    }
+
+    const notif = ElNotification({
+        title: 'Saved',
+        message: h('div', { class: 'flex items-center gap-3' }, [
+            h('span', 'Asignación guardada'),
+            h(
+                'button',
+                {
+                    class: 'font-semibold text-primary hover:underline',
+                    onClick: () => {
+                        router.delete(`/budget-movements/${movementId}`, {
+                            preserveScroll: true,
+                            preserveState: true,
+                            only: ['budgets'],
+                        });
+                        notif.close();
+                    },
+                },
+                'Deshacer',
+            ),
+        ]),
+        type: 'success',
+        duration: 6000,
+        onClose: () => {
+            if (activeUndoNotification === notif) {
+                activeUndoNotification = null;
+            }
+        },
+    });
+
+    activeUndoNotification = notif;
+};
+
+const handleAssignSuccess = (page: { props?: { flash?: { type?: string; movement_id?: number } } }) => {
+    const flash = page?.props?.flash;
+    if (flash?.type === 'movement_created' && flash.movement_id) {
+        showUndoToast(flash.movement_id);
+    }
 };
 
 
@@ -232,7 +283,8 @@ export const useBudget = (budgets: Ref<Record<string, any>>) => {
             {
                 preserveScroll: true,
                 preserveState: true,
-                only: ['budgets'],
+                only: ['budgets', 'flash'],
+                onSuccess: handleAssignSuccess,
                 onError: handleBudgetError,
             }
         );
@@ -252,7 +304,8 @@ export const useBudget = (budgets: Ref<Record<string, any>>) => {
             {
                 preserveScroll: true,
                 preserveState: true,
-                only: ['budgets'],
+                only: ['budgets', 'flash'],
+                onSuccess: handleAssignSuccess,
                 onError: handleBudgetError,
             }
         );

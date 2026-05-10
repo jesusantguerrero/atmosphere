@@ -22,11 +22,11 @@ const emitChange = (value: string) => {
 </script>
 
 <template>
-    <section class="flex overflow-hidden font-bold border rounded-md bg-primary/10 text-primary border-primary min-w-max">
+    <section class="flex overflow-hidden text-sm font-medium border border-base-lvl-2 rounded-md bg-base-lvl-3 text-body-1/70 min-w-max">
         <button
             v-for="(item, statusName) in statuses"
-            class="px-2 py-1.5 flex items-center border border-transparent hover:bg-primary/5"
-            :class="{'text-white bg-primary border border-primary hover:text-primary': isSelected(statusName)}"
+            class="px-3 py-1.5 flex items-center transition-colors border-r border-base-lvl-2 last:border-r-0 hover:bg-base-lvl-2 hover:text-body-1"
+            :class="{'!bg-primary !text-white hover:!bg-primary-dark': isSelected(statusName)}"
             :key="statusName"
             @click="emitChange(item.value || statusName)">
                 {{ item.label }}

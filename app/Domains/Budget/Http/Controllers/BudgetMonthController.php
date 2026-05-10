@@ -24,8 +24,10 @@ class BudgetMonthController extends Controller
     {
         $isMovement = request()->post('type');
         $postData = $this->getPostData();
+        $movement = null;
+
         if (! $isMovement && $postData && $postData['budgeted'] !== null) {
-            $service->registerAssignment(new BudgetAssignData(
+            $movement = $service->registerAssignment(new BudgetAssignData(
                 $postData['team_id'],
                 $postData['user_id'],
                 $month,
@@ -33,10 +35,19 @@ class BudgetMonthController extends Controller
                 $postData['budgeted'],
             ));
         } elseif ($isMovement) {
-            $service->registerMovement(BudgetMovementData::from($this->getPostData()));
+            $movement = $service->registerMovement(BudgetMovementData::from($this->getPostData()));
         }
 
-        return Redirect::back();
+        $redirect = Redirect::back();
+
+        if ($movement) {
+            $redirect->with('flash', [
+                'type' => 'movement_created',
+                'movement_id' => $movement->id,
+            ]);
+        }
+
+        return $redirect;
     }
 
     public function updateActivity(BudgetCategoryService $service, Category $category, $month)

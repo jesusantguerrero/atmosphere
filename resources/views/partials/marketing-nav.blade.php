@@ -26,11 +26,11 @@
                 {{ $altLabel }}
             </a>
             <a href="{{ route('login') }}"
-               class="text-sm font-medium text-gray-100 hover:text-primary transition-colors">
+               class="hidden sm:inline-block text-sm font-medium text-gray-100 hover:text-primary transition-colors">
                 {{ __('landing.nav.login') }}
             </a>
             <a href="{{ route('register') }}"
-               class="text-sm font-semibold bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg transition-colors hidden sm:inline">
+               class="text-sm font-semibold bg-primary hover:bg-primary-dark text-white px-3 sm:px-4 py-2 rounded-lg transition-colors">
                 {{ __('landing.nav.sign_up') }}
             </a>
         </nav>

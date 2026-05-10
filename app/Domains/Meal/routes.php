@@ -18,6 +18,7 @@ Route::post('/shared/list/{token}/reset', [SharedShoppingListController::class, 
 // Authed chat-style shopping list (chat-style mobile UI on top of Plan module).
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
     Route::get('/shopping', [ShoppingListController::class, 'index'])->name('shopping.index');
+    Route::get('/shopping/current', [ShoppingListController::class, 'current'])->name('shopping.current');
     Route::post('/shopping/{plan}/items', [ShoppingListController::class, 'addItem'])->name('shopping.items.add');
     Route::post('/shopping/{plan}/items/{item}/cycle', [ShoppingListController::class, 'cycleItem'])->name('shopping.items.cycle');
     Route::delete('/shopping/{plan}/items/{item}', [ShoppingListController::class, 'destroyItem'])->name('shopping.items.destroy');
