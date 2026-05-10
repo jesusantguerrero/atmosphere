@@ -3,9 +3,9 @@
 return [
     'meta' => [
         'title' => 'Loger — El Sistema Operativo del Hogar',
-        'description' => 'Loger es una sola app para correr la maquinaria financiera, logística y relacional de tu hogar. Presupuesto, comidas, tareas, agenda familiar, mantenimiento — todo lo que hoy llevas en la cabeza, en hojas de Excel o en seis apps distintas, en un solo sistema.',
+        'description' => 'Tu casa funciona con 6 apps, 3 hojas de cálculo y tu cabeza. Loger une dinero, comidas, tareas, familia y agenda en un solo sistema — pensado para hogares fuera del mundo bancario de EE.UU.',
         'og_title' => 'Loger — El Sistema Operativo del Hogar',
-        'og_description' => 'Presupuesto, comidas, tareas, familia, calendario. Maneja tu casa como funciona de verdad — como un sistema, no como una hoja de cálculo.',
+        'og_description' => 'Un solo sistema para tu dinero, comidas, tareas, familia y agenda semanal. Deja de hacer malabares con apps. Empieza a gestionar tu casa.',
     ],
 
     'nav' => [
@@ -17,183 +17,129 @@ return [
 
     'hero' => [
         'badge' => 'El Sistema Operativo del Hogar',
-        'headline_a' => 'Tu hogar funciona en caos.',
-        'headline_b' => 'Reemplaza el caos.',
-        'subhead' => 'Un solo lugar para el presupuesto, las facturas, el plan de comidas y la agenda familiar — pensado para hogares cuyo banco no se conecta con las apps de presupuesto gringas.',
-        'cta_primary' => 'Empezar gratis — en menos de 5 min',
+        'headline_a' => 'Tu casa funciona con',
+        'headline_b' => '6 apps, 3 hojas de cálculo y tu cabeza.',
+        'subhead' => 'Loger es un solo sistema para tu dinero, comidas, tareas, familia y agenda semanal — diseñado para cómo funciona un hogar de verdad.',
+        'cta_primary' => 'Empezar gratis',
         'cta_secondary' => 'Ver el demo',
-        'reassurance' => 'Sin tarjeta · Funciona con cualquier banco · DOP, USD, EUR y más',
+        'reassurance' => 'Sin tarjeta de crédito · Gratis para siempre para uso personal',
     ],
-
-    'social_bar' => [
-        'built_in' => 'Hecho en 🇩🇴 República Dominicana',
-        'open_source' => 'Motor open-source — Atmosphere en GitHub',
-        'license' => 'Licencia BSD-3 · auto-alójalo gratis',
-        'made_by' => 'Hecho por un hogar, para hogares',
-    ],
-
-    'problem' => [
-        'eyebrow' => 'Por qué existe Loger',
-        'line_1' => 'Tu banco no está en Plaid.',
-        'line_2' => 'Tu pareja usa otro distinto.',
-        'line_3' => 'El colegio de los niños cobra en DOP.',
-        'body_1' => 'La mayoría de las apps fueron pensadas para una familia en EE.UU. con una sola cuenta en Chase.',
-        'body_2' => 'Loger fue hecho para el resto de nosotros.',
-    ],
-
-    'why_diff' => [
-        'eyebrow' => 'Por qué Loger',
-        'title' => 'El hogar no es un presupuesto. Es un sistema.',
-        'body' => 'La mayoría de las apps asumen que tienes un banco en EE.UU. con importación automática — y se quedan en el dinero. Loger va más allá.',
-        'cells' => [
-            'institution' => [
-                'title' => 'Cualquier institución',
-                'body' => 'Sin Plaid, sin sync exclusivo de EE.UU. Importación de PDF, entrada manual, CSV.',
-            ],
-            'currency' => [
-                'title' => 'Multi-moneda nativo',
-                'body' => 'DOP, USD, EUR, MXN lado a lado. Sin gimnasia de conversiones.',
-            ],
-            'beyond' => [
-                'title' => 'Más allá del dinero',
-                'body' => 'Comidas, tareas, facturas, familia — el trabajo real de manejar la casa.',
-            ],
-            'oss' => [
-                'title' => 'Motor open-source',
-                'body' => 'Loger corre sobre Atmosphere. BSD-3 en GitHub. Auto-alójalo o que lo hospedemos nosotros.',
-            ],
-        ],
-    ],
-
-    'plus_banner' => [
-        'eyebrow' => 'Para 🇩🇴 República Dominicana',
-        'title' => 'Funciones bancarias para usuarios en RD',
-        'body' => 'Loger Plus auto-categoriza pagadores BHD, lee estados de cuenta y maneja ciclos de tarjeta de crédito multi-cuenta — RD$299/mes, gratis los primeros 30 días.',
-        'cta' => 'Probar Plus gratis 30 días',
-        'note_other' => '¿No estás en RD? Plus se va expandiendo país por país — dinos dónde tienes tu banco para votar por el próximo.',
-        'cta_other' => 'Cuéntanos dónde tienes tu banco',
-    ],
-
-    'atmosphere' => [
-        'eyebrow' => 'Cómo está hecho Loger',
-        'title' => 'Loger es Atmosphere hospedado.',
-        'body_1' => 'Atmosphere es nuestro motor open-source para el hogar — BSD-3, en GitHub. Cualquiera puede hacerle fork y auto-alojarlo. Loger es la distribución que corremos por ti, con funciones bancarias y actualizaciones manejadas.',
-        'body_2' => 'Mismo código, dos formas de usarlo. Como Chromium y Chrome.',
-        'cta_self_host' => 'Auto-alojar en GitHub',
-        'cta_signup' => 'O simplemente regístrate gratis',
-    ],
-
-    'faq' => [
-        'eyebrow' => 'FAQ',
-        'title' => 'Preguntas frecuentes',
-        'subtitle' => 'Si la tuya no está aquí, escríbenos.',
-        'items' => [
-            [
-                'q' => '¿Y si mi banco no está soportado?',
-                'a' => 'Todos los bancos están soportados. Loger no depende de APIs bancarias — sube un PDF del estado de cuenta o entra las transacciones a mano. No nos conectamos a tu banco, así que ni siquiera vemos tus credenciales.',
-            ],
-            [
-                'q' => '¿Mis datos financieros están seguros?',
-                'a' => 'Tus datos son tuyos: nunca se venden, nunca se usan para publicidad. El motor es open-source en GitHub, así que puedes leer exactamente qué hace Loger con tus datos — o auto-alojarlo en tu propio servidor si prefieres no confiar en nosotros del todo.',
-            ],
-            [
-                'q' => '¿Puedo usar Loger en el celular?',
-                'a' => 'Sí — Loger es una web app responsiva que funciona en cualquier dispositivo. Puedes añadirla a la pantalla de inicio en iOS y Android para una experiencia tipo app.',
-            ],
-            [
-                'q' => '¿Qué pasa si cancelo Plus?',
-                'a' => 'Te quedas con todos tus datos y bajas a Gratis. Nada queda atrás del paywall salvo el procesamiento bancario específico para RD y algunas automatizaciones. Tu presupuesto, historial y cuentas siguen siendo tuyos.',
-            ],
-            [
-                'q' => '¿Necesito los cinco pilares?',
-                'a' => 'No — activa solo lo que tu hogar necesita. Casi todos empiezan con Finanzas y añaden Calendario. Puedes prender o apagar pilares cuando quieras.',
-            ],
-            [
-                'q' => '¿Mi pareja o familia pueden ver esto también?',
-                'a' => 'Sí — los equipos del hogar te dejan compartir el acceso con quienes viven contigo. Cada quien tiene su perfil, y tú decides quién ve qué.',
-            ],
-        ],
-    ],
-
-    'pillars_caveat' => 'Activa solo los pilares que tu hogar necesita.',
 
     'pillars' => [
         'eyebrow' => 'Cinco pilares, un sistema',
-        'title' => 'Todo lo que mueve a tu hogar',
-        'subtitle' => 'Cinco áreas que activas por equipo. Las finanzas son donde la mayoría de apps se detienen — Loger sigue.',
+        'title' => 'Todo lo que mueve tu hogar, en un solo lugar',
+        'subtitle' => 'El dinero es donde la mayoría de apps se detienen. Loger sigue — hasta las comidas, tareas, agendas y las mil pequeñas cosas que llevas en la cabeza.',
     ],
 
     'features' => [
         'finance' => [
             'title' => 'Finanzas',
-            'description' => 'Presupuesto por sobres estilo YNAB, multi-moneda de fábrica. Concilia estados de cuenta sin depender de Plaid ni de bancos exclusivos de EE.UU.',
+            'description' => 'Deja de revisar tres apps para saber cómo estás. Presupuesto por sobres, cuentas multi-moneda y estados de cuenta que tú controlas — sin depender de bancos exclusivos de EE.UU.',
             'items' => [
-                'Presupuesto mensual base cero',
-                'Cuentas multi-moneda (nativa y convertida)',
-                'Importación y conciliación de PDF',
-                'Patrimonio neto, metas de ahorro, watchlists',
+                'Sabe a qué va cada peso, cada mes',
+                'Cuentas en varias monedas — de forma nativa',
+                'Importa estados de cuenta directo desde el PDF de tu banco',
+                'Patrimonio y metas creciendo en un solo lugar',
             ],
         ],
         'meals' => [
             'title' => 'Comida',
-            'description' => 'Planifica qué comen, qué hay que comprar y qué ya tienes en la despensa. Conecta cada compra directamente al presupuesto del hogar.',
+            'description' => 'Deja de mirar la nevera preguntándote qué cenar. Planifica la semana, genera la lista y conecta cada compra al presupuesto.',
             'items' => [
-                'Recetas, ingredientes y favoritos',
-                'Plan semanal y listas de compras',
-                'Despensa con fechas de vencimiento',
-                'Costo por receta y presupuesto semanal',
+                'Guarda las recetas que sí cocinas',
+                'Lista de compras automática para la semana',
+                'Sabe qué hay en la despensa — y qué se está venciendo',
+                'Cuánto cuesta de verdad tu semana de comida',
             ],
         ],
         'housing' => [
             'title' => 'Hogar',
-            'description' => 'Maneja la casa como el activo que es. Tareas, mantenimiento, equipos, facturas recurrentes y contactos de servicios en un solo lugar.',
+            'description' => 'Deja de olvidar lo que poco a poco se va dañando. Tareas, facturas, equipos y "¿cuándo fue la última vez…?" — resueltos en un solo lugar.',
             'items' => [
-                'Tareas y "¿cuándo fue la última vez…?"',
-                'Inventario de equipos y garantías',
-                'Calendario de mantenimiento y proveedores',
-                'Facturas recurrentes, servicios, planes',
+                'Sabe cuándo fue la última vez de cada tarea',
+                'Equipos, garantías y proveedores documentados',
+                'Adelántate a facturas y renovaciones',
+                'Mantenimiento antes de que sea emergencia',
             ],
         ],
         'family' => [
             'title' => 'Familia',
-            'description' => 'El lado humano de la casa. Perfiles, fechas importantes, notas de salud y todas esas cosas pequeñas que siempre se te olvidan.',
+            'description' => 'Deja de cargar las alergias, tallas y cumpleaños en tu cabeza. Perfiles, notas de salud y los detalles pequeños — escritos una vez, encontrados al instante.',
             'items' => [
-                'Perfiles y fechas importantes',
-                'Notas de salud (alergias, medicamentos)',
-                'Bitácora de escuela / trabajo',
-                'Preferencias, tallas, ideas de regalos',
+                'Un perfil por miembro, con los detalles que importan',
+                'Alergias, medicamentos y consultas en un solo lugar',
+                'Fechas importantes e ideas de regalos a mano',
+                'Hitos de escuela y trabajo registrados, no perdidos',
             ],
         ],
         'calendar' => [
             'title' => 'Calendario y Rutinas',
-            'description' => 'La capa que une todo. Trae los eventos con fecha de los demás pilares — comidas, tareas, facturas, familia — a una sola vista semanal.',
+            'description' => 'Deja de cuadrar cuatro calendarios para saber tu semana. Comidas, tareas, facturas y eventos familiares — en una sola vista compartida que toda la casa puede ver.',
             'items' => [
-                'Agenda semanal de todos los pilares',
-                'Rutinas y checklists recurrentes',
-                'Agenda familiar compartida',
-                'Recordatorios push, email, WhatsApp',
+                'Tu semana real, con todos los pilares a la vez',
+                'Rutinas recurrentes que sí se mantienen',
+                'Una agenda compartida que toda la familia ve',
+                'Recordatorios por push, email o WhatsApp',
             ],
         ],
     ],
 
-    'social_proof' => [
-        'title' => 'Una nota del fundador',
-        'subtitle' => 'Loger es un proyecto pequeño y honesto. Aquí está por qué lo construyo.',
-        'founder_quote' => 'Construí Loger porque manejaba mi propio hogar entre cuatro monedas, tres bancos, dos idiomas y media docena de apps. Ninguna conectaba con la otra. Loger es lo que yo quería que existiera — y Atmosphere, el motor open-source debajo, también es tuyo.',
-        'founder_name' => 'Jesus Guerrero',
-        'founder_role' => 'Fundador en solitario · Hecho en la RD',
-        'cta' => 'Comparte tu historia',
-    ],
-
     'why' => [
+        'eyebrow' => 'Por qué Loger',
         'title' => 'El hogar no es un presupuesto. Es un sistema.',
-        'body' => 'La mayoría de las apps asumen que tienes un banco en EE.UU. con importación automática — y se quedan en el dinero. Loger va más allá: funciona con cualquier institución, soporta varias monedas de forma nativa y se mete en el trabajo logístico y relacional de manejar la casa. Un solo sistema, en lugar de seis apps distintas.',
+        'body' => 'Otras apps se quedan en el dinero. Pero manejar una casa es comidas, tareas, agendas, facturas y mil cosas pequeñas que llevas en la cabeza. Loger es un solo lugar para todo eso — para cualquier banco, cualquier moneda, cualquier país.',
     ],
 
     'final_cta' => [
-        'title' => '¿Listo para manejar tu casa como un sistema?',
-        'subtitle' => 'Gratis para siempre para uso personal. Sin tarjeta. Sin Plaid. Sin Excel.',
-        'cta' => 'Crear mi Loger gratis',
+        'title' => 'Deja de hacer malabares. Empieza a gestionar.',
+        'subtitle' => 'Crea una cuenta gratis y trae todo tu hogar a un solo sistema.',
+        'cta' => 'Crear cuenta gratis',
+    ],
+
+    'mockups' => [
+        'hero_titlebar' => 'Mayo 2026 · Presupuesto',
+        'hero_to_budget' => 'Para asignar · todo el dinero distribuido',
+        'hero_assign_button' => 'Asignar sobrante',
+        'category_savings' => 'Ahorro',
+        'category_personal' => 'Gasto personal',
+        'category_rent' => 'Renta',
+        'hero_floating_chip' => '+$50 → Ahorro',
+        'trust_strip_label' => 'Hecho para hogares en',
+        'trust_strip_dr' => 'Rep. Dominicana',
+        'trust_strip_anywhere' => 'Cualquier país',
+        'why_accounts_label' => 'Cuentas en 4 monedas',
+        'why_account_bhd' => 'BHD Cuenta de ahorros',
+        'why_networth_label' => 'Patrimonio (USD)',
+        'finance_networth' => 'Patrimonio',
+        'meal_monday' => 'Lun',
+        'meal_tuesday' => 'Mar',
+        'meal_wednesday' => 'Mié',
+        'meal_dish_1' => 'Pasta primavera',
+        'meal_dish_2' => 'Bowl de pollo',
+        'meal_dish_3' => 'Tacos',
+        'meal_week_budget' => 'Presupuesto semanal',
+        'bill_internet' => 'Internet',
+        'bill_internet_meta' => '02 may · pago auto.',
+        'bill_electricity' => 'Electricidad',
+        'bill_electricity_meta' => '15 may · estimado',
+        'bill_water' => 'Agua',
+        'bill_water_meta' => '28 may · agendado',
+        'family_member_1_name' => 'Ana',
+        'family_member_1_meta' => 'Alérgica al maní · chequeo 2 jun',
+        'family_member_2_name' => 'Diana',
+        'family_member_2_age' => '8 años',
+        'family_member_2_meta' => 'Excursión escolar · permiso pendiente',
+        'family_member_3_name' => 'Pedro',
+        'family_member_3_meta' => 'Cumpleaños · 24 may — le gusta el mate / talla L',
+        'cal_event_food' => 'Pasta primavera',
+        'cal_event_home' => 'Sacar la basura',
+        'cal_event_finance' => 'Factura internet — $45',
+        'cal_event_family' => 'Diana — visita médica',
+        'cal_pillar_food' => 'Comida',
+        'cal_pillar_home' => 'Hogar',
+        'cal_pillar_finance' => 'Finanzas',
+        'cal_pillar_family' => 'Familia',
+        'integrating_layer' => 'Capa integradora',
     ],
 
     'footer' => [
@@ -204,11 +150,6 @@ return [
         'legal' => 'Legal',
         'privacy' => 'Política de privacidad',
         'terms' => 'Términos de servicio',
-        'open_source' => 'Open Source',
-        'atmosphere' => 'Atmosphere en GitHub',
-        'self_host' => 'Auto-alójalo gratis',
-        'open_source_page' => 'Sobre nuestro OSS',
-        'powered_by' => 'Loger corre sobre Atmosphere — nuestro motor open-source para el hogar.',
         'built_by' => 'Hecho por Jesus Guerrero — Publicado bajo licencia BSD-3-Clause',
     ],
 
@@ -221,7 +162,7 @@ return [
             'name' => 'Gratis',
             'price' => '$0',
             'cadence' => 'para siempre',
-            'tagline' => 'Todo lo que necesitas para presupuestar — funciona en cualquier país.',
+            'tagline' => 'Todo lo que necesitas para manejar el hogar — funciona en cualquier país.',
             'cta' => 'Empezar',
             'features' => [
                 'Presupuestos y cuentas multi-moneda',
@@ -248,83 +189,6 @@ return [
             ],
         ],
         'note' => 'Plus está en acceso anticipado para usuarios de República Dominicana. Contáctanos si quieres que añadamos soporte local para tu país.',
-    ],
-
-    'open_source' => [
-        'meta' => [
-            'title' => 'Open Source — Loger corre sobre Atmosphere',
-            'description' => 'Loger es la distribución hospedada de Atmosphere, nuestro motor open-source para el hogar. Licencia BSD-3, en GitHub. Auto-alójalo, o que lo corramos nosotros.',
-        ],
-        'hero' => [
-            'eyebrow' => 'Open source',
-            'title' => 'Loger corre sobre Atmosphere. Atmosphere es open source.',
-            'subhead_1' => 'Atmosphere es el motor del sistema operativo del hogar — BSD-3, en GitHub, cualquiera puede hacerle fork y auto-alojarlo.',
-            'subhead_2' => 'Loger es la distribución que corremos por ti, con funciones bancarias y actualizaciones manejadas. Mismo código, dos formas de usarlo.',
-            'cta_signup' => 'Crear cuenta en Loger',
-            'cta_github' => 'Dale star a Atmosphere en GitHub',
-        ],
-        'split' => [
-            'eyebrow' => 'Por qué dos cosas',
-            'title' => 'Dos productos, una sola base de código.',
-            'subtitle' => 'Tomamos el camino de WordPress.org / WordPress.com a propósito. Esto es lo que te da cada lado.',
-            'engine' => [
-                'tag' => 'Atmosphere',
-                'title' => 'El motor',
-                'body' => 'Licencia BSD-3. Público en GitHub. Cualquiera puede hacerle fork, auditarlo, extenderlo o correrlo en su propia infraestructura — sin permisos, sin pagos, sin lock-in.',
-            ],
-            'distribution' => [
-                'tag' => 'Loger',
-                'title' => 'La distribución hospedada',
-                'body' => 'Hospedamos Atmosphere por ti, lo mantenemos actualizado y le sumamos funciones bancarias (lectura BHD, ciclos multi-moneda DOP/USD, respaldos manejados). Te registras, lo corremos.',
-            ],
-            'same_code' => [
-                'tag' => 'Mismo código',
-                'title' => 'Dos formas de usarlo',
-                'body' => 'Como Chromium y Chrome. El motor es el proyecto open-source. La distribución es el producto manejado, pulido, encima del motor. Tú eliges cuál te queda.',
-            ],
-        ],
-        'when' => [
-            'eyebrow' => 'Cómo elegir',
-            'title' => 'Auto-alojado u hospedado — ambas son opciones honestas.',
-            'self_host' => [
-                'title' => 'Auto-aloja Atmosphere si…',
-                'items' => [
-                    'Eres dev y te sientes cómodo corriendo una app Laravel',
-                    'Quieres control total de tus datos y tu infraestructura',
-                    'Quieres extender o hacerle fork al motor para tu propio hogar',
-                    'Prefieres no confiar tus finanzas a un servicio hospedado — BSD-3 te deja salir',
-                ],
-            ],
-            'hosted' => [
-                'title' => 'Usa Loger si…',
-                'items' => [
-                    'Quieres que simplemente funcione — sin servidores, sin deploys',
-                    'Quieres actualizaciones, respaldos y uptime manejados por nosotros',
-                    'Estás en RD y quieres las funciones bancarias para BHD',
-                    'Prefieres pagar una suscripción pequeña antes que correr una app Laravel tú mismo',
-                ],
-            ],
-            'note' => 'Ambos corren el mismo motor. Puedes moverte de un lado al otro — tus datos son tuyos.',
-        ],
-        'getting_started' => [
-            'eyebrow' => 'Cómo empezar',
-            'title' => 'Elige tu camino.',
-            'self_host' => [
-                'title' => 'Auto-aloja Atmosphere',
-                'body' => 'Clona el repo, sigue el README y córrelo en tu propio servidor. Gratis, BSD-3, sin amarres.',
-                'code' => 'git clone https://github.com/jesusantguerrero/atmosphere.git',
-                'cta' => 'Abrir el repo en GitHub',
-            ],
-            'hosted' => [
-                'title' => 'Regístrate en Loger',
-                'body' => 'Sáltate la instalación. Gratis para uso personal, con funciones Plus opcionales para usuarios en RD.',
-                'cta' => 'Crear una cuenta gratis',
-            ],
-        ],
-        'closing' => [
-            'title' => 'Nuestro código es tuyo, lo corras tú o lo corramos nosotros.',
-            'cta' => 'Regístrate gratis',
-        ],
     ],
 
     'errors' => [

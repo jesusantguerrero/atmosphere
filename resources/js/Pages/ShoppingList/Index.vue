@@ -66,6 +66,13 @@ const copyShareUrl = async () => {
 
 <template>
     <AppLayout :title="$t('Shopping list')">
+        <template #title>
+            <h4 class="text-xs font-bold flex items-center gap-2 lg:ml-6">
+                <IMdiCartOutline class="w-4 h-4" />
+                {{ $t('Shopping list') }}
+            </h4>
+        </template>
+
         <!-- The chat-style component owns the full mobile viewport; the share
              sheet floats above it as a small panel. -->
         <ShoppingChatList
@@ -83,7 +90,7 @@ const copyShareUrl = async () => {
                 :title="shareUrl ? $t('Manage sharing') : $t('Share with someone')"
                 @click="showShareSheet = !showShareSheet"
             >
-                <i class="fa fa-share-nodes" />
+                <IMdiShareVariant class="w-5 h-5" />
             </button>
 
             <div
@@ -104,10 +111,10 @@ const copyShareUrl = async () => {
                         />
                         <button
                             type="button"
-                            class="text-xs px-2 py-1.5 rounded-md bg-primary text-white"
+                            class="text-xs px-2 py-1.5 rounded-md bg-primary text-white inline-flex items-center"
                             @click="copyShareUrl"
                         >
-                            <i class="fa fa-copy mr-1" />{{ $t('Copy') }}
+                            <IMdiContentCopy class="mr-1" />{{ $t('Copy') }}
                         </button>
                     </div>
                 </div>

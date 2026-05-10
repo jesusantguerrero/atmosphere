@@ -86,57 +86,57 @@
 
                 {{-- Right: floating product preview card (Loger budget UI mockup) --}}
                 <div class="lg:col-span-5 relative">
-                    <div class="relative rounded-2xl border border-gray-200 bg-white shadow-2xl shadow-black/40 p-5 transform lg:rotate-1 hover:rotate-0 transition-transform duration-500">
+                    <div class="relative rounded-2xl border border-gray-800/80 bg-gray-900/70 backdrop-blur-sm shadow-2xl shadow-black/40 p-5 transform lg:rotate-1 hover:rotate-0 transition-transform duration-500">
 
-                        {{-- mini-app titlebar --}}
-                        <div class="flex items-center justify-between mb-5 pb-4 border-b border-gray-200">
+                        {{-- Mini-app titlebar --}}
+                        <div class="flex items-center justify-between mb-5 pb-4 border-b border-gray-800">
                             <div class="flex items-center gap-2">
-                                <span class="w-2.5 h-2.5 rounded-full bg-red-500/80"></span>
-                                <span class="w-2.5 h-2.5 rounded-full bg-amber-500/80"></span>
-                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-red-500/70"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-amber-500/70"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/70"></span>
                             </div>
-                            <span class="text-[11px] uppercase tracking-wider text-gray-500 font-semibold">May 2026 · Budget</span>
+                            <span class="text-[11px] uppercase tracking-wider text-gray-500 font-semibold">{{ __('landing.mockups.hero_titlebar') }}</span>
                         </div>
 
                         {{-- Ready-to-Assign card --}}
-                        <div class="rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100/40 border border-emerald-200 p-5 mb-3">
-                            <div class="text-3xl font-bold text-gray-900 tabular-nums leading-none">$1,000.00</div>
-                            <div class="text-xs text-emerald-700 mt-1.5">To budget · all money assigned</div>
-                            <button class="mt-4 w-full text-xs font-semibold py-2 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition-colors">
-                                Asignar sobrante
+                        <div class="rounded-xl bg-gradient-to-br from-emerald-500/15 to-emerald-500/5 border border-emerald-500/20 p-5 mb-3">
+                            <div class="text-3xl font-bold text-white tabular-nums leading-none">$1,000.00</div>
+                            <div class="text-xs text-emerald-300/80 mt-1.5">{{ __('landing.mockups.hero_to_budget') }}</div>
+                            <button class="mt-4 w-full text-xs font-semibold py-2 rounded-lg bg-emerald-500/90 text-emerald-950 hover:bg-emerald-400 transition-colors">
+                                {{ __('landing.mockups.hero_assign_button') }}
                             </button>
                         </div>
 
                         {{-- Category rows --}}
                         <div class="space-y-1.5">
-                            <div class="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-gray-50 transition-colors">
+                            <div class="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-gray-800/40 transition-colors">
                                 <div class="flex items-center gap-2.5">
                                     <span class="w-1 h-6 rounded-full bg-primary"></span>
-                                    <span class="text-sm text-gray-800">Ahorro</span>
+                                    <span class="text-sm text-gray-200">{{ __('landing.mockups.category_savings') }}</span>
                                 </div>
-                                <span class="text-sm font-medium text-emerald-600 tabular-nums">$500</span>
+                                <span class="text-sm font-medium text-emerald-400 tabular-nums">$500</span>
                             </div>
-                            <div class="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-gray-50 transition-colors">
+                            <div class="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-gray-800/40 transition-colors">
                                 <div class="flex items-center gap-2.5">
                                     <span class="w-1 h-6 rounded-full bg-primary"></span>
-                                    <span class="text-sm text-gray-800">Gasto Personal</span>
+                                    <span class="text-sm text-gray-200">{{ __('landing.mockups.category_personal') }}</span>
                                 </div>
-                                <span class="text-sm font-medium text-emerald-600 tabular-nums">$300</span>
+                                <span class="text-sm font-medium text-emerald-400 tabular-nums">$300</span>
                             </div>
-                            <div class="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-gray-50 transition-colors">
+                            <div class="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-gray-800/40 transition-colors">
                                 <div class="flex items-center gap-2.5">
-                                    <span class="w-1 h-6 rounded-full bg-gray-400"></span>
-                                    <span class="text-sm text-gray-800">Renta</span>
+                                    <span class="w-1 h-6 rounded-full bg-gray-600"></span>
+                                    <span class="text-sm text-gray-200">{{ __('landing.mockups.category_rent') }}</span>
                                 </div>
-                                <span class="text-sm font-medium text-gray-500 tabular-nums">$200</span>
+                                <span class="text-sm font-medium text-gray-400 tabular-nums">$200</span>
                             </div>
                         </div>
                     </div>
 
                     {{-- Floating accent card behind --}}
-                    <div aria-hidden="true" class="hidden lg:block absolute -bottom-6 -left-6 w-40 h-24 rounded-xl bg-white/10 border border-white/15 -z-10"></div>
+                    <div aria-hidden="true" class="hidden lg:block absolute -bottom-6 -left-6 w-40 h-24 rounded-xl bg-gray-900/80 border border-gray-800 -z-10"></div>
                     <div aria-hidden="true" class="hidden lg:block absolute -top-4 -right-4 px-3 py-2 rounded-lg bg-primary text-white text-[11px] font-semibold shadow-lg shadow-primary/30">
-                        +$50 → Ahorro
+                        {{ __('landing.mockups.hero_floating_chip') }}
                     </div>
                 </div>
 
@@ -144,109 +144,56 @@
 
             {{-- Trust strip --}}
             <div class="mt-20 pt-10 border-t border-gray-900 flex flex-col sm:flex-row items-center justify-between gap-6">
-                <p class="text-xs uppercase tracking-widest text-gray-600 font-semibold">Built for budgets in</p>
+                <p class="text-xs uppercase tracking-widest text-gray-600 font-semibold">{{ __('landing.mockups.trust_strip_label') }}</p>
                 <div class="flex items-center gap-6 sm:gap-8 text-sm text-gray-500">
-                    <span class="flex items-center gap-2">🇩🇴 <span>Dom. Republic</span></span>
-                    <span class="flex items-center gap-2">🌎 <span>Anywhere</span></span>
+                    <span class="flex items-center gap-2">🇩🇴 <span>{{ __('landing.mockups.trust_strip_dr') }}</span></span>
+                    <span class="flex items-center gap-2">🌎 <span>{{ __('landing.mockups.trust_strip_anywhere') }}</span></span>
                 </div>
             </div>
         </section>
 
-        {{-- ─── SOCIAL PROOF BAR ─────────────────────────────── --}}
-        <section aria-label="What Loger is" class="border-y border-gray-900 bg-gray-900/30">
-            <div class="max-w-6xl mx-auto px-6 py-5">
-                <ul class="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs sm:text-sm text-gray-500">
-                    <li>
-                        <span>{{ __('landing.social_bar.built_in') }}</span>
-                    </li>
-                    <li class="hidden sm:block text-gray-800" aria-hidden="true">·</li>
-                    <li>
-                        <a href="https://github.com/jesusantguerrero/atmosphere"
-                           target="_blank"
-                           rel="noopener noreferrer"
-                           class="inline-flex items-center gap-2 hover:text-gray-300 transition-colors">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.07 3.29 9.37 7.86 10.89.58.11.79-.25.79-.56v-2.16c-3.2.69-3.88-1.37-3.88-1.37-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.68 1.24 3.34.95.1-.74.4-1.24.72-1.53-2.55-.29-5.24-1.28-5.24-5.71 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.46.11-3.04 0 0 .96-.31 3.15 1.18a10.93 10.93 0 0 1 5.74 0c2.19-1.49 3.15-1.18 3.15-1.18.62 1.58.23 2.75.11 3.04.74.81 1.18 1.84 1.18 3.1 0 4.44-2.7 5.41-5.27 5.7.41.36.78 1.06.78 2.13v3.16c0 .31.21.67.8.56 4.56-1.52 7.85-5.82 7.85-10.89C23.5 5.65 18.35.5 12 .5z"/></svg>
-                            <span>{{ __('landing.social_bar.open_source') }}</span>
-                        </a>
-                    </li>
-                    <li class="hidden sm:block text-gray-800" aria-hidden="true">·</li>
-                    <li>
-                        <span>{{ __('landing.social_bar.license') }}</span>
-                    </li>
-                    <li class="hidden md:block text-gray-800" aria-hidden="true">·</li>
-                    <li class="hidden md:block">
-                        <span>{{ __('landing.social_bar.made_by') }}</span>
-                    </li>
-                </ul>
-            </div>
-        </section>
-
-        {{-- ─── THE PROBLEM (dark narrative) ─────────────────── --}}
-        <section class="border-t border-gray-900 bg-gray-950">
-            <div class="max-w-4xl mx-auto px-6 py-24 lg:py-32">
-                <div class="inline-block text-xs uppercase tracking-widest text-primary font-semibold mb-6">{{ __('landing.problem.eyebrow') }}</div>
-                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-[1.15] mb-3">
-                    {{ __('landing.problem.line_1') }}
-                </h2>
-                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-[1.15] mb-3">
-                    {{ __('landing.problem.line_2') }}
-                </h2>
-                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-[1.15] mb-10">
-                    {{ __('landing.problem.line_3') }}
-                </h2>
-                <p class="text-gray-400 text-lg leading-relaxed max-w-2xl">
-                    {{ __('landing.problem.body_1') }}
-                </p>
-                <p class="text-gray-200 text-lg leading-relaxed mt-2 max-w-2xl">
-                    <strong class="font-semibold">{{ __('landing.problem.body_2') }}</strong>
-                </p>
-            </div>
-        </section>
-
-        {{-- ─── PILLARS (light section) ──────────────────────── --}}
-        <div class="bg-gray-50 text-gray-900">
-        <section class="max-w-6xl mx-auto px-6 pt-24 pb-32">
+        {{-- ─── PILLARS ──────────────────────────────────────── --}}
+        <section class="max-w-6xl mx-auto px-6 pb-32">
 
             <div class="text-center max-w-2xl mx-auto mb-16">
                 <div class="inline-block text-xs uppercase tracking-widest text-primary font-semibold mb-4">{{ __('landing.pillars.eyebrow') }}</div>
-                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 tracking-tight mb-4 leading-tight">
+                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight mb-4 leading-tight">
                     {{ __('landing.pillars.title') }}
                 </h2>
-                <p class="text-gray-600 leading-relaxed">{{ __('landing.pillars.subtitle') }}</p>
-                <p class="text-sm text-gray-500 mt-3 italic">{{ __('landing.pillars_caveat') }}</p>
+                <p class="text-gray-400 leading-relaxed">{{ __('landing.pillars.subtitle') }}</p>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
 
                 {{-- Finance card with embedded chart mockup --}}
-                <div class="group relative bg-white border border-gray-200 hover:border-gray-300 hover:shadow-lg shadow-sm rounded-2xl p-6 lg:p-7 flex flex-col transition-all">
+                <div class="group relative bg-gray-900/60 border border-gray-800 hover:border-gray-700 rounded-2xl p-6 lg:p-7 flex flex-col transition-colors">
                     <div class="flex items-center gap-3 mb-5">
                         <div class="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
                             <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         </div>
-                        <h2 class="text-lg font-semibold text-gray-900">{{ __('landing.features.finance.title') }}</h2>
+                        <h2 class="text-lg font-semibold text-white">{{ __('landing.features.finance.title') }}</h2>
                     </div>
 
                     {{-- Embedded mini-mockup: net-worth bars --}}
-                    <div class="rounded-xl bg-gray-50 border border-gray-200 p-4 mb-5">
-                        <div class="text-[11px] uppercase tracking-wider text-gray-500 mb-1">Net worth</div>
-                        <div class="text-xl font-bold text-gray-900 mb-3 tabular-nums">$1,331,211</div>
+                    <div class="rounded-xl bg-gray-950/60 border border-gray-800/60 p-4 mb-5">
+                        <div class="text-[11px] uppercase tracking-wider text-gray-500 mb-1">{{ __('landing.mockups.finance_networth') }}</div>
+                        <div class="text-xl font-bold text-white mb-3 tabular-nums">$1,331,211</div>
                         <div class="flex items-end gap-1 h-12">
-                            <div class="flex-1 bg-primary/40 rounded-sm" style="height: 30%"></div>
-                            <div class="flex-1 bg-primary/55 rounded-sm" style="height: 45%"></div>
-                            <div class="flex-1 bg-primary/65 rounded-sm" style="height: 55%"></div>
-                            <div class="flex-1 bg-primary/75 rounded-sm" style="height: 70%"></div>
-                            <div class="flex-1 bg-primary/85 rounded-sm" style="height: 60%"></div>
-                            <div class="flex-1 bg-primary/95 rounded-sm" style="height: 85%"></div>
+                            <div class="flex-1 bg-primary/30 rounded-sm" style="height: 30%"></div>
+                            <div class="flex-1 bg-primary/40 rounded-sm" style="height: 45%"></div>
+                            <div class="flex-1 bg-primary/50 rounded-sm" style="height: 55%"></div>
+                            <div class="flex-1 bg-primary/60 rounded-sm" style="height: 70%"></div>
+                            <div class="flex-1 bg-primary/70 rounded-sm" style="height: 60%"></div>
+                            <div class="flex-1 bg-primary/80 rounded-sm" style="height: 85%"></div>
                             <div class="flex-1 bg-primary rounded-sm" style="height: 100%"></div>
                         </div>
                     </div>
 
-                    <p class="text-gray-600 text-sm leading-relaxed mb-5">
+                    <p class="text-gray-400 text-sm leading-relaxed mb-5">
                         {{ __('landing.features.finance.description') }}
                     </p>
 
-                    <ul class="mt-auto space-y-2 text-sm text-gray-700">
+                    <ul class="mt-auto space-y-2 text-sm text-gray-300">
                         @foreach ((array) __('landing.features.finance.items') as $item)
                             <li class="flex items-start gap-2">
                                 <svg class="w-4 h-4 text-primary mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
@@ -256,51 +203,47 @@
                     </ul>
                 </div>
 
-                {{-- Calendar card showing the integrating layer (in top row to surface cross-pillar magic) --}}
-                <div class="group relative bg-white border border-gray-200 hover:border-gray-300 hover:shadow-lg shadow-sm rounded-2xl p-6 lg:p-7 flex flex-col transition-all">
+                {{-- Meals card with mini meal list --}}
+                <div class="group relative bg-gray-900/60 border border-gray-800 hover:border-gray-700 rounded-2xl p-6 lg:p-7 flex flex-col transition-colors">
                     <div class="flex items-center gap-3 mb-5">
-                        <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                         </div>
-                        <h2 class="text-lg font-semibold text-gray-900">{{ __('landing.features.calendar.title') }}</h2>
+                        <h2 class="text-lg font-semibold text-white">{{ __('landing.features.meals.title') }}</h2>
                     </div>
 
-                    {{-- Embedded mini-mockup: weekly cross-pillar timeline --}}
-                    <div class="rounded-xl bg-gray-50 border border-gray-200 p-4 mb-5 space-y-2">
-                        <div class="flex items-center gap-3 text-xs">
-                            <span class="text-gray-500 w-7 font-medium">Mon</span>
-                            <span class="w-1.5 h-4 rounded-full bg-amber-500"></span>
-                            <span class="flex-1 text-gray-800 truncate">Pasta primavera</span>
-                            <span class="text-amber-600">Food</span>
+                    {{-- Embedded mini-mockup: weekly meal grid --}}
+                    <div class="rounded-xl bg-gray-950/60 border border-gray-800/60 p-4 mb-5 space-y-2">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-gray-500">{{ __('landing.mockups.meal_monday') }}</span>
+                            <span class="text-gray-200">{{ __('landing.mockups.meal_dish_1') }}</span>
+                            <span class="text-amber-400/80 tabular-nums">$8</span>
                         </div>
-                        <div class="flex items-center gap-3 text-xs">
-                            <span class="text-gray-500 w-7 font-medium">Mon</span>
-                            <span class="w-1.5 h-4 rounded-full bg-sky-500"></span>
-                            <span class="flex-1 text-gray-800 truncate">Take trash out</span>
-                            <span class="text-sky-600">Home</span>
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-gray-500">{{ __('landing.mockups.meal_tuesday') }}</span>
+                            <span class="text-gray-200">{{ __('landing.mockups.meal_dish_2') }}</span>
+                            <span class="text-amber-400/80 tabular-nums">$12</span>
                         </div>
-                        <div class="flex items-center gap-3 text-xs">
-                            <span class="text-gray-500 w-7 font-medium">Tue</span>
-                            <span class="w-1.5 h-4 rounded-full bg-primary"></span>
-                            <span class="flex-1 text-gray-800 truncate">Internet bill — $45</span>
-                            <span class="text-primary">Finance</span>
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-gray-500">{{ __('landing.mockups.meal_wednesday') }}</span>
+                            <span class="text-gray-200">{{ __('landing.mockups.meal_dish_3') }}</span>
+                            <span class="text-amber-400/80 tabular-nums">$10</span>
                         </div>
-                        <div class="flex items-center gap-3 text-xs">
-                            <span class="text-gray-500 w-7 font-medium">Wed</span>
-                            <span class="w-1.5 h-4 rounded-full bg-purple-500"></span>
-                            <span class="flex-1 text-gray-800 truncate">Diana — doctor visit</span>
-                            <span class="text-purple-600">Family</span>
+                        <div class="flex items-center justify-between text-xs pt-2 mt-2 border-t border-gray-800/60">
+                            <span class="text-gray-500">{{ __('landing.mockups.meal_week_budget') }}</span>
+                            <span></span>
+                            <span class="text-white font-medium tabular-nums">$84 / $120</span>
                         </div>
                     </div>
 
-                    <p class="text-gray-600 text-sm leading-relaxed mb-5">
-                        {{ __('landing.features.calendar.description') }}
+                    <p class="text-gray-400 text-sm leading-relaxed mb-5">
+                        {{ __('landing.features.meals.description') }}
                     </p>
 
-                    <ul class="mt-auto space-y-2 text-sm text-gray-700">
-                        @foreach ((array) __('landing.features.calendar.items') as $item)
+                    <ul class="mt-auto space-y-2 text-sm text-gray-300">
+                        @foreach ((array) __('landing.features.meals.items') as $item)
                             <li class="flex items-start gap-2">
-                                <svg class="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                <svg class="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                                 <span>{{ $item }}</span>
                             </li>
                         @endforeach
@@ -308,50 +251,50 @@
                 </div>
 
                 {{-- Housing card with bills mockup --}}
-                <div class="group relative bg-white border border-gray-200 hover:border-gray-300 hover:shadow-lg shadow-sm rounded-2xl p-6 lg:p-7 flex flex-col transition-all">
+                <div class="group relative bg-gray-900/60 border border-gray-800 hover:border-gray-700 rounded-2xl p-6 lg:p-7 flex flex-col transition-colors">
                     <div class="flex items-center gap-3 mb-5">
-                        <div class="w-10 h-10 rounded-xl bg-sky-100 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                        <div class="w-10 h-10 rounded-xl bg-sky-500/15 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
                         </div>
-                        <h2 class="text-lg font-semibold text-gray-900">{{ __('landing.features.housing.title') }}</h2>
+                        <h2 class="text-lg font-semibold text-white">{{ __('landing.features.housing.title') }}</h2>
                     </div>
 
                     {{-- Embedded mini-mockup: bill timeline --}}
-                    <div class="rounded-xl bg-gray-50 border border-gray-200 p-4 mb-5 space-y-2.5">
+                    <div class="rounded-xl bg-gray-950/60 border border-gray-800/60 p-4 mb-5 space-y-2.5">
                         <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center text-[10px] font-bold">02</div>
+                            <div class="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-300 flex items-center justify-center text-[10px] font-bold">02</div>
                             <div class="flex-1">
-                                <div class="text-xs text-gray-800">Internet</div>
-                                <div class="text-[10px] text-gray-500">May 02 · auto-pay</div>
+                                <div class="text-xs text-gray-200">{{ __('landing.mockups.bill_internet') }}</div>
+                                <div class="text-[10px] text-gray-500">{{ __('landing.mockups.bill_internet_meta') }}</div>
                             </div>
-                            <span class="text-xs text-gray-700 tabular-nums">$45</span>
+                            <span class="text-xs text-gray-300 tabular-nums">$45</span>
                         </div>
                         <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center text-[10px] font-bold">15</div>
+                            <div class="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-300 flex items-center justify-center text-[10px] font-bold">15</div>
                             <div class="flex-1">
-                                <div class="text-xs text-gray-800">Electricity</div>
-                                <div class="text-[10px] text-gray-500">May 15 · estimate</div>
+                                <div class="text-xs text-gray-200">{{ __('landing.mockups.bill_electricity') }}</div>
+                                <div class="text-[10px] text-gray-500">{{ __('landing.mockups.bill_electricity_meta') }}</div>
                             </div>
-                            <span class="text-xs text-gray-700 tabular-nums">$78</span>
+                            <span class="text-xs text-gray-300 tabular-nums">$78</span>
                         </div>
                         <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center text-[10px] font-bold">28</div>
+                            <div class="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-300 flex items-center justify-center text-[10px] font-bold">28</div>
                             <div class="flex-1">
-                                <div class="text-xs text-gray-800">Water</div>
-                                <div class="text-[10px] text-gray-500">May 28 · scheduled</div>
+                                <div class="text-xs text-gray-200">{{ __('landing.mockups.bill_water') }}</div>
+                                <div class="text-[10px] text-gray-500">{{ __('landing.mockups.bill_water_meta') }}</div>
                             </div>
-                            <span class="text-xs text-gray-700 tabular-nums">$22</span>
+                            <span class="text-xs text-gray-300 tabular-nums">$22</span>
                         </div>
                     </div>
 
-                    <p class="text-gray-600 text-sm leading-relaxed mb-5">
+                    <p class="text-gray-400 text-sm leading-relaxed mb-5">
                         {{ __('landing.features.housing.description') }}
                     </p>
 
-                    <ul class="mt-auto space-y-2 text-sm text-gray-700">
+                    <ul class="mt-auto space-y-2 text-sm text-gray-300">
                         @foreach ((array) __('landing.features.housing.items') as $item)
                             <li class="flex items-start gap-2">
-                                <svg class="w-4 h-4 text-sky-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                <svg class="w-4 h-4 text-sky-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                                 <span>{{ $item }}</span>
                             </li>
                         @endforeach
@@ -359,98 +302,103 @@
                 </div>
             </div>
 
-            {{-- Bottom row: Food + Family (2 wider cards) --}}
+            {{-- Bottom row: Family + Calendar (2 wider cards) --}}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
 
-                {{-- Food card with mini meal list --}}
-                <div class="group relative bg-white border border-gray-200 hover:border-gray-300 hover:shadow-lg shadow-sm rounded-2xl p-6 lg:p-7 flex flex-col transition-all">
+                {{-- Family card with member roster mockup --}}
+                <div class="group relative bg-gray-900/60 border border-gray-800 hover:border-gray-700 rounded-2xl p-6 lg:p-7 flex flex-col transition-colors">
                     <div class="flex items-center gap-3 mb-5">
-                        <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                        <div class="w-10 h-10 rounded-xl bg-purple-500/15 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                         </div>
-                        <h2 class="text-lg font-semibold text-gray-900">{{ __('landing.features.meals.title') }}</h2>
+                        <h2 class="text-lg font-semibold text-white">{{ __('landing.features.family.title') }}</h2>
                     </div>
 
-                    {{-- Embedded mini-mockup: weekly meal grid --}}
-                    <div class="rounded-xl bg-gray-50 border border-gray-200 p-4 mb-5 space-y-2">
-                        <div class="flex items-center justify-between text-xs">
-                            <span class="text-gray-500">Mon</span>
-                            <span class="text-gray-800">Pasta primavera</span>
-                            <span class="text-amber-600 tabular-nums">$8</span>
+                    {{-- Embedded mini-mockup: family roster --}}
+                    <div class="rounded-xl bg-gray-950/60 border border-gray-800/60 p-4 mb-5 space-y-2.5">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-purple-500/25 text-purple-200 flex items-center justify-center text-xs font-semibold">A</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="text-xs text-gray-200">{{ __('landing.mockups.family_member_1_name') }}</div>
+                                <div class="text-[10px] text-gray-500">{{ __('landing.mockups.family_member_1_meta') }}</div>
+                            </div>
                         </div>
-                        <div class="flex items-center justify-between text-xs">
-                            <span class="text-gray-500">Tue</span>
-                            <span class="text-gray-800">Chicken bowl</span>
-                            <span class="text-amber-600 tabular-nums">$12</span>
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-amber-500/25 text-amber-200 flex items-center justify-center text-xs font-semibold">D</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="text-xs text-gray-200">{{ __('landing.mockups.family_member_2_name') }} <span class="text-[10px] text-gray-500">· {{ __('landing.mockups.family_member_2_age') }}</span></div>
+                                <div class="text-[10px] text-gray-500">{{ __('landing.mockups.family_member_2_meta') }}</div>
+                            </div>
                         </div>
-                        <div class="flex items-center justify-between text-xs">
-                            <span class="text-gray-500">Wed</span>
-                            <span class="text-gray-800">Tacos</span>
-                            <span class="text-amber-600 tabular-nums">$10</span>
-                        </div>
-                        <div class="flex items-center justify-between text-xs pt-2 mt-2 border-t border-gray-200">
-                            <span class="text-gray-500">Week budget</span>
-                            <span></span>
-                            <span class="text-gray-900 font-medium tabular-nums">$84 / $120</span>
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-sky-500/25 text-sky-200 flex items-center justify-center text-xs font-semibold">P</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="text-xs text-gray-200">{{ __('landing.mockups.family_member_3_name') }}</div>
+                                <div class="text-[10px] text-gray-500">{{ __('landing.mockups.family_member_3_meta') }}</div>
+                            </div>
                         </div>
                     </div>
 
-                    <p class="text-gray-600 text-sm leading-relaxed mb-5">
-                        {{ __('landing.features.meals.description') }}
+                    <p class="text-gray-400 text-sm leading-relaxed mb-5">
+                        {{ __('landing.features.family.description') }}
                     </p>
 
-                    <ul class="mt-auto space-y-2 text-sm text-gray-700">
-                        @foreach ((array) __('landing.features.meals.items') as $item)
+                    <ul class="mt-auto space-y-2 text-sm text-gray-300">
+                        @foreach ((array) __('landing.features.family.items') as $item)
                             <li class="flex items-start gap-2">
-                                <svg class="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                <svg class="w-4 h-4 text-purple-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                                 <span>{{ $item }}</span>
                             </li>
                         @endforeach
                     </ul>
                 </div>
 
-                {{-- Family card with member roster mockup --}}
-                <div class="group relative bg-white border border-gray-200 hover:border-gray-300 hover:shadow-lg shadow-sm rounded-2xl p-6 lg:p-7 flex flex-col transition-all">
+                {{-- Calendar card showing the integrating layer (multi-color week) --}}
+                <div class="group relative bg-gray-900/60 border border-gray-800 hover:border-gray-700 rounded-2xl p-6 lg:p-7 flex flex-col transition-colors">
                     <div class="flex items-center gap-3 mb-5">
-                        <div class="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                        <div class="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                         </div>
-                        <h2 class="text-lg font-semibold text-gray-900">{{ __('landing.features.family.title') }}</h2>
+                        <h2 class="text-lg font-semibold text-white">{{ __('landing.features.calendar.title') }}</h2>
+                        <span class="ml-auto text-[10px] uppercase tracking-wider text-emerald-300/80 font-semibold">{{ __('landing.mockups.integrating_layer') }}</span>
                     </div>
 
-                    {{-- Embedded mini-mockup: family roster --}}
-                    <div class="rounded-xl bg-gray-50 border border-gray-200 p-4 mb-5 space-y-2.5">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-xs font-semibold">A</div>
-                            <div class="flex-1 min-w-0">
-                                <div class="text-xs text-gray-800">Ana</div>
-                                <div class="text-[10px] text-gray-500">Allergic to peanuts · check-up Jun 2</div>
-                            </div>
+                    {{-- Embedded mini-mockup: weekly cross-pillar timeline --}}
+                    <div class="rounded-xl bg-gray-950/60 border border-gray-800/60 p-4 mb-5 space-y-2">
+                        <div class="flex items-center gap-3 text-xs">
+                            <span class="text-gray-500 w-7 font-medium">{{ __('landing.mockups.meal_monday') }}</span>
+                            <span class="w-1.5 h-4 rounded-full bg-amber-500"></span>
+                            <span class="flex-1 text-gray-200">{{ __('landing.mockups.cal_event_food') }}</span>
+                            <span class="text-amber-400/80">{{ __('landing.mockups.cal_pillar_food') }}</span>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-semibold">D</div>
-                            <div class="flex-1 min-w-0">
-                                <div class="text-xs text-gray-800">Diana <span class="text-[10px] text-gray-500">· 8 yrs</span></div>
-                                <div class="text-[10px] text-gray-500">School trip · permission slip due</div>
-                            </div>
+                        <div class="flex items-center gap-3 text-xs">
+                            <span class="text-gray-500 w-7 font-medium">{{ __('landing.mockups.meal_monday') }}</span>
+                            <span class="w-1.5 h-4 rounded-full bg-sky-500"></span>
+                            <span class="flex-1 text-gray-200">{{ __('landing.mockups.cal_event_home') }}</span>
+                            <span class="text-sky-400/80">{{ __('landing.mockups.cal_pillar_home') }}</span>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-sky-100 text-sky-700 flex items-center justify-center text-xs font-semibold">P</div>
-                            <div class="flex-1 min-w-0">
-                                <div class="text-xs text-gray-800">Pedro</div>
-                                <div class="text-[10px] text-gray-500">Birthday · May 24 — likes mate / size L</div>
-                            </div>
+                        <div class="flex items-center gap-3 text-xs">
+                            <span class="text-gray-500 w-7 font-medium">{{ __('landing.mockups.meal_tuesday') }}</span>
+                            <span class="w-1.5 h-4 rounded-full bg-primary"></span>
+                            <span class="flex-1 text-gray-200">{{ __('landing.mockups.cal_event_finance') }}</span>
+                            <span class="text-primary/90">{{ __('landing.mockups.cal_pillar_finance') }}</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-xs">
+                            <span class="text-gray-500 w-7 font-medium">{{ __('landing.mockups.meal_wednesday') }}</span>
+                            <span class="w-1.5 h-4 rounded-full bg-purple-500"></span>
+                            <span class="flex-1 text-gray-200">{{ __('landing.mockups.cal_event_family') }}</span>
+                            <span class="text-purple-400/90">{{ __('landing.mockups.cal_pillar_family') }}</span>
                         </div>
                     </div>
 
-                    <p class="text-gray-600 text-sm leading-relaxed mb-5">
-                        {{ __('landing.features.family.description') }}
+                    <p class="text-gray-400 text-sm leading-relaxed mb-5">
+                        {{ __('landing.features.calendar.description') }}
                     </p>
 
-                    <ul class="mt-auto space-y-2 text-sm text-gray-700">
-                        @foreach ((array) __('landing.features.family.items') as $item)
+                    <ul class="mt-auto space-y-2 text-sm text-gray-300">
+                        @foreach ((array) __('landing.features.calendar.items') as $item)
                             <li class="flex items-start gap-2">
-                                <svg class="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                <svg class="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                                 <span>{{ $item }}</span>
                             </li>
                         @endforeach
@@ -459,218 +407,61 @@
 
             </div>
         </section>
-        </div>
 
         {{-- ─── WHY LOGER (with stat strip) ──────────────────── --}}
         <section class="border-t border-gray-900 bg-gray-950">
             <div class="max-w-6xl mx-auto px-6 py-24 lg:py-32">
                 <div class="grid lg:grid-cols-2 gap-16 items-center">
                     <div>
-                        <div class="inline-block text-xs uppercase tracking-widest text-primary font-semibold mb-4">{{ __('landing.why_diff.eyebrow') }}</div>
+                        <div class="inline-block text-xs uppercase tracking-widest text-primary font-semibold mb-4">{{ __('landing.why.eyebrow') }}</div>
                         <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight mb-6 tracking-tight">
-                            {{ __('landing.why_diff.title') }}
+                            {{ __('landing.why.title') }}
                         </h2>
-                        <p class="text-gray-400 leading-relaxed text-lg mb-8">
-                            {{ __('landing.why_diff.body') }}
+                        <p class="text-gray-400 leading-relaxed text-lg">
+                            {{ __('landing.why.body') }}
                         </p>
-
-                        {{-- 4-cell differentiator matrix --}}
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            @foreach (['institution' => '🏦', 'currency' => '💱', 'beyond' => '🏠', 'oss' => '⭐'] as $key => $icon)
-                                <div class="rounded-xl border border-gray-800 bg-gray-900/40 p-4">
-                                    <div class="text-xl mb-2" aria-hidden="true">{{ $icon }}</div>
-                                    <div class="text-sm font-semibold text-white mb-1">{{ __('landing.why_diff.cells.' . $key . '.title') }}</div>
-                                    <div class="text-xs text-gray-400 leading-relaxed">{{ __('landing.why_diff.cells.' . $key . '.body') }}</div>
-                                </div>
-                            @endforeach
-                        </div>
                     </div>
 
                     {{-- Multi-currency mockup --}}
                     <div class="relative">
-                        <div class="rounded-2xl bg-white border border-gray-200 p-6 shadow-2xl shadow-black/40">
-                            <div class="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-4">Accounts in 4 currencies</div>
+                        <div class="rounded-2xl bg-gray-900/60 border border-gray-800 p-6">
+                            <div class="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-4">{{ __('landing.mockups.why_accounts_label') }}</div>
                             <div class="space-y-3">
-                                <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50 border border-gray-200">
+                                <div class="flex items-center justify-between p-3 rounded-lg bg-gray-950/60 border border-gray-800/60">
                                     <div class="flex items-center gap-3">
                                         <span class="w-9 h-9 rounded-lg bg-primary/15 text-primary flex items-center justify-center font-bold text-xs">DOP</span>
-                                        <span class="text-sm text-gray-800">BHD Cuenta de ahorros</span>
+                                        <span class="text-sm text-gray-200">{{ __('landing.mockups.why_account_bhd') }}</span>
                                     </div>
-                                    <span class="text-sm font-semibold text-gray-900 tabular-nums">RD$ 45,210</span>
+                                    <span class="text-sm font-semibold text-white tabular-nums">RD$ 45,210</span>
                                 </div>
-                                <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50 border border-gray-200">
+                                <div class="flex items-center justify-between p-3 rounded-lg bg-gray-950/60 border border-gray-800/60">
                                     <div class="flex items-center gap-3">
-                                        <span class="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">USD</span>
-                                        <span class="text-sm text-gray-800">Wise — Multi</span>
+                                        <span class="w-9 h-9 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center font-bold text-xs">USD</span>
+                                        <span class="text-sm text-gray-200">Wise — Multi</span>
                                     </div>
-                                    <span class="text-sm font-semibold text-gray-900 tabular-nums">$ 1,820</span>
+                                    <span class="text-sm font-semibold text-white tabular-nums">$ 1,820</span>
                                 </div>
-                                <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50 border border-gray-200">
+                                <div class="flex items-center justify-between p-3 rounded-lg bg-gray-950/60 border border-gray-800/60">
                                     <div class="flex items-center gap-3">
-                                        <span class="w-9 h-9 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center font-bold text-xs">EUR</span>
-                                        <span class="text-sm text-gray-800">Revolut</span>
+                                        <span class="w-9 h-9 rounded-lg bg-sky-500/15 text-sky-400 flex items-center justify-center font-bold text-xs">EUR</span>
+                                        <span class="text-sm text-gray-200">Revolut</span>
                                     </div>
-                                    <span class="text-sm font-semibold text-gray-900 tabular-nums">€ 340</span>
+                                    <span class="text-sm font-semibold text-white tabular-nums">€ 340</span>
                                 </div>
-                                <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50 border border-gray-200">
+                                <div class="flex items-center justify-between p-3 rounded-lg bg-gray-950/60 border border-gray-800/60">
                                     <div class="flex items-center gap-3">
-                                        <span class="w-9 h-9 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs">MXN</span>
-                                        <span class="text-sm text-gray-800">Banorte</span>
+                                        <span class="w-9 h-9 rounded-lg bg-amber-500/15 text-amber-400 flex items-center justify-center font-bold text-xs">MXN</span>
+                                        <span class="text-sm text-gray-200">Banorte</span>
                                     </div>
-                                    <span class="text-sm font-semibold text-gray-900 tabular-nums">MX$ 8,900</span>
+                                    <span class="text-sm font-semibold text-white tabular-nums">MX$ 8,900</span>
                                 </div>
                             </div>
-                            <div class="mt-4 pt-4 border-t border-gray-200 flex items-center justify-between">
-                                <span class="text-xs text-gray-500">Net worth (USD)</span>
-                                <span class="text-base font-bold text-gray-900 tabular-nums">$ 3,425</span>
+                            <div class="mt-4 pt-4 border-t border-gray-800/60 flex items-center justify-between">
+                                <span class="text-xs text-gray-500">{{ __('landing.mockups.why_networth_label') }}</span>
+                                <span class="text-base font-bold text-white tabular-nums">$ 3,425</span>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </section>
-
-        {{-- ─── DR PLUS BANNER (dark, geo-friendly) ──────────── --}}
-        <section class="border-t border-gray-900 bg-gradient-to-br from-primary/15 via-gray-950 to-gray-950">
-            <div class="max-w-5xl mx-auto px-6 py-16 lg:py-20">
-                <div class="grid lg:grid-cols-5 gap-8 items-center">
-                    <div class="lg:col-span-3">
-                        <div class="inline-flex items-center gap-2 border border-primary/30 bg-primary/10 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-primary mb-4">
-                            {{ __('landing.plus_banner.eyebrow') }}
-                        </div>
-                        <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight mb-3 leading-tight">
-                            {{ __('landing.plus_banner.title') }}
-                        </h2>
-                        <p class="text-gray-300 leading-relaxed">
-                            {{ __('landing.plus_banner.body') }}
-                        </p>
-                    </div>
-                    <div class="lg:col-span-2 flex flex-col gap-3">
-                        <a href="{{ route('register') }}"
-                           data-cta="plus-banner-primary"
-                           class="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white font-semibold px-6 py-3.5 rounded-xl transition-colors text-sm shadow-lg shadow-primary/30">
-                            {{ __('landing.plus_banner.cta') }}
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
-                        </a>
-                        <p class="text-xs text-gray-500 leading-relaxed">
-                            {{ __('landing.plus_banner.note_other') }}
-                            <a href="mailto:jesusant.guerrero@gmail.com?subject=Loger%20Plus%20-%20country%20request" class="text-primary hover:text-primary-dark transition-colors font-medium whitespace-nowrap">
-                                {{ __('landing.plus_banner.cta_other') }} →
-                            </a>
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        {{-- ─── ATMOSPHERE RELATIONSHIP STRIP §6b ─────────────── --}}
-        <section class="bg-white border-y border-gray-200">
-            <div class="max-w-5xl mx-auto px-6 py-20 lg:py-24">
-                <div class="grid lg:grid-cols-5 gap-10 items-center">
-                    <div class="lg:col-span-3">
-                        <div class="inline-block text-xs uppercase tracking-widest text-primary font-semibold mb-4">{{ __('landing.atmosphere.eyebrow') }}</div>
-                        <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 tracking-tight mb-4 leading-tight">
-                            {{ __('landing.atmosphere.title') }}
-                        </h2>
-                        <p class="text-gray-600 leading-relaxed mb-3">
-                            {{ __('landing.atmosphere.body_1') }}
-                        </p>
-                        <p class="text-gray-700 leading-relaxed font-medium">
-                            {{ __('landing.atmosphere.body_2') }}
-                        </p>
-                    </div>
-                    <div class="lg:col-span-2 flex flex-col gap-3">
-                        <a href="https://github.com/jesusantguerrero/atmosphere"
-                           target="_blank"
-                           rel="noopener noreferrer"
-                           class="inline-flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-800 text-white font-semibold px-6 py-3.5 rounded-xl transition-colors text-sm shadow-md">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.07 3.29 9.37 7.86 10.89.58.11.79-.25.79-.56v-2.16c-3.2.69-3.88-1.37-3.88-1.37-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.68 1.24 3.34.95.1-.74.4-1.24.72-1.53-2.55-.29-5.24-1.28-5.24-5.71 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.46.11-3.04 0 0 .96-.31 3.15 1.18a10.93 10.93 0 0 1 5.74 0c2.19-1.49 3.15-1.18 3.15-1.18.62 1.58.23 2.75.11 3.04.74.81 1.18 1.84 1.18 3.1 0 4.44-2.7 5.41-5.27 5.7.41.36.78 1.06.78 2.13v3.16c0 .31.21.67.8.56 4.56-1.52 7.85-5.82 7.85-10.89C23.5 5.65 18.35.5 12 .5z"/></svg>
-                            {{ __('landing.atmosphere.cta_self_host') }}
-                        </a>
-                        <a href="{{ route('register') }}"
-                           class="inline-flex items-center justify-center gap-2 border border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 font-medium px-6 py-3.5 rounded-xl transition-colors text-sm">
-                            {{ __('landing.atmosphere.cta_signup') }} →
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        {{-- ─── FAQ (light) ──────────────────────────────────── --}}
-        <section class="bg-gray-50">
-            <div class="max-w-3xl mx-auto px-6 py-20 lg:py-24">
-                <div class="text-center mb-12">
-                    <div class="inline-block text-xs uppercase tracking-widest text-primary font-semibold mb-3">{{ __('landing.faq.eyebrow') }}</div>
-                    <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight mb-3 leading-tight">
-                        {{ __('landing.faq.title') }}
-                    </h2>
-                    <p class="text-gray-600">{{ __('landing.faq.subtitle') }}</p>
-                </div>
-
-                <dl class="space-y-3">
-                    @foreach ((array) __('landing.faq.items') as $item)
-                        <details class="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-gray-300 transition-colors">
-                            <summary class="flex items-center justify-between gap-4 px-6 py-5 cursor-pointer list-none">
-                                <dt class="text-base font-semibold text-gray-900 leading-snug">{{ $item['q'] }}</dt>
-                                <svg class="w-5 h-5 flex-shrink-0 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                                </svg>
-                            </summary>
-                            <dd class="px-6 pb-5 -mt-1 text-sm text-gray-600 leading-relaxed">{{ $item['a'] }}</dd>
-                        </details>
-                    @endforeach
-                </dl>
-            </div>
-        </section>
-
-        {{-- ─── FOUNDER NOTE (light island) ──────────────────── --}}
-        <section class="bg-gradient-to-b from-stone-50 to-white text-gray-900">
-            <div class="max-w-3xl mx-auto px-6 py-24">
-                <div class="text-center mb-10">
-                    <div class="inline-block text-xs uppercase tracking-widest text-primary font-semibold mb-3">{{ __('landing.social_proof.title') }}</div>
-                    <p class="text-gray-600">{{ __('landing.social_proof.subtitle') }}</p>
-                </div>
-
-                <figure class="bg-white border border-gray-200 rounded-2xl p-8 lg:p-10 flex flex-col gap-6 shadow-xl shadow-gray-200/60">
-                    <svg class="w-8 h-8 text-primary/80" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M9.983 3v7.391c0 5.704-3.731 9.57-8.983 10.609l-.995-2.151c2.432-.917 3.995-3.638 3.995-5.849h-4v-10h9.983zm14.017 0v7.391c0 5.704-3.748 9.571-9 10.609l-.996-2.151c2.433-.917 3.996-3.638 3.996-5.849h-3.983v-10h9.983z"/>
-                    </svg>
-                    <blockquote class="text-gray-800 text-base sm:text-lg leading-relaxed">
-                        {{ __('landing.social_proof.founder_quote') }}
-                    </blockquote>
-                    <figcaption class="flex items-center gap-4 pt-4 border-t border-gray-200">
-                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white font-semibold text-lg shadow-md shadow-primary/30" aria-hidden="true">
-                            JG
-                        </div>
-                        <div class="min-w-0">
-                            <div class="text-sm font-semibold text-gray-900">{{ __('landing.social_proof.founder_name') }}</div>
-                            <div class="text-xs text-gray-500 mb-1">{{ __('landing.social_proof.founder_role') }}</div>
-                            <div class="flex items-center gap-2 text-xs">
-                                <a href="https://www.linkedin.com/in/jesus-guerrero-alvarez/"
-                                   target="_blank"
-                                   rel="noopener noreferrer"
-                                   class="inline-flex items-center gap-1 text-primary hover:text-primary-dark transition-colors font-medium">
-                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 0h-14C2.239 0 0 2.239 0 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5V5c0-2.761-2.238-5-5-5zM8 19H5V8h3v11zM6.5 6.732c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zM20 19h-3v-5.604c0-3.368-4-3.113-4 0V19h-3V8h3v1.765c1.396-2.586 7-2.777 7 2.476V19z"/></svg>
-                                    LinkedIn
-                                </a>
-                                <span class="text-gray-300" aria-hidden="true">·</span>
-                                <a href="https://jesusantguerrero.com"
-                                   target="_blank"
-                                   rel="noopener noreferrer"
-                                   class="text-primary hover:text-primary-dark transition-colors font-medium">
-                                    jesusantguerrero.com
-                                </a>
-                            </div>
-                        </div>
-                    </figcaption>
-                </figure>
-
-                <div class="text-center mt-10">
-                    <a href="mailto:jesusant.guerrero@gmail.com?subject=Loger%20testimonial"
-                       class="inline-flex items-center gap-1.5 text-sm text-primary hover:text-primary-dark transition-colors font-medium">
-                        {{ __('landing.social_proof.cta') }}
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                    </a>
                 </div>
             </div>
         </section>
