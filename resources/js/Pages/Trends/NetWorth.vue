@@ -72,7 +72,7 @@ const { lastMonth, thisMonth, monthMovement, monthMovementVariance } = useNetWor
                         {{ formatMoney(thisMonth)}}
                     </h4>
                     <p class="space-x-1">
-                        <span class="text-success text-sms bg-success/10 px-2 rounded-md">
+                        <span v-if="monthMovementVariance !== null" class="text-success text-sms bg-success/10 px-2 rounded-md">
                             {{ monthMovementVariance }}%
                         </span>
                         <span class="text-success text-sm">

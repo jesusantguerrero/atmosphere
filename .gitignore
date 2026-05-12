@@ -24,3 +24,5 @@ docs/.vitepress/dist/**
 Modules/*
 !Modules/.gitkeep
 /public/build
+/.planning/
+.claude/

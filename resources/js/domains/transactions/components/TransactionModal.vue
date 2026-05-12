@@ -557,13 +557,13 @@ const assignTransactionLabel = (label: Record<string, string>, transaction: Reco
 <template>
   <modal :show="show" :max-width="maxWidth" :full-height="fullHeight" :closeable="closeable" v-slot:default="{ close }"
     @close="$emit('update:show', false)">
-    <div class="flex-1 pb-4 bg-base-lvl-3 sm:p-6 sm:pb-4 text-body">
-      <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-        <header v-if="fullHeight" class="flex items-center justify-between pb-4 text-lg font-bold border-b">
+    <div class="flex-1 min-h-0 pb-4 overflow-y-auto transaction-modal-body bg-base-lvl-3 sm:p-6 sm:pb-4 text-body">
+      <div class="text-center sm:mt-0 sm:ml-4 sm:text-left">
+        <header v-if="fullHeight" class="sticky top-0 z-10 flex items-center justify-between px-4 py-3 text-base font-bold border-b bg-base-lvl-3 sm:static sm:px-0 sm:pb-3 sm:pt-0 sm:text-lg">
           <span>{{ $t('Create a transaction') }}</span>
           <button
             type="button"
-            class="text-body-1/60 hover:text-body p-1 -mr-1 rounded transition"
+            class="p-1 -mr-1 rounded text-body-1/60 hover:text-body transition"
             :aria-label="$t('Close')"
             @click="close"
           >
@@ -573,53 +573,56 @@ const assignTransactionLabel = (label: Record<string, string>, transaction: Reco
         <header v-else class="flex justify-end -mt-1 -mr-2">
           <button
             type="button"
-            class="text-body-1/60 hover:text-body p-1 rounded transition"
+            class="p-1 rounded text-body-1/60 hover:text-body transition"
             :aria-label="$t('Close')"
             @click="close"
           >
             <i class="fa fa-times text-base" />
           </button>
         </header>
-        <TransactionTypesPicker v-model="form.direction" />
+        <div class="px-4 mt-3 sm:px-0">
+          <TransactionTypesPicker v-model="form.direction" />
+        </div>
 
-        <div class="mt-2">
+        <div class="mt-3">
           <slot name="content">
             <div>
               {{ form.error }}
-              <div class="px-4 md:flex md:space-x-2 md:px-0">
-                <AtField label="Date" class="flex justify-between w-full md:w-3/12 md:block">
-                  <NDatePicker v-model:value="form.date" type="date" size="large" class="w-48 md:w-full" />
-                  <!-- Quick presets — most transactions are entered for today or yesterday. -->
-                  <div class="flex gap-1.5 mt-1.5">
-                    <button
-                      type="button"
-                      class="px-2 py-0.5 text-xs rounded transition"
-                      :class="isDatePreset('today') ? 'bg-primary text-white' : 'bg-base-lvl-2 text-body-1 hover:bg-base-lvl-1'"
-                      @click="setDatePreset('today')"
-                    >
-                      {{ $t('Today') }}
-                    </button>
-                    <button
-                      type="button"
-                      class="px-2 py-0.5 text-xs rounded transition"
-                      :class="isDatePreset('yesterday') ? 'bg-primary text-white' : 'bg-base-lvl-2 text-body-1 hover:bg-base-lvl-1'"
-                      @click="setDatePreset('yesterday')"
-                    >
-                      {{ $t('Yesterday') }}
-                    </button>
+              <div class="px-4 space-y-3 md:flex md:space-x-2 md:space-y-0 md:px-0">
+                <AtField label="Date" class="w-full md:w-3/12">
+                  <div class="flex items-center gap-2">
+                    <NDatePicker v-model:value="form.date" type="date" size="large" class="flex-1 md:w-full" />
+                    <!-- Quick presets — most transactions are entered for today or yesterday. -->
+                    <div class="flex gap-1.5">
+                      <button
+                        type="button"
+                        class="px-2.5 py-1 text-xs rounded transition"
+                        :class="isDatePreset('today') ? 'bg-primary text-white' : 'bg-base-lvl-2 text-body-1 hover:bg-base-lvl-1'"
+                        @click="setDatePreset('today')"
+                      >
+                        {{ $t('Today') }}
+                      </button>
+                      <button
+                        type="button"
+                        class="px-2.5 py-1 text-xs rounded transition"
+                        :class="isDatePreset('yesterday') ? 'bg-primary text-white' : 'bg-base-lvl-2 text-body-1 hover:bg-base-lvl-1'"
+                        @click="setDatePreset('yesterday')"
+                      >
+                        {{ $t('Yesterday') }}
+                      </button>
+                    </div>
                   </div>
                 </AtField>
 
-                <AtField label="Description"
-                  class="flex justify-between w-full space-x-2 md:w-6/12 md:block md:space-x-0">
+                <AtField label="Description" class="w-full md:w-6/12">
                   <LogerInput
                     ref="descriptionInputRef"
                     v-model="form.description"
-                    class="w-48 md:w-full"
+                    class="w-full"
                   />
                 </AtField>
 
-                <AtField label="Currency" class="flex justify-between w-full md:w-3/12 md:block"
+                <AtField label="Currency" class="w-full md:w-3/12"
                   v-if="hasMultiCurrencyAccounts">
                   <CurrencySelector v-model="transactionCurrency" :exclude-currencies="[]"
                     @change="handleTransactionCurrencyChange" />
@@ -769,11 +772,14 @@ const assignTransactionLabel = (label: Record<string, string>, transaction: Reco
       {{ validationError }}
     </div>
 
-    <footer class="flex items-center justify-end w-full px-6 py-4 gap-2 bg-base-lvl-2">
+    <footer
+      class="flex flex-col-reverse w-full gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-end sm:px-6 sm:py-4 bg-base-lvl-2"
+      :style="{ paddingBottom: fullHeight ? 'calc(0.75rem + env(safe-area-inset-bottom))' : undefined }"
+    >
       <LogerButton
         variant="neutral"
         rounded
-        class="h-10"
+        class="h-11 w-full sm:h-10 sm:w-auto"
         :disabled="form.processing"
         @click="close"
       >
@@ -782,17 +788,18 @@ const assignTransactionLabel = (label: Record<string, string>, transaction: Reco
       <LogerButton
         variant="inverse"
         rounded
-        class="h-10"
+        class="h-11 w-full sm:h-10 sm:w-auto"
         :processing="lastSaved.addAnother && form.processing"
         :disabled="form.processing"
         @click="onSubmit(true)"
       >
-        {{ saveText === 'save' ? $t('Save and add another') : $t('Update and add another') }}
+        <span class="sm:hidden">{{ saveText === 'save' ? $t('Save & add another') : $t('Update & add another') }}</span>
+        <span class="hidden sm:inline">{{ saveText === 'save' ? $t('Save and add another') : $t('Update and add another') }}</span>
       </LogerButton>
       <LogerButton
         variant="primary"
         rounded
-        class="h-10"
+        class="h-11 w-full sm:h-10 sm:w-auto"
         :processing="form.processing && !lastSaved.addAnother"
         :disabled="form.processing"
         @click="onSubmit()"
@@ -824,3 +831,17 @@ const assignTransactionLabel = (label: Record<string, string>, transaction: Reco
     </transition>
   </Teleport>
 </template>
+
+<style>
+/* atmosphere-ui ships `.form-group { margin: 15px 0 }` and `.form-group label
+   { margin: .5rem 0 }` globally. That spacing is too generous inside this
+   modal — fields end up with ~30px between them on mobile. Tighten it here
+   without affecting other forms in the app. */
+.transaction-modal-body .form-group {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+.transaction-modal-body .form-group > header label {
+    margin: 0 0 0.25rem;
+}
+</style>

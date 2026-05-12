@@ -43,7 +43,7 @@ const dismiss = () => {
             <SectionTitle type="secondary">Onboarding</SectionTitle>
             <div class="flex items-center gap-3">
                 <span v-if="percentage !== undefined" class="text-xs font-semibold text-body-1/60">
-                    {{ percentage }}%
+                    {{ Math.round(percentage) }}%
                 </span>
                 <i :class="icon" />
             </div>

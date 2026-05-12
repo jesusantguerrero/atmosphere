@@ -155,8 +155,8 @@
                                 @create="router.visit(route('teams.create'))"
                                 resource-name="Space"
                             />
-                            <!-- Settings Dropdown -->
-                            <div class="relative ml-3"  v-if="$page.props.auth.user">
+                            <!-- Settings Dropdown (desktop) -->
+                            <div class="relative ml-3 hidden lg:block"  v-if="$page.props.auth.user">
                                 <AppUserMenu
                                     :has-image="$page.props.jetstream.managesProfilePhotos"
                                     :image-url="$page.props.auth.user.profile_photo_url"
@@ -165,32 +165,143 @@
                                     @logout="logout()"
                                 />
                             </div>
+                            <!-- Mobile hamburger (replaces user menu on small screens — opens full nav drawer) -->
+                            <button
+                                v-if="$page.props.auth.user"
+                                type="button"
+                                class="lg:hidden flex items-center justify-center w-10 h-10 rounded-full text-body-1 hover:bg-base-lvl-2 transition-colors"
+                                :aria-label="$t('Open menu')"
+                                aria-haspopup="dialog"
+                                :aria-expanded="showingNavigationDropdown"
+                                @click="showingNavigationDropdown = true"
+                            >
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                                </svg>
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Responsive Navigation Menu -->
-                <div :class="{'block': showingNavigationDropdown, 'hidden': ! showingNavigationDropdown}" class="sm:hidden">
-                    <div class="pt-2 pb-3 space-y-1">
-                        <JetResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">
-                            Dashboard
-                        </JetResponsiveNavLink>
-                    </div>
+                <!-- ─── Mobile nav drawer ───────────────────────────────
+                     Slide-in panel from the right with everything that's
+                     not in the bottom-nav: Dashboard, Trends, Housing,
+                     Family + About, Help, Settings, Sign out.
+                     Bottom-nav stays as-is for the 4 daily-use pillars. -->
+                <Teleport to="body" v-if="$page.props.auth.user">
+                    <!-- Backdrop -->
+                    <transition
+                        enter-active-class="transition-opacity duration-200"
+                        enter-from-class="opacity-0"
+                        leave-active-class="transition-opacity duration-200"
+                        leave-to-class="opacity-0"
+                    >
+                        <div
+                            v-if="showingNavigationDropdown"
+                            class="fixed inset-0 bg-black/40 z-[1500] lg:hidden"
+                            @click="showingNavigationDropdown = false"
+                        />
+                    </transition>
+                    <!-- Panel -->
+                    <transition
+                        enter-active-class="transition-transform duration-200 ease-out"
+                        enter-from-class="translate-x-full"
+                        leave-active-class="transition-transform duration-200 ease-in"
+                        leave-to-class="translate-x-full"
+                    >
+                        <aside
+                            v-if="showingNavigationDropdown"
+                            role="dialog"
+                            aria-label="Navigation"
+                            class="fixed top-0 right-0 bottom-0 w-72 max-w-[85vw] bg-base-lvl-3 shadow-2xl z-[1501] lg:hidden flex flex-col overflow-y-auto"
+                        >
+                            <!-- Header: user identity + close -->
+                            <header class="flex items-center justify-between px-4 py-4 border-b border-base-lvl-2">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <img
+                                        v-if="$page.props.jetstream.managesProfilePhotos && $page.props.auth.user.profile_photo_url"
+                                        :src="$page.props.auth.user.profile_photo_url"
+                                        class="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                                        :alt="$page.props.auth.user.name"
+                                    >
+                                    <div v-else class="w-10 h-10 rounded-full bg-primary/15 text-primary flex items-center justify-center font-semibold flex-shrink-0">
+                                        {{ ($page.props.auth.user.name || '?').slice(0, 1) }}
+                                    </div>
+                                    <div class="min-w-0">
+                                        <div class="text-sm font-semibold text-body truncate">{{ $page.props.auth.user.name }}</div>
+                                        <div class="text-xs text-body-1/60 truncate">{{ $page.props.auth.user.email }}</div>
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    class="ml-2 flex-shrink-0 w-8 h-8 rounded-full text-body-1/60 hover:bg-base-lvl-2 transition-colors flex items-center justify-center"
+                                    :aria-label="$t('Close menu')"
+                                    @click="showingNavigationDropdown = false"
+                                >
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </header>
 
-                    <!-- Responsive Settings Options -->
-                    <div class="pt-4 pb-1 border-t border-gray-200">
-                        <div class="flex items-center px-4">
-                            <div v-if="$page.props.jetstream.managesProfilePhotos" class="flex-shrink-0 mr-3" >
-                                <img class="object-cover w-10 h-10 rounded-full" :src="$page.props.auth.user.profile_photo_url" :alt="$page.props.auth.user.name" />
-                            </div>
+                            <!-- All pillars (full list, including the ones hidden from the bottom-nav) -->
+                            <nav class="flex-1 py-2">
+                                <ul class="space-y-1 px-2">
+                                    <li v-for="item in currentMenu" :key="item.to">
+                                        <Link
+                                            :href="item.to"
+                                            class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-body-1 hover:bg-base-lvl-2 hover:text-primary transition-colors"
+                                            :class="{ 'bg-primary/10 text-primary': currentPath?.startsWith(item.to) }"
+                                            @click="showingNavigationDropdown = false"
+                                        >
+                                            <i v-if="typeof item.icon === 'string'" :class="item.icon" class="w-5 text-center text-body-1/60"></i>
+                                            <span>{{ item.label }}</span>
+                                        </Link>
+                                    </li>
+                                </ul>
 
-                            <div>
-                                <div class="text-base font-medium text-gray-800">{{ $page.props.auth.user.name }}</div>
-                                <div class="text-sm font-medium text-body">{{ $page.props.auth.user.email }}</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                                <!-- Header items: About, Help Center, Settings -->
+                                <div class="mt-4 pt-4 border-t border-base-lvl-2">
+                                    <ul class="space-y-1 px-2">
+                                        <li>
+                                            <Link
+                                                href="/notifications"
+                                                class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-body-1 hover:bg-base-lvl-2 hover:text-primary transition-colors"
+                                                @click="showingNavigationDropdown = false"
+                                            >
+                                                <i class="fa fa-bell w-5 text-center text-body-1/60"></i>
+                                                <span>{{ $t('Notifications') }}</span>
+                                                <span v-if="$page.props.unreadNotifications > 0" class="ml-auto text-xs bg-primary text-white rounded-full px-2 py-0.5">{{ $page.props.unreadNotifications }}</span>
+                                            </Link>
+                                        </li>
+                                        <li v-for="item in headerMenu" :key="item.to">
+                                            <Link
+                                                :href="item.to"
+                                                class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-body-1 hover:bg-base-lvl-2 hover:text-primary transition-colors"
+                                                @click="showingNavigationDropdown = false"
+                                            >
+                                                <i :class="item.icon" class="w-5 text-center text-body-1/60"></i>
+                                                <span>{{ item.label }}</span>
+                                            </Link>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </nav>
+
+                            <!-- Sign out anchored at bottom -->
+                            <footer class="px-2 py-3 border-t border-base-lvl-2">
+                                <button
+                                    type="button"
+                                    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-body-1 hover:bg-base-lvl-2 hover:text-red-500 transition-colors"
+                                    @click="logout(); showingNavigationDropdown = false"
+                                >
+                                    <i class="fa fa-sign-out-alt w-5 text-center text-body-1/60"></i>
+                                    <span>{{ $t('Sign out') }}</span>
+                                </button>
+                            </footer>
+                        </aside>
+                    </transition>
+                </Teleport>
             </template>
 
             <template #aside>

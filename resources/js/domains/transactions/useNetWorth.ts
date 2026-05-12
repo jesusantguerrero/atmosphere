@@ -18,8 +18,15 @@ export const useNetWorth = (netWorthData: Ref<INetWorthEntry[]>) => {
         return  thisMonth.value - lastMonth.value;
     });
 
-    const monthMovementVariance = computed(() => {
-        return  (monthMovement.value /  lastMonth.value * 100.00).toFixed(2);
+    // Returns null when there's no prior-month baseline (avoids the
+    // "Infinity%" render that fires for brand-new accounts and the
+    // demo seed). Consumers should v-if on the value before showing
+    // a "% change" pill.
+    const monthMovementVariance = computed<string | null>(() => {
+        if (!lastMonth.value || !Number.isFinite(lastMonth.value)) {
+            return null;
+        }
+        return (monthMovement.value / lastMonth.value * 100.00).toFixed(2);
     });
 
     return {

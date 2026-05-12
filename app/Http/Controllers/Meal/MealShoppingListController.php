@@ -68,7 +68,7 @@ class MealShoppingListController
         $shoppingList = $planService->getPlanTypeModel($team->id, PlanTypes::SHOPPING_LIST);
 
         if (! $shoppingList) {
-            $shoppingList = $planService->createPlanBoard($team, PlanTypes::SHOPPING_LIST, PlanTypes::SHOPPING_LIST->name);
+            $shoppingList = $planService->createPlanBoard($team, PlanTypes::SHOPPING_LIST, PlanTypes::SHOPPING_LIST->displayName());
         }
 
         $firstStage = $shoppingList->stages->first();

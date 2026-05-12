@@ -1,4 +1,5 @@
 import IconTransferVue from "@/Components/icons/IconTransfer.vue";
+import IconPlus from "@/Components/icons/IconPlus.vue";
 import { Link } from "@inertiajs/vue3"
 import { cloneDeep } from "lodash";
 export * from "./menus";
@@ -33,6 +34,17 @@ export const useAppMenu = (t: any, modules: any[]) => {
             }
         },
         {
+            // Calendar is a universal integrating-layer view (pulls dated
+            // items from every other pillar). Always shown — not a pillar.
+            icon: 'fas fa-calendar',
+            label: t('Calendar'),
+            to: '/calendar',
+            as: Link,
+            isActiveFunction(url: string, currentPath: string) {
+                return /^\/calendar/.test(currentPath)
+            }
+        },
+        {
             separator: true
         },
         // Pillar labels follow .planning/family-os-structure.md naming:
@@ -54,7 +66,7 @@ export const useAppMenu = (t: any, modules: any[]) => {
             // and the mobile bottom-nav (mobileTargets below). Hidden from the
             // desktop sidebar to keep that rail focused on top-level pillars —
             // shopping isn't a pillar, it's a tool that lives inside Food.
-            icon: 'fas fa-cart-shopping',
+            icon: 'fas fa-shopping-cart',
             label: t('Shopping'),
             name: 'shopping',
             to: '/shopping',
@@ -65,12 +77,15 @@ export const useAppMenu = (t: any, modules: any[]) => {
             }
         },
         {
+            // Finance is the canonical Loger pillar (per marketing landing
+            // and README) — always shown, never gated by module enablement.
+            // Fresh users without any modules enabled still see Finance in
+            // both the desktop sidebar and the mobile bottom-nav.
             icon: 'fas fa-dollar-sign',
             label: t('Finance'),
             name: 'finance',
             to: '/finance',
             as: Link,
-            hidden: !isModuleEnabled('finance'),
             isActiveFunction(url: string, currentPath: string) {
                return /finance|budgets/.test(currentPath)
             }
@@ -101,19 +116,38 @@ export const useAppMenu = (t: any, modules: any[]) => {
     // in the right widget panel on desktop, see FinanceWidget).
     const desktopMenu = appMenu.filter(item => !item.hidden && !item.mobileOnly);
 
-    // Mobile bottom-nav: Today is the daily entry point (replaces Dashboard
-    // slot on mobile — Dashboard remains reachable via desktop sidebar and
-    // Today's "Open budget" link). Shopping is mobile-first by design (the
-    // wife uses it in the supermarket); Household is desktop-only since most
-    // chores/equipment edits happen at home.
-    const mobileTargets = ['/today', '/meals/overview', '/shopping', '/finance'];
+    // Mobile bottom-nav: aim for 4 nav slots + 1 centered FAB = 5 items, so
+    // the layout stays balanced (2 + FAB + 2) regardless of which modules
+    // a user has activated. Slots fill in priority order:
+    //   1. Primary pillars (the daily-use ones — Today, Food, Shopping, Finance)
+    //   2. Fallback non-pillars (Calendar, Trends) when a pillar is module-
+    //      gated off, so fresh users see a useful nav before activating modules.
+    const primaryMobileTargets = ['/today', '/meals/overview', '/shopping', '/finance'];
+    const fallbackMobileTargets = ['/calendar', '/trends'];
+    const targetSlots = 4;
+
     let mobileMenu = cloneDeep(appMenu)
-        .filter(item => !item.hidden && mobileTargets.includes(item.to))
-        .sort((a, b) => mobileTargets.indexOf(a.to) - mobileTargets.indexOf(b.to));
-    mobileMenu.splice(2, 0, {
+        .filter(item => !item.hidden && primaryMobileTargets.includes(item.to))
+        .sort((a, b) => primaryMobileTargets.indexOf(a.to) - primaryMobileTargets.indexOf(b.to));
+
+    if (mobileMenu.length < targetSlots) {
+        const used = new Set(mobileMenu.map(i => i.to));
+        const fallbacks = cloneDeep(appMenu)
+            .filter(item => !item.hidden && fallbackMobileTargets.includes(item.to) && !used.has(item.to))
+            .slice(0, targetSlots - mobileMenu.length);
+        // Insert fallbacks AFTER Today so the priority items still bookend.
+        // Today always sits at the leading edge; Finance (if present) at the trailing.
+        mobileMenu.splice(1, 0, ...fallbacks);
+    }
+
+    // Insert the Add FAB at the visual midpoint so it stays centered when
+    // we have an even count (2 left + FAB + 2 right). Math.floor keeps the
+    // FAB centered on 4-item layouts (slots 0,1,FAB,2,3).
+    const fabMidpoint = Math.floor(mobileMenu.length / 2);
+    mobileMenu.splice(fabMidpoint, 0, {
         name: 'add',
         label: 'Add',
-        icon: IconTransferVue,
+        icon: IconPlus,
         action: 'openTransactionModal'
     });
 

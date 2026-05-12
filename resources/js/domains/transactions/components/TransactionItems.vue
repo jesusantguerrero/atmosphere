@@ -160,14 +160,14 @@ watch(
       <section v-if="!index">
           <AtField
             :label="accountLabel"
-            class="flex justify-between w-full space-x-4 md:w-full md:my-0 md:block md:space-x-0 md:-mt-4"
+            class="w-full md:my-0 md:-mt-4"
           >
             <NSelect
               filterable
               clearable
               tag
               size="large"
-              class="w-48 md:w-full"
+              class="w-full"
               v-model:value="split.account_id"
               :default-expand-all="true"
               :options="accountsOptions"
@@ -189,7 +189,7 @@ watch(
       <div class="md:flex md:space-x-3 md:px-0 md:-mt-4">
         <AtField
           label="Payee"
-          class="flex justify-between md:w-4/12 md:block md:space-x-0"
+          class="w-full md:w-4/12"
           v-if="!isTransfer"
         >
           <LogerApiSimpleSelect
@@ -200,7 +200,7 @@ watch(
             track-id="id"
             placeholder="Add a payee"
             endpoint="/api/payees"
-            class="w-48 md:w-full"
+            class="w-full"
           />
         </AtField>
         <section>
@@ -236,31 +236,38 @@ watch(
             </template>
           </InputMoney>
         </AtField>
-        <header v-if="fullHeight && !isTransfer" class="flex justify-between px-4 py-3">
+        <header v-if="fullHeight && !isTransfer" class="flex flex-col gap-2 px-0 py-2 md:flex-row md:items-start md:justify-between md:gap-3 md:px-4 md:py-3">
+            <!-- Amount comes first on mobile (visual hero), category sits below as a row.
+                 On desktop they sit side-by-side as before via md:order classes. -->
+            <AtField v-if="!isPickerOpen" class="w-full md:order-2 md:w-auto md:flex-shrink-0">
+              <InputMoney
+                :number-format="true"
+                v-model="split.amount"
+                v-model:history="split.history"
+                class="text-2xl font-bold md:text-base md:font-normal"
+              >
+                <template #prefix>
+                  <span class="flex items-center pl-2 text-base text-body-1/60 md:text-current"> RD$ </span>
+                </template>
+              </InputMoney>
+            </AtField>
+
             <CategoryPicker
-              class="w-full"
+              class="w-full md:order-1 md:flex-1"
               v-model="split[categoryField]"
               v-model:isPickerOpen="isPickerOpen"
               :placeholder="`Choose ${categoryLabel}`"
               :options="categoryAccounts"
             />
-
-            <AtField v-if="!isPickerOpen">
-              <InputMoney :number-format="true" v-model="split.amount" v-model:history="split.history">
-                <template #prefix>
-                  <span class="flex items-center pl-2"> RD$ </span>
-                </template>
-              </InputMoney>
-            </AtField>
           </header>
       </div>
 
       <footer class="flex justify-end mb-2" v-if="hasSplits">
         <AtField
             label="Description"
-            class="flex justify-between w-full space-x-2 md:block md:space-x-0 md:mt-0"
+            class="w-full md:mt-0"
         >
-            <LogerInput v-model="split.concept" class="w-48 md:w-full" />
+            <LogerInput v-model="split.concept" class="w-full" />
         </AtField>
         <div class="flex items-center justify-center">
             <span class="flex items-center h-10 px-4 mt-10  min-w-fit">

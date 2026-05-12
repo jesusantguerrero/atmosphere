@@ -254,7 +254,13 @@ const deleteBulkTransactions = () => {
       </div>
     </main>
 
-    <DashboardFab />
+    <!-- DashboardFab removed: the global MobileMenuBar already exposes a +
+         FAB for the add-transaction action, and stacking two pink FABs in
+         the bottom-right corner created visual duplication. The quick-
+         action expansion (Expense / Income / Transfer) lives in this
+         component and can be re-introduced behind a long-press gesture or
+         a single visible FAB if/when users ask for it. -->
+    <!-- <DashboardFab /> -->
 
     <BulkSelectionBar
       v-if="selectedItems.length"
