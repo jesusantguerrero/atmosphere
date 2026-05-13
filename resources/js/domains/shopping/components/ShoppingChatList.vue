@@ -313,7 +313,12 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <div class="flex flex-col h-screen bg-base-lvl-1">
+    <!-- Pin to the available viewport area between AppLayout's top header
+         (h-16 = 64px) and the mobile bottom-nav (h-14 = 56px, hidden on lg).
+         Using fixed positioning so the chat composer at the bottom of this
+         flex column stays visible without the user having to scroll past
+         the AppShell chrome to reach it. -->
+    <div class="fixed inset-x-0 top-16 bottom-14 lg:bottom-0 flex flex-col bg-base-lvl-1 z-10">
         <!-- Header: list name + filter chips + owner controls -->
         <header class="bg-base-lvl-3 border-b border-base">
             <div class="max-w-2xl mx-auto px-4 py-3 w-full">
@@ -325,6 +330,8 @@ onBeforeUnmount(() => {
                         </p>
                     </div>
                     <div v-if="showOwnerControls" class="flex items-center gap-2 shrink-0">
+                        <!-- Page-level secondary actions (e.g. Share) inject here -->
+                        <slot name="header-actions" />
                         <button
                             type="button"
                             class="text-xs px-2 py-1 rounded-md bg-base-lvl-2 text-body-1 hover:bg-base-lvl-1 transition"

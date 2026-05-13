@@ -150,7 +150,7 @@ html {
     &__inner {
       grid-column-start: 1;
       grid-column-end: 3;
-      padding-bottom: 40px;
+      padding-bottom: calc(64px + env(safe-area-inset-bottom));
     }
   }
 

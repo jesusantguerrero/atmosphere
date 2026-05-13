@@ -74,28 +74,32 @@ const copyShareUrl = async () => {
         </template>
 
         <!-- The chat-style component owns the full mobile viewport; the share
-             sheet floats above it as a small panel. -->
+             sheet floats above it as a small panel triggered from the
+             header-actions slot (next to Reset). -->
         <ShoppingChatList
             :plan="plan"
             api-base="/shopping"
             :mercure-url="mercureUrl"
             :show-owner-controls="true"
             :endpoints="endpoints"
-        />
+        >
+            <template #header-actions>
+                <button
+                    type="button"
+                    class="text-xs px-2 py-1 rounded-md bg-base-lvl-2 text-body-1 hover:bg-base-lvl-1 transition inline-flex items-center"
+                    :title="shareUrl ? $t('Manage sharing') : $t('Share with someone')"
+                    @click="showShareSheet = !showShareSheet"
+                >
+                    <IMdiShareVariant class="w-3.5 h-3.5 mr-1" />
+                    {{ shareUrl ? $t('Sharing') : $t('Share') }}
+                </button>
+            </template>
+        </ShoppingChatList>
 
         <Teleport to="body">
-            <button
-                type="button"
-                class="fixed bottom-20 right-4 w-12 h-12 flex items-center justify-center rounded-full bg-secondary text-white shadow-lg z-30"
-                :title="shareUrl ? $t('Manage sharing') : $t('Share with someone')"
-                @click="showShareSheet = !showShareSheet"
-            >
-                <IMdiShareVariant class="w-5 h-5" />
-            </button>
-
             <div
                 v-if="showShareSheet"
-                class="fixed inset-x-3 bottom-36 max-w-sm mx-auto bg-base-lvl-3 border border-base rounded-xl shadow-2xl p-4 z-30"
+                class="fixed inset-x-3 bottom-20 max-w-sm mx-auto bg-base-lvl-3 border border-base rounded-xl shadow-2xl p-4 z-30"
             >
                 <h3 class="font-bold text-body mb-2">{{ $t('Share this list') }}</h3>
                 <p v-if="!shareUrl" class="text-sm text-body-1/70 mb-3">

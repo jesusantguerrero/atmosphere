@@ -82,7 +82,7 @@ const dayLabel = (item: UpcomingItem): string => {
 };
 
 const handleLogExpense = (): void => {
-    openTransactionModal({ mode: 'EXPENSE' });
+    openTransactionModal({ mode: 'WITHDRAW' });
 };
 
 onMounted(fetchSummary);

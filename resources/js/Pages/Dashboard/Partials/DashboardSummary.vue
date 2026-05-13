@@ -77,7 +77,7 @@ const movementIsPositive = computed(() => Number(monthMovement.value) >= 0);
                 </p>
                 <p class="text-xs mt-1" :class="movementIsPositive ? 'text-green-500' : 'text-red-400'">
                     {{ movementIsPositive ? '+' : '' }}{{ formatMoney(monthMovement) }}
-                    <span class="text-body-1/40">({{ monthMovementVariance }}%)</span>
+                    <span v-if="monthMovementVariance !== null" class="text-body-1/40">({{ monthMovementVariance }}%)</span>
                 </p>
             </button>
 

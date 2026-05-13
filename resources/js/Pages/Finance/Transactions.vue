@@ -219,8 +219,8 @@ const pdfExportUrl = computed(() => buildExportUrl('/finance/transactions/export
       </template>
 
       <main class="mt-4 ">
-        <header class="flex bg-base-lvl-3 justify-between px-6 py-2">
-            <section class="flex space-x-2 items-center">
+        <header class="flex flex-col md:flex-row bg-base-lvl-3 md:justify-between gap-3 md:gap-0 px-4 md:px-6 py-3 md:py-2">
+            <section class="flex flex-wrap items-center gap-2 overflow-x-auto">
                 <StatusButtons
                     v-model="currentStatus"
                     :statuses="transactionStatus"
