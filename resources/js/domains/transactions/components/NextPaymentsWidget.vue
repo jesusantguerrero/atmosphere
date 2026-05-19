@@ -21,7 +21,7 @@ const props = withDefaults(defineProps<{
 // pass an explicit title still get the locale-aware label.
 const resolvedTitle = computed(() => props.title ?? t('Next Payments'));
 
-const emit = defineEmits(['action', 'delete'])
+const emit = defineEmits(['action', 'delete', 'pay'])
 const { openTransactionModal } = useTransactionModal();
 const handleEdit = (transaction: ITransaction) => {
     if (props.emitActions) {
@@ -40,6 +40,10 @@ const handleRemove = (transaction: ITransaction) => {
         removeTransaction(transaction);
     }
 }
+
+const handlePay = (transaction: ITransaction) => {
+    emit('pay', transaction);
+}
 </script>
 
 <template>
@@ -55,6 +59,7 @@ const handleRemove = (transaction: ITransaction) => {
             :payment="transaction"
             @edit="handleEdit"
             @deleted="handleRemove"
+            @pay="handlePay"
         >
             <template #left-action-button>
                 <slot name="left-action-button" :resource="transaction" />

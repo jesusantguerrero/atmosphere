@@ -212,6 +212,43 @@ const isCreditCard = computed(() => {
     return selectedAccount.value?.account_detail_type_id == creditCard.value?.id;
 });
 
+// Credit-card utilization: debt / credit_limit as a percent. Personal-finance
+// rule of thumb is to stay under 30% (green) and never above 80% (red) — the
+// second-biggest factor in credit-score health after payment history.
+// Hidden when there's no credit_limit set, which is also when this account
+// likely isn't actually a credit card.
+const utilization = computed(() => {
+    const account = selectedAccount.value as any;
+    if (!isCreditCard.value || !account?.credit_limit || account.credit_limit <= 0) {
+        return null;
+    }
+    const limit = Number(account.credit_limit);
+    const debt = Math.abs(Number(account.balance ?? 0));
+    const percent = (debt / limit) * 100;
+    return {
+        debt,
+        limit,
+        percent: Math.min(percent, 100),
+        rawPercent: percent,
+    };
+});
+
+const utilizationColor = computed(() => {
+    if (!utilization.value) return '';
+    const p = utilization.value.percent;
+    if (p < 30) return 'bg-emerald-500';
+    if (p < 80) return 'bg-amber-500';
+    return 'bg-red-500';
+});
+
+const utilizationLabelColor = computed(() => {
+    if (!utilization.value) return '';
+    const p = utilization.value.percent;
+    if (p < 30) return 'text-emerald-700';
+    if (p < 80) return 'text-amber-700';
+    return 'text-red-700';
+});
+
 const payCreditCard = () => {
     const accountId = page.accountId
     const debt = Math.abs(selectedAccount.value?.balance ?? 0);
@@ -226,7 +263,35 @@ const payCreditCard = () => {
     })
 }
 
+// "Pay this cycle" from a NextPaymentsWidget row. Opens the transfer modal
+// pre-filled with the cycle's REMAINING balance (total - paid) so partial
+// pays auto-correct. The AutoLinkCreditCardPayment listener attaches the
+// resulting Payment to the oldest open cycle for this card — usually the
+// same one the user clicked. For users with multiple open cycles paying out
+// of order, the existing link icon (or the manual setPaymentBill modal)
+// still lets them target a specific cycle.
+const payCycle = (cycle: any) => {
+    const accountId = page.accountId;
+    const total = Number(cycle.total ?? 0);
+    const paid = Number(cycle.paid ?? 0);
+    const remaining = Math.max(total - paid, 0);
+    openTransactionModal({
+        mode: TRANSFER,
+        transactionData: {
+            counter_account_id: accountId ?? "",
+            total: remaining,
+            description: `Payment of ${selectedAccount.value?.name} — cycle ${cycle.end_at ?? cycle.due_at ?? ''}`,
+            account_id: props.accounts.find((account) => account.balance > remaining)?.id,
+            date: cycle.due_at ?? undefined,
+        },
+    });
+}
+
 const setPaymentBill = (transaction: ITransaction) => {
+    // Important: target the CLICKED cycle's id, not currentBillingCycle.at(0).
+    // The latter was a long-standing bug that pointed every "record a payment"
+    // request at whichever cycle happened to be first in the array regardless
+    // of which row the user actually interacted with.
     openModal(
         {
             data: {
@@ -236,7 +301,7 @@ const setPaymentBill = (transaction: ITransaction) => {
                 defaultConcept: `Payment of ${transaction.name}`,
                 due: transaction.total,
                 transaction: transaction,
-                endpoint: `/api/billing-cycles/${currentBillingCycle.value.id}/payments/`,
+                endpoint: `/api/billing-cycles/${transaction.id}/payments/`,
                 paymentMethod: paymentMethods[0],
             }
         })
@@ -395,39 +460,74 @@ const selectedTabName = computed(() => {
         </template>
 
         <FinanceTemplate :title="$t('Transactions')" :accounts="accounts">
-            <section class="flex items-center gap-4 mt-4 px-4 py-3 rounded-lg bg-base-lvl-3 flex-wrap">
-                <!-- Primary: Balance -->
-                <div class="flex items-center gap-2 mr-auto">
-                    <div>
-                        <span class="text-xs text-secondary">{{ $t('Balance') }}</span>
-                        <h3 class="text-xl font-bold text-body">
-                            {{ formatMoney(selectedAccount?.balance) }}
-                        </h3>
+            <section class="mt-4 px-4 py-3 rounded-lg bg-base-lvl-3">
+                <div class="flex items-center gap-4 flex-wrap">
+                    <!-- Primary: Balance -->
+                    <div class="flex items-center gap-2 mr-auto">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs text-secondary">{{ $t('Balance') }}</span>
+                                <!-- Credit-card identity pill so the user knows what kind
+                                     of account they're looking at without parsing the data. -->
+                                <span
+                                    v-if="isCreditCard"
+                                    class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-primary/10 text-primary"
+                                >
+                                    <IMdiCreditCard class="w-3 h-3" />
+                                    {{ $t('Credit Card') }}
+                                </span>
+                            </div>
+                            <h3 class="text-xl font-bold text-body">
+                                {{ formatMoney(selectedAccount?.balance) }}
+                            </h3>
+                        </div>
+                        <ElTooltip :content="formatMoney(selectedAccount?.reconciliation_last?.amount)"
+                            v-if="selectedAccount?.reconciliation_last">
+                            <button
+                                @click="router.visit(`/finance/accounts/${selectedAccount.id}/reconciliations/`)"
+                                class="text-secondary hover:text-primary transition-colors">
+                                <IMdiHistory />
+                            </button>
+                        </ElTooltip>
                     </div>
-                    <ElTooltip :content="formatMoney(selectedAccount?.reconciliation_last?.amount)"
-                        v-if="selectedAccount?.reconciliation_last">
-                        <button
-                            @click="router.visit(`/finance/accounts/${selectedAccount.id}/reconciliations/`)"
-                            class="text-secondary hover:text-primary transition-colors">
-                            <IMdiHistory />
-                        </button>
-                    </ElTooltip>
+
+                    <!-- Secondary stats: compact inline -->
+                    <div class="flex items-center gap-4 text-sm text-body-1/80 flex-wrap">
+                        <div class="text-center" v-if="startingBalance !== undefined">
+                            <span class="block text-xs text-secondary">Start {{ monthName }}</span>
+                            <span class="font-medium">{{ formatMoney(startingBalance) }}</span>
+                        </div>
+                        <div class="text-center" v-if="stats?.debit">
+                            <span class="block text-xs text-secondary">{{ $t('Debit') }}</span>
+                            <span class="font-medium text-red-500">{{ formatMoney(stats.debit) }}</span>
+                        </div>
+                        <div class="text-center" v-if="stats?.credit">
+                            <span class="block text-xs text-secondary">{{ $t('Credit') }}</span>
+                            <span class="font-medium text-green-600">{{ formatMoney(stats.credit) }}</span>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Secondary stats: compact inline -->
-                <div class="flex items-center gap-4 text-sm text-body-1/80 flex-wrap">
-                    <div class="text-center" v-if="startingBalance !== undefined">
-                        <span class="block text-xs text-secondary">Start {{ monthName }}</span>
-                        <span class="font-medium">{{ formatMoney(startingBalance) }}</span>
+                <!-- Credit-card utilization bar — debt vs credit_limit. Green
+                     under 30%, amber under 80%, red beyond. Standard personal-
+                     finance rule of thumb for credit-score health. -->
+                <div v-if="utilization" class="mt-3 pt-3 border-t border-base">
+                    <div class="flex items-center justify-between text-xs mb-1.5">
+                        <span class="text-secondary">{{ $t('Utilization') }}</span>
+                        <span class="font-medium tabular-nums" :class="utilizationLabelColor">
+                            {{ utilization.percent.toFixed(0) }}% · {{ formatMoney(utilization.debt) }} {{ $t('of') }} {{ formatMoney(utilization.limit) }}
+                        </span>
                     </div>
-                    <div class="text-center" v-if="stats?.debit">
-                        <span class="block text-xs text-secondary">{{ $t('Debit') }}</span>
-                        <span class="font-medium text-red-500">{{ formatMoney(stats.debit) }}</span>
+                    <div class="w-full h-1.5 rounded-full bg-base overflow-hidden">
+                        <div
+                            class="h-full rounded-full transition-all duration-500"
+                            :class="utilizationColor"
+                            :style="{ width: `${utilization.percent}%` }"
+                        />
                     </div>
-                    <div class="text-center" v-if="stats?.credit">
-                        <span class="block text-xs text-secondary">{{ $t('Credit') }}</span>
-                        <span class="font-medium text-green-600">{{ formatMoney(stats.credit) }}</span>
-                    </div>
+                    <p v-if="utilization.rawPercent >= 80" class="mt-1.5 text-[11px] text-red-600/80">
+                        {{ $t('Above 80% utilization can hurt your credit score. Consider paying down some balance.') }}
+                    </p>
                 </div>
             </section>
 
@@ -549,7 +649,7 @@ const selectedTabName = computed(() => {
                 <NextPaymentsWidget class="w-full" :title="$t('Credit Card Payments')" :payments="billingCycles.map((payment) => ({
                     ...payment,
                     date: payment.due_at
-                }))" emit-actions emit-delete @action="setPaymentBill">
+                }))" emit-actions emit-delete @action="setPaymentBill" @pay="payCycle">
                     <template v-slot:left-action-button="{ resource }">
                         <button
                             class="text-gray-400 hidden group-hover:inline-block transition cursor-pointer hover:text-red-400 focus:outline-none"

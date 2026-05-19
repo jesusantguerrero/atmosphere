@@ -9,7 +9,41 @@ const props = defineProps<{
     payment: ITransaction
 }>();
 
-defineEmits(['edit', 'deleted']);
+defineEmits(['edit', 'deleted', 'pay']);
+
+// Billing-cycle status badge (only renders when this row is a credit-card
+// cycle, identified by `payment.status` being one of the BillingCycle
+// constants). Separate from urgencyLevel below — urgency is "how late is
+// this", status is "is it paid yet". Both can co-exist on the same row.
+const STATUS_META: Record<string, { label: string; classes: string }> = {
+    PENDING:         { label: 'Pending',   classes: 'bg-gray-100 text-gray-700 ring-gray-200' },
+    PARTIALLY_PAID:  { label: 'Partial',   classes: 'bg-amber-50 text-amber-700 ring-amber-200' },
+    LATE:            { label: 'Late',      classes: 'bg-red-50 text-red-700 ring-red-200' },
+    PAID:            { label: 'Paid',      classes: 'bg-emerald-50 text-emerald-700 ring-emerald-200' },
+    CANCELLED:       { label: 'Cancelled', classes: 'bg-gray-50 text-gray-500 ring-gray-200' },
+};
+
+const cycleStatus = computed(() => {
+    const raw = (props.payment as any).status;
+    if (!raw || typeof raw !== 'string') return null;
+    return STATUS_META[raw.toUpperCase()] ?? null;
+});
+
+// Remaining balance for partially-paid cycles. Used for the Pay button so
+// the user pays only the outstanding amount, not the original total.
+const remainingBalance = computed(() => {
+    const p: any = props.payment;
+    const total = Number(p.total ?? 0);
+    const paid = Number(p.paid ?? 0);
+    const remaining = total - paid;
+    return remaining > 0 ? remaining : 0;
+});
+
+const isCycle = computed(() => cycleStatus.value !== null);
+const isSettled = computed(() => {
+    const raw = (props.payment as any).status;
+    return raw === 'PAID' || raw === 'CANCELLED';
+});
 
 // Calculate days overdue for credit card payments
 const daysOverdue = computed(() => {
@@ -121,13 +155,46 @@ const dateBadgeConfig = computed(() => {
                         <component :is="badgeConfig.icon" class="w-3 h-3" />
                         {{ badgeConfig.text }}
                     </span>
+                    <!-- Cycle status badge — orthogonal to urgency. Shows actual
+                         settlement state (PENDING / PARTIALLY_PAID / LATE / PAID /
+                         CANCELLED) so a glance answers "is this bill done?". -->
+                    <span
+                        v-if="cycleStatus"
+                        class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold uppercase tracking-wide ring-1 ring-inset"
+                        :class="cycleStatus.classes"
+                    >
+                        {{ cycleStatus.label }}
+                    </span>
                 </div>
                 <span class="text-sm text-body-1/70 truncate block">
                     {{ payment.description }}
                 </span>
+                <!-- Show remaining balance for partial-pay cycles so the user
+                     knows what's left without doing the math themselves. -->
+                <span
+                    v-if="isCycle && (payment as any).paid > 0 && !isSettled"
+                    class="text-[11px] text-body-1/60 tabular-nums"
+                >
+                    {{ $t('Paid') }} <MoneyPresenter :value="(payment as any).paid" /> ·
+                    <MoneyPresenter :value="remainingBalance" /> {{ $t('remaining') }}
+                </span>
             </section>
         </section>
-        <section class="flex items-center pl-2">
+        <section class="flex items-center pl-2 gap-2">
+            <!-- Pay this cycle CTA. Always visible on cycle rows that aren't
+                 already settled. Emits 'pay' so the parent can open a transfer
+                 modal pre-filled with the remaining balance; the auto-link
+                 listener attaches the resulting Payment to this cycle. -->
+            <button
+                v-if="isCycle && !isSettled"
+                type="button"
+                class="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-primary text-white shadow-sm hover:bg-primary-dark transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                :title="$t('Pay this cycle')"
+                @click.stop="$emit('pay', payment)"
+            >
+                <IMdiCash class="w-3 h-3" />
+                {{ $t('Pay') }}
+            </button>
             <slot name="date">
                 <button
                     type="button"
