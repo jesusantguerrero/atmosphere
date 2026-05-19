@@ -2,9 +2,9 @@
 
 namespace App\Providers;
 
+use App\Domains\Transaction\Listeners\AutoLinkCreditCardPayment;
 use App\Domains\Transaction\Listeners\DeleteTransactionPayment;
 use App\Domains\Transaction\Listeners\UpdateOpenReconciliations;
-use App\Domains\Transaction\Listeners\AutoLinkCreditCardPayment;
 use App\Domains\Transaction\Listeners\UpdatePlannedTransactions;
 use App\Events\AutomationEvent;
 use App\Events\BudgetAssigned;
@@ -101,4 +101,15 @@ class EventServiceProvider extends ServiceProvider
             CreateOccurrenceAutomation::class,
         ],
         ShoppingListItemUpdated::class => [
-            PushShoppingList
+            PushShoppingListUpdate::class,
+        ],
+    ];
+
+    /**
+     * Register any events for your application.
+     */
+    public function boot(): void
+    {
+        //
+    }
+}
