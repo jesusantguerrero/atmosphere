@@ -162,15 +162,49 @@ class BillingCycle extends Model implements IPayableDocument
         return '';
     }
 
+    /**
+     * Recompute paid / debt / status from the cycle's payment sources.
+     *
+     * Two sources contribute:
+     *
+     *   1) Payment rows in the `payments` morph relation — created by the
+     *      AutoLinkCreditCardPayment listener on TransactionCreated and by
+     *      the manual link-payments UI. Acts as an audit trail.
+     *   2) Verified transactions targeting this card's account within the
+     *      cycle window that DON'T yet have a Payment row attached
+     *      (`transactionable_id IS NULL`). This catches:
+     *        - historical transactions imported before the auto-link
+     *          listener existed
+     *        - any transaction the listener skipped (e.g. it was in DRAFT
+     *          status at creation time and got verified later by a path
+     *          that doesn't re-fire the listener)
+     *      Without this fallback, those payments are invisible to the
+     *      cycle and it stays PENDING even though the money clearly moved.
+     */
     public static function checkPayments($payable)
     {
-        if ($payable && $payable->payments) {
-            $totalPaid = $payable->payments()->sum('amount');
-            $payable->paid = $totalPaid;
-            $payable->debt = $payable->total - $totalPaid;
-            $statusField = $payable->getStatusField();
-            $payable->$statusField = self::checkStatus($payable);
+        if (! $payable) {
+            return;
         }
+
+        $linkedAmount = (float) $payable->payments()->sum('amount');
+
+        $unlinkedAmount = 0.0;
+        if ($payable->account_id && $payable->start_at && $payable->due_at) {
+            $unlinkedAmount = (float) Transaction::query()
+                ->where('team_id', $payable->team_id)
+                ->where('counter_account_id', $payable->account_id)
+                ->where('status', 'verified')
+                ->whereBetween('date', [$payable->start_at, $payable->due_at])
+                ->whereNull('transactionable_id')
+                ->sum('total');
+        }
+
+        $totalPaid = $linkedAmount + $unlinkedAmount;
+        $payable->paid = $totalPaid;
+        $payable->debt = (float) $payable->total - $totalPaid;
+        $statusField = $payable->getStatusField();
+        $payable->$statusField = self::checkStatus($payable);
     }
 
     public function linkPayment(Transaction $transaction, $formData)
@@ -191,57 +225,4 @@ class BillingCycle extends Model implements IPayableDocument
             'client_id' => $transaction->user_id,
             'currency_code' => $transaction->currency_code,
             'currency_rate' => $transaction->currency_rate,
-            'status' => 'verified',
-            'transaction_id' => $transaction->id,
-        ]);
-
-        $transaction->update([
-            'transactionable_type' => Payment::class,
-            'transactionable_id' => $payment->id,
-        ]);
-
-        $this->save();
-
-        return $payment;
-    }
-
-    public function createPayment($formData)
-    {
-        $paid = $this->payments->sum('amount');
-        if ($paid >= $this->total) {
-            throw new Exception('This invoice is already paid');
-        }
-
-        $debt = $this->total - $paid;
-
-        $formData['amount'] = $formData['amount'] > $debt ? $debt : $formData['amount'];
-        $payment = $this->payments()->create([
-            ...$formData,
-            'user_id' => $formData['user_id'] ?? $this->user_id,
-            'team_id' => $formData['team_id'] ?? $this->team_id,
-            'client_id' => $formData['client_id'] ?? $this->user_id,
-        ]);
-
-        $this->save();
-
-        return $payment;
-    }
-
-    public function createPaymentTransaction(Payment $payment)
-    {
-        $direction = Transaction::DIRECTION_CREDIT;
-        $counterAccountId = $this->account_id;
-
-        return [
-            'team_id' => $payment->team_id,
-            'user_id' => $payment->user_id,
-            'date' => $payment->payment_date,
-            'description' => $payment->concept,
-            'direction' => $direction,
-            'total' => $payment->amount,
-            'account_id' => $payment->account_id,
-            'counter_account_id' => $counterAccountId,
-            'items' => [],
-        ];
-    }
-}
+            'status' =>

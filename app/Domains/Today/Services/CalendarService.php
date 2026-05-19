@@ -70,7 +70,14 @@ class CalendarService
                 'total' => (float) $c->total,
                 'source' => null,
                 'notes' => null,
-                'completed_at' => null,
+                // Surface "this bill is settled" to the calendar UI so it can
+                // strike it through, the same way completed planner items
+                // render. Until BillingCycle gains a dedicated `paid_at`
+                // timestamp, updated_at is the closest proxy (it updates
+                // whenever a payment is recorded, see ManagesInvoices trait).
+                'completed_at' => $c->status === BillingCycle::STATUS_PAID
+                    ? $c->updated_at?->toDateTimeString()
+                    : null,
             ]);
     }
 
