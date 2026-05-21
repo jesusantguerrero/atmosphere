@@ -225,4 +225,57 @@ class BillingCycle extends Model implements IPayableDocument
             'client_id' => $transaction->user_id,
             'currency_code' => $transaction->currency_code,
             'currency_rate' => $transaction->currency_rate,
-            'status' =>
+            'status' => 'verified',
+            'transaction_id' => $transaction->id,
+        ]);
+
+        $transaction->update([
+            'transactionable_type' => Payment::class,
+            'transactionable_id' => $payment->id,
+        ]);
+
+        $this->save();
+
+        return $payment;
+    }
+
+    public function createPayment($formData)
+    {
+        $paid = $this->payments->sum('amount');
+        if ($paid >= $this->total) {
+            throw new Exception('This invoice is already paid');
+        }
+
+        $debt = $this->total - $paid;
+
+        $formData['amount'] = $formData['amount'] > $debt ? $debt : $formData['amount'];
+        $payment = $this->payments()->create([
+            ...$formData,
+            'user_id' => $formData['user_id'] ?? $this->user_id,
+            'team_id' => $formData['team_id'] ?? $this->team_id,
+            'client_id' => $formData['client_id'] ?? $this->user_id,
+        ]);
+
+        $this->save();
+
+        return $payment;
+    }
+
+    public function createPaymentTransaction(Payment $payment)
+    {
+        $direction = Transaction::DIRECTION_CREDIT;
+        $counterAccountId = $this->account_id;
+
+        return [
+            'team_id' => $payment->team_id,
+            'user_id' => $payment->user_id,
+            'date' => $payment->payment_date,
+            'description' => $payment->concept,
+            'direction' => $direction,
+            'total' => $payment->amount,
+            'account_id' => $payment->account_id,
+            'counter_account_id' => $counterAccountId,
+            'items' => [],
+        ];
+    }
+}
