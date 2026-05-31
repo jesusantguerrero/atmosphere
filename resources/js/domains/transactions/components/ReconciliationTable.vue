@@ -18,7 +18,7 @@ withDefaults(defineProps<{
     cols: () => tableCols
 });
 
-const emit = defineEmits(["removed", "edit", "approved", "unmatched"]);
+const emit = defineEmits(["removed", "edit", "approved", "unmatched", "selectionChange"]);
 
 const isTransferModalOpen = ref(false);
 
@@ -32,6 +32,19 @@ const handleEdit = (transaction: ITransaction) => {
   transferConfig.transactionData = transaction;
   isTransferModalOpen.value = true;
 };
+
+// Bubble Element Plus's selection-change so the parent can render a
+// bulk action bar. Also expose the table ref so the parent can call
+// clearSelection() after a bulk operation completes.
+const tableRef = ref<any>(null);
+const onSelectionChange = (rows: any[]) => {
+  emit('selectionChange', rows);
+};
+const clearSelection = () => {
+  // CustomTable -> ElTable.clearSelection()
+  tableRef.value?.$refs?.tableRef?.clearSelection?.();
+};
+defineExpose({ clearSelection });
 
 const options = (row: Record<string, any>) => {
   // 'Unmatch' is the common, safe action — it only removes the link
@@ -88,12 +101,14 @@ const getTransactionColor = (row: ITransaction) => {
 <template>
   <div class="pb-8 mt-5 bg-base-lvl-3">
     <CustomTable
+      ref="tableRef"
       :cols="cols"
       :show-prepend="true"
       :table-data="transactions"
       :is-loading="isLoading"
       :selectable="true"
       @edit="handleEdit"
+      @selection-change="onSelectionChange"
       :height="580"
     >
       <template v-slot:total="{ scope: { row }, col }">

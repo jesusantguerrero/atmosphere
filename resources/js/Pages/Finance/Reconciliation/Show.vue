@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, toRefs, provide, ref, onMounted, nextTick } from "vue";
+import { computed, toRefs, provide, ref, onMounted } from "vue";
 import { Link, router, useForm } from "@inertiajs/vue3";
 import { AtBackgroundIconCard, AtField } from "atmosphere-ui";
 
@@ -104,6 +104,49 @@ const unmatchTransaction = (entry: ReconciliationEntry) => {
   );
 };
 
+// ─── Bulk selection ──────────────────────────────────────────
+// Common case: 'I see 8 obvious matches, mark them all in one go'.
+// Without this the user has to click 8 individual rows; with 50+
+// transaction statements that's tedious enough to push users away
+// from regular reconciliation.
+const selectedRows = ref<any[]>([]);
+const reconciliationTableRef = ref<any>(null);
+const bulkProcessing = ref(false);
+
+const onSelectionChange = (rows: any[]) => {
+  selectedRows.value = Array.isArray(rows) ? rows : [];
+};
+
+const bulkSetMatched = async (matched: boolean) => {
+  if (!selectedRows.value.length || bulkProcessing.value) return;
+  bulkProcessing.value = true;
+  try {
+    // Fire all PUTs in parallel — the per-row endpoint is idempotent
+    // and the backend recomputes totals on each, so we just need to
+    // reload once at the end.
+    await Promise.all(
+      selectedRows.value
+        .filter((row) => row.entry_id)
+        .map((row) =>
+          axios.put(
+            `/finance/reconciliation/${props.reconciliation.id}/reconciliation-entries/${row.entry_id}/check`,
+            { matched }
+          )
+        )
+    );
+    reconciliationTableRef.value?.clearSelection?.();
+    selectedRows.value = [];
+    router.reload({ only: ['transactions'] });
+  } finally {
+    bulkProcessing.value = false;
+  }
+};
+
+const bulkClear = () => {
+  reconciliationTableRef.value?.clearSelection?.();
+  selectedRows.value = [];
+};
+
 
 
 const toggleCheck = (entry: ReconciliationEntry) => {
@@ -139,17 +182,10 @@ const handleEdit = (transaction: ITransaction) => {
 // reconciliation
 
 
-const isEditing = ref(false);
-const statementBalanceRef = ref();
-const toggleEditing = () => {
-  isEditing.value = !isEditing.value;
-  if (isEditing.value) {
-    nextTick(() => {
-      statementBalanceRef.value.focus();
-    });
-  }
-};
-
+// Statement balance is now always editable — the pencil-toggle
+// pattern was friction-without-value. The user came here to enter
+// this number; making them click an icon first to enable the input
+// was reverse onboarding.
 const reconcileForm = useForm({
   date: props.reconciliation.date,
   balance: props.reconciliation.amount,
@@ -350,22 +386,16 @@ const differenceDirection = computed(() => {
           </div>
         </div>
 
-        <header class="flex items-end justify-between gap-6 px-6 py-3 flex-wrap">
-          <div class="flex items-end gap-6 flex-wrap">
+        <header class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 md:gap-6 px-4 md:px-6 py-3">
+          <div class="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-6 flex-wrap">
             <AtField :label="$t('Statement balance')">
               <LogerInput
-                ref="statementBalanceRef"
                 class="opacity-100 cursor-text"
                 v-model="reconcileForm.balance"
                 :number-format="true"
-                :disabled="!isEditing"
-                @blur="isEditing = false"
               >
                 <template #prefix>
                   {{ account.currency_code }}
-                </template>
-                <template #suffix>
-                  <IMdiPencil class="cursor-pointer" @click.prevent="toggleEditing" />
                 </template>
               </LogerInput>
             </AtField>
@@ -432,7 +462,55 @@ const differenceDirection = computed(() => {
           </div>
         </header>
 
+        <!-- Bulk action bar — only renders when rows are selected.
+             Lets the user mark/unmark many rows at once instead of
+             one-by-one for long statements. -->
+        <Transition
+          enter-active-class="transition duration-150 ease-out"
+          enter-from-class="opacity-0 -translate-y-1"
+          enter-to-class="opacity-100 translate-y-0"
+          leave-active-class="transition duration-100 ease-in"
+          leave-from-class="opacity-100"
+          leave-to-class="opacity-0"
+        >
+          <div
+            v-if="selectedRows.length"
+            class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-4 md:px-6 py-2 bg-primary/10 border-y border-primary/20"
+          >
+            <p class="text-sm font-medium text-body">
+              {{ selectedRows.length }} {{ $t('selected') }}
+            </p>
+            <div class="flex items-center gap-2 flex-wrap">
+              <LogerButton
+                variant="inverse"
+                :disabled="bulkProcessing"
+                :processing="bulkProcessing"
+                @click="bulkSetMatched(true)"
+              >
+                <IMdiCheck class="mr-1" />
+                {{ $t('Mark matched') }}
+              </LogerButton>
+              <LogerButton
+                variant="neutral"
+                :disabled="bulkProcessing"
+                @click="bulkSetMatched(false)"
+              >
+                <IMdiClose class="mr-1" />
+                {{ $t('Unmark') }}
+              </LogerButton>
+              <button
+                type="button"
+                class="px-2 py-1 text-xs text-body-1/60 hover:text-body transition"
+                @click="bulkClear"
+              >
+                {{ $t('Clear selection') }}
+              </button>
+            </div>
+          </div>
+        </Transition>
+
         <ReconciliationTable
+          ref="reconciliationTableRef"
           :cols="tableAccountCols(props.reconciliation.account_id)"
           :transactions="transactionList"
           :server-search-options="serverSearchOptions"
@@ -442,6 +520,7 @@ const differenceDirection = computed(() => {
           @unmatched="unmatchTransaction"
           @removed="requestRemoveTransaction"
           @edit="handleEdit"
+          @selection-change="onSelectionChange"
         >
             <template #footer v-if="false">
                 <footer class="justify-end flex px-4 mt-4">
