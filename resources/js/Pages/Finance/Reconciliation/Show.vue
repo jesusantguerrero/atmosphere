@@ -7,6 +7,7 @@ import AppLayout from "@/Components/templates/AppLayout.vue";
 
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 import LogerInput from "@/Components/atoms/LogerInput.vue";
+import ConfirmationModal from "@/Components/atoms/ConfirmationModal.vue";
 
 import FinanceTemplate from "../Partials/FinanceTemplate.vue";
 import FinanceSectionNav from "../Partials/FinanceSectionNav.vue";
@@ -57,12 +58,50 @@ interface ReconciliationEntry {
     is_matched: boolean
 }
 
-const removeTransaction = (transaction: ReconciliationEntry) => {
-  router.delete(`/transactions/${transaction.transaction_id}`, {
+// Destructive flow split into two stages so a single dropdown click
+// can never delete a transaction. Click 'Delete transaction…' opens
+// the confirm modal — only its confirm button actually fires the
+// DELETE. 'Unmatch' (the common case) just clears the match flag.
+
+const pendingDelete = ref<ReconciliationEntry | null>(null);
+
+const requestRemoveTransaction = (transaction: ReconciliationEntry) => {
+  pendingDelete.value = transaction;
+};
+
+const cancelRemoveTransaction = () => {
+  pendingDelete.value = null;
+};
+
+const confirmRemoveTransaction = () => {
+  if (!pendingDelete.value) return;
+  const tx = pendingDelete.value;
+  router.delete(`/transactions/${tx.transaction_id}`, {
     onSuccess() {
       router.reload();
     },
+    onFinish() {
+      pendingDelete.value = null;
+    },
   });
+};
+
+// 'Unmatch' is the safe default action — just clears the match flag,
+// no deletion. Reuses the same endpoint as toggleCheck so the
+// reconciliation totals refresh consistently.
+const unmatchTransaction = (entry: ReconciliationEntry) => {
+  router.put(
+    `/finance/reconciliation/${props.reconciliation.id}/reconciliation-entries/${entry.entry_id}/check`,
+    { matched: false },
+    {
+      preserveScroll: true,
+      preserveState: true,
+      only: ['transactions'],
+      onSuccess() {
+        router.reload();
+      },
+    }
+  );
 };
 
 
@@ -142,20 +181,31 @@ const syncReconciliation = async () => {
         });
 };
 
-const deleteReconciliation = async () => {
-    const canDelete = confirm("Are you sure you want to delete this?")
+// Two-stage destructive flow — same pattern as transaction delete.
+// Was previously using the native browser confirm() dialog which is
+// jarring and inconsistent with the rest of the app's modal styling.
+const showDeleteReconciliationModal = ref(false);
 
-    if (canDelete) {
-        router
-          .delete(`/finance/reconciliation/${props.reconciliation.id}`, {
-           only: ['transactions'],
-              preserveScroll: true,
-              preserveState: true,
-              onSuccess() {
-                router.visit(`/finance/accounts/${props.reconciliation.account_id}`)
-              }
-          });
-    }
+const requestDeleteReconciliation = () => {
+  showDeleteReconciliationModal.value = true;
+};
+
+const cancelDeleteReconciliation = () => {
+  showDeleteReconciliationModal.value = false;
+};
+
+const confirmDeleteReconciliation = () => {
+  router.delete(`/finance/reconciliation/${props.reconciliation.id}`, {
+    only: ['transactions'],
+    preserveScroll: true,
+    preserveState: true,
+    onSuccess() {
+      router.visit(`/finance/accounts/${props.reconciliation.account_id}`);
+    },
+    onFinish() {
+      showDeleteReconciliationModal.value = false;
+    },
+  });
 };
 onMounted(() => {
   router.on("start", () => (isLoading.value = true));
@@ -372,7 +422,7 @@ const differenceDirection = computed(() => {
             <button
               v-if="reconciliation.status != 'completed'"
               type="button"
-              @click="deleteReconciliation()"
+              @click="requestDeleteReconciliation()"
               :disabled="syncReconciliationForm.processing || reconcileForm.processing"
               class="p-2 rounded-md text-body-1/40 hover:text-error hover:bg-error/5 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-error/40 disabled:opacity-50"
               :title="$t('Delete this reconciliation')"
@@ -389,7 +439,8 @@ const differenceDirection = computed(() => {
           :is-loading="isLoading"
           @toggleCheck="toggleCheck"
           @findLinked="findLinked"
-          @removed="removeTransaction"
+          @unmatched="unmatchTransaction"
+          @removed="requestRemoveTransaction"
           @edit="handleEdit"
         >
             <template #footer v-if="false">
@@ -401,5 +452,56 @@ const differenceDirection = computed(() => {
 
       </section>
     </FinanceTemplate>
+
+    <!-- Confirm modal for deleting the entire reconciliation. -->
+    <ConfirmationModal
+      :show="showDeleteReconciliationModal"
+      @close="cancelDeleteReconciliation"
+    >
+      <template #title>{{ $t('Delete reconciliation?') }}</template>
+      <template #content>
+        <p class="text-sm text-body-1">
+          {{ $t('This will permanently delete this reconciliation and unmatch all its transactions. The transactions themselves stay in your account.') }}
+        </p>
+      </template>
+      <template #footer>
+        <LogerButton variant="neutral" @click="cancelDeleteReconciliation">
+          {{ $t('Cancel') }}
+        </LogerButton>
+        <LogerButton
+          variant="error"
+          class="ml-2"
+          @click="confirmDeleteReconciliation"
+        >
+          {{ $t('Delete reconciliation') }}
+        </LogerButton>
+      </template>
+    </ConfirmationModal>
+
+    <!-- Confirm modal for permanently deleting a transaction from the
+         account. Separate from unmatch — unmatch is one-click safe. -->
+    <ConfirmationModal
+      :show="pendingDelete !== null"
+      @close="cancelRemoveTransaction"
+    >
+      <template #title>{{ $t('Delete transaction?') }}</template>
+      <template #content>
+        <p class="text-sm text-body-1">
+          {{ $t('This will permanently delete the transaction from your account. To only remove it from this reconciliation, use Unmatch instead.') }}
+        </p>
+      </template>
+      <template #footer>
+        <LogerButton variant="neutral" @click="cancelRemoveTransaction">
+          {{ $t('Cancel') }}
+        </LogerButton>
+        <LogerButton
+          variant="error"
+          class="ml-2"
+          @click="confirmRemoveTransaction"
+        >
+          {{ $t('Delete transaction') }}
+        </LogerButton>
+      </template>
+    </ConfirmationModal>
   </AppLayout>
 </template>
