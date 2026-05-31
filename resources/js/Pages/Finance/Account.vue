@@ -480,15 +480,40 @@ const selectedTabName = computed(() => {
                             <h3 class="text-xl font-bold text-body">
                                 {{ formatMoney(selectedAccount?.balance) }}
                             </h3>
-                        </div>
-                        <ElTooltip :content="formatMoney(selectedAccount?.reconciliation_last?.amount)"
-                            v-if="selectedAccount?.reconciliation_last">
+                            <!-- Reconciliation freshness signal. Previously this was
+                                 only visible as a clock icon with the amount in a
+                                 tooltip — the *date* (the thing the user wants to
+                                 know at a glance: "is this account stale?") was
+                                 hidden. Click navigates to reconciliation history. -->
                             <button
+                                v-if="selectedAccount?.reconciliation_last"
+                                type="button"
+                                class="mt-0.5 inline-flex items-center gap-1 text-[11px] text-body-1/60 hover:text-primary transition"
+                                :title="$t('Open reconciliation history')"
                                 @click="router.visit(`/finance/accounts/${selectedAccount.id}/reconciliations/`)"
-                                class="text-secondary hover:text-primary transition-colors">
-                                <IMdiHistory />
+                            >
+                                <IMdiHistory class="w-3 h-3" />
+                                <span>
+                                    {{ $t('Last reconciled') }} · {{ formatDate(selectedAccount.reconciliation_last.date) }}
+                                </span>
+                                <span
+                                    v-if="selectedAccount.reconciliation_last.status === 'pending'"
+                                    class="ml-1 px-1 py-px rounded text-[9px] font-semibold uppercase tracking-wide bg-amber-100 text-amber-700"
+                                >
+                                    {{ $t('Pending') }}
+                                </span>
                             </button>
-                        </ElTooltip>
+                            <button
+                                v-else
+                                type="button"
+                                class="mt-0.5 inline-flex items-center gap-1 text-[11px] text-body-1/50 hover:text-primary transition"
+                                :title="$t('Start the first reconciliation for this account')"
+                                @click="router.visit(`/finance/accounts/${selectedAccount?.id}/reconciliations/`)"
+                            >
+                                <IMdiHistory class="w-3 h-3" />
+                                <span>{{ $t('Never reconciled') }}</span>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Secondary stats: compact inline -->

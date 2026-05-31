@@ -101,6 +101,19 @@ const openQuickAdd = () => {
     openTransactionModal({ mode: 'WITHDRAW' });
 };
 
+// Upcoming row navigation. Only kinds with a known detail destination are
+// clickable; utilities and plan items currently have no per-record route,
+// so they render as plain rows (no hover, no button semantics, no cursor).
+const isUpcomingClickable = (item: UpcomingItem): boolean => {
+    return item.kind === 'billing_cycle' && !!item.account_id;
+};
+
+const openUpcoming = (item: UpcomingItem): void => {
+    if (item.kind === 'billing_cycle' && item.account_id) {
+        router.visit(`/finance/accounts/${item.account_id}`);
+    }
+};
+
 // Group meals by day for weekly view
 const mealsByDay = computed(() => {
     const groups: Record<string, { label: string; meals: MealItem[] }> = {};
@@ -167,14 +180,36 @@ const closeBulkPlanner = () => { showBulkPlannerModal.value = false; };
                             : $t('Nothing logged yet — log it before you forget.')
                         }}
                     </p>
+                    <!-- Budget pace line.
+                         Three states so the user always knows where they stand:
+                           (a) under budget AND today's spend is within the daily slice → neutral
+                           (b) under budget BUT today's spend exceeded the daily slice → amber pace warning
+                           (c) over the monthly budget entirely → red over-by callout
+                         Previous version hid the line whenever daily_remaining ≤ 0 — the
+                         exact moment a "Today" page should be loudest. -->
                     <p
-                        v-if="today.money.daily_remaining > 0"
+                        v-if="today.money.month_remaining > 0"
                         class="text-sm mt-2"
-                        :class="today.money.daily_remaining < today.money.today_spent
-                            ? 'text-error font-medium'
+                        :class="today.money.today_spent > today.money.daily_remaining
+                            ? 'text-warning font-medium'
                             : 'text-body-1/70'"
                     >
-                        {{ formatMoney(today.money.daily_remaining) }}/{{ $t('day remaining') }}
+                        <template v-if="today.money.today_spent > today.money.daily_remaining">
+                            {{ $t('Ahead of pace — daily slice is') }}
+                            {{ formatMoney(today.money.daily_remaining) }}
+                        </template>
+                        <template v-else>
+                            {{ formatMoney(today.money.daily_remaining) }}/{{ $t('day remaining') }}
+                        </template>
+                        <span class="text-xs text-body-1/50 ml-1">
+                            ({{ today.money.days_in_month_left }}d left)
+                        </span>
+                    </p>
+                    <p
+                        v-else
+                        class="text-sm mt-2 text-error font-medium"
+                    >
+                        {{ $t('Over budget by') }} {{ formatMoney(Math.abs(today.money.month_remaining)) }}
                         <span class="text-xs text-body-1/50 ml-1">
                             ({{ today.money.days_in_month_left }}d left)
                         </span>
@@ -326,14 +361,19 @@ const closeBulkPlanner = () => { showBulkPlannerModal.value = false; };
                         </h2>
                     </header>
                     <div v-if="today.upcoming.length" class="space-y-2">
+                        <!-- Render as <button> only when the row is actually navigable.
+                             Previously every row carried type="button" — invalid HTML on
+                             the <div> branch — and only billing_cycle items had an
+                             onClick, while utilities/planners showed the same shape so
+                             users couldn't tell which rows did anything. -->
                         <component
-                            :is="item.kind === 'billing_cycle' ? 'button' : 'div'"
+                            :is="isUpcomingClickable(item) ? 'button' : 'div'"
                             v-for="item in today.upcoming"
                             :key="item.id"
-                            type="button"
+                            v-bind="isUpcomingClickable(item) ? { type: 'button' } : {}"
                             class="w-full flex items-center justify-between gap-3 px-3 py-2 rounded-md bg-base-lvl-2 transition text-left"
-                            :class="item.kind === 'billing_cycle' ? 'hover:bg-base-lvl-1 cursor-pointer' : ''"
-                            @click="item.kind === 'billing_cycle' && item.account_id ? router.visit(`/finance/accounts/${item.account_id}`) : null"
+                            :class="isUpcomingClickable(item) ? 'hover:bg-base-lvl-1 cursor-pointer' : 'cursor-default'"
+                            @click="isUpcomingClickable(item) ? openUpcoming(item) : null"
                         >
                             <div class="flex items-center gap-2 min-w-0">
                                 <i
