@@ -17,6 +17,7 @@ import FinanceSectionNav from "./Partials/FinanceSectionNav.vue";
 import AccountReconciliationBanner from "./Partials/AccountReconciliationBanner.vue";
 import TransactionSearch from "@/domains/transactions/components/TransactionSearch.vue";
 import TransactionTable from "@/domains/transactions/components/TransactionTable.vue";
+import MultiCurrencyDetailPanel from "@/domains/transactions/components/MultiCurrencyDetailPanel.vue";
 import AccountReconciliationForm from "./AccountReconciliationForm.vue";
 
 import { NDropdown } from "naive-ui";
@@ -555,6 +556,18 @@ const selectedTabName = computed(() => {
                     </p>
                 </div>
             </section>
+
+            <!-- BHD-style "Detalle tarjeta de crédito" — two columns when the account
+                 has multiple currencies. Reads from Account::getAllCurrencyBalances()
+                 which is exposed as `all_currency_balances` on the account payload.
+                 Hidden when the account is single-currency. -->
+            <MultiCurrencyDetailPanel
+                v-if="selectedAccount?.is_multi_currency && selectedAccount?.all_currency_balances?.length"
+                class="mt-3"
+                :account-name="selectedAccount.name"
+                :account-type="isCreditCard ? 'credit_card' : (selectedAccount.detail_type?.name ?? 'bank')"
+                :currencies="selectedAccount.all_currency_balances"
+            />
 
             <AccountReconciliationBanner v-if="selectedAccount" :account="selectedAccount" class="mt-2" />
 

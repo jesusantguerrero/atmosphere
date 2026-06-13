@@ -129,24 +129,26 @@ class BillingCycle extends Model implements IPayableDocument
         $payable->debt = $payable->total - $payable->paid;
     }
 
-    public static function checkStatus($payable)
+    public static function checkStatus($payable): string
     {
-        $debt = $payable->total - $payable->paid;
-        if ($debt <= 0) {
-            $status = self::STATUS_PAID;
-        } elseif ($debt > 0 && $debt < $payable->amount) {
-            $status = self::STATUS_PARTIALLY_PAID;
-        } elseif ($debt && $payable->end_at < $payable->payments?->first()?->payment_date) {
-            $status = self::STATUS_LATE;
-        } elseif ($debt && ! $payable->cancelled_at) {
-            $status = self::STATUS_PENDING;
-        } elseif ($payable->cancelled_at) {
-            $status = self::STATUS_CANCELLED;
-        } else {
-            $status = $payable->status;
+        $total = (float) $payable->total;
+        $paid = (float) $payable->paid;
+        $debt = $total - $paid;
+
+        $statusField = $payable->getStatusField();
+        if (($payable->$statusField ?? null) === self::STATUS_CANCELLED) {
+            return self::STATUS_CANCELLED;
         }
 
-        return $status;
+        if ($total > 0.00001 && $debt <= 0.00001) {
+            return self::STATUS_PAID;
+        }
+
+        if ($paid > 0.00001) {
+            return self::STATUS_PARTIALLY_PAID;
+        }
+
+        return self::STATUS_PENDING;
     }
 
     public function updateStatus()
@@ -187,24 +189,97 @@ class BillingCycle extends Model implements IPayableDocument
             return;
         }
 
-        $linkedAmount = (float) $payable->payments()->sum('amount');
-
-        $unlinkedAmount = 0.0;
-        if ($payable->account_id && $payable->start_at && $payable->due_at) {
-            $unlinkedAmount = (float) Transaction::query()
-                ->where('team_id', $payable->team_id)
-                ->where('counter_account_id', $payable->account_id)
-                ->where('status', 'verified')
-                ->whereBetween('date', [$payable->start_at, $payable->due_at])
-                ->whereNull('transactionable_id')
-                ->sum('total');
-        }
-
-        $totalPaid = $linkedAmount + $unlinkedAmount;
+        $totalPaid = self::computePaid($payable);
         $payable->paid = $totalPaid;
         $payable->debt = (float) $payable->total - $totalPaid;
         $statusField = $payable->getStatusField();
         $payable->$statusField = self::checkStatus($payable);
+    }
+
+    /**
+     * Amount considered paid against $payable: its explicitly-linked Payment
+     * rows plus its share of any verified card payments that aren't linked to
+     * a Payment yet.
+     *
+     * Unlinked payments are allocated across the account's cycles oldest
+     * statement first — mirroring AutoLinkCreditCardPayment's "oldest open
+     * cycle" rule — and a payment can only settle a cycle whose cut date
+     * (end_at) has already passed on the payment date. You pay a statement
+     * after it closes, never the cycle still accumulating. Allocation is
+     * capped at each cycle's remaining debt, so an arrears payment for a prior
+     * statement never spills into (and prematurely settles) the open cycle.
+     */
+    protected static function computePaid($payable): float
+    {
+        if (! $payable->account_id || ! $payable->team_id) {
+            return (float) $payable->payments()->sum('amount');
+        }
+
+        $cycles = self::query()
+            ->where('team_id', $payable->team_id)
+            ->where('account_id', $payable->account_id)
+            ->orderBy('end_at')
+            ->get(['id', 'end_at', 'total']);
+
+        $linkedByCycle = Payment::query()
+            ->where('payable_type', self::class)
+            ->whereIn('payable_id', $cycles->pluck('id')->filter()->all())
+            ->selectRaw('payable_id, sum(amount) as linked')
+            ->groupBy('payable_id')
+            ->pluck('linked', 'payable_id');
+
+        $selfKey = $payable->id ?? '_self';
+        $selfLinked = (float) ($payable->id ? ($linkedByCycle[$payable->id] ?? 0) : 0);
+
+        $ledger = [];
+        foreach ($cycles as $cycle) {
+            if ($payable->id && $cycle->id === $payable->id) {
+                continue;
+            }
+            $linked = (float) ($linkedByCycle[$cycle->id] ?? 0);
+            $ledger[$cycle->id] = [
+                'end_at' => substr((string) $cycle->end_at, 0, 10),
+                'remaining' => max(0.0, (float) $cycle->total - $linked),
+                'allocated' => 0.0,
+            ];
+        }
+        $ledger[$selfKey] = [
+            'end_at' => substr((string) $payable->end_at, 0, 10),
+            'remaining' => max(0.0, (float) $payable->total - $selfLinked),
+            'allocated' => 0.0,
+        ];
+
+        uasort($ledger, fn ($a, $b) => $a['end_at'] <=> $b['end_at']);
+
+        $payments = Transaction::query()
+            ->where('team_id', $payable->team_id)
+            ->where('counter_account_id', $payable->account_id)
+            ->where('status', 'verified')
+            ->whereNull('transactionable_id')
+            ->orderBy('date')
+            ->get(['date', 'total']);
+
+        foreach ($payments as $payment) {
+            $amount = (float) $payment->total;
+            $payDate = substr((string) $payment->date, 0, 10);
+            foreach ($ledger as $key => $row) {
+                if ($amount <= 0.00001) {
+                    break;
+                }
+                if ($row['end_at'] >= $payDate) {
+                    continue;
+                }
+                $room = $row['remaining'] - $row['allocated'];
+                if ($room <= 0.00001) {
+                    continue;
+                }
+                $give = min($room, $amount);
+                $ledger[$key]['allocated'] += $give;
+                $amount -= $give;
+            }
+        }
+
+        return $selfLinked + ($ledger[$selfKey]['allocated'] ?? 0.0);
     }
 
     public function linkPayment(Transaction $transaction, $formData)

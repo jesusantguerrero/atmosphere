@@ -45,7 +45,7 @@ class APAPAlert implements MailToTransaction
             return $node->text();
         });
 
-        $total = (int) str_replace(',', '', $tdValues[13]);
+        $total = (float) str_replace(',', '', $tdValues[13]);
         $type = 1;
 
         return new TransactionDataDTO([

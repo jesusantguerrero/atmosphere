@@ -29,7 +29,7 @@ class QikAlert implements MailToTransaction
 
         preg_match('/transacci[óo]n de\s*(RD\$|USD\$)\s*([\d,]+\.?\d*)/iu', $text, $amountMatches);
         $currencyCode = isset($amountMatches[1]) ? Qik::parseCurrency($amountMatches[1]) : 'DOP';
-        $total = isset($amountMatches[2]) ? (int) str_replace(',', '', $amountMatches[2]) : 0;
+        $total = isset($amountMatches[2]) ? (float) str_replace(',', '', $amountMatches[2]) : 0;
 
         preg_match('/Localidad\s+(.+?)\s+Fecha y hora/iu', $text, $payeeMatches);
         $payee = isset($payeeMatches[1]) ? trim($payeeMatches[1]) : '';

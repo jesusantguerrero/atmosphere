@@ -78,9 +78,12 @@ const toggleLandingPage = () => {
 
 const { openTransactionModal } = useTransactionModal();
 
+// Short day-of-week prefix on the date so a row's "when" reads in one
+// glance ("Fri May 29 · tomorrow") instead of forcing the user to
+// translate "May 29" → "what day is that?".
 const formatDueDate = (iso: string) => {
     try {
-        return format(parseISO(iso), 'MMM d');
+        return format(parseISO(iso), 'EEE MMM d');
     } catch (e) {
         return iso;
     }
