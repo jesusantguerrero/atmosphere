@@ -41,7 +41,7 @@ class BSCAlert implements MailToTransaction
 
         // Extract amount: "Monto: RD$ 4,115.00"
         preg_match('/Monto:\s*(RD\$|USD\$)?\s*([\d,]+\.?\d*)/', $productLine, $amountMatches);
-        $total = isset($amountMatches[2]) ? (int) str_replace(',', '', $amountMatches[2]) : 0;
+        $total = isset($amountMatches[2]) ? (float) str_replace(',', '', $amountMatches[2]) : 0;
         $currencyCode = isset($amountMatches[1]) ? str_replace('$', '', $amountMatches[1]) : 'RD$';
 
         // Extract payee/location: "Lugar de transacción: {location}"

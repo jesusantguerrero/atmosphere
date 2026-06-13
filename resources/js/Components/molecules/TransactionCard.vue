@@ -92,7 +92,7 @@ const handleOptions = (option: 'remove'|'selected') => {
 
 <template>
   <div
-    class="capitalize transition text-slate-body group"
+    class="capitalize transition text-body-1 group"
     :class="[
       allowSelect &&
         'cursor-pointer hover:bg-base-lvl-3 border-2 border-transparent hover:border-primary',
