@@ -8,6 +8,12 @@ use Insane\Journal\Models\Core\Account as BaseAccount;
 class Account extends BaseAccount
 {
     /**
+     * Always-serialized accessor for the BHD-style multi-currency detail panel.
+     * Returns null when single-currency so the Vue v-if (`?.length`) hides the panel.
+     */
+    protected $appends = ['all_currency_balances'];
+
+    /**
      * Initialize the model and merge fillable fields
      */
     public function __construct(array $attributes = [])
@@ -20,7 +26,7 @@ class Account extends BaseAccount
                 'secondary_currencies'
             ]
         );
-        
+
         // Merge parent casts with our additional casts
         $this->casts = array_merge(
             $this->casts ?? [],
@@ -29,8 +35,23 @@ class Account extends BaseAccount
                 'secondary_currencies' => 'array'
             ]
         );
-        
+
         parent::__construct($attributes);
+    }
+
+    /**
+     * Accessor that powers the `MultiCurrencyDetailPanel` Vue component on
+     * `Pages/Finance/Account.vue`. Returns null for single-currency accounts so
+     * the panel hides itself; returns the same shape as `getAllCurrencyBalances()`
+     * for multi-currency ones (DOP/USD/etc. side-by-side, BHD-style).
+     */
+    public function getAllCurrencyBalancesAttribute(): ?array
+    {
+        if (!$this->isMultiCurrency()) {
+            return null;
+        }
+
+        return array_values($this->getAllCurrencyBalances());
     }
 
     /**

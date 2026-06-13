@@ -106,12 +106,20 @@ const state = reactive({
     total: 0,
     has_splits: false,
     // Multi-currency fields
-    currency_code: 'USD',
+    currency_code: (window as any)?.logerAppSettings?.currency_code ?? 'USD',
     exchange_rate: null as number | null,
     exchange_amount: null as number | null,
     is_multi_currency: false
   })
 });
+
+/**
+ * Team-level default currency from app settings. Falls back to USD if not configured.
+ * Replaces hardcoded 'USD' literals that broke auto-flip logic for non-USD-primary teams
+ * (e.g. a DR user with DOP primary on a multi-currency BHD card was getting auto-flip
+ * triggered backwards).
+ */
+const defaultCurrency = (window as any)?.logerAppSettings?.currency_code ?? 'USD';
 
 state.form.validationSchema({
   description: [validators.isRequired],
@@ -138,14 +146,14 @@ const showSuccessToast = (message: string) => {
 
 // Multi-currency state
 const isMultiCurrency = ref(false);
-const transactionCurrency = ref('USD');
+const transactionCurrency = ref(defaultCurrency);
 const selectedAccountId = ref<number | null>(null);
 const manualExchangeRate = ref<number | null>(null);
 const currentExchangeRate = ref<number | null>(null);
 
 const currencyAmount = ref({
   amount: 0,
-  currency: 'USD'
+  currency: defaultCurrency
 });
 
 watch(
@@ -519,8 +527,9 @@ const handleTransactionCurrencyChange = (currency: { code: string; name: string;
     transactionCurrency.value = currency.code;
     currencyAmount.value.currency = currency.code;
 
-    // Auto-enable multicurrency mode if currency is different from USD
-    if (currency.code !== 'USD' && hasMultiCurrencyAccounts.value) {
+    // Auto-enable multicurrency mode if currency differs from the team's primary.
+    // Was hardcoded to 'USD' — broke for DR users on DOP-primary teams.
+    if (currency.code !== defaultCurrency && hasMultiCurrencyAccounts.value) {
       isMultiCurrency.value = true;
     }
 
@@ -627,6 +636,28 @@ const assignTransactionLabel = (label: Record<string, string>, transaction: Reco
                   <CurrencySelector v-model="transactionCurrency" :exclude-currencies="[]"
                     @change="handleTransactionCurrencyChange" />
                 </AtField>
+              </div>
+
+              <!-- Multi-currency discoverability hint.
+                   The Multi-currency toggle lives at the bottom of the modal so it's
+                   easy to miss. When the team has a multi-currency account but the
+                   user hasn't enabled multi-currency mode yet, surface a one-click
+                   shortcut right where they'll be entering the transaction. -->
+              <div
+                v-if="hasMultiCurrencyAccounts && !isMultiCurrency"
+                class="mx-4 md:mx-0 mt-3 flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 rounded-md border border-primary/20 bg-primary/5 text-sm text-body"
+              >
+                <span class="flex items-center gap-2">
+                  <i class="fa fa-coins text-primary" />
+                  <span>{{ $t('This team has accounts in multiple currencies. Enable to log a charge in a non-primary currency.') }}</span>
+                </span>
+                <button
+                  type="button"
+                  class="px-3 py-1 rounded font-medium bg-primary text-white text-xs hover:bg-primary-dark transition"
+                  @click="isMultiCurrency = true"
+                >
+                  {{ $t('Enable multi-currency') }}
+                </button>
               </div>
 
               <!-- Multi-Currency Transaction Entry -->
