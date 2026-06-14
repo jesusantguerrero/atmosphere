@@ -70,13 +70,10 @@ $marketingLocale = function (): void {
 
 Route::get('/', function () use ($marketingLocale) {
     if (auth()->check()) {
-        $landingPage = Setting::where([
-            'user_id' => auth()->id(),
-            'team_id' => auth()->user()->current_team_id,
-            'name' => 'landing_page',
-        ])->value('value');
-
-        return redirect($landingPage === 'today' ? '/today' : '/dashboard');
+        // Today merged into Dashboard — always land on /dashboard. The legacy
+        // `landing_page='today'` Setting is now a no-op; the /today route itself
+        // redirects to /dashboard for any direct navigation that survived.
+        return redirect('/dashboard');
     }
 
     $marketingLocale();
@@ -201,7 +198,11 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     ***************************************************************************************/
 
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
-    Route::get('/today', TodayController::class)->name('today');
+    // /today merged into /dashboard — its Due Today + Upcoming widgets now render
+    // in the dashboard side column. Route preserved as a redirect so old bookmarks,
+    // notification links, and external integrations don't 404. `today` name kept so
+    // existing `route('today')` calls keep resolving without a deprecation sweep.
+    Route::get('/today', fn () => redirect()->route('dashboard'))->name('today');
     Route::get('/calendar', CalendarController::class)->name('calendar');
     Route::post('/planner/bulk', [PlannerController::class, 'bulkStore'])->name('planner.bulk');
     Route::post('/planner', [PlannerController::class, 'store'])->name('planner.store');

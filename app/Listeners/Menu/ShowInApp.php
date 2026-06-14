@@ -10,8 +10,9 @@ class ShowInApp
     {
         $menu = $event->menu;
 
-        // Today (TODAY-1 v0.1 — daily-first command center; coexists with Dashboard)
-        $menu->add('Today', route('today'));
+        // Today merged into Dashboard (its Due Today + Upcoming widgets now live
+        // in Pages/Dashboard/Index.vue side column). Route /today still redirects
+        // to /dashboard for old bookmarks; sidebar entry retired.
         // Calendar (unified view across domains)
         $menu->add('Calendar', route('calendar'));
         // Dashboard

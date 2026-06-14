@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Setting;
 use App\Providers\RouteServiceProvider;
 use Closure;
 use Illuminate\Http\Request;
@@ -23,20 +22,11 @@ class RedirectIfAuthenticated
 
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
-                $user = Auth::guard($guard)->user();
-                $home = RouteServiceProvider::HOME;
-
-                $landingPage = Setting::where([
-                    'user_id' => $user->id,
-                    'team_id' => $user->current_team_id,
-                    'name' => 'landing_page',
-                ])->value('value');
-
-                if ($landingPage === 'today') {
-                    $home = '/today';
-                }
-
-                return redirect($home);
+                // Today merged into Dashboard — always send authenticated users to
+                // /dashboard. The legacy `landing_page='today'` Setting is now a
+                // no-op; the /today route itself redirects to /dashboard so any
+                // stale link still lands on the right page.
+                return redirect(RouteServiceProvider::HOME);
             }
         }
 
