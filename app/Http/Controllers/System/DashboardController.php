@@ -5,6 +5,7 @@ namespace App\Http\Controllers\System;
 use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Housing\Models\Occurrence;
 use App\Domains\Meal\Services\MealService;
+use App\Domains\Today\Services\TodayService;
 use App\Domains\Transaction\Services\CreditCardReportService;
 use App\Domains\Transaction\Services\PlannedTransactionService;
 use App\Domains\Transaction\Services\ReportService;
@@ -25,6 +26,7 @@ class DashboardController
         private PlannedTransactionService $plannedService,
         private CreditCardReportService $creditCardReportService,
         private WatchlistService $watchlistService,
+        private TodayService $todayService,
     ) {}
 
     public function __invoke()
@@ -53,6 +55,13 @@ class DashboardController
 
         $topWatchlists = $this->getTopWatchlists($teamId, $startDate, $endDate);
 
+        // Pull only the two slices of TodayService that we actually surface in the
+        // dashboard's side column — `today` (due-today actions: planner + relationship
+        // reminders) and `upcoming` (cross-pillar timeline incl. plans, distinct from
+        // the finance-only NextPayments widget). The rest of the Today payload
+        // (`money`, `attention`, `meal`) is already represented by other widgets here.
+        $todayPayload = $this->todayService->buildPayload($teamId, $request->user()->id);
+
         return inertia('Dashboard/Index', [
             'sectionTitle' => 'Dashboard',
             'meals' => PlannedMealResource::collection($plannedMeals),
@@ -62,6 +71,8 @@ class DashboardController
             'expenses' => ReportService::generateCurrentPreviousReport($teamId, 'month', 1),
             'spendingSummary' => ReportService::generateExpensesByPeriod($teamId, $startDate),
             'accounts' => $accounts,
+            'todayItems' => $todayPayload['today'] ?? [],
+            'upcomingItems' => $todayPayload['upcoming'] ?? [],
             'onboarding' => function () use ($team) {
                 $onboarding = $team->onboarding();
 

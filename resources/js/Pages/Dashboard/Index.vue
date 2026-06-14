@@ -18,6 +18,8 @@ import BudgetFundWidget from "./Partials/BudgetFundWidget.vue";
 import BudgetWidget from "./Partials/BudgetWidget.vue";
 import AccountBalancesWidget from "./Partials/AccountBalancesWidget.vue";
 import DashboardSummary from "./Partials/DashboardSummary.vue";
+import DueTodayWidget, { type TodayItem } from "./Partials/DueTodayWidget.vue";
+import UpcomingWidget, { type UpcomingItem } from "./Partials/UpcomingWidget.vue";
 import WatchlistDashboardWidget from "@/domains/watchlist/components/WatchlistDashboardWidget.vue";
 import DashboardFab from "./Partials/DashboardFab.vue";
 import BulkSelectionBar from "@/Components/BulkSelectionBar.vue";
@@ -66,8 +68,15 @@ const props = withDefaults(
     checks?: IOccurrenceCheck[];
     modules: any[];
     topWatchlists: any[];
+    /** From /today route (now merged here). Action list of items due today. */
+    todayItems?: TodayItem[];
+    /** From /today route. Cross-pillar timeline including planner items. */
+    upcomingItems?: UpcomingItem[];
   }>(),
-  {}
+  {
+    todayItems: () => [],
+    upcomingItems: () => [],
+  }
 );
 const contextStore = useAppContextStore();
 
@@ -224,6 +233,8 @@ const deleteBulkTransactions = () => {
               v-if="isModuleEnabled('housing')" />
 
           <AccountBalancesWidget :accounts="accounts" />
+          <DueTodayWidget :items="todayItems" />
+          <UpcomingWidget :items="upcomingItems" />
           <WatchlistDashboardWidget :watchlists="topWatchlists" />
           <WidgetContainer
             :message="$t('Transactions')"
