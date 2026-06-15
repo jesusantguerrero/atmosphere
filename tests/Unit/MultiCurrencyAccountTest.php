@@ -63,6 +63,21 @@ class MultiCurrencyAccountTest extends TestCase
         $this->assertContains('all_currency_balances', $account->getAppends());
     }
 
+    /**
+     * @test
+     *
+     * Regression: declaring `protected $appends = ['all_currency_balances']`
+     * at the class level overrode the vendor's `$appends = ['balance']`,
+     * blanking the balance shown in the account header. The constructor must
+     * MERGE with the parent's appends, not replace them.
+     */
+    public function appends_preserves_vendor_balance_entry()
+    {
+        $account = new Account();
+
+        $this->assertContains('balance', $account->getAppends());
+    }
+
     /** @test */
     public function all_currency_balances_accessor_returns_null_when_single_currency()
     {

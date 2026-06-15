@@ -29,33 +29,37 @@ class Account extends BaseAccount
     }
 
     /**
-     * Always-serialized accessor for the BHD-style multi-currency detail panel.
-     * Returns null when single-currency so the Vue v-if (`?.length`) hides the panel.
-     */
-    protected $appends = ['all_currency_balances'];
-
-    /**
-     * Initialize the model and merge fillable fields
+     * Initialize the model and merge fillable / casts / appends with parent.
+     *
+     * NOTE: declaring `protected $appends = ['all_currency_balances']` at the
+     * class level would OVERRIDE the vendor's `$appends = ['balance']` (PHP
+     * does not auto-merge inherited properties) and the UI would lose the
+     * `balance` field that powers the account header. Merge here instead so
+     * both the vendor's `balance` and our `all_currency_balances` ship in the
+     * serialized payload.
      */
     public function __construct(array $attributes = [])
     {
-        // Merge parent fillable with our additional fields
         $this->fillable = array_merge(
             $this->fillable ?? [],
             [
                 'is_multi_currency',
-                'secondary_currencies'
+                'secondary_currencies',
             ]
         );
 
-        // Merge parent casts with our additional casts
         $this->casts = array_merge(
             $this->casts ?? [],
             [
                 'is_multi_currency' => 'boolean',
-                'secondary_currencies' => 'array'
+                'secondary_currencies' => 'array',
             ]
         );
+
+        $this->appends = array_values(array_unique(array_merge(
+            $this->appends ?? [],
+            ['all_currency_balances'],
+        )));
 
         parent::__construct($attributes);
     }
