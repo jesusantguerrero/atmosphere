@@ -4,9 +4,30 @@ namespace App\Models;
 
 use App\Models\CurrencyBalance;
 use Insane\Journal\Models\Core\Account as BaseAccount;
+use Insane\Journal\Models\Core\AccountDetailType;
 
 class Account extends BaseAccount
 {
+    /**
+     * Override the vendor's static finder so it returns App\Models\Account
+     * instances (with our $appends) instead of vendor base-class instances.
+     *
+     * The vendor implementation does `return Account::where(...)` with a
+     * hard-coded import to the vendor class, which bypasses LSB. Using
+     * `static::` here makes the query resolve to whichever class called it —
+     * App\Models\Account when called via App\Models\Account::getByDetailTypes(),
+     * so the all_currency_balances accessor lands in the serialized JSON
+     * (sidebar accounts in HandleInertiaRequests, DashboardController, etc.).
+     */
+    public static function getByDetailTypes($teamId, $detailTypes = AccountDetailType::ALL)
+    {
+        return static::where('accounts.team_id', $teamId)
+            ->byDetailTypes($detailTypes)
+            ->orderBy('accounts.index')
+            ->with(['reconciliationLast'])
+            ->get();
+    }
+
     /**
      * Always-serialized accessor for the BHD-style multi-currency detail panel.
      * Returns null when single-currency so the Vue v-if (`?.length`) hides the panel.
@@ -141,23 +162,31 @@ class Account extends BaseAccount
     }
 
     /**
-     * Get all currency balances for this account
+     * Get all currency balances for this account.
+     *
+     * Returns one row per supported currency. The primary currency row is
+     * always present. Secondary rows come from either the `currency_balances`
+     * table (when populated by MultiCurrencyTransactionService) OR — as a
+     * fallback — from `secondary_currencies` on the account itself with zero
+     * balances. The fallback matters when the user enables multi-currency via
+     * AccountUpdate (raw update) without going through enableMultiCurrency(),
+     * which would normally seed the CurrencyBalance rows. Without it the
+     * MultiCurrencyDetailPanel would show only the primary column and feel
+     * broken right after the user flips the toggle.
      */
     public function getAllCurrencyBalances(): array
     {
         $balances = [];
-        
-        // Add primary currency balance
         $primaryCurrency = $this->getPrimaryCurrency();
+
         $balances[$primaryCurrency] = [
             'currency_code' => $primaryCurrency,
             'balance' => $this->getBalanceInCurrency($primaryCurrency),
             'pending_balance' => $this->getPendingBalanceInCurrency($primaryCurrency),
             'total_balance' => $this->getTotalBalanceInCurrency($primaryCurrency),
-            'is_primary' => true
+            'is_primary' => true,
         ];
 
-        // Add secondary currency balances
         foreach ($this->currencyBalances as $currencyBalance) {
             if ($currencyBalance->currency_code !== $primaryCurrency) {
                 $balances[$currencyBalance->currency_code] = [
@@ -165,7 +194,23 @@ class Account extends BaseAccount
                     'balance' => (float) $currencyBalance->balance,
                     'pending_balance' => (float) $currencyBalance->pending_balance,
                     'total_balance' => (float) $currencyBalance->total_balance,
-                    'is_primary' => false
+                    'is_primary' => false,
+                ];
+            }
+        }
+
+        foreach ($this->getSecondaryCurrencies() as $secondaryCurrency) {
+            if ($secondaryCurrency === $primaryCurrency) {
+                continue;
+            }
+
+            if (! isset($balances[$secondaryCurrency])) {
+                $balances[$secondaryCurrency] = [
+                    'currency_code' => $secondaryCurrency,
+                    'balance' => 0.0,
+                    'pending_balance' => 0.0,
+                    'total_balance' => 0.0,
+                    'is_primary' => false,
                 ];
             }
         }
