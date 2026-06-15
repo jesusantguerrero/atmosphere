@@ -82,6 +82,34 @@ class MultiCurrencyAccountTest extends TestCase
         $this->assertNull($arr['all_currency_balances']);
     }
 
+    /**
+     * @test
+     *
+     * If the user enables multi-currency via the AccountUpdate raw update path
+     * (i.e., without enableMultiCurrency() seeding rows in `currency_balances`),
+     * the accessor should still surface a row per declared secondary currency
+     * with zero balances. Otherwise the panel only shows the primary column.
+     */
+    public function getAllCurrencyBalances_backfills_secondaries_with_zero_when_no_balance_row()
+    {
+        $account = new Account([
+            'currency_code' => 'DOP',
+            'is_multi_currency' => true,
+            'secondary_currencies' => ['USD', 'EUR'],
+        ]);
+        $account->setRelation('currencyBalances', collect());
+
+        $balances = $account->getAllCurrencyBalances();
+
+        $this->assertArrayHasKey('DOP', $balances);
+        $this->assertArrayHasKey('USD', $balances);
+        $this->assertArrayHasKey('EUR', $balances);
+        $this->assertSame(0.0, $balances['USD']['balance']);
+        $this->assertSame(0.0, $balances['USD']['total_balance']);
+        $this->assertFalse($balances['USD']['is_primary']);
+        $this->assertTrue($balances['DOP']['is_primary']);
+    }
+
     /** @test */
     public function it_can_get_all_supported_currencies()
     {
