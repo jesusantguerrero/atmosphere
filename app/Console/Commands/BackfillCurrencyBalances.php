@@ -36,7 +36,8 @@ class BackfillCurrencyBalances extends Command
 {
     protected $signature = 'multicurrency:backfill-balances
         {--team= : Limit to a single team_id}
-        {--dry : Compute and print but do not write to currency_balances}';
+        {--dry : Compute and print but do not write to currency_balances}
+        {--list-txs : List every tx contributing to each per-currency sum (date, payee, total)}';
 
     protected $description = 'Recompute currency_balances.pending_balance from transactions for multi-currency accounts';
 
@@ -44,6 +45,7 @@ class BackfillCurrencyBalances extends Command
     {
         $teamFilter = $this->option('team');
         $dryRun = (bool) $this->option('dry');
+        $listTxs = (bool) $this->option('list-txs');
 
         $query = Account::query()->where('is_multi_currency', true);
         if ($teamFilter) {
@@ -92,6 +94,10 @@ class BackfillCurrencyBalances extends Command
                     number_format($pending, 2)
                 ));
 
+                if ($listTxs) {
+                    $this->printContributingTxs($account->id, $currency);
+                }
+
                 if ($dryRun) {
                     continue;
                 }
@@ -133,5 +139,59 @@ class BackfillCurrencyBalances extends Command
             ->where('t.currency_code', $currencyCode)
             ->where('t.status', '!=', Transaction::STATUS_CANCELED)
             ->sum(DB::raw('tl.amount * tl.type'));
+    }
+
+    /**
+     * Print every tx contributing to the per-currency sum so the user can
+     * audit unexpected totals (e.g. legacy seed data, double-imports). One
+     * line per transaction_line with date, payee, signed amount, status.
+     */
+    private function printContributingTxs(int $accountId, string $currencyCode): void
+    {
+        $rows = DB::table('transaction_lines as tl')
+            ->join('transactions as t', 't.id', '=', 'tl.transaction_id')
+            ->leftJoin('payees as p', 'p.id', '=', 't.payee_id')
+            ->where('tl.account_id', $accountId)
+            ->where('t.currency_code', $currencyCode)
+            ->where('t.status', '!=', Transaction::STATUS_CANCELED)
+            ->orderByDesc('t.date')
+            ->orderByDesc('t.id')
+            ->get([
+                't.id as tx_id',
+                't.date',
+                't.description',
+                't.status',
+                'p.name as payee_name',
+                'tl.amount',
+                'tl.type',
+            ]);
+
+        if ($rows->isEmpty()) {
+            $this->line('       (no transactions found)');
+
+            return;
+        }
+
+        $running = 0.0;
+        foreach ($rows as $row) {
+            $signed = (float) $row->amount * (int) $row->type;
+            $running += $signed;
+
+            $this->line(sprintf(
+                '       %s  #%-7d  %-30s  %s%-12s  %-8s  running=%s',
+                $row->date,
+                $row->tx_id,
+                $this->shorten($row->payee_name ?: $row->description ?: '-', 30),
+                $signed >= 0 ? '+' : '',
+                number_format($signed, 2),
+                $row->status,
+                number_format($running, 2)
+            ));
+        }
+    }
+
+    private function shorten(string $value, int $max): string
+    {
+        return strlen($value) > $max ? substr($value, 0, $max - 1).'…' : $value;
     }
 }
