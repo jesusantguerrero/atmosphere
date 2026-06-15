@@ -12,8 +12,8 @@ use App\Domains\Transaction\Services\ReportService;
 use App\Domains\Transaction\Services\TransactionService;
 use App\Http\Controllers\Traits\HasEnrichedRequest;
 use App\Http\Resources\PlannedMealResource;
+use App\Models\Account;
 use Inertia\Inertia;
-use Insane\Journal\Models\Core\Account;
 use Insane\Journal\Models\Core\AccountDetailType;
 use Modules\Watchlist\Services\WatchlistService;
 

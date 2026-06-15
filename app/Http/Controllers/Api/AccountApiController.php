@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\Account;
 use Illuminate\Http\Request;
-use Insane\Journal\Models\Core\Account;
 use Insane\Journal\Models\Core\Transaction;
 use App\Domains\Transaction\Services\CreditCardReportService;
 use App\Services\MultiCurrencyDisplayService;
