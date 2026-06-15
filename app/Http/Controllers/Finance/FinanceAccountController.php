@@ -18,8 +18,8 @@ use Freesgen\Atmosphere\Http\Querify;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use App\Models\Account;
 use Insane\Journal\Models\Accounting\ReconciliationEntry;
-use Insane\Journal\Models\Core\Account;
 use Insane\Journal\Models\Core\Transaction;
 
 class FinanceAccountController extends InertiaController

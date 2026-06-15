@@ -4,9 +4,9 @@ namespace App\Http\Middleware;
 
 use App\Concerns\Facades\Menu;
 use App\Domains\AppCore\Models\Category;
+use App\Models\Account;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
-use Insane\Journal\Models\Core\Account;
 use Insane\Journal\Models\Core\AccountDetailType;
 use Tightenco\Ziggy\Ziggy;
 
