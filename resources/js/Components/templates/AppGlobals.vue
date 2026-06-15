@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { router } from "@inertiajs/vue3";
+import { router, usePage } from "@inertiajs/vue3";
 
 import MoreOptionsModal from "../MoreOptionsModal.vue";
 import TransactionModal from "@/domains/transactions/components/TransactionModal.vue";
@@ -37,6 +37,17 @@ const transactionModalMaxWidth = computed(() => {
 
 const { isOpen: isImportModalOpen } = useImportModal();
 
+/**
+ * TransactionModal lives at the app root and is opened from many places
+ * via the useTransactionModal composable. None of those call sites have the
+ * accounts list in scope, so we forward the globally-shared `accounts` Inertia
+ * prop here. Without this the modal can't tell which accounts are
+ * multi-currency, so the Currency picker stays hidden and editing a tx that's
+ * not in the team default currency gives no visual cue about its currency.
+ */
+const page = usePage();
+const sharedAccounts = computed(() => (page.props as any).accounts ?? []);
+
 if (config.MERCURE_URL) {
     const url = new URL(config.MERCURE_URL);
     url.searchParams.append("topic", "https://example.com/main");
@@ -58,8 +69,9 @@ const {
 </script>
 
 <template>
-    <TransactionModal v-model:show="isOpen" v-bind="transactionModalState" :max-width="transactionModalMaxWidth"
-        :full-height="context.isMobile" @saved="onTransactionSaved" @close="onTransactionSaved" />
+    <TransactionModal v-model:show="isOpen" v-bind="transactionModalState" :accounts="sharedAccounts"
+        :max-width="transactionModalMaxWidth" :full-height="context.isMobile"
+        @saved="onTransactionSaved" @close="onTransactionSaved" />
 
     <MoreOptionsModal v-model:show="context.isMoreOptionsModalOpen" :max-width="modalMaxWidth"
         v-if="context.isMobile" />

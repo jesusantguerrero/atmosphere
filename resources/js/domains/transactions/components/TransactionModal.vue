@@ -283,14 +283,21 @@ watch(
       }
     });
 
-    // Set multi-currency state if transaction has multi-currency data
-    if (newValue.is_multi_currency) {
+    // Set multi-currency state if transaction has multi-currency data, OR if
+    // it's just a tx that happens to be in a non-team-default currency (e.g.
+    // a $1 USD charge on a multi-currency DOP card). Without the second branch
+    // the modal would auto-fall back to the team default on save, silently
+    // flipping the tx's currency_code and corrupting the underlying record.
+    const txCurrency = newValue.currency_code;
+    const isInForeignCurrency = !!txCurrency && txCurrency !== defaultCurrency;
+
+    if (newValue.is_multi_currency || isInForeignCurrency) {
       isMultiCurrency.value = true;
-      transactionCurrency.value = newValue.currency_code || 'USD';
+      transactionCurrency.value = txCurrency || defaultCurrency;
       selectedAccountId.value = newValue.account_id || null;
       currencyAmount.value = {
         amount: newValue.total || 0,
-        currency: newValue.currency_code || 'USD'
+        currency: txCurrency || defaultCurrency,
       };
       if (newValue.exchange_rate) {
         manualExchangeRate.value = newValue.exchange_rate;
