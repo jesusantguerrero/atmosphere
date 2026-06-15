@@ -4,9 +4,30 @@ namespace App\Models;
 
 use App\Models\CurrencyBalance;
 use Insane\Journal\Models\Core\Account as BaseAccount;
+use Insane\Journal\Models\Core\AccountDetailType;
 
 class Account extends BaseAccount
 {
+    /**
+     * Override the vendor's static finder so it returns App\Models\Account
+     * instances (with our $appends) instead of vendor base-class instances.
+     *
+     * The vendor implementation does `return Account::where(...)` with a
+     * hard-coded import to the vendor class, which bypasses LSB. Using
+     * `static::` here makes the query resolve to whichever class called it —
+     * App\Models\Account when called via App\Models\Account::getByDetailTypes(),
+     * so the all_currency_balances accessor lands in the serialized JSON
+     * (sidebar accounts in HandleInertiaRequests, DashboardController, etc.).
+     */
+    public static function getByDetailTypes($teamId, $detailTypes = AccountDetailType::ALL)
+    {
+        return static::where('accounts.team_id', $teamId)
+            ->byDetailTypes($detailTypes)
+            ->orderBy('accounts.index')
+            ->with(['reconciliationLast'])
+            ->get();
+    }
+
     /**
      * Always-serialized accessor for the BHD-style multi-currency detail panel.
      * Returns null when single-currency so the Vue v-if (`?.length`) hides the panel.

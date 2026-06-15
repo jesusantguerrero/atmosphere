@@ -51,8 +51,35 @@ class MultiCurrencyAccountTest extends TestCase
     public function it_returns_false_for_multi_currency_when_not_set()
     {
         $account = new Account();
-        
+
         $this->assertFalse($account->isMultiCurrency());
+    }
+
+    /** @test */
+    public function appends_includes_all_currency_balances()
+    {
+        $account = new Account();
+
+        $this->assertContains('all_currency_balances', $account->getAppends());
+    }
+
+    /** @test */
+    public function all_currency_balances_accessor_returns_null_when_single_currency()
+    {
+        $account = new Account(['currency_code' => 'USD', 'is_multi_currency' => false]);
+
+        $this->assertNull($account->getAllCurrencyBalancesAttribute());
+    }
+
+    /** @test */
+    public function all_currency_balances_appears_in_serialized_array_when_single_currency()
+    {
+        $account = new Account(['currency_code' => 'USD', 'is_multi_currency' => false]);
+
+        $arr = $account->toArray();
+
+        $this->assertArrayHasKey('all_currency_balances', $arr);
+        $this->assertNull($arr['all_currency_balances']);
     }
 
     /** @test */
