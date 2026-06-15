@@ -46,7 +46,6 @@ const DEFAULT_LABELS = {
     lastPaymentAmount: 'Monto último pago',
     lastPaymentDate: 'Fecha último pago',
     currentBalance: 'Balance actual',
-    pending: 'Pendiente (sin facturar)',
     extraCupo: 'Extra cupo',
 };
 
@@ -85,8 +84,16 @@ type RowDef = {
 const ROWS: RowDef[] = [
     { key: 'creditLimit', label: 'creditLimit', pick: c => c.credit_limit, isMoney: true, isCreditOnly: true },
     { key: 'available', label: 'available', pick: c => c.available, isMoney: true, isCreditOnly: true },
-    { key: 'currentBalance', label: 'currentBalance', pick: c => c.balance, isMoney: true },
-    { key: 'pending', label: 'pending', pick: c => c.pending_balance, isMoney: true, isCreditOnly: true },
+    // Use total_balance so both primary and secondary currencies show a real
+    // number. Primary's total_balance == vendor `balance` accessor. Secondary
+    // currencies have `balance` = 0 (the cache field) but accumulate activity
+    // in `pending_balance`, so their total_balance reflects the actual saldo.
+    // Previously we showed two rows (Balance actual + Pendiente sin facturar)
+    // mimicking BHD's statement, but Loger doesn't track billing-cycle state
+    // for secondary currencies — the "Pendiente" row just duplicated the
+    // total under a misleading label that promised a distinction we don't
+    // actually make.
+    { key: 'currentBalance', label: 'currentBalance', pick: c => c.total_balance, isMoney: true },
     { key: 'paymentsMonth', label: 'paymentsMonth', pick: c => c.payments_month, isMoney: true, isCreditOnly: true },
     { key: 'lastPaymentAmount', label: 'lastPaymentAmount', pick: c => c.last_payment_amount, isMoney: true },
     { key: 'lastPaymentDate', label: 'lastPaymentDate', pick: c => c.last_payment_date, isMoney: false },
