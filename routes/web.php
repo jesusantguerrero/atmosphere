@@ -27,6 +27,7 @@ use App\Http\Controllers\System\PlannerController;
 use App\Http\Controllers\System\ServiceController;
 use App\Http\Controllers\System\TeamInvitationController;
 use App\Http\Controllers\System\TodayController;
+use App\Http\Controllers\Plan\SpendingPlanController;
 use App\Http\Controllers\System\UserDeviceController;
 use App\Models\Setting;
 use Freesgen\Atmosphere\Http\Controllers\SettingsController;
@@ -210,6 +211,14 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     Route::delete('/planner/{planner}', [PlannerController::class, 'destroy'])->name('planner.destroy');
     Route::patch('/planner/{planner}/complete', [PlannerController::class, 'complete'])->name('planner.complete');
     Route::patch('/planner/{planner}/cancel', [PlannerController::class, 'cancel'])->name('planner.cancel');
+
+    /**************************************************************************************
+      *                               Spending Plan
+      *   Envelope-style planning surface, decoupled from reconciliation status.
+     ***************************************************************************************/
+    Route::get('/plan', [SpendingPlanController::class, 'index'])->name('plan.index');
+    Route::put('/plan/intents', [SpendingPlanController::class, 'upsert'])->name('plan.upsert');
+    Route::post('/plan/copy-from-previous', [SpendingPlanController::class, 'copyFromPrevious'])->name('plan.copy');
 
     /**************************************************************************************
       *                               Finance Section
