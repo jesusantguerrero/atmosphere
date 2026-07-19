@@ -4,7 +4,7 @@ import IconTransfer from "@/Components/icons/IconTransfer.vue";
 import { Link } from "@inertiajs/vue3";
 import formatMoney from "@/utils/formatMoney";
 
-export const tableAccountCols = (accountId: number, showSelects?: false) => [
+export const tableAccountCols = (accountId?: number, showSelects?: boolean) => [
     ...( showSelects ? [{
         label: "",
         name: "selection",
@@ -20,13 +20,19 @@ export const tableAccountCols = (accountId: number, showSelects?: false) => [
         name: "date",
         width: 150,
         align: "center",
+        sortable: true,
         class: 'text-center',
         headerClass: 'text-center',
         render(row: any) {
             try {
                 const date = parseISO(row.date)
-                const hasPassed = isAfter(startOfDay(date), startOfDay(new Date()))
-                return h('div', {class: hasPassed ? 'text-danger' : 'text-info cursor-pointer'} ,format(date, "dd MMM, yyyy"))
+                const isFuture = isAfter(startOfDay(date), startOfDay(new Date()))
+                return h('div', { class: 'flex items-center justify-center gap-2' }, [
+                    h('span', {
+                        class: 'px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-base-lvl-1 text-body-1/60',
+                    }, format(date, 'EEE')),
+                    h('span', { class: isFuture ? 'text-danger' : 'text-body-1' }, format(date, 'dd MMM, yyyy')),
+                ])
             } catch (e) {
                 return h('div', {class:'text-info cursor-pointer'} , '--')
             }
@@ -35,32 +41,64 @@ export const tableAccountCols = (accountId: number, showSelects?: false) => [
     {
         label: "Payee",
         name: "payee",
-        class: 'w-full',
+        class: 'w-full min-w-0',
         width: 200,
+        sortable: true,
         render(row: any) {
             try {
                 const account = row.account_id === accountId ? row.counter_account : row.account
                 const children = () => [
-                    h(Link, { class: 'font-bold underline text-secondary', href: `/finance/accounts/${account.id}`}, `${account?.name}`),
-                    h(IconTransfer, { class: 'fa fa-right-left'})
+                    h(Link, { class: 'font-bold underline truncate text-secondary', href: `/finance/accounts/${account.id}`}, `${account?.name}`),
+                    h(IconTransfer, { class: 'fa fa-right-left flex-shrink-0'})
                 ];
                 return row.payee
-                ? h(Link, { class: 'font-bold text-primary', href: `/finance/lines?filter[payee_id]=${row.payee.id}`}, row.payee.name)
-                : h('div', { class: "flex justify-between items-center text-body-1 h-4"}, children() )
+                ? h(Link, { class: 'block font-bold truncate text-primary', href: `/finance/lines?filter[payee_id]=${row.payee.id}`, title: row.payee.name }, row.payee.name)
+                : h('div', { class: "flex items-center justify-between gap-1 min-w-0 text-body-1"}, children() )
             } catch(e) {
                 return ''
             }
         }
     },
     {
-        label: "Description/category",
-        name: "description",
-        width: 220,
+        // Semantic type (Income / Expense / Transfer) so the row reads at a glance,
+        // with the category chip kept alongside it — category drives Loger's budgets,
+        // so it can't be dropped the way a pure "Type" column would. The raw
+        // description moves to the tooltip: it's usually redundant with the payee.
+        label: "Type",
+        name: "type",
+        width: 240,
+        sortable: true,
+        class: 'min-w-0',
         render(row: any) {
-            return h('div', [
-                h('div', row.description),
-                h(Link, { class: 'text-primary font-bold', href: `/finance/lines?filter[category_id]=${row.category?.id ?? row.category_id}`},  row.category?.name ?? row.category_name)
-            ])
+            const categoryName = row.category?.name ?? row.category_name;
+            const categoryId = row.category?.id ?? row.category_id;
+            const isTransfer = Boolean(row.is_transfer);
+            const isInflow = row.direction === 'DEPOSIT';
+
+            const type = isTransfer
+                ? { label: 'Transfer', icon: '⇄', class: 'text-body-1/70' }
+                : isInflow
+                    ? { label: 'Income', icon: '↑', class: 'text-green-500' }
+                    : { label: 'Expense', icon: '↓', class: 'text-red-400' };
+
+            const children: any[] = [
+                h('span', { class: `flex items-center gap-1.5 flex-shrink-0 font-medium ${type.class}`, title: row.description }, [
+                    h('span', { class: 'text-sm leading-none' }, type.icon),
+                    h('span', type.label),
+                ]),
+            ];
+
+            if (categoryName) {
+                children.push(
+                    h(Link, {
+                        class: 'flex-shrink-0 px-1.5 py-0.5 rounded text-[11px] font-medium truncate max-w-[9rem] text-primary bg-primary/10',
+                        href: `/finance/lines?filter[category_id]=${categoryId}`,
+                        title: categoryName,
+                    }, categoryName)
+                );
+            }
+
+            return h('div', { class: 'flex items-center gap-2 min-w-0' }, children);
         }
     },
     {
@@ -68,8 +106,11 @@ export const tableAccountCols = (accountId: number, showSelects?: false) => [
         name: "total",
         type: "custom",
         align: 'right',
+        sortable: true,
         class: 'text-right',
-        width: 150,
+        // Sized for the realistic ceiling (DOP 1,000,000.00), not an arbitrary
+        // 150px — the extra width was just dead space between Type and Amount.
+        width: 130,
         headerClass: 'text-right',
     },
     {
@@ -77,7 +118,7 @@ export const tableAccountCols = (accountId: number, showSelects?: false) => [
         name: "_runningBalance",
         align: 'right',
         class: 'text-right',
-        width: 150,
+        width: 130,
         headerClass: 'text-right',
         render(row: any) {
             if (row._runningBalance === undefined) return '';

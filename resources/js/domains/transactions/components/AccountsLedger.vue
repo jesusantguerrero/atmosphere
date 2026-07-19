@@ -12,6 +12,7 @@ import AccountItem from "./AccountItem.vue";
 import MoneyPresenter from '@/Components/molecules/MoneyPresenter.vue';
 import { useAppContextStore } from "@/store";
 import { IAccount } from "@/domains/transactions/models/transactions";
+import { isCreditCard } from "@/domains/transactions";
 import AccountLinkModal from "./AccountLinkModal.vue";
 
 const selectedAccountId = inject<Ref<number | null>>('selectedAccountId', ref(null));
@@ -70,11 +71,6 @@ const openLinkModal = (account = {}) => {
     isLinkModalOpen.value = true;
 };
 
-// Separate credit cards from regular accounts
-const isCreditCard = (account: IAccount) => {
-    return account.credit_limit && account.credit_limit > 0;
-};
-
 // Filter accounts based on reconciliation status and account type
 const filteredAccounts = computed(() => {
     let accounts = props.accounts;
@@ -91,8 +87,16 @@ const filteredAccounts = computed(() => {
     return accounts;
 });
 
-const bankAccounts = computed(() => filteredAccounts.value.filter(a => !isCreditCard(a)));
-const creditCards = computed(() => filteredAccounts.value.filter(isCreditCard));
+// Draggable mutates the bound list in place, so these must be real refs — a
+// computed's array is rebuilt on every recompute and the dragged order would be
+// silently discarded. Each group keeps its own order; they never interleave.
+const bankAccounts = ref<IAccount[]>([]);
+const creditCards = ref<IAccount[]>([]);
+
+watch(filteredAccounts, (accounts) => {
+    bankAccounts.value = accounts.filter(account => !isCreditCard(account));
+    creditCards.value = accounts.filter(isCreditCard);
+}, { immediate: true });
 
 const budgetAccountsTotal = computed(() => {
     return filteredAccounts.value.reduce((total, account) => {

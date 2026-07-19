@@ -5,9 +5,11 @@ namespace App\Domains\Integration\Actions;
 use App\Domains\Automation\Concerns\AutomationActionContract;
 use App\Domains\Automation\Models\Automation;
 use App\Domains\Automation\Models\AutomationTaskAction;
+use App\Domains\Integration\Concerns\TransactionDataDTO;
 use App\Domains\Transaction\Models\TransactionLine;
 use App\Domains\Transaction\Services\TransactionService;
 use App\Helpers\FormulaHelper;
+use App\Models\Setting;
 use App\Models\User;
 use App\Notifications\EntryGenerated;
 use Insane\Journal\Models\Core\Account;
@@ -58,6 +60,12 @@ class TransactionCreateEntry implements AutomationActionContract
         }
 
         $date = FormulaHelper::parseFormula($taskData?->date, $payload);
+        $settings = Setting::getByTeam($automation->team_id);
+        $currencyCode = self::resolveCurrencyCode(
+            FormulaHelper::parseFormula($taskData?->currency_code, $payload),
+            $settings
+        );
+
         $transactionData = [
             'team_id' => $automation->team_id,
             'user_id' => $automation->user_id,
@@ -66,7 +74,7 @@ class TransactionCreateEntry implements AutomationActionContract
             'payee_name' => $payee ? $payee->name : null,
             'counter_account_id' => $counterAccountId ?? null,
             'date' => $date,
-            'currency_code' => FormulaHelper::parseFormula($taskData?->currency_code, $payload),
+            'currency_code' => $currencyCode,
             'category_id' => $transactionCategoryId ?? null,
             'description' => $description,
             'reference' => $payload['messageId'] ?? ("{$payload['id']}:{$description}:{$date}") ?? null,
@@ -84,6 +92,14 @@ class TransactionCreateEntry implements AutomationActionContract
             ]),
         ];
 
+        if ($cashAccountId = self::resolveCashWithdrawalAccountId($payload, $accountId, $settings)) {
+            $transactionData['is_transfer'] = true;
+            $transactionData['counter_account_id'] = $cashAccountId;
+            $transactionData['payee_id'] = null;
+            $transactionData['payee_name'] = null;
+            $transactionData['category_id'] = null;
+        }
+
         // Auto-confirm transactions for credit card accounts (email is the confirmation)
         $account = Account::find($accountId);
         if ($account && $account->credit_closing_day) {
@@ -100,6 +116,49 @@ class TransactionCreateEntry implements AutomationActionContract
         User::find($automation->user_id)->notify(new EntryGenerated($transaction));
 
         return $transaction;
+    }
+
+    /**
+     * Resolve the currency for the created transaction.
+     *
+     * The formula-resolved value wins when it is a valid 3-letter code. When the
+     * automation task references a variable the parser didn't provide, the
+     * formula collapses to an empty string or "0"; in that case we fall back to
+     * the team's primary currency instead of silently defaulting to USD.
+     *
+     * @param  array<string, mixed>  $settings
+     */
+    private static function resolveCurrencyCode(?string $resolved, array $settings): string
+    {
+        $resolved = trim((string) $resolved);
+
+        if (preg_match('/^[A-Za-z]{3}$/', $resolved)) {
+            return strtoupper($resolved);
+        }
+
+        return $settings['team_primary_currency_code'] ?? 'USD';
+    }
+
+    /**
+     * Return the configured cash account when this email is a cash withdrawal
+     * that should be routed there as a transfer, or null to keep the default
+     * expense behavior.
+     *
+     * @param  array<string, mixed>  $settings
+     */
+    private static function resolveCashWithdrawalAccountId(mixed $payload, int|string|null $sourceAccountId, array $settings): ?int
+    {
+        if (($payload['transactionType'] ?? null) !== TransactionDataDTO::TYPE_CASH_WITHDRAWAL) {
+            return null;
+        }
+
+        $cashAccountId = $settings['team_cash_withdrawal_account_id'] ?? null;
+
+        if (! $cashAccountId || (int) $cashAccountId === (int) $sourceAccountId) {
+            return null;
+        }
+
+        return (int) $cashAccountId;
     }
 
     public function getName(): string

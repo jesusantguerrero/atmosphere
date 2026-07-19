@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers\Finance;
 
-use Inertia\Inertia;
-use App\Models\Setting;
-use Illuminate\Http\Request;
-use Freesgen\Atmosphere\Http\Querify;
-use Insane\Journal\Models\Core\Payee;
-use Insane\Journal\Models\Core\Category;
-use Freesgen\Atmosphere\Http\InertiaController;
 use App\Domains\Transaction\Services\ReportService;
 use App\Domains\Transaction\Services\TransactionService;
+use App\Models\Setting;
+use Freesgen\Atmosphere\Http\InertiaController;
+use Freesgen\Atmosphere\Http\Querify;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Insane\Journal\Models\Core\Category;
+use Insane\Journal\Models\Core\Payee;
 
 class FinanceLinesController extends InertiaController
 {
@@ -41,7 +41,7 @@ class FinanceLinesController extends InertiaController
 
         [$startDate, $endDate] = [null, null];
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
-        if (isset($filters['dates'])) {
+        if (isset($filters['date'])) {
             [$startDate, $endDate] = $this->getFilterDates($filters, $timeZone);
         }
 
@@ -55,7 +55,7 @@ class FinanceLinesController extends InertiaController
             $teamId,
             [
                 'categoryId' => $category && $category->parent_id ? $category->id : null,
-                'groupId' => $category && !$category->parent_id ? $category->id : null,
+                'groupId' => $category && ! $category->parent_id ? $category->id : null,
                 'payeeId' => $payee->id ?? null,
                 'limit' => 50,
                 'startDate' => $startDate,

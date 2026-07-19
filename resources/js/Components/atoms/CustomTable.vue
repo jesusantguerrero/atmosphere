@@ -1,7 +1,7 @@
 <script setup lang="ts" generic="T">
 import formatMoney from "@/utils/formatMoney";
 import CustomCell from "./customCell.js";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 export interface TableData {
     [key: string]: string;
@@ -24,8 +24,29 @@ const props = withDefaults(defineProps<{
     skeletonLines: 4
 })
 
+const emit = defineEmits(['sort', 'row-click']);
+
 const getHeaderClass = ({ row } : { row: Record<string, any>}) => {
     return row.headerClass
+};
+
+// Opt-in per column via `sortable: true`. Cycles asc -> desc -> unsorted so the
+// user can always get back to the table's natural order (which, for a register,
+// is the date order the running balance is computed against).
+const sortState = ref<{ name: string | null, dir: 'asc' | 'desc' }>({ name: null, dir: 'asc' });
+
+const toggleSort = (col: Record<string, any>) => {
+    if (!col.sortable) return;
+
+    if (sortState.value.name !== col.name) {
+        sortState.value = { name: col.name, dir: 'asc' };
+    } else if (sortState.value.dir === 'asc') {
+        sortState.value = { name: col.name, dir: 'desc' };
+    } else {
+        sortState.value = { name: null, dir: 'asc' };
+    }
+
+    emit('sort', sortState.value);
 };
 
 const range = computed(() => {
@@ -39,7 +60,6 @@ const range = computed(() => {
         style="width: 100%"
         :data="tableData"
         :header-cell-class-name="getHeaderClass"
-        @sort-change="$emit('sort', $event)"
         @row-click="$emit('row-click', $event)"
     >
         <thead>
@@ -50,7 +70,23 @@ const range = computed(() => {
                  :class="[col.headerClass]"
                  :style="{width: col.width, maxWidth: col.maxWidth}"
                 >
-                    <slot :name="`header-${col.name}`">
+                    <button
+                        v-if="col.sortable"
+                        type="button"
+                        class="inline-flex items-center gap-1 transition-colors hover:text-primary"
+                        @click="toggleSort(col)"
+                    >
+                        <slot :name="`header-${col.name}`">
+                            {{ col.label }}
+                        </slot>
+                        <span
+                            class="text-[10px] leading-none"
+                            :class="sortState.name === col.name ? 'text-primary' : 'opacity-40'"
+                        >
+                            {{ sortState.name === col.name ? (sortState.dir === 'asc' ? '▲' : '▼') : '⇅' }}
+                        </span>
+                    </button>
+                    <slot v-else :name="`header-${col.name}`">
                         {{ col.label }}
                     </slot>
                 </th>
@@ -110,7 +146,7 @@ const range = computed(() => {
                 </td>
             </tr>
             <tr>
-                <td :colspan="cols.length" class="flex flex-col w-full">
+                <td :colspan="cols.length" class="w-full">
                     <slot name="empty" v-if="!hideEmptyText">
                         <div class="w-full py-5 text-center text-base-200">
                             {{ emptyText }}

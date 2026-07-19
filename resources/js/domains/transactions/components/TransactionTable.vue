@@ -21,7 +21,7 @@ withDefaults(defineProps<{
     emptyText: 'No data found',
 });
 
-const emit = defineEmits(["removed", "edit", "approved", "duplicate"]);
+const emit = defineEmits(["removed", "edit", "approved", "duplicate", "sort"]);
 
 const isTransferModalOpen = ref(false);
 
@@ -70,6 +70,16 @@ const handleOptions = (option: ItemAction, transaction: ITransaction) => {
   emit(option, transaction);
 };
 
+// Explicit +/- so direction reads without relying on color alone (also helps
+// color-blind users). Transfers stay unsigned: the sign depends on which side of
+// the transfer you're looking at, which getTransactionColor already handles.
+const amountSign = (row: ITransaction) => {
+  if (row.is_transfer || row.counter_account_id) {
+    return '';
+  }
+  return row.direction === 'WITHDRAW' ? '−' : '+';
+};
+
 const getTransactionColor = (row: ITransaction) => {
 // @ts-ignore
   if (row.payee?.name || row.payee_name) {
@@ -98,9 +108,14 @@ const getTransactionColor = (row: ITransaction) => {
       :empty-text="emptyText"
       :row-class="rowClass"
       @edit="handleEdit"
+      @sort="emit('sort', $event)"
     >
+      <template v-if="$slots.empty" #empty>
+        <slot name="empty" />
+      </template>
+
       <template v-slot:total="{ scope: { row } }">
-        <div class="flex items-center gap-2">
+        <div class="flex items-center justify-end gap-2">
           <button
             v-if="row._isDraft"
             @click.stop="emit('approved', row)"
@@ -109,8 +124,8 @@ const getTransactionColor = (row: ITransaction) => {
           >
             Approve
           </button>
-          <div class="font-bold" :class="[getTransactionColor(row)]">
-            {{ formatMoney(row.total, row.currency_code) }}
+          <div class="font-bold tabular-nums" :class="[getTransactionColor(row)]">
+            <span v-if="amountSign(row)" class="mr-0.5">{{ amountSign(row) }}</span>{{ formatMoney(row.total, row.currency_code) }}
           </div>
         </div>
       </template>

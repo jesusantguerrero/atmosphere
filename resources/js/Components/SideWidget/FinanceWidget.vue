@@ -168,7 +168,6 @@ onBeforeUnmount(() => {
     :class="{ 'rounded-tl-lg': applicationStore.selectedSection }"
   >
   <Transition name="slide">
-    <keep-alive>
       <article
         class="container flex flex-col h-[calc(100vh-60px)] px-4 py-4 duration-75 bg-white border-l border-base shadow-xl rounded-tl-lg mt-[60px] w-96"
         v-if="applicationStore.selectedSection?.name"
@@ -197,7 +196,6 @@ onBeforeUnmount(() => {
           />
         </keep-alive>
       </article>
-    </keep-alive>
   </Transition>
     <section class="flex flex-col widget-main-menu bg-base-lvl-3 border-l border-base pt-[60px]">
       <section class="flex flex-col gap-1 px-2 py-3">

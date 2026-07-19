@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { computed, toRefs, provide, reactive, ref, onMounted } from "vue";
-import { useI18n } from "vue-i18n";
 import { router, useForm, usePage } from "@inertiajs/vue3";
-import { format } from "date-fns";
-import { AtDatePager } from "atmosphere-ui";
+import { addMonths, endOfMonth, format, isSameMonth, startOfMonth } from "date-fns";
 import axios from "axios";
 
 import { useServerSearch, IServerSearchData } from "@/composables/useServerSearchV2";
@@ -17,10 +15,9 @@ import FinanceSectionNav from "./Partials/FinanceSectionNav.vue";
 import AccountReconciliationBanner from "./Partials/AccountReconciliationBanner.vue";
 import TransactionSearch from "@/domains/transactions/components/TransactionSearch.vue";
 import TransactionTable from "@/domains/transactions/components/TransactionTable.vue";
-import MultiCurrencyDetailPanel from "@/domains/transactions/components/MultiCurrencyDetailPanel.vue";
 import AccountReconciliationForm from "./AccountReconciliationForm.vue";
 
-import { NDropdown } from "naive-ui";
+import { NDatePicker, NDropdown } from "naive-ui";
 
 import { useTransactionModal, TRANSACTION_DIRECTIONS, removeTransaction } from "@/domains/transactions";
 import { tableAccountCols } from "@/domains/transactions";
@@ -30,13 +27,11 @@ import { formatDate, formatMoney } from "@/utils";
 import { IAccount, ICategory, ITransaction } from "@/domains/transactions/models";
 import NextPaymentsWidget from "@/domains/transactions/components/NextPaymentsWidget.vue";
 import { usePaymentModal } from "@/domains/transactions/usePaymentModal";
-import WidgetContainer from "@/Components/WidgetContainer.vue";
 import Modal from "@/Components/atoms/Modal.vue";
 import ImportHolder from "@/Components/organisms/ImportHolder.vue";
 
 const { openTransactionModal } = useTransactionModal();
 const { openModal } = usePaymentModal();
-const { t } = useI18n();
 
 
 const props = withDefaults(defineProps<{
@@ -102,6 +97,47 @@ const reset = () => {
     pageState.custom.direction = null;
     baseReset();
 };
+
+// Register filter: All / Debits / Credits. Replaces the old pill chips with a
+// single proportioned segmented control that sits inline with search.
+const directionOptions: { label: string, value: string | null }[] = [
+    { label: 'All', value: null },
+    { label: 'Debits', value: 'WITHDRAW' },
+    { label: 'Credits', value: 'DEPOSIT' },
+];
+const isDirection = (value: string | null): boolean => (pageState.custom.direction ?? null) === value;
+
+// Register sorting. The running balance is calculated in the server's date order
+// BEFORE this sort runs, so each row keeps the balance it actually had at that
+// point in time — re-ordering the view never rewrites those numbers.
+const sort = ref<{ name: string | null, dir: 'asc' | 'desc' }>({ name: null, dir: 'asc' });
+
+const sortValue = (row: any, key: string) => {
+    switch (key) {
+        case 'date': return row.date ?? '';
+        case 'payee': return (row.payee?.name ?? row.payee_name ?? '').toLowerCase();
+        case 'total': return Number(row.total ?? 0);
+        case 'type': return row.is_transfer ? 'Transfer' : (row.direction === 'DEPOSIT' ? 'Income' : 'Expense');
+        default: return row[key];
+    }
+};
+
+const sortedTransactions = computed(() => {
+    const rows = displayTransactions.value;
+    if (!sort.value.name) {
+        return rows;
+    }
+
+    const direction = sort.value.dir === 'asc' ? 1 : -1;
+    const key = sort.value.name;
+
+    return [...rows].sort((a, b) => {
+        const left = sortValue(a, key);
+        const right = sortValue(b, key);
+        if (left === right) return 0;
+        return left > right ? direction : -direction;
+    });
+});
 
 provide("selectedAccountId", accountId);
 
@@ -172,6 +208,31 @@ onMounted(() => {
 })
 
 const monthName = computed(() => format(pageState.dates.startDate, "MMMM"))
+
+// Period navigation. The old AtDatePager could only step one month at a time, so
+// reaching an arbitrary month (say Aug 2024) took ~20 clicks — and 20 more to get
+// back. The month/year picker jumps anywhere directly and "Today" is a one-click
+// return to the current month.
+const periodStart = (): Date => pageState.dates.startDate ? new Date(pageState.dates.startDate) : new Date();
+
+const goToMonth = (date: Date) => {
+    pageState.dates.startDate = startOfMonth(date);
+    pageState.dates.endDate = endOfMonth(date);
+};
+
+const shiftMonth = (delta: number) => goToMonth(addMonths(periodStart(), delta));
+
+const goToCurrentMonth = () => goToMonth(new Date());
+
+const periodTimestamp = computed(() => periodStart().getTime());
+
+const onMonthPicked = (timestamp: number | null) => {
+    if (timestamp) {
+        goToMonth(new Date(timestamp));
+    }
+};
+
+const isCurrentMonth = computed(() => isSameMonth(periodStart(), new Date()));
 
 // ## Reconciliation
 
@@ -362,10 +423,13 @@ const syncEmails = () => {
     });
 };
 
+const importActions = [
+    { key: 'import-pdf', label: 'Import PDF' },
+    { key: 'import-csv', label: 'Import CSV' },
+];
+
 const moreActions = computed(() => {
     const actions: any[] = [
-        { key: 'import-pdf', label: 'Import PDF' },
-        { key: 'import-csv', label: 'Import CSV' },
         { key: 'export-csv', label: 'Export CSV' },
     ];
     if (selectedAccount.value?.bank_code) {
@@ -411,20 +475,6 @@ const transactionRowClass = (row: any) => {
 
 const draftCount = computed(() => (props.drafts || []).length);
 
-const financeTabs = computed(() => {
-    const transactionLabel = draftCount.value > 0
-        ? `${t('Transactions')} ${props.transactions.length} (${draftCount.value} ${t('pending')})`
-        : `${t('Transactions')} ${props.transactions.length}`;
-
-    return [{
-        name: "transactions",
-        label: transactionLabel,
-    }];
-});
-
-const selectedTabName = computed(() => {
-    return `${t('All transactions in')} ${monthName.value}`;
-})
 
 </script>
 
@@ -433,10 +483,54 @@ const selectedTabName = computed(() => {
         <template #header>
             <FinanceSectionNav>
                 <template #actions>
-                    <div class="flex items-center w-full space-x-2">
-                        <AtDatePager class="w-full h-12 border-none bg-base-lvl-1 text-body"
-                            v-model:startDate="pageState.dates.startDate" v-model:endDate="pageState.dates.endDate"
-                            controlsClass="bg-transparent text-body hover:bg-base-lvl-1" next-mode="month" />
+                    <div class="flex items-center w-full gap-2">
+                        <div class="flex items-center h-12 gap-1 px-1 mr-auto rounded-md bg-base-lvl-1">
+                            <button
+                                type="button"
+                                class="px-2 py-1 rounded text-body-1 hover:bg-base-lvl-2"
+                                :title="$t('Previous month')"
+                                @click="shiftMonth(-1)"
+                            >
+                                <IMdiChevronLeft />
+                            </button>
+
+                            <NDatePicker
+                                type="month"
+                                size="small"
+                                class="w-36"
+                                :value="periodTimestamp"
+                                :clearable="false"
+                                @update:value="onMonthPicked"
+                            />
+
+                            <button
+                                type="button"
+                                class="px-2 py-1 rounded text-body-1 hover:bg-base-lvl-2"
+                                :title="$t('Next month')"
+                                @click="shiftMonth(1)"
+                            >
+                                <IMdiChevronRight />
+                            </button>
+
+                            <button
+                                v-if="!isCurrentMonth"
+                                type="button"
+                                class="px-2 py-1 text-xs font-semibold rounded text-primary hover:bg-base-lvl-2"
+                                :title="$t('Back to current month')"
+                                @click="goToCurrentMonth()"
+                            >
+                                {{ $t('Today') }}
+                            </button>
+                        </div>
+                        <!-- No "+ Transaction" here on purpose: the global "+ New" in the
+                             app header already opens the same modal, prefilled with this
+                             account AND with a type to pick (Income/Expense/Transfer). -->
+                        <NDropdown trigger="click" key-field="key" :options="importActions" @select="handleMoreAction">
+                            <LogerButton variant="inverse">
+                                <i class="fas fa-file-import mr-1.5" />
+                                {{ $t('Import') }}
+                            </LogerButton>
+                        </NDropdown>
                         <NDropdown trigger="click" key-field="key" :options="moreActions" @select="handleMoreAction">
                             <LogerButton variant="inverse">
                                 <IMdiDotsVertical />
@@ -460,202 +554,132 @@ const selectedTabName = computed(() => {
             </section>
         </template>
 
-        <FinanceTemplate :title="$t('Transactions')" :accounts="accounts">
-            <section class="mt-4 px-4 py-3 rounded-lg bg-base-lvl-3">
-                <div class="flex items-center gap-4 flex-wrap">
-                    <!-- Primary: Balance -->
-                    <div class="flex items-center gap-2 mr-auto">
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <span class="text-xs text-secondary">{{ $t('Balance') }}</span>
-                                <!-- Credit-card identity pill so the user knows what kind
-                                     of account they're looking at without parsing the data. -->
-                                <span
-                                    v-if="isCreditCard"
-                                    class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-primary/10 text-primary"
-                                >
-                                    <IMdiCreditCard class="w-3 h-3" />
-                                    {{ $t('Credit Card') }}
-                                </span>
-                            </div>
-                            <h3 class="text-xl font-bold text-body">
-                                {{ formatMoney(selectedAccount?.balance) }}
-                            </h3>
-                            <!-- Reconciliation freshness signal. Previously this was
-                                 only visible as a clock icon with the amount in a
-                                 tooltip — the *date* (the thing the user wants to
-                                 know at a glance: "is this account stale?") was
-                                 hidden. Click navigates to reconciliation history. -->
-                            <button
-                                v-if="selectedAccount?.reconciliation_last"
-                                type="button"
-                                class="mt-0.5 inline-flex items-center gap-1 text-[11px] text-body-1/60 hover:text-primary transition"
-                                :title="$t('Open reconciliation history')"
-                                @click="router.visit(`/finance/accounts/${selectedAccount.id}/reconciliations/`)"
-                            >
-                                <IMdiHistory class="w-3 h-3" />
-                                <span>
-                                    {{ $t('Last reconciled') }} · {{ formatDate(selectedAccount.reconciliation_last.date) }}
-                                </span>
-                                <span
-                                    v-if="selectedAccount.reconciliation_last.status === 'pending'"
-                                    class="ml-1 px-1 py-px rounded text-[9px] font-semibold uppercase tracking-wide bg-amber-100 text-amber-700"
-                                >
-                                    {{ $t('Pending') }}
-                                </span>
-                            </button>
-                            <button
-                                v-else
-                                type="button"
-                                class="mt-0.5 inline-flex items-center gap-1 text-[11px] text-body-1/50 hover:text-primary transition"
-                                :title="$t('Start the first reconciliation for this account')"
-                                @click="router.visit(`/finance/accounts/${selectedAccount?.id}/reconciliations/`)"
-                            >
-                                <IMdiHistory class="w-3 h-3" />
-                                <span>{{ $t('Never reconciled') }}</span>
-                            </button>
-                        </div>
-                    </div>
+        <!-- hide-panel: the register runs full width, with no side column. The
+             reference design is a single focused register — the accounts ledger and
+             credit-card widgets that used to sit on the right were the main source
+             of visual noise here. -->
+        <FinanceTemplate :title="$t('Transactions')" :accounts="accounts" :hide-panel="true">
+            <!-- Phase 1 clean register header (Actual-Budget style): search on the
+                 left, prominent balance + Reconcile on the right. The detailed
+                 month-movement summary was intentionally dropped here to cut noise;
+                 utilization/movement detail can return in a later phase. -->
+            <section class="mt-4 flex flex-col gap-3 md:flex-row md:items-center">
+                <AppSearch
+                    v-model.lazy="pageState.search"
+                    class="w-full md:max-w-xs"
+                    :has-filters="hasFilters"
+                    :placeholder="$t('Search')"
+                    @clear="reset()"
+                />
 
-                    <!-- Secondary stats: compact inline -->
-                    <div class="flex items-center gap-4 text-sm text-body-1/80 flex-wrap">
-                        <div class="text-center" v-if="startingBalance !== undefined">
-                            <span class="block text-xs text-secondary">Start {{ monthName }}</span>
-                            <span class="font-medium">{{ formatMoney(startingBalance) }}</span>
-                        </div>
-                        <div class="text-center" v-if="stats?.debit">
-                            <span class="block text-xs text-secondary">{{ $t('Debit') }}</span>
-                            <span class="font-medium text-red-500">{{ formatMoney(stats.debit) }}</span>
-                        </div>
-                        <div class="text-center" v-if="stats?.credit">
-                            <span class="block text-xs text-secondary">{{ $t('Credit') }}</span>
-                            <span class="font-medium text-green-600">{{ formatMoney(stats.credit) }}</span>
-                        </div>
-                    </div>
+                <div class="inline-flex self-start p-0.5 text-xs rounded-lg bg-base-lvl-1 md:self-auto">
+                    <button
+                        v-for="opt in directionOptions"
+                        :key="String(opt.value)"
+                        type="button"
+                        class="px-3 py-1.5 rounded-md transition-colors"
+                        :class="isDirection(opt.value)
+                            ? 'bg-base-lvl-3 text-body font-semibold shadow-sm'
+                            : 'text-body-1/60 hover:text-body'"
+                        @click="pageState.custom.direction = opt.value"
+                    >
+                        {{ $t(opt.label) }}
+                    </button>
                 </div>
 
-                <!-- Credit-card utilization bar — debt vs credit_limit. Green
-                     under 30%, amber under 80%, red beyond. Standard personal-
-                     finance rule of thumb for credit-score health. -->
-                <div v-if="utilization" class="mt-3 pt-3 border-t border-base">
-                    <div class="flex items-center justify-between text-xs mb-1.5">
-                        <span class="text-secondary">{{ $t('Utilization') }}</span>
-                        <span class="font-medium tabular-nums" :class="utilizationLabelColor">
-                            {{ utilization.percent.toFixed(0) }}% · {{ formatMoney(utilization.debt) }} {{ $t('of') }} {{ formatMoney(utilization.limit) }}
-                        </span>
+                <div class="flex items-center gap-4 md:ml-auto">
+                    <div class="text-right">
+                        <div class="text-xs text-secondary">
+                            {{ isCreditCard ? $t('Available credit') : $t('Cleared Balance') }}
+                        </div>
+                        <div class="text-lg font-bold leading-tight text-body tabular-nums">
+                            {{ isCreditCard && utilization ? formatMoney(utilization.limit - utilization.debt) : formatMoney(selectedAccount?.balance) }}
+                        </div>
                     </div>
-                    <div class="w-full h-1.5 rounded-full bg-base overflow-hidden">
-                        <div
-                            class="h-full rounded-full transition-all duration-500"
-                            :class="utilizationColor"
-                            :style="{ width: `${utilization.percent}%` }"
-                        />
-                    </div>
-                    <p v-if="utilization.rawPercent >= 80" class="mt-1.5 text-[11px] text-red-600/80">
-                        {{ $t('Above 80% utilization can hurt your credit score. Consider paying down some balance.') }}
-                    </p>
+                    <div class="w-px h-9 bg-base-lvl-2" />
+                    <LogerButton variant="inverse" @click="reconcileForm.isVisible = true">
+                        {{ $t('Reconcile Now') }}
+                    </LogerButton>
                 </div>
             </section>
 
-            <!-- BHD-style "Detalle tarjeta de crédito" — two columns when the account
-                 has multiple currencies. Reads from Account::getAllCurrencyBalances()
-                 which is exposed as `all_currency_balances` on the account payload.
-                 Hidden when the account is single-currency. -->
+            <!-- Multi-currency detail panel — hidden in Phase 1 to keep the register
+                 clean. Reintroduce (behind a toggle/menu) in a later phase.
             <MultiCurrencyDetailPanel
                 v-if="selectedAccount?.is_multi_currency && selectedAccount?.all_currency_balances?.length"
                 class="mt-3"
                 :account-name="selectedAccount.name"
                 :account-type="isCreditCard ? 'credit_card' : (selectedAccount.detail_type?.name ?? 'bank')"
                 :currencies="selectedAccount.all_currency_balances"
-            />
+            /> -->
 
             <AccountReconciliationBanner v-if="selectedAccount" :account="selectedAccount" class="mt-2" />
 
-            <div
-                v-if="displayTransactions.length === 0 && !isLoading"
-                class="mt-3 flex flex-col sm:flex-row items-start sm:items-center gap-4 rounded-lg border border-primary/20 bg-primary/5 px-5 py-4"
-            >
-                <div class="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary flex-shrink-0">
-                    <i class="fas fa-lightbulb" />
-                </div>
-                <div class="flex-1 min-w-0">
-                    <p class="font-semibold text-sm text-body-1">{{ $t('Get started with this account') }}</p>
-                    <p class="text-xs text-body-1/60 mt-0.5">
-                        {{ $t('Import your bank statement or add your first transaction manually.') }}
-                    </p>
-                </div>
-                <div class="flex items-center gap-2 flex-shrink-0">
-                    <LogerButton
-                        variant="inverse"
-                        class="text-xs"
-                        @click="showImportPdf = true"
-                    >
-                        <i class="fas fa-file-pdf mr-1" />
-                        {{ $t('Import') }} PDF
-                    </LogerButton>
-                    <LogerButton
-                        variant="inverse"
-                        class="text-xs"
-                        @click="showImportCsv = true"
-                    >
-                        <i class="fas fa-file-csv mr-1" />
-                        {{ $t('Import') }} CSV
-                    </LogerButton>
-                    <LogerButton
-                        variant="primary"
-                        class="text-xs"
-                        @click="openTransactionModal({})"
-                    >
-                        <i class="fas fa-plus mr-1" />
-                        {{ $t('Add transaction') }}
-                    </LogerButton>
-                </div>
-            </div>
+            <!-- Plain card instead of WidgetContainer: its header only restated the
+                 period ("All transactions in May") and a single-tab pill with the
+                 count — both already shown by the period picker above and the footer
+                 below. That was a full row of chrome saying nothing new. -->
+            <article class="mt-4 overflow-hidden border rounded-lg bg-base-lvl-3 border-base">
+                <Component :is="listComponent" :cols="tableAccountCols(props.accountId)"
+                    :transactions="sortedTransactions" :server-search-options="serverSearchOptions"
+                    :is-loading="isLoading" :empty-text="`No transactions in ${monthName}`"
+                    :row-class="transactionRowClass" @findLinked="findLinked"
+                    @removed="removeTransaction($event, ['verified'])" @duplicate="handleDuplicate"
+                    @edit="handleEdit" @approved="handleApprove" @sort="sort = $event">
+                    <template #empty>
+                        <div class="flex flex-col items-center justify-center px-6 py-12 text-center">
+                            <div class="flex items-center justify-center mb-4 rounded-full w-14 h-14 bg-primary/10 text-primary">
+                                <i class="text-2xl fas fa-receipt" />
+                            </div>
+                            <h3 class="mb-1 text-lg font-bold text-body-1">
+                                {{ hasFilters ? $t('No matching transactions') : `${$t('No transactions in')} ${monthName}` }}
+                            </h3>
+                            <p class="max-w-xs mb-5 text-sm text-body-1/60">
+                                {{ hasFilters
+                                    ? $t('Try adjusting your search or filters.')
+                                    : $t('Import a bank statement to bring this account up to date.') }}
+                            </p>
 
-            <WidgetContainer :message="selectedTabName" :tabs="financeTabs" default-tab="transactions" class="mt-4">
-                <template #title>
-                    <header class="flex space-x-2 pl-4 items-center justify-between py-2 w-full">
-                        <AppSearch v-model.lazy="pageState.search" class="w-full md:flex " :has-filters="hasFilters"
-                            @clear="reset()" :placeholder="selectedTabName" />
-
-                        <!-- Debit/Credit Filter -->
-                        <div class="flex space-x-1">
-                            <button
-                                @click="pageState.custom.direction = pageState.custom.direction === 'WITHDRAW' ? null : 'WITHDRAW'"
-                                :class="[
-                                    'px-3 py-1.5 text-xs rounded-full transition-colors',
-                                    pageState.custom.direction === 'WITHDRAW'
-                                        ? 'bg-red-100 text-red-700 border border-red-200'
-                                        : 'bg-base-lvl-1 text-body-1 hover:bg-base-lvl-2'
-                                ]">
-                                {{ $t('Debits') }}
-                            </button>
-                            <button
-                                @click="pageState.custom.direction = pageState.custom.direction === 'DEPOSIT' ? null : 'DEPOSIT'"
-                                :class="[
-                                    'px-3 py-1.5 text-xs rounded-full transition-colors',
-                                    pageState.custom.direction === 'DEPOSIT'
-                                        ? 'bg-green-100 text-green-700 border border-green-200'
-                                        : 'bg-base-lvl-1 text-body-1 hover:bg-base-lvl-2'
-                                ]">
-                                {{ $t('Credits') }}
-                            </button>
+                            <div class="flex flex-wrap items-center justify-center gap-2">
+                                <LogerButton v-if="hasFilters" variant="inverse" class="text-xs" @click="reset()">
+                                    <i class="mr-1 fas fa-times" />
+                                    {{ $t('Clear filters') }}
+                                </LogerButton>
+                                <template v-else>
+                                    <LogerButton variant="inverse" class="text-xs" @click="showImportPdf = true">
+                                        <i class="mr-1 fas fa-file-pdf" />
+                                        {{ $t('Import') }} PDF
+                                    </LogerButton>
+                                    <LogerButton variant="inverse" class="text-xs" @click="showImportCsv = true">
+                                        <i class="mr-1 fas fa-file-csv" />
+                                        {{ $t('Import') }} CSV
+                                    </LogerButton>
+                                </template>
+                            </div>
                         </div>
+                    </template>
+                </Component>
 
-                    </header>
-                </template>
-                <template v-slot:content="{ selectedTab }">
-                    <section class="bg-base-lvl-3">
-                        <Component :is="listComponent" :cols="tableAccountCols(props.accountId)"
-                            :transactions="displayTransactions" :server-search-options="serverSearchOptions"
-                            :is-loading="isLoading" :empty-text="`No transactions in ${monthName}`"
-                            :row-class="transactionRowClass" @findLinked="findLinked"
-                            @removed="removeTransaction($event, ['verified'])" @duplicate="handleDuplicate"
-                            @edit="handleEdit" @approved="handleApprove" />
-                    </section>
-                </template>
-            </WidgetContainer>
+                <footer
+                    v-if="displayTransactions.length"
+                    class="flex items-center justify-end gap-2 px-5 py-2.5 text-xs font-semibold border-t text-body-1/60 border-base"
+                >
+                    <template v-if="draftCount">
+                        <span class="text-warning">{{ draftCount }} {{ $t('pending') }}</span>
+                        <span class="text-body-1/30">·</span>
+                    </template>
+                    <span>
+                        {{ displayTransactions.length }}
+                        {{ displayTransactions.length === 1 ? $t('Transaction') : $t('Transactions') }}
+                    </span>
+                </footer>
+            </article>
 
+            <!-- Credit-card side widgets (last payment + upcoming cycles) are parked
+                 while the register runs full width. With hide-panel on, this slot
+                 renders ABOVE the register, which reintroduces the clutter we just
+                 removed — so it stays off until it gets a proper home (a collapsible
+                 strip or the "…" menu).
             <template #prepend-panel class="">
                 <section
                     v-if="isCreditCard"
@@ -704,6 +728,7 @@ const selectedTabName = computed(() => {
                     </template>
                 </NextPaymentsWidget>
             </template>
+            -->
 
             <AccountReconciliationForm :show="reconcileForm.isVisible" @close="reconcileForm.isVisible = false"
                 :account="selectedAccount" />

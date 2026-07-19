@@ -55,6 +55,7 @@ class BHDAlert implements MailToTransaction
                 'productName' => $productName,
                 'productCode' => $productCode,
                 'productBrand' => 'BHD',
+                'transactionType' => BHD::parseTransactionType($tdValues[5]),
             ]);
         } catch (Exception $e) {
             Log::error('BHD Alert parsing failed', [

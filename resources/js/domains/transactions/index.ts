@@ -1,5 +1,6 @@
 import { router } from "@inertiajs/vue3"
-import { ITransaction } from "./models"
+import axios from "axios"
+import { IAccount, ITransaction } from "./models"
 import { useTransactionStore } from "@/store/transactions"
 
 
@@ -15,6 +16,25 @@ export const TRANSACTION_DIRECTIONS = {
     DEPOSIT: 'DEPOSIT',
     TRANSFER: 'TRANSFER'
 }
+
+/**
+ * Canonical credit-card predicate. The account wizard requires both a credit
+ * limit and a closing day, so either field identifies a card — but only
+ * `credit_limit` drives the available-credit rendering in AccountItem, so it
+ * is the one we key off everywhere.
+ */
+export const isCreditCard = (account: Pick<IAccount, 'credit_limit'>) => {
+    return Number(account?.credit_limit ?? 0) > 0;
+};
+
+export const saveAccountsReorder = (items: IAccount[]) => {
+    const accounts = items?.reduce((savedItems, account) => {
+        savedItems[account.id] = account;
+        return savedItems;
+    }, {} as Record<number, IAccount>);
+
+    return axios.patch('/api/accounts/', { accounts });
+};
 
 export const getVariances = (current = 0, last = 0) => {
     if (last === 0) {

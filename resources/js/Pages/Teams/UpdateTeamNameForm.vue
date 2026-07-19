@@ -1,5 +1,5 @@
 <script setup lang="ts">
-    import { useForm } from '@inertiajs/vue3'
+    import { useForm, usePage } from '@inertiajs/vue3'
 
     import JetActionMessage from '@/Components/atoms/ActionMessage.vue'
     import LogerButton from '@/Components/atoms/LogerButton.vue'
@@ -14,6 +14,7 @@
         modules: any[]
     }>();
     const form = useForm(mapTeamFormServer(props.team))
+    const accounts = usePage().props.accounts as Record<string, any>[]
 
     function updateTeamName() {
         form.transform((data: any) => {
@@ -47,6 +48,7 @@
                 :currencies="[]"
                 :timezones="[]"
                 :modules="modules"
+                :accounts="accounts"
                 :form-data="form"
             />
         </template>

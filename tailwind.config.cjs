@@ -10,6 +10,10 @@ module.exports = {
         './resources/views/**/*.blade.php',
         './resources/js/**/*.vue',
         './resources/js/**/*.js',
+        // Column definitions (tableCols.ts, tableAccountCols.ts, …) build markup in
+        // render functions, so their classes have to be scanned too — otherwise
+        // things like max-w-[9rem] silently never get generated.
+        './resources/js/**/*.ts',
         './node_modules/atmosphere-ui/**/*.vue',
     ],
 
