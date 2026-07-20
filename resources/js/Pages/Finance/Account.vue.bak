@@ -600,7 +600,6 @@ const draftCount = computed(() => (props.drafts || []).length);
                     </div>
                     <div class="w-px h-9 bg-base-lvl-2" />
                     <LogerButton variant="neutral" @click="reconcileForm.isVisible = true">
-                        <i class="fas fa-check-double mr-1.5" />
                         {{ $t('Reconcile Now') }}
                     </LogerButton>
                 </div>
