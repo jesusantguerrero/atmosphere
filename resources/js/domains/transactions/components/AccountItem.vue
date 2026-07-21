@@ -52,7 +52,7 @@ const creditLimitDate = computed(() => {
         ["few", "rd"],
         ["other", "th"],
     ]);
-    return account.value.credit_closing_day ? `${account.value.credit_closing_day}${suffixes.get(formatter.select(account.credit_closing_day))}` : '';
+    return account.value.credit_closing_day ? `${account.value.credit_closing_day}${suffixes.get(formatter.select(Number(account.value.credit_closing_day)))}` : '';
 })
 </script>
 

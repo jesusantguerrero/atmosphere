@@ -198,7 +198,7 @@ const deleteBulkTransactions = () => {
                     @click="router.visit('/finance/transactions')">
                     <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">{{ $t('Savings') }}</p>
                     <p class="text-lg font-bold mt-2 break-all leading-tight" :class="Number(savings) >= 0 ? 'text-green-500' : 'text-red-400'">{{ formatMoney(savings) }}</p>
-                    <p class="text-xs text-body-1/40 mt-1">{{ $t('Income') }} - {{ $t('Expenses') }}</p>
+                    <p class="text-xs text-body-1/40 mt-1">{{ $t('Contributed to savings') }}</p>
                 </div>
 
                 <div class="bg-base-lvl-3 border border-base rounded-lg p-4 cursor-pointer hover:border-primary/30 transition overflow-hidden"
@@ -211,7 +211,8 @@ const deleteBulkTransactions = () => {
                         class="h-1.5 rounded-full mt-2"
                         :show-labels="false"
                     />
-                    <p class="text-xs text-body-1/40 mt-1">{{ $t('of') }} {{ formatMoney(budgetTotal.spending) }}</p>
+                    <p class="text-xs text-body-1/40 mt-1" v-if="Number(budgetTotal.spending) > 0">{{ $t('of') }} {{ formatMoney(budgetTotal.spending) }}</p>
+                    <p class="text-xs text-body-1/40 mt-1" v-else>{{ $t('No budget set for this month') }}</p>
                 </div>
             </section>
 

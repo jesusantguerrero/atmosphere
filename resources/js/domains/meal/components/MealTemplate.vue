@@ -31,7 +31,7 @@ defineProps({
           <h4 class="capitalize">
             {{ mealType.name }}
           </h4>
-          <p>{{ mealType.description }}</p>
+          <p v-if="mealType.description && mealType.description !== mealType.name">{{ mealType.description }}</p>
         </div>
       </article>
     </header>
