@@ -683,10 +683,10 @@ const draftCount = computed(() => (props.drafts || []).length);
                  renders ABOVE the register, which reintroduces the clutter we just
                  removed — so it stays off until it gets a proper home (a collapsible
                  strip or the "…" menu).
-            <template #prepend-panel class="">
+            <template #prepend-panel>
                 <section
                     v-if="isCreditCard"
-                    class="w-full px-4 pt-4">
+                    class="w-full pt-4">
                     <div class="rounded-lg bg-base-lvl-3 px-4 py-3">
                         <header class="flex items-center justify-between text-xs text-body-1/70">
                             <span>{{ $t('Last payment') }}</span>
@@ -695,7 +695,7 @@ const draftCount = computed(() => (props.drafts || []).length);
                                 {{ $t('Not linked to a cycle') }}
                             </span>
                         </header>
-                        <div v-if="lastCreditCardPayment" class="mt-1 flex items-baseline justify-between gap-3">
+                        <div v-if="lastCreditCardPayment" class="mt-1 flex items-baseline justify-between gap-3 flex-wrap">
                             <span class="text-lg font-semibold text-body">
                                 {{ formatMoney(lastCreditCardPayment.amount, selectedAccount?.currency_code) }}
                             </span>
@@ -711,7 +711,7 @@ const draftCount = computed(() => (props.drafts || []).length);
                         </p>
                     </div>
                 </section>
-                <NextPaymentsWidget class="w-full py-4 px-4" :title="$t('Credit Card Payments')" :payments="billingCycles.map((payment) => ({
+                <NextPaymentsWidget class="w-full" :title="$t('Credit Card Payments')" :payments="billingCycles.map((payment) => ({
                     ...payment,
                     date: payment.due_at
                 }))" emit-actions emit-delete @action="setPaymentBill" @pay="payCycle">
@@ -795,4 +795,3 @@ const draftCount = computed(() => (props.drafts || []).length);
         </Modal>
     </AppLayout>
 </template>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
