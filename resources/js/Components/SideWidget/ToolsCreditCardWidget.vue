@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Link } from '@inertiajs/vue3';
 
 import { IAccount } from '@/domains/transactions/models';
+import { isCreditCard } from '@/domains/transactions';
 import { formatMoney } from '@/utils';
 import { useTransactionModal } from '@/domains/transactions/useTransactionModal';
 
@@ -51,7 +52,7 @@ const fetchSummary = async (): Promise<void> => {
 };
 
 const creditCards = computed<IAccount[]>(() =>
-    props.accounts.filter((account) => account.credit_closing_day)
+    props.accounts.filter(isCreditCard)
 );
 
 // Total position — the at-a-glance hero. Debt = absolute sum of negative

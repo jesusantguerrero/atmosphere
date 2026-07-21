@@ -96,13 +96,6 @@ export const tableAccountCols = (accountId?: number, showSelects?: boolean) => [
                         title: categoryName,
                     }, categoryName)
                 );
-            } else {
-                children.push(
-                    h('span', {
-                        class: 'flex-shrink-0 px-1.5 py-0.5 rounded text-[11px] font-medium text-body-1/40 bg-base-lvl-1',
-                        title: 'Sin categoría',
-                    }, 'Sin categoría')
-                );
             }
 
             return h('div', { class: 'flex items-center gap-2 min-w-0' }, children);

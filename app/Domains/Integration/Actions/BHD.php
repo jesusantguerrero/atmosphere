@@ -5,6 +5,7 @@ namespace App\Domains\Integration\Actions;
 use App\Domains\Automation\Concerns\AutomationActionContract;
 use App\Domains\Automation\Models\Automation;
 use App\Domains\Automation\Models\AutomationTaskAction;
+use App\Domains\Integration\Concerns\TransactionDataDTO;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\DomCrawler\Crawler;
@@ -123,6 +124,16 @@ class BHD implements AutomationActionContract
         ];
 
         return $types[$type];
+    }
+
+    public static function parseTransactionType(?string $type): ?string
+    {
+        return match (strtolower(trim((string) $type))) {
+            'compra' => TransactionDataDTO::TYPE_PURCHASE,
+            'retiro de efectivo' => TransactionDataDTO::TYPE_CASH_WITHDRAWAL,
+            'reserva de fondos (hold)' => TransactionDataDTO::TYPE_HOLD,
+            default => null,
+        };
     }
 
     /**

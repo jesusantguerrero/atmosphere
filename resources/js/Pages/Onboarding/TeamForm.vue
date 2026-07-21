@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import { NSelect } from "naive-ui";
 import { AtField} from "atmosphere-ui";
 import { format } from "date-fns";
@@ -8,17 +9,26 @@ import LogerApiSelect from "@/Components/organisms/LogerApiSelect.vue";
 
 import { DEFAULT_TIMEZONE, defaultDateFormats } from "@/domains/app/index";
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
     formData: Object;
+    accounts?: Record<string, any>[];
 }>(), {
     formData: () => ({
         name: '',
         timezone: DEFAULT_TIMEZONE,
         primary_currency_code: 'USD',
         currency_symbol_option: 'before',
-        date_format: ''
-    })
+        date_format: '',
+        cash_withdrawal_account_id: ''
+    }),
+    accounts: () => []
 });
+
+// Only asset accounts make sense as a cash-withdrawal destination; credit cards
+// are excluded so the picker isn't cluttered with accounts money never lands in.
+const cashAccountOptions = computed(() => (props.accounts ?? [])
+    .filter((account) => !account.credit_closing_day)
+    .map((account) => ({ value: String(account.id), label: account.name })));
 
 const currencyCodeFormatter = (currency: Record<string, string>) => {
     return currency.code ? `${currency.code} ${currency.symbol}` : currency.name ?? currency;
@@ -102,6 +112,22 @@ const currencyLocaleOptions = [{
                 />
             </AtField>
         </section>
+
+        <AtField
+            v-if="cashAccountOptions.length"
+            label="Cash withdrawal account"
+        >
+            <NSelect
+                v-model:value="formData.cash_withdrawal_account_id"
+                filterable
+                clearable
+                :options="cashAccountOptions"
+                placeholder="Select"
+            />
+            <p class="mt-1 text-xs text-secondary">
+                ATM/cash-withdrawal emails are routed here as a transfer instead of an expense.
+            </p>
+        </AtField>
 
         <slot name="append" />
     </div>

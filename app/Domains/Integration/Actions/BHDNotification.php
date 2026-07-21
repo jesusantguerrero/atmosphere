@@ -101,6 +101,7 @@ class BHDNotification implements MailToTransaction
             'productName' => $product,
             'productCode' => $productLast4,
             'productBrand' => 'BHD',
+            'transactionType' => BHD::parseTransactionType($bhdOutput['type'] ?? null),
         ]);
     }
 

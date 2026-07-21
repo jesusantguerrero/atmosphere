@@ -218,7 +218,7 @@ const pdfExportUrl = computed(() => buildExportUrl('/finance/transactions/export
         </button>
       </template>
 
-      <main class="mt-4 ">
+      <main class="mt-4">
         <header class="flex flex-col md:flex-row bg-base-lvl-3 md:justify-between gap-3 md:gap-0 px-4 md:px-6 py-3 md:py-2">
             <section class="flex flex-wrap items-center gap-2 overflow-x-auto">
                 <StatusButtons
@@ -290,7 +290,27 @@ const pdfExportUrl = computed(() => buildExportUrl('/finance/transactions/export
             @removed="removeTransaction($event, ['verified'])"
             @duplicate="handleDuplicate"
             @edit="handleEdit"
-        />
+        >
+            <template #empty>
+                <div class="mx-6 my-8 flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-base-lvl-2 px-6 py-12 text-center">
+                    <div class="flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 text-primary mb-4">
+                        <i class="fas fa-receipt text-2xl" />
+                    </div>
+                    <h3 class="text-lg font-bold text-body-1 mb-1">
+                        {{ hasFilters ? 'No matching transactions' : `No transactions in ${monthName}` }}
+                    </h3>
+                    <p class="text-sm text-body-1/60 mb-5 max-w-xs">
+                        {{ hasFilters
+                            ? 'Try adjusting your search or filters to find what you\'re looking for.'
+                            : 'Transactions for this period will show up here as they come in.' }}
+                    </p>
+                    <LogerButton v-if="hasFilters" variant="inverse" @click="reset()">
+                        <i class="fas fa-times mr-2" />
+                        Clear filters
+                    </LogerButton>
+                </div>
+            </template>
+        </component>
       </main>
     </FinanceTemplate>
   </AppLayout>

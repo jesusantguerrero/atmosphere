@@ -6,6 +6,12 @@ use Spatie\LaravelData\Data;
 
 class TransactionDataDTO extends Data
 {
+    const TYPE_PURCHASE = 'PURCHASE';
+
+    const TYPE_CASH_WITHDRAWAL = 'CASH_WITHDRAWAL';
+
+    const TYPE_HOLD = 'HOLD';
+
     public int $id;
 
     public string $date;
@@ -30,6 +36,8 @@ class TransactionDataDTO extends Data
 
     public ?string $productBrand;
 
+    public ?string $transactionType;
+
     public function __construct($data)
     {
         $this->id = $data['id'];
@@ -44,6 +52,7 @@ class TransactionDataDTO extends Data
         $this->productName = $data['productName'] ?? null;
         $this->productCode = $data['productCode'] ?? null;
         $this->productBrand = $data['productBrand'] ?? null;
+        $this->transactionType = $data['transactionType'] ?? null;
     }
 
     /**

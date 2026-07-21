@@ -44,6 +44,10 @@ defineProps({
 <style lang="scss">
 body,
 html {
+  /* !important defends against browser extensions (e.g. Grammarly) that inject
+     an inline `margin-bottom` on <body>, which would otherwise leak the dark
+     #1e293b background as a strip at the bottom of the viewport. */
+  margin: 0 !important;
   background-color: #1e293b;
 }
 .home-container {

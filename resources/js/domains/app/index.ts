@@ -199,7 +199,8 @@ export const mapTeamFormServer = (team: Record<string, any>, prefix="team_") => 
         timezone:'',
         primary_currency_code: 'USD',
         currency_symbol_option: 'before',
-        date_format: ''
+        date_format: '',
+        cash_withdrawal_account_id: ''
     })
 }
 
