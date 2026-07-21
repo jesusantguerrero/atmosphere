@@ -604,10 +604,13 @@ const assignTransactionLabel = (label: Record<string, string>, transaction: Reco
           <slot name="content">
             <div>
               {{ form.error }}
-              <div class="px-4 space-y-3 md:flex md:space-x-2 md:space-y-0 md:px-0">
+              <div class="px-4 space-y-3 md:flex md:items-start md:space-x-2 md:space-y-0 md:px-0">
                 <AtField label="Date" class="w-full md:w-3/12">
-                  <div class="flex items-center gap-2">
-                    <NDatePicker v-model:value="form.date" type="date" size="large" class="flex-1 md:w-full" />
+                  <!-- Presets sit under the picker, not beside it: sharing the row
+                       squeezed NDatePicker below its intrinsic width and naive-ui
+                       truncated the date to the day number. -->
+                  <div class="space-y-1.5">
+                    <NDatePicker v-model:value="form.date" type="date" size="large" class="w-full" />
                     <!-- Quick presets — most transactions are entered for today or yesterday. -->
                     <div class="flex gap-1.5">
                       <button
@@ -764,7 +767,7 @@ const assignTransactionLabel = (label: Record<string, string>, transaction: Reco
                   ]" />
                 </AtField>
                 <AtField label="Date" v-if="state.schedule_settings.end_type == 'DATE'">
-                  <NDatePicker v-model:value="state.schedule_settings.end_date" size="lg" />
+                  <NDatePicker v-model:value="state.schedule_settings.end_date" type="date" size="large" class="w-full" />
                 </AtField>
                 <AtField label="Instances" v-if="state.schedule_settings.end_type == 'COUNT'">
                   <AtInput type="number" v-model="state.schedule_settings.count" />

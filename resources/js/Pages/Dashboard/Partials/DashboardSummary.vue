@@ -9,6 +9,7 @@ import AccountBalancesWidget from "./AccountBalancesWidget.vue";
 import OccurrenceWidget from "@/domains/housing/components/OccurrenceWidget.vue";
 import MealWidget from "@/domains/meal/components/MealWidget.vue";
 import WatchlistDashboardWidget from "@/domains/watchlist/components/WatchlistDashboardWidget.vue";
+import DueTodayWidget, { type TodayItem } from "./DueTodayWidget.vue";
 
 import { useNetWorth, INetWorthEntry } from "@/domains/transactions/useNetWorth";
 import { formatMoney } from "@/utils";
@@ -28,6 +29,8 @@ const props = defineProps<{
     topWatchlists: any[];
     isMealsEnabled: boolean;
     isHousingEnabled: boolean;
+    todayItems?: TodayItem[];
+    drafts?: number;
 }>();
 
 const { netWorth } = toRefs(props);
@@ -66,20 +69,7 @@ const movementIsPositive = computed(() => Number(monthMovement.value) >= 0);
 <template>
     <div class="space-y-4">
         <!-- Hero stats row -->
-        <section class="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <button
-                class="bg-base-lvl-3 rounded-lg p-4 text-left border border-base hover:border-primary/30 transition cursor-pointer"
-                @click="router.visit('/trends/net-worth')"
-            >
-                <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">{{ $t('Net Worth') }}</p>
-                <p class="text-xl font-bold text-body mt-1">
-                    <MoneyPresenter :value="thisMonth" />
-                </p>
-                <p class="text-xs mt-1" :class="movementIsPositive ? 'text-green-500' : 'text-red-400'">
-                    {{ movementIsPositive ? '+' : '' }}{{ formatMoney(monthMovement) }}
-                    <span v-if="monthMovementVariance !== null" class="text-body-1/40">({{ monthMovementVariance }}%)</span>
-                </p>
-            </button>
+        <section class="grid grid-cols-2 md:grid-cols-3 gap-3">
 
             <button
                 class="bg-base-lvl-3 rounded-lg p-4 text-left border border-base hover:border-primary/30 transition cursor-pointer"
@@ -125,6 +115,24 @@ const movementIsPositive = computed(() => Number(monthMovement.value) >= 0);
         <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <!-- Left column: accounts + action items -->
             <div class="md:col-span-2 space-y-4">
+                <!-- Today / needs attention -->
+                <DueTodayWidget v-if="todayItems?.length" :items="todayItems" />
+                <button
+                    v-if="drafts"
+                    type="button"
+                    class="w-full text-left bg-base-lvl-3 rounded-lg border border-base p-4 flex items-center gap-3 hover:border-primary/30 transition"
+                    @click="router.visit('/finance/transactions')"
+                >
+                    <span class="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 text-primary flex-shrink-0">
+                        <i class="fas fa-receipt" />
+                    </span>
+                    <span class="flex-1 min-w-0">
+                        <span class="block text-sm font-semibold text-body-1">{{ drafts }} {{ $t('transactions to review') }}</span>
+                        <span class="block text-xs text-body-1/60">{{ $t('Imported, waiting for your approval') }}</span>
+                    </span>
+                    <span class="text-xs font-semibold text-primary">{{ $t('Review') }} →</span>
+                </button>
+
                 <!-- Accounts -->
                 <AccountBalancesWidget :accounts="accounts" />
 
@@ -148,9 +156,6 @@ const movementIsPositive = computed(() => Number(monthMovement.value) >= 0);
                     v-if="isMealsEnabled"
                     :meals="meals?.data ?? []"
                 />
-
-                <!-- Top watchlists -->
-                <WatchlistDashboardWidget :watchlists="topWatchlists" />
 
                 <!-- Credit card debt callout -->
                 <div

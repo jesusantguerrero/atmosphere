@@ -47,6 +47,7 @@ const getUrgencyLabel = (occurrence: IOccurrenceCheck): string => {
                 Occurrence Checks
             </Link>
         </SectionTitle>
+        <p class="text-center text-[11px] text-gray-400 mt-0.5">Days since it last happened</p>
         <section class="flex mt-4" v-if="checks?.length">
           <CategoryItem
                 class="capitalize"
@@ -58,6 +59,12 @@ const getUrgencyLabel = (occurrence: IOccurrenceCheck): string => {
                 wrap
           />
         </section>
+        <div class="flex items-center justify-center gap-3 mt-3 text-[10px] text-gray-400" v-if="checks?.length">
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full" style="background:#ef4444"></span>Overdue</span>
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full" style="background:#f59e0b"></span>Due</span>
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full" style="background:#22c55e"></span>On track</span>
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full" style="background:#9ca3af"></span>No data</span>
+        </div>
         <section class="flex items-center flex-col justify-center" v-else>
           <CategoryItem
                 class="capitalize"

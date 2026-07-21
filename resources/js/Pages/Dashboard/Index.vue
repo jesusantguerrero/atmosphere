@@ -205,6 +205,8 @@ const deleteBulkTransactions = () => {
         :top-watchlists="topWatchlists"
         :is-meals-enabled="isModuleEnabled('meals')"
         :is-housing-enabled="isModuleEnabled('housing')"
+        :today-items="todayItems"
+        :drafts="dynamicStore.drafts"
       />
 
       <!-- DETAILED VIEW (original layout) -->
