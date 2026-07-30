@@ -3,6 +3,9 @@ import { h } from "vue"
 import IconTransfer from "@/Components/icons/IconTransfer.vue";
 import { Link } from "@inertiajs/vue3";
 import formatMoney from "@/utils/formatMoney";
+import { nameToColor } from "@/utils";
+
+const initials = (name: string) => (name || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
 
 export const tableAccountCols = (accountId?: number, showSelects?: boolean) => [
     ...( showSelects ? [{
@@ -47,13 +50,18 @@ export const tableAccountCols = (accountId?: number, showSelects?: boolean) => [
         render(row: any) {
             try {
                 const account = row.account_id === accountId ? row.counter_account : row.account
-                const children = () => [
-                    h(Link, { class: 'font-bold underline truncate text-secondary', href: `/finance/accounts/${account.id}`}, `${account?.name}`),
-                    h(IconTransfer, { class: 'fa fa-right-left flex-shrink-0'})
-                ];
-                return row.payee
-                ? h(Link, { class: 'block font-bold truncate text-primary', href: `/finance/lines?filter[payee_id]=${row.payee.id}`, title: row.payee.name }, row.payee.name)
-                : h('div', { class: "flex items-center justify-between gap-1 min-w-0 text-body-1"}, children() )
+                const name = row.payee?.name ?? account?.name ?? ''
+                const avatar = h('span', {
+                    class: 'flex items-center justify-center flex-shrink-0 rounded-full w-7 h-7 text-[10px] font-bold text-white',
+                    style: { background: nameToColor(name) },
+                }, initials(name))
+                const label = row.payee
+                    ? h(Link, { class: 'block font-bold truncate text-body', href: `/finance/lines?filter[payee_id]=${row.payee.id}`, title: row.payee.name }, row.payee.name)
+                    : h('div', { class: 'flex items-center gap-1 min-w-0 text-body-1' }, [
+                        h(Link, { class: 'font-bold underline truncate text-secondary', href: `/finance/accounts/${account.id}` }, `${account?.name}`),
+                        h(IconTransfer, { class: 'fa fa-right-left flex-shrink-0' }),
+                    ])
+                return h('div', { class: 'flex items-center gap-2.5 min-w-0' }, [avatar, h('div', { class: 'flex-1 min-w-0' }, [label])])
             } catch(e) {
                 return ''
             }
@@ -79,7 +87,7 @@ export const tableAccountCols = (accountId?: number, showSelects?: boolean) => [
                 ? { label: 'Transfer', icon: '⇄', class: 'text-body-1/70' }
                 : isInflow
                     ? { label: 'Income', icon: '↑', class: 'text-green-500' }
-                    : { label: 'Expense', icon: '↓', class: 'text-red-400' };
+                    : { label: 'Expense', icon: '↓', class: 'text-body-1/70' };
 
             const children: any[] = [
                 h('span', { class: `flex items-center gap-1.5 flex-shrink-0 font-medium ${type.class}`, title: row.description }, [
@@ -91,7 +99,7 @@ export const tableAccountCols = (accountId?: number, showSelects?: boolean) => [
             if (categoryName) {
                 children.push(
                     h(Link, {
-                        class: 'flex-shrink-0 px-1.5 py-0.5 rounded text-[11px] font-medium truncate max-w-[9rem] text-primary bg-primary/10',
+                        class: 'flex-shrink-0 px-1.5 py-0.5 rounded text-[11px] font-medium truncate max-w-[9rem] text-body-1/70 bg-base-lvl-1',
                         href: `/finance/lines?filter[category_id]=${categoryId}`,
                         title: categoryName,
                     }, categoryName)

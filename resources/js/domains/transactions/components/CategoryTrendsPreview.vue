@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { router } from "@inertiajs/vue3";
+import { nameToColor } from "@/utils";
 
 import DonutChart from '@/Components/organisms/DonutChart.vue';
 import WidgetTitleCard from '@/Components/molecules/WidgetTitleCard.vue';
@@ -58,6 +59,12 @@ const typeLabel = computed(() => {
             value="total"
         />
     </article>
+    <ul class="flex flex-wrap justify-center px-2 mt-2 gap-x-4 gap-y-1">
+        <li v-for="item in typeData" :key="item.name" class="flex items-center gap-1.5 text-xs text-body-1/70">
+            <span class="inline-block rounded-sm w-2.5 h-2.5" :style="{ background: item.color || nameToColor(item.name) }" />
+            <span class="capitalize">{{ item.name }}</span>
+        </li>
+    </ul>
 </WidgetTitleCard>
 
 </template>

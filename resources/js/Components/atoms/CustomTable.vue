@@ -115,11 +115,11 @@ const range = computed(() => {
             </tr>
             <tr v-for="(data, index) in tableData"
                 :key="`data-row-${index}`"
-                class="text-body"
-                :class="[index % 2 ? 'bg-base-lvl-2' : '', rowClass?.(data, index) ?? '']"
+                class="text-body transition-colors border-b border-base-lvl-2 hover:bg-base-lvl-1"
+                :class="[rowClass?.(data, index) ?? '']"
             >
                 <td v-for="col in cols" :key="col.name" class="h-full align-baseline" :style="{width: col.width, maxWidth: col.maxWidth}">
-                    <div class="flex flex-col w-full h-full px-2 py-1 text-left" :class="col.class">
+                    <div class="flex flex-col w-full h-full px-2 py-3 text-left" :class="col.class">
                             <slot :name="col.name" v-bind:scope="{row: data, value: data[col.name], col, field: col.name, $index: index }">
                                 <div v-if="col.type == 'calc'" :class="col.class">
                                     {{ col.formula(data) }}

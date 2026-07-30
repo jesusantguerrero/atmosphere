@@ -202,7 +202,6 @@
     "Take a watchlist and a category to measure how many months of expenses cover your emergency allocation.": "Toma una lista de seguimiento y una categoría para medir cuántos meses de gastos cubre tu asignación de emergencia.",
     "Savings goals": "Metas de ahorro",
     "Track your monthly and target-date goals": "Lleva el seguimiento de tus metas mensuales y por fecha",
-    "Goals": "Metas",
     "Create from a category": "Crear desde una categoría",
     "Open a budget category and click \"Set target\" to create your first goal.": "Abre una categoría del presupuesto y haz clic en \"Set target\" para crear tu primera meta.",
     "No goals yet": "Aún no hay metas",
@@ -246,5 +245,15 @@
     "Click to use this amount": "Click para usar este monto",
     "Use last month's plan": "Usar plan del mes pasado",
     "Copy budgeted amounts from last month": "Copia los montos presupuestados del mes anterior",
-    "Bank": "Banco"
+    "Bank": "Banco",
+    "of": "de",
+    "Contributed to savings": "Aportado a ahorros",
+    "No budget set for this month": "Sin presupuesto este mes",
+    "transactions to review": "transacciones por revisar",
+    "Imported, waiting for your approval": "Importadas, esperando tu aprobación",
+    "Review": "Revisar",
+    "Days since it last happened": "Días desde la última vez",
+    "Due": "Por vencer",
+    "On track": "Al día",
+    "No data": "Sin datos"
 }

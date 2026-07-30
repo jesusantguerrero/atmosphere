@@ -199,7 +199,6 @@
     "Take a watchlist and a category to measure how many months of expenses cover your emergency allocation.": "Take a watchlist and a category to measure how many months of expenses cover your emergency allocation.",
     "Savings goals": "Savings goals",
     "Track your monthly and target-date goals": "Track your monthly and target-date goals",
-    "Goals": "Goals",
     "Create from a category": "Create from a category",
     "Open a budget category and click \"Set target\" to create your first goal.": "Open a budget category and click \"Set target\" to create your first goal.",
     "No goals yet": "No goals yet",
@@ -243,5 +242,15 @@
     "Click to use this amount": "Click to use this amount",
     "Use last month's plan": "Use last month's plan",
     "Copy budgeted amounts from last month": "Copy budgeted amounts from last month",
-    "Bank": "Bank"
+    "Bank": "Bank",
+    "of": "of",
+    "Contributed to savings": "Contributed to savings",
+    "No budget set for this month": "No budget set for this month",
+    "transactions to review": "transactions to review",
+    "Imported, waiting for your approval": "Imported, waiting for your approval",
+    "Review": "Review",
+    "Days since it last happened": "Days since it last happened",
+    "Due": "Due",
+    "On track": "On track",
+    "No data": "No data"
 }

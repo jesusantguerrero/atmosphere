@@ -238,19 +238,20 @@ const pdfExportUrl = computed(() => buildExportUrl('/finance/transactions/export
                     class="w-full md:flex"
                     :has-filters="hasFilters"
                     @clear="reset()"
+                    :placeholder="$t('Search')"
                     @blur="executeSearch"
                 />
                 <span>
                     {{ listData.length }}
                 </span>
                 <a :href="csvExportUrl" target="_blank">
-                    <LogerButton variant="inverse" as="span">
+                    <LogerButton variant="neutral" as="span">
                         <IMdiDownload class="mr-1" />
                         CSV
                     </LogerButton>
                 </a>
                 <a :href="pdfExportUrl" target="_blank">
-                    <LogerButton variant="inverse" as="span">
+                    <LogerButton variant="neutral" as="span">
                         <IMdiFilePdfBox class="mr-1" />
                         PDF
                     </LogerButton>
