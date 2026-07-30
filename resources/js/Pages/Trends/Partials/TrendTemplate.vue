@@ -53,7 +53,7 @@
 </script>
 
 <template>
-    <article class="relative px-3 mx-auto mt-12 space-y-6 md:space-y-0 md:space-x-10 md:flex max-w-screen-2xl sm:px-6 lg:px-8">
+    <article class="relative px-3 pt-16 pb-20 mx-auto space-y-6 md:space-y-0 md:space-x-10 md:flex max-w-screen-2xl sm:px-6 lg:px-8">
         <main
             class="overflow-hidden md:pr-5 md:pl-8"
             :class="hidePanel ? 'md:w-full' : 'md:w-6/12 lg:w-7/12 xl:w-8/12 2xl:w-10/12'"
@@ -61,7 +61,7 @@
             <slot />
         </main>
 
-        <aside class="space-y-4 md:w-3/12 md:sticky md:top-0" v-if="!hidePanel">
+        <aside class="space-y-4 md:w-3/12" v-if="!hidePanel">
             <section class="w-full md:px-2 aside-content">
                 <slot name="prepend-panel" />
                 <slot name="panel">

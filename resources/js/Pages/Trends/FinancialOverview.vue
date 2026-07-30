@@ -225,6 +225,7 @@ async function saveExchangeRate() {
                             <p class="text-2xl font-bold break-all leading-tight">
                                 {{ formatMoney(totals.net_worth, quoteCurrency) }}
                             </p>
+                            <p class="text-[11px] opacity-70">Includes accounts in {{ baseCurrency }} (converted)</p>
                         </div>
                         <div class="hidden md:flex items-center gap-4 text-sm opacity-80">
                             <span>{{ formatMoney(totals.total_quote, quoteCurrency) }}</span>

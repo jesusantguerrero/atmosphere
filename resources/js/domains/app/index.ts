@@ -13,6 +13,7 @@ export const useAppMenu = (t: any, modules: any[]) => {
         {
             icon: 'fas fa-bolt',
             name: 'Today',
+            mobileOnly: true,
             label: t('Today'),
             to: '/today',
             as: Link
@@ -47,6 +48,20 @@ export const useAppMenu = (t: any, modules: any[]) => {
         {
             separator: true
         },
+        {
+            // Finance is the canonical Loger pillar (per marketing landing
+            // and README) — always shown, never gated by module enablement.
+            // Fresh users without any modules enabled still see Finance in
+            // both the desktop sidebar and the mobile bottom-nav.
+            icon: 'fas fa-dollar-sign',
+            label: t('Finance'),
+            name: 'finance',
+            to: '/finance',
+            as: Link,
+            isActiveFunction(url: string, currentPath: string) {
+               return /finance|budgets/.test(currentPath)
+            }
+        },
         // Pillar labels follow .planning/family-os-structure.md naming:
         // Food (was Meal Planner), Home (was Housing), Family (was Profiles).
         // Routes stay unchanged — only the visible labels move.
@@ -74,20 +89,6 @@ export const useAppMenu = (t: any, modules: any[]) => {
             mobileOnly: true,
             isActiveFunction(url: string, currentPath: string) {
                 return /^\/shopping/.test(currentPath)
-            }
-        },
-        {
-            // Finance is the canonical Loger pillar (per marketing landing
-            // and README) — always shown, never gated by module enablement.
-            // Fresh users without any modules enabled still see Finance in
-            // both the desktop sidebar and the mobile bottom-nav.
-            icon: 'fas fa-dollar-sign',
-            label: t('Finance'),
-            name: 'finance',
-            to: '/finance',
-            as: Link,
-            isActiveFunction(url: string, currentPath: string) {
-               return /finance|budgets/.test(currentPath)
             }
         },
         {
