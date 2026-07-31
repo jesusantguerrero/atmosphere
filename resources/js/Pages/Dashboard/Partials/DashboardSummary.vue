@@ -10,6 +10,7 @@ import OccurrenceWidget from "@/domains/housing/components/OccurrenceWidget.vue"
 import MealWidget from "@/domains/meal/components/MealWidget.vue";
 import WatchlistDashboardWidget from "@/domains/watchlist/components/WatchlistDashboardWidget.vue";
 import DueTodayWidget, { type TodayItem } from "./DueTodayWidget.vue";
+import RoutineNowNextWidget from "./RoutineNowNextWidget.vue";
 
 import { useNetWorth, INetWorthEntry } from "@/domains/transactions/useNetWorth";
 import { formatMoney } from "@/utils";
@@ -115,6 +116,8 @@ const movementIsPositive = computed(() => Number(monthMovement.value) >= 0);
         <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <!-- Left column: accounts + action items -->
             <div class="md:col-span-2 space-y-4">
+                <!-- Now / Next from the weekly routine -->
+                <RoutineNowNextWidget />
                 <!-- Today / needs attention -->
                 <DueTodayWidget v-if="todayItems?.length" :items="todayItems" />
                 <button
