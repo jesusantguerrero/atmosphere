@@ -185,20 +185,7 @@ const pdfExportUrl = computed(() => buildExportUrl('/finance/transactions/export
 <template>
   <AppLayout :title="sectionTitle" @back="handleBackButton" :show-back-button="true">
     <template #header>
-      <FinanceSectionNav>
-        <template #actions>
-          <div class="flex items-center w-full space-x-2">
-            <AtDatePager
-                class="w-full h-12 border-none bg-base-lvl-1 text-body"
-                v-model:startDate="pageState.dates.startDate"
-                v-model:endDate="pageState.dates.endDate"
-                controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
-                next-mode="month"
-            />
-            <DraftButtons v-if="isDraft" @submitted="fetchTransactions()" />
-          </div>
-        </template>
-      </FinanceSectionNav>
+      <FinanceSectionNav />
     </template>
 
     <FinanceTemplate
@@ -230,6 +217,14 @@ const pdfExportUrl = computed(() => buildExportUrl('/finance/transactions/export
                     show-all
                     @update:model-value="goToAccount"
                 />
+                <AtDatePager
+                    class="h-10 border-none rounded-md bg-base-lvl-1 text-body"
+                    v-model:startDate="pageState.dates.startDate"
+                    v-model:endDate="pageState.dates.endDate"
+                    controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
+                    next-mode="month"
+                />
+                <DraftButtons v-if="isDraft" @submitted="fetchTransactions()" />
             </section>
 
             <section class="flex items-center space-x-2">

@@ -86,23 +86,20 @@ const transactionStatus = {
 <template>
   <AppLayout @back="router.visit('/finance/transactions')" :show-back-button="true">
     <template #header>
-      <FinanceSectionNav>
-        <template #actions>
-          <div class="flex items-center w-full space-x-2">
-            <LogerButton
-              variant="inverse"
-              class=""
-              v-for="(item, statusName) in transactionStatus"
-              :key="statusName"
-              @click="router.visit(item.value)"
-            >
-              {{ item.label }}
-            </LogerButton>
-          </div>
-        </template>
-      </FinanceSectionNav>
+      <FinanceSectionNav />
     </template>
     <FinanceTemplate :title="$t('Transactions')" :accounts="accounts">
+      <section class="flex flex-wrap items-center gap-2 pt-4">
+        <LogerButton
+          variant="inverse"
+          v-for="(item, statusName) in transactionStatus"
+          :key="statusName"
+          @click="router.visit(item.value)"
+        >
+          {{ item.label }}
+        </LogerButton>
+      </section>
+
       <Component
         :is="listComponent"
         :cols="tableCategoryCols(categoryId)"

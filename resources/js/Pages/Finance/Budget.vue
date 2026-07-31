@@ -222,71 +222,7 @@ const budgetCsvExportUrl = computed(() => {
     :show-back-button="true"
   >
     <template #header>
-      <FinanceSectionNav>
-        <template #actions>
-          <div class="flex items-center space-x-2">
-            <!-- Overspent notice -->
-            <AtButton
-              v-if="visibleFilters.overspent"
-              @click="toggleFilter('overspent')"
-              class="flex items-center justify-between space-x-2 rounded-md min-w-fit group"
-              :class="[filters.overspent ? 'bg-primary text-white' : 'text-primary']"
-            >
-              <span class="relative">
-                {{ filterGroups.overSpent.length }} Overspent categories
-                <PointAlert v-if="!filters.overspent" />
-              </span>
-
-              <div class="text-white text-sm rounded-full group-hover:bg-base-lvl-3/20 p-0.5">
-                <IconClose />
-              </div>
-            </AtButton>
-            <StatusButtons
-              :modelValue="currentStatus"
-              :statuses="budgetStatus"
-              @change="toggleFilter"
-            />
-
-            <LogerButton variant="inverse" @click="goToday"> {{ $t('Today') }} </LogerButton>
-
-            <JetDropdown align="right" width="48">
-                <template #trigger>
-                    <LogerButtonCircle :title="$t('More actions')">
-                        <IMdiDotsVertical />
-                    </LogerButtonCircle>
-                </template>
-
-                <template #content>
-                    <div class="w-56 py-1">
-                        <AtDropdownLink
-                            as="button"
-                            @click="copyFromPrevious()"
-                        >
-                            <section class="flex items-center w-full">
-                                <IMdiContentCopy class="mr-2" />
-                                <span>{{ $t('Use last month\'s plan') }}</span>
-                            </section>
-                        </AtDropdownLink>
-
-                        <AtDropdownLink :href="budgetCsvExportUrl" target="_blank" as="a">
-                            <section class="flex items-center w-full">
-                                <IMdiDownload class="mr-2" />
-                                <span>{{ $t('Export') }} CSV</span>
-                            </section>
-                        </AtDropdownLink>
-
-                        <AtDropdownLink :href="route('budget.export')" target="_blank" as="a">
-                            <section class="flex items-center w-full">
-                                <IMdiExport class="mr-2" />
-                                <span>{{ $t('Export') }} {{ $t('Budget') }}</span>
-                            </section>
-                        </AtDropdownLink>
-                    </div>
-                </template>
-            </JetDropdown>
-          </div>
-        </template>
-      </FinanceSectionNav>
+      <FinanceSectionNav />
     </template>
 
     <FinanceTemplate :accounts="accounts" :panel-size="panelSize">
@@ -297,6 +233,70 @@ const budgetCsvExportUrl = computed(() => {
         :title="$t('This is your budget.')"
         :content="$t('Create new category groups and categories and organize them to suit your needs')"
       />
+
+      <section class="flex flex-wrap items-center gap-2 py-3">
+        <!-- Overspent notice -->
+        <AtButton
+          v-if="visibleFilters.overspent"
+          @click="toggleFilter('overspent')"
+          class="flex items-center justify-between space-x-2 rounded-md min-w-fit group"
+          :class="[filters.overspent ? 'bg-primary text-white' : 'text-primary']"
+        >
+          <span class="relative">
+            {{ filterGroups.overSpent.length }} Overspent categories
+            <PointAlert v-if="!filters.overspent" />
+          </span>
+
+          <div class="text-white text-sm rounded-full group-hover:bg-base-lvl-3/20 p-0.5">
+            <IconClose />
+          </div>
+        </AtButton>
+        <StatusButtons
+          :modelValue="currentStatus"
+          :statuses="budgetStatus"
+          @change="toggleFilter"
+        />
+
+        <div class="ml-auto flex items-center gap-2">
+          <LogerButton variant="inverse" @click="goToday"> {{ $t('Today') }} </LogerButton>
+
+          <JetDropdown align="right" width="48">
+              <template #trigger>
+                  <LogerButtonCircle :title="$t('More actions')">
+                      <IMdiDotsVertical />
+                  </LogerButtonCircle>
+              </template>
+
+              <template #content>
+                  <div class="w-56 py-1">
+                      <AtDropdownLink
+                          as="button"
+                          @click="copyFromPrevious()"
+                      >
+                          <section class="flex items-center w-full">
+                              <IMdiContentCopy class="mr-2" />
+                              <span>{{ $t('Use last month\'s plan') }}</span>
+                          </section>
+                      </AtDropdownLink>
+
+                      <AtDropdownLink :href="budgetCsvExportUrl" target="_blank" as="a">
+                          <section class="flex items-center w-full">
+                              <IMdiDownload class="mr-2" />
+                              <span>{{ $t('Export') }} CSV</span>
+                          </section>
+                      </AtDropdownLink>
+
+                      <AtDropdownLink :href="route('budget.export')" target="_blank" as="a">
+                          <section class="flex items-center w-full">
+                              <IMdiExport class="mr-2" />
+                              <span>{{ $t('Export') }} {{ $t('Budget') }}</span>
+                          </section>
+                      </AtDropdownLink>
+                  </div>
+              </template>
+          </JetDropdown>
+        </div>
+      </section>
 
       <BudgetBalanceAssign
         class="rounded-t-md"

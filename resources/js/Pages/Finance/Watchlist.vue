@@ -155,29 +155,13 @@ onMounted(() => {
 <template>
   <AppLayout :title="sectionTitle">
     <template #header>
-      <FinanceSectionNav>
-        <template #actions>
-          <AtDatePager
-            class="w-full h-12 border-none bg-base-lvl-1 text-body"
-            v-model:startDate="pageState.dates.startDate"
-            v-model:endDate="pageState.dates.endDate"
-            @change="executeSearchWithDelay(5)"
-            controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
-            next-mode="month"
-          >
-            {{ formatMonth(pageState.dates.startDate, "MMMM") }}
-          </AtDatePager>
-          <div>
-            <LogerButton variant="inverse" @click="isModalOpen=!isModalOpen"> {{ $t('Add WatchList') }} </LogerButton>
-          </div>
-        </template>
-      </FinanceSectionNav>
+      <FinanceSectionNav />
     </template>
 
     <FinanceTemplate :title="$t('Finance')" :accounts="accounts" ref="financeTemplateRef">
       <article class="w-full">
         <header class="px-2 mt-4 mb-4">
-          <div class="flex items-center gap-2">
+          <div class="flex flex-wrap items-center gap-2">
             <h2 class="text-lg font-bold text-body">{{ $t('Spending watchlists') }}</h2>
             <NTooltip trigger="hover" placement="right">
               <template #trigger>
@@ -198,6 +182,20 @@ onMounted(() => {
                 </p>
               </div>
             </NTooltip>
+
+            <div class="ml-auto flex items-center gap-2">
+              <AtDatePager
+                class="h-10 border-none rounded-md bg-base-lvl-1 text-body"
+                v-model:startDate="pageState.dates.startDate"
+                v-model:endDate="pageState.dates.endDate"
+                @change="executeSearchWithDelay(5)"
+                controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
+                next-mode="month"
+              >
+                {{ formatMonth(pageState.dates.startDate, "MMMM") }}
+              </AtDatePager>
+              <LogerButton variant="inverse" @click="isModalOpen=!isModalOpen"> {{ $t('Add WatchList') }} </LogerButton>
+            </div>
           </div>
           <p class="text-sm text-body-1 mt-1 max-w-2xl">
             {{ $t('Track categories, payees or tags with monthly targets and get alerted when you cross them.') }}

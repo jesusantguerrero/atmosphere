@@ -39,29 +39,26 @@ const { state: pageState } = useServerSearch(serverSearchOptions);
 <template>
   <AppLayout @back="router.visit('/budgets')" :show-back-button="true">
     <template #header>
-      <FinanceSectionNav>
-        <template #actions>
-          <div class="flex items-center space-x-2">
-            <AtDatePager
-              class="w-full h-12 border-none bg-base-lvl-1 text-body"
-              v-model:startDate="pageState.dates.startDate"
-              v-model:endDate="pageState.dates.endDate"
-              controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
-              next-mode="month"
-            />
-            <LogerButton variant="inverse">{{ $t('Import') }}</LogerButton>
-            <LogerButton variant="inverse">
-              <a :href="route('budget.export')" class="block w-full" target="_blank">
-                {{ $t('Export') }}
-              </a>
-            </LogerButton>
-          </div>
-        </template>
-      </FinanceSectionNav>
+      <FinanceSectionNav />
     </template>
 
     <FinanceTemplate>
       <main class="py-3 space-y-4">
+        <section class="flex flex-wrap items-center justify-end gap-2">
+          <AtDatePager
+            class="h-10 border-none rounded-md bg-base-lvl-1 text-body"
+            v-model:startDate="pageState.dates.startDate"
+            v-model:endDate="pageState.dates.endDate"
+            controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
+            next-mode="month"
+          />
+          <LogerButton variant="inverse">{{ $t('Import') }}</LogerButton>
+          <LogerButton variant="inverse">
+            <a :href="route('budget.export')" class="block w-full" target="_blank">
+              {{ $t('Export') }}
+            </a>
+          </LogerButton>
+        </section>
         <section class="px-4 py-2 bg-base-lvl-3 rounded-md">
         <ChartComparison
           class="w-full mt-4 mb-10 overflow-hidden bg-base-lvl-3 rounded-lg"

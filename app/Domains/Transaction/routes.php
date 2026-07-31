@@ -15,6 +15,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
 
     Route::get('/finance/reconciliation/accounts/{account}', [ReconciliationController::class, 'create']);
     Route::post('/finance/reconciliation/accounts/{account}', [ReconciliationController::class, 'store']);
+    Route::get('/finance/accounts/{account}/balance-at', [ReconciliationController::class, 'balanceAt'])->name('accounts.balance-at');
     Route::get('/finance/accounts/{account}/reconciliations', [ReconciliationController::class, 'accountReconciliations']);
 
     Route::get('/finance/reconciliation/{reconciliation}', [ReconciliationController::class, 'show']);

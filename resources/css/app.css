@@ -45,6 +45,29 @@
 /* Base text color follows the theme (untyped text was falling back to black). */
 body { color: rgb(var(--c-body)); }
 
+/* Element Plus dark theme (html.dark) ships its own grays; remap the surfaces
+   and text to Loger tokens so ElTable/ElPagination blend with the app instead
+   of standing out as a different shade of dark. */
+.dark {
+    --el-bg-color: rgb(var(--c-base-lvl-3));
+    --el-bg-color-overlay: rgb(var(--c-base-lvl-3));
+    --el-fill-color-blank: rgb(var(--c-base-lvl-3));
+    --el-fill-color-light: rgb(var(--c-base-lvl-2));
+    --el-fill-color-lighter: rgb(var(--c-base-lvl-2));
+    --el-text-color-primary: rgb(var(--c-body));
+    --el-text-color-regular: rgb(var(--c-body-1));
+    --el-border-color: rgb(var(--c-border));
+    --el-border-color-light: rgb(var(--c-border));
+    --el-border-color-lighter: rgb(var(--c-border));
+    --el-table-bg-color: rgb(var(--c-base-lvl-3));
+    --el-table-tr-bg-color: rgb(var(--c-base-lvl-3));
+    --el-table-header-bg-color: rgb(var(--c-base-lvl-3));
+    --el-table-header-text-color: rgb(var(--c-body-1));
+    --el-table-text-color: rgb(var(--c-body-1));
+    --el-table-border-color: rgb(var(--c-border));
+    --el-table-row-hover-bg-color: rgb(var(--c-base-lvl-2));
+}
+
 
 
 .multiselect__option--highlight {
