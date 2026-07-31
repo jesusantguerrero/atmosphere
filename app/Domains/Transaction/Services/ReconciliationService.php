@@ -7,6 +7,7 @@ use App\Domains\Budget\Data\BudgetReservedNames;
 use App\Domains\Transaction\Data\ReconciliationParamsData;
 use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Transaction\Models\TransactionLine;
+use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Accounting\Reconciliation;
 use Insane\Journal\Models\Accounting\ReconciliationEntry;
 use Insane\Journal\Models\Core\Account;
@@ -14,6 +15,20 @@ use Insane\Journal\Models\Core\Transaction as CoreTransaction;
 
 class ReconciliationService
 {
+    /**
+     * Account balance as of a given date (verified lines only). Reconciling
+     * against the CURRENT balance made any reconciliation dated in the past —
+     * a statement from two months ago, say — report a meaningless difference.
+     */
+    public function balanceAsOf(Account $account, string $date): float
+    {
+        return (float) $account->transactionLines()
+            ->join('transactions', 'transactions.id', 'transaction_lines.transaction_id')
+            ->where('transactions.status', CoreTransaction::STATUS_VERIFIED)
+            ->where('transaction_lines.date', '<=', $date)
+            ->sum(DB::raw('amount * type'));
+    }
+
     public function listHistoryOf(Account $account)
     {
         return Reconciliation::where([
@@ -39,7 +54,7 @@ class ReconciliationService
             return $dateReconciliation;
         }
 
-        $diff = $account->balance - $params->balance;
+        $diff = $this->balanceAsOf($account, $params->date) - $params->balance;
         $reconciliation = Reconciliation::create([
             'user_id' => $params->user_id,
             'team_id' => $account->team_id,
@@ -58,7 +73,7 @@ class ReconciliationService
     public function update(Reconciliation $reconciliation, ReconciliationParamsData $params)
     {
         $extraTransactions = $reconciliation->account->transactionsToReconcile(null, $reconciliation->date);
-        $diff = $reconciliation->account->balance - $params->balance;
+        $diff = $this->balanceAsOf($reconciliation->account, $reconciliation->date) - $params->balance;
 
         $reconciliation->update([
             'amount' => $params->balance,

@@ -158,18 +158,7 @@ const deleteBulkTransactions = () => {
 <template>
   <AppLayout>
     <template #header>
-      <FinanceSectionNav>
-        <template #actions>
-          <AtDatePager
-            class="w-full h-12 border-none bg-base-lvl-1 text-body"
-            v-model:startDate="pageState.dates.startDate"
-            v-model:endDate="pageState.dates.endDate"
-            @change="executeSearchWithDelay"
-            controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
-            next-mode="month"
-          />
-        </template>
-      </FinanceSectionNav>
+      <FinanceSectionNav />
     </template>
 
     <FinanceTemplate
@@ -177,6 +166,17 @@ const deleteBulkTransactions = () => {
         :accounts="accounts"
         ref="financeTemplateRef"
     >
+      <section class="flex justify-end pt-4">
+        <AtDatePager
+          class="h-12 border-none rounded-md bg-base-lvl-1 text-body"
+          v-model:startDate="pageState.dates.startDate"
+          v-model:endDate="pageState.dates.endDate"
+          @change="executeSearchWithDelay"
+          controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
+          next-mode="month"
+        />
+      </section>
+
       <section class="mt-4 space-y-4">
             <!-- Summary stat cards -->
             <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">

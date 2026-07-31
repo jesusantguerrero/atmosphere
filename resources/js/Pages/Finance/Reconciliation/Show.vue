@@ -29,6 +29,9 @@ interface CollectionData<T> {
 const props = withDefaults(
   defineProps<{
     transactions: ITransaction[];
+    matchedCount?: number;
+    totalEntries?: number;
+    ledgerBalance?: number;
     stats: CollectionData<Record<string, number>>;
     account: IAccount;
     accounts: IAccount[];
@@ -96,7 +99,7 @@ const unmatchTransaction = (entry: ReconciliationEntry) => {
     {
       preserveScroll: true,
       preserveState: true,
-      only: ['transactions'],
+      only: ['transactions', 'matchedCount', 'totalEntries'],
       onSuccess() {
         router.reload();
       },
@@ -136,7 +139,7 @@ const bulkSetMatched = async (matched: boolean) => {
     );
     reconciliationTableRef.value?.clearSelection?.();
     selectedRows.value = [];
-    router.reload({ only: ['transactions'] });
+    router.reload({ only: ['transactions', 'matchedCount', 'totalEntries'] });
   } finally {
     bulkProcessing.value = false;
   }
@@ -155,7 +158,7 @@ const toggleCheck = (entry: ReconciliationEntry) => {
   }, {
     preserveScroll: true,
     preserveState: true,
-    only: ['transactions'],
+    only: ['transactions', 'matchedCount', 'totalEntries'],
     onSuccess() {
       router.reload();
     },
@@ -211,7 +214,7 @@ const syncReconciliation = async () => {
     if (syncReconciliationForm.processing) return
     syncReconciliationForm
         .put(`/finance/reconciliation/${props.reconciliation.id}/sync-transactions`, {
-        only: ['transactions'],
+        only: ['transactions', 'matchedCount', 'totalEntries'],
             preserveScroll: true,
             preserveState: true,
         });
@@ -232,7 +235,7 @@ const cancelDeleteReconciliation = () => {
 
 const confirmDeleteReconciliation = () => {
   router.delete(`/finance/reconciliation/${props.reconciliation.id}`, {
-    only: ['transactions'],
+    only: ['transactions', 'matchedCount', 'totalEntries'],
     preserveScroll: true,
     preserveState: true,
     onSuccess() {
@@ -252,8 +255,56 @@ const transactionList = computed(() => {
   return props.transactions.data;
 });
 
+// Matched count comes from the server so it spans ALL pages — the paginated
+// .data only holds the current 25 rows, and counting those made the header
+// progress lie whenever there was more than one page.
 const transactionsMatched = computed(() => {
-  return props.transactions.data.filter(item => item.matched).length;
+  return props.matchedCount ?? props.transactions.data.filter(item => item.matched).length;
+});
+
+// Unfiltered total for progress. transactions.total shrinks when the
+// pending/matched filter is on, which would corrupt "x / total matched".
+const totalTransactions = computed(() => {
+  return props.totalEntries ?? props.transactions.total ?? 0;
+});
+
+// ─── Match status filter (All / Pending / Matched) ───────────
+// Server-side (?matched=pending|matched) so it spans every page, not just
+// the 25 loaded rows. With the pending filter on, checking a row makes it
+// leave the list on reload — the remaining work is always what's on screen.
+const matchedFilter = ref<string>(new URLSearchParams(window.location.search).get('matched') ?? '');
+
+const filterOptions = computed(() => [
+  { value: '', label: 'All', count: totalTransactions.value },
+  { value: 'pending', label: 'Pending', count: totalTransactions.value - transactionsMatched.value },
+  { value: 'matched', label: 'Matched', count: transactionsMatched.value },
+]);
+
+const reloadList = (params: Record<string, any>) => {
+  router.get(window.location.pathname, params, {
+    preserveState: true,
+    preserveScroll: true,
+    only: ['transactions', 'matchedCount', 'totalEntries'],
+  });
+};
+
+const setMatchedFilter = (value: string) => {
+  if (matchedFilter.value === value) return;
+  matchedFilter.value = value;
+  reloadList(value ? { matched: value, page: 1 } : { page: 1 });
+};
+
+// Server-side pagination (25 per page). Partial visit keeps scroll and local
+// state; only the table data and counters travel.
+const goToPage = (page: number) => {
+  reloadList(matchedFilter.value ? { matched: matchedFilter.value, page } : { page });
+};
+
+// Ledger balance AS OF the reconciliation date. account.balance is the
+// current balance — on past reconciliations it produced a nonsense
+// difference against that month's statement.
+const ledgerBalance = computed(() => {
+  return props.ledgerBalance ?? props.account.balance ?? 0;
 });
 
 // Sprint 1 derived state — progress / difference / status
@@ -269,7 +320,7 @@ const transactionsMatched = computed(() => {
 // `differenceDirection` → human label "Loger higher" / "Statement higher"
 //                         so the user knows which side to investigate.
 const progressPercent = computed(() => {
-  const total = props.transactions.total || 0;
+  const total = totalTransactions.value;
   if (!total) return 0;
   return Math.round((transactionsMatched.value / total) * 100);
 });
@@ -286,7 +337,7 @@ const progressTextColor = computed(() => {
 
 const difference = computed(() => {
   const stmt = Number(reconcileForm.balance) || 0;
-  return (props.account.balance ?? 0) - stmt;
+  return (ledgerBalance.value ?? 0) - stmt;
 });
 
 const isMatched = computed(() => Math.abs(difference.value) < 0.01);
@@ -373,7 +424,7 @@ const differenceDirection = computed(() => {
               <span class="text-2xl font-bold" :class="progressTextColor">
                 {{ transactionsMatched }}
               </span>
-              <span class="text-body-1/60 text-sm"> / {{ transactions.total }} {{ $t('matched') }}</span>
+              <span class="text-body-1/60 text-sm"> / {{ totalTransactions }} {{ $t('matched') }}</span>
               <span class="ml-2 text-xs text-body-1/50">({{ progressPercent }}%)</span>
             </p>
           </div>
@@ -386,7 +437,9 @@ const differenceDirection = computed(() => {
           </div>
         </div>
 
-        <header class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 md:gap-6 px-4 md:px-6 py-3">
+        <!-- Sticky: the difference is the number being driven to zero — it
+             stays pinned (under the fixed app header) while the table scrolls. -->
+        <header class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 md:gap-6 px-4 md:px-6 py-3 md:sticky md:top-12 md:z-20 bg-base-lvl-3 border-b border-base">
           <div class="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-6 flex-wrap">
             <AtField :label="$t('Statement balance')">
               <LogerInput
@@ -401,7 +454,12 @@ const differenceDirection = computed(() => {
             </AtField>
 
             <AtField :label="$t('Loger balance')">
-              <span class="tabular-nums">{{ formatMoney(account.balance, account.currency_code) }}</span>
+              <div>
+                <span class="tabular-nums">{{ formatMoney(ledgerBalance, account.currency_code) }}</span>
+                <p v-if="reconciliation.date" class="text-[10px] text-body-1/50 leading-tight">
+                  {{ $t('as of') }} {{ reconciliation.date }}
+                </p>
+              </div>
             </AtField>
 
             <!-- Difference: red when ≠ 0, green when matched. This is the
@@ -461,6 +519,24 @@ const differenceDirection = computed(() => {
             </button>
           </div>
         </header>
+
+        <!-- Match status filter — server-side, spans all pages. With
+             'Pending' on, checked rows leave the list: what's on screen
+             is always the remaining work. -->
+        <div class="flex items-center gap-1 px-4 md:px-6 py-2 border-b border-base">
+          <button
+            v-for="option in filterOptions"
+            :key="option.value"
+            type="button"
+            class="px-3 py-1 text-xs rounded-full transition-colors"
+            :class="matchedFilter === option.value
+              ? 'bg-primary/15 text-primary font-semibold'
+              : 'text-body-1/60 hover:text-body hover:bg-base-lvl-2'"
+            @click="setMatchedFilter(option.value)"
+          >
+            {{ $t(option.label) }} <span class="opacity-60">({{ option.count }})</span>
+          </button>
+        </div>
 
         <!-- Bulk action bar — only renders when rows are selected.
              Lets the user mark/unmark many rows at once instead of
@@ -522,9 +598,16 @@ const differenceDirection = computed(() => {
           @edit="handleEdit"
           @selection-change="onSelectionChange"
         >
-            <template #footer v-if="false">
-                <footer class="justify-end flex px-4 mt-4">
-                    <NPagination v-model:page="state.page" :page-count="Math.ceil(transactions.total / 25)" />
+            <template #footer v-if="transactions.last_page > 1">
+                <footer class="flex items-center justify-between px-4 mt-4">
+                    <span class="text-xs text-body-1/60">
+                        {{ transactions.from }}–{{ transactions.to }} {{ $t('of') }} {{ transactions.total }}
+                    </span>
+                    <NPagination
+                        :page="transactions.current_page"
+                        :page-count="transactions.last_page"
+                        @update:page="goToPage"
+                    />
                 </footer>
             </template>
         </ReconciliationTable>

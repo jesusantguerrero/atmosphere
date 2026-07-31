@@ -157,40 +157,7 @@ const reconcileForm = useForm({
 <template>
 <AppLayout @back="router.visit('/finance/transactions')" :show-back-button="true">
   <template #header>
-    <FinanceSectionNav>
-      <template #actions>
-        <div class="flex items-center w-full space-x-2">
-          <AtDatePager
-            class="w-full h-12 border-none bg-base-lvl-1 text-body"
-            v-model:startDate="pageState.dates.startDate"
-            v-model:endDate="pageState.dates.endDate"
-            controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
-            next-mode="month"
-          />
-          <LogerButton
-          variant="inverse"
-          @click="reconcileForm.isVisible = true"
-          v-if="!hasReconciliation">
-            {{ $t('Reconciliation') }}
-          </LogerButton>
-          <LogerButton
-            variant="inverse"
-            @click="router.visit(`/finance/reconciliation/${selectedAccount?.reconciliation_last.id}`)"
-            v-else
-          >
-            {{ $t('Review Reconciliation') }}
-          </LogerButton>
-          <LogerButton
-            variant="neutral"
-            v-if="isCreditCard"
-            @click="payCreditCard"
-          >
-            {{ $t('Pay credit card') }}
-          </LogerButton>
-          <DraftButtons v-if="isDraft" />
-        </div>
-      </template>
-    </FinanceSectionNav>
+    <FinanceSectionNav />
   </template>
 
   <template #title>
@@ -207,6 +174,37 @@ const reconcileForm = useForm({
   </template>
 
   <FinanceTemplate :title="$t('Transactions')" :accounts="accounts">
+      <section class="flex flex-wrap items-center gap-2 pt-4">
+        <AtDatePager
+          class="h-10 border-none rounded-md bg-base-lvl-1 text-body mr-auto"
+          v-model:startDate="pageState.dates.startDate"
+          v-model:endDate="pageState.dates.endDate"
+          controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
+          next-mode="month"
+        />
+        <LogerButton
+          variant="inverse"
+          @click="reconcileForm.isVisible = true"
+          v-if="!hasReconciliation">
+          {{ $t('Reconciliation') }}
+        </LogerButton>
+        <LogerButton
+          variant="inverse"
+          @click="router.visit(`/finance/reconciliation/${selectedAccount?.reconciliation_last.id}`)"
+          v-else
+        >
+          {{ $t('Review Reconciliation') }}
+        </LogerButton>
+        <LogerButton
+          variant="neutral"
+          v-if="isCreditCard"
+          @click="payCreditCard"
+        >
+          {{ $t('Pay credit card') }}
+        </LogerButton>
+        <DraftButtons v-if="isDraft" />
+      </section>
+
       <section class="flex w-full mt-4 space-x-4 flex-nowrap">
         <BackgroundCard
           class="w-full cursor-pointer text-body-1 bg-base-lvl-3"

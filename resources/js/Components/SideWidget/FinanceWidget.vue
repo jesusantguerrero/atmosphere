@@ -6,8 +6,6 @@ import {
   shallowRef,
   computed,
 } from "vue";
-import { onClickOutside } from "@vueuse/core";
-
 import ToolsAccountsWidget from "./ToolsAccountsWidget.vue";
 import { THEME_FINI } from "@/utils/constants";
 import { setTheme } from "@/composables/useTheme";
@@ -138,10 +136,9 @@ const isActiveSection = (section: AssistantSection, index: number) => {
   return selected.name === section.name && selected.title === section.title;
 };
 
+// Docked panel, not a popover: it stays open while working on the page.
+// Close is explicit — X button, Escape, or toggling the rail icon.
 const panelRef = ref<HTMLElement | null>(null);
-onClickOutside(panelRef, () => {
-  if (applicationStore.selectedSection) closePanel();
-});
 
 const onKeydown = (event: KeyboardEvent) => {
   if (event.key === 'Escape' && applicationStore.selectedSection) {

@@ -96,25 +96,23 @@ transformCategoryOptions(props.accounts, "accounts", "accountsOptions");
 <template>
   <AppLayout>
     <template #header>
-      <FinanceSectionNav>
-        <template #actions>
-          <AtDatePager
-            class="w-full h-12 border-none bg-base-lvl-1 text-body"
-            v-model:startDate="pageState.dates.startDate"
-            v-model:endDate="pageState.dates.endDate"
-            controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
-            next-mode="month"
-          />
-          <div>
-            <LogerButton  variant="inverse">
-                {{ $t('Import') }} {{ $t('Transactions') }}
-            </LogerButton>
-          </div>
-        </template>
-      </FinanceSectionNav>
+      <FinanceSectionNav />
     </template>
 
     <FinanceTemplate :title="$t('Finance')" :accounts="accounts" ref="financeTemplateRef">
+      <section class="flex flex-wrap items-center justify-end gap-2 pt-4">
+        <AtDatePager
+          class="h-12 border-none rounded-md bg-base-lvl-1 text-body"
+          v-model:startDate="pageState.dates.startDate"
+          v-model:endDate="pageState.dates.endDate"
+          controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
+          next-mode="month"
+        />
+        <LogerButton variant="inverse">
+          {{ $t('Import') }} {{ $t('Transactions') }}
+        </LogerButton>
+      </section>
+
       <div class="py-12 text-center text-body-1/60">
         <h3 class="text-lg font-semibold text-body-1">{{ $t('No budgets yet') }}</h3>
         <p class="mt-1 text-sm">{{ $t('Create your first budget to start tracking your spending by category.') }}</p>

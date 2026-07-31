@@ -216,10 +216,14 @@ const monthlySeries = computed(() => {
 <template>
   <AppLayout :title="sectionName" :show-back-button="true" @back="goBack">
     <template #header>
-      <FinanceSectionNav>
-        <template #actions>
+      <FinanceSectionNav />
+    </template>
+
+    <FinanceTemplate ref="financeTemplateRef">
+      <article class="w-full space-y-4">
+        <section class="flex flex-wrap items-center justify-end gap-2 pt-4">
           <AtDatePager
-            class="w-full h-12 border-none bg-base-lvl-1 text-body"
+            class="h-10 border-none rounded-md bg-base-lvl-1 text-body"
             v-model:startDate="pageState.dates.startDate"
             v-model:endDate="pageState.dates.endDate"
             controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
@@ -232,12 +236,8 @@ const monthlySeries = computed(() => {
               <i class="fa fa-ellipsis-v" />
             </button>
           </NDropdown>
-        </template>
-      </FinanceSectionNav>
-    </template>
+        </section>
 
-    <FinanceTemplate ref="financeTemplateRef">
-      <article class="w-full space-y-4">
         <header class="bg-base-lvl-3 rounded-md px-5 py-4 border border-base">
           <p class="text-xs uppercase tracking-wide text-body-1 font-semibold">This month</p>
           <div class="flex items-baseline gap-3 mt-1 flex-wrap">
