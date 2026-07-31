@@ -132,6 +132,7 @@ class BHD implements AutomationActionContract
             'compra' => TransactionDataDTO::TYPE_PURCHASE,
             'retiro de efectivo' => TransactionDataDTO::TYPE_CASH_WITHDRAWAL,
             'reserva de fondos (hold)' => TransactionDataDTO::TYPE_HOLD,
+            'transacciones entre mis productos' => TransactionDataDTO::TYPE_INTERNAL_TRANSFER,
             default => null,
         };
     }

@@ -39,7 +39,7 @@ class BHDNotification implements MailToTransaction
             ],
             'idProductoDestino' => [
                 'processor' => 'processResult',
-                'name' => 'seller',
+                'name' => 'destination_product',
             ],
             'idDescripcion' => [
                 'processor' => 'processResult',
@@ -83,16 +83,18 @@ class BHDNotification implements MailToTransaction
         }
 
         $product = str_replace('X', '', $bhdOutput['product']);
+        $destinationProduct = str_replace('X', '', $bhdOutput['destination_product'] ?? '');
         $seller = str_replace('X', '', $bhdOutput['seller'] ?? '');
 
         // get the last 4 digits of the product
         $productLast4 = substr($product, -4);
+        $destinationProductLast4 = $destinationProduct !== '' ? substr($destinationProduct, -4) : null;
 
         return new TransactionDataDTO([
             'id' => (int) $mail['id'],
             'messageId' => $mail['messageId'],
             'date' => $bhdOutput['date'],
-            'payee' => $seller ?? $bhdOutput['seller'] ?? 'BHD Notification',
+            'payee' => $seller !== '' ? $seller : ($destinationProductLast4 ? 'Transferencia a '.$destinationProductLast4 : 'BHD Notification'),
             'category' => '',
             'categoryGroup' => '',
             'description' => $bhdOutput['product'].':'.$bhdOutput['description'],
@@ -101,6 +103,8 @@ class BHDNotification implements MailToTransaction
             'productName' => $product,
             'productCode' => $productLast4,
             'productBrand' => 'BHD',
+            'destinationProductName' => $bhdOutput['destination_product'] ?? null,
+            'destinationProductCode' => $destinationProductLast4,
             'transactionType' => BHD::parseTransactionType($bhdOutput['type'] ?? null),
         ]);
     }

@@ -12,6 +12,8 @@ class TransactionDataDTO extends Data
 
     const TYPE_HOLD = 'HOLD';
 
+    const TYPE_INTERNAL_TRANSFER = 'INTERNAL_TRANSFER';
+
     public int $id;
 
     public string $date;
@@ -36,6 +38,10 @@ class TransactionDataDTO extends Data
 
     public ?string $productBrand;
 
+    public ?string $destinationProductName;
+
+    public ?string $destinationProductCode;
+
     public ?string $transactionType;
 
     public function __construct($data)
@@ -52,6 +58,8 @@ class TransactionDataDTO extends Data
         $this->productName = $data['productName'] ?? null;
         $this->productCode = $data['productCode'] ?? null;
         $this->productBrand = $data['productBrand'] ?? null;
+        $this->destinationProductName = $data['destinationProductName'] ?? null;
+        $this->destinationProductCode = $data['destinationProductCode'] ?? null;
         $this->transactionType = $data['transactionType'] ?? null;
     }
 

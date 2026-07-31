@@ -89,8 +89,19 @@ class TransactionCreateEntry implements AutomationActionContract
                 ...($payload['productName'] ? ['product_name' => $payload['productName']] : []),
                 ...($payload['productCode'] ? ['product_code' => $payload['productCode']] : []),
                 ...($payload['productBrand'] ? ['product_brand' => $payload['productBrand']] : []),
+                ...(($payload['destinationProductName'] ?? null) ? ['destination_product_name' => $payload['destinationProductName']] : []),
+                ...(($payload['destinationProductCode'] ?? null) ? ['destination_product_code' => $payload['destinationProductCode']] : []),
             ]),
         ];
+
+        if ($destinationAccount = self::resolveInternalTransferAccount($payload, $accountId, $automation->team_id)) {
+            $transactionData['is_transfer'] = true;
+            $transactionData['counter_account_id'] = $destinationAccount->id;
+            $transactionData['payee_id'] = null;
+            $transactionData['payee_name'] = null;
+            $transactionData['category_id'] = null;
+            $transactionData['description'] = 'Transferencia a '.$destinationAccount->name;
+        }
 
         if ($cashAccountId = self::resolveCashWithdrawalAccountId($payload, $accountId, $settings)) {
             $transactionData['is_transfer'] = true;
@@ -159,6 +170,39 @@ class TransactionCreateEntry implements AutomationActionContract
         }
 
         return (int) $cashAccountId;
+    }
+
+    /**
+     * Match a BHD "Transacciones entre mis productos" destination to one of the
+     * team's accounts using the destination product's visible last digits.
+     */
+    private static function resolveInternalTransferAccount(
+        mixed $payload,
+        int|string|null $sourceAccountId,
+        int $teamId
+    ): ?Account {
+        if (($payload['transactionType'] ?? null) !== TransactionDataDTO::TYPE_INTERNAL_TRANSFER) {
+            return null;
+        }
+
+        $destinationProductCode = $payload['destinationProductCode'] ?? null;
+        if (! $destinationProductCode) {
+            return null;
+        }
+
+        $destinationAccount = Account::where('team_id', $teamId)
+            ->where('number', $destinationProductCode)
+            ->when(
+                $payload['productBrand'] ?? null,
+                fn ($query, $brand) => $query->whereRaw('name like ?', ['%'.$brand.'%'])
+            )
+            ->first();
+
+        if (! $destinationAccount || (int) $destinationAccount->id === (int) $sourceAccountId) {
+            return null;
+        }
+
+        return $destinationAccount;
     }
 
     public function getName(): string
