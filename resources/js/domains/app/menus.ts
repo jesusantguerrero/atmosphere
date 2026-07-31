@@ -51,7 +51,7 @@ const menus = {
         },
         {
             label: 'Shopping List',
-            url: '/shopping-list'
+            url: '/shopping'
         },
         {
             label: 'Templates',

@@ -20,14 +20,12 @@ class MealShoppingListController
 {
     public function __construct(Meal $meal, private MealService $mealService) {}
 
-    public function index(PlanService $service): Response
+    public function index(): RedirectResponse
     {
-        $user = request()->user();
-
-        return inertia('Meals/ShoppingList', [
-            'chores' => [$service->getPlanType($user->current_team_id, PlanTypes::SHOPPING_LIST, request())],
-            'profiles' => LogerProfile::where('team_id', $user->current_team_id)->get(['id', 'name']),
-        ]);
+        // Unified shopping: the standalone /shopping list (real-time, multi-list,
+        // categories) is now the single experience. The old meals-specific page
+        // is retired; this redirect keeps old links / bookmarks working.
+        return Redirect::route('shopping.index');
     }
 
     public function store(Meal $meal): RedirectResponse
