@@ -13,7 +13,7 @@
       <template #option="{ node, option }">
         <div class="flex items-center justify-between w-full">
           <span>{{ option.label }}</span>
-          <span class="text-sm text-gray-500">{{ option.symbol }}</span>
+          <span class="text-sm text-body-1">{{ option.symbol }}</span>
         </div>
       </template>
     </NSelect>

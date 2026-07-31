@@ -4,7 +4,7 @@
             :overlap="true"
             trigger="click"
             placement="top-start"
-            popper-class='tag-select dark:bg-gray-900 dark:text-gray-300'
+            popper-class='tag-select dark:bg-gray-900 dark:text-body-1/60'
             :width="310"
             :show-arrow="false"
         >

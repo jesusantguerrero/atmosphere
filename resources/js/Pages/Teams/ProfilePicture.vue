@@ -13,7 +13,7 @@
 
         <div class="ml-4 leading-tight">
             <div>{{ userName }}</div>
-            <div class="text-sm text-gray-700">{{ email }}</div>
+            <div class="text-sm text-body-1">{{ email }}</div>
         </div>
     </div>
 </template>

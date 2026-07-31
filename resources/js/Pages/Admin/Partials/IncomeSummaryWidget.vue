@@ -15,7 +15,7 @@ defineProps<Props>();
 
 <template>
   <div
-    class="flex flex-col h-full overflow-hidden bg-white divide-x-2 lg:flex-row sm:rounded-lg"
+    class="flex flex-col h-full overflow-hidden bg-base-lvl-3 divide-x-2 lg:flex-row sm:rounded-lg"
   >
     <article class="p-5 h-full" :class="[sections ? 'lg:w-9/12' : 'w-full']">
       <header>
@@ -40,7 +40,7 @@ defineProps<Props>();
         <small>Avg.</small>
       </header>
       <section class="mt-4 space-y-2">
-        <div v-for="section in sections" class="p-2 bg-gray-100 rounded-md">
+        <div v-for="section in sections" class="p-2 bg-base-lvl-1 rounded-md">
           <h4 class="text-xs">{{ section.display_id }}</h4>
           <p class="font-bold">{{ formatMoney(section.total) }}</p>
         </div>

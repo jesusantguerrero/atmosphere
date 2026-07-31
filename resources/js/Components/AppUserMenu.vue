@@ -41,7 +41,7 @@ const { toggleModal: toggleImportModal } = useImportModal();
 
         <template #content>
             <!-- Account -->
-            <div class="block px-4 py-2 text-xs text-gray-400">
+            <div class="block px-4 py-2 text-xs text-body-1/70">
                 Account
             </div>
 
@@ -54,7 +54,7 @@ const { toggleModal: toggleImportModal } = useImportModal();
             </JetDropdownLink>
 
             <!-- Data -->
-            <div class="block px-4 py-2 text-xs text-gray-400">
+            <div class="block px-4 py-2 text-xs text-body-1/70">
                 Data
             </div>
             <AtDropdownLink as="button" target="_blank" @click="toggleImportModal()">
@@ -72,7 +72,7 @@ const { toggleModal: toggleImportModal } = useImportModal();
                 </section>
             </AtDropdownLink>
 
-            <div class="border-t border-gray-100"></div>
+            <div class="border-t border-base-lvl-2"></div>
 
             <!-- Authentication -->
             <form @submit.prevent="$emit('logout')">

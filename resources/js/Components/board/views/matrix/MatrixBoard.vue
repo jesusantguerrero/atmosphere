@@ -64,7 +64,7 @@
           <task-group
               title="No prioritized"
               type="backlog"
-              color="text-gray-400"
+              color="text-body-1/70"
               :tasks="getMatrixTasks('backlog')"
               :handle-mode="allowUpdate"
               :is-quadrant="true"
@@ -94,8 +94,8 @@
       </div>
     </div>
 
-    <div class="w-full px-5 py-4 bg-white rounded-md shadow-md" v-if="mode == 'timeline'">
-      <div class="mb-2 font-bold text-left text-gray-500">
+    <div class="w-full px-5 py-4 bg-base-lvl-3 rounded-md shadow-md" v-if="mode == 'timeline'">
+      <div class="mb-2 font-bold text-left text-body-1">
             Timeline: <span class="text-sm font-normal">Track the number of days since the task was created until today</span>
       </div>
       <roadmap-view
@@ -107,7 +107,7 @@
       >
         <template v-slot:description="{focusedTextClass, item: task, differenceInCalendarDays: days}">
            <div class="flex items-center h-full mx-2 text-left">
-            <span class="text-gray-400 capitalize" :class="getMatrixColor(task.matrix)">
+            <span class="text-body-1/70 capitalize" :class="getMatrixColor(task.matrix)">
               {{ task.matrix}}:
             </span>
                {{ task.title }}

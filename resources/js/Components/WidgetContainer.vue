@@ -106,7 +106,7 @@ const { isTab: isCurrentTab, selectedTab} = useTabs(
             v-for="card in cards"
             class="w-full shadow-none"
             :class="[
-              card.accent ? 'bg-primary-shade-2 text-white' : 'bg-white text-primary',
+              card.accent ? 'bg-primary-shade-2 text-white' : 'bg-base-lvl-3 text-primary',
               cardSize,
             ]"
             :icon="`fas ${card.icon}`"

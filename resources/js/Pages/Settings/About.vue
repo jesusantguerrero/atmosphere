@@ -59,7 +59,7 @@ const techStack = [
         <div class="h-auto py-12 pt-32 mx-auto space-y-4 max-w-4xl sm:px-6 lg:px-8">
 
             <!-- ─── Brand header ─────────────────────────────────────── -->
-            <section class="rounded-xl bg-white p-8 lg:p-10 border border-base-lvl-2">
+            <section class="rounded-xl bg-base-lvl-3 p-8 lg:p-10 border border-base-lvl-2">
                 <header class="flex flex-col items-center text-center">
                     <AppIcon size="medium" />
                     <h1 class="mt-4 text-2xl font-bold text-body">The Family Operating System</h1>

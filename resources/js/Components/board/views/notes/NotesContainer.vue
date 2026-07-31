@@ -11,10 +11,10 @@
                     <span>
                         Notes
                     </span>
-                    <span class="ml-4 text-gray-300"> {{ mails.length}} </span>
+                    <span class="ml-4 text-body-1/60"> {{ mails.length}} </span>
                 </div>
                 <el-dropdown trigger="click"  @click.native.prevent>
-                    <div class="flex justify-center w-5 h-full py-2 text-center rounded-full hover:bg-gray-200">
+                    <div class="flex justify-center w-5 h-full py-2 text-center rounded-full hover:bg-base-lvl-1">
                         <div class="flex items-center mr-2">
                             <i class="fa fa-ellipsis-v"></i>
                         </div>
@@ -32,7 +32,7 @@
                     group="tasks"
                     @change="($event) => changeStatus($event, quadrant)"
                 >
-                    <div v-for="task in mails" :key="`task-${task.id}`" :class="`task-item p-5 bg-white overflow-auto ic-scroller`">
+                    <div v-for="task in mails" :key="`task-${task.id}`" :class="`task-item p-5 bg-base-lvl-3 overflow-auto ic-scroller`">
                         <label class="checkbox-label">
                             <span class="font-bold">
                                 <!-- [{{ task.stage.name }}] -->
@@ -43,7 +43,7 @@
                             </span>
                         </label>
 
-                        <div v-html="task.snippet" class="note-body bg-white" />
+                        <div v-html="task.snippet" class="note-body bg-base-lvl-3" />
                     </div>
                 </draggable>
                 <!-- <item-group-cell
@@ -164,7 +164,7 @@ export default {
 
 <style lang="scss" scoped>
 .task-item {
-    @apply rounded-md border-gray-200 shadow-md;
+    @apply rounded-md border-base-lvl-2 shadow-md;
     transition: all ease .3s;
     border-width: 1px;
 

@@ -6,7 +6,7 @@
       </h4>
 
       <div class="flex">
-        <small class="mr-2 text-sm font-bold text-gray-400 dark:text-gray-300">{{ helpText }}</small>
+        <small class="mr-2 text-sm font-bold text-body-1/70 dark:text-body-1/60">{{ helpText }}</small>
         <div @click="toggleExpanded">
           <icon-expand v-if="!isExpanded" class="fill-current dark:text-gray-50"/>
           <icon-collapse v-else class="fill-current dark:text-gray-50"/>
@@ -315,7 +315,7 @@ const onToggleKey = (task) => {
 
 .dragArea {
     &::after {
-      @apply text-gray-400 dark:text-gray-300 font-bold;
+      @apply text-body-1/70 dark:text-body-1/60 font-bold;
       display: block;
       width: 100%;
       height: 100%;

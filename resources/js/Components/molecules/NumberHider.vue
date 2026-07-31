@@ -4,7 +4,7 @@
 </script>
 
 <template>
-<div class="absolute w-full h-full border rounded-md bg-white/10 border-white/20 backdrop-blur-xl" v-if="hasHiddenValues" />
+<div class="absolute w-full h-full border rounded-md bg-base-lvl-3/10 border-white/20 backdrop-blur-xl" v-if="hasHiddenValues" />
 </template>
 
 

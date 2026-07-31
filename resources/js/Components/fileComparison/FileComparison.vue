@@ -311,7 +311,7 @@ onUnmounted(() => unsubscribe())
             </div>
         </main>
         <section v-if="state.isCalled && !state.processing && state.fileToCompare">
-            <h4 class="flex justify-between mt-1 font-semibold text-gray-400" v-if="state.isCalled">
+            <h4 class="flex justify-between mt-1 font-semibold text-body-1/70" v-if="state.isCalled">
                 <span>
                     {{ t('compareFilesModal.results', {
                         count: validResults.length,
@@ -320,7 +320,7 @@ onUnmounted(() => unsubscribe())
                 </span>
             </h4>
             <div  class="items-center justify-center w-full py-2 mt-1 border-2 rounded-md cursor-pointer border-secondary" v-if="matches.exact.length">
-                <h4 class="flex justify-between font-semibold text-gray-400">
+                <h4 class="flex justify-between font-semibold text-body-1/70">
                     <span>
                         {{ t('compareFilesModal.resultsFound', {
                             count: matches.exact.length,
@@ -349,7 +349,7 @@ onUnmounted(() => unsubscribe())
                 </section>
             </div>
             <div  class="items-center justify-center w-full py-2 mt-2 border-2 rounded-md cursor-pointer border-secondary" v-if="matches.partials.length">
-                <h4 class="flex justify-between font-semibold text-gray-400">
+                <h4 class="flex justify-between font-semibold text-body-1/70">
                     <span>
                         {{ t('compareFilesModal.resultsFound', {
                             count: matches.partials.length,

@@ -252,5 +252,18 @@
     "Days since it last happened": "Days since it last happened",
     "Due": "Due",
     "On track": "On track",
-    "No data": "No data"
+    "No data": "No data",
+    "Search for anything": "Search for anything",
+    "Search transactions and payees": "Search transactions and payees",
+    "Searching...": "Searching...",
+    "No results found": "No results found",
+    "Type at least 3 characters": "Type at least 3 characters",
+    "Navigate": "Navigate",
+    "Open": "Open",
+    "Close": "Close",
+    "Payee": "Payee",
+    "Transaction": "Transaction",
+    "all": "all",
+    "transactions": "transactions",
+    "payees": "payees"
 }

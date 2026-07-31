@@ -13,10 +13,10 @@
                     <span :class="`text-${quadrant.attributes.color}-400`">
                         {{ name }}
                     </span>
-                    <span class="ml-4 text-gray-300"> {{ quadrant.items.length}} </span>
+                    <span class="ml-4 text-body-1/60"> {{ quadrant.items.length}} </span>
                 </div>
                 <el-dropdown trigger="click"  @click.native.prevent>
-                    <div class="flex justify-center w-5 h-full py-2 text-center rounded-full hover:bg-gray-200">
+                    <div class="flex justify-center w-5 h-full py-2 text-center rounded-full hover:bg-base-lvl-1">
                         <div class="flex items-center mr-2">
                             <i class="fa fa-ellipsis-v"></i>
                         </div>
@@ -132,7 +132,7 @@ export default {
 <style lang="scss">
 .kanban-container {
     .task-item {
-        @apply py-4 px-2 bg-gray-200 my-2;
+        @apply py-4 px-2 bg-base-lvl-1 my-2;
     }
 
     .item-container.section-card .body{

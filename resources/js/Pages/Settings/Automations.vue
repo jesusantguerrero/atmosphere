@@ -6,9 +6,9 @@
         <div class="py-12">
             <div class="h-auto mx-auto max-w-7xl sm:px-6 lg:px-8">
                 <div
-                    class="flex items-center justify-between mb-5 border-4 border-white rounded-md bg-gray-50"
+                    class="flex items-center justify-between mb-5 border-4 border-white rounded-md bg-base-lvl-2"
                 >
-                    <div class="px-5 font-bold text-gray-600">{{ $t('Automations') }}</div>
+                    <div class="px-5 font-bold text-body-1">{{ $t('Automations') }}</div>
 
 
                     <AtButton class="text-white bg-primary"
@@ -35,7 +35,7 @@
                     </div>
                 <div class="w-full integrations-form">
                     <div
-                        class="grid grid-cols-3 px-5 py-3 my-2 font-bold text-gray-500 cursor-pointer bg-base-lvl-1 app-service__item"
+                        class="grid grid-cols-3 px-5 py-3 my-2 font-bold text-body-1 cursor-pointer bg-base-lvl-1 app-service__item"
                         v-for="service in integrations"
                         :key="service.id"
                     >
@@ -194,8 +194,8 @@ const google = (scopeName, service) => {
 
 <style lang="scss">
     .app-service__integration {
-        @apply bg-base-lvl-1 text-gray-500 my-2 cursor-pointer px-5 py-3 font-bold;
-        @apply border-2 border-gray-300 rounded-md;
+        @apply bg-base-lvl-1 text-body-1 my-2 cursor-pointer px-5 py-3 font-bold;
+        @apply border-2 border-base-lvl-2 rounded-md;
         width: 150px;
         display: flex;
         flex-direction: column;

@@ -158,7 +158,7 @@
                 >
                     <template v-slot:option="{ option }">
                         <div class="flex justify-between text-sm group md:text-base">
-                            <span :class="option.$groupLabel ? 'text-gray-500 font-bold' : 'text-gray-800'">
+                            <span :class="option.$groupLabel ? 'text-body-1 font-bold' : 'text-body'">
                                 {{ option.label || option.$groupLabel }}
                             </span>
                             <span class="font-bold text-secondary" v-if="option.available">
@@ -181,7 +181,7 @@
                 >
                     <template v-slot:option="{ option }">
                         <div class="flex justify-between text-sm group md:text-base">
-                            <span :class="option.$groupLabel ? 'text-gray-500 font-bold' : 'text-gray-800'">
+                            <span :class="option.$groupLabel ? 'text-body-1 font-bold' : 'text-body'">
                                 {{ option.label || option.$groupLabel }}
                             </span>
                             <span class="font-bold text-secondary" v-if="option.available">{{ formatMoney(option.available) }}</span>

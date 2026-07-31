@@ -347,7 +347,7 @@ export default {
 
 <style lang="scss" scoped>
 .form-control {
-    @apply w-full bg-gray-100 border-gray-400 border-2 px-4;
+    @apply w-full bg-base-lvl-1 border-gray-400 border-2 px-4;
     height: 37px;
     border-radius: 4px;
 }
@@ -401,7 +401,7 @@ h1 {
 
 .form-cell {
     .item-group-cell {
-        @apply border-2 border-gray-200 px-0;
+        @apply border-2 border-base-lvl-2 px-0;
         height: 37px;
 
         span {
@@ -414,7 +414,7 @@ h1 {
 }
 
 .workflow-item {
-    @apply border-2 border-gray-300;
+    @apply border-2 border-base-lvl-2;
     display: inline-block;
     margin: 2px;
     padding: 2px 5px;

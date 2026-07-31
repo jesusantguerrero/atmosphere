@@ -82,7 +82,7 @@ const state = reactive({
       </h5>
       <div class="card-text">
         <LogerChart
-            style="height:300px; background: white; width: 100%"
+            style="height:300px; background: rgb(var(--c-base-lvl-3)); width: 100%"
             label="name"
             type="line"
             :labels="state.headers.labels"

@@ -161,7 +161,7 @@ onUnmounted(() => unsubscribe())
       </section>
     </section>
     <footer class="flex justify-between" v-if="SearchState.isCalled">
-      <section class="text-gray-400">
+      <section class="text-body-1/70">
         {{ SearchState.lastResponse?.length }} {{ t('commons.results')}}
       </section>
     </footer>

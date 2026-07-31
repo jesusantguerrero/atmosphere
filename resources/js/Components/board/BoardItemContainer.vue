@@ -134,7 +134,7 @@ const onSaved = (title: string) => {
       {{ title }}
     </header>
     <slot> </slot>
-    <section class="mb-5 text-gray-600 body space-y-1">
+    <section class="mb-5 text-body-1 body space-y-1">
       <ItemGroupCell
         ref="ItemGroupCell"
         v-if="allowAdd"
@@ -167,7 +167,7 @@ const onSaved = (title: string) => {
 
       <section
         v-if="!tasks || !tasks.length"
-        class="font-bold text-center text-gray-400 task-item"
+        class="font-bold text-center text-body-1/70 task-item"
       >
         <slot name="empty"> There's no items to show </slot>
       </section>
@@ -177,7 +177,7 @@ const onSaved = (title: string) => {
 
 <style lang="scss" scoped>
 .task-item {
-  @apply py-4 border-b-2 border-gray-100 flex justify-between;
+  @apply py-4 border-b-2 border-base-lvl-2 flex justify-between;
 }
 
 .item-container.section-card .body {

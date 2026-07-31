@@ -40,7 +40,7 @@
             </div>
         </div>
 
-        <div class="px-6 py-4 space-x-3 text-right bg-gray-100">
+        <div class="px-6 py-4 space-x-3 text-right bg-base-lvl-1">
             <at-button type="secondary" @click="close"> Cancel </at-button>
             <at-button class="text-white bg-primary" @click="submit"> Save </at-button>
         </div>

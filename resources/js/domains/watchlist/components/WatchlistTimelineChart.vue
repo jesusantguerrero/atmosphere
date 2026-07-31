@@ -93,7 +93,7 @@ const chartOptions = computed(() => ({
             </div>
         </header>
         <LogerChart
-            class="bg-white"
+            class="bg-base-lvl-3"
             style="height: 280px; width: 100%;"
             type="bar"
             :labels="labels"

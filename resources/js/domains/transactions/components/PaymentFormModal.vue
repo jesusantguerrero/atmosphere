@@ -431,7 +431,7 @@ const dialogWidth = computed(() => {
 
       <AppFormField class="w-full text-left" label="Notes" v-if="false">
         <textarea
-          class="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:border-gray-400"
+          class="w-full px-3 py-2 border border-base-lvl-2 rounded-md focus:outline-none focus:border-gray-400"
           v-model="paymentForm.notes"
           cols="3"
           rows="3"
@@ -449,7 +449,7 @@ const dialogWidth = computed(() => {
         <AtButton
           :disabled="isLoading"
           @click="emitChange(false)"
-          class="bg-white border rounded-md text-gray"
+          class="bg-base-lvl-3 border rounded-md text-gray"
         >
           Cancel
         </AtButton>

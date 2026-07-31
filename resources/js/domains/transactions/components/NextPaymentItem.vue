@@ -16,11 +16,11 @@ defineEmits(['edit', 'deleted', 'pay']);
 // constants). Separate from urgencyLevel below — urgency is "how late is
 // this", status is "is it paid yet". Both can co-exist on the same row.
 const STATUS_META: Record<string, { label: string; classes: string }> = {
-    PENDING:         { label: 'Pending',   classes: 'bg-gray-100 text-gray-700 ring-gray-200' },
-    PARTIALLY_PAID:  { label: 'Partial',   classes: 'bg-amber-50 text-amber-700 ring-amber-200' },
-    LATE:            { label: 'Late',      classes: 'bg-red-50 text-red-700 ring-red-200' },
-    PAID:            { label: 'Paid',      classes: 'bg-emerald-50 text-emerald-700 ring-emerald-200' },
-    CANCELLED:       { label: 'Cancelled', classes: 'bg-gray-50 text-gray-500 ring-gray-200' },
+    PENDING:         { label: 'Pending',   classes: 'bg-base-lvl-1 text-body-1 ring-gray-200 dark:ring-white/10' },
+    PARTIALLY_PAID:  { label: 'Partial',   classes: 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:ring-amber-500/25' },
+    LATE:            { label: 'Late',      classes: 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-500/15 dark:text-red-300 dark:ring-red-500/25' },
+    PAID:            { label: 'Paid',      classes: 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:ring-emerald-500/25' },
+    CANCELLED:       { label: 'Cancelled', classes: 'bg-base-lvl-2 text-body-1 ring-gray-200 dark:ring-white/10' },
 };
 
 const cycleStatus = computed(() => {
@@ -71,7 +71,7 @@ const badgeConfig = computed(() => {
     if (level === 'critical') {
         return {
             text: 'Critical',
-            classes: 'bg-red-50 text-red-700 ring-red-100',
+            classes: 'bg-red-50 text-red-700 ring-red-100 dark:bg-red-500/15 dark:text-red-300 dark:ring-red-500/25',
             dotColor: 'bg-red-500',
             icon: 'IMdiAlertCircle'
         };
@@ -79,14 +79,14 @@ const badgeConfig = computed(() => {
     if (level === 'notice') {
         return {
             text: 'Notice',
-            classes: 'bg-amber-50 text-amber-700 ring-amber-100',
+            classes: 'bg-amber-50 text-amber-700 ring-amber-100 dark:bg-amber-500/15 dark:text-amber-300 dark:ring-amber-500/25',
             dotColor: 'bg-amber-500',
             icon: 'IMdiAlert'
         };
     }
     return {
         text: 'Credit Card',
-        classes: 'bg-blue-50 text-blue-700 ring-blue-100',
+        classes: 'bg-blue-50 text-blue-700 ring-blue-100 dark:bg-blue-500/15 dark:text-blue-300 dark:ring-blue-500/25',
         dotColor: 'bg-blue-500',
         icon: 'IMdiCreditCard'
     };
@@ -98,18 +98,18 @@ const borderBgConfig = computed(() => {
     if (level === 'critical') {
         return {
             border: 'border-l-red-600',
-            bg: 'bg-red-50/40 hover:bg-red-50/60'
+            bg: 'bg-red-50/40 hover:bg-red-50/60 dark:bg-red-500/10 dark:hover:bg-red-500/20'
         };
     }
     if (level === 'notice') {
         return {
             border: 'border-l-amber-500',
-            bg: 'bg-amber-50/30 hover:bg-amber-50/50'
+            bg: 'bg-amber-50/30 hover:bg-amber-50/50 dark:bg-amber-500/10 dark:hover:bg-amber-500/20'
         };
     }
     return {
         border: 'border-l-blue-400',
-        bg: 'bg-blue-50/20 hover:bg-blue-50/30'
+        bg: 'bg-blue-50/20 hover:bg-blue-50/30 dark:bg-blue-500/10 dark:hover:bg-blue-500/20'
     };
 });
 
@@ -117,12 +117,12 @@ const borderBgConfig = computed(() => {
 const dateBadgeConfig = computed(() => {
     const level = urgencyLevel.value;
     if (level === 'critical') {
-        return 'text-red-700 bg-red-50 ring-red-100 hover:bg-red-100/70';
+        return 'text-red-700 bg-red-50 ring-red-100 hover:bg-red-100/70 dark:text-red-300 dark:bg-red-500/15 dark:ring-red-500/25 dark:hover:bg-red-500/25';
     }
     if (level === 'notice') {
-        return 'text-amber-700 bg-amber-50 ring-amber-100 hover:bg-amber-100/70';
+        return 'text-amber-700 bg-amber-50 ring-amber-100 hover:bg-amber-100/70 dark:text-amber-300 dark:bg-amber-500/15 dark:ring-amber-500/25 dark:hover:bg-amber-500/25';
     }
-    return 'text-blue-700 bg-blue-50 ring-blue-100 hover:bg-blue-100/70';
+    return 'text-blue-700 bg-blue-50 ring-blue-100 hover:bg-blue-100/70 dark:text-blue-300 dark:bg-blue-500/15 dark:ring-blue-500/25 dark:hover:bg-blue-500/25';
 });
 </script>
 
@@ -132,12 +132,12 @@ const dateBadgeConfig = computed(() => {
         :class="[
             payment.type === 'credit_card_payment'
                 ? borderBgConfig.border + ' ' + borderBgConfig.bg
-                : 'border-l-transparent hover:bg-gray-50'
+                : 'border-l-transparent hover:bg-base-lvl-2'
         ]"
     >
         <section class="flex gap-3 flex-1">
             <slot name="left-action-button">
-                <button class="text-gray-400 inline-block md:opacity-0 md:group-hover:opacity-100 transition cursor-pointer hover:text-red-400 focus:outline-none" @click="$emit('deleted', payment)">
+                <button class="text-body-1/70 inline-block md:opacity-0 md:group-hover:opacity-100 transition cursor-pointer hover:text-red-400 focus:outline-none" @click="$emit('deleted', payment)">
                     <IMdiTrash />
                  </button>
             </slot>

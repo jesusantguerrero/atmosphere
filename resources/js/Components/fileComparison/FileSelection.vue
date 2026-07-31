@@ -18,7 +18,7 @@ const emit = defineEmits<{
 <template>
   <VueFinalModal
     class="flex items-center justify-center "
-    content-class="flex flex-col max-w-3xl w-[48rem] p-4 mx-4 space-y-2 bg-white border rounded-lg dark:border-gray-700"
+    content-class="flex flex-col max-w-3xl w-[48rem] p-4 mx-4 space-y-2 bg-base-lvl-3 border rounded-lg dark:border-gray-700"
     overlay-transition="vfm-fade"
     content-transition="vfm-fade"
   >

@@ -11,7 +11,7 @@
 
             <div class="w-full px-1 pt-2 pb-5">
                 <input
-                    class="w-full h-8 px-2 border-2 border-gray-100 rounded-md focus:outline-none focus:border-gray-200"
+                    class="w-full h-8 px-2 border-2 border-base-lvl-2 rounded-md focus:outline-none focus:border-base-lvl-2"
                     type="text"
                     placeholder="Select or create a person"
                     v-model.trim="searchText"
@@ -30,7 +30,7 @@
                         class="flex items-center px-2 py-2 transition-colors rounded-sm cursor-pointer"
                         :class="[
                             preSelectedValue == tag && 'bg-gray-500 text-white',
-                            isSelected(tag.uid) ? 'bg-gray-200 hover:bg-gray-500 hover:text-white' : 'hover:bg-gray-500 hover:text-white'
+                            isSelected(tag.uid) ? 'bg-base-lvl-1 hover:bg-gray-500 hover:text-white' : 'hover:bg-gray-500 hover:text-white'
                         ]"
                         @click.stop="selectItem(tag)"
                     >
@@ -59,7 +59,7 @@
             <template #reference>
             <button
                 ref="button"
-                :class="{'text-gray-500': formattedItems }"
+                :class="{'text-body-1': formattedItems }"
                 class="flex items-center w-full h-full space-x-1 text-xs focus:outline-none"
                 @mousedown.prevent
                 @focus.prevent="focusButton"

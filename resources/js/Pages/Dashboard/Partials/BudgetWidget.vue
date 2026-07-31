@@ -137,7 +137,7 @@ fetchBudgetAlerts().then(data => {
     >
         <div class="flex items-center justify-between px-4 py-3">
             <div class="flex items-center gap-2">
-                <section class="bg-white text-primary w-7 h-7 rounded-full flex items-center justify-center">
+                <section class="bg-base-lvl-3 text-primary w-7 h-7 rounded-full flex items-center justify-center">
                     <IMdiBankTransfer class="text-sm" />
                 </section>
                 <span class="font-bold text-sm">{{ $t('Budget balance') }}</span>
@@ -150,7 +150,7 @@ fetchBudgetAlerts().then(data => {
             </div>
             <div class="flex items-center gap-1 text-sm font-bold">
                 <ElTooltip :content="formatMoney(prevBudget.total)">
-                    <span class="bg-white text-error text-xs px-1 py-0.5 rounded-md cursor-pointer">
+                    <span class="bg-base-lvl-3 text-error text-xs px-1 py-0.5 rounded-md cursor-pointer">
                         {{ variance }} %
                     </span>
                 </ElTooltip>
@@ -162,7 +162,7 @@ fetchBudgetAlerts().then(data => {
                 class="h-1.5 rounded-sm"
                 :goal="currentBudget.total"
                 :current="currentBudget.forSpending"
-                :progress-class="['bg-white', 'bg-white/30']"
+                :progress-class="['bg-base-lvl-3', 'bg-base-lvl-3/30']"
                 :show-labels="false"
             >
                 <template v-slot:before="{ progress }">
@@ -176,7 +176,7 @@ fetchBudgetAlerts().then(data => {
                 class="h-1.5 rounded-sm"
                 :goal="currentBudget.total"
                 :current="currentBudget.forSavings"
-                :progress-class="['bg-white', 'bg-white/30']"
+                :progress-class="['bg-base-lvl-3', 'bg-base-lvl-3/30']"
                 :show-labels="false"
             >
                 <template v-slot:before="{ progress }">
@@ -216,7 +216,7 @@ fetchBudgetAlerts().then(data => {
         <template #action>
             <button
                 type="button"
-                class="text-white p-1.5 rounded hover:bg-white/10 transition"
+                class="text-white p-1.5 rounded hover:bg-base-lvl-3/10 transition"
                 :aria-label="$t('Open budget')"
                 @click="router.visit('/budgets')"
             >
@@ -238,7 +238,7 @@ fetchBudgetAlerts().then(data => {
               </section>
               <header class="mt-4 border-t py-4 flex items-start justify-between pb-2">
                     <h1 class="font-bold flex items-center ">
-                        <section class="bg-white text-primary w-8 h-8 rounded-full flex items-center justify-center mr-2"
+                        <section class="bg-base-lvl-3 text-primary w-8 h-8 rounded-full flex items-center justify-center mr-2"
                         >
                             <IMdiBankTransfer />
                         </section>
@@ -247,7 +247,7 @@ fetchBudgetAlerts().then(data => {
                     <section class="space-x-2 ">
                         <h2 class="flex items-center text-lg font-bold">
                             <ElTooltip :content="formatMoney(prevBudget.total)">
-                                <span class="bg-white inline-block cursor-pointer rounded-md text-error text-xs px-1 py-0.5 mr-1" >
+                                <span class="bg-base-lvl-3 inline-block cursor-pointer rounded-md text-error text-xs px-1 py-0.5 mr-1" >
                                     {{variance}} %
                                 </span>
                             </ElTooltip>
@@ -262,7 +262,7 @@ fetchBudgetAlerts().then(data => {
                     class="h-2 rounded-sm"
                     :goal="currentBudget.total"
                     :current="currentBudget.forSpending"
-                    :progress-class="['bg-white', 'bg-primaryDark/60']"
+                    :progress-class="['bg-base-lvl-3', 'bg-primaryDark/60']"
                     :show-labels="false"
                 >
                     <template v-slot:before="{ progress }">
@@ -281,7 +281,7 @@ fetchBudgetAlerts().then(data => {
                     class="h-2 rounded-sm"
                     :goal="currentBudget.total"
                     :current="currentBudget.forSavings"
-                    :progress-class="['bg-white', 'bg-primaryDark/60']"
+                    :progress-class="['bg-base-lvl-3', 'bg-primaryDark/60']"
                     :show-labels="false"
                 >
                 <template v-slot:before="{ progress }">

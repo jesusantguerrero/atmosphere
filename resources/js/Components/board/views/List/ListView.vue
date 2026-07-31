@@ -202,7 +202,7 @@ const { syncScroll } = useSyncScroll("left", "ic-scroller-slim");
 <template>
   <div
     class="ic-list"
-    :class="{ 'rounded-md bg-gray-200 border border-slate-500': !isExpanded }"
+    :class="{ 'rounded-md bg-base-lvl-1 border border-slate-500': !isExpanded }"
     :data-table-size="tableSize"
   >
     <div class="ic-list__body" :class="{ 'not-expanded': !isExpanded, loaded: isLoaded }">
@@ -266,7 +266,7 @@ const { syncScroll } = useSyncScroll("left", "ic-scroller-slim");
                   ]"
                 >
                   <div
-                    class="flex justify-center w-5 h-full py-2 text-center rounded-full hover:bg-gray-200"
+                    class="flex justify-center w-5 h-full py-2 text-center rounded-full hover:bg-base-lvl-1"
                   >
                     <div class="flex items-center justify-center">
                       <i class="fa fa-ellipsis-v"></i>
@@ -311,7 +311,7 @@ const { syncScroll } = useSyncScroll("left", "ic-scroller-slim");
           >
             <ListCellTitle
               v-for="(item, index) in stage.items"
-              class="flex bg-gray-200 border border-white item-false"
+              class="flex bg-base-lvl-1 border border-white item-false"
               :key="`item-false__title-${item.id}`"
               :item="item"
               :index="index"
@@ -434,7 +434,7 @@ const { syncScroll } = useSyncScroll("left", "ic-scroller-slim");
     position: relative;
 
     &.not-expanded {
-      @apply bg-gray-200;
+      @apply bg-base-lvl-1;
       width: 100%;
       display: flex;
     }
@@ -459,7 +459,7 @@ const { syncScroll } = useSyncScroll("left", "ic-scroller-slim");
 }
 
 .item-false {
-  @apply bg-gray-200;
+  @apply bg-base-lvl-1;
   height: 44px;
   width: 100%;
   border: 2px solid white;

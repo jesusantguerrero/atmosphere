@@ -9,7 +9,7 @@ defineProps<{
 </script>
 
 <template>
-  <div class="w-4/12 mx-2 p-5 bg-white border-gray-300 border-1 shadow-md rounded-md">
+  <div class="w-4/12 mx-2 p-5 bg-base-lvl-3 border-base-lvl-2 border-1 shadow-md rounded-md">
     <h5 class="mb-2">
       {{ info.title }}
     </h5>

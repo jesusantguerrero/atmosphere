@@ -49,13 +49,13 @@ const createBudget = () => {
     <AppLayout :is-onboarding="true">
         <div class="h-auto py-12 mx-auto max-w-7xl sm:px-6 lg:px-8">
             <div
-                class="flex items-center justify-between py-2 mb-10 border-4 border-white rounded-md bg-gray-50"
+                class="flex items-center justify-between py-2 mb-10 border-4 border-white rounded-md bg-base-lvl-2"
             >
-                <div class="px-5 font-bold text-gray-600">
+                <div class="px-5 font-bold text-body-1">
                     Space Setup
                 </div>
 
-                <div  class="flex overflow-hidden font-bold text-gray-500 rounded-lg max-w-min">
+                <div  class="flex overflow-hidden font-bold text-body-1 rounded-lg max-w-min">
                     <LogerButton
                         :disabled="!formData.name"
                         v-if="state.currentMode == 'createTeam'"
@@ -68,7 +68,7 @@ const createBudget = () => {
             </div>
 
             <TeamForm
-                class="w-full px-5 py-4 space-y-5 bg-white rounded-md "
+                class="w-full px-5 py-4 space-y-5 bg-base-lvl-3 rounded-md "
                 v-if="state.currentMode == 'createTeam'"
                 :form-data="formData"
             >

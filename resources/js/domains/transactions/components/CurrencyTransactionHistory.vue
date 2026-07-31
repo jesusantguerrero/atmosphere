@@ -35,85 +35,85 @@
 
     <!-- Summary Cards -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-      <div class="bg-white rounded-lg shadow p-4 border">
-        <div class="text-sm text-gray-600">Total Transactions</div>
+      <div class="bg-base-lvl-3 rounded-lg shadow p-4 border">
+        <div class="text-sm text-body-1">Total Transactions</div>
         <div class="text-2xl font-bold">{{ filteredTransactions.length }}</div>
       </div>
       
-      <div class="bg-white rounded-lg shadow p-4 border">
-        <div class="text-sm text-gray-600">Pending Conversions</div>
+      <div class="bg-base-lvl-3 rounded-lg shadow p-4 border">
+        <div class="text-sm text-body-1">Pending Conversions</div>
         <div class="text-2xl font-bold text-orange-600">{{ pendingConversions }}</div>
       </div>
       
-      <div class="bg-white rounded-lg shadow p-4 border">
-        <div class="text-sm text-gray-600">Converted</div>
+      <div class="bg-base-lvl-3 rounded-lg shadow p-4 border">
+        <div class="text-sm text-body-1">Converted</div>
         <div class="text-2xl font-bold text-green-600">{{ convertedTransactions }}</div>
       </div>
       
-      <div class="bg-white rounded-lg shadow p-4 border">
-        <div class="text-sm text-gray-600">Total Value</div>
+      <div class="bg-base-lvl-3 rounded-lg shadow p-4 border">
+        <div class="text-sm text-body-1">Total Value</div>
         <div class="text-lg font-bold">{{ totalValue }}</div>
       </div>
     </div>
 
     <!-- Transaction Table -->
-    <div class="bg-white rounded-lg shadow border overflow-hidden">
+    <div class="bg-base-lvl-3 rounded-lg shadow border overflow-hidden">
       <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
+        <table class="min-w-full divide-y divide-base-lvl-2">
+          <thead class="bg-base-lvl-2">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-body-1 uppercase tracking-wider">
                 <button @click="sortBy('date')" class="flex items-center space-x-1">
                   <span>Date</span>
                   <SortIcon :direction="getSortDirection('date')" />
                 </button>
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-body-1 uppercase tracking-wider">
                 Description
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-body-1 uppercase tracking-wider">
                 Account
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-body-1 uppercase tracking-wider">
                 <button @click="sortBy('currency_code')" class="flex items-center space-x-1">
                   <span>Currency</span>
                   <SortIcon :direction="getSortDirection('currency_code')" />
                 </button>
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-body-1 uppercase tracking-wider">
                 <button @click="sortBy('total')" class="flex items-center space-x-1">
                   <span>Amount</span>
                   <SortIcon :direction="getSortDirection('total')" />
                 </button>
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-body-1 uppercase tracking-wider">
                 Conversion
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-body-1 uppercase tracking-wider">
                 Status
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-body-1 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
+          <tbody class="bg-base-lvl-3 divide-y divide-base-lvl-2">
             <tr 
               v-for="transaction in paginatedTransactions" 
               :key="transaction.id" 
-              class="hover:bg-gray-50"
+              class="hover:bg-base-lvl-2"
             >
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-body">
                 {{ formatDate(transaction.date) }}
               </td>
               
               <td class="px-6 py-4">
-                <div class="text-sm font-medium text-gray-900">{{ transaction.description }}</div>
-                <div v-if="transaction.payee" class="text-sm text-gray-500">{{ transaction.payee.name }}</div>
+                <div class="text-sm font-medium text-body">{{ transaction.description }}</div>
+                <div v-if="transaction.payee" class="text-sm text-body-1">{{ transaction.payee.name }}</div>
                 <div v-if="transaction.category" class="text-xs text-blue-600">{{ transaction.category.name }}</div>
               </td>
               
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-body">
                 {{ transaction.account?.name }}
               </td>
               
@@ -128,24 +128,24 @@
               </td>
               
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900">
+                <div class="text-sm font-medium text-body">
                   {{ formatCurrency(transaction.total, transaction.currency_code) }}
                 </div>
               </td>
               
               <td class="px-6 py-4 whitespace-nowrap">
                 <div v-if="transaction.exchange_rate && transaction.exchange_amount" class="text-sm">
-                  <div class="font-medium text-gray-900">
+                  <div class="font-medium text-body">
                     {{ formatCurrency(transaction.exchange_amount, transaction.account?.currency_code) }}
                   </div>
-                  <div class="text-xs text-gray-500">
+                  <div class="text-xs text-body-1">
                     Rate: {{ transaction.exchange_rate.toFixed(4) }}
                   </div>
                 </div>
                 <div v-else-if="needsConversion(transaction)" class="text-sm text-orange-600">
                   Pending
                 </div>
-                <div v-else class="text-sm text-gray-500">
+                <div v-else class="text-sm text-body-1">
                   N/A
                 </div>
               </td>
@@ -173,7 +173,7 @@
                   </button>
                   <button
                     @click="viewDetails(transaction)"
-                    class="text-gray-600 hover:text-gray-900"
+                    class="text-body-1 hover:text-body"
                   >
                     Details
                   </button>
@@ -185,26 +185,26 @@
       </div>
 
       <!-- Pagination -->
-      <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+      <div class="bg-base-lvl-3 px-4 py-3 flex items-center justify-between border-t border-base-lvl-2 sm:px-6">
         <div class="flex-1 flex justify-between sm:hidden">
           <button
             @click="previousPage"
             :disabled="currentPage === 1"
-            class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+            class="relative inline-flex items-center px-4 py-2 border border-base-lvl-2 text-sm font-medium rounded-md text-body-1 bg-base-lvl-3 hover:bg-base-lvl-2"
           >
             Previous
           </button>
           <button
             @click="nextPage"
             :disabled="currentPage === totalPages"
-            class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+            class="ml-3 relative inline-flex items-center px-4 py-2 border border-base-lvl-2 text-sm font-medium rounded-md text-body-1 bg-base-lvl-3 hover:bg-base-lvl-2"
           >
             Next
           </button>
         </div>
         <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
           <div>
-            <p class="text-sm text-gray-700">
+            <p class="text-sm text-body-1">
               Showing {{ startIndex }} to {{ endIndex }} of {{ filteredTransactions.length }} results
             </p>
           </div>
@@ -213,7 +213,7 @@
               <button
                 @click="previousPage"
                 :disabled="currentPage === 1"
-                class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+                class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-base-lvl-2 bg-base-lvl-3 text-sm font-medium text-body-1 hover:bg-base-lvl-2"
               >
                 Previous
               </button>
@@ -224,7 +224,7 @@
                 :class="[
                   page === currentPage
                     ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
-                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50',
+                    : 'bg-base-lvl-3 border-base-lvl-2 text-body-1 hover:bg-base-lvl-2',
                   'relative inline-flex items-center px-4 py-2 border text-sm font-medium'
                 ]"
               >
@@ -233,7 +233,7 @@
               <button
                 @click="nextPage"
                 :disabled="currentPage === totalPages"
-                class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+                class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-base-lvl-2 bg-base-lvl-3 text-sm font-medium text-body-1 hover:bg-base-lvl-2"
               >
                 Next
               </button>
@@ -245,8 +245,8 @@
 
     <!-- Empty State -->
     <div v-if="filteredTransactions.length === 0" class="text-center py-12">
-      <div class="text-gray-500 text-lg mb-4">No transactions found</div>
-      <p class="text-gray-400 mb-6">Try adjusting your filters or create a new transaction</p>
+      <div class="text-body-1 text-lg mb-4">No transactions found</div>
+      <p class="text-body-1/70 mb-6">Try adjusting your filters or create a new transaction</p>
       <AtButton @click="$emit('createTransaction')" class="text-white bg-primary">
         Create Transaction
       </AtButton>
@@ -416,7 +416,7 @@ const getStatusBadgeClass = (transaction: any) => {
   if (transaction.status === 'verified') {
     return 'bg-blue-100 text-blue-800';
   }
-  return 'bg-gray-100 text-gray-800';
+  return 'bg-base-lvl-1 text-body';
 };
 
 const getStatusLabel = (transaction: any) => {

@@ -13,7 +13,7 @@ defineProps({
   <AppLayout title="$t('Reports')">
     <div class="w-full py-10 mx-auto mt-8 sm:px-6 lg:px-8 print:w-[210mm] print">
       <div
-        class="w-full px-5 py-5 mb-10 bg-white rounded-md shadow-md print:w-[210mm] print"
+        class="w-full px-5 py-5 mb-10 bg-base-lvl-3 rounded-md shadow-md print:w-[210mm] print"
       >
         <div
           class="mt-10 divide-y divide-base-lvl-1 text-body-1 items print:w-[210mm] print"
@@ -32,7 +32,7 @@ defineProps({
                 :href="report.url"
                 v-for="(report, reportName) in category.reports"
                 :key="reportName"
-                class="block px-5 py-4 transition rounded-md cursor-pointer bg-gray-50 hover:bg-gray-100"
+                class="block px-5 py-4 transition rounded-md cursor-pointer bg-base-lvl-2 hover:bg-base-lvl-1"
               >
                 <h5 class="text-lg font-bold text-secondary">
                   {{ report.label }}

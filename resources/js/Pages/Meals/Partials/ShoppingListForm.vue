@@ -63,13 +63,13 @@ const addToShoppingList = () => {
                 <section class="flex items-center space-x-2 w-2/12  justify-end">
                     <div class="">
                         <button
-                            class=" px-3 py-3 rounded-l-md dark:bg-base-lvl-1 bg-gray-200 transition-colors"
+                            class=" px-3 py-3 rounded-l-md dark:bg-base-lvl-1 bg-base-lvl-1 transition-colors"
                             :class="{'hover:bg-green-400 dark:hover:bg-green-400 hover:text-white': !disabled }"
                             @click.stop="ingredient.quantity+=1">
                                 <IMdiChevronUp />
                         </button>
                         <button
-                            class="px-3 py-3 rounded-r-md dark:bg-base-lvl-1 bg-gray-200 transition-colors"
+                            class="px-3 py-3 rounded-r-md dark:bg-base-lvl-1 bg-base-lvl-1 transition-colors"
                             :class="{'hover:bg-red-400 dark:hover:bg-red-400 hover:text-white': !disabled}"
                             @click.stop="ingredient.quantity-=1">
                                 <IMdiChevronDown />

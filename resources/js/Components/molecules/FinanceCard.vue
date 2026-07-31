@@ -14,7 +14,7 @@
              type: Boolean,
          },
     })
-    const classes = 'flex bg-gray-100 items-center rounded-md px-5 py-4'
+    const classes = 'flex bg-base-lvl-1 items-center rounded-md px-5 py-4'
 </script>
 
 <template>

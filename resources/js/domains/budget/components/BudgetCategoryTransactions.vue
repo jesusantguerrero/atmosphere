@@ -35,7 +35,7 @@
 <template>
     <ChartComparison
         v-if="spending.transactions"
-        class="w-full mt-4 mb-10 overflow-hidden bg-white rounded-lg"
+        class="w-full mt-4 mb-10 overflow-hidden bg-base-lvl-3 rounded-lg"
         :title="$t('Spending summary')"
         ref="ComparisonRevenue"
         :data="spending.transactions"

@@ -115,7 +115,7 @@
 
     >
         <template #content>
-            <h3 v-if="isTwoFactorEnabled && state.confirming" class="text-lg font-medium text-gray-900">
+            <h3 v-if="isTwoFactorEnabled && state.confirming" class="text-lg font-medium text-body">
                 Finish enabling two factor authentication.
             </h3>
             <h3 class="text-lg font-medium" v-else>
@@ -130,7 +130,7 @@
 
             <div v-if="isTwoFactorEnabled">
                 <section v-if="state.qrCode">
-                    <div class="max-w-xl mt-4 text-sm text-gray-600">
+                    <div class="max-w-xl mt-4 text-sm text-body-1">
                         <p v-if="confirming" class="font-semibold">
                             To finish enabling two factor authentication, scan the following QR code using your phone's authenticator application or enter the setup key and provide the generated OTP code.
                         </p>
@@ -161,13 +161,13 @@
                 </section>
 
                 <div v-if="state.recoveryCodes.length > 0 && !state.confirming">
-                    <div class="max-w-xl mt-4 text-sm text-gray-600">
+                    <div class="max-w-xl mt-4 text-sm text-body-1">
                         <p class="font-bold">
                             Store these recovery codes in a secure password manager. They can be used to recover access to your account if your two factor authentication device is lost.
                         </p>
                     </div>
 
-                    <div class="grid max-w-xl gap-1 px-4 py-4 mt-4 font-mono text-sm bg-gray-100 rounded-lg">
+                    <div class="grid max-w-xl gap-1 px-4 py-4 mt-4 font-mono text-sm bg-base-lvl-1 rounded-lg">
                         <div v-for="code in state.recoveryCodes" :key="code">
                             {{ code }}
                         </div>

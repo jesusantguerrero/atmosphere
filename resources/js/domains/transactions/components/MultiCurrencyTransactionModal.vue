@@ -84,7 +84,7 @@
                         placeholder="Auto-calculated on payment"
                         @update:model-value="handleManualRateChange"
                       />
-                      <div class="text-xs text-gray-500">
+                      <div class="text-xs text-body-1">
                         1 {{ transactionCurrency }} = {{ displayExchangeRate }} {{ accountPrimaryCurrency }}
                       </div>
                     </div>

@@ -134,7 +134,7 @@ const { form } = toRefs(state);
 
       <div class="flex justify-between mt-4">
         <div class="flex font-bold">
-          <at-button class="block h-full text-gray-500" @click="onCancel">
+          <at-button class="block h-full text-body-1" @click="onCancel">
             Cancel
           </at-button>
         </div>

@@ -3,15 +3,15 @@
     <div class="px-5 pb-10">
       <h5 class="p-4 text-left card-title">Revenue</h5>
       <div class="card-text">
-        <div class="px-10 mb-2 text-gray-500 bg-gray-100 comparison-header">
+        <div class="px-10 mb-2 text-body-1 bg-base-lvl-1 comparison-header">
           <div
-            class="cursor-pointer comparison-header__item previous-period hover:text-gray-700"
+            class="cursor-pointer comparison-header__item previous-period hover:text-body-1"
           >
             <h6 class="period-title">{{ $t("Previous year") }}</h6>
             <span class="period-value"> {{ formatMoney(headerInfo.previous) }}</span>
           </div>
           <div
-            class="cursor-pointer comparison-header__item current-period hover:text-gray-700"
+            class="cursor-pointer comparison-header__item current-period hover:text-body-1"
           >
             <h6 class="period-title">{{ $t("Current Year") }}</h6>
             <span class="period-value"> {{ formatMoney(headerInfo.current) }}</span>

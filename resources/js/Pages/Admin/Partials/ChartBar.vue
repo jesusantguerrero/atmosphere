@@ -9,22 +9,22 @@
       </h5>
       <div class="card-text flex">
         <div class="mb-2 flex-col flex justify-center items-center">
-          <section class="text-gray-500 space-x-8 bg-gray-100 px-10 comparison-header">
+          <section class="text-body-1 space-x-8 bg-base-lvl-1 px-10 comparison-header">
             <div
-              class="cursor-pointer comparison-header__item previous-period hover:text-gray-700"
+              class="cursor-pointer comparison-header__item previous-period hover:text-body-1"
             >
               <h6 class="period-title">Mes</h6>
               <span class="period-value"> {{ formatMoney(headerInfo.month) }}</span>
             </div>
             <div
-              class="cursor-pointer comparison-header__item current-period hover:text-gray-700"
+              class="cursor-pointer comparison-header__item current-period hover:text-body-1"
             >
               <h6 class="period-title">Año</h6>
               <span class="period-value"> {{ formatMoney(headerInfo.current) }}</span>
             </div>
           </section>
           <div
-            class="cursor-pointer justify-center text-lg flex flex-col comparison-header__item current-period hover:text-gray-700"
+            class="cursor-pointer justify-center text-lg flex flex-col comparison-header__item current-period hover:text-body-1"
           >
             <h6 class="period-title text-center">Avg.</h6>
             <span class="period-value text-center">

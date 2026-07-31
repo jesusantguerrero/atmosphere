@@ -81,7 +81,7 @@ const isHuge = computed(() => props.size == "huge");
 .cls-3 {
   font-size: 86.98px;
   fill: #626d73;
-  stroke: #fff;
+  stroke: rgb(var(--c-base-lvl-3));
   font-family: Kanit-SemiBold, Kanit;
   font-weight: 600;
 }

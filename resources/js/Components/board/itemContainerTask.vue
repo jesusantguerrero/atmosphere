@@ -82,7 +82,7 @@ const updateTask = () => {
             </button>
         </section>
 
-        <button @click="$emit('item-deleted', task)" class="ml-2 text-gray-300 hover:text-red-400">
+        <button @click="$emit('item-deleted', task)" class="ml-2 text-body-1/60 hover:text-red-400">
             <i class="fa fa-trash"/>
         </button>
     </div>

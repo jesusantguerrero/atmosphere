@@ -20,7 +20,7 @@
     </div>
     
     <!-- Exchange rate display -->
-    <div v-if="showExchangeInfo && exchangeRate" class="mt-2 text-sm text-gray-600">
+    <div v-if="showExchangeInfo && exchangeRate" class="mt-2 text-sm text-body-1">
       <div class="flex items-center justify-between">
         <span>Exchange Rate:</span>
         <span>1 {{ currency }} = {{ exchangeRate.toFixed(4) }} {{ targetCurrency }}</span>

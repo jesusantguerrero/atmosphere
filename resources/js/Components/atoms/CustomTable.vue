@@ -63,7 +63,7 @@ const range = computed(() => {
         @row-click="$emit('row-click', $event)"
     >
         <thead>
-            <tr class="px-2 py-4 font-bold text-left border-b border-gray-200 text-body">
+            <tr class="px-2 py-4 font-bold text-left border-b border-base-lvl-2 text-body">
                 <th v-for="col in cols"
                  :key="col.name"
                  class="px-2 py-4"

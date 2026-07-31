@@ -100,7 +100,7 @@ const shoppingItemCount = Array.isArray(props.shoppingList?.data)
 
       <div class="py-6 space-y-4 md:w-3/12">
         <!-- Shopping list quick summary -->
-        <div class="px-4 py-3 bg-white rounded-md shadow-sm">
+        <div class="px-4 py-3 bg-base-lvl-3 rounded-md shadow-sm">
           <SectionTitle type="secondary" class="text-center mb-2">
             {{ $t('Shopping List') }}
           </SectionTitle>
@@ -119,7 +119,7 @@ const shoppingItemCount = Array.isArray(props.shoppingList?.data)
         </div>
 
         <!-- Most liked meals -->
-        <div class="px-2 py-2 bg-white rounded-md">
+        <div class="px-2 py-2 bg-base-lvl-3 rounded-md">
           <SectionTitle type="secondary" class="text-center">
             {{ $t('Most liked meals') }}
           </SectionTitle>

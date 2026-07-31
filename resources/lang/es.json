@@ -255,5 +255,18 @@
     "Days since it last happened": "Días desde la última vez",
     "Due": "Por vencer",
     "On track": "Al día",
-    "No data": "Sin datos"
+    "No data": "Sin datos",
+    "Search for anything": "Buscar cualquier cosa",
+    "Search transactions and payees": "Buscar transacciones y beneficiarios",
+    "Searching...": "Buscando...",
+    "No results found": "Sin resultados",
+    "Type at least 3 characters": "Escribe al menos 3 caracteres",
+    "Navigate": "Navegar",
+    "Open": "Abrir",
+    "Close": "Cerrar",
+    "Payee": "Beneficiario",
+    "Transaction": "Transacción",
+    "all": "todo",
+    "transactions": "transacciones",
+    "payees": "beneficiarios"
 }

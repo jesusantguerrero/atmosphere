@@ -237,7 +237,7 @@ const budgetCsvExportUrl = computed(() => {
                 <PointAlert v-if="!filters.overspent" />
               </span>
 
-              <div class="text-white text-sm rounded-full group-hover:bg-white/20 p-0.5">
+              <div class="text-white text-sm rounded-full group-hover:bg-base-lvl-3/20 p-0.5">
                 <IconClose />
               </div>
             </AtButton>

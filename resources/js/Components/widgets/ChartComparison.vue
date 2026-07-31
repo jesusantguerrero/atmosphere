@@ -120,7 +120,7 @@ const handleSelection = (index: number) => {
             </div>
             </div>
             <LogerChart
-                class="bg-white"
+                class="bg-base-lvl-3"
                 style="height:300px; width: 100%"
                 label="name"
                 type="bar"

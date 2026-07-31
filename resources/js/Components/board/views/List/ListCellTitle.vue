@@ -33,7 +33,7 @@ function getFieldValue(item, name) {
 
 <template>
     <section
-        :class="`item-false bg-gray-200 border border-white flex`"
+        :class="`item-false bg-base-lvl-1 border border-white flex`"
         :key="`item-false__title-${item.id}`"
     >
         <!-- Selection Checkbox  -->
@@ -57,7 +57,7 @@ function getFieldValue(item, name) {
 
         <!-- handle -->
         <div class="flex items-center cursor-grab">
-            <div class="text-gray-400 handle">
+            <div class="text-body-1/70 handle">
                 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--ic" width="32" height="32" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path fill="currentColor" d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2s.9-2 2-2s2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2s2-.9 2-2s-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2s2-.9 2-2s-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2s-2 .9-2 2s.9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2s2-.9 2-2s-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2s2-.9 2-2s-.9-2-2-2z"></path></svg>
             </div>
         </div>
@@ -94,7 +94,7 @@ function getFieldValue(item, name) {
         >
             <template #trigger>
                 <div
-                    class="flex justify-center w-5 h-full py-2 text-center rounded-full hover:bg-gray-200"
+                    class="flex justify-center w-5 h-full py-2 text-center rounded-full hover:bg-base-lvl-1"
                 >
                     <div class="flex items-center mr-2">
                         <i class="fa fa-ellipsis-v"></i>
@@ -151,7 +151,7 @@ function getFieldValue(item, name) {
     }
 
     &__input {
-        @apply border-gray-400 text-gray-400;
+        @apply border-gray-400 text-body-1/70;
         border-width: 1px;
         width: 30px !important;
         height: 30px !important;

@@ -51,7 +51,7 @@ const handlePay = (transaction: ITransaction) => {
     class="mt-4 mb-4 overflow-hidden rounded-lg bg-base-lvl-3"
     :class="cardShadow"
 >
-    <h4 v-if="!hideTitle" class="px-4 pt-3 pb-2 font-bold">{{ resolvedTitle }}</h4>
+    <h4 v-if="!hideTitle" class="px-4 pt-3 pb-2 font-bold text-body">{{ resolvedTitle }}</h4>
     <section class="space-y-2 pb-2" v-if="payments?.length">
         <NextPaymentItem
             v-for="transaction in payments"

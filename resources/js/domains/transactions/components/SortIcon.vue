@@ -18,7 +18,7 @@
     </svg>
     <svg 
       v-else 
-      class="w-4 h-4 text-gray-400" 
+      class="w-4 h-4 text-body-1/70" 
       fill="currentColor" 
       viewBox="0 0 20 20"
     >

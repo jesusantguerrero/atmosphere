@@ -50,6 +50,17 @@ const visibleItems = computed<Item[]>(() => [
     ...skipItems.value,
 ]);
 
+// Group by stage (category); headers show only when the list has >1 stage.
+const STATE_ORDER = { pending: 0, buy: 1, skip: 2 } as const;
+const hasCategories = computed<boolean>(() => (plan.value?.stages.length ?? 0) > 1);
+const visibleSections = computed(() =>
+    (plan.value?.stages ?? []).map((s) => ({
+        id: s.id,
+        name: s.name,
+        items: [...s.items].sort((a, b) => STATE_ORDER[a.state] - STATE_ORDER[b.state]),
+    }))
+);
+
 const fetchPlan = async (): Promise<void> => {
     loading.value = true;
     error.value = null;
@@ -186,7 +197,7 @@ onMounted(fetchPlan);
                     <input
                         :value="shareUrl"
                         readonly
-                        class="flex-1 px-2 py-1.5 text-[11px] bg-white border border-base rounded-md text-body min-w-0"
+                        class="flex-1 px-2 py-1.5 text-[11px] bg-base-lvl-3 border border-base rounded-md text-body min-w-0"
                         @focus="($event.target as HTMLInputElement).select()"
                     />
                     <button
@@ -242,29 +253,43 @@ onMounted(fetchPlan);
                 <p class="text-[11px] text-body-1/40 mt-0.5">{{ $t('Type below to add an item.') }}</p>
             </div>
 
-            <div
-                v-for="item in visibleItems"
-                v-else
-                :key="item.id"
-                class="flex items-center gap-2 px-2.5 py-2 rounded-lg border text-sm cursor-pointer select-none"
-                :class="stateClass(item.state)"
-                @click="cycleItem(item)"
-            >
-                <i class="fa text-xs shrink-0" :class="stateIcon(item.state)" />
-                <span class="flex-1 break-words text-xs">{{ item.title }}</span>
-                <span
-                    v-if="item.state === 'buy'"
-                    class="shrink-0 px-1.5 py-0.5 rounded-full text-[9px] font-semibold uppercase tracking-wide bg-success/20 text-success"
+            <template v-else>
+                <div
+                    v-for="section in visibleSections"
+                    :key="section.id"
+                    v-show="section.items.length"
+                    class="space-y-1.5"
                 >
-                    {{ $t('Buying') }}
-                </span>
-                <span
-                    v-else-if="item.state === 'skip'"
-                    class="shrink-0 px-1.5 py-0.5 rounded-full text-[9px] font-semibold uppercase tracking-wide bg-error/15 text-error/70"
-                >
-                    {{ $t('Skip') }}
-                </span>
-            </div>
+                    <p
+                        v-if="hasCategories"
+                        class="text-[10px] font-bold uppercase tracking-wide text-body-1/50 px-1 pt-1"
+                    >
+                        {{ section.name }}
+                    </p>
+                    <div
+                        v-for="item in section.items"
+                        :key="item.id"
+                        class="flex items-center gap-2 px-2.5 py-2 rounded-lg border text-sm cursor-pointer select-none"
+                        :class="stateClass(item.state)"
+                        @click="cycleItem(item)"
+                    >
+                        <i class="fa text-xs shrink-0" :class="stateIcon(item.state)" />
+                        <span class="flex-1 break-words text-xs">{{ item.title }}</span>
+                        <span
+                            v-if="item.state === 'buy'"
+                            class="shrink-0 px-1.5 py-0.5 rounded-full text-[9px] font-semibold uppercase tracking-wide bg-success/20 text-success"
+                        >
+                            {{ $t('Buying') }}
+                        </span>
+                        <span
+                            v-else-if="item.state === 'skip'"
+                            class="shrink-0 px-1.5 py-0.5 rounded-full text-[9px] font-semibold uppercase tracking-wide bg-error/15 text-error/70"
+                        >
+                            {{ $t('Skip') }}
+                        </span>
+                    </div>
+                </div>
+            </template>
         </section>
 
         <!-- Composer + open-full-list -->

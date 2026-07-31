@@ -61,7 +61,7 @@ const appliedSorts = computed(() => {
         <div
           v-for="sort in appliedSorts"
           :key="sort.label"
-          class="ml-2 bg-red-200 text-gray-600 rounded-md px-2 flex items-center font-bold py-1"
+          class="ml-2 bg-red-200 text-body-1 rounded-md px-2 flex items-center font-bold py-1"
         >
           <span> {{ sort.label }} {{ sort.direction }} </span>
           <IconClose
@@ -77,7 +77,7 @@ const appliedSorts = computed(() => {
         <p
           v-for="filter in appliedFilters"
           :key="filter.label"
-          class="ml-2 bg-red-200 rounded-md px-2 text-gray-600 py-1 flex items-center"
+          class="ml-2 bg-red-200 rounded-md px-2 text-body-1 py-1 flex items-center"
         >
           {{ filter.label }}:
           <span class="font-bold ml-2 capitalize">{{ filter.value }}</span>

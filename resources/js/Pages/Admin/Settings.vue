@@ -38,7 +38,7 @@ const executeSearch = () => {};
         />
       </section>
       <AtTable
-        class="bg-white rounded-md text-body-1 mt-4"
+        class="bg-base-lvl-3 rounded-md text-body-1 mt-4"
         :table-data="data"
         :cols="[
           {

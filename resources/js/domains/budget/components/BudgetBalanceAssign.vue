@@ -280,65 +280,65 @@
                                 {{ $t('Allocate leftover') }}
                             </AtButton>
                         </template>
-                        <div class="w-80 md:w-96 space-y-4 text-gray-800">
-                            <div class="flex items-center justify-between pb-2 border-b border-gray-200">
-                                <span class="text-sm font-medium text-gray-600">{{ $t('Available') }}</span>
+                        <div class="w-80 md:w-96 space-y-4 text-body">
+                            <div class="flex items-center justify-between pb-2 border-b border-base-lvl-2">
+                                <span class="text-sm font-medium text-body-1">{{ $t('Available') }}</span>
                                 <span class="text-base font-bold text-success">{{ formatter(value) }}</span>
                             </div>
 
                             <div class="grid grid-cols-3 gap-2">
                                 <button
                                     type="button"
-                                    class="px-2 py-1.5 text-xs font-medium rounded-md border border-gray-200 hover:bg-gray-50 hover:border-primary"
+                                    class="px-2 py-1.5 text-xs font-medium rounded-md border border-base-lvl-2 hover:bg-base-lvl-2 hover:border-primary"
                                     @click.stop="presetSplit(0.5, 0.5)"
                                 >50 / 50</button>
                                 <button
                                     type="button"
-                                    class="px-2 py-1.5 text-xs font-medium rounded-md border border-gray-200 hover:bg-gray-50 hover:border-primary"
+                                    class="px-2 py-1.5 text-xs font-medium rounded-md border border-base-lvl-2 hover:bg-base-lvl-2 hover:border-primary"
                                     @click.stop="presetSplit(1, 0)"
                                 >{{ $t('All to Savings') }}</button>
                                 <button
                                     type="button"
-                                    class="px-2 py-1.5 text-xs font-medium rounded-md border border-gray-200 hover:bg-gray-50 hover:border-primary"
+                                    class="px-2 py-1.5 text-xs font-medium rounded-md border border-base-lvl-2 hover:bg-base-lvl-2 hover:border-primary"
                                     @click.stop="presetSplit(0, 1)"
                                 >{{ $t('All to Spending') }}</button>
                             </div>
 
                             <div class="space-y-3">
                                 <div>
-                                    <label class="block mb-1 text-xs font-medium text-gray-600">
+                                    <label class="block mb-1 text-xs font-medium text-body-1">
                                         {{ splitTargets.savings?.name ?? $t('Savings') }}
                                     </label>
                                     <div class="relative">
-                                        <span class="absolute text-gray-400 -translate-y-1/2 left-3 top-1/2">$</span>
+                                        <span class="absolute text-body-1/70 -translate-y-1/2 left-3 top-1/2">$</span>
                                         <input
                                             v-model.number="splitForm.savings_amount"
                                             type="number"
                                             min="0"
                                             step="0.01"
-                                            class="w-full py-2 pl-7 pr-3 text-gray-800 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                                            class="w-full py-2 pl-7 pr-3 text-body border border-base-lvl-2 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
                                         />
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block mb-1 text-xs font-medium text-gray-600">
+                                    <label class="block mb-1 text-xs font-medium text-body-1">
                                         {{ splitTargets.personal?.name ?? $t('Personal Spending') }}
                                     </label>
                                     <div class="relative">
-                                        <span class="absolute text-gray-400 -translate-y-1/2 left-3 top-1/2">$</span>
+                                        <span class="absolute text-body-1/70 -translate-y-1/2 left-3 top-1/2">$</span>
                                         <input
                                             v-model.number="splitForm.personal_amount"
                                             type="number"
                                             min="0"
                                             step="0.01"
-                                            class="w-full py-2 pl-7 pr-3 text-gray-800 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                                            class="w-full py-2 pl-7 pr-3 text-body border border-base-lvl-2 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
                                         />
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="flex items-center justify-between pt-2 text-sm border-t border-gray-200">
-                                <span class="text-gray-600">{{ $t('Unassigned') }}</span>
+                            <div class="flex items-center justify-between pt-2 text-sm border-t border-base-lvl-2">
+                                <span class="text-body-1">{{ $t('Unassigned') }}</span>
                                 <span
                                     class="font-bold"
                                     :class="Math.abs(splitRemaining) < 0.01 ? 'text-success' : splitRemaining < 0 ? 'text-error' : 'text-warning'"
@@ -352,7 +352,7 @@
                             <div class="flex items-center justify-end pt-2 space-x-2">
                                 <button
                                     type="button"
-                                    class="px-4 py-2 text-sm text-gray-600 rounded-md hover:text-gray-900 hover:bg-gray-100"
+                                    class="px-4 py-2 text-sm text-body-1 rounded-md hover:text-body hover:bg-base-lvl-1"
                                     @click.stop="showSplitPopover = false"
                                 >
                                     {{ $t('Cancel') }}
@@ -389,7 +389,7 @@
                                 >
                                     <template v-slot:option="{ option }">
                                         <div class="flex justify-between text-sm group md:text-base">
-                                            <span :class="option.$groupLabel ? 'text-gray-500 font-bold' : 'text-gray-800'">
+                                            <span :class="option.$groupLabel ? 'text-body-1 font-bold' : 'text-body'">
                                                 {{ option.label || option.$groupLabel }}
                                             </span>
                                             <span

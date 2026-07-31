@@ -104,7 +104,7 @@ import JetValidationErrors from "@/Components/atoms/ValidationErrors.vue";
             <div class="inline-flex items-center justify-end mt-4">
               <button
                 type="button"
-                class="text-sm text-gray-600 underline cursor-pointer hover:text-gray-900"
+                class="text-sm text-body-1 underline cursor-pointer hover:text-body"
                 @click.prevent="toggleRecovery"
               >
                 <span v-if="!recovery"> Use a recovery code </span>

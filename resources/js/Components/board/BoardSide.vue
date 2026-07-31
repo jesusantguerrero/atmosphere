@@ -1,5 +1,5 @@
 <template>
-    <div class="relative py-5 transition-all bg-white board-side">
+    <div class="relative py-5 transition-all bg-base-lvl-3 board-side">
         <div @click="$emit('toggle-expanded')" class="absolute flex items-center justify-center w-6 h-6 text-white border rounded-full cursor-pointer bg-purple-400/60 border-slate-400 top-20 -right-4">
             <i class="fa" :class="arrowIcon" />
         </div>
@@ -33,7 +33,7 @@
 
             </div>
             <div
-                class="flex mx-5 mt-2 overflow-hidden text-gray-500 rounded"
+                class="flex mx-5 mt-2 overflow-hidden text-body-1 rounded"
                 v-if="!showAdd && !isHeaderMenu"
             >
                 <button
@@ -44,7 +44,7 @@
                 </button>
             </div>
             <div
-                class="flex mx-5 mt-2 overflow-hidden text-gray-500 rounded"
+                class="flex mx-5 mt-2 overflow-hidden text-body-1 rounded"
                 v-if="showAdd && !isHeaderMenu"
             >
                 <input
@@ -208,7 +208,7 @@ function deleteBoard(id) {
     @apply my-2 border-l-4 border-white;
 
     &:visited {
-        @apply text-gray-600;
+        @apply text-body-1;
     }
 
     &.active {
