@@ -263,7 +263,7 @@ const isCurrentMonth = computed(() => isSameMonth(periodStart(), new Date()));
             />
             <DraftButtons v-if="isDraft" @submitted="fetchTransactions()" />
 
-            <div class="flex flex-wrap items-center gap-1 md:ml-auto">
+            <div class="flex items-center gap-1 md:ml-auto shrink-0">
                 <button
                     type="button"
                     class="px-2 py-1 rounded text-body-1 hover:bg-base-lvl-2"

@@ -38,12 +38,12 @@ const renderLabel: SelectRenderLabel = (option: IAccount) => {
 </script>
 
 <template>
-    <section class="w-80">
+    <section class="w-full md:w-60">
         <NSelect
             filterable
             clearable
             tag
-            size="large"
+            size="medium"
             class="w-full"
             placeholder="Filter account"
             :multiple="multiple"
