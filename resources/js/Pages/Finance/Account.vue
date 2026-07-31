@@ -274,6 +274,66 @@ const isCreditCard = computed(() => {
     return selectedAccount.value?.account_detail_type_id == creditCard.value?.id;
 });
 
+// --- Cashback quick-add (credit cards only) ---
+// Records a cashback as a normal income (DEPOSIT) transaction on this card,
+// defaulting to the "Ready to Assign" category. Reuses the same
+// transactions.store endpoint the modal uses, just with cashback defaults.
+const READY_TO_ASSIGN_NAME = "Ready to Assign";
+const showCashback = ref(false);
+const cashbackAmount = ref<string>("");
+const cashbackNote = ref<string>("");
+const cashbackDate = ref<string>(format(new Date(), "yyyy-MM-dd"));
+const cashbackCategoryId = ref<number | null>(null);
+const cashbackExpanded = ref(false);
+const savingCashback = ref(false);
+const cashbackCategoryName = computed(
+    () => props.categories?.find((c: any) => c.id === cashbackCategoryId.value)?.name ?? READY_TO_ASSIGN_NAME
+);
+const openCashback = (): void => {
+    cashbackAmount.value = "";
+    cashbackDate.value = format(new Date(), "yyyy-MM-dd");
+    cashbackExpanded.value = false;
+    cashbackCategoryId.value = props.categories?.find((c: any) => c.name === READY_TO_ASSIGN_NAME)?.id ?? null;
+    cashbackNote.value = `Cashback · ${selectedAccount.value?.name ?? ""}`.trim();
+    showCashback.value = true;
+};
+const submitCashback = (): void => {
+    const amount = Number(cashbackAmount.value);
+    if (!amount || savingCashback.value) {
+        return;
+    }
+    savingCashback.value = true;
+    router.post(
+        route("transactions.store"),
+        {
+            resource_type_id: "MANUAL",
+            status: "verified",
+            direction: "DEPOSIT",
+            date: cashbackDate.value,
+            description: cashbackNote.value || `Cashback · ${selectedAccount.value?.name ?? ""}`,
+            account_id: selectedAccount.value?.id,
+            category_id: cashbackCategoryId.value,
+            total: amount,
+            has_splits: false,
+            counter_account_id: null,
+            currency_code: selectedAccount.value?.currency_code,
+            is_multi_currency: false,
+            payee_id: null,
+            label_id: null,
+        },
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                showCashback.value = false;
+                cashbackAmount.value = "";
+            },
+            onFinish: () => {
+                savingCashback.value = false;
+            },
+        }
+    );
+};
+
 // Credit-card utilization: debt / credit_limit as a percent. Personal-finance
 // rule of thumb is to stay under 30% (green) and never above 80% (red) — the
 // second-biggest factor in credit-score health after payment history.
@@ -480,66 +540,11 @@ const draftCount = computed(() => (props.drafts || []).length);
 
 <template>
     <AppLayout @back="router.visit('/finance/transactions')" :show-back-button="true">
+        <!-- The tabs row navigates, and nothing else: period/Import/kebab moved
+             down to the register card's toolbar, where the controls actually
+             apply. Keeps the sub-nav a single-purpose, quiet row. -->
         <template #header>
-            <FinanceSectionNav>
-                <template #actions>
-                    <div class="flex items-center w-full gap-2">
-                        <div class="flex items-center h-12 gap-1 px-1 mr-auto rounded-md bg-base-lvl-1">
-                            <button
-                                type="button"
-                                class="px-2 py-1 rounded text-body-1 hover:bg-base-lvl-2"
-                                :title="$t('Previous month')"
-                                @click="shiftMonth(-1)"
-                            >
-                                <IMdiChevronLeft />
-                            </button>
-
-                            <NDatePicker
-                                type="month"
-                                format="MMM yyyy"
-                                size="small"
-                                class="w-36"
-                                :value="periodTimestamp"
-                                :clearable="false"
-                                @update:value="onMonthPicked"
-                            />
-
-                            <button
-                                type="button"
-                                class="px-2 py-1 rounded text-body-1 hover:bg-base-lvl-2"
-                                :title="$t('Next month')"
-                                @click="shiftMonth(1)"
-                            >
-                                <IMdiChevronRight />
-                            </button>
-
-                            <button
-                                v-if="!isCurrentMonth"
-                                type="button"
-                                class="px-2 py-1 text-xs font-semibold rounded text-primary hover:bg-base-lvl-2"
-                                :title="$t('Back to current month')"
-                                @click="goToCurrentMonth()"
-                            >
-                                {{ $t('Today') }}
-                            </button>
-                        </div>
-                        <!-- No "+ Transaction" here on purpose: the global "+ New" in the
-                             app header already opens the same modal, prefilled with this
-                             account AND with a type to pick (Income/Expense/Transfer). -->
-                        <NDropdown trigger="click" key-field="key" :options="importActions" @select="handleMoreAction">
-                            <LogerButton variant="neutral">
-                                <i class="fas fa-file-import mr-1.5" />
-                                {{ $t('Import') }}
-                            </LogerButton>
-                        </NDropdown>
-                        <NDropdown trigger="click" key-field="key" :options="moreActions" @select="handleMoreAction">
-                            <LogerButton variant="inverse">
-                                <IMdiDotsVertical />
-                            </LogerButton>
-                        </NDropdown>
-                    </div>
-                </template>
-            </FinanceSectionNav>
+            <FinanceSectionNav />
         </template>
 
         <template #title>
@@ -560,51 +565,99 @@ const draftCount = computed(() => (props.drafts || []).length);
              credit-card widgets that used to sit on the right were the main source
              of visual noise here. -->
         <FinanceTemplate :title="$t('Transactions')" :accounts="accounts" :hide-panel="true">
-            <!-- Phase 1 clean register header (Actual-Budget style): search on the
-                 left, prominent balance + Reconcile on the right. The detailed
-                 month-movement summary was intentionally dropped here to cut noise;
-                 utilization/movement detail can return in a later phase. -->
-            <section class="mt-4 flex flex-col gap-3 md:flex-row md:items-center">
-                <AppSearch
-                    v-model.lazy="pageState.search"
-                    class="w-full md:max-w-xs"
-                    :has-filters="hasFilters"
-                    :placeholder="$t('Search')"
-                    @clear="reset()"
-                />
-
-                <div class="inline-flex self-start p-0.5 text-xs rounded-lg bg-base-lvl-1 md:self-auto">
-                    <button
-                        v-for="opt in directionOptions"
-                        :key="String(opt.value)"
-                        type="button"
-                        class="px-3 py-1.5 rounded-md transition-colors"
-                        :class="isDirection(opt.value)
-                            ? 'bg-base-lvl-3 text-body font-semibold shadow-sm'
-                            : 'text-body-1/60 hover:text-body'"
-                        @click="pageState.custom.direction = opt.value"
-                    >
-                        {{ $t(opt.label) }}
-                    </button>
+            <!-- Page header: the balance IS the page title now (left), with the
+                 view's actions on the right. One filled primary per view
+                 (Reconcile); Cashback stays as a quiet tinted-outline secondary. -->
+            <section class="mt-4 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                <div>
+                    <div class="text-xs text-secondary">
+                        {{ isCreditCard ? $t('Available credit') : $t('Cleared Balance') }}
+                    </div>
+                    <div class="text-2xl font-bold leading-tight text-body tabular-nums">
+                        {{ isCreditCard && utilization ? formatMoney(utilization.limit - utilization.debt) : formatMoney(selectedAccount?.balance) }}
+                    </div>
+                    <div v-if="isCreditCard" class="text-xs text-body-1/50 tabular-nums">{{ $t('Balance') }} {{ formatMoney(selectedAccount?.balance) }}</div>
                 </div>
 
-                <div class="flex items-center gap-4 md:ml-auto">
-                    <div class="text-right">
-                        <div class="text-xs text-secondary">
-                            {{ isCreditCard ? $t('Available credit') : $t('Cleared Balance') }}
-                        </div>
-                        <div class="text-lg font-bold leading-tight text-body tabular-nums">
-                            {{ isCreditCard && utilization ? formatMoney(utilization.limit - utilization.debt) : formatMoney(selectedAccount?.balance) }}
-                        </div>
-                        <div v-if="isCreditCard" class="text-[11px] text-body-1/50 tabular-nums">{{ $t('Balance') }} {{ formatMoney(selectedAccount?.balance) }}</div>
-                    </div>
-                    <div class="w-px h-9 bg-base-lvl-2" />
-                    <LogerButton variant="neutral" @click="reconcileForm.isVisible = true">
+                <div class="flex items-center gap-2">
+                    <button
+                        v-if="isCreditCard"
+                        type="button"
+                        class="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-sm font-semibold text-success border border-success/25 bg-success/5 hover:border-success/50 transition"
+                        :title="$t('Add cashback')"
+                        @click="openCashback"
+                    >
+                        <i class="fas fa-plus text-xs" />
+                        {{ $t('Cashback') }}
+                    </button>
+                    <LogerButton variant="primary" @click="reconcileForm.isVisible = true">
                         <i class="fas fa-check-double mr-1.5" />
                         {{ $t('Reconcile Now') }}
                     </LogerButton>
                 </div>
             </section>
+
+        <Teleport to="body">
+            <div v-if="showCashback" class="fixed inset-0 z-[1400]" @click="showCashback = false" />
+            <div
+                v-if="showCashback"
+                class="fixed z-[1401] top-24 right-6 w-80 max-w-[92vw] bg-base-lvl-3 border border-base rounded-2xl shadow-2xl p-4"
+            >
+                <h4 class="font-bold text-body mb-0.5 flex items-center gap-2">
+                    <span class="w-5 h-5 rounded-md bg-success/15 text-success flex items-center justify-center text-xs font-bold">%</span>
+                    {{ $t('Add cashback') }}
+                </h4>
+                <p class="text-[11px] text-body-1/50 mb-3">{{ $t('Recorded as income on this card') }}</p>
+
+                <div class="flex items-center gap-2 bg-base-lvl-2 border border-base rounded-lg px-3 py-2.5 mb-2">
+                    <span class="text-xs text-body-1/50 font-semibold">{{ selectedAccount?.currency_code }}</span>
+                    <input
+                        v-model="cashbackAmount"
+                        type="number" step="0.01" min="0" inputmode="decimal" placeholder="0.00"
+                        class="flex-1 w-full bg-transparent outline-none text-body text-xl font-bold tabular-nums"
+                        @keydown.enter="submitCashback"
+                    />
+                </div>
+
+                <div class="bg-base-lvl-2 border border-base rounded-lg px-3 py-2 mb-2">
+                    <label class="block text-[9px] uppercase tracking-wide text-body-1/50 mb-0.5">{{ $t('Note') }}</label>
+                    <input v-model="cashbackNote" type="text" class="w-full bg-transparent outline-none text-body text-sm font-medium" />
+                </div>
+
+                <div class="bg-base-lvl-2 border border-base rounded-lg px-3 py-2 mb-2">
+                    <label class="block text-[9px] uppercase tracking-wide text-body-1/50 mb-0.5">{{ $t('Date') }}</label>
+                    <input v-model="cashbackDate" type="date" class="w-full bg-transparent outline-none text-body text-sm font-medium" />
+                </div>
+
+                <p class="text-[11px] text-body-1/60 px-1 mb-1">
+                    &rarr; {{ $t('goes to') }} <span class="text-body-1/90 font-medium">{{ cashbackCategoryName }}</span>
+                </p>
+
+                <button type="button" class="text-xs text-body-1/70 hover:text-body px-1 py-1" @click="cashbackExpanded = !cashbackExpanded">
+                    {{ cashbackExpanded ? '&#9650;' : '&#9660;' }} {{ $t('More options') }}
+                </button>
+                <div v-if="cashbackExpanded" class="border-t border-dashed border-base pt-2 mt-1">
+                    <label class="block text-[9px] uppercase tracking-wide text-body-1/50 mb-1 px-1">{{ $t('Category') }}</label>
+                    <select v-model="cashbackCategoryId" class="w-full bg-base-lvl-2 border border-base rounded-lg px-3 py-2 text-sm text-body outline-none">
+                        <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name }}</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center gap-2 mt-3">
+                    <button type="button" class="text-sm text-body-1 px-3 py-2 rounded-lg hover:bg-base-lvl-2 transition" @click="showCashback = false">
+                        {{ $t('Cancel') }}
+                    </button>
+                    <button
+                        type="button"
+                        class="flex-1 bg-success text-white font-semibold text-sm py-2.5 rounded-lg disabled:opacity-50 transition"
+                        :disabled="!Number(cashbackAmount) || savingCashback"
+                        @click="submitCashback"
+                    >
+                        {{ savingCashback ? $t('Saving…') : $t('Add cashback') }}
+                    </button>
+                </div>
+            </div>
+        </Teleport>
 
             <!-- Multi-currency detail panel — hidden in Phase 1 to keep the register
                  clean. Reintroduce (behind a toggle/menu) in a later phase.
@@ -623,6 +676,89 @@ const draftCount = computed(() => (props.drafts || []).length);
                  count — both already shown by the period picker above and the footer
                  below. That was a full row of chrome saying nothing new. -->
             <article class="mt-4 overflow-hidden border rounded-lg bg-base-lvl-3 border-base">
+                <!-- Card toolbar: everything that filters or feeds THIS list lives
+                     here — search, direction filter, period pager, Import, kebab.
+                     Navigation (tabs) and page actions (Reconcile) stay above. -->
+                <header class="flex flex-col gap-3 px-4 py-2.5 border-b border-base md:flex-row md:items-center">
+                    <AppSearch
+                        v-model.lazy="pageState.search"
+                        class="w-full md:max-w-xs"
+                        :has-filters="hasFilters"
+                        :placeholder="$t('Search')"
+                        @clear="reset()"
+                    />
+
+                    <div class="inline-flex self-start p-0.5 text-xs rounded-lg bg-base-lvl-1 md:self-auto">
+                        <button
+                            v-for="opt in directionOptions"
+                            :key="String(opt.value)"
+                            type="button"
+                            class="px-3 py-1.5 rounded-md transition-colors"
+                            :class="isDirection(opt.value)
+                                ? 'bg-base-lvl-3 text-body font-semibold shadow-sm'
+                                : 'text-body-1/60 hover:text-body'"
+                            @click="pageState.custom.direction = opt.value"
+                        >
+                            {{ $t(opt.label) }}
+                        </button>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-1 md:ml-auto">
+                        <button
+                            type="button"
+                            class="px-2 py-1 rounded text-body-1 hover:bg-base-lvl-2"
+                            :title="$t('Previous month')"
+                            @click="shiftMonth(-1)"
+                        >
+                            <IMdiChevronLeft />
+                        </button>
+
+                        <NDatePicker
+                            type="month"
+                            format="MMM yyyy"
+                            size="small"
+                            class="w-32"
+                            :value="periodTimestamp"
+                            :clearable="false"
+                            @update:value="onMonthPicked"
+                        />
+
+                        <button
+                            type="button"
+                            class="px-2 py-1 rounded text-body-1 hover:bg-base-lvl-2"
+                            :title="$t('Next month')"
+                            @click="shiftMonth(1)"
+                        >
+                            <IMdiChevronRight />
+                        </button>
+
+                        <button
+                            v-if="!isCurrentMonth"
+                            type="button"
+                            class="px-2 py-1 text-xs font-semibold rounded text-primary hover:bg-base-lvl-2"
+                            :title="$t('Back to current month')"
+                            @click="goToCurrentMonth()"
+                        >
+                            {{ $t('Today') }}
+                        </button>
+
+                        <!-- No "+ Transaction" here on purpose: the global "+ New" in
+                             the app header already opens the same modal, prefilled with
+                             this account AND with a type to pick. -->
+                        <NDropdown trigger="click" key-field="key" :options="importActions" @select="handleMoreAction">
+                            <LogerButton variant="neutral" class="ml-1 !px-3 !py-1.5 text-xs">
+                                <i class="fas fa-file-import mr-1.5" />
+                                {{ $t('Import') }}
+                            </LogerButton>
+                        </NDropdown>
+                        <NDropdown trigger="click" key-field="key" :options="moreActions" @select="handleMoreAction">
+                            <button type="button" class="px-2 py-1.5 rounded text-body-1 hover:bg-base-lvl-2" :title="$t('More actions')">
+                                <IMdiDotsVertical />
+                            </button>
+                        </NDropdown>
+                    </div>
+                </header>
+
                 <Component :is="listComponent" :cols="tableAccountCols(props.accountId)"
                     :transactions="sortedTransactions" :server-search-options="serverSearchOptions"
                     :is-loading="isLoading" :empty-text="`No transactions in ${monthName}`"

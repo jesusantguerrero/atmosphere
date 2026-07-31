@@ -45,7 +45,10 @@ export const tableAccountCols = (accountId?: number, showSelects?: boolean) => [
         label: "Payee",
         name: "payee",
         class: 'w-full min-w-0',
-        width: 200,
+        // Intentionally width-less: every other column is fixed, so in a
+        // table-fixed layout Payee absorbs whatever is left. It holds the
+        // longest, least predictable text ("PedidosYa*Pa...") and is the column
+        // worth giving the slack to.
         sortable: true,
         render(row: any) {
             try {
@@ -147,12 +150,17 @@ export const tableAccountCols = (accountId?: number, showSelects?: boolean) => [
         align: 'center',
         class: 'text-center',
         headerClass: 'text-center',
-        width: 90,
+        // Holds a single reconciliation icon or an em-dash — sized for the
+        // header label, which is the widest thing in the column.
+        width: 70,
     },
     {
         label: "",
         name: "actions",
         type: "custom",
+        // Icon + kebab menu. Needs a width or it competes with Payee for the
+        // leftover space in the table-fixed layout.
+        width: 60,
         class: 'text-right'
     },
 ];

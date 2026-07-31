@@ -1,9 +1,11 @@
 <script setup lang="ts">
     import { ref, computed } from "vue";
     import { useCssVar } from '@vueuse/core';
-    import { GlobalThemeOverrides, NConfigProvider } from 'naive-ui'
+    import { GlobalThemeOverrides, NConfigProvider, darkTheme } from 'naive-ui'
     import { theme } from "../../../../tailwindTheme/index.js";
+    import { useDarkMode } from '@/composables/useDarkMode';
 
+    const { isDark } = useDarkMode();
     const provider = ref()
     const bgColor = useCssVar('--colors-primary', provider, { initialValue: "#f20"} )
 
@@ -33,7 +35,7 @@
 </script>
 
 <template>
-    <NConfigProvider tag="div" ref="provider" :theme-overrides="themeOverrides">
+    <NConfigProvider tag="div" ref="provider" :theme="isDark ? darkTheme : null" :theme-overrides="themeOverrides">
         <slot />
     </NConfigProvider>
 </template>

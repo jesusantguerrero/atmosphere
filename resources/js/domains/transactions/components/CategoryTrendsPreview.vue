@@ -53,7 +53,7 @@ const typeLabel = computed(() => {
     <article class="w-full">
         <DonutChart
             class="mx-auto flex justify-center"
-            style="height:270px; background: white; width: 100%"
+            style="height:270px; background: rgb(var(--c-base-lvl-3)); width: 100%"
             :series="typeData"
             label="name"
             value="total"

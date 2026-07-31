@@ -32,7 +32,8 @@ const isHuge = computed(() => props.size == "huge");
 
 <template>
   <div class="flex flex-col">
-    <img src="/logo.png" :style="{ height: sizeClass }" class="mx-auto max-w-full" v-if="!isHuge" />
+    <img src="/logo.png" :style="{ height: sizeClass }" class="mx-auto max-w-full dark:hidden" v-if="!isHuge" />
+    <img src="/logo-dark.png" :style="{ height: sizeClass }" class="mx-auto max-w-full hidden dark:block" v-if="!isHuge" />
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 253.23 63.81"

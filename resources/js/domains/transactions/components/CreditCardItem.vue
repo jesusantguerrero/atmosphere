@@ -103,7 +103,7 @@ onMounted(() => {
     <!-- Balance Section -->
     <div class="mb-3">
       <p class="text-xs text-body-1 mb-0.5">Current Balance</p>
-      <p class="text-base font-bold text-body">
+      <p class="relative text-base font-bold text-body">
         <NumberHider />
         {{ formatMoney(account.balance, account.currency_code) }}
         / {{ formatMoney(availableCredit, account.currency_code) }}

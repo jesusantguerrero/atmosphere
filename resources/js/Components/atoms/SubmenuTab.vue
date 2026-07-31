@@ -40,9 +40,7 @@ const props = defineProps({
 });
 
 const tabClasses = computed(() => {
-  const activeStateClass = props.keepActiveState && "focus:bg-base-lvl-1";
-
-  return [activeStateClass];
+  return [];
 });
 
 const isActive = computed(() => {
@@ -64,7 +62,7 @@ const isActive = computed(() => {
     :is="as"
     :type="as"
     :href="value"
-    class="items-center justify-center px-3 py-2 text-sm font-medium leading-4 text-center transition border-b-2 border-transparent after:inline-flex text-body hover:bg-base-lvl-2 hover:text-body/80 focus:outline-none"
+    class="items-center justify-center px-3 py-2 text-sm font-medium leading-4 text-center transition border-b-2 border-transparent after:inline-flex text-body-1/60 hover:text-body focus:outline-none"
     :class="[...tabClasses, isSelected && isActive && 'border-b-2 border-primary text-primary']"
     v-bind="$attrs"
   >
