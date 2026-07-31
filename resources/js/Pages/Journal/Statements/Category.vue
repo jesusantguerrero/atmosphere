@@ -74,7 +74,7 @@ const { customPrint } = usePrint("report");
   <AppLayout :title="sectionTitle">
     <template #header>
       <div class="flex items-center justify-end py-1 mx-5 rounded-md">
-        <div class="flex space-x-2 font-bold text-gray-500 rounded-t-lg max-w-min">
+        <div class="flex space-x-2 font-bold text-body-1 rounded-t-lg max-w-min">
           <ElDatePicker
             :model-value="[searchState.dates.startDate, searchState.dates.endDate]"
             type="daterange"
@@ -115,10 +115,10 @@ const { customPrint } = usePrint("report");
     </template>
 
     <div
-      class="w-full py-10 mx-auto mt-16 mb-32 bg-white rounded-md shadow-md printable sm:px-6 lg:px-8 print:shadow-none print:w-screen print:absolute print:mt-0"
+      class="w-full py-10 mx-auto mt-16 mb-32 bg-base-lvl-3 rounded-md shadow-md printable sm:px-6 lg:px-8 print:shadow-none print:w-screen print:absolute print:mt-0"
       id="report"
     >
-      <header class="text-center text-gray-500">
+      <header class="text-center text-body-1">
         <h4 class="text-3xl font-bold capitalize">{{ sectionTitle }}</h4>
         <h5 class="font-bold">Neatforms</h5>
         <p>From date to date</p>
@@ -134,13 +134,13 @@ const { customPrint } = usePrint("report");
         <div v-for="group in ledger" :key="group.id" class="py-2">
           <div
             v-if="hasHeader(group)"
-            class="w-full px-5 py-2 mt-5 font-bold bg-gray-200"
+            class="w-full px-5 py-2 mt-5 font-bold bg-base-lvl-1"
           >
             {{ group.alias ?? group.name }}
             {{ group?.total }}
           </div>
           <div class="divide-y" v-if="!isSummary">
-            <div class="px-5 py-2 font-semibold bg-gray-100">
+            <div class="px-5 py-2 font-semibold bg-base-lvl-1">
               {{ group.alias ?? group.name }}
             </div>
             <article class="w-full px-5" v-for="categories in group.categories">

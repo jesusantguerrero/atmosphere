@@ -1,13 +1,13 @@
 <template>
 <div class="text-sm checklist-container" ref="checklistContainer">
-    <h4 class="font-bold text-gray-500 dark:text-gray-300">
+    <h4 class="font-bold text-body-1 dark:text-body-1/60">
         Checklist ({{ doneItems }} / {{ items ? items.length : 0 }})
     </h4>
    <draggable :model-value="items" @update:modelValue="$emit('update:items')" handle=".handle">
         <div
             v-for="(check, index) in items"
             :key="check.id"
-            class="flex items-center justify-between h-8 px-2 my-2 bg-white rounded-sm cursor-default checklist__item dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-50"
+            class="flex items-center justify-between h-8 px-2 my-2 bg-base-lvl-3 rounded-sm cursor-default checklist__item dark:bg-gray-700 dark:text-body-1/60 hover:bg-base-lvl-2"
         >
             <div class="flex items-center w-full">
                 <i class="mr-2 opacity-0 fa fa-arrows-alt checklist-item__move handle"  v-if="allowEdit"></i>
@@ -27,7 +27,7 @@
 
             <button class="w-5">
                 <i
-                    class="text-gray-400 opacity-0 cursor-pointer fa fa-trash checklist-item__delete hover:text-red-300"
+                    class="text-body-1/70 opacity-0 cursor-pointer fa fa-trash checklist-item__delete hover:text-red-300"
                     @click="deleteItem(index)"
                     v-if="allowEdit"
                 ></i>
@@ -35,14 +35,14 @@
         </div>
     </draggable>
 
-    <div class="flex items-center justify-between px-2 bg-gray-100 border-2 border-gray-100 rounded-md shadow-sm text dark:bg-gray-800 dark:border-gray-600"
+    <div class="flex items-center justify-between px-2 bg-base-lvl-1 border-2 border-base-lvl-2 rounded-md shadow-sm text dark:bg-gray-800 dark:border-gray-600"
         :class="{'border-gray-400': isFocused}"
         v-if="allowEdit"
     >
         <input type="checkbox" disabled class="mr-2">
         <input
             :value="modelValue"
-            class="w-full h-8 bg-gray-100 dark:bg-gray-800 dark:text-gray-300 focus:outline-none"
+            class="w-full h-8 bg-base-lvl-1 dark:bg-gray-800 dark:text-body-1/60 focus:outline-none"
             type="text"
             ref="input"
             @input="emit('update:modelValue', input.value)"

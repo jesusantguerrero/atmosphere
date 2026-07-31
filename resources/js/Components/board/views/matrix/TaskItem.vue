@@ -1,6 +1,6 @@
 <template>
   <div
-    class="items-center px-4 mb-2 transition-all bg-white border-2 border-gray-200 rounded-md cursor-pointer task-item dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 hover:border-green-200"
+    class="items-center px-4 mb-2 transition-all bg-base-lvl-3 border-2 border-base-lvl-2 rounded-md cursor-pointer task-item dark:bg-gray-700 dark:border-gray-600 dark:text-body-1/60 hover:border-green-200"
     :class="{'py-3 shadow-md ': !isCompact, 'py-2': isCompact }"
     @click="$emit('selected', task)"
     @dblclick.prevent="$emit('edited', task)"
@@ -38,7 +38,7 @@
 
           <div
             v-else-if="type=='delete'"
-            class="mx-2 text-sm text-gray-400 cursor-pointer hover:text-red-400 md:text-md md:text-base"
+            class="mx-2 text-sm text-body-1/70 cursor-pointer hover:text-red-400 md:text-md md:text-base"
             @click="$emit('deleted', task)"
             title="Delete">
             <i class="mr-1 fa fa-trash"></i>
@@ -72,7 +72,7 @@
         </div>
 
         <el-dropdown trigger="click" @command="handleCommand" v-if="showControls" :disabled="isDisabled" @click.stop="">
-          <div class="px-2 py-1 text-sm text-gray-400 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 dark:hover:text-gray-50 focus:outline-none hover:text-gray-600" :title="isDisabled? 'Can updates tasks when timer is running' : ''" @click.stop="">
+          <div class="px-2 py-1 text-sm text-body-1/70 rounded-md hover:bg-base-lvl-1 dark:hover:bg-gray-600 dark:hover:text-gray-50 focus:outline-none hover:text-body-1" :title="isDisabled? 'Can updates tasks when timer is running' : ''" @click.stop="">
             <i class="fa fa-ellipsis-v"></i>
           </div>
           <template #dropdown>
@@ -94,13 +94,13 @@
     <div class="flex items-center mt-1 text-xs" :class="{'justify-between': task.due_date }" v-if="!isCompact">
       <button
         title="Description"
-        class="px-2 py-1 rounded-md hover:bg-gray-200 focus:outline-none"
+        class="px-2 py-1 rounded-md hover:bg-base-lvl-1 focus:outline-none"
         @click.stop="toggleExpand" v-if="task.description">
         <i class="fa fa-align-left"></i>
       </button>
       <button
         title="Checklist"
-        class="flex items-center w-20 px-2 py-1 rounded-md hover:bg-gray-200 focus:outline-none"
+        class="flex items-center w-20 px-2 py-1 rounded-md hover:bg-base-lvl-1 focus:outline-none"
         @click.stop="toggleExpand" v-if="task.checklist?.length">
         <i class="mr-2 fa fa-list-ul"></i>
         <div>
@@ -126,7 +126,7 @@
         <div
           class="pt-2 text-left whitespace-pre-line task-item__description"
           placeholder="Add a short description"
-          :class="{'text-gray-400 text-sm': !task.description }"
+          :class="{'text-body-1/70 text-sm': !task.description }"
           v-html="task.description"
         />
         <div class="mt-5 task-item__checklist">
@@ -196,7 +196,7 @@ export default {
           schedule: 'bg-blue-100 dark:bg-gray-600 dark:border-gray-500 dark:text-blue-500 text-blue-500',
           delegate: 'bg-yellow-100 dark:bg-gray-600 dark:border-gray-500 dark:text-yellow-400 text-yellow-500',
           delete: 'bg-red-100 dark:bg-gray-600 dark:border-gray-500 text-red-400',
-          backlog: 'bg-gray-100 text-gray-500 dark:bg-gray-600 dark:border-gray-500 dark:text-gray-300'
+          backlog: 'bg-base-lvl-1 text-body-1 dark:bg-gray-600 dark:border-gray-500 dark:text-body-1/60'
         }
 
         return colors[props.type] || colors['todo']
@@ -214,7 +214,7 @@ export default {
         const { formatDate } = useDateTime()
         const stateStyles = {
           normal: {
-            color: 'text-gray-400',
+            color: 'text-body-1/70',
             title: 'due date'
           },
           due: {

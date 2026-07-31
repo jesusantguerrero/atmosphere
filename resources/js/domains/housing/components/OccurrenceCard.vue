@@ -34,7 +34,7 @@ const state = reactive({
             MAJOR: 'text-red-500',
             MAINTENANCE: 'text-blue-500'
         };
-        return colors[props.occurrence.status] || 'text-gray-400';
+        return colors[props.occurrence.status] || 'text-body-1/70';
     }),
     statusColors: computed(() => {
         const colors = {
@@ -71,7 +71,7 @@ const asideClass = computed(() => ({
           </div>
       </section>
       <section class="w-full md:w-6/12 py-3">
-          <div class="flex occurrences-center text-sm text-gray-400 uppercase items-center">
+          <div class="flex occurrences-center text-sm text-body-1/70 uppercase items-center">
               <span class="hidden w-16 md:inline-block">{{ occurrence.log.length }}</span>
               <SiteUptime :responses="occurrence.log" container-class="gap-0.5 md:ml-5 opacity-60"/>
           </div>
@@ -79,7 +79,7 @@ const asideClass = computed(() => ({
       <section class="flex items-center justify-center occurrences-center w-full mt-2 md:w-3/12 md:justify-end md:mt-0 md:space-x-2">
           <p>
               <span class="font-bold" :class="[state.siteStatusClass]"> AVG: </span>
-              <span class="font-bold text-gray-500">{{ occurrence.avg_days_passed }} Days</span>
+              <span class="font-bold text-body-1">{{ occurrence.avg_days_passed }} Days</span>
           </p>
           <p>
               <span class="font-bold" :class="[state.siteStatusClass]"> Prev: </span>
@@ -94,13 +94,13 @@ const asideClass = computed(() => ({
             <IMdiSync  class="animate-spin" v-if="isLoading" />
             <template v-else>
                 <button 
-                    class=" px-3 py-3 rounded-tl-md dark:bg-base-lvl-1 bg-gray-200 transition-colors" 
+                    class=" px-3 py-3 rounded-tl-md dark:bg-base-lvl-1 bg-base-lvl-1 transition-colors" 
                     :class="{'hover:bg-green-400 dark:hover:bg-green-400 hover:text-white': !disabled }"
                     @click.stop="!disabled && $emit('add-instance', occurrence)">
                         <IMdiChevronUp />
                 </button>
                 <button 
-                    class="px-3 py-3 rounded-bl-md dark:bg-base-lvl-1 bg-gray-200 transition-colors" 
+                    class="px-3 py-3 rounded-bl-md dark:bg-base-lvl-1 bg-base-lvl-1 transition-colors" 
                     :class="{'hover:bg-red-400 dark:hover:bg-red-400 hover:text-white': !disabled}"
                     @click.stop="!disabled && $emit('remove-instance', occurrence)">
                         <IMdiChevronDown />

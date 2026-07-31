@@ -39,14 +39,14 @@ defineEmits(["open", "close", "select"]);
         />
       </slot>
     </template>
-    <button v-else class="hover:bg-gray-50 px-2 h-full" @click="$emit('open')">
+    <button v-else class="hover:bg-base-lvl-2 px-2 h-full" @click="$emit('open')">
       <slot name="icon">
         <IMdiFilter />
       </slot>
     </button>
     <button
       title="Reset all filters"
-      class="hover:bg-red-400 bg-gray-100 h-6 transition-all flex items-center justify-center w-6 my-auto hover:text-white px-2 rounded-full"
+      class="hover:bg-red-400 bg-base-lvl-1 h-6 transition-all flex items-center justify-center w-6 my-auto hover:text-white px-2 rounded-full"
       @click="$emit('close')"
       v-if="isActive"
     >

@@ -20,7 +20,7 @@ const cardStyle = computed(() => ({
     <section class="wrapper">
         <Link class="bg-brand shadow-md rounded-lg p-4 text-center" :href="`/housing/boards/${board.id}`">
           <!-- Profile Image -->
-          <div class="w-20 h-20 mx-auto rounded-full text-4xl bg-light flex items-center justify-center  overflow-hidden bg-white shadow py-4">
+          <div class="w-20 h-20 mx-auto rounded-full text-4xl bg-light flex items-center justify-center  overflow-hidden bg-base-lvl-3 shadow py-4">
             <!-- Replace with actual image -->
             {{ board.name.at(0)}}
           </div>

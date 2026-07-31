@@ -68,7 +68,7 @@ export default {
     @apply w-full h-7 text-sm inline-block border-2 border-transparent border-dashed cursor-pointer px-2 overflow-hidden;
 
     &:hover {
-        @apply border-gray-300;
+        @apply border-base-lvl-2;
         a {
             @apply text-purple-600;
         }

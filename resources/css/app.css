@@ -3,6 +3,49 @@
 @import 'tailwindcss/utilities';
 @import "../../node_modules/atmosphere-ui/dist/style.css";
 
+/* Theme tokens — light (default) and dark (.dark on <html>). Generated from tailwindTheme. */
+:root {
+    --c-primary: 243 126 161;
+    --c-primaryDark: 184 17 67;
+    --c-secondary: 123 119 209;
+    --c-accent: 247 130 194;
+    --c-neutral: 243 244 246;
+    --c-base-deep-1: 148 163 184;
+    --c-base: 243 244 246;
+    --c-base-lvl-1: 241 245 249;
+    --c-base-lvl-2: 248 250 252;
+    --c-base-lvl-3: 255 255 255;
+    --c-info: 61 104 245;
+    --c-success: 0 200 117;
+    --c-warning: 211 158 23;
+    --c-error: 246 25 9;
+    --c-body: 17 24 39;
+    --c-body-1: 55 65 81;
+    --c-border: 229 231 235;
+}
+.dark {
+    --c-primary: 242 97 122;
+    --c-secondary: 149 179 249;
+    --c-accent: 124 91 191;
+    --c-neutral: 35 33 48;
+    --c-base-deep-1: 32 38 49;
+    --c-base: 11 14 19;
+    --c-base-lvl-1: 15 19 26;
+    --c-base-lvl-2: 20 24 31;
+    --c-base-lvl-3: 25 30 39;
+    --c-info: 61 104 245;
+    --c-success: 86 192 138;
+    --c-warning: 211 158 23;
+    --c-error: 239 107 103;
+    --c-body: 231 234 240;
+    --c-body-1: 155 164 178;
+    --c-border: 32 38 49;
+}
+
+/* Base text color follows the theme (untyped text was falling back to black). */
+body { color: rgb(var(--c-body)); }
+
+
 
 .multiselect__option--highlight {
   @apply bg-primary/20 !important;

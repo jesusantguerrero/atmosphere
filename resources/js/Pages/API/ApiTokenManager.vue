@@ -51,7 +51,7 @@
                                 </div>
 
                                 <div class="flex items-center">
-                                    <div class="text-sm text-gray-300" v-if="token.last_used_ago">
+                                    <div class="text-sm text-body-1/60" v-if="token.last_used_ago">
                                         Last used {{ token.last_used_ago }}
                                     </div>
 
@@ -84,7 +84,7 @@
                     Please copy your new API token. For your security, it won't be shown again.
                 </div>
 
-                <div class="mt-4 bg-gray-100 px-4 py-2 rounded font-mono text-sm text-gray-500" v-if="$page.props.jetstream.flash.token">
+                <div class="mt-4 bg-base-lvl-1 px-4 py-2 rounded font-mono text-sm text-body-1" v-if="$page.props.jetstream.flash.token">
                     {{ $page.props.jetstream.flash.token }}
                 </div>
             </template>

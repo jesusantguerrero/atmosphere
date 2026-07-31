@@ -25,7 +25,7 @@ const isOpen = useLocalStorage(props.storageKey || props.title || "isOpen", true
 
 
 <template>
-    <article class="px-8 py-4 bg-white border rounded-md border-primary" v-if="isOpen">
+    <article class="px-8 py-4 bg-base-lvl-3 border rounded-md border-primary" v-if="isOpen">
         <header class="flex justify-between">
             <h4 class="text-lg font-bold text-primary"> {{ title }}</h4>
             <button v-if="isClosable" @click="isOpen=false"><IconClose /></button>

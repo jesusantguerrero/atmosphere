@@ -455,25 +455,25 @@ function fmtCompact(value: number): string {
                         </div>
 
                         <div class="grid grid-cols-2 gap-2">
-                            <div class="rounded-md p-2 bg-white min-w-0" :class="accentClasses[selectedPlan.accent].statRing">
+                            <div class="rounded-md p-2 bg-base-lvl-3 min-w-0" :class="accentClasses[selectedPlan.accent].statRing">
                                 <div class="text-xs text-body-1 truncate">Inicial ({{ selectedRaw.inicialPct }}%)</div>
                                 <div class="font-bold text-body text-sm truncate">{{ fmtNoCents(selectedPlan.inicial) }}</div>
                             </div>
-                            <div class="rounded-md p-2 bg-white min-w-0" :class="accentClasses[selectedPlan.accent].statRing">
+                            <div class="rounded-md p-2 bg-base-lvl-3 min-w-0" :class="accentClasses[selectedPlan.accent].statRing">
                                 <div class="text-xs text-body-1 truncate">Cierre (~{{ cierrePct }}%)</div>
                                 <div class="font-bold text-body text-sm truncate">{{ fmtNoCents(selectedPlan.cierre) }}</div>
                             </div>
-                            <div class="rounded-md p-2 bg-white min-w-0" :class="accentClasses[selectedPlan.accent].statRing">
+                            <div class="rounded-md p-2 bg-base-lvl-3 min-w-0" :class="accentClasses[selectedPlan.accent].statRing">
                                 <div class="text-xs text-body-1 truncate">A financiar</div>
                                 <div class="font-bold text-body text-sm truncate">{{ fmtNoCents(selectedPlan.financiamiento) }}</div>
                             </div>
-                            <div class="rounded-md p-2 bg-white min-w-0" :class="accentClasses[selectedPlan.accent].statRing">
+                            <div class="rounded-md p-2 bg-base-lvl-3 min-w-0" :class="accentClasses[selectedPlan.accent].statRing">
                                 <div class="text-xs text-body-1 truncate">1 año en cuota</div>
                                 <div class="font-bold text-body text-sm truncate">{{ fmtNoCents(selectedPlan.cuota * 12) }}</div>
                             </div>
                         </div>
 
-                        <div class="rounded-lg p-3 bg-white" :class="accentClasses[selectedPlan.accent].statRing">
+                        <div class="rounded-lg p-3 bg-base-lvl-3" :class="accentClasses[selectedPlan.accent].statRing">
                             <div class="flex items-center gap-2 mb-2">
                                 <span class="w-7 h-7 rounded-full flex items-center justify-center shrink-0" :class="accentClasses[selectedPlan.accent].iconCircle">
                                     <i class="fa fa-bullseye text-xs"></i>
@@ -496,7 +496,7 @@ function fmtCompact(value: number): string {
                         </div>
 
                         <div class="grid grid-cols-2 gap-2">
-                            <div class="rounded-md p-2 bg-white min-w-0" :class="accentClasses[selectedPlan.accent].statRing">
+                            <div class="rounded-md p-2 bg-base-lvl-3 min-w-0" :class="accentClasses[selectedPlan.accent].statRing">
                                 <div class="text-xs text-body-1 truncate">Total pagado</div>
                                 <div class="font-bold text-body text-sm truncate">{{ fmtCompact(selectedPlan.totalPagado) }}</div>
                             </div>

@@ -117,7 +117,7 @@ function save() {
 
 <style lang="scss">
     .form-control {
-        @apply w-full bg-gray-100 border-gray-400 border-2 px-4;
+        @apply w-full bg-base-lvl-1 border-gray-400 border-2 px-4;
         height: 37px;
         border-radius: 4px;
     }

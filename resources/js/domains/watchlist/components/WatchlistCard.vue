@@ -117,7 +117,7 @@ const streakLabel = computed(() => {
 </script>
 
 <template>
-  <article class="overflow-hidden bg-white rounded-lg shadow-md">
+  <article class="overflow-hidden bg-base-lvl-3 rounded-lg shadow-md">
     <header class="p-4 flex items-start justify-between">
       <div class="min-w-0">
         <h4 class="font-bold text-primary truncate">{{ item.name }}</h4>

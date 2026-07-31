@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import axios from 'axios';
+import { router } from '@inertiajs/vue3';
 
 import AppLayout from '@/Components/templates/AppLayout.vue';
 import ShoppingChatList from '@/domains/shopping/components/ShoppingChatList.vue';
@@ -25,8 +26,18 @@ interface PlanPayload {
     stages: Stage[];
 }
 
+interface ListSummary {
+    id: number;
+    name: string;
+    total: number;
+    pending: number;
+    shared: boolean;
+}
+
 const props = defineProps<{
     plan: PlanPayload;
+    lists?: ListSummary[];
+    activeListId?: number;
     shareUrl: string | null;
     shareToken: string | null;
     mercureUrl: string | null;
@@ -36,11 +47,43 @@ const shareUrl = ref<string | null>(props.shareUrl);
 const shareToken = ref<string | null>(props.shareToken);
 const showShareSheet = ref(false);
 
-const endpoints = {
+// Computed so switching lists (which swaps props.plan) always retargets the
+// mutation endpoints at the currently-active list.
+const endpoints = computed(() => ({
     cycle: (itemId: number) => `/shopping/${props.plan.id}/items/${itemId}/cycle`,
     add: `/shopping/${props.plan.id}/items`,
     reset: `/shopping/${props.plan.id}/reset`,
     destroy: (itemId: number) => `/shopping/${props.plan.id}/items/${itemId}`,
+}));
+
+const switchList = (id: number) => {
+    if (id === props.plan.id) return;
+    router.visit(`/shopping?plan=${id}`);
+};
+
+const createList = async (name: string) => {
+    const clean = name.trim();
+    if (!clean) return;
+    const { data } = await axios.post('/shopping/lists', { name: clean });
+    router.visit(`/shopping?plan=${data.activeListId}`);
+};
+
+const renameList = async ({ id, name }: { id: number; name: string }) => {
+    const clean = name.trim();
+    if (!clean) return;
+    await axios.put(`/shopping/${id}`, { name: clean });
+    router.reload();
+};
+
+const deleteList = async (id: number) => {
+    await axios.delete(`/shopping/${id}`);
+    router.visit('/shopping');
+};
+
+const importList = async ({ name, text }: { name: string; text: string }) => {
+    if (!text.trim()) return;
+    const { data } = await axios.post('/shopping/import', { name, text });
+    router.visit(`/shopping?plan=${data.activeListId}`);
 };
 
 const enableShare = async () => {
@@ -73,15 +116,19 @@ const copyShareUrl = async () => {
             </h4>
         </template>
 
-        <!-- The chat-style component owns the full mobile viewport; the share
-             sheet floats above it as a small panel triggered from the
-             header-actions slot (next to Reset). -->
         <ShoppingChatList
             :plan="plan"
+            :lists="lists"
+            :active-list-id="activeListId"
             api-base="/shopping"
             :mercure-url="mercureUrl"
             :show-owner-controls="true"
             :endpoints="endpoints"
+            @switch="switchList"
+            @create="createList"
+            @rename="renameList"
+            @delete="deleteList"
+            @import="importList"
         >
             <template #header-actions>
                 <button

@@ -48,7 +48,7 @@ const styles = computed(() => ({
             :style="styles"
             :title="title"
         >
-            <div class="w-1/2 h-full bg-white opacity-30" />
+            <div class="w-1/2 h-full bg-base-lvl-3 opacity-30" />
             <i :class="iconClass" v-if="iconClass" class="font-bold text-white" />
             <div class="absolute top-0 left-0 flex items-center justify-center w-full h-full font-bold text-white group-hover:text-body-1">
                 <slot name="icon">

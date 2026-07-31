@@ -73,7 +73,7 @@ const daysAgoLabel = (lastDate: string | null): string => {
 
 const badgeClass = (daysUntilNext: number | null): string => {
     if (daysUntilNext === null) {
-        return 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300';
+        return 'bg-base-lvl-1 text-body-1 dark:bg-gray-700 dark:text-body-1/60';
     }
     if (daysUntilNext >= 0) {
         return 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300';

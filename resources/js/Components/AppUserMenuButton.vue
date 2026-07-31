@@ -1,5 +1,5 @@
 <template>
-    <button v-if="hasImage" class="flex text-sm transition border-2 border-transparent rounded-full focus:outline-none focus:border-gray-300 active:slate-600" >
+    <button v-if="hasImage" class="flex text-sm transition border-2 border-transparent rounded-full focus:outline-none focus:border-base-lvl-2 active:slate-600" >
         <img class="object-cover w-8 h-8 rounded-full" :src="imageUrl" :alt="user.name" />
     </button>
 

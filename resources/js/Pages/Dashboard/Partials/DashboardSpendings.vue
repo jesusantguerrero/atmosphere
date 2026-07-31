@@ -77,7 +77,7 @@
     <template v-slot:content="{ selectedTab }">
         <ChartCurrentVsPrevious
             v-if="selectedTab=='monthVsPrevious'"
-            class="w-full  md:mb-10 overflow-hidden bg-white rounded-lg"
+            class="w-full  md:mb-10 overflow-hidden bg-base-lvl-3 rounded-lg"
             :class="[cardShadow]"
             :title="$t('This month vs last month')"
             ref="ComparisonRevenue"
@@ -86,7 +86,7 @@
 
         <ChartComparison
             v-else
-            class="w-full md:mb-10 overflow-hidden bg-white rounded-lg"
+            class="w-full md:mb-10 overflow-hidden bg-base-lvl-3 rounded-lg"
             :class="[cardShadow]"
             :title="$t('Spending summary')"
             ref="ComparisonRevenue"

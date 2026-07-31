@@ -16,6 +16,7 @@
     import AppUserMenu from '@/Components/AppUserMenu.vue'
     import MobileMenuBar from '@/Components/mobile/MobileMenuBar.vue'
     import TransactionAddButton from './TransactionAddButton.vue'
+    import AppResourceSearch from './AppResourceSearch.vue'
     import IconBack from '../icons/IconBack.vue'
     import WatchlistButton from './WatchlistButton.vue'
 
@@ -25,6 +26,7 @@
     import AppProvider from './AppProvider.vue'
     import { useAppContextStore } from '@/store'
     import FinanceWidget from '../SideWidget/FinanceWidget.vue'
+    import { useDarkMode } from '@/composables/useDarkMode'
     // import LogerAssistant from '../organisms/logerAssistant.vue'
 
     const props = defineProps<{
@@ -102,6 +104,7 @@
 
     // useLogerConfig()
     const { openTransactionModal } = useTransactionModal()
+    const { isDark, toggle: toggleDark } = useDarkMode()
     const handleActions = (action) => {
         const actions = {
             'openTransactionModal': {
@@ -136,8 +139,19 @@
                         </div>
 
                         <div class="flex space-x-2 sm:items-center sm:ml-6">
+                            <AppResourceSearch class="hidden mr-2 md:block" v-if="!isOnboarding" />
                             <TransactionAddButton class="hidden mr-4 md:inline-block" v-if="!isOnboarding" />
                             <!-- <TransactionQuickButton class="hidden mr-4 md:inline-block" v-if="!isOnboarding" /> -->
+                            <button
+                                v-if="!isOnboarding"
+                                type="button"
+                                @click="toggleDark"
+                                :title="isDark ? 'Light mode' : 'Dark mode'"
+                                class="px-1 transition-colors text-body-1/60 hover:text-body-1"
+                            >
+                                <IMdiWeatherSunny v-if="isDark" />
+                                <IMdiWeatherNight v-else />
+                            </button>
                             <PrivacyToggle v-model="isPrivacyMode" v-if="!isOnboarding" />
                             <AppNotificationBell
                                 :notifications="$page.props.unreadNotifications"
@@ -315,8 +329,8 @@
                     :current-path="currentPath"
                     brand-container-class="py-2"
                     nav-container-class="px-2 pt-1 space-y-2 border-t"
-                    icon-class="text-gray-400 transition hover:text-primary"
-                    item-class="px-5 py-[0.60rem] rounded-md font-bold text-gray-400 w-54 hover:text-primary hover:bg-base-lvl-1 text-xs"
+                    icon-class="text-body-1/70 transition hover:text-primary"
+                    item-class="px-5 py-[0.60rem] rounded-md font-bold text-body-1/70 w-54 hover:text-primary hover:bg-base-lvl-1 text-xs"
                     item-active-class="text-primary bg-base-lvl-1/70"
                     is-expandable
                 >

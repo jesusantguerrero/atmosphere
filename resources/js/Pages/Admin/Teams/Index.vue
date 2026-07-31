@@ -65,7 +65,7 @@ const deleteTeam = () => {};
         </AppButton>
       </section>
       <AtTable
-        class="mt-4 bg-white rounded-md text-body-1"
+        class="mt-4 bg-base-lvl-3 rounded-md text-body-1"
         :table-data="listData"
         :cols="cols"
         :pagination="searchState"

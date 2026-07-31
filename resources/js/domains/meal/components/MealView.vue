@@ -61,7 +61,7 @@
             </span>
             <button
                 type="button"
-                class="absolute top-2.5 left-2.5 w-9 h-9 flex items-center justify-center rounded-full bg-white/80 hover:bg-white shadow-md transition"
+                class="absolute top-2.5 left-2.5 w-9 h-9 flex items-center justify-center rounded-full bg-base-lvl-3/80 hover:bg-base-lvl-3 shadow-md transition"
                 :class="meal.is_liked ? 'text-error' : 'text-body-1/60 hover:text-error'"
                 :title="meal.is_liked ? 'Remove from favorites' : 'Add to favorites'"
                 @click.stop="$emit('toggle-like', meal)"

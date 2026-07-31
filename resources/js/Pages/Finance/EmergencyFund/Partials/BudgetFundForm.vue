@@ -74,7 +74,7 @@
                     :default-expand-all="true"
                     :options="categorySelectOptions"
                 />
-                <p v-if="selectedTeamLabel" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                <p v-if="selectedTeamLabel" class="mt-1 text-xs text-body-1 dark:text-body-1/70">
                     {{ $t('Pulling balance from') }}: {{ selectedTeamLabel }}
                 </p>
             </AtField>

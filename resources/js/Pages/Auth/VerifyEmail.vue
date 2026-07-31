@@ -4,7 +4,7 @@
             <JetAuthenticationCardLogo />
         </template>
 
-        <div class="mb-4 text-sm text-gray-600">
+        <div class="mb-4 text-sm text-body-1">
             Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn't receive the email, we will gladly send you another.
         </div>
 
@@ -18,7 +18,7 @@
                     Resend Verification Email
                 </JetButton>
 
-                <Link :href="route('logout')" method="post" as="button" class="underline text-sm text-gray-600 hover:text-gray-900">Log Out</Link>
+                <Link :href="route('logout')" method="post" as="button" class="underline text-sm text-body-1 hover:text-body">Log Out</Link>
             </div>
         </form>
     </JetAuthenticationCard>

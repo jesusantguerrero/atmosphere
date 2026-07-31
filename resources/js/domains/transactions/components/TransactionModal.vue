@@ -702,7 +702,7 @@ const assignTransactionLabel = (label: Record<string, string>, transaction: Reco
                         <div class="space-y-2">
                           <LogerInput v-model="manualExchangeRate" type="number" step="0.0001"
                             placeholder="Auto-calculated on payment" @update:model-value="handleManualRateChange" />
-                          <div class="text-xs text-gray-500">
+                          <div class="text-xs text-body-1">
                             1 {{ transactionCurrency }} = {{ displayExchangeRate }} {{ accountPrimaryCurrency }}
                           </div>
                         </div>

@@ -32,7 +32,7 @@ const totalBoards = computed(() => props.boards.length);
 </script>
 
 <template>
-    <AppLayout title="Home Projects">
+    <AppLayout title="Household">
         <template #header>
             <HouseSectionNav>
                 <template #actions>

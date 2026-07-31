@@ -1,8 +1,10 @@
 /** @type {import('tailwindcss').Config} */
 const defaultTheme = require('tailwindcss/defaultTheme');
 const themes = require('./tailwindTheme/index.cjs');
+const plugin = require('tailwindcss/plugin');
 
 module.exports = {
+    darkMode: 'class',
     content: [
         './vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php',
         './vendor/laravel/jetstream/**/*.blade.php',
@@ -14,7 +16,7 @@ module.exports = {
         // render functions, so their classes have to be scanned too — otherwise
         // things like max-w-[9rem] silently never get generated.
         './resources/js/**/*.ts',
-        './node_modules/atmosphere-ui/**/*.vue',
+        './node_modules/atmosphere-ui/**/*.vue'
     ],
 
     theme: {
@@ -23,8 +25,9 @@ module.exports = {
                 brand: ['Pacifico', 'cursive'],
                 sans: ['Nunito', ...defaultTheme.fontFamily.sans],
             },
-            colors: {
-                ...themes.defaultLight
+            colors: themes.cssVarColors(themes.defaultLight),
+            borderColor: {
+                DEFAULT: 'rgb(var(--c-border) / <alpha-value>)',
             },
             keyframes: {
                 ripple: {
@@ -47,6 +50,6 @@ module.exports = {
     },
     plugins: [
         require('@tailwindcss/typography'),
-        require('@mertasan/tailwindcss-variables')
+        require('@mertasan/tailwindcss-variables'),
     ],
 };

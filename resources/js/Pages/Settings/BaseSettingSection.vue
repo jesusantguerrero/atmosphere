@@ -86,7 +86,7 @@ currentTab.value = props.tabName;
           <template v-if="section && section.length">
             <Link
               :href="section[1]"
-              class="flex justify-between w-full px-2 py-2 font-bold text-gray-400 transition transform bg-white border hover:text-blue-400 hover:shadow-md hover:border-blue-400"
+              class="flex justify-between w-full px-2 py-2 font-bold text-body-1/70 transition transform bg-base-lvl-3 border hover:text-blue-400 hover:shadow-md hover:border-blue-400"
             >
               <div>
                 {{ $t(section[0]) }}

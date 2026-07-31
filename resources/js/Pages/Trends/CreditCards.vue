@@ -216,7 +216,7 @@ const deltaDisplay = computed(() => {
                 </section>
                 <section class="w-8/12">
                     <ChartTopCreditCard
-                        class="bg-white rounded-md overflow-hidden"
+                        class="bg-base-lvl-3 rounded-md overflow-hidden"
                         group-name="name"
                         :data="data.topCategoriesByCard"
                     />
@@ -224,7 +224,7 @@ const deltaDisplay = computed(() => {
             </section>
             <section class="w-full mt-4">
                 <ChartTopCreditCard
-                    class="bg-white rounded-md overflow-hidden"
+                    class="bg-base-lvl-3 rounded-md overflow-hidden"
                     :data="data.topPayeesByCard"
                 />
             </section>

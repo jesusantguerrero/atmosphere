@@ -545,7 +545,7 @@ const { isMac, modKey } = useKeyboardShortcuts({
                 <template #empty>
                 <div class="w-full mx-auto prose prose-xl text-center">
                     <img src="../../../img/undraw_empty.svg" class="w-4/12 mx-auto" />
-                    <small class="mt-4 text-gray-400">
+                    <small class="mt-4 text-body-1/70">
                     Nothing to do. Add new tasks from here or mark in your
                     <a href="#" @click="">boards</a> as todo</small>
                 </div>
@@ -632,7 +632,7 @@ li.link {
 }
 
 .form-input {
-    @apply shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight;
+    @apply shadow appearance-none border rounded py-2 px-3 text-body-1 leading-tight;
 }
 
 .automation-logo {

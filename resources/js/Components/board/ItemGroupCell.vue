@@ -164,7 +164,7 @@ const {
                 v-else
                 @click="toggleEditMode()"
                 :title="displayValue"
-                class="inline-block w-full px-2 overflow-hidden text-sm border-2 border-transparent border-dashed cursor-pointer h-7 hover:border-gray-300"
+                class="inline-block w-full px-2 overflow-hidden text-sm border-2 border-transparent border-dashed cursor-pointer h-7 hover:border-base-lvl-2"
             >
                 {{ displayValue }}
             </span>
@@ -250,7 +250,7 @@ const {
 </style>
 <style scoped lang="scss">
 .form-input {
-    @apply shadow-none appearance-none border w-full py-2 px-3 text-gray-700 leading-tight;
+    @apply shadow-none appearance-none border w-full py-2 px-3 text-body-1 leading-tight;
     border-radius: 0 0 0 0 !important;
 
     &:focus {
@@ -275,12 +275,12 @@ const {
     }
 
     .new-item-button {
-        @apply p-2 text-gray-300;
+        @apply p-2 text-body-1/60;
         width: 100%;
         transition: all ease 0.3s;
         cursor: pointer;
         &:hover {
-            @apply bg-gray-200 text-gray-600;
+            @apply bg-base-lvl-1 text-body-1;
         }
     }
 }

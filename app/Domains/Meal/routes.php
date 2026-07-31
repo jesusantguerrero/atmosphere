@@ -19,7 +19,13 @@ Route::post('/shared/list/{token}/reset', [SharedShoppingListController::class, 
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
     Route::get('/shopping', [ShoppingListController::class, 'index'])->name('shopping.index');
     Route::get('/shopping/current', [ShoppingListController::class, 'current'])->name('shopping.current');
+    Route::get('/shopping/lists', [ShoppingListController::class, 'lists'])->name('shopping.lists');
+    Route::post('/shopping/lists', [ShoppingListController::class, 'createList'])->name('shopping.lists.create');
+    Route::post('/shopping/import', [ShoppingListController::class, 'import'])->name('shopping.import');
     Route::post('/shopping/{plan}/items', [ShoppingListController::class, 'addItem'])->name('shopping.items.add');
+    Route::post('/shopping/{plan}/stages', [ShoppingListController::class, 'addStage'])->name('shopping.stages.add');
+    Route::put('/shopping/{plan}', [ShoppingListController::class, 'renameList'])->name('shopping.rename');
+    Route::delete('/shopping/{plan}', [ShoppingListController::class, 'deleteList'])->name('shopping.delete');
     Route::post('/shopping/{plan}/items/{item}/cycle', [ShoppingListController::class, 'cycleItem'])->name('shopping.items.cycle');
     Route::delete('/shopping/{plan}/items/{item}', [ShoppingListController::class, 'destroyItem'])->name('shopping.items.destroy');
     Route::post('/shopping/{plan}/reset', [ShoppingListController::class, 'reset'])->name('shopping.reset');

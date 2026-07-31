@@ -24,7 +24,7 @@ const props = defineProps<{
 const overdue = computed(() => props.utilities.filter(u => u.is_overdue).length);
 
 const badgeClass = (utility: Utility): string => {
-    if (utility.days_until === null) return 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400';
+    if (utility.days_until === null) return 'bg-base-lvl-1 text-body-1 dark:bg-gray-700 dark:text-body-1/70';
     if (utility.is_overdue) return 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400';
     if (utility.days_until <= 3) return 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400';
     return 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400';

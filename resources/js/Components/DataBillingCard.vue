@@ -70,7 +70,7 @@ function createSubscription(data: any) {
 
 <template>
   <div
-    class="w-4/12 px-5 py-10 mx-6 mb-5 bg-white rounded-md shadow-md"
+    class="w-4/12 px-5 py-10 mx-6 mb-5 bg-base-lvl-3 rounded-md shadow-md"
     :class="{ 'border-primary border-2': isCurrent }"
   >
     <div class="prose prose-xl">
@@ -105,7 +105,7 @@ function createSubscription(data: any) {
     <div class="text-center" v-if="!isCurrent">
       <a
         v-if="contactLink"
-        class="inline-block px-5 py-2 text-blue-500 bg-white border-2 rounded-md border-primary"
+        class="inline-block px-5 py-2 text-blue-500 bg-base-lvl-3 border-2 rounded-md border-primary"
         :href="contactLink"
       >
         Contact Sales

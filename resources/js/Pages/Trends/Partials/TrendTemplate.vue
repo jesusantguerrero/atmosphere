@@ -53,19 +53,21 @@
 </script>
 
 <template>
-    <article class="relative flex flex-col-reverse w-full pt-16 pb-20 mx-auto md:flex-row md:space-x-2 md:max-w-screen-2xl">
-        <main class="w-full overflow-hidden md:pl-8" :class="hidePanel ? 'md:pr-8' : 'md:pr-5 md:w-7/12 lg:w-10/12'">
+    <article class="relative px-3 pt-16 pb-20 mx-auto space-y-6 md:space-y-0 md:space-x-10 md:flex max-w-screen-2xl sm:px-6 lg:px-8">
+        <main
+            class="overflow-hidden md:pr-5 md:pl-8"
+            :class="hidePanel ? 'md:w-full' : 'md:w-6/12 lg:w-7/12 xl:w-8/12 2xl:w-10/12'"
+        >
             <slot />
         </main>
 
-        <aside class="relative w-full h-screen overflow-auto md:px-2 md:block" :class="panelStyles" v-if="!hidePanel">
-            <section class="px-2 md:fixed aside-content md:pr-8">
+        <aside class="space-y-4 md:w-3/12" v-if="!hidePanel">
+            <section class="w-full md:px-2 aside-content">
                 <slot name="prepend-panel" />
                 <slot name="panel">
                     <AccountsLedger
                         :accounts="accounts"
-                        :class="[cardShadow]"
-                        class="px-4 py-2 space-y-4 cursor-pointer md:mt-4 rounded-b-md md:rounded-md min-h-min bg-base-lvl-3"
+                        class="w-full px-4 py-2 space-y-4 cursor-pointer md:mt-4 rounded-md min-h-min bg-base-lvl-3"
                         @reordered="saveReorder"
                     />
                 </slot>

@@ -717,7 +717,7 @@ const draftCount = computed(() => (props.drafts || []).length);
                 }))" emit-actions emit-delete @action="setPaymentBill" @pay="payCycle">
                     <template v-slot:left-action-button="{ resource }">
                         <button
-                            class="text-gray-400 hidden group-hover:inline-block transition cursor-pointer hover:text-red-400 focus:outline-none"
+                            class="text-body-1/70 hidden group-hover:inline-block transition cursor-pointer hover:text-red-400 focus:outline-none"
                             @click="setPaymentBill(resource)">
                             <IMdiLink />
                         </button>

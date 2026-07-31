@@ -44,7 +44,7 @@
             <h4 class="text-md font-semibold mb-4">Step 2: Secondary Currencies</h4>
             
             <div class="mb-4">
-              <p class="text-sm text-gray-600 mb-3">
+              <p class="text-sm text-body-1 mb-3">
                 Select additional currencies this account will support. Transactions can be recorded in these currencies.
               </p>
               
@@ -73,7 +73,7 @@
                     <div 
                       v-for="(currency, index) in form.secondary_currencies" 
                       :key="currency"
-                      class="flex items-center justify-between p-2 bg-gray-50 rounded"
+                      class="flex items-center justify-between p-2 bg-base-lvl-2 rounded"
                     >
                       <span>{{ getCurrencyDisplay(currency) }}</span>
                       <AtButton 
@@ -119,7 +119,7 @@
           <div v-if="currentStep === 4" class="space-y-4">
             <h4 class="text-md font-semibold mb-4">Step 4: Review Configuration</h4>
             
-            <div class="bg-gray-50 p-4 rounded space-y-3">
+            <div class="bg-base-lvl-2 p-4 rounded space-y-3">
               <div><strong>Account Name:</strong> {{ form.name }}</div>
               <div><strong>Primary Currency:</strong> {{ getCurrencyDisplay(form.currency_code) }}</div>
               <div><strong>Multi-Currency:</strong> {{ form.is_multi_currency ? 'Enabled' : 'Disabled' }}</div>
@@ -160,7 +160,7 @@
       </div>
       
       <div class="flex items-center space-x-2">
-        <span class="text-sm text-gray-500">Step {{ currentStep }} of {{ totalSteps }}</span>
+        <span class="text-sm text-body-1">Step {{ currentStep }} of {{ totalSteps }}</span>
         
         <AtButton 
           v-if="currentStep < totalSteps"

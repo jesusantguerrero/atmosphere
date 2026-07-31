@@ -124,7 +124,7 @@ onMounted(() => {
           class="h-2 rounded-sm"
           :goal="2000"
           :current="1500"
-          :progress-class="['bg-white', 'bg-primaryDark/60']"
+          :progress-class="['bg-base-lvl-3', 'bg-primaryDark/60']"
           :show-labels="false"
         >
           <template v-slot:before="{ progress }">
@@ -142,7 +142,7 @@ onMounted(() => {
           class="h-2 rounded-sm"
           :goal="1200"
           :current="700"
-          :progress-class="['bg-white', 'bg-primaryDark/60']"
+          :progress-class="['bg-base-lvl-3', 'bg-primaryDark/60']"
           :show-labels="false"
         />
       </article>

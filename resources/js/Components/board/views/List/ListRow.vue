@@ -33,7 +33,7 @@ function getBg(field: LogerField, item: PlanItem, fieldName: string) {
             return bg ? matrixColors[bg.result || bg.color] : "";
         }
     }
-    return "bg-gray-200";
+    return "bg-base-lvl-1";
 }
 
 const components: Record<string, ConcreteComponent> = {

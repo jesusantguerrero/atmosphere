@@ -41,13 +41,13 @@ const getUrgencyLabel = (occurrence: IOccurrenceCheck): string => {
 </script>
 
 <template>
-    <div class="px-2 py-2 bg-white rounded-md overflow-x-auto ic-scroller">
+    <div class="px-2 py-2 bg-base-lvl-3 rounded-md overflow-x-auto ic-scroller">
         <SectionTitle type="secondary" class="font-bold text-center cursor-pointer">
             <Link href="/housing/occurrence">
                 Occurrence Checks
             </Link>
         </SectionTitle>
-        <p class="text-center text-[11px] text-gray-400 mt-0.5">Days since it last happened</p>
+        <p class="text-center text-[11px] text-body-1/70 mt-0.5">{{ $t('Days since it last happened') }}</p>
         <section class="flex mt-4" v-if="checks?.length">
           <CategoryItem
                 class="capitalize"
@@ -59,11 +59,11 @@ const getUrgencyLabel = (occurrence: IOccurrenceCheck): string => {
                 wrap
           />
         </section>
-        <div class="flex items-center justify-center gap-3 mt-3 text-[10px] text-gray-400" v-if="checks?.length">
-            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full" style="background:#ef4444"></span>Overdue</span>
-            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full" style="background:#f59e0b"></span>Due</span>
-            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full" style="background:#22c55e"></span>On track</span>
-            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full" style="background:#9ca3af"></span>No data</span>
+        <div class="flex items-center justify-center gap-3 mt-3 text-[10px] text-body-1/70" v-if="checks?.length">
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full" style="background:#ef4444"></span>{{ $t('Overdue') }}</span>
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full" style="background:#f59e0b"></span>{{ $t('Due') }}</span>
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full" style="background:#22c55e"></span>{{ $t('On track') }}</span>
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full" style="background:#9ca3af"></span>{{ $t('No data') }}</span>
         </div>
         <section class="flex items-center flex-col justify-center" v-else>
           <CategoryItem

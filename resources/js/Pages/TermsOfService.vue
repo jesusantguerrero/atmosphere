@@ -1,6 +1,6 @@
 <template>
-    <div class="font-sans text-gray-900 antialiased">
-        <div class="pt-4 bg-gray-100">
+    <div class="font-sans text-body antialiased">
+        <div class="pt-4 bg-base-lvl-1">
             <div class="min-h-screen flex flex-col items-center pt-6 sm:pt-0">
                 <div>
                     <jet-authentication-card-logo />

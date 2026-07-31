@@ -169,7 +169,7 @@ onBeforeUnmount(() => {
   >
   <Transition name="slide">
       <article
-        class="container flex flex-col h-[calc(100vh-60px)] px-4 py-4 duration-75 bg-white border-l border-base shadow-xl rounded-tl-lg mt-[60px] w-96"
+        class="container flex flex-col h-[calc(100vh-60px)] px-4 py-4 duration-75 bg-base-lvl-3 border-l border-base shadow-xl rounded-tl-lg mt-[60px] w-96"
         v-if="applicationStore.selectedSection?.name"
       >
         <header class="flex items-center justify-between border-b border-base pb-3 mb-3 shrink-0">

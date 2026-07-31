@@ -52,7 +52,7 @@
             </section>
 
             <section class="flex items-center space-x-2 text-right">
-                <div class="flex items-center space-x-1 font-bold text-gray-500">
+                <div class="flex items-center space-x-1 font-bold text-body-1">
                     <div v-for="ingredient in meal.ingredients" :style="{color: ingredient.color}" :key="ingredient.id">
                         {{ ingredient.name  }}
                     </div>

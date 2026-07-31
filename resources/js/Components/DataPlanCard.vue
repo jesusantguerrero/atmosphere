@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white px-5 py-10 mb-5 mx-2 rounded-md shadow-md rounded-md flex">
+  <div class="bg-base-lvl-3 px-5 py-10 mb-5 mx-2 rounded-md shadow-md rounded-md flex">
     <div class="w-4/12">
       <div class="mx-auto">
         <div class="prose prose-xl">
@@ -9,7 +9,7 @@
               {{ plan.plan?.display_name ?? plan.name }}
             </span>
 
-            <div class="text-2xl text-gray-400">Your plan information</div>
+            <div class="text-2xl text-body-1/70">Your plan information</div>
             <div class="text-sm mt-10 grid grid-cols-2 gap-2 w-full" v-if="plan.plan">
               <span
                 v-for="feature in plan.plan.features"
@@ -34,7 +34,7 @@
 
         <div class="mt-10 mb-2">
           <h5>Plan Details</h5>
-          <p class="text-2x1 text-gray-400">
+          <p class="text-2x1 text-body-1/70">
             <span> <i class="fa fa-users"></i> 1 member(s) </span>
             <span class="ml-2"> <i class="fa fa-users"></i> 1 team(s) </span>
           </p>

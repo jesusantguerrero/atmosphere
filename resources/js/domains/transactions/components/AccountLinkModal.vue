@@ -119,7 +119,7 @@ const close = () => emit('close');
             </div>
         </div>
 
-        <div class="flex justify-end px-6 py-4 space-x-3 text-right bg-gray-100">
+        <div class="flex justify-end px-6 py-4 space-x-3 text-right bg-base-lvl-1">
             <LogerButton variant="neutral" @click="close"> Cancel </LogerButton>
             <LogerButton class="text-white bg-primary" @click="submit" :processing="form.processing">
                 Save

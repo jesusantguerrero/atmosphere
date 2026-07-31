@@ -2,7 +2,7 @@
   <div class="multi-currency-dashboard">
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
-      <h2 class="text-2xl font-bold text-gray-900">Multi-Currency Accounts</h2>
+      <h2 class="text-2xl font-bold text-body">Multi-Currency Accounts</h2>
       <AtButton @click="showAccountWizard = true" type="primary" class="text-white bg-primary">
         Add Multi-Currency Account
       </AtButton>
@@ -13,7 +13,7 @@
       <div
         v-for="account in multiCurrencyAccounts"
         :key="account.id"
-        class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow"
+        class="bg-base-lvl-3 rounded-lg shadow-md border border-base-lvl-2 overflow-hidden hover:shadow-lg transition-shadow"
       >
         <!-- Account Header -->
         <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4">
@@ -31,8 +31,8 @@
           <!-- Primary Currency Balance -->
           <div class="mb-4">
             <div class="flex items-center justify-between">
-              <span class="text-sm font-medium text-gray-600">Primary Balance</span>
-              <span class="text-lg font-bold text-gray-900">
+              <span class="text-sm font-medium text-body-1">Primary Balance</span>
+              <span class="text-lg font-bold text-body">
                 {{ formatCurrency(account.primary_balance || 0, account.currency_code) }}
               </span>
             </div>
@@ -40,13 +40,13 @@
 
           <!-- Secondary Currency Balances -->
           <div v-if="account.currency_balances && account.currency_balances.length > 0" class="space-y-2">
-            <div class="text-sm font-medium text-gray-600 border-t pt-2">Secondary Balances</div>
+            <div class="text-sm font-medium text-body-1 border-t pt-2">Secondary Balances</div>
             <div
               v-for="balance in account.currency_balances"
               :key="balance.currency_code"
               class="flex items-center justify-between text-sm"
             >
-              <span class="text-gray-600">{{ balance.currency_code }}</span>
+              <span class="text-body-1">{{ balance.currency_code }}</span>
               <div class="text-right">
                 <div class="font-medium">
                   {{ formatCurrency(balance.balance, balance.currency_code) }}
@@ -82,10 +82,10 @@
     </div>
 
     <!-- Recent Multi-Currency Transactions -->
-    <div class="bg-white rounded-lg shadow-md border border-gray-200">
-      <div class="p-4 border-b border-gray-200">
+    <div class="bg-base-lvl-3 rounded-lg shadow-md border border-base-lvl-2">
+      <div class="p-4 border-b border-base-lvl-2">
         <div class="flex items-center justify-between">
-          <h3 class="text-lg font-semibold text-gray-900">Recent Multi-Currency Transactions</h3>
+          <h3 class="text-lg font-semibold text-body">Recent Multi-Currency Transactions</h3>
           <div class="flex space-x-2">
             <CurrencySelector
               v-model="filterCurrency"
@@ -102,46 +102,46 @@
       </div>
 
       <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
+        <table class="min-w-full divide-y divide-base-lvl-2">
+          <thead class="bg-base-lvl-2">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-body-1 uppercase tracking-wider">
                 Date
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-body-1 uppercase tracking-wider">
                 Description
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-body-1 uppercase tracking-wider">
                 Account
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-body-1 uppercase tracking-wider">
                 Amount
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-body-1 uppercase tracking-wider">
                 Status
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-left text-xs font-medium text-body-1 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="transaction in filteredTransactions" :key="transaction.id" class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+          <tbody class="bg-base-lvl-3 divide-y divide-base-lvl-2">
+            <tr v-for="transaction in filteredTransactions" :key="transaction.id" class="hover:bg-base-lvl-2">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-body">
                 {{ formatDate(transaction.date) }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900">{{ transaction.description }}</div>
-                <div v-if="transaction.payee" class="text-sm text-gray-500">{{ transaction.payee.name }}</div>
+                <div class="text-sm font-medium text-body">{{ transaction.description }}</div>
+                <div v-if="transaction.payee" class="text-sm text-body-1">{{ transaction.payee.name }}</div>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-body">
                 {{ transaction.account?.name }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900">
+                <div class="text-sm font-medium text-body">
                   {{ formatCurrency(transaction.total, transaction.currency_code) }}
                 </div>
-                <div v-if="transaction.exchange_amount && transaction.exchange_rate" class="text-sm text-gray-500">
+                <div v-if="transaction.exchange_amount && transaction.exchange_rate" class="text-sm text-body-1">
                   {{ formatCurrency(transaction.exchange_amount, transaction.account?.currency_code) }}
                   (Rate: {{ transaction.exchange_rate.toFixed(4) }})
                 </div>
@@ -177,7 +177,7 @@
 
         <!-- Empty State -->
         <div v-if="filteredTransactions.length === 0" class="text-center py-8">
-          <div class="text-gray-500">No multi-currency transactions found</div>
+          <div class="text-body-1">No multi-currency transactions found</div>
           <AtButton @click="openTransactionModal()" class="mt-4 text-white bg-primary">
             Create First Transaction
           </AtButton>
@@ -277,9 +277,9 @@ const getStatusBadgeClass = (status: string) => {
     'verified': 'bg-green-100 text-green-800',
     'pending': 'bg-yellow-100 text-yellow-800',
     'converted': 'bg-blue-100 text-blue-800',
-    'draft': 'bg-gray-100 text-gray-800'
+    'draft': 'bg-base-lvl-1 text-body'
   };
-  return classes[status] || 'bg-gray-100 text-gray-800';
+  return classes[status] || 'bg-base-lvl-1 text-body';
 };
 
 const getStatusLabel = (transaction: any) => {

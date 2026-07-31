@@ -80,19 +80,25 @@ const amountSign = (row: ITransaction) => {
   return row.direction === 'WITHDRAW' ? '−' : '+';
 };
 
+const moneyParts = (value: any, currency?: string) => {
+  const s = formatMoney(value, currency);
+  const i = s.lastIndexOf('.');
+  return i === -1 ? { main: s, cents: '' } : { main: s.slice(0, i), cents: s.slice(i + 1) };
+};
+
 const getTransactionColor = (row: ITransaction) => {
 // @ts-ignore
   if (row.payee?.name || row.payee_name) {
-    return row.direction == "WITHDRAW" ? "text-red-400" : "text-green-500";
+    return row.direction == "WITHDRAW" ? "text-body" : "text-green-500";
   }
   // Transfers: if this account is the source (account_id), money is leaving (red)
   // If this account is the destination (counter_account_id), money is coming in (green)
   if (row.is_transfer || row.counter_account_id) {
     const viewingAccountId = (row as any)._viewingAccountId;
     if (viewingAccountId) {
-      return row.account_id === viewingAccountId ? "text-red-400" : "text-green-500";
+      return row.account_id === viewingAccountId ? "text-body" : "text-green-500";
     }
-    return row.direction == "WITHDRAW" ? "text-red-400" : "text-green-500";
+    return row.direction == "WITHDRAW" ? "text-body" : "text-green-500";
   }
   return "text-body-1";
 };
@@ -125,7 +131,7 @@ const getTransactionColor = (row: ITransaction) => {
             Approve
           </button>
           <div class="font-bold tabular-nums" :class="[getTransactionColor(row)]">
-            <span v-if="amountSign(row)" class="mr-0.5">{{ amountSign(row) }}</span>{{ formatMoney(row.total, row.currency_code) }}
+            <span v-if="amountSign(row)" class="mr-0.5">{{ amountSign(row) }}</span>{{ moneyParts(row.total, row.currency_code).main }}<span v-if="moneyParts(row.total, row.currency_code).cents" class="text-[0.72em] align-top opacity-60">.{{ moneyParts(row.total, row.currency_code).cents }}</span>
           </div>
         </div>
       </template>

@@ -18,7 +18,7 @@
             :options="options"
             @select="$emit('option', board, $event)"
         >
-            <button class="hover:bg-gray-200 w-5 rounded-full py-2 text-center" @click.prevent.stop>
+            <button class="hover:bg-base-lvl-1 w-5 rounded-full py-2 text-center" @click.prevent.stop>
                 <i class="fa fa-ellipsis-v"></i>
             </button>
         </NDropdown>

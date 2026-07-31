@@ -61,7 +61,7 @@ onMounted(() => {
 
 <template>
   <div
-    class="card w-full rounded-lg border border-gray-200 bg-white p-4 cursor-pointer hover:border-gray-300 transition-all relative overflow-hidden"
+    class="card w-full rounded-lg border border-base-lvl-2 bg-base-lvl-3 p-4 cursor-pointer hover:border-base-lvl-2 transition-all relative overflow-hidden"
     :class="{ 'border-primary border-2 ring-1 ring-primary': isSelected }"
     ref="CreditCardView"
     v-bind="$attrs"
@@ -70,9 +70,9 @@ onMounted(() => {
     :data-slide="index"
   >
     <!-- Header -->
-    <div class="flex justify-between items-start gap-2 mb-3 pb-3 border-b border-gray-100">
+    <div class="flex justify-between items-start gap-2 mb-3 pb-3 border-b border-base-lvl-2">
       <div class="flex-1 min-w-0">
-        <p class="text-xs text-gray-500 font-medium truncate">{{ account.name }}</p>
+        <p class="text-xs text-body-1 font-medium truncate">{{ account.name }}</p>
       </div>
 
       <!-- Status Indicator -->
@@ -83,14 +83,14 @@ onMounted(() => {
         </div>
          <div class="flex gap-1">
         <button
-          class="p-1.5 text-gray-400 hover:text-primary hover:bg-primary/5 rounded transition-colors flex-shrink-0"
+          class="p-1.5 text-body-1/70 hover:text-primary hover:bg-primary/5 rounded transition-colors flex-shrink-0"
           @click.stop="$emit('edit')"
           title="Edit account"
         >
           <IMdiEdit class="w-4 h-4" />
         </button>
         <button
-          class="p-1.5 text-gray-400 hover:text-primary hover:bg-primary/5 rounded transition-colors flex-shrink-0"
+          class="p-1.5 text-body-1/70 hover:text-primary hover:bg-primary/5 rounded transition-colors flex-shrink-0"
           @click.stop="$emit('link')"
           title="Link account"
         >
@@ -102,8 +102,8 @@ onMounted(() => {
 
     <!-- Balance Section -->
     <div class="mb-3">
-      <p class="text-xs text-gray-500 mb-0.5">Current Balance</p>
-      <p class="text-base font-bold text-gray-900">
+      <p class="text-xs text-body-1 mb-0.5">Current Balance</p>
+      <p class="text-base font-bold text-body">
         <NumberHider />
         {{ formatMoney(account.balance, account.currency_code) }}
         / {{ formatMoney(availableCredit, account.currency_code) }}

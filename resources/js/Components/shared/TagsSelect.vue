@@ -71,7 +71,7 @@ const state = reactive({
         ['bg-purple-200', 'bg-purple-400', 'hover:border-purple-600'],
         ['bg-pink-200', 'bg-pink-400', 'hover:border-pink-600'],
         ['bg-indigo-200', 'bg-indigo-400', 'hover:border-indigo-600'],
-        ['bg-gray-200', 'bg-gray-400', 'hover:border-gray-600'],
+        ['bg-base-lvl-1', 'bg-gray-400', 'hover:border-gray-600'],
     ]
 })
 
@@ -213,7 +213,7 @@ const select = (tag: any) => {
             trigger="click"
             v-model="state.isOpen"
             placement="bottom-end"
-            popper-class='tag-select dark:bg-gray-900 dark:text-gray-300'
+            popper-class='tag-select dark:bg-gray-900 dark:text-body-1/60'
             :width="240"
             :show-arrow="false"
             @hide="state.selectedTag=null"
@@ -222,13 +222,13 @@ const select = (tag: any) => {
 
             <div v-if="state.selectedTag">
                 <div class="flex items-center mb-5">
-                    <button @click="state.selectedTag = null" class="px-2 py-1 rounded-md hover:bg-gray-200 focus:outline-none"><i class="fa fa-chevron-left"></i></button>
+                    <button @click="state.selectedTag = null" class="px-2 py-1 rounded-md hover:bg-base-lvl-1 focus:outline-none"><i class="fa fa-chevron-left"></i></button>
                     <div class="ml-2 font-bold"> Edit Tag</div>
                 </div>
                 <div class="mb-6 text-left">
                     <label for="" class="inline-block mb-2 font-bold">Tag Name</label>
                     <input
-                        class="w-full h-8 px-2 border-2 border-gray-100 rounded-md dark:bg-gray-900 focus:outline-none focus:border-gray-200"
+                        class="w-full h-8 px-2 border-2 border-base-lvl-2 rounded-md dark:bg-gray-900 focus:outline-none focus:border-base-lvl-2"
                         type="text"
                         placeholder="Add or create a tag"
                         v-model.trim="state.selectedTag.name"
@@ -266,7 +266,7 @@ const select = (tag: any) => {
 
             <div class="w-full px-1 pt-2 pb-5" v-else>
                 <input
-                    class="w-full h-8 px-2 border-2 border-gray-100 rounded-md dark:bg-gray-900 dark:focus:border-gray-400 dark:border-gray-500 dark:text-gray-300 focus:outline-none focus:border-gray-200"
+                    class="w-full h-8 px-2 border-2 border-base-lvl-2 rounded-md dark:bg-gray-900 dark:focus:border-gray-400 dark:border-gray-500 dark:text-body-1/60 focus:outline-none focus:border-base-lvl-2"
                     type="text"
                     placeholder="Add or create a tag"
                     v-model.trim="searchText"
@@ -287,7 +287,7 @@ const select = (tag: any) => {
                         :class="[
                             `select-item-${index}`,
                             preSelectedValue == tag && 'bg-gray-500 text-white',
-                            isSelected(tag.uid) ? 'bg-gray-200 hover:bg-gray-200 ' : 'hover:bg-gray-200 dark:hover:bg-gray-600 dark:hover:text-gray-50'
+                            isSelected(tag.uid) ? 'bg-base-lvl-1 hover:bg-base-lvl-1 ' : 'hover:bg-base-lvl-1 dark:hover:bg-gray-600 dark:hover:text-gray-50'
                         ]"
                         @click.stop="selectTag(tag)"
                     >
@@ -317,8 +317,8 @@ const select = (tag: any) => {
             <template #reference>
             <button
                 ref="button"
-                :class="{'text-gray-500': true }"
-                class="flex items-center h-full space-x-1 text-xs focus:outline-none dark:bg-transparent dark:text-gray-300"
+                :class="{'text-body-1': true }"
+                class="flex items-center h-full space-x-1 text-xs focus:outline-none dark:bg-transparent dark:text-body-1/60"
                 @mousedown.prevent
                 @focus.prevent="focusButton"
             >
@@ -354,7 +354,7 @@ const select = (tag: any) => {
 <style lang="scss">
 .dark {
 .el-popper.is-light {
-    @apply bg-gray-700 border-gray-500 text-gray-300;
+    @apply bg-gray-700 border-gray-500 text-body-1/60;
 }
 }
 </style>

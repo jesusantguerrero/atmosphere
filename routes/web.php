@@ -18,6 +18,7 @@ use App\Http\Controllers\Finance\FinanceTrendController;
 use App\Http\Controllers\Finance\FinancialOverviewController;
 use App\Http\Controllers\NextPaymentsController;
 use App\Http\Controllers\Relationship\RelationshipController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\System\CalendarController;
 use App\Http\Controllers\System\CoreModuleController;
 use App\Http\Controllers\System\DashboardController;
@@ -159,6 +160,9 @@ Route::group([], app_path('/Domains/Meal/routes.php'));
 Route::group([], app_path('/Domains/Integration/routes.php'));
 
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
+    // Header command palette — searches across resources for the current team.
+    Route::get('/search', [SearchController::class, 'index'])->name('search');
+
     /**
      *  Jetstream & Settings Section
      */

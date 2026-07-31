@@ -26,3 +26,5 @@ Modules/*
 /public/build
 /.planning/
 .claude/
+
+*.bak

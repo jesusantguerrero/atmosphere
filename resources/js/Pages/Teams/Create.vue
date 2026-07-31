@@ -10,7 +10,7 @@
 <template>
     <AppLayout title="Create new space">
         <template #header>
-            <h2 class="px-4 py-2 text-xl font-semibold leading-tight text-gray-800">
+            <h2 class="px-4 py-2 text-xl font-semibold leading-tight text-body">
                 Create new space
             </h2>
         </template>

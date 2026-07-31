@@ -131,7 +131,7 @@ const calculateSum = (items: number[]|string[]) => {
                 </div>
             </div>
         </template>
-        <div v-else class="items-center justify-center px-5 py-6 text-center text-gray-600">
+        <div v-else class="items-center justify-center px-5 py-6 text-center text-body-1">
             <div class="mx-auto text-6xl">
                <svg xmlns="http://www.w3.org/2000/svg"  xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="mx-auto iconify iconify--iconoir" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="M7 2h9.5L21 6.5V19"></path><path d="M3 20.5v-14A1.5 1.5 0 0 1 4.5 5h9.752a.6.6 0 0 1 .424.176l3.148 3.148A.6.6 0 0 1 18 8.75V20.5a1.5 1.5 0 0 1-1.5 1.5h-12A1.5 1.5 0 0 1 3 20.5Z"></path><path fill="currentColor" d="M14 8.4V5.354a.354.354 0 0 1 .604-.25l3.292 3.292a.353.353 0 0 1-.25.604H14.6a.6.6 0 0 1-.6-.6Z"></path></g></svg>
             </div>

@@ -24,7 +24,7 @@ withDefaults(defineProps<{
     <slot name="top">
         <div class="flex items-center justify-between pb-2" :class="{'px-5': withPadding}">
             <h1 class="font-bold flex items-center">
-                <section class="bg-white text-primary w-8 h-8 rounded-full flex items-center justify-center mr-2"
+                <section class="bg-base-lvl-3 text-primary w-8 h-8 rounded-full flex items-center justify-center mr-2"
                     v-if="$slots.icon"
                 >
                     <slot name="icon"></slot>

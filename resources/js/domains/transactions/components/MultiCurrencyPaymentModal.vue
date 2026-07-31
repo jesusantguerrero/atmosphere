@@ -4,24 +4,24 @@
       <div class="text-center sm:mt-0 sm:ml-4 sm:text-left">
         <header class="py-3 border-b">
           <h3 class="text-lg font-bold">Multi-Currency Payment</h3>
-          <p class="text-sm text-gray-600 mt-1">
+          <p class="text-sm text-body-1 mt-1">
             Process payment with currency conversion for {{ account?.name }}
           </p>
         </header>
 
         <div class="px-4 pt-5 mt-2 space-y-6">
           <!-- Account Summary -->
-          <div class="bg-gray-50 rounded-lg p-4">
+          <div class="bg-base-lvl-2 rounded-lg p-4">
             <h4 class="font-semibold mb-3">Account Summary</h4>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <div class="text-sm text-gray-600">Primary Currency Balance</div>
+                <div class="text-sm text-body-1">Primary Currency Balance</div>
                 <div class="text-lg font-semibold">
                   {{ formatCurrency(account?.primary_balance || 0, account?.currency_code) }}
                 </div>
               </div>
               <div v-if="pendingBalances.length > 0">
-                <div class="text-sm text-gray-600">Pending Secondary Currency Balances</div>
+                <div class="text-sm text-body-1">Pending Secondary Currency Balances</div>
                 <div class="space-y-1">
                   <div 
                     v-for="balance in pendingBalances" 
@@ -110,14 +110,14 @@
             </div>
 
             <!-- Exchange Rate Display -->
-            <div v-if="calculatedExchangeRate" class="bg-white rounded p-3 border">
+            <div v-if="calculatedExchangeRate" class="bg-base-lvl-3 rounded p-3 border">
               <div class="flex items-center justify-between">
                 <span class="text-sm font-medium">Calculated Exchange Rate:</span>
                 <span class="font-semibold">
                   1 {{ form.currency_code }} = {{ calculatedExchangeRate.toFixed(4) }} {{ account?.currency_code }}
                 </span>
               </div>
-              <div class="text-xs text-gray-500 mt-1">
+              <div class="text-xs text-body-1 mt-1">
                 Rate calculated from provided amounts
               </div>
             </div>
@@ -152,7 +152,7 @@
 
     <!-- Footer -->
     <div class="flex items-center justify-between w-full px-6 py-4 bg-base-lvl-2">
-      <div class="text-sm text-gray-500">
+      <div class="text-sm text-body-1">
         <span v-if="calculatedExchangeRate">
           Exchange rate will be recorded for future reference
         </span>

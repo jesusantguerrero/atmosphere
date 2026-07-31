@@ -103,7 +103,7 @@ const handleOptions = (option: string) => {
             </span>
         </h4>
     </section>
-    <button class="text-gray-400 hidden group-hover:inline-block transition cursor-pointer hover:text-red-400 focus:outline-none" @click="$emit('deleted', $event)">
+    <button class="text-body-1/70 hidden group-hover:inline-block transition cursor-pointer hover:text-red-400 focus:outline-none" @click="$emit('deleted', $event)">
        <IMdiTrash />
     </button>
 </header>

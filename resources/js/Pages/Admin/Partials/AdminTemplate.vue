@@ -13,7 +13,7 @@ defineProps<{
       <AdminSectionNav />
     </template>
 
-    <main class="p-5 mt-8 pt-0 mx-auto text-gray-500 sm:px-6 lg:px-8">
+    <main class="p-5 mt-8 pt-0 mx-auto text-body-1 sm:px-6 lg:px-8">
       <div class="flex justify-between mt-4 md:mt-0 mb-4" v-if="user">
         <h4 class="hidden md:inline-block">{{ $t("Welcome") }}, {{ user.name }}</h4>
       </div>

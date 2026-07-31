@@ -27,7 +27,7 @@
                             </JetDropdownLink>
                         </div>
                     </slot>
-                    <div class="border-t border-gray-100"></div>
+                    <div class="border-t border-base-lvl-2"></div>
                 </template>
             </div>
         </template>

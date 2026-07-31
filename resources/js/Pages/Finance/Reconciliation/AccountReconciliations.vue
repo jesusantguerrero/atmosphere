@@ -170,7 +170,7 @@ const pluralize = (count: number, singular: string, plural: string) => {
                 <div class="relative flex items-start justify-between mt-4 mb-2 overflow-x-auto pb-4"
                     v-if="reconciliations.length">
                     <!-- Horizontal line -->
-                    <div class="absolute left-0 right-0 top-6 h-0.5 bg-gray-200 z-0"></div>
+                    <div class="absolute left-0 right-0 top-6 h-0.5 bg-base-lvl-1 z-0"></div>
 
                     <!-- Timeline items -->
                     <template v-for="(reconciliation, idx) in visibleReconciliations" :key="reconciliation.id">
@@ -233,9 +233,9 @@ const pluralize = (count: number, singular: string, plural: string) => {
                     <div class="flex-1" v-if="!hasPendingReconciliation && reconciliations.length"></div>
                     <div class="flex flex-col items-center z-10 min-w-[140px]" v-if="!hasPendingReconciliation">
                         <div
-                            class="rounded-full border-2 border-dashed border-gray-300 w-12 h-12 flex items-center justify-center mb-2 cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
+                            class="rounded-full border-2 border-dashed border-base-lvl-2 w-12 h-12 flex items-center justify-center mb-2 cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
                             @click="startReconciliation">
-                            <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" stroke-width="2"
+                            <svg class="w-6 h-6 text-body-1/70" fill="none" stroke="currentColor" stroke-width="2"
                                 viewBox="0 0 24 24">
                                 <line x1="12" y1="5" x2="12" y2="19" />
                                 <line x1="5" y1="12" x2="19" y2="12" />

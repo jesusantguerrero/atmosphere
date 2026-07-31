@@ -225,6 +225,7 @@ async function saveExchangeRate() {
                             <p class="text-2xl font-bold break-all leading-tight">
                                 {{ formatMoney(totals.net_worth, quoteCurrency) }}
                             </p>
+                            <p class="text-[11px] opacity-70">Includes accounts in {{ baseCurrency }} (converted)</p>
                         </div>
                         <div class="hidden md:flex items-center gap-4 text-sm opacity-80">
                             <span>{{ formatMoney(totals.total_quote, quoteCurrency) }}</span>
@@ -239,12 +240,12 @@ async function saveExchangeRate() {
                         <input
                             v-model.number="localExchangeRate"
                             type="number" min="0" step="0.01"
-                            class="w-20 px-2 py-1 text-sm rounded bg-white/20 text-white placeholder-white/50 border-0 focus:outline-none focus:ring-1 focus:ring-white/50"
+                            class="w-20 px-2 py-1 text-sm rounded bg-base-lvl-3/20 text-white placeholder-white/50 border-0 focus:outline-none focus:ring-1 focus:ring-white/50"
                         />
                         <span class="text-xs opacity-60">{{ quoteCurrency }}</span>
                         <button
                             :disabled="isSavingRate || localExchangeRate === exchangeRate"
-                            class="px-3 py-1 text-xs font-medium rounded bg-white/20 hover:bg-white/30 disabled:opacity-30 transition"
+                            class="px-3 py-1 text-xs font-medium rounded bg-base-lvl-3/20 hover:bg-base-lvl-3/30 disabled:opacity-30 transition"
                             @click="saveExchangeRate"
                         >
                             {{ saveSuccess ? 'Saved!' : 'Update' }}

@@ -47,7 +47,7 @@ function close() {
             </div>
         </div>
 
-        <div class="px-6 py-4 text-right bg-gray-100">
+        <div class="px-6 py-4 text-right bg-base-lvl-1">
             <slot name="footer">
             </slot>
         </div>

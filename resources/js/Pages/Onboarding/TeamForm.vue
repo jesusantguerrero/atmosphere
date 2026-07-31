@@ -55,7 +55,7 @@ const currencyLocaleOptions = [{
 
 <template>
     <div
-        class="w-full px-5 py-4 space-y-5 bg-white rounded-md"
+        class="w-full px-5 py-4 space-y-5 bg-base-lvl-3 rounded-md"
     >
         <AtField class="space-y-2" label="Budget Name">
             <LogerInput placeholder="Eg. Family" v-model="formData.name" required />

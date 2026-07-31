@@ -106,7 +106,7 @@ const emitBlur = () => {
     >
       <template #prefix>
         <button
-            class="rounded-l-md px-2 hover:bg-gray-50 md:px-4"
+            class="rounded-l-md px-2 hover:bg-base-lvl-2 md:px-4"
             :class="{'text-primary': isFocused}"
             @click.stop="$emit('search')"
         >
@@ -116,7 +116,7 @@ const emitBlur = () => {
       <template #suffix>
         <button
           title="Reset all filters"
-          class="hover:bg-red-400 bg-gray-100 h-6 transition-all mr-4 flex items-center justify-center w-6 my-auto hover:text-white px-2 rounded-full"
+          class="hover:bg-red-400 bg-base-lvl-1 h-6 transition-all mr-4 flex items-center justify-center w-6 my-auto hover:text-white px-2 rounded-full"
           @click.stop="resetFilters()"
           v-if="hasFilters"
         >
@@ -137,7 +137,7 @@ const emitBlur = () => {
     >
       <template #releaseYear>
         <button
-          class="hover:bg-gray-50 px-2 flex h-full items-center"
+          class="hover:bg-base-lvl-2 px-2 flex h-full items-center"
           @click="sort('releaseYear')"
         >
           <IMdiSort /> Year
@@ -145,7 +145,7 @@ const emitBlur = () => {
       </template>
 
       <template #title>
-        <button class="hover:bg-gray-50 px-2 flex items-center" @click="sort('title')">
+        <button class="hover:bg-base-lvl-2 px-2 flex items-center" @click="sort('title')">
           <IMdiSort /> Name
         </button>
       </template>
