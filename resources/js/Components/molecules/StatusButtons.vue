@@ -22,11 +22,16 @@ const emitChange = (value: string) => {
 </script>
 
 <template>
-    <section class="flex overflow-hidden text-sm font-medium border border-base-lvl-2 rounded-md bg-base-lvl-3 text-body-1/70 min-w-max">
+    <!-- Shared segmented filter — same visual as the register's
+         All/Debits/Credits control, so every mutually-exclusive view filter
+         reads the same across Finance. -->
+    <section class="inline-flex p-0.5 text-xs rounded-lg bg-base-lvl-1 min-w-max">
         <button
             v-for="(item, statusName) in statuses"
-            class="px-3 py-1.5 flex items-center transition-colors border-r border-base-lvl-2 last:border-r-0 hover:bg-base-lvl-2 hover:text-body-1"
-            :class="{'!bg-primary !text-white hover:!bg-primary-dark': isSelected(statusName)}"
+            class="px-3 py-1.5 flex items-center rounded-md transition-colors"
+            :class="isSelected(statusName)
+                ? 'bg-base-lvl-3 text-body font-semibold shadow-sm'
+                : 'text-body-1/60 hover:text-body'"
             :key="statusName"
             @click="emitChange(item.value || statusName)">
                 {{ item.label }}
