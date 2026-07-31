@@ -109,6 +109,14 @@ class ReconciliationController extends Controller
             $query->where('reconciliation_entries.matched', true);
         }
 
+        if ($search = request()->get('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('transactions.description', 'like', "%{$search}%")
+                    ->orWhere('transactions.total', 'like', "%{$search}%")
+                    ->orWhereHas('payee', fn ($p) => $p->where('name', 'like', "%{$search}%"));
+            });
+        }
+
         return $query->paginate(25)->withQueryString();
     }
 

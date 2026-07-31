@@ -7,7 +7,7 @@ export const tableCols = [
     {
         label: "Date",
         name: "date",
-        width: 200,
+        width: 150,
         class: 'text-center',
         headerClass: 'text-center',
         render(row: any) {
@@ -24,6 +24,7 @@ export const tableCols = [
     {
         label: "Account",
         name: "account",
+        minWidth: 140,
         render(row: Record<string, any>) {
             return h('div', {}, [
                 h(Link, { class: 'font-medium text-body-1/80 hover:text-primary hover:underline transition-colors', href: `/finance/accounts/${row.account_id}`}, row.account?.name ?? row.account_name),
@@ -31,9 +32,12 @@ export const tableCols = [
         }
     },
     {
+        // Fixed widths (700 here + 200/300/300 on siblings) overflowed the
+        // container and ElTable's table-fixed layout painted the Account and
+        // Payee headers on top of each other. min-widths flex instead.
         label: "Payee",
         name: "payee",
-        width: 700,
+        minWidth: 220,
         class: 'w-full',
         render(row: Record<string, any>) {
             const payeeName = row.payee?.name ?? row.payee_name;
@@ -52,7 +56,7 @@ export const tableCols = [
     {
         label: "Description",
         name: "description",
-        width: 300,
+        minWidth: 180,
         render(row: any) {
             return h('div', [
                 h('div', row.description),
@@ -70,7 +74,7 @@ export const tableCols = [
     {
         label: "",
         name: "actions",
-        width: 300,
+        width: 110,
         type: "custom",
         class: 'text-right'
     },

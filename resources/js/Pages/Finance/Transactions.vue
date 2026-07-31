@@ -2,10 +2,9 @@
 import { computed, toRefs, reactive, provide, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { router } from "@inertiajs/vue3";
-import { format } from "date-fns";
+import { addMonths, endOfMonth, format, isSameMonth, startOfMonth } from "date-fns";
 import axios from "axios";
-// @ts-ignore
-import { AtDatePager } from "atmosphere-ui";
+import { NDatePicker, NDropdown } from "naive-ui";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import AppSearch from "@/Components/AppSearch/AppSearch.vue";
@@ -179,6 +178,41 @@ const buildExportUrl = (base: string): string => {
 
 const csvExportUrl = computed(() => buildExportUrl('/finance/transactions/export/csv'));
 const pdfExportUrl = computed(() => buildExportUrl('/finance/transactions/export/pdf'));
+
+// Data actions live in the kebab — same slot they occupy on the register.
+const exportOptions = [
+    { key: 'export-csv', label: 'Export CSV' },
+    { key: 'export-pdf', label: 'Export PDF' },
+];
+
+const handleExport = (key: string) => {
+    if (key === 'export-csv') window.open(csvExportUrl.value, '_blank');
+    if (key === 'export-pdf') window.open(pdfExportUrl.value, '_blank');
+};
+
+// Month pager — same control as the register: chevrons for neighbors, the
+// picker for direct jumps, Today to come back. Replaces the old AtDatePager,
+// which stepped one month at a time and didn't follow the dark theme.
+const periodStart = (): Date => pageState.dates.startDate ? new Date(pageState.dates.startDate) : new Date();
+
+const goToMonth = (date: Date) => {
+    pageState.dates.startDate = startOfMonth(date);
+    pageState.dates.endDate = endOfMonth(date);
+};
+
+const shiftMonth = (delta: number) => goToMonth(addMonths(periodStart(), delta));
+
+const goToCurrentMonth = () => goToMonth(new Date());
+
+const periodTimestamp = computed(() => periodStart().getTime());
+
+const onMonthPicked = (timestamp: number | null) => {
+    if (timestamp) {
+        goToMonth(new Date(timestamp));
+    }
+};
+
+const isCurrentMonth = computed(() => isSameMonth(periodStart(), new Date()));
 </script>
 
 
@@ -206,52 +240,74 @@ const pdfExportUrl = computed(() => buildExportUrl('/finance/transactions/export
       </template>
 
       <main class="mt-4">
-        <header class="flex flex-col md:flex-row bg-base-lvl-3 md:justify-between gap-3 md:gap-0 px-4 md:px-6 py-3 md:py-2">
-            <section class="flex flex-wrap items-center gap-2 overflow-x-auto">
-                <StatusButtons
-                    v-model="currentStatus"
-                    :statuses="transactionStatus"
-                    @change="router.visit($event)"
-                />
-                <AccountFilter
-                    show-all
-                    @update:model-value="goToAccount"
-                />
-                <AtDatePager
-                    class="h-10 border-none rounded-md bg-base-lvl-1 text-body"
-                    v-model:startDate="pageState.dates.startDate"
-                    v-model:endDate="pageState.dates.endDate"
-                    controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
-                    next-mode="month"
-                />
-                <DraftButtons v-if="isDraft" @submitted="fetchTransactions()" />
-            </section>
+        <!-- Unified toolbar grammar (same as the register):
+             search → segmented filter → contextual filters … period → data
+             actions. One row; the floating count moved to the card footer. -->
+        <header class="flex flex-col md:flex-row md:items-center bg-base-lvl-3 gap-3 md:gap-2 px-4 md:px-6 py-3 md:py-2">
+            <AppSearch
+                v-model.lazy="pageState.search"
+                class="w-full md:max-w-xs"
+                :has-filters="hasFilters"
+                @clear="reset()"
+                :placeholder="$t('Search')"
+                @blur="executeSearch"
+            />
+            <StatusButtons
+                v-model="currentStatus"
+                :statuses="transactionStatus"
+                @change="router.visit($event)"
+            />
+            <AccountFilter
+                show-all
+                @update:model-value="goToAccount"
+            />
+            <DraftButtons v-if="isDraft" @submitted="fetchTransactions()" />
 
-            <section class="flex items-center space-x-2">
-                <AppSearch
-                    v-model.lazy="pageState.search"
-                    class="w-full md:flex"
-                    :has-filters="hasFilters"
-                    @clear="reset()"
-                    :placeholder="$t('Search')"
-                    @blur="executeSearch"
+            <div class="flex items-center gap-1 md:ml-auto shrink-0">
+                <button
+                    type="button"
+                    class="px-2 py-1 rounded text-body-1 hover:bg-base-lvl-2"
+                    :title="$t('Previous month')"
+                    @click="shiftMonth(-1)"
+                >
+                    <IMdiChevronLeft />
+                </button>
+
+                <NDatePicker
+                    type="month"
+                    format="MMM yyyy"
+                    size="small"
+                    class="w-32"
+                    :value="periodTimestamp"
+                    :clearable="false"
+                    @update:value="onMonthPicked"
                 />
-                <span>
-                    {{ listData.length }}
-                </span>
-                <a :href="csvExportUrl" target="_blank">
-                    <LogerButton variant="neutral" as="span">
-                        <IMdiDownload class="mr-1" />
-                        CSV
-                    </LogerButton>
-                </a>
-                <a :href="pdfExportUrl" target="_blank">
-                    <LogerButton variant="neutral" as="span">
-                        <IMdiFilePdfBox class="mr-1" />
-                        PDF
-                    </LogerButton>
-                </a>
-            </section>
+
+                <button
+                    type="button"
+                    class="px-2 py-1 rounded text-body-1 hover:bg-base-lvl-2"
+                    :title="$t('Next month')"
+                    @click="shiftMonth(1)"
+                >
+                    <IMdiChevronRight />
+                </button>
+
+                <button
+                    v-if="!isCurrentMonth"
+                    type="button"
+                    class="px-2 py-1 text-xs font-semibold rounded text-primary hover:bg-base-lvl-2"
+                    :title="$t('Back to current month')"
+                    @click="goToCurrentMonth()"
+                >
+                    {{ $t('Today') }}
+                </button>
+
+                <NDropdown trigger="click" key-field="key" :options="exportOptions" @select="handleExport">
+                    <button type="button" class="px-2 py-1.5 rounded text-body-1 hover:bg-base-lvl-2" :title="$t('More actions')">
+                        <IMdiDotsVertical />
+                    </button>
+                </NDropdown>
+            </div>
         </header>
 
         <div
@@ -307,6 +363,14 @@ const pdfExportUrl = computed(() => buildExportUrl('/finance/transactions/export
                 </div>
             </template>
         </component>
+
+        <footer
+            v-if="showTransactionTable && listData.length"
+            class="flex items-center justify-end px-5 py-2.5 text-xs font-semibold border-t text-body-1/60 border-base bg-base-lvl-3"
+        >
+            {{ listData.length }}
+            {{ listData.length === 1 ? $t('Transaction') : $t('Transactions') }}
+        </footer>
       </main>
     </FinanceTemplate>
   </AppLayout>
