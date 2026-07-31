@@ -118,7 +118,7 @@ const handleSelection = (index: number) => {
                 class="flex items-center  justify-between w-full px-4 py-2 cursor-pointer comparison-header__item md:py-6 md:justify-center md:flex-col previous-period hover:text-body/80"
             >
                 <h6 class="period-title">{{ header.label }}</h6>
-                <span class="mt-2 text-xs period-value">
+                <span class="relative mt-2 text-xs period-value">
                     <NumberHider />
                     {{ formatMoney(header.value) }}
                 </span>

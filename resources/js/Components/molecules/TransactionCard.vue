@@ -115,7 +115,7 @@ const handleOptions = (option: 'remove'|'selected') => {
             {{ title }}
           </h4>
           <div class="text-right shrink-0 tabular-nums">
-            <h4 class="relative text-sm font-bold leading-snug sm:text-base">
+            <h4 class="relative text-sm font-bold leading-snug sm:text-base text-body">
               <NumberHider />
               {{ formatMoney(value, currencyCode) }}
             </h4>

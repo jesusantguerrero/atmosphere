@@ -158,8 +158,8 @@
                                 @click="router.visit('/notifications')"
                              />
                              <!-- <LogerAssistant /> -->
+                             <div class="team-select-fix flex items-center" v-if="$page.props.auth.user?.all_teams.length && !context.isMobile">
                              <AtTeamSelect
-                                v-if="$page.props.auth.user?.all_teams.length && !context.isMobile"
                                 :has-team-features="$page.props.jetstream.hasTeamFeatures"
                                 :can-create-teams="$page.props.jetstream.canCreateTeams"
                                 :current-team="$page.props.auth.user.current_team"
@@ -169,6 +169,7 @@
                                 @create="router.visit(route('teams.create'))"
                                 resource-name="Space"
                             />
+                             </div>
                             <!-- Settings Dropdown (desktop) -->
                             <div class="relative ml-3 hidden lg:block"  v-if="$page.props.auth.user">
                                 <AppUserMenu
@@ -337,7 +338,8 @@
                     <template #brand>
                         <div class="flex w-full h-full pl-0 mx-auto mb-0" :class="isExpanded ? 'pl-5' :'justify-center'">
                             <Link href="/dashboard" class="pt-3 mx-auto text-center" v-if="!isExpanded">
-                                <img src="/logotype.png" :style="{height: '24px'}" class="mx-auto"/>
+                                <img src="/logotype.png" :style="{height: '24px'}" class="mx-auto dark:hidden"/>
+                                <img src="/logotype-dark.png" :style="{height: '24px'}" class="mx-auto hidden dark:block"/>
                             </Link>
                             <Link href="/dashboard" class="mx-auto text-center " v-else>
                                 <AppIcon size="medium"  />

@@ -93,7 +93,7 @@ const budgets = computed(() => {
 
 
 <template>
-    <AppLayout title="Home Projects">
+    <AppLayout title="Family">
         <template #header>
             <ProfileSectionNav :loger-profile="profiles">
                   <template #actions>

@@ -66,7 +66,7 @@ const hasHiddenValues = inject('hasHiddenValues', ref(false))
                 class="flex flex-col items-center justify-center w-full px-6 cursor-pointer select-none comparison-header__item snap-center min-w-max previous-period hover:text-body/80"
             >
             <h6 class="period-title">{{ header.label }}</h6>
-            <span class="text-sm period-value" v-for="(value, index) in header.value">
+            <span class="relative text-sm period-value" v-for="(value, index) in header.value">
                 <div
                     class="absolute w-2 h-2 rounded-full -left-4 top-2"
                     :style="{backgroundColor: state.options.colors[index]}"

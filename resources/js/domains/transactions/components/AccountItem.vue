@@ -81,7 +81,7 @@ const creditLimitDate = computed(() => {
         </span>
         <span v-if="creditLimitDate" class="text-xs text-body-1/50 shrink-0">{{ creditLimitDate }}</span>
       </header>
-      <p class="text-xs mt-0.5 flex items-center gap-1.5" :class="{ 'text-red-400': isDebt(account.balance) }">
+      <p class="relative text-xs mt-0.5 flex items-center gap-1.5" :class="{ 'text-red-400': isDebt(account.balance) }">
         <NumberHider />
         <span :class="isSelected ? 'font-medium' : ''" title="Balance">{{ formatMoney(account.balance, account.currency_code) }}</span>
         <span v-if="isCreditCard" class="text-green-600 text-[10px]" title="Available credit"><span class="opacity-60">avail</span> 

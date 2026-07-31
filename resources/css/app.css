@@ -67,3 +67,15 @@ body { color: rgb(var(--c-body)); }
         overflow: auto;
     }
 }
+
+
+/* Dark mode: neutralize atmosphere-ui's hardcoded light surfaces in the team switcher. */
+.dark .team-select-fix .bg-white { background-color: rgb(var(--c-base-lvl-3)); }
+.dark .team-select-fix .text-gray-500,
+.dark .team-select-fix .text-gray-700,
+.dark .team-select-fix .text-gray-400 { color: rgb(var(--c-body-1)); }
+.dark .team-select-fix .hover\:bg-gray-50:hover,
+.dark .team-select-fix .focus\:bg-gray-50:focus,
+.dark .team-select-fix .active\:bg-gray-50:active { background-color: rgb(var(--c-base-lvl-2)); }
+.dark .team-select-fix .hover\:text-gray-700:hover { color: rgb(var(--c-body)); }
+.dark .team-select-fix .border-gray-100 { border-color: rgb(var(--c-base-lvl-2)); }

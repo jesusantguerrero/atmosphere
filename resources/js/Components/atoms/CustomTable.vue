@@ -52,6 +52,26 @@ const toggleSort = (col: Record<string, any>) => {
 const range = computed(() => {
       return [...Array(props.skeletonLines).keys()];
 })
+
+/**
+ * Column definitions across the app declare width as a bare number (`200`) or a
+ * numeric string (`"100"`). Both are invalid CSS, so the browser dropped them
+ * silently and `table-fixed` fell back to distributing every column equally —
+ * short columns like a status icon got as much room as a payee name. Units are
+ * added here rather than in each cols file so every CustomTable benefits.
+ */
+const toCssSize = (value: unknown) => {
+    if (value === undefined || value === null || value === '') return undefined;
+
+    return typeof value === 'number' || /^\d+(\.\d+)?$/.test(String(value))
+        ? `${value}px`
+        : String(value);
+};
+
+const colStyle = (col: Record<string, any>) => ({
+    width: toCssSize(col.width),
+    maxWidth: toCssSize(col.maxWidth),
+});
 </script>
 
 <template>
@@ -68,7 +88,7 @@ const range = computed(() => {
                  :key="col.name"
                  class="px-2 py-4"
                  :class="[col.headerClass]"
-                 :style="{width: col.width, maxWidth: col.maxWidth}"
+                 :style="colStyle(col)"
                 >
                     <button
                         v-if="col.sortable"
@@ -100,7 +120,7 @@ const range = computed(() => {
                 :class="{'bg-base-lvl-2 py-2': index % 2}"
             >
                 <td v-for="col in cols" :key="col.name" class="h-6 py-1"
-                :style="{width: col.width, maxWidth: col.maxWidth}">
+                :style="colStyle(col)">
                     <span class="inline-block w-full h-full align-baseline bg-base-lvl-1"></span>
                 </td>
             </tr>
@@ -118,7 +138,7 @@ const range = computed(() => {
                 class="text-body transition-colors border-b border-base-lvl-2 hover:bg-base-lvl-1"
                 :class="[rowClass?.(data, index) ?? '']"
             >
-                <td v-for="col in cols" :key="col.name" class="h-full align-baseline" :style="{width: col.width, maxWidth: col.maxWidth}">
+                <td v-for="col in cols" :key="col.name" class="h-full align-baseline" :style="colStyle(col)">
                     <div class="flex flex-col w-full h-full px-2 py-3 text-left" :class="col.class">
                             <slot :name="col.name" v-bind:scope="{row: data, value: data[col.name], col, field: col.name, $index: index }">
                                 <div v-if="col.type == 'calc'" :class="col.class">
