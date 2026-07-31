@@ -47,8 +47,15 @@ body { color: rgb(var(--c-body)); }
 
 /* Element Plus dark theme (html.dark) ships its own grays; remap the surfaces
    and text to Loger tokens so ElTable/ElPagination blend with the app instead
-   of standing out as a different shade of dark. */
-.dark {
+   of standing out as a different shade of dark.
+
+   Two scopes are required:
+   - html.dark  → EP's dark file declares globals on `html.dark`, which beats
+                  a plain `.dark` selector on specificity.
+   - .el-table  → EP declares table vars ON the component (`.el-table { --el-
+                  table-tr-bg-color: ... }`), so root-level overrides never
+                  reach it; they must be re-declared at component scope. */
+html.dark {
     --el-bg-color: rgb(var(--c-base-lvl-3));
     --el-bg-color-overlay: rgb(var(--c-base-lvl-3));
     --el-fill-color-blank: rgb(var(--c-base-lvl-3));
@@ -59,6 +66,9 @@ body { color: rgb(var(--c-body)); }
     --el-border-color: rgb(var(--c-border));
     --el-border-color-light: rgb(var(--c-border));
     --el-border-color-lighter: rgb(var(--c-border));
+}
+
+.dark .el-table {
     --el-table-bg-color: rgb(var(--c-base-lvl-3));
     --el-table-tr-bg-color: rgb(var(--c-base-lvl-3));
     --el-table-header-bg-color: rgb(var(--c-base-lvl-3));

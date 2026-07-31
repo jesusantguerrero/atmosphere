@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, toRefs, provide, ref, onMounted } from "vue";
+import { computed, toRefs, provide, ref, onMounted, watch } from "vue";
 import { Link, router, useForm } from "@inertiajs/vue3";
 import { AtBackgroundIconCard, AtField } from "atmosphere-ui";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
+import AppSearch from "@/Components/AppSearch/AppSearch.vue";
 
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 import LogerInput from "@/Components/atoms/LogerInput.vue";
@@ -273,12 +274,20 @@ const totalTransactions = computed(() => {
 // the 25 loaded rows. With the pending filter on, checking a row makes it
 // leave the list on reload — the remaining work is always what's on screen.
 const matchedFilter = ref<string>(new URLSearchParams(window.location.search).get('matched') ?? '');
+const searchQuery = ref<string>(new URLSearchParams(window.location.search).get('search') ?? '');
 
 const filterOptions = computed(() => [
   { value: '', label: 'All', count: totalTransactions.value },
   { value: 'pending', label: 'Pending', count: totalTransactions.value - transactionsMatched.value },
   { value: 'matched', label: 'Matched', count: transactionsMatched.value },
 ]);
+
+const buildListParams = (extra: Record<string, any> = {}) => {
+  const params: Record<string, any> = { ...extra };
+  if (matchedFilter.value) params.matched = matchedFilter.value;
+  if (searchQuery.value) params.search = searchQuery.value;
+  return params;
+};
 
 const reloadList = (params: Record<string, any>) => {
   router.get(window.location.pathname, params, {
@@ -291,13 +300,22 @@ const reloadList = (params: Record<string, any>) => {
 const setMatchedFilter = (value: string) => {
   if (matchedFilter.value === value) return;
   matchedFilter.value = value;
-  reloadList(value ? { matched: value, page: 1 } : { page: 1 });
+  reloadList(buildListParams({ page: 1 }));
 };
+
+// Search by amount or payee — the number on the bank statement is what the
+// user cross-checks against, so a debounced server-side lookup beats
+// scanning 75 rows by eye.
+let searchTimer: ReturnType<typeof setTimeout> | null = null;
+watch(searchQuery, () => {
+  if (searchTimer) clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => reloadList(buildListParams({ page: 1 })), 350);
+});
 
 // Server-side pagination (25 per page). Partial visit keeps scroll and local
 // state; only the table data and counters travel.
 const goToPage = (page: number) => {
-  reloadList(matchedFilter.value ? { matched: matchedFilter.value, page } : { page });
+  reloadList(buildListParams({ page }));
 };
 
 // Ledger balance AS OF the reconciliation date. account.balance is the
@@ -327,12 +345,6 @@ const progressPercent = computed(() => {
 
 const progressBarColor = computed(() => {
   return progressPercent.value === 100 ? 'bg-emerald-500' : 'bg-primary';
-});
-
-const progressTextColor = computed(() => {
-  if (progressPercent.value === 100) return 'text-emerald-600';
-  if (progressPercent.value > 0) return 'text-primary';
-  return 'text-body-1/40';
 });
 
 const difference = computed(() => {
@@ -412,34 +424,12 @@ const differenceDirection = computed(() => {
       </div>
 
       <section class="bg-base-lvl-3 mt-4 rounded-t-lg overflow-hidden">
-        <!-- Progress hero. Previously buried as a 12px label next to the
-             other AtFields; this is the single number that answers
-             "am I done?" so it gets size + a bar. -->
-        <div class="px-6 pt-4 pb-3 border-b border-base">
-          <div class="flex items-center justify-between gap-4 flex-wrap">
-            <h2 class="text-xs font-semibold uppercase tracking-wide text-body-1/60">
-              {{ $t('Match progress') }}
-            </h2>
-            <p class="tabular-nums">
-              <span class="text-2xl font-bold" :class="progressTextColor">
-                {{ transactionsMatched }}
-              </span>
-              <span class="text-body-1/60 text-sm"> / {{ totalTransactions }} {{ $t('matched') }}</span>
-              <span class="ml-2 text-xs text-body-1/50">({{ progressPercent }}%)</span>
-            </p>
-          </div>
-          <div class="mt-2 w-full h-1.5 rounded-full bg-base overflow-hidden">
-            <div
-              class="h-full rounded-full transition-all duration-500"
-              :class="progressBarColor"
-              :style="{ width: progressPercent + '%' }"
-            />
-          </div>
-        </div>
-
-        <!-- Sticky: the difference is the number being driven to zero — it
-             stays pinned (under the fixed app header) while the table scrolls. -->
-        <header class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 md:gap-6 px-4 md:px-6 py-3 md:sticky md:top-12 md:z-20 bg-base-lvl-3 border-b border-base">
+        <!-- Sticky wrapper: context numbers + the 2px progress line stay
+             pinned while the table scrolls. The old full-width MATCH PROGRESS
+             band was redundant chrome — the Pending/Matched counts and this
+             hairline carry the same information. -->
+        <div class="md:sticky md:top-0 md:z-20 bg-base-lvl-3">
+        <header class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 md:gap-6 px-4 md:px-6 py-3">
           <div class="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-6 flex-wrap">
             <AtField :label="$t('Statement balance')">
               <LogerInput
@@ -462,18 +452,21 @@ const differenceDirection = computed(() => {
               </div>
             </AtField>
 
-            <!-- Difference: red when ≠ 0, green when matched. This is the
-                 number the user is trying to drive to zero, so it now
-                 carries the most visual weight and a directional label. -->
+            <!-- Difference: red when ≠ 0, green when matched — the number
+                 being driven to zero. Direction + match count live in its
+                 sublabel: it's where the eye already is when asking
+                 "am I done?". -->
             <AtField :label="differenceLabel">
-              <div class="flex items-baseline gap-1">
-                <span class="font-bold tabular-nums text-lg" :class="differenceColor">
-                  {{ formatMoney(Math.abs(difference)) }}
-                </span>
-                <span v-if="differenceDirection" class="text-[10px] uppercase tracking-wide text-body-1/60">
-                  {{ differenceDirection }}
-                </span>
-                <IMdiCheckCircle v-if="isMatched" class="w-4 h-4 text-emerald-500 ml-1" />
+              <div>
+                <div class="flex items-baseline gap-1">
+                  <span class="font-bold tabular-nums text-lg" :class="differenceColor">
+                    {{ formatMoney(Math.abs(difference)) }}
+                  </span>
+                  <IMdiCheckCircle v-if="isMatched" class="w-4 h-4 text-emerald-500 ml-1" />
+                </div>
+                <p class="text-[10px] text-body-1/50 leading-tight">
+                  <template v-if="differenceDirection">{{ differenceDirection.toLowerCase() }} · </template>{{ transactionsMatched }}/{{ totalTransactions }} {{ $t('matched') }}
+                </p>
               </div>
             </AtField>
           </div>
@@ -520,22 +513,42 @@ const differenceDirection = computed(() => {
           </div>
         </header>
 
-        <!-- Match status filter — server-side, spans all pages. With
-             'Pending' on, checked rows leave the list: what's on screen
-             is always the remaining work. -->
-        <div class="flex items-center gap-1 px-4 md:px-6 py-2 border-b border-base">
-          <button
-            v-for="option in filterOptions"
-            :key="option.value"
-            type="button"
-            class="px-3 py-1 text-xs rounded-full transition-colors"
-            :class="matchedFilter === option.value
-              ? 'bg-primary/15 text-primary font-semibold'
-              : 'text-body-1/60 hover:text-body hover:bg-base-lvl-2'"
-            @click="setMatchedFilter(option.value)"
-          >
-            {{ $t(option.label) }} <span class="opacity-60">({{ option.count }})</span>
-          </button>
+        <!-- Hairline progress: fills toward 100% as rows are matched. -->
+        <div class="h-0.5 bg-base" :title="progressPercent + '% matched'">
+          <div
+            class="h-full transition-all duration-500"
+            :class="progressBarColor"
+            :style="{ width: progressPercent + '%' }"
+          />
+        </div>
+        </div>
+
+        <!-- List controls: search + match status filter. Same grammar as the
+             register toolbar — search first, segmented filter next. The filter
+             is server-side so it spans every page; with 'Pending' on, checked
+             rows leave the list and what's on screen is the remaining work. -->
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2 px-4 md:px-6 py-2 border-b border-base">
+          <AppSearch
+            v-model.lazy="searchQuery"
+            class="w-full sm:max-w-[220px]"
+            :placeholder="$t('Amount or payee')"
+            :has-filters="Boolean(searchQuery)"
+            @clear="searchQuery = ''"
+          />
+          <div class="inline-flex self-start p-0.5 text-xs rounded-lg bg-base-lvl-1 sm:self-auto">
+            <button
+              v-for="option in filterOptions"
+              :key="option.value"
+              type="button"
+              class="px-3 py-1.5 rounded-md transition-colors"
+              :class="matchedFilter === option.value
+                ? 'bg-base-lvl-3 text-body font-semibold shadow-sm'
+                : 'text-body-1/60 hover:text-body'"
+              @click="setMatchedFilter(option.value)"
+            >
+              {{ $t(option.label) }} <span class="opacity-60">({{ option.count }})</span>
+            </button>
+          </div>
         </div>
 
         <!-- Bulk action bar — only renders when rows are selected.
