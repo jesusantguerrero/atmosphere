@@ -1,26 +1,32 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { useLocalStorage } from '@vueuse/core';
 
 import IconClose from '@/Components/icons/IconClose.vue';
 
 /**
- * Guided empty state for the Budget page.
+ * Guided empty state for the Budget page — Mercury-style floating panel.
  *
- * Shown when this month has zero assignments AND the user hasn't dismissed
- * the panel. Replaces the previous generic "This is your budget" message with
- * a 3-step walkthrough tailored to how a newcomer actually gets from
- * registration to a working budget in Loger:
+ * Design choice (vs inline banner): a fixed bottom-right card that doesn't
+ * push the budget UI around, plus a collapse-to-launcher pattern so a user
+ * who dismissed it can still recall the checklist without losing their place.
+ * Auto-hides entirely once the user has made their first assignment this
+ * month (`monthIsEmpty=false`) — the checklist is not a promotion, it's
+ * newcomer wayfinding.
  *
- *   1. Verify accounts (needed so any inflow lands in Ready to Assign)
- *   2. Log a first income transaction (populates Ready to Assign)
- *   3. Assign that income to the categories that were seeded on signup
+ * Positioning: `right-[100px]` clears the 76px right-side quick-panel rail
+ * that AppLayout renders in desktop.
  *
- * The dismiss is remembered in localStorage — power-users returning to a
- * fresh month don't need to see it every time. Auto-hides once the user has
- * assigned at least one peso this month (`monthIsEmpty=false`), so it never
- * competes with real budget data.
+ * The three steps track observable state:
+ *   1. hasAccounts       — user has at least one Account
+ *   2. readyToAssign > 0 — an income has landed in the RTA pool
+ *   3. (implicit) — once complete, monthIsEmpty flips and the whole
+ *      floater disappears; no need to render a checkmark for it.
+ *
+ * Dismiss persists in localStorage; collapse (to launcher) doesn't. This
+ * lets a returning user always re-open the checklist without a permanent
+ * "off" gesture, while still respecting a hard-dismiss.
  */
 const props = defineProps<{
   monthIsEmpty: boolean;
@@ -29,21 +35,23 @@ const props = defineProps<{
 }>();
 
 const dismissed = useLocalStorage('loger-budget-onboarding-dismissed', false);
+const collapsed = ref(false);
 
 const shouldShow = computed(() => props.monthIsEmpty && !dismissed.value);
 
 const readyToAssignHasFunds = computed(() => Number(props.readyToAssign ?? 0) > 0);
-
 const step1Complete = computed(() => props.hasAccounts === true);
 const step2Complete = computed(() => readyToAssignHasFunds.value);
-const step3Complete = computed(() => false); // once step 3 done, monthIsEmpty flips false and the whole banner hides
+
+const completedSteps = computed(() => {
+  let n = 0;
+  if (step1Complete.value) n++;
+  if (step2Complete.value) n++;
+  return n;
+});
 
 const goToAccounts = () => router.visit('/finance');
-const goToNewIncome = () => {
-  // Match the top-bar "+ New → Income" flow — expose a query param the
-  // TransactionModal listens for on mount.
-  router.visit('/finance/transactions?new=income');
-};
+const goToNewIncome = () => router.visit('/finance/transactions?new=income');
 const scrollToTable = () => {
   const el = document.querySelector('[data-budget-table]');
   el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -52,121 +60,151 @@ const scrollToTable = () => {
 const dismiss = () => {
   dismissed.value = true;
 };
+const collapse = () => {
+  collapsed.value = true;
+};
+const expand = () => {
+  collapsed.value = false;
+};
 </script>
 
 <template>
-  <article
-    v-if="shouldShow"
-    class="relative overflow-hidden rounded-lg border border-primary/30 bg-gradient-to-br from-primary/5 to-transparent px-6 py-5 mb-3"
+  <!-- Expanded panel -->
+  <aside
+    v-if="shouldShow && !collapsed"
+    class="fixed bottom-4 right-[100px] z-40 w-[360px] max-w-[calc(100vw-32px)] rounded-xl border border-base bg-base-lvl-3 shadow-2xl overflow-hidden"
   >
-    <button
-      type="button"
-      class="absolute top-3 right-3 text-body-1/60 hover:text-body focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded"
-      :title="$t('Dismiss')"
-      :aria-label="$t('Dismiss')"
-      @click="dismiss"
-    >
-      <IconClose />
-    </button>
-
-    <header class="pr-8">
-      <h3 class="text-lg font-bold text-body">
-        {{ $t('Welcome to your budget') }}
-      </h3>
-      <p class="mt-1 text-sm text-body-1/80 max-w-2xl">
-        {{ $t('Loger uses zero-based budgeting: every peso gets a job before you spend it. Three steps to a working budget:') }}
-      </p>
+    <header class="flex items-start justify-between gap-2 px-5 pt-4 pb-3 border-b border-base">
+      <div class="flex-1 min-w-0">
+        <h3 class="text-base font-bold text-body">
+          {{ $t('Set up your budget') }}
+        </h3>
+        <p class="text-xs text-body-1/70 mt-0.5">
+          {{ completedSteps }} / 3 {{ $t('done') }}
+        </p>
+      </div>
+      <button
+        type="button"
+        class="flex items-center justify-center h-7 w-7 rounded-md text-body-1/60 hover:bg-base-lvl-2 hover:text-body focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 transition"
+        :title="$t('Collapse')"
+        :aria-label="$t('Collapse')"
+        @click="collapse"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
     </header>
 
-    <ol class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+    <ul class="py-2">
       <!-- Step 1: accounts -->
-      <li
-        class="rounded-md border p-3 flex flex-col gap-2 transition"
-        :class="step1Complete
-          ? 'border-emerald-500/40 bg-emerald-500/5'
-          : 'border-base bg-base-lvl-3'"
-      >
-        <div class="flex items-center gap-2">
-          <span
-            class="flex items-center justify-center h-6 w-6 rounded-full text-xs font-bold"
-            :class="step1Complete
-              ? 'bg-emerald-500 text-white'
-              : 'bg-primary/10 text-primary'"
-          >
-            <span v-if="step1Complete">✓</span>
-            <span v-else>1</span>
-          </span>
-          <h4 class="text-sm font-semibold text-body">{{ $t('Verify your accounts') }}</h4>
-        </div>
-        <p class="text-xs text-body-1/70">
-          {{ $t('Bank, credit cards, cash — Loger needs to know where your money lives.') }}
-        </p>
+      <li>
         <button
           type="button"
-          class="mt-auto text-xs font-medium text-primary hover:underline text-left"
+          class="w-full flex items-center gap-3 px-5 py-3 hover:bg-base-lvl-2 transition text-left focus:outline-none focus-visible:bg-base-lvl-2"
           @click="goToAccounts"
         >
-          {{ step1Complete ? $t('Manage accounts') : $t('Go to accounts') }} →
+          <span
+            class="flex-shrink-0 flex items-center justify-center h-9 w-9 rounded-lg text-sm font-bold"
+            :class="step1Complete
+              ? 'bg-emerald-500/15 text-emerald-500'
+              : 'bg-primary/10 text-primary'"
+          >
+            <svg v-if="step1Complete" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            <span v-else>1</span>
+          </span>
+          <span class="flex-1 min-w-0">
+            <span class="block text-sm font-medium text-body">{{ $t('Verify your accounts') }}</span>
+            <span class="block text-xs text-body-1/60 mt-0.5 truncate">
+              {{ $t('Bank, credit cards, cash') }}
+            </span>
+          </span>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-body-1/40 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
         </button>
       </li>
 
       <!-- Step 2: first income -->
-      <li
-        class="rounded-md border p-3 flex flex-col gap-2 transition"
-        :class="step2Complete
-          ? 'border-emerald-500/40 bg-emerald-500/5'
-          : 'border-base bg-base-lvl-3'"
-      >
-        <div class="flex items-center gap-2">
-          <span
-            class="flex items-center justify-center h-6 w-6 rounded-full text-xs font-bold"
-            :class="step2Complete
-              ? 'bg-emerald-500 text-white'
-              : 'bg-primary/10 text-primary'"
-          >
-            <span v-if="step2Complete">✓</span>
-            <span v-else>2</span>
-          </span>
-          <h4 class="text-sm font-semibold text-body">{{ $t('Log an income') }}</h4>
-        </div>
-        <p class="text-xs text-body-1/70">
-          {{ $t('A salary, a payment received — anything that fills your Ready to Assign pool.') }}
-        </p>
+      <li>
         <button
           type="button"
-          class="mt-auto text-xs font-medium text-primary hover:underline text-left"
+          class="w-full flex items-center gap-3 px-5 py-3 hover:bg-base-lvl-2 transition text-left focus:outline-none focus-visible:bg-base-lvl-2"
           @click="goToNewIncome"
         >
-          {{ step2Complete ? $t('Log another income') : $t('Add income') }} →
+          <span
+            class="flex-shrink-0 flex items-center justify-center h-9 w-9 rounded-lg text-sm font-bold"
+            :class="step2Complete
+              ? 'bg-emerald-500/15 text-emerald-500'
+              : 'bg-primary/10 text-primary'"
+          >
+            <svg v-if="step2Complete" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            <span v-else>2</span>
+          </span>
+          <span class="flex-1 min-w-0">
+            <span class="block text-sm font-medium text-body">{{ $t('Log an income') }}</span>
+            <span class="block text-xs text-body-1/60 mt-0.5 truncate">
+              {{ $t('Fill up Ready to Assign') }}
+            </span>
+          </span>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-body-1/40 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
         </button>
       </li>
 
       <!-- Step 3: assign -->
-      <li
-        class="rounded-md border p-3 flex flex-col gap-2 transition"
-        :class="step3Complete
-          ? 'border-emerald-500/40 bg-emerald-500/5'
-          : 'border-base bg-base-lvl-3'"
-      >
-        <div class="flex items-center gap-2">
-          <span
-            class="flex items-center justify-center h-6 w-6 rounded-full text-xs font-bold bg-primary/10 text-primary"
-          >
-            3
-          </span>
-          <h4 class="text-sm font-semibold text-body">{{ $t('Assign to categories') }}</h4>
-        </div>
-        <p class="text-xs text-body-1/70">
-          {{ $t('Give every peso a job — rent, groceries, savings. Type into the ASSIGNED column below.') }}
-        </p>
+      <li>
         <button
           type="button"
-          class="mt-auto text-xs font-medium text-primary hover:underline text-left"
+          class="w-full flex items-center gap-3 px-5 py-3 hover:bg-base-lvl-2 transition text-left focus:outline-none focus-visible:bg-base-lvl-2"
           @click="scrollToTable"
         >
-          {{ $t('Jump to categories') }} ↓
+          <span class="flex-shrink-0 flex items-center justify-center h-9 w-9 rounded-lg text-sm font-bold bg-primary/10 text-primary">
+            3
+          </span>
+          <span class="flex-1 min-w-0">
+            <span class="block text-sm font-medium text-body">{{ $t('Assign to categories') }}</span>
+            <span class="block text-xs text-body-1/60 mt-0.5 truncate">
+              {{ $t('Give every peso a job below') }}
+            </span>
+          </span>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-body-1/40 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
         </button>
       </li>
-    </ol>
-  </article>
+    </ul>
+
+    <footer class="px-5 py-2 border-t border-base flex items-center justify-between">
+      <span class="text-[11px] text-body-1/50">{{ $t('Zero-based budgeting') }}</span>
+      <button
+        type="button"
+        class="text-[11px] font-medium text-body-1/60 hover:text-body-1 transition"
+        @click="dismiss"
+      >
+        {{ $t('Don\'t show again') }}
+      </button>
+    </footer>
+  </aside>
+
+  <!-- Collapsed launcher — small floating button when the panel is minimized
+       but not permanently dismissed. Click to re-expand. -->
+  <button
+    v-if="shouldShow && collapsed"
+    type="button"
+    class="fixed bottom-4 right-[100px] z-40 flex items-center gap-2 pl-3 pr-4 py-2.5 rounded-full bg-primary text-white shadow-xl hover:shadow-2xl hover:bg-primary/90 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+    :title="$t('Show budget setup')"
+    :aria-label="$t('Show budget setup')"
+    @click="expand"
+  >
+    <span class="flex items-center justify-center h-6 w-6 rounded-full bg-white/20 text-xs font-bold">
+      {{ completedSteps }}/3
+    </span>
+    <span class="text-sm font-medium">{{ $t('Set up budget') }}</span>
+  </button>
 </template>
