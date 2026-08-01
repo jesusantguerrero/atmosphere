@@ -364,6 +364,11 @@ const context = useAppContextStore();
                     />
                 </template>
             </BalanceInput>
+            <!-- Empty w-8 spacer so subcategory rows align with the group
+                 header's action column (⋮) and with the ASSIGNED/SPENT/
+                 AVAILABLE labels above. Individual items don't have their
+                 own row-level action menu; the column reserves the width. -->
+            <div class="w-8" aria-hidden="true"></div>
         </div>
     </section>
     <div

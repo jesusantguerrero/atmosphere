@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { toRefs, ref } from "vue";
+import { toRefs, ref, nextTick } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
 import { VueDraggableNext as Draggable } from "vue-draggable-next";
 import { useBreakpoints, breakpointsTailwind } from "@vueuse/core";
@@ -10,6 +10,7 @@ import LogerInput from "@/Components/atoms/LogerInput.vue";
 import BudgetGroupItem from "@/domains/budget/components/BudgetGroupItem.vue";
 import BudgetItem from "@/domains/budget/components/BudgetItem.vue";
 import BudgetGroupForm from "@/domains/budget/components/BudgetGroupForm.vue";
+import TotalBudgetRow from "@/domains/budget/components/TotalBudgetRow.vue";
 
 import { useBudget } from "@/domains/budget";
 import { createBudgetCategory } from "@/domains/budget/createBudgetCategory";
@@ -54,6 +55,7 @@ const saveBudgetCategory = (parentId?: number, callback?: () => {}) => {
   }
 };
 
+
 const saveReorder = (categories: ICategory[]) => {
   const items = categories.map((item, index) => ({
     id: item.id,
@@ -85,14 +87,6 @@ const handleBudgetMovement = (budgetMovementData: any) => {
 </script>
 
 <template>
-    <BudgetGroupForm
-        v-model="categoryForm.name"
-        class="overflow-hidden rounded-md"
-        :class="[cardShadow]"
-        @save="saveBudgetCategory()"
-        @cancel=""
-    />
-
     <!-- Empty state: new account with no budget categories yet. -->
     <div
         v-if="!visibleCategories?.length"
@@ -103,18 +97,26 @@ const handleBudgetMovement = (budgetMovementData: any) => {
         <p class="mt-1 text-sm text-body-1 text-center max-w-sm">
             {{ $t('Create your first category group above to start budgeting. Group ideas: Vivienda, Comida, Transporte.') }}
         </p>
+        <!-- BudgetGroupForm surfaces here as a full-width CTA because there's
+             nothing else on screen and creating the first group is THE next
+             step. Once there are categories, the form moves to a compact
+             pill in the header row below. -->
+        <div class="w-full max-w-md mt-6">
+            <BudgetGroupForm
+                v-model="categoryForm.name"
+                class="overflow-hidden rounded-md"
+                :class="[cardShadow]"
+                @save="saveBudgetCategory()"
+                @cancel=""
+            />
+        </div>
     </div>
 
-    <!-- Column legend — small visual key so users know what each amount means. -->
-    <header
-        v-if="visibleCategories?.length"
-        class="hidden md:flex items-center justify-end gap-2 px-4 py-2 text-xs uppercase tracking-wide text-body-1/50 font-medium"
-    >
-        <span class="w-36 text-right">{{ $t('Assigned') }}</span>
-        <span class="w-44 text-right">{{ $t('Spent') }}</span>
-        <span class="w-28 text-right">{{ $t('Available') }}</span>
-        <span class="w-8" aria-hidden="true"></span>
-    </header>
+    <!-- "Add category group" moved to Budget.vue's toolbar as a "+"
+         icon with popover so the header stays 2 rows. Subcategory
+         adds still happen inline inside each group via the "+" next
+         to the group name (BudgetGroupItem's toggleAdding). -->
+
 
     <Draggable
         v-if="visibleCategories?.length"
@@ -174,6 +176,15 @@ const handleBudgetMovement = (budgetMovementData: any) => {
     </template>
     </BudgetGroupItem>
     </Draggable>
+
+    <!-- Sanity-check footer: sum of Assigned / Spent / Available across every
+         visible group. Additive-only; nothing else depends on it, so if the
+         totals ever look off it can be v-if-guarded without regressions. -->
+    <TotalBudgetRow
+        v-if="visibleCategories?.length"
+        :budgets="visibleCategories"
+        :is-mobile="isMobile"
+    />
 </template>
 
 

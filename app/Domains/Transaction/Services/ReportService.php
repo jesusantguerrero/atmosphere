@@ -125,10 +125,16 @@ class ReportService
         })->sortByDesc($timeUnit)->values()->toArray();
     }
 
-    public static function generateCurrentPreviousReport($teamId, $timeUnit = 'month', $timeUnitDiff = 2, $type = 'expenses')
+    public static function generateCurrentPreviousReport($teamId, $timeUnit = 'month', $timeUnitDiff = 2, $type = 'expenses', $anchorDate = null)
     {
-        $endDate = Carbon::now()->endOfMonth()->format('Y-m-d');
-        $startDate = Carbon::now()->subMonth($timeUnitDiff)->startOfMonth()->format('Y-m-d');
+        // Anchor defaults to "now" (production: current month). When an anchor
+        // date is passed we build the window around it instead, so callers can
+        // point the report at the latest month that actually has data.
+        $anchor = $anchorDate
+            ? Carbon::createFromFormat('Y-m-d', $anchorDate)
+            : Carbon::now();
+        $endDate = $anchor->copy()->endOfMonth()->format('Y-m-d');
+        $startDate = $anchor->copy()->subMonth($timeUnitDiff)->startOfMonth()->format('Y-m-d');
 
         $results = self::getExpensesInPeriod($teamId, $startDate, $endDate);
         $resultGroup = $results->groupBy('month');
@@ -142,6 +148,60 @@ class ReportService
                 'total' => $monthItems->sum('total_amount'),
             ];
         }, $resultGroup)->sortBy('date');
+    }
+
+    /**
+     * Most recent day that has an expense transaction for the team, as Y-m-d,
+     * or null when there are none. Used to anchor trend reports to real data
+     * instead of the wall clock (dev/demo data can lag the system date).
+     */
+    public static function getLatestExpenseDate($teamId): ?string
+    {
+        $wideStart = Carbon::now()->subYears(5)->startOfMonth()->format('Y-m-d');
+        $wideEnd = Carbon::now()->addYear()->endOfMonth()->format('Y-m-d');
+        $rows = self::getExpensesInPeriod($teamId, $wideStart, $wideEnd);
+
+        return $rows->first()->date ?? null;
+    }
+
+    /**
+     * Money-in vs money-out per month over a continuous N-month axis ending at
+     * the anchor month (defaults to now; pass the latest data month so the
+     * chart stays populated when demo data lags the clock). Shape is chart
+     * ready: [{ month: 'Y-m-01', income, expense, net }, ...] oldest-first.
+     */
+    public static function getMonthlyFlow($teamId, $months = 6, $anchorDate = null): array
+    {
+        $anchor = $anchorDate
+            ? Carbon::createFromFormat('Y-m-d', $anchorDate)
+            : Carbon::now();
+        $rangeStart = $anchor->copy()->subMonths($months - 1)->startOfMonth();
+        $startDate = $rangeStart->format('Y-m-d');
+        $endDate = $anchor->copy()->endOfMonth()->format('Y-m-d');
+
+        $expenseByMonth = self::getExpensesByCategoriesInPeriod($teamId, $startDate, $endDate)
+            ->groupBy('month')
+            ->map(fn ($items) => (float) $items->sum('total_amount'));
+        $incomeByMonth = self::getTransactionsByPayeeInPeriod($teamId, $startDate, $endDate)
+            ->groupBy('month')
+            ->map(fn ($items) => (float) $items->sum('total_amount'));
+
+        $out = [];
+        $cursor = $rangeStart->copy();
+        for ($i = 0; $i < $months; $i++) {
+            $key = $cursor->format('Y-m-d');
+            $income = (float) $incomeByMonth->get($key, 0);
+            $expense = (float) $expenseByMonth->get($key, 0);
+            $out[] = [
+                'month' => $key,
+                'income' => $income,
+                'expense' => $expense,
+                'net' => $income - $expense,
+            ];
+            $cursor->addMonth();
+        }
+
+        return $out;
     }
 
     public static function getPaymentsByYear($year, $teamId)

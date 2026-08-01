@@ -163,8 +163,17 @@ const fetchDetails = async (category: ICategory) => {
                 </button>
             </div>
         </div>
-        <div class="flex items-center space-x-2">
-            <MoneyPresenter :value="item.budgeted" />
+        <!--
+            Fixed column widths (w-36 / w-44 / w-28 / w-8) so the group
+            totals align pixel-exact with (a) BudgetItem subcategory rows
+            below and (b) the ASSIGNED / SPENT / AVAILABLE labels rendered
+            in Budget.vue's row 2. Previously used space-x-2 + natural
+            MoneyPresenter widths which drifted with value length.
+        -->
+        <div class="flex items-center flex-nowrap">
+            <div class="w-36 text-right">
+                <MoneyPresenter :value="item.budgeted" />
+            </div>
             <ExpenseChartWidgetRow
                 :value="item.activity"
                 v-if="!isMobile"
@@ -175,15 +184,19 @@ const fetchDetails = async (category: ICategory) => {
                 :details="details"
                 @open-details="fetchDetails(item)"
             />
-            <MoneyPresenter :value="item.available" />
-            <NDropdown
-                trigger="click"
-                key-field="name"
-                :options="options"
-                :on-select="handleOptions"
-            >
-                <LogerButtonTab> <i class="fa fa-ellipsis-v"></i></LogerButtonTab>
-            </NDropdown>
+            <div class="w-28 text-right">
+                <MoneyPresenter :value="item.available" />
+            </div>
+            <div class="w-8 flex items-center justify-center">
+                <NDropdown
+                    trigger="click"
+                    key-field="name"
+                    :options="options"
+                    :on-select="handleOptions"
+                >
+                    <LogerButtonTab> <i class="fa fa-ellipsis-v"></i></LogerButtonTab>
+                </NDropdown>
+            </div>
         </div>
     </header>
     <section class="border-l-4 border-primary bg-base-lvl-3" ref="dropdown">

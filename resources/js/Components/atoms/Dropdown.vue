@@ -70,7 +70,12 @@ const alignmentClasses = computed(() => {
                     :class="[widthClass, alignmentClasses]"
                     style="display: none;"
                     @click="toggleOpen(false)">
-                <div class="rounded-md ring-1 ring-black ring-opacity-5" :class="contentClasses">
+                <!-- loger-dropdown marker class scopes the dark-mode overrides
+                     in app.css that neutralize atmosphere-ui's hardcoded
+                     hover:bg-gray-100 / text-gray-700 utilities inside
+                     AtDropdownLink. Without it, hovered items flash white
+                     against the dark surface. -->
+                <div class="loger-dropdown rounded-md ring-1 ring-black ring-opacity-5" :class="contentClasses">
                     <slot name="content"></slot>
                 </div>
             </div>

@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, provide, ref, toRefs, onMounted, nextTick } from "vue";
-import { router } from "@inertiajs/vue3";
+import { router, useForm } from "@inertiajs/vue3";
 import { AtButton, AtDatePager } from "atmosphere-ui";
 import { useBreakpoints, breakpointsTailwind } from "@vueuse/core";
 import { startOfMonth } from "date-fns";
+import { NPopover } from "naive-ui";
 
 import { AtDropdownLink } from "atmosphere-ui";
 
@@ -23,6 +24,10 @@ import ExpenseIncome from "@/domains/transactions/components/ExpenseIncome.vue";
 
 import BudgetBalanceAssign from "@/domains/budget/components/BudgetBalanceAssign.vue";
 import BudgetDetailForm from "@/domains/budget/components/BudgetDetailForm.vue";
+import BudgetSidePanel from "@/domains/budget/components/BudgetSidePanel.vue";
+import MonthStripYear from "@/domains/budget/components/MonthStripYear.vue";
+import LogerInput from "@/Components/atoms/LogerInput.vue";
+import { createBudgetCategory } from "@/domains/budget/createBudgetCategory";
 
 import { useBudget } from "@/domains/budget";
 import { SearchFilterMode, useServerSearch } from "@/composables/useServerSearchV2";
@@ -131,6 +136,42 @@ const goToday = () => {
   executeSearchWithDelay();
 };
 
+// "Add category group" affordance in the header toolbar. Popover
+// triggered by IMdiPlus opens an inline input; Enter saves, Esc
+// cancels. Preserves the previous 3rd-row placement's functionality
+// in a single-icon footprint that fits the 2-row header.
+const groupForm = useForm({
+  account_id: null,
+  parent_id: null,
+  name: "",
+  amount: 0,
+});
+const showAddGroupPopover = ref(false);
+const groupInputRef = ref<HTMLInputElement | null>(null);
+
+const openAddGroup = async () => {
+  showAddGroupPopover.value = true;
+  await nextTick();
+  groupInputRef.value?.focus?.();
+};
+
+const cancelAddGroup = () => {
+  showAddGroupPopover.value = false;
+  groupForm.name = "";
+};
+
+const submitAddGroup = () => {
+  const name = groupForm.name.trim();
+  if (!name) {
+    cancelAddGroup();
+    return;
+  }
+  createBudgetCategory(groupForm, undefined, () => {
+    groupForm.name = "";
+    showAddGroupPopover.value = false;
+  });
+};
+
 const monthIsEmpty = computed(() => {
     const groups = (categories.value ?? []) as any[];
     for (const group of groups) {
@@ -225,7 +266,7 @@ const budgetCsvExportUrl = computed(() => {
       <FinanceSectionNav />
     </template>
 
-    <FinanceTemplate :accounts="accounts" :panel-size="panelSize">
+    <FinanceTemplate :accounts="accounts" :panel-size="panelSize" dense>
       <!--
         Newcomer onboarding: replaces the old generic "This is your budget"
         MessageBox with an actionable 3-step walkthrough. Auto-hides once the
@@ -239,134 +280,213 @@ const budgetCsvExportUrl = computed(() => {
         :has-accounts="(accounts?.length ?? 0) > 0"
       />
 
-      <section class="flex flex-wrap items-center gap-2 py-3">
-        <!-- Overspent notice -->
-        <AtButton
-          v-if="visibleFilters.overspent"
-          @click="toggleFilter('overspent')"
-          class="flex items-center justify-between space-x-2 rounded-md min-w-fit group"
-          :class="[filters.overspent ? 'bg-primary text-white' : 'text-primary']"
-        >
-          <span class="relative">
-            {{ filterGroups.overSpent.length }} Overspent categories
-            <PointAlert v-if="!filters.overspent" />
-          </span>
+      <!-- Row 1: Month strip. Extracted from BudgetBalanceAssign's #top slot
+           so it renders standalone above the consolidated toolbar row. -->
+      <MonthStripYear
+        v-if="pageState.dates?.startDate"
+        class="w-full"
+        v-model:startDate="pageState.dates.startDate"
+        v-model:endDate="pageState.dates.endDate"
+        @change="executeSearchWithDelay(5)"
+      />
 
-          <div class="text-white text-sm rounded-full group-hover:bg-base-lvl-3/20 p-0.5">
-            <IconClose />
-          </div>
-        </AtButton>
-        <StatusButtons
-          :modelValue="currentStatus"
-          :statuses="budgetStatus"
-          @change="toggleFilter"
-        />
+      <!--
+        Row 2 — consolidated header (Actual-style). Outer container
+        mirrors the row anatomy so labels align pixel-exact with values
+        below: px-4 (matches BudgetGroupItem/BudgetItem left+right
+        padding), left flex-1 group holds toolbar + assign pill, right
+        group is fixed w-36/w-44/w-28/w-8 no gap. Previously ml-auto +
+        internal px-4 on the labels div was double-padding + pushing
+        content past the section's right edge (AVAILABLE got cut off).
+      -->
+      <div class="flex items-center gap-2 px-4 mt-2 py-1">
+        <!-- Left group: toolbar + assign pill share flex-1, filling the
+             equivalent of the row's "name" area. Icons-only toolbar in
+             the style of Actual: filter (opens the Funded/Not-funded
+             popover), today (jump to current month), more-actions (⋮).
+             The Overspent chip stays as a text banner when triggered
+             because it's a contextual alert, not a permanent control. -->
+        <div class="flex-1 min-w-0 flex flex-wrap md:flex-nowrap items-center gap-1">
+          <AtButton
+            v-if="visibleFilters.overspent"
+            @click="toggleFilter('overspent')"
+            class="flex items-center justify-between space-x-2 rounded-md min-w-fit group"
+            :class="[filters.overspent ? 'bg-primary text-white' : 'text-primary']"
+          >
+            <span class="relative">
+              {{ filterGroups.overSpent.length }} Overspent categories
+              <PointAlert v-if="!filters.overspent" />
+            </span>
 
-        <div class="ml-auto flex items-center gap-2">
-          <LogerButton variant="inverse" @click="goToday"> {{ $t('Today') }} </LogerButton>
+            <div class="text-white text-sm rounded-full group-hover:bg-base-lvl-3/20 p-0.5">
+              <IconClose />
+            </div>
+          </AtButton>
 
-          <JetDropdown align="right" width="48">
-              <template #trigger>
-                  <LogerButtonCircle :title="$t('More actions')">
-                      <IMdiDotsVertical />
-                  </LogerButtonCircle>
-              </template>
+          <!-- Filter icon opens a popover with the Funded/Not-funded
+               segmented control. Active-state dot appears on the icon
+               when a filter is set so users can tell at a glance. -->
+          <NPopover trigger="click" placement="bottom-start">
+            <template #trigger>
+              <LogerButtonCircle
+                :title="$t('Filter')"
+                class="relative"
+              >
+                <IMdiFilterVariant />
+                <span
+                  v-if="currentStatus"
+                  class="absolute top-0 right-0 w-1.5 h-1.5 rounded-full bg-primary"
+                  aria-hidden="true"
+                />
+              </LogerButtonCircle>
+            </template>
+            <div class="p-2">
+              <StatusButtons
+                :modelValue="currentStatus"
+                :statuses="budgetStatus"
+                @change="toggleFilter"
+              />
+            </div>
+          </NPopover>
 
-              <template #content>
-                  <div class="w-56 py-1">
-                      <AtDropdownLink
-                          as="button"
-                          @click="copyFromPrevious()"
-                      >
-                          <section class="flex items-center w-full">
-                              <IMdiContentCopy class="mr-2" />
-                              <span>{{ $t('Use last month\'s plan') }}</span>
-                          </section>
-                      </AtDropdownLink>
+          <LogerButtonCircle
+            :title="$t('Jump to current month')"
+            @click="goToday"
+          >
+            <IMdiTargetVariant />
+          </LogerButtonCircle>
 
-                      <AtDropdownLink :href="budgetCsvExportUrl" target="_blank" as="a">
-                          <section class="flex items-center w-full">
-                              <IMdiDownload class="mr-2" />
-                              <span>{{ $t('Export') }} CSV</span>
-                          </section>
-                      </AtDropdownLink>
+          <!-- Add category group — popover with inline input. Removed
+               the previous 3rd row that hosted this affordance so the
+               header stays at 2 rows like Actual. -->
+          <NPopover
+            v-model:show="showAddGroupPopover"
+            trigger="manual"
+            placement="bottom-start"
+          >
+            <template #trigger>
+              <LogerButtonCircle
+                :title="$t('Add category group')"
+                @click="openAddGroup"
+              >
+                <IMdiPlus />
+              </LogerButtonCircle>
+            </template>
+            <div class="p-2 w-64 space-y-2">
+              <label class="block text-xs font-medium text-body-1">
+                {{ $t('Category group name') }}
+              </label>
+              <LogerInput
+                ref="groupInputRef"
+                v-model="groupForm.name"
+                :placeholder="$t('e.g. Vivienda, Comida')"
+                :disabled="groupForm.processing"
+                class="text-sm"
+                @keydown.enter="submitAddGroup"
+                @keydown.esc="cancelAddGroup"
+              />
+              <div class="flex items-center justify-end gap-2 pt-1">
+                <button
+                  type="button"
+                  class="text-xs text-body-1 hover:text-body px-2 py-1"
+                  @click="cancelAddGroup"
+                >
+                  {{ $t('Cancel') }}
+                </button>
+                <button
+                  type="button"
+                  class="text-xs font-medium px-3 py-1 rounded-md bg-primary text-white disabled:opacity-50"
+                  :disabled="!groupForm.name.trim() || groupForm.processing"
+                  @click="submitAddGroup"
+                >
+                  {{ $t('Save') }}
+                </button>
+              </div>
+            </div>
+          </NPopover>
 
-                      <AtDropdownLink :href="route('budget.export')" target="_blank" as="a">
-                          <section class="flex items-center w-full">
-                              <IMdiExport class="mr-2" />
-                              <span>{{ $t('Export') }} {{ $t('Budget') }}</span>
-                          </section>
-                      </AtDropdownLink>
-                  </div>
-              </template>
-          </JetDropdown>
+          <!-- The ⋮ More Actions dropdown (Copy from last month, Export
+               CSV, Export Budget) moved to BudgetSidePanel's hamburger
+               menu on the right so those month-level actions live with
+               the rest of the budget-summary controls. -->
+
+          <BudgetBalanceAssign
+            class="rounded-md shrink-0"
+            :value="readyToAssignBalance"
+            :category="readyToAssignLeft"
+            :to-assign="readyToAssign"
+            :scheduled-total="scheduledTotal"
+          />
         </div>
-      </section>
 
-      <BudgetBalanceAssign
-        class="rounded-t-md"
-        :class="[!visibleFilters.overspent && 'rounded-b-md']"
-        :value="readyToAssignBalance"
-        :category="readyToAssignLeft"
-        :to-assign="readyToAssign"
-        :scheduled-total="scheduledTotal"
-      >
-        <template #top>
-            <AtDatePager
-              v-if="pageState.dates?.startDate"
-              class="w-full h-12 border-none bg-base-lvl-1 text-body"
-              v-model:startDate="pageState.dates.startDate"
-              v-model:endDate="pageState.dates.endDate"
-              @change="executeSearchWithDelay(5)"
-              controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
-              next-mode="month"
-            >
-              {{ formatMonth(pageState.dates.startDate, "MMMM") }}
-            </AtDatePager>
-        </template>
-      </BudgetBalanceAssign>
+        <!-- Right group: fixed w-36/w-44/w-28/w-8 no gap. Mirrors
+             BudgetGroupItem/BudgetItem right-side anatomy 1:1, and
+             because the outer container has the same px-4 as the rows,
+             the labels sit pixel-aligned above the values below. No
+             internal padding or ml-auto — flex-1 on the left group
+             pushes this to the right naturally. -->
+        <!-- SPENT uses text-left pl-8 (not text-right like the others)
+             because ExpenseChartWidgetRow renders its value with
+             `inline-flex justify-between px-4` + a `ml-4` on the value
+             span → the "DOP X.XX" starts 32px from the left edge of the
+             w-44 chart column. Mimicking that offset here puts the
+             SPENT label directly above its value; text-right would leave
+             a ~90px visual gap on the right side of the column. -->
+        <div class="hidden md:flex items-center flex-nowrap shrink-0 text-xs uppercase tracking-wide text-body-1/50 font-medium">
+          <span class="w-36 text-right">{{ $t('Assigned') }}</span>
+          <span class="w-44 text-left pl-8">{{ $t('Spent') }}</span>
+          <span class="w-28 text-right">{{ $t('Available') }}</span>
+          <span class="w-8" aria-hidden="true"></span>
+        </div>
+      </div>
 
       <!-- data-budget-table anchor is used by BudgetOnboarding's "Jump to
-           categories" CTA to smooth-scroll here. -->
-      <section data-budget-table class="mx-auto mt-4 rounded-lg text-body bg-base max-w-7xl">
+           categories" CTA to smooth-scroll here. max-w-7xl was previously
+           capping the table around ~1280px, leaving huge empty lateral space
+           on wider screens — the assign card and column headers already fit
+           any width, so let the table breathe. -->
+      <section data-budget-table class="w-full mt-4 rounded-lg text-body bg-base">
           <article class="w-full space-y-4">
             <BudgetErrorBanner />
             <BudgetCategories :budgets="budgets" />
         </article>
       </section>
 
-      <template #prepend-panel class="">
-        <div class="space-y-4 ">
-          <BudgetDetailForm
-            v-if="selectedBudget && !showCategoriesInMain"
-            full
-            :category="selectedBudget"
-            :item="selectedBudget.budget"
-            :editable="true"
-            @saved="onBudgetItemSaved"
-            @deleted="deleteBudget"
-            @cancel="setSelectedBudget()"
-            @close="setSelectedBudget()"
-          />
-
-          <ExpenseIncome
-            v-else
-            :value="readyToAssign.inflow + readyToAssign.budgetedSpending"
-            :footer-stats="[
-              {
-                label: 'Income',
-                value: readyToAssign.inflow,
-                class: 'text-success',
-              },
-              {
-                label: 'Expense',
-                value: readyToAssign.budgetedSpending,
-                class: 'text-error',
-              },
-            ]"
-
+      <template #prepend-panel>
+        <!--
+          Actual-style right panel: persistent "My Budget" section with
+          Status + Summary cards + a hamburger menu that consolidates
+          the month-level actions (previously scattered in the header
+          toolbar's ⋮ dropdown). The selected-category BudgetDetailForm
+          slots in below when a row is selected; otherwise the panel
+          just shows the general budget health. Replaces the old
+          ExpenseIncome fallback (Income vs Expense chart) — the same
+          spend data is available from the Trends page and from the
+          per-row activity chart, so the panel real estate is better
+          spent on aggregate summary + quick actions.
+        -->
+        <BudgetSidePanel
+          :value="readyToAssignBalance"
+          :to-assign="readyToAssign"
+          :budgets="budgets"
+          :budget-csv-export-url="budgetCsvExportUrl"
+          :export-budget-url="route('budget.export')"
+          @copy-from-previous="copyFromPrevious()"
+        >
+          <template #detail>
+            <BudgetDetailForm
+              v-if="selectedBudget && !showCategoriesInMain"
+              full
+              :category="selectedBudget"
+              :item="selectedBudget.budget"
+              :editable="true"
+              @saved="onBudgetItemSaved"
+              @deleted="deleteBudget"
+              @cancel="setSelectedBudget()"
+              @close="setSelectedBudget()"
             />
-        </div>
+          </template>
+        </BudgetSidePanel>
       </template>
     </FinanceTemplate>
     <modal

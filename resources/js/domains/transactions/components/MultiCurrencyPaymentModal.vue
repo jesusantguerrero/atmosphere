@@ -69,8 +69,8 @@
           </div>
 
           <!-- Currency Conversion Section -->
-          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h4 class="font-semibold text-blue-800 mb-4">Currency Conversion</h4>
+          <div class="bg-blue-50 border border-blue-200 dark:bg-blue-500/10 dark:border-blue-500/25 rounded-lg p-4">
+            <h4 class="font-semibold text-blue-800 dark:text-blue-300 mb-4">Currency Conversion</h4>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <!-- Secondary Currency Amount -->
@@ -123,14 +123,14 @@
             </div>
 
             <!-- Conversion Preview -->
-            <div v-if="form.total && form.exchange_amount" class="mt-4 p-3 bg-green-50 border border-green-200 rounded">
+            <div v-if="form.total && form.exchange_amount" class="mt-4 p-3 bg-green-50 border border-green-200 dark:bg-green-500/10 dark:border-green-500/25 rounded">
               <div class="text-sm">
-                <div class="font-medium text-green-800">Payment Summary:</div>
-                <div class="text-green-700">
-                  Paying {{ formatCurrency(form.total, form.currency_code) }} 
+                <div class="font-medium text-green-800 dark:text-green-300">Payment Summary:</div>
+                <div class="text-green-700 dark:text-green-200/80">
+                  Paying {{ formatCurrency(form.total, form.currency_code) }}
                   = {{ formatCurrency(form.exchange_amount, account?.currency_code) }}
                 </div>
-                <div class="text-green-700">
+                <div class="text-green-700 dark:text-green-200/80">
                   This will reduce the pending {{ form.currency_code }} balance and update the primary balance
                 </div>
               </div>
