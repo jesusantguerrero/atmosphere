@@ -120,4 +120,44 @@ class DefaultCategoriesTest extends TestCase
         $this->assertNotNull($child);
         $this->assertSame($parent->id, $child->parent_id);
     }
+
+    public function test_seed_uses_spanish_names_when_app_locale_is_es(): void
+    {
+        // Simulate a Spanish signup: the request-scoped locale drives what
+        // TransactionCategoriesCreate writes into `categories.name`.
+        app()->setLocale('es');
+
+        $user = User::factory()->withPersonalTeam()->create();
+        $team = $user->ownedTeams()->first();
+
+        $groceries = Category::where(['team_id' => $team->id, 'display_id' => 'groceries'])->firstOrFail();
+        $emergency = Category::where(['team_id' => $team->id, 'display_id' => 'emergency_fund'])->firstOrFail();
+        $obligations = Category::where(['team_id' => $team->id, 'display_id' => 'immediate_obligations'])->firstOrFail();
+        $savings = Category::where(['team_id' => $team->id, 'display_id' => 'personal_spending'])->firstOrFail();
+
+        $this->assertSame('Supermercado', $groceries->name);
+        $this->assertSame('Fondo de Emergencia', $emergency->name);
+        $this->assertSame('Obligaciones Inmediatas', $obligations->name);
+        $this->assertSame('Gasto Personal', $savings->name);
+
+        app()->setLocale('en');
+    }
+
+    public function test_reserved_names_stay_english_even_when_locale_is_es(): void
+    {
+        // Ready to Assign and Inflow are matched literally in BudgetMonth
+        // queries; localising them would silently break every RTA lookup.
+        app()->setLocale('es');
+
+        $user = User::factory()->withPersonalTeam()->create();
+        $team = $user->ownedTeams()->first();
+
+        $inflow = Category::where(['team_id' => $team->id, 'display_id' => 'inflow'])->firstOrFail();
+        $rta = Category::where(['team_id' => $team->id, 'display_id' => 'ready_to_assign'])->firstOrFail();
+
+        $this->assertSame('Inflow', $inflow->name);
+        $this->assertSame('Ready to Assign', $rta->name);
+
+        app()->setLocale('en');
+    }
 }
