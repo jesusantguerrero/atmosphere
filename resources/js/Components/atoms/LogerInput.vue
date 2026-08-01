@@ -22,7 +22,7 @@ defineExpose({
 <template>
 <AtInput
     type="text"
-    class="items-center px-2 rounded-sm bg-base-lvl-2/80 text-base-200 border-base hover:ring-primary"
+    class="items-center px-2 rounded-sm bg-base-lvl-2/80 text-body border-base hover:ring-primary"
     :class="{'border-none': disabled}"
     :disabled="disabled"
     v-bind="$attrs"
