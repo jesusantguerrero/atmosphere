@@ -389,5 +389,9 @@
     "Daily cumulative": "Acumulado diario",
     "This vs last month": "Este mes vs anterior",
     "Debts vs Assets": "Deudas vs Activos",
-    "Spend": "Gasto"
+    "Spend": "Gasto",
+    "Net cashflow": "Flujo neto",
+    "Net cashflow is money in minus money out for the selected period.": "El flujo neto es ingresos menos egresos del período seleccionado.",
+    "Total money received in the selected period.": "Total de dinero recibido en el período seleccionado.",
+    "Total money spent in the selected period.": "Total de dinero gastado en el período seleccionado."
 }

@@ -310,5 +310,9 @@
     "No data for this period.": "No data for this period.",
     "Money in": "Money in",
     "Money out": "Money out",
-    "Member": "Member"
+    "Member": "Member",
+    "Net cashflow": "Net cashflow",
+    "Net cashflow is money in minus money out for the selected period.": "Net cashflow is money in minus money out for the selected period.",
+    "Total money received in the selected period.": "Total money received in the selected period.",
+    "Total money spent in the selected period.": "Total money spent in the selected period."
 }

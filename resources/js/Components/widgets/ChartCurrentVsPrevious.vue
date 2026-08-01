@@ -39,7 +39,7 @@ const state = reactive({
     },
     options: {
         colors: ["#7B77D120", "#F598B420"],
-        borderColors: ["#7B77D1", "#F598B4"],
+        borderColors: ["#7B77D1B3", "#F598B4B3"],
         tension: 0,
         interaction: {
             intersect: false,

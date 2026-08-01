@@ -88,15 +88,19 @@ const moneyInRows = computed(() => rankRows(moneyInSrc.value));
 const moneyOutRows = computed(() => rankRows(moneyOutSrc.value));
 const totalIn = computed(() => moneyInSrc.value.reduce((a, i) => a + i.total, 0));
 const totalOut = computed(() => moneyOutSrc.value.reduce((a, i) => a + i.total, 0));
+// Period-wide totals for the Net cashflow summary (independent of the toggle).
+const grandIn = computed(() => incomeRows.value.reduce((a, i) => a + i.total, 0));
+const grandOut = computed(() => expenseByCat.value.reduce((a, i) => a + i.total, 0));
+const netFlow = computed(() => grandIn.value - grandOut.value);
 
 // ---- tabs
 const tabs = [
+  { id: "patrimonio", label: "Net worth" },
   { id: "gastos", label: "Spending" },
   { id: "categorias", label: "Categories" },
   { id: "tendencia", label: "Trend" },
-  { id: "patrimonio", label: "Net worth" },
 ];
-const activeTab = ref("gastos");
+const activeTab = ref("patrimonio");
 const rangeMap: Record<string, number> = { "3M": 3, "6M": 6, "1Y": 12 };
 const monthsToRange = (m: number) => (m === 12 ? "1Y" : m === 3 ? "3M" : "6M");
 const range = ref(monthsToRange(Number(props.metaData?.months ?? 6)));
@@ -239,7 +243,7 @@ const catTop = computed(() => expenseByCat.value.slice(0, 12));
 const catLabels = computed(() => catTop.value.map((c) => c.name));
 const catSeries = computed(() => [{ name: t("Spend"), data: catTop.value.map((c) => c.total) }]);
 const catOptions = {
-  colors: ["#7C6FF0"],
+  colors: ["#7C6FF0B3"],
   borderColors: ["#7C6FF0"],
   responsive: true,
   maintainAspectRatio: false,
@@ -258,13 +262,25 @@ const catOptions = {
     </template>
 
     <div class="px-4 pb-20 mx-auto pt-16 max-w-6xl">
-      <!-- toolbar -->
-      <div class="flex flex-wrap items-center gap-2 mb-6">
-        <button class="px-3 py-1.5 rounded-lg text-sm border border-base bg-base-lvl-1 text-body-1/70">{{ $t('Filters') }}</button>
-        <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm border border-base bg-base-lvl-1 text-body-1/70">
-          <span>{{ chartMeta.right }}</span>
+      <!-- summary: net cashflow = money in − money out, on the filters line -->
+      <div class="flex flex-wrap items-start justify-between gap-6 mb-8 pb-6 border-b border-base-lvl-2">
+        <div class="flex flex-wrap gap-8 sm:gap-14">
+          <div>
+            <div class="text-xs text-body-1/50 mb-1 w-max cursor-help border-b border-dotted border-body-1/30" :title="$t('Net cashflow is money in minus money out for the selected period.')">{{ $t('Net cashflow') }}</div>
+            <div class="text-3xl font-extrabold tabular-nums leading-none" :class="netFlow >= 0 ? 'text-body' : 'text-error'">
+              <span>{{ money(netFlow).sign }}DOP {{ money(netFlow).main }}</span><span class="text-base opacity-40">.{{ money(netFlow).cents }}</span>
+            </div>
+          </div>
+          <div>
+            <div class="text-xs text-body-1/50 mb-1 w-max cursor-help border-b border-dotted border-body-1/30" :title="$t('Total money received in the selected period.')">{{ $t('Money in') }}</div>
+            <div class="text-3xl font-extrabold tabular-nums leading-none text-success"><span>DOP {{ money(grandIn).main }}</span><span class="text-base opacity-40">.{{ money(grandIn).cents }}</span></div>
+          </div>
+          <div>
+            <div class="text-xs text-body-1/50 mb-1 w-max cursor-help border-b border-dotted border-body-1/30" :title="$t('Total money spent in the selected period.')">{{ $t('Money out') }}</div>
+            <div class="text-3xl font-extrabold tabular-nums leading-none text-error"><span>−DOP {{ money(grandOut).main }}</span><span class="text-base opacity-40">.{{ money(grandOut).cents }}</span></div>
+          </div>
         </div>
-        <div class="ml-auto flex items-center gap-2">
+        <div class="flex items-center gap-2">
           <div class="flex rounded-lg border border-base bg-base-lvl-1 p-0.5">
             <button
               v-for="r in ['3M','6M','1Y']"
@@ -317,7 +333,7 @@ const catOptions = {
             <span class="text-[11px] text-body-1/40">{{ chartMeta.right }}</span>
           </div>
 
-          <div class="bg-base-lvl-3 border border-base rounded-xl overflow-hidden">
+          <div class="overflow-hidden">
             <ChartComparison
               v-if="activeTab === 'gastos'"
               key="c-gastos"
@@ -346,8 +362,8 @@ const catOptions = {
 
       <!-- money in / money out — appears under the Patrimonio tab -->
       <div v-if="activeTab === 'patrimonio'" class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-8">
-        <div class="bg-base-lvl-3 border border-base rounded-xl p-5">
-          <h3 class="text-lg font-extrabold text-body">{{ $t('Money out') }}</h3>
+        <div class="bg-base-lvl-3/50 border border-base rounded-xl p-5">
+          <h3 class="text-lg font-extrabold text-body w-max cursor-help border-b border-dotted border-body-1/20" :title="$t('Total money spent in the selected period.')">{{ $t('Money out') }}</h3>
           <div class="text-error font-bold tabular-nums mb-3">−DOP {{ money(totalOut).main }}<span class="text-xs opacity-60">.{{ money(totalOut).cents }}</span></div>
           <div class="flex gap-1 mb-4 p-0.5 rounded-lg bg-base-lvl-1 border border-base w-max">
             <button v-for="dm in breakdownDims" :key="dm.id" class="px-3 py-1 text-xs font-medium rounded-md transition" :class="outDim === dm.id ? 'bg-base-lvl-3 text-body' : 'text-body-1/50 hover:text-body-1'" @click="outDim = dm.id">{{ $t(dm.label) }}</button>
@@ -359,8 +375,8 @@ const catOptions = {
           </div>
           <p v-if="!moneyOutRows.length" class="text-sm text-body-1/50 py-6 text-center">{{ $t('No data for this period.') }}</p>
         </div>
-        <div class="bg-base-lvl-3 border border-base rounded-xl p-5">
-          <h3 class="text-lg font-extrabold text-body">{{ $t('Money in') }}</h3>
+        <div class="bg-base-lvl-3/50 border border-base rounded-xl p-5">
+          <h3 class="text-lg font-extrabold text-body w-max cursor-help border-b border-dotted border-body-1/20" :title="$t('Total money received in the selected period.')">{{ $t('Money in') }}</h3>
           <div class="text-success font-bold tabular-nums mb-3">DOP {{ money(totalIn).main }}<span class="text-xs opacity-60">.{{ money(totalIn).cents }}</span></div>
           <div class="flex gap-1 mb-4 p-0.5 rounded-lg bg-base-lvl-1 border border-base w-max">
             <button v-for="dm in breakdownDims" :key="dm.id" class="px-3 py-1 text-xs font-medium rounded-md transition" :class="inDim === dm.id ? 'bg-base-lvl-3 text-body' : 'text-body-1/50 hover:text-body-1'" @click="inDim = dm.id">{{ $t(dm.label) }}</button>

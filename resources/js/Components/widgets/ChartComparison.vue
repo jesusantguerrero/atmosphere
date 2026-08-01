@@ -64,7 +64,7 @@ const state = computed(() => {
             id: dateString
         })),
         options: {
-            colors: ["#7B77D1", "#80CDFE"],
+            colors: ["#7B77D1B3", "#80CDFEB3"],
             hasHiddenValues: hasHiddenValues.value,
         },
         series: currentSeries.value
