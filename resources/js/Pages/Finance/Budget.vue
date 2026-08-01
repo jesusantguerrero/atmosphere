@@ -26,9 +26,9 @@ import BudgetDetailForm from "@/domains/budget/components/BudgetDetailForm.vue";
 
 import { useBudget } from "@/domains/budget";
 import { SearchFilterMode, useServerSearch } from "@/composables/useServerSearchV2";
-import MessageBox from "@/Components/organisms/MessageBox.vue";
 import BudgetCategories from "./Partials/BudgetCategories.vue";
 import BudgetErrorBanner from "@/domains/budget/components/BudgetErrorBanner.vue";
+import BudgetOnboarding from "@/domains/budget/components/BudgetOnboarding.vue";
 
 import { MonthTypeFormat, formatMonth, formatMoney } from "@/utils";
 import { ICategory } from "@/domains/transactions/models";
@@ -226,12 +226,17 @@ const budgetCsvExportUrl = computed(() => {
     </template>
 
     <FinanceTemplate :accounts="accounts" :panel-size="panelSize">
-      <!-- Budget intro tutorial — dismissable. Storage key is stable across locales
-           so dismissing in Spanish doesn't re-surface the box when switched to English. -->
-      <MessageBox
-        storage-key="loger-budget-intro-dismissed"
-        :title="$t('This is your budget.')"
-        :content="$t('Create new category groups and categories and organize them to suit your needs')"
+      <!--
+        Newcomer onboarding: replaces the old generic "This is your budget"
+        MessageBox with an actionable 3-step walkthrough. Auto-hides once the
+        user assigns their first peso this month (monthIsEmpty flips false).
+        Dismiss persists in localStorage for returning power-users who land on
+        a fresh month with no assignments yet — they don't need to see it again.
+      -->
+      <BudgetOnboarding
+        :month-is-empty="monthIsEmpty"
+        :ready-to-assign="Number(readyToAssignBalance) || 0"
+        :has-accounts="(accounts?.length ?? 0) > 0"
       />
 
       <section class="flex flex-wrap items-center gap-2 py-3">
@@ -321,7 +326,9 @@ const budgetCsvExportUrl = computed(() => {
         </template>
       </BudgetBalanceAssign>
 
-      <section class="mx-auto mt-4 rounded-lg text-body bg-base max-w-7xl">
+      <!-- data-budget-table anchor is used by BudgetOnboarding's "Jump to
+           categories" CTA to smooth-scroll here. -->
+      <section data-budget-table class="mx-auto mt-4 rounded-lg text-body bg-base max-w-7xl">
           <article class="w-full space-y-4">
             <BudgetErrorBanner />
             <BudgetCategories :budgets="budgets" />
