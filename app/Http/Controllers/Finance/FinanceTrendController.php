@@ -187,6 +187,15 @@ class FinanceTrendController extends Controller
             $anchor->copy()->subMonths($months - 1)->startOfMonth()->format('Y-m-d'),
             $anchor->copy()->endOfMonth()->format('Y-m-d'),
         ))->values();
+        // Money in/out per month for the Income tab's monthly chart.
+        $monthlyFlow = ReportService::getMonthlyFlow($teamId, $months, $latestExpenseDate);
+        // Credit card summary for the Cards tab (reuses the credit-card report service).
+        $creditCards = $this->creditCardService->creditCards(
+            $teamId,
+            $anchor->copy()->endOfMonth()->format('Y-m-d'),
+            $anchor->copy()->subMonths(2)->startOfMonth()->format('Y-m-d'),
+            null,
+        );
 
         return [
             'data' => [
@@ -197,6 +206,8 @@ class FinanceTrendController extends Controller
                 'expensesReport' => $expensesReport,
                 'spendingSummary' => $spendingSummary,
                 'netWorth' => $netWorth,
+                'monthlyFlow' => $monthlyFlow,
+                'creditCards' => $creditCards,
             ],
             'metaData' => [
                 'name' => 'insights',
