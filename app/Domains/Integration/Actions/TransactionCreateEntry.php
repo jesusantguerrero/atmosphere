@@ -124,7 +124,25 @@ class TransactionCreateEntry implements AutomationActionContract
         }
 
         $transaction = Transaction::createTransaction($transactionData);
-        User::find($automation->user_id)->notify(new EntryGenerated($transaction));
+
+        /**
+         * Dedupe import notifications: an automation that ingests a batch
+         * (email/PDF/CSV import) creates one transaction at a time and
+         * previously fired one EntryGenerated per row — meaning a single
+         * BHD statement import spammed the bell with dozens of identical
+         * "New transactions have been imported" notifications. Skip if the
+         * user already has an unread EntryGenerated waiting: one nudge is
+         * enough. When they clear the unread queue, the next import batch
+         * gets a fresh notification.
+         */
+        $user = User::find($automation->user_id);
+        $alreadyNotified = $user->unreadNotifications()
+            ->where('type', EntryGenerated::class)
+            ->exists();
+
+        if (! $alreadyNotified) {
+            $user->notify(new EntryGenerated($transaction));
+        }
 
         return $transaction;
     }

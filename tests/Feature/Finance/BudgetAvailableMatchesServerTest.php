@@ -26,7 +26,9 @@ class BudgetAvailableMatchesServerTest extends TestCase
         $user = User::factory()->withPersonalTeam()->create();
         $team = $user->ownedTeams()->first();
 
-        $ahorro = Category::where(['team_id' => $team->id, 'name' => 'Ahorro'])->firstOrFail();
+        // Reference by display_id (stable slug) instead of display name so
+        // this test doesn't break every time the seed's user-visible names change.
+        $ahorro = Category::where(['team_id' => $team->id, 'display_id' => 'savings_general'])->firstOrFail();
 
         // Seed values that would diverge under the old `parseAvailable` formula:
         // server stores 200, but the old client formula would compute

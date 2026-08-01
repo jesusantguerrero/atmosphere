@@ -46,15 +46,6 @@ export const useAppMenu = (t: any, modules: any[]) => {
             }
         },
         {
-            icon: 'fas fa-table-cells',
-            label: t('Routine'),
-            to: '/routine',
-            as: Link,
-            isActiveFunction(url: string, currentPath: string) {
-                return /^\/routine/.test(currentPath)
-            }
-        },
-        {
             separator: true
         },
         {

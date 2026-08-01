@@ -37,14 +37,20 @@ const props = defineProps<{
 const { netWorth } = toRefs(props);
 const { thisMonth, lastMonth, monthMovement, monthMovementVariance } = useNetWorth(netWorth);
 
+// Coerce to Number because the API sends totals as strings (e.g. "0.00").
+// Without this, `!"0.00"` evaluates to `false` (non-empty string is truthy),
+// the divide-by-zero guard below is bypassed, and the card renders
+// "Infinity% spent" — a real regression seen on first-load-without-budget.
 const currentBudget = computed(() => ({
-    total: props.budgetTotal?.at(-1)?.total ?? 0,
-    spending: props.budgetTotal?.at(-1)?.spending ?? 0,
-    savings: props.budgetTotal?.at(-1)?.savings ?? 0,
+    total: Number(props.budgetTotal?.at(-1)?.total ?? 0),
+    spending: Number(props.budgetTotal?.at(-1)?.spending ?? 0),
+    savings: Number(props.budgetTotal?.at(-1)?.savings ?? 0),
 }));
 
+const hasBudget = computed(() => Number.isFinite(currentBudget.value.total) && currentBudget.value.total > 0);
+
 const spentPercentage = computed(() => {
-    if (!currentBudget.value.total) return 0;
+    if (!hasBudget.value) return 0;
     return Math.round((currentBudget.value.spending / currentBudget.value.total) * 100);
 });
 
@@ -97,18 +103,24 @@ const movementIsPositive = computed(() => Number(monthMovement.value) >= 0);
                 @click="router.visit('/budgets')"
             >
                 <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">{{ $t('Budget') }}</p>
-                <p class="text-xl font-bold text-body mt-1">{{ spentPercentage }}%
-                    <span class="text-xs font-normal text-body-1/50">{{ $t('spent') }}</span>
-                </p>
-                <div class="mt-2">
-                    <BudgetProgress
-                        class="h-1.5 rounded-full"
-                        :goal="currentBudget.total"
-                        :current="currentBudget.spending"
-                        :progress-class="['bg-primary', 'bg-base-lvl-1']"
-                        :show-labels="false"
-                    />
-                </div>
+                <template v-if="hasBudget">
+                    <p class="text-xl font-bold text-body mt-1">{{ spentPercentage }}%
+                        <span class="text-xs font-normal text-body-1/50">{{ $t('spent') }}</span>
+                    </p>
+                    <div class="mt-2">
+                        <BudgetProgress
+                            class="h-1.5 rounded-full"
+                            :goal="currentBudget.total"
+                            :current="currentBudget.spending"
+                            :progress-class="['bg-primary', 'bg-base-lvl-1']"
+                            :show-labels="false"
+                        />
+                    </div>
+                </template>
+                <template v-else>
+                    <p class="text-sm font-semibold text-body mt-1">{{ $t('No budget set') }}</p>
+                    <p class="text-xs text-primary mt-1">{{ $t('Set your first budget') }} →</p>
+                </template>
             </button>
         </section>
 

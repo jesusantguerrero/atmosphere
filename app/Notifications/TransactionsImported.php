@@ -14,10 +14,7 @@ class TransactionsImported extends Notification
      *
      * @return void
      */
-    public function __construct(protected string $url)
-    {
-
-    }
+    public function __construct(protected string $url) {}
 
     /**
      * Get the notification's delivery channels.
@@ -39,7 +36,7 @@ class TransactionsImported extends Notification
     public function toArray($notifiable)
     {
         return [
-            'message' => 'New transactions has been imported, go to drafts to approve them!',
+            'message' => 'New transactions have been imported. Review and approve them.',
             'cta' => 'Approve new transactions',
             'link' => $this->url,
         ];

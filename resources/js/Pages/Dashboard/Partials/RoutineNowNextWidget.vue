@@ -11,7 +11,7 @@ const loaded = ref(false);
 
 onMounted(async () => {
   try {
-    const { data } = await axios.get("/routine/current");
+    const { data } = await axios.get("/housing/routine/current");
     current.value = data.current;
     next.value = data.next;
   } catch (e) {
@@ -25,7 +25,7 @@ onMounted(async () => {
   <div
     v-if="loaded && (current || next)"
     class="bg-base-lvl-3 border border-base rounded-xl p-3 flex gap-3 items-stretch cursor-pointer hover:border-base-lvl-1 transition"
-    @click="router.visit('/routine')"
+    @click="router.visit('/housing/routine')"
   >
     <div class="flex-1 min-w-0">
       <div class="text-[10px] uppercase tracking-wide text-body-1/50 mb-1">{{ $t('Now') }}</div>

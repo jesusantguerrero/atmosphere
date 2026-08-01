@@ -2,6 +2,7 @@
 import { ref, computed } from "vue";
 import axios from "axios";
 import AppLayout from "@/Components/templates/AppLayout.vue";
+import HouseSectionNav from "@/Components/templates/HouseSectionNav.vue";
 
 interface Block {
   id: number;
@@ -90,11 +91,11 @@ const save = async () => {
   };
   try {
     if (isEdit.value) {
-      const { data } = await axios.put(`/routine/${props.plan.id}/blocks/${form.value.id}`, payload);
+      const { data } = await axios.put(`/housing/routine/${props.plan.id}/blocks/${form.value.id}`, payload);
       const i = blocks.value.findIndex((b) => b.id === data.id);
       if (i !== -1) blocks.value[i] = data;
     } else {
-      const { data } = await axios.post(`/routine/${props.plan.id}/blocks`, payload);
+      const { data } = await axios.post(`/housing/routine/${props.plan.id}/blocks`, payload);
       blocks.value.push(data);
     }
     showModal.value = false;
@@ -108,7 +109,7 @@ const remove = async () => {
   if (!window.confirm("¿Eliminar este bloque?")) return;
   saving.value = true;
   try {
-    await axios.delete(`/routine/${props.plan.id}/blocks/${form.value.id}`);
+    await axios.delete(`/housing/routine/${props.plan.id}/blocks/${form.value.id}`);
     blocks.value = blocks.value.filter((b) => b.id !== form.value.id);
     showModal.value = false;
   } finally {
@@ -118,12 +119,12 @@ const remove = async () => {
 </script>
 
 <template>
-  <AppLayout :title="$t('Routine')">
-    <template #title>
-      <h4 class="text-xs font-bold flex items-center gap-2 lg:ml-6">{{ $t('Weekly routine') }}</h4>
+  <AppLayout title="Household">
+    <template #header>
+      <HouseSectionNav />
     </template>
 
-    <div class="px-3 pt-16 pb-20 mx-auto max-w-6xl">
+    <div class="px-5 pb-20 mx-auto mt-12 max-w-6xl">
       <!-- header: filter + add -->
       <div class="flex items-center gap-2 mb-4 flex-wrap">
         <h1 class="text-lg font-bold text-body mr-auto">{{ $t('Weekly routine') }}</h1>
