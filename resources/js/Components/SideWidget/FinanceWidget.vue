@@ -194,12 +194,19 @@ onBeforeUnmount(() => {
         </keep-alive>
       </article>
   </Transition>
-    <section class="flex flex-col widget-main-menu bg-base-lvl-3 border-l border-base pt-[60px]">
-      <section class="flex flex-col gap-1 px-2 py-3">
+    <!--
+      Quick-access rail. Each button stacks an icon + a tiny text label so a
+      first-time user can tell what each panel does without hovering (which
+      previously required waiting ~1.5s for the native title tooltip).
+      The rail is deliberately kept slim (~76px) — labels are 10px so they
+      don't shout, but they're visible in a glance.
+    -->
+    <section class="flex flex-col widget-main-menu bg-base-lvl-3 border-l border-base pt-[60px] w-[76px]">
+      <section class="flex flex-col gap-1 px-1 py-3">
         <button
           v-for="(section, index) in topSections"
           :key="`top-${index}`"
-          class="group relative flex items-center justify-center h-10 w-10 mx-auto rounded-lg transition-all duration-150"
+          class="group relative flex flex-col items-center justify-center gap-1 py-2 mx-auto w-full rounded-lg transition-all duration-150"
           :class="[
             isActiveSection(section, index)
               ? 'bg-primary/10 text-primary'
@@ -214,19 +221,22 @@ onBeforeUnmount(() => {
         >
           <span
             v-if="isActiveSection(section, index)"
-            class="absolute -left-2 top-1/2 -translate-y-1/2 h-5 w-1 rounded-r-full bg-primary"
+            class="absolute -left-1 top-1/2 -translate-y-1/2 h-5 w-1 rounded-r-full bg-primary"
             aria-hidden="true"
           />
           <component v-if="section.icon" :is="section.icon" class="h-[18px] w-[18px]" />
           <span v-else class="text-xs font-semibold">{{ section.label }}</span>
+          <span class="text-[10px] leading-tight font-medium text-center px-1 line-clamp-2">
+            {{ section.title }}
+          </span>
         </button>
       </section>
 
-      <section v-if="bottomSections.length" class="mt-auto flex flex-col gap-1 px-2 py-3 border-t border-base">
+      <section v-if="bottomSections.length" class="mt-auto flex flex-col gap-1 px-1 py-3 border-t border-base">
         <button
           v-for="(section, index) in bottomSections"
           :key="`bottom-${index}`"
-          class="group relative flex items-center justify-center h-10 w-10 mx-auto rounded-lg transition-all duration-150"
+          class="group relative flex flex-col items-center justify-center gap-1 py-2 mx-auto w-full rounded-lg transition-all duration-150"
           :class="[
             isActiveSection(section, topSections.length + index)
               ? 'bg-primary/10 text-primary'
@@ -241,11 +251,14 @@ onBeforeUnmount(() => {
         >
           <span
             v-if="isActiveSection(section, topSections.length + index)"
-            class="absolute -left-2 top-1/2 -translate-y-1/2 h-5 w-1 rounded-r-full bg-primary"
+            class="absolute -left-1 top-1/2 -translate-y-1/2 h-5 w-1 rounded-r-full bg-primary"
             aria-hidden="true"
           />
           <component v-if="section.icon" :is="section.icon" class="h-[18px] w-[18px]" />
           <span v-else class="text-xs font-semibold">{{ section.label }}</span>
+          <span class="text-[10px] leading-tight font-medium text-center px-1 line-clamp-2">
+            {{ section.title }}
+          </span>
         </button>
       </section>
     </section>
@@ -259,6 +272,6 @@ onBeforeUnmount(() => {
 }
 
 .custom-split {
-  padding-right: 64px;
+  padding-right: 76px;
 }
 </style>

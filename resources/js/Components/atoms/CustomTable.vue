@@ -168,7 +168,7 @@ const colStyle = (col: Record<string, any>) => ({
             <tr>
                 <td :colspan="cols.length" class="w-full">
                     <slot name="empty" v-if="!hideEmptyText">
-                        <div class="w-full py-5 text-center text-base-200">
+                        <div class="w-full py-5 text-center text-body">
                             {{ emptyText }}
                         </div>
                     </slot>

@@ -223,8 +223,8 @@ const excludedCurrencies = computed(() => {
               </AtField>
 
               <AtField label="Last 4 digits" class="space-y-2">
-                <LogerInput v-model="form.number" type="number" class="w-full" placeholder="e.g., 3861"
-                  min="0" max="9999" />
+                <LogerInput v-model="form.number" type="text" class="w-full" placeholder="e.g., 3861"
+                  inputmode="numeric" maxlength="4" pattern="[0-9]*" />
               </AtField>
 
               <AtField label="Bank" class="space-y-2" hint="Short code used in reports (e.g., BHD, BDI, APAP)">

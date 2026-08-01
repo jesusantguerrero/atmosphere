@@ -6,6 +6,7 @@ use App\Http\Controllers\Meal\MealMenuController;
 use App\Http\Controllers\Meal\MealPlannerController;
 use App\Http\Controllers\Meal\MealShoppingListController;
 use App\Http\Controllers\Meal\SharedShoppingListController;
+use App\Http\Controllers\RoutineController;
 use App\Http\Controllers\ShoppingListController;
 use Illuminate\Support\Facades\Route;
 
@@ -30,6 +31,13 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     Route::delete('/shopping/{plan}/items/{item}', [ShoppingListController::class, 'destroyItem'])->name('shopping.items.destroy');
     Route::post('/shopping/{plan}/reset', [ShoppingListController::class, 'reset'])->name('shopping.reset');
     Route::post('/shopping/{plan}/share', [ShoppingListController::class, 'toggleShare'])->name('shopping.share');
+
+    // Weekly routine (time-block planner) — Plan-based, no new table.
+    Route::get('/housing/routine', [RoutineController::class, 'index'])->name('routine.index');
+    Route::get('/housing/routine/current', [RoutineController::class, 'current'])->name('routine.current');
+    Route::post('/housing/routine/{plan}/blocks', [RoutineController::class, 'storeBlock'])->name('routine.blocks.store');
+    Route::put('/housing/routine/{plan}/blocks/{item}', [RoutineController::class, 'updateBlock'])->name('routine.blocks.update');
+    Route::delete('/housing/routine/{plan}/blocks/{item}', [RoutineController::class, 'destroyBlock'])->name('routine.blocks.destroy');
 });
 
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', 'loger.concerns:meals'])->group(function () {

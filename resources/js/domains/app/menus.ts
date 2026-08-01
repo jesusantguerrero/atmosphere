@@ -25,8 +25,8 @@ const menus = {
         url: '/housing/plans'
     },
     {
-        label: 'Equipment',
-        url: '/housing/equipments'
+        label: 'Routine',
+        url: '/housing/routine'
     },
     {
         label: 'Utilities',

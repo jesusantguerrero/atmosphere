@@ -19,7 +19,7 @@ class BudgetExportTest extends TestCase
         $team = $user->ownedTeams()->first();
 
         $rta = Category::where(['team_id' => $team->id, 'display_id' => 'ready_to_assign'])->firstOrFail();
-        $ahorro = Category::where(['team_id' => $team->id, 'name' => 'Ahorro'])->firstOrFail();
+        $ahorro = Category::where(['team_id' => $team->id, 'display_id' => 'savings_general'])->firstOrFail();
 
         $month = '2026-05-01';
 
@@ -63,7 +63,7 @@ class BudgetExportTest extends TestCase
         $user = User::factory()->withPersonalTeam()->create();
         $team = $user->ownedTeams()->first();
 
-        $ahorro = Category::where(['team_id' => $team->id, 'name' => 'Ahorro'])->firstOrFail();
+        $ahorro = Category::where(['team_id' => $team->id, 'display_id' => 'savings_general'])->firstOrFail();
 
         $month = '2026-05-01';
 
@@ -83,7 +83,9 @@ class BudgetExportTest extends TestCase
         $export = new BudgetExport($team->id, $month);
         $rows = $export->query()->get()->map(fn ($budgetMonth) => $export->map($budgetMonth));
 
-        $ahorroRow = $rows->firstWhere(fn ($row) => $row[3] === 'Ahorro');
+        // Look up by display_id-derived name so the assertion follows the
+        // seed's current display name (`General Savings` today).
+        $ahorroRow = $rows->firstWhere(fn ($row) => $row[3] === $ahorro->name);
         $this->assertSame('DOP$200', $ahorroRow[6]);
     }
 }

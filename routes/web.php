@@ -27,7 +27,6 @@ use App\Http\Controllers\System\OnboardingController;
 use App\Http\Controllers\System\PlannerController;
 use App\Http\Controllers\System\ServiceController;
 use App\Http\Controllers\System\TeamInvitationController;
-use App\Http\Controllers\System\TodayController;
 use App\Http\Controllers\System\UserDeviceController;
 use App\Models\Setting;
 use Freesgen\Atmosphere\Http\Controllers\SettingsController;
@@ -158,6 +157,15 @@ Route::group([], app_path('/Domains/Transaction/routes.php'));
 Route::group([], app_path('/Domains/Budget/routes.php'));
 Route::group([], app_path('/Domains/Meal/routes.php'));
 Route::group([], app_path('/Domains/Integration/routes.php'));
+
+/**
+ * Guessable finance sub-URLs — the sub-nav uses the canonical route, but users
+ * naturally guess `/finance/<section>` variants. Without these redirects they
+ * hit the app 404 which bounces to the public marketing landing (jarring for a
+ * logged-in user). Cheap redirects fix the discoverability gap.
+ */
+Route::redirect('/finance/budgets', '/budgets');
+Route::redirect('/finance/budget', '/budgets');
 
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
     // Header command palette — searches across resources for the current team.

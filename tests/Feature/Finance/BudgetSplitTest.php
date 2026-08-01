@@ -19,8 +19,8 @@ class BudgetSplitTest extends TestCase
         $this->actingAs($user);
 
         $rta = Category::where(['team_id' => $team->id, 'name' => 'Ready to Assign'])->firstOrFail();
-        $ahorro = Category::where(['team_id' => $team->id, 'name' => 'Ahorro'])->firstOrFail();
-        $gastoPersonal = Category::where(['team_id' => $team->id, 'name' => 'Gasto Personal'])->firstOrFail();
+        $ahorro = Category::where(['team_id' => $team->id, 'display_id' => 'savings_general'])->firstOrFail();
+        $gastoPersonal = Category::where(['team_id' => $team->id, 'display_id' => 'personal_spending'])->firstOrFail();
 
         $month = now()->format('Y-m-01');
 
@@ -66,7 +66,7 @@ class BudgetSplitTest extends TestCase
         $this->actingAs($user);
 
         $rta = Category::where(['team_id' => $team->id, 'name' => 'Ready to Assign'])->firstOrFail();
-        $ahorro = Category::where(['team_id' => $team->id, 'name' => 'Ahorro'])->firstOrFail();
+        $ahorro = Category::where(['team_id' => $team->id, 'display_id' => 'savings_general'])->firstOrFail();
         $month = now()->format('Y-m-01');
 
         $this->post("/budgets/{$rta->id}/months/{$month}/split", [

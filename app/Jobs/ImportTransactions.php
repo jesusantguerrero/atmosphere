@@ -31,6 +31,16 @@ class ImportTransactions implements ShouldQueue
         $results = TransactionService::importAndSave($this->user, $this->file);
 
         $url = "/finance/transactions?filter[status]=draft&filter[date]=$results->startDate~$results->endDate";
-        $this->user->notify(new TransactionsImported($url));
+
+        // Same dedupe pattern as TransactionCreateEntry — collapse repeated
+        // import batches into a single unread nudge. Once the user reviews
+        // and clears the notification, the next batch gets a fresh one.
+        $alreadyNotified = $this->user->unreadNotifications()
+            ->where('type', TransactionsImported::class)
+            ->exists();
+
+        if (! $alreadyNotified) {
+            $this->user->notify(new TransactionsImported($url));
+        }
     }
 }
