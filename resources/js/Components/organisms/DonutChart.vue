@@ -5,8 +5,16 @@ import { Chart, registerables } from "chart.js/auto";
 import { computed, ref, toRefs } from "vue";
 import { Doughnut as DoughnutChart } from "vue-chartjs";
 
+import { useDarkMode } from "@/composables/useDarkMode";
+
 Chart.register(...registerables);
 Chart.overrides['doughnut'].plugins.legend.display = false
+
+const { isDark } = useDarkMode();
+const themeColor = (token: string) => {
+    const value = getComputedStyle(document.documentElement).getPropertyValue(token).trim();
+    return value ? `rgb(${value})` : undefined;
+};
 
 const props = defineProps({
   series: {
@@ -56,11 +64,16 @@ const chartData = computed(() => {
 });
 
 const chartRef = ref();
+// Chart.js paints labels with its own `#666` default, which disappears against
+// the dark surfaces. Re-read the theme token whenever the mode flips.
+const labelColor = computed(() => (isDark.value, themeColor('--c-body-1')));
 const options = computed(() => ({
+  color: labelColor.value,
   plugins: {
     ...(props.legend && {
       legend: {
         position: props.legendPosition,
+        labels: { color: labelColor.value },
       },
     }),
     responsive: true,

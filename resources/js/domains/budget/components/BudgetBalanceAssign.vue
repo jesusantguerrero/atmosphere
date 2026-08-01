@@ -230,41 +230,29 @@
 
 <template>
     <section
-        class="overflow-hidden border divide-y-2 rounded-md cursor-pointer text-body-1"
+        class="overflow-hidden border divide-y-2 rounded-md text-body-1"
         :class="theme.default"
-
     >
+        <!-- Month picker rendered outside the popover trigger so hovering
+             a month pill doesn't fire the debug tooltip. Keeps the strip
+             clickable without interference. -->
+        <slot name="top" />
+
         <NPopover>
             <template #trigger>
-                <article class="relative flex flex-col items-center justify-center mx-auto" :class="badgeClass">
-                    <slot name="top" />
-                    <header class="flex w-full ">
-                        <section class="w-full h-10 " />
-                        <h4 class="flex flex-col items-center justify-center w-full mt-0 font-bold text-center">
-                            <span class="text-lg">{{ formatter(value) }}</span>
-                            <span
-                                v-if="scheduledTotal > 0"
-                                class="text-xs font-normal opacity-80"
-                            >
-                                {{ $t('After scheduled') }}: {{ formatter(afterScheduled) }}
-                            </span>
-                        </h4>
-                        <BudgetProgress
-                            class="text-center rounded-lg "
-                            :goal="toAssign.monthlyGoals.target"
-                            :current="toAssign.monthlyGoals.balance"
-                            :progress-class="['bg-secondary/10', 'bg-secondary/5']"
-                        >
-                            <section class="font-bold">
-                                <h4 class="text-secondary">
-                                    <MoneyPresenter :value="toAssign.monthlyGoals.balance" />
-                                </h4>
-                            </section>
-                        </BudgetProgress>
-                    </header>
-                    <small class="mb-4">
-                        {{ description }}
-                    </small>
+                <!-- Compact inline pill: amount + primary action only. The
+                     description text, "After scheduled" value, and monthly-
+                     goal progress bar were removed from the visible article
+                     so the pill matches Actual's tight "Assign $X" chip.
+                     All that context still surfaces in the hover debug
+                     tooltip below. Everything else — split popover, fix
+                     popover, activity/target slots — is intact. -->
+                <article
+                    class="relative flex items-center gap-x-2 px-3 py-1.5 cursor-pointer whitespace-nowrap"
+                    :class="badgeClass"
+                    :title="description"
+                >
+                    <span class="text-base font-bold">{{ formatter(value) }}</span>
 
                     <NPopover
                         v-if="canSplit"
@@ -274,7 +262,7 @@
                     >
                         <template #trigger>
                             <AtButton
-                                class="mb-3 text-white rounded-md bg-black/30"
+                                class="text-white rounded-md bg-black/30 text-sm shrink-0"
                                 @click.stop="openSplit"
                             >
                                 {{ $t('Allocate leftover') }}
@@ -371,8 +359,8 @@
 
                     <NPopover v-if="isOverspent"  placement="bottom" trigger="click">
                         <template #trigger>
-                            <AtButton class="text-white rounded-md bg-black/30">
-                                Fix this
+                            <AtButton class="text-white rounded-md bg-black/30 text-sm shrink-0" @click.stop>
+                                {{ $t('Fix this') }}
                             </AtButton>
                         </template>
                         <div class="w-72 md:w-96">

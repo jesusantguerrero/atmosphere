@@ -90,6 +90,37 @@ html.dark {
   @apply bg-base-lvl-2;
 }
 
+/* vue-multiselect dark mode — dropdown panel + options had hardcoded white
+   defaults from the vendor stylesheet, which made group headers and category
+   rows invisible against the dark app surface (reported on Budget's "Fix this"
+   popover, where categories in the "From" selector didn't render). Route every
+   surface, text, and border through the Loger theme tokens so the selector
+   inherits the current mode. */
+.dark .multiselect__tags,
+.dark .multiselect__single,
+.dark .multiselect__input,
+.dark .multiselect__content-wrapper,
+.dark .multiselect__content,
+.dark .multiselect__option {
+    background-color: rgb(var(--c-base-lvl-2));
+    color: rgb(var(--c-body));
+    border-color: rgb(var(--c-border));
+}
+.dark .multiselect__option--group,
+.dark .multiselect__option--disabled {
+    background-color: rgb(var(--c-base-lvl-1)) !important;
+    color: rgb(var(--c-body-1)) !important;
+}
+.dark .multiselect__option--highlight,
+.dark .multiselect__option--selected.multiselect__option--highlight {
+    background-color: rgba(var(--c-primary), 0.25) !important;
+    color: rgb(var(--c-body));
+}
+.dark .multiselect__placeholder,
+.dark .multiselect__select:before {
+    color: rgb(var(--c-body-1));
+}
+
 .aside-content {
     width: -webkit-fill-available;
 }
@@ -112,3 +143,41 @@ html.dark {
 .dark .team-select-fix .active\:bg-gray-50:active { background-color: rgb(var(--c-base-lvl-2)); }
 .dark .team-select-fix .hover\:text-gray-700:hover { color: rgb(var(--c-body)); }
 .dark .team-select-fix .border-gray-100 { border-color: rgb(var(--c-base-lvl-2)); }
+
+/* Loger's Dropdown atom wraps its content div with .loger-dropdown; scope
+   AtDropdownLink's hardcoded light utilities (text-gray-700, hover/focus
+   bg-gray-100) inside it so items don't flash white in dark mode.
+   Reported on the Budget "More actions" menu — hovering "Export CSV"
+   painted a white band across the dark popover. */
+.dark .loger-dropdown .text-gray-700 { color: rgb(var(--c-body)); }
+.dark .loger-dropdown .hover\:bg-gray-100:hover,
+.dark .loger-dropdown .focus\:bg-gray-100:focus,
+.dark .loger-dropdown .hover\:bg-gray-50:hover,
+.dark .loger-dropdown .focus\:bg-gray-50:focus { background-color: rgb(var(--c-base-lvl-2)); }
+
+/* AtDatePager (atmosphere-ui) hardcodes bg-white / border-gray-200 / text-
+   gray-500 on its root .date-pager element, so the month pager on Budget
+   ("July" strip above the ready-to-assign card) rendered as a big white bar
+   in dark mode. Re-theme via the .date-pager class so every consumer of the
+   component inherits the fix — no per-instance overrides needed. */
+.dark .date-pager {
+    background-color: rgb(var(--c-base-lvl-1));
+    border-color: rgb(var(--c-border));
+    color: rgb(var(--c-body));
+}
+.dark .date-pager button { color: rgb(var(--c-body)); }
+
+/* AtInput / AtField (atmosphere-ui) hardcode text-gray-700 in every theme
+   and border-gray-300 on the input shell. In dark mode this makes input text
+   collapse into the dark surface and the border stands out as a light seam.
+   AtInput has no distinguishing root class, so scope by ancestor: any form
+   inside .form-group (AtField's wrapper) gets remapped to theme tokens. This
+   covers BudgetTargetForm, the "Fix this" popover, TransactionModal, etc. */
+.dark .form-group .text-gray-700 { color: rgb(var(--c-body)); }
+.dark .form-group .border-gray-300 { border-color: rgb(var(--c-border)); }
+.dark .form-group input,
+.dark .form-group textarea,
+.dark .form-group select { background-color: rgb(var(--c-base-lvl-2)); color: rgb(var(--c-body)); }
+.dark .form-group input::placeholder,
+.dark .form-group textarea::placeholder { color: rgb(var(--c-body-1) / 0.6); }
+.dark .form-group label { color: rgb(var(--c-body-1)); }

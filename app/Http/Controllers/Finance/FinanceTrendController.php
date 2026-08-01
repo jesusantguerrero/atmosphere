@@ -19,6 +19,10 @@ class FinanceTrendController extends Controller
     const DateFormat = 'Y-m-d';
 
     const sections = [
+        'insights' => [
+            'template' => 'Trends/Insights',
+            'handler' => 'insights',
+        ],
         'groups' => [
             'handler' => 'group',
         ],
@@ -59,7 +63,7 @@ class FinanceTrendController extends Controller
 
     public function __construct(private ReportService $reportService, private CreditCardReportService $creditCardService) {}
 
-    public function index(Request $request, $sectionName = 'groups')
+    public function index(Request $request, $sectionName = 'insights')
     {
         $queryParams = $request->query();
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
@@ -125,6 +129,90 @@ class FinanceTrendController extends Controller
             'metaData' => [
                 'title' => 'Category Group Trends',
                 'name' => 'group',
+            ],
+        ];
+    }
+
+    /**
+     * Consolidated Insights view — reuses the existing per-section aggregations
+     * (spending by group, by payee both directions, and income vs expenses) in
+     * a single payload so one page can render the whole picture.
+     */
+    public function insights(Request $request)
+    {
+        $filters = $request->query('filter', []);
+        [$startDate, $endDate] = $this->getFilterDates($filters);
+        $teamId = $request->user()->current_team_id;
+
+        $groups = TransactionService::getCategoryExpensesGroup($teamId, $startDate, $endDate, null, null);
+        $incomeExpenses = TransactionService::getIncomeVsExpenses($teamId, 3);
+        // Same two charts the Dashboard's "Financial glance" widget shows, so
+        // Insights reuses them behind a Previous / Spending toggle. Anchored to
+        // the most recent month that actually has data so they stay populated
+        // even when demo data lags the system clock; in production the latest
+        // active month IS the current month.
+        $latestExpenseDate = ReportService::getLatestExpenseDate($teamId);
+        $anchor = $latestExpenseDate
+            ? Carbon::createFromFormat('Y-m-d', $latestExpenseDate)
+            : Carbon::now();
+
+        // Payee breakdowns (money in / money out) for the latest active month,
+        // aggregated per payee. Anchored so they are not empty when data lags.
+        $breakStart = $anchor->copy()->startOfMonth()->format('Y-m-d');
+        $breakEnd = $anchor->copy()->endOfMonth()->format('Y-m-d');
+        $payeesOut = ReportService::getExpensesByPayeeInPeriod($teamId, $breakStart, $breakEnd)
+            ->groupBy('name')
+            ->map(fn ($rows, $name) => ['name' => $name, 'total' => (float) $rows->sum('total_amount')])
+            ->values()->sortByDesc('total')->values();
+        // Income by payee — same source the category (income) view uses so the
+        // Category / Payee totals line up on the money-in widget.
+        $payeesIn = TransactionService::getTransactionsByPayeeInPeriod($teamId, $breakStart, $breakEnd, Transaction::DIRECTION_DEBIT)
+            ->groupBy('name')
+            ->map(fn ($rows, $name) => ['name' => $name, 'total' => (float) $rows->sum('total')])
+            ->values()->sortByDesc('total')->values();
+        // History length driven by the 3M / 6M / 1Y toolbar segment.
+        $months = (int) $request->query('months', 6);
+        $months = in_array($months, [3, 6, 12], true) ? $months : 6;
+
+        $expensesReport = ReportService::generateCurrentPreviousReport($teamId, 'month', 1, 'expenses', $latestExpenseDate);
+        $spendingSummary = ReportService::generateExpensesByPeriodInDate(
+            $teamId,
+            $anchor->copy()->subMonths($months - 1)->startOfMonth()->format('Y-m-d'),
+            $anchor->copy()->endOfMonth()->format('Y-m-d'),
+        );
+        // Assets vs debts, cumulative by month, for the Patrimonio tab
+        // (reuses the ChartNetWorth widget from /trends/net-worth).
+        $netWorth = collect(TransactionService::getNetWorth(
+            $teamId,
+            $anchor->copy()->subMonths($months - 1)->startOfMonth()->format('Y-m-d'),
+            $anchor->copy()->endOfMonth()->format('Y-m-d'),
+        ))->values();
+        // Money in/out per month for the Income tab's monthly chart.
+        $monthlyFlow = ReportService::getMonthlyFlow($teamId, $months, $latestExpenseDate);
+        // Credit card summary for the Cards tab (reuses the credit-card report service).
+        $creditCards = $this->creditCardService->creditCards(
+            $teamId,
+            $anchor->copy()->endOfMonth()->format('Y-m-d'),
+            $anchor->copy()->subMonths(2)->startOfMonth()->format('Y-m-d'),
+            null,
+        );
+
+        return [
+            'data' => [
+                'groups' => $groups,
+                'payeesOut' => $payeesOut,
+                'payeesIn' => $payeesIn,
+                'incomeExpenses' => $incomeExpenses,
+                'expensesReport' => $expensesReport,
+                'spendingSummary' => $spendingSummary,
+                'netWorth' => $netWorth,
+                'monthlyFlow' => $monthlyFlow,
+                'creditCards' => $creditCards,
+            ],
+            'metaData' => [
+                'name' => 'insights',
+                'title' => 'Insights',
+                'months' => $months,
             ],
         ];
     }

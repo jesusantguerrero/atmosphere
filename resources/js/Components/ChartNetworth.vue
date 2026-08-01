@@ -45,7 +45,8 @@ const state = computed(() => ({
         id: item.date_unit
     })),
     options: {
-        colors: ["#7B77D1", "#F37EA1"],
+        colors: ["#7B77D1B3", "#F37EA1B3"],
+        borderColors: ["#7B77D1", "#F37EA1"],
     },
     series: currentSeries.value
 }));

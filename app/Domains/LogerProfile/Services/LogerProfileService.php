@@ -3,13 +3,12 @@
 namespace App\Domains\LogerProfile\Services;
 
 use App\Domains\AppCore\Models\Category;
-use App\Domains\LogerProfile\Models\LogerProfile;
 use App\Domains\LogerProfile\Data\LogerProfileData;
-use App\Domains\Transaction\Models\TransactionLine;
 use App\Domains\LogerProfile\Data\ProfileEntityData;
-use App\Domains\LogerProfile\Models\LogerProfileEntity;
 use App\Domains\LogerProfile\Exceptions\ProfileNotFound;
-use App\Domains\Transaction\Services\TransactionService;
+use App\Domains\LogerProfile\Models\LogerProfile;
+use App\Domains\LogerProfile\Models\LogerProfileEntity;
+use App\Domains\Transaction\Models\TransactionLine;
 
 class LogerProfileService
 {
@@ -36,21 +35,22 @@ class LogerProfileService
     public function checkByName(int $teamId, string $name)
     {
         $profile = LogerProfile::where([
-            "team_id" => $teamId,
-            "name" => $name,
+            'team_id' => $teamId,
+            'name' => $name,
         ])->first();
 
         return $profile;
     }
+
     public function getByName(int $teamId, string $name)
     {
         $profile = LogerProfile::where([
-            "team_id" => $teamId,
-            "name" => $name,
+            'team_id' => $teamId,
+            'name' => $name,
         ])->first();
 
-        if (!$profile) {
-            throw new ProfileNotFound("Profile not found");
+        if (! $profile) {
+            throw new ProfileNotFound('Profile not found');
         }
 
         return LogerProfileData::from($profile);
@@ -68,16 +68,30 @@ class LogerProfileService
         ])->get());
     }
 
-    public function getTransactionsByProfileId(int $profileId, $startDate, $endDate)
+    public function getTransactionsByProfileId(int $profileId, $startDate, $endDate): array
     {
-        $entities =  LogerProfileEntity::where([
+        $entities = LogerProfileEntity::where([
             'profile_id' => $profileId,
-            'entity_type' => Category::class
+            'entity_type' => Category::class,
         ])->get();
 
-        $categories = $entities->map(fn ($entity) => $entity->entity->id)->all();
+        $categories = $entities
+            ->map(fn ($entity) => $entity->entity?->id)
+            ->filter()
+            ->values()
+            ->all();
 
-        $teamId = $entities[0]->team_id;
+        // A profile with no category entities linked (or whose categories were
+        // deleted) has nothing to report on — querying with an empty category
+        // list would match every expense instead.
+        if (! $categories) {
+            return [
+                'data' => collect(),
+                'total' => 0,
+            ];
+        }
+
+        $teamId = $entities->first()->team_id;
 
         $transactions = TransactionLine::query()
             ->byTeam($teamId)
@@ -88,8 +102,8 @@ class LogerProfileService
             ->get();
 
         return [
-            "data" => $transactions,
-            "total" => $transactions->sum('amount'),
+            'data' => $transactions,
+            'total' => $transactions->sum('amount'),
         ];
     }
 }

@@ -39,6 +39,8 @@ createInertiaApp({
             legacy: false,
         })
 
+        window.logerLocale = props.initialPage.props.locale;
+
         window.logerAppSettings = {
             currency_code: props.initialPage.props.settings?.team_primary_currency_code ?? 'USD',
             date_format: props.initialPage.props.settings?.team_date_format,

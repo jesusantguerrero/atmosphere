@@ -20,6 +20,17 @@ module.exports = {
     ],
 
     theme: {
+        // `base` is a surface token, but Tailwind also emits it as a text color.
+        // The resulting `.text-base { color: var(--c-base) }` collides with the
+        // `text-base` *font-size* utility: at equal specificity the responsive
+        // variants (`sm:text-base`, `md:text-base`) come last in the stylesheet
+        // and win over `text-body`, painting text with the app background —
+        // black-on-black in dark mode. Drop `base` from text colors only; it
+        // stays available for bg/border/divide/ring.
+        textColor: ({ theme }) => {
+            const { base, ...colors } = theme('colors');
+            return colors;
+        },
         extend: {
             fontFamily: {
                 brand: ['Pacifico', 'cursive'],

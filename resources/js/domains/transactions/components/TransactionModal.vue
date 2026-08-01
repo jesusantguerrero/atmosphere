@@ -672,8 +672,8 @@ const assignTransactionLabel = (label: Record<string, string>, transaction: Reco
 
               <!-- Multi-Currency Transaction Entry -->
               <div v-if="isMultiCurrency" class="px-4 md:px-0 mt-4">
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                  <h4 class="font-semibold text-blue-800 mb-3">Multi-Currency Transaction</h4>
+                <div class="bg-blue-50 border border-blue-200 dark:bg-blue-500/10 dark:border-blue-500/25 rounded-lg p-4 mb-4">
+                  <h4 class="font-semibold text-blue-800 dark:text-blue-300 mb-3">Multi-Currency Transaction</h4>
 
                   <!-- Currency Selection -->
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -712,14 +712,14 @@ const assignTransactionLabel = (label: Record<string, string>, transaction: Reco
 
                   <!-- Conversion Preview -->
                   <div v-if="showConversionInfo && needsConversion"
-                    class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                    class="mt-4 p-3 bg-yellow-50 border border-yellow-200 dark:bg-yellow-500/10 dark:border-yellow-500/25 rounded">
                     <div class="text-sm">
-                      <div class="font-medium text-yellow-800">Conversion Preview:</div>
-                      <div class="text-yellow-700">
+                      <div class="font-medium text-yellow-800 dark:text-yellow-300">Conversion Preview:</div>
+                      <div class="text-yellow-700 dark:text-yellow-200/80">
                         {{ formatCurrency(currencyAmount.amount, transactionCurrency) }}
                         will be recorded as pending until payment
                       </div>
-                      <div v-if="currentExchangeRate" class="text-yellow-700">
+                      <div v-if="currentExchangeRate" class="text-yellow-700 dark:text-yellow-200/80">
                         Estimated value: {{ formatCurrency(convertedAmount, accountPrimaryCurrency) }}
                       </div>
                     </div>

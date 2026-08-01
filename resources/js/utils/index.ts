@@ -1,4 +1,5 @@
 import { addDays, differenceInCalendarDays, format, parseISO, startOfDay, subDays } from "date-fns"
+import { es } from "date-fns/locale"
 import { differenceInMonths } from "date-fns";
 export * from "./formatMoney";
 export * from "./isMobile";
@@ -75,11 +76,12 @@ export enum MonthTypeFormat {
     monthYear = 'MMMM yyyy'
 }
 export const formatMonth = (dateString: string | Date, type: string = MonthTypeFormat.short ) => {
+    const opts = (typeof window !== 'undefined' && (window as any).logerLocale === 'es') ? { locale: es } : undefined;
     try {
         if (typeof dateString == 'string') {
-            return format(parseISO(dateString), type)
+            return format(parseISO(dateString), type, opts)
         } else {
-            return format(dateString, type)
+            return format(dateString, type, opts)
         }
     } catch (err) {
         return dateString

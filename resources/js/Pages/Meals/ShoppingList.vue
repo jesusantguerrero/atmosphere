@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { router } from "@inertiajs/vue3"
+import { router, useForm } from "@inertiajs/vue3"
 import axios from 'axios';
 
 import AppLayout from '@/Components/templates/AppLayout.vue';
@@ -35,6 +35,20 @@ const chorePlan = computed(() => {
 const onSearch = (query: string) => {
     router.replace(`${location.pathname}/${query}`)
 }
+
+// Empty-state CTA. Creates a blank shopping list via the ShoppingListController's
+// createList endpoint; the response redirect drops the user into the fresh list.
+// Distinct from the "generate from meal plan" flow — that one lives inside
+// ShoppingListForm and pulls ingredients from an active meal-planner week.
+const createListForm = useForm({
+    name: '',
+});
+
+const startShoppingList = () => {
+    createListForm.post(route('shopping.lists.create'), {
+        preserveScroll: true,
+    });
+};
 
 const mealStatus = {
   list: {
@@ -170,16 +184,21 @@ const copyShareUrl = async () => {
                     resource-name="items"
                 />
             </template>
-            <WelcomeCard v-else message="Loger profiles">
-                <section class="flex flex-col items-center pb-12 mx-auto">
+            <WelcomeCard v-else :message="$t('Shopping list')">
+                <section class="flex flex-col items-center pb-12 mx-auto text-center">
                     <img src="../LogerProfile/empty-box.svg" class="opacity-50" />
-                    <h4 class="text-lg font-bold text-body-1">There are not profiles created</h4>
-                    <p class="max-w-lg my-3">
-                        Lorem ipsum dolor sit amet consectetur adipiscing elit maecenas, ligula rutrum scelerisque vulputate netus urna dui facilisi, habitant auctor sapien a porta nisi arcu. Imperdiet curabitur accumsan torquent fusce mauris blandit fames mollis primis lacinia felis, interdum p.
+                    <h4 class="text-lg font-bold text-body">{{ $t('No shopping list yet') }}</h4>
+                    <p class="max-w-md my-3 text-body-1">
+                        {{ $t('Plan your meals for the week and Loger will build the shopping list from the ingredients you need. Or start a blank list and add items as you go.') }}
                     </p>
-                    <LogerButton variant="inverse">
-                        Add shopping list
-                    </LogerButton>
+                    <div class="flex flex-wrap items-center justify-center gap-2 mt-2">
+                        <LogerButton variant="primary" @click="startShoppingList" :processing="createListForm.processing">
+                            {{ $t('Start a shopping list') }}
+                        </LogerButton>
+                        <LogerButton variant="inverse" as="a" :href="route('meal-planner.index')">
+                            {{ $t('Plan meals first') }}
+                        </LogerButton>
+                    </div>
                 </section>
             </WelcomeCard>
         </main>

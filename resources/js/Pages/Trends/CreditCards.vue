@@ -123,7 +123,7 @@ const deltaDisplay = computed(() => {
             <header class="flex space-x-5">
                 <BackgroundCard
                     class="w-full cursor-pointer text-body-1 bg-base-lvl-3"
-                    :value="data.lastCycleBalances.length"
+                    :value="data.lastCycleBalances?.length ?? 0"
                     :label="'Credits Qty'"
                     label-class="capitalize text-secondary font-base"
                 />

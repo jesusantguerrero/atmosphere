@@ -223,7 +223,7 @@
                 @click="goToPage(page)"
                 :class="[
                   page === currentPage
-                    ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                    ? 'z-10 bg-blue-50 border-blue-500 text-blue-600 dark:bg-blue-500/15 dark:border-blue-500/50 dark:text-blue-300'
                     : 'bg-base-lvl-3 border-base-lvl-2 text-body-1 hover:bg-base-lvl-2',
                   'relative inline-flex items-center px-4 py-2 border text-sm font-medium'
                 ]"

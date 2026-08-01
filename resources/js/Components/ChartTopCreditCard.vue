@@ -60,8 +60,10 @@ const state = computed(() => ({
     })
 }));
 
-const labels =computed(() => {
-    return currentSeries.value[0].labels.map(formatMonth)
+// Grouping an empty `data` yields no series at all, so index 0 is undefined —
+// which is the normal state for a period with no credit card activity yet.
+const labels = computed(() => {
+    return currentSeries.value[0]?.labels?.map(formatMonth) ?? []
 })
 
 const hasHiddenValues = inject('hasHiddenValues', ref(false))

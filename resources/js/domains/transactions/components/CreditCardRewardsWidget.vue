@@ -34,7 +34,7 @@ const typeLabel = computed(() => {
     <article class="w-full">
         <DonutChart
             class="mx-auto flex justify-center"
-            style="height:270px; background: white; width: 100%"
+            style="height:270px; width: 100%"
             :series="creditCardData"
             label="name"
             :legend="true"

@@ -144,17 +144,24 @@ class BudgetRolloverService
             'name' => $month,
         ])->first();
 
+        // Rolling a month that was never opened for Ready to Assign (first roll
+        // of a fresh month, or the previous month's roll never ran) leaves both
+        // the row and the aggregate missing. Start from zero — the row is
+        // created by the updateOrCreate below.
+        $leftFromLastMonth = $budgetMonth?->left_from_last_month ?? 0;
+        $budgeted = $results?->budgeted ?? 0;
+
         $inflow = (new BudgetCategoryService($readyToAssignCategory))->getCategoryInflow($readyToAssignCategory, $month);
-        $TBB = $budgetMonth->left_from_last_month + $inflow;
+        $TBB = $leftFromLastMonth + $inflow;
 
         $nextMonth = Carbon::createFromFormat('Y-m-d', $month)->addMonthsWithNoOverflow(1)->format('Y-m-d');
-        $overspending = abs($results?->overspendingInMonth);
-        $leftover = $TBB - $results?->budgeted;
+        $overspending = abs($results?->overspendingInMonth ?? 0);
+        $leftover = $TBB - $budgeted;
 
-        $available = Money::of($budgetMonth->left_from_last_month, 'DOP', null, RoundingMode::HALF_UP)
-            ->plus($results->budgeted, RoundingMode::HALF_UP)
-            ->plus($results->funded_spending, RoundingMode::HALF_UP)
-            ->minus(($results->payments), RoundingMode::HALF_UP)
+        $available = Money::of($leftFromLastMonth, 'DOP', null, RoundingMode::HALF_UP)
+            ->plus($budgeted, RoundingMode::HALF_UP)
+            ->plus($results?->funded_spending ?? 0, RoundingMode::HALF_UP)
+            ->minus(($results?->payments ?? 0), RoundingMode::HALF_UP)
             ->getAmount()
             ->toFloat();
 
@@ -179,7 +186,7 @@ class BudgetRolloverService
             'name' => $month,
         ], [
             'user_id' => $readyToAssignCategory->user_id,
-            'budgeted' => $results?->budgeted,
+            'budgeted' => $budgeted,
             'activity' => $inflow,
             'available' => $available,
             'funded_spending' => $results?->funded_spending ?? 0,
@@ -197,7 +204,7 @@ class BudgetRolloverService
         ], [
             'user_id' => $readyToAssignCategory->user_id,
             'left_from_last_month' => $leftover,
-            'moved_from_last_month' => $results?->available + $leftover,
+            'moved_from_last_month' => ($results?->available ?? 0) + $leftover,
             'overspending_previous_month' => $overspending,
         ]);
     }

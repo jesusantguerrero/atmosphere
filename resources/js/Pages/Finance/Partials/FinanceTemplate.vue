@@ -37,7 +37,37 @@
         },
         hidePanel: {
             type: Boolean
+        },
+        /**
+         * Opt-in tight-padding mode. When true, drops the outer article
+         * and main padding so the table extends nearly edge-to-edge to
+         * the sidebar and right rail. Reserved for table-heavy pages
+         * (Budget) where every horizontal pixel counts. Default false
+         * preserves the classic spacing used by Watchlist, Reconciliation,
+         * HouseBuyer, and every other Finance page.
+         */
+        dense: {
+            type: Boolean,
+            default: false,
         }
+    });
+
+    const articleClasses = computed(() => {
+        return props.dense
+            ? 'px-2 md:px-1 mt-12 md:space-x-2'
+            : 'px-3 sm:px-5 sm:px-6 lg:px-8 mt-12 md:space-x-10';
+    });
+
+    const mainClasses = computed(() => {
+        return props.dense
+            ? 'md:pl-2 md:pr-0'
+            : 'md:pr-5 md:pl-8';
+    });
+
+    const asideInnerClasses = computed(() => {
+        return props.dense
+            ? 'md:px-1'
+            : 'md:px-2';
     });
 
     const slots = useSlots();
@@ -65,17 +95,28 @@
 </script>
 
 <template>
-    <article class="px-3 sm:px-5 mx-auto mt-12 space-y-6 md:space-y-0 md:space-x-10  relative md:flex max-w-screen-2xl sm:px-6 lg:px-8">
+    <!--
+        Layout padding is opt-in via the `dense` prop. Default (false)
+        preserves the historic spacing used across all Finance pages
+        (Watchlist, Reconciliation, HouseBuyer, etc.); Budget passes
+        dense=true to extend its table nearly edge-to-edge to match
+        Actual's tighter aesthetic. Non-padding classes (max-width,
+        margins, top offset, flex behavior) stay identical between modes.
+    -->
+    <article
+        class="mx-auto space-y-6 md:space-y-0 relative md:flex max-w-screen-2xl"
+        :class="articleClasses"
+    >
         <main
-            class="overflow-hidden md:pr-5 md:pl-8"
-            :class="showPanel() ? 'md:w-6/12 lg:w-7/12 xl:w-8/12 2xl:w-10/12' : 'md:w-full'"
+            class="overflow-hidden"
+            :class="[mainClasses, showPanel() ? 'md:w-6/12 lg:w-7/12 xl:w-8/12 2xl:w-10/12' : 'md:w-full']"
         >
             <slot name="prepend-panel" v-if="hidePanel" />
             <slot />
         </main>
 
         <aside class="space-y-4 md:w-3/12 md:sticky md:top-0" v-if="showPanel()">
-            <section class="w-full md:px-2 aside-content">
+            <section class="w-full aside-content" :class="asideInnerClasses">
                 <slot name="prepend-panel" />
                 <slot name="panel">
                     <AccountsLedger
