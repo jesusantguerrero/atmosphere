@@ -69,9 +69,25 @@ const rankRows = (arr: any[]) => {
   const tot = arr.reduce((a, i) => a + i.total, 0) || 1;
   return arr.slice(0, 8).map((i) => ({ name: i.name, amount: i.total, pct: (i.total / tot) * 100, w: (i.total / max) * 100 }));
 };
-const moneyOutRows = computed(() => rankRows(expenseByCat.value));
-const moneyInRows = computed(() => rankRows(incomeRows.value));
-const totalIn = computed(() => incomeRows.value.reduce((a, i) => a + i.total, 0));
+const payeesInRows = computed<any[]>(() =>
+  (props.data?.payeesIn ?? []).map((x: any) => ({ name: x.name, total: abs(x.total) })).sort((a, b) => b.total - a.total)
+);
+const payeesOutRows = computed<any[]>(() =>
+  (props.data?.payeesOut ?? []).map((x: any) => ({ name: x.name, total: abs(x.total) })).sort((a, b) => b.total - a.total)
+);
+const breakdownDims = [
+  { id: "categoria", label: "Category" },
+  { id: "payee", label: "Payee" },
+  { id: "miembro", label: "Member" },
+];
+const inDim = ref("categoria");
+const outDim = ref("categoria");
+const moneyInSrc = computed<any[]>(() => (inDim.value === "categoria" ? incomeRows.value : inDim.value === "payee" ? payeesInRows.value : []));
+const moneyOutSrc = computed<any[]>(() => (outDim.value === "categoria" ? expenseByCat.value : outDim.value === "payee" ? payeesOutRows.value : []));
+const moneyInRows = computed(() => rankRows(moneyInSrc.value));
+const moneyOutRows = computed(() => rankRows(moneyOutSrc.value));
+const totalIn = computed(() => moneyInSrc.value.reduce((a, i) => a + i.total, 0));
+const totalOut = computed(() => moneyOutSrc.value.reduce((a, i) => a + i.total, 0));
 
 // ---- tabs
 const tabs = [
@@ -332,7 +348,10 @@ const catOptions = {
       <div v-if="activeTab === 'patrimonio'" class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-8">
         <div class="bg-base-lvl-3 border border-base rounded-xl p-5">
           <h3 class="text-lg font-extrabold text-body">{{ $t('Money out') }}</h3>
-          <div class="text-error font-bold tabular-nums mb-3">−DOP {{ money(monthExpenseTotal).main }}<span class="text-xs opacity-60">.{{ money(monthExpenseTotal).cents }}</span></div>
+          <div class="text-error font-bold tabular-nums mb-3">−DOP {{ money(totalOut).main }}<span class="text-xs opacity-60">.{{ money(totalOut).cents }}</span></div>
+          <div class="flex gap-1 mb-4 p-0.5 rounded-lg bg-base-lvl-1 border border-base w-max">
+            <button v-for="dm in breakdownDims" :key="dm.id" class="px-3 py-1 text-xs font-medium rounded-md transition" :class="outDim === dm.id ? 'bg-base-lvl-3 text-body' : 'text-body-1/50 hover:text-body-1'" @click="outDim = dm.id">{{ $t(dm.label) }}</button>
+          </div>
           <div v-for="(r, i) in moneyOutRows" :key="i" class="grid items-center gap-3 py-2 border-t border-base-lvl-2" style="grid-template-columns:1.3fr 1.3fr auto">
             <div class="text-sm font-medium text-body truncate">{{ r.name }}</div>
             <div class="flex items-center gap-2 text-xs text-body-1"><span style="min-width:38px">{{ r.pct.toFixed(1) }}%</span><span class="flex-1 h-1 rounded-full bg-base-lvl-2 relative overflow-hidden"><span class="absolute inset-y-0 left-0 rounded-full" :style="{ width: r.w + '%', background: '#E8837E' }"></span></span></div>
@@ -343,6 +362,9 @@ const catOptions = {
         <div class="bg-base-lvl-3 border border-base rounded-xl p-5">
           <h3 class="text-lg font-extrabold text-body">{{ $t('Money in') }}</h3>
           <div class="text-success font-bold tabular-nums mb-3">DOP {{ money(totalIn).main }}<span class="text-xs opacity-60">.{{ money(totalIn).cents }}</span></div>
+          <div class="flex gap-1 mb-4 p-0.5 rounded-lg bg-base-lvl-1 border border-base w-max">
+            <button v-for="dm in breakdownDims" :key="dm.id" class="px-3 py-1 text-xs font-medium rounded-md transition" :class="inDim === dm.id ? 'bg-base-lvl-3 text-body' : 'text-body-1/50 hover:text-body-1'" @click="inDim = dm.id">{{ $t(dm.label) }}</button>
+          </div>
           <div v-for="(r, i) in moneyInRows" :key="i" class="grid items-center gap-3 py-2 border-t border-base-lvl-2" style="grid-template-columns:1.3fr 1.3fr auto">
             <div class="text-sm font-medium text-body truncate">{{ r.name }}</div>
             <div class="flex items-center gap-2 text-xs text-body-1"><span style="min-width:38px">{{ r.pct.toFixed(1) }}%</span><span class="flex-1 h-1 rounded-full bg-base-lvl-2 relative overflow-hidden"><span class="absolute inset-y-0 left-0 rounded-full" :style="{ width: r.w + '%', background: '#56C08A' }"></span></span></div>

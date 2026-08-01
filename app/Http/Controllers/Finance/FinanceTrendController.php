@@ -145,8 +145,6 @@ class FinanceTrendController extends Controller
         $teamId = $request->user()->current_team_id;
 
         $groups = TransactionService::getCategoryExpensesGroup($teamId, $startDate, $endDate, null, null);
-        $payeesOut = TransactionService::getTransactionsByPayeeInPeriod($teamId, $startDate, $endDate, Transaction::DIRECTION_DEBIT)->sortByDesc('total')->values();
-        $payeesIn = TransactionService::getTransactionsByPayeeInPeriod($teamId, $startDate, $endDate, Transaction::DIRECTION_CREDIT)->sortByDesc('total')->values();
         $incomeExpenses = TransactionService::getIncomeVsExpenses($teamId, 3);
         // Same two charts the Dashboard's "Financial glance" widget shows, so
         // Insights reuses them behind a Previous / Spending toggle. Anchored to
@@ -157,6 +155,21 @@ class FinanceTrendController extends Controller
         $anchor = $latestExpenseDate
             ? Carbon::createFromFormat('Y-m-d', $latestExpenseDate)
             : Carbon::now();
+
+        // Payee breakdowns (money in / money out) for the latest active month,
+        // aggregated per payee. Anchored so they are not empty when data lags.
+        $breakStart = $anchor->copy()->startOfMonth()->format('Y-m-d');
+        $breakEnd = $anchor->copy()->endOfMonth()->format('Y-m-d');
+        $payeesOut = ReportService::getExpensesByPayeeInPeriod($teamId, $breakStart, $breakEnd)
+            ->groupBy('name')
+            ->map(fn ($rows, $name) => ['name' => $name, 'total' => (float) $rows->sum('total_amount')])
+            ->values()->sortByDesc('total')->values();
+        // Income by payee — same source the category (income) view uses so the
+        // Category / Payee totals line up on the money-in widget.
+        $payeesIn = TransactionService::getTransactionsByPayeeInPeriod($teamId, $breakStart, $breakEnd, Transaction::DIRECTION_DEBIT)
+            ->groupBy('name')
+            ->map(fn ($rows, $name) => ['name' => $name, 'total' => (float) $rows->sum('total')])
+            ->values()->sortByDesc('total')->values();
         // History length driven by the 3M / 6M / 1Y toolbar segment.
         $months = (int) $request->query('months', 6);
         $months = in_array($months, [3, 6, 12], true) ? $months : 6;

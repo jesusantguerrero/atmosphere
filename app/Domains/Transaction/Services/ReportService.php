@@ -242,6 +242,25 @@ class ReportService
             ->get();
     }
 
+    /**
+     * Expenses grouped by payee for the period, using the same balance +
+     * expenseCategories scopes as the category breakdown so the totals line up
+     * across the Category / Payee dimensions (money-out widget).
+     */
+    public static function getExpensesByPayeeInPeriod($teamId, $startDate, $endDate)
+    {
+        return TransactionLine::byTeam($teamId)
+            ->balance()
+            ->inDateFrame($startDate, $endDate)
+            ->expenseCategories()
+            ->join('transactions', 'transactions.id', 'transaction_lines.transaction_id')
+            ->join('payees', 'transaction_lines.payee_id', '=', 'payees.id')
+            ->selectRaw('date_format(transaction_lines.date, "%Y-%m-01") as date, date_format(transaction_lines.date, "%Y-%m-01") as month, payees.name, payees.id')
+            ->groupByRaw('date_format(transaction_lines.date, "%Y-%m"), payees.id')
+            ->orderByDesc('date')
+            ->get();
+    }
+
     public static function getExpensesByCategoriesInPeriod($teamId, $startDate, $endDate, $categories = null)
     {
         $cats = TransactionLine::byTeam($teamId)
