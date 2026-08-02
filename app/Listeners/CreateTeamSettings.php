@@ -76,12 +76,22 @@ class CreateTeamSettings
 
     public function setAvailableModules($team)
     {
+        // Finance is always on (the door). Any other module the user opted into
+        // at Space Setup is enabled here; the rest stay off. The selection rides
+        // the same onboarding request, so request() is the source of truth. When
+        // absent (API/team creation without the picker) only Finance is on — the
+        // previous default, preserved.
+        $selected = array_map(
+            fn ($name) => strtolower((string) $name),
+            (array) request()->input('modules', [])
+        );
+
         foreach (CoreModuleTypeEnum::cases() as $module) {
             $team->modules()->create([
                 'user_id' => $team->user_id,
                 'name' => $module->name,
                 'alias' => ucfirst($module->name),
-                'enabled' => $module === CoreModuleTypeEnum::Finance,
+                'enabled' => $module === CoreModuleTypeEnum::Finance || in_array(strtolower($module->name), $selected, true),
                 'created_from' => 'app:console',
             ]);
         }

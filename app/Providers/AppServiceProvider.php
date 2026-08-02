@@ -98,6 +98,7 @@ class AppServiceProvider extends ServiceProvider
         Onboard::addStep(__('Add your family'))
             ->link('/loger-profiles')
             ->cta(__('Add profiles'))
+            ->excludeIf(fn (Team $model) => ! $model->isModuleEnabled('profiles'))
             ->attributes([
                 'icon' => 'fas fa-users',
                 'name' => 'addProfiles',
@@ -110,6 +111,7 @@ class AppServiceProvider extends ServiceProvider
         Onboard::addStep(__('Plan your meals'))
             ->link('/meals/overview')
             ->cta(__('Plan meals'))
+            ->excludeIf(fn (Team $model) => ! $model->isModuleEnabled('meals'))
             ->attributes([
                 'icon' => 'fas fa-utensils',
                 'name' => 'addMealPlan',
