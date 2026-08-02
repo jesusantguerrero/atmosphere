@@ -46,6 +46,19 @@ export const useAppMenu = (t: any, modules: any[]) => {
             }
         },
         {
+            // Inbox is the AI triage surface — an integrating-layer destination
+            // (like Calendar) where captured items land to be classified. Always
+            // shown; not gated by a module.
+            icon: 'fas fa-inbox',
+            name: 'inbox',
+            label: t('Inbox'),
+            to: '/inbox',
+            as: Link,
+            isActiveFunction(url: string, currentPath: string) {
+                return /^\/inbox/.test(currentPath)
+            }
+        },
+        {
             separator: true
         },
         {
@@ -96,19 +109,12 @@ export const useAppMenu = (t: any, modules: any[]) => {
             label: t('Household'),
             to: '/housing',
             as: Link,
-            hidden: !isModuleEnabled('housing'),
+            // Profiles/Family now live INSIDE Household as the "People" sub-tab.
+            // Keep the pillar visible if either module is on, and highlight it
+            // when viewing /loger-profiles so the context stays coherent.
+            hidden: !(isModuleEnabled('housing') || isModuleEnabled('profiles')),
             isActiveFunction(url:string, currentPath: string) {
-                return /housing/.test(currentPath)
-             }
-        },
-        {
-            icon: 'fas fa-users',
-            label: t('Family'),
-            to: '/loger-profiles',
-            as: Link,
-            hidden: !isModuleEnabled('profiles'),
-            isActiveFunction(url: string, currentPath: string) {
-                return /loger-profiles/.test(currentPath)
+                return /housing|loger-profiles/.test(currentPath)
              }
         }
     ];
@@ -169,7 +175,10 @@ export const useAppMenu = (t: any, modules: any[]) => {
             icon: 'fas fa-cogs',
             label: t('Settings'),
             name: 'settings',
-            to: '/user/profile',
+            // Lands on the Settings hub (grouped cards) instead of
+            // jumping straight to the Jetstream profile page. Users
+            // who want Profile still find it in the first card.
+            to: '/settings',
             as: Link
         },
     ];

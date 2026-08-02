@@ -29,52 +29,75 @@ const overdueOccurrences = computed(() => {
 });
 
 const totalBoards = computed(() => props.boards.length);
+
+const isFirstRun = computed(() => totalOccurrences.value === 0 && totalBoards.value === 0);
 </script>
 
 <template>
-    <AppLayout title="Household">
+    <AppLayout :title="$t('Household')">
         <template #header>
             <HouseSectionNav>
                 <template #actions>
                     <div class="flex gap-2">
                         <LogerButton variant="inverse" @click="router.visit('/housing/occurrence/create')">
-                            Add Occurrence
+                            {{ $t('Add Reminder') }}
                         </LogerButton>
                     </div>
                 </template>
             </HouseSectionNav>
         </template>
 
-        <main class="px-5 mx-auto mt-12 max-w-screen-2xl sm:px-6 lg:px-8 space-y-6 md:pr-16">
-            <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <main class="px-5 mx-auto pt-16 max-w-screen-2xl sm:px-6 lg:px-8 space-y-6 md:pr-16">
+            <section
+                v-if="isFirstRun"
+                class="flex flex-col items-center justify-center max-w-xl py-16 mx-auto text-center"
+            >
+                <div class="flex items-center justify-center w-16 h-16 mb-5 rounded-full bg-primary/10 text-primary">
+                    <i class="text-2xl fa fa-house-user"></i>
+                </div>
+                <h2 class="text-xl font-bold text-body">{{ $t('Welcome to your Household') }}</h2>
+                <p class="max-w-md mt-2 mb-6 text-body-2">
+                    {{ $t('Keep your home running: track recurring tasks like oil changes or filter swaps, and share chores the whole family can pick up.') }}
+                </p>
+                <div class="flex flex-col gap-3 sm:flex-row">
+                    <LogerButton variant="inverse" @click="router.visit('/housing/occurrence/create')">
+                        {{ $t('Add Reminder') }}
+                    </LogerButton>
+                    <LogerButton variant="neutral" @click="router.visit('/housing/chores')">
+                        {{ $t('Add chore list') }}
+                    </LogerButton>
+                </div>
+            </section>
+
+            <section v-else class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div class="bg-base-lvl-3 border border-base rounded-lg px-4 py-3 text-center">
                     <p class="text-2xl font-bold text-body">{{ totalOccurrences }}</p>
-                    <p class="text-sm text-body-2 mt-1">Occurrences</p>
+                    <p class="text-sm text-body-2 mt-1">{{ $t('Reminders') }}</p>
                 </div>
                 <div class="bg-base-lvl-3 border border-base rounded-lg px-4 py-3 text-center">
-                    <p class="text-2xl font-bold" :class="overdueOccurrences > 0 ? 'text-red-500' : 'text-green-500'">
+                    <p class="text-2xl font-bold" :class="overdueOccurrences > 0 ? 'text-error' : 'text-success'">
                         {{ overdueOccurrences }}
                     </p>
-                    <p class="text-sm text-body-2 mt-1">Overdue</p>
+                    <p class="text-sm text-body-2 mt-1">{{ $t('Overdue') }}</p>
                 </div>
                 <div class="bg-base-lvl-3 border border-base rounded-lg px-4 py-3 text-center">
                     <p class="text-2xl font-bold text-body">{{ totalBoards }}</p>
-                    <p class="text-sm text-body-2 mt-1">Boards</p>
+                    <p class="text-sm text-body-2 mt-1">{{ $t('Chore boards') }}</p>
                 </div>
                 <div class="bg-base-lvl-3 border border-base rounded-lg px-4 py-3 text-center flex items-center justify-center">
                     <Link href="/housing/occurrence" class="text-primary text-sm font-medium hover:underline">
-                        View all occurrences
+                        {{ $t('View all reminders') }}
                     </Link>
                 </div>
             </section>
 
-            <section class="md:flex md:gap-6 space-y-6 md:space-y-0">
+            <section v-if="!isFirstRun" class="md:flex md:gap-6 space-y-6 md:space-y-0">
                 <div class="md:w-1/2 space-y-4">
                     <OccurrenceWidget :checks="checks" />
                 </div>
 
                 <div class="md:w-1/2 space-y-4">
-                    <WidgetTitleCard title="Chore Boards" :hide-divider="false">
+                    <WidgetTitleCard :title="$t('Chore boards')" :hide-divider="false">
                         <template #action>
                             <LogerButton
                                 variant="inverse"
@@ -82,16 +105,16 @@ const totalBoards = computed(() => props.boards.length);
                                 rounded
                                 @click="router.visit('/housing/chores')"
                             >
-                                View all
+                                {{ $t('View all') }}
                             </LogerButton>
                         </template>
 
                         <div class="w-full">
                             <ChoreWidget v-if="boards.length" :boards="boards" />
                             <section v-else class="flex flex-col items-center justify-center py-8 w-full text-center">
-                                <p class="text-body-2 text-sm mb-3">No chore boards created yet.</p>
+                                <p class="text-body-2 text-sm mb-3">{{ $t('No chore boards yet.') }}</p>
                                 <LogerButton variant="inverse" @click="router.visit('/housing/chores')">
-                                    Add Chore List
+                                    {{ $t('Add chore list') }}
                                 </LogerButton>
                             </section>
                         </div>

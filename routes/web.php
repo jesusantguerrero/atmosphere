@@ -158,6 +158,10 @@ Route::group([], app_path('/Domains/Budget/routes.php'));
 Route::group([], app_path('/Domains/Meal/routes.php'));
 Route::group([], app_path('/Domains/Integration/routes.php'));
 
+// Admin / backoffice — users, teams, impersonate, feature flags. Sits at
+// the app root (not under a domain) since it cuts across every domain.
+require __DIR__.'/admin.php';
+
 /**
  * Guessable finance sub-URLs — the sub-nav uses the canonical route, but users
  * naturally guess `/finance/<section>` variants. Without these redirects they
@@ -216,6 +220,10 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     // existing `route('today')` calls keep resolving without a deprecation sweep.
     Route::get('/today', fn () => redirect()->route('dashboard'))->name('today');
     Route::get('/calendar', CalendarController::class)->name('calendar');
+    // Inbox — the AI triage surface. Captured items (receipts, statements,
+    // quick notes) land here and get classified into finance/reminders/chores.
+    // Phase 1 renders the destination; capture + classification wiring follows.
+    Route::get('/inbox', \App\Http\Controllers\InboxController::class)->name('inbox');
     Route::post('/planner/bulk', [PlannerController::class, 'bulkStore'])->name('planner.bulk');
     Route::post('/planner', [PlannerController::class, 'store'])->name('planner.store');
     Route::put('/planner/{planner}', [PlannerController::class, 'update'])->name('planner.update');

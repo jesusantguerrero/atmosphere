@@ -17,7 +17,7 @@ const menus = {
         url: '/housing/chores'
     },
     {
-        label: 'Occurrence Checks',
+        label: 'Reminders',
         url: '/housing/occurrence'
     },
     {
@@ -31,6 +31,10 @@ const menus = {
     {
         label: 'Utilities',
         url: '/housing/utilities'
+    },
+    {
+        label: 'People',
+        url: '/loger-profiles'
     }
     ],
     [MODULES.MEAL]: [
@@ -102,48 +106,56 @@ const menus = {
         {
             label: 'Year summary',
             url: '/trends/year-summary'
+        },
+        {
+            label: 'Relationships',
+            url: '/trends/relationships',
+            // Gated: page is a mock until backend hooks land. The
+            // admin panel toggles this without a code deploy.
+            featureFlag: 'trends-relationships',
         }
     ],  [MODULES.ADMIN]: [
         {
-          label: "Dashboard",
+          label: "Overview",
           to: "/admin",
           isActiveFunction(currentPath: string) {
             return "/admin" == currentPath;
           },
         },
         {
-          label: "Teams",
-          to: "/admin/teams",
-        },
-        {
-          label: "Subscriptions",
-          to: "/admin/subscriptions",
-        },
-        {
           label: "Users",
           to: "/admin/users",
         },
         {
-          label: "Commands",
-          to: "/admin/commands",
+          label: "Teams",
+          to: "/admin/teams",
         },
         {
-          label: "Settings",
-          to: "/admin/settings/email",
+          label: "Feature Flags",
+          to: "/admin/feature-flags",
         },
         {
-          label: "Backups",
-          to: "/admin/backups",
-        },
-        {
-          label: "Pulse",
-          url: "/pulse",
-          as: 'a'
+          label: "Mail",
+          to: "/admin/mail",
         },
       ],
 }
 
 
-export const getSectionMenu = (sectionName) => {
-    return menus[sectionName].filter(item => !item.hidden)
+/**
+ * Filter section menu items by:
+ *   - explicit `hidden: true` (compile-time hide)
+ *   - `featureFlag` (runtime toggle — checked against the shared
+ *     `featureFlags` prop that HandleInertiaRequests populates).
+ *
+ * The activeFlags param is optional so callers that don't have Inertia
+ * context (SSR, tests) still work; missing = all featureFlag items
+ * hidden, which is the safe default.
+ */
+export const getSectionMenu = (sectionName, activeFlags: Record<string, boolean> = {}) => {
+    return menus[sectionName].filter(item => {
+        if (item.hidden) return false;
+        if (item.featureFlag && !activeFlags[item.featureFlag]) return false;
+        return true;
+    });
 }

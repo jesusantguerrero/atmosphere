@@ -78,7 +78,7 @@ const status = computed(() => {
   if (v > 0) {
     return {
       variant: "unassigned",
-      label: "Ready to assign",
+      label: "To assign",
       colorClass:
         "bg-warning/10 border-warning/40 text-warning",
       description:

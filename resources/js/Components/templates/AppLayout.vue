@@ -67,6 +67,18 @@
     });
 
 
+    // Badge counts for sidebar items, keyed by item `name` (AtSide `counters`
+    // shape: { name: { count } }). Only include a key when > 0 so no zero-badge
+    // renders. `pendingReviewCount` = DRAFT transactions awaiting confirmation.
+    const navCounters = computed(() => {
+        const counters: Record<string, any> = {}
+        const pending = Number((pageProps as any).pendingReviewCount ?? 0)
+        if (pending > 0) {
+            counters.inbox = { count: pending > 99 ? '99+' : pending }
+        }
+        return counters
+    })
+
     const sectionTitle = computed(() => {
         return props.title || pageProps.sectionTitle
     })
@@ -299,6 +311,19 @@
                                                 <span>{{ item.label }}</span>
                                             </Link>
                                         </li>
+                                        <!-- Admin entry — visible only to users with role admin
+                                             or super_admin. Sits after Settings so it feels
+                                             like an operator tool rather than a pillar. -->
+                                        <li v-if="['admin', 'super_admin'].includes($page.props.auth?.user?.role)">
+                                            <Link
+                                                href="/admin"
+                                                class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-body-1 hover:bg-base-lvl-2 hover:text-primary transition-colors"
+                                                @click="showingNavigationDropdown = false"
+                                            >
+                                                <i class="fas fa-shield-alt w-5 text-center text-body-1/60"></i>
+                                                <span>{{ $t('Admin') }}</span>
+                                            </Link>
+                                        </li>
                                     </ul>
                                 </div>
                             </nav>
@@ -326,6 +351,7 @@
                     :class="panelShadow"
                     v-model:isExpanded="isExpanded"
                     :menu="currentMenu"
+                    :counters="navCounters"
                     :header-menu="headerMenu"
                     :current-path="currentPath"
                     brand-container-class="py-2"

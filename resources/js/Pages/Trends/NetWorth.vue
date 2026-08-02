@@ -7,7 +7,8 @@ import AppLayout from "@/Components/templates/AppLayout.vue";
 import TrendTemplate from "./Partials/TrendTemplate.vue";
 import ChartNetWorth from "@/Components/ChartNetworth.vue";
 import TrendSectionNav from "./Partials/TrendSectionNav.vue";
-import { trendOptions } from "./Partials/trendOptions";
+import { useTrendOptions } from "./Partials/trendOptions";
+const trendOptions = useTrendOptions();
 import WidgetTitleCard from "@/Components/molecules/WidgetTitleCard.vue";
 
 

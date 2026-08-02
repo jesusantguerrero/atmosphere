@@ -44,7 +44,7 @@ const getUrgencyLabel = (occurrence: IOccurrenceCheck): string => {
     <div class="px-2 py-2 bg-base-lvl-3 rounded-md overflow-x-auto ic-scroller">
         <SectionTitle type="secondary" class="font-bold text-center cursor-pointer">
             <Link href="/housing/occurrence">
-                Occurrence Checks
+                {{ $t('Reminders') }}
             </Link>
         </SectionTitle>
         <p class="text-center text-[11px] text-body-1/70 mt-0.5">{{ $t('Days since it last happened') }}</p>
@@ -79,7 +79,7 @@ const getUrgencyLabel = (occurrence: IOccurrenceCheck): string => {
                 </span>
             </template>
           </CategoryItem>
-          <p class="text-center text-sm -mt-6">Occurrences track the duration of events based on transactions or manual input</p>
+          <p class="text-center text-sm -mt-6">{{ $t('Reminders track how long since a recurring task — like an oil change or a filter swap.') }}</p>
         </section>
       </div>
 </template>

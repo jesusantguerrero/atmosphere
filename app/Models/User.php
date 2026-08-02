@@ -27,7 +27,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password', 'language',
+        'name', 'email', 'password', 'language', 'role',
     ];
 
     /**
@@ -60,9 +60,48 @@ class User extends Authenticatable
         'profile_photo_url',
     ];
 
-    public function isSuperAdmin()
+    /**
+     * Highest-tier admin. Reserved for destructive operations (delete team,
+     * kill-switch feature flags). Historic env-based check stays authoritative
+     * so config('atmosphere.superadmin.email') always wins even if the DB
+     * `role` column ends up out of sync — env is treated as tier 0 override.
+     */
+    public function isSuperAdmin(): bool
     {
-        return config('atmosphere.superadmin.email') === $this?->email;
+        if (config('atmosphere.superadmin.email') === $this?->email) {
+            return true;
+        }
+
+        return $this->role === 'super_admin';
+    }
+
+    /**
+     * Day-to-day backoffice access — user list, team list, impersonate,
+     * non-destructive feature-flag toggles. Super admins are always admins.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->isSuperAdmin() || $this->role === 'admin';
+    }
+
+    /**
+     * Gate for lab404/laravel-impersonate. Only admins can start an
+     * impersonation session (regular users can be impersonated but never
+     * initiate it themselves).
+     */
+    public function canImpersonate(): bool
+    {
+        return $this->isAdmin();
+    }
+
+    /**
+     * Users can be impersonated as long as they aren't a super admin
+     * themselves — preserves the principle that only the true owner can
+     * act as the true owner.
+     */
+    public function canBeImpersonated(): bool
+    {
+        return ! $this->isSuperAdmin();
     }
 
     public function sendLoginLink()

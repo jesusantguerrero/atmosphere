@@ -99,7 +99,7 @@ const handleOptions = (optionName: IOptionNames , occurrence: OccurrenceItem) =>
 
 const dataStatus = {
   all: {
-    label: "All checks",
+    label: "All reminders",
     value: "/housing/occurrence",
   },
   1: {
@@ -112,7 +112,7 @@ const currentStatus = ref(props.serverSearchOptions.filters?.is_liked || "all");
 </script>
 
 <template>
-    <AppLayout title="Occurrence Checks">
+    <AppLayout :title="$t('Reminders')">
         <template #header>
             <HouseSectionNav>
                   <template #actions>
@@ -167,7 +167,7 @@ const currentStatus = ref(props.serverSearchOptions.filters?.is_liked || "all");
                     <span class=" font-bold text-2xl">
                         <IMdiTimerStarOutline />
                     </span>
-                    <h4 class="text-lg font-bold text-body-1"> Occurrence Checks</h4>
+                    <h4 class="text-lg font-bold text-body-1">{{ $t('Reminders') }}</h4>
                     <p class="max-w-lg my-3">
                         Occurrences track the duration of events based on transactions or manual input
                     </p>

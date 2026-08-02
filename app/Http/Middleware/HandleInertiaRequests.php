@@ -3,8 +3,11 @@
 namespace App\Http\Middleware;
 
 use App\Concerns\Facades\Menu;
+use App\Domains\AppCore\Facades\Feature;
 use App\Domains\AppCore\Models\Category;
+use App\Domains\AppCore\Models\FeatureFlag;
 use App\Models\Account;
+use App\Domains\Transaction\Services\TransactionService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Insane\Journal\Models\Core\AccountDetailType;
@@ -62,6 +65,12 @@ class HandleInertiaRequests extends Middleware
             'unreadNotifications' => function () use ($user) {
                 return $user ? $user->unreadNotifications->count() : 0;
             },
+            // Count of DRAFT transactions (captured, awaiting confirmation).
+            // Powers the Inbox nav badge — the always-visible "things to do"
+            // signal, mirroring unreadNotifications.
+            'pendingReviewCount' => function () use ($team) {
+                return $team ? TransactionService::getDraftCount($team->id) : 0;
+            },
             'flash' => fn () => $request->session()->get('flash'),
             'modules' => $team ? $team->modules : [],
             'menu' => $menu,
@@ -77,6 +86,21 @@ class HandleInertiaRequests extends Middleware
                 ->get() : [''],
             'version' => config('app.version'),
             'environment' => config('app.env'),
+            // Feature flags resolved for the current user context (user > team
+            // > global). Shape: { 'flag-key': true, ... }. Only currently-
+            // active flags are shipped — off flags don't send a false, so
+            // the payload stays small even as the flag catalog grows.
+            'featureFlags' => function () use ($user) {
+                if (! $user) {
+                    return (object) [];
+                }
+
+                return FeatureFlag::query()
+                    ->pluck('key')
+                    ->mapWithKeys(fn (string $key) => [$key => Feature::activeForUser($key, $user)])
+                    ->filter()
+                    ->toArray() ?: (object) [];
+            },
         ];
     }
 }

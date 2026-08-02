@@ -5,6 +5,9 @@ import { computed } from "vue";
 
 const teamId = computed(() => usePage().props.auth.user.current_team_id);
 
+// Section tabs for the (per-user / per-team) Settings hub. Mail driver
+// (SMTP/Mailgun/SES) is a system-wide admin concern and lives under
+// /admin/mail — deliberately NOT included here.
 const sections = computed(() => [
     {
         label: 'Profile',
@@ -17,6 +20,10 @@ const sections = computed(() => [
     {
         label: 'Integrations',
         url: '/integrations'
+    },
+    {
+        label: 'Messaging',
+        url: '/settings/integrations/social'
     },
 ])
 </script>

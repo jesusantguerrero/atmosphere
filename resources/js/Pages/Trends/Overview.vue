@@ -8,7 +8,8 @@ import AppLayout from "@/Components/templates/AppLayout.vue";
 import ChartNetWorth from "@/Components/ChartNetworth.vue";
 import IncomeExpenses from "@/Components/IncomeExpenses.vue";
 
-import { trendOptions } from "./Partials/trendOptions";
+import { useTrendOptions } from "./Partials/trendOptions";
+const trendOptions = useTrendOptions();
 import TrendTemplate from "./Partials/TrendTemplate.vue";
 import TrendSectionNav from "./Partials/TrendSectionNav.vue";
 import ChartComparison from "@/Components/widgets/ChartComparison.vue";

@@ -40,7 +40,7 @@ const dismiss = () => {
             class="flex items-center justify-between px-4 py-2 cursor-pointer"
             @click="toggleCollapse()"
         >
-            <SectionTitle type="secondary">Onboarding</SectionTitle>
+            <SectionTitle type="secondary">{{ $t('Get started') }}</SectionTitle>
             <div class="flex items-center gap-3">
                 <span v-if="percentage !== undefined" class="text-xs font-semibold text-body-1/60">
                     {{ Math.round(percentage) }}%
@@ -77,7 +77,7 @@ const dismiss = () => {
                 </div>
 
                 <div class="flex-1 min-w-0">
-                    <p class="font-bold text-sm text-body-1">{{ step.label }}</p>
+                    <p class="font-bold text-sm text-body-1">{{ step.title }}</p>
                     <p class="text-xs text-body-1/60 mt-0.5">{{ step.description }}</p>
                     <Link
                         v-if="!step.complete && step.link"
@@ -88,7 +88,7 @@ const dismiss = () => {
                         <i class="fas fa-arrow-right text-[10px]" />
                     </Link>
                     <span v-else-if="step.complete" class="mt-1 inline-block text-xs text-green-600 font-medium">
-                        Done
+                        {{ $t('Done') }}
                     </span>
                 </div>
             </div>
@@ -98,7 +98,7 @@ const dismiss = () => {
                     class="text-xs text-body-1/40 hover:text-body-1/70 transition-colors"
                     @click.stop="dismiss"
                 >
-                    Dismiss widget
+                    {{ $t('Dismiss') }}
                 </button>
             </div>
         </div>
