@@ -144,6 +144,13 @@ const expenseVarianceTone = computed(() => {
 // directly as income − expenses so it shows without the full ZBB assign ritual.
 const availableThisMonth = computed(() => Number(props.income || 0) - Number(props.transactionTotal || 0));
 
+// The ZBB star of the Resumen. Ready to Assign = inflow − everything already
+// assigned to categories (currentBudget.total). This IS Hope's 'what's left'
+// number, but on the budget's terms: it starts as all your money and drops to 0
+// as every peso gets a job. Replaces the old cash-flow 'income − expenses' hero.
+const readyToAssign = computed(() => Number(props.income || 0) - Number(currentBudget.value.total || 0));
+const allAssigned = computed(() => Number(props.income || 0) > 0 && Math.round(readyToAssign.value) === 0);
+
 // Fix (Hope): `budgetTotal` arrives from the server as an ARRAY of monthly rows
 // (getMonthAssignmentTotal groups by month); the current month is the last entry.
 // The card previously read `budgetTotal.spending` off that array — always
@@ -221,19 +228,28 @@ const deleteBulkTransactions = () => {
       </section>
 
       <section class="mt-4 space-y-4">
-            <!-- The headline "what's left after paying" figure — income − expenses,
-                 surfaced directly so a surplus-first user (Hope) finds it without
-                 doing the full assign-every-peso ritual. -->
+            <!-- ZBB hero: "Por asignar" (Ready to Assign) = inflow − everything
+                 assigned. It's Hope's "what's left" number, but on-brand: it drops
+                 to 0 as every peso gets a job, and 0 is celebrated as the win. -->
             <div
                 class="p-5 border rounded-lg bg-base-lvl-3"
-                :class="availableThisMonth >= 0 ? 'border-success/40' : 'border-error/40'"
+                :class="allAssigned ? 'border-success/60' : (readyToAssign >= 0 ? 'border-success/40' : 'border-error/40')"
             >
-                <p class="text-xs font-medium tracking-wide uppercase text-body-1/50">{{ $t('What\'s left this month') }}</p>
-                <p
-                    class="mt-1 text-3xl font-bold leading-tight break-all"
-                    :class="availableThisMonth >= 0 ? 'text-success' : 'text-error'"
-                >{{ formatMoney(availableThisMonth) }}</p>
-                <p class="mt-1 text-xs text-body-1/40">{{ $t('Income minus expenses') }}</p>
+                <p class="text-xs font-medium tracking-wide uppercase text-body-1/50">
+                    {{ allAssigned ? $t('This month') : $t('Available this month') }}
+                    <InfoHint :title="$t('Ready to assign')" :body="$t('ready_to_assign_hint')" />
+                </p>
+                <template v-if="allAssigned">
+                    <p class="mt-1 text-3xl font-bold leading-tight text-success">✓ {{ $t('All assigned') }}</p>
+                    <p class="mt-1 text-xs text-body-1/40">{{ $t('Every peso has a job') }}</p>
+                </template>
+                <template v-else>
+                    <p
+                        class="mt-1 text-3xl font-bold leading-tight break-all"
+                        :class="readyToAssign >= 0 ? 'text-success' : 'text-error'"
+                    >{{ formatMoney(readyToAssign) }}</p>
+                    <p class="mt-1 text-xs text-body-1/40">{{ readyToAssign >= 0 ? $t('Ready to assign to your categories') : $t('You assigned more than you have') }}</p>
+                </template>
             </div>
 
             <!-- Summary stat cards -->
@@ -322,7 +338,7 @@ const deleteBulkTransactions = () => {
                 </WidgetTitleCard>
                 <div
                     v-else
-                    class="hidden md:flex items-center px-4 py-3 text-sm text-body-1/50 bg-base-lvl-3 border border-base rounded-lg"
+                    class="hidden md:flex md:self-start items-center px-4 py-3 text-sm text-body-1/50 bg-base-lvl-3 border border-base rounded-lg"
                 >
                     {{ $t('No planned transactions yet') }}
                 </div>

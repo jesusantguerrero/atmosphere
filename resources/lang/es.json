@@ -542,5 +542,13 @@
     "funded_vs_overspent_hint": "'Por fondear' (ámbar): gastaste en algo a lo que aún no le asignaste dinero, pero todavía tienes en 'Por asignar' para cubrirlo — solo asígnalo. 'Sobregirado' (rojo): ya no queda para cubrirlo.",
     "assigned_100_hint": "100% asignado no es 100% gastado. Significa que ya le diste un trabajo a todo tu dinero del mes — 'Por asignar' quedó en 0. Es la meta, no una alarma.",
     "net_worth_hint": "Todo lo que tienes (cuentas, ahorros) menos lo que debes (tarjetas, préstamos). Es tu foto financiera completa; sirve para ver si mejoras mes a mes.",
-    "account_type_hint": "Cómo clasifica Loger esta cuenta (corriente, ahorro, tarjeta, efectivo). No cambia tu dinero — solo ayuda a agrupar y a los reportes. Si dudas, elige la más parecida; lo puedes cambiar después."
+    "account_type_hint": "Cómo clasifica Loger esta cuenta (corriente, ahorro, tarjeta, efectivo). No cambia tu dinero — solo ayuda a agrupar y a los reportes. Si dudas, elige la más parecida; lo puedes cambiar después.",
+    "Plan and track your safety net": "Planifica y sigue tu red de seguridad",
+    "Available this month": "Disponible este mes",
+    "This month": "Este mes",
+    "All assigned": "Todo asignado",
+    "Every peso has a job": "Cada peso tiene un trabajo",
+    "Ready to assign to your categories": "Listo para repartir en tus categorías",
+    "You assigned more than you have": "Asignaste más de lo que tienes",
+    "Savings goals live here — your monthly spending plan is in Budget.": "Las metas de ahorro viven aquí — tu plan de gastos del mes está en Presupuesto."
 }

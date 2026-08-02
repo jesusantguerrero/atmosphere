@@ -528,7 +528,7 @@ async function saveExchangeRate() {
                 </section>
 
                 <!-- By Bank breakdown -->
-                <section v-if="bankBreakdown.length" class="bg-base-lvl-3 border border-base rounded-lg overflow-hidden">
+                <section v-if="bankBreakdown.length > 1" class="bg-base-lvl-3 border border-base rounded-lg overflow-hidden">
                     <div class="px-5 py-3 border-b border-base">
                         <h2 class="font-bold text-body text-sm">{{ $t('By Bank') }}</h2>
                     </div>
