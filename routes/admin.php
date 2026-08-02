@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\FeatureFlagController;
 use App\Http\Controllers\Admin\MailController;
 use App\Http\Controllers\Admin\TeamController;
 use App\Http\Controllers\Admin\UserController;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use Lab404\Impersonate\Services\ImpersonateManager;
 
@@ -72,9 +73,14 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', 'admin.only'
         // Impersonation — thin wrappers around lab404's ImpersonateManager
         // so we can keep the auth middleware group consistent + name the
         // routes admin.* for Ziggy on the frontend.
+        //
+        // Names must not collide with lab404's own `Route::impersonate()`,
+        // which Atmosphere registers inside its own `admin.` group — that
+        // already owns `admin.impersonate` and `admin.impersonate.leave`.
+        // Duplicate names only surface on `route:cache`, never in dev.
         Route::post('/impersonate/{user}', function ($userId) {
             $manager = app(ImpersonateManager::class);
-            $target = \App\Models\User::findOrFail($userId);
+            $target = User::findOrFail($userId);
 
             abort_unless(auth()->user()->canImpersonate(), 403);
             abort_unless($target->canBeImpersonated(), 403);
@@ -94,5 +100,5 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', 'admin.only'
                 'type' => 'success',
                 'message' => 'Left impersonation session.',
             ]);
-        })->name('impersonate.leave');
+        })->name('impersonate.stop');
     });

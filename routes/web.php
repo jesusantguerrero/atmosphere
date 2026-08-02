@@ -16,6 +16,7 @@ use App\Http\Controllers\Finance\FinanceLinesController;
 use App\Http\Controllers\Finance\FinanceTransactionController;
 use App\Http\Controllers\Finance\FinanceTrendController;
 use App\Http\Controllers\Finance\FinancialOverviewController;
+use App\Http\Controllers\InboxController;
 use App\Http\Controllers\NextPaymentsController;
 use App\Http\Controllers\Relationship\RelationshipController;
 use App\Http\Controllers\SearchController;
@@ -194,9 +195,20 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
         return back();
     })->name('settings.landing-page');
 
-    // Settings routes
+    // Settings hub — a lightweight landing page that groups every
+    // settings entry into cards. Defined BEFORE the atmosphere resource
+    // routes below so it wins the /settings match. The atmosphere
+    // SettingsController expects InertiaController config that Loger
+    // doesn't provide, so calling its `index` throws
+    // ArgumentCountError; this closure sidesteps it entirely.
+    Route::get('/settings', fn () => inertia('Settings/Index'))
+        ->name('settings.index');
+
+    // Remaining Settings routes (section renders + store/update/delete)
+    // still go through the atmosphere SettingsController.
     Route::controller(SettingsController::class)->group(function () {
-        Route::resource('/settings', SettingsController::class);
+        Route::resource('/settings', SettingsController::class)
+            ->except(['index']);
         Route::get('/settings/tab/{tabName}', 'index');
         Route::get('/settings/{name}', 'section');
     });
@@ -223,7 +235,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     // Inbox — the AI triage surface. Captured items (receipts, statements,
     // quick notes) land here and get classified into finance/reminders/chores.
     // Phase 1 renders the destination; capture + classification wiring follows.
-    Route::get('/inbox', \App\Http\Controllers\InboxController::class)->name('inbox');
+    Route::get('/inbox', InboxController::class)->name('inbox');
     Route::post('/planner/bulk', [PlannerController::class, 'bulkStore'])->name('planner.bulk');
     Route::post('/planner', [PlannerController::class, 'store'])->name('planner.store');
     Route::put('/planner/{planner}', [PlannerController::class, 'update'])->name('planner.update');
