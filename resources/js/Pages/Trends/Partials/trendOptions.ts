@@ -31,10 +31,6 @@ export const trendOptionsRaw: TrendOption[] = [
         url: '/trends',
     },
     {
-        label: 'Net Worth',
-        url: '/trends/net-worth',
-    },
-    {
         label: 'Credit Cards',
         url: '/trends/credit-cards',
     },

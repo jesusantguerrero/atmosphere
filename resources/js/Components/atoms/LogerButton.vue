@@ -11,6 +11,7 @@ const variants = {
   inverse: "border-primary bg-primary/10 text-primary hover:bg-primary hover:text-white",
   "inverse-secondary":
     "border-secondary bg-secondary/10 text-secondary hover:bg-secondary hover:text-white",
+  ghost: "border-base bg-transparent text-body-1 hover:border-primary hover:text-primary",
 }
 
 export type ButtonVariants = keyof typeof variants;

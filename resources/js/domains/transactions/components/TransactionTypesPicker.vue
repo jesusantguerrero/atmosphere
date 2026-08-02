@@ -15,17 +15,17 @@ const transactionTypes = [
 </script>
 
 <template>
-    <div class="grid grid-cols-3 overflow-hidden text-lg rounded-lg" role="tablist">
+    <div class="grid grid-cols-3 gap-1 p-1 text-lg rounded-lg bg-base-lvl-1 border border-base" role="tablist">
         <button
             v-for="type in transactionTypes"
             :key="type.value"
             type="button"
             role="tab"
             :aria-selected="modelValue == type.value"
-            class="py-1 font-bold text-center cursor-pointer transition"
+            class="py-1.5 font-bold text-center rounded-md cursor-pointer transition"
             :class="modelValue == type.value
                 ? type.activeClass
-                : 'hover:bg-base-lvl-3 text-body bg-base-lvl-2'"
+                : 'bg-transparent text-body-1 hover:text-body hover:bg-base-lvl-2/60'"
             @click="$emit('update:modelValue', type.value)"
         >
             {{ $t(type.label) }}

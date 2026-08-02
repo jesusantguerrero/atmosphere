@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, computed, inject, ref, watch } from "vue";
+import { reactive, computed, inject, ref, watch, nextTick } from "vue";
 import { AtField } from "atmosphere-ui";
 import { NSelect } from "naive-ui";
 
@@ -66,6 +66,20 @@ const firstRowAccountCurrency = computed(() => {
 
 const onCurrencyPicked = (currency: { code: string } | null) => {
   if (currency?.code) emit('update:currencyCode', currency.code);
+};
+
+// After selecting from the filterable account NSelect, naive-ui keeps its search
+// input focused; the next click (e.g. on Category) is consumed blurring it, so the
+// user needs an extra click. Blur here so the Category dropdown opens on first click.
+const onAccountPicked = () => {
+  // Let naive-ui finish closing its menu first, THEN drop the focus that the
+  // filterable input keeps (otherwise the next click on Category is consumed
+  // blurring it, forcing an extra click). Blurring too early (nextTick) fought
+  // the menu close, so defer past it.
+  setTimeout(() => {
+    const el = document.activeElement as HTMLElement | null;
+    if (el && el.tagName === 'INPUT') el.blur();
+  }, 60);
 };
 const accountLabel = computed(() => {
   return !props.isTransfer ? "Account" : "Source";
@@ -224,6 +238,7 @@ watch(
                   v-model:value="split.account_id"
                   :default-expand-all="true"
                   :options="accountsOptions"
+                  @update:value="onAccountPicked"
                 />
               </AtField>
             </div>
@@ -254,6 +269,10 @@ watch(
           class="w-full md:w-4/12"
           v-if="!isTransfer"
         >
+          <!-- Required marker: payee is mandatory on income + expense. -->
+          <template #action>
+            <span class="font-bold text-error" aria-hidden="true">*</span>
+          </template>
           <LogerApiSimpleSelect
             v-model="split.payee_id"
             v-model:label="split.payee_label"
@@ -267,6 +286,10 @@ watch(
         </AtField>
         <section>
             <AtField :label="categoryLabel" v-if="isTransfer || !fullHeight" class="md:block md:w-full">
+              <!-- Required marker: category is mandatory on income + expense (not transfers). -->
+              <template #action v-if="!isTransfer">
+                <span class="font-bold text-error" aria-hidden="true">*</span>
+              </template>
               <NSelect
                 filterable
                 clearable
@@ -362,11 +385,12 @@ watch(
 
     <LogerButton
         v-if="!isTransfer"
-        variant="neutral"
+        variant="ghost"
+        class="mt-1"
         @click="addSplit()"
     >
       <IMdiCallSplit />
-      Add split
+      {{ $t('Add split') }}
     </LogerButton>
   </section>
 </template>

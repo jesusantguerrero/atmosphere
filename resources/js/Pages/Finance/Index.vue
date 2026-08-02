@@ -1,5 +1,6 @@
 
 <script setup lang="ts">
+import InfoHint from "@/Components/atoms/InfoHint.vue";
 import { computed, toRefs, ref } from "vue";
 import { Link, router, useForm } from "@inertiajs/vue3";
 import { format, subMonths } from "date-fns";
@@ -166,6 +167,10 @@ const hasBudget = computed(() =>
 
 const topCategories = props.expensesByCategory.slice(0, 4);
 
+// Fix: the Resumen "Transaction history" widget duplicates the Transacciones tab
+// and grew too long — cap it to the 5 most recent rows and link out for the rest.
+const recentTransactions = computed(() => props.transactions.slice(0, 5));
+
 const { openTransactionModal } = useTransactionModal();
 const handleEdit = (transaction: ITransaction) => {
     openTransactionModal({
@@ -283,7 +288,7 @@ const deleteBulkTransactions = () => {
                         <i class="fas fa-shield-alt text-primary"></i>
                     </div>
                     <div>
-                        <p class="text-sm font-medium text-body">{{ $t('Emergency Fund Builder') }}</p>
+                        <p class="text-sm font-medium text-body">{{ $t('Emergency Fund Builder') }} <InfoHint :title="$t('Emergency fund')" :body="$t('emergency_fund_hint')" /></p>
                         <p class="text-xs text-body-1/50">{{ $t('Plan and track your safety net') }}</p>
                     </div>
                 </div>
@@ -291,7 +296,7 @@ const deleteBulkTransactions = () => {
             </Link>
 
             <section class="grid md:grid-cols-2 gap-4">
-                <WidgetTitleCard :title="$t('Planned Transactions')" class="hidden md:block">
+                <WidgetTitleCard v-if="planned.length" :title="$t('Planned Transactions')" class="hidden md:block">
                     <TransactionsList
                       class="w-full"
                       table-class="w-full p-2 overflow-auto text-sm rounded-t-lg bg-base-lvl-3"
@@ -315,6 +320,12 @@ const deleteBulkTransactions = () => {
                         </AtButton>
                     </template>
                 </WidgetTitleCard>
+                <div
+                    v-else
+                    class="hidden md:flex items-center px-4 py-3 text-sm text-body-1/50 bg-base-lvl-3 border border-base rounded-lg"
+                >
+                    {{ $t('No planned transactions yet') }}
+                </div>
 
 
                 <CategoryTrendsPreview
@@ -331,14 +342,24 @@ const deleteBulkTransactions = () => {
                 >
                     <p class="text-sm text-body-1/50">{{ $t('No transactions for this period.') }}</p>
                 </div>
-                <TransactionsList
-                    v-else
-                    class="w-full"
-                    table-class="overflow-auto text-sm"
-                    :transactions="transactions"
-                    :parser="transactionDBToTransaction"
-                    @edit="handleEdit"
-                />
+                <div v-else class="w-full">
+                    <TransactionsList
+                        class="w-full"
+                        table-class="overflow-auto text-sm"
+                        :transactions="recentTransactions"
+                        :parser="transactionDBToTransaction"
+                        @edit="handleEdit"
+                    />
+                    <div v-if="transactions.length > 5" class="flex justify-end pt-2">
+                        <Link
+                            href="/finance/transactions"
+                            class="flex items-center text-xs text-primary hover:underline"
+                        >
+                            {{ $t('See all') }}
+                            <i class="ml-1 fa fa-chevron-right"></i>
+                        </Link>
+                    </div>
+                </div>
 
                 <template #action>
                     <LogerButton variant="inverse" class="text-xs" @click="openTransactionModal()">

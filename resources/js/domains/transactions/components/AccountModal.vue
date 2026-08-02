@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import InfoHint from "@/Components/atoms/InfoHint.vue";
 import { useForm, usePage, router } from "@inertiajs/vue3";
 import { useI18n } from "vue-i18n";
 import { reactive, toRefs, computed, watch } from "vue";
@@ -218,6 +219,9 @@ const excludedCurrencies = computed(() => {
             <!-- Account Type & Name Section -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <AtField :label="$t('Detail Type')" class="space-y-2">
+                <template #action>
+                  <InfoHint :title="$t('Account type')" :body="$t('account_type_hint')" />
+                </template>
                 <NSelect filterable clearable tag class="w-full" v-model:value="form.account_detail_type_id"
                   :default-expand-all="true" :options="detailOptions" />
               </AtField>

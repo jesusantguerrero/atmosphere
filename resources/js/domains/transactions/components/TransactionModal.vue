@@ -3,6 +3,7 @@ import { format, parseISO } from "date-fns";
 import { reactive, toRefs, watch, computed, inject, ref, nextTick } from "vue";
 import { AtField, AtFieldCheck, AtInput } from "atmosphere-ui";
 import { NSelect, NDatePicker } from "naive-ui";
+import { useI18n } from "vue-i18n";
 import { router, usePage } from "@inertiajs/vue3";
 
 import Modal from "@/Components/atoms/Modal.vue";
@@ -394,6 +395,7 @@ const lastSaved = useStorage('lastTransactionSaved', {
 });
 // Client-side validation surface. Replaces the legacy `alert("...")` on amount
 // and adds checks the backend would otherwise reject silently.
+const { t } = useI18n();
 const validationError = ref<string | null>(null);
 
 const validateBeforeSubmit = (splitItems: Record<string, any>[]): boolean => {
@@ -410,6 +412,20 @@ const validateBeforeSubmit = (splitItems: Record<string, any>[]): boolean => {
       }
       if (Number(split.account_id) === Number(split.counter_account_id)) {
         validationError.value = 'Source and destination cannot be the same account.';
+        return false;
+      }
+    } else {
+      // Non-transfer (income + expense): a payee is always required so the
+      // "gasto por categoria" widget and payee reports are never left empty.
+      if (!split.payee_id) {
+        validationError.value = t('Every income and expense needs a payee.');
+        return false;
+      }
+      // Category is required for expenses (WITHDRAW). Income (DEPOSIT) is allowed
+      // to leave the category empty here because the submit .transform step
+      // defaults it to "Ready to Assign" (readyToAssignId) right after this runs.
+      if (state.form.direction === TRANSACTION_DIRECTIONS.WITHDRAW && !split.category_id) {
+        validationError.value = t('Every income and expense needs a category.');
         return false;
       }
     }
@@ -616,16 +632,13 @@ const assignTransactionLabel = (label: Record<string, string>, transaction: Reco
               {{ form.error }}
               <div class="px-4 md:flex md:items-start md:space-x-2 md:px-0">
                 <AtField label="Date" class="w-full md:w-3/12">
-                  <!-- Presets sit under the picker, not beside it: sharing the row
-                       squeezed NDatePicker below its intrinsic width and naive-ui
-                       truncated the date to the day number. -->
-                  <div class="space-y-1.5">
-                    <NDatePicker v-model:value="form.date" type="date" size="large" class="w-full" />
-                    <!-- Quick presets — most transactions are entered for today or yesterday. -->
+                  <!-- Quick presets live in the label's action slot (right of the
+                       "Date" label) so they don't add a row under the input. -->
+                  <template #action>
                     <div class="flex gap-1.5">
                       <button
                         type="button"
-                        class="px-2.5 py-1 text-xs rounded transition"
+                        class="px-2 py-0.5 text-[11px] font-medium rounded transition"
                         :class="isDatePreset('today') ? 'bg-primary text-white' : 'bg-base-lvl-2 text-body-1 hover:bg-base-lvl-1'"
                         @click="setDatePreset('today')"
                       >
@@ -633,14 +646,15 @@ const assignTransactionLabel = (label: Record<string, string>, transaction: Reco
                       </button>
                       <button
                         type="button"
-                        class="px-2.5 py-1 text-xs rounded transition"
+                        class="px-2 py-0.5 text-[11px] font-medium rounded transition"
                         :class="isDatePreset('yesterday') ? 'bg-primary text-white' : 'bg-base-lvl-2 text-body-1 hover:bg-base-lvl-1'"
                         @click="setDatePreset('yesterday')"
                       >
                         {{ $t('Yesterday') }}
                       </button>
                     </div>
-                  </div>
+                  </template>
+                  <NDatePicker v-model:value="form.date" type="date" size="large" class="w-full" />
                 </AtField>
 
                 <AtField label="Description" class="w-full md:w-9/12">

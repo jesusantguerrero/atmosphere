@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import InfoHint from "@/Components/atoms/InfoHint.vue";
 import { ref, computed } from "vue";
 import { router } from "@inertiajs/vue3";
 import axios from "axios";
@@ -12,6 +13,7 @@ import LogerInput from "@/Components/atoms/LogerInput.vue";
 import { useTrendOptions } from "./Partials/trendOptions";
 const trendOptions = useTrendOptions();
 import { formatMoney } from "@/utils";
+import { useI18n } from "vue-i18n";
 
 interface AccountEntry {
     id: number; name: string; bank_code: string | null;
@@ -66,11 +68,20 @@ const isSavingRate = ref(false);
 const saveSuccess = ref(false);
 const showGoalPicker = ref(false);
 const localPinnedIds = ref<string[]>([...props.pinnedGoalIds]);
+const { t } = useI18n();
+
+// Only surface the FX / exchange-rate widget when the team actually holds
+// value in a currency other than the space's primary (quote) currency.
+const hasForeignCurrency = computed<boolean>(() =>
+    props.accounts.some(g => g.accounts.some(a =>
+        a.currency_code !== props.quoteCurrency || a.is_multi_currency || (a.base_balance ?? 0) !== 0
+    )) || (props.totals?.total_base ?? 0) !== 0
+);
 
 const groupLabel = (group: string) => {
     const labels: Record<string, string> = {
-        bank: 'Bank', savings: 'Savings', cash: 'Cash', cash_on_hand: 'Cash on Hand',
-        credit_card: 'Credit Card', money_market: 'Money Market', other: 'Other',
+        bank: t('Bank'), savings: t('Savings'), cash: t('Cash'), cash_on_hand: t('Cash on Hand'),
+        credit_card: t('Credit Card'), money_market: t('Money Market'), other: t('Other'),
     };
     return labels[group] ?? group;
 };
@@ -210,23 +221,23 @@ async function saveExchangeRate() {
 </script>
 
 <template>
-    <AppLayout title="Financial Overview">
+    <AppLayout :title="$t('Financial Overview')">
         <template #header>
             <TrendSectionNav :sections="trendOptions" />
         </template>
 
-        <TrendTemplate title="Finance" :hide-panel="true">
+        <TrendTemplate :title="$t('Finance')" :hide-panel="true">
             <div class="space-y-5 mt-5">
 
                 <!-- Net Worth bar with inline exchange rate -->
                 <section class="bg-primary text-white rounded-lg px-5 py-4 flex flex-wrap items-center justify-between gap-3">
                     <div class="flex items-center gap-6">
                         <div>
-                            <p class="text-xs uppercase tracking-wide opacity-70">Net Worth</p>
+                            <p class="text-xs uppercase tracking-wide opacity-70 inline-flex items-center gap-1">{{ $t('Net worth') }} <InfoHint :title="$t('Net worth')" :body="$t('net_worth_hint')" /></p>
                             <p class="text-2xl font-bold break-all leading-tight">
                                 {{ formatMoney(totals.net_worth, quoteCurrency) }}
                             </p>
-                            <p class="text-[11px] opacity-70">Includes accounts in {{ baseCurrency }} (converted)</p>
+                            <p class="text-[11px] opacity-70">{{ $t('Includes accounts in {currency} (converted)', { currency: baseCurrency }) }}</p>
                         </div>
                         <div class="hidden md:flex items-center gap-4 text-sm opacity-80">
                             <span>{{ formatMoney(totals.total_quote, quoteCurrency) }}</span>
@@ -236,7 +247,7 @@ async function saveExchangeRate() {
                             </span>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2">
+                    <div v-if="hasForeignCurrency" class="flex items-center gap-2">
                         <span class="text-xs opacity-60">1 {{ baseCurrency }} =</span>
                         <input
                             v-model.number="localExchangeRate"
@@ -249,7 +260,7 @@ async function saveExchangeRate() {
                             class="px-3 py-1 text-xs font-medium rounded bg-base-lvl-3/20 hover:bg-base-lvl-3/30 disabled:opacity-30 transition"
                             @click="saveExchangeRate"
                         >
-                            {{ saveSuccess ? 'Saved!' : 'Update' }}
+                            {{ saveSuccess ? $t('Saved!') : $t('Update') }}
                         </button>
                     </div>
                 </section>
@@ -261,15 +272,15 @@ async function saveExchangeRate() {
                     <div class="w-full lg:w-5/12">
                         <div class="bg-base-lvl-3 border border-base rounded-lg overflow-hidden h-full">
                             <div class="px-5 py-3 border-b border-base flex items-center justify-between">
-                                <h2 class="font-bold text-body text-sm">Financial Goals</h2>
+                                <h2 class="font-bold text-body text-sm">{{ $t('Financial Goals') }}</h2>
                                 <LogerButton variant="inverse" class="text-xs" @click="showGoalPicker = !showGoalPicker">
-                                    <IMdiPlus class="mr-1" v-if="!showGoalPicker" /> {{ showGoalPicker ? 'Done' : 'Add' }}
+                                    <IMdiPlus class="mr-1" v-if="!showGoalPicker" /> {{ showGoalPicker ? $t('Done') : $t('Add') }}
                                 </LogerButton>
                             </div>
 
                             <!-- Goal picker -->
                             <div v-if="showGoalPicker" class="px-5 py-3 border-b border-base bg-base-lvl-1 space-y-2">
-                                <p class="text-xs text-body-1/50 mb-2">Select goals to show in this view:</p>
+                                <p class="text-xs text-body-1/50 mb-2">{{ $t('Select goals to show in this view:') }}</p>
                                 <label
                                     v-for="goal in availableGoals"
                                     :key="goal.id"
@@ -287,7 +298,7 @@ async function saveExchangeRate() {
                                     </span>
                                 </label>
                                 <LogerButton class="mt-2 w-full justify-center text-xs" @click="savePinnedGoals">
-                                    Save selection
+                                    {{ $t('Save selection') }}
                                 </LogerButton>
                             </div>
 
@@ -295,9 +306,9 @@ async function saveExchangeRate() {
                             <table v-if="pinnedGoals.length" class="w-full text-sm">
                                 <thead>
                                     <tr class="text-xs uppercase text-body-1/50 bg-base-lvl-2">
-                                        <th class="text-left px-5 py-2 font-medium">Goal</th>
-                                        <th class="text-right px-5 py-2 font-medium">Balance / Target</th>
-                                        <th class="text-right px-5 py-2 font-medium">Diff</th>
+                                        <th class="text-left px-5 py-2 font-medium">{{ $t('Goal') }}</th>
+                                        <th class="text-right px-5 py-2 font-medium">{{ $t('Balance / Target') }}</th>
+                                        <th class="text-right px-5 py-2 font-medium">{{ $t('Diff') }}</th>
                                         <th class="w-8"></th>
                                     </tr>
                                 </thead>
@@ -335,11 +346,11 @@ async function saveExchangeRate() {
                                                     @click="editingGoalLinkId = editingGoalLinkId === goal.id ? null : goal.id"
                                                 >
                                                     <IMdiPlus class="text-[10px]" />
-                                                    <span>{{ editingGoalLinkId === goal.id ? 'Done' : (goal.linked_accounts.length || goal.linked_categories.length ? 'Add' : 'Link') }}</span>
+                                                    <span>{{ editingGoalLinkId === goal.id ? $t('Done') : (goal.linked_accounts.length || goal.linked_categories.length ? $t('Add') : $t('Link')) }}</span>
                                                 </button>
                                             </div>
                                             <div v-if="editingGoalLinkId === goal.id" class="mt-2 max-h-48 overflow-y-auto border border-base rounded bg-base-lvl-1 p-2 space-y-1">
-                                                <p class="text-[10px] font-semibold uppercase tracking-wide text-body-1/40 px-1 pt-1">Accounts</p>
+                                                <p class="text-[10px] font-semibold uppercase tracking-wide text-body-1/40 px-1 pt-1">{{ $t('Accounts') }}</p>
                                                 <label
                                                     v-for="a in flatAccounts"
                                                     :key="a.id"
@@ -355,7 +366,7 @@ async function saveExchangeRate() {
                                                     <span class="text-body-1/40 ml-auto">{{ a.group }}</span>
                                                 </label>
                                                 <template v-if="availableCategories.length">
-                                                    <p class="text-[10px] font-semibold uppercase tracking-wide text-body-1/40 px-1 pt-2">Categories</p>
+                                                    <p class="text-[10px] font-semibold uppercase tracking-wide text-body-1/40 px-1 pt-2">{{ $t('Categories') }}</p>
                                                     <template v-for="group in availableCategories" :key="group.team_name">
                                                         <label
                                                             v-for="cat in group.categories"
@@ -398,7 +409,7 @@ async function saveExchangeRate() {
                                 </tbody>
                                 <tfoot>
                                     <tr class="bg-base-lvl-2 font-bold">
-                                        <td class="px-5 py-2 text-body">Total</td>
+                                        <td class="px-5 py-2 text-body">{{ $t('Total') }}</td>
                                         <td class="px-5 py-2 text-right tabular-nums">{{ formatMoney(goalsTotal, quoteCurrency) }}</td>
                                         <td></td><td></td>
                                     </tr>
@@ -406,7 +417,7 @@ async function saveExchangeRate() {
                             </table>
 
                             <div v-else-if="!showGoalPicker" class="px-5 py-8 text-center text-body-1/40 text-sm">
-                                Click <strong>Add</strong> to pin goals to this view.
+                                {{ $t('Click') }} <strong>{{ $t('Add') }}</strong> {{ $t('to pin goals to this view.') }}
                             </div>
                         </div>
                     </div>
@@ -415,13 +426,13 @@ async function saveExchangeRate() {
                     <div class="w-full lg:w-7/12">
                         <div class="bg-base-lvl-3 border border-base rounded-lg overflow-hidden h-full">
                             <div class="px-5 py-3 border-b border-base">
-                                <h2 class="font-bold text-body text-sm">Accounts</h2>
+                                <h2 class="font-bold text-body text-sm">{{ $t('Accounts') }}</h2>
                             </div>
 
                             <table class="w-full text-sm">
                                 <thead>
                                     <tr class="text-xs uppercase text-body-1/50 bg-base-lvl-2">
-                                        <th class="text-left px-5 py-2 font-medium">Account</th>
+                                        <th class="text-left px-5 py-2 font-medium">{{ $t('Account') }}</th>
                                         <th class="text-right px-5 py-2 font-medium">{{ baseCurrency }}</th>
                                         <th class="text-right px-5 py-2 font-medium">{{ quoteCurrency }}</th>
                                     </tr>
@@ -455,7 +466,7 @@ async function saveExchangeRate() {
                                                             @click.stop="openBankEditor(account)"
                                                         >
                                                             <span v-if="account.bank_code">· {{ account.bank_code }}</span>
-                                                            <span v-else class="opacity-60">+ Bank</span>
+                                                            <span v-else class="opacity-60">+ {{ $t('Bank') }}</span>
                                                         </button>
                                                     </template>
                                                     <div class="space-y-2 min-w-[220px]" @click.stop>
@@ -494,7 +505,7 @@ async function saveExchangeRate() {
                                             </td>
                                         </tr>
                                         <tr class="border-b-2 border-base bg-base-lvl-1/50">
-                                            <td class="px-5 py-1.5 text-xs font-semibold text-body-1/60 pl-8">Subtotal</td>
+                                            <td class="px-5 py-1.5 text-xs font-semibold text-body-1/60 pl-8">{{ $t('Subtotal') }}</td>
                                             <td class="px-5 py-1.5 text-right text-xs font-semibold tabular-nums">
                                                 <span v-if="group.subtotals.base">{{ formatMoney(group.subtotals.base, baseCurrency) }}</span>
                                             </td>
@@ -506,7 +517,7 @@ async function saveExchangeRate() {
                                 </tbody>
                                 <tfoot>
                                     <tr class="bg-base-lvl-2 font-bold">
-                                        <td class="px-5 py-3 text-body">Total</td>
+                                        <td class="px-5 py-3 text-body">{{ $t('Total') }}</td>
                                         <td class="px-5 py-3 text-right tabular-nums">{{ formatMoney(totals.total_base, baseCurrency) }}</td>
                                         <td class="px-5 py-3 text-right tabular-nums">{{ formatMoney(totals.total_quote + totals.base_in_quote, quoteCurrency) }}</td>
                                     </tr>
@@ -519,13 +530,13 @@ async function saveExchangeRate() {
                 <!-- By Bank breakdown -->
                 <section v-if="bankBreakdown.length" class="bg-base-lvl-3 border border-base rounded-lg overflow-hidden">
                     <div class="px-5 py-3 border-b border-base">
-                        <h2 class="font-bold text-body text-sm">By Bank</h2>
+                        <h2 class="font-bold text-body text-sm">{{ $t('By Bank') }}</h2>
                     </div>
                     <table class="w-full text-sm">
                         <thead>
                             <tr class="text-xs uppercase text-body-1/50 bg-base-lvl-2">
-                                <th class="text-left px-5 py-2 font-medium">Bank</th>
-                                <th class="text-right px-5 py-2 font-medium">Accounts</th>
+                                <th class="text-left px-5 py-2 font-medium">{{ $t('Bank') }}</th>
+                                <th class="text-right px-5 py-2 font-medium">{{ $t('Accounts') }}</th>
                                 <th class="text-right px-5 py-2 font-medium">{{ quoteCurrency }}</th>
                             </tr>
                         </thead>
@@ -535,7 +546,7 @@ async function saveExchangeRate() {
                                     <span v-if="entry.bank_code" class="inline-block px-2 py-0.5 rounded text-xs font-semibold bg-primary/10 text-primary">
                                         {{ entry.bank_code }}
                                     </span>
-                                    <span v-else class="italic text-body-1/50">Unlinked</span>
+                                    <span v-else class="italic text-body-1/50">{{ $t('Unlinked') }}</span>
                                 </td>
                                 <td class="px-5 py-2 text-right text-body-1/60 tabular-nums">{{ entry.account_count }}</td>
                                 <td class="px-5 py-2 text-right tabular-nums">{{ formatMoney(entry.total_in_quote, quoteCurrency) }}</td>
@@ -543,7 +554,7 @@ async function saveExchangeRate() {
                         </tbody>
                         <tfoot>
                             <tr class="bg-base-lvl-2 font-bold">
-                                <td class="px-5 py-2 text-body">Net Worth</td>
+                                <td class="px-5 py-2 text-body">{{ $t('Net worth') }}</td>
                                 <td></td>
                                 <td class="px-5 py-2 text-right tabular-nums">
                                     {{ formatMoney(totals.total_quote + totals.base_in_quote, quoteCurrency) }}

@@ -59,7 +59,11 @@ const nwChrono = computed<any[]>(() =>
   [...nwRaw.value].reverse().map((r: any) => ({ date_unit: r.date_unit, assets: num(r.assets), debts: num(r.debts) }))
 );
 const nwLatest = computed<any>(() => nwRaw.value[0] ?? null);
-const nw3ago = computed<any>(() => nwRaw.value[3] ?? nwRaw.value[nwRaw.value.length - 1] ?? null);
+const nw3ago = computed<any>(() => nwRaw.value[3] ?? null);
+// Only show a "vs 3 months ago" comparison when there is a genuine prior
+// data point. A days-old account has no real history, so we must NOT fall
+// back to the current value as the baseline (which fabricates "== today").
+const showNwComparison = computed<boolean>(() => !!nw3ago.value && nw3ago.value !== nwLatest.value);
 
 const ie = computed<any>(() => props.data?.incomeExpenses ?? {});
 const expenseByCat = computed<any[]>(() =>
@@ -227,7 +231,7 @@ const hero = computed(() => {
   const net = a + de;
   const net3 = num(nw3ago.value?.assets) + num(nw3ago.value?.debts);
   const diff = net - net3;
-  return { label: t("Net worth"), value: net, negative: net < 0, sub: nw3ago.value ? t("{sign}DOP {amount} vs 3 months ago", { sign: diff >= 0 ? "+" : "−", amount: shortK(diff) }) : "" };
+  return { label: t("Net worth"), value: net, negative: net < 0, sub: showNwComparison.value ? t("{sign}DOP {amount} vs 3 months ago", { sign: diff >= 0 ? "+" : "−", amount: shortK(diff) }) : "" };
 });
 
 // ---- narrative per tab
@@ -261,10 +265,13 @@ const narrative = computed<any[]>(() => {
   const de = num(nwLatest.value?.debts);
   const net = a + de;
   const net3 = num(nw3ago.value?.assets) + num(nw3ago.value?.debts);
-  return [
+  const out: any[] = [
     { icon: net < 0 ? "↗" : "↘", title: net < 0 ? t("Net worth is negative") : t("Net worth is positive"), text: t("Debts (DOP {debts}) {rel} assets (DOP {assets}). The net stands at {net}.", { debts: money(de).main, rel: abs(de) > a ? t("exceed") : t("are below"), assets: money(a).main, net: `${net < 0 ? "−" : ""}DOP ${money(net).main}` }) },
-    { icon: "↗", title: t("vs 3 months ago"), text: t("Three months ago the net was {net}.", { net: `${net3 < 0 ? "−" : ""}DOP ${money(net3).main}` }) },
   ];
+  if (showNwComparison.value) {
+    out.push({ icon: "↗", title: t("vs 3 months ago"), text: t("Three months ago the net was {net}.", { net: `${net3 < 0 ? "−" : ""}DOP ${money(net3).main}` }) });
+  }
+  return out;
 });
 
 // ---- chart context label

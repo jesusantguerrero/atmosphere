@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import InfoHint from "@/Components/atoms/InfoHint.vue";
 import { computed } from "vue";
 // @ts-ignore
 import { AtDropdownLink } from "atmosphere-ui";
@@ -145,6 +146,7 @@ const status = computed(() => {
       <div class="flex items-center justify-between">
         <span class="text-sm font-semibold uppercase tracking-wide">
           {{ $t(status.label) }}
+          <InfoHint :title="$t('Ready to assign')" :body="$t('ready_to_assign_hint')" />
         </span>
         <span class="text-xl font-bold tabular-nums">
           {{ formatMoney(status.amount) }}

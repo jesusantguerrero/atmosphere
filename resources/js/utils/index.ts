@@ -89,18 +89,24 @@ export const formatMonth = (dateString: string | Date, type: string = MonthTypeF
 }
 
 
+// Localize date output. When the app locale is Spanish, use Spanish month names
+// (date-fns `es`) and a day-first default ("15 ene 2027") instead of "MMM dd, yyyy".
+const isEsLocale = () => String((typeof window !== 'undefined' && (window as any).logerLocale) || '').toLowerCase().startsWith('es');
+const dfOptions = () => (isEsLocale() ? { locale: es } : undefined);
+
 const formatISOString = (isoString: string, formatString: string) => {
     const date = isoString.includes('T') ? isoString.slice(0, isoString.indexOf('T')) : isoString
-    return format(parseISO(date), formatString)
+    return format(parseISO(date), formatString, dfOptions())
 }
-export const formatDate = (dateISOString: string|Date, placeholder?: string, formatString = "MMM dd, yyyy") => {
+export const formatDate = (dateISOString: string|Date, placeholder?: string, formatString?: string) => {
     const emptyDate = '-- --- ----'
 
     if (!dateISOString && placeholder) return placeholder;
+    const fmt = formatString ?? (isEsLocale() ? 'dd MMM yyyy' : 'MMM dd, yyyy');
     try {
         return typeof dateISOString == 'string'
-        ? formatISOString(dateISOString, formatString)
-        : format(dateISOString, formatString);
+        ? formatISOString(dateISOString, fmt)
+        : format(dateISOString, fmt, dfOptions());
     }
     catch (e) {
         return dateISOString ?? emptyDate;
