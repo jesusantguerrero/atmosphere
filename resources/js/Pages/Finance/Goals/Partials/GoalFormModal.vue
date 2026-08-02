@@ -152,6 +152,7 @@ const submit = (): void => {
 
             <AtField :label="$t('Target date')" v-if="showDatePicker">
                 <NDatePicker
+                    class="w-full"
                     type="date"
                     size="large"
                     v-model:value="form.frequency_date"

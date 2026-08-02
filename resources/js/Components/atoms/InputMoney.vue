@@ -41,7 +41,12 @@ const emitValue = (value: string) => {
 }
 
 const onFocus = (evt: InputEvent) => {
-    if (!modelValue.value) {
+    // Select-all when the field is empty OR numerically zero. Was only checking
+    // `!modelValue.value`, but "0"/"0.00" are truthy strings, so typing into a
+    // zero field prepended the digits ("0" + "3500" = "03500"). Selecting all on
+    // focus makes the first keystroke replace the zero instead.
+    const raw = String(modelValue.value ?? "").replace(/[^0-9.-]/g, "");
+    if (!modelValue.value || Number(raw) === 0) {
         nextTick(() => {
             // @ts-ignore
             evt.target?.setSelectionRange(0, 999);

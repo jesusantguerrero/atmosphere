@@ -500,5 +500,9 @@
     "Enter account name": "Escribe el nombre de la cuenta",
     "Select primary currency": "Selecciona la moneda principal",
     "Enable multi-currency support": "Habilitar soporte multi-moneda",
-    "Currency Configuration": "Configuración de moneda"
+    "Currency Configuration": "Configuración de moneda",
+    "Currency": "Moneda",
+    "rate": "tasa",
+    "Editable rate — settles when the payment clears.": "Tasa editable — se ajusta al liquidarse el pago.",
+    "Account": "Cuenta"
 }

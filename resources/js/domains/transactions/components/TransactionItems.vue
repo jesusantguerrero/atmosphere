@@ -7,7 +7,9 @@ import InputMoney from "@/Components/atoms/InputMoney.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 import LogerApiSimpleSelect from "@/Components/organisms/LogerApiSimpleSelect.vue";
 import CategoryPicker from "./CategoryPicker.vue";
+import CurrencySelector from "./CurrencySelector.vue";
 import { IAccount, ICategory } from "../models";
+import { getCurrencyByCode } from "../currency-constants";
 import { formatMoney } from "@/utils";
 import LogerInput from "@/Components/atoms/LogerInput.vue";
 import { TRANSACTION_DIRECTIONS } from "..";
@@ -35,7 +37,36 @@ const props = defineProps<{
   isTransfer: boolean
   fullHeight: boolean;
   mode?: string;
+  currencyCode?: string;
+  showCurrencyPicker?: boolean;
 }>();
+
+const emit = defineEmits<{
+  (e: 'update:currencyCode', code: string): void;
+  (e: 'firstRowChange', payload: { account_id: number | null; amount: number }): void;
+}>();
+
+// Currency symbol for the amount inputs. Derived from the transaction's
+// selected currency (falls back to the team default) so it always agrees
+// with the Currency dropdown instead of a hardcoded peso symbol.
+const currencySymbol = computed(() => {
+  const code = props.currencyCode
+    || (window as any)?.logerAppSettings?.currency_code
+    || "USD";
+  return getCurrencyByCode(code)?.symbol ?? code;
+});
+
+// The account chosen on the first row, resolved to its full record so we can
+// surface its native currency (the chip next to the account, and the modal's
+// conversion hint when the picked currency differs from it).
+const firstRowAccountCurrency = computed(() => {
+  const acc = (props.accounts || []).find((a) => a.id === splits[0]?.account_id);
+  return acc?.currency_code || null;
+});
+
+const onCurrencyPicked = (currency: { code: string } | null) => {
+  if (currency?.code) emit('update:currencyCode', currency.code);
+};
 const accountLabel = computed(() => {
   return !props.isTransfer ? "Account" : "Source";
 });
@@ -103,8 +134,15 @@ defineExpose({
   getSplits() {
     return splits;
   },
-  reset() {
-    splits.splice(0, splits.length, { ...defaultRow });
+  // Accepts the rows the parent wants to keep after a save (e.g. 'Save and add
+  // another' preserves the account so you don't re-pick it every time). Falls
+  // back to a single blank row when nothing is passed. Previously ignored its
+  // argument and always reset to defaultRow, wiping the account to 'Please Select'.
+  reset(items?: SplitItem[]) {
+    const next = (items && items.length)
+      ? items.map((item) => ({ ...defaultRow, ...item }))
+      : [{ ...defaultRow }];
+    splits.splice(0, splits.length, ...next);
   },
 });
 
@@ -145,6 +183,15 @@ watch(
   },
   { deep: true }
 );
+
+// Bubble the first row's account + amount up so the modal can show the
+// multi-currency conversion strip only when the picked currency differs from
+// the account's native currency. immediate so the modal syncs on open.
+watch(
+  () => ({ account_id: splits[0]?.account_id ?? null, amount: Number(splits[0]?.amount ?? 0) }),
+  (payload) => emit('firstRowChange', payload),
+  { immediate: true, deep: true }
+);
 </script>
 
 
@@ -158,21 +205,36 @@ watch(
 
 
       <section v-if="!index">
-          <AtField
-            :label="accountLabel"
-            class="w-full md:my-0 md:-mt-4"
-          >
-            <NSelect
-              filterable
-              clearable
-              tag
-              size="large"
-              class="w-full"
-              v-model:value="split.account_id"
-              :default-expand-all="true"
-              :options="accountsOptions"
-            />
-          </AtField>
+          <div class="md:flex md:items-start md:gap-3">
+            <div class="relative w-full md:flex-1">
+              <span
+                v-if="showCurrencyPicker && firstRowAccountCurrency"
+                class="absolute right-0 top-0 z-10 px-2 py-0.5 text-[10px] font-bold tracking-wide rounded-full bg-info/10 text-info border border-info/25"
+              >{{ firstRowAccountCurrency }}</span>
+              <AtField
+                :label="$t(accountLabel)"
+                class="w-full md:my-0 md:-mt-4"
+              >
+                <NSelect
+                  filterable
+                  clearable
+                  tag
+                  size="large"
+                  class="w-full"
+                  v-model:value="split.account_id"
+                  :default-expand-all="true"
+                  :options="accountsOptions"
+                />
+              </AtField>
+            </div>
+            <AtField
+              v-if="showCurrencyPicker"
+              :label="$t('Currency')"
+              class="w-full md:w-44 md:flex-shrink-0 md:my-0 md:-mt-4"
+            >
+              <CurrencySelector :model-value="currencyCode" :clearable="false" @change="onCurrencyPicked" />
+            </AtField>
+          </div>
 
         <div class="px-2 py-1 text-center" v-if="hasSplits">
             {{  formatMoney(splitsTotal) }}
@@ -232,7 +294,7 @@ watch(
         <AtField label="Amount" class="hidden md:block md:w-5/12">
           <InputMoney :number-format="true" v-model="split.amount" v-model:history="split.history" placeholder="">
             <template #prefix>
-              <span class="flex items-center pl-2"> RD$ </span>
+              <span class="flex items-center pl-2"> {{ currencySymbol }} </span>
             </template>
           </InputMoney>
         </AtField>
@@ -247,7 +309,7 @@ watch(
                 class="text-2xl font-bold md:text-base md:font-normal"
               >
                 <template #prefix>
-                  <span class="flex items-center pl-2 text-base text-body-1/60 md:text-current"> RD$ </span>
+                  <span class="flex items-center pl-2 text-base text-body-1/60 md:text-current"> {{ currencySymbol }} </span>
                 </template>
               </InputMoney>
             </AtField>

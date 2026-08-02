@@ -423,5 +423,10 @@
     "Enter account name": "Enter account name",
     "Select primary currency": "Select primary currency",
     "Enable multi-currency support": "Enable multi-currency support",
-    "Currency Configuration": "Currency Configuration"
+    "Currency Configuration": "Currency Configuration",
+    "Currency": "Currency",
+    "rate": "rate",
+    "Editable rate — settles when the payment clears.": "Editable rate — settles when the payment clears.",
+    "Account": "Account",
+    "Source": "Source"
 }

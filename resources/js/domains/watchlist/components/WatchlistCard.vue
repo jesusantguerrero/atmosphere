@@ -3,7 +3,7 @@ import { computed } from "vue";
 import { NDropdown, NTooltip } from "naive-ui";
 
 import { formatMoney, formatDate } from "@/utils";
-import { getVariances } from "@/domains/transactions";
+import { getVariances, formatVariance } from "@/domains/transactions";
 
 const props = defineProps({
   item: {
@@ -18,7 +18,7 @@ const emit = defineEmits<{
 }>();
 
 const lastMonthVariance = computed(() => {
-  return getVariances(props.item.data.month.total, props.item.data.prevMonth.total) || 0;
+  return getVariances(props.item.data.month.total, props.item.data.prevMonth.total);
 });
 
 const typeLabels: Record<string, string> = {
@@ -198,7 +198,7 @@ const streakLabel = computed(() => {
       <div class="flex justify-between space-x-2 text-xs">
         <div class="w-full px-5 py-2 mt-4 bg-opacity-25 rounded-md bg-secondary/10">
           <span class="text-body-1/80">Last month:</span>
-          <span class="font-bold text-secondary">{{ lastMonthVariance }}%</span>
+          <span class="font-bold text-secondary">{{ formatVariance(lastMonthVariance) }}</span>
         </div>
         <button
           v-if="!hasTarget"

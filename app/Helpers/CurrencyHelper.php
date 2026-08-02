@@ -16,7 +16,7 @@ class CurrencyHelper
             ];
         }
         )->filter(function ($curr) {
-            return isset($curr['code']);
+            return ! empty($curr['code']);
         })->unique('code')->sortBy('code')->values()->all();
     }
 }

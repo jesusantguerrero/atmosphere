@@ -36,12 +36,37 @@ export const saveAccountsReorder = (items: IAccount[]) => {
     return axios.patch('/api/accounts/', { accounts });
 };
 
-export const getVariances = (current = 0, last = 0) => {
-    if (last === 0) {
-      return 0;
+type Numeric = number | string | null | undefined;
+
+/**
+ * Percent change between two periods, as a fixed-2 string.
+ *
+ * Returns `null` when there is nothing to compare against — a zero, null or
+ * non-numeric baseline. That is not the same as 0%: a month that went from
+ * nothing to something has no meaningful percentage, and rendering it as 0%
+ * understates the change. Callers must render `null` as an em dash.
+ *
+ * The old strict `last === 0` check let two real cases through, because MySQL
+ * hands these numbers over as strings and SUM() over an empty period is NULL:
+ * `"0.00" === 0` and `null === 0` are both false, so both fell into the
+ * division and produced Infinity.
+ */
+export const getVariances = (current: Numeric = 0, last: Numeric = 0): string | null => {
+    const currentValue = Number(current ?? 0);
+    const lastValue = Number(last ?? 0);
+
+    if (!Number.isFinite(currentValue) || !Number.isFinite(lastValue) || lastValue === 0) {
+        return null;
     }
-    const variance = ((current - last) / last) * 100;
-    return Number.isNaN(variance) ? 0 : variance.toFixed(2);
+
+    const variance = ((currentValue - lastValue) / lastValue) * 100;
+
+    return Number.isFinite(variance) ? variance.toFixed(2) : null;
+};
+
+/** Display form of {@link getVariances} — an em dash when not comparable. */
+export const formatVariance = (variance: string | null, suffix = '%'): string => {
+    return variance === null ? '—' : `${variance}${suffix}`;
 };
 
 
