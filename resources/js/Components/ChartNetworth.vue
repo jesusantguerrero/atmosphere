@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import formatMoney from "@/utils/formatMoney";
 import { computed, ref, inject } from "vue";
+import { useI18n } from "vue-i18n";
 
 import LogerChart from "./organisms/LogerChart.vue";
 import ChartHeaderScroller from "./ChartHeaderScroller.vue";
 import NumberHider from "./molecules/NumberHider.vue";
 import { formatMonth } from "@/utils";
+
+const { t } = useI18n();
 
 const props = defineProps({
     title: {
@@ -27,12 +30,12 @@ const props = defineProps({
 const selectedDate = ref()
 const currentSeries = computed(() => {
     return [{
-        name: 'Debts',
+        name: t('Debts'),
         data: Object.values(props.data).map(item => Math.abs(item.debts)),
         labels: Object.values(props.data).map(item => item.date_unit)
     },
     {
-        name: 'Assets',
+        name: t('Assets'),
         data: Object.values(props.data).map(item => item.assets),
         labels: Object.values(props.data).map(item => item.date_unit)
     }];
@@ -85,7 +88,7 @@ const hasHiddenValues = inject('hasHiddenValues', ref(false))
             :series="state.series"
             :has-hidden-values="hasHiddenValues"
             summary-line
-            summary-line-label="Net worth"
+            :summary-line-label="$t('Net worth')"
         />
       </div>
     </div>

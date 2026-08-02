@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import InfoHint from "@/Components/atoms/InfoHint.vue";
 import { computed, provide, ref, toRefs, onMounted, nextTick } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
 import { AtButton, AtDatePager } from "atmosphere-ui";
@@ -333,6 +334,8 @@ const budgetCsvExportUrl = computed(() => {
             </div>
           </AtButton>
 
+          <InfoHint :title="$t('Funded vs overspent')" :body="$t('funded_vs_overspent_hint')" />
+
           <!-- Filter icon opens a popover with the Funded/Not-funded
                segmented control. Active-state dot appears on the icon
                when a filter is set so users can tell at a glance. -->
@@ -443,7 +446,7 @@ const budgetCsvExportUrl = computed(() => {
              SPENT label directly above its value; text-right would leave
              a ~90px visual gap on the right side of the column. -->
         <div class="hidden md:flex items-center flex-nowrap shrink-0 text-xs uppercase tracking-wide text-body-1/50 font-medium">
-          <span class="w-36 text-right">{{ $t('Assigned') }}</span>
+          <span class="w-36 text-right">{{ $t('Assigned') }} <InfoHint :title="$t('100% assigned')" :body="$t('assigned_100_hint')" /></span>
           <span class="w-44 text-left pl-8">{{ $t('Spent') }}</span>
           <span class="w-28 text-right">{{ $t('Available') }}</span>
           <span class="w-8" aria-hidden="true"></span>
