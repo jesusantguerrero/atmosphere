@@ -136,7 +136,7 @@ const movementIsPositive = computed(() => Number(monthMovement.value) >= 0);
                     v-if="drafts"
                     type="button"
                     class="w-full text-left bg-base-lvl-3 rounded-lg border border-base p-4 flex items-center gap-3 hover:border-primary/30 transition"
-                    @click="router.visit('/finance/transactions')"
+                    @click="router.visit('/inbox')"
                 >
                     <span class="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 text-primary flex-shrink-0">
                         <i class="fas fa-receipt" />

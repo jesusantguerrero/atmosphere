@@ -51,7 +51,7 @@ const shoppingItemCount = Array.isArray(props.shoppingList?.data)
 </script>
 
 <template>
-  <AppLayout>
+  <AppLayout :title="$t('Food')">
     <template #header>
       <MealSectionNav>
         <template #actions>
@@ -63,7 +63,7 @@ const shoppingItemCount = Array.isArray(props.shoppingList?.data)
     </template>
 
     <div
-      class="px-5 mx-auto mt-12 space-y-10 md:space-y-0 md:space-x-10 md:flex max-w-screen-2xl sm:px-6 lg:px-8"
+      class="px-5 mx-auto pt-16 space-y-10 md:space-y-0 md:space-x-10 md:flex max-w-screen-2xl sm:px-6 lg:px-8"
     >
       <div class="md:w-9/12">
         <!-- Today's meal plan -->

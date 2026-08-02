@@ -41,7 +41,15 @@
             await OneSignal.init({
                 appId: @json(config('services.onesignal.app_id')),
                 safari_web_id: "web.onesignal.auto.3f550615-46c0-4fa5-9ee8-42953ece3d19",
-                notifyButton: { enable: true },
+                // Floating bell disabled — the circular widget overlapped the app UI.
+                // Web-push opt-in now happens through the slidedown prompt below, so
+                // subscriptions keep working without a persistent on-screen circle.
+                notifyButton: { enable: false },
+                promptOptions: {
+                    slidedown: {
+                        prompts: [{ type: "push", autoPrompt: true }],
+                    },
+                },
             });
             // Link this subscription to a Loger user_id so the server can
             // target push notifications at a specific person (credit-card

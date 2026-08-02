@@ -1,70 +1,45 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { Link } from "@inertiajs/vue3";
+import { IBoard } from "@/domains/housing/models";
 
-// Props
-const props = withDefaults(defineProps<{
+const props = defineProps<{
     board: IBoard;
-    color: string;
-}>(), {
-  color:  "#D8D7F1", // Default color
-});
+    color?: string | null;
+}>();
 
-// Dynamically set card styles
-const cardStyle = computed(() => ({
-  backgroundColor: props.color,
-}));
+// Curated palette (matches the app's chart + Family avatar colors).
+// Used as a deterministic fallback when a board has no color set.
+const PALETTE = [
+    "#7B77D1", "#F37EA1", "#80CDFE", "#6EE7B7",
+    "#FBBF77", "#A78BFA", "#5EEAD4", "#F59E9E",
+];
+
+const accent = computed(() => {
+    if (props.color) return props.color;
+    const seed = String(props.board.id ?? props.board.name ?? "");
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++) {
+        hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+    }
+    return PALETTE[hash % PALETTE.length];
+});
 </script>
 
 <template>
-    <section class="wrapper">
-        <Link class="bg-brand shadow-md rounded-lg p-4 text-center" :href="`/housing/boards/${board.id}`">
-          <!-- Profile Image -->
-          <div class="w-20 h-20 mx-auto rounded-full text-4xl bg-light flex items-center justify-center  overflow-hidden bg-base-lvl-3 shadow py-4">
-            <!-- Replace with actual image -->
-            {{ board.name.at(0)}}
-          </div>
-          <!-- Name -->
-          <h3 class="mt-4 text-darker font-bold text-lg capitalize">{{ board.name }}</h3>
-          <!-- School -->
-          <p class="text-[#6E6E6E] text-sm">{{ board.description ?? 'N/D' }}</p>
-          <!-- Percentage -->
-          <p class="mt-2 text-2xl font-bold text-[#4A3F94]">{{ board.template}}</p>
-          <!-- Rank Badge -->
-          <span class="mt-1 inline-block bg-light text-white text-sm px-4 py-1 rounded-full">
-            {{ board.itemsCount ?? 0 }}
-          </span>
-        </Link>
-    </section>
+    <Link
+        :href="`/housing/boards/${board.id}`"
+        class="flex flex-col items-center w-32 px-4 py-5 text-center transition-colors border rounded-lg bg-base-lvl-2 border-base hover:border-primary"
+    >
+        <div
+            class="flex items-center justify-center w-16 h-16 mb-3 text-2xl font-bold rounded-full"
+            :style="{ backgroundColor: accent + '1F', color: accent }"
+        >
+            {{ board.name?.charAt(0)?.toUpperCase() }}
+        </div>
+        <h3 class="max-w-full font-semibold capitalize truncate text-body">{{ board.name }}</h3>
+        <p v-if="board.template" class="mt-0.5 max-w-full text-xs capitalize truncate text-body-2">
+            {{ board.template }}
+        </p>
+    </Link>
 </template>
-
-
-<style lang="scss" scoped>
-.wrapper {
-    --custom-color: v-bind(color)
-}
-
-.bg-brand {
-    background-color: var(--custom-color);
-  }
-
-  /* 50% blue, 50% white */
-  .bg-light {
-    background-color: color-mix(in srgb, var(--custom-color), white);
-  }
-
-  /* 25% blue, 75% white */
-  .bg-blue-lighter {
-    background-color: color-mix(in srgb, blue, white 75%);
-  }
-
-  /* 50% blue, 50% black */
-  .bg-blue-dark {
-    background-color: color-mix(in srgb, blue, black);
-  }
-
-  /* 25% blue, 75% black */
-  .text-darker {
-    color: color-mix(in srgb, var(--custom-color), black 75%);
-  }
-</style>

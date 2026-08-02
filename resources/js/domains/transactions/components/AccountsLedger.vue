@@ -123,7 +123,7 @@ const toggleGroup = (group: string) => {
         <!-- Header -->
         <header class="flex items-center justify-between pb-2">
             <div class="flex items-center gap-1">
-                <h3 class="text-sm font-bold text-body">Accounts</h3>
+                <h3 class="text-sm font-bold text-body">{{ $t('Accounts') }}</h3>
                 <MoneyPresenter :value="budgetAccountsTotal" class="text-xs text-primary" />
             </div>
             <LogerButtonTab class="w-7 h-7 flex items-center justify-center rounded hover:bg-base-lvl-2" @click="openAccountModal()">
@@ -149,7 +149,7 @@ const toggleGroup = (group: string) => {
             <section v-if="creditCards.length">
                 <button v-if="bankAccounts.length" class="w-full flex items-center justify-between px-2 pb-1 cursor-pointer" @click="toggleGroup('credit-cards')">
                     <h4 class="text-[10px] uppercase tracking-wider text-body-1/50 font-semibold">
-                        Credit Cards
+                        {{ $t('Credit Cards') }}
                     </h4>
                     <IMdiChevronDown class="text-body-1/40 text-xs transition-transform" :class="{ '-rotate-90': collapsed['credit-cards'] }" />
                 </button>
@@ -164,7 +164,7 @@ const toggleGroup = (group: string) => {
             <section v-if="bankAccounts.length">
                 <button v-if="creditCards.length" class="w-full flex items-center justify-between px-2 pb-1 cursor-pointer" @click="toggleGroup('bank')">
                     <h4 class="text-[10px] uppercase tracking-wider text-body-1/50 font-semibold">
-                        Bank Accounts
+                        {{ $t('Bank Accounts') }}
                     </h4>
                     <IMdiChevronDown class="text-body-1/40 text-xs transition-transform" :class="{ '-rotate-90': collapsed['bank'] }" />
                 </button>
@@ -175,9 +175,25 @@ const toggleGroup = (group: string) => {
                 </Draggable>
             </section>
 
-            <!-- Empty state -->
-            <p v-if="!filteredAccounts.length" class="text-xs text-center text-body-1/40 py-4">
-                No accounts match this filter
+            <!-- First-run: no accounts at all -->
+            <div v-if="!accounts.length" class="flex flex-col items-center px-3 py-8 text-center">
+                <div class="flex items-center justify-center w-12 h-12 mb-3 rounded-full bg-primary/10 text-primary">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <p class="text-sm font-semibold text-body">{{ $t('No accounts yet') }}</p>
+                <p class="mt-1 text-xs text-body-1/60">{{ $t('Add your bank, cash, or card to start tracking your money.') }}</p>
+                <button
+                    type="button"
+                    class="px-3 py-1.5 mt-3 text-xs font-semibold text-white transition-colors rounded-md bg-primary hover:bg-primary/80"
+                    @click="openAccountModal()"
+                >
+                    {{ $t('Add your first account') }}
+                </button>
+            </div>
+
+            <!-- Accounts exist but none match the active filter -->
+            <p v-else-if="!filteredAccounts.length" class="text-xs text-center text-body-1/40 py-4">
+                {{ $t('No accounts match this filter') }}
             </p>
         </div>
 

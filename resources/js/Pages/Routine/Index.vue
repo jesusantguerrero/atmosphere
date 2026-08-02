@@ -119,12 +119,12 @@ const remove = async () => {
 </script>
 
 <template>
-  <AppLayout title="Household">
+  <AppLayout :title="$t('Routine')">
     <template #header>
       <HouseSectionNav />
     </template>
 
-    <div class="px-5 pb-20 mx-auto mt-12 max-w-6xl">
+    <div class="px-5 pb-20 mx-auto pt-16 max-w-6xl">
       <!-- header: filter + add -->
       <div class="flex items-center gap-2 mb-4 flex-wrap">
         <h1 class="text-lg font-bold text-body mr-auto">{{ $t('Weekly routine') }}</h1>

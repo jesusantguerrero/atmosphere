@@ -148,7 +148,7 @@ const expand = () => {
           <span class="flex-1 min-w-0">
             <span class="block text-sm font-medium text-body">{{ $t('Log an income') }}</span>
             <span class="block text-xs text-body-1/60 mt-0.5 truncate">
-              {{ $t('Fill up Ready to Assign') }}
+              {{ $t('So you have money to assign') }}
             </span>
           </span>
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-body-1/40 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

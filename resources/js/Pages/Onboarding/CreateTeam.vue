@@ -49,7 +49,7 @@ const createBudget = () => {
     <AppLayout :is-onboarding="true">
         <div class="h-auto py-12 mx-auto max-w-7xl sm:px-6 lg:px-8">
             <div
-                class="flex items-center justify-between py-2 mb-10 border-4 border-white rounded-md bg-base-lvl-2"
+                class="flex items-center justify-between py-2 mb-10 border-4 border-base rounded-md bg-base-lvl-2"
             >
                 <div class="px-5 font-bold text-body-1">
                     Space Setup

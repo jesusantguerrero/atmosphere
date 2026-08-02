@@ -9,7 +9,8 @@ import TrendTemplate from "./Partials/TrendTemplate.vue";
 import TrendSectionNav from "./Partials/TrendSectionNav.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 import LogerInput from "@/Components/atoms/LogerInput.vue";
-import { trendOptions } from "./Partials/trendOptions";
+import { useTrendOptions } from "./Partials/trendOptions";
+const trendOptions = useTrendOptions();
 import { formatMoney } from "@/utils";
 
 interface AccountEntry {

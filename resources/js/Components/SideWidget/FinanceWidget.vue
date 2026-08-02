@@ -5,7 +5,9 @@ import {
   ref,
   shallowRef,
   computed,
+  watch,
 } from "vue";
+import { usePage } from "@inertiajs/vue3";
 import ToolsAccountsWidget from "./ToolsAccountsWidget.vue";
 import { THEME_FINI } from "@/utils/constants";
 import { setTheme } from "@/composables/useTheme";
@@ -145,6 +147,26 @@ const onKeydown = (event: KeyboardEvent) => {
     closePanel();
   }
 };
+
+// Deep-link support: navigating to any page with ?panel=<name> auto-opens that
+// right-rail panel. Powers the onboarding wizard ("Add accounts" → the Accounts
+// panel opens for you) instead of dropping the user on the page to hunt for it.
+// A URL watch (not just onMounted) is required because AppLayout — and this
+// widget — persist across Inertia navigations, so onMounted fires only once.
+const page = usePage();
+watch(
+  () => page.url,
+  (url) => {
+    const query = (url || '').split('?')[1] || '';
+    const panel = new URLSearchParams(query).get('panel');
+    if (!panel) return;
+    const idx = sections.value.findIndex((sec) => sec.name === panel);
+    if (idx >= 0 && applicationStore.selectedSection?.name !== panel) {
+      onSetSelectSection(sections.value[idx], idx);
+    }
+  },
+  { immediate: true }
+);
 
 onMounted(() => {
   document.addEventListener('keydown', onKeydown);

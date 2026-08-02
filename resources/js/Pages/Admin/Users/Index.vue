@@ -1,103 +1,168 @@
 <script setup lang="ts">
-import { Link } from "@inertiajs/vue3";
-import { computed, toRefs } from "vue";
-import { router } from "@inertiajs/core";
-
-// @ts-ignore: its my template
-import AtTable from "@/Components/shared/BaseTable.vue";
-import AppButton from "@/Components/atoms/LogerButton.vue";
-
-import cols from "./cols";
-import { IRent } from "@/Modules/property/propertyEntity";
-import AppSearch from "@/Components/AppSearch/AppSearch.vue";
-import { IServerSearchData, useServerSearch } from "@/composables/useServerSearch";
+import { ref, watch } from "vue";
+import { Link, router } from "@inertiajs/vue3";
 import AdminTemplate from "../Partials/AdminTemplate.vue";
+import LogerInput from "@/Components/atoms/LogerInput.vue";
 
-interface IPaginatedData {
-  data: IRent[];
+/**
+ * Admin · Users list. Paginated table with search + role filter.
+ * The filters use `router.get` with `preserveState` so typing doesn't
+ * blow away the input focus. Search is debounced client-side (200ms)
+ * to avoid a request per keystroke.
+ */
+
+interface UserRow {
+    id: number;
+    name: string;
+    email: string;
+    role: "user" | "admin" | "super_admin";
+    email_verified_at: string | null;
+    created_at: string;
+}
+
+interface PaginatedUsers {
+    data: UserRow[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    links: Array<{ url: string | null; label: string; active: boolean }>;
 }
 
 const props = defineProps<{
-  users: IRent[] | IPaginatedData;
-  serverSearchOptions: IServerSearchData;
-  user: Record<string, string>;
+    users: PaginatedUsers;
+    filters: { search: string; role: string | null };
 }>();
 
-const { serverSearchOptions } = toRefs(props);
-const {
-  executeSearch,
-  changeSize,
-  paginate,
-  reset,
-  state: searchState,
-} = useServerSearch(serverSearchOptions, {
-  manual: true,
+const search = ref(props.filters.search ?? "");
+const role = ref<string | null>(props.filters.role ?? null);
+
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(search, (value) => {
+    if (searchTimeout) clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        router.get(
+            "/admin/users",
+            { search: value, role: role.value ?? undefined },
+            { preserveState: true, preserveScroll: true, replace: true }
+        );
+    }, 200);
 });
 
-const listData = computed(() => {
-  return Array.isArray(props.users) ? props.users : props.users.data;
+watch(role, (value) => {
+    router.get(
+        "/admin/users",
+        { search: search.value, role: value ?? undefined },
+        { preserveState: true, preserveScroll: true, replace: true }
+    );
 });
 
-const tableConfig = {
-  selectable: true,
-  searchBar: true,
-  pagination: true,
+const roleBadgeClass = (r: string) => {
+    if (r === "super_admin") return "bg-primary text-white";
+    if (r === "admin") return "bg-primary/15 text-primary";
+    return "bg-base-lvl-2 text-body-1";
 };
-
-const approveTeam = (team: Record<string, string>) => {
-  router.post(route("admin.teams.approve", team));
-};
-
-const deleteTeam = () => {};
 </script>
 
 <template>
-  <AdminTemplate title="Teams">
-    <main class="pb-16 mt-24">
-      <section class="flex space-x-4">
-        <AppSearch
-          v-model.lazy="searchState.search"
-          class="w-full md:flex"
-          :has-filters="true"
-          @clear="reset()"
-          @blur="executeSearch"
-        />
-        <AppButton @click="router.visit(route('rents.create'))">
-          {{ $t("add user") }}
-        </AppButton>
-      </section>
-      <AtTable
-        class="mt-4 bg-base-lvl-3 rounded-md text-body-1"
-        :table-data="listData"
-        :cols="cols"
-        :pagination="searchState"
-        :total="users.total"
-        @search="executeSearch"
-        @paginate="paginate"
-        @size-change="changeSize"
-        :config="tableConfig"
-      >
-        <template v-slot:actions="{ scope: { row } }" class="flex">
-          <div class="flex items-center justify-end">
-            <UnitTag :status="row.status" />
+    <AdminTemplate title="Users">
+        <!-- Toolbar -->
+        <section class="flex flex-wrap items-center gap-2 mb-4">
+            <div class="w-full sm:w-72">
+                <LogerInput
+                    v-model="search"
+                    placeholder="Search by name or email"
+                    class="text-sm"
+                />
+            </div>
+            <select
+                v-model="role"
+                class="px-3 py-2 text-sm rounded-md bg-base-lvl-3 border border-base text-body focus:outline-none focus:border-primary"
+            >
+                <option :value="null">All roles</option>
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+                <option value="super_admin">Super admin</option>
+            </select>
+            <div class="ml-auto text-xs text-body-1/60">
+                {{ users.total.toLocaleString() }} total
+            </div>
+        </section>
 
+        <!-- Table -->
+        <div class="rounded-lg bg-base-lvl-3 border border-base overflow-hidden">
+            <table class="w-full text-sm">
+                <thead class="text-xs uppercase tracking-wide text-body-1/60 bg-base-lvl-2">
+                    <tr>
+                        <th class="text-left px-4 py-3 font-semibold">User</th>
+                        <th class="text-left px-4 py-3 font-semibold hidden md:table-cell">Email</th>
+                        <th class="text-left px-4 py-3 font-semibold">Role</th>
+                        <th class="text-left px-4 py-3 font-semibold hidden lg:table-cell">Verified</th>
+                        <th class="text-left px-4 py-3 font-semibold hidden lg:table-cell">Joined</th>
+                        <th class="w-8"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-base">
+                    <tr
+                        v-for="user in users.data"
+                        :key="user.id"
+                        class="hover:bg-base-lvl-2/50 transition-colors"
+                    >
+                        <td class="px-4 py-3">
+                            <Link :href="`/admin/users/${user.id}`" class="font-medium text-body hover:text-primary">
+                                {{ user.name }}
+                            </Link>
+                            <div class="text-xs text-body-1/60 md:hidden">{{ user.email }}</div>
+                        </td>
+                        <td class="px-4 py-3 text-body-1 hidden md:table-cell">{{ user.email }}</td>
+                        <td class="px-4 py-3">
+                            <span
+                                class="text-xs font-medium px-2 py-0.5 rounded-full"
+                                :class="roleBadgeClass(user.role)"
+                            >
+                                {{ user.role }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-body-1 hidden lg:table-cell">
+                            <span v-if="user.email_verified_at" class="text-success">✓</span>
+                            <span v-else class="text-body-1/40">—</span>
+                        </td>
+                        <td class="px-4 py-3 text-body-1 hidden lg:table-cell">
+                            {{ new Date(user.created_at).toLocaleDateString() }}
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                            <Link :href="`/admin/users/${user.id}`" class="text-primary hover:underline text-xs">
+                                Open →
+                            </Link>
+                        </td>
+                    </tr>
+                    <tr v-if="!users.data.length">
+                        <td colspan="6" class="px-4 py-12 text-center text-body-1/60">
+                            No users match your filters.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <nav v-if="users.last_page > 1" class="flex items-center justify-center gap-1 mt-4 text-sm">
             <Link
-              class="relative inline-block px-5 py-2 ml-4 overflow-hidden font-bold transition rounded-md cursor-pointer hover:bg-primary hover:text-white text-body focus:outline-none hover:bg-opacity-80 min-w-max"
-              :href="`/admin/teams/${row.id}`"
-            >
-              <IMdiChevronRight />
-            </Link>
-            <AppButton
-              variant="neutral"
-              class="flex flex-col items-center justify-center transition hover:text-error hover:border-red-400"
-              @click="deleteTeam(row)"
-              title="Approve team"
-            >
-              <IMdiTrash />
-            </AppButton>
-          </div>
-        </template>
-      </AtTable>
-    </main>
-  </AdminTemplate>
+                v-for="link in users.links"
+                :key="link.label"
+                :href="link.url ?? ''"
+                v-html="link.label"
+                class="px-3 py-1.5 rounded-md"
+                :class="[
+                    link.active
+                        ? 'bg-primary text-white font-medium'
+                        : link.url
+                            ? 'text-body-1 hover:bg-base-lvl-2'
+                            : 'text-body-1/40 pointer-events-none',
+                ]"
+                preserve-scroll
+                preserve-state
+            />
+        </nav>
+    </AdminTemplate>
 </template>

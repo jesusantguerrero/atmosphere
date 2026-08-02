@@ -5,7 +5,8 @@ import { AtDatePager } from 'atmosphere-ui';
 
 import AppLayout from '@/Components/templates/AppLayout.vue';
 import SectionTitle from '@/Components/atoms/SectionTitle.vue';
-import { trendOptions } from './Partials/trendOptions';
+import { useTrendOptions } from './Partials/trendOptions';
+const trendOptions = useTrendOptions();
 import TrendSectionNav from './Partials/TrendSectionNav.vue';
 import TrendTemplate from './Partials/TrendTemplate.vue';
 import { useServerSearch } from '@/composables/useServerSearch';

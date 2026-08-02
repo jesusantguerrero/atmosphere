@@ -100,5 +100,7 @@ class Kernel extends HttpKernel
         'treasurer.biller' => EnsureIsBiller::class,
         'treasurer.subscribed' => Subscribed::class,
         'loger.concerns' => EnsureCoreModulePermissions::class,
+        'admin.only' => \App\Http\Middleware\AdminOnly::class,
+        'feature' => \App\Http\Middleware\FeatureFlag::class,
     ];
 }

@@ -3,13 +3,17 @@
 namespace App\Providers;
 
 use App\Concerns\AppMenu;
+use App\Domains\AppCore\Facades\Feature;
+use App\Domains\AppCore\Services\FeatureFlagService;
 use App\Domains\Housing\Actions\RegisterOccurrence;
 use App\Jobs\RunTeamChecks;
 use App\Models\Account;
+use App\Domains\LogerProfile\Models\LogerProfile;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Spatie\Onboard\Facades\Onboard;
@@ -26,6 +30,12 @@ class AppServiceProvider extends ServiceProvider
             \Insane\Journal\Models\Core\Account::class,
             Account::class
         );
+
+        // FeatureFlagService is a stateless helper — a singleton keeps the
+        // resolved-flag runtime cache alive for the request lifecycle so
+        // consecutive `Feature::active(...)` calls skip the Cache facade
+        // round-trip on repeat keys.
+        $this->app->singleton(FeatureFlagService::class);
     }
 
     /**
@@ -39,6 +49,17 @@ class AppServiceProvider extends ServiceProvider
             return $user->isSuperAdmin();
         });
 
+        Gate::define('admin', function (User $user) {
+            return $user->isAdmin();
+        });
+
+        // Blade directive so views can gate blocks by flag:
+        //   @feature('trends-relationships') ... @endfeature
+        // Uses the auth user's context (per-user > per-team > global).
+        Blade::if('feature', function (string $key): bool {
+            return Feature::activeForUser($key, auth()->user());
+        });
+
         $this->app->bindMethod([RunTeamChecks::class, 'handle'], function (RunTeamChecks $job, Application $app) {
             return $job->handle($app->make(RegisterOccurrence::class));
         });
@@ -47,39 +68,52 @@ class AppServiceProvider extends ServiceProvider
             return new AppMenu;
         });
 
-        Onboard::addStep('Step 1: Add accounts')
-            ->link('/finance')
-            ->cta('Go to accounts')
+        // Onboarding wizard steps (rendered by the dashboard OnboardingSteps
+        // widget). Human, i18n copy via __(); ordered by the fastest path to
+        // value for a family: money in → give it a plan → the people → the week.
+        Onboard::addStep(__('Add your accounts'))
+            ->link('/finance?panel=accounts')
+            ->cta(__('Add accounts'))
             ->attributes([
-                'icon' => 'fas fa-credit-card',
+                'icon' => 'fas fa-wallet',
                 'name' => 'addAccounts',
-                'description' => 'Create your accounts',
-                'name' => 'addAccounts',
-
+                'description' => __('Add your bank, cash, and card accounts so Loger can track your money.'),
             ])
             ->completeIf(function (Team $model) {
                 return $model->accounts->count() > 0;
             });
 
-        Onboard::addStep('Step 2: Add budget categories')
+        Onboard::addStep(__('Set your first budget'))
             ->link('/budgets')
-            ->cta('Go to finance/budget')
+            ->cta(__('Set up budget'))
             ->attributes([
                 'icon' => 'fas fa-tags',
-                'name' => 'AddCategories',
-                'description' => 'Structure your budgets with category groups and categories',
+                'name' => 'addCategories',
+                'description' => __('Give every peso a job with categories that fit your family.'),
             ])
             ->completeIf(function (Team $model) {
                 return $model->budgetCategories->count() > 0;
             });
 
-        Onboard::addStep('Step 3: Add meal plan')
-            ->link('/meal-planner')
-            ->cta('Go to meal/plan')
+        Onboard::addStep(__('Add your family'))
+            ->link('/loger-profiles')
+            ->cta(__('Add profiles'))
             ->attributes([
-                'icon' => 'fas fa-credit-card',
-                'name' => 'AddMealPlan',
-                'description' => 'Organize your meals',
+                'icon' => 'fas fa-users',
+                'name' => 'addProfiles',
+                'description' => __('Add a profile for each person and see everything linked to them.'),
+            ])
+            ->completeIf(function (Team $model) {
+                return LogerProfile::where('team_id', $model->id)->exists();
+            });
+
+        Onboard::addStep(__('Plan your meals'))
+            ->link('/meals/overview')
+            ->cta(__('Plan meals'))
+            ->attributes([
+                'icon' => 'fas fa-utensils',
+                'name' => 'addMealPlan',
+                'description' => __('Add meals to your week and build the shopping list automatically.'),
             ])
             ->completeIf(function (Team $model) {
                 return $model->meals->count() > 0;
