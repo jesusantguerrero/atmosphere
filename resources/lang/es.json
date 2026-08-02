@@ -478,5 +478,9 @@
     "Add your first account": "Agrega tu primera cuenta",
     "No accounts match this filter": "Ninguna cuenta coincide con este filtro",
     "Credit Cards": "Tarjetas de crédito",
-    "Bank Accounts": "Cuentas bancarias"
+    "Bank Accounts": "Cuentas bancarias",
+    "What's left this month": "Lo que te queda este mes",
+    "Income minus expenses": "Ingresos menos gastos",
+    "overspent categories": "categorías sobregiradas",
+    "categories to fund": "categorías por fondear"
 }

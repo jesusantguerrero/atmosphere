@@ -244,6 +244,12 @@ const readyToAssignLeft = computed(() => {
     return readyToAssign.value.toAssign
 })
 
+// Fix (Hope): when money is still available to assign (RTA balance > 0),
+// "overspent" categories are really just *unfunded* — the money exists, it
+// just hasn't been assigned yet. Don't alarm the surplus-first user with red;
+// only a true overspend (nothing left to cover) is an alert.
+const overspentIsCovered = computed(() => Number(readyToAssignBalance.value ?? 0) > 0);
+
 const budgetCsvExportUrl = computed(() => {
     const { startDate } = pageState.dates;
     if (startDate) {
@@ -311,11 +317,15 @@ const budgetCsvExportUrl = computed(() => {
             v-if="visibleFilters.overspent"
             @click="toggleFilter('overspent')"
             class="flex items-center justify-between space-x-2 rounded-md min-w-fit group"
-            :class="[filters.overspent ? 'bg-primary text-white' : 'text-primary']"
+            :class="[
+              filters.overspent
+                ? (overspentIsCovered ? 'bg-warning text-white' : 'bg-primary text-white')
+                : (overspentIsCovered ? 'text-warning' : 'text-primary')
+            ]"
           >
             <span class="relative">
-              {{ filterGroups.overSpent.length }} Overspent categories
-              <PointAlert v-if="!filters.overspent" />
+              {{ filterGroups.overSpent.length }} {{ overspentIsCovered ? $t('categories to fund') : $t('overspent categories') }}
+              <PointAlert v-if="!filters.overspent && !overspentIsCovered" />
             </span>
 
             <div class="text-white text-sm rounded-full group-hover:bg-base-lvl-3/20 p-0.5">

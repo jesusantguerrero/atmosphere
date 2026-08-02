@@ -3,7 +3,7 @@ import { format, parseISO } from "date-fns";
 import { reactive, toRefs, watch, computed, inject, ref, nextTick } from "vue";
 import { AtField, AtFieldCheck, AtInput } from "atmosphere-ui";
 import { NSelect, NDatePicker } from "naive-ui";
-import { router } from "@inertiajs/vue3";
+import { router, usePage } from "@inertiajs/vue3";
 
 import Modal from "@/Components/atoms/Modal.vue";
 import LogerInput from "@/Components/atoms/LogerInput.vue";
@@ -408,6 +408,23 @@ const validateBeforeSubmit = (splitItems: Record<string, any>[]): boolean => {
   return true;
 };
 
+// Fix (Hope): the "Ready to Assign" (inflow) category, resolved by its stable
+// display_id. Income only counts in "Income"/"Por asignar" when it lands in the
+// inflow group (see TransactionService::getIncome → byCategories(['inflow'])),
+// so a fresh salary with no category picked shows 0 until categorized by hand.
+const page = usePage();
+const readyToAssignId = computed<number | null>(() => {
+  const find = (list: any[]): number | null => {
+    for (const c of (list || [])) {
+      if (c?.display_id === 'ready_to_assign') return c.id;
+      const sub = find(c?.sub_categories || c?.subCategories);
+      if (sub) return sub;
+    }
+    return null;
+  };
+  return find((page.props as any).categories || []);
+});
+
 const onSubmit = (addAnother = false) => {
   lastSaved.value.addAnother = addAnother;
   const actions = {
@@ -454,6 +471,16 @@ const onSubmit = (addAnother = false) => {
             start_date: format(new Date(form.date), "yyyy-MM-dd"),
           } : {}),
         };
+
+        // An income with no category picked won't count anywhere (inflow group
+        // gate). Default it to Ready to Assign so the salary counts on its own.
+        // Safe no-op if the category can't be resolved.
+        if (!data.is_transfer
+            && data.direction === TRANSACTION_DIRECTIONS.DEPOSIT
+            && !data.category_id
+            && readyToAssignId.value) {
+          data.category_id = readyToAssignId.value;
+        }
 
         if (isMultiCurrency.value) {
           // Multi-currency transaction data

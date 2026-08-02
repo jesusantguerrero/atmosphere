@@ -126,6 +126,10 @@ const expenseVariance = computed(() => {
   return getVariances(props.transactionTotal, props.lastMonthExpenses) || 0;
 });
 
+// Fix (Hope): the surplus-first "what's left after paying" number, computed
+// directly as income − expenses so it shows without the full ZBB assign ritual.
+const availableThisMonth = computed(() => Number(props.income || 0) - Number(props.transactionTotal || 0));
+
 const topCategories = props.expensesByCategory.slice(0, 4);
 
 const { openTransactionModal } = useTransactionModal();
@@ -178,6 +182,21 @@ const deleteBulkTransactions = () => {
       </section>
 
       <section class="mt-4 space-y-4">
+            <!-- The headline "what's left after paying" figure — income − expenses,
+                 surfaced directly so a surplus-first user (Hope) finds it without
+                 doing the full assign-every-peso ritual. -->
+            <div
+                class="p-5 border rounded-lg bg-base-lvl-3"
+                :class="availableThisMonth >= 0 ? 'border-success/40' : 'border-error/40'"
+            >
+                <p class="text-xs font-medium tracking-wide uppercase text-body-1/50">{{ $t('What\'s left this month') }}</p>
+                <p
+                    class="mt-1 text-3xl font-bold leading-tight break-all"
+                    :class="availableThisMonth >= 0 ? 'text-success' : 'text-error'"
+                >{{ formatMoney(availableThisMonth) }}</p>
+                <p class="mt-1 text-xs text-body-1/40">{{ $t('Income minus expenses') }}</p>
+            </div>
+
             <!-- Summary stat cards -->
             <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="bg-base-lvl-3 border border-base rounded-lg p-4 cursor-pointer hover:border-primary/30 transition overflow-hidden"
