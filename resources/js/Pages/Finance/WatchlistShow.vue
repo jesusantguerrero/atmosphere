@@ -75,19 +75,18 @@ const projectionTone = computed(() => {
 
 // Variance vs last month (positive = spending more = bad for expenses)
 const variance = computed(() => {
-    if (prevMonthTotal.value === 0) return null;
-    return getVariances(monthTotal.value, prevMonthTotal.value) || 0;
+    return getVariances(monthTotal.value, prevMonthTotal.value);
 });
 
 const varianceLabel = computed(() => {
     if (variance.value === null) return null;
-    const sign = variance.value > 0 ? '+' : '';
+    const sign = Number(variance.value) > 0 ? '+' : '';
     return `${sign}${variance.value}% vs last month`;
 });
 
 const varianceTone = computed(() => {
-    if (variance.value === null || variance.value === 0) return 'text-body-1';
-    return variance.value > 0 ? 'text-error' : 'text-success';
+    if (variance.value === null || Number(variance.value) === 0) return 'text-body-1';
+    return Number(variance.value) > 0 ? 'text-error' : 'text-success';
 });
 
 const transactionMeta = computed(() => {

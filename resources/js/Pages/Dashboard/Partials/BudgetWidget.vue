@@ -11,7 +11,7 @@ import PointAlert from "@/Components/atoms/PointAlert.vue";
 
 import { formatMoney } from '@/utils';
 import { IBudgetStat } from '@/domains/budget/models/budget';
-import { getVariances } from '@/domains/transactions';
+import { getVariances, formatVariance } from '@/domains/transactions';
 import axios from 'axios';
 
 interface Stat {
@@ -151,7 +151,7 @@ fetchBudgetAlerts().then(data => {
             <div class="flex items-center gap-1 text-sm font-bold">
                 <ElTooltip :content="formatMoney(prevBudget.total)">
                     <span class="bg-base-lvl-3 text-error text-xs px-1 py-0.5 rounded-md cursor-pointer">
-                        {{ variance }} %
+                        {{ formatVariance(variance) }}
                     </span>
                 </ElTooltip>
                 <span>{{ formatMoney(stats.budgeted.value) }}</span>
@@ -248,7 +248,7 @@ fetchBudgetAlerts().then(data => {
                         <h2 class="flex items-center text-lg font-bold">
                             <ElTooltip :content="formatMoney(prevBudget.total)">
                                 <span class="bg-base-lvl-3 inline-block cursor-pointer rounded-md text-error text-xs px-1 py-0.5 mr-1" >
-                                    {{variance}} %
+                                    {{ formatVariance(variance) }}
                                 </span>
                             </ElTooltip>
                             <span >

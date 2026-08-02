@@ -17,7 +17,14 @@ services:
       - .env
     environment:
       AUTORUN_ENABLED: true
-      AUTORUN_LARAVEL_MIGRATION_ISOLATION: true
+      # Migration isolation is OFF on purpose. The isolation lock is taken
+      # through the cache store, and with CACHE_DRIVER=database that means
+      # `cache_locks` — a table that only exists *after* migrations run.
+      # On a fresh database the first deploy therefore dies with
+      # "Table 'cache_locks' doesn't exist" before migrating anything.
+      # It also protects nothing here: `loger` is the only service with
+      # AUTORUN_ENABLED, so no second container races it.
+      AUTORUN_LARAVEL_MIGRATION_ISOLATION: false
       DB_CONNECTION: mysql
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}

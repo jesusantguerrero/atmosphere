@@ -139,7 +139,7 @@ const toggleGroup = (group: string) => {
                     ? 'bg-primary/15 text-primary font-medium'
                     : 'text-body-1/60 hover:bg-base-lvl-2'
             ]">
-                {{ option.label }}
+                {{ $t(option.label) }}
             </button>
         </div>
 

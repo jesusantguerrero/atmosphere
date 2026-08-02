@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers\Finance;
 
-use Carbon\Carbon;
+use App\Domains\Budget\Models\BudgetMonth;
+use App\Domains\Budget\Services\BudgetMonthService;
+use App\Domains\Transaction\Models\Transaction;
+use App\Domains\Transaction\Services\PlannedTransactionService;
+use App\Domains\Transaction\Services\TransactionService;
 use App\Models\Setting;
+use Carbon\Carbon;
+use Freesgen\Atmosphere\Http\InertiaController;
+use Freesgen\Atmosphere\Http\Querify;
 use Illuminate\Http\Request;
 use Laravel\Jetstream\Jetstream;
-use Freesgen\Atmosphere\Http\Querify;
-use App\Domains\Budget\Models\BudgetMonth;
-use App\Domains\Transaction\Models\Transaction;
-use Freesgen\Atmosphere\Http\InertiaController;
-use App\Domains\Budget\Services\BudgetMonthService;
-use App\Domains\Transaction\Services\TransactionService;
-use App\Domains\Transaction\Services\PlannedTransactionService;
 
 class FinanceController extends InertiaController
 {
@@ -59,8 +59,11 @@ class FinanceController extends InertiaController
             'budgetTotal' => $budgetTotal,
             'expensesByCategory' => $expensesByCategory,
             'expensesByCategoryGroup' => $expensesByCategoryGroup,
-            'transactionTotal' => $transactionsTotal->total_amount,
-            'lastMonthExpenses' => $lastMonthExpenses->total_amount,
+            // SUM() over a period with no rows is NULL, not 0 — unlike getIncome(),
+            // which uses ->sum() and already returns 0. That asymmetry is what fed
+            // the frontend a null baseline and rendered "vs Jul: Infinity%".
+            'transactionTotal' => (float) ($transactionsTotal?->total_amount ?? 0),
+            'lastMonthExpenses' => (float) ($lastMonthExpenses?->total_amount ?? 0),
             'income' => $income,
             'savings' => $savings,
             'savingsInMonth' => $savingsInMonth,

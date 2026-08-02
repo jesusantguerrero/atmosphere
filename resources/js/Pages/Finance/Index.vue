@@ -22,6 +22,7 @@ import {
     transactionDBToTransaction,
     plannedDBToTransaction,
     getVariances,
+    formatVariance,
     useTransactionModal,
     removeTransaction
 } from "@/domains/transactions";
@@ -123,8 +124,45 @@ const incomeVariance = computed(() => {
 });
 
 const expenseVariance = computed(() => {
-  return getVariances(props.transactionTotal, props.lastMonthExpenses) || 0;
+  return getVariances(props.transactionTotal, props.lastMonthExpenses);
 });
+
+// A null variance means last month had no movement, so there is no baseline to
+// compare against — stay neutral instead of implying a good or bad trend.
+const incomeVarianceTone = computed(() => {
+  if (incomeVariance.value === null) return 'text-body-1/60';
+  return Number(incomeVariance.value) >= 0 ? 'text-green-500' : 'text-red-400';
+});
+
+const expenseVarianceTone = computed(() => {
+  if (expenseVariance.value === null) return 'text-body-1/60';
+  return Number(expenseVariance.value) <= 0 ? 'text-green-500' : 'text-red-400';
+});
+
+// Fix (Hope): the surplus-first "what's left after paying" number, computed
+// directly as income − expenses so it shows without the full ZBB assign ritual.
+const availableThisMonth = computed(() => Number(props.income || 0) - Number(props.transactionTotal || 0));
+
+// Fix (Hope): `budgetTotal` arrives from the server as an ARRAY of monthly rows
+// (getMonthAssignmentTotal groups by month); the current month is the last entry.
+// The card previously read `budgetTotal.spending` off that array — always
+// `undefined` — so the subtitle was permanently stuck on "No budget set for this
+// month" while the headline still rendered `transactionTotal` (raw expenses) as if
+// it were a budget, and BudgetProgress divided by a 0 goal. We derive the real
+// assigned spending budget and gate the whole card on whether one exists.
+const currentBudget = computed(() => {
+    const row = Array.isArray(props.budgetTotal)
+        ? props.budgetTotal.at(-1)
+        : props.budgetTotal;
+    return {
+        spending: Number(row?.spending ?? 0),
+        total: Number(row?.total ?? 0),
+    };
+});
+
+const hasBudget = computed(() =>
+    Number.isFinite(currentBudget.value.spending) && currentBudget.value.spending > 0
+);
 
 const topCategories = props.expensesByCategory.slice(0, 4);
 
@@ -178,20 +216,35 @@ const deleteBulkTransactions = () => {
       </section>
 
       <section class="mt-4 space-y-4">
+            <!-- The headline "what's left after paying" figure — income − expenses,
+                 surfaced directly so a surplus-first user (Hope) finds it without
+                 doing the full assign-every-peso ritual. -->
+            <div
+                class="p-5 border rounded-lg bg-base-lvl-3"
+                :class="availableThisMonth >= 0 ? 'border-success/40' : 'border-error/40'"
+            >
+                <p class="text-xs font-medium tracking-wide uppercase text-body-1/50">{{ $t('What\'s left this month') }}</p>
+                <p
+                    class="mt-1 text-3xl font-bold leading-tight break-all"
+                    :class="availableThisMonth >= 0 ? 'text-success' : 'text-error'"
+                >{{ formatMoney(availableThisMonth) }}</p>
+                <p class="mt-1 text-xs text-body-1/40">{{ $t('Income minus expenses') }}</p>
+            </div>
+
             <!-- Summary stat cards -->
             <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="bg-base-lvl-3 border border-base rounded-lg p-4 cursor-pointer hover:border-primary/30 transition overflow-hidden"
                     @click="router.visit('/finance/transactions?filter[direction]=DEPOSIT')">
                     <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">{{ $t('Income') }}</p>
                     <p class="text-lg font-bold text-green-500 mt-2 break-all leading-tight">{{ formatMoney(income) }}</p>
-                    <p class="text-xs text-body-1/40 mt-1">vs {{ lastMonthName }}: <span :class="incomeVariance >= 0 ? 'text-green-500' : 'text-red-400'">{{ incomeVariance }}%</span></p>
+                    <p class="text-xs text-body-1/40 mt-1">vs {{ lastMonthName }}: <span :class="incomeVarianceTone">{{ formatVariance(incomeVariance) }}</span></p>
                 </div>
 
                 <div class="bg-base-lvl-3 border border-base rounded-lg p-4 cursor-pointer hover:border-primary/30 transition overflow-hidden"
                     @click="router.visit('/finance/transactions')">
                     <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">{{ $t('Expenses') }}</p>
                     <p class="text-lg font-bold text-red-400 mt-2 break-all leading-tight">{{ formatMoney(transactionTotal) }}</p>
-                    <p class="text-xs text-body-1/40 mt-1">vs {{ lastMonthName }}: <span :class="expenseVariance <= 0 ? 'text-green-500' : 'text-red-400'">{{ expenseVariance }}%</span></p>
+                    <p class="text-xs text-body-1/40 mt-1">vs {{ lastMonthName }}: <span :class="expenseVarianceTone">{{ formatVariance(expenseVariance) }}</span></p>
                 </div>
 
                 <div class="bg-base-lvl-3 border border-base rounded-lg p-4 cursor-pointer hover:border-primary/30 transition overflow-hidden"
@@ -204,15 +257,20 @@ const deleteBulkTransactions = () => {
                 <div class="bg-base-lvl-3 border border-base rounded-lg p-4 cursor-pointer hover:border-primary/30 transition overflow-hidden"
                     @click="router.visit('/budgets')">
                     <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">{{ $t('Budget') }}</p>
-                    <p class="text-lg font-bold text-body mt-2 break-all leading-tight">{{ formatMoney(transactionTotal) }}</p>
-                    <BudgetProgress
-                        :goal="budgetTotal.spending"
-                        :current="transactionTotal"
-                        class="h-1.5 rounded-full mt-2"
-                        :show-labels="false"
-                    />
-                    <p class="text-xs text-body-1/40 mt-1" v-if="Number(budgetTotal.spending) > 0">{{ $t('of') }} {{ formatMoney(budgetTotal.spending) }}</p>
-                    <p class="text-xs text-body-1/40 mt-1" v-else>{{ $t('No budget set for this month') }}</p>
+                    <template v-if="hasBudget">
+                        <p class="text-lg font-bold text-body mt-2 break-all leading-tight">{{ formatMoney(transactionTotal) }}</p>
+                        <BudgetProgress
+                            :goal="currentBudget.spending"
+                            :current="transactionTotal"
+                            class="h-1.5 rounded-full mt-2"
+                            :show-labels="false"
+                        />
+                        <p class="text-xs text-body-1/40 mt-1">{{ $t('of') }} {{ formatMoney(currentBudget.spending) }}</p>
+                    </template>
+                    <template v-else>
+                        <p class="text-sm font-semibold text-body mt-2">{{ $t('No budget set for this month') }}</p>
+                        <p class="text-xs text-primary mt-1">{{ $t('Set your first budget') }} →</p>
+                    </template>
                 </div>
             </section>
 

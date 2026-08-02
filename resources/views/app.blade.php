@@ -60,6 +60,16 @@
         });
         </script>
         @endif
+        {{-- Google Analytics 4 — renders only when GOOGLE_ANALYTICS_ID is set (empty in dev/local). --}}
+        @if (config('services.google_analytics.measurement_id'))
+        <script async src="https://www.googletagmanager.com/gtag/js?id={{ config('services.google_analytics.measurement_id') }}"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', @json(config('services.google_analytics.measurement_id')));
+        </script>
+        @endif
     </head>
     <body class="font-sans antialiased">
         @inertia

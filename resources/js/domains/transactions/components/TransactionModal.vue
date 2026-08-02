@@ -3,14 +3,12 @@ import { format, parseISO } from "date-fns";
 import { reactive, toRefs, watch, computed, inject, ref, nextTick } from "vue";
 import { AtField, AtFieldCheck, AtInput } from "atmosphere-ui";
 import { NSelect, NDatePicker } from "naive-ui";
-import { router } from "@inertiajs/vue3";
+import { router, usePage } from "@inertiajs/vue3";
 
 import Modal from "@/Components/atoms/Modal.vue";
 import LogerInput from "@/Components/atoms/LogerInput.vue";
 import TransactionTypesPicker from "./TransactionTypesPicker.vue";
 import TransactionItems from "./TransactionItems.vue";
-import CurrencySelector from "./CurrencySelector.vue";
-import MultiCurrencyInput from "./MultiCurrencyInput.vue";
 
 import { TRANSACTION_DIRECTIONS } from "@/domains/transactions";
 import { cloneDeep } from "lodash";
@@ -19,7 +17,7 @@ import { useTransactionStore } from "@/store/transactions";
 import { useInertiaForm, validators } from "@/utils/useInertiaForm";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 import { useStorage } from "@vueuse/core";
-import { formatCurrency } from '../currency-constants';
+import { formatCurrency, getCurrencyByCode } from '../currency-constants';
 import { convertAmount } from '../multi-currency-utils';
 import { generateRandomColor } from "@/utils";
 import axios from "axios";
@@ -224,44 +222,55 @@ const hasMultiCurrencyAccounts = computed(() => {
   return multiCurrencyAccounts.value.length > 0;
 });
 
-const shouldShowMultiCurrency = computed(() => {
-  return isMultiCurrency.value || hasMultiCurrencyAccounts.value;
+// The account chosen in the grid's first row (mirrored up via @first-row-change)
+// and the amount typed there. These drive the conversion strip.
+const gridAccountId = ref<number | null>(null);
+const gridAmount = ref(0);
+
+const onFirstRowChange = (payload: { account_id: number | null; amount: number }) => {
+  gridAccountId.value = payload?.account_id ?? null;
+  gridAmount.value = Number(payload?.amount ?? 0);
+};
+
+// The native currency of the account picked in the grid (not a selector — it
+// comes from the account). Falls back to the team default when none is chosen.
+const activeAccountCurrency = computed(() => {
+  const acc = (props.accounts || []).find((account: Account) => account.id === gridAccountId.value);
+  return acc?.currency_code || defaultCurrency;
 });
 
-const multiCurrencyAccountOptions = computed(() => {
-  return multiCurrencyAccounts.value.map((account: Account) => ({
-    value: account.id,
-    label: `${account.name} (${account.currency_code})`,
-    currency_code: account.currency_code,
-    secondary_currencies: account.secondary_currencies || []
-  }));
+// Symbol (e.g. RD$) of the account's native currency, for the conversion estimate.
+const activeAccountSymbol = computed(() => {
+  return getCurrencyByCode(activeAccountCurrency.value)?.symbol || activeAccountCurrency.value;
 });
 
-const selectedAccount = computed(() => {
-  return multiCurrencyAccounts.value.find((account: Account) => account.id === selectedAccountId.value);
+// Converted amount formatted with thousands + 2 decimals (e.g. "5,900.00").
+const convertedDisplay = computed(() => {
+  const n = Number(convertedAmount.value) || 0;
+  return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 });
 
-const accountPrimaryCurrency = computed(() => {
-  return selectedAccount.value?.currency_code || 'USD';
-});
-
+// Conversion only matters once an account is picked AND the transaction currency
+// differs from that account's own currency.
 const needsConversion = computed(() => {
-  return transactionCurrency.value !== accountPrimaryCurrency.value;
+  return !!gridAccountId.value && transactionCurrency.value !== activeAccountCurrency.value;
 });
 
-const showConversionInfo = computed(() => {
-  return isMultiCurrency.value && selectedAccount.value && needsConversion.value;
+const showConversion = computed(() => {
+  return hasMultiCurrencyAccounts.value && needsConversion.value;
 });
 
 const convertedAmount = computed(() => {
-  if (currentExchangeRate.value && currencyAmount.value.amount) {
-    return convertAmount(currencyAmount.value.amount, currentExchangeRate.value);
+  if (currentExchangeRate.value && gridAmount.value) {
+    return convertAmount(gridAmount.value, currentExchangeRate.value);
   }
   return 0;
 });
 
-const displayExchangeRate = computed(() => {
-  return currentExchangeRate.value ? currentExchangeRate.value.toFixed(4) : 'TBD';
+// Reset any stale exchange rate when the transaction currency changes.
+watch(transactionCurrency, () => {
+  manualExchangeRate.value = null;
+  currentExchangeRate.value = null;
 });
 
 const gridSplitsRef = ref();
@@ -337,11 +346,11 @@ watch(
       state.form.direction = props.mode?.toUpperCase() ?? "WITHDRAW";
       // Reset multi-currency state for new transactions
       isMultiCurrency.value = false;
-      transactionCurrency.value = 'USD';
+      transactionCurrency.value = defaultCurrency;
       selectedAccountId.value = null;
       manualExchangeRate.value = null;
       currentExchangeRate.value = null;
-      currencyAmount.value = { amount: 0, currency: 'USD' };
+      currencyAmount.value = { amount: 0, currency: defaultCurrency };
     }
     if (show) {
       // Autofocus the description after the modal transition settles.
@@ -354,11 +363,11 @@ watch(
       state.form.reset();
       // Reset multi-currency state
       isMultiCurrency.value = false;
-      transactionCurrency.value = 'USD';
+      transactionCurrency.value = defaultCurrency;
       selectedAccountId.value = null;
       manualExchangeRate.value = null;
       currentExchangeRate.value = null;
-      currencyAmount.value = { amount: 0, currency: 'USD' };
+      currencyAmount.value = { amount: 0, currency: defaultCurrency };
     }
   }
 );
@@ -408,6 +417,23 @@ const validateBeforeSubmit = (splitItems: Record<string, any>[]): boolean => {
   return true;
 };
 
+// Fix (Hope): the "Ready to Assign" (inflow) category, resolved by its stable
+// display_id. Income only counts in "Income"/"Por asignar" when it lands in the
+// inflow group (see TransactionService::getIncome → byCategories(['inflow'])),
+// so a fresh salary with no category picked shows 0 until categorized by hand.
+const page = usePage();
+const readyToAssignId = computed<number | null>(() => {
+  const find = (list: any[]): number | null => {
+    for (const c of (list || [])) {
+      if (c?.display_id === 'ready_to_assign') return c.id;
+      const sub = find(c?.sub_categories || c?.subCategories);
+      if (sub) return sub;
+    }
+    return null;
+  };
+  return find((page.props as any).categories || []);
+});
+
 const onSubmit = (addAnother = false) => {
   lastSaved.value.addAnother = addAnother;
   const actions = {
@@ -455,36 +481,43 @@ const onSubmit = (addAnother = false) => {
           } : {}),
         };
 
-        if (isMultiCurrency.value) {
-          // Multi-currency transaction data
-          (data as any).currency_code = transactionCurrency.value;
-          (data as any).total = currencyAmount.value.amount;
-          (data as any).is_multi_currency = true;
-          (data as any).account_id = selectedAccountId.value;
+        // Single unified entry: the grid holds account + amount + category.
+        const splitItem = splitItems[0];
+        (data as any).category_id = splitItem.category_id;
+        (data as any).label_id = splitItem.label_id;
+        (data as any).payee_id = splitItem.payee_id;
+        (data as any).counter_account_id = form.is_transfer ? splitItem.counter_account_id : null;
+        (data as any).account_id = splitItem.account_id;
+        (data as any).total = splitItem.amount;
+        (data as any).currency_code = transactionCurrency.value;
+        (data as any).has_splits = false;
 
-          // Only set exchange rate if manually provided
+        if (splitItems?.length > 1) {
+          (data as any).items = splitItems;
+          (data as any).has_splits = true;
+        }
+
+        // Multi-currency: the charge currency differs from the account's own
+        // currency. Flag it and attach the (optional) manual rate + converted
+        // amount so the ledger reconciles once the payment settles.
+        if (needsConversion.value) {
+          (data as any).is_multi_currency = true;
           if (manualExchangeRate.value) {
             (data as any).exchange_rate = manualExchangeRate.value;
-            (data as any).exchange_amount = convertAmount(currencyAmount.value.amount, manualExchangeRate.value);
+            (data as any).exchange_amount = convertAmount(Number(splitItem.amount) || 0, manualExchangeRate.value);
           }
+        }
 
-          // For multi-currency, we don't use splits in the same way
-          (data as any).has_splits = false;
-        } else {
-          // Standard transaction
-          const splitItem = splitItems[0];
-          (data as any).category_id = splitItem.category_id;
-          (data as any).label_id = splitItem.label_id;
-          (data as any).payee_id = splitItem.payee_id;
-          (data as any).counter_account_id = form.is_transfer ? splitItem.counter_account_id : null;
-          (data as any).account_id = splitItem.account_id;
-          (data as any).total = splitItem.amount;
-          (data as any).has_splits = false;
-
-          if (splitItems?.length > 1) {
-            (data as any).items = splitItems;
-            (data as any).has_splits = true;
-          }
+        // An income with no category picked won't count anywhere (getIncome
+        // filters by the inflow group). Default it to Ready to Assign so the
+        // salary counts on its own. Placed AFTER the split block, which sets
+        // category_id from the (possibly empty) category field. Safe no-op if
+        // the category can't be resolved.
+        if (!(data as any).is_transfer
+            && (data as any).direction === TRANSACTION_DIRECTIONS.DEPOSIT
+            && !(data as any).category_id
+            && readyToAssignId.value) {
+          (data as any).category_id = readyToAssignId.value;
         }
 
         lastSaved.value.lastSaved = data as any;
@@ -508,6 +541,9 @@ const onSubmit = (addAnother = false) => {
           const verb = props.transactionData?.id ? 'updated' : 'saved';
           showSuccessToast(`Transaction ${verb}`);
 
+          // Refresh page props so lists/totals update without a manual reload.
+          router.reload({ preserveScroll: true });
+
           if (!lastSaved.value.addAnother) {
             emit("close");
           }
@@ -528,36 +564,10 @@ const saveText = computed(() => {
   return !props.transactionData?.id ? 'save' : 'update'
 })
 
-// Multi-currency handler functions
-const handleTransactionCurrencyChange = (currency: { code: string; name: string; symbol: string } | null) => {
-  if (currency) {
-    transactionCurrency.value = currency.code;
-    currencyAmount.value.currency = currency.code;
-
-    // Auto-enable multicurrency mode if currency differs from the team's primary.
-    // Was hardcoded to 'USD' — broke for DR users on DOP-primary teams.
-    if (currency.code !== defaultCurrency && hasMultiCurrencyAccounts.value) {
-      isMultiCurrency.value = true;
-    }
-
-    // Reset manual exchange rate when currency changes
-    manualExchangeRate.value = null;
-    currentExchangeRate.value = null;
-  }
-};
-
-const handleAccountChange = (accountId: number) => {
-  selectedAccountId.value = accountId;
-  state.form.account_id = accountId;
-
-  // Reset exchange rate when account changes
-  manualExchangeRate.value = null;
-  currentExchangeRate.value = null;
-};
-
-const handleManualRateChange = (rate: number | null) => {
-  manualExchangeRate.value = rate;
-  currentExchangeRate.value = rate;
+const handleManualRateChange = (rate: number | string | null) => {
+  const n = rate === '' || rate === null || rate === undefined ? null : Number(rate);
+  manualExchangeRate.value = n as number | null;
+  currentExchangeRate.value = Number.isFinite(n as number) ? (n as number) : null;
 };
 
 const assignTransactionLabel = (label: Record<string, string>, transaction: Record<string, string>) => {
@@ -604,7 +614,7 @@ const assignTransactionLabel = (label: Record<string, string>, transaction: Reco
           <slot name="content">
             <div>
               {{ form.error }}
-              <div class="px-4 space-y-3 md:flex md:items-start md:space-x-2 md:space-y-0 md:px-0">
+              <div class="px-4 md:flex md:items-start md:space-x-2 md:px-0">
                 <AtField label="Date" class="w-full md:w-3/12">
                   <!-- Presets sit under the picker, not beside it: sharing the row
                        squeezed NDatePicker below its intrinsic width and naive-ui
@@ -633,102 +643,49 @@ const assignTransactionLabel = (label: Record<string, string>, transaction: Reco
                   </div>
                 </AtField>
 
-                <AtField label="Description" class="w-full md:w-6/12">
+                <AtField label="Description" class="w-full md:w-9/12">
                   <LogerInput
                     ref="descriptionInputRef"
                     v-model="form.description"
                     class="w-full"
                   />
                 </AtField>
-
-                <AtField label="Currency" class="w-full md:w-3/12"
-                  v-if="hasMultiCurrencyAccounts">
-                  <CurrencySelector v-model="transactionCurrency" :exclude-currencies="[]"
-                    @change="handleTransactionCurrencyChange" />
-                </AtField>
-              </div>
-
-              <!-- Multi-currency discoverability hint.
-                   The Multi-currency toggle lives at the bottom of the modal so it's
-                   easy to miss. When the team has a multi-currency account but the
-                   user hasn't enabled multi-currency mode yet, surface a one-click
-                   shortcut right where they'll be entering the transaction. -->
-              <div
-                v-if="hasMultiCurrencyAccounts && !isMultiCurrency"
-                class="mx-4 md:mx-0 mt-3 flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 rounded-md border border-primary/20 bg-primary/5 text-sm text-body"
-              >
-                <span class="flex items-center gap-2">
-                  <i class="fa fa-coins text-primary" />
-                  <span>{{ $t('This team has accounts in multiple currencies. Enable to log a charge in a non-primary currency.') }}</span>
-                </span>
-                <button
-                  type="button"
-                  class="px-3 py-1 rounded font-medium bg-primary text-white text-xs hover:bg-primary-dark transition"
-                  @click="isMultiCurrency = true"
-                >
-                  {{ $t('Enable multi-currency') }}
-                </button>
-              </div>
-
-              <!-- Multi-Currency Transaction Entry -->
-              <div v-if="isMultiCurrency" class="px-4 md:px-0 mt-4">
-                <div class="bg-blue-50 border border-blue-200 dark:bg-blue-500/10 dark:border-blue-500/25 rounded-lg p-4 mb-4">
-                  <h4 class="font-semibold text-blue-800 dark:text-blue-300 mb-3">Multi-Currency Transaction</h4>
-
-                  <!-- Currency Selection -->
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <AtField label="Transaction Currency">
-                      <CurrencySelector v-model="transactionCurrency" :exclude-currencies="[]"
-                        @change="handleTransactionCurrencyChange" />
-                    </AtField>
-
-                    <AtField label="Account" v-if="!isTransfer">
-                      <NSelect v-model:value="selectedAccountId" :options="multiCurrencyAccountOptions"
-                        placeholder="Select multi-currency account" @update:value="handleAccountChange" />
-                    </AtField>
-                  </div>
-
-                  <!-- Amount Entry -->
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <AtField label="Amount">
-                      <MultiCurrencyInput v-model="currencyAmount" :target-currency="accountPrimaryCurrency"
-                        :exchange-rate="currentExchangeRate" :show-exchange-info="showConversionInfo"
-                        @currency-change="(currency: string) => { transactionCurrency.value = currency; currencyAmount.value.currency = currency; }" />
-                    </AtField>
-
-                    <!-- Exchange Rate Display/Input -->
-                    <div v-if="showConversionInfo && needsConversion">
-                      <AtField label="Exchange Rate (Optional)">
-                        <div class="space-y-2">
-                          <LogerInput v-model="manualExchangeRate" type="number" step="0.0001"
-                            placeholder="Auto-calculated on payment" @update:model-value="handleManualRateChange" />
-                          <div class="text-xs text-body-1">
-                            1 {{ transactionCurrency }} = {{ displayExchangeRate }} {{ accountPrimaryCurrency }}
-                          </div>
-                        </div>
-                      </AtField>
-                    </div>
-                  </div>
-
-                  <!-- Conversion Preview -->
-                  <div v-if="showConversionInfo && needsConversion"
-                    class="mt-4 p-3 bg-yellow-50 border border-yellow-200 dark:bg-yellow-500/10 dark:border-yellow-500/25 rounded">
-                    <div class="text-sm">
-                      <div class="font-medium text-yellow-800 dark:text-yellow-300">Conversion Preview:</div>
-                      <div class="text-yellow-700 dark:text-yellow-200/80">
-                        {{ formatCurrency(currencyAmount.amount, transactionCurrency) }}
-                        will be recorded as pending until payment
-                      </div>
-                      <div v-if="currentExchangeRate" class="text-yellow-700 dark:text-yellow-200/80">
-                        Estimated value: {{ formatCurrency(convertedAmount, accountPrimaryCurrency) }}
-                      </div>
-                    </div>
-                  </div>
-                </div>
               </div>
 
               <TransactionItems ref="gridSplitsRef" :items="splits" :is-transfer="isTransfer" :mode="form.direction"
-                :categories="categoryOptions" :accounts="accountOptions" :full-height="fullHeight" />
+                :categories="categoryOptions" :accounts="accountOptions" :full-height="fullHeight"
+                v-model:currency-code="transactionCurrency"
+                :show-currency-picker="hasMultiCurrencyAccounts"
+                @first-row-change="onFirstRowChange" />
+
+              <!-- Multi-currency conversion strip. Appears ONLY when the picked
+                   transaction currency differs from the selected account's own
+                   currency — no modes, no blue block, no duplicate selectors. -->
+              <div v-if="showConversion" class="mx-4 md:mx-0 mt-3">
+                <div class="rounded-lg border border-amber-300/40 bg-amber-400/[0.07] px-3 py-2">
+                  <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5">
+                    <div class="flex items-center gap-2 text-sm text-body">
+                      <span class="font-semibold whitespace-nowrap">1 {{ transactionCurrency }} =</span>
+                      <input
+                        v-model="manualExchangeRate"
+                        type="text"
+                        inputmode="decimal"
+                        class="w-20 px-2 py-1 text-sm text-center rounded-md bg-base-lvl-1 border border-base focus:border-primary focus:outline-none"
+                        :placeholder="$t('rate')"
+                        @input="handleManualRateChange(($event.target as HTMLInputElement).value)"
+                      />
+                      <span class="font-semibold whitespace-nowrap">{{ activeAccountCurrency }}</span>
+                    </div>
+                    <div v-if="convertedAmount" class="text-sm font-bold text-amber-500 whitespace-nowrap">
+                      ≈ {{ activeAccountSymbol }} {{ convertedDisplay }}
+                    </div>
+                  </div>
+                  <div class="mt-1 flex items-center gap-1.5 text-xs text-body-1/60">
+                    <i class="fa fa-rotate" />
+                    <span>{{ $t('Editable rate — settles when the payment clears.') }}</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div v-if="isRecurrence">
@@ -797,11 +754,6 @@ const assignTransactionLabel = (label: Record<string, string>, transaction: Reco
          the form area, not next to Cancel. -->
     <section class="flex flex-wrap items-center gap-x-6 gap-y-2 px-6 py-2 text-sm border-t border-base bg-base-lvl-3">
       <AtFieldCheck v-model="isRecurrence" :label="$t('Set recurrence')" />
-      <AtFieldCheck
-        v-if="hasMultiCurrencyAccounts"
-        v-model="isMultiCurrency"
-        :label="$t('Multi-currency')"
-      />
     </section>
 
     <!-- Inline validation surface — appears only when validateBeforeSubmit fails. -->
@@ -884,5 +836,16 @@ const assignTransactionLabel = (label: Record<string, string>, transaction: Reco
 }
 .transaction-modal-body .form-group > header label {
     margin: 0 0 0.25rem;
+}
+/* NDatePicker (naive-ui .n-input) rendered two-tone: the inner <input> got the
+   app's `.dark .form-group input` base-lvl-2 override while the naive-ui wrapper
+   (incl. the calendar-icon suffix) kept its own theme color. Unify both ends. */
+.transaction-modal-body .n-input {
+    background-color: rgb(var(--c-base-lvl-2)) !important;
+}
+.transaction-modal-body .n-input .n-input__input-el,
+.transaction-modal-body .n-input .n-input__suffix,
+.transaction-modal-body .n-input .n-input__prefix {
+    background-color: transparent !important;
 }
 </style>
