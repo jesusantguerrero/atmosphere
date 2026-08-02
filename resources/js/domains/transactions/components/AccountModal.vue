@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useForm, usePage, router } from "@inertiajs/vue3";
+import { useI18n } from "vue-i18n";
 import { reactive, toRefs, computed, watch } from "vue";
 import { NSelect } from "naive-ui";
 import { AtField, AtButton, AtFieldCheck } from "atmosphere-ui";
@@ -16,6 +17,7 @@ import CurrencySelector from "./CurrencySelector.vue";
 import { IAccount } from "../models";
 import { getCurrencyByCode } from '../currency-constants';
 
+const { t } = useI18n();
 const emit = defineEmits(["close"]);
 const props = withDefaults(defineProps<{
   show: boolean;
@@ -77,7 +79,7 @@ const getCurrencyDisplay = (currencyCode: string) => {
 };
 
 const modalTitle = computed(() => {
-  return props.formData.id ? `Edit ${props.formData.name} account` : "Add Account";
+  return props.formData.id ? t('Edit {name} account', { name: props.formData.name }) : t('Add Account');
 });
 
 watch(
@@ -137,6 +139,8 @@ const submit = () => {
       onSuccess: ({ data }) => {
         emit("close");
         state.form.reset();
+        // Refresh page props so the accounts list updates without a manual reload.
+        router.reload({ preserveScroll: true });
       },
     });
 };
@@ -213,21 +217,21 @@ const excludedCurrencies = computed(() => {
           <div class="space-y-5">
             <!-- Account Type & Name Section -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <AtField label="Detail Type" class="space-y-2">
+              <AtField :label="$t('Detail Type')" class="space-y-2">
                 <NSelect filterable clearable tag class="w-full" v-model:value="form.account_detail_type_id"
                   :default-expand-all="true" :options="detailOptions" />
               </AtField>
 
-              <AtField label="Account Label" class="space-y-2">
-                <LogerInput v-model="form.name" class="w-full" placeholder="Enter account name" />
+              <AtField :label="$t('Account Label')" class="space-y-2">
+                <LogerInput v-model="form.name" class="w-full" :placeholder="$t('Enter account name')" />
               </AtField>
 
-              <AtField label="Last 4 digits" class="space-y-2">
+              <AtField :label="$t('Last 4 digits')" class="space-y-2">
                 <LogerInput v-model="form.number" type="text" class="w-full" placeholder="e.g., 3861"
                   inputmode="numeric" maxlength="4" pattern="[0-9]*" />
               </AtField>
 
-              <AtField label="Bank" class="space-y-2" hint="Short code used in reports (e.g., BHD, BDI, APAP)">
+              <AtField :label="$t('Bank')" class="space-y-2" hint="Short code used in reports (e.g., BHD, BDI, APAP)">
                 <LogerInput v-model="form.bank_code" class="w-full" placeholder="e.g., BHD" list="bank-code-suggestions" />
                 <datalist id="bank-code-suggestions">
                   <option value="BHD" />
@@ -274,17 +278,17 @@ const excludedCurrencies = computed(() => {
                     d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z"
                     clip-rule="evenodd" />
                 </svg>
-                Currency Configuration
+                {{ $t('Currency Configuration') }}
               </h4>
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <AtField label="Primary Currency" class="space-y-2">
-                  <CurrencySelector v-model="form.currency_code" placeholder="Select primary currency"
+                <AtField :label="$t('Primary Currency')" class="space-y-2">
+                  <CurrencySelector v-model="form.currency_code" :placeholder="$t('Select primary currency')"
                     :clearable="false" class="w-full" />
                 </AtField>
 
                 <div class="flex items-end pb-1">
-                  <AtFieldCheck label="Enable multi-currency support" v-model="form.is_multi_currency" />
+                  <AtFieldCheck :label="$t('Enable multi-currency support')" v-model="form.is_multi_currency" />
                 </div>
               </div>
 
@@ -344,7 +348,7 @@ const excludedCurrencies = computed(() => {
 
             <!-- Opening Balance -->
             <div v-if="!form.id">
-              <AtField label="Opening Balance" class="space-y-2">
+              <AtField :label="$t('Opening Balance')" class="space-y-2">
                 <LogerInput v-model="form.opening_balance" type="number" class="w-full md:w-64" placeholder="0.00"
                   step="0.01" />
               </AtField>

@@ -41,6 +41,17 @@ createInertiaApp({
 
         window.logerLocale = props.initialPage.props.locale;
 
+        // Keep vue-i18n's locale in sync with the server locale on every Inertia
+        // navigation. The i18n instance is created once with the initial locale,
+        // so without this a language change only applied after a manual reload.
+        router.on('navigate', (event: any) => {
+            const newLocale = event?.detail?.page?.props?.locale;
+            if (newLocale && i18n.global.locale.value !== newLocale) {
+                i18n.global.locale.value = newLocale;
+                window.logerLocale = newLocale;
+            }
+        });
+
         window.logerAppSettings = {
             currency_code: props.initialPage.props.settings?.team_primary_currency_code ?? 'USD',
             date_format: props.initialPage.props.settings?.team_date_format,

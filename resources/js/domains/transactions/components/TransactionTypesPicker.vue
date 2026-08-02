@@ -28,7 +28,7 @@ const transactionTypes = [
                 : 'hover:bg-base-lvl-3 text-body bg-base-lvl-2'"
             @click="$emit('update:modelValue', type.value)"
         >
-            {{ type.label }}
+            {{ $t(type.label) }}
         </button>
     </div>
 </template>

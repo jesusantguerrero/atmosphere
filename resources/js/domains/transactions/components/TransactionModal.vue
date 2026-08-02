@@ -472,16 +472,6 @@ const onSubmit = (addAnother = false) => {
           } : {}),
         };
 
-        // An income with no category picked won't count anywhere (inflow group
-        // gate). Default it to Ready to Assign so the salary counts on its own.
-        // Safe no-op if the category can't be resolved.
-        if (!data.is_transfer
-            && data.direction === TRANSACTION_DIRECTIONS.DEPOSIT
-            && !data.category_id
-            && readyToAssignId.value) {
-          data.category_id = readyToAssignId.value;
-        }
-
         if (isMultiCurrency.value) {
           // Multi-currency transaction data
           (data as any).currency_code = transactionCurrency.value;
@@ -514,6 +504,18 @@ const onSubmit = (addAnother = false) => {
           }
         }
 
+        // An income with no category picked won't count anywhere (getIncome
+        // filters by the inflow group). Default it to Ready to Assign so the
+        // salary counts on its own. Placed AFTER the split block, which sets
+        // category_id from the (possibly empty) category field. Safe no-op if
+        // the category can't be resolved.
+        if (!(data as any).is_transfer
+            && (data as any).direction === TRANSACTION_DIRECTIONS.DEPOSIT
+            && !(data as any).category_id
+            && readyToAssignId.value) {
+          (data as any).category_id = readyToAssignId.value;
+        }
+
         lastSaved.value.lastSaved = data as any;
         return data;
       })
@@ -534,6 +536,9 @@ const onSubmit = (addAnother = false) => {
           // Confirm the save so the user knows it landed — modal closes silently otherwise.
           const verb = props.transactionData?.id ? 'updated' : 'saved';
           showSuccessToast(`Transaction ${verb}`);
+
+          // Refresh page props so lists/totals update without a manual reload.
+          router.reload({ preserveScroll: true });
 
           if (!lastSaved.value.addAnother) {
             emit("close");
