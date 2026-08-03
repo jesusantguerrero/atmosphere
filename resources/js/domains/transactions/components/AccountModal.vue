@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import InfoHint from "@/Components/atoms/InfoHint.vue";
 import { useForm, usePage, router } from "@inertiajs/vue3";
+import { useAccountsStore } from "@/store/accounts.store";
 import { useI18n } from "vue-i18n";
 import { reactive, toRefs, computed, watch } from "vue";
 import { NSelect } from "naive-ui";
@@ -20,6 +21,8 @@ import { getCurrencyByCode } from '../currency-constants';
 
 const { t } = useI18n();
 const emit = defineEmits(["close"]);
+
+const accountsStore = useAccountsStore();
 const props = withDefaults(defineProps<{
   show: boolean;
   maxWidth?: string;
@@ -140,8 +143,9 @@ const submit = () => {
       onSuccess: ({ data }) => {
         emit("close");
         state.form.reset();
-        // Refresh page props so the accounts list updates without a manual reload.
-        router.reload({ preserveScroll: true });
+        // Sync the accounts store so every consumer (right-rail panel, dashboard
+        // list, pickers) reflects the new/edited account without a manual reload.
+        accountsStore.refresh();
       },
     });
 };
@@ -159,6 +163,7 @@ const closeAccount = (close: boolean) => {
     onSuccess: () => {
       emit("close");
       state.form.reset();
+      accountsStore.refresh();
     },
   });
 };
@@ -169,6 +174,7 @@ const remove = () => {
       onSuccess() {
         emit("close");
         state.form.reset();
+        accountsStore.refresh();
       },
     });
   }

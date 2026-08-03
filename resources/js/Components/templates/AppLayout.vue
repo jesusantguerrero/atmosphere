@@ -1,5 +1,5 @@
 <script setup lang="ts">
-    import { provide, ref, computed, onMounted } from 'vue'
+    import { provide, ref, computed, onMounted, watch } from 'vue'
     import { router } from '@inertiajs/vue3'
     import { AtSide, AtTeamSelect } from "atmosphere-ui"
     import { useLocalStorage } from "@vueuse/core"
@@ -25,6 +25,7 @@
     import { useTransactionModal } from '@/domains/transactions'
     import AppProvider from './AppProvider.vue'
     import { useAppContextStore } from '@/store'
+    import { useAccountsStore } from '@/store/accounts.store'
     import FinanceWidget from '../SideWidget/FinanceWidget.vue'
     import { useDarkMode } from '@/composables/useDarkMode'
     // import LogerAssistant from '../organisms/logerAssistant.vue'
@@ -110,9 +111,22 @@
     transformCategoryOptions(pageProps.categories, 'sub_categories', 'categoryOptions');
     transformCategoryOptions(pageProps.accounts, 'accounts', 'accountsOptions');
 
-    const accounts = computed(() => {
-        return pageProps.accounts;
-    })
+    // Accounts flow through a Pinia store so any mutation (create/edit/close)
+    // syncs everywhere without a manual reload. Seed and keep it in sync with the
+    // shared `accounts` Inertia prop on every navigation / partial reload.
+    const accountsStore = useAccountsStore();
+    watch(
+        () => pageProps.accounts,
+        (list) => {
+            // Only sync when the server actually sent the list. A non-Inertia
+            // response (e.g. the account API POST) can momentarily leave
+            // pageProps.accounts undefined — ignore that so we don't wipe the
+            // store the modal just refreshed.
+            if (Array.isArray(list)) accountsStore.setAccounts(list as any[]);
+        },
+        { immediate: true, deep: true }
+    );
+    const accounts = computed(() => accountsStore.accounts);
 
     // useLogerConfig()
     const { openTransactionModal } = useTransactionModal()
