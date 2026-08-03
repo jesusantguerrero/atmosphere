@@ -154,11 +154,17 @@ const onKeydown = (event: KeyboardEvent) => {
 // A URL watch (not just onMounted) is required because AppLayout — and this
 // widget — persist across Inertia navigations, so onMounted fires only once.
 const page = usePage();
+
+// The ?panel=<name> currently in the URL, if any.
+const panelFromUrl = (): string | null => {
+  const query = (page.url || '').split('?')[1] || '';
+  return new URLSearchParams(query).get('panel');
+};
+
 watch(
   () => page.url,
-  (url) => {
-    const query = (url || '').split('?')[1] || '';
-    const panel = new URLSearchParams(query).get('panel');
+  () => {
+    const panel = panelFromUrl();
     if (!panel) return;
     const idx = sections.value.findIndex((sec) => sec.name === panel);
     if (idx >= 0 && applicationStore.selectedSection?.name !== panel) {
@@ -170,7 +176,10 @@ watch(
 
 onMounted(() => {
   document.addEventListener('keydown', onKeydown);
-  if (props.isExpanded) {
+  // Auto-open the first panel only when the rail starts expanded AND nothing
+  // else already claimed it — a ?panel= deep-link (handled by the watch above)
+  // or an already-open section must not be overridden by the default (budget).
+  if (props.isExpanded && !applicationStore.selectedSection && !panelFromUrl()) {
     onSetSelectSection(sections.value[0], 0);
   }
 });
