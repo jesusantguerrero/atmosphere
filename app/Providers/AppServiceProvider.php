@@ -69,12 +69,18 @@ class AppServiceProvider extends ServiceProvider
         });
 
         // Onboarding wizard steps (rendered by the dashboard OnboardingSteps
-        // widget). Human, i18n copy via __(); ordered by the fastest path to
-        // value for a family: money in → give it a plan → the people → the week.
-        Onboard::addStep(__('Add your accounts'))
+        // widget). Human, i18n copy via __(). The translatable attributes are
+        // wrapped in a closure so they resolve at initiate()/render time. These
+        // definitions run in AppServiceProvider::boot(), BEFORE the
+        // SetUserLocale middleware, so eager __() here would always bake the
+        // default (en) locale — that is why the checklist showed in English for
+        // Spanish teams. attributes(callable) defers translation until the
+        // dashboard controller reads the steps, when the team's locale is set.
+        Onboard::addStep('Add your accounts')
             ->link('/finance?panel=accounts')
-            ->cta(__('Add accounts'))
-            ->attributes([
+            ->attributes(fn () => [
+                'title' => __('Add your accounts'),
+                'cta' => __('Add accounts'),
                 'icon' => 'fas fa-wallet',
                 'name' => 'addAccounts',
                 'description' => __('Add your bank, cash, and card accounts so Loger can track your money.'),
@@ -83,10 +89,11 @@ class AppServiceProvider extends ServiceProvider
                 return $model->accounts->count() > 0;
             });
 
-        Onboard::addStep(__('Set your first budget'))
+        Onboard::addStep('Set your first budget')
             ->link('/budgets')
-            ->cta(__('Set up budget'))
-            ->attributes([
+            ->attributes(fn () => [
+                'title' => __('Set your first budget'),
+                'cta' => __('Set up budget'),
                 'icon' => 'fas fa-tags',
                 'name' => 'addCategories',
                 'description' => __('Give every peso a job with categories that fit your family.'),
@@ -95,11 +102,12 @@ class AppServiceProvider extends ServiceProvider
                 return $model->budgetCategories->count() > 0;
             });
 
-        Onboard::addStep(__('Add your family'))
+        Onboard::addStep('Add your family')
             ->link('/loger-profiles')
-            ->cta(__('Add profiles'))
             ->excludeIf(fn (Team $model) => ! $model->isModuleEnabled('profiles'))
-            ->attributes([
+            ->attributes(fn () => [
+                'title' => __('Add your family'),
+                'cta' => __('Add profiles'),
                 'icon' => 'fas fa-users',
                 'name' => 'addProfiles',
                 'description' => __('Add a profile for each person and see everything linked to them.'),
@@ -108,11 +116,12 @@ class AppServiceProvider extends ServiceProvider
                 return LogerProfile::where('team_id', $model->id)->exists();
             });
 
-        Onboard::addStep(__('Plan your meals'))
+        Onboard::addStep('Plan your meals')
             ->link('/meals/overview')
-            ->cta(__('Plan meals'))
             ->excludeIf(fn (Team $model) => ! $model->isModuleEnabled('meals'))
-            ->attributes([
+            ->attributes(fn () => [
+                'title' => __('Plan your meals'),
+                'cta' => __('Plan meals'),
                 'icon' => 'fas fa-utensils',
                 'name' => 'addMealPlan',
                 'description' => __('Add meals to your week and build the shopping list automatically.'),
