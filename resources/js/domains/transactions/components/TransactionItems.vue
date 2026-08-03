@@ -82,10 +82,10 @@ const onAccountPicked = () => {
   }, 60);
 };
 const accountLabel = computed(() => {
-  return !props.isTransfer ? "Account" : "Source";
+  return !props.isTransfer ? "Account" : "Source account";
 });
 const categoryLabel = computed(() => {
-  return !props.isTransfer ? "Category" : "Destination";
+  return !props.isTransfer ? "Category" : "Destination account";
 });
 
 const categoryField = computed(() => {
@@ -257,7 +257,7 @@ watch(
       </section>
 
       <header class="flex justify-between pt-2 -mb-4" v-if="hasSplits">
-        <h4 class="font-bold">Split ({{ index + 1 }}/{{ splits.length }})</h4>
+        <h4 class="font-bold">{{ $t('Split') }} ({{ index + 1 }}/{{ splits.length }})</h4>
         <button @click="removeSplit(index)">
           <IMdiTrash />
         </button>
@@ -265,7 +265,7 @@ watch(
 
       <div class="md:flex md:space-x-3 md:px-0 md:-mt-4">
         <AtField
-          label="Payee"
+          :label="$t('Payee')"
           class="w-full md:w-4/12"
           v-if="!isTransfer"
         >
@@ -279,13 +279,13 @@ watch(
             :allow-create="true"
             custom-label="name"
             track-id="id"
-            placeholder="Add a payee"
+            :placeholder="$t('Add a payee')"
             endpoint="/api/payees"
             class="w-full"
           />
         </AtField>
         <section>
-            <AtField :label="categoryLabel" v-if="isTransfer || !fullHeight" class="md:block md:w-full">
+            <AtField :label="$t(categoryLabel)" v-if="isTransfer || !fullHeight" class="md:block md:w-full">
               <!-- Required marker: category is mandatory on income + expense (not transfers). -->
               <template #action v-if="!isTransfer">
                 <span class="font-bold text-error" aria-hidden="true">*</span>
@@ -300,7 +300,7 @@ watch(
                 :options="categoryAccounts"
               />
             </AtField>
-            <AtField label="Tags" class="hidden md:block md:w-full">
+            <AtField :label="$t('Tags')" class="hidden md:block md:w-full">
                 <LogerApiSimpleSelect
                     v-model="split.label_id"
                     v-model:label="split.label_name"
@@ -309,12 +309,12 @@ watch(
                     tag
                     custom-label="name"
                     track-id="id"
-                    placeholder="Add label"
+                    :placeholder="$t('Add label')"
                     endpoint="/api/labels"
                 />
             </AtField>
         </section>
-        <AtField label="Amount" class="hidden md:block md:w-5/12">
+        <AtField :label="$t('Amount')" class="hidden md:block md:w-5/12">
           <InputMoney :number-format="true" v-model="split.amount" v-model:history="split.history" placeholder="">
             <template #prefix>
               <span class="flex items-center pl-2"> {{ currencySymbol }} </span>
@@ -341,7 +341,7 @@ watch(
               class="w-full md:order-1 md:flex-1"
               v-model="split[categoryField]"
               v-model:isPickerOpen="isPickerOpen"
-              :placeholder="`Choose ${categoryLabel}`"
+              :placeholder="$t('Choose {label}', { label: $t(categoryLabel) })"
               :options="categoryAccounts"
             />
           </header>
@@ -349,7 +349,7 @@ watch(
 
       <footer class="flex justify-end mb-2" v-if="hasSplits">
         <AtField
-            label="Description"
+            :label="$t('Description')"
             class="w-full md:mt-0"
         >
             <LogerInput v-model="split.concept" class="w-full" />
