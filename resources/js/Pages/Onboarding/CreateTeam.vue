@@ -104,6 +104,11 @@ const createBudget = () => {
     formData.transform((data) => {
         data.primary_currency_code = data.primary_currency_code.code || data.primary_currency_code
         const parsed = parseTeamForm(data)
+        // parseTeamForm prefixes every field with team_, which would persist
+        // modules/members (an array + JSON) as team settings and blow up. Drop
+        // those prefixed copies; we resend them unprefixed below.
+        delete parsed.team_modules
+        delete parsed.team_members
         parsed.language = data.language
         parsed.modules = Array.isArray(data.modules) ? data.modules.join(',') : data.modules
         const names = data.modules.includes('Profiles')
