@@ -648,5 +648,8 @@
     "Rent held in trust": "Renta en fideicomiso",
     "Update Account": "Actualizar cuenta",
     "Create Account": "Crear cuenta",
-    "No budget set": "Sin presupuesto"
+    "No budget set": "Sin presupuesto",
+    "New": "Nuevo",
+    "Inflow": "Ingresos",
+    "Ready to Assign": "Por asignar"
 }
