@@ -11,18 +11,18 @@ const backToHome = () => {
 </script>
 
 <template>
-    <AppLayout title="Unauthorized Module">
+    <AppLayout :title="$t('Unauthorized Module')">
       <main class="mt-4">
         <WelcomeCard message="Loger profiles">
             <section class="flex flex-col items-center pb-12 mx-auto">
                 <img src="../LogerProfile/empty-box.svg" class="opacity-50" />
-                <h4 class="text-lg font-bold text-body-1"> You don't have access to this module</h4>
+                <h4 class="text-lg font-bold text-body-1"> {{ $t("You don't have access to this module") }}</h4>
                 <p class="max-w-lg my-3">
-                   Activate this module in settings or contact the administrator
+                   {{ $t('Activate this module in settings or contact the administrator') }}
                 </p>
 
                 <LogerButton variant="inverse" @click="backToHome">
-                    Back to Home
+                    {{ $t('Back to Home') }}
                 </LogerButton>
             </section>
         </WelcomeCard>
