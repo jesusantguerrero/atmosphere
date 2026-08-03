@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import axios from 'axios';
 import { Link } from '@inertiajs/vue3';
 import { formatMoney } from '@/utils';
 import { useTransactionModal } from '@/domains/transactions/useTransactionModal';
+import { useTransactionStore } from '@/store/transactions';
 
 interface MoneyPayload {
     today_spent: number;
@@ -91,6 +92,13 @@ const handleLogExpense = (): void => {
 };
 
 onMounted(fetchSummary);
+
+// Re-pull the summary whenever a transaction is logged/edited/deleted anywhere
+// (the store bumps `revision`). Inertia's partial reload doesn't re-run this
+// widget's onMounted, so without this 'No spending history yet' and the daily
+// numbers stay stale after the first expense.
+const transactionStore = useTransactionStore();
+watch(() => transactionStore.revision, () => { fetchSummary(); });
 </script>
 
 <template>

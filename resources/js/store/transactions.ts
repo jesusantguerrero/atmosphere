@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
 import { TRANSACTION_DIRECTIONS } from "@/domains/transactions";
 import { format } from "date-fns";
@@ -12,6 +13,14 @@ interface QuickTransactionData {
     counterAccountName?: string
 }
 export const useTransactionStore = defineStore('transactions', () => {
+    // Monotonic signal bumped whenever a transaction is created/updated/deleted.
+    // Store-backed views that derive from transactions but aren't refreshed by
+    // Inertia's partial reload (e.g. the budget side widget's summary) watch
+    // this and re-pull. Keeps 'No spending history yet' from going stale after
+    // the first logged expense.
+    const revision = ref(0);
+    const notifyChanged = () => { revision.value++; };
+
     const onSubmit = (data: QuickTransactionData, direction = TRANSACTION_DIRECTIONS.WITHDRAW) => {
         return new Promise((resolve, reject) => useForm({
             resource_type_id: "MANUAL",
@@ -29,6 +38,7 @@ export const useTransactionStore = defineStore('transactions', () => {
               }
             },
             onSuccess: () => {
+              notifyChanged();
               resolve(true)
             },
             onError() {
@@ -38,7 +48,7 @@ export const useTransactionStore = defineStore('transactions', () => {
     };
 
     const emitTransaction = (transaction: ITransaction, method: string, oldData?: ITransaction) => {
-
+        notifyChanged();
     }
 
     const reload = () => {
@@ -48,6 +58,8 @@ export const useTransactionStore = defineStore('transactions', () => {
     return {
        onSubmit,
        emitTransaction,
+       notifyChanged,
+       revision,
        reload
     }
 })
