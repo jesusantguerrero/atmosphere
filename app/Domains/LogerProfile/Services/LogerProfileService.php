@@ -24,7 +24,12 @@ class LogerProfileService
 
     public function create(LogerProfileData $data)
     {
-        return LogerProfile::create($data->toArray());
+        // The DTO carries nullable fields (id, image_url, …) the model doesn't
+        // mass-assign; restrict to the model's fillable set so create() doesn't
+        // throw MassAssignmentException.
+        return LogerProfile::create(
+            collect($data->toArray())->only((new LogerProfile)->getFillable())->all()
+        );
     }
 
     public function getById(int $id)

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { NSelect } from "naive-ui";
 import { AtField} from "atmosphere-ui";
 import { format } from "date-fns";
@@ -8,6 +9,8 @@ import LogerInput from "@/Components/atoms/LogerInput.vue";
 import LogerApiSelect from "@/Components/organisms/LogerApiSelect.vue";
 
 import { DEFAULT_TIMEZONE, defaultDateFormats } from "@/domains/app/index";
+
+const { t } = useI18n();
 
 const props = withDefaults(defineProps<{
     formData: Object;
@@ -42,13 +45,13 @@ const dateFormats = defaultDateFormats.map((formatString) => ({
 
 const currencyLocaleOptions = [{
     value: 'after',
-    label: 'After'
+    label: t('After')
 }, {
     value: 'before',
-    label: 'Before'
+    label: t('Before')
 }, {
     value: 'without_symbol',
-    label: 'Without Symbol'
+    label: t('Without Symbol')
 }]
 </script>
 
@@ -57,8 +60,8 @@ const currencyLocaleOptions = [{
     <div
         class="w-full px-5 py-4 space-y-5 bg-base-lvl-3 rounded-md"
     >
-        <AtField class="space-y-2" label="Budget Name">
-            <LogerInput placeholder="Eg. Family" v-model="formData.name" required />
+        <AtField class="space-y-2" :label="$t('Space name')">
+            <LogerInput :placeholder="$t('Eg. Family')" v-model="formData.name" required />
         </AtField>
 
         <AtField :label="$t('Language')">
@@ -71,20 +74,20 @@ const currencyLocaleOptions = [{
             </select>
         </AtField>
 
-        <AtField label="Timezone">
+        <AtField :label="$t('Timezone')">
             <LogerApiSelect
                 v-model="formData.timezone"
-                placeholder="Select"
+                :placeholder="$t('Select')"
                 endpoint="/api/timezones"
                 once
                 :tag="false"
             />
         </AtField>
 
-        <AtField label="Primary Currency" >
+        <AtField :label="$t('Primary Currency')" >
             <LogerApiSelect
                 v-model="formData.primary_currency_code"
-                placeholder="Select"
+                :placeholder="$t('Select')"
                 endpoint="/api/currencies"
                 once
                 track-by="code"
@@ -94,42 +97,41 @@ const currencyLocaleOptions = [{
         </AtField>
 
         <section class="flex space-x-4">
-            <AtField label="Currency Locale" class="md:w-full">
+            <AtField :label="$t('Symbol position')" class="md:w-full">
                 <NSelect
                     v-model:value="formData.currency_symbol_option"
                     filterable
                     :options="currencyLocaleOptions"
-                    placeholder="Select"
+                    :placeholder="$t('Select')"
                 />
             </AtField>
 
-            <AtField label="Date Format" class="md:w-full">
+            <AtField :label="$t('Date Format')" class="md:w-full">
                 <NSelect
                     v-model:value="formData.date_format"
                     filterable
                     :options="dateFormats"
-                    placeholder="Select"
+                    :placeholder="$t('Select')"
                 />
             </AtField>
         </section>
 
         <AtField
             v-if="cashAccountOptions.length"
-            label="Cash withdrawal account"
+            :label="$t('Cash withdrawal account')"
         >
             <NSelect
                 v-model:value="formData.cash_withdrawal_account_id"
                 filterable
                 clearable
                 :options="cashAccountOptions"
-                placeholder="Select"
+                :placeholder="$t('Select')"
             />
             <p class="mt-1 text-xs text-secondary">
-                ATM/cash-withdrawal emails are routed here as a transfer instead of an expense.
+                {{ $t('ATM/cash-withdrawal emails are routed here as a transfer instead of an expense.') }}
             </p>
         </AtField>
 
         <slot name="append" />
     </div>
 </template>
-

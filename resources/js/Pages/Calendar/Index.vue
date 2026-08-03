@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import { AtDatePager } from 'atmosphere-ui';
+import { NDatePicker } from 'naive-ui';
 import {
     format,
     startOfMonth,
@@ -118,6 +119,7 @@ const selectDay = (date: Date) => {
 
 // Add planner item form
 const showAddForm = ref(false);
+const showFinancials = ref(false);
 const addForm = useForm({
     name: '',
     date: '',
@@ -128,6 +130,7 @@ const addForm = useForm({
 
 const openAddForm = (date?: Date) => {
     addForm.reset();
+    showFinancials.value = false;
     if (date) {
         addForm.date = format(date, 'yyyy-MM-dd');
     }
@@ -354,11 +357,12 @@ const monthLabel = computed(() => format(currentDate.value, 'MMMM yyyy'));
                             </div>
                             <div>
                                 <label class="block text-xs font-medium text-body mb-1">{{ $t('Date') }} *</label>
-                                <input
-                                    v-model="addForm.date"
+                                <NDatePicker
+                                    v-model:formatted-value="addForm.date"
+                                    value-format="yyyy-MM-dd"
                                     type="date"
-                                    required
-                                    class="w-full px-3 py-2 text-sm border rounded-md bg-base-lvl-1 border-base text-body focus:outline-none focus:ring-2 focus:ring-primary"
+                                    size="large"
+                                    class="w-full"
                                 />
                             </div>
                             <div>
@@ -369,25 +373,37 @@ const monthLabel = computed(() => format(currentDate.value, 'MMMM yyyy'));
                                     class="w-full px-3 py-2 text-sm border rounded-md bg-base-lvl-1 border-base text-body focus:outline-none focus:ring-2 focus:ring-primary resize-none"
                                 />
                             </div>
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label class="block text-xs font-medium text-body mb-1">{{ $t('Amount') }}</label>
-                                    <input
-                                        v-model.number="addForm.total"
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        class="w-full px-3 py-2 text-sm border rounded-md bg-base-lvl-1 border-base text-body focus:outline-none focus:ring-2 focus:ring-primary"
-                                    />
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-body mb-1">{{ $t('Source') }}</label>
-                                    <input
-                                        v-model="addForm.source"
-                                        type="text"
-                                        class="w-full px-3 py-2 text-sm border rounded-md bg-base-lvl-1 border-base text-body focus:outline-none focus:ring-2 focus:ring-primary"
-                                        :placeholder="$t('e.g. school, family')"
-                                    />
+                            <!-- Money is optional and hidden by default: a plain event
+                                 (a soccer practice) should never be asked for an amount. -->
+                            <div>
+                                <button
+                                    v-if="!showFinancials"
+                                    type="button"
+                                    class="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary/80"
+                                    @click="showFinancials = true"
+                                >
+                                    <i class="text-[10px] fa fa-plus" /> {{ $t('Add amount (optional)') }}
+                                </button>
+                                <div v-else class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-medium text-body mb-1">{{ $t('Amount') }}</label>
+                                        <input
+                                            v-model.number="addForm.total"
+                                            type="number"
+                                            step="0.01"
+                                            min="0"
+                                            class="w-full px-3 py-2 text-sm border rounded-md bg-base-lvl-1 border-base text-body focus:outline-none focus:ring-2 focus:ring-primary"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-body mb-1">{{ $t('Source') }}</label>
+                                        <input
+                                            v-model="addForm.source"
+                                            type="text"
+                                            class="w-full px-3 py-2 text-sm border rounded-md bg-base-lvl-1 border-base text-body focus:outline-none focus:ring-2 focus:ring-primary"
+                                            :placeholder="$t('e.g. school, family')"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                             <div class="flex justify-end gap-2 pt-2">

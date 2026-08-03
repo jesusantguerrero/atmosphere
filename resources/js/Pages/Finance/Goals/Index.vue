@@ -127,6 +127,7 @@ const dueLabel = (goal: Goal): string | null => {
                 <div>
                     <h1 class="text-2xl font-bold text-body">{{ $t('Savings goals') }}</h1>
                     <p class="text-body-1">{{ $t('Track your monthly and target-date goals') }}</p>
+                    <p class="mt-0.5 text-xs text-body-1/50">{{ $t('Savings goals live here — your monthly spending plan is in Budget.') }}</p>
                 </div>
                 <LogerButton variant="inverse" @click="showCreateModal = true">
                     {{ $t('New goal') }}
