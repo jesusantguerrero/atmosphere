@@ -448,7 +448,7 @@ const budgetCsvExportUrl = computed(() => {
         <div class="hidden md:flex items-center flex-nowrap shrink-0 text-xs uppercase tracking-wide text-body-1/50 font-medium">
           <span class="w-36 text-right">{{ $t('Assigned') }} <InfoHint :title="$t('100% assigned')" :body="$t('assigned_100_hint')" /></span>
           <span class="w-44 text-left pl-8">{{ $t('Spent') }}</span>
-          <span class="w-28 text-right">{{ $t('Available') }}</span>
+          <span class="w-28 text-right">{{ $t('Available') }} <InfoHint :title="$t('Funded vs overspent')" :body="$t('funded_vs_overspent_hint')" /></span>
           <span class="w-8" aria-hidden="true"></span>
         </div>
       </div>

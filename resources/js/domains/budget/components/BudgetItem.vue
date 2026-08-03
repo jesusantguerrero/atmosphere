@@ -28,6 +28,14 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits(['removed', 'edit', 'assign', 'move']);
+
+// Fix-2 (Hope/CEO): a negative "available" is only a *true* overspend when
+// there's no Ready-to-Assign money left to cover it. While RTA balance > 0 the
+// category is merely unfunded — the money exists, it just hasn't been assigned.
+// Show amber (needs funding), not alarming red, so the detail row agrees with
+// the Budget banner and the surplus hero number instead of contradicting them.
+const readyToAssign = inject<any>('readyToAssign', null);
+const overspentIsCovered = computed(() => Number(readyToAssign?.value?.balance ?? 0) > 0);
 const budgeted = ref<number>(props.item.budgeted);
 
 const budgetTarget = computed(() => {
@@ -354,7 +362,7 @@ const context = useAppContextStore();
                 :category="item"
                 @move="onMoveFromBudget"
                 class="flex items-center h-full w-28"
-                :class="Number(item.available) < 0 ? 'text-error font-semibold' : ''"
+                :class="Number(item.available) < 0 ? (overspentIsCovered ? 'text-warning font-semibold' : 'text-error font-semibold') : ''"
             >
                 <template #suffix v-if="item.available">
                     <BudgetTransaction

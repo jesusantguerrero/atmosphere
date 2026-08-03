@@ -138,11 +138,29 @@ class BudgetCategoryController extends InertiaController
 
         $overspending = BudgetMonth::getMonthOverspendingCategories($teamId, $monthStart);
 
+        // Ready-to-Assign balance for the month. The side widget uses this to
+        // decide whether a category's negative "available" is a true overspend
+        // (RTA exhausted -> red) or merely unfunded (RTA still positive ->
+        // amber "to fund"), matching the Budget banner/hero reframe (Fix-2).
+        $readyToAssign = 0.0;
+        try {
+            $readyCategory = Category::where('team_id', $teamId)
+                ->where('display_id', 'ready_to_assign')
+                ->first();
+            if ($readyCategory) {
+                $info = (new BudgetCategoryService)->getBudgetInfo($readyCategory, $monthStart);
+                $readyToAssign = (float) ($info['available'] ?? 0);
+            }
+        } catch (\Throwable $e) {
+            $readyToAssign = 0.0;
+        }
+
         return response()->json([
             'money' => $money,
             'topCategories' => $this->topSpendCategoriesWithAvailable($teamId, $monthStart),
             'upcoming' => $this->upcomingBills($teamId, $today, $nextPayments),
             'overspending' => $overspending,
+            'ready_to_assign' => round($readyToAssign, 2),
         ]);
     }
 
