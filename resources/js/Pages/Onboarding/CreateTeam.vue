@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { reactive } from "vue";
+import { reactive, ref, watch } from "vue";
 import { useForm, usePage } from '@inertiajs/vue3';
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
+import LogerInput from "@/Components/atoms/LogerInput.vue";
 import AcceptInvitation from "./AcceptInvitation.vue";
 import TeamForm from "./TeamForm.vue";
 
@@ -23,6 +24,7 @@ const state = reactive({
 const defaultTimezone = "UTC";
 
 const userLanguage = (usePage().props.auth?.user?.language as string) ?? 'en';
+const ownerName = (usePage().props.auth?.user?.name as string) ?? '';
 
 const formData = useForm({
     name: '',
@@ -32,6 +34,7 @@ const formData = useForm({
     date_format: '',
     language: userLanguage,
     modules: [] as string[],
+    members: '',
 });
 
 // Opt-in modules shown at Space Setup. Finance is always on (the door); these
@@ -55,12 +58,37 @@ const toggleModule = (name: string): void => {
     }
 };
 
+// Household composition — collected inline when the user opts into Profiles, so
+// the family shows up right at setup (Jam-style) instead of a later empty page.
+// Owner is seeded; empty rows are ignored on submit.
+const AVATAR_PALETTE = ['#7B77D1', '#F37EA1', '#80CDFE', '#6EE7B7', '#FBBF77', '#A78BFA', '#5EEAD4', '#F59E9E'];
+const colorFor = (seed: string): string => {
+    let hash = 0;
+    const s = String(seed || '?');
+    for (let i = 0; i < s.length; i++) hash = (hash * 31 + s.charCodeAt(i)) >>> 0;
+    return AVATAR_PALETTE[hash % AVATAR_PALETTE.length];
+};
+const rowStyle = (name: string) => {
+    const color = colorFor(name);
+    return { backgroundColor: `${color}1F`, color };
+};
+
+const members = ref<{ name: string }[]>([{ name: ownerName }, { name: '' }, { name: '' }]);
+const addMember = () => members.value.push({ name: '' });
+const removeMember = (index: number) => {
+    if (members.value.length > 1) members.value.splice(index, 1);
+};
+
 const createBudget = () => {
     formData.transform((data) => {
         data.primary_currency_code = data.primary_currency_code.code || data.primary_currency_code
         const parsed = parseTeamForm(data)
         parsed.language = data.language
-        parsed.modules = data.modules
+        parsed.modules = Array.isArray(data.modules) ? data.modules.join(',') : data.modules
+        const names = data.modules.includes('Profiles')
+            ? members.value.map((m) => m.name.trim()).filter(Boolean)
+            : []
+        parsed.members = JSON.stringify(names)
         return parsed
     }).post('/onboarding')
 }
@@ -147,6 +175,49 @@ const createBudget = () => {
                         >
                             <i v-if="isOn(m.name)" class="text-[10px] fas fa-check" />
                         </span>
+                    </button>
+                </div>
+
+                <!-- Household composition, inline, only when Profiles is selected. -->
+                <div v-if="isOn('Profiles')" class="pt-3 mt-1 border-t border-base-lvl-2 space-y-2">
+                    <div>
+                        <h4 class="text-sm font-bold text-body-1">{{ $t('Who lives in your household?') }}</h4>
+                        <p class="text-xs text-body-1/60">{{ $t('Add everyone now — you can always add more later.') }}</p>
+                    </div>
+
+                    <div
+                        v-for="(row, index) in members"
+                        :key="index"
+                        class="flex items-center gap-3"
+                    >
+                        <div
+                            class="flex items-center justify-center w-9 h-9 text-sm font-bold rounded-full shrink-0"
+                            :style="rowStyle(row.name)"
+                        >
+                            {{ (row.name?.charAt(0) || '?').toUpperCase() }}
+                        </div>
+                        <LogerInput
+                            v-model="row.name"
+                            class="flex-1"
+                            :placeholder="$t('Name')"
+                            @keydown.enter="addMember"
+                        />
+                        <button
+                            type="button"
+                            class="w-8 h-8 rounded-md text-body-1/40 hover:text-error shrink-0"
+                            :class="{ 'invisible': members.length <= 1 }"
+                            @click="removeMember(index)"
+                        >
+                            <i class="fa fa-times" />
+                        </button>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:text-primary/80"
+                        @click="addMember"
+                    >
+                        <i class="text-xs fa fa-plus" /> {{ $t('Add another') }}
                     </button>
                 </div>
             </section>
