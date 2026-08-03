@@ -15,6 +15,7 @@ import { TRANSACTION_DIRECTIONS } from "@/domains/transactions";
 import { cloneDeep } from "lodash";
 import { ITransactionLine } from "../models";
 import { useTransactionStore } from "@/store/transactions";
+import { useAccountsStore } from "@/store/accounts.store";
 import { useInertiaForm, validators } from "@/utils/useInertiaForm";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 import { useStorage } from "@vueuse/core";
@@ -388,6 +389,7 @@ const resetSplits = (lastSaved: Record<string, any>) => {
 }
 
 const transactionStore = useTransactionStore();
+const accountsStore = useAccountsStore();
 
 const lastSaved = useStorage('lastTransactionSaved', {
   lastSaved: null,
@@ -402,16 +404,16 @@ const validateBeforeSubmit = (splitItems: Record<string, any>[]): boolean => {
   validationError.value = null;
   for (const split of splitItems) {
     if (!split.amount || Number(split.amount) <= 0) {
-      validationError.value = 'Every split must have an amount greater than 0.';
+      validationError.value = t('Every split must have an amount greater than 0.');
       return false;
     }
     if (state.form.is_transfer) {
       if (!split.account_id || !split.counter_account_id) {
-        validationError.value = 'Transfers need both source and destination accounts.';
+        validationError.value = t('Transfers need both source and destination accounts.');
         return false;
       }
       if (Number(split.account_id) === Number(split.counter_account_id)) {
-        validationError.value = 'Source and destination cannot be the same account.';
+        validationError.value = t('Source and destination cannot be the same account.');
         return false;
       }
     } else {
@@ -554,11 +556,13 @@ const onSubmit = (addAnother = false) => {
           })
 
           // Confirm the save so the user knows it landed — modal closes silently otherwise.
-          const verb = props.transactionData?.id ? 'updated' : 'saved';
-          showSuccessToast(`Transaction ${verb}`);
+          showSuccessToast(props.transactionData?.id ? t('Transaction updated') : t('Transaction saved'));
 
           // Refresh page props so lists/totals update without a manual reload.
           router.reload({ preserveScroll: true });
+          // And re-sync account balances in the right-rail store (router.reload
+          // doesn't re-render the store-backed widget on its own).
+          accountsStore.refresh();
 
           if (!lastSaved.value.addAnother) {
             emit("close");
@@ -631,7 +635,7 @@ const assignTransactionLabel = (label: Record<string, string>, transaction: Reco
             <div>
               {{ form.error }}
               <div class="px-4 md:flex md:items-start md:space-x-2 md:px-0">
-                <AtField label="Date" class="w-full md:w-3/12">
+                <AtField :label="$t('Date')" class="w-full md:w-3/12">
                   <!-- Quick presets live in the label's action slot (right of the
                        "Date" label) so they don't add a row under the input. -->
                   <template #action>
@@ -657,7 +661,7 @@ const assignTransactionLabel = (label: Record<string, string>, transaction: Reco
                   <NDatePicker v-model:value="form.date" type="date" size="large" class="w-full" />
                 </AtField>
 
-                <AtField label="Description" class="w-full md:w-9/12">
+                <AtField :label="$t('Description')" class="w-full md:w-9/12">
                   <LogerInput
                     ref="descriptionInputRef"
                     v-model="form.description"
@@ -704,43 +708,43 @@ const assignTransactionLabel = (label: Record<string, string>, transaction: Reco
 
             <div v-if="isRecurrence">
               <div class="flex space-x-2">
-                <AtField label="Repeat this transaction" class="w-full">
+                <AtField :label="$t('Repeat this transaction')" class="w-full">
                   <NSelect v-model:value="state.schedule_settings.frequency" size="large" :options="[
                     {
                       value: 'WEEKLY',
-                      label: 'Weekly',
+                      label: $t('Weekly'),
                     },
                     {
                       value: 'MONTHLY',
-                      label: 'Monthly',
+                      label: $t('Monthly'),
                     },
                   ]" />
                 </AtField>
-                <AtField :label="state.frequencyLabel" class="capitalize">
+                <AtField :label="$t(state.frequencyLabel)" class="capitalize">
                   <AtInput type="number" v-model="state.schedule_settings.repeat_on_day_of_month" />
                 </AtField>
               </div>
               <div class="flex">
-                <AtField label="Ends" class="w-full">
+                <AtField :label="$t('Ends')" class="w-full">
                   <NSelect v-model:value="state.schedule_settings.end_type" :options="[
                     {
                       value: 'NEVER',
-                      label: 'Never',
+                      label: $t('Never'),
                     },
                     {
                       value: 'DATE',
-                      label: 'At',
+                      label: $t('At'),
                     },
                     {
                       value: 'COUNT',
-                      label: 'After',
+                      label: $t('After'),
                     },
                   ]" />
                 </AtField>
-                <AtField label="Date" v-if="state.schedule_settings.end_type == 'DATE'">
+                <AtField :label="$t('Date')" v-if="state.schedule_settings.end_type == 'DATE'">
                   <NDatePicker v-model:value="state.schedule_settings.end_date" type="date" size="large" class="w-full" />
                 </AtField>
-                <AtField label="Instances" v-if="state.schedule_settings.end_type == 'COUNT'">
+                <AtField :label="$t('Instances')" v-if="state.schedule_settings.end_type == 'COUNT'">
                   <AtInput type="number" v-model="state.schedule_settings.count" />
                 </AtField>
               </div>
