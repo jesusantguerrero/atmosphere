@@ -585,5 +585,13 @@
     "You assigned more than you have. Take money from another category or add funds to balance the month.": "You assigned more than you have. Take money from another category or add funds to balance the month.",
     "You have unassigned money remaining. Assign it to categories, savings, or credit card payments to balance the month.": "You have unassigned money remaining. Assign it to categories, savings, or credit card payments to balance the month.",
     "Budget options": "Budget options",
-    "Spent": "Spent"
+    "Spent": "Spent",
+    "or": "or",
+    "Browse in your computer": "Browse in your computer",
+    "No transactions in {month}": "No transactions in {month}",
+    "Approve": "Approve",
+    "Remove": "Remove",
+    "Find Linked": "Find Linked",
+    "Click to approve": "Click to approve",
+    "Duplicate": "Duplicate"
 }

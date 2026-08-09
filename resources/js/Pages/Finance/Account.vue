@@ -761,7 +761,7 @@ const draftCount = computed(() => (props.drafts || []).length);
 
                 <Component :is="listComponent" :cols="tableAccountCols(props.accountId)"
                     :transactions="sortedTransactions" :server-search-options="serverSearchOptions"
-                    :is-loading="isLoading" :empty-text="`No transactions in ${monthName}`"
+                    :is-loading="isLoading" :empty-text="$t('No transactions in {month}', { month: monthName })"
                     :row-class="transactionRowClass" @findLinked="findLinked"
                     @removed="removeTransaction($event, ['verified'])" @duplicate="handleDuplicate"
                     @edit="handleEdit" @approved="handleApprove" @sort="sort = $event">

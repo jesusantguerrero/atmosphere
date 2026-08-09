@@ -111,8 +111,8 @@ defineExpose({
                 {{ filePlaceholderText }}
             </label>
             <div v-if="!formData.file" class="mt-2">
-                or
-                <button class="underline text-primary underline-offset-2"> Browse in your computer</button>
+                {{ $t('or') }}
+                <button class="underline text-primary underline-offset-2"> {{ $t('Browse in your computer') }}</button>
             </div>
         </div>
         <div class="absolute z-10 flex w-full h-full bg-primary/30" :style="progressStyle" />
