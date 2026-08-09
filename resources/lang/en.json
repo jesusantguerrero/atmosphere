@@ -575,5 +575,15 @@
     "No budget set": "No budget set",
     "New": "New",
     "Inflow": "Inflow",
-    "Ready to Assign": "Ready to Assign"
+    "Ready to Assign": "Ready to Assign",
+    "My Budget": "My Budget",
+    "Outflow": "Outflow",
+    "Cleared Balance": "Cleared Balance",
+    "All balanced": "All balanced",
+    "Every peso is assigned. Nice work.": "Every peso is assigned. Nice work.",
+    "Overspent": "Overspent",
+    "You assigned more than you have. Take money from another category or add funds to balance the month.": "You assigned more than you have. Take money from another category or add funds to balance the month.",
+    "You have unassigned money remaining. Assign it to categories, savings, or credit card payments to balance the month.": "You have unassigned money remaining. Assign it to categories, savings, or credit card payments to balance the month.",
+    "Budget options": "Budget options",
+    "Spent": "Spent"
 }

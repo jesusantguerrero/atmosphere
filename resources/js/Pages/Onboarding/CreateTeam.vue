@@ -162,7 +162,6 @@ const createBudget = () => {
                 <!-- Step: space basics -->
                 <TeamForm
                     v-show="currentKey == 'space'"
-                    class="w-full px-5 py-4 space-y-5 bg-base-lvl-3 rounded-md"
                     :form-data="formData"
                 >
                     <template #append>

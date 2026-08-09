@@ -651,5 +651,15 @@
     "No budget set": "Sin presupuesto",
     "New": "Nuevo",
     "Inflow": "Ingresos",
-    "Ready to Assign": "Por asignar"
+    "Ready to Assign": "Por asignar",
+    "My Budget": "Mi presupuesto",
+    "Outflow": "Salidas",
+    "Cleared Balance": "Saldo confirmado",
+    "All balanced": "Todo cuadrado",
+    "Every peso is assigned. Nice work.": "Cada peso está asignado. ¡Buen trabajo!",
+    "Overspent": "Sobregirado",
+    "You assigned more than you have. Take money from another category or add funds to balance the month.": "Asignaste más de lo que tienes. Toma dinero de otra categoría o agrega fondos para cuadrar el mes.",
+    "You have unassigned money remaining. Assign it to categories, savings, or credit card payments to balance the month.": "Te queda dinero sin asignar. Repártelo en categorías, ahorros o pagos de tarjeta para cuadrar el mes.",
+    "Budget options": "Opciones de presupuesto",
+    "Spent": "Gastado"
 }
