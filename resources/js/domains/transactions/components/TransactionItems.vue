@@ -68,18 +68,19 @@ const onCurrencyPicked = (currency: { code: string } | null) => {
   if (currency?.code) emit('update:currencyCode', currency.code);
 };
 
-// After selecting from the filterable account NSelect, naive-ui keeps its search
-// input focused; the next click (e.g. on Category) is consumed blurring it, so the
-// user needs an extra click. Blur here so the Category dropdown opens on first click.
+// naive-ui instance ref for the account NSelect so we can close it deterministically.
+const accountSelectRef = ref<any>(null);
+
+// After selecting the account, close its dropdown immediately via the component's
+// own blur(). The old approach deferred a document.activeElement blur by 60ms,
+// which RACED the user's next click: if they clicked Payee within that window the
+// account dropdown was still open and — because naive-ui teleports the menu right
+// over the Payee/Category rows below — the click landed on the open account menu,
+// clearing the account and re-opening its dropdown (the reported bug). Blurring the
+// NSelect instance in the update handler closes the menu before the next click can
+// land, so the account commits and stays put.
 const onAccountPicked = () => {
-  // Let naive-ui finish closing its menu first, THEN drop the focus that the
-  // filterable input keeps (otherwise the next click on Category is consumed
-  // blurring it, forcing an extra click). Blurring too early (nextTick) fought
-  // the menu close, so defer past it.
-  setTimeout(() => {
-    const el = document.activeElement as HTMLElement | null;
-    if (el && el.tagName === 'INPUT') el.blur();
-  }, 60);
+  nextTick(() => accountSelectRef.value?.blur?.());
 };
 const accountLabel = computed(() => {
   return !props.isTransfer ? "Account" : "Source account";
@@ -230,6 +231,7 @@ watch(
                 class="w-full md:my-0 md:-mt-4"
               >
                 <NSelect
+                  ref="accountSelectRef"
                   filterable
                   clearable
                   tag
