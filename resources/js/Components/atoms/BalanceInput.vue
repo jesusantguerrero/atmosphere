@@ -1,6 +1,6 @@
 <script lang="ts" setup>
     import { useForm } from "@inertiajs/vue3";
-    import { computed, inject, ref } from "vue"
+    import { computed, inject, ref, watch, onBeforeUnmount } from "vue"
     import { NPopover } from "naive-ui";
     import { AtField, AtButton } from "atmosphere-ui";
     import Multiselect from "vue-multiselect";
@@ -120,11 +120,25 @@
     const toggle = () => {
         showPopover.value = !showPopover.value
     }
+
+    // The Move popover uses trigger="manual", so naive-ui does NOT auto-close it
+    // on Escape or an outside click (the reported stickiness — it lingered and
+    // reappeared after re-renders until a manual reload). Close it on Escape via a
+    // window listener bound only while open; the outside click is handled by
+    // @clickoutside on the NPopover in the template.
+    const onEsc = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') showPopover.value = false;
+    };
+    watch(showPopover, (open) => {
+        if (open) window.addEventListener('keydown', onEsc);
+        else window.removeEventListener('keydown', onEsc);
+    });
+    onBeforeUnmount(() => window.removeEventListener('keydown', onEsc));
 </script>
 
 <template>
 <div class="flex justify-end text-right select-none" title="Money Available">
-    <NPopover trigger="manual" placement="bottom"  :show="showPopover">
+    <NPopover trigger="manual" placement="bottom" :show="showPopover" @clickoutside="showPopover = false">
         <template #trigger>
             <div
                 class="inline-flex items-center px-4 py-1 font-bold cursor-pointer flex-nowrap rounded-3xl min-w-max"
