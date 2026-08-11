@@ -182,10 +182,21 @@ const remove = () => {
 
 const detailTypes = usePage().props.accountDetailTypes;
 
-const detailOptions = ref(makeOptions(detailTypes, ["id", "label"]));
+// Raw options keep the ORIGINAL (English) labels so logic that keys off them
+// (credit-card detection) is unaffected by display translation.
+const rawDetailOptions = makeOptions(detailTypes, ["id", "label"]);
+
+// De-jargonized, localized labels for display: QuickBooks-style accounting terms
+// ('Money market', 'Client trust account', 'Rent held in trust') are shown to
+// families, not accountants — translate via i18n; passthrough for custom (tag)
+// entries the user types themselves.
+const detailOptions = ref(rawDetailOptions.map((o) => ({
+  ...o,
+  label: o.label ? t(o.label) : o.label,
+})));
 
 const creditCard = computed(() => {
-  return detailOptions.value.find((type) => type.label.toLowerCase() == "credit cards");
+  return rawDetailOptions.find((type) => String(type.label).toLowerCase() == "credit cards");
 });
 
 const isCreditCard = computed(() => {
@@ -402,14 +413,14 @@ const excludedCurrencies = computed(() => {
 
         <div class="flex items-center space-x-3">
           <AtButton type="secondary" @click="close" :disabled="form.processing" class="px-6">
-            Cancel
+            {{ $t('Cancel') }}
           </AtButton>
           <LogerButton @click="submit" :processing="form.processing"
             class="bg-primary hover:bg-primaryDark text-white px-8 py-2 font-medium">
             <svg v-if="!form.processing" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
             </svg>
-            {{ form.id ? 'Update Account' : 'Create Account' }}
+            {{ form.id ? $t('Update Account') : $t('Create Account') }}
           </LogerButton>
         </div>
       </div>

@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { reactive, ref } from "vue";
 import { NDropdown } from "naive-ui";
+import { useI18n } from "vue-i18n";
 
 import CustomTable from "@/Components/atoms/CustomTable.vue";
 
 import { tableCols } from "@/domains/transactions";
 import formatMoney from "@/utils/formatMoney";
 import { ITransaction, TransactionConfig } from "@/domains/transactions/models";
+
+const { t } = useI18n();
 
 withDefaults(defineProps<{
     transactions: ITransaction[],
@@ -40,24 +43,24 @@ const options = (row: Record<string, any>) => {
   const defaultOptions = [
     {
       name: "approved",
-      label: "Approve",
+      label: t("Approve"),
       hide: row.status !== "draft",
     },
     {
       name: "edit",
-      label: "Edit",
+      label: t("Edit"),
     },
     {
       name: "duplicate",
-      label: "Duplicate",
+      label: t("Duplicate"),
     },
     {
       name: "removed",
-      label: "Remove",
+      label: t("Remove"),
     },
     {
       name: "findLinked",
-      label: "Find Linked",
+      label: t("Find Linked"),
       hide: row.status !== "draft",
     },
   ];
@@ -126,9 +129,9 @@ const getTransactionColor = (row: ITransaction) => {
             v-if="row._isDraft"
             @click.stop="emit('approved', row)"
             class="px-2 py-1 text-xs font-medium bg-amber-100 text-amber-800 rounded-full hover:bg-green-100 hover:text-green-700 transition-colors"
-            title="Click to approve"
+            :title="$t('Click to approve')"
           >
-            Approve
+            {{ $t('Approve') }}
           </button>
           <div class="font-bold tabular-nums" :class="[getTransactionColor(row)]">
             <span v-if="amountSign(row)" class="mr-0.5">{{ amountSign(row) }}</span>{{ moneyParts(row.total, row.currency_code).main }}<span v-if="moneyParts(row.total, row.currency_code).cents" class="text-[0.72em] align-top opacity-60">.{{ moneyParts(row.total, row.currency_code).cents }}</span>

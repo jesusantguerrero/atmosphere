@@ -19,6 +19,7 @@ import {
 import AppLayout from '@/Components/templates/AppLayout.vue';
 import LogerButton from '@/Components/atoms/LogerButton.vue';
 import DayMonthToggle from '@/Components/molecules/DayMonthToggle.vue';
+import { formatMonth, formatDate } from '@/utils';
 
 interface CalendarEvent {
     id: string;
@@ -155,7 +156,9 @@ const deletePlanner = (plannerId: number) => {
     router.delete(route('planner.destroy', plannerId), { preserveScroll: true });
 };
 
-const monthLabel = computed(() => format(currentDate.value, 'MMMM yyyy'));
+// Spanish month names when the app locale is es (formatMonth applies the
+// date-fns es locale); English otherwise.
+const monthLabel = computed(() => formatMonth(currentDate.value, 'MMMM yyyy'));
 </script>
 
 <template>
@@ -194,7 +197,7 @@ const monthLabel = computed(() => format(currentDate.value, 'MMMM yyyy'));
                             :key="day"
                             class="text-center text-xs font-semibold text-body-1/60 py-2"
                         >
-                            {{ day }}
+                            {{ $t(day) }}
                         </div>
                     </div>
 
@@ -252,7 +255,7 @@ const monthLabel = computed(() => format(currentDate.value, 'MMMM yyyy'));
                 >
                     <header class="flex items-center justify-between mb-3">
                         <h3 class="text-sm font-bold text-body">
-                            {{ format(selectedDay, 'EEEE, MMM d') }}
+                            {{ formatDate(selectedDay, undefined, 'EEEE, MMM d') }}
                         </h3>
                         <button
                             type="button"

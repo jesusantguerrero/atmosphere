@@ -1,30 +1,31 @@
 <template>
     <JetActionSection
-        title="Delete Account"
-        description="Permanently delete your account."
+        danger
+        :title="$t('Delete Account')"
+        :description="$t('Permanently delete your account.')"
     >
         <template #content>
-            <div class="max-w-xl text-sm">
-                Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.
+            <div class="max-w-xl text-sm text-body-1/70">
+                {{ $t('Once your account is deleted, all of its resources and data will be permanently deleted. Download anything you want to keep first.') }}
             </div>
 
             <div class="mt-5">
                 <JetDangerButton @click="confirmUserDeletion">
-                    Delete Account
+                    {{ $t('Delete Account') }}
                 </JetDangerButton>
             </div>
 
             <!-- Delete Account Confirmation Modal -->
             <JetDialogModal :show="confirmingUserDeletion" @close="closeModal">
                 <template #title>
-                    Delete Account
+                    {{ $t('Delete Account') }}
                 </template>
 
                 <template #content>
-                    Are you sure you want to delete your account? Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.
+                    {{ $t('Are you sure you want to delete your account? This is permanent. Enter your password to confirm.') }}
 
                     <div class="mt-4">
-                        <jet-input type="password" class="block w-3/4 mt-1" placeholder="Password"
+                        <jet-input type="password" class="block w-3/4 mt-1" :placeholder="$t('Password')"
                                     ref="password"
                                     v-model="form.password"
                                     @keyup.enter="deleteUser" />
@@ -35,11 +36,11 @@
 
                 <template #footer>
                     <JetSecondaryButton @click="closeModal">
-                        Cancel
+                        {{ $t('Cancel') }}
                     </JetSecondaryButton>
 
                     <jetDangerButton class="ml-2" @click="deleteUser" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                        Delete Account
+                        {{ $t('Delete Account') }}
                     </jetDangerButton>
                 </template>
             </JetDialogModal>

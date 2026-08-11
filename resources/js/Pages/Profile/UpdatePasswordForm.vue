@@ -40,8 +40,8 @@
 
 <template>
     <JetFormSection @submitted="updatePassword"
-        title="Update password"
-        description="Ensure your account is using a long, random password to stay secure."
+        :title="$t('Update password')"
+        :description="$t('Ensure your account uses a long, random password to stay secure.')"
     >
         <template #form>
             <AtField class="col-span-6 sm:col-span-4"

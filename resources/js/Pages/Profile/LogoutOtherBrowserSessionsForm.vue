@@ -47,8 +47,8 @@
 
 <template>
     <ActionSection
-        title="Browser Sessions"
-        description="Manage and log out your active sessions on other browsers and devices.">
+        :title="$t('Browser Sessions')"
+        :description="$t('Manage and log out your active sessions on other browsers and devices.')">
 
         <template #content>
             <header class="max-w-xl text-sm">

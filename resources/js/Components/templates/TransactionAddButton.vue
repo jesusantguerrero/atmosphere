@@ -30,25 +30,25 @@
                     <i class="fa fa-plus"></i>
                 </div>
                 <span>
-                    New
+                    {{ $t('New') }}
                 </span>
             </AtButton>
         </template>
 
         <template #content>
             <div class="py-1 ">
-                <h4 class="px-2 text-body-1/80"> Transactions: </h4>
+                <h4 class="px-2 text-body-1/80"> {{ $t('Transactions') }}: </h4>
                 <LogerButtonTab class="w-full font-bold" @click="open(DEPOSIT)">
                 <IMdiBankTransferIn class="mr-2 text-md" />
-                Income
+                {{ $t('Income') }}
                 </LogerButtonTab>
                 <LogerButtonTab class="w-full font-bold" @click="open(WITHDRAW)">
                     <IMdiBankTransferOut class="mr-2 text-md" />
-                    Expense
+                    {{ $t('Expense') }}
                 </LogerButtonTab>
                 <LogerButtonTab class="w-full font-bold" @click="open('transfer')">
                     <IMdiBankTransfer class="mr-2 text-md" />
-                    Transfer
+                    {{ $t('Transfer') }}
                 </LogerButtonTab>
             </div>
         </template>

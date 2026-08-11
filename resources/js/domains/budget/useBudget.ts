@@ -60,10 +60,21 @@ const showUndoToast = (movementId: number) => {
     activeUndoNotification = notif;
 };
 
-const handleAssignSuccess = (page: { props?: { flash?: { type?: string; movement_id?: number } } }) => {
+const handleAssignSuccess = (page: { props?: { flash?: { type?: string; movement_id?: number }, budgets?: any } }) => {
     const flash = page?.props?.flash;
     if (flash?.type === 'movement_created' && flash.movement_id) {
         showUndoToast(flash.movement_id);
+    }
+    // Force an immediate state re-sync from the fresh server props so the
+    // "to assign" headline (and every budget-derived total) ticks down the
+    // instant the assignment lands — the ZBB dopamine loop depends on seeing
+    // the number drop live. Relying only on the deep prop-watch proved flaky
+    // under Inertia partial reloads (preserveState) + heavy re-renders, leaving
+    // "POR ASIGNAR" frozen until a manual refresh.
+    const budgetData = page?.props?.budgets;
+    if (budgetData) {
+        setBudgetState(getBudget(budgetData.data));
+        setVisibleCategories();
     }
 };
 

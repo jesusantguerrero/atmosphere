@@ -35,10 +35,10 @@ const approveTransactionAll = () => {
 <template>
     <div class="flex items-center w-full space-x-2">
         <AtButton class="flex items-center h-10 space-x-2 text-primary" rounded @click="approveTransactionAll($event)">
-            <i class="block mr-2 fa fa-check"></i> Approve
+            <i class="block mr-2 fa fa-check"></i> {{ $t('Approve') }}
         </AtButton>
         <AtButton class="flex items-center h-10 mr-2 space-x-2 text-primary" rounded @click="removeAllDrafts()">
-            <i class="block mr-2 fa fa-times"></i> Remove</AtButton>
+            <i class="block mr-2 fa fa-times"></i> {{ $t('Remove') }}</AtButton>
         <AtButton class="flex items-center h-10 space-x-2 text-white bg-primary" rounded @click="runAutomation()">
             <i class="block fa fa-robot"></i>
         </AtButton>

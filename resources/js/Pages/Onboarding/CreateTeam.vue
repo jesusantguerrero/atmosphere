@@ -9,6 +9,7 @@ import AcceptInvitation from "./AcceptInvitation.vue";
 import TeamForm from "./TeamForm.vue";
 
 import { parseTeamForm } from "@/domains/app";
+import { guessDefaultCurrency } from "@/domains/transactions/currency-constants";
 
 defineProps({
     invitations: {
@@ -29,7 +30,8 @@ const ownerName = (usePage().props.auth?.user?.name as string) ?? '';
 const formData = useForm({
     name: '',
     timezone: defaultTimezone,
-    primary_currency_code: 'USD',
+    // Locale-aware default (DOP for RD, etc.); still editable in the space step.
+    primary_currency_code: guessDefaultCurrency(),
     currency_symbol_option: 'before',
     date_format: '',
     language: userLanguage,
@@ -160,7 +162,6 @@ const createBudget = () => {
                 <!-- Step: space basics -->
                 <TeamForm
                     v-show="currentKey == 'space'"
-                    class="w-full px-5 py-4 space-y-5 bg-base-lvl-3 rounded-md"
                     :form-data="formData"
                 >
                     <template #append>

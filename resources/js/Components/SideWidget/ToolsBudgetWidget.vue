@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import axios from 'axios';
 import { Link } from '@inertiajs/vue3';
 import { formatMoney } from '@/utils';
 import { useTransactionModal } from '@/domains/transactions/useTransactionModal';
+import { useTransactionStore } from '@/store/transactions';
 
 interface MoneyPayload {
     today_spent: number;
@@ -38,6 +39,7 @@ interface SummaryPayload {
     money: MoneyPayload;
     topCategories: TopCategory[];
     upcoming: UpcomingPayload;
+    ready_to_assign: number;
     overspending: Record<string, number>;
 }
 
@@ -62,13 +64,17 @@ const fetchSummary = async (): Promise<void> => {
 
 const todaySpent = computed<number>(() => summary.value?.money.today_spent ?? 0);
 const dailySafe = computed<number>(() => summary.value?.money.daily_remaining ?? 0);
+const readyToAssign = computed<number>(() => summary.value?.ready_to_assign ?? 0);
 
 // Color signal for a category row:
 // - red: overspent (negative available)
 // - amber: less than 20% of typical monthly spend left
 // - default: room to spare
-const categoryTone = (cat: TopCategory): 'over' | 'low' | 'ok' => {
-    if (cat.available < 0) return 'over';
+const categoryTone = (cat: TopCategory): 'over' | 'fund' | 'low' | 'ok' => {
+    // A negative available is a true overspend only when Ready-to-Assign is
+    // exhausted. While RTA is still positive the category is just unfunded ->
+    // amber 'to fund', not red, so the widget agrees with the Budget hero (Fix-2).
+    if (cat.available < 0) return readyToAssign.value > 0 ? 'fund' : 'over';
     if (cat.monthly_avg > 0 && cat.available < cat.monthly_avg * 0.2) return 'low';
     return 'ok';
 };
@@ -86,6 +92,13 @@ const handleLogExpense = (): void => {
 };
 
 onMounted(fetchSummary);
+
+// Re-pull the summary whenever a transaction is logged/edited/deleted anywhere
+// (the store bumps `revision`). Inertia's partial reload doesn't re-run this
+// widget's onMounted, so without this 'No spending history yet' and the daily
+// numbers stay stale after the first expense.
+const transactionStore = useTransactionStore();
+watch(() => transactionStore.revision, () => { fetchSummary(); });
 </script>
 
 <template>
@@ -122,7 +135,7 @@ onMounted(fetchSummary);
                                     class="font-bold tabular-nums"
                                     :class="{
                                         'text-error': categoryTone(cat) === 'over',
-                                        'text-amber-500': categoryTone(cat) === 'low',
+                                        'text-amber-500': categoryTone(cat) === 'low' || categoryTone(cat) === 'fund',
                                         'text-body': categoryTone(cat) === 'ok',
                                     }"
                                 >
@@ -133,6 +146,12 @@ onMounted(fetchSummary);
                                     class="text-[9px] text-amber-500 font-semibold uppercase tracking-wide"
                                 >
                                     {{ $t('low') }}
+                                </p>
+                                <p
+                                    v-else-if="categoryTone(cat) === 'fund'"
+                                    class="text-[9px] text-amber-500 font-semibold uppercase tracking-wide"
+                                >
+                                    {{ $t('to fund') }}
                                 </p>
                                 <p
                                     v-else-if="categoryTone(cat) === 'over'"
