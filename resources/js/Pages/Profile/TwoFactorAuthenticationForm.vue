@@ -110,8 +110,8 @@
 
 <template>
     <ActionSection
-        title="Two Factor Authentication"
-        description="Add additional security to your account using two factor authentication."
+        :title="$t('Two Factor Authentication')"
+        :description="$t('Add an extra layer of security to your account.')"
 
     >
         <template #content>
