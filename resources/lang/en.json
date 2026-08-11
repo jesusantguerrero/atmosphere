@@ -616,5 +616,7 @@
     "Email": "Email",
     "Update your photo, name and language.": "Update your photo, name and language.",
     "Password, two-factor authentication and active sessions.": "Password, two-factor authentication and active sessions.",
-    "Choose which modules appear in your navigation.": "Choose which modules appear in your navigation."
+    "Choose which modules appear in your navigation.": "Choose which modules appear in your navigation.",
+    "{n} days since last": "{n} days since last",
+    "{n} days overdue": "{n} days overdue"
 }

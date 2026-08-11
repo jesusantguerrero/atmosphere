@@ -692,5 +692,7 @@
     "Email": "Correo",
     "Update your photo, name and language.": "Actualiza tu foto, nombre e idioma.",
     "Password, two-factor authentication and active sessions.": "Contraseña, autenticación de dos factores y sesiones activas.",
-    "Choose which modules appear in your navigation.": "Elige qué módulos aparecen en tu navegación."
+    "Choose which modules appear in your navigation.": "Elige qué módulos aparecen en tu navegación.",
+    "{n} days since last": "Hace {n} días",
+    "{n} days overdue": "{n} días de retraso"
 }

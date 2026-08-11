@@ -25,6 +25,13 @@ const props = defineProps({
     },
     wrap: {
         type: Boolean
+    },
+    // Optional override for the circle's native tooltip. When set (e.g. the
+    // reminders widget passing the exact day count), it wins over the label
+    // title so hovering reveals the detail behind a summarized value.
+    valueTitle: {
+        type: String,
+        default: ''
     }
 })
 const titleRef = ref(null)
@@ -46,7 +53,7 @@ const styles = computed(() => ({
             class="relative overflow-hidden border-2 rounded-full h-14 w-14"
             :class="colorClass"
             :style="styles"
-            :title="title"
+            :title="valueTitle || title"
         >
             <div class="w-1/2 h-full bg-base-lvl-3 opacity-30" />
             <i :class="iconClass" v-if="iconClass" class="font-bold text-white" />
