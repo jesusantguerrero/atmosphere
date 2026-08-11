@@ -10,8 +10,16 @@ const teamId = computed(() => usePage().props.auth.user.current_team_id);
 // /admin/mail — deliberately NOT included here.
 const sections = computed(() => [
     {
-        label: 'Profile',
+        label: 'Account',
         url: '/user/profile'
+    },
+    {
+        label: 'Security',
+        url: '/user/security'
+    },
+    {
+        label: 'Preferences',
+        url: '/user/preferences'
     },
     {
         label: 'Budget',

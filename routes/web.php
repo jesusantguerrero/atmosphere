@@ -18,6 +18,7 @@ use App\Http\Controllers\Finance\FinanceTrendController;
 use App\Http\Controllers\Finance\FinancialOverviewController;
 use App\Http\Controllers\InboxController;
 use App\Http\Controllers\NextPaymentsController;
+use App\Http\Controllers\ProfileSettingsController;
 use App\Http\Controllers\Relationship\RelationshipController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\System\CalendarController;
@@ -214,6 +215,12 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     });
 
     Route::patch('/user/modules', [CoreModuleController::class, 'update'])->name('user.modules.update');
+
+    // Profile settings split into three sibling pages (Account = Jetstream's
+    // /user/profile). Security/Preferences reuse ProfileSettingsController which
+    // extends Jetstream's controller for its sessions()/2FA helpers.
+    Route::get('/user/security', [ProfileSettingsController::class, 'security'])->name('user.security');
+    Route::get('/user/preferences', [ProfileSettingsController::class, 'preferences'])->name('user.preferences');
 
     Route::controller(NotificationController::class)->group(function () {
         Route::get('/notifications', 'index')->name('notifications');
