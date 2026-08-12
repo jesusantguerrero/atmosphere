@@ -6,12 +6,29 @@ import CategoryItem from '@/domains/transactions/components/CategoryItem.vue';
 
 import { IOccurrenceCheck } from "@/domains/housing/models";
 import { getDayDiff } from '@/utils';
+import { useI18n } from 'vue-i18n';
 
 withDefaults(defineProps<{
     checks?: IOccurrenceCheck[];
 }>(), {
     checks: () => ([])
 })
+
+const { t } = useI18n();
+
+const daysSince = (occurrence: IOccurrenceCheck): number =>
+    typeof getDayDiff(occurrence.last_date) === 'number'
+        ? getDayDiff(occurrence.last_date) as number
+        : 0;
+
+// Once a reminder is many days old the raw day count (e.g. 752d) is hard to
+// read, so summarize it in months past ~3 months; the exact days stay in the
+// tooltip via getUrgencyTitle for anyone who wants the detail.
+const humanizeSpan = (n: number): string => {
+    const abs = Math.abs(n);
+    if (abs < 90) return `${n}d`;
+    return `${Math.round(n / 30)}m`;
+};
 
 const getUrgencyColor = (occurrence: IOccurrenceCheck): string => {
     const days = typeof getDayDiff(occurrence.last_date) === 'number'
@@ -28,15 +45,24 @@ const getUrgencyColor = (occurrence: IOccurrenceCheck): string => {
 };
 
 const getUrgencyLabel = (occurrence: IOccurrenceCheck): string => {
-    const days = typeof getDayDiff(occurrence.last_date) === 'number'
-        ? getDayDiff(occurrence.last_date) as number
-        : 0;
+    const days = daysSince(occurrence);
     const avg = occurrence.avg_days_passed;
 
-    if (!avg || avg <= 0) return `${days}d`;
+    if (!avg || avg <= 0) return humanizeSpan(days);
     const diff = days - avg;
-    if (diff > 0) return `+${diff}d`;
-    return `${days}d`;
+    if (diff > 0) return `+${humanizeSpan(diff)}`;
+    return humanizeSpan(days);
+};
+
+// Full detail, always in exact days, surfaced on hover.
+const getUrgencyTitle = (occurrence: IOccurrenceCheck): string => {
+    const days = daysSince(occurrence);
+    const avg = occurrence.avg_days_passed;
+    const since = t('{n} days since last', { n: days });
+    if (!avg || avg <= 0) return since;
+    const diff = days - avg;
+    if (diff > 0) return `${since} · ${t('{n} days overdue', { n: diff })}`;
+    return since;
 };
 </script>
 
@@ -54,6 +80,7 @@ const getUrgencyLabel = (occurrence: IOccurrenceCheck): string => {
                 v-for="occurrence in checks"
                 :label="occurrence.name"
                 :value="getUrgencyLabel(occurrence)"
+                :value-title="getUrgencyTitle(occurrence)"
                 :color="getUrgencyColor(occurrence)"
                 :color-class="''"
                 wrap

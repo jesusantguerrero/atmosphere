@@ -211,7 +211,7 @@ const clearActiveWatchlist = () => {
             class="mt-5"
             v-if="isYearReport"
             :is="trendComponent"
-            style="background: white; width: 100%"
+            style="width: 100%"
             :type="section"
             :series="data"
             :data="data"
@@ -232,7 +232,7 @@ const clearActiveWatchlist = () => {
             <section class="relative flex flex-wrap items-center justify-center w-full bg-base-lvl-3 md:flex-nowrap md:space-x-8">
                 <component
                     :is="trendComponent"
-                    style="background: white; width: 100%"
+                    style="width: 100%"
                     :type="section"
                     :series="data"
                     :data="data"

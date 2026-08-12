@@ -613,5 +613,17 @@
     "Once your account is deleted, all of its resources and data will be permanently deleted. Download anything you want to keep first.": "Once your account is deleted, all of its resources and data will be permanently deleted. Download anything you want to keep first.",
     "Are you sure you want to delete your account? This is permanent. Enter your password to confirm.": "Are you sure you want to delete your account? This is permanent. Enter your password to confirm.",
     "Password": "Password",
-    "Email": "Email"
+    "Email": "Email",
+    "Update your photo, name and language.": "Update your photo, name and language.",
+    "Password, two-factor authentication and active sessions.": "Password, two-factor authentication and active sessions.",
+    "Choose which modules appear in your navigation.": "Choose which modules appear in your navigation.",
+    "{n} days since last": "{n} days since last",
+    "{n} days overdue": "{n} days overdue",
+    "Current Password": "Current Password",
+    "New Password": "New Password",
+    "Confirm password": "Confirm password",
+    "Swap accounts": "Swap accounts",
+    "Select all": "Select all",
+    "Items selected": "Items selected",
+    "Delete {n} selected transactions? This cannot be undone.": "Delete {n} selected transactions? This cannot be undone."
 }

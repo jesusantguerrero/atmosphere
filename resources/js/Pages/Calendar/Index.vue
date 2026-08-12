@@ -19,7 +19,7 @@ import {
 import AppLayout from '@/Components/templates/AppLayout.vue';
 import LogerButton from '@/Components/atoms/LogerButton.vue';
 import DayMonthToggle from '@/Components/molecules/DayMonthToggle.vue';
-import { formatMonth, formatDate } from '@/utils';
+import { formatMonth, formatDate, formatMoney } from '@/utils';
 
 interface CalendarEvent {
     id: string;
@@ -294,7 +294,7 @@ const monthLabel = computed(() => formatMonth(currentDate.value, 'MMMM yyyy'));
                                         {{ event.notes }}
                                     </p>
                                     <p v-if="event.total" class="text-sm font-bold mt-1">
-                                        ${{ event.total.toLocaleString() }}
+                                        {{ formatMoney(event.total) }}
                                     </p>
                                 </div>
                             </div>

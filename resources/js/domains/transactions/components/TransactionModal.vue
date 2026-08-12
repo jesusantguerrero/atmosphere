@@ -16,7 +16,7 @@ import { cloneDeep } from "lodash";
 import { ITransactionLine } from "../models";
 import { useTransactionStore } from "@/store/transactions";
 import { useAccountsStore } from "@/store/accounts.store";
-import { useInertiaForm, validators } from "@/utils/useInertiaForm";
+import { useInertiaForm } from "@/utils/useInertiaForm";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 import { useStorage } from "@vueuse/core";
 import { formatCurrency, getCurrencyByCode } from '../currency-constants';
@@ -121,9 +121,8 @@ const state = reactive({
  */
 const defaultCurrency = (window as any)?.logerAppSettings?.currency_code ?? 'USD';
 
-state.form.validationSchema({
-  description: [validators.isRequired],
-});
+// Description is optional. The real submit guard (validateBeforeSubmit)
+// enforces the essentials: split amounts, payee and category.
 
 const splits = ref<Record<string, any>[]>([])
 

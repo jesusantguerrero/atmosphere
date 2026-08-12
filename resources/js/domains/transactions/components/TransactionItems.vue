@@ -93,6 +93,15 @@ const categoryField = computed(() => {
   return props.isTransfer ? "counter_account_id" : "category_id";
 });
 
+// Transfer-only: flip source (account_id) and destination (counter_account_id)
+// in place. Both selects share the same account options, so it is a straight
+// value exchange; the reactive split updates the UI and the currency chip.
+const swapTransferAccounts = (split: SplitItem) => {
+  const from = split.account_id;
+  split.account_id = split.counter_account_id;
+  split.counter_account_id = from;
+};
+
 const categoryOptions = inject<{ display_id?: string }[]>("categoryOptions", []);
 const accountsOptions = inject<{ id: number; label: string }[]>("accountsOptions", []);
 
@@ -291,6 +300,16 @@ watch(
               <!-- Required marker: category is mandatory on income + expense (not transfers). -->
               <template #action v-if="!isTransfer">
                 <span class="font-bold text-error" aria-hidden="true">*</span>
+              </template>
+              <template #action v-else>
+                <button
+                  type="button"
+                  :title="$t('Swap accounts')"
+                  class="flex items-center justify-center w-6 h-6 -mt-1 rounded-full text-body-1/60 hover:text-primary hover:bg-base-lvl-2 transition"
+                  @click="swapTransferAccounts(split)"
+                >
+                  <IMdiSwapVertical />
+                </button>
               </template>
               <NSelect
                 filterable

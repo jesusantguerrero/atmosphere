@@ -15,6 +15,14 @@ import LogerChart from "@/Components/organisms/LogerChart.vue";
 const props = defineProps<{ data?: any; metaData?: any }>();
 const { t } = useI18n();
 
+// Currency code from the team/user settings. Falls back to DOP so
+// existing behavior for the primary market (Dominican Republic) is
+// preserved; USD/EUR/MXN users now see their own currency instead of
+// the hardcoded "DOP" that peppered this file.
+const currency = computed(
+    () => (window as any)?.logerAppSettings?.currency_code ?? "DOP"
+);
+
 const num = (v: any) => Number(v ?? 0);
 const abs = (v: any) => Math.abs(num(v));
 const money = (n: number) => {
@@ -137,13 +145,17 @@ const tabs = [
   { id: "cards", label: "Cards" },
 ];
 const activeTab = ref("patrimonio");
-const rangeMap: Record<string, number> = { "3M": 3, "6M": 6, "1Y": 12 };
-const monthsToRange = (m: number) => (m === 12 ? "1Y" : m === 3 ? "3M" : "6M");
+const rangeMap: Record<string, number> = { "1M": 1, "3M": 3, "6M": 6, "1Y": 12 };
+// Year-to-date is dynamic (Jan..current month of this year), so it is not a
+// fixed bucket in rangeMap — computed on demand when the user picks it.
+const ytdMonths = () => new Date().getMonth() + 1;
+const monthsToRange = (m: number) => (m === 12 ? "1Y" : m === 6 ? "6M" : m === 3 ? "3M" : m === 1 ? "1M" : "6M");
 const range = ref(monthsToRange(Number(props.metaData?.months ?? 6)));
 const setRange = (r: string) => {
   if (range.value === r) return;
   range.value = r;
-  router.get(location.pathname, { months: rangeMap[r] }, { preserveState: true, preserveScroll: true, only: ["data", "metaData"] });
+  const months = r === "YTD" ? ytdMonths() : rangeMap[r];
+  router.get(location.pathname, { months }, { preserveState: true, preserveScroll: true, only: ["data", "metaData"] });
 };
 
 const toneClass = (tone: string) => (tone === "success" ? "text-success" : tone === "error" ? "text-error" : tone === "amber" ? "text-amber-500" : "text-body");
@@ -223,7 +235,7 @@ const hero = computed(() => {
       label: t("Credit used"),
       value: num(cards.value.creditTotal),
       negative: false,
-      sub: hasCards.value ? t("{pct}% of your DOP {capacity} limit", { pct: num(cards.value.creditLineUsage).toFixed(0), capacity: money(num(cards.value.creditCapacity)).main }) : t("No credit cards yet."),
+      sub: hasCards.value ? t(`{pct}% of your ${currency.value} {capacity} limit`, { pct: num(cards.value.creditLineUsage).toFixed(0), capacity: money(num(cards.value.creditCapacity)).main }) : t("No credit cards yet."),
     };
   }
   const a = num(nwLatest.value?.assets);
@@ -231,7 +243,7 @@ const hero = computed(() => {
   const net = a + de;
   const net3 = num(nw3ago.value?.assets) + num(nw3ago.value?.debts);
   const diff = net - net3;
-  return { label: t("Net worth"), value: net, negative: net < 0, sub: showNwComparison.value ? t("{sign}DOP {amount} vs 3 months ago", { sign: diff >= 0 ? "+" : "−", amount: shortK(diff) }) : "" };
+  return { label: t("Net worth"), value: net, negative: net < 0, sub: showNwComparison.value ? t(`{sign}${currency.value} {amount} vs 3 months ago`, { sign: diff >= 0 ? "+" : "−", amount: shortK(diff) }) : "" };
 });
 
 // ---- narrative per tab
@@ -242,23 +254,23 @@ const narrative = computed<any[]>(() => {
     const avg = spendMonths.value.length ? spendMonths.value.reduce((s, m) => s + m.total, 0) / spendMonths.value.length : 0;
     const out: any[] = [];
     if (p)
-      out.push({ icon: c < p ? "↘" : "↗", title: c < p ? t("Spending is trending down") : t("Spending is going up"), text: t("You closed {month} at DOP {amount}, {pct}% {dir} than {prev}.", { month: formatMonth(latestSpend.value.month), amount: money(c).main, pct: Math.abs(pctChange(c, p)).toFixed(0), dir: c < p ? t("less") : t("more"), prev: formatMonth(prevSpend.value.month) }) });
-    out.push({ icon: "✱", title: t("Average for the period"), text: t("You average DOP {amount} per month over the last {n} months.", { amount: money(avg).main, n: spendMonths.value.length }) });
+      out.push({ icon: c < p ? "↘" : "↗", title: c < p ? t("Spending is trending down") : t("Spending is going up"), text: t(`You closed {month} at ${currency.value} {amount}, {pct}% {dir} than {prev}.`, { month: formatMonth(latestSpend.value.month), amount: money(c).main, pct: Math.abs(pctChange(c, p)).toFixed(0), dir: c < p ? t("less") : t("more"), prev: formatMonth(prevSpend.value.month) }) });
+    out.push({ icon: "✱", title: t("Average for the period"), text: t(`You average ${currency.value} {amount} per month over the last {n} months.`, { amount: money(avg).main, n: spendMonths.value.length }) });
     return out;
   }
   if (activeTab.value === "income") {
     const top = incomeRows.value[0];
     const tot = grandIn.value || 1;
     const out: any[] = [];
-    if (top) out.push({ icon: "↗", title: t("Top income source"), text: t("{name} brought in DOP {amount} — {pct}% of your income.", { name: top.name, amount: money(top.total).main, pct: ((top.total / tot) * 100).toFixed(0) }) });
-    out.push({ icon: "✱", title: t("Income vs spending"), text: t("You brought in DOP {in} and spent DOP {out} this period.", { in: money(grandIn.value).main, out: money(grandOut.value).main }) });
+    if (top) out.push({ icon: "↗", title: t("Top income source"), text: t(`{name} brought in ${currency.value} {amount} — {pct}% of your income.`, { name: top.name, amount: money(top.total).main, pct: ((top.total / tot) * 100).toFixed(0) }) });
+    out.push({ icon: "✱", title: t("Income vs spending"), text: t(`You brought in ${currency.value} {in} and spent ${currency.value} {out} this period.`, { in: money(grandIn.value).main, out: money(grandOut.value).main }) });
     return out;
   }
   if (activeTab.value === "cards") {
     if (!hasCards.value) return [{ icon: "✱", title: t("No credit cards yet"), text: t("Add a credit card account to see utilization and balances.") }];
     return [
-      { icon: "↗", title: t("Credit utilization"), text: t("You are using {pct}% of your DOP {capacity} total limit.", { pct: num(cards.value.creditLineUsage).toFixed(0), capacity: money(num(cards.value.creditCapacity)).main }) },
-      { icon: "✱", title: t("Across {n} cards", { n: cardBalances.value.length }), text: t("Total balance owed is DOP {total}.", { total: money(num(cards.value.creditTotal)).main }) },
+      { icon: "↗", title: t("Credit utilization"), text: t(`You are using {pct}% of your ${currency.value} {capacity} total limit.`, { pct: num(cards.value.creditLineUsage).toFixed(0), capacity: money(num(cards.value.creditCapacity)).main }) },
+      { icon: "✱", title: t("Across {n} cards", { n: cardBalances.value.length }), text: t(`Total balance owed is ${currency.value} {total}.`, { total: money(num(cards.value.creditTotal)).main }) },
     ];
   }
   const a = num(nwLatest.value?.assets);
@@ -266,20 +278,20 @@ const narrative = computed<any[]>(() => {
   const net = a + de;
   const net3 = num(nw3ago.value?.assets) + num(nw3ago.value?.debts);
   const out: any[] = [
-    { icon: net < 0 ? "↗" : "↘", title: net < 0 ? t("Net worth is negative") : t("Net worth is positive"), text: t("Debts (DOP {debts}) {rel} assets (DOP {assets}). The net stands at {net}.", { debts: money(de).main, rel: abs(de) > a ? t("exceed") : t("are below"), assets: money(a).main, net: `${net < 0 ? "−" : ""}DOP ${money(net).main}` }) },
+    { icon: net < 0 ? "↗" : "↘", title: net < 0 ? t("Net worth is negative") : t("Net worth is positive"), text: t(`Debts (${currency.value} {debts}) {rel} assets (${currency.value} {assets}). The net stands at {net}.`, { debts: money(de).main, rel: abs(de) > a ? t("exceed") : t("are below"), assets: money(a).main, net: `${net < 0 ? "−" : ""}${currency.value} ${money(net).main}` }) },
   ];
   if (showNwComparison.value) {
-    out.push({ icon: "↗", title: t("vs 3 months ago"), text: t("Three months ago the net was {net}.", { net: `${net3 < 0 ? "−" : ""}DOP ${money(net3).main}` }) });
+    out.push({ icon: "↗", title: t("vs 3 months ago"), text: t("Three months ago the net was {net}.", { net: `${net3 < 0 ? "−" : ""}${currency.value} ${money(net3).main}` }) });
   }
   return out;
 });
 
 // ---- chart context label
 const chartMeta = computed(() => {
-  if (activeTab.value === "gastos") return { legend: t("Monthly spend"), right: t("{n} months · DOP", { n: spendMonths.value.length }) };
-  if (activeTab.value === "income") return { legend: t("Monthly income"), right: t("{n} months · DOP", { n: flow.value.length }) };
+  if (activeTab.value === "gastos") return { legend: t("Monthly spend"), right: t(`{n} months · ${currency.value}`, { n: spendMonths.value.length }) };
+  if (activeTab.value === "income") return { legend: t("Monthly income"), right: t(`{n} months · ${currency.value}`, { n: flow.value.length }) };
   if (activeTab.value === "cards") return { legend: t("Card balances"), right: t("{n} cards", { n: cardBalances.value.length }) };
-  return { legend: t("Debts vs Assets"), right: t("{n} months · DOP", { n: nwChrono.value.length }) };
+  return { legend: t("Debts vs Assets"), right: t(`{n} months · ${currency.value}`, { n: nwChrono.value.length }) };
 });
 </script>
 
@@ -291,19 +303,19 @@ const chartMeta = computed(() => {
 
     <div class="px-4 pb-20 mx-auto pt-16 max-w-6xl">
       <!-- summary: net cashflow = money in − money out, on the filters line -->
-      <div class="flex flex-wrap items-start justify-between gap-6 mb-8 pb-6 border-b border-base-lvl-2">
+      <div class="flex flex-wrap items-start justify-between gap-6 mt-5 mb-8 pb-6 border-b border-base-lvl-2">
         <div class="flex flex-wrap gap-8 sm:gap-14">
           <div v-for="(st, i) in summaryStats" :key="i">
             <div class="text-xs text-body-1/50 mb-1 w-max" :class="st.tip ? 'cursor-help border-b border-dotted border-body-1/30' : ''" :title="st.tip">{{ st.label }}</div>
             <div class="text-3xl font-extrabold tabular-nums leading-none" :class="toneClass(st.tone)">
-              <template v-if="st.kind === 'money'"><span>{{ money(st.value).sign }}DOP {{ money(st.value).main }}</span><span class="text-base opacity-40">.{{ money(st.value).cents }}</span></template>
+              <template v-if="st.kind === 'money'"><span>{{ money(st.value).sign }}{{ currency }} {{ money(st.value).main }}</span><span class="text-base opacity-40">.{{ money(st.value).cents }}</span></template>
               <template v-else>{{ st.value }}</template>
             </div>
           </div>
         </div>
         <div class="flex items-center gap-2">
           <div class="flex rounded-lg border border-base bg-base-lvl-1 p-0.5">
-            <button v-for="r in ['3M','6M','1Y']" :key="r" class="px-2.5 py-1 text-xs font-medium rounded-md transition" :class="range === r ? 'bg-base-lvl-3 text-body' : 'text-body-1/50'" @click="setRange(r)">{{ r }}</button>
+            <button v-for="r in ['1M','3M','6M','YTD','1Y']" :key="r" class="px-2.5 py-1 text-xs font-medium rounded-md transition" :class="range === r ? 'bg-base-lvl-3 text-body' : 'text-body-1/50'" @click="setRange(r)">{{ r }}</button>
           </div>
         </div>
       </div>
@@ -354,27 +366,27 @@ const chartMeta = computed(() => {
       <div v-if="activeTab === 'patrimonio'" class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-8">
         <div class="bg-base-lvl-3/50 border border-base rounded-xl p-5">
           <h3 class="text-lg font-extrabold text-body w-max cursor-help border-b border-dotted border-body-1/20" :title="$t('Total money spent in the selected period.')">{{ $t('Money out') }}</h3>
-          <div class="text-error font-bold tabular-nums mb-3">−DOP {{ money(totalOut).main }}<span class="text-xs opacity-60">.{{ money(totalOut).cents }}</span></div>
+          <div class="text-error font-bold tabular-nums mb-3">−{{ currency }} {{ money(totalOut).main }}<span class="text-xs opacity-60">.{{ money(totalOut).cents }}</span></div>
           <div class="flex gap-1 mb-4 p-0.5 rounded-lg bg-base-lvl-1 border border-base w-max">
             <button v-for="dm in breakdownDims" :key="dm.id" class="px-3 py-1 text-xs font-medium rounded-md transition" :class="outDim === dm.id ? 'bg-base-lvl-3 text-body' : 'text-body-1/50 hover:text-body-1'" @click="outDim = dm.id">{{ $t(dm.label) }}</button>
           </div>
           <div v-for="(r, i) in moneyOutRows" :key="i" class="grid items-center gap-3 py-2 border-t border-base-lvl-2" style="grid-template-columns:1.3fr 1.3fr auto">
             <div class="text-sm font-medium text-body truncate">{{ r.name }}</div>
             <div class="flex items-center gap-2 text-xs text-body-1"><span style="min-width:38px">{{ r.pct.toFixed(1) }}%</span><span class="flex-1 h-1 rounded-full bg-base-lvl-2 relative overflow-hidden"><span class="absolute inset-y-0 left-0 rounded-full" :style="{ width: r.w + '%', background: '#E8837E' }"></span></span></div>
-            <div class="text-right text-sm font-semibold tabular-nums">−DOP {{ money(r.amount).main }}</div>
+            <div class="text-right text-sm font-semibold tabular-nums">−{{ currency }} {{ money(r.amount).main }}</div>
           </div>
           <p v-if="!moneyOutRows.length" class="text-sm text-body-1/50 py-6 text-center">{{ $t('No data for this period.') }}</p>
         </div>
         <div class="bg-base-lvl-3/50 border border-base rounded-xl p-5">
           <h3 class="text-lg font-extrabold text-body w-max cursor-help border-b border-dotted border-body-1/20" :title="$t('Total money received in the selected period.')">{{ $t('Money in') }}</h3>
-          <div class="text-success font-bold tabular-nums mb-3">DOP {{ money(totalIn).main }}<span class="text-xs opacity-60">.{{ money(totalIn).cents }}</span></div>
+          <div class="text-success font-bold tabular-nums mb-3">{{ currency }} {{ money(totalIn).main }}<span class="text-xs opacity-60">.{{ money(totalIn).cents }}</span></div>
           <div class="flex gap-1 mb-4 p-0.5 rounded-lg bg-base-lvl-1 border border-base w-max">
             <button v-for="dm in breakdownDims" :key="dm.id" class="px-3 py-1 text-xs font-medium rounded-md transition" :class="inDim === dm.id ? 'bg-base-lvl-3 text-body' : 'text-body-1/50 hover:text-body-1'" @click="inDim = dm.id">{{ $t(dm.label) }}</button>
           </div>
           <div v-for="(r, i) in moneyInRows" :key="i" class="grid items-center gap-3 py-2 border-t border-base-lvl-2" style="grid-template-columns:1.3fr 1.3fr auto">
             <div class="text-sm font-medium text-body truncate">{{ r.name }}</div>
             <div class="flex items-center gap-2 text-xs text-body-1"><span style="min-width:38px">{{ r.pct.toFixed(1) }}%</span><span class="flex-1 h-1 rounded-full bg-base-lvl-2 relative overflow-hidden"><span class="absolute inset-y-0 left-0 rounded-full" :style="{ width: r.w + '%', background: '#56C08A' }"></span></span></div>
-            <div class="text-right text-sm font-semibold tabular-nums">DOP {{ money(r.amount).main }}</div>
+            <div class="text-right text-sm font-semibold tabular-nums">{{ currency }} {{ money(r.amount).main }}</div>
           </div>
           <p v-if="!moneyInRows.length" class="text-sm text-body-1/50 py-6 text-center">{{ $t('No data for this period.') }}</p>
         </div>
@@ -398,14 +410,14 @@ const chartMeta = computed(() => {
       <div v-else-if="activeTab === 'income'" class="mt-8">
         <div class="bg-base-lvl-3/50 border border-base rounded-xl p-5 md:max-w-2xl">
           <h3 class="text-lg font-extrabold text-body w-max cursor-help border-b border-dotted border-body-1/20" :title="$t('Total money received in the selected period.')">{{ $t('Money in') }}</h3>
-          <div class="text-success font-bold tabular-nums mb-3">DOP {{ money(totalIn).main }}<span class="text-xs opacity-60">.{{ money(totalIn).cents }}</span></div>
+          <div class="text-success font-bold tabular-nums mb-3">{{ currency }} {{ money(totalIn).main }}<span class="text-xs opacity-60">.{{ money(totalIn).cents }}</span></div>
           <div class="flex gap-1 mb-4 p-0.5 rounded-lg bg-base-lvl-1 border border-base w-max">
             <button v-for="dm in breakdownDims" :key="dm.id" class="px-3 py-1 text-xs font-medium rounded-md transition" :class="inDim === dm.id ? 'bg-base-lvl-3 text-body' : 'text-body-1/50 hover:text-body-1'" @click="inDim = dm.id">{{ $t(dm.label) }}</button>
           </div>
           <div v-for="(r, i) in moneyInRows" :key="i" class="grid items-center gap-3 py-2 border-t border-base-lvl-2" style="grid-template-columns:1.3fr 1.3fr auto">
             <div class="text-sm font-medium text-body truncate">{{ r.name }}</div>
             <div class="flex items-center gap-2 text-xs text-body-1"><span style="min-width:38px">{{ r.pct.toFixed(1) }}%</span><span class="flex-1 h-1 rounded-full bg-base-lvl-2 relative overflow-hidden"><span class="absolute inset-y-0 left-0 rounded-full" :style="{ width: r.w + '%', background: '#56C08A' }"></span></span></div>
-            <div class="text-right text-sm font-semibold tabular-nums">DOP {{ money(r.amount).main }}</div>
+            <div class="text-right text-sm font-semibold tabular-nums">{{ currency }} {{ money(r.amount).main }}</div>
           </div>
           <p v-if="!moneyInRows.length" class="text-sm text-body-1/50 py-6 text-center">{{ $t('No data for this period.') }}</p>
         </div>
@@ -417,7 +429,7 @@ const chartMeta = computed(() => {
           <h3 class="text-lg font-extrabold text-body mb-3">{{ $t('Credit card expenses') }}</h3>
           <div v-for="(c, i) in cardTable" :key="i" class="grid items-center gap-3 py-2 border-t border-base-lvl-2" style="grid-template-columns:1.4fr auto 1fr auto">
             <div class="text-sm font-medium text-body truncate">{{ c.name }}</div>
-            <div class="text-right text-sm tabular-nums">DOP {{ money(c.balance).main }}</div>
+            <div class="text-right text-sm tabular-nums">{{ currency }} {{ money(c.balance).main }}</div>
             <div class="h-1 rounded-full bg-base-lvl-2 relative overflow-hidden mx-2"><span class="absolute inset-y-0 left-0 rounded-full" :style="{ width: c.pct + '%', background: c.pct >= 70 ? '#E8837E' : c.pct >= 30 ? '#E7B45A' : '#56C08A' }"></span></div>
             <div class="text-right text-xs text-body-1/60 tabular-nums" style="min-width:42px">{{ c.pct.toFixed(1) }}%</div>
           </div>
@@ -428,7 +440,7 @@ const chartMeta = computed(() => {
           <div v-for="(r, i) in cardCategories" :key="i" class="grid items-center gap-3 py-2 border-t border-base-lvl-2" style="grid-template-columns:1.3fr 1.3fr auto">
             <div class="text-sm font-medium text-body truncate">{{ r.name }}</div>
             <div class="flex items-center gap-2 text-xs text-body-1"><span style="min-width:38px">{{ r.pct.toFixed(1) }}%</span><span class="flex-1 h-1 rounded-full bg-base-lvl-2 relative overflow-hidden"><span class="absolute inset-y-0 left-0 rounded-full" :style="{ width: r.w + '%', background: '#E8837E' }"></span></span></div>
-            <div class="text-right text-sm font-semibold tabular-nums">−DOP {{ money(r.amount).main }}</div>
+            <div class="text-right text-sm font-semibold tabular-nums">−{{ currency }} {{ money(r.amount).main }}</div>
           </div>
           <p v-if="!cardCategories.length" class="text-sm text-body-1/50 py-6 text-center">{{ $t('No data for this period.') }}</p>
         </div>
