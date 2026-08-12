@@ -167,7 +167,7 @@ import CurrencySelector from './CurrencySelector.vue';
 import MultiCurrencyInput from './MultiCurrencyInput.vue';
 
 import { TRANSACTION_DIRECTIONS } from '@/domains/transactions';
-import { useInertiaForm, validators } from '@/utils/useInertiaForm';
+import { useInertiaForm } from '@/utils/useInertiaForm';
 import { formatCurrency } from '../currency-constants';
 import { calculateExchangeRate, convertAmount } from '../multi-currency-utils';
 
@@ -221,9 +221,7 @@ const form = useInertiaForm({
   is_multi_currency: false
 });
 
-form.validationSchema({
-  description: [validators.isRequired],
-});
+// Description is optional — no client-side required rule.
 
 const splits = ref<Record<string, any>[]>([]);
 const gridSplitsRef = ref();
