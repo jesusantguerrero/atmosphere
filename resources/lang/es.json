@@ -697,5 +697,6 @@
     "{n} days overdue": "{n} días de retraso",
     "Current Password": "Contraseña actual",
     "New Password": "Contraseña nueva",
-    "Confirm password": "Confirmar contraseña"
+    "Confirm password": "Confirmar contraseña",
+    "Swap accounts": "Intercambiar cuentas"
 }

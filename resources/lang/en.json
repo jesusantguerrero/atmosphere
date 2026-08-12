@@ -621,5 +621,6 @@
     "{n} days overdue": "{n} days overdue",
     "Current Password": "Current Password",
     "New Password": "New Password",
-    "Confirm password": "Confirm password"
+    "Confirm password": "Confirm password",
+    "Swap accounts": "Swap accounts"
 }
