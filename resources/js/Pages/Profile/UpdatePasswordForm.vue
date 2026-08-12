@@ -2,13 +2,11 @@
 <script lang="ts" setup>
     import { useForm } from '@inertiajs/vue3'
     import { ref } from "vue"
-    import { AtField } from "atmosphere-ui";
+    import { AtField, AtInputPassword } from "atmosphere-ui";
 
     import JetActionMessage from '@/Components/atoms/ActionMessage.vue'
     import LogerButton from '@/Components/atoms/LogerButton.vue'
     import JetFormSection from '@/Components/atoms/FormSection.vue'
-    import LogerInput from '@/Components/atoms/LogerInput.vue'
-
 
     const form = useForm({
         current_password: '',
@@ -26,16 +24,21 @@
             onError: () => {
                 if (form.errors.password) {
                     form.reset('password', 'password_confirmation')
-                    password.value.focus()
+                    password.value?.focus?.()
                 }
 
                 if (form.errors.current_password) {
                     form.reset('current_password')
-                    currentPassword.value.focus()
+                    currentPassword.value?.focus?.()
                 }
             }
         })
     }
+
+    // Password fields mirror the login screen: AtInputPassword adds the eye
+    // reveal toggle. These classes match LogerInput so they blend with the
+    // other settings inputs on the page.
+    const inputClass = "items-center px-2 rounded-sm bg-base-lvl-2/80 text-body border-base hover:ring-primary block w-full mt-1";
 </script>
 
 <template>
@@ -46,38 +49,37 @@
         <template #form>
             <AtField class="col-span-6 sm:col-span-4"
                 field="current_password"
-                label="Current Password"
+                :label="$t('Current Password')"
                 :errors="form.errors"
             >
-                <LogerInput id="current_password" type="password" class="block w-full mt-1" v-model="form.current_password" ref="currentPassword" autocomplete="current-password" />
+                <AtInputPassword id="current_password" :class="inputClass" v-model="form.current_password" ref="currentPassword" autocomplete="current-password" />
             </AtField>
 
             <AtField class="col-span-6 sm:col-span-4"
                 field="password"
-                label="New Password"
+                :label="$t('New Password')"
                 :errors="form.errors"
             >
-                <LogerInput id="password" type="password" class="block w-full mt-1" v-model="form.password" ref="password" autocomplete="new-password" />
+                <AtInputPassword id="password" :class="inputClass" v-model="form.password" ref="password" autocomplete="new-password" />
             </AtField>
 
             <AtField class="col-span-6 sm:col-span-4"
-                label="Confirm password"
+                :label="$t('Confirm password')"
                 field="password_confirmation"
                 :errors="form.errors"
             >
-                <LogerInput id="password_confirmation" type="password" class="block w-full mt-1" v-model="form.password_confirmation" autocomplete="new-password" />
+                <AtInputPassword id="password_confirmation" :class="inputClass" v-model="form.password_confirmation" autocomplete="new-password" />
             </AtField>
         </template>
 
         <template #actions>
             <jetActionMessage :on="form.recentlySuccessful" class="mr-3">
-                Saved.
+                {{ $t('Saved') }}
             </jetActionMessage>
 
             <LogerButton :processing="form.processing" >
-                Save
+                {{ $t('Save') }}
             </LogerButton>
         </template>
     </JetFormSection>
 </template>
-

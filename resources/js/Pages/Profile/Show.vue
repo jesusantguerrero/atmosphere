@@ -13,7 +13,7 @@
             <SettingsSectionNav />
         </template>
 
-        <div class="max-w-3xl px-4 pt-16 pb-20 mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-5xl px-4 pt-32 pb-20 mx-auto sm:px-6 lg:px-8">
             <header class="mb-8">
                 <h1 class="text-2xl font-bold text-body">{{ $t('Account') }}</h1>
                 <p class="mt-1 text-sm text-body-1/60">

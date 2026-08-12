@@ -618,5 +618,8 @@
     "Password, two-factor authentication and active sessions.": "Password, two-factor authentication and active sessions.",
     "Choose which modules appear in your navigation.": "Choose which modules appear in your navigation.",
     "{n} days since last": "{n} days since last",
-    "{n} days overdue": "{n} days overdue"
+    "{n} days overdue": "{n} days overdue",
+    "Current Password": "Current Password",
+    "New Password": "New Password",
+    "Confirm password": "Confirm password"
 }
