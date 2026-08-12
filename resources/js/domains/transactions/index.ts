@@ -72,7 +72,8 @@ export const formatVariance = (variance: string | null, suffix = '%'): string =>
 
 
 export const removeTransaction = (transaction: ITransaction, only: string[] = []) => {
-    if (confirm(`Are you sure you want to remove this transaction? ${JSON.stringify(transaction)}`)) {
+    const label = (transaction as any)?.description || (transaction as any)?.payee_name || (transaction as any)?.title;
+    if (confirm(label ? `Remove "${label}"? This can't be undone.` : `Remove this transaction? This can't be undone.`)) {
         router.delete(`/transactions/${transaction.id}`, {
             preserveScroll: true,
             preserveState: true,
