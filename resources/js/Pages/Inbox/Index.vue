@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { router, useForm } from '@inertiajs/vue3';
 import axios from 'axios';
 
 import AppLayout from '@/Components/templates/AppLayout.vue';
@@ -21,6 +21,9 @@ const isLoading = ref(true);
 const selected = ref([]);
 const listRef = ref();
 const { t } = useI18n();
+// Same Inertia-form delete used by the dashboard/finance bulk delete, pointed
+// at the shared /finance/transactions/bulk/delete endpoint.
+const deleteTransactionsForm = useForm({ data: [] as number[] });
 
 const fetchDrafts = () => {
     return axios
@@ -52,7 +55,7 @@ const bulkDelete = () => {
     const ids = [...selected.value].map(Number).filter((n) => !Number.isNaN(n));
     if (!ids.length) return;
     if (!confirm(t('Delete {n} selected transactions? This cannot be undone.', { n: ids.length }))) return;
-    router.post('/finance/transactions/bulk/delete', { data: ids }, {
+    deleteTransactionsForm.transform(() => ({ data: ids })).post('/finance/transactions/bulk/delete', {
         preserveScroll: true,
         onSuccess: () => {
             listRef.value?.clearSelection();
