@@ -2395,12 +2395,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/jesusantguerrero/plan-module.git",
-                "reference": "9b7be787102a21617d83738d715cc79035b3852b"
+                "reference": "a03ec4d744a06cf2ebb14bc2a10bf6beb2f6b698"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jesusantguerrero/plan-module/zipball/9b7be787102a21617d83738d715cc79035b3852b",
-                "reference": "9b7be787102a21617d83738d715cc79035b3852b",
+                "url": "https://api.github.com/repos/jesusantguerrero/plan-module/zipball/a03ec4d744a06cf2ebb14bc2a10bf6beb2f6b698",
+                "reference": "a03ec4d744a06cf2ebb14bc2a10bf6beb2f6b698",
                 "shasum": ""
             },
             "default-branch": true,
@@ -2431,7 +2431,7 @@
                 "issues": "https://github.com/jesusantguerrero/plan-module/issues",
                 "source": "https://github.com/jesusantguerrero/plan-module/tree/master"
             },
-            "time": "2026-05-08T23:58:49+00:00"
+            "time": "2026-08-12T04:04:05+00:00"
         },
         {
             "name": "insane/treasurer",

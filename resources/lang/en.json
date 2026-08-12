@@ -625,5 +625,11 @@
     "Swap accounts": "Swap accounts",
     "Select all": "Select all",
     "Items selected": "Items selected",
-    "Delete {n} selected transactions? This cannot be undone.": "Delete {n} selected transactions? This cannot be undone."
+    "Delete {n} selected transactions? This cannot be undone.": "Delete {n} selected transactions? This cannot be undone.",
+    "All {n} conversations in your inbox are selected.": "All {n} conversations in your inbox are selected.",
+    "All {n} on this page are selected.": "All {n} on this page are selected.",
+    "Select all {n} in your inbox": "Select all {n} in your inbox",
+    "{n} selected": "{n} selected",
+    "Clear selection": "Clear selection",
+    "Delete all {n} items in your inbox? This cannot be undone.": "Delete all {n} items in your inbox? This cannot be undone."
 }

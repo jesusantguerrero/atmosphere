@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import { ref, computed, onMounted } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { ref, computed, onMounted, watch } from 'vue';
+import { router, useForm, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 
 import AppLayout from '@/Components/templates/AppLayout.vue';
@@ -11,7 +11,6 @@ import { useTransactionStore } from '@/store/transactions';
 // @ts-expect-error: no types
 import MdiSync from '~icons/mdi/sync';
 import { useI18n } from 'vue-i18n';
-import BulkSelectionBar from '@/Components/BulkSelectionBar.vue';
 
 // The Inbox IS the review screen for DRAFT transactions (captured, not yet
 // confirmed). It reuses the same TransactionsList + confirm/remove machinery as
@@ -21,6 +20,15 @@ const isLoading = ref(true);
 const selected = ref([]);
 const listRef = ref();
 const { t } = useI18n();
+// Same Inertia-form delete used by the dashboard/finance bulk delete, pointed
+// at the shared /finance/transactions/bulk/delete endpoint.
+const deleteTransactionsForm = useForm({ data: [] as number[] });
+const removeAllForm = useForm({});
+
+// Total drafts in the inbox (may exceed what's loaded on the page).
+const page = usePage();
+const totalDrafts = computed(() => Number((page.props as any).pendingReviewCount) || 0);
+const allInboxSelected = ref(false);
 
 const fetchDrafts = () => {
     return axios
@@ -40,25 +48,40 @@ const refresh = () => {
     fetchDrafts();
 };
 
-// Select-all + bulk delete for the inbox. selectAll/clearSelection drive
-// TransactionsList's internal selection; the selected ids go to the bulk
-// endpoint in one request (no per-row confirm storm).
+// Gmail-style selection. The list loads up to 200 drafts; "select all" ticks
+// every loaded row, and when the inbox holds more than what's loaded the banner
+// offers to escalate to the whole inbox — which deletes via the remove-all-drafts
+// endpoint instead of by id.
 const allSelected = computed(() => drafts.value.length > 0 && selected.value.length >= drafts.value.length);
+const hasMoreThanLoaded = computed(() => totalDrafts.value > drafts.value.length);
+const selectionActive = computed(() => selected.value.length > 0 || allInboxSelected.value);
+
 const toggleSelectAll = () => {
-    if (allSelected.value) listRef.value?.clearSelection();
+    if (allSelected.value) { allInboxSelected.value = false; listRef.value?.clearSelection(); }
     else listRef.value?.selectAll();
 };
+const selectAllInbox = () => { allInboxSelected.value = true; };
+const clearAll = () => { allInboxSelected.value = false; listRef.value?.clearSelection(); };
+
+// The "all inbox" escalation only holds while the whole page stays selected.
+watch(() => selected.value.length, (len) => {
+    if (allInboxSelected.value && len < drafts.value.length) allInboxSelected.value = false;
+});
+
+const afterDelete = () => { clearAll(); fetchDrafts(); router.reload({ only: ['pendingReviewCount'] }); };
+
+const deleteAllInbox = () => {
+    if (!confirm(t('Delete all {n} items in your inbox? This cannot be undone.', { n: totalDrafts.value }))) return;
+    removeAllForm.post('/transactions/remove-all-drafts', { preserveScroll: true, onSuccess: afterDelete });
+};
 const bulkDelete = () => {
+    if (allInboxSelected.value) return deleteAllInbox();
     const ids = [...selected.value].map(Number).filter((n) => !Number.isNaN(n));
     if (!ids.length) return;
     if (!confirm(t('Delete {n} selected transactions? This cannot be undone.', { n: ids.length }))) return;
-    router.post('/finance/transactions/bulk/delete', { data: ids }, {
+    deleteTransactionsForm.transform(() => ({ data: ids })).post('/finance/transactions/bulk/delete', {
         preserveScroll: true,
-        onSuccess: () => {
-            listRef.value?.clearSelection();
-            fetchDrafts();
-            router.reload({ only: ['pendingReviewCount'] });
-        },
+        onSuccess: afterDelete,
     });
 };
 
@@ -148,6 +171,34 @@ const captureMethods = [
                     </label>
                 </div>
 
+                <!-- Gmail-style selection banner: page vs whole-inbox -->
+                <div
+                    v-if="selectionActive"
+                    class="flex flex-wrap items-center justify-center px-4 py-2.5 text-sm border rounded-lg gap-x-3 gap-y-1 bg-base-lvl-2 border-base text-body-2"
+                >
+                    <span v-if="allInboxSelected">
+                        {{ $t('All {n} conversations in your inbox are selected.', { n: totalDrafts }) }}
+                    </span>
+                    <template v-else-if="allSelected">
+                        <span>{{ $t('All {n} on this page are selected.', { n: selected.length }) }}</span>
+                        <button
+                            v-if="hasMoreThanLoaded"
+                            type="button"
+                            class="font-semibold text-primary hover:underline"
+                            @click="selectAllInbox"
+                        >{{ $t('Select all {n} in your inbox', { n: totalDrafts }) }}</button>
+                    </template>
+                    <span v-else>{{ $t('{n} selected', { n: selected.length }) }}</span>
+
+                    <span class="opacity-30">·</span>
+                    <button type="button" class="font-semibold text-error hover:underline" @click="bulkDelete">
+                        {{ $t('Delete') }}
+                    </button>
+                    <button type="button" class="hover:underline" @click="clearAll">
+                        {{ $t('Clear selection') }}
+                    </button>
+                </div>
+
                 <TransactionsList
                     ref="listRef"
                     class="w-full"
@@ -163,11 +214,6 @@ const captureMethods = [
                     @removed="removeTransaction($event, ['draft'])"
                 />
 
-                <BulkSelectionBar
-                    v-if="selected.length"
-                    :selected-items="selected"
-                    @delete-pressed="bulkDelete"
-                />
             </section>
 
             <!-- Inbox zero -->

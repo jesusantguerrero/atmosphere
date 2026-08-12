@@ -701,5 +701,11 @@
     "Swap accounts": "Intercambiar cuentas",
     "Select all": "Seleccionar todo",
     "Items selected": "Ítems seleccionados",
-    "Delete {n} selected transactions? This cannot be undone.": "¿Eliminar {n} transacciones seleccionadas? Esto no se puede deshacer."
+    "Delete {n} selected transactions? This cannot be undone.": "¿Eliminar {n} transacciones seleccionadas? Esto no se puede deshacer.",
+    "All {n} conversations in your inbox are selected.": "Las {n} conversaciones de tu bandeja están seleccionadas.",
+    "All {n} on this page are selected.": "Las {n} de esta página están seleccionadas.",
+    "Select all {n} in your inbox": "Seleccionar las {n} de la bandeja",
+    "{n} selected": "{n} seleccionadas",
+    "Clear selection": "Limpiar selección",
+    "Delete all {n} items in your inbox? This cannot be undone.": "¿Eliminar las {n} de tu bandeja? Esto no se puede deshacer."
 }
