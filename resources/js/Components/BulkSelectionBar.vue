@@ -15,7 +15,7 @@ export default {
             <span class="font-bold mr-1">
                 {{ selectedItems.length }}
             </span>
-            Items selected
+            {{ $t('Items selected') }}
         </section>
         <section>
             <span class="ml-2 toolbar-buttons cursor-pointer" @click="$emit('delete-pressed')">

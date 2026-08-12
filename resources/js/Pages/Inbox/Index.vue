@@ -10,6 +10,8 @@ import { removeTransaction, useTransactionModal } from '@/domains/transactions';
 import { useTransactionStore } from '@/store/transactions';
 // @ts-expect-error: no types
 import MdiSync from '~icons/mdi/sync';
+import { useI18n } from 'vue-i18n';
+import BulkSelectionBar from '@/Components/BulkSelectionBar.vue';
 
 // The Inbox IS the review screen for DRAFT transactions (captured, not yet
 // confirmed). It reuses the same TransactionsList + confirm/remove machinery as
@@ -17,6 +19,8 @@ import MdiSync from '~icons/mdi/sync';
 const drafts = ref<any[]>([]);
 const isLoading = ref(true);
 const selected = ref([]);
+const listRef = ref();
+const { t } = useI18n();
 
 const fetchDrafts = () => {
     return axios
@@ -34,6 +38,28 @@ onMounted(fetchDrafts);
 const refresh = () => {
     isLoading.value = true;
     fetchDrafts();
+};
+
+// Select-all + bulk delete for the inbox. selectAll/clearSelection drive
+// TransactionsList's internal selection; the selected ids go to the bulk
+// endpoint in one request (no per-row confirm storm).
+const allSelected = computed(() => drafts.value.length > 0 && selected.value.length >= drafts.value.length);
+const toggleSelectAll = () => {
+    if (allSelected.value) listRef.value?.clearSelection();
+    else listRef.value?.selectAll();
+};
+const bulkDelete = () => {
+    const ids = [...selected.value].map(Number).filter((n) => !Number.isNaN(n));
+    if (!ids.length) return;
+    if (!confirm(t('Delete {n} selected transactions? This cannot be undone.', { n: ids.length }))) return;
+    router.post('/finance/transactions/bulk/delete', { data: ids }, {
+        preserveScroll: true,
+        onSuccess: () => {
+            listRef.value?.clearSelection();
+            fetchDrafts();
+            router.reload({ only: ['pendingReviewCount'] });
+        },
+    });
 };
 
 // Approving opens the edit/confirm modal (same flow as the dashboard widget).
@@ -109,14 +135,21 @@ const captureMethods = [
 
             <!-- Draft review list -->
             <section v-else-if="hasItems" class="space-y-4">
-                <h3 class="flex items-center gap-2 text-sm font-semibold tracking-wide uppercase text-body-2">
-                    {{ $t('Needs your review') }}
-                    <span class="px-2 py-0.5 text-xs font-bold rounded-full bg-primary/10 text-primary">
-                        {{ $page.props.pendingReviewCount }}
-                    </span>
-                </h3>
+                <div class="flex items-center justify-between">
+                    <h3 class="flex items-center gap-2 text-sm font-semibold tracking-wide uppercase text-body-2">
+                        {{ $t('Needs your review') }}
+                        <span class="px-2 py-0.5 text-xs font-bold rounded-full bg-primary/10 text-primary">
+                            {{ $page.props.pendingReviewCount }}
+                        </span>
+                    </h3>
+                    <label class="flex items-center gap-2 text-xs cursor-pointer select-none text-body-2">
+                        <input type="checkbox" class="rounded border-base" :checked="allSelected" @change="toggleSelectAll" />
+                        {{ $t('Select all') }}
+                    </label>
+                </div>
 
                 <TransactionsList
+                    ref="listRef"
                     class="w-full"
                     table-class="w-full p-2 overflow-auto text-sm rounded-lg shadow-md bg-base-lvl-3"
                     v-model:selected="selected"
@@ -128,6 +161,12 @@ const captureMethods = [
                     :hide-accounts="true"
                     @approved="handleEdit"
                     @removed="removeTransaction($event, ['draft'])"
+                />
+
+                <BulkSelectionBar
+                    v-if="selected.length"
+                    :selected-items="selected"
+                    @delete-pressed="bulkDelete"
                 />
             </section>
 

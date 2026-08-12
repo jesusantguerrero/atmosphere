@@ -91,6 +91,18 @@ const calculateSum = (items: number[]|string[]) => {
         return sum;
     }, {});
 }
+// Bulk helpers exposed to parents (e.g. the Inbox select-all + bulk delete).
+// Additive — regular per-row click selection is untouched.
+const selectAll = () => {
+    const ids = transactionsParsed.value.map((t: any) => t.id || t.title);
+    selectedItems.splice(0, selectedItems.length, ...ids);
+    emit('update:selected', selectedItems);
+};
+const clearSelection = () => {
+    selectedItems.splice(0, selectedItems.length);
+    emit('update:selected', selectedItems);
+};
+defineExpose({ selectAll, clearSelection });
 </script>
 
 <template>

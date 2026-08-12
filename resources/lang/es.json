@@ -698,5 +698,8 @@
     "Current Password": "Contraseña actual",
     "New Password": "Contraseña nueva",
     "Confirm password": "Confirmar contraseña",
-    "Swap accounts": "Intercambiar cuentas"
+    "Swap accounts": "Intercambiar cuentas",
+    "Select all": "Seleccionar todo",
+    "Items selected": "Ítems seleccionados",
+    "Delete {n} selected transactions? This cannot be undone.": "¿Eliminar {n} transacciones seleccionadas? Esto no se puede deshacer."
 }
