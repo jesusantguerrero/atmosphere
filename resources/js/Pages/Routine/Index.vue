@@ -381,32 +381,6 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); });
         >+ {{ $t('Block') }}</button>
       </div>
 
-      <!-- time-budget analytics + category legend -->
-      <div v-if="showBudget" class="bg-base-lvl-3 border border-base rounded-xl p-4 mb-4">
-        <div class="flex items-center mb-3">
-          <h2 class="text-sm font-bold text-body">{{ $t('Weekly time budget') }}</h2>
-          <span class="ml-2 text-xs text-body-1/60">{{ budgetTotalHours }} {{ $t('h/week') }}</span>
-          <button class="ml-auto text-xs font-semibold px-3 py-1 rounded-lg bg-primary text-white disabled:opacity-50"
-                  :disabled="savingCats" @click="saveCategories">{{ $t('Save categories') }}</button>
-        </div>
-        <!-- stacked bar -->
-        <div class="flex h-3 w-full rounded-full overflow-hidden mb-3">
-          <div v-for="c in timeBudget" :key="c.color" class="h-full" :style="{ width: c.pct + '%', background: c.color }"
-               :title="(catLabel(c.color) || $t('Unnamed')) + ' · ' + c.hours + 'h'"></div>
-        </div>
-        <!-- rows: swatch + editable name + hours + pct -->
-        <div class="space-y-1.5">
-          <div v-for="c in timeBudget" :key="c.color" class="flex items-center gap-2">
-            <span class="w-3 h-3 rounded-sm flex-none" :style="{ background: c.color }"></span>
-            <input v-model="catNames[c.color]" type="text" :placeholder="$t('Name this category')"
-                   class="flex-1 min-w-0 px-2 py-1 text-xs rounded bg-base-lvl-2 border border-base text-body outline-none focus:border-primary" />
-            <span class="text-xs font-semibold text-body tabular-nums w-14 text-right">{{ c.hours }}h</span>
-            <span class="text-[10px] text-body-1/50 tabular-nums w-9 text-right">{{ c.pct }}%</span>
-          </div>
-        </div>
-        <p class="text-[11px] text-body-1/50 mt-3">{{ $t('Name each color once and it becomes a category across the routine. The budget uses the weekly template.') }}</p>
-      </div>
-
       <!-- grid -->
       <div class="bg-base-lvl-3 border border-base rounded-xl overflow-hidden">
         <div class="grid border-b border-base bg-base-lvl-2" style="grid-template-columns:44px repeat(7,1fr)">
@@ -529,6 +503,38 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); });
           <div class="flex justify-end pt-2">
             <button type="button" class="text-sm text-body-1 px-3 py-1.5 rounded-lg hover:bg-base-lvl-2" @click="dayMenu = null">{{ $t('Close') }}</button>
           </div>
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- time-budget drawer (floats over the grid, never pushes it down) -->
+    <Teleport to="body">
+      <div v-if="showBudget" class="fixed inset-0 z-[60] flex justify-end" @click.self="showBudget = false">
+        <div class="absolute inset-0 bg-black/40"></div>
+        <div class="relative w-full max-w-sm h-full bg-base-lvl-3 border-l border-base shadow-2xl p-5 overflow-y-auto">
+          <div class="flex items-center mb-1">
+            <h2 class="text-base font-bold text-body">{{ $t('Weekly time budget') }}</h2>
+            <button class="ml-auto text-body-1/60 hover:text-body text-lg leading-none" @click="showBudget = false">✕</button>
+          </div>
+          <p class="text-xs text-body-1/60 mb-4">{{ budgetTotalHours }} {{ $t('h/week') }}</p>
+          <!-- stacked bar -->
+          <div class="flex h-3 w-full rounded-full overflow-hidden mb-4">
+            <div v-for="c in timeBudget" :key="c.color" class="h-full" :style="{ width: c.pct + '%', background: c.color }"
+                 :title="(catLabel(c.color) || $t('Unnamed')) + ' · ' + c.hours + 'h'"></div>
+          </div>
+          <!-- rows: swatch + editable name + hours + pct -->
+          <div class="space-y-1.5">
+            <div v-for="c in timeBudget" :key="c.color" class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-sm flex-none" :style="{ background: c.color }"></span>
+              <input v-model="catNames[c.color]" type="text" :placeholder="$t('Name this category')"
+                     class="flex-1 min-w-0 px-2 py-1 text-xs rounded bg-base-lvl-2 border border-base text-body outline-none focus:border-primary" />
+              <span class="text-xs font-semibold text-body tabular-nums w-12 text-right">{{ c.hours }}h</span>
+              <span class="text-[10px] text-body-1/50 tabular-nums w-8 text-right">{{ c.pct }}%</span>
+            </div>
+          </div>
+          <button class="w-full mt-4 text-xs font-semibold px-3 py-2 rounded-lg bg-primary text-white disabled:opacity-50"
+                  :disabled="savingCats" @click="saveCategories">{{ $t('Save categories') }}</button>
+          <p class="text-[11px] text-body-1/50 mt-3">{{ $t('Name each color once and it becomes a category across the routine. The budget uses the weekly template.') }}</p>
         </div>
       </div>
     </Teleport>
