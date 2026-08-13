@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Domains\LogerProfile\Models\LogerProfile;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Inertia\Response;
 use Modules\Plan\Entities\Plan;
@@ -74,6 +75,7 @@ class RoutineController extends Controller
     {
         $this->guard($request, $plan);
         $data = $this->validateBlock($request);
+        $data['day'] = $this->dayFor($data);
 
         $stage = $plan->stages->firstWhere('order', $data['day']);
         if (! $stage) {
@@ -99,6 +101,7 @@ class RoutineController extends Controller
         $this->guard($request, $plan);
         $this->ensureItemBelongsTo($plan, $item);
         $data = $this->validateBlock($request);
+        $data['day'] = $this->dayFor($data);
 
         $stage = $plan->stages->firstWhere('order', $data['day']);
         if (! $stage) {
@@ -235,6 +238,44 @@ class RoutineController extends Controller
         ]);
     }
 
+    /**
+     * Dated exceptions ("this week was different") for the ISO week that
+     * contains ?date (defaults to today). The weekly template is NOT included —
+     * the client already has it and overlays these on top, where an exception
+     * hides the template block it overlaps and `skip` blanks a slot for the day.
+     */
+    public function week(Request $request, Plan $plan): JsonResponse
+    {
+        $this->guard($request, $plan);
+
+        $anchor = $request->query('date')
+            ? Carbon::createFromFormat('Y-m-d', $request->query('date'))
+            : Carbon::now();
+        $monday = $anchor->copy()->startOfWeek(Carbon::MONDAY);
+        $sunday = $monday->copy()->addDays(6);
+
+        $blocks = [];
+        foreach ($plan->stages as $stage) {
+            $day = (int) $stage->order;
+            foreach ($stage->items()->orderBy('order')->get() as $item) {
+                $payload = $this->blockPayload($item, $day);
+                if (empty($payload['date'])) {
+                    continue;                          // template block, not an exception
+                }
+                $d = Carbon::createFromFormat('Y-m-d', $payload['date']);
+                if ($d->between($monday, $sunday)) {
+                    $blocks[] = $payload;
+                }
+            }
+        }
+
+        return response()->json([
+            'week_start' => $monday->format('Y-m-d'),
+            'week_end' => $sunday->format('Y-m-d'),
+            'blocks' => $blocks,
+        ]);
+    }
+
     // ---- helpers ------------------------------------------------------------
 
     private function validateBlock(Request $request): array
@@ -247,18 +288,42 @@ class RoutineController extends Controller
             'color' => ['nullable', 'string', 'max:20'],
             'member_id' => ['nullable', 'integer'],
             'note' => ['nullable', 'string', 'max:500'],
+            // date present => this is a dated *exception* (this-week override),
+            // not part of the undated weekly template.
+            'date' => ['nullable', 'date_format:Y-m-d'],
+            'skip' => ['nullable', 'boolean'],
         ]);
+    }
+
+    /** Weekday (0=Mon..6=Sun) — derived from the exception date when present. */
+    private function dayFor(array $data): int
+    {
+        if (! empty($data['date'])) {
+            return (int) Carbon::createFromFormat('Y-m-d', $data['date'])->dayOfWeekIso - 1;
+        }
+
+        return (int) $data['day'];
     }
 
     private function blockFields(array $data): array
     {
-        return [
+        $fields = [
             ['name' => 'start', 'value' => $data['start']],
             ['name' => 'end', 'value' => $data['end']],
             ['name' => 'color', 'value' => $data['color'] ?? '#6E9BE6'],
             ['name' => 'member', 'value' => (string) ($data['member_id'] ?? '')],
             ['name' => 'note', 'value' => (string) ($data['note'] ?? '')],
         ];
+        // A `date` field marks the block as a dated exception; `skip` marks a
+        // "this template block is off today" hole. Template blocks carry neither.
+        if (! empty($data['date'])) {
+            $fields[] = ['name' => 'date', 'value' => $data['date']];
+        }
+        if (! empty($data['skip'])) {
+            $fields[] = ['name' => 'skip', 'value' => '1'];
+        }
+
+        return $fields;
     }
 
     private function resolveRoutinePlan(Request $request, PlanService $planService): Plan
@@ -300,7 +365,11 @@ class RoutineController extends Controller
         foreach ($plan->stages as $stage) {
             $day = (int) $stage->order;
             foreach ($stage->items()->orderBy('order')->get() as $item) {
-                $blocks[] = $this->blockPayload($item, $day);
+                $payload = $this->blockPayload($item, $day);
+                if (! empty($payload['date'])) {
+                    continue;                          // exceptions belong to week()
+                }
+                $blocks[] = $payload;
             }
         }
 
@@ -324,6 +393,8 @@ class RoutineController extends Controller
             'color' => $f['color'] ?? '#6E9BE6',
             'member_id' => isset($f['member']) && $f['member'] !== '' ? (int) $f['member'] : null,
             'note' => $f['note'] ?? '',
+            'date' => $f['date'] ?? null,
+            'skip' => ($f['skip'] ?? '') === '1',
         ];
     }
 

@@ -13,13 +13,17 @@ interface Block {
   color: string;
   member_id: number | null;
   note: string;
+  date: string | null;    // set => dated exception; null => weekly template
+  skip: boolean;          // exception that blanks a template slot for that date
 }
+type RenderBlock = Block & { _kind: "template" | "exception" };
 interface Member { id: number; name: string; }
 interface PlanPayload { id: number; blocks: Block[]; days: string[]; }
 
 const props = defineProps<{ plan: PlanPayload; members: Member[] }>();
 
-const blocks = ref<Block[]>([...props.plan.blocks]);
+const blocks = ref<Block[]>([...props.plan.blocks]);       // weekly template
+const exceptions = ref<Block[]>([]);                       // dated, current week
 const SHORT = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 const HOUR_H = 40;
 const COLORS = ["#56C08A", "#6E9BE6", "#E8A54F", "#E87FA8", "#A98BE0", "#B79B82", "#5CC2C2", "#E0736F", "#6B7686"];
@@ -28,19 +32,57 @@ const toMin = (t: string) => {
   const [h, m] = String(t || "0:0").split(":");
   return (parseInt(h) || 0) * 60 + (parseInt(m) || 0);
 };
+const overlaps = (a: Block, b: Block) => toMin(a.start) < toMin(b.end) && toMin(b.start) < toMin(a.end);
 
-// Time range auto-expands to fit the blocks (early risers / night owls) with a
-// sensible default window of 05:00–23:00; clamped to a valid 0–24 day.
+// ---- Week / dates ----
+const startOfWeekMon = (d: Date) => {
+  const x = new Date(d);
+  const wd = (x.getDay() + 6) % 7;                 // 0=Mon
+  x.setDate(x.getDate() - wd);
+  x.setHours(0, 0, 0, 0);
+  return x;
+};
+const isoOf = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+const viewMode = ref<"template" | "week">("template");
+const weekAnchor = ref<Date>(startOfWeekMon(new Date()));
+const weekDates = computed(() => Array.from({ length: 7 }, (_, i) => {
+  const x = new Date(weekAnchor.value);
+  x.setDate(x.getDate() + i);
+  return x;
+}));
+const todayIso = isoOf(new Date());
+const weekLabel = computed(() => {
+  const a = weekDates.value[0], b = weekDates.value[6];
+  return `${a.getDate()}/${a.getMonth() + 1} – ${b.getDate()}/${b.getMonth() + 1}`;
+});
+
+const fetchWeek = async () => {
+  const { data } = await axios.get(`/housing/routine/${props.plan.id}/week`, {
+    params: { date: isoOf(weekDates.value[0]) },
+  });
+  exceptions.value = data.blocks ?? [];
+};
+const setMode = (m: "template" | "week") => { viewMode.value = m; if (m === "week") fetchWeek(); };
+const shiftWeek = (delta: number) => {
+  const x = new Date(weekAnchor.value); x.setDate(x.getDate() + delta * 7);
+  weekAnchor.value = startOfWeekMon(x); fetchWeek();
+};
+const goThisWeek = () => { weekAnchor.value = startOfWeekMon(new Date()); fetchWeek(); };
+
+// Time range auto-expands to fit template + exceptions (early risers / night owls).
 const DEFAULT_START = 5;
 const DEFAULT_END = 23;
+const allForRange = computed(() => [...blocks.value, ...exceptions.value]);
 const startH = computed(() => {
   let min = DEFAULT_START;
-  for (const b of blocks.value) min = Math.min(min, Math.floor(toMin(b.start) / 60));
+  for (const b of allForRange.value) min = Math.min(min, Math.floor(toMin(b.start) / 60));
   return Math.max(0, min);
 });
 const endH = computed(() => {
   let max = DEFAULT_END;
-  for (const b of blocks.value) max = Math.max(max, Math.ceil(toMin(b.end) / 60));
+  for (const b of allForRange.value) max = Math.max(max, Math.ceil(toMin(b.end) / 60));
   return Math.min(24, max);
 });
 const hours = computed(() => Array.from({ length: endH.value - startH.value }, (_, i) => startH.value + i));
@@ -57,8 +99,24 @@ const memberColor = (id: number | null) => {
 };
 const initial = (id: number | null) => (memberName(id) || "?").slice(0, 1).toUpperCase();
 
-const blocksByDay = (day: number) =>
+const templateByDay = (day: number) =>
   blocks.value.filter((b) => b.day === day).sort((a, b) => toMin(a.start) - toMin(b.start));
+
+// Effective blocks per column: template as-is, or (week) template minus the
+// slots an exception overlaps, plus the visible exceptions (skip = invisible hole).
+const renderBlocks = (day: number): RenderBlock[] => {
+  if (viewMode.value === "template") {
+    return templateByDay(day).map((b) => ({ ...b, _kind: "template" as const }));
+  }
+  const iso = isoOf(weekDates.value[day]);
+  const exc = exceptions.value.filter((e) => e.date === iso);
+  const solid = exc.filter((e) => !e.skip);
+  const tmpl = templateByDay(day)
+    .filter((t) => !exc.some((e) => overlaps(t, e)))
+    .map((b) => ({ ...b, _kind: "template" as const }));
+  return [...tmpl, ...solid.map((e) => ({ ...e, _kind: "exception" as const }))]
+    .sort((a, b) => toMin(a.start) - toMin(b.start));
+};
 
 const blockStyle = (b: Block) => {
   const top = ((toMin(b.start) - startH.value * 60) / 60) * HOUR_H;
@@ -72,43 +130,52 @@ const blockStyle = (b: Block) => {
   };
 };
 
-// Now-line (browser-local)
+// Now-line
 const now = new Date();
-const nowDow = (now.getDay() + 6) % 7;            // 0=Mon..6=Sun
+const nowDow = (now.getDay() + 6) % 7;
 const nowTop = computed(() => ((now.getHours() * 60 + now.getMinutes() - startH.value * 60) / 60) * HOUR_H);
 const nowVisible = computed(() => now.getHours() >= startH.value && now.getHours() < endH.value);
+const showNow = (day: number) =>
+  nowVisible.value && (viewMode.value === "template" ? day === nowDow : isoOf(weekDates.value[day]) === todayIso);
+const isTodayCol = (day: number) => viewMode.value === "week" && isoOf(weekDates.value[day]) === todayIso;
 
 // ---- Modal ----
 const showModal = ref(false);
 const saving = ref(false);
 const blankForm = (day = 0): Block =>
-  ({ id: 0, day, title: "", start: "09:00", end: "10:00", color: COLORS[1], member_id: null, note: "" });
+  ({ id: 0, day, title: "", start: "09:00", end: "10:00", color: COLORS[1], member_id: null, note: "", date: null, skip: false });
 const form = ref<Block>(blankForm());
 const isEdit = computed(() => form.value.id > 0);
+const isException = computed(() => !!form.value.date);
 
-const openNew = (day = 0) => { form.value = blankForm(day); showModal.value = true; };
+const openNew = (day = 0) => {
+  const f = blankForm(day);
+  if (viewMode.value === "week") f.date = isoOf(weekDates.value[day]);
+  form.value = f;
+  showModal.value = true;
+};
 const openEdit = (b: Block) => { form.value = { ...b }; showModal.value = true; };
-
-// Duplicate: turn the current edit into a fresh (unsaved) copy — Save creates a
-// new block with the same title/time/color/member/note that the user can retime.
 const duplicate = () => { form.value = { ...form.value, id: 0 }; };
 
 const payloadOf = (b: Block) => ({
   day: b.day, title: b.title.trim(), start: b.start, end: b.end,
   color: b.color, member_id: b.member_id, note: b.note ?? "",
+  date: b.date ?? null, skip: b.skip ?? false,
 });
 
 const save = async () => {
   if (!form.value.title.trim() || saving.value) return;
   saving.value = true;
+  const wasException = isException.value;
   try {
     if (isEdit.value) {
       const { data } = await axios.put(`/housing/routine/${props.plan.id}/blocks/${form.value.id}`, payloadOf(form.value));
-      const i = blocks.value.findIndex((b) => b.id === data.id);
-      if (i !== -1) blocks.value[i] = data;
+      if (wasException) { await fetchWeek(); }
+      else { const i = blocks.value.findIndex((b) => b.id === data.id); if (i !== -1) blocks.value[i] = data; }
     } else {
       const { data } = await axios.post(`/housing/routine/${props.plan.id}/blocks`, payloadOf(form.value));
-      blocks.value.push(data);
+      if (wasException) { await fetchWeek(); }
+      else { blocks.value.push(data); }
     }
     showModal.value = false;
   } finally {
@@ -124,9 +191,10 @@ const clearToast = () => { if (toastTimer) clearTimeout(toastTimer); toastTimer 
 const remove = async () => {
   if (!isEdit.value) return;
   const removed = { ...form.value };
-  blocks.value = blocks.value.filter((b) => b.id !== removed.id);
   showModal.value = false;
   await axios.delete(`/housing/routine/${props.plan.id}/blocks/${removed.id}`).catch(() => {});
+  if (removed.date) { await fetchWeek(); }
+  else { blocks.value = blocks.value.filter((b) => b.id !== removed.id); }
   clearToast();
   toast.value = { block: removed };
   toastTimer = setTimeout(clearToast, 5000);
@@ -137,10 +205,10 @@ const undoDelete = async () => {
   const b = toast.value.block;
   clearToast();
   const { data } = await axios.post(`/housing/routine/${props.plan.id}/blocks`, payloadOf(b));
-  blocks.value.push(data);
+  if (b.date) { await fetchWeek(); } else { blocks.value.push(data); }
 };
 
-// ---- Quick member assign (per block, floating at click coords) ----
+// ---- Quick member assign (per block, floating) ----
 const assignMenu = ref<{ x: number; y: number; block: Block } | null>(null);
 const openAssign = (b: Block, ev: MouseEvent) => {
   if (assignMenu.value?.block.id === b.id) { assignMenu.value = null; return; }
@@ -154,26 +222,57 @@ const setBlockMember = async (b: Block, memberId: number | null) => {
   if (b.member_id === memberId) return;
   const next = { ...b, member_id: memberId };
   const { data } = await axios.put(`/housing/routine/${props.plan.id}/blocks/${b.id}`, payloadOf(next));
-  const i = blocks.value.findIndex((x) => x.id === data.id);
-  if (i !== -1) blocks.value[i] = data;
+  if (b.date) { await fetchWeek(); }
+  else { const i = blocks.value.findIndex((x) => x.id === data.id); if (i !== -1) blocks.value[i] = data; }
 };
 
-// ---- Per-day dialog: duplicate day / assign day ----
+// ---- Template-block action menu (week mode) ----
+const tmplMenu = ref<{ x: number; y: number; block: Block; date: string } | null>(null);
+const openTmplMenu = (b: Block, date: string, ev: MouseEvent) => {
+  const w = 190, h = 150;
+  const x = Math.max(8, Math.min(ev.clientX, window.innerWidth - w));
+  const y = Math.min(ev.clientY, window.innerHeight - h - 8);
+  tmplMenu.value = { x, y, block: b, date };
+};
+const replaceToday = () => {
+  if (!tmplMenu.value) return;
+  const { block, date } = tmplMenu.value;
+  tmplMenu.value = null;
+  form.value = { ...block, id: 0, date, skip: false };   // new dated copy to retime
+  showModal.value = true;
+};
+const removeToday = async () => {
+  if (!tmplMenu.value) return;
+  const { block, date } = tmplMenu.value;
+  tmplMenu.value = null;
+  await axios.post(`/housing/routine/${props.plan.id}/blocks`, {
+    ...payloadOf(block), date, skip: true,
+  });
+  await fetchWeek();
+};
+const editTemplate = () => {
+  if (!tmplMenu.value) return;
+  const b = tmplMenu.value.block;
+  tmplMenu.value = null;
+  openEdit(b);
+};
+
+const onBlockClick = (rb: RenderBlock, day: number, ev: MouseEvent) => {
+  if (viewMode.value === "template" || rb._kind === "exception") { openEdit(rb); return; }
+  openTmplMenu(rb, isoOf(weekDates.value[day]), ev);
+};
+
+// ---- Per-day dialog: duplicate day / assign day (template mode) ----
 const dayMenu = ref<number | null>(null);
 const copyTargets = ref<number[]>([]);
 const copyMode = ref<"replace" | "append">("replace");
 const busyDay = ref(false);
 
-const openDay = (day: number) => {
-  dayMenu.value = day;
-  copyTargets.value = [];
-  copyMode.value = "replace";
-};
+const openDay = (day: number) => { dayMenu.value = day; copyTargets.value = []; copyMode.value = "replace"; };
 const toggleTarget = (day: number) => {
   const i = copyTargets.value.indexOf(day);
   if (i === -1) copyTargets.value.push(day); else copyTargets.value.splice(i, 1);
 };
-
 const applyDay = async (from: number) => {
   if (!copyTargets.value.length || busyDay.value) return;
   busyDay.value = true;
@@ -185,11 +284,8 @@ const applyDay = async (from: number) => {
     if (replaced.length) blocks.value = blocks.value.filter((b) => !replaced.includes(b.day));
     for (const nb of (data.blocks ?? [])) blocks.value.push(nb);
     dayMenu.value = null;
-  } finally {
-    busyDay.value = false;
-  }
+  } finally { busyDay.value = false; }
 };
-
 const assignDay = async (day: number, memberId: number | null) => {
   if (busyDay.value) return;
   busyDay.value = true;
@@ -197,9 +293,7 @@ const assignDay = async (day: number, memberId: number | null) => {
     await axios.post(`/housing/routine/${props.plan.id}/assign-day`, { day, member_id: memberId });
     blocks.value = blocks.value.map((b) => (b.day === day ? { ...b, member_id: memberId } : b));
     dayMenu.value = null;
-  } finally {
-    busyDay.value = false;
-  }
+  } finally { busyDay.value = false; }
 };
 
 onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); });
@@ -212,11 +306,30 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); });
     </template>
 
     <div class="px-5 pb-20 mx-auto pt-16 max-w-6xl">
-      <!-- header: filter + add -->
-      <div class="flex items-center gap-2 mb-4 flex-wrap">
+      <!-- header: mode toggle + week nav + filter + add -->
+      <div class="flex items-center gap-2 mb-2 flex-wrap">
         <h1 class="text-lg font-bold text-body mr-auto">{{ $t('Weekly routine') }}</h1>
+        <div class="flex rounded-lg bg-base-lvl-1 border border-base p-0.5">
+          <button class="text-xs font-semibold px-3 py-1 rounded-md transition"
+                  :class="viewMode === 'template' ? 'bg-base-lvl-3 text-body' : 'text-body-1/60'"
+                  @click="setMode('template')">{{ $t('Template') }}</button>
+          <button class="text-xs font-semibold px-3 py-1 rounded-md transition"
+                  :class="viewMode === 'week' ? 'bg-base-lvl-3 text-body' : 'text-body-1/60'"
+                  @click="setMode('week')">{{ $t('This week') }}</button>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 mb-4 flex-wrap">
+        <!-- week nav -->
+        <div v-if="viewMode === 'week'" class="flex items-center gap-1 mr-2">
+          <button class="w-7 h-7 rounded-lg bg-base-lvl-1 border border-base text-body-1/70 hover:text-body" @click="shiftWeek(-1)">‹</button>
+          <span class="text-xs font-semibold text-body px-1 min-w-[92px] text-center">{{ weekLabel }}</span>
+          <button class="w-7 h-7 rounded-lg bg-base-lvl-1 border border-base text-body-1/70 hover:text-body" @click="shiftWeek(1)">›</button>
+          <button class="text-[11px] font-semibold px-2 py-1 rounded-lg bg-base-lvl-1 border border-base text-body-1/70 hover:text-body" @click="goThisWeek">{{ $t('Today') }}</button>
+        </div>
+
         <button
-          class="text-xs font-semibold px-3 py-1.5 rounded-full border transition"
+          class="text-xs font-semibold px-3 py-1.5 rounded-full border transition ml-auto"
           :class="filterMember === null ? 'bg-base-lvl-3 text-body border-base-lvl-1' : 'bg-base-lvl-1 text-body-1/70 border-base'"
           @click="filterMember = null"
         >{{ $t('Everyone') }}</button>
@@ -239,9 +352,10 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); });
         <div class="grid border-b border-base bg-base-lvl-2" style="grid-template-columns:44px repeat(7,1fr)">
           <div></div>
           <div v-for="(d, i) in SHORT" :key="i" class="relative py-2 text-center text-[11px] font-bold"
-               :class="i === nowDow ? 'text-body' : 'text-body-1/60'">
-            {{ d }}
+               :class="isTodayCol(i) ? 'text-primary' : ((viewMode === 'template' && i === nowDow) ? 'text-body' : 'text-body-1/60')">
+            {{ d }}<span v-if="viewMode === 'week'" class="ml-1 opacity-70">{{ weekDates[i].getDate() }}</span>
             <button
+              v-if="viewMode === 'template'"
               class="absolute right-1 top-1.5 w-4 h-4 rounded text-body-1/40 hover:text-body hover:bg-base-lvl-1 leading-none"
               @click.stop="openDay(i)"
               :title="$t('Day options')"
@@ -257,38 +371,44 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); });
             </div>
             <!-- day columns -->
             <div v-for="day in 7" :key="day" class="relative border-l border-base/50"
+                 :class="isTodayCol(day - 1) ? 'bg-primary/5' : ''"
                  :style="{ height: gridHeight + 'px' }"
                  @dblclick="openNew(day - 1)">
-              <!-- hour lines -->
               <div v-for="h in hours" :key="h" class="absolute left-0 right-0 border-t border-base/30"
                    :style="{ top: ((h - startH) * HOUR_H) + 'px' }"></div>
-              <!-- now line -->
-              <div v-if="nowVisible && (day - 1) === nowDow" class="absolute left-0 right-0 h-0.5 bg-primary z-10"
+              <div v-if="showNow(day - 1)" class="absolute left-0 right-0 h-0.5 bg-primary z-10"
                    :style="{ top: nowTop + 'px' }"></div>
               <!-- blocks -->
-              <div v-for="b in blocksByDay(day - 1)" :key="b.id"
+              <div v-for="rb in renderBlocks(day - 1)" :key="rb._kind + rb.id"
                    class="absolute left-0.5 right-0.5 rounded-md px-1.5 py-0.5 text-[10px] font-semibold overflow-hidden cursor-pointer leading-tight transition"
-                   :class="{ 'opacity-20 grayscale': !shown(b) }"
-                   :style="blockStyle(b)"
-                   :title="b.note || b.title"
-                   @click="openEdit(b)">
+                   :class="[
+                     !shown(rb) ? 'opacity-20 grayscale' : '',
+                     rb._kind === 'exception' ? 'ring-1 ring-current' : (viewMode === 'week' ? 'opacity-60 border-dashed' : ''),
+                   ]"
+                   :style="blockStyle(rb)"
+                   :title="rb.note || rb.title"
+                   @click="onBlockClick(rb, day - 1, $event)">
                 <div class="truncate flex items-center gap-1">
-                  {{ b.title }}
-                  <span v-if="b.note" class="opacity-60 text-[8px]">✎</span>
+                  {{ rb.title }}
+                  <span v-if="rb._kind === 'exception'" class="text-[8px]">★</span>
+                  <span v-else-if="rb.note" class="opacity-60 text-[8px]">✎</span>
                 </div>
-                <div class="text-[8px] opacity-70">{{ b.start }}–{{ b.end }}</div>
+                <div class="text-[8px] opacity-70">{{ rb.start }}–{{ rb.end }}</div>
                 <button
                   class="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full text-[7px] flex items-center justify-center font-bold text-white ring-1 ring-white/30"
-                  :style="{ background: memberColor(b.member_id) }"
-                  @click.stop="openAssign(b, $event)"
+                  :style="{ background: memberColor(rb.member_id) }"
+                  @click.stop="openAssign(rb, $event)"
                   :title="$t('Assign member')"
-                >{{ b.member_id ? initial(b.member_id) : '+' }}</button>
+                >{{ rb.member_id ? initial(rb.member_id) : '+' }}</button>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <p class="text-[11px] text-body-1/50 mt-3">{{ $t('Double-tap a day to add · tap a block to edit · ⋯ to duplicate a day. This template repeats every week.') }}</p>
+      <p class="text-[11px] text-body-1/50 mt-3">
+        <span v-if="viewMode === 'template'">{{ $t('Double-tap a day to add · tap a block to edit · ⋯ to duplicate a day. This template repeats every week.') }}</span>
+        <span v-else>{{ $t('This week only: exceptions (★) override the template for that date. Tap a faded template block to replace or remove it just for today.') }}</span>
+      </p>
     </div>
 
     <!-- quick-assign floating menu -->
@@ -307,45 +427,45 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); });
       </div>
     </Teleport>
 
+    <!-- template-block action menu (week mode) -->
+    <Teleport to="body">
+      <div v-if="tmplMenu" class="fixed inset-0 z-40" @click="tmplMenu = null">
+        <div class="absolute w-48 bg-base-lvl-3 border border-base rounded-lg shadow-2xl p-1 text-body"
+             :style="{ left: tmplMenu.x + 'px', top: (tmplMenu.y + 6) + 'px' }" @click.stop>
+          <button type="button" class="w-full text-left text-xs px-2 py-1.5 rounded hover:bg-base-lvl-2" @click="replaceToday">{{ $t('Replace just today') }}</button>
+          <button type="button" class="w-full text-left text-xs px-2 py-1.5 rounded hover:bg-base-lvl-2" @click="removeToday">{{ $t('Remove just today') }}</button>
+          <div class="border-t border-base my-1"></div>
+          <button type="button" class="w-full text-left text-xs px-2 py-1.5 rounded hover:bg-base-lvl-2 text-body-1/70" @click="editTemplate">{{ $t('Edit template') }}</button>
+        </div>
+      </div>
+    </Teleport>
+
     <!-- per-day dialog -->
     <Teleport to="body">
       <div v-if="dayMenu !== null" class="fixed inset-0 z-40 flex items-center justify-center p-4 bg-black/50" @click.self="dayMenu = null">
         <div class="w-full max-w-xs bg-base-lvl-3 border border-base rounded-2xl shadow-2xl p-4">
           <h3 class="font-bold text-body mb-3">{{ SHORT[dayMenu] }} · {{ $t('Day options') }}</h3>
-
           <p class="text-[10px] uppercase tracking-wide text-body-1/50 mb-1.5">{{ $t('Duplicate day to') }}</p>
           <div class="flex flex-wrap gap-1.5 mb-2">
-            <button v-for="(dd, di) in SHORT" :key="di"
-                    v-show="di !== dayMenu"
-                    type="button"
+            <button v-for="(dd, di) in SHORT" :key="di" v-show="di !== dayMenu" type="button"
                     class="text-xs px-2 py-1 rounded-lg border transition"
                     :class="copyTargets.includes(di) ? 'bg-primary text-white border-primary' : 'bg-base-lvl-2 text-body-1/70 border-base'"
                     @click="toggleTarget(di)">{{ dd }}</button>
           </div>
           <div class="flex items-center gap-3 mb-2 text-xs text-body-1/70">
-            <label class="flex items-center gap-1 cursor-pointer">
-              <input type="radio" value="replace" v-model="copyMode" />{{ $t('Replace') }}
-            </label>
-            <label class="flex items-center gap-1 cursor-pointer">
-              <input type="radio" value="append" v-model="copyMode" />{{ $t('Add') }}
-            </label>
+            <label class="flex items-center gap-1 cursor-pointer"><input type="radio" value="replace" v-model="copyMode" />{{ $t('Replace') }}</label>
+            <label class="flex items-center gap-1 cursor-pointer"><input type="radio" value="append" v-model="copyMode" />{{ $t('Add') }}</label>
           </div>
-          <button type="button"
-                  class="w-full text-sm font-semibold bg-primary text-white py-2 rounded-lg disabled:opacity-40 mb-4"
-                  :disabled="!copyTargets.length || busyDay"
-                  @click="applyDay(dayMenu)">{{ $t('Apply') }}</button>
-
+          <button type="button" class="w-full text-sm font-semibold bg-primary text-white py-2 rounded-lg disabled:opacity-40 mb-4"
+                  :disabled="!copyTargets.length || busyDay" @click="applyDay(dayMenu)">{{ $t('Apply') }}</button>
           <p class="text-[10px] uppercase tracking-wide text-body-1/50 mb-1.5">{{ $t('Assign whole day to') }}</p>
           <div class="flex flex-col gap-0.5 mb-1">
-            <button type="button" class="text-left text-sm px-2 py-1.5 rounded-lg hover:bg-base-lvl-2 text-body-1/80"
-                    @click="assignDay(dayMenu, null)">{{ $t('Everyone') }}</button>
+            <button type="button" class="text-left text-sm px-2 py-1.5 rounded-lg hover:bg-base-lvl-2 text-body-1/80" @click="assignDay(dayMenu, null)">{{ $t('Everyone') }}</button>
             <button v-for="m in members" :key="m.id" type="button"
-                    class="flex items-center gap-2 text-left text-sm px-2 py-1.5 rounded-lg hover:bg-base-lvl-2 text-body"
-                    @click="assignDay(dayMenu, m.id)">
+                    class="flex items-center gap-2 text-left text-sm px-2 py-1.5 rounded-lg hover:bg-base-lvl-2 text-body" @click="assignDay(dayMenu, m.id)">
               <span class="w-2.5 h-2.5 rounded-full" :style="{ background: memberColor(m.id) }"></span>{{ m.name }}
             </button>
           </div>
-
           <div class="flex justify-end pt-2">
             <button type="button" class="text-sm text-body-1 px-3 py-1.5 rounded-lg hover:bg-base-lvl-2" @click="dayMenu = null">{{ $t('Close') }}</button>
           </div>
@@ -365,7 +485,9 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); });
     <Teleport to="body">
       <div v-if="showModal" class="fixed inset-0 z-40 flex items-center justify-center p-4 bg-black/50" @click.self="showModal = false">
         <div class="w-full max-w-sm bg-base-lvl-3 border border-base rounded-2xl shadow-2xl p-4">
-          <h3 class="font-bold text-body mb-3">{{ isEdit ? $t('Edit block') : $t('New block') }}</h3>
+          <h3 class="font-bold text-body mb-1">{{ isEdit ? $t('Edit block') : $t('New block') }}</h3>
+          <p v-if="isException" class="text-[11px] text-primary font-semibold mb-3">★ {{ $t('Exception — this date only') }}: {{ form.date }}</p>
+          <div v-else class="mb-3"></div>
 
           <input v-model="form.title" type="text" :placeholder="$t('Title')"
                  class="w-full mb-2 px-3 py-2 text-sm rounded-lg bg-base-lvl-2 border border-base text-body outline-none focus:border-primary" />
@@ -373,7 +495,8 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); });
           <div class="flex gap-2 mb-2">
             <div class="flex-1">
               <label class="block text-[9px] uppercase tracking-wide text-body-1/50 mb-1">{{ $t('Day') }}</label>
-              <select v-model.number="form.day" class="w-full px-2 py-2 text-sm rounded-lg bg-base-lvl-2 border border-base text-body outline-none">
+              <select v-model.number="form.day" :disabled="isException"
+                      class="w-full px-2 py-2 text-sm rounded-lg bg-base-lvl-2 border border-base text-body outline-none disabled:opacity-50">
                 <option v-for="(d, i) in SHORT" :key="i" :value="i">{{ d }}</option>
               </select>
             </div>

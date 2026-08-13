@@ -826,5 +826,12 @@
     "Apply": "Aplicar",
     "Block deleted": "Bloque eliminado",
     "Undo": "Deshacer",
-    "Double-tap a day to add · tap a block to edit · ⋯ to duplicate a day. This template repeats every week.": "Doble toque en un día para agregar · toca un bloque para editar · ⋯ para duplicar un día. Esta plantilla se repite cada semana."
+    "Double-tap a day to add · tap a block to edit · ⋯ to duplicate a day. This template repeats every week.": "Doble toque en un día para agregar · toca un bloque para editar · ⋯ para duplicar un día. Esta plantilla se repite cada semana.",
+    "Template": "Plantilla",
+    "This week": "Esta semana",
+    "Replace just today": "Reemplazar solo hoy",
+    "Remove just today": "Quitar solo hoy",
+    "Edit template": "Editar plantilla",
+    "Exception — this date only": "Excepción — solo esta fecha",
+    "This week only: exceptions (★) override the template for that date. Tap a faded template block to replace or remove it just for today.": "Solo esta semana: las excepciones (★) tienen prioridad sobre la plantilla para esa fecha. Toca un bloque de plantilla tenue para reemplazarlo o quitarlo solo por hoy."
 }

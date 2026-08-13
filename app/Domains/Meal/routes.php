@@ -40,6 +40,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     Route::delete('/housing/routine/{plan}/blocks/{item}', [RoutineController::class, 'destroyBlock'])->name('routine.blocks.destroy');
     Route::post('/housing/routine/{plan}/copy-day', [RoutineController::class, 'copyDay'])->name('routine.copy-day');
     Route::post('/housing/routine/{plan}/assign-day', [RoutineController::class, 'assignDay'])->name('routine.assign-day');
+    Route::get('/housing/routine/{plan}/week', [RoutineController::class, 'week'])->name('routine.week');
 });
 
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', 'loger.concerns:meals'])->group(function () {
