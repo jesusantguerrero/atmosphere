@@ -154,7 +154,7 @@ const submit = () => {
             </p>
 
             <div class="mb-4 flex items-end gap-3 flex-wrap">
-                <div class="flex-1 min-w-48">
+                <div class="w-64 max-w-full">
                     <label class="block text-xs font-semibold uppercase tracking-wide text-body-1/60 mb-1">
                         {{ $t('Source (optional)') }}
                     </label>
@@ -165,7 +165,7 @@ const submit = () => {
                 </div>
                 <button
                     type="button"
-                    class="text-sm text-primary hover:underline whitespace-nowrap pb-5"
+                    class="text-sm text-primary hover:underline whitespace-nowrap pb-6"
                     @click="showPaste = !showPaste"
                 >
                     <i class="fa fa-paste mr-1" />
