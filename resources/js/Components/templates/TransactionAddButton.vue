@@ -6,8 +6,10 @@
     import { usePage } from '@inertiajs/vue3';
 
     import { TRANSACTION_DIRECTIONS,  useTransactionModal } from '@/domains/transactions';
+    import { useToggleModal } from '@/domains/app/useToggleModal';
     const  { DEPOSIT, WITHDRAW, TRANSFER } = TRANSACTION_DIRECTIONS;
     const { openTransactionModal } = useTransactionModal();
+    const { openModal: openBulkPlanner } = useToggleModal('bulkPlanner');
 
     const page = usePage().props;
     const open = (mode: string) => {
@@ -49,6 +51,12 @@
                 <LogerButtonTab class="w-full font-bold" @click="open('transfer')">
                     <IMdiBankTransfer class="mr-2 text-md" />
                     {{ $t('Transfer') }}
+                </LogerButtonTab>
+
+                <h4 class="px-2 mt-2 border-t border-base pt-2 text-body-1/80"> {{ $t('Planner') }}: </h4>
+                <LogerButtonTab class="w-full font-bold" @click="openBulkPlanner()">
+                    <IMdiCalendarMultipleCheck class="mr-2 text-md" />
+                    {{ $t('Plan a batch') }}
                 </LogerButtonTab>
             </div>
         </template>
