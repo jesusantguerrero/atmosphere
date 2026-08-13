@@ -843,5 +843,9 @@
     "Name this category": "Nombra esta categoría",
     "Name each color once and it becomes a category across the routine. The budget uses the weekly template.": "Nombra cada color una vez y queda como categoría en toda la rutina. El presupuesto usa la plantilla semanal.",
     "Filter by this category": "Filtrar por esta categoría",
-    "No blocks this day": "No hay bloques este día"
+    "No blocks this day": "No hay bloques este día",
+    "Manage Space": "Administrar espacio",
+    "Space Settings": "Ajustes del espacio",
+    "Create New Space": "Crear nuevo espacio",
+    "Switch Space": "Cambiar de espacio"
 }
