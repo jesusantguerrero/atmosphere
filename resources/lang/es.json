@@ -736,5 +736,21 @@
     "ROUTINE": "Rutina",
     "CUSTOM": "Personalizado",
     "SHOPPING_LIST": "Lista de compras",
-    "Priority": "Prioridad"
+    "Priority": "Prioridad",
+    "Search": "Buscar",
+    "Last Paid": "Último pago",
+    "Avg Cycle": "Ciclo prom.",
+    "Next Due": "Próximo vencimiento",
+    "Clear sort": "Limpiar orden",
+    "Save this order": "Guardar este orden",
+    "Select Mode": "Modo selección",
+    "Sort by Task Name": "Ordenar por nombre",
+    "No utilities tracked yet.": "Aún no hay servicios registrados.",
+    "Add your first utility": "Agrega tu primer servicio",
+    "Nothing to do. Add new tasks from here or mark in your": "Nada por hacer. Agrega tareas aquí o márcalas en tus",
+    "as todo": "como pendientes",
+    "Days": "Días",
+    "Delegate": "Delegar",
+    "Board": "Tablero",
+    "Selection Mode": "Modo selección"
 }

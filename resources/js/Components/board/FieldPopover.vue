@@ -47,10 +47,10 @@
             </button>
         </li>
         <li class="option-list__item" @click="$emit('clear-sort')">
-            <button class="option-list__button">Clear sort</button>
+            <button class="option-list__button">{{ $t('Clear sort') }}</button>
         </li>
         <li class="option-list__item">
-          <button class="option-list__button">Duplicate</button>
+          <button class="option-list__button">{{ $t('Duplicate') }}</button>
         </li>
         <li class="option-list__item" v-if="field.manual">
           <button @click="deleteField()" class="option-list__button hover:bg-red-300">

@@ -479,7 +479,7 @@ const { isMac, modKey } = useKeyboardShortcuts({
                     name=""
                     id=""
                     v-model="searchOptions.search"
-                    :placeholder="`Search (${modKey}+K)`"
+                    :placeholder="`${$t('Search')} (${modKey}+K)`"
                 />
                 <span class="ml-2 toolbar-buttons">
                     <i class="fa fa-user"></i>
@@ -547,8 +547,8 @@ const { isMac, modKey } = useKeyboardShortcuts({
                 <div class="w-full mx-auto prose prose-xl text-center">
                     <img src="../../../img/undraw_empty.svg" class="w-4/12 mx-auto" />
                     <small class="mt-4 text-body-1/70">
-                    Nothing to do. Add new tasks from here or mark in your
-                    <a href="#" @click="">boards</a> as todo</small>
+                    {{ $t('Nothing to do. Add new tasks from here or mark in your') }}
+                    <a href="#" @click="">boards</a> {{ $t('as todo') }}</small>
                 </div>
                 </template>
             </BoardItemContainer>

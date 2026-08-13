@@ -106,12 +106,12 @@ const handleEdit = (resource) => {
 const defaultOptions = {
     edit: {
         name: "edit",
-        label: "Edit",
+        label: window.t("Edit"),
         handle: handleEdit
     },
     removed: {
         name: "removed",
-        label: "Remove",
+        label: window.t("Remove"),
         handle: handleDelete
     }
 }

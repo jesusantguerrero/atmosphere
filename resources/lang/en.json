@@ -647,5 +647,21 @@
     "ROUTINE": "Routine",
     "CUSTOM": "Custom",
     "SHOPPING_LIST": "Shopping List",
-    "Priority": "Priority"
+    "Priority": "Priority",
+    "Search": "Search",
+    "Last Paid": "Last Paid",
+    "Avg Cycle": "Avg Cycle",
+    "Next Due": "Next Due",
+    "Clear sort": "Clear sort",
+    "Save this order": "Save this order",
+    "Select Mode": "Select Mode",
+    "Sort by Task Name": "Sort by Task Name",
+    "No utilities tracked yet.": "No utilities tracked yet.",
+    "Add your first utility": "Add your first utility",
+    "Nothing to do. Add new tasks from here or mark in your": "Nothing to do. Add new tasks from here or mark in your",
+    "as todo": "as todo",
+    "Days": "Days",
+    "Delegate": "Delegate",
+    "Board": "Board",
+    "Selection Mode": "Selection Mode"
 }
