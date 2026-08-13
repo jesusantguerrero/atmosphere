@@ -27,14 +27,13 @@ const users = inject<any[]>('users', []);
 const COLORS = ['#56C08A', '#6E9BE6', '#E8A54F', '#E87FA8', '#A98BE0', '#B79B82', '#5CC2C2', '#E0736F', '#6B7686'];
 const memberColor = (idx: number) => COLORS[(idx + 3) % COLORS.length];
 
-const onlyToday = ref(false);
-const todayStr = new Date().toISOString().slice(0, 10);
+const todayLabel = new Date().toLocaleDateString('es', { weekday: 'long', day: 'numeric', month: 'long' });
 
 const allItems = computed(() => (props.stages || []).flatMap((s: any) => s.items || []));
 
-const isToday = (item: any) => (item.due_date || '').toString().slice(0, 10) === todayStr;
-
-const visibleItems = computed(() => (onlyToday.value ? allItems.value.filter(isToday) : allItems.value));
+// The chores payload is already scoped to today (pending + completed today) by
+// the controller, so every visible done card counts toward today's streak.
+const visibleItems = computed(() => allItems.value);
 
 const lanes = computed(() => {
   const list = (users || []).map((m: any, idx: number) => ({
@@ -118,15 +117,10 @@ async function addChore(lane: any) {
 <template>
   <div class="flex flex-col w-full pb-20">
     <div class="flex items-center justify-end mb-5">
-      <button
-        type="button"
-        class="inline-flex items-center gap-2 px-3.5 py-1.5 text-sm font-semibold transition border rounded-full"
-        :class="onlyToday ? 'bg-primary text-white border-primary shadow-sm' : 'text-body-1/80 border-base hover:bg-base-lvl-2'"
-        @click="onlyToday = !onlyToday"
-      >
+      <span class="inline-flex items-center gap-2 px-3.5 py-1.5 text-sm font-semibold capitalize rounded-full text-body-1/70 bg-base-lvl-2">
         <i class="text-xs fa fa-calendar-day"></i>
-        {{ $t('Today') }}
-      </button>
+        {{ todayLabel }}
+      </span>
     </div>
 
     <div class="flex gap-4 pb-4 overflow-x-auto">
