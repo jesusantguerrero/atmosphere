@@ -757,5 +757,6 @@
     "Remove just today": "Remove just today",
     "Edit template": "Edit template",
     "Exception — this date only": "Exception — this date only",
-    "This week only: exceptions (★) override the template for that date. Tap a faded template block to replace or remove it just for today.": "This week only: exceptions (★) override the template for that date. Tap a faded template block to replace or remove it just for today."
+    "This week only: exceptions (★) override the template for that date. Tap a faded template block to replace or remove it just for today.": "This week only: exceptions (★) override the template for that date. Tap a faded template block to replace or remove it just for today.",
+    "Activate module": "Activate module"
 }

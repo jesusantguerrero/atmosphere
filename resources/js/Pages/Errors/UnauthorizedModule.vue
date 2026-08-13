@@ -4,6 +4,11 @@ import LogerButton from '@/Components/atoms/LogerButton.vue';
 
 import { router } from "@inertiajs/vue3";
 
+// Primary path matches the copy ("activate this module in settings"): send the
+// user straight to where modules are toggled instead of a dead-end home button.
+const goToModules = () => {
+    return router.visit('/user/profile#modules')
+}
 const backToHome = () => {
     return router.visit('/')
 }
@@ -21,9 +26,14 @@ const backToHome = () => {
                    {{ $t('Activate this module in settings or contact the administrator') }}
                 </p>
 
-                <LogerButton variant="inverse" @click="backToHome">
-                    {{ $t('Back to Home') }}
-                </LogerButton>
+                <div class="flex flex-col items-center gap-3 mt-2">
+                    <LogerButton variant="primary" @click="goToModules">
+                        {{ $t('Activate module') }}
+                    </LogerButton>
+                    <button type="button" class="text-sm text-body-1/70 hover:text-body underline" @click="backToHome">
+                        {{ $t('Back to Home') }}
+                    </button>
+                </div>
             </section>
         </WelcomeCard>
   </main>

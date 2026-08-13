@@ -833,5 +833,6 @@
     "Remove just today": "Quitar solo hoy",
     "Edit template": "Editar plantilla",
     "Exception — this date only": "Excepción — solo esta fecha",
-    "This week only: exceptions (★) override the template for that date. Tap a faded template block to replace or remove it just for today.": "Solo esta semana: las excepciones (★) tienen prioridad sobre la plantilla para esa fecha. Toca un bloque de plantilla tenue para reemplazarlo o quitarlo solo por hoy."
+    "This week only: exceptions (★) override the template for that date. Tap a faded template block to replace or remove it just for today.": "Solo esta semana: las excepciones (★) tienen prioridad sobre la plantilla para esa fecha. Toca un bloque de plantilla tenue para reemplazarlo o quitarlo solo por hoy.",
+    "Activate module": "Activar módulo"
 }
