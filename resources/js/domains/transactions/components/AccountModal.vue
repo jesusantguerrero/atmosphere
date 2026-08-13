@@ -50,7 +50,7 @@ const state = reactive({
     credit_closing_day: null,
     credit_limit: null,
     // Multi-currency fields
-    currency_code: 'USD',
+    currency_code: (window as any)?.logerAppSettings?.currency_code ?? 'USD',
     is_multi_currency: false,
     secondary_currencies: [],
     currency_config: {}

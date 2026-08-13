@@ -231,13 +231,13 @@ const processing = ref(false);
 
 const creditLimitInput = ref({
   amount: 0,
-  currency: 'USD'
+  currency: (window as any)?.logerAppSettings?.currency_code ?? 'USD'
 });
 
 const form = useForm({
   name: '',
   account_detail_type_id: null,
-  currency_code: 'USD',
+  currency_code: (window as any)?.logerAppSettings?.currency_code ?? 'USD',
   is_multi_currency: false,
   secondary_currencies: [] as string[],
   credit_closing_day: null,
