@@ -801,12 +801,12 @@
     "Remove row": "Eliminar fila",
     "Add another row": "Agregar otra fila",
     "Saving...": "Guardando...",
-    "Save :n items": "Guardar :n elementos",
     "Landing page": "Página de inicio",
     "Set as home": "Establecer como inicio",
     "Today is your landing page": "Hoy es tu página de inicio",
     "Set Today as landing page": "Establecer Hoy como página de inicio",
     "Daily": "Diario",
     "Weekdays": "Entre semana",
-    "Once": "Una vez"
+    "Once": "Una vez",
+    "Save {n} items": "Guardar {n} ítems"
 }

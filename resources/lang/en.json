@@ -712,12 +712,12 @@
     "Remove row": "Remove row",
     "Add another row": "Add another row",
     "Saving...": "Saving...",
-    "Save :n items": "Save :n items",
     "Landing page": "Landing page",
     "Set as home": "Set as home",
     "Today is your landing page": "Today is your landing page",
     "Set Today as landing page": "Set Today as landing page",
     "Daily": "Daily",
     "Weekdays": "Weekdays",
-    "Once": "Once"
+    "Once": "Once",
+    "Save {n} items": "Save {n} items"
 }

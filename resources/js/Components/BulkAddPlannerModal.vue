@@ -274,17 +274,18 @@ const submit = () => {
         </template>
 
         <template #footer>
-            <LogerButton variant="neutral" :disabled="submitting" @click="close">
-                {{ $t('Cancel') }}
-            </LogerButton>
-            <LogerButton
-                variant="inverse"
-                :disabled="submitting || validRows.length === 0"
-                class="ml-2"
-                @click="submit"
-            >
-                {{ submitting ? $t('Saving...') : $t('Save :n items', { n: validRows.length }) }}
-            </LogerButton>
+            <div class="flex items-center justify-end gap-2">
+                <LogerButton variant="neutral" :disabled="submitting" @click="close">
+                    {{ $t('Cancel') }}
+                </LogerButton>
+                <LogerButton
+                    variant="inverse"
+                    :disabled="submitting || validRows.length === 0"
+                    @click="submit"
+                >
+                    {{ submitting ? $t('Saving...') : $t('Save {n} items', { n: validRows.length }) }}
+                </LogerButton>
+            </div>
         </template>
     </DialogModal>
 </template>
