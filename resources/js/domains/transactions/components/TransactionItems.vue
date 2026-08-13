@@ -116,6 +116,23 @@ const categoryAccounts = computed(() => {
     }
 });
 
+// Selectable ids of the current category list, groups flattened out (a group
+// header — `type: 'group'` — is a label, not a pickable option).
+const selectableCategoryIds = computed(() => {
+    const ids = new Set<string>();
+    const walk = (options: any[]) => {
+        (options ?? []).forEach((option) => {
+            if (option?.children?.length) {
+                walk(option.children);
+            } else if (option?.value != null && option?.type !== "group") {
+                ids.add(String(option.value));
+            }
+        });
+    };
+    walk(categoryAccounts.value as any[]);
+    return ids;
+});
+
 const splits = reactive<SplitItem[]>(props.items ?? []);
 const hasSplits = computed(() => splits.length > 1);
 
@@ -206,6 +223,26 @@ watch(
     categoryIds.forEach((catId, idx) => fetchRelatedPlanned(idx, catId));
   },
   { deep: true }
+);
+
+// Switching Expense <-> Income narrows the category list (income only offers the
+// inflow group). A category picked under the previous direction is no longer in
+// the options, so NSelect fell back to painting the raw id ("929") in the field
+// and the user could submit an expense category on an income. Drop the pick when
+// it isn't valid for the new direction; keep it when it still is (editing an
+// existing income never loses its inflow category).
+watch(
+  () => props.mode,
+  () => {
+    if (props.isTransfer) return;
+    splits.forEach((split) => {
+      const current = split.category_id;
+      if (current == null || current === "") return;
+      if (!selectableCategoryIds.value.has(String(current))) {
+        split.category_id = null;
+      }
+    });
+  }
 );
 
 // Bubble the first row's account + amount up so the modal can show the
