@@ -42,34 +42,29 @@ const { toggleModal: toggleImportModal } = useImportModal();
         <template #content>
             <!-- Account -->
             <div class="block px-4 py-2 text-xs text-body-1/70">
-                Account
+                {{ $t('Account') }}
             </div>
 
             <JetDropdownLink :href="route('profile.show')">
-                Profile
+                <span class="flex items-center gap-2"><IMdiAccountOutline /> {{ $t('Profile') }}</span>
             </JetDropdownLink>
 
             <JetDropdownLink :href="route('api-tokens.index')" v-if="hasApiFeatures">
-                API Tokens
+                <span class="flex items-center gap-2"><IMdiKeyOutline /> {{ $t('API Tokens') }}</span>
             </JetDropdownLink>
 
             <!-- Data -->
             <div class="block px-4 py-2 text-xs text-body-1/70">
-                Data
+                {{ $t('Data') }}
             </div>
             <AtDropdownLink as="button" target="_blank" @click="toggleImportModal()">
-                Import
+                <span class="flex items-center gap-2"><IMdiTrayArrowDown /> {{ $t('Import') }}</span>
             </AtDropdownLink>
-            <AtDropdownLink :href="route('finance.export')"  target="_blank" as="a">
-                Export transactions
+            <AtDropdownLink :href="route('finance.export')" target="_blank" as="a">
+                <span class="flex items-center gap-2"><IMdiTrayArrowUp /> {{ $t('Export transactions') }}</span>
             </AtDropdownLink>
-            <AtDropdownLink :href="route('housing.occurrences.export')"  target="_blank" as="a">
-                <section class="flex w-full">
-                    <IMdiFile  class="mr-2" />
-                    <span>
-                        Export occurrences
-                    </span>
-                </section>
+            <AtDropdownLink :href="route('housing.occurrences.export')" target="_blank" as="a">
+                <span class="flex items-center gap-2"><IMdiFileExportOutline /> {{ $t('Export occurrences') }}</span>
             </AtDropdownLink>
 
             <div class="border-t border-base-lvl-2"></div>
@@ -77,7 +72,7 @@ const { toggleModal: toggleImportModal } = useImportModal();
             <!-- Authentication -->
             <form @submit.prevent="$emit('logout')">
                 <JetDropdownLink as="button">
-                    Log Out
+                    <span class="flex items-center gap-2"><IMdiLogout /> {{ $t('Log Out') }}</span>
                 </JetDropdownLink>
             </form>
         </template>

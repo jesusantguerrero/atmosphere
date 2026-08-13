@@ -707,5 +707,10 @@
     "Select all {n} in your inbox": "Seleccionar las {n} de la bandeja",
     "{n} selected": "{n} seleccionadas",
     "Clear selection": "Limpiar selección",
-    "Delete all {n} items in your inbox? This cannot be undone.": "¿Eliminar las {n} de tu bandeja? Esto no se puede deshacer."
+    "Delete all {n} items in your inbox? This cannot be undone.": "¿Eliminar las {n} de tu bandeja? Esto no se puede deshacer.",
+    "API Tokens": "Tokens de API",
+    "Data": "Datos",
+    "Export transactions": "Exportar transacciones",
+    "Export occurrences": "Exportar ocurrencias",
+    "Log Out": "Cerrar sesión"
 }
