@@ -20,7 +20,7 @@ type RenderBlock = Block & { _kind: "template" | "exception" };
 interface Member { id: number; name: string; }
 interface PlanPayload { id: number; blocks: Block[]; days: string[]; }
 
-const props = defineProps<{ plan: PlanPayload; members: Member[] }>();
+const props = defineProps<{ plan: PlanPayload; members: Member[]; categories?: { color: string; name: string }[] }>();
 
 const blocks = ref<Block[]>([...props.plan.blocks]);       // weekly template
 const exceptions = ref<Block[]>([]);                       // dated, current week
@@ -98,6 +98,37 @@ const memberColor = (id: number | null) => {
   return COLORS[(idx + 3) % COLORS.length];
 };
 const initial = (id: number | null) => (memberName(id) || "?").slice(0, 1).toUpperCase();
+
+// ---- Named categories + time-budget analytics ----
+// Colors already act as categories visually; naming them gives a legend,
+// accessibility (not color-only) and the weekly time budget.
+const catNames = ref<Record<string, string>>({});
+(props.categories || []).forEach((c) => { catNames.value[c.color] = c.name; });
+const showBudget = ref(false);
+const savingCats = ref(false);
+
+const timeBudget = computed(() => {
+  const mins: Record<string, number> = {};
+  for (const b of blocks.value) {
+    const d = toMin(b.end) - toMin(b.start);
+    if (d > 0) mins[b.color] = (mins[b.color] || 0) + d;
+  }
+  const total = Object.values(mins).reduce((a, c) => a + c, 0) || 1;
+  return Object.entries(mins)
+    .map(([color, m]) => ({ color, minutes: m, hours: Math.round((m / 60) * 10) / 10, pct: Math.round((m / total) * 100) }))
+    .sort((a, b) => b.minutes - a.minutes);
+});
+const budgetTotalHours = computed(() =>
+  Math.round((timeBudget.value.reduce((a, c) => a + c.minutes, 0) / 60) * 10) / 10);
+const catLabel = (color: string) => (catNames.value[color] || "").trim();
+
+const saveCategories = async () => {
+  if (savingCats.value) return;
+  savingCats.value = true;
+  const payload = timeBudget.value.map((r) => ({ color: r.color, name: catNames.value[r.color] || "" }));
+  try { await axios.put(`/housing/routine/${props.plan.id}/categories`, { categories: payload }); }
+  finally { savingCats.value = false; }
+};
 
 const templateByDay = (day: number) =>
   blocks.value.filter((b) => b.day === day).sort((a, b) => toMin(a.start) - toMin(b.start));
@@ -317,6 +348,9 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); });
                   :class="viewMode === 'week' ? 'bg-base-lvl-3 text-body' : 'text-body-1/60'"
                   @click="setMode('week')">{{ $t('This week') }}</button>
         </div>
+        <button class="text-xs font-semibold px-3 py-1.5 rounded-lg border transition"
+                :class="showBudget ? 'bg-base-lvl-3 text-body border-base-lvl-1' : 'bg-base-lvl-1 text-body-1/70 border-base'"
+                @click="showBudget = !showBudget">📊 {{ $t('Time budget') }}</button>
       </div>
 
       <div class="flex items-center gap-2 mb-4 flex-wrap">
@@ -345,6 +379,32 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); });
           class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-primary text-white ml-1"
           @click="openNew()"
         >+ {{ $t('Block') }}</button>
+      </div>
+
+      <!-- time-budget analytics + category legend -->
+      <div v-if="showBudget" class="bg-base-lvl-3 border border-base rounded-xl p-4 mb-4">
+        <div class="flex items-center mb-3">
+          <h2 class="text-sm font-bold text-body">{{ $t('Weekly time budget') }}</h2>
+          <span class="ml-2 text-xs text-body-1/60">{{ budgetTotalHours }} {{ $t('h/week') }}</span>
+          <button class="ml-auto text-xs font-semibold px-3 py-1 rounded-lg bg-primary text-white disabled:opacity-50"
+                  :disabled="savingCats" @click="saveCategories">{{ $t('Save categories') }}</button>
+        </div>
+        <!-- stacked bar -->
+        <div class="flex h-3 w-full rounded-full overflow-hidden mb-3">
+          <div v-for="c in timeBudget" :key="c.color" class="h-full" :style="{ width: c.pct + '%', background: c.color }"
+               :title="(catLabel(c.color) || $t('Unnamed')) + ' · ' + c.hours + 'h'"></div>
+        </div>
+        <!-- rows: swatch + editable name + hours + pct -->
+        <div class="space-y-1.5">
+          <div v-for="c in timeBudget" :key="c.color" class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-sm flex-none" :style="{ background: c.color }"></span>
+            <input v-model="catNames[c.color]" type="text" :placeholder="$t('Name this category')"
+                   class="flex-1 min-w-0 px-2 py-1 text-xs rounded bg-base-lvl-2 border border-base text-body outline-none focus:border-primary" />
+            <span class="text-xs font-semibold text-body tabular-nums w-14 text-right">{{ c.hours }}h</span>
+            <span class="text-[10px] text-body-1/50 tabular-nums w-9 text-right">{{ c.pct }}%</span>
+          </div>
+        </div>
+        <p class="text-[11px] text-body-1/50 mt-3">{{ $t('Name each color once and it becomes a category across the routine. The budget uses the weekly template.') }}</p>
       </div>
 
       <!-- grid -->

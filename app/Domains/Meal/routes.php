@@ -41,6 +41,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     Route::post('/housing/routine/{plan}/copy-day', [RoutineController::class, 'copyDay'])->name('routine.copy-day');
     Route::post('/housing/routine/{plan}/assign-day', [RoutineController::class, 'assignDay'])->name('routine.assign-day');
     Route::get('/housing/routine/{plan}/week', [RoutineController::class, 'week'])->name('routine.week');
+    Route::put('/housing/routine/{plan}/categories', [RoutineController::class, 'saveCategories'])->name('routine.categories');
 });
 
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', 'loger.concerns:meals'])->group(function () {

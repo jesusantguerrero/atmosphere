@@ -758,5 +758,12 @@
     "Edit template": "Edit template",
     "Exception — this date only": "Exception — this date only",
     "This week only: exceptions (★) override the template for that date. Tap a faded template block to replace or remove it just for today.": "This week only: exceptions (★) override the template for that date. Tap a faded template block to replace or remove it just for today.",
-    "Activate module": "Activate module"
+    "Activate module": "Activate module",
+    "Time budget": "Time budget",
+    "Weekly time budget": "Weekly time budget",
+    "h/week": "h/week",
+    "Save categories": "Save categories",
+    "Unnamed": "Unnamed",
+    "Name this category": "Name this category",
+    "Name each color once and it becomes a category across the routine. The budget uses the weekly template.": "Name each color once and it becomes a category across the routine. The budget uses the weekly template."
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Domains\LogerProfile\Models\LogerProfile;
+use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -31,6 +32,7 @@ class RoutineController extends Controller
         return inertia('Routine/Index', [
             'plan' => $this->planPayload($plan),
             'members' => $this->members($request),
+            'categories' => $this->categories($request->user()->current_team_id),
         ]);
     }
 
@@ -310,6 +312,40 @@ class RoutineController extends Controller
             'week_end' => $sunday->format('Y-m-d'),
             'blocks' => $blocks,
         ]);
+    }
+
+    /** Named categories (color -> name) for the legend + time-budget analytics. */
+    public function saveCategories(Request $request, Plan $plan): JsonResponse
+    {
+        $this->guard($request, $plan);
+        $data = $request->validate([
+            'categories' => ['present', 'array'],
+            'categories.*.color' => ['required', 'string', 'max:20'],
+            'categories.*.name' => ['nullable', 'string', 'max:60'],
+        ]);
+
+        $clean = array_values(array_map(
+            fn ($c) => ['color' => $c['color'], 'name' => trim($c['name'] ?? '')],
+            $data['categories']
+        ));
+
+        Setting::updateOrCreate(
+            ['team_id' => $request->user()->current_team_id, 'name' => 'routine_categories'],
+            ['user_id' => $request->user()->id, 'value' => json_encode($clean)]
+        );
+
+        return response()->json(['categories' => $clean]);
+    }
+
+    private function categories(int $teamId): array
+    {
+        $setting = Setting::where(['team_id' => $teamId, 'name' => 'routine_categories'])->first();
+        if (! $setting || ! $setting->value) {
+            return [];
+        }
+        $decoded = json_decode($setting->value, true);
+
+        return is_array($decoded) ? $decoded : [];
     }
 
     // ---- helpers ------------------------------------------------------------

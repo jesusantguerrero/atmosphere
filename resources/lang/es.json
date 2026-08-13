@@ -834,5 +834,12 @@
     "Edit template": "Editar plantilla",
     "Exception — this date only": "Excepción — solo esta fecha",
     "This week only: exceptions (★) override the template for that date. Tap a faded template block to replace or remove it just for today.": "Solo esta semana: las excepciones (★) tienen prioridad sobre la plantilla para esa fecha. Toca un bloque de plantilla tenue para reemplazarlo o quitarlo solo por hoy.",
-    "Activate module": "Activar módulo"
+    "Activate module": "Activar módulo",
+    "Time budget": "Presupuesto de tiempo",
+    "Weekly time budget": "Presupuesto de tiempo semanal",
+    "h/week": "h/semana",
+    "Save categories": "Guardar categorías",
+    "Unnamed": "Sin nombre",
+    "Name this category": "Nombra esta categoría",
+    "Name each color once and it becomes a category across the routine. The budget uses the weekly template.": "Nombra cada color una vez y queda como categoría en toda la rutina. El presupuesto usa la plantilla semanal."
 }
