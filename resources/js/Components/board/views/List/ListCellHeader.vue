@@ -47,7 +47,7 @@ const filterIcons = computed(() => {
                   @sort="$emit('sort', $event)"
                   @clear-sort="$emit('clear-sort')"
               >
-                  {{ field.title }}
+                  {{ $t(field.title) }}
                   <i :class="filterIcons[field.name].sort" />
               </FieldPopover>
            </slot>

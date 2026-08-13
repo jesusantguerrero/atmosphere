@@ -39,7 +39,7 @@ const badgeLabel = (utility: Utility): string => {
 </script>
 
 <template>
-    <AppLayout title="Utilities">
+    <AppLayout :title="$t('Utilities')">
         <template #header>
             <HouseSectionNav class="h-12">
                 <template #actions>
@@ -60,13 +60,13 @@ const badgeLabel = (utility: Utility): string => {
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div class="bg-base-lvl-3 border border-base rounded-lg px-4 py-3 text-center">
                         <p class="text-2xl font-bold text-body">{{ utilities.length }}</p>
-                        <p class="text-sm text-body-2 mt-1">Utilities</p>
+                        <p class="text-sm text-body-2 mt-1">{{ $t('Utilities') }}</p>
                     </div>
                     <div class="bg-base-lvl-3 border border-base rounded-lg px-4 py-3 text-center">
                         <p class="text-2xl font-bold" :class="overdue > 0 ? 'text-red-500' : 'text-green-500'">
                             {{ overdue }}
                         </p>
-                        <p class="text-sm text-body-2 mt-1">Overdue</p>
+                        <p class="text-sm text-body-2 mt-1">{{ $t('Overdue') }}</p>
                     </div>
                 </div>
 
@@ -74,11 +74,11 @@ const badgeLabel = (utility: Utility): string => {
                     <table class="w-full text-sm">
                         <thead>
                             <tr class="border-b border-base text-left">
-                                <th class="px-4 py-3 font-medium text-body-2">Name</th>
-                                <th class="px-4 py-3 font-medium text-body-2">Last Paid</th>
-                                <th class="px-4 py-3 font-medium text-body-2">Avg Cycle</th>
-                                <th class="px-4 py-3 font-medium text-body-2">Next Due</th>
-                                <th class="px-4 py-3 font-medium text-body-2">Status</th>
+                                <th class="px-4 py-3 font-medium text-body-2">{{ $t('Name') }}</th>
+                                <th class="px-4 py-3 font-medium text-body-2">{{ $t('Last Paid') }}</th>
+                                <th class="px-4 py-3 font-medium text-body-2">{{ $t('Avg Cycle') }}</th>
+                                <th class="px-4 py-3 font-medium text-body-2">{{ $t('Next Due') }}</th>
+                                <th class="px-4 py-3 font-medium text-body-2">{{ $t('Status') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-base">
@@ -109,9 +109,9 @@ const badgeLabel = (utility: Utility): string => {
             </section>
 
             <section v-else class="flex flex-col items-center justify-center py-20 text-center space-y-4">
-                <p class="text-body-2 text-base">No utilities tracked yet.</p>
+                <p class="text-body-2 text-base">{{ $t('No utilities tracked yet.') }}</p>
                 <LogerButton variant="inverse" @click="router.visit('/housing/occurrence/create')">
-                    Add your first utility
+                    {{ $t('Add your first utility') }}
                 </LogerButton>
             </section>
         </main>

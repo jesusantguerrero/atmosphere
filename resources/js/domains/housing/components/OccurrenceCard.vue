@@ -79,7 +79,7 @@ const asideClass = computed(() => ({
       <section class="flex items-center justify-center occurrences-center w-full mt-2 md:w-3/12 md:justify-end md:mt-0 md:space-x-2">
           <p>
               <span class="font-bold" :class="[state.siteStatusClass]"> AVG: </span>
-              <span class="font-bold text-body-1">{{ occurrence.avg_days_passed }} Days</span>
+              <span class="font-bold text-body-1">{{ occurrence.avg_days_passed }} {{ $t('Days') }}</span>
           </p>
           <p>
               <span class="font-bold" :class="[state.siteStatusClass]"> Prev: </span>

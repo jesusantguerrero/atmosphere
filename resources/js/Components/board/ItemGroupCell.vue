@@ -150,7 +150,7 @@ const {
         >
             <i class="mr-3 fa fa-plus"></i>
             <span>
-                {{ placeholder }}
+                {{ $t(placeholder) }}
             </span>
         </div>
 
@@ -198,7 +198,7 @@ const {
                         :class="{ 'new-item': isTitle }"
                         :name="`${index}-${fieldName}`"
                         id=""
-                        :placeholder="placeholder"
+                        :placeholder="$t(placeholder)"
                         v-model="value"
                         @blur="saveChanges()"
                         @keydown.enter="saveItem"

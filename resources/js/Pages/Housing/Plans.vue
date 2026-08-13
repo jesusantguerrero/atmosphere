@@ -10,7 +10,7 @@ import BoardSection from '@/Components/board/BoardSection.vue';
 
 
 <template>
-    <AppLayout title="Occurrence Checks">
+    <AppLayout :title="$t('Plans')">
         <template #header>
             <HouseSectionNav>
                   <template #actions>

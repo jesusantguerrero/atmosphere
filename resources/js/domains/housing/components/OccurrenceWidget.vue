@@ -24,10 +24,15 @@ const daysSince = (occurrence: IOccurrenceCheck): number =>
 // Once a reminder is many days old the raw day count (e.g. 752d) is hard to
 // read, so summarize it in months past ~3 months; the exact days stay in the
 // tooltip via getUrgencyTitle for anyone who wants the detail.
+// Compact but unambiguous unit suffixes. The old "d"/"m" pair was misread —
+// "25m" looks like 25 minutes when it means 25 months — so months now render
+// as a clear localized token (es "mes" / en "mo") while days stay "d" (the
+// widget subtitle already frames the number as days). Exact days live in the
+// hover tooltip via getUrgencyTitle.
 const humanizeSpan = (n: number): string => {
     const abs = Math.abs(n);
-    if (abs < 90) return `${n}d`;
-    return `${Math.round(n / 30)}m`;
+    if (abs < 90) return `${n}${t('day-abbrev')}`;
+    return `${Math.round(n / 30)}${t('month-abbrev')}`;
 };
 
 const getUrgencyColor = (occurrence: IOccurrenceCheck): string => {

@@ -6,6 +6,7 @@ import MoreOptionsModal from "../MoreOptionsModal.vue";
 import TransactionModal from "@/domains/transactions/components/TransactionModal.vue";
 import PaymentFormModal from "@/domains/transactions/components/PaymentFormModal.vue";
 import ImportResourceModal from "@/Components/ImportResourceModal.vue";
+import BulkAddPlannerModal from "@/Components/BulkAddPlannerModal.vue";
 
 import { useTransactionModal, transactionModalState } from "@/domains/transactions";
 import { useImportModal } from "@/domains/transactions/useImportModal";
@@ -66,6 +67,13 @@ const {
     closeModal: closeOccurrenceModal,
     data: occurrenceData,
 } = useToggleModal("occurrence");
+
+// Bulk planner ("Plan a batch") lives at the app root so the global +New menu
+// can open it from any page, not just Today.
+const {
+    isOpen: isBulkPlannerOpen,
+    closeModal: closeBulkPlanner,
+} = useToggleModal("bulkPlanner");
 </script>
 
 <template>
@@ -80,6 +88,8 @@ const {
         @saved="onTransactionSaved" />
 
     <ImportResourceModal v-model:show="isImportModalOpen" />
+
+    <BulkAddPlannerModal :show="isBulkPlannerOpen" @close="closeBulkPlanner" />
 
 
     <OccurrenceCheckModal v-model:show="isOccurrenceModalOpen" :max-width="modalMaxWidth"

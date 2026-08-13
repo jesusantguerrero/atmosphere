@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import { format, parseISO } from 'date-fns';
 
@@ -8,7 +8,7 @@ import LogerButton from '@/Components/atoms/LogerButton.vue';
 import DayMonthToggle from '@/Components/molecules/DayMonthToggle.vue';
 import { formatMoney } from '@/utils';
 import { useTransactionModal } from '@/domains/transactions/useTransactionModal';
-import BulkAddPlannerModal from '@/Pages/Today/Partials/BulkAddPlannerModal.vue';
+import { useToggleModal } from '@/domains/app/useToggleModal';
 
 interface MoneyPayload {
     today_spent: number;
@@ -129,9 +129,9 @@ const mealsByDay = computed(() => {
     return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b));
 });
 
-const showBulkPlannerModal = ref(false);
-const openBulkPlanner = () => { showBulkPlannerModal.value = true; };
-const closeBulkPlanner = () => { showBulkPlannerModal.value = false; };
+// The modal itself is mounted app-wide in AppGlobals so the global +New menu can
+// reach it too; Today just triggers the shared state.
+const { openModal: openBulkPlanner } = useToggleModal('bulkPlanner');
 </script>
 
 <template>
@@ -156,7 +156,7 @@ const closeBulkPlanner = () => { showBulkPlannerModal.value = false; };
                         <i class="fa fa-home mr-1" />
                         {{ isLandingPage ? $t('Landing page') : $t('Set as home') }}
                     </button>
-                    <LogerButton variant="neutral" rounded @click="openBulkPlanner">
+                    <LogerButton variant="neutral" rounded @click="openBulkPlanner()">
                         <i class="fa fa-calendar-plus mr-2" />
                         {{ $t('Plan a batch') }}
                     </LogerButton>
@@ -423,7 +423,5 @@ const closeBulkPlanner = () => { showBulkPlannerModal.value = false; };
                 </article>
             </section>
         </main>
-
-        <BulkAddPlannerModal :show="showBulkPlannerModal" @close="closeBulkPlanner" />
     </AppLayout>
 </template>

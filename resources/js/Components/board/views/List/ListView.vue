@@ -231,7 +231,7 @@ const { syncScroll } = useSyncScroll("left", "ic-scroller-slim");
 
               <span class="font-bold handle" v-if="!isEditMode">
                 {{ stage.title || stage.name }}
-                {{ isSelectMode ? "(Selection Mode)" : "" }}
+                {{ isSelectMode ? $t('Selection Mode') : '' }}
               </span>
 
               <div v-else>
@@ -253,15 +253,15 @@ const { syncScroll } = useSyncScroll("left", "ic-scroller-slim");
                   :options="[
                     {
                       key: 'edit',
-                      label: 'Edit',
+                      label: $t('Edit'),
                     },
                     {
                       key: 'delete',
-                      label: 'Delete',
+                      label: $t('Delete'),
                     },
                     {
                       key: 'selection',
-                      label: 'Select Mode',
+                      label: $t('Select Mode'),
                     },
                   ]"
                 >
@@ -282,15 +282,15 @@ const { syncScroll } = useSyncScroll("left", "ic-scroller-slim");
               :options="[
                 {
                   key: 'sort',
-                  label: 'Sort by Task Name',
+                  label: $t('Sort by Task Name'),
                 },
                 {
                   key: 'clearSort',
-                  label: 'Clear sort',
+                  label: $t('Clear sort'),
                 },
                 {
                   key: 'saveOrder',
-                  label: 'Save this order',
+                  label: $t('Save this order'),
                 },
               ]"
             >

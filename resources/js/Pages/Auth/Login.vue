@@ -56,8 +56,19 @@ const submit = (formData: Record<string, string>) => {
           <AppIcon size="huge" class="text-white" />
         </Link>
       </template>
-      <template #prependInput v-if="config.IS_DEMO">
+      <template #prependInput v-if="status || config.IS_DEMO">
+        <!-- Why you are looking at a login screen: set when the session ended
+             mid-work (expired or force-closed). Without it the app just bounced
+             the user here with no explanation. -->
+        <div
+          v-if="status"
+          class="px-5 py-3 mt-6 font-sans text-sm text-center rounded-md bg-black bg-opacity-25"
+          role="status"
+        >
+          {{ status }}
+        </div>
         <DemoInstructions
+          v-if="config.IS_DEMO"
           class="px-5 py-2 mt-6 font-sans text-sm text-center bg-black bg-opacity-25 rounded-md"
         />
       </template>

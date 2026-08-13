@@ -37,9 +37,9 @@ const accent = computed(() => {
         >
             {{ board.name?.charAt(0)?.toUpperCase() }}
         </div>
-        <h3 class="max-w-full font-semibold capitalize truncate text-body">{{ board.name }}</h3>
+        <h3 class="max-w-full font-semibold capitalize truncate text-body">{{ $t(board.name) }}</h3>
         <p v-if="board.template" class="mt-0.5 max-w-full text-xs capitalize truncate text-body-2">
-            {{ board.template }}
+            {{ $t(board.template) }}
         </p>
     </Link>
 </template>

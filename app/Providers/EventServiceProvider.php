@@ -21,10 +21,12 @@ use App\Listeners\CreateOccurrenceAutomation;
 use App\Listeners\CreateStartingBalance;
 use App\Listeners\CreateTeamSettings;
 use App\Listeners\HandleTransactionCreated;
+use App\Listeners\LogForcedLogout;
 use App\Listeners\Menu\ShowInApp;
 use App\Listeners\PushShoppingListUpdate;
 use App\Listeners\TrashTeamSettings;
 use App\Listeners\UpdateBudgetAvailable;
+use Illuminate\Auth\Events\CurrentDeviceLogout;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -48,6 +50,9 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         Registered::class => [
             SendEmailVerificationNotification::class,
+        ],
+        CurrentDeviceLogout::class => [
+            LogForcedLogout::class,
         ],
         TeamCreated::class => [
             CreateTeamAccounts::class,

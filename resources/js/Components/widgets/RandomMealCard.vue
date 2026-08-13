@@ -58,7 +58,7 @@ const getRandomMeal = () => {
     <div class="flex items-center justify-between px-4 py-3 rounded-lg bg-base-lvl-3">
         <div class="flex items-center text-center capitalize text-secondary">
             <span>
-                {{ state.label }}
+                {{ state.isLoading ? $t('Loading...') : (state.mealName ?? $t(title)) }}
             </span>
         </div>
         <div class="flex justify-between">

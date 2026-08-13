@@ -3,7 +3,7 @@
         v-model:value="localValue"
         ref="input"
         value-key="name"
-        placeholder="Select"
+        :placeholder="$t('Select')"
         :filterable="true"
         :automatic-dropdown="true"
         :options="users"

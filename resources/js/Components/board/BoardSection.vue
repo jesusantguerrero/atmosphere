@@ -9,6 +9,7 @@ import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts';
 
 import ListView from "./views/List/ListView.vue";
 import MatrixView from "./views/matrix/MatrixBoard.vue";
+import FamilyView from "./views/FamilyView.vue";
 import ItemModal from "./ItemModal.vue";
 import AutomationModal from "../AutomationModal.vue";
 import BulkSelectionBar from '../BulkSelectionBar.vue';
@@ -48,6 +49,12 @@ const views = {
         title: "Matrix",
         component: MatrixView,
         icon: "fa fa-border-all"
+    },
+    family:{
+        name: "family",
+        title: "Family",
+        component: FamilyView,
+        icon: "fa fa-users"
     }
 };
 
@@ -94,9 +101,9 @@ const kanbanData = computed(() => {
         field => field.name == "status"
     );
 
-    if (props.board.stages.length) {
+    if (statusField && props.board.stages.length) {
         const quadrants = {};
-        props.board.labels.forEach(label => {
+        (props.board.labels ?? []).forEach(label => {
             if (label.field_id == statusField.id) {
                 quadrants[label.name] = {
                     id: label.id,
@@ -108,13 +115,23 @@ const kanbanData = computed(() => {
             }
         });
 
+        // Fallback bucket so items whose status has no matching label don't
+        // crash this computed — it is bound (:kanban-data) for every non-list
+        // view, so a throw here blanks the whole board, not just Kanban.
+        if (!quadrants['backlog']) {
+            quadrants['backlog'] = {
+                id: null,
+                fieldId: statusField.id,
+                attributes: { name: 'backlog', color: 'gray' },
+                items: [],
+                newTask: {}
+            };
+        }
+
         props.board.stages.forEach(stage => {
-            stage.items.forEach(item => {
-                if (quadrants[item[statusField.name]]) {
-                    quadrants[item[statusField.name]].items.push(item);
-                } else {
-                    quadrants['backlog'].items.push(item);
-                }
+            (stage.items ?? []).forEach(item => {
+                const bucket = quadrants[item[statusField.name]] ?? quadrants['backlog'];
+                bucket.items.push(item);
             });
         });
         return quadrants;
@@ -204,10 +221,11 @@ function addItem(item: Record<string, string>, stage: Record<string, string>, re
         });
 
         if (reload) {
-            router.reload({
-                preserveScroll: true,
-                preserveState: true
-            });
+            // Match every other mutation path in this component: a plain reload
+            // re-renders fresh server state. preserveState kept the stale in-place
+            // mutated board.stages, so new items didn't show and users re-added
+            // them (duplicates).
+            router.reload({ preserveScroll: true });
         }
     }).catch((error) => {
         ElNotification({
@@ -459,13 +477,13 @@ const { isMac, modKey } = useKeyboardShortcuts({
                      <template slot="singleLabel" slot-scope="props">
                          <span class="option__title">
                                 <i :class="views[props.option].icon" class="mr-2"></i>
-                                {{ views[props.option].title }}
+                                {{ $t(views[props.option].title) }}
                             </span>
                     </template>
                     <template slot="option" slot-scope="props">
                         <div class="option__desc">
                             <span class="option__title"><i :class="views[props.option].icon" class="mr-2"></i>
-                                {{ views[props.option].title }}
+                                {{ $t(views[props.option].title) }}
                             </span>
                         </div>
                     </template>
@@ -478,7 +496,7 @@ const { isMac, modKey } = useKeyboardShortcuts({
                     name=""
                     id=""
                     v-model="searchOptions.search"
-                    :placeholder="`Search (${modKey}+K)`"
+                    :placeholder="`${$t('Search')} (${modKey}+K)`"
                 />
                 <span class="ml-2 toolbar-buttons">
                     <i class="fa fa-user"></i>
@@ -546,8 +564,8 @@ const { isMac, modKey } = useKeyboardShortcuts({
                 <div class="w-full mx-auto prose prose-xl text-center">
                     <img src="../../../img/undraw_empty.svg" class="w-4/12 mx-auto" />
                     <small class="mt-4 text-body-1/70">
-                    Nothing to do. Add new tasks from here or mark in your
-                    <a href="#" @click="">boards</a> as todo</small>
+                    {{ $t('Nothing to do. Add new tasks from here or mark in your') }}
+                    <a href="#" @click="">boards</a> {{ $t('as todo') }}</small>
                 </div>
                 </template>
             </BoardItemContainer>
@@ -557,6 +575,7 @@ const { isMac, modKey } = useKeyboardShortcuts({
                 :is="containerComponent"
                 :stages="board.stages"
                 :fields="board.fields"
+                :board-id="board.id"
                 :kanban-data="kanbanData"
                 @saved="addItem"
                 :resource-name="resourceName"
@@ -613,21 +632,21 @@ li.link {
 }
 
 .board__toolbar {
-    border-bottom: 1px solid #ddd;
+    @apply items-center border-b border-base;
     padding-bottom: 15px;
 }
 
 .toolbar-buttons {
-    @apply px-2 rounded-full inline-flex items-center justify-center cursor-pointer;
+    @apply px-2 rounded-full inline-flex items-center justify-center cursor-pointer text-body-1/50 transition-colors;
     width: 34px;
     height: 34px;
 
     &.active {
-        @apply bg-gray-300;
+        @apply bg-base-lvl-2 text-primary;
     }
 
     &:hover {
-        @apply bg-gray-300;
+        @apply bg-base-lvl-2 text-body;
     }
 }
 

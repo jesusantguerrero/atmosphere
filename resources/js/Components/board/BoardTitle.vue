@@ -46,7 +46,7 @@ const checkChanges = (shouldToggle: boolean) => {
     v-if="!isEditMode"
     @click="toggleEditMode()"
     >
-        {{ boardName }}
+        {{ $t(boardName) }}
     </span>
     <input
         v-else

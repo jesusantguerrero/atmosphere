@@ -4,6 +4,7 @@ namespace App\Domains\Transaction\Services;
 
 use App\Domains\AppCore\Models\Planner;
 use App\Domains\Integration\Concerns\PlannedTransactionDTO;
+use Illuminate\Support\Arr;
 use App\Domains\Transaction\Models\Transaction;
 use Exception;
 use Insane\Journal\Models\Core\Transaction as CoreTransaction;
@@ -19,20 +20,25 @@ class PlannedTransactionService
             'status' => Transaction::STATUS_PLANNED,
         ])->first();
 
-        try {
-            if (! $transaction) {
-                $transaction = Transaction::create($plannedData->toArray());
-                $transaction->createLines($plannedData->items ?? []);
-            } else {
-                $transaction->updateTransaction($plannedData->toArray());
-            }
-            Planner::create(array_merge($plannedData->toArray(), [
+        // Restrict the DTO to real columns before mass-assigning: it carries
+        // schedule-only fields (frequency, interval, end_type, items, metaData,
+        // timezone_id, resource_type_id, repeat_*) that aren't Transaction/Planner
+        // columns. Passing them to create() throws under
+        // Model::preventSilentlyDiscardingAttributes (on outside production).
+        if (! $transaction) {
+            $transaction = Transaction::create(Arr::only($plannedData->toArray(), (new Transaction)->getFillable()));
+            $transaction->createLines($plannedData->items ?? []);
+        } else {
+            $transaction->updateTransaction(Arr::only($plannedData->toArray(), (new Transaction)->getFillable()));
+        }
+
+        Planner::create(array_merge(
+            Arr::only($plannedData->toArray(), (new Planner)->getFillable()),
+            [
                 'dateable_type' => Transaction::class,
                 'dateable_id' => $transaction->id,
-            ]));
-        } catch (Exception $e) {
-            dd($plannedData);
-        }
+            ]
+        ));
     }
 
     public function getPlanned($teamId)
@@ -87,19 +93,19 @@ class PlannedTransactionService
             'status' => Transaction::STATUS_PLANNED,
         ])->first();
 
-        try {
-            if (! $transaction) {
-                $transaction = Transaction::create($plannedData->toArray());
-                $transaction->createLines($plannedData->items ?? []);
-            } else {
-                $transaction->updateTransaction($plannedData->toArray());
-            }
-            Planner::create(array_merge($plannedData->toArray(), [
+        if (! $transaction) {
+            $transaction = Transaction::create(Arr::only($plannedData->toArray(), (new Transaction)->getFillable()));
+            $transaction->createLines($plannedData->items ?? []);
+        } else {
+            $transaction->updateTransaction(Arr::only($plannedData->toArray(), (new Transaction)->getFillable()));
+        }
+
+        Planner::create(array_merge(
+            Arr::only($plannedData->toArray(), (new Planner)->getFillable()),
+            [
                 'dateable_type' => Transaction::class,
                 'dateable_id' => $transaction->id,
-            ]));
-        } catch (Exception $e) {
-            dd($plannedData);
-        }
+            ]
+        ));
     }
 }

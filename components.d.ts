@@ -16,6 +16,7 @@ declare module 'vue' {
     IMdiBankTransferIn: typeof import('~icons/mdi/bank-transfer-in')['default']
     IMdiBankTransferOut: typeof import('~icons/mdi/bank-transfer-out')['default']
     IMdiBell: typeof import('~icons/mdi/bell')['default']
+    IMdiCalendarMultipleCheck: typeof import('~icons/mdi/calendar-multiple-check')['default']
     IMdiCallSplit: typeof import('~icons/mdi/call-split')['default']
     IMdiCartOutline: typeof import('~icons/mdi/cart-outline')['default']
     IMdiCash: typeof import('~icons/mdi/cash')['default']
