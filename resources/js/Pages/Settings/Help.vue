@@ -56,7 +56,7 @@ const gettingStarted = [
         n: 4,
         title: 'Enable the pillars you need',
         body: 'Start with Finance and Calendar. Add Food, Home, and Family when you\'re ready. Each pillar can be turned on or off any time.',
-        cta: { label: 'Manage modules', href: '/settings/modules' },
+        cta: { label: 'Manage modules', href: '/user/preferences#modules' },
     },
     {
         n: 5,

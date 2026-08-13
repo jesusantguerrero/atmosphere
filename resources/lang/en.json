@@ -773,5 +773,7 @@
     "Create New Space": "Create New Space",
     "Switch Space": "Switch Space",
     "Favorites": "Favorites",
-    "All meals": "All meals"
+    "All meals": "All meals",
+    "Shopping list": "Shopping list",
+    "{buy} buying · {skip} skipped · {pending} pending": "{buy} buying · {skip} skipped · {pending} pending"
 }

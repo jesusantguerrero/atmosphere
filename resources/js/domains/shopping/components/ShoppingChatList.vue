@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import axios from 'axios';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 interface Item {
     id: number;
@@ -113,6 +116,13 @@ const allItems = computed<Item[]>(() => stages.value.flatMap((s) => s.items));
 // → buy (already in cart) → skip (not getting today). The previous filter tabs
 // hard-removed items on tap, which felt like the row was being deleted.
 const STATE_ORDER = { pending: 0, buy: 1, skip: 2 } as const;
+
+// The default list's raw name is a system constant (e.g. SHOPPING_LIST); show a
+// friendly translated title instead — this is the only screen a shared guest sees.
+const listTitle = computed(() => {
+    const n = (props.plan.name ?? '').trim();
+    return /^[A-Z][A-Z0-9_]+$/.test(n) ? t('Shopping list') : n;
+});
 const visibleItems = computed<Item[]>(() =>
     [...allItems.value].sort((a, b) => {
         const sa = STATE_ORDER[a.state];
@@ -400,12 +410,12 @@ onBeforeUnmount(() => {
                             class="flex items-center gap-1.5 text-lg font-bold text-body max-w-full"
                             @click="showListMenu = !showListMenu"
                         >
-                            <span class="truncate">{{ plan.name }}</span>
+                            <span class="truncate">{{ listTitle }}</span>
                             <i class="fa fa-chevron-down text-xs text-body-1/60 shrink-0" />
                         </button>
-                        <h1 v-else class="text-lg font-bold text-body truncate">{{ plan.name }}</h1>
+                        <h1 v-else class="text-lg font-bold text-body truncate">{{ listTitle }}</h1>
                         <p class="text-xs text-body-1/60 mt-0.5">
-                            {{ counts.buy }} buying · {{ counts.skip }} skipped · {{ counts.pending }} pending
+                            {{ $t('{buy} buying · {skip} skipped · {pending} pending', { buy: counts.buy, skip: counts.skip, pending: counts.pending }) }}
                         </p>
 
                         <template v-if="showListMenu">

@@ -81,7 +81,7 @@ const groups = computed<SettingsGroup[]>(() => {
                 {
                     name: "Modules",
                     description: "Enable pillars: Housing, Meals, Family.",
-                    href: "/user/profile#modules",
+                    href: "/user/preferences#modules",
                     icon: "fas fa-th-large",
                 },
             ],

@@ -21,7 +21,7 @@
                 </p>
             </header>
 
-            <UpdateModulesForm />
+            <div id="modules"><UpdateModulesForm /></div>
         </div>
     </AppLayout>
 </template>
