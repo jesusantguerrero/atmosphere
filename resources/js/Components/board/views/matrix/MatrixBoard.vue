@@ -320,7 +320,9 @@ watch(() => [state.tasks, props.mode], () => {
 })
 
 const getMatrixTasks = (matrix) => {
-    return  props.kanbanData[matrix].items;
+    // Guard: a board whose statuses don't map to these matrix quadrants (e.g. chores)
+    // would otherwise crash the whole view. Degrade to an empty quadrant instead.
+    return props.kanbanData[matrix]?.items ?? [];
 }
 
 const getNextIndex = (list) => {
@@ -354,6 +356,7 @@ const moveTo = async (task, matrix) => {
 const handleDragChanges = (e, matrix) => {
   if (e.added) {
     const quadrant = props.kanbanData[matrix]
+    if (!quadrant) return;
     let field = e.added.element.fields.find(field => field.field_id == quadrant.attributes.field_id)
     if (!field) {
         field = this.fields.find( field => field.id == quadrant.attributes.field_id);
