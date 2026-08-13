@@ -816,5 +816,15 @@
     "To": "A",
     "From": "De",
     "Search category": "Buscar categoría",
-    "Money Available": "Dinero disponible"
+    "Money Available": "Dinero disponible",
+    "Optional details": "Detalles opcionales",
+    "Duplicate day to": "Duplicar día a",
+    "Assign whole day to": "Asignar todo el día a",
+    "Assign member": "Asignar miembro",
+    "Day options": "Opciones del día",
+    "Replace": "Reemplazar",
+    "Apply": "Aplicar",
+    "Block deleted": "Bloque eliminado",
+    "Undo": "Deshacer",
+    "Double-tap a day to add · tap a block to edit · ⋯ to duplicate a day. This template repeats every week.": "Doble toque en un día para agregar · toca un bloque para editar · ⋯ para duplicar un día. Esta plantilla se repite cada semana."
 }

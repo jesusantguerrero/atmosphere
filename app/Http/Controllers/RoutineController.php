@@ -131,6 +131,110 @@ class RoutineController extends Controller
         return response()->json(['deleted' => true]);
     }
 
+    /**
+     * Copy every block from one weekday to one or more target weekdays in a
+     * single call. mode=replace wipes the target day first (default); append
+     * keeps what's there. This is the killer of the repetitive-entry pain:
+     * "make Wed like Mon" is one request, not N block creations.
+     */
+    public function copyDay(Request $request, Plan $plan): JsonResponse
+    {
+        $this->guard($request, $plan);
+        $data = $request->validate([
+            'from' => ['required', 'integer', 'min:0', 'max:6'],
+            'to' => ['required', 'array', 'min:1'],
+            'to.*' => ['integer', 'min:0', 'max:6'],
+            'mode' => ['nullable', 'in:replace,append'],
+        ]);
+
+        $from = (int) $data['from'];
+        $mode = $data['mode'] ?? 'replace';
+        $targets = array_values(array_filter(
+            array_unique(array_map('intval', $data['to'])),
+            fn ($d) => $d !== $from                    // never copy a day onto itself
+        ));
+
+        $sourceStage = $plan->stages->firstWhere('order', $from);
+        if (! $sourceStage) {
+            return response()->json(['error' => 'Invalid source day.'], 422);
+        }
+        $sourceItems = $sourceStage->items()->orderBy('order')->get();
+
+        $created = [];
+        DB::transaction(function () use ($plan, $request, $targets, $mode, $sourceItems, &$created) {
+            foreach ($targets as $day) {
+                $stage = $plan->stages->firstWhere('order', $day);
+                if (! $stage) {
+                    continue;
+                }
+                if ($mode === 'replace') {
+                    foreach ($stage->items()->get() as $existing) {
+                        $existing->fields()->delete();
+                        $existing->delete();
+                    }
+                }
+                foreach ($sourceItems as $src) {
+                    $f = $src->fields->pluck('value', 'field_name')->toArray();
+                    $item = PlanItem::create([
+                        'plan_id' => $plan->id,
+                        'team_id' => $plan->team_id,
+                        'user_id' => $request->user()->id,
+                        'stage_id' => $stage->id,
+                        'title' => $src->title,
+                        'state' => PlanItem::STATE_PENDING,
+                        'order' => $src->order,
+                    ]);
+                    $item->saveFields([
+                        ['name' => 'start', 'value' => $f['start'] ?? '00:00'],
+                        ['name' => 'end', 'value' => $f['end'] ?? '00:00'],
+                        ['name' => 'color', 'value' => $f['color'] ?? '#6E9BE6'],
+                        ['name' => 'member', 'value' => $f['member'] ?? ''],
+                        ['name' => 'note', 'value' => $f['note'] ?? ''],
+                    ]);
+                    $created[] = $this->blockPayload($item->fresh(), $day);
+                }
+            }
+        });
+
+        // replaced tells the client which day columns to clear before merging.
+        return response()->json([
+            'blocks' => $created,
+            'mode' => $mode,
+            'replaced' => $mode === 'replace' ? $targets : [],
+        ], 201);
+    }
+
+    /** Assign (or clear) a member on every block of one weekday in one call. */
+    public function assignDay(Request $request, Plan $plan): JsonResponse
+    {
+        $this->guard($request, $plan);
+        $data = $request->validate([
+            'day' => ['required', 'integer', 'min:0', 'max:6'],
+            'member_id' => ['nullable', 'integer'],
+        ]);
+
+        $stage = $plan->stages->firstWhere('order', (int) $data['day']);
+        if (! $stage) {
+            return response()->json(['error' => 'Invalid day.'], 422);
+        }
+
+        $value = isset($data['member_id']) && $data['member_id'] !== null
+            ? (string) $data['member_id'] : '';
+
+        $ids = [];
+        foreach ($stage->items()->get() as $item) {
+            // Replace only the member field, leaving start/end/color/note intact.
+            $item->fields()->where('field_name', 'member')->delete();
+            $item->saveFields([['name' => 'member', 'value' => $value]]);
+            $ids[] = $item->id;
+        }
+
+        return response()->json([
+            'ids' => $ids,
+            'member_id' => $data['member_id'] ?? null,
+        ]);
+    }
+
     // ---- helpers ------------------------------------------------------------
 
     private function validateBlock(Request $request): array
@@ -142,6 +246,7 @@ class RoutineController extends Controller
             'end' => ['required', 'string', 'max:5'],
             'color' => ['nullable', 'string', 'max:20'],
             'member_id' => ['nullable', 'integer'],
+            'note' => ['nullable', 'string', 'max:500'],
         ]);
     }
 
@@ -152,6 +257,7 @@ class RoutineController extends Controller
             ['name' => 'end', 'value' => $data['end']],
             ['name' => 'color', 'value' => $data['color'] ?? '#6E9BE6'],
             ['name' => 'member', 'value' => (string) ($data['member_id'] ?? '')],
+            ['name' => 'note', 'value' => (string) ($data['note'] ?? '')],
         ];
     }
 
@@ -217,6 +323,7 @@ class RoutineController extends Controller
             'end' => $f['end'] ?? '00:00',
             'color' => $f['color'] ?? '#6E9BE6',
             'member_id' => isset($f['member']) && $f['member'] !== '' ? (int) $f['member'] : null,
+            'note' => $f['note'] ?? '',
         ];
     }
 
