@@ -15,6 +15,7 @@ import {
     parseISO,
     isToday as dateFnsIsToday,
 } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 import AppLayout from '@/Components/templates/AppLayout.vue';
 import LogerButton from '@/Components/atoms/LogerButton.vue';
@@ -79,7 +80,15 @@ const calendarDays = computed(() => {
     return days;
 });
 
-const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+// Weekday headers localized to the app locale (Monday-first, matching the grid).
+const isEsLocale = ((window as any)?.logerLocale ?? 'en').startsWith('es');
+const weekdays = computed(() => {
+    const weekStart = startOfWeek(currentDate.value, { weekStartsOn: 1 });
+    return Array.from({ length: 7 }, (_, i) => {
+        const label = format(addDays(weekStart, i), 'EEE', isEsLocale ? { locale: es } : undefined);
+        return label.charAt(0).toUpperCase() + label.slice(1);
+    });
+});
 
 // Kind → color classes
 const kindColor = (kind: string): string => {
@@ -121,6 +130,9 @@ const selectDay = (date: Date) => {
 // Add planner item form
 const showAddForm = ref(false);
 const showFinancials = ref(false);
+// Honor the space's configured date format (dd.MM.yyyy, MM/dd/yyyy, ...) in the
+// date picker instead of Naive's default ISO display.
+const spaceDateFormat = ((window as any)?.logerAppSettings?.date_format) || 'dd MMM, yyyy';
 const addForm = useForm({
     name: '',
     date: '',
@@ -363,6 +375,7 @@ const monthLabel = computed(() => formatMonth(currentDate.value, 'MMMM yyyy'));
                                 <NDatePicker
                                     v-model:formatted-value="addForm.date"
                                     value-format="yyyy-MM-dd"
+                                    :format="spaceDateFormat"
                                     type="date"
                                     size="large"
                                     class="w-full"

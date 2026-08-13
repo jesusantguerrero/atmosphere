@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Domains\LogerProfile\Models\LogerProfile;
+use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Inertia\Response;
 use Modules\Plan\Entities\Plan;
@@ -30,6 +32,7 @@ class RoutineController extends Controller
         return inertia('Routine/Index', [
             'plan' => $this->planPayload($plan),
             'members' => $this->members($request),
+            'categories' => $this->categories($request->user()->current_team_id),
         ]);
     }
 
@@ -40,19 +43,55 @@ class RoutineController extends Controller
         $dow = (int) date('N') - 1;               // 0=Mon .. 6=Sun
         $now = (int) date('G') * 60 + (int) date('i');
 
-        $today = [];
+        $todayDate = date('Y-m-d');
+
+        // Split the weekday's blocks into the undated template and today's dated
+        // exceptions (exceptions for other dates in this stage are ignored).
+        $template = [];
+        $exceptions = [];
         foreach ($plan->stages as $stage) {
             if ((int) $stage->order !== $dow) {
                 continue;
             }
             foreach ($stage->items()->orderBy('order')->get() as $item) {
                 $b = $this->blockPayload($item, $dow);
-                $today[] = [
-                    'block' => $b,
-                    's' => $this->toMinutes($b['start']),
-                    'e' => $this->toMinutes($b['end']),
-                ];
+                if (empty($b['date'])) {
+                    $template[] = $b;
+                } elseif ($b['date'] === $todayDate) {
+                    $exceptions[] = $b;
+                }
             }
+        }
+
+        // Same override rule as the week view: an exception hides the template
+        // block it overlaps; `skip` just blanks the slot (not rendered).
+        $overlaps = function (array $a, array $b): bool {
+            return $this->toMinutes($a['start']) < $this->toMinutes($b['end'])
+                && $this->toMinutes($b['start']) < $this->toMinutes($a['end']);
+        };
+        $effective = [];
+        foreach ($template as $t) {
+            $covered = false;
+            foreach ($exceptions as $e) {
+                if ($overlaps($t, $e)) { $covered = true; break; }
+            }
+            if (! $covered) {
+                $effective[] = $t;
+            }
+        }
+        foreach ($exceptions as $e) {
+            if (empty($e['skip'])) {
+                $effective[] = $e;
+            }
+        }
+
+        $today = [];
+        foreach ($effective as $b) {
+            $today[] = [
+                'block' => $b,
+                's' => $this->toMinutes($b['start']),
+                'e' => $this->toMinutes($b['end']),
+            ];
         }
         usort($today, fn ($a, $b) => $a['s'] <=> $b['s']);
 
@@ -74,6 +113,7 @@ class RoutineController extends Controller
     {
         $this->guard($request, $plan);
         $data = $this->validateBlock($request);
+        $data['day'] = $this->dayFor($data);
 
         $stage = $plan->stages->firstWhere('order', $data['day']);
         if (! $stage) {
@@ -99,6 +139,7 @@ class RoutineController extends Controller
         $this->guard($request, $plan);
         $this->ensureItemBelongsTo($plan, $item);
         $data = $this->validateBlock($request);
+        $data['day'] = $this->dayFor($data);
 
         $stage = $plan->stages->firstWhere('order', $data['day']);
         if (! $stage) {
@@ -131,6 +172,182 @@ class RoutineController extends Controller
         return response()->json(['deleted' => true]);
     }
 
+    /**
+     * Copy every block from one weekday to one or more target weekdays in a
+     * single call. mode=replace wipes the target day first (default); append
+     * keeps what's there. This is the killer of the repetitive-entry pain:
+     * "make Wed like Mon" is one request, not N block creations.
+     */
+    public function copyDay(Request $request, Plan $plan): JsonResponse
+    {
+        $this->guard($request, $plan);
+        $data = $request->validate([
+            'from' => ['required', 'integer', 'min:0', 'max:6'],
+            'to' => ['required', 'array', 'min:1'],
+            'to.*' => ['integer', 'min:0', 'max:6'],
+            'mode' => ['nullable', 'in:replace,append'],
+        ]);
+
+        $from = (int) $data['from'];
+        $mode = $data['mode'] ?? 'replace';
+        $targets = array_values(array_filter(
+            array_unique(array_map('intval', $data['to'])),
+            fn ($d) => $d !== $from                    // never copy a day onto itself
+        ));
+
+        $sourceStage = $plan->stages->firstWhere('order', $from);
+        if (! $sourceStage) {
+            return response()->json(['error' => 'Invalid source day.'], 422);
+        }
+        $sourceItems = $sourceStage->items()->orderBy('order')->get();
+
+        $created = [];
+        DB::transaction(function () use ($plan, $request, $targets, $mode, $sourceItems, &$created) {
+            foreach ($targets as $day) {
+                $stage = $plan->stages->firstWhere('order', $day);
+                if (! $stage) {
+                    continue;
+                }
+                if ($mode === 'replace') {
+                    foreach ($stage->items()->get() as $existing) {
+                        $existing->fields()->delete();
+                        $existing->delete();
+                    }
+                }
+                foreach ($sourceItems as $src) {
+                    $f = $src->fields->pluck('value', 'field_name')->toArray();
+                    $item = PlanItem::create([
+                        'plan_id' => $plan->id,
+                        'team_id' => $plan->team_id,
+                        'user_id' => $request->user()->id,
+                        'stage_id' => $stage->id,
+                        'title' => $src->title,
+                        'state' => PlanItem::STATE_PENDING,
+                        'order' => $src->order,
+                    ]);
+                    $item->saveFields([
+                        ['name' => 'start', 'value' => $f['start'] ?? '00:00'],
+                        ['name' => 'end', 'value' => $f['end'] ?? '00:00'],
+                        ['name' => 'color', 'value' => $f['color'] ?? '#6E9BE6'],
+                        ['name' => 'member', 'value' => $f['member'] ?? ''],
+                        ['name' => 'note', 'value' => $f['note'] ?? ''],
+                    ]);
+                    $created[] = $this->blockPayload($item->fresh(), $day);
+                }
+            }
+        });
+
+        // replaced tells the client which day columns to clear before merging.
+        return response()->json([
+            'blocks' => $created,
+            'mode' => $mode,
+            'replaced' => $mode === 'replace' ? $targets : [],
+        ], 201);
+    }
+
+    /** Assign (or clear) a member on every block of one weekday in one call. */
+    public function assignDay(Request $request, Plan $plan): JsonResponse
+    {
+        $this->guard($request, $plan);
+        $data = $request->validate([
+            'day' => ['required', 'integer', 'min:0', 'max:6'],
+            'member_id' => ['nullable', 'integer'],
+        ]);
+
+        $stage = $plan->stages->firstWhere('order', (int) $data['day']);
+        if (! $stage) {
+            return response()->json(['error' => 'Invalid day.'], 422);
+        }
+
+        $value = isset($data['member_id']) && $data['member_id'] !== null
+            ? (string) $data['member_id'] : '';
+
+        $ids = [];
+        foreach ($stage->items()->get() as $item) {
+            // Replace only the member field, leaving start/end/color/note intact.
+            $item->fields()->where('field_name', 'member')->delete();
+            $item->saveFields([['name' => 'member', 'value' => $value]]);
+            $ids[] = $item->id;
+        }
+
+        return response()->json([
+            'ids' => $ids,
+            'member_id' => $data['member_id'] ?? null,
+        ]);
+    }
+
+    /**
+     * Dated exceptions ("this week was different") for the ISO week that
+     * contains ?date (defaults to today). The weekly template is NOT included —
+     * the client already has it and overlays these on top, where an exception
+     * hides the template block it overlaps and `skip` blanks a slot for the day.
+     */
+    public function week(Request $request, Plan $plan): JsonResponse
+    {
+        $this->guard($request, $plan);
+
+        $anchor = $request->query('date')
+            ? Carbon::createFromFormat('Y-m-d', $request->query('date'))
+            : Carbon::now();
+        $monday = $anchor->copy()->startOfWeek(Carbon::MONDAY);
+        $sunday = $monday->copy()->addDays(6);
+
+        $blocks = [];
+        foreach ($plan->stages as $stage) {
+            $day = (int) $stage->order;
+            foreach ($stage->items()->orderBy('order')->get() as $item) {
+                $payload = $this->blockPayload($item, $day);
+                if (empty($payload['date'])) {
+                    continue;                          // template block, not an exception
+                }
+                $d = Carbon::createFromFormat('Y-m-d', $payload['date']);
+                if ($d->between($monday, $sunday)) {
+                    $blocks[] = $payload;
+                }
+            }
+        }
+
+        return response()->json([
+            'week_start' => $monday->format('Y-m-d'),
+            'week_end' => $sunday->format('Y-m-d'),
+            'blocks' => $blocks,
+        ]);
+    }
+
+    /** Named categories (color -> name) for the legend + time-budget analytics. */
+    public function saveCategories(Request $request, Plan $plan): JsonResponse
+    {
+        $this->guard($request, $plan);
+        $data = $request->validate([
+            'categories' => ['present', 'array'],
+            'categories.*.color' => ['required', 'string', 'max:20'],
+            'categories.*.name' => ['nullable', 'string', 'max:60'],
+        ]);
+
+        $clean = array_values(array_map(
+            fn ($c) => ['color' => $c['color'], 'name' => trim($c['name'] ?? '')],
+            $data['categories']
+        ));
+
+        Setting::updateOrCreate(
+            ['team_id' => $request->user()->current_team_id, 'name' => 'routine_categories'],
+            ['user_id' => $request->user()->id, 'value' => json_encode($clean)]
+        );
+
+        return response()->json(['categories' => $clean]);
+    }
+
+    private function categories(int $teamId): array
+    {
+        $setting = Setting::where(['team_id' => $teamId, 'name' => 'routine_categories'])->first();
+        if (! $setting || ! $setting->value) {
+            return [];
+        }
+        $decoded = json_decode($setting->value, true);
+
+        return is_array($decoded) ? $decoded : [];
+    }
+
     // ---- helpers ------------------------------------------------------------
 
     private function validateBlock(Request $request): array
@@ -142,17 +359,43 @@ class RoutineController extends Controller
             'end' => ['required', 'string', 'max:5'],
             'color' => ['nullable', 'string', 'max:20'],
             'member_id' => ['nullable', 'integer'],
+            'note' => ['nullable', 'string', 'max:500'],
+            // date present => this is a dated *exception* (this-week override),
+            // not part of the undated weekly template.
+            'date' => ['nullable', 'date_format:Y-m-d'],
+            'skip' => ['nullable', 'boolean'],
         ]);
+    }
+
+    /** Weekday (0=Mon..6=Sun) — derived from the exception date when present. */
+    private function dayFor(array $data): int
+    {
+        if (! empty($data['date'])) {
+            return (int) Carbon::createFromFormat('Y-m-d', $data['date'])->dayOfWeekIso - 1;
+        }
+
+        return (int) $data['day'];
     }
 
     private function blockFields(array $data): array
     {
-        return [
+        $fields = [
             ['name' => 'start', 'value' => $data['start']],
             ['name' => 'end', 'value' => $data['end']],
             ['name' => 'color', 'value' => $data['color'] ?? '#6E9BE6'],
             ['name' => 'member', 'value' => (string) ($data['member_id'] ?? '')],
+            ['name' => 'note', 'value' => (string) ($data['note'] ?? '')],
         ];
+        // A `date` field marks the block as a dated exception; `skip` marks a
+        // "this template block is off today" hole. Template blocks carry neither.
+        if (! empty($data['date'])) {
+            $fields[] = ['name' => 'date', 'value' => $data['date']];
+        }
+        if (! empty($data['skip'])) {
+            $fields[] = ['name' => 'skip', 'value' => '1'];
+        }
+
+        return $fields;
     }
 
     private function resolveRoutinePlan(Request $request, PlanService $planService): Plan
@@ -171,6 +414,26 @@ class RoutineController extends Controller
                     'order' => $i,
                 ]);
             }
+            $plan = $plan->fresh();
+        }
+
+        // Self-heal: ensure all 7 weekday stages (order 0..6) exist. Older plans
+        // may predate this layout or have been created with fewer stages, which
+        // would make blocks for those weekdays fail with "Invalid day.".
+        $haveOrders = $plan->stages->map(fn ($s) => (int) $s->order)->all();
+        $added = false;
+        foreach (self::DAYS as $i => $day) {
+            if (! in_array($i, $haveOrders, true)) {
+                $plan->stages()->create([
+                    'user_id' => $user->id,
+                    'team_id' => $plan->team_id,
+                    'name' => $day,
+                    'order' => $i,
+                ]);
+                $added = true;
+            }
+        }
+        if ($added) {
             $plan = $plan->fresh();
         }
 
@@ -194,7 +457,11 @@ class RoutineController extends Controller
         foreach ($plan->stages as $stage) {
             $day = (int) $stage->order;
             foreach ($stage->items()->orderBy('order')->get() as $item) {
-                $blocks[] = $this->blockPayload($item, $day);
+                $payload = $this->blockPayload($item, $day);
+                if (! empty($payload['date'])) {
+                    continue;                          // exceptions belong to week()
+                }
+                $blocks[] = $payload;
             }
         }
 
@@ -217,6 +484,9 @@ class RoutineController extends Controller
             'end' => $f['end'] ?? '00:00',
             'color' => $f['color'] ?? '#6E9BE6',
             'member_id' => isset($f['member']) && $f['member'] !== '' ? (int) $f['member'] : null,
+            'note' => $f['note'] ?? '',
+            'date' => $f['date'] ?? null,
+            'skip' => ($f['skip'] ?? '') === '1',
         ];
     }
 

@@ -123,21 +123,27 @@
 
     // The Move popover uses trigger="manual", so naive-ui does NOT auto-close it
     // on Escape or an outside click (the reported stickiness — it lingered and
-    // reappeared after re-renders until a manual reload). Close it on Escape via a
-    // window listener bound only while open; the outside click is handled by
+    // reappeared after re-renders until a manual reload). Close it on Escape (see
+    // the document/capture listener below); the outside click is handled by
     // @clickoutside on the NPopover in the template.
     const onEsc = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') showPopover.value = false;
+        if (e.key === 'Escape' && showPopover.value) {
+            e.stopPropagation();
+            showPopover.value = false;
+        }
     };
+    // Capture phase on document so Escape is caught before vue-multiselect (which
+    // binds Esc on keyup to close only its own dropdown) or naive-ui can swallow
+    // it. Bound only while open. Matches Modal.vue / Dropdown.vue conventions.
     watch(showPopover, (open) => {
-        if (open) window.addEventListener('keydown', onEsc);
-        else window.removeEventListener('keydown', onEsc);
+        if (open) document.addEventListener('keydown', onEsc, true);
+        else document.removeEventListener('keydown', onEsc, true);
     });
-    onBeforeUnmount(() => window.removeEventListener('keydown', onEsc));
+    onBeforeUnmount(() => document.removeEventListener('keydown', onEsc, true));
 </script>
 
 <template>
-<div class="flex justify-end text-right select-none" title="Money Available">
+<div class="flex justify-end text-right select-none" :title="$t('Money Available')">
     <NPopover trigger="manual" placement="bottom" :show="showPopover" @clickoutside="showPopover = false">
         <template #trigger>
             <div
@@ -152,20 +158,20 @@
             </div>
         </template>
         <div class="w-72 md:w-96">
-            <AtField label="Move">
+            <AtField :label="$t('Move')">
                 <InputMoney :number-format="true" v-model="form.amount" >
                     <template #prefix>
                         <span class="flex items-center pl-2"> RD$ </span>
                       </template>
                 </InputMoney>
             </AtField>
-            <AtField label="To" v-if="status == BALANCE_STATUS.available">
+            <AtField :label="$t('To')" v-if="status == BALANCE_STATUS.available">
                 <Multiselect
                     v-model="form.destination_category_id"
                     :options="categoryOptions"
                     group-values="children"
                     group-label="label"
-                    placeholder="Search category"
+                    :placeholder="$t('Search category')"
                     track-by="value"
                     label="label"
                     select-label=""
@@ -181,13 +187,13 @@
                     </template>
                 </Multiselect>
             </AtField>
-             <AtField label="From" v-else>
+             <AtField :label="$t('From')" v-else>
                 <Multiselect
                     v-model="form.source_category_id"
                     :options="categoryOptions"
                     group-values="children"
                     group-label="label"
-                    placeholder="Search category"
+                    :placeholder="$t('Search category')"
                     track-by="value"
                     label="label"
                     select-label=""
@@ -205,14 +211,14 @@
             </AtField>
             <div class="flex items-center justify-end space-x-2">
                 <AtButton class="text-body-1" @click="clear" :disabled="form.processing">
-                    Cancel
+                    {{ $t('Cancel') }}
                 </AtButton>
                 <LogerButton
                     class="text-white rounded-md bg-success"
                     @click="onMoveFromBudget()"
                     :processing="form.processing"
                 >
-                    Save
+                    {{ $t('Save') }}
                 </LogerButton>
             </div>
         </div>

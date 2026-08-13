@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, toRefs } from "vue";
 import { router } from "@inertiajs/vue3";
+import { useTransactionModal, TRANSACTION_DIRECTIONS } from "@/domains/transactions";
 
 import MoneyPresenter from "@/Components/molecules/MoneyPresenter.vue";
 import BudgetProgress from "@/domains/budget/components/BudgetProgress.vue";
@@ -35,6 +36,12 @@ const props = defineProps<{
 }>();
 
 const { netWorth } = toRefs(props);
+
+// Reuse the app-wide transaction modal (rendered globally in AppGlobals).
+// Recording the transaction there marks the cycle paid and the global
+// "saved" handler already runs router.reload(), refreshing this dashboard.
+const { openTransactionModal } = useTransactionModal();
+const { TRANSFER, WITHDRAW } = TRANSACTION_DIRECTIONS;
 const { thisMonth, lastMonth, monthMovement, monthMovementVariance } = useNetWorth(netWorth);
 
 // Coerce to Number because the API sends totals as strings (e.g. "0.00").
@@ -141,6 +148,62 @@ const showAllPayments = ref(false);
 const visiblePayments = computed(() =>
     showAllPayments.value ? props.nextPayments : (props.nextPayments ?? []).slice(0, 3)
 );
+
+// ---------------------------------------------------------------------------
+// Issue 1 — "Mark as paid" from a next-payment row.
+// Mirrors Finance/Account.vue's payCycle(): opens the SAME global transaction
+// modal pre-filled from the clicked payment so submitting it records the
+// payment/transfer. For credit-card cycles (payment.account_id = the card) we
+// open a TRANSFER into that card — the AutoLinkCreditCardPayment listener then
+// attaches the resulting Payment to the open cycle. For non-card items (e.g.
+// budget reminders that only carry a category) we open a WITHDRAW pre-filled
+// with the category. Only pass a fresh object (no synthetic id) so the modal
+// stays in "create" mode. The global saved-handler runs router.reload().
+// ---------------------------------------------------------------------------
+const handlePay = (payment: any) => {
+    const total = Number(payment.total ?? 0);
+    const paid = Number(payment.paid ?? 0);
+    const remaining = Math.max(total - paid, 0) || total;
+    const fundingAccountId = props.accounts?.find(a => numericBalance(a) > remaining)?.id;
+    openTransactionModal({
+        mode: payment.account_id ? TRANSFER : WITHDRAW,
+        transactionData: {
+            counter_account_id: payment.account_id ?? undefined,
+            category_id: payment.category_id ?? undefined,
+            total: remaining,
+            description: payment.description ?? payment.title ?? "",
+            account_id: fundingAccountId,
+            date: payment.due_date ?? (payment as any).date ?? undefined,
+        },
+    });
+};
+
+// ---------------------------------------------------------------------------
+// Issue 2 — deep-link the hero payment rows to the planned/upcoming list
+// already filtered. /finance/transactions honors filter[status] and
+// filter[date] (both override the page defaults), so we land on planned
+// transactions narrowed to the overdue or due-soon window respectively.
+// The occurrences page has no overdue filter, so that row is left generic.
+// ---------------------------------------------------------------------------
+const fmtDate = (d: Date): string =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+const goToOverduePayments = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+    router.visit(`/finance/transactions?filter[status]=planned&filter[date]=1970-01-01~${fmtDate(yesterday)}`);
+};
+
+const goToDueSoonPayments = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const soon = new Date(today);
+    soon.setDate(today.getDate() + 7);
+    router.visit(`/finance/transactions?filter[status]=planned&filter[date]=${fmtDate(today)}~${fmtDate(soon)}`);
+};
+
 </script>
 
 <template>
@@ -168,7 +231,7 @@ const visiblePayments = computed(() =>
                     v-if="overduePayments.length"
                     type="button"
                     class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg bg-base-lvl-2 border border-error/30 hover:border-error/50 transition text-left"
-                    @click="router.visit('/finance/transactions')"
+                    @click="goToOverduePayments"
                 >
                     <span class="flex items-center gap-2 min-w-0">
                         <i class="fa fa-clock text-error flex-shrink-0" />
@@ -202,7 +265,7 @@ const visiblePayments = computed(() =>
                     v-if="dueSoonPayments.length"
                     type="button"
                     class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg bg-base-lvl-2 border border-base hover:border-primary/30 transition text-left"
-                    @click="router.visit('/finance/transactions')"
+                    @click="goToDueSoonPayments"
                 >
                     <span class="flex items-center gap-2 min-w-0">
                         <i class="fa fa-calendar-day text-body-1/60 flex-shrink-0" />
@@ -299,7 +362,7 @@ const visiblePayments = computed(() =>
                 <!-- Next payments — only if there are any. Shows the top 3 with a
                      "see all" toggle so the list doesn't dominate the screen. -->
                 <div v-if="nextPayments?.length" class="bg-base-lvl-3 rounded-lg border border-base">
-                    <NextPaymentsWidget :payments="visiblePayments" class="px-4" />
+                    <NextPaymentsWidget :payments="visiblePayments" class="px-4" @pay="handlePay" />
                     <button
                         v-if="nextPayments.length > 3"
                         type="button"
