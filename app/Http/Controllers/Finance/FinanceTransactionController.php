@@ -101,7 +101,12 @@ class FinanceTransactionController extends InertiaController
                 ->leftJoin(DB::raw('accounts ca'), 'ca.id', 'transactions.counter_account_id')
                 ->leftJoin('accounts', 'accounts.id', 'transactions.account_id')
                 ->leftJoin('linked_transactions', 'transactions.id', 'linked_transactions.transaction_id')
-                ->leftJoin(DB::raw('transactions linked'), 'linked.id', 'linked_transactions.linked_transaction_id');
+                ->leftJoin(DB::raw('transactions linked'), 'linked.id', 'linked_transactions.linked_transaction_id')
+                // QuerifySlim runs on a raw DB::table() query, which bypasses the
+                // model's SoftDeletes scope — so soft-deleted transactions kept
+                // showing in the Inbox/list while getDraftCount (Eloquent) reported
+                // 0, and re-deleting them did nothing (already gone). Exclude them.
+                ->whereNull('transactions.deleted_at');
         });
     }
 
