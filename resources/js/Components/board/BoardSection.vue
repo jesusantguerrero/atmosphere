@@ -101,9 +101,9 @@ const kanbanData = computed(() => {
         field => field.name == "status"
     );
 
-    if (props.board.stages.length) {
+    if (statusField && props.board.stages.length) {
         const quadrants = {};
-        props.board.labels.forEach(label => {
+        (props.board.labels ?? []).forEach(label => {
             if (label.field_id == statusField.id) {
                 quadrants[label.name] = {
                     id: label.id,
@@ -115,13 +115,23 @@ const kanbanData = computed(() => {
             }
         });
 
+        // Fallback bucket so items whose status has no matching label don't
+        // crash this computed — it is bound (:kanban-data) for every non-list
+        // view, so a throw here blanks the whole board, not just Kanban.
+        if (!quadrants['backlog']) {
+            quadrants['backlog'] = {
+                id: null,
+                fieldId: statusField.id,
+                attributes: { name: 'backlog', color: 'gray' },
+                items: [],
+                newTask: {}
+            };
+        }
+
         props.board.stages.forEach(stage => {
-            stage.items.forEach(item => {
-                if (quadrants[item[statusField.name]]) {
-                    quadrants[item[statusField.name]].items.push(item);
-                } else {
-                    quadrants['backlog'].items.push(item);
-                }
+            (stage.items ?? []).forEach(item => {
+                const bucket = quadrants[item[statusField.name]] ?? quadrants['backlog'];
+                bucket.items.push(item);
             });
         });
         return quadrants;
@@ -565,6 +575,7 @@ const { isMac, modKey } = useKeyboardShortcuts({
                 :is="containerComponent"
                 :stages="board.stages"
                 :fields="board.fields"
+                :board-id="board.id"
                 :kanban-data="kanbanData"
                 @saved="addItem"
                 :resource-name="resourceName"

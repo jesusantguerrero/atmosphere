@@ -21,6 +21,10 @@ const props = defineProps<{
 
 const isModalOpen = ref(false);
 
+// Deep-link / default the board view via ?view= (e.g. ?view=family for the
+// kitchen-screen view). BoardSection reads this through its `layout` prop.
+const initialView = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '').get('view') || undefined;
+
 const chorePlan = computed(() => {
     return props.chores?.at(0)
 })
@@ -45,6 +49,7 @@ const createList = () => {
             :users="users"
             :automations="automations"
             :filters="filters"
+            :layout="initialView"
         />
         <WelcomeCard v-else :message="$t('Chores')">
             <section class="flex flex-col items-center pb-12 mx-auto text-center">

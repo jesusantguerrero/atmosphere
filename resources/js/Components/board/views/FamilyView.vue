@@ -15,6 +15,7 @@ import { router } from '@inertiajs/vue3';
 const props = defineProps<{
   stages: any[];
   fields?: any[];
+  boardId?: number;
   kanbanData?: Record<string, any>;
   resourceName?: string;
 }>();
@@ -52,6 +53,7 @@ const lanes = computed(() => {
 
 const donePoints = (lane: any) => lane.items.filter((i: any) => i.is_done).length;
 const laneInitial = (lane: any) => (lane.unassigned ? '?' : (lane.name || '?')).slice(0, 1).toUpperCase();
+const lanePct = (lane: any) => (lane.items.length ? Math.round((donePoints(lane) / lane.items.length) * 100) : 0);
 
 const busy = ref<Record<number, boolean>>({});
 
@@ -61,7 +63,7 @@ async function toggleDone(item: any) {
   const next = !item.is_done;
   item.is_done = next; // optimistic
   try {
-    await axios.put(`/housing/plans/${item.board_id}/items/${item.id}`, { is_done: next });
+    await axios.put(`/housing/plans/${props.boardId ?? item.board_id}/items/${item.id}`, { is_done: next });
     router.reload({ preserveScroll: true });
   } catch (e) {
     item.is_done = !next; // revert on failure
@@ -72,14 +74,15 @@ async function toggleDone(item: any) {
 </script>
 
 <template>
-  <div class="w-full pb-20">
-    <div class="flex items-center justify-end mb-4">
+  <div class="flex flex-col w-full pb-20">
+    <div class="flex items-center justify-end mb-5">
       <button
         type="button"
-        class="px-4 py-1.5 text-sm font-semibold transition border rounded-full"
-        :class="onlyToday ? 'bg-primary text-white border-primary' : 'text-body-1 border-base hover:bg-base-lvl-2'"
+        class="inline-flex items-center gap-2 px-3.5 py-1.5 text-sm font-semibold transition border rounded-full"
+        :class="onlyToday ? 'bg-primary text-white border-primary shadow-sm' : 'text-body-1/80 border-base hover:bg-base-lvl-2'"
         @click="onlyToday = !onlyToday"
       >
+        <i class="text-xs fa fa-calendar-day"></i>
         {{ $t('Today') }}
       </button>
     </div>
@@ -88,19 +91,29 @@ async function toggleDone(item: any) {
       <div
         v-for="lane in lanes"
         :key="lane.key"
-        class="flex-shrink-0 border w-72 rounded-2xl bg-base-lvl-2 border-base"
+        class="flex-shrink-0 overflow-hidden border shadow-sm w-72 rounded-2xl bg-base-lvl-2 border-base"
       >
-        <div class="flex items-center justify-between px-4 py-3 border-b border-base">
-          <div class="flex items-center gap-2 font-bold text-body">
-            <span
-              class="flex items-center justify-center w-8 h-8 text-sm font-bold text-white rounded-full"
-              :style="{ background: lane.color }"
-            >{{ laneInitial(lane) }}</span>
-            <span>{{ lane.unassigned ? $t('Unassigned') : lane.name }}</span>
+        <div class="relative px-4 pt-4 pb-3 bg-base-lvl-3/40">
+          <span class="absolute top-0 left-0 right-0 h-1" :style="{ background: lane.color }"></span>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center min-w-0 gap-2.5">
+              <span
+                class="flex items-center justify-center flex-shrink-0 text-sm font-bold text-white rounded-full shadow-sm w-9 h-9 ring-2 ring-white/10"
+                :style="{ background: lane.color }"
+              >{{ laneInitial(lane) }}</span>
+              <span class="font-semibold truncate text-body">{{ lane.unassigned ? $t('Unassigned') : lane.name }}</span>
+            </div>
+            <div
+              class="flex items-center flex-shrink-0 gap-1.5 px-2.5 py-1 rounded-full bg-base-lvl-1"
+              :title="$t('Points')"
+            >
+              <i class="text-xs fa fa-star" :style="{ color: lane.color }"></i>
+              <span class="text-sm font-bold leading-none text-body">{{ donePoints(lane) }}</span>
+              <span class="text-xs leading-none text-body-1/50">/ {{ lane.items.length }}</span>
+            </div>
           </div>
-          <div class="flex items-baseline gap-1" :title="$t('Points')">
-            <span class="text-3xl font-black leading-none" :style="{ color: lane.color }">{{ donePoints(lane) }}</span>
-            <span class="text-xs text-body-1/60">/ {{ lane.items.length }}</span>
+          <div class="h-1.5 mt-3 overflow-hidden rounded-full bg-base-lvl-1">
+            <div class="h-full transition-all duration-500 rounded-full" :style="{ width: lanePct(lane) + '%', background: lane.color }"></div>
           </div>
         </div>
 
