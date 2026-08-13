@@ -170,9 +170,12 @@ class FinanceTrendController extends Controller
             ->groupBy('name')
             ->map(fn ($rows, $name) => ['name' => $name, 'total' => (float) $rows->sum('total')])
             ->values()->sortByDesc('total')->values();
-        // History length driven by the 3M / 6M / 1Y toolbar segment.
+        // History length driven by the range toolbar (1M / 3M / 6M / YTD / 1Y).
+        // YTD sends a dynamic count (Jan..current month, 1..12), so accept any
+        // 1..12 span instead of the old fixed [3, 6, 12] whitelist that silently
+        // coerced 1M and YTD back to 6.
         $months = (int) $request->query('months', 6);
-        $months = in_array($months, [3, 6, 12], true) ? $months : 6;
+        $months = ($months >= 1 && $months <= 12) ? $months : 6;
 
         $expensesReport = ReportService::generateCurrentPreviousReport($teamId, 'month', 1, 'expenses', $latestExpenseDate);
         $spendingSummary = ReportService::generateExpensesByPeriodInDate(

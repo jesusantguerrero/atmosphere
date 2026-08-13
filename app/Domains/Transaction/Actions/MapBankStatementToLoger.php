@@ -41,12 +41,18 @@ class MapBankStatementToLoger
             'total' => $amount,
             'reference' => $row['reference'],
             'status' => Transaction::STATUS_DRAFT,
-            'items' => [],
-            'metaData' => [
+            // Journal's Transaction::createTransaction() mass-assigns this array
+            // straight into the model. A camelCase 'metaData' and 'items' are not
+            // fillable columns, so under Model::preventSilentlyDiscardingAttributes()
+            // (on outside production) the import throws; in production they were
+            // silently dropped, so provenance was never persisted at all. Write the
+            // real 'meta_data' JSON column (as the integration path does) and let
+            // createTransaction default items to [] on its own.
+            'meta_data' => json_encode([
                 'resource_id' => 'BANK_IMPORT',
                 'resource_origin' => 'BANK_IMPORT',
                 'resource_type' => 'transaction',
-            ],
+            ]),
         ];
     }
 

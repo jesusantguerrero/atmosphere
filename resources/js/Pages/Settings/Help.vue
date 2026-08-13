@@ -49,7 +49,7 @@ const gettingStarted = [
     {
         n: 3,
         title: 'Import a bank statement',
-        body: 'Drop in a PDF — BHD, Banreservas, or any other. Loger reads it and turns it into transactions you can review and approve.',
+        body: 'Drop in a bank statement PDF and Loger reads it — turning it into transactions you can review and approve.',
         cta: { label: 'Import a statement', href: '/finance/transactions?filter[status]=draft' },
     },
     {

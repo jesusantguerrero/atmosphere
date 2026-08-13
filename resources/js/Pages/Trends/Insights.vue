@@ -150,7 +150,10 @@ const rangeMap: Record<string, number> = { "1M": 1, "3M": 3, "6M": 6, "1Y": 12 }
 // fixed bucket in rangeMap — computed on demand when the user picks it.
 const ytdMonths = () => new Date().getMonth() + 1;
 const monthsToRange = (m: number) => (m === 12 ? "1Y" : m === 6 ? "6M" : m === 3 ? "3M" : m === 1 ? "1M" : "6M");
-const range = ref(monthsToRange(Number(props.metaData?.months ?? 6)));
+const initialMonths = Number(props.metaData?.months ?? 6);
+// Prefer YTD as the active label when the returned span matches Jan..current and
+// isn't a fixed bucket (avoids showing "6M" after a YTD reload in e.g. August=8).
+const range = ref((initialMonths === ytdMonths() && ![1, 3, 6, 12].includes(initialMonths)) ? "YTD" : monthsToRange(initialMonths));
 const setRange = (r: string) => {
   if (range.value === r) return;
   range.value = r;

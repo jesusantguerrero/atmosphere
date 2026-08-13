@@ -631,5 +631,10 @@
     "Select all {n} in your inbox": "Select all {n} in your inbox",
     "{n} selected": "{n} selected",
     "Clear selection": "Clear selection",
-    "Delete all {n} items in your inbox? This cannot be undone.": "Delete all {n} items in your inbox? This cannot be undone."
+    "Delete all {n} items in your inbox? This cannot be undone.": "Delete all {n} items in your inbox? This cannot be undone.",
+    "API Tokens": "API Tokens",
+    "Data": "Data",
+    "Export transactions": "Export transactions",
+    "Export occurrences": "Export occurrences",
+    "Log Out": "Log Out"
 }

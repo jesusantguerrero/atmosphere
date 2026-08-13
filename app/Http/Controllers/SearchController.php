@@ -50,14 +50,24 @@ class SearchController extends Controller
     {
         $term = '%'.$this->escapeLike($searchText).'%';
 
+        // If the query looks like a number, also match by amount (either sign) —
+        // typing "3000" should surface a 3,000 transaction, not only rows whose
+        // description happens to contain those digits.
+        $digits = str_replace([',', ' '], '', $searchText);
+        $amount = is_numeric($digits) ? (float) $digits : null;
+
         return Transaction::query()
             ->where('transactions.team_id', $teamId)
             ->where('transactions.status', Transaction::STATUS_VERIFIED)
-            ->where(function ($query) use ($term) {
+            ->where(function ($query) use ($term, $amount) {
                 $query->where('transactions.description', 'like', $term)
                     ->orWhereHas('payee', function ($payee) use ($term) {
                         $payee->where('name', 'like', $term);
                     });
+
+                if ($amount !== null) {
+                    $query->orWhereRaw('ABS(transactions.total) = ?', [$amount]);
+                }
             })
             ->with(['payee:id,name', 'category:id,name'])
             ->orderByDesc('transactions.date')
