@@ -21,7 +21,7 @@ const cardShadow = inject("cardShadow", '')
             <slot name="before" />
 
             <h1 class="font-bold text-body">
-              {{ message }} <span class="text-primary">{{ username }}</span>
+              {{ $t(message) }} <span class="text-primary">{{ username }}</span>
             </h1>
         </section>
       <div class="space-x-2">

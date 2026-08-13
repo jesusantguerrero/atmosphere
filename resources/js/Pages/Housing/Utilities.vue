@@ -39,7 +39,7 @@ const badgeLabel = (utility: Utility): string => {
 </script>
 
 <template>
-    <AppLayout title="Utilities">
+    <AppLayout :title="$t('Utilities')">
         <template #header>
             <HouseSectionNav class="h-12">
                 <template #actions>

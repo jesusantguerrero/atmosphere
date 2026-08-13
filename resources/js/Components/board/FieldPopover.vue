@@ -17,7 +17,7 @@
       <AtField class="form-group" label="Property type" v-if="!field.id || field.manual">
         <multiselect
           v-model="field.type"
-          placeholder="Select"
+          :placeholder="$t('Select')"
           ref="input"
           label="title"
           :show-labels="false"

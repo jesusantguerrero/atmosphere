@@ -19,7 +19,7 @@
       <ElSelect
         v-model="localValue"
         ref="input"
-        placeholder="Select"
+        :placeholder="$t('Select')"
         :filterable="true"
         :automatic-dropdown="true"
         @visible-change="!$event && toggleEditMode()"

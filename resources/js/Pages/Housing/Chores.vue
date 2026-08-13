@@ -33,7 +33,7 @@ const createList = () => {
 </script>
 
 <template>
-    <AppLayout title="Occurrence Checks">
+    <AppLayout :title="$t('Chores')">
         <template #header>
             <HouseSectionNav class="h-12" />
       </template>

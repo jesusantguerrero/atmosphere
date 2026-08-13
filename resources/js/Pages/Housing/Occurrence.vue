@@ -124,11 +124,11 @@ const currentStatus = ref(props.serverSearchOptions.filters?.is_liked || "all");
                         />
                         <LogerButton variant="secondary"  class="flex" @click="openModal()">
                             <IMdiPlus class="mr-2"/>
-                            Add Check
+                            {{ $t('Add Check') }}
                         </LogerButton>
                         <LogerButton variant="secondary"  class="flex" @click="syncAll()">
                             <IMdiSync class="mr-2" :class="{'animate-spin': syncForm.processing }" />
-                            Sync
+                            {{ $t('Sync') }}
                         </LogerButton>
                       </div>
                   </template>
@@ -169,10 +169,10 @@ const currentStatus = ref(props.serverSearchOptions.filters?.is_liked || "all");
                     </span>
                     <h4 class="text-lg font-bold text-body-1">{{ $t('Reminders') }}</h4>
                     <p class="max-w-lg my-3">
-                        Occurrences track the duration of events based on transactions or manual input
+                        {{ $t('Occurrences track the duration of events based on transactions or manual input') }}
                     </p>
                     <LogerButton variant="inverse" @click="openModal()">
-                        Add occurrence check
+                        {{ $t('Add occurrence check') }}
                     </LogerButton>
                 </section>
             </WelcomeCard>

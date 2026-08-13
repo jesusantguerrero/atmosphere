@@ -2,7 +2,7 @@
   <NSelect
     v-model:value="localValue"
     ref="input"
-    placeholder="Select"
+    :placeholder="$t('Select')"
     :filterable="true"
     :automatic-dropdown="true"
     :options="options"

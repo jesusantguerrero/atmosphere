@@ -1,5 +1,5 @@
 <template>
-    <AppLayout title="Occurrence Checks">
+    <AppLayout :title="$t('Equipment')">
         <template #header>
             <HouseSectionNav>
                   <template #actions>

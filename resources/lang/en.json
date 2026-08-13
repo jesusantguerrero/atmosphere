@@ -636,5 +636,16 @@
     "Data": "Data",
     "Export transactions": "Export transactions",
     "Export occurrences": "Export occurrences",
-    "Log Out": "Log Out"
+    "Log Out": "Log Out",
+    "chores": "Chores",
+    "plans": "Plans",
+    "equipments": "Equipment",
+    "shopping_list": "Shopping List",
+    "custom": "Custom",
+    "routine": "Routine",
+    "CHORES": "Chores",
+    "ROUTINE": "Routine",
+    "CUSTOM": "Custom",
+    "SHOPPING_LIST": "Shopping List",
+    "Priority": "Priority"
 }

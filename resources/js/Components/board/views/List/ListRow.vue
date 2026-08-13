@@ -42,7 +42,10 @@ const components: Record<string, ConcreteComponent> = {
 }
 
 const getRenderComponent = (item: PlanItem, field: LogerField) => {
-    return item?.type ? components[item[field.name]] : ItemGroupCell
+    // Summary cells are objects shaped { value, type }. Route on the cell's own
+    // type (progress/summaryDate); normal scalar cells fall back to ItemGroupCell.
+    const cell = item?.[field.name] as any;
+    return cell && cell.type ? components[cell.type] : ItemGroupCell;
 }
 </script>
 

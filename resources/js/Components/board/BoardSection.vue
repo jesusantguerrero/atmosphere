@@ -204,10 +204,11 @@ function addItem(item: Record<string, string>, stage: Record<string, string>, re
         });
 
         if (reload) {
-            router.reload({
-                preserveScroll: true,
-                preserveState: true
-            });
+            // Match every other mutation path in this component: a plain reload
+            // re-renders fresh server state. preserveState kept the stale in-place
+            // mutated board.stages, so new items didn't show and users re-added
+            // them (duplicates).
+            router.reload({ preserveScroll: true });
         }
     }).catch((error) => {
         ElNotification({
@@ -459,13 +460,13 @@ const { isMac, modKey } = useKeyboardShortcuts({
                      <template slot="singleLabel" slot-scope="props">
                          <span class="option__title">
                                 <i :class="views[props.option].icon" class="mr-2"></i>
-                                {{ views[props.option].title }}
+                                {{ $t(views[props.option].title) }}
                             </span>
                     </template>
                     <template slot="option" slot-scope="props">
                         <div class="option__desc">
                             <span class="option__title"><i :class="views[props.option].icon" class="mr-2"></i>
-                                {{ views[props.option].title }}
+                                {{ $t(views[props.option].title) }}
                             </span>
                         </div>
                     </template>
