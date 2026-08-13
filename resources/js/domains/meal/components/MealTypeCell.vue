@@ -71,7 +71,7 @@ const emitCellEvent = (eventName: string) => {
         custom-label="name"
         track-id="id"
         :bordered="false"
-        :placeholder="`Add ${mealType.name}`"
+        :placeholder="$t('Add') + ' ' + $t(mealType.name)"
         endpoint="/api/recipes"
       />
       <LogerButtonTab @click="submit" v-if="recipe.id">Save</LogerButtonTab>

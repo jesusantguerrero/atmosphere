@@ -849,5 +849,14 @@
     "Create New Space": "Crear nuevo espacio",
     "Switch Space": "Cambiar de espacio",
     "All meals": "Todas las comidas",
-    "{buy} buying · {skip} skipped · {pending} pending": "{buy} comprando · {skip} omitido · {pending} pendiente"
+    "{buy} buying · {skip} skipped · {pending} pending": "{buy} comprando · {skip} omitido · {pending} pendiente",
+    "What am I eating today?": "¿Qué voy a comer hoy?",
+    "View full list": "Ver lista completa",
+    "No liked meals yet.": "Aún no hay comidas favoritas.",
+    "No meal types configured.": "No hay tipos de comida configurados.",
+    "items": "ítems",
+    "Breakfast": "Desayuno",
+    "Lunch": "Almuerzo",
+    "Dinner": "Cena",
+    "Snack": "Merienda"
 }

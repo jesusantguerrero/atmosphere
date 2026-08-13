@@ -775,5 +775,14 @@
     "Favorites": "Favorites",
     "All meals": "All meals",
     "Shopping list": "Shopping list",
-    "{buy} buying · {skip} skipped · {pending} pending": "{buy} buying · {skip} skipped · {pending} pending"
+    "{buy} buying · {skip} skipped · {pending} pending": "{buy} buying · {skip} skipped · {pending} pending",
+    "What am I eating today?": "What am I eating today?",
+    "View full list": "View full list",
+    "No liked meals yet.": "No liked meals yet.",
+    "No meal types configured.": "No meal types configured.",
+    "items": "items",
+    "Breakfast": "Breakfast",
+    "Lunch": "Lunch",
+    "Dinner": "Dinner",
+    "Snack": "Snack"
 }
