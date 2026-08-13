@@ -42,6 +42,14 @@ class TransactionCreate implements TransactionCreates
 
     public function create(User $user, array $transactionData)
     {
+        // A blank description used to hit the DB NOT NULL and 500. Fall back to
+        // the payee label / name so the row still has a readable description.
+        if (empty($transactionData['description'])) {
+            $transactionData['description'] = $transactionData['payee_label']
+                ?? $transactionData['name']
+                ?? '';
+        }
+
         $transactionData = $this->stripUiOnlyFields([
             ...$transactionData,
             'team_id' => $user->current_team_id,
