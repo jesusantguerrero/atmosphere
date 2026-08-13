@@ -9,6 +9,7 @@ import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts';
 
 import ListView from "./views/List/ListView.vue";
 import MatrixView from "./views/matrix/MatrixBoard.vue";
+import FamilyView from "./views/FamilyView.vue";
 import ItemModal from "./ItemModal.vue";
 import AutomationModal from "../AutomationModal.vue";
 import BulkSelectionBar from '../BulkSelectionBar.vue';
@@ -48,6 +49,12 @@ const views = {
         title: "Matrix",
         component: MatrixView,
         icon: "fa fa-border-all"
+    },
+    family:{
+        name: "family",
+        title: "Family",
+        component: FamilyView,
+        icon: "fa fa-users"
     }
 };
 
