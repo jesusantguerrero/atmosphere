@@ -16,6 +16,7 @@ const props = defineProps<{
   stages: any[];
   fields?: any[];
   boardId?: number;
+  kiosk?: boolean;
   kanbanData?: Record<string, any>;
   resourceName?: string;
 }>();
@@ -116,7 +117,15 @@ async function addChore(lane: any) {
 
 <template>
   <div class="flex flex-col w-full pb-20">
-    <div class="flex items-center justify-end mb-5">
+    <div v-if="!kiosk" class="flex items-center justify-end gap-2 mb-5">
+      <button
+        type="button"
+        class="inline-flex items-center gap-2 px-3.5 py-1.5 text-sm font-semibold transition border rounded-full text-body-1/70 border-base hover:bg-base-lvl-2"
+        @click="router.visit('/housing/chores/screen')"
+      >
+        <i class="text-xs fa fa-expand"></i>
+        {{ $t('Screen') }}
+      </button>
       <span class="inline-flex items-center gap-2 px-3.5 py-1.5 text-sm font-semibold capitalize rounded-full text-body-1/70 bg-base-lvl-2">
         <i class="text-xs fa fa-calendar-day"></i>
         {{ todayLabel }}

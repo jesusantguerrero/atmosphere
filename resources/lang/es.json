@@ -753,5 +753,9 @@
     "Delegate": "Delegar",
     "Board": "Tablero",
     "Selection Mode": "Modo selección",
-    "Points": "Puntos"
+    "Points": "Puntos",
+    "Your session ended, so we signed you out. Sign in again to pick up where you left off.": "Tu sesión terminó y cerramos tu cuenta. Vuelve a entrar para continuar donde ibas.",
+    "Your session expired before that could be saved. The page is fresh again — please try once more.": "Tu sesión expiró antes de poder guardar. La página ya está actualizada — inténtalo de nuevo.",
+    "Exit": "Salir",
+    "Screen": "Pantalla"
 }

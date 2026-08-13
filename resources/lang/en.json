@@ -664,5 +664,9 @@
     "Delegate": "Delegate",
     "Board": "Board",
     "Selection Mode": "Selection Mode",
-    "Points": "Points"
+    "Points": "Points",
+    "Your session ended, so we signed you out. Sign in again to pick up where you left off.": "Your session ended, so we signed you out. Sign in again to pick up where you left off.",
+    "Your session expired before that could be saved. The page is fresh again — please try once more.": "Your session expired before that could be saved. The page is fresh again — please try once more.",
+    "Exit": "Exit",
+    "Screen": "Screen"
 }
