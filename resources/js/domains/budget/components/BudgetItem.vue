@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { format, startOfMonth, isThisMonth } from 'date-fns';
-import { ref, nextTick, onMounted, inject, computed } from 'vue';
+import { ref, nextTick, onMounted, inject, computed, watch } from 'vue';
 import { NDropdown } from 'naive-ui';
 import { router, usePage } from '@inertiajs/vue3';
 import autoAnimate from '@formkit/auto-animate';
@@ -227,6 +227,14 @@ const handleAssignOptions = (option: string) => {
   onAssignBudget()
 };
 const isEditing = ref(false);
+// With a stable :key (item.id) the row is reused across re-renders instead of
+// being remounted on every budget change, so sync the local input value when the
+// server-provided amount changes and the user isn't actively editing.
+watch(() => props.item.budgeted, (val) => {
+    if (!isEditing.value) {
+        budgeted.value = val;
+    }
+});
 const input = ref()
 const toggleEditing = () => {
     isEditing.value = !isEditing.value

@@ -719,5 +719,13 @@
     "Daily": "Daily",
     "Weekdays": "Weekdays",
     "Once": "Once",
-    "Save {n} items": "Save {n} items"
+    "Save {n} items": "Save {n} items",
+    "Open budget": "Open budget",
+    "Set up your budget": "Set up your budget",
+    "Total budget": "Total budget",
+    "Move": "Move",
+    "To": "To",
+    "From": "From",
+    "Search category": "Search category",
+    "Money Available": "Money Available"
 }

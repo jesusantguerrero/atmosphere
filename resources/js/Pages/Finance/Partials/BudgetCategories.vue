@@ -158,7 +158,7 @@ const handleBudgetMovement = (budgetMovementData: any) => {
                     v-for="item in itemGroup.subCategories"
                     :class="[selectedBudget?.id == item.id ?
                         'bg-base-lvl-2 border-base-lvl-3' : 'bg-base-lvl-3' ]"
-                    :key="`${item.id}-${item.budgeted}`"
+                    :key="item.id"
                     :item="item"
                     :is-mobile="isMobile"
                     @open="router.visit(`/budgets/${item.id}`)"

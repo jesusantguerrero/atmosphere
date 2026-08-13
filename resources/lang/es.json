@@ -808,5 +808,13 @@
     "Daily": "Diario",
     "Weekdays": "Entre semana",
     "Once": "Una vez",
-    "Save {n} items": "Guardar {n} ítems"
+    "Save {n} items": "Guardar {n} ítems",
+    "Open budget": "Abrir presupuesto",
+    "Set up your budget": "Configura tu presupuesto",
+    "Total budget": "Presupuesto total",
+    "Move": "Mover",
+    "To": "A",
+    "From": "De",
+    "Search category": "Buscar categoría",
+    "Money Available": "Dinero disponible"
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, toRefs, watch } from "vue";
+import { reactive, toRefs, watch, provide } from "vue";
 import { AtButton, AtField } from "atmosphere-ui";
 import { useForm } from "@inertiajs/vue3";
 import { parseISO } from "date-fns";
@@ -11,6 +11,8 @@ import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 
 import { ICategory } from "@/domains/transactions/models";
 import { BudgetTarget } from "../models/budget";
+import { useSelect } from "@/utils/useSelects";
+import { useAccountsStore } from "@/store/accounts.store";
 // import IconPicker from '../IconPicker.vue';
 
 const props = defineProps<{
@@ -23,6 +25,27 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits(["cancel", "deleted"]);
+
+// The account picker (AccountFilter) below injects `accountsOptions`, which
+// AppLayout provides just once as a static snapshot of the accounts prop — so an
+// account created from the Add-account modal does not show here until a full
+// page reload. Re-provide it from the live Pinia accounts store (kept fresh via
+// accountsStore.refresh() on create/edit/close) so this modal picker — and the
+// BudgetMatchCard resolver below it — always see newly created accounts at once.
+// A reactive array (not a ref) keeps both the template `:options` binding and
+// BudgetMatchCard's `.find(...)` script usage working.
+const accountsStore = useAccountsStore();
+const { categoryOptions } = useSelect();
+const liveAccountsOptions = reactive<any[]>([]);
+watch(
+  () => accountsStore.accounts,
+  (list) => {
+    const opts = categoryOptions(list, "accounts", false) || [];
+    liveAccountsOptions.splice(0, liveAccountsOptions.length, ...opts);
+  },
+  { immediate: true, deep: true }
+);
+provide("accountsOptions", liveAccountsOptions);
 
 const state = reactive({
   form: useForm({
