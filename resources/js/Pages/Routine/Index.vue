@@ -90,7 +90,11 @@ const gridHeight = computed(() => hours.value.length * HOUR_H);
 
 // Member filter
 const filterMember = ref<number | null>(null);
-const shown = (b: Block) => filterMember.value === null || b.member_id === filterMember.value;
+const filterColor = ref<string | null>(null);   // click a legend swatch to spotlight that category
+const toggleColorFilter = (color: string) => { filterColor.value = filterColor.value === color ? null : color; };
+const shown = (b: Block) =>
+  (filterMember.value === null || b.member_id === filterMember.value) &&
+  (filterColor.value === null || b.color === filterColor.value);
 const memberName = (id: number | null) => props.members.find((m) => m.id === id)?.name ?? "";
 const memberColor = (id: number | null) => {
   if (id === null) return "#69727F";
@@ -460,8 +464,12 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); });
                  :title="(catLabel(c.color) || $t('Unnamed')) + ' · ' + c.hours + 'h'"></div>
           </div>
           <div class="space-y-1.5">
-            <div v-for="c in timeBudget" :key="c.color" class="flex items-center gap-2">
-              <span class="w-3 h-3 rounded-sm flex-none" :style="{ background: c.color }"></span>
+            <div v-for="c in timeBudget" :key="c.color" class="flex items-center gap-2 transition"
+                 :class="filterColor && filterColor !== c.color ? 'opacity-40' : ''">
+              <button type="button" class="w-4 h-4 rounded-sm flex-none transition ring-offset-2 ring-offset-base-lvl-3"
+                      :class="filterColor === c.color ? 'ring-2 ring-white' : 'hover:scale-125'"
+                      :style="{ background: c.color }" @click="toggleColorFilter(c.color)"
+                      :title="$t('Filter by this category')"></button>
               <input v-model="catNames[c.color]" type="text" :placeholder="$t('Name this category')"
                      class="flex-1 min-w-0 px-2 py-1 text-xs rounded bg-base-lvl-2 border border-base text-body outline-none focus:border-primary" />
               <span class="text-xs font-semibold text-body tabular-nums w-12 text-right">{{ c.hours }}h</span>
