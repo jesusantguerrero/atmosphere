@@ -381,6 +381,26 @@ class RoutineController extends Controller
             $plan = $plan->fresh();
         }
 
+        // Self-heal: ensure all 7 weekday stages (order 0..6) exist. Older plans
+        // may predate this layout or have been created with fewer stages, which
+        // would make blocks for those weekdays fail with "Invalid day.".
+        $haveOrders = $plan->stages->map(fn ($s) => (int) $s->order)->all();
+        $added = false;
+        foreach (self::DAYS as $i => $day) {
+            if (! in_array($i, $haveOrders, true)) {
+                $plan->stages()->create([
+                    'user_id' => $user->id,
+                    'team_id' => $plan->team_id,
+                    'name' => $day,
+                    'order' => $i,
+                ]);
+                $added = true;
+            }
+        }
+        if ($added) {
+            $plan = $plan->fresh();
+        }
+
         return $plan;
     }
 
