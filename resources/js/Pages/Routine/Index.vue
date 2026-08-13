@@ -168,6 +168,7 @@ const blockStyle = (b: Block) => {
 // Now-line
 const now = new Date();
 const nowDow = (now.getDay() + 6) % 7;
+const selectedMobileDay = ref(nowDow);   // mobile agenda: which day to show
 const nowTop = computed(() => ((now.getHours() * 60 + now.getMinutes() - startH.value * 60) / 60) * HOUR_H);
 const nowVisible = computed(() => now.getHours() >= startH.value && now.getHours() < endH.value);
 const showNow = (day: number) =>
@@ -331,7 +332,96 @@ const assignDay = async (day: number, memberId: number | null) => {
   } finally { busyDay.value = false; }
 };
 
-onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); });
+// ---- Drag on the grid: create / move / resize (snap to 15 min) ----
+const gridBodyRef = ref<HTMLElement | null>(null);
+const SNAP = 15;
+const snapMin = (m: number) => Math.max(0, Math.round(m / SNAP) * SNAP);
+const minToHHMM = (m: number) => {
+  const v = Math.max(0, Math.min(24 * 60, m));
+  return `${String(Math.floor(v / 60)).padStart(2, "0")}:${String(v % 60).padStart(2, "0")}`;
+};
+const drag = ref<any>(null);
+const dragMoved = ref(false);
+
+const colGeom = () => {
+  const el = gridBodyRef.value;
+  if (!el) return null;
+  const r = el.getBoundingClientRect();
+  return { r, colW: (r.width - 44) / 7 };
+};
+const yToMin = (clientY: number) => {
+  const g = colGeom(); if (!g) return startH.value * 60;
+  return startH.value * 60 + ((clientY - g.r.top) / HOUR_H) * 60;
+};
+const xToDay = (clientX: number) => {
+  const g = colGeom(); if (!g) return 0;
+  return Math.max(0, Math.min(6, Math.floor((clientX - g.r.left - 44) / g.colW)));
+};
+
+const attachDrag = () => { window.addEventListener("pointermove", onDragMove); window.addEventListener("pointerup", onDragUp); };
+const detachDrag = () => { window.removeEventListener("pointermove", onDragMove); window.removeEventListener("pointerup", onDragUp); };
+
+const startCreate = (day: number, e: PointerEvent) => {
+  const m = snapMin(yToMin(e.clientY));
+  drag.value = { mode: "create", day, downX: e.clientX, downY: e.clientY, curStart: m, curEnd: m, curDay: day };
+  dragMoved.value = false; attachDrag();
+};
+const startMove = (rb: RenderBlock, day: number, e: PointerEvent) => {
+  drag.value = { mode: "move", block: rb, day, downX: e.clientX, downY: e.clientY, downEvent: e,
+    grab: yToMin(e.clientY) - toMin(rb.start), dur: toMin(rb.end) - toMin(rb.start),
+    curStart: toMin(rb.start), curEnd: toMin(rb.end), curDay: day };
+  dragMoved.value = false; attachDrag();
+};
+const startResize = (rb: RenderBlock, day: number, e: PointerEvent) => {
+  drag.value = { mode: "resize", block: rb, day, downX: e.clientX, downY: e.clientY,
+    curStart: toMin(rb.start), curEnd: toMin(rb.end), curDay: day };
+  dragMoved.value = false; attachDrag();
+};
+
+const onDragMove = (e: PointerEvent) => {
+  const d = drag.value; if (!d) return;
+  if (!dragMoved.value) {
+    if (Math.abs(e.clientX - d.downX) < 4 && Math.abs(e.clientY - d.downY) < 4) return;
+    dragMoved.value = true;
+  }
+  if (d.mode === "create") { d.curEnd = snapMin(yToMin(e.clientY)); }
+  else if (d.mode === "move") { const ns = snapMin(yToMin(e.clientY) - d.grab); d.curStart = ns; d.curEnd = ns + d.dur; d.curDay = xToDay(e.clientX); }
+  else if (d.mode === "resize") { d.curEnd = Math.max(d.curStart + SNAP, snapMin(yToMin(e.clientY))); }
+};
+
+const persistBlockChange = async (orig: RenderBlock, next: any) => {
+  const { data } = await axios.put(`/housing/routine/${props.plan.id}/blocks/${orig.id}`, payloadOf(next));
+  if (orig.date) { await fetchWeek(); }
+  else { const i = blocks.value.findIndex((b) => b.id === (data?.id ?? orig.id)); if (i !== -1) blocks.value[i] = data; }
+};
+
+const onDragUp = async (e: PointerEvent) => {
+  detachDrag();
+  const d = drag.value; drag.value = null;
+  if (!d) return;
+  const moved = dragMoved.value;
+  if (d.mode === "create") {
+    if (!moved) return;                                   // a plain click, not a drag
+    const a = Math.min(d.curStart, d.curEnd), b = Math.max(d.curStart, d.curEnd);
+    if (b - a < SNAP) return;
+    const fm = blankForm(d.day);
+    fm.start = minToHHMM(a); fm.end = minToHHMM(b);
+    if (viewMode.value === "week") fm.date = isoOf(weekDates.value[d.day]);
+    form.value = fm; showModal.value = true;
+    return;
+  }
+  if (!moved) { if (d.block) onBlockClick(d.block, d.day, d.downEvent ?? e); return; }  // tap = edit
+  if (d.mode === "move") await persistBlockChange(d.block, { ...d.block, day: d.curDay, start: minToHHMM(d.curStart), end: minToHHMM(d.curEnd) });
+  else if (d.mode === "resize") await persistBlockChange(d.block, { ...d.block, end: minToHHMM(d.curEnd) });
+};
+
+const dragGhost = computed(() => {
+  const d = drag.value; if (!d || !dragMoved.value) return null;
+  const a = Math.min(d.curStart, d.curEnd), b = Math.max(d.curStart, d.curEnd);
+  return { day: d.curDay ?? d.day, top: ((a - startH.value * 60) / 60) * HOUR_H, height: Math.max(6, ((b - a) / 60) * HOUR_H), label: minToHHMM(a) + "–" + minToHHMM(b) };
+});
+
+onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); detachDrag(); });
 </script>
 
 <template>
@@ -352,7 +442,7 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); });
                   :class="viewMode === 'week' ? 'bg-base-lvl-3 text-body' : 'text-body-1/60'"
                   @click="setMode('week')">{{ $t('This week') }}</button>
         </div>
-        <button class="text-xs font-semibold px-3 py-1.5 rounded-lg border transition"
+        <button class="hidden md:inline-flex text-xs font-semibold px-3 py-1.5 rounded-lg border transition"
                 :class="showBudget ? 'bg-base-lvl-3 text-body border-base-lvl-1' : 'bg-base-lvl-1 text-body-1/70 border-base'"
                 @click="showBudget = !showBudget">📊 {{ $t('Time budget') }}</button>
       </div>
@@ -385,9 +475,41 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); });
         >+ {{ $t('Block') }}</button>
       </div>
 
+      <!-- mobile day agenda: the 7-column grid is unusable on phones -->
+      <div class="md:hidden">
+        <div class="flex gap-1.5 overflow-x-auto pb-2 mb-2">
+          <button v-for="(d, i) in SHORT" :key="i"
+                  class="flex-none px-3 py-1.5 rounded-lg text-xs font-semibold border transition"
+                  :class="selectedMobileDay === i ? 'bg-primary text-white border-primary' : 'bg-base-lvl-1 text-body-1/70 border-base'"
+                  @click="selectedMobileDay = i">
+            {{ d }}<span v-if="viewMode === 'week'" class="ml-1 opacity-80">{{ weekDates[i].getDate() }}</span>
+          </button>
+        </div>
+        <div class="space-y-2">
+          <div v-for="rb in renderBlocks(selectedMobileDay)" :key="rb._kind + rb.id"
+               class="flex items-stretch gap-3 rounded-lg bg-base-lvl-3 border border-base p-3 cursor-pointer"
+               :class="{ 'opacity-40': !shown(rb) }"
+               @click="openEdit(rb)">
+            <div class="w-1 rounded-full flex-none" :style="{ background: rb.color }"></div>
+            <div class="flex-1 min-w-0">
+              <div class="text-sm font-semibold text-body truncate flex items-center gap-1">
+                {{ rb.title }}
+                <span v-if="rb._kind === 'exception'" class="text-[10px] text-primary">★</span>
+              </div>
+              <div class="text-xs text-body-1/60">{{ rb.start }}–{{ rb.end }}</div>
+              <div v-if="rb.note" class="text-[11px] text-body-1/50 mt-0.5 truncate">{{ rb.note }}</div>
+            </div>
+            <span v-if="rb.member_id" class="w-6 h-6 rounded-full text-[10px] flex items-center justify-center font-bold text-white flex-none self-center"
+                  :style="{ background: memberColor(rb.member_id) }">{{ initial(rb.member_id) }}</span>
+          </div>
+          <p v-if="!renderBlocks(selectedMobileDay).length" class="text-center text-xs text-body-1/50 py-8">{{ $t('No blocks this day') }}</p>
+        </div>
+        <button class="w-full mt-3 text-sm font-semibold px-3 py-2 rounded-lg bg-primary text-white" @click="openNew(selectedMobileDay)">+ {{ $t('Block') }}</button>
+      </div>
+
       <!-- grid + side budget panel: the panel NARROWS the grid (which scrolls
            horizontally), so it never pushes the grid down nor covers it. -->
-      <div class="flex gap-4 items-start">
+      <div class="hidden md:flex gap-4 items-start">
         <div class="flex-1 min-w-0">
         <div class="bg-base-lvl-3 border border-base rounded-xl overflow-hidden">
         <div class="grid border-b border-base bg-base-lvl-2" style="grid-template-columns:44px repeat(7,1fr)">
@@ -404,21 +526,25 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); });
           </div>
         </div>
         <div class="overflow-x-auto">
-          <div class="grid relative" style="grid-template-columns:44px repeat(7,1fr);min-width:760px">
+          <div ref="gridBodyRef" class="grid relative" style="grid-template-columns:44px repeat(7,1fr);min-width:760px">
             <!-- time gutter -->
             <div class="relative" :style="{ height: gridHeight + 'px' }">
               <div v-for="h in hours" :key="h" class="absolute right-1.5 text-[9px] text-body-1/40"
                    :style="{ top: ((h - startH) * HOUR_H - 5) + 'px' }">{{ (h < 10 ? '0' : '') + h }}:00</div>
             </div>
             <!-- day columns -->
-            <div v-for="day in 7" :key="day" class="relative border-l border-base/50"
+            <div v-for="day in 7" :key="day" class="relative border-l border-base/50 select-none"
                  :class="isTodayCol(day - 1) ? 'bg-primary/5' : ''"
                  :style="{ height: gridHeight + 'px' }"
+                 @pointerdown.self="startCreate(day - 1, $event)"
                  @dblclick="openNew(day - 1)">
               <div v-for="h in hours" :key="h" class="absolute left-0 right-0 border-t border-base/30"
                    :style="{ top: ((h - startH) * HOUR_H) + 'px' }"></div>
               <div v-if="showNow(day - 1)" class="absolute left-0 right-0 h-0.5 bg-primary z-10"
                    :style="{ top: nowTop + 'px' }"></div>
+              <div v-if="dragGhost && dragGhost.day === (day - 1)"
+                   class="absolute left-0.5 right-0.5 rounded-md border-2 border-dashed border-primary bg-primary/10 pointer-events-none z-20 flex items-start justify-center text-[9px] text-primary font-bold pt-0.5"
+                   :style="{ top: dragGhost.top + 'px', height: dragGhost.height + 'px' }">{{ dragGhost.label }}</div>
               <!-- blocks -->
               <div v-for="rb in renderBlocks(day - 1)" :key="rb._kind + rb.id"
                    class="absolute left-0.5 right-0.5 rounded-md px-1.5 py-0.5 text-[10px] font-semibold overflow-hidden cursor-pointer leading-tight transition"
@@ -428,7 +554,7 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); });
                    ]"
                    :style="blockStyle(rb)"
                    :title="rb.note || rb.title"
-                   @click="onBlockClick(rb, day - 1, $event)">
+                   @pointerdown.stop="startMove(rb, day - 1, $event)">
                 <div class="truncate flex items-center gap-1">
                   {{ rb.title }}
                   <span v-if="rb._kind === 'exception'" class="text-[8px]">★</span>
@@ -438,9 +564,11 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); });
                 <button
                   class="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full text-[7px] flex items-center justify-center font-bold text-white ring-1 ring-white/30"
                   :style="{ background: memberColor(rb.member_id) }"
+                  @pointerdown.stop
                   @click.stop="openAssign(rb, $event)"
                   :title="$t('Assign member')"
                 >{{ rb.member_id ? initial(rb.member_id) : '+' }}</button>
+                <div class="absolute left-0 right-0 bottom-0 h-1.5 cursor-ns-resize hover:bg-primary/40" @pointerdown.stop="startResize(rb, day - 1, $event)"></div>
               </div>
             </div>
           </div>
