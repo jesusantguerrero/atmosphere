@@ -74,6 +74,30 @@ async function toggleDone(item: any) {
 
 const draft = ref<Record<string, string>>({});
 const openAssign = ref<number | null>(null);
+const openRec = ref<number | null>(null);
+const recurrencePresets = [
+  { key: 'daily', label: 'Daily' },
+  { key: 'weekdays', label: 'Weekdays' },
+  { key: 'weekly', label: 'Weekly' },
+  { key: 'once', label: 'Once' },
+];
+
+function recurrenceKey(item: any): string {
+  const s = (item.rrule || '').toUpperCase();
+  if (!s) return 'Once';
+  if (s.includes('BYDAY=MO,TU,WE,TH,FR')) return 'Weekdays';
+  if (s.includes('FREQ=DAILY')) return 'Daily';
+  if (s.includes('FREQ=WEEKLY')) return 'Weekly';
+  return 'Daily';
+}
+
+async function setRecurrence(item: any, preset: string) {
+  openRec.value = null;
+  try {
+    await axios.put(`/housing/plans/${props.boardId ?? item.board_id}/items/${item.id}`, { recurrence: preset });
+    router.reload({ preserveScroll: true });
+  } catch (e) { /* ignore */ }
+}
 
 async function assign(item: any, value: string | null) {
   openAssign.value = null;
@@ -180,7 +204,32 @@ async function addChore(lane: any) {
             </button>
             <div class="flex-1 min-w-0">
               <p class="font-semibold truncate text-body" :class="{ 'line-through': item.is_done }">{{ item.title }}</p>
-              <p v-if="item.due_date" class="text-xs text-body-1/60">{{ item.due_date }}</p>
+              <div class="flex items-center gap-2 mt-1">
+                <div class="relative">
+                  <button
+                    type="button"
+                    class="inline-flex items-center gap-1 px-2 py-0.5 text-xs transition rounded-full bg-base-lvl-1 text-body-1/50 hover:text-body"
+                    @click.stop="openRec = openRec === item.id ? null : item.id"
+                  >
+                    <i class="fa fa-redo text-[9px]"></i>
+                    {{ $t(recurrenceKey(item)) }}
+                  </button>
+                  <div
+                    v-if="openRec === item.id"
+                    class="absolute left-0 z-20 py-1 mt-1 border shadow-lg w-36 rounded-xl bg-base-lvl-1 border-base"
+                  >
+                    <button
+                      v-for="p in recurrencePresets"
+                      :key="p.key"
+                      type="button"
+                      class="flex items-center w-full gap-2 px-3 py-1.5 text-sm text-left hover:bg-base-lvl-2"
+                      :class="recurrenceKey(item) === p.label ? 'text-primary' : 'text-body'"
+                      @click="setRecurrence(item, p.key)"
+                    >{{ $t(p.label) }}</button>
+                  </div>
+                </div>
+                <span v-if="item.due_date" class="text-xs text-body-1/50">{{ item.due_date }}</span>
+              </div>
             </div>
             <div class="relative flex-shrink-0">
               <button
