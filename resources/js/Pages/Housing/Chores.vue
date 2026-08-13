@@ -23,7 +23,7 @@ const isModalOpen = ref(false);
 
 // Deep-link / default the board view via ?view= (e.g. ?view=family for the
 // kitchen-screen view). BoardSection reads this through its `layout` prop.
-const initialView = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '').get('view') || undefined;
+const initialView = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '').get('view') || 'family';
 
 const chorePlan = computed(() => {
     return props.chores?.at(0)

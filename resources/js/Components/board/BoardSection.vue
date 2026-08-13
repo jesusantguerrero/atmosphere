@@ -632,21 +632,21 @@ li.link {
 }
 
 .board__toolbar {
-    border-bottom: 1px solid #ddd;
+    @apply items-center border-b border-base;
     padding-bottom: 15px;
 }
 
 .toolbar-buttons {
-    @apply px-2 rounded-full inline-flex items-center justify-center cursor-pointer;
+    @apply px-2 rounded-full inline-flex items-center justify-center cursor-pointer text-body-1/50 transition-colors;
     width: 34px;
     height: 34px;
 
     &.active {
-        @apply bg-gray-300;
+        @apply bg-base-lvl-2 text-primary;
     }
 
     &:hover {
-        @apply bg-gray-300;
+        @apply bg-base-lvl-2 text-body;
     }
 }
 

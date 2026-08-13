@@ -71,6 +71,48 @@ async function toggleDone(item: any) {
     busy.value[item.id] = false;
   }
 }
+
+const draft = ref<Record<string, string>>({});
+const openAssign = ref<number | null>(null);
+
+async function assign(item: any, value: string | null) {
+  openAssign.value = null;
+  const ownerField = (props.fields || []).find((f: any) => f.name === 'owner');
+  if (!ownerField) return;
+  const prev = item.owner;
+  item.owner = value ?? ''; // optimistic
+  try {
+    await axios.put(`/housing/plans/${props.boardId ?? item.board_id}/items/${item.id}`, {
+      fields: [{ field_id: ownerField.id, field_name: 'owner', name: 'owner', value: value ?? '' }],
+    });
+    router.reload({ preserveScroll: true });
+  } catch (e) {
+    item.owner = prev;
+  }
+}
+
+async function addChore(lane: any) {
+  const title = (draft.value[lane.key] || '').trim();
+  if (!title) return;
+  const stageId = props.stages?.[0]?.id;
+  const ownerField = (props.fields || []).find((f: any) => f.name === 'owner');
+  // Adding inside a member's lane pre-assigns them as the chore owner.
+  const fields = (!lane.unassigned && ownerField)
+    ? [{ field_id: ownerField.id, field_name: 'owner', name: 'owner', value: lane.key }]
+    : [];
+  draft.value[lane.key] = '';
+  try {
+    await axios.post(`/housing/plans/${props.boardId}/items`, {
+      title,
+      stage_id: stageId,
+      order: lane.items.length,
+      fields,
+    });
+    router.reload({ preserveScroll: true });
+  } catch (e) {
+    draft.value[lane.key] = title; // restore so the user doesn't lose input
+  }
+}
 </script>
 
 <template>
@@ -91,9 +133,9 @@ async function toggleDone(item: any) {
       <div
         v-for="lane in lanes"
         :key="lane.key"
-        class="flex-shrink-0 overflow-hidden border shadow-sm w-72 rounded-2xl bg-base-lvl-2 border-base"
+        class="flex-shrink-0 border shadow-sm w-72 rounded-2xl bg-base-lvl-2 border-base"
       >
-        <div class="relative px-4 pt-4 pb-3 bg-base-lvl-3/40">
+        <div class="relative px-4 pt-4 pb-3 overflow-hidden rounded-t-2xl bg-base-lvl-3/40">
           <span class="absolute top-0 left-0 right-0 h-1" :style="{ background: lane.color }"></span>
           <div class="flex items-center justify-between">
             <div class="flex items-center min-w-0 gap-2.5">
@@ -133,12 +175,59 @@ async function toggleDone(item: any) {
             >
               <i v-if="item.is_done" class="text-white fa fa-check"></i>
             </button>
-            <div class="min-w-0">
+            <div class="flex-1 min-w-0">
               <p class="font-semibold truncate text-body" :class="{ 'line-through': item.is_done }">{{ item.title }}</p>
               <p v-if="item.due_date" class="text-xs text-body-1/60">{{ item.due_date }}</p>
             </div>
+            <div class="relative flex-shrink-0">
+              <button
+                type="button"
+                class="flex items-center justify-center rounded-full w-7 h-7"
+                :title="$t('Owner')"
+                @click.stop="openAssign = openAssign === item.id ? null : item.id"
+              >
+                <span
+                  v-if="!lane.unassigned"
+                  class="flex items-center justify-center w-7 h-7 text-white rounded-full text-[11px] font-bold"
+                  :style="{ background: lane.color }"
+                >{{ laneInitial(lane) }}</span>
+                <span
+                  v-else
+                  class="flex items-center justify-center border border-dashed rounded-full w-7 h-7 border-base text-body-1/40"
+                ><i class="text-xs fa fa-user-plus"></i></span>
+              </button>
+              <div
+                v-if="openAssign === item.id"
+                class="absolute right-0 z-20 w-40 py-1 mt-1 border shadow-lg rounded-xl bg-base-lvl-1 border-base"
+              >
+                <button
+                  v-for="(m, idx) in users"
+                  :key="m.value"
+                  type="button"
+                  class="flex items-center w-full gap-2 px-3 py-1.5 text-sm text-left hover:bg-base-lvl-2 text-body"
+                  @click="assign(item, m.value)"
+                >
+                  <span class="flex items-center justify-center w-5 h-5 text-white rounded-full text-[10px] font-bold" :style="{ background: memberColor(idx) }">{{ (m.name || '?').slice(0, 1).toUpperCase() }}</span>
+                  <span class="truncate">{{ m.name }}</span>
+                </button>
+                <button
+                  type="button"
+                  class="flex items-center w-full gap-2 px-3 py-1.5 text-sm text-left hover:bg-base-lvl-2 text-body-1/60"
+                  @click="assign(item, null)"
+                >
+                  <i class="w-5 text-xs text-center fa fa-user-slash"></i>
+                  <span>{{ $t('Unassigned') }}</span>
+                </button>
+              </div>
+            </div>
           </div>
-          <p v-if="!lane.items.length" class="py-6 text-sm text-center text-body-1/40">—</p>
+          <input
+            v-model="draft[lane.key]"
+            @keyup.enter="addChore(lane)"
+            type="text"
+            :placeholder="'+ ' + $t('Add item')"
+            class="w-full px-3 py-2.5 text-sm transition bg-transparent border border-dashed rounded-xl border-base text-body placeholder:text-body-1/40 focus:outline-none focus:border-primary focus:bg-base-lvl-3"
+          />
         </div>
       </div>
     </div>
