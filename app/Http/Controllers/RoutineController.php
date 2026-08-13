@@ -41,19 +41,55 @@ class RoutineController extends Controller
         $dow = (int) date('N') - 1;               // 0=Mon .. 6=Sun
         $now = (int) date('G') * 60 + (int) date('i');
 
-        $today = [];
+        $todayDate = date('Y-m-d');
+
+        // Split the weekday's blocks into the undated template and today's dated
+        // exceptions (exceptions for other dates in this stage are ignored).
+        $template = [];
+        $exceptions = [];
         foreach ($plan->stages as $stage) {
             if ((int) $stage->order !== $dow) {
                 continue;
             }
             foreach ($stage->items()->orderBy('order')->get() as $item) {
                 $b = $this->blockPayload($item, $dow);
-                $today[] = [
-                    'block' => $b,
-                    's' => $this->toMinutes($b['start']),
-                    'e' => $this->toMinutes($b['end']),
-                ];
+                if (empty($b['date'])) {
+                    $template[] = $b;
+                } elseif ($b['date'] === $todayDate) {
+                    $exceptions[] = $b;
+                }
             }
+        }
+
+        // Same override rule as the week view: an exception hides the template
+        // block it overlaps; `skip` just blanks the slot (not rendered).
+        $overlaps = function (array $a, array $b): bool {
+            return $this->toMinutes($a['start']) < $this->toMinutes($b['end'])
+                && $this->toMinutes($b['start']) < $this->toMinutes($a['end']);
+        };
+        $effective = [];
+        foreach ($template as $t) {
+            $covered = false;
+            foreach ($exceptions as $e) {
+                if ($overlaps($t, $e)) { $covered = true; break; }
+            }
+            if (! $covered) {
+                $effective[] = $t;
+            }
+        }
+        foreach ($exceptions as $e) {
+            if (empty($e['skip'])) {
+                $effective[] = $e;
+            }
+        }
+
+        $today = [];
+        foreach ($effective as $b) {
+            $today[] = [
+                'block' => $b,
+                's' => $this->toMinutes($b['start']),
+                'e' => $this->toMinutes($b['end']),
+            ];
         }
         usort($today, fn ($a, $b) => $a['s'] <=> $b['s']);
 
