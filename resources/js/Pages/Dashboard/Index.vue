@@ -129,7 +129,7 @@ const deleteBulkTransactions = () => {
 </script>
 
 <template>
-  <AppLayout>
+  <AppLayout :title="$t('Dashboard')">
     <template #title v-if="contextStore.isMobile">
       <AppIcon size="medium" class="ml-2" />
     </template>

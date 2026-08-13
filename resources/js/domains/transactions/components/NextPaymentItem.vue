@@ -153,7 +153,7 @@ const dateBadgeConfig = computed(() => {
                         :title="`${badgeConfig.text}${daysOverdue > 0 ? ` - ${daysOverdue} days overdue` : ''}`"
                     >
                         <component :is="badgeConfig.icon" class="w-3 h-3" />
-                        {{ badgeConfig.text }}
+                        {{ $t(badgeConfig.text) }}
                     </span>
                     <!-- Cycle status badge — orthogonal to urgency. Shows actual
                          settlement state (PENDING / PARTIALLY_PAID / LATE / PAID /
@@ -163,7 +163,7 @@ const dateBadgeConfig = computed(() => {
                         class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold uppercase tracking-wide ring-1 ring-inset"
                         :class="cycleStatus.classes"
                     >
-                        {{ cycleStatus.label }}
+                        {{ $t(cycleStatus.label) }}
                     </span>
                 </div>
                 <span class="text-sm text-body-1/70 truncate block">
@@ -189,11 +189,11 @@ const dateBadgeConfig = computed(() => {
                 v-if="isCycle && !isSettled"
                 type="button"
                 class="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-primary text-white shadow-sm hover:bg-primary-dark transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                :title="$t('Pay this cycle')"
+                :title="$t('Mark this cycle as paid')"
                 @click.stop="$emit('pay', payment)"
             >
                 <IMdiCash class="w-3 h-3" />
-                {{ $t('Pay') }}
+                {{ $t('Mark as paid') }}
             </button>
             <slot name="date">
                 <button
