@@ -336,7 +336,7 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); });
       <HouseSectionNav />
     </template>
 
-    <div class="px-5 pb-20 mx-auto pt-16 max-w-6xl">
+    <div class="px-5 pb-20 pt-16 w-full">
       <!-- header: mode toggle + week nav + filter + add -->
       <div class="flex items-center gap-2 mb-2 flex-wrap">
         <h1 class="text-lg font-bold text-body mr-auto">{{ $t('Weekly routine') }}</h1>
