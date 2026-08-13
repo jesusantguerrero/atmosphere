@@ -93,19 +93,19 @@ class PlannedTransactionService
             'status' => Transaction::STATUS_PLANNED,
         ])->first();
 
-        try {
-            if (! $transaction) {
-                $transaction = Transaction::create($plannedData->toArray());
-                $transaction->createLines($plannedData->items ?? []);
-            } else {
-                $transaction->updateTransaction($plannedData->toArray());
-            }
-            Planner::create(array_merge($plannedData->toArray(), [
+        if (! $transaction) {
+            $transaction = Transaction::create(Arr::only($plannedData->toArray(), (new Transaction)->getFillable()));
+            $transaction->createLines($plannedData->items ?? []);
+        } else {
+            $transaction->updateTransaction(Arr::only($plannedData->toArray(), (new Transaction)->getFillable()));
+        }
+
+        Planner::create(array_merge(
+            Arr::only($plannedData->toArray(), (new Planner)->getFillable()),
+            [
                 'dateable_type' => Transaction::class,
                 'dateable_id' => $transaction->id,
-            ]));
-        } catch (Exception $e) {
-            dd($plannedData);
-        }
+            ]
+        ));
     }
 }
