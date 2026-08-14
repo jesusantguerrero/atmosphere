@@ -83,7 +83,7 @@ const promptRename = () => {
 };
 const confirmDelete = () => {
     showListMenu.value = false;
-    if (window.confirm(`Delete "${props.plan.name}" and all its items?`)) emit('delete', props.plan.id);
+    if (window.confirm(t('Delete "{name}" and all its items?', { name: props.plan.name }))) emit('delete', props.plan.id);
 };
 const openImport = () => {
     showListMenu.value = false;
@@ -215,7 +215,7 @@ const submitComposer = async () => {
 
 const removeItem = async (item: Item) => {
     if (!props.endpoints.destroy) return;
-    if (!window.confirm(`Remove "${item.title}" from this list?`)) return;
+    if (!window.confirm(t('Remove "{title}" from this list?', { title: item.title }))) return;
 
     const snapshot = stages.value.map((s) => ({ ...s, items: [...s.items] }));
     removeItemLocally(item.id);
@@ -228,7 +228,7 @@ const removeItem = async (item: Item) => {
 };
 
 const reset = async () => {
-    if (!window.confirm('Reset every item to pending? This starts a fresh trip.')) return;
+    if (!window.confirm(t('Reset every item to pending? This starts a fresh trip.'))) return;
     await axios.post(props.endpoints.reset, {}, requestConfig());
     for (const stage of stages.value) {
         for (const item of stage.items) {

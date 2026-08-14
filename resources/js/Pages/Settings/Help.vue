@@ -133,7 +133,7 @@ const toggleFaq = (i: number) => {
 </script>
 
 <template>
-    <AppLayout title="Settings - Help">
+    <AppLayout :title="$t('Settings - Help')">
         <template #header>
             <SettingsSectionNav />
         </template>
@@ -143,9 +143,9 @@ const toggleFaq = (i: number) => {
             <section class="rounded-xl bg-base-lvl-3 p-8 lg:p-10 border border-base-lvl-2">
                 <header class="flex flex-col items-center text-center">
                     <AppIcon size="medium" />
-                    <h1 class="mt-4 text-2xl font-bold text-body">Help Center</h1>
+                    <h1 class="mt-4 text-2xl font-bold text-body">{{ $t('Help Center') }}</h1>
                     <p class="mt-2 text-sm text-body-1/70 max-w-md">
-                        Setup help, common questions, and how to reach a human when you need one.
+                        {{ $t('Setup help, common questions, and how to reach a human when you need one.') }}
                     </p>
                     <span class="mt-4 px-3 py-1 rounded-full bg-base-lvl-2 text-body-1 font-mono text-xs">
                         {{ versionLabel }}
@@ -164,14 +164,14 @@ const toggleFaq = (i: number) => {
                             : 'text-body-1/60 border-transparent hover:text-body-1 hover:border-base-lvl-2'"
                         @click="activeTab = tab.id"
                     >
-                        {{ tab.label }}
+                        {{ $t(tab.label) }}
                     </button>
                 </nav>
 
                 <!-- ─── Get started tab ─────────────────────────────────── -->
                 <div v-if="activeTab === 'started'" class="mt-8 space-y-4">
                     <p class="text-sm text-body-1/70 leading-relaxed mb-6">
-                        Five steps to a household running on Loger. You don't have to do them in order — but most people find this is the fastest path.
+                        {{ $t("Five steps to a household running on Loger. You don't have to do them in order — but most people find this is the fastest path.") }}
                     </p>
 
                     <ol class="space-y-3">
@@ -184,13 +184,13 @@ const toggleFaq = (i: number) => {
                                 {{ step.n }}
                             </div>
                             <div class="flex-1 min-w-0">
-                                <div class="text-sm font-semibold text-body">{{ step.title }}</div>
-                                <div class="text-xs text-body-1/70 mt-1 leading-relaxed">{{ step.body }}</div>
+                                <div class="text-sm font-semibold text-body">{{ $t(step.title) }}</div>
+                                <div class="text-xs text-body-1/70 mt-1 leading-relaxed">{{ $t(step.body) }}</div>
                                 <a
                                     :href="step.cta.href"
                                     class="inline-flex items-center gap-1 mt-2 text-xs font-medium text-primary hover:underline"
                                 >
-                                    {{ step.cta.label }} →
+                                    {{ $t(step.cta.label) }} →
                                 </a>
                             </div>
                         </li>
@@ -210,7 +210,7 @@ const toggleFaq = (i: number) => {
                             @click="toggleFaq(i)"
                             :aria-expanded="openFaqIndex === i"
                         >
-                            <span>{{ item.q }}</span>
+                            <span>{{ $t(item.q) }}</span>
                             <svg
                                 class="w-4 h-4 text-body-1/60 flex-shrink-0 transition-transform"
                                 :class="{ 'rotate-180': openFaqIndex === i }"
@@ -220,7 +220,7 @@ const toggleFaq = (i: number) => {
                             </svg>
                         </button>
                         <div v-if="openFaqIndex === i" class="px-4 pb-4 text-sm text-body-1/80 leading-relaxed">
-                            {{ item.a }}
+                            {{ $t(item.a) }}
                         </div>
                     </div>
                 </div>
@@ -229,9 +229,9 @@ const toggleFaq = (i: number) => {
                 <div v-else-if="activeTab === 'tutorials'" class="mt-8 space-y-4">
                     <div class="flex flex-col items-center justify-center text-center py-8 px-6 rounded-lg bg-base-lvl-2/40 border border-dashed border-base-lvl-2">
                         <span class="text-3xl mb-3" aria-hidden="true">🎬</span>
-                        <h3 class="text-sm font-semibold text-body">Video tutorials are coming</h3>
+                        <h3 class="text-sm font-semibold text-body">{{ $t('Video tutorials are coming') }}</h3>
                         <p class="text-xs text-body-1/70 mt-1 max-w-sm">
-                            Short walkthroughs of the things people most often ask about — multi-currency setup, PDF imports, the meal-planner-to-budget flow.
+                            {{ $t('Short walkthroughs of the things people most often ask about — multi-currency setup, PDF imports, the meal-planner-to-budget flow.') }}
                         </p>
                         <a
                             href="https://jesusantguerrero.github.io/atmosphere"
@@ -239,12 +239,12 @@ const toggleFaq = (i: number) => {
                             rel="noopener noreferrer"
                             class="mt-4 text-xs font-medium text-primary hover:underline"
                         >
-                            In the meantime, browse the docs →
+                            {{ $t('In the meantime, browse the docs') }} →
                         </a>
                     </div>
 
                     <p class="text-xs text-body-1/60 italic text-center pt-2">
-                        Have a topic you want covered? <a href="mailto:jesusant.guerrero@gmail.com?subject=Loger%20tutorial%20request" class="text-primary hover:underline">Tell us</a>.
+                        {{ $t('Have a topic you want covered?') }} <a href="mailto:jesusant.guerrero@gmail.com?subject=Loger%20tutorial%20request" class="text-primary hover:underline">{{ $t('Tell us') }}</a>.
                     </p>
                 </div>
 
@@ -260,8 +260,8 @@ const toggleFaq = (i: number) => {
                     >
                         <span class="text-2xl leading-none flex-shrink-0" aria-hidden="true">{{ resource.icon }}</span>
                         <div class="flex-1 min-w-0">
-                            <div class="text-sm font-semibold text-body">{{ resource.title }}</div>
-                            <div class="text-xs text-body-1/70 mt-0.5 leading-relaxed">{{ resource.body }}</div>
+                            <div class="text-sm font-semibold text-body">{{ $t(resource.title) }}</div>
+                            <div class="text-xs text-body-1/70 mt-0.5 leading-relaxed">{{ $t(resource.body) }}</div>
                         </div>
                         <svg v-if="resource.external" class="w-3 h-3 text-body-1/40 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
@@ -269,7 +269,7 @@ const toggleFaq = (i: number) => {
                     </a>
 
                     <p class="text-xs text-body-1/60 italic leading-relaxed text-center pt-4 border-t border-base-lvl-2/60 mt-2">
-                        Loger is a small, solo project. Replies are personal, not from a queue.
+                        {{ $t('Loger is a small, solo project. Replies are personal, not from a queue.') }}
                     </p>
                 </div>
             </section>

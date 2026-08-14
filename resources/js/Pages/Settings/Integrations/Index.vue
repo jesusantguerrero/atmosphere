@@ -2,6 +2,7 @@
 import { computed, nextTick, reactive, ref } from "vue";
 import { router } from '@inertiajs/vue3';
 import axios from 'axios';
+import { useI18n } from 'vue-i18n';
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import AutomationModal from '@/Components/AutomationModal.vue';
@@ -83,22 +84,24 @@ const formatDate = (iso: string): string => {
     }
 };
 
+const { t } = useI18n();
+
 const formatRelativeTime = (iso: string | null): string => {
     if (!iso) return '';
     const then = new Date(iso).getTime();
     if (isNaN(then)) return '';
 
     const diff = Date.now() - then;
-    if (diff < 0) return 'just now';
+    if (diff < 0) return t('just now');
 
     const minute = 60_000;
     const hour = 3_600_000;
     const day = 86_400_000;
 
-    if (diff < minute) return 'just now';
-    if (diff < hour) return `${Math.floor(diff / minute)}m ago`;
-    if (diff < day) return `${Math.floor(diff / hour)}h ago`;
-    if (diff < 7 * day) return `${Math.floor(diff / day)}d ago`;
+    if (diff < minute) return t('just now');
+    if (diff < hour) return t('{n}m ago', { n: Math.floor(diff / minute) });
+    if (diff < day) return t('{n}h ago', { n: Math.floor(diff / hour) });
+    if (diff < 7 * day) return t('{n}d ago', { n: Math.floor(diff / day) });
     return formatDate(iso);
 };
 
@@ -149,7 +152,7 @@ const connectService = (service: Service): void => {
 
 const disconnect = async (integration: Integration): Promise<void> => {
     const confirmed = window.confirm(
-        `Disconnect ${integration.name} (${integration.hash})? Loger will stop reading new messages from this account.`
+        t('Disconnect {name} ({hash})? Loger will stop reading new messages from this account.', { name: integration.name, hash: integration.hash })
     );
     if (!confirmed) return;
 
@@ -176,7 +179,7 @@ const onItemSaved = (): void => {
 </script>
 
 <template>
-    <AppLayout title="Settings - Integrations">
+    <AppLayout :title="$t('Settings - Integrations')">
         <template #header>
             <SettingsSectionNav />
         </template>
@@ -258,9 +261,9 @@ const onItemSaved = (): void => {
                             </button>
                             <div v-if="expandedServiceId === service.id" class="mt-3 p-3 rounded-md bg-base-lvl-2 border border-base text-xs text-body-1/80 space-y-2">
                                 <ul class="space-y-1.5 list-disc list-inside">
-                                    <li v-for="item in accessDetails(service).items" :key="item">{{ item }}</li>
+                                    <li v-for="item in accessDetails(service).items" :key="item">{{ $t(item) }}</li>
                                 </ul>
-                                <p class="text-body-1/60 pt-1 border-t border-base">{{ accessDetails(service).note }}</p>
+                                <p class="text-body-1/60 pt-1 border-t border-base">{{ $t(accessDetails(service).note) }}</p>
                             </div>
                         </div>
                         <div class="shrink-0">
