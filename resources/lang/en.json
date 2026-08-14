@@ -914,5 +914,9 @@
     "In the meantime, browse the docs": "In the meantime, browse the docs",
     "Have a topic you want covered?": "Have a topic you want covered?",
     "Tell us": "Tell us",
-    "Loger is a small, solo project. Replies are personal, not from a queue.": "Loger is a small, solo project. Replies are personal, not from a queue."
+    "Loger is a small, solo project. Replies are personal, not from a queue.": "Loger is a small, solo project. Replies are personal, not from a queue.",
+    "Connect Google Calendar to see your events here.": "Connect Google Calendar to see your events here.",
+    "Reconnect Google to see your calendar events here.": "Reconnect Google to see your calendar events here.",
+    "Your Google connection expired. Reconnect it to see your calendar events.": "Your Google connection expired. Reconnect it to see your calendar events.",
+    "Show Google Calendar": "Show Google Calendar"
 }

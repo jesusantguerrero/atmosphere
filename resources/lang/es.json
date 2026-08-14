@@ -988,5 +988,9 @@
     "In the meantime, browse the docs": "Mientras tanto, explora la documentación",
     "Have a topic you want covered?": "¿Hay un tema que quieres que cubramos?",
     "Tell us": "Cuéntanos",
-    "Loger is a small, solo project. Replies are personal, not from a queue.": "Loger es un proyecto pequeño de una sola persona. Las respuestas son personales, no de una cola de tickets."
+    "Loger is a small, solo project. Replies are personal, not from a queue.": "Loger es un proyecto pequeño de una sola persona. Las respuestas son personales, no de una cola de tickets.",
+    "Connect Google Calendar to see your events here.": "Conecta Google Calendar para ver tus eventos aquí.",
+    "Reconnect Google to see your calendar events here.": "Reconecta Google para ver los eventos de tu calendario aquí.",
+    "Your Google connection expired. Reconnect it to see your calendar events.": "Tu conexión con Google expiró. Reconéctala para ver los eventos de tu calendario.",
+    "Show Google Calendar": "Mostrar Google Calendar"
 }
