@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Domains\Automation\Models\Automation;
 use App\Domains\Integration\Models\Integration;
+use App\Domains\Integration\Services\EmailToTasksAutomation;
 use App\Models\User;
 use Illuminate\Console\Command;
 
@@ -65,43 +65,7 @@ class SetupEmailToTasksAutomation extends Command
         $query = (string) $this->option('query');
         $board = (string) $this->option('board');
 
-        $automation = Automation::updateOrCreate(
-            [
-                'user_id' => $user->id,
-                'team_id' => $teamId,
-                'name' => 'Email to Tasks',
-            ],
-            [
-                'integration_id' => $integrationId,
-                'trigger_id' => 1,
-                'description' => 'Turns selected emails (default: starred) into task cards on a board.',
-                'sentence' => 'When a matching email is received, create a task',
-                'status' => true,
-                'is_background' => true,
-                'config' => [],
-            ]
-        );
-
-        $automation->saveTasks([
-            [
-                'entity' => 'App\\Domains\\Integration\\Actions\\GmailReceived',
-                'task_type' => 'trigger',
-                'order' => 0,
-                'name' => 'Gmail Trigger - Tasks',
-                'values' => [
-                    'query' => $query,
-                ],
-            ],
-            [
-                'entity' => 'App\\Domains\\Integration\\Actions\\CreateTaskFromEmail',
-                'task_type' => 'action',
-                'order' => 1,
-                'name' => 'Create Task From Email',
-                'values' => [
-                    'board' => $board,
-                ],
-            ],
-        ]);
+        $automation = EmailToTasksAutomation::enable($user, $query, $board, $teamId);
 
         $action = $automation->wasRecentlyCreated ? 'Created' : 'Updated';
         $this->newLine();

@@ -7,6 +7,7 @@ use App\Domains\Integration\Models\Integration;
 use App\Domains\Automation\Models\AutomationTask;
 use App\Domains\Automation\Models\AutomationRecipe;
 use App\Domains\Integration\Services\GoogleService;
+use App\Domains\Integration\Services\EmailToTasksAutomation;
 use App\Domains\Automation\Models\AutomationService;
 
 class IntegrationController
@@ -23,7 +24,26 @@ class IntegrationController
                 'team_id' => $user->current_team_id,
                 'user_id' => $user->id,
             ])->with(['automations'])->get(),
+            'emailToTasks' => EmailToTasksAutomation::status($user),
         ]);
+    }
+
+    public function toggleEmailToTasks(Request $request)
+    {
+        $user = $request->user();
+        $status = EmailToTasksAutomation::status($user);
+
+        if (! $status['connected']) {
+            return response()->json($status, 422);
+        }
+
+        if ($status['enabled']) {
+            EmailToTasksAutomation::disable($user);
+        } else {
+            EmailToTasksAutomation::enable($user, $request->input('query'), $request->input('board'));
+        }
+
+        return response()->json(EmailToTasksAutomation::status($user));
     }
 
     public function social()

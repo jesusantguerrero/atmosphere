@@ -34,17 +34,41 @@ interface Integration {
     automations: Automation[];
 }
 
+interface EmailToTasksStatus {
+    enabled: boolean;
+    exists: boolean;
+    connected: boolean;
+    query: string;
+    board: string;
+}
+
 const props = withDefaults(defineProps<{
     services?: Service[];
     integrations?: Integration[];
     recipes?: any[];
     tasks?: any[];
+    emailToTasks?: EmailToTasksStatus;
 }>(), {
     services: () => [],
     integrations: () => [],
     recipes: () => [],
     tasks: () => [],
+    emailToTasks: () => ({ enabled: false, exists: false, connected: false, query: 'is:starred', board: 'Email' }),
 });
+
+// One-click "emails -> tasks" automation state (mirrors the server status).
+const e2t = reactive<EmailToTasksStatus>({ ...props.emailToTasks });
+const togglingE2t = ref(false);
+const toggleEmailToTasks = async (): Promise<void> => {
+    if (! e2t.connected || togglingE2t.value) return;
+    togglingE2t.value = true;
+    try {
+        const { data } = await axios.post('/integrations/email-to-tasks');
+        Object.assign(e2t, data);
+    } finally {
+        togglingE2t.value = false;
+    }
+};
 
 const state = reactive({
     isAutomationModalOpen: false,
@@ -348,6 +372,44 @@ const onItemSaved = (): void => {
                 <p class="text-sm text-body-1/70 mt-1 max-w-md mx-auto">
                     {{ $t('More sync sources are on the way. For now you can import bank statements as PDFs or enter transactions manually.') }}
                 </p>
+            </section>
+
+            <!-- Email → Tasks (one-click automation) -->
+            <section class="space-y-3">
+                <div>
+                    <h2 class="text-sm font-bold uppercase tracking-wide text-body-1/60">{{ $t('Email → Tasks') }}</h2>
+                    <p class="text-xs text-body-1/60 mt-0.5">{{ $t('Turn selected emails into task cards you can triage.') }}</p>
+                </div>
+                <article class="bg-base-lvl-3 rounded-xl border border-base shadow-sm p-5 flex items-start gap-4">
+                    <span class="w-10 h-10 shrink-0 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                        <i class="fa fa-envelope-open-text" />
+                    </span>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="font-bold text-body">{{ $t('Star an email → get a task') }}</h3>
+                        <p class="text-sm text-body-1/80 mt-1">{{ $t('When you star an email in Gmail, Loger adds it as a task card on your board — deduped, no flooding. Uses the Gmail connection you already have.') }}</p>
+                        <p v-if="!e2t.connected" class="text-xs text-body-1/60 mt-2">{{ $t('Connect Google first to enable this.') }}</p>
+                        <p v-else-if="e2t.enabled" class="text-[11px] text-body-1/50 mt-2">
+                            <span class="uppercase tracking-wide">{{ $t('Gmail search') }}:</span>
+                            <span class="font-mono ml-1">{{ e2t.query }}</span>
+                        </p>
+                    </div>
+                    <div class="shrink-0 self-center">
+                        <button
+                            type="button"
+                            :disabled="!e2t.connected || togglingE2t"
+                            :aria-pressed="e2t.enabled"
+                            :title="e2t.enabled ? $t('Turn off') : $t('Turn on')"
+                            class="relative inline-flex h-6 w-11 items-center rounded-full transition disabled:opacity-40"
+                            :class="e2t.enabled ? 'bg-primary' : 'bg-base-lvl-1 border border-base'"
+                            @click="toggleEmailToTasks"
+                        >
+                            <span
+                                class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition"
+                                :class="e2t.enabled ? 'translate-x-6' : 'translate-x-1'"
+                            />
+                        </button>
+                    </div>
+                </article>
             </section>
 
             <!-- Automations — secondary section -->
