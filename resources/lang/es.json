@@ -915,5 +915,14 @@
     "Read-only access": "Acceso de solo lectura",
     "Sync sources": "Fuentes de sincronización",
     "Untitled automation": "Automatización sin título",
-    "What we access": "A qué accedemos"
+    "What we access": "A qué accedemos",
+    "Clashes with calendar": "Choca con tu calendario",
+    "Connect Google Calendar to detect clashes with your routine.": "Conecta Google Calendar para detectar choques con tu rutina.",
+    "Your Google connection expired. Reconnect it to detect clashes.": "Tu conexión con Google expiró. Reconéctala para detectar choques.",
+    "Reconnect Google to include your calendar and detect clashes.": "Reconecta Google para incluir tu calendario y detectar choques.",
+    "Couldn't read your calendar right now.": "No pudimos leer tu calendario ahora mismo.",
+    "{n} routine block(s) clash with your calendar this week.": "{n} bloque(s) de tu rutina chocan con tu calendario esta semana.",
+    "No clashes with your calendar this week.": "Sin choques con tu calendario esta semana.",
+    "Connect Google": "Conectar Google",
+    "Reconnect": "Reconectar"
 }

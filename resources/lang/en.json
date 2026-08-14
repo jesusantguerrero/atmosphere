@@ -841,5 +841,14 @@
     "Read-only access": "Read-only access",
     "Sync sources": "Sync sources",
     "Untitled automation": "Untitled automation",
-    "What we access": "What we access"
+    "What we access": "What we access",
+    "Clashes with calendar": "Clashes with calendar",
+    "Connect Google Calendar to detect clashes with your routine.": "Connect Google Calendar to detect clashes with your routine.",
+    "Your Google connection expired. Reconnect it to detect clashes.": "Your Google connection expired. Reconnect it to detect clashes.",
+    "Reconnect Google to include your calendar and detect clashes.": "Reconnect Google to include your calendar and detect clashes.",
+    "Couldn't read your calendar right now.": "Couldn't read your calendar right now.",
+    "{n} routine block(s) clash with your calendar this week.": "{n} routine block(s) clash with your calendar this week.",
+    "No clashes with your calendar this week.": "No clashes with your calendar this week.",
+    "Connect Google": "Connect Google",
+    "Reconnect": "Reconnect"
 }
