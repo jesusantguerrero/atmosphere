@@ -34,7 +34,7 @@ const emitChange = (value: string) => {
                 : 'text-body-1/60 hover:text-body'"
             :key="statusName"
             @click="emitChange(item.value || statusName)">
-                {{ item.label }}
+                {{ $t(item.label) }}
         </button>
     </section>
 </template>

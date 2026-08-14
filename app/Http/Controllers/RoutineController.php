@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domains\Integration\Services\GoogleCalendarService;
 use App\Domains\LogerProfile\Models\LogerProfile;
 use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
@@ -45,45 +46,10 @@ class RoutineController extends Controller
 
         $todayDate = date('Y-m-d');
 
-        // Split the weekday's blocks into the undated template and today's dated
-        // exceptions (exceptions for other dates in this stage are ignored).
-        $template = [];
-        $exceptions = [];
-        foreach ($plan->stages as $stage) {
-            if ((int) $stage->order !== $dow) {
-                continue;
-            }
-            foreach ($stage->items()->orderBy('order')->get() as $item) {
-                $b = $this->blockPayload($item, $dow);
-                if (empty($b['date'])) {
-                    $template[] = $b;
-                } elseif ($b['date'] === $todayDate) {
-                    $exceptions[] = $b;
-                }
-            }
-        }
-
-        // Same override rule as the week view: an exception hides the template
-        // block it overlaps; `skip` just blanks the slot (not rendered).
-        $overlaps = function (array $a, array $b): bool {
-            return $this->toMinutes($a['start']) < $this->toMinutes($b['end'])
-                && $this->toMinutes($b['start']) < $this->toMinutes($a['end']);
-        };
-        $effective = [];
-        foreach ($template as $t) {
-            $covered = false;
-            foreach ($exceptions as $e) {
-                if ($overlaps($t, $e)) { $covered = true; break; }
-            }
-            if (! $covered) {
-                $effective[] = $t;
-            }
-        }
-        foreach ($exceptions as $e) {
-            if (empty($e['skip'])) {
-                $effective[] = $e;
-            }
-        }
+        // Effective blocks for today = weekday template with today's dated
+        // exceptions overlaid (exception hides the template block it overlaps;
+        // `skip` blanks the slot).
+        $effective = $this->effectiveBlocksForDate($plan, $todayDate, $dow);
 
         $today = [];
         foreach ($effective as $b) {
@@ -314,6 +280,100 @@ class RoutineController extends Controller
         ]);
     }
 
+    /**
+     * Clash detection for the "this week" view: project the routine onto the
+     * ISO week of ?date, pull the user's timed Google Calendar events for that
+     * week, and flag every routine block that overlaps a real event.
+     *
+     * Degrades gracefully: if Google isn't connected or the token lacks the
+     * Calendar scope, `clashes` is empty and `connected`/`error` tell the client
+     * what to show (e.g. a "connect Google" hint). Never 500s on a calendar hiccup.
+     */
+    public function calendarClashes(Request $request, Plan $plan): JsonResponse
+    {
+        $this->guard($request, $plan);
+        $user = $request->user();
+
+        $anchor = $request->query('date')
+            ? Carbon::createFromFormat('Y-m-d', $request->query('date'))
+            : Carbon::now();
+        $monday = $anchor->copy()->startOfWeek(Carbon::MONDAY)->startOfDay();
+        $sunday = $monday->copy()->addDays(6);
+
+        $result = GoogleCalendarService::eventsForTeam(
+            $user->current_team_id,
+            $user->id,
+            $monday,
+            $sunday->copy()->endOfDay(),
+        );
+
+        $payload = [
+            'connected' => $result['connected'],
+            'error' => $result['error'],
+            'week_start' => $monday->format('Y-m-d'),
+            'week_end' => $sunday->format('Y-m-d'),
+            'clashes' => [],
+        ];
+
+        if (! $result['connected'] || $result['error'] || empty($result['events'])) {
+            return response()->json($payload);
+        }
+
+        // Bucket events by calendar date; keep them as start/end minute ranges.
+        $eventsByDate = [];
+        foreach ($result['events'] as $ev) {
+            $startDate = substr($ev['start'], 0, 10);
+            $endDate = substr($ev['end'], 0, 10);
+            $s = $this->toMinutes(substr($ev['start'], 11, 5));
+            // An event ending on a later day (crosses midnight) is clamped to the
+            // end of its start day for a same-day block comparison.
+            $e = $endDate === $startDate ? $this->toMinutes(substr($ev['end'], 11, 5)) : 1440;
+            if ($e <= $s) {
+                $e = 1440;
+            }
+            $eventsByDate[$startDate][] = [
+                'title' => $ev['title'],
+                's' => $s,
+                'e' => $e,
+                'start' => substr($ev['start'], 11, 5),
+                'end' => substr($ev['end'], 11, 5),
+            ];
+        }
+
+        $clashes = [];
+        for ($i = 0; $i < 7; $i++) {
+            $date = $monday->copy()->addDays($i);
+            $dateStr = $date->format('Y-m-d');
+            $dayEvents = $eventsByDate[$dateStr] ?? [];
+            if (! $dayEvents) {
+                continue;
+            }
+            foreach ($this->effectiveBlocksForDate($plan, $dateStr, $i) as $b) {
+                $bs = $this->toMinutes($b['start']);
+                $be = $this->toMinutes($b['end']);
+                foreach ($dayEvents as $ev) {
+                    if ($bs < $ev['e'] && $ev['s'] < $be) {   // time ranges overlap
+                        $clashes[] = [
+                            'date' => $dateStr,
+                            'day' => $i,
+                            'block_id' => $b['id'],
+                            'block_title' => $b['title'],
+                            'block_start' => $b['start'],
+                            'block_end' => $b['end'],
+                            'event_title' => $ev['title'],
+                            'event_start' => $ev['start'],
+                            'event_end' => $ev['end'],
+                        ];
+                    }
+                }
+            }
+        }
+
+        $payload['clashes'] = $clashes;
+
+        return response()->json($payload);
+    }
+
     /** Named categories (color -> name) for the legend + time-budget analytics. */
     public function saveCategories(Request $request, Plan $plan): JsonResponse
     {
@@ -488,6 +548,60 @@ class RoutineController extends Controller
             'date' => $f['date'] ?? null,
             'skip' => ($f['skip'] ?? '') === '1',
         ];
+    }
+
+    /**
+     * The blocks that actually apply on a given date: the weekday template with
+     * that date's exceptions overlaid. An exception hides any template block it
+     * overlaps; a `skip` exception just removes the slot (not returned). Shared
+     * by the now/next widget and calendar clash detection so both agree on what
+     * "today" looks like.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function effectiveBlocksForDate(Plan $plan, string $date, int $dow): array
+    {
+        $template = [];
+        $exceptions = [];
+        foreach ($plan->stages as $stage) {
+            if ((int) $stage->order !== $dow) {
+                continue;
+            }
+            foreach ($stage->items()->orderBy('order')->get() as $item) {
+                $b = $this->blockPayload($item, $dow);
+                if (empty($b['date'])) {
+                    $template[] = $b;
+                } elseif ($b['date'] === $date) {
+                    $exceptions[] = $b;
+                }
+            }
+        }
+
+        $overlaps = function (array $a, array $b): bool {
+            return $this->toMinutes($a['start']) < $this->toMinutes($b['end'])
+                && $this->toMinutes($b['start']) < $this->toMinutes($a['end']);
+        };
+
+        $effective = [];
+        foreach ($template as $t) {
+            $covered = false;
+            foreach ($exceptions as $e) {
+                if ($overlaps($t, $e)) {
+                    $covered = true;
+                    break;
+                }
+            }
+            if (! $covered) {
+                $effective[] = $t;
+            }
+        }
+        foreach ($exceptions as $e) {
+            if (empty($e['skip'])) {
+                $effective[] = $e;
+            }
+        }
+
+        return $effective;
     }
 
     private function toMinutes(string $hhmm): int

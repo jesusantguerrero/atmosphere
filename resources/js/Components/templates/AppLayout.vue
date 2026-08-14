@@ -194,6 +194,10 @@
                                 :full-height="true"
                                 @create="router.visit(route('teams.create'))"
                                 resource-name="Space"
+                                :section-title="$t('Manage Space')"
+                                :settings-label="$t('Space Settings')"
+                                :create-label="$t('Create New Space')"
+                                :switch-label="$t('Switch Space')"
                             />
                              </div>
                             <!-- Settings Dropdown (desktop) -->

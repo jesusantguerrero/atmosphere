@@ -7,7 +7,7 @@ import { router } from "@inertiajs/vue3";
 // Primary path matches the copy ("activate this module in settings"): send the
 // user straight to where modules are toggled instead of a dead-end home button.
 const goToModules = () => {
-    return router.visit('/user/profile#modules')
+    return router.visit('/user/preferences#modules')
 }
 const backToHome = () => {
     return router.visit('/')

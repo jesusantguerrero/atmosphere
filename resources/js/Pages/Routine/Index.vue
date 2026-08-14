@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onBeforeUnmount } from "vue";
 import axios from "axios";
+import { useI18n } from "vue-i18n";
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import HouseSectionNav from "@/Components/templates/HouseSectionNav.vue";
 
@@ -21,6 +22,7 @@ interface Member { id: number; name: string; }
 interface PlanPayload { id: number; blocks: Block[]; days: string[]; }
 
 const props = defineProps<{ plan: PlanPayload; members: Member[]; categories?: { color: string; name: string }[] }>();
+const { t } = useI18n();
 
 const blocks = ref<Block[]>([...props.plan.blocks]);       // weekly template
 const exceptions = ref<Block[]>([]);                       // dated, current week
@@ -63,6 +65,7 @@ const fetchWeek = async () => {
     params: { date: isoOf(weekDates.value[0]) },
   });
   exceptions.value = data.blocks ?? [];
+  fetchClashes();                                    // refresh calendar clashes for this week (non-blocking)
 };
 const setMode = (m: "template" | "week") => { viewMode.value = m; if (m === "week") fetchWeek(); };
 const shiftWeek = (delta: number) => {
@@ -70,6 +73,47 @@ const shiftWeek = (delta: number) => {
   weekAnchor.value = startOfWeekMon(x); fetchWeek();
 };
 const goThisWeek = () => { weekAnchor.value = startOfWeekMon(new Date()); fetchWeek(); };
+
+// ---- Google Calendar clash detection (week mode only) ----
+// The routine is a guide, not a calendar -- so instead of importing events, we
+// just flag the routine blocks that collide with real Google Calendar events
+// for the displayed week. Fully optional: if Google isn't connected (or the
+// token predates the Calendar scope) we show a hint, never an error.
+interface Clash {
+  date: string; day: number; block_id: number;
+  block_title: string; block_start: string; block_end: string;
+  event_title: string; event_start: string; event_end: string;
+}
+const clashes = ref<Clash[]>([]);
+const calConnected = ref(true);
+const calError = ref<string | null>(null);
+
+const fetchClashes = async () => {
+  if (viewMode.value !== "week") return;
+  try {
+    const { data } = await axios.get(`/housing/routine/${props.plan.id}/calendar-clashes`, {
+      params: { date: isoOf(weekDates.value[0]) },
+    });
+    clashes.value = data.clashes ?? [];
+    calConnected.value = data.connected ?? false;
+    calError.value = data.error ?? null;
+  } catch {
+    clashes.value = []; calConnected.value = false; calError.value = "fetch";
+  }
+};
+
+const clashByKey = computed(() => {
+  const m: Record<string, Clash[]> = {};
+  for (const c of clashes.value) (m[`${c.date}|${c.block_id}`] ||= []).push(c);
+  return m;
+});
+const clashBlockCount = computed(() => Object.keys(clashByKey.value).length);
+const blockClashes = (rb: RenderBlock, day: number): Clash[] => {
+  if (viewMode.value !== "week") return [];
+  return clashByKey.value[`${isoOf(weekDates.value[day])}|${rb.id}`] || [];
+};
+const clashTip = (list: Clash[]) =>
+  `${t('Clashes with calendar')}: ` + list.map((c) => `${c.event_title} ${c.event_start}–${c.event_end}`).join(", ");
 
 // Time range auto-expands to fit template + exceptions (early risers / night owls).
 const DEFAULT_START = 5;
@@ -475,6 +519,36 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); detachDrag(); 
         >+ {{ $t('Block') }}</button>
       </div>
 
+      <!-- calendar clash banner (week mode): hint to connect, or a clash count -->
+      <div v-if="viewMode === 'week'" class="mb-3">
+        <div v-if="!calConnected"
+             class="flex items-center gap-2 text-xs px-3 py-2 rounded-lg bg-base-lvl-1 border border-base text-body-1/70">
+          <span>📅</span>
+          <span>{{ calError === 'reauth' ? $t('Your Google connection expired. Reconnect it to detect clashes.') : $t('Connect Google Calendar to detect clashes with your routine.') }}</span>
+          <a href="/integrations" class="ml-auto font-semibold text-primary hover:underline">{{ $t('Connect Google') }}</a>
+        </div>
+        <div v-else-if="calError === 'scope'"
+             class="flex items-center gap-2 text-xs px-3 py-2 rounded-lg bg-base-lvl-1 border border-base text-body-1/70">
+          <span>📅</span>
+          <span>{{ $t('Reconnect Google to include your calendar and detect clashes.') }}</span>
+          <a href="/integrations" class="ml-auto font-semibold text-primary hover:underline">{{ $t('Reconnect') }}</a>
+        </div>
+        <div v-else-if="calError === 'fetch'"
+             class="text-xs px-3 py-2 rounded-lg bg-base-lvl-1 border border-base text-body-1/50">
+          {{ $t("Couldn't read your calendar right now.") }}
+        </div>
+        <div v-else-if="clashBlockCount"
+             class="flex items-center gap-2 text-xs px-3 py-2 rounded-lg bg-error/10 border border-error/30 text-error font-semibold">
+          <span>⚠</span>
+          <span>{{ $t('{n} routine block(s) clash with your calendar this week.', { n: clashBlockCount }) }}</span>
+        </div>
+        <div v-else
+             class="flex items-center gap-2 text-xs px-3 py-2 rounded-lg bg-base-lvl-1 border border-base text-body-1/50">
+          <span>✓</span>
+          <span>{{ $t('No clashes with your calendar this week.') }}</span>
+        </div>
+      </div>
+
       <!-- mobile day agenda: the 7-column grid is unusable on phones -->
       <div class="md:hidden">
         <div class="flex gap-1.5 overflow-x-auto pb-2 mb-2">
@@ -494,10 +568,12 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); detachDrag(); 
             <div class="flex-1 min-w-0">
               <div class="text-sm font-semibold text-body truncate flex items-center gap-1">
                 {{ rb.title }}
+                <span v-if="blockClashes(rb, selectedMobileDay).length" class="text-[11px] text-error">⚠</span>
                 <span v-if="rb._kind === 'exception'" class="text-[10px] text-primary">★</span>
               </div>
               <div class="text-xs text-body-1/60">{{ rb.start }}–{{ rb.end }}</div>
-              <div v-if="rb.note" class="text-[11px] text-body-1/50 mt-0.5 truncate">{{ rb.note }}</div>
+              <div v-if="blockClashes(rb, selectedMobileDay).length" class="text-[11px] text-error mt-0.5 truncate">⚠ {{ clashTip(blockClashes(rb, selectedMobileDay)) }}</div>
+              <div v-else-if="rb.note" class="text-[11px] text-body-1/50 mt-0.5 truncate">{{ rb.note }}</div>
             </div>
             <span v-if="rb.member_id" class="w-6 h-6 rounded-full text-[10px] flex items-center justify-center font-bold text-white flex-none self-center"
                   :style="{ background: memberColor(rb.member_id) }">{{ initial(rb.member_id) }}</span>
@@ -550,13 +626,14 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); detachDrag(); 
                    class="absolute left-0.5 right-0.5 rounded-md px-1.5 py-0.5 text-[10px] font-semibold overflow-hidden cursor-pointer leading-tight transition"
                    :class="[
                      !shown(rb) ? 'opacity-20 grayscale' : '',
-                     rb._kind === 'exception' ? 'ring-1 ring-current' : (viewMode === 'week' ? 'opacity-60 border-dashed' : ''),
+                     blockClashes(rb, day - 1).length ? 'ring-2 ring-error' : (rb._kind === 'exception' ? 'ring-1 ring-current' : (viewMode === 'week' ? 'opacity-60 border-dashed' : '')),
                    ]"
                    :style="blockStyle(rb)"
-                   :title="rb.note || rb.title"
+                   :title="blockClashes(rb, day - 1).length ? clashTip(blockClashes(rb, day - 1)) : (rb.note || rb.title)"
                    @pointerdown.stop="startMove(rb, day - 1, $event)">
                 <div class="truncate flex items-center gap-1">
                   {{ rb.title }}
+                  <span v-if="blockClashes(rb, day - 1).length" class="text-[8px] text-error">⚠</span>
                   <span v-if="rb._kind === 'exception'" class="text-[8px]">★</span>
                   <span v-else-if="rb.note" class="opacity-60 text-[8px]">✎</span>
                 </div>
