@@ -914,5 +914,17 @@
     "In the meantime, browse the docs": "In the meantime, browse the docs",
     "Have a topic you want covered?": "Have a topic you want covered?",
     "Tell us": "Tell us",
-    "Loger is a small, solo project. Replies are personal, not from a queue.": "Loger is a small, solo project. Replies are personal, not from a queue."
+    "Loger is a small, solo project. Replies are personal, not from a queue.": "Loger is a small, solo project. Replies are personal, not from a queue.",
+    "Connect Google Calendar to see your events here.": "Connect Google Calendar to see your events here.",
+    "Reconnect Google to see your calendar events here.": "Reconnect Google to see your calendar events here.",
+    "Your Google connection expired. Reconnect it to see your calendar events.": "Your Google connection expired. Reconnect it to see your calendar events.",
+    "Show Google Calendar": "Show Google Calendar",
+    "Email → Tasks": "Email → Tasks",
+    "Turn selected emails into task cards you can triage.": "Turn selected emails into task cards you can triage.",
+    "Star an email → get a task": "Star an email → get a task",
+    "When you star an email in Gmail, Loger adds it as a task card on your board — deduped, no flooding. Uses the Gmail connection you already have.": "When you star an email in Gmail, Loger adds it as a task card on your board — deduped, no flooding. Uses the Gmail connection you already have.",
+    "Connect Google first to enable this.": "Connect Google first to enable this.",
+    "Gmail search": "Gmail search",
+    "Turn on": "Turn on",
+    "Turn off": "Turn off"
 }

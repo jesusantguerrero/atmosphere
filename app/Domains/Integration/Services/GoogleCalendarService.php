@@ -30,7 +30,7 @@ class GoogleCalendarService
      * @return array{connected: bool, error: ?string, events: array<int, array{title: string, start: string, end: string}>}
      *         event start/end are 'Y-m-d H:i' in the event's own (local) offset.
      */
-    public static function eventsForTeam(int $teamId, int $userId, DateTimeInterface $timeMin, DateTimeInterface $timeMax): array
+    public static function eventsForTeam(int $teamId, int $userId, DateTimeInterface $timeMin, DateTimeInterface $timeMax, bool $timedOnly = true): array
     {
         $integration = Integration::where([
             'user_id' => $userId,
@@ -86,15 +86,36 @@ class GoogleCalendarService
             if (($ev['status'] ?? '') === 'cancelled') {
                 continue;
             }
-            $start = $ev['start']['dateTime'] ?? null;   // timed events only
-            $end = $ev['end']['dateTime'] ?? null;
-            if (! $start || ! $end) {
-                continue;                                 // all-day / date-only: no clash
+            $startDt = $ev['start']['dateTime'] ?? null;
+            $endDt = $ev['end']['dateTime'] ?? null;
+            if ($startDt && $endDt) {                     // timed event
+                $events[] = [
+                    'title' => $ev['summary'] ?? '(sin titulo)',
+                    'start' => Carbon::parse($startDt)->format('Y-m-d H:i'),
+                    'end' => Carbon::parse($endDt)->format('Y-m-d H:i'),
+                    'all_day' => false,
+                    'date' => Carbon::parse($startDt)->format('Y-m-d'),
+                ];
+
+                continue;
             }
+            // All-day / date-only events don't clash with timed blocks, so the
+            // clash caller (timedOnly=true) skips them; the calendar view wants them.
+            if ($timedOnly) {
+                continue;
+            }
+            $startD = $ev['start']['date'] ?? null;
+            if (! $startD) {
+                continue;
+            }
+            // Google's all-day end.date is exclusive; keep the inclusive last day.
+            $endD = $ev['end']['date'] ?? $startD;
             $events[] = [
                 'title' => $ev['summary'] ?? '(sin titulo)',
-                'start' => Carbon::parse($start)->format('Y-m-d H:i'),
-                'end' => Carbon::parse($end)->format('Y-m-d H:i'),
+                'start' => $startD,
+                'end' => $endD,
+                'all_day' => true,
+                'date' => $startD,
             ];
         }
 

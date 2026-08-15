@@ -24,9 +24,23 @@ class GoogleService
             $client = new GoogleClient(['client_id' => config('integrations.google.client_id')]);
             $client->setApplicationName(config('app.name'));
             $client->setAuthConfig(self::getConfigPath());
+            // Must match the redirect_uri used to build the auth URL in
+            // requestAccessToken(); Google rejects the code exchange otherwise,
+            // leaving the client tokenless and making the userinfo call below
+            // fail with a confusing 401 "missing authentication credential".
+            $client->setRedirectUri(config('app.url').'/services/accept-oauth');
             $client->setAccessType('offline');
             $userIdToken = $_GET['code'];
             $tokenResponse = $client->fetchAccessTokenWithAuthCode($userIdToken);
+
+            if (! is_array($tokenResponse) || isset($tokenResponse['error'])) {
+                $reason = is_array($tokenResponse)
+                    ? ($tokenResponse['error_description'] ?? $tokenResponse['error'] ?? 'unknown error')
+                    : 'no token returned';
+                throw new Exception('Google rejected the authorization ('.$reason.'). Check that the redirect URI matches the one registered in Google Cloud.');
+            }
+            // Carry the freshly obtained token so the userinfo lookup is authed.
+            $client->setAccessToken($tokenResponse);
 
             $integration = Integration::where([
                 'user_id' => $user->id,
@@ -39,7 +53,10 @@ class GoogleService
 
             if ($userInfo->email == $user->email) {
                 $integration->token = json_encode($tokenResponse);
-                if ($tokenResponse['refresh_token']) {
+                // Incremental re-consent (e.g. adding the Calendar scope) often
+                // returns no new refresh_token — keep the existing one instead of
+                // overwriting it with nothing.
+                if (! empty($tokenResponse['refresh_token'])) {
                     $integration->meta_data = json_encode($tokenResponse['refresh_token']);
                 }
                 $integration->save();

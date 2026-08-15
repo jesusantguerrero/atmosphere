@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted, watch } from 'vue';
+import axios from 'axios';
 import { router, useForm } from '@inertiajs/vue3';
 import { AtDatePager } from 'atmosphere-ui';
 import { NDatePicker } from 'naive-ui';
@@ -34,6 +35,8 @@ interface CalendarEvent {
     source: string | null;
     notes: string | null;
     completed_at: string | null;
+    all_day?: boolean;
+    time?: string | null;
 }
 
 const props = defineProps<{
@@ -41,6 +44,35 @@ const props = defineProps<{
     start: string;
     end: string;
 }>();
+
+// ---- Google Calendar overlay (read-only) ----
+// Fetched async so the base calendar (bills, meals, tasks) renders instantly;
+// Google events layer in on top and can be toggled off. A calendar hiccup
+// never blocks the page — we just show a connect/reconnect hint.
+const googleEvents = ref<CalendarEvent[]>([]);
+const googleConnected = ref(true);
+const googleError = ref<string | null>(null);
+const showGoogle = ref(true);
+
+const allEvents = computed<CalendarEvent[]>(() =>
+    showGoogle.value ? [...props.events, ...googleEvents.value] : props.events);
+
+const fetchGoogleEvents = async () => {
+    try {
+        const { data } = await axios.get('/calendar/google-events', {
+            params: { start: props.start, end: props.end },
+        });
+        googleEvents.value = data.events ?? [];
+        googleConnected.value = data.connected ?? false;
+        googleError.value = data.error ?? null;
+    } catch {
+        googleEvents.value = [];
+        googleConnected.value = false;
+        googleError.value = 'fetch';
+    }
+};
+onMounted(fetchGoogleEvents);
+watch(() => props.start, fetchGoogleEvents);   // month navigation reloads props
 
 // Current viewed month
 const currentDate = ref(new Date(props.start + 'T12:00:00'));
@@ -65,7 +97,7 @@ const calendarDays = computed(() => {
 
     while (day <= calEnd) {
         const dayStr = format(day, 'yyyy-MM-dd');
-        const dayEvents = props.events.filter((e) => e.start === dayStr);
+        const dayEvents = allEvents.value.filter((e) => e.start === dayStr);
 
         days.push({
             date: new Date(day),
@@ -99,6 +131,7 @@ const kindColor = (kind: string): string => {
         utility: 'bg-accent/20 text-accent border-accent/30',
         relationship: 'bg-error/20 text-error border-error/30',
         occurrence: 'bg-body-1/20 text-body-1 border-body-1/30',
+        google: 'bg-[#4285F4]/15 text-[#4285F4] border-[#4285F4]/30',
     };
     return map[kind] || 'bg-primary/20 text-primary border-primary/30';
 };
@@ -111,6 +144,7 @@ const kindIcon = (kind: string): string => {
         utility: 'fa-bolt',
         relationship: 'fa-heart',
         occurrence: 'fa-repeat',
+        google: 'fa-calendar',
     };
     return map[kind] || 'fa-calendar-day';
 };
@@ -120,7 +154,7 @@ const selectedDay = ref<Date | null>(null);
 const selectedDayEvents = computed(() => {
     if (!selectedDay.value) return [];
     const dayStr = format(selectedDay.value, 'yyyy-MM-dd');
-    return props.events.filter((e) => e.start === dayStr);
+    return allEvents.value.filter((e) => e.start === dayStr);
 });
 
 const selectDay = (date: Date) => {
@@ -184,6 +218,16 @@ const monthLabel = computed(() => formatMonth(currentDate.value, 'MMMM yyyy'));
                 </div>
                 <div class="flex items-center gap-3">
                     <DayMonthToggle />
+                    <button
+                        v-if="googleConnected"
+                        type="button"
+                        class="text-xs font-semibold px-2.5 py-1 rounded-full border transition inline-flex items-center gap-1.5"
+                        :class="showGoogle ? 'bg-[#4285F4]/10 text-[#4285F4] border-[#4285F4]/30' : 'bg-base-lvl-1 text-body-1/60 border-base'"
+                        :title="$t('Show Google Calendar')"
+                        @click="showGoogle = !showGoogle"
+                    >
+                        <span class="w-2 h-2 rounded-full bg-[#4285F4]"></span>Google
+                    </button>
                     <AtDatePager
                         :model-value="currentDate"
                         next-mode="month"
@@ -198,6 +242,15 @@ const monthLabel = computed(() => formatMonth(currentDate.value, 'MMMM yyyy'));
                     </LogerButton>
                 </div>
             </header>
+
+            <div
+                v-if="!googleConnected || googleError === 'scope' || googleError === 'reauth'"
+                class="flex items-center gap-2 text-xs px-3 py-2 rounded-lg bg-base-lvl-1 border border-base text-body-1/70"
+            >
+                <span>📅</span>
+                <span>{{ googleError === 'scope' ? $t('Reconnect Google to see your calendar events here.') : (googleError === 'reauth' ? $t('Your Google connection expired. Reconnect it to see your calendar events.') : $t('Connect Google Calendar to see your events here.')) }}</span>
+                <a href="/integrations" class="ml-auto font-semibold text-primary hover:underline">{{ googleError ? $t('Reconnect') : $t('Connect Google') }}</a>
+            </div>
 
             <div class="flex gap-4">
                 <!-- Month grid -->
@@ -247,7 +300,7 @@ const monthLabel = computed(() => formatMonth(currentDate.value, 'MMMM yyyy'));
                                     ]"
                                     :title="event.title"
                                 >
-                                    {{ event.title }}
+                                    <span v-if="event.kind === 'google' && event.time" class="opacity-70 mr-0.5">{{ event.time }}</span>{{ event.title }}
                                 </div>
                                 <p
                                     v-if="cell.events.length > 3"
@@ -296,7 +349,7 @@ const monthLabel = computed(() => formatMonth(currentDate.value, 'MMMM yyyy'));
                                             class="text-sm font-medium truncate"
                                             :class="event.completed_at ? 'line-through' : ''"
                                         >
-                                            {{ event.title }}
+                                            <span v-if="event.kind === 'google' && event.time" class="opacity-70 mr-1">{{ event.time }}</span>{{ event.title }}
                                         </span>
                                     </div>
                                     <p v-if="event.source" class="text-xs opacity-70 uppercase tracking-wide mt-0.5">

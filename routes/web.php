@@ -22,6 +22,7 @@ use App\Http\Controllers\ProfileSettingsController;
 use App\Http\Controllers\Relationship\RelationshipController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\System\CalendarController;
+use App\Http\Controllers\System\CalendarGoogleEventsController;
 use App\Http\Controllers\System\CoreModuleController;
 use App\Http\Controllers\System\DashboardController;
 use App\Http\Controllers\System\NotificationController;
@@ -239,6 +240,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     // existing `route('today')` calls keep resolving without a deprecation sweep.
     Route::get('/today', fn () => redirect()->route('dashboard'))->name('today');
     Route::get('/calendar', CalendarController::class)->name('calendar');
+    Route::get('/calendar/google-events', CalendarGoogleEventsController::class)->name('calendar.google-events');
     // Inbox — the AI triage surface. Captured items (receipts, statements,
     // quick notes) land here and get classified into finance/reminders/chores.
     // Phase 1 renders the destination; capture + classification wiring follows.

@@ -988,5 +988,17 @@
     "In the meantime, browse the docs": "Mientras tanto, explora la documentación",
     "Have a topic you want covered?": "¿Hay un tema que quieres que cubramos?",
     "Tell us": "Cuéntanos",
-    "Loger is a small, solo project. Replies are personal, not from a queue.": "Loger es un proyecto pequeño de una sola persona. Las respuestas son personales, no de una cola de tickets."
+    "Loger is a small, solo project. Replies are personal, not from a queue.": "Loger es un proyecto pequeño de una sola persona. Las respuestas son personales, no de una cola de tickets.",
+    "Connect Google Calendar to see your events here.": "Conecta Google Calendar para ver tus eventos aquí.",
+    "Reconnect Google to see your calendar events here.": "Reconecta Google para ver los eventos de tu calendario aquí.",
+    "Your Google connection expired. Reconnect it to see your calendar events.": "Tu conexión con Google expiró. Reconéctala para ver los eventos de tu calendario.",
+    "Show Google Calendar": "Mostrar Google Calendar",
+    "Email → Tasks": "Correos → Tareas",
+    "Turn selected emails into task cards you can triage.": "Convierte ciertos correos en tarjetas de tarea que puedes revisar.",
+    "Star an email → get a task": "Marca un correo con estrella → obtén una tarea",
+    "When you star an email in Gmail, Loger adds it as a task card on your board — deduped, no flooding. Uses the Gmail connection you already have.": "Cuando marcas un correo con estrella en Gmail, Loger lo agrega como tarjeta de tarea en tu board — sin duplicados, sin inundar. Usa la conexión de Gmail que ya tienes.",
+    "Connect Google first to enable this.": "Conecta Google primero para habilitarlo.",
+    "Gmail search": "Búsqueda de Gmail",
+    "Turn on": "Activar",
+    "Turn off": "Desactivar"
 }
