@@ -89,8 +89,8 @@ class DashboardController
                     }),
                 ] : [];
             },
-            'drafts' => Inertia::lazy(fn () => TransactionService::getDraftCount($teamId)),
-            'checks' => Inertia::lazy(fn () => Occurrence::where('team_id', $teamId)->limit(4)->get()),
+            'drafts' => Inertia::optional(fn () => TransactionService::getDraftCount($teamId)),
+            'checks' => Inertia::optional(fn () => Occurrence::where('team_id', $teamId)->limit(4)->get()),
             'nextPayments' => $nextPayments,
             'topWatchlists' => $topWatchlists,
         ]);
