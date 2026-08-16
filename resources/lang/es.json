@@ -1004,5 +1004,17 @@
     "Filter account": "Filtrar cuenta",
     "avail": "disp.",
     "Notifications": "Notificaciones",
-    "Clear these draft transactions? This cannot be undone.": "¿Borrar estos borradores de transacciones? Esto no se puede deshacer."
+    "Clear these draft transactions? This cannot be undone.": "¿Borrar estos borradores de transacciones? Esto no se puede deshacer.",
+    "Rename, merge duplicates, or remove payees.": "Renombra, fusiona duplicados o elimina beneficiarios.",
+    "Search payees": "Buscar beneficiarios",
+    "Rename": "Renombrar",
+    "Merge": "Fusionar",
+    "No payees found": "No se encontraron beneficiarios",
+    "Rename payee": "Renombrar beneficiario",
+    "Merge payee": "Fusionar beneficiario",
+    "Move all transactions from this payee into another, then delete it.": "Mueve todas las transacciones de este beneficiario a otro y luego elimínalo.",
+    "Merge into": "Fusionar en",
+    "Select a payee": "Selecciona un beneficiario",
+    "Delete \"{name}\"?": "¿Eliminar \"{name}\"?",
+    "Delete \"{name}\"? Its {count} transactions keep their data but lose the payee.": "¿Eliminar \"{name}\"? Sus {count} transacciones conservan sus datos pero pierden el beneficiario."
 }
