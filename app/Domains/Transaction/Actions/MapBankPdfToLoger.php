@@ -3,6 +3,7 @@
 namespace App\Domains\Transaction\Actions;
 
 use App\Domains\Transaction\Models\Transaction;
+use App\Domains\Transaction\Services\PayeeResolver;
 use Insane\Journal\Models\Core\Payee;
 
 class MapBankPdfToLoger
@@ -21,7 +22,7 @@ class MapBankPdfToLoger
 
         $description = trim($row['description']);
         $payeeName = self::extractPayeeName($description);
-        $payee = Payee::findOrCreateByName($session, $payeeName);
+        $payee = PayeeResolver::resolve($session, $payeeName);
 
         return [
             'team_id' => $session['team_id'],

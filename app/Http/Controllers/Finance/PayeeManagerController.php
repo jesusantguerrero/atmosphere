@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Finance;
 
 use App\Http\Controllers\Controller;
+use App\Models\PayeeAlias;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Payee;
@@ -74,6 +75,17 @@ class PayeeManagerController extends Controller
             DB::table('transaction_lines')
                 ->where('team_id', $teamId)->where('payee_id', $source->id)
                 ->update(['payee_id' => $target->id]);
+
+            // Keep any aliases that pointed at the source pointing at the target,
+            // and add the source's name as an alias so future imports of that
+            // name resolve to the target instead of re-creating the duplicate.
+            PayeeAlias::where('team_id', $teamId)->where('payee_id', $source->id)
+                ->update(['payee_id' => $target->id]);
+            PayeeAlias::updateOrCreate(
+                ['team_id' => $teamId, 'name' => $source->name],
+                ['payee_id' => $target->id]
+            );
+
             $source->delete();
         });
 
@@ -92,6 +104,10 @@ class PayeeManagerController extends Controller
             DB::table('transaction_lines')
                 ->where('team_id', $teamId)->where('payee_id', $model->id)
                 ->update(['payee_id' => null]);
+
+            // Drop any aliases that resolved to this payee.
+            PayeeAlias::where('team_id', $teamId)->where('payee_id', $model->id)->delete();
+
             $model->delete();
         });
 
