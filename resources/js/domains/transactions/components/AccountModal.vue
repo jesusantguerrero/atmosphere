@@ -370,8 +370,8 @@ const excludedCurrencies = computed(() => {
             <!-- Opening Balance -->
             <div v-if="!form.id">
               <AtField :label="$t('Opening Balance')" class="space-y-2">
-                <LogerInput v-model="form.opening_balance" type="number" class="w-full md:w-64" placeholder="0.00"
-                  step="0.01" />
+                <input v-model.number="form.opening_balance" type="number" step="0.01" inputmode="decimal" placeholder="0.00"
+                  class="w-full md:w-64 px-2 py-2 text-sm rounded-sm bg-base-lvl-2/80 border border-base text-body outline-none focus:ring-1 focus:ring-primary" />
               </AtField>
             </div>
 
