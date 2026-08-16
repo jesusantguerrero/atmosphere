@@ -15,6 +15,7 @@
     import AppNotificationBell from '@/Components/molecules/AppNotificationBell.vue'
     import AppUserMenu from '@/Components/AppUserMenu.vue'
     import MobileMenuBar from '@/Components/mobile/MobileMenuBar.vue'
+    import MobileQuickCapture from '@/Components/mobile/MobileQuickCapture.vue'
     import TransactionAddButton from './TransactionAddButton.vue'
     import AppResourceSearch from './AppResourceSearch.vue'
     import IconBack from '../icons/IconBack.vue'
@@ -409,6 +410,7 @@
                     <slot />
                 </main>
                 <MobileMenuBar :menu="mobileMenu" @action="handleActions" />
+                <MobileQuickCapture />
             </template>
 
             <template #aside-widget>
