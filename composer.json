@@ -9,11 +9,8 @@
     "license": "MIT",
     "repositories": [
         {
-            "type": "path",
-            "url": "packages/atmosphere",
-            "options": {
-                "symlink": false
-            }
+            "type": "vcs",
+            "url": "../atmosphere-core"
         }
     ],
     "require": {
@@ -23,7 +20,7 @@
         "doctrine/dbal": "^3.3",
         "dompdf/dompdf": "^2.0.3",
         "ernysans/laraworld": "^1.0",
-        "freesgen/atmosphere": "dev-main",
+        "freesgen/atmosphere": "dev-inertia-v2-compat",
         "google/apiclient": "^2.12",
         "guzzlehttp/guzzle": "^7.0.2",
         "inertiajs/inertia-laravel": "^2.0",
