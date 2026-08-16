@@ -32,11 +32,7 @@ class GoogleCalendarService
      */
     public static function eventsForTeam(int $teamId, int $userId, DateTimeInterface $timeMin, DateTimeInterface $timeMax, bool $timedOnly = true): array
     {
-        $integration = Integration::where([
-            'user_id' => $userId,
-            'team_id' => $teamId,
-            'name' => 'Google',
-        ])->first();
+        $integration = GoogleService::findGoogleIntegration($userId, $teamId, true);
 
         if (! $integration || ! $integration->token) {
             return ['connected' => false, 'error' => null, 'events' => []];

@@ -42,11 +42,10 @@ class GoogleService
             // Carry the freshly obtained token so the userinfo lookup is authed.
             $client->setAccessToken($tokenResponse);
 
-            $integration = Integration::where([
-                'user_id' => $user->id,
-                'team_id' => $user->current_team_id,
-                'name' => 'Google',
-            ])->first();
+            $integration = self::findGoogleIntegration($user->id, $user->current_team_id);
+            if (! $integration) {
+                throw new Exception('No Google integration found to attach the token to. Reconnect from the Integrations page.');
+            }
 
             $oauth2 = new Oauth2($client);
             $userInfo = $oauth2->userinfo->get();
@@ -74,20 +73,39 @@ class GoogleService
         }
     }
 
+    /**
+     * The user's connected Google/Gmail integration. The OAuth service is
+     * seeded as 'Gmail' (LogerAutomationService::services()), so a connected
+     * integration is named 'Gmail' — accept that plus the legacy 'Google'
+     * name, and also match via the linked automation service. Prefers a
+     * token-bearing, newest row.
+     */
+    public static function findGoogleIntegration(int $userId, int $teamId, bool $requireToken = false): ?Integration
+    {
+        $query = Integration::where('user_id', $userId)
+            ->where('team_id', $teamId)
+            ->where(function ($q) {
+                $q->whereIn('name', ['Gmail', 'Google'])
+                    ->orWhereHas('service', fn ($s) => $s->whereIn('name', ['Gmail', 'Google']));
+            });
+
+        if ($requireToken) {
+            $query->whereNotNull('token');
+        }
+
+        return $query->orderByDesc('id')->first();
+    }
+
     public static function getClient($integrationId)
     {
         $integration = Integration::find($integrationId);
         $client = new GoogleClient;
         $client->setAuthConfig(self::getConfigPath());
 
-        if (! $accessToken = session('g_token') && $integration->token) {
-            $accessToken = $integration->token;
-        }
-
-        $client->setAccessToken($accessToken);
+        $client->setAccessToken($integration->token);
 
         if ($client->isAccessTokenExpired()) {
-            if ($refreshToken = $integration->meta_data) {
+            if ($refreshToken = (json_decode($integration->meta_data ?? '') ?: $integration->meta_data)) {
                 $tokenResponse = $client->fetchAccessTokenWithRefreshToken($refreshToken);
                 self::setTokens((object) [
                     'access_token' => $tokenResponse,
@@ -153,6 +171,9 @@ class GoogleService
         $client = new GoogleClient([
             'client_id' => config('integrations.google.client_id'),
         ]);
+        // Load the same client (id + secret) the token exchange uses, so the
+        // auth request and the exchange in setTokens() are the same OAuth client.
+        $client->setAuthConfig(self::getConfigPath());
         $client->addScope([
             Gmail::GMAIL_READONLY,
             'https://www.googleapis.com/auth/calendar.readonly',
