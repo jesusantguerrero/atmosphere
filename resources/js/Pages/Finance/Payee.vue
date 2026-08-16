@@ -21,7 +21,7 @@ import { useTransactionModal, TRANSACTION_DIRECTIONS, removeTransaction } from "
 // import { IServerSearchData, useServerSearch } from "@/composables/useServerSearch";
 import { tableAccountCols } from "@/domains/transactions";
 import { useAppContextStore } from "@/store";
-import { formatMoney } from "@/utils";
+import { formatMoney, formatMonth } from "@/utils";
 import { IAccount, ICategory, ITransaction } from "@/domains/transactions/models";
 import axios from "axios";
 import AccountReconciliationForm from "./AccountReconciliationForm.vue";
@@ -99,7 +99,7 @@ onMounted(() => {
     router.on('finish', () => isLoading.value = false)
 })
 
-const monthName = computed(() => format(pageState.dates.startDate, "MMMM"))
+const monthName = computed(() => formatMonth(pageState.dates.startDate, "MMMM"))
 
 // reconciliation
 
@@ -180,8 +180,9 @@ const reconcileForm = useForm({
           v-model:startDate="pageState.dates.startDate"
           v-model:endDate="pageState.dates.endDate"
           controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
-          next-mode="month"
-        />
+          next-mode="month">
+            {{ formatMonth(pageState.dates.startDate, 'MMMM yyyy') }}
+        </AtDatePager>
         <LogerButton
           variant="inverse"
           @click="reconcileForm.isVisible = true"

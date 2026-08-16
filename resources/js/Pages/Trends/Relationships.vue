@@ -11,6 +11,7 @@ import TrendSectionNav from './Partials/TrendSectionNav.vue';
 import TrendTemplate from './Partials/TrendTemplate.vue';
 import { useServerSearch } from '@/composables/useServerSearch';
 import { formatMoney } from '@/utils';
+import { formatMonth } from '@/utils';
 
 interface Member {
     id: string;
@@ -190,8 +191,9 @@ const usagePct = (row: CategoryRow) => Math.min(100, Math.round((row.spent / row
                         v-model:endDate="pageState.dates.endDate"
                         @change="executeSearchWithDelay(500)"
                         controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
-                        next-mode="month"
-                    />
+                        next-mode="month">
+            {{ formatMonth(pageState.dates.startDate, 'MMMM yyyy') }}
+        </AtDatePager>
                 </template>
             </TrendSectionNav>
         </template>

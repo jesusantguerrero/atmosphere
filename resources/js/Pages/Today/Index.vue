@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
-import { format, parseISO } from 'date-fns';
 
 import AppLayout from '@/Components/templates/AppLayout.vue';
 import LogerButton from '@/Components/atoms/LogerButton.vue';
 import DayMonthToggle from '@/Components/molecules/DayMonthToggle.vue';
-import { formatMoney } from '@/utils';
+import { formatDate, formatMoney } from '@/utils';
 import { useTransactionModal } from '@/domains/transactions/useTransactionModal';
 import { useToggleModal } from '@/domains/app/useToggleModal';
 
@@ -83,7 +82,7 @@ const { openTransactionModal } = useTransactionModal();
 // translate "May 29" → "what day is that?".
 const formatDueDate = (iso: string) => {
     try {
-        return format(parseISO(iso), 'EEE MMM d');
+        return formatDate(iso, undefined, 'EEE MMM d');
     } catch (e) {
         return iso;
     }
@@ -98,7 +97,7 @@ const relativeDueLabel = (daysUntil: number) => {
     return `in ${daysUntil} days`;
 };
 
-const todayLabel = computed(() => format(new Date(), 'EEEE, MMM d'));
+const todayLabel = computed(() => formatDate(new Date(), undefined, 'EEEE, MMM d'));
 
 const openQuickAdd = () => {
     openTransactionModal({ mode: 'WITHDRAW' });

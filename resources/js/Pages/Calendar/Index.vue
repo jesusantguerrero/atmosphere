@@ -211,12 +211,12 @@ const monthLabel = computed(() => formatMonth(currentDate.value, 'MMMM yyyy'));
     <AppLayout :title="$t('Calendar')">
         <main class="px-4 mx-auto mt-5 mb-10 max-w-screen-2xl sm:px-6 lg:px-8 space-y-4">
             <!-- Header -->
-            <header class="flex items-end justify-between gap-4">
+            <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                     <h1 class="text-2xl font-bold text-body">{{ $t('Calendar') }}</h1>
                     <p class="text-sm text-body-1/70">{{ monthLabel }}</p>
                 </div>
-                <div class="flex items-center gap-3">
+                <div class="flex flex-wrap items-center gap-3">
                     <DayMonthToggle />
                     <button
                         v-if="googleConnected"
@@ -252,7 +252,7 @@ const monthLabel = computed(() => formatMonth(currentDate.value, 'MMMM yyyy'));
                 <a href="/integrations" class="ml-auto font-semibold text-primary hover:underline">{{ googleError ? $t('Reconnect') : $t('Connect Google') }}</a>
             </div>
 
-            <div class="flex gap-4">
+            <div class="flex flex-col lg:flex-row gap-4">
                 <!-- Month grid -->
                 <section class="flex-1">
                     <!-- Weekday headers -->
@@ -316,7 +316,7 @@ const monthLabel = computed(() => formatMonth(currentDate.value, 'MMMM yyyy'));
                 <!-- Detail panel -->
                 <aside
                     v-if="selectedDay"
-                    class="w-80 shrink-0 bg-base-lvl-3 rounded-lg border border-base p-4 self-start sticky top-4"
+                    class="w-full lg:w-80 shrink-0 bg-base-lvl-3 rounded-lg border border-base p-4 self-start lg:sticky lg:top-4"
                 >
                     <header class="flex items-center justify-between mb-3">
                         <h3 class="text-sm font-bold text-body">

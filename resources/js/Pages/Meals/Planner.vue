@@ -1,5 +1,6 @@
 <script setup lang="ts">
     import { format, startOfDay } from "date-fns";
+    import { formatDate } from "@/utils";
     // @ts-ignore
     import { AtDatePager } from "atmosphere-ui";
     import { useI18n } from "vue-i18n";
@@ -61,7 +62,7 @@
     }
 
     const getDayName = (date) => {
-        return format(date, 'iiii')
+        return formatDate(date, undefined, 'iiii')
     }
 
     const getDayMeals = (date, mealTypeId) => {
@@ -194,8 +195,10 @@
                             v-model="state.date"
                             v-model:dateSpan="state.dateSpan"
                             controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
-                            next-mode="week"
-                        />
+                            next-mode="week">
+                            <span v-if="state.dateSpan && state.dateSpan.length">{{ formatDate(state.dateSpan[0]) }} - {{ formatDate(state.dateSpan[state.dateSpan.length - 1]) }}</span>
+                            <span v-else>{{ formatDate(state.date) }}</span>
+                        </AtDatePager>
                         <LogerButton variant="neutral" class="h-10 text-sm" @click="openSaveMenuModal">
                             {{ $t('Save as Menu') }}
                         </LogerButton>

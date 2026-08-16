@@ -1,4 +1,5 @@
-import { format, isAfter, parseISO, startOfDay } from "date-fns"
+import { isAfter, parseISO, startOfDay } from "date-fns"
+import { formatDate } from "@/utils"
 import { h } from "vue"
 import IconTransfer from "@/Components/icons/IconTransfer.vue";
 import { Link } from "@inertiajs/vue3";
@@ -18,7 +19,7 @@ export const tableCols = [
                 // fallback to current date
             }
             const hasPassed = isAfter(startOfDay(date), startOfDay(new Date()))
-            return h('div', {class: hasPassed ? 'text-danger' : 'text-info cursor-pointer'} ,format(date, "dd MMM, yyyy"))
+            return h('div', {class: hasPassed ? 'text-danger' : 'text-info cursor-pointer'} ,formatDate(date, undefined, "dd MMM, yyyy"))
         }
     },
     {

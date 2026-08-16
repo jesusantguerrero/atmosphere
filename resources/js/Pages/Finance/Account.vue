@@ -23,7 +23,7 @@ import { useTransactionModal, TRANSACTION_DIRECTIONS, removeTransaction } from "
 import { tableAccountCols } from "@/domains/transactions";
 import { paymentMethods } from "@/domains/transactions/constants";
 import { useAppContextStore } from "@/store";
-import { formatDate, formatMoney } from "@/utils";
+import { formatDate, formatMoney, formatMonth } from "@/utils";
 import { IAccount, ICategory, ITransaction } from "@/domains/transactions/models";
 import NextPaymentsWidget from "@/domains/transactions/components/NextPaymentsWidget.vue";
 import { usePaymentModal } from "@/domains/transactions/usePaymentModal";
@@ -207,7 +207,7 @@ onMounted(() => {
     router.on('finish', () => isLoading.value = false)
 })
 
-const monthName = computed(() => format(pageState.dates.startDate, "MMMM"))
+const monthName = computed(() => formatMonth(pageState.dates.startDate, "MMMM"))
 
 // Period navigation. The old AtDatePager could only step one month at a time, so
 // reaching an arbitrary month (say Aug 2024) took ~20 clicks — and 20 more to get

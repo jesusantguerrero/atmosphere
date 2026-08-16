@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
-import { format, parseISO } from 'date-fns';
-import { formatMoney } from '@/utils';
+import { formatDate, formatMoney } from '@/utils';
 
 /**
  * Upcoming — cross-pillar timeline: billing cycles, utilities, and planner items
@@ -31,7 +30,7 @@ withDefaults(defineProps<{
 
 const formatDueDate = (iso: string) => {
     try {
-        return format(parseISO(iso), 'EEE MMM d');
+        return formatDate(iso, undefined, 'EEE MMM d');
     } catch {
         return iso;
     }

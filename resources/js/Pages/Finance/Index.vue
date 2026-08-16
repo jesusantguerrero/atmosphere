@@ -5,6 +5,7 @@ import { computed, toRefs, ref } from "vue";
 import { Link, router, useForm } from "@inertiajs/vue3";
 import { format, subMonths } from "date-fns";
 import { es } from "date-fns/locale";
+import { formatMonth } from "@/utils";
 // @ts-ignore
 import { AtButton, AtDatePager } from "atmosphere-ui";
 
@@ -225,8 +226,9 @@ const deleteBulkTransactions = () => {
           v-model:endDate="pageState.dates.endDate"
           @change="executeSearchWithDelay"
           controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
-          next-mode="month"
-        />
+          next-mode="month">
+            {{ formatMonth(pageState.dates.startDate, 'MMMM yyyy') }}
+        </AtDatePager>
       </section>
 
       <section class="mt-4 space-y-4">

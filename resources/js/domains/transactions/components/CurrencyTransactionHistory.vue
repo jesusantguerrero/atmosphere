@@ -256,7 +256,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { format } from 'date-fns';
+import { formatDate } from '@/utils';
 import { AtButton } from 'atmosphere-ui';
 import { NSelect } from 'naive-ui';
 
@@ -398,7 +398,7 @@ const totalValue = computed(() => {
 
 // Methods
 const formatDate = (date: string) => {
-  return format(new Date(date), 'MMM dd, yyyy');
+  return formatDate(date, undefined, 'MMM dd, yyyy');
 };
 
 const needsConversion = (transaction: any) => {

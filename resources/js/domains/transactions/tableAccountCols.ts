@@ -1,4 +1,5 @@
-import { format, isAfter, parseISO, startOfDay } from "date-fns"
+import { isAfter, parseISO, startOfDay } from "date-fns"
+import { formatDate } from "@/utils"
 import { h } from "vue"
 import IconTransfer from "@/Components/icons/IconTransfer.vue";
 import { Link } from "@inertiajs/vue3";
@@ -33,8 +34,8 @@ export const tableAccountCols = (accountId?: number, showSelects?: boolean) => [
                 return h('div', { class: 'flex items-center justify-center gap-2' }, [
                     h('span', {
                         class: 'px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-base-lvl-1 text-body-1/60',
-                    }, format(date, 'EEE')),
-                    h('span', { class: isFuture ? 'text-danger' : 'text-body-1' }, format(date, 'dd MMM, yyyy')),
+                    }, formatDate(date, undefined, 'EEE')),
+                    h('span', { class: isFuture ? 'text-danger' : 'text-body-1' }, formatDate(date, undefined, 'dd MMM, yyyy')),
                 ])
             } catch (e) {
                 return h('div', {class:'text-info cursor-pointer'} , '--')

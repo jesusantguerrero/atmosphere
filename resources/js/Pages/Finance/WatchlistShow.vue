@@ -227,8 +227,9 @@ const monthlySeries = computed(() => {
             v-model:endDate="pageState.dates.endDate"
             controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
             next-mode="month"
-            @change="executeSearchWithDelay(5)"
-          />
+            @change="executeSearchWithDelay(5)">
+            {{ formatMonth(pageState.dates.startDate, 'MMMM yyyy') }}
+        </AtDatePager>
           <LogerButton variant="inverse" @click="openEdit">Edit</LogerButton>
           <NDropdown trigger="click" :options="headerMenuOptions" @select="onHeaderMenuSelect">
             <button type="button" class="text-body-1 hover:text-body p-1 rounded" aria-label="More actions">

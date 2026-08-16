@@ -5,7 +5,7 @@ import { Link } from '@inertiajs/vue3';
 
 import { IAccount } from '@/domains/transactions/models';
 import { isCreditCard } from '@/domains/transactions';
-import { formatMoney } from '@/utils';
+import { formatMoney, formatMonth } from '@/utils';
 import { useTransactionModal } from '@/domains/transactions/useTransactionModal';
 
 interface PayInFullItem {
@@ -143,7 +143,7 @@ const dayLabel = (daysUntil: number, isOverdue: boolean): string => {
 const formatLastUsed = (iso: string | null): string => {
     if (!iso) return 'never used';
     const date = new Date(iso + 'T12:00:00');
-    return date.toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
+    return formatMonth(date, 'MMM yyyy');
 };
 
 const handlePayInFull = (item: PayInFullItem): void => {

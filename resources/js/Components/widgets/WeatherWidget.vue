@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useLocalStorage } from "@vueuse/core";
-import { addMinutes, format } from "date-fns";
+import { addMinutes } from "date-fns";
+import { formatDate } from "@/utils";
 import { onMounted, computed } from "vue";
 import WidgetCard from "../molecules/WidgetCard.vue";
 import { ref } from "vue";
@@ -31,7 +32,7 @@ const description = computed(() => {
   return  state.value.weather?.description;
 });
 
-const today = format(new Date(), "iiii");
+const today = formatDate(new Date(), undefined, "iiii");
 
 const setWeatherData = (data: any) => {
   Object.keys(state.value).forEach((key) => {

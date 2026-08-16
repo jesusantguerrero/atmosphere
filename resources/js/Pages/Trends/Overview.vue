@@ -3,6 +3,7 @@ import { computed, ref, toRefs } from "vue";
 import { router } from "@inertiajs/vue3";
 // @ts-ignore
 import { AtDatePager } from "atmosphere-ui";
+import { formatMonth } from "@/utils";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import ChartNetWorth from "@/Components/ChartNetworth.vue";
@@ -176,8 +177,9 @@ const clearActiveWatchlist = () => {
                         v-model:endDate="pageState.dates.endDate"
                         @change="executeSearchWithDelay(500)"
                         controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
-                        next-mode="month"
-                    />
+                        next-mode="month">
+            {{ formatMonth(pageState.dates.startDate, 'MMMM yyyy') }}
+        </AtDatePager>
                     <div
                         v-if="activeWatchlist"
                         class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-semibold"

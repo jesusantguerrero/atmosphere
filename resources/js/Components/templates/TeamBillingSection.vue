@@ -1,12 +1,11 @@
 <script lang="ts" setup>
-import { format } from "date-fns";
 import { computed } from "vue";
 import { router } from "@inertiajs/vue3";
 
 import DataCard from "@/Components/DataCard.vue";
 import DataPlanCard from "@/Components/DataPlanCard.vue";
 import DataBillingCard from "@/Components/DataBillingCard.vue";
-import { formatMoney } from "@/utils";
+import { formatDate, formatMoney } from "@/utils";
 
 const props = defineProps<{
   sessions?: [];
@@ -44,14 +43,14 @@ const lastPayment = computed(() => {
 
 const nextPaymentDate = computed(() => {
   if (details.value) {
-    return format(new Date(details.value.next_billing_date), "MMM dd, yyyy");
+    return formatDate(details.value.next_billing_date, undefined, "MMM dd, yyyy");
   }
   return 0;
 });
 
 const lastPaymentDate = computed(() => {
   if (details.value) {
-    return format(new Date(details.value.last_payment_date), "MMM dd, yyyy");
+    return formatDate(details.value.last_payment_date, undefined, "MMM dd, yyyy");
   }
   return "-";
 });

@@ -3,6 +3,7 @@ import { computed, toRefs, reactive, provide, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { router } from "@inertiajs/vue3";
 import { addMonths, endOfMonth, format, isSameMonth, startOfMonth } from "date-fns";
+import { formatMonth } from "@/utils";
 import axios from "axios";
 import { NDatePicker, NDropdown } from "naive-ui";
 
@@ -153,7 +154,7 @@ watch(() => pageState?.filters, (filters) => {
     }
 }, { immediate: true })
 
-const monthName = computed(() => format(pageState.dates.startDate, "MMMM"))
+const monthName = computed(() => formatMonth(pageState.dates.startDate, "MMMM"))
 
 const listData = computed(() => {
     return transactions.data;

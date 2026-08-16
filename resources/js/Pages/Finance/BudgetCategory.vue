@@ -2,6 +2,7 @@
 import { toRefs } from "vue";
 // @ts-expect-error: no definitions
 import { AtDatePager } from "atmosphere-ui";
+import { formatMonth } from "@/utils";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
@@ -50,8 +51,9 @@ const { state: pageState } = useServerSearch(serverSearchOptions);
             v-model:startDate="pageState.dates.startDate"
             v-model:endDate="pageState.dates.endDate"
             controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
-            next-mode="month"
-          />
+            next-mode="month">
+            {{ formatMonth(pageState.dates.startDate, 'MMMM yyyy') }}
+        </AtDatePager>
           <LogerButton variant="inverse">{{ $t('Import') }}</LogerButton>
           <LogerButton variant="inverse">
             <a :href="route('budget.export')" class="block w-full" target="_blank">
