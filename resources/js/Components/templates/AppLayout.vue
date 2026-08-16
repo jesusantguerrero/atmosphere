@@ -404,7 +404,7 @@
                     <slot name="header" />
                 </header>
                 <!-- Page Content -->
-                <main class="overflow-hidden overflow-y-auto ic-scroller">
+                <main class="overflow-hidden overflow-y-auto ic-scroller pb-20 lg:pb-0">
                     <JetBanner active-class="mt-14" />
                     <slot />
                 </main>

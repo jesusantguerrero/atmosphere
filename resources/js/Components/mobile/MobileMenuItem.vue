@@ -3,7 +3,7 @@
         :href="item.to || item.url"
         v-if="item.to || item.url"
         v-ripple
-        class="inline-flex items-center justify-center w-full h-full transition-colors active:bg-body-1/10"
+        class="relative overflow-hidden inline-flex items-center justify-center w-full h-full transition-colors active:bg-body-1/10"
     >
         <div
             class="flex flex-col items-center justify-center w-full h-full gap-0.5 transition-colors"
