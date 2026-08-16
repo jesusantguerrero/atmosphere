@@ -29,7 +29,9 @@ class AutomationCheck extends Command
      */
     public function handle()
     {
-        $automations = Automation::whereNotNull('is_background')->get();
+        $automations = Automation::where('is_background', true)
+            ->where('status', true)
+            ->get();
         $backfillMode = $this->option('backfill');
 
         foreach ($automations as $automation) {
