@@ -156,11 +156,11 @@ async function addChore(lane: any) {
       </span>
     </div>
 
-    <div class="flex gap-4 pb-4 overflow-x-auto">
+    <div class="flex flex-col gap-4 pb-4 md:flex-row md:overflow-x-auto">
       <div
         v-for="lane in lanes"
         :key="lane.key"
-        class="flex-shrink-0 border shadow-sm w-72 rounded-2xl bg-base-lvl-2 border-base"
+        class="w-full md:w-72 md:flex-shrink-0 border shadow-sm rounded-2xl bg-base-lvl-2 border-base"
       >
         <div class="relative px-4 pt-4 pb-3 overflow-hidden rounded-t-2xl bg-base-lvl-3/40">
           <span class="absolute top-0 left-0 right-0 h-1" :style="{ background: lane.color }"></span>
