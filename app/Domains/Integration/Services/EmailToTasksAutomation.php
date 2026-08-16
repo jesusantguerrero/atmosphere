@@ -102,14 +102,7 @@ class EmailToTasksAutomation
     /** The token-bearing Google/Gmail integration this user connected. */
     private static function googleIntegration(User $user, ?int $teamId): ?Integration
     {
-        return Integration::where('user_id', $user->id)
-            ->where('team_id', $teamId ?? $user->current_team_id)
-            ->whereNotNull('token')
-            ->where(function ($q) {
-                $q->whereIn('name', ['Google', 'Gmail'])
-                    ->orWhereHas('service', fn ($s) => $s->whereIn('name', ['Google', 'Gmail']));
-            })
-            ->first();
+        return GoogleService::findGoogleIntegration($user->id, $teamId ?? $user->current_team_id, true);
     }
 
     private static function queryOf(Automation $automation): string
