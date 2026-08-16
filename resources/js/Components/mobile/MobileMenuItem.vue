@@ -44,9 +44,16 @@ const isComponent = (property) => {
 // first page load and never moved on Inertia (SPA) navigation. page.url updates
 // on every visit, so the active tab now tracks the current route.
 const isExact = computed(() => {
+    const current = (page.url || '').split('?')[0];
+    // A tab may deep-link to its action surface (item.to) but still need to stay
+    // highlighted across the whole section. When item.activeMatch (a RegExp) is
+    // provided, it decides the highlight; otherwise fall back to prefix matching
+    // on the target url.
+    if (props.item.activeMatch) {
+        try { return props.item.activeMatch.test(current); } catch (e) { /* fall through */ }
+    }
     const url = props.item.url || props.item.to || '';
     if (! url) return false;
-    const current = (page.url || '').split('?')[0];
     return current === url || current.startsWith(url.endsWith('/') ? url : url + '/');
 });
 </script>

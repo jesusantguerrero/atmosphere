@@ -129,17 +129,25 @@ export const useAppMenu = (t: any, modules: any[]) => {
     // NOT a nav slot anymore — it floats above the bar, offset right
     // (Maple-style), and lives in MobileQuickCapture.vue.
     // Voz cálida en los labels: Hoy · Agenda · Comida · Tareas · Dinero.
-    //   Hoy    = home/panel cockpit (/today)
+    //   Hoy    = home/panel cockpit (/today -> /dashboard)
     //   Agenda = calendar + rutinas (/calendar)
-    //   Comida = meal plan + shopping (/meals/overview)
-    //   Tareas = the Hogar pillar: chores + reminders (/housing)
-    //   Dinero = finance pillar (/finance)
+    //   Comida = meal plan directo (/meal-planner)
+    //   Tareas = tareas del hogar directo (/housing/chores)
+    //   Dinero = presupuesto directo (/budgets)
+    //
+    // Deep-link vs. highlight: `to` lands you on the section's ACTION surface
+    // (fewer taps to the thing you use daily), while `activeMatch` keeps the tab
+    // lit across the WHOLE section — so navigating from /budgets to /transactions,
+    // or /housing/chores to /housing/occurrence, still highlights the right pillar.
+    // Patterns mirror the desktop sidebar's isActiveFunction for consistency.
+    // Each section page carries its own sub-nav (Overview/Budget/Planner...), so
+    // landing deep never strands the user — Overview is always one tap away.
     const mobileMenu = [
-        { icon: 'fas fa-bolt',         name: 'Today',  label: t('Today'),  to: '/today',          as: Link },
-        { icon: 'fas fa-calendar',     name: 'Agenda', label: t('Agenda'), to: '/calendar',       as: Link },
-        { icon: 'fas fa-utensils',     name: 'Food',   label: t('Food'),   to: '/meals/overview', as: Link },
-        { icon: 'fas fa-check-circle', name: 'Tasks',  label: t('Tasks'),  to: '/housing',        as: Link },
-        { icon: 'fas fa-dollar-sign',  name: 'Money',  label: t('Money'),  to: '/finance',        as: Link },
+        { icon: 'fas fa-bolt',         name: 'Today',  label: t('Today'),  to: '/today',          as: Link, activeMatch: /^\/(today|dashboard)/ },
+        { icon: 'fas fa-calendar',     name: 'Agenda', label: t('Agenda'), to: '/calendar',       as: Link, activeMatch: /^\/calendar/ },
+        { icon: 'fas fa-utensils',     name: 'Food',   label: t('Food'),   to: '/meal-planner',   as: Link, activeMatch: /(meal-planner|meals|ingredients)/ },
+        { icon: 'fas fa-check-circle', name: 'Tasks',  label: t('Tasks'),  to: '/housing/chores', as: Link, activeMatch: /(housing|loger-profiles)/ },
+        { icon: 'fas fa-dollar-sign',  name: 'Money',  label: t('Money'),  to: '/budgets',        as: Link, activeMatch: /(finance|budgets)/ },
     ];
 
     const headerMenu =  [
