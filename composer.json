@@ -10,7 +10,7 @@
     "repositories": [
         {
             "type": "path",
-            "url": "../atmosphere-core",
+            "url": "packages/atmosphere",
             "options": {
                 "symlink": false
             }
