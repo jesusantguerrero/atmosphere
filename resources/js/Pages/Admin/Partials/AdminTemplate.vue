@@ -22,7 +22,7 @@ defineProps<{
             <AdminSectionNav />
         </template>
 
-        <main class="px-3 mx-auto mt-12 mb-10 max-w-screen-2xl sm:px-6 lg:px-8">
+        <main class="px-3 mx-auto mt-16 mb-10 max-w-screen-2xl sm:px-6 lg:px-8">
             <slot />
         </main>
     </AppLayout>
