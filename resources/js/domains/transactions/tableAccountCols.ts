@@ -100,7 +100,10 @@ export const tableAccountCols = (accountId?: number, showSelects?: boolean) => [
                 ]),
             ];
 
-            if (categoryName) {
+            if (isTransfer) {
+                // Transfers do not carry a category, so a "Sin categoria" chip
+                // on them is misleading - render no category chip for transfers.
+            } else if (categoryName) {
                 children.push(
                     h(Link, {
                         class: 'flex-shrink-0 px-1.5 py-0.5 rounded text-[11px] font-medium truncate max-w-[9rem] text-body-1/70 bg-base-lvl-1',
