@@ -28,3 +28,6 @@ Modules/*
 .claude/
 
 *.bak
+
+# staged-for-deletion (device cannot rm)
+_to_delete/

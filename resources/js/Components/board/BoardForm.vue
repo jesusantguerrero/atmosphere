@@ -55,7 +55,7 @@
 
 <script setup>
 import { inject, computed, watch } from "vue";
-import { useForm } from "@inertiajs/inertia-vue3";
+import { useForm } from "@inertiajs/vue3";
 import DialogModal from "@/Jetstream/DialogModal.vue"
 import PrimaryButton from "@/Jetstream/Button.vue"
 

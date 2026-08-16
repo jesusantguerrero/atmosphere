@@ -5,9 +5,19 @@ namespace App\Models;
 use App\Models\CurrencyBalance;
 use Insane\Journal\Models\Core\Account as BaseAccount;
 use Insane\Journal\Models\Core\AccountDetailType;
+use Insane\Journal\Models\Core\Transaction;
+use Illuminate\Support\Facades\DB;
 
 class Account extends BaseAccount
 {
+    /**
+     * Batch-computed verified balance for the accounts list. When set (via
+     * hydratePrecomputedBalances) the `balance` accessor returns it directly,
+     * avoiding the vendor's per-account sum(amount * type) query — an N+1 across
+     * the accounts collection HandleInertiaRequests serializes on every page.
+     */
+    public ?float $precomputedBalance = null;
+
     /**
      * Override the vendor's static finder so it returns App\Models\Account
      * instances (with our $appends) instead of vendor base-class instances.
@@ -21,11 +31,53 @@ class Account extends BaseAccount
      */
     public static function getByDetailTypes($teamId, $detailTypes = AccountDetailType::ALL)
     {
-        return static::where('accounts.team_id', $teamId)
+        $accounts = static::where('accounts.team_id', $teamId)
             ->byDetailTypes($detailTypes)
             ->orderBy('accounts.index')
             ->with(['reconciliationLast'])
             ->get();
+
+        return static::hydratePrecomputedBalances($accounts);
+    }
+
+    /**
+     * Override the vendor `balance` accessor to reuse the batch-precomputed
+     * value when present, falling back to the vendor's exact per-account query
+     * otherwise. Same semantics (verified lines, sum(amount * type)), so the
+     * displayed balance never changes — only the query count drops.
+     */
+    public function getBalanceAttribute()
+    {
+        if ($this->precomputedBalance !== null) {
+            return $this->precomputedBalance;
+        }
+
+        return parent::getBalanceAttribute();
+    }
+
+    /**
+     * Compute every account's verified balance in ONE grouped query instead of
+     * one sum() per account on serialization. Mirrors the vendor accessor
+     * exactly; TransactionLine/Transaction have no soft-deletes or global
+     * scopes, so a raw grouped query is equivalent to the relation-based sum.
+     */
+    protected static function hydratePrecomputedBalances($accounts)
+    {
+        if ($accounts->isEmpty()) {
+            return $accounts;
+        }
+
+        $balances = DB::table('transaction_lines')
+            ->join('transactions', 'transactions.id', '=', 'transaction_lines.transaction_id')
+            ->where('transactions.status', Transaction::STATUS_VERIFIED)
+            ->whereIn('transaction_lines.account_id', $accounts->pluck('id'))
+            ->groupBy('transaction_lines.account_id')
+            ->selectRaw('transaction_lines.account_id as aid, SUM(transaction_lines.amount * transaction_lines.type) as balance')
+            ->pluck('balance', 'aid');
+
+        return $accounts->each(function ($account) use ($balances) {
+            $account->precomputedBalance = (float) ($balances[$account->id] ?? 0);
+        });
     }
 
     /**

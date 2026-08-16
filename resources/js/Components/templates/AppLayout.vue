@@ -58,7 +58,14 @@
             label: t('User Profile'),
             to: '/user/profile',
             as: Link
-        }] : appMenu
+        }] : (
+            // Admin as a first-class sidebar entry for operators. The nav
+            // dropdown already exposes it; this mirrors that gate (super_admin
+            // / admin) and the /admin routes' `superadmin` Gate.
+            ['admin', 'super_admin'].includes(pageProps.auth?.user?.role)
+                ? [...appMenu, { icon: 'fas fa-shield-alt', name: 'admin', label: t('Admin'), to: '/admin', as: Link, isActiveFunction: (url, path) => /^\/admin/.test(path) }]
+                : appMenu
+        )
         // serverMenu.value.map(item => ({
         //     label: item.title,
         //     name: item.title,

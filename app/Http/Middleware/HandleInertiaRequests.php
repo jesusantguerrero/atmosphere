@@ -47,8 +47,6 @@ class HandleInertiaRequests extends Middleware
     {
         $user = $request->user();
         $team = $user ? $user->currentTeam : null;
-        $menu = Menu::render('app');
-
         return [
             ...parent::share($request),
             'ziggy' => fn () => [
@@ -59,11 +57,11 @@ class HandleInertiaRequests extends Middleware
             //     'user' => $request->user(),
             // ],
             'locale' => app()->getLocale(),
-            'settings' => $team ? $team->settings->mapWithKeys(fn ($setting) => [$setting['name'] => $setting['value']]) : [],
-            'accountDetailTypes' => AccountDetailType::all(),
+            'settings' => fn () => $team ? $team->settings->mapWithKeys(fn ($setting) => [$setting['name'] => $setting['value']]) : [],
+            'accountDetailTypes' => fn () => AccountDetailType::all(),
             'trialEndsAt' => $team ? $team->trial_ends_at : null,
             'unreadNotifications' => function () use ($user) {
-                return $user ? $user->unreadNotifications->count() : 0;
+                return $user ? $user->unreadNotifications()->count() : 0;
             },
             // Count of DRAFT transactions (captured, awaiting confirmation).
             // Powers the Inbox nav badge — the always-visible "things to do"
@@ -72,11 +70,11 @@ class HandleInertiaRequests extends Middleware
                 return $team ? TransactionService::getDraftCount($team->id) : 0;
             },
             'flash' => fn () => $request->session()->get('flash'),
-            'modules' => $team ? $team->modules : [],
-            'menu' => $menu,
-            'balance' => $team ? $team->balance() : 0,
-            'accounts' => $team ? Account::getByDetailTypes($team->id) : [],
-            'categories' => $team ? Category::where([
+            'modules' => fn () => $team ? $team->modules : [],
+            'menu' => fn () => Menu::render('app'),
+            'balance' => fn () => $team ? $team->balance() : 0,
+            'accounts' => fn () => $team ? Account::getByDetailTypes($team->id) : [],
+            'categories' => fn () => $team ? Category::where([
                 'categories.team_id' => $team->id,
                 'categories.resource_type' => 'transactions',
             ])

@@ -191,7 +191,6 @@ const handleEdit = (transaction: ITransaction) => {
 const selectedItems = ref([]);
 const deleteTransactionsForm = useForm({
     isVisible: false,
-    data: [],
 })
 
 const deleteBulkTransactions = () => {

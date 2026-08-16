@@ -7,6 +7,12 @@
         "laravel"
     ],
     "license": "MIT",
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "git@github.com:jesusantguerrero/atmosphere-core.git"
+        }
+    ],
     "require": {
         "php": "^8.2",
         "ext-mailparse": "*",
@@ -14,10 +20,10 @@
         "doctrine/dbal": "^3.3",
         "dompdf/dompdf": "^2.0.3",
         "ernysans/laraworld": "^1.0",
-        "freesgen/atmosphere": "dev-main",
+        "freesgen/atmosphere": "dev-inertia-v2-compat",
         "google/apiclient": "^2.12",
         "guzzlehttp/guzzle": "^7.0.2",
-        "inertiajs/inertia-laravel": "^1.0",
+        "inertiajs/inertia-laravel": "^3.3",
         "insane/journal": "dev-master@dev",
         "insane/plan-module": "dev-master",
         "insane/treasurer": "dev-master",
@@ -50,7 +56,7 @@
         "brianium/paratest": "^7.0",
         "fakerphp/faker": "^1.9.1",
         "insane/remotr": "dev-main",
-        "laravel/boost": "^1.1",
+        "laravel/boost": "^2.5",
         "laravel/pint": "^1.13",
         "mockery/mockery": "^1.4.2",
         "nunomaduro/collision": "^8.1",
