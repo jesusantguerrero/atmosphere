@@ -230,7 +230,7 @@ const goToDueSoonPayments = () => {
                 <button
                     v-if="overduePayments.length"
                     type="button"
-                    class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg bg-base-lvl-2 border border-error/30 hover:border-error/50 transition text-left"
+                    class="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3 px-3 py-2.5 rounded-lg bg-base-lvl-2 border border-error/30 hover:border-error/50 transition text-left"
                     @click="goToOverduePayments"
                 >
                     <span class="flex items-center gap-2 min-w-0">
@@ -248,7 +248,7 @@ const goToDueSoonPayments = () => {
                 <button
                     v-if="overdueReminders.length"
                     type="button"
-                    class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg bg-base-lvl-2 border border-error/30 hover:border-error/50 transition text-left"
+                    class="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3 px-3 py-2.5 rounded-lg bg-base-lvl-2 border border-error/30 hover:border-error/50 transition text-left"
                     @click="router.visit('/housing/occurrence')"
                 >
                     <span class="flex items-center gap-2 min-w-0">
@@ -264,7 +264,7 @@ const goToDueSoonPayments = () => {
                 <button
                     v-if="dueSoonPayments.length"
                     type="button"
-                    class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg bg-base-lvl-2 border border-base hover:border-primary/30 transition text-left"
+                    class="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3 px-3 py-2.5 rounded-lg bg-base-lvl-2 border border-base hover:border-primary/30 transition text-left"
                     @click="goToDueSoonPayments"
                 >
                     <span class="flex items-center gap-2 min-w-0">
@@ -280,7 +280,7 @@ const goToDueSoonPayments = () => {
                 <button
                     v-if="draftsCount"
                     type="button"
-                    class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg bg-base-lvl-2 border border-base hover:border-primary/30 transition text-left"
+                    class="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3 px-3 py-2.5 rounded-lg bg-base-lvl-2 border border-base hover:border-primary/30 transition text-left"
                     @click="router.visit('/inbox')"
                 >
                     <span class="flex items-center gap-2 min-w-0">
@@ -302,27 +302,27 @@ const goToDueSoonPayments = () => {
         <section class="grid grid-cols-2 md:grid-cols-3 gap-3">
 
             <button
-                class="bg-base-lvl-3 rounded-lg p-4 text-left border border-base hover:border-primary/30 transition cursor-pointer"
+                class="min-w-0 bg-base-lvl-3 rounded-lg p-4 text-left border border-base hover:border-primary/30 transition cursor-pointer"
                 @click="router.visit('/finance/transactions')"
             >
                 <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">{{ $t('Current Expenses') }}</p>
-                <p class="text-lg font-bold text-body mt-1">
+                <p class="text-base sm:text-lg font-bold text-body mt-1 truncate">
                     <MoneyPresenter :value="expenses" />
                 </p>
             </button>
 
             <button
-                class="bg-base-lvl-3 rounded-lg p-4 text-left border border-base hover:border-primary/30 transition cursor-pointer"
+                class="min-w-0 bg-base-lvl-3 rounded-lg p-4 text-left border border-base hover:border-primary/30 transition cursor-pointer"
                 @click="router.visit('/finance/transactions')"
             >
                 <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">{{ $t('Total Balance') }}</p>
-                <p class="text-lg font-bold mt-1" :class="totalBalance >= 0 ? 'text-body' : 'text-error'">
+                <p class="text-base sm:text-lg font-bold mt-1 truncate" :class="totalBalance >= 0 ? 'text-body' : 'text-error'">
                     <MoneyPresenter :value="totalBalance" />
                 </p>
             </button>
 
             <button
-                class="bg-base-lvl-3 rounded-lg p-4 text-left border border-base hover:border-primary/30 transition cursor-pointer"
+                class="min-w-0 bg-base-lvl-3 rounded-lg p-4 text-left border border-base hover:border-primary/30 transition cursor-pointer"
                 @click="router.visit('/budgets')"
             >
                 <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">{{ $t('Budget') }}</p>
