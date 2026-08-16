@@ -10,7 +10,7 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "../atmosphere-core"
+            "url": "git@github.com:jesusantguerrero/atmosphere-core.git"
         }
     ],
     "require": {
@@ -23,7 +23,7 @@
         "freesgen/atmosphere": "dev-inertia-v2-compat",
         "google/apiclient": "^2.12",
         "guzzlehttp/guzzle": "^7.0.2",
-        "inertiajs/inertia-laravel": "^3.0",
+        "inertiajs/inertia-laravel": "^3.3",
         "insane/journal": "dev-master@dev",
         "insane/plan-module": "dev-master",
         "insane/treasurer": "dev-master",
