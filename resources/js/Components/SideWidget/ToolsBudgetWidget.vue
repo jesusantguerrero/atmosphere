@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import axios from 'axios';
 import { Link } from '@inertiajs/vue3';
-import { formatMoney } from '@/utils';
+import { formatDate, formatMoney } from '@/utils';
 import { useTransactionModal } from '@/domains/transactions/useTransactionModal';
 import { useTransactionStore } from '@/store/transactions';
 
@@ -84,7 +84,7 @@ const dayLabel = (item: UpcomingItem): string => {
     if (item.days_until === 1) return 'tomorrow';
     // Format as short weekday for the next-7-day window.
     const date = new Date(item.due_at + 'T12:00:00');
-    return date.toLocaleDateString(undefined, { weekday: 'short' });
+    return formatDate(date, undefined, 'EEE');
 };
 
 const handleLogExpense = (): void => {

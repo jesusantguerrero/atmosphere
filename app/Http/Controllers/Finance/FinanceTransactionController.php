@@ -382,10 +382,17 @@ class FinanceTransactionController extends InertiaController
 
         $user = $request->user();
 
-        $drafts = Transaction::query()
+        $query = Transaction::query()
             ->where('team_id', $user->current_team_id)
-            ->where('status', Transaction::STATUS_DRAFT)
-            ->get();
+            ->where('status', Transaction::STATUS_DRAFT);
+
+        // When a month range is supplied, clear only that month's drafts
+        // (the Drafts view sends the visible month) instead of every draft.
+        if ($request->filled('start') && $request->filled('end')) {
+            $query->whereBetween('date', [$request->input('start'), $request->input('end')]);
+        }
+
+        $drafts = $query->get();
 
         foreach ($drafts as $transaction) {
             $transactionDelete->delete($user, $transaction);

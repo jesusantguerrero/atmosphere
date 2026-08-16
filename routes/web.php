@@ -14,6 +14,7 @@ use App\Http\Controllers\Finance\FinanceAccountController;
 use App\Http\Controllers\Finance\FinanceController;
 use App\Http\Controllers\Finance\FinanceLinesController;
 use App\Http\Controllers\Finance\FinanceTransactionController;
+use App\Http\Controllers\Finance\PayeeManagerController;
 use App\Http\Controllers\Finance\FinanceTrendController;
 use App\Http\Controllers\Finance\FinancialOverviewController;
 use App\Http\Controllers\InboxController;
@@ -273,6 +274,13 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     ]);
 
     // Transactions
+    Route::controller(PayeeManagerController::class)->group(function () {
+        Route::get('/finance/payees', 'index')->name('finance.payees');
+        Route::patch('/finance/payees/{payee}', 'update')->name('finance.payees.update');
+        Route::post('/finance/payees/{payee}/merge', 'merge')->name('finance.payees.merge');
+        Route::delete('/finance/payees/{payee}', 'destroy')->name('finance.payees.destroy');
+    });
+
     Route::controller(FinanceTransactionController::class)->group(function () {
         Route::post('/linked-drafts', 'findLinkedDrafts')->name('finance.transactions.linked-drafts');
         Route::patch('/transactions/{transaction}/linked', 'findLinked')->name('finance.transactions.linked');

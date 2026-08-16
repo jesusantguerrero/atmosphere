@@ -2,6 +2,7 @@
 import { toRefs } from "vue";
 // @ts-ignore
 import {  AtDatePager } from "atmosphere-ui";
+import { formatMonth } from "@/utils";
 
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 import AppLayout from "@/Components/templates/AppLayout.vue";
@@ -106,8 +107,9 @@ transformCategoryOptions(props.accounts, "accounts", "accountsOptions");
           v-model:startDate="pageState.dates.startDate"
           v-model:endDate="pageState.dates.endDate"
           controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
-          next-mode="month"
-        />
+          next-mode="month">
+            {{ formatMonth(pageState.dates.startDate, 'MMMM yyyy') }}
+        </AtDatePager>
         <LogerButton variant="inverse">
           {{ $t('Import') }} {{ $t('Transactions') }}
         </LogerButton>

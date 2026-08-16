@@ -85,6 +85,10 @@ const menus = {
     {
         label: 'Transactions',
         url: '/finance/transactions'
+    },
+    {
+        label: 'Payees',
+        url: '/finance/payees'
     }],
     [MODULES.TRENDS]: [
         {

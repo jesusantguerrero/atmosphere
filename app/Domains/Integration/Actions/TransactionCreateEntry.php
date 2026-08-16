@@ -12,6 +12,7 @@ use App\Helpers\FormulaHelper;
 use App\Models\Setting;
 use App\Models\User;
 use App\Notifications\EntryGenerated;
+use App\Domains\Transaction\Services\PayeeResolver;
 use Insane\Journal\Models\Core\Account;
 use Insane\Journal\Models\Core\Payee;
 use Insane\Journal\Models\Core\Transaction;
@@ -36,7 +37,7 @@ class TransactionCreateEntry implements AutomationActionContract
         $transactionCategoryId = null;
 
         if ($payeeName = $payload['payee']) {
-            $payee = Payee::findOrCreateByName($automation, $payeeName ?? 'General Provider');
+            $payee = PayeeResolver::resolve($automation, $payeeName ?? 'General Provider');
             $lastTransaction = TransactionLine::where([
                 'payee_id' => $payee->id,
                 'team_id' => $automation->team_id,

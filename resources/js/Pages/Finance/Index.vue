@@ -4,6 +4,8 @@ import InfoHint from "@/Components/atoms/InfoHint.vue";
 import { computed, toRefs, ref } from "vue";
 import { Link, router, useForm } from "@inertiajs/vue3";
 import { format, subMonths } from "date-fns";
+import { es } from "date-fns/locale";
+import { formatMonth } from "@/utils";
 // @ts-ignore
 import { AtButton, AtDatePager } from "atmosphere-ui";
 
@@ -115,7 +117,8 @@ transformCategoryOptions(props.accounts, "accounts", "accountsOptions");
 
 const lastMonthName = computed(() => {
     try {
-        return format(subMonths(pageState.dates.startDate, 1), 'MMM');
+        const isEs = ((window as any)?.logerLocale ?? 'en').startsWith('es');
+        return format(subMonths(pageState.dates.startDate, 1), 'MMM', isEs ? { locale: es } : undefined);
     } catch (e) {
         return 'LM'
     }
@@ -223,8 +226,9 @@ const deleteBulkTransactions = () => {
           v-model:endDate="pageState.dates.endDate"
           @change="executeSearchWithDelay"
           controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
-          next-mode="month"
-        />
+          next-mode="month">
+            {{ formatMonth(pageState.dates.startDate, 'MMMM yyyy') }}
+        </AtDatePager>
       </section>
 
       <section class="mt-4 space-y-4">
@@ -245,7 +249,7 @@ const deleteBulkTransactions = () => {
                 </template>
                 <template v-else>
                     <p
-                        class="mt-1 text-3xl font-bold leading-tight break-all"
+                        class="mt-1 text-3xl font-bold leading-tight"
                         :class="readyToAssign >= 0 ? 'text-success' : 'text-error'"
                     >{{ formatMoney(readyToAssign) }}</p>
                     <p class="mt-1 text-xs text-body-1/40">{{ readyToAssign >= 0 ? $t('Ready to assign to your categories') : $t('You assigned more than you have') }}</p>
@@ -253,25 +257,25 @@ const deleteBulkTransactions = () => {
             </div>
 
             <!-- Summary stat cards -->
-            <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="bg-base-lvl-3 border border-base rounded-lg p-4 cursor-pointer hover:border-primary/30 transition overflow-hidden"
                     @click="router.visit('/finance/transactions?filter[direction]=DEPOSIT')">
                     <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">{{ $t('Income') }}</p>
-                    <p class="text-lg font-bold text-green-500 mt-2 break-all leading-tight">{{ formatMoney(income) }}</p>
+                    <p class="text-lg font-bold text-green-500 mt-2 leading-tight">{{ formatMoney(income) }}</p>
                     <p class="text-xs text-body-1/40 mt-1">vs {{ lastMonthName }}: <span :class="incomeVarianceTone">{{ formatVariance(incomeVariance) }}</span></p>
                 </div>
 
                 <div class="bg-base-lvl-3 border border-base rounded-lg p-4 cursor-pointer hover:border-primary/30 transition overflow-hidden"
                     @click="router.visit('/finance/transactions')">
                     <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">{{ $t('Expenses') }}</p>
-                    <p class="text-lg font-bold text-red-400 mt-2 break-all leading-tight">{{ formatMoney(transactionTotal) }}</p>
+                    <p class="text-lg font-bold text-red-400 mt-2 leading-tight">{{ formatMoney(transactionTotal) }}</p>
                     <p class="text-xs text-body-1/40 mt-1">vs {{ lastMonthName }}: <span :class="expenseVarianceTone">{{ formatVariance(expenseVariance) }}</span></p>
                 </div>
 
                 <div class="bg-base-lvl-3 border border-base rounded-lg p-4 cursor-pointer hover:border-primary/30 transition overflow-hidden"
                     @click="router.visit('/finance/transactions')">
                     <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">{{ $t('Savings') }}</p>
-                    <p class="text-lg font-bold mt-2 break-all leading-tight" :class="Number(savings) >= 0 ? 'text-green-500' : 'text-red-400'">{{ formatMoney(savings) }}</p>
+                    <p class="text-lg font-bold mt-2 leading-tight" :class="Number(savings) >= 0 ? 'text-green-500' : 'text-red-400'">{{ formatMoney(savings) }}</p>
                     <p class="text-xs text-body-1/40 mt-1">{{ $t('Contributed to savings') }}</p>
                 </div>
 
@@ -279,7 +283,7 @@ const deleteBulkTransactions = () => {
                     @click="router.visit('/budgets')">
                     <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">{{ $t('Budget') }}</p>
                     <template v-if="hasBudget">
-                        <p class="text-lg font-bold text-body mt-2 break-all leading-tight">{{ formatMoney(transactionTotal) }}</p>
+                        <p class="text-lg font-bold text-body mt-2 leading-tight">{{ formatMoney(transactionTotal) }}</p>
                         <BudgetProgress
                             :goal="currentBudget.spending"
                             :current="transactionTotal"

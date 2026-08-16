@@ -3,6 +3,7 @@
 namespace App\Domains\Transaction\Actions;
 
 use App\Domains\Transaction\Models\Transaction;
+use App\Domains\Transaction\Services\PayeeResolver;
 use Insane\Journal\Models\Core\Account;
 use Insane\Journal\Models\Core\Payee;
 
@@ -22,7 +23,7 @@ class MapBankStatementToLoger
 
         $description = trim($row['description']);
         $payeeName = self::extractPayeeName($description);
-        $payee = Payee::findOrCreateByName($session, $payeeName);
+        $payee = PayeeResolver::resolve($session, $payeeName);
 
         $account = Account::find($accountId);
         $currencyCode = $account?->currency_code ?? 'USD';

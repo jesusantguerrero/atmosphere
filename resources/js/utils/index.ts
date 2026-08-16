@@ -76,7 +76,7 @@ export enum MonthTypeFormat {
     monthYear = 'MMMM yyyy'
 }
 export const formatMonth = (dateString: string | Date, type: string = MonthTypeFormat.short ) => {
-    const opts = (typeof window !== 'undefined' && (window as any).logerLocale === 'es') ? { locale: es } : undefined;
+    const opts = (String((typeof window !== 'undefined' && (window as any).logerLocale) || '').toLowerCase().startsWith('es')) ? { locale: es } : undefined;
     try {
         if (typeof dateString == 'string') {
             return format(parseISO(dateString), type, opts)

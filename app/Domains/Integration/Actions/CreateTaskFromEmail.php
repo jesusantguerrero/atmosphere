@@ -61,29 +61,33 @@ class CreateTaskFromEmail implements AutomationActionContract
             return $payload;
         }
 
-        $eventData = [
+        // Deduped by message-id within the board's stage: a re-sync updates the
+        // existing card instead of adding a second one.
+        $item = PlanItem::firstOrNew([
+            'stage_id' => $stage->id,
+            'resource_id' => $messageId,
+        ]);
+
+        // `plan_id` (not `board_id`) is the real column, and `fields` are saved
+        // separately — passing either through mass assignment throws under the
+        // app's strict-model settings and the card silently never lands.
+        $item->fill([
             'title' => $subject !== '' ? $subject : ($from !== '' ? $from : 'Email'),
-            'board_id' => $stage->board_id,
+            'plan_id' => $stage->plan_id,
             'stage_id' => $stage->id,
             'team_id' => $stage->team_id,
             'user_id' => $stage->user_id,
             'resource_id' => $messageId,
             'resource_origin' => 'email',
             'resource_type' => 'gmail',
-            'fields' => [
-                ['name' => 'from', 'type' => 'text', 'value' => $from],
-                ['name' => 'subject', 'type' => 'text', 'value' => $subject],
-                ['name' => 'date', 'type' => 'text', 'value' => $date],
-                ['name' => 'snippet', 'type' => 'text', 'value' => $snippet],
-                ['name' => 'messageId', 'type' => 'text', 'value' => $messageId],
-            ],
-        ];
+        ])->save();
 
-        // Deduped by message-id within the board's stage: a re-sync updates the
-        // existing card instead of adding a second one.
-        PlanItem::createEvent($eventData, [
-            'resource_id' => $messageId,
-            'stage_id' => $stage->id,
+        $item->saveFields([
+            ['name' => 'from', 'type' => 'text', 'value' => $from],
+            ['name' => 'subject', 'type' => 'text', 'value' => $subject],
+            ['name' => 'date', 'type' => 'text', 'value' => $date],
+            ['name' => 'snippet', 'type' => 'text', 'value' => $snippet],
+            ['name' => 'messageId', 'type' => 'text', 'value' => $messageId],
         ]);
 
         return $payload;

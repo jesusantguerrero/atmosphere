@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { router } from "@inertiajs/vue3";
+import { useI18n } from "vue-i18n";
 // @ts-expect-error: no definitions
 import { AtButton } from "atmosphere-ui";
 
+const props = defineProps<{ start?: string; end?: string }>();
 const emit = defineEmits(['submitted'])
+const { t } = useI18n();
 
 const runAutomation = () => {
     axios.post('/api/automation/run-all')
@@ -15,7 +18,8 @@ const runAutomation = () => {
 }
 
 const removeAllDrafts = () => {
-    router.post('/transactions/remove-all-drafts', {} ,{
+    if (!window.confirm(t('Clear these draft transactions? This cannot be undone.'))) return;
+    router.post('/transactions/remove-all-drafts', { start: props.start, end: props.end }, {
         onSuccess() {
             emit('submitted')
         }

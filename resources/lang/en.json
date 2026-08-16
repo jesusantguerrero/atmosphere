@@ -926,5 +926,21 @@
     "Connect Google first to enable this.": "Connect Google first to enable this.",
     "Gmail search": "Gmail search",
     "Turn on": "Turn on",
-    "Turn off": "Turn off"
+    "Turn off": "Turn off",
+    "Filter account": "Filter account",
+    "avail": "avail",
+    "Notifications": "Notifications",
+    "Clear these draft transactions? This cannot be undone.": "Clear these draft transactions? This cannot be undone.",
+    "Rename, merge duplicates, or remove payees.": "Rename, merge duplicates, or remove payees.",
+    "Search payees": "Search payees",
+    "Rename": "Rename",
+    "Merge": "Merge",
+    "No payees found": "No payees found",
+    "Rename payee": "Rename payee",
+    "Merge payee": "Merge payee",
+    "Move all transactions from this payee into another, then delete it.": "Move all transactions from this payee into another, then delete it.",
+    "Merge into": "Merge into",
+    "Select a payee": "Select a payee",
+    "Delete \"{name}\"?": "Delete \"{name}\"?",
+    "Delete \"{name}\"? Its {count} transactions keep their data but lose the payee.": "Delete \"{name}\"? Its {count} transactions keep their data but lose the payee."
 }

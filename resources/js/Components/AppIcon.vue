@@ -53,7 +53,7 @@ const isHuge = computed(() => props.size == "huge");
       </g>
     </svg>
     <small
-      class="inline-block font-brand"
+      class="inline-block font-brand whitespace-nowrap max-w-full truncate"
       :class="[isHuge ? 'text-sm mt-4' : 'text-xs text-body-1/80']"
       >The Family Operating System</small
     >

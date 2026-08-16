@@ -19,6 +19,7 @@ import { useServerSearch } from "@/composables/useServerSearch";
 import AccountFilters from "@/domains/transactions/components/AccountFilters.vue";
 import CreditCardRewardsWidget from "@/domains/transactions/components/CreditCardRewardsWidget.vue";
 import { formatMoney } from "@/utils";
+import { formatMonth } from "@/utils";
 
 const props = withDefaults(defineProps<{
     user: Record<string, any>;
@@ -94,8 +95,9 @@ const deltaDisplay = computed(() => {
                     v-model:endDate="pageState.dates.endDate"
                     @change="executeSearchWithDelay(500)"
                     controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
-                    next-mode="month"
-                />
+                    next-mode="month">
+            {{ formatMonth(pageState.dates.startDate, 'MMMM yyyy') }}
+        </AtDatePager>
                 <AccountFilters
                     class="w-full"
                     v-model:accounts="pageState.filters.account"
@@ -121,7 +123,7 @@ const deltaDisplay = computed(() => {
         </section>
 
         <article v-else>
-            <header class="flex space-x-5">
+            <header class="grid grid-cols-2 md:grid-cols-4 gap-5">
                 <BackgroundCard
                     class="w-full cursor-pointer text-body-1 bg-base-lvl-3"
                     :value="data.lastCycleBalances?.length ?? 0"
@@ -199,8 +201,8 @@ const deltaDisplay = computed(() => {
                 </table>
             </section>
 
-            <section class="mt-4 flex space-x-4">
-                <section class="w-4/12 space-y-2">
+            <section class="mt-4 flex flex-col lg:flex-row gap-4">
+                <section class="w-full lg:w-4/12 space-y-2">
                     <div
                         v-if="data.billingCyclesByCard?.discountTotal"
                         class="bg-base-lvl-3 border border-base rounded-lg px-4 py-3 flex items-baseline justify-between"
@@ -215,7 +217,7 @@ const deltaDisplay = computed(() => {
                         :credit-card-data="data.billingCyclesByCard.data"
                     />
                 </section>
-                <section class="w-8/12">
+                <section class="w-full lg:w-8/12">
                     <ChartTopCreditCard
                         class="bg-base-lvl-3 rounded-md overflow-hidden"
                         group-name="name"

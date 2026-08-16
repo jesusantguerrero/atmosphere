@@ -17,7 +17,8 @@
 <script setup>
 import SectionTitle from "@/Components/atoms/SectionTitle.vue";
 import { useLocalStorage } from "@vueuse/core";
-import { addMinutes, format } from "date-fns";
+import { addMinutes } from "date-fns";
+import { formatDate } from "@/utils";
 import { onMounted, reactive, computed } from "vue";
 const endpoint = import.meta.env.VITE_WEATHER_ENDPOINT;
 
@@ -40,7 +41,7 @@ const description = computed(() => {
   return state.value.weather.length && state.value.weather[0].description;
 });
 
-const today = format(new Date(), "iiii");
+const today = formatDate(new Date(), undefined, "iiii");
 
 const setWeatherData = (data) => {
   Object.keys(state.value).forEach((key) => {

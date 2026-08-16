@@ -98,7 +98,7 @@ const totalAutomations = computed<number>(() =>
 const formatDate = (iso: string): string => {
     if (!iso) return '';
     try {
-        return new Date(iso).toLocaleDateString(undefined, {
+        return new Date(iso).toLocaleDateString(String((typeof window !== 'undefined' && (window as any).logerLocale) || 'en'), {
             year: 'numeric',
             month: 'short',
             day: 'numeric',

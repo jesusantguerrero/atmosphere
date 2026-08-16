@@ -1,5 +1,5 @@
-import { getDayDiff } from "@/utils";
-import { format, parseISO } from "date-fns";
+import { getDayDiff, formatDate } from "@/utils";
+import { parseISO } from "date-fns";
 import { h } from "vue";
 
 export const occurrenceCols = [
@@ -14,7 +14,7 @@ export const occurrenceCols = [
         name: "last_date",
         render(row) {
             const date = row.last_date && parseISO(row.last_date)
-            return h('div', {class:'text-info cursor-pointer'} , date  && format(date, "dd MMM, yyyy"))
+            return h('div', {class:'text-info cursor-pointer'} , date  && formatDate(date, undefined, "dd MMM, yyyy"))
         }
     },
     {

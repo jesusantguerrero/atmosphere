@@ -3,6 +3,7 @@ import { computed, toRefs, reactive, provide, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { router } from "@inertiajs/vue3";
 import { addMonths, endOfMonth, format, isSameMonth, startOfMonth } from "date-fns";
+import { formatMonth } from "@/utils";
 import axios from "axios";
 import { NDatePicker, NDropdown } from "naive-ui";
 
@@ -19,6 +20,7 @@ import TransactionSearch from "@/domains/transactions/components/TransactionSear
 import DraftButtons from "@/domains/transactions/components/DraftButtons.vue";
 
 import { removeTransaction, useTransactionModal } from "@/domains/transactions";
+import { useImportModal } from "@/domains/transactions/useImportModal";
 import { useServerSearch, IServerSearchData } from "@/composables/useServerSearch";
 import { useAppContextStore } from "@/store";
 import { IAccount, ITransaction } from "@/domains/transactions/models";
@@ -153,7 +155,7 @@ watch(() => pageState?.filters, (filters) => {
     }
 }, { immediate: true })
 
-const monthName = computed(() => format(pageState.dates.startDate, "MMMM"))
+const monthName = computed(() => formatMonth(pageState.dates.startDate, "MMMM"))
 
 const listData = computed(() => {
     return transactions.data;
@@ -179,13 +181,21 @@ const buildExportUrl = (base: string): string => {
 const csvExportUrl = computed(() => buildExportUrl('/finance/transactions/export/csv'));
 const pdfExportUrl = computed(() => buildExportUrl('/finance/transactions/export/pdf'));
 
+// Month range so the Drafts view can clear just the visible month, not every draft.
+const draftMonthStart = computed(() => pageState.dates.startDate ? format(pageState.dates.startDate, 'yyyy-MM-dd') : undefined);
+const draftMonthEnd = computed(() => pageState.dates.endDate ? format(pageState.dates.endDate, 'yyyy-MM-dd') : undefined);
+
 // Data actions live in the kebab — same slot they occupy on the register.
+const { toggleModal: toggleImportModal } = useImportModal();
+
 const exportOptions = [
+    { key: 'import', label: 'Import' },
     { key: 'export-csv', label: 'Export CSV' },
     { key: 'export-pdf', label: 'Export PDF' },
 ];
 
 const handleExport = (key: string) => {
+    if (key === 'import') { toggleImportModal(); return; }
     if (key === 'export-csv') window.open(csvExportUrl.value, '_blank');
     if (key === 'export-pdf') window.open(pdfExportUrl.value, '_blank');
 };
@@ -261,7 +271,7 @@ const isCurrentMonth = computed(() => isSameMonth(periodStart(), new Date()));
                 show-all
                 @update:model-value="goToAccount"
             />
-            <DraftButtons v-if="isDraft" @submitted="fetchTransactions()" />
+            <DraftButtons v-if="isDraft" :start="draftMonthStart" :end="draftMonthEnd" @submitted="fetchTransactions()" />
 
             <div class="flex items-center gap-1 md:ml-auto shrink-0">
                 <button

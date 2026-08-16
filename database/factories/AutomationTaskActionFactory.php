@@ -34,7 +34,6 @@ class AutomationTaskActionFactory extends Factory
             'user_id' => $automation->user_id,
             'automation_id' => $automation->id,
             'automation_task_id' => null,
-            'integration_id' => null,
             'name' => $this->faker->words(2, true),
             'entity' => 'App\\Domains\\Integration\\Actions\\TestAction',
             'task_type' => 'action',
