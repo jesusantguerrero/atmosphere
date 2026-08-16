@@ -17,7 +17,7 @@
         "freesgen/atmosphere": "dev-main",
         "google/apiclient": "^2.12",
         "guzzlehttp/guzzle": "^7.0.2",
-        "inertiajs/inertia-laravel": "^1.0",
+        "inertiajs/inertia-laravel": "^2.0",
         "insane/journal": "dev-master@dev",
         "insane/plan-module": "dev-master",
         "insane/treasurer": "dev-master",

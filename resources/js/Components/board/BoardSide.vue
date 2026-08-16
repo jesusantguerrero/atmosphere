@@ -81,7 +81,7 @@ import SearchBar from "../SearchBar.vue";
 import WorkspaceSelector from "../workspace/WorkspaceSelector.vue";
 import { computed, reactive, ref, nextTick } from "vue";
 import { router } from "@inertiajs/vue3";
-import { usePage } from "@inertiajs/inertia-vue3";
+import { usePage } from "@inertiajs/vue3";
 
 
 const pageProps = usePage().props;

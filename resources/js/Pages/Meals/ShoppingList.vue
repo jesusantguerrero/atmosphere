@@ -33,7 +33,7 @@ const chorePlan = computed(() => {
 })
 
 const onSearch = (query: string) => {
-    router.replace(`${location.pathname}/${query}`)
+    router.visit(`${location.pathname}/${query}`, { replace: true, preserveState: true })
 }
 
 // Empty-state CTA. Creates a blank shopping list via the ShoppingListController's
