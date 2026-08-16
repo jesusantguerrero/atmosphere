@@ -1,4 +1,11 @@
 {
+    "Money": "Dinero",
+    "Agenda": "Agenda",
+    "Tasks": "Tareas",
+    "Task": "Tarea",
+    "Event": "Evento",
+    "Meal": "Comida",
+    "Quick capture": "Captura rápida",
     "Group": "Grupo",
     "Source": "Fuente",
     "Showing": "Mostrando",

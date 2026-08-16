@@ -35,6 +35,8 @@ class ProfileSettingsController extends UserProfileController
      */
     public function preferences(Request $request)
     {
-        return Jetstream::inertia()->render($request, 'Profile/Preferences', []);
+        return Jetstream::inertia()->render($request, 'Profile/Preferences', [
+            'notificationPrefs' => $request->user()->notificationPrefs(),
+        ]);
     }
 }

@@ -1,6 +1,7 @@
 <script lang="ts" setup>
     import AppLayout from '@/Components/templates/AppLayout.vue'
     import UpdateModulesForm from './UpdateModulesForm.vue'
+    import NotificationPreferencesForm from './NotificationPreferencesForm.vue'
     import SettingsSectionNav from '@/Components/templates/SettingsSectionNav.vue'
 
     // Preferences page: personal nav module visibility. Its own route
@@ -22,6 +23,10 @@
             </header>
 
             <div id="modules"><UpdateModulesForm /></div>
+
+            <div class="my-8 border-t border-base-lvl-3"></div>
+
+            <div id="notifications"><NotificationPreferencesForm /></div>
         </div>
     </AppLayout>
 </template>

@@ -21,11 +21,6 @@ class WatchlistAutoSuggestionAlert extends LogerNotification
         private string $monthIso,
     ) {}
 
-    public function via($notifiable): array
-    {
-        return ['database'];
-    }
-
     public function toArray($notifiable): array
     {
         $names = array_map(fn ($s) => $s['payee_name'] ?? 'Unknown', $this->suggestions);

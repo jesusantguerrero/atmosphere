@@ -3,9 +3,8 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Notification;
 
-class TransactionsImported extends Notification
+class TransactionsImported extends LogerNotification
 {
     use Queueable;
 
@@ -15,17 +14,6 @@ class TransactionsImported extends Notification
      * @return void
      */
     public function __construct(protected string $url) {}
-
-    /**
-     * Get the notification's delivery channels.
-     *
-     * @param  mixed  $notifiable
-     * @return array
-     */
-    public function via($notifiable)
-    {
-        return ['database'];
-    }
 
     /**
      * Get the array representation of the notification.

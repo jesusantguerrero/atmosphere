@@ -198,6 +198,24 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
         return back();
     })->name('settings.landing-page');
 
+    // Per-user notification delivery preferences (email + OneSignal push).
+    // In-app (database) notifications are always delivered and not toggle-able.
+    Route::patch('/user/notification-prefs', function (Request $request) {
+        $data = $request->validate([
+            'email' => ['required', 'boolean'],
+            'push' => ['required', 'boolean'],
+        ]);
+
+        $user = $request->user();
+        $user->notification_prefs = array_merge($user->notificationPrefs(), [
+            'email' => (bool) $data['email'],
+            'push' => (bool) $data['push'],
+        ]);
+        $user->save();
+
+        return back();
+    })->name('user.notification-prefs');
+
     // Settings hub — a lightweight landing page that groups every
     // settings entry into cards. Defined BEFORE the atmosphere resource
     // routes below so it wins the /settings match. The atmosphere

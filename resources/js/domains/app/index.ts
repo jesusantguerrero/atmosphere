@@ -123,40 +123,32 @@ export const useAppMenu = (t: any, modules: any[]) => {
     // in the right widget panel on desktop, see FinanceWidget).
     const desktopMenu = appMenu.filter(item => !item.hidden && !item.mobileOnly);
 
-    // Mobile bottom-nav: aim for 4 nav slots + 1 centered FAB = 5 items, so
-    // the layout stays balanced (2 + FAB + 2) regardless of which modules
-    // a user has activated. Slots fill in priority order:
-    //   1. Primary pillars (the daily-use ones — Today, Food, Shopping, Finance)
-    //   2. Fallback non-pillars (Calendar, Trends) when a pillar is module-
-    //      gated off, so fresh users see a useful nav before activating modules.
-    const primaryMobileTargets = ['/today', '/meals/overview', '/shopping', '/finance'];
-    const fallbackMobileTargets = ['/calendar', '/trends'];
-    const targetSlots = 4;
-
-    let mobileMenu = cloneDeep(appMenu)
-        .filter(item => !item.hidden && primaryMobileTargets.includes(item.to))
-        .sort((a, b) => primaryMobileTargets.indexOf(a.to) - primaryMobileTargets.indexOf(b.to));
-
-    if (mobileMenu.length < targetSlots) {
-        const used = new Set(mobileMenu.map(i => i.to));
-        const fallbacks = cloneDeep(appMenu)
-            .filter(item => !item.hidden && fallbackMobileTargets.includes(item.to) && !used.has(item.to))
-            .slice(0, targetSlots - mobileMenu.length);
-        // Insert fallbacks AFTER Today so the priority items still bookend.
-        // Today always sits at the leading edge; Finance (if present) at the trailing.
-        mobileMenu.splice(1, 0, ...fallbacks);
-    }
-
-    // Insert the Add FAB at the visual midpoint so it stays centered when
-    // we have an even count (2 left + FAB + 2 right). Math.floor keeps the
-    // FAB centered on 4-item layouts (slots 0,1,FAB,2,3).
-    const fabMidpoint = Math.floor(mobileMenu.length / 2);
-    mobileMenu.splice(fabMidpoint, 0, {
-        name: 'add',
-        label: 'Add',
-        icon: IconPlus,
-        action: 'openTransactionModal'
-    });
+    // Mobile bottom-nav (v3 navbar): FIVE FIXED pillars. The bar always shows
+    // the same 5 hubs regardless of module enablement, so it stays predictable
+    // across personas (per the agreed nav design). The "+" capture button is
+    // NOT a nav slot anymore — it floats above the bar, offset right
+    // (Maple-style), and lives in MobileQuickCapture.vue.
+    // Voz cálida en los labels: Hoy · Agenda · Comida · Tareas · Dinero.
+    //   Hoy    = home/panel cockpit (/today -> /dashboard)
+    //   Agenda = calendar + rutinas (/calendar)
+    //   Comida = meal plan directo (/meal-planner)
+    //   Tareas = tareas del hogar directo (/housing/chores)
+    //   Dinero = presupuesto directo (/budgets)
+    //
+    // Deep-link vs. highlight: `to` lands you on the section's ACTION surface
+    // (fewer taps to the thing you use daily), while `activeMatch` keeps the tab
+    // lit across the WHOLE section — so navigating from /budgets to /transactions,
+    // or /housing/chores to /housing/occurrence, still highlights the right pillar.
+    // Patterns mirror the desktop sidebar's isActiveFunction for consistency.
+    // Each section page carries its own sub-nav (Overview/Budget/Planner...), so
+    // landing deep never strands the user — Overview is always one tap away.
+    const mobileMenu = [
+        { icon: 'fas fa-bolt',         name: 'Today',  label: t('Today'),  to: '/today',          as: Link, activeMatch: /^\/(today|dashboard)/ },
+        { icon: 'fas fa-calendar',     name: 'Agenda', label: t('Agenda'), to: '/calendar',       as: Link, activeMatch: /^\/calendar/ },
+        { icon: 'fas fa-utensils',     name: 'Food',   label: t('Food'),   to: '/meal-planner',   as: Link, activeMatch: /(meal-planner|meals|ingredients)/ },
+        { icon: 'fas fa-check-circle', name: 'Tasks',  label: t('Tasks'),  to: '/housing/chores', as: Link, activeMatch: /(housing|loger-profiles)/ },
+        { icon: 'fas fa-dollar-sign',  name: 'Money',  label: t('Money'),  to: '/budgets',        as: Link, activeMatch: /(finance|budgets)/ },
+    ];
 
     const headerMenu =  [
         {

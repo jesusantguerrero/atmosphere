@@ -5,7 +5,6 @@ namespace App\Notifications;
 use Illuminate\Bus\Queueable;
 use App\Domains\Housing\Models\Occurrence;
 use App\Domains\Integration\Models\Integration;
-use Illuminate\Notifications\Messages\MailMessage;
 use App\Domains\Housing\Contracts\OccurrenceNotifyTypes;
 
 class OccurrenceAlert extends LogerNotification
@@ -24,28 +23,12 @@ class OccurrenceAlert extends LogerNotification
     }
 
     /**
-     * Get the notification's delivery channels.
-     *
-     * @param  mixed  $notifiable
-     * @return array
+     * Also fan out to Telegram (in addition to the prefs-gated mail/push and
+     * the always-on database channel handled by the base class).
      */
-    public function via($notifiable)
+    protected function extraChannels($notifiable): array
     {
-        return ['database', TelegramChannel::class];
-    }
-
-    /**
-     * Get the mail representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage
-     */
-    public function toMail($notifiable)
-    {
-        return (new MailMessage)
-            ->line('The introduction to the notification.')
-            ->action('Notification Action', url('/'))
-            ->line('Thank you for using our application!');
+        return [TelegramChannel::class];
     }
 
     /**
