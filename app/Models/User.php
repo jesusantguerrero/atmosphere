@@ -27,7 +27,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password', 'language', 'role',
+        'name', 'email', 'password', 'language', 'role', 'notification_prefs',
     ];
 
     /**
@@ -49,6 +49,7 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'notification_prefs' => 'array',
     ];
 
     /**
@@ -107,5 +108,47 @@ class User extends Authenticatable
     public function sendLoginLink()
     {
         return config('atmosphere.superadmin.email') === $this?->email;
+    }
+
+    /**
+     * Default notification delivery preferences applied when a user has never
+     * touched the settings. Both optional channels default ON — the in-app
+     * (`database`) channel is always delivered regardless.
+     *
+     * @return array{email: bool, push: bool}
+     */
+    public static function defaultNotificationPrefs(): array
+    {
+        return ['email' => true, 'push' => true];
+    }
+
+    /**
+     * Merge the stored preferences over the defaults so a partially-saved or
+     * legacy row never leaves a channel undefined.
+     *
+     * @return array{email: bool, push: bool}
+     */
+    public function notificationPrefs(): array
+    {
+        $stored = $this->notification_prefs;
+
+        return array_merge(self::defaultNotificationPrefs(), is_array($stored) ? $stored : []);
+    }
+
+    /**
+     * Whether this user wants a given optional channel (`email` | `push`).
+     */
+    public function wantsNotificationChannel(string $channel): bool
+    {
+        return (bool) ($this->notificationPrefs()[$channel] ?? false);
+    }
+
+    /**
+     * Route OneSignal pushes to this user by their external ID — the value the
+     * frontend passes to `OneSignal.login(...)`, which is the Loger user id.
+     */
+    public function routeNotificationForOnesignal(): int|string|null
+    {
+        return $this->id;
     }
 }

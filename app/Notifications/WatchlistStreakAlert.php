@@ -22,11 +22,6 @@ class WatchlistStreakAlert extends LogerNotification
         private string $monthIso,
     ) {}
 
-    public function via($notifiable): array
-    {
-        return ['database'];
-    }
-
     public function toArray($notifiable): array
     {
         $message = $this->event === self::EVENT_MILESTONE

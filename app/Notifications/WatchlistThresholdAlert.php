@@ -15,11 +15,6 @@ class WatchlistThresholdAlert extends LogerNotification
         private string $monthIso,
     ) {}
 
-    public function via($notifiable): array
-    {
-        return ['database'];
-    }
-
     public function toArray($notifiable): array
     {
         $target = (float) $this->watchlist->target;

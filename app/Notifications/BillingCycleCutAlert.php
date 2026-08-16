@@ -16,9 +16,9 @@ class BillingCycleCutAlert extends LogerNotification
         private int $userId
     ) {}
 
-    public function via($notifiable): array
+    protected function extraChannels($notifiable): array
     {
-        return ['database', TelegramChannel::class];
+        return [TelegramChannel::class];
     }
 
     public function toArray($notifiable): array
