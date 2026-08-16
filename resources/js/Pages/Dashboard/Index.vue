@@ -108,7 +108,6 @@ onMounted(() => {
 const selectedItems = ref([]);
 const deleteTransactionsForm = useForm({
   isVisible: false,
-  data: [],
 });
 
 const transactionStore = useTransactionStore();

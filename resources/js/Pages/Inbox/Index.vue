@@ -22,7 +22,7 @@ const listRef = ref();
 const { t } = useI18n();
 // Same Inertia-form delete used by the dashboard/finance bulk delete, pointed
 // at the shared /finance/transactions/bulk/delete endpoint.
-const deleteTransactionsForm = useForm({ data: [] as number[] });
+const deleteTransactionsForm = useForm({});
 const removeAllForm = useForm({});
 
 // Total drafts in the inbox (may exceed what's loaded on the page).
