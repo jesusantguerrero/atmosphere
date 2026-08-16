@@ -45,7 +45,7 @@ const renderLabel: SelectRenderLabel = (option: IAccount) => {
             tag
             size="medium"
             class="w-full"
-            placeholder="Filter account"
+            :placeholder="$t('Filter account')"
             :multiple="multiple"
             v-model:value="selectedAccount"
             :default-expand-all="true"
