@@ -56,7 +56,7 @@
         "brianium/paratest": "^7.0",
         "fakerphp/faker": "^1.9.1",
         "insane/remotr": "dev-main",
-        "laravel/boost": "^1.1",
+        "laravel/boost": "^2.5",
         "laravel/pint": "^1.13",
         "mockery/mockery": "^1.4.2",
         "nunomaduro/collision": "^8.1",
