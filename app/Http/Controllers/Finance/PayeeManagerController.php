@@ -55,8 +55,14 @@ class PayeeManagerController extends Controller
     {
         $teamId = $request->user()->current_team_id;
         $data = $request->validate([
-            'target_id' => ['required', 'integer', 'different:'.$payee],
+            'target_id' => ['required', 'integer'],
         ]);
+
+        // Hard guard: never merge a payee into itself (would delete the payee
+        // its own transactions were just reassigned to).
+        if ((int) $data['target_id'] === $payee) {
+            return back();
+        }
 
         $source = Payee::where('team_id', $teamId)->findOrFail($payee);
         $target = Payee::where('team_id', $teamId)->findOrFail($data['target_id']);
