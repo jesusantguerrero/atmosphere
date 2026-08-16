@@ -135,7 +135,7 @@ const dateBadgeConfig = computed(() => {
                 : 'border-l-transparent hover:bg-base-lvl-2'
         ]"
     >
-        <section class="flex gap-3 flex-1">
+        <section class="flex gap-3 flex-1 min-w-0">
             <slot name="left-action-button">
                 <button class="text-body-1/70 inline-block md:opacity-0 md:group-hover:opacity-100 transition cursor-pointer hover:text-red-400 focus:outline-none" @click="$emit('deleted', payment)">
                     <IMdiTrash />
@@ -180,7 +180,7 @@ const dateBadgeConfig = computed(() => {
                 </span>
             </section>
         </section>
-        <section class="flex items-center pl-2 gap-2">
+        <section class="flex items-center pl-2 gap-2 flex-shrink-0">
             <!-- Pay this cycle CTA. Always visible on cycle rows that aren't
                  already settled. Emits 'pay' so the parent can open a transfer
                  modal pre-filled with the remaining balance; the auto-link
