@@ -42,7 +42,7 @@ const checkChanges = (shouldToggle: boolean) => {
 
 <template>
 <div class="flex justify-between mr-2">
-    <span class="w-full px-2 text-3xl font-bold border border-transparent rounded-md hover:border-slate-300"
+    <span class="w-full px-2 text-xl md:text-3xl font-bold border border-transparent rounded-md hover:border-slate-300"
     v-if="!isEditMode"
     @click="toggleEditMode()"
     >
@@ -54,7 +54,7 @@ const checkChanges = (shouldToggle: boolean) => {
         id="board-name"
         ref="boardNameInputRef0"
         type="text"
-        class="inline-block w-full px-2 text-2xl font-bold border rounded-md focus:outline-none focus:border-purple-500"
+        class="inline-block w-full px-2 text-lg md:text-2xl font-bold border rounded-md focus:outline-none focus:border-purple-500"
         @blur="checkChanges(true)"
         @keypress.enter="checkChanges(true)"
     />

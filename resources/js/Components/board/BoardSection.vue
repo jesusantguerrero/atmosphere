@@ -474,16 +474,16 @@ const { isMac, modKey } = useKeyboardShortcuts({
                         :options="viewsKeys"
                         class="w-full"
                     >
-                     <template slot="singleLabel" slot-scope="props">
+                     <template #singleLabel="{ option }">
                          <span class="option__title">
-                                <i :class="views[props.option].icon" class="mr-2"></i>
-                                {{ $t(views[props.option].title) }}
+                                <i :class="views[option].icon" class="mr-2"></i>
+                                {{ $t(views[option].title) }}
                             </span>
                     </template>
-                    <template slot="option" slot-scope="props">
+                    <template #option="{ option }">
                         <div class="option__desc">
-                            <span class="option__title"><i :class="views[props.option].icon" class="mr-2"></i>
-                                {{ $t(views[props.option].title) }}
+                            <span class="option__title"><i :class="views[option].icon" class="mr-2"></i>
+                                {{ $t(views[option].title) }}
                             </span>
                         </div>
                     </template>
