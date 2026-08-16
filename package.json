@@ -54,7 +54,7 @@
     "@tailwindcss/typography": "^0.5.15",
     "@vitejs/plugin-vue": "^5.2.1",
     "@vueuse/core": "^11.3.0",
-    "atmosphere-ui": "^1.4.1",
+    "atmosphere-ui": "^1.4.4",
     "autoprefixer": "^10.4.20",
     "axios": "^1.7.9",
     "commit-and-tag-version": "^12.5.0",
