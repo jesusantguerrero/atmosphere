@@ -1003,5 +1003,6 @@
     "Turn off": "Desactivar",
     "Filter account": "Filtrar cuenta",
     "avail": "disp.",
-    "Notifications": "Notificaciones"
+    "Notifications": "Notificaciones",
+    "Clear these draft transactions? This cannot be undone.": "¿Borrar estos borradores de transacciones? Esto no se puede deshacer."
 }
