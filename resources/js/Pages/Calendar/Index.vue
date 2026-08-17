@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, watch } from 'vue';
 import axios from 'axios';
-import { router, useForm } from '@inertiajs/vue3';
+import { router, useForm, Link } from '@inertiajs/vue3';
 import { AtDatePager } from 'atmosphere-ui';
 import { NDatePicker } from 'naive-ui';
 import {
@@ -217,6 +217,14 @@ const monthLabel = computed(() => formatMonth(currentDate.value, 'MMMM yyyy'));
                     <p class="text-sm text-body-1/70">{{ monthLabel }}</p>
                 </div>
                 <div class="flex flex-wrap items-center gap-3">
+                    <Link
+                        href="/housing/routine"
+                        class="text-xs font-semibold px-2.5 py-1 rounded-full border border-base bg-base-lvl-1 text-body-1/70 hover:text-body hover:border-primary/40 transition inline-flex items-center gap-1.5"
+                        :title="$t('Weekly routine')"
+                    >
+                        <i class="fa fa-repeat"></i>
+                        {{ $t('Routine') }}
+                    </Link>
                     <DayMonthToggle />
                     <button
                         v-if="googleConnected"
