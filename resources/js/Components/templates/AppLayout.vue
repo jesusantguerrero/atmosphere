@@ -110,6 +110,16 @@
     const currentPath = computed(() => {
         return document?.location?.pathname
     })
+
+    // Pages with their own inline add UI (bottom "add item" input / per-lane
+    // add) hide the floating capture FAB so it doesn't duplicate the action
+    // or cover their bottom input. Reactive to Inertia navigations via page.url.
+    const quickCapturePage = usePage();
+    const hideFabOnRoutes = ['/shopping', '/housing/chores'];
+    const showQuickCapture = computed(() => {
+        const url = (quickCapturePage.url || '').split('?')[0];
+        return !hideFabOnRoutes.some(r => url === r || url.startsWith(r + '/'));
+    });
     const isExpanded = useLocalStorage('isMenuExpanded', true);
     const isAsideExpanded = useLocalStorage('isAsideExpanded', false);
     const logout = () => router.post(route('logout'));
@@ -417,7 +427,7 @@
                     <slot />
                 </main>
                 <MobileMenuBar :menu="mobileMenu" @action="handleActions" />
-                <MobileQuickCapture />
+                <MobileQuickCapture v-if="showQuickCapture" />
             </template>
 
             <template #aside-widget>
