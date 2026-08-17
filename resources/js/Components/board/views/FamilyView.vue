@@ -141,7 +141,7 @@ async function addChore(lane: any) {
 
 <template>
   <div class="flex flex-col w-full pb-20">
-    <div v-if="!kiosk" class="flex items-center justify-end gap-2 mb-5">
+    <div v-if="!kiosk" class="flex flex-wrap items-center justify-end gap-2 mb-5">
       <button
         type="button"
         class="inline-flex items-center gap-2 px-3.5 py-1.5 text-sm font-semibold transition border rounded-full text-body-1/70 border-base hover:bg-base-lvl-2"
@@ -150,7 +150,7 @@ async function addChore(lane: any) {
         <i class="text-xs fa fa-expand"></i>
         {{ $t('Screen') }}
       </button>
-      <span class="inline-flex items-center gap-2 px-3.5 py-1.5 text-sm font-semibold capitalize rounded-full text-body-1/70 bg-base-lvl-2">
+      <span class="inline-flex items-center gap-2 px-3.5 py-1.5 text-sm font-semibold capitalize rounded-full text-body-1/70 bg-base-lvl-2 whitespace-nowrap">
         <i class="text-xs fa fa-calendar-day"></i>
         {{ todayLabel }}
       </span>
@@ -203,7 +203,7 @@ async function addChore(lane: any) {
               <i v-if="item.is_done" class="text-white fa fa-check"></i>
             </button>
             <div class="flex-1 min-w-0">
-              <p class="font-semibold truncate text-body" :class="{ 'line-through': item.is_done }">{{ item.title }}</p>
+              <p class="font-semibold line-clamp-2 text-body" :class="{ 'line-through': item.is_done }">{{ item.title }}</p>
               <div class="flex items-center gap-2 mt-1">
                 <div class="relative">
                   <button
