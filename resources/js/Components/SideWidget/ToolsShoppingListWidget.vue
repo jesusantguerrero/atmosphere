@@ -262,7 +262,7 @@ onMounted(fetchPlan);
                 >
                     <p
                         v-if="hasCategories"
-                        class="text-[10px] font-bold uppercase tracking-wide text-body-1/50 px-1 pt-1"
+                        class="text-[11px] font-bold uppercase tracking-wide text-body-1/50 px-1 pt-1"
                     >
                         {{ section.name }}
                     </p>
@@ -277,13 +277,13 @@ onMounted(fetchPlan);
                         <span class="flex-1 break-words text-xs">{{ item.title }}</span>
                         <span
                             v-if="item.state === 'buy'"
-                            class="shrink-0 px-1.5 py-0.5 rounded-full text-[9px] font-semibold uppercase tracking-wide bg-success/20 text-success"
+                            class="shrink-0 px-1.5 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wide bg-success/20 text-success"
                         >
                             {{ $t('Buying') }}
                         </span>
                         <span
                             v-else-if="item.state === 'skip'"
-                            class="shrink-0 px-1.5 py-0.5 rounded-full text-[9px] font-semibold uppercase tracking-wide bg-error/15 text-error/70"
+                            class="shrink-0 px-1.5 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wide bg-error/15 text-error/70"
                         >
                             {{ $t('Skip') }}
                         </span>
@@ -309,7 +309,7 @@ onMounted(fetchPlan);
                     :disabled="!composer.trim() || sending"
                     :title="$t('Send')"
                 >
-                    <i class="fa fa-paper-plane text-[10px]" />
+                    <i class="fa fa-paper-plane text-[11px]" />
                 </button>
             </form>
 

@@ -313,7 +313,7 @@ async function addFlat() {
                   class="inline-flex items-center gap-1 px-2 py-0.5 text-xs transition rounded-full bg-base-lvl-1 text-body-1/50 hover:text-body"
                   @click.stop="openRec = openRec === item.id ? null : item.id"
                 >
-                  <i class="fa fa-redo text-[9px]"></i>
+                  <i class="fa fa-redo text-[11px]"></i>
                   {{ $t(recurrenceKey(item)) }}
                 </button>
                 <div
@@ -362,7 +362,7 @@ async function addFlat() {
                 class="flex items-center w-full gap-2 px-3 py-1.5 text-sm text-left hover:bg-base-lvl-2 text-body"
                 @click="assign(item, m.value)"
               >
-                <span class="flex items-center justify-center w-5 h-5 text-white rounded-full text-[10px] font-bold" :style="{ background: memberColor(idx) }">{{ (m.name || '?').slice(0, 1).toUpperCase() }}</span>
+                <span class="flex items-center justify-center w-5 h-5 text-white rounded-full text-[11px] font-bold" :style="{ background: memberColor(idx) }">{{ (m.name || '?').slice(0, 1).toUpperCase() }}</span>
                 <span class="truncate">{{ m.name }}</span>
               </button>
               <button
@@ -462,7 +462,7 @@ async function addFlat() {
                     class="inline-flex items-center gap-1 px-2 py-0.5 text-xs transition rounded-full bg-base-lvl-1 text-body-1/50 hover:text-body"
                     @click.stop="openRec = openRec === item.id ? null : item.id"
                   >
-                    <i class="fa fa-redo text-[9px]"></i>
+                    <i class="fa fa-redo text-[11px]"></i>
                     {{ $t(recurrenceKey(item)) }}
                   </button>
                   <div
@@ -510,7 +510,7 @@ async function addFlat() {
                   class="flex items-center w-full gap-2 px-3 py-1.5 text-sm text-left hover:bg-base-lvl-2 text-body"
                   @click="assign(item, m.value)"
                 >
-                  <span class="flex items-center justify-center w-5 h-5 text-white rounded-full text-[10px] font-bold" :style="{ background: memberColor(idx) }">{{ (m.name || '?').slice(0, 1).toUpperCase() }}</span>
+                  <span class="flex items-center justify-center w-5 h-5 text-white rounded-full text-[11px] font-bold" :style="{ background: memberColor(idx) }">{{ (m.name || '?').slice(0, 1).toUpperCase() }}</span>
                   <span class="truncate">{{ m.name }}</span>
                 </button>
                 <button

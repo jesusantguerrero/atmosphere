@@ -148,7 +148,7 @@ const toggleGroup = (group: string) => {
             <!-- Credit cards group (first — late fees) -->
             <section v-if="creditCards.length">
                 <button v-if="bankAccounts.length" class="w-full flex items-center justify-between px-2 pb-1 cursor-pointer" @click="toggleGroup('credit-cards')">
-                    <h4 class="text-[10px] uppercase tracking-wider text-body-1/50 font-semibold">
+                    <h4 class="text-[11px] uppercase tracking-wider text-body-1/50 font-semibold">
                         {{ $t('Credit Cards') }}
                     </h4>
                     <IMdiChevronDown class="text-body-1/40 text-xs transition-transform" :class="{ '-rotate-90': collapsed['credit-cards'] }" />
@@ -163,7 +163,7 @@ const toggleGroup = (group: string) => {
             <!-- Bank accounts group -->
             <section v-if="bankAccounts.length">
                 <button v-if="creditCards.length" class="w-full flex items-center justify-between px-2 pb-1 cursor-pointer" @click="toggleGroup('bank')">
-                    <h4 class="text-[10px] uppercase tracking-wider text-body-1/50 font-semibold">
+                    <h4 class="text-[11px] uppercase tracking-wider text-body-1/50 font-semibold">
                         {{ $t('Bank Accounts') }}
                     </h4>
                     <IMdiChevronDown class="text-body-1/40 text-xs transition-transform" :class="{ '-rotate-90': collapsed['bank'] }" />

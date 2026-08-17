@@ -117,7 +117,7 @@ watch(() => transactionStore.revision, () => { fetchSummary(); });
                      5 categories the user touches most. The decision-shaped
                      question this section answers. -->
                 <article class="mb-4">
-                    <h3 class="text-[10px] font-semibold uppercase tracking-wide text-body-1/50 mb-2">
+                    <h3 class="text-[11px] font-semibold uppercase tracking-wide text-body-1/50 mb-2">
                         {{ $t('Can I spend on…?') }}
                     </h3>
                     <div v-if="summary.topCategories.length" class="bg-base-lvl-2 rounded-xl border border-base divide-y divide-base">
@@ -128,7 +128,7 @@ watch(() => transactionStore.revision, () => { fetchSummary(); });
                         >
                             <div class="min-w-0 flex-1">
                                 <p class="font-semibold text-body truncate">{{ cat.name }}</p>
-                                <p v-if="cat.group" class="text-[10px] text-body-1/50 truncate">{{ cat.group }}</p>
+                                <p v-if="cat.group" class="text-[11px] text-body-1/50 truncate">{{ cat.group }}</p>
                             </div>
                             <div class="text-right shrink-0 ml-2">
                                 <p
@@ -143,19 +143,19 @@ watch(() => transactionStore.revision, () => { fetchSummary(); });
                                 </p>
                                 <p
                                     v-if="categoryTone(cat) === 'low'"
-                                    class="text-[9px] text-amber-500 font-semibold uppercase tracking-wide"
+                                    class="text-[11px] text-amber-500 font-semibold uppercase tracking-wide"
                                 >
                                     {{ $t('low') }}
                                 </p>
                                 <p
                                     v-else-if="categoryTone(cat) === 'fund'"
-                                    class="text-[9px] text-amber-500 font-semibold uppercase tracking-wide"
+                                    class="text-[11px] text-amber-500 font-semibold uppercase tracking-wide"
                                 >
                                     {{ $t('to fund') }}
                                 </p>
                                 <p
                                     v-else-if="categoryTone(cat) === 'over'"
-                                    class="text-[9px] text-error font-semibold uppercase tracking-wide"
+                                    class="text-[11px] text-error font-semibold uppercase tracking-wide"
                                 >
                                     {{ $t('over') }}
                                 </p>
@@ -171,13 +171,13 @@ watch(() => transactionStore.revision, () => { fetchSummary(); });
                 <!-- Section 2: Today. Action surface — log expense lives here so
                      the widget is part of the logging flow, not just a readout. -->
                 <article class="mb-4">
-                    <h3 class="text-[10px] font-semibold uppercase tracking-wide text-body-1/50 mb-2">
+                    <h3 class="text-[11px] font-semibold uppercase tracking-wide text-body-1/50 mb-2">
                         {{ $t('Today') }}
                     </h3>
                     <div class="bg-base-lvl-2 rounded-xl border border-base p-3">
                         <div class="flex items-center justify-between mb-2">
                             <div>
-                                <p class="text-[10px] text-body-1/50 uppercase tracking-wide">{{ $t('Logged') }}</p>
+                                <p class="text-[11px] text-body-1/50 uppercase tracking-wide">{{ $t('Logged') }}</p>
                                 <p class="text-base font-bold text-body tabular-nums">{{ formatMoney(todaySpent) }}</p>
                             </div>
                             <button
@@ -185,7 +185,7 @@ watch(() => transactionStore.revision, () => { fetchSummary(); });
                                 class="text-xs px-3 py-1.5 rounded-lg bg-primary text-white font-semibold shadow-sm hover:bg-primary/90 transition"
                                 @click="handleLogExpense"
                             >
-                                <i class="fa fa-plus text-[10px] mr-1" />
+                                <i class="fa fa-plus text-[11px] mr-1" />
                                 {{ $t('Log expense') }}
                             </button>
                         </div>
@@ -199,7 +199,7 @@ watch(() => transactionStore.revision, () => { fetchSummary(); });
                 <!-- Section 3: Next 7 days. Cash-flow context — bills coming
                      mean the available numbers above don't tell the full story. -->
                 <article v-if="summary.upcoming.count" class="mb-3">
-                    <h3 class="text-[10px] font-semibold uppercase tracking-wide text-body-1/50 mb-2">
+                    <h3 class="text-[11px] font-semibold uppercase tracking-wide text-body-1/50 mb-2">
                         {{ $t('Next 7 days') }}
                     </h3>
                     <div class="bg-amber-500/5 rounded-xl border border-amber-500/30 p-3">

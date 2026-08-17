@@ -28,7 +28,7 @@ onMounted(async () => {
     @click="router.visit('/housing/routine')"
   >
     <div class="flex-1 min-w-0">
-      <div class="text-[10px] uppercase tracking-wide text-body-1/50 mb-1">{{ $t('Now') }}</div>
+      <div class="text-[11px] uppercase tracking-wide text-body-1/50 mb-1">{{ $t('Now') }}</div>
       <div v-if="current" class="flex items-stretch gap-2">
         <span class="w-1 rounded" :style="{ background: current.color }"></span>
         <div class="min-w-0">
@@ -40,7 +40,7 @@ onMounted(async () => {
     </div>
     <div class="w-px bg-base"></div>
     <div class="flex-1 min-w-0">
-      <div class="text-[10px] uppercase tracking-wide text-body-1/50 mb-1">{{ $t('Next') }}</div>
+      <div class="text-[11px] uppercase tracking-wide text-body-1/50 mb-1">{{ $t('Next') }}</div>
       <div v-if="next" class="flex items-stretch gap-2">
         <span class="w-1 rounded" :style="{ background: next.color }"></span>
         <div class="min-w-0">

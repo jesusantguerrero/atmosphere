@@ -13,7 +13,7 @@
                 <component :is="item.icon" v-if="isComponent(item.icon)" class="text-lg custom-icon" />
                 <i class="text-lg custom-icon" :class="item.icon" v-else />
             </div>
-            <span class="block text-[10px] font-medium leading-none truncate max-w-[64px]">
+            <span class="block text-[11px] font-medium leading-none truncate max-w-[64px]">
                 {{ item.label }}
             </span>
         </div>

@@ -33,7 +33,7 @@ export const tableAccountCols = (accountId?: number, showSelects?: boolean) => [
                 const isFuture = isAfter(startOfDay(date), startOfDay(new Date()))
                 return h('div', { class: 'flex items-center justify-center gap-2' }, [
                     h('span', {
-                        class: 'px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-base-lvl-1 text-body-1/60',
+                        class: 'px-1.5 py-0.5 rounded text-[11px] font-semibold uppercase tracking-wide bg-base-lvl-1 text-body-1/60',
                     }, formatDate(date, undefined, 'EEE')),
                     h('span', { class: isFuture ? 'text-danger' : 'text-body-1' }, formatDate(date, undefined, 'dd MMM, yyyy')),
                 ])
@@ -56,7 +56,7 @@ export const tableAccountCols = (accountId?: number, showSelects?: boolean) => [
                 const account = row.account_id === accountId ? row.counter_account : row.account
                 const name = row.payee?.name ?? account?.name ?? ''
                 const avatar = h('span', {
-                    class: 'flex items-center justify-center flex-shrink-0 rounded-full w-7 h-7 text-[10px] font-bold text-white',
+                    class: 'flex items-center justify-center flex-shrink-0 rounded-full w-7 h-7 text-[11px] font-bold text-white',
                     style: { background: nameToColor(name) },
                 }, initials(name))
                 const label = row.payee

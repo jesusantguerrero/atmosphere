@@ -85,7 +85,7 @@ const dismiss = () => {
                         class="inline-flex items-center gap-1 mt-2 px-3 py-1 text-xs font-semibold rounded-md bg-primary text-white hover:bg-primary/80 transition-colors"
                     >
                         {{ step.cta }}
-                        <i class="fas fa-arrow-right text-[10px]" />
+                        <i class="fas fa-arrow-right text-[11px]" />
                     </Link>
                     <span v-else-if="step.complete" class="mt-1 inline-block text-xs text-green-600 font-medium">
                         {{ $t('Done') }}

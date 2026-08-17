@@ -100,7 +100,7 @@ const colStyle = (col: Record<string, any>) => ({
                             {{ col.label }}
                         </slot>
                         <span
-                            class="text-[10px] leading-none"
+                            class="text-[11px] leading-none"
                             :class="sortState.name === col.name ? 'text-primary' : 'opacity-40'"
                         >
                             {{ sortState.name === col.name ? (sortState.dir === 'asc' ? '▲' : '▼') : '⇅' }}

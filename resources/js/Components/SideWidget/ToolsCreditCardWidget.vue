@@ -177,7 +177,7 @@ onMounted(fetchSummary);
                      statement; pre-due (PRE_DUE window) or overdue. The
                      reason this widget exists. -->
                 <article v-if="summary.payInFull.length" class="mb-4">
-                    <h3 class="text-[10px] font-semibold uppercase tracking-wide text-error mb-2 flex items-center gap-1.5">
+                    <h3 class="text-[11px] font-semibold uppercase tracking-wide text-error mb-2 flex items-center gap-1.5">
                         <i class="fa fa-triangle-exclamation" />
                         {{ $t('Pay in full') }}
                     </h3>
@@ -217,19 +217,19 @@ onMounted(fetchSummary);
                 <!-- Section 2: TOTAL POSITION — at-a-glance summary across all
                      cards. The "what do I owe" answer. -->
                 <article v-if="creditCards.length" class="mb-4">
-                    <h3 class="text-[10px] font-semibold uppercase tracking-wide text-body-1/50 mb-2">
+                    <h3 class="text-[11px] font-semibold uppercase tracking-wide text-body-1/50 mb-2">
                         {{ $t('Total position') }}
                     </h3>
                     <div class="bg-base-lvl-2 rounded-xl border border-base p-3">
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <p class="text-[10px] uppercase tracking-wide text-body-1/50">{{ $t('Debt') }}</p>
+                                <p class="text-[11px] uppercase tracking-wide text-body-1/50">{{ $t('Debt') }}</p>
                                 <p class="text-base font-bold tabular-nums" :class="totalDebt > 0 ? 'text-error' : 'text-body'">
                                     {{ formatMoney(totalDebt) }}
                                 </p>
                             </div>
                             <div>
-                                <p class="text-[10px] uppercase tracking-wide text-body-1/50">{{ $t('Available') }}</p>
+                                <p class="text-[11px] uppercase tracking-wide text-body-1/50">{{ $t('Available') }}</p>
                                 <p class="text-base font-bold tabular-nums text-body">{{ formatMoney(totalAvailable) }}</p>
                             </div>
                         </div>
@@ -255,7 +255,7 @@ onMounted(fetchSummary);
                      debt approaching their next closing date so you can plan
                      cash. Cards already in payInFull are filtered out. -->
                 <article v-if="closingSoonFiltered.length" class="mb-4">
-                    <h3 class="text-[10px] font-semibold uppercase tracking-wide text-body-1/50 mb-2">
+                    <h3 class="text-[11px] font-semibold uppercase tracking-wide text-body-1/50 mb-2">
                         {{ $t('Closing soon') }}
                     </h3>
                     <div class="bg-base-lvl-2 rounded-xl border border-base divide-y divide-base">
@@ -266,7 +266,7 @@ onMounted(fetchSummary);
                         >
                             <div class="min-w-0 flex-1">
                                 <p class="font-semibold text-body truncate">{{ row.name }}</p>
-                                <p class="text-[10px] text-body-1/60">
+                                <p class="text-[11px] text-body-1/60">
                                     {{ $t('closes') }} {{ dayLabel(row.days_until, false) }}
                                 </p>
                             </div>
@@ -281,7 +281,7 @@ onMounted(fetchSummary);
                      activity in 6+ months and zero balance. Cancellation
                      candidates. Hidden when there are none. -->
                 <article v-if="summary.inactive.length" class="mb-3">
-                    <h3 class="text-[10px] font-semibold uppercase tracking-wide text-body-1/50 mb-2">
+                    <h3 class="text-[11px] font-semibold uppercase tracking-wide text-body-1/50 mb-2">
                         {{ $t('Consider closing') }}
                     </h3>
                     <div class="bg-base-lvl-2 rounded-xl border border-base p-3">
@@ -295,7 +295,7 @@ onMounted(fetchSummary);
                                 class="flex items-center justify-between gap-2"
                             >
                                 <span class="truncate text-body">{{ card.account_name }}</span>
-                                <span class="text-[10px] text-body-1/50 shrink-0">
+                                <span class="text-[11px] text-body-1/50 shrink-0">
                                     {{ $t('last used') }} {{ formatLastUsed(card.last_used_at) }}
                                 </span>
                             </li>

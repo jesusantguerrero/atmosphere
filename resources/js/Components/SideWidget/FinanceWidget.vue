@@ -257,7 +257,7 @@ onBeforeUnmount(() => {
           />
           <component v-if="section.icon" :is="section.icon" class="h-[18px] w-[18px]" />
           <span v-else class="text-xs font-semibold">{{ section.label }}</span>
-          <span class="text-[10px] leading-tight font-medium text-center px-1 line-clamp-2">
+          <span class="text-[11px] leading-tight font-medium text-center px-1 line-clamp-2">
             {{ section.title }}
           </span>
         </button>
@@ -287,7 +287,7 @@ onBeforeUnmount(() => {
           />
           <component v-if="section.icon" :is="section.icon" class="h-[18px] w-[18px]" />
           <span v-else class="text-xs font-semibold">{{ section.label }}</span>
-          <span class="text-[10px] leading-tight font-medium text-center px-1 line-clamp-2">
+          <span class="text-[11px] leading-tight font-medium text-center px-1 line-clamp-2">
             {{ section.title }}
           </span>
         </button>

@@ -92,7 +92,7 @@ const remove = (p: Payee) => {
         <div class="w-full max-w-sm bg-base-lvl-3 border border-base rounded-2xl shadow-2xl p-5">
           <h3 class="font-bold text-body mb-1">{{ $t('Merge payee') }}</h3>
           <p class="text-xs text-body-1/60 mb-3">{{ $t('Move all transactions from this payee into another, then delete it.') }}</p>
-          <label class="block text-[10px] uppercase tracking-wide text-body-1/50 mb-1">{{ $t('Merge into') }}</label>
+          <label class="block text-[11px] uppercase tracking-wide text-body-1/50 mb-1">{{ $t('Merge into') }}</label>
           <select v-model="mergeTargetId" class="w-full mb-4 px-2 py-2 text-sm rounded-lg bg-base-lvl-2 border border-base text-body outline-none">
             <option :value="null" disabled>{{ $t('Select a payee') }}…</option>
             <option v-for="tg in mergeTargets" :key="tg.id" :value="tg.id">{{ tg.name }}</option>

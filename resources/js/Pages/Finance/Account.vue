@@ -620,12 +620,12 @@ const draftCount = computed(() => (props.drafts || []).length);
                 </div>
 
                 <div class="bg-base-lvl-2 border border-base rounded-lg px-3 py-2 mb-2">
-                    <label class="block text-[9px] uppercase tracking-wide text-body-1/50 mb-0.5">{{ $t('Note') }}</label>
+                    <label class="block text-[11px] uppercase tracking-wide text-body-1/50 mb-0.5">{{ $t('Note') }}</label>
                     <input v-model="cashbackNote" type="text" class="w-full bg-transparent outline-none text-body text-sm font-medium" />
                 </div>
 
                 <div class="bg-base-lvl-2 border border-base rounded-lg px-3 py-2 mb-2">
-                    <label class="block text-[9px] uppercase tracking-wide text-body-1/50 mb-0.5">{{ $t('Date') }}</label>
+                    <label class="block text-[11px] uppercase tracking-wide text-body-1/50 mb-0.5">{{ $t('Date') }}</label>
                     <input v-model="cashbackDate" type="date" class="w-full bg-transparent outline-none text-body text-sm font-medium" />
                 </div>
 
@@ -637,7 +637,7 @@ const draftCount = computed(() => (props.drafts || []).length);
                     {{ cashbackExpanded ? '&#9650;' : '&#9660;' }} {{ $t('More options') }}
                 </button>
                 <div v-if="cashbackExpanded" class="border-t border-dashed border-base pt-2 mt-1">
-                    <label class="block text-[9px] uppercase tracking-wide text-body-1/50 mb-1 px-1">{{ $t('Category') }}</label>
+                    <label class="block text-[11px] uppercase tracking-wide text-body-1/50 mb-1 px-1">{{ $t('Category') }}</label>
                     <select v-model="cashbackCategoryId" class="w-full bg-base-lvl-2 border border-base rounded-lg px-3 py-2 text-sm text-body outline-none">
                         <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name }}</option>
                     </select>
