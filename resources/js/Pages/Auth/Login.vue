@@ -56,6 +56,13 @@ const submit = (formData: Record<string, string>) => {
           <AppIcon size="huge" class="text-white" />
         </Link>
       </template>
+      <template #more-actions>
+        <div class="mt-3 text-center" v-if="canResetPassword">
+          <Link :href="route('password.request')" class="text-sm font-semibold text-primary hover:underline">
+            {{ $t('Forgot your password?') }}
+          </Link>
+        </div>
+      </template>
       <template #prependInput v-if="status || config.IS_DEMO">
         <!-- Why you are looking at a login screen: set when the session ended
              mid-work (expired or force-closed). Without it the app just bounced
