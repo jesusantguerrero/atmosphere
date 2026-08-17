@@ -183,7 +183,11 @@ class GoogleService
         $client->setRedirectUri(config('app.url').'/services/accept-oauth');
         $client->setAccessType('offline');
         $client->setLoginHint($user->email);
-        $client->setApprovalPrompt('auto');
+        // Force the consent screen on (re)connect so newly-added scopes (e.g.
+        // Calendar) are actually granted. With 'auto', a user whose token predates
+        // the Calendar scope keeps the old scope set on reconnect -> Calendar API
+        // 403s forever ('Reconnect Google' banner that never clears).
+        $client->setPrompt('consent');
         $client->setIncludeGrantedScopes(true);
 
         $authUrl = $client->createAuthUrl();
