@@ -185,7 +185,7 @@
 
 
 <template>
-    <AppLayout title="Meal Planner">
+    <AppLayout :title="$t('Meal Planner')">
         <template #header>
             <MealSectionNav>
                 <template #actions>

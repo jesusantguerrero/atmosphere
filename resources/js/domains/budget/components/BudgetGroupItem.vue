@@ -136,16 +136,19 @@ const fetchDetails = async (category: ICategory) => {
 
 <template>
 <article>
-    <header class="flex justify-between px-4 py-0.5 text-body-1/80 text-xs">
+    <!--
+        Desktop header: fixed column widths (w-36 / w-44 / w-28 / w-8) so the
+        group totals align pixel-exact with (a) BudgetItem subcategory rows
+        below and (b) the ASSIGNED / SPENT / AVAILABLE labels rendered in
+        Budget.vue's row 2.
+    -->
+    <header v-if="!isMobile" class="flex justify-between px-4 py-0.5 text-body-1/80 text-xs">
         <div class="flex items-center space-x-2">
-            <div class="cursor-grab" v-if="isMobile && allowDrag">
-                <IconDrag class="handle" />
-            </div>
-            <LogerButtonTab @click="isExpanded=!isExpanded" v-else>
+            <LogerButtonTab @click="isExpanded=!isExpanded">
                 <i class="fa" :class="toggleIcon" />
             </LogerButtonTab>
             <div class="flex items-center">
-                <h4 class="relative font-bold text-primary cursor-grab" :class="{'handle': !isMobile }">
+                <h4 class="relative font-bold cursor-grab handle" :class="item.hasOverspent ? 'text-error' : 'text-body'">
                     {{ item.name }}
                     <PointAlert
                         v-if="item.hasOverspent"
@@ -163,20 +166,12 @@ const fetchDetails = async (category: ICategory) => {
                 </button>
             </div>
         </div>
-        <!--
-            Fixed column widths (w-36 / w-44 / w-28 / w-8) so the group
-            totals align pixel-exact with (a) BudgetItem subcategory rows
-            below and (b) the ASSIGNED / SPENT / AVAILABLE labels rendered
-            in Budget.vue's row 2. Previously used space-x-2 + natural
-            MoneyPresenter widths which drifted with value length.
-        -->
         <div class="flex items-center flex-nowrap">
             <div class="w-36 text-right">
                 <MoneyPresenter :value="item.budgeted" />
             </div>
             <ExpenseChartWidgetRow
                 :value="item.activity"
-                v-if="!isMobile"
                 hide-title
                 :item="item"
                 type="groups"
@@ -197,6 +192,52 @@ const fetchDetails = async (category: ICategory) => {
                     <LogerButtonTab> <i class="fa fa-ellipsis-v"></i></LogerButtonTab>
                 </NDropdown>
             </div>
+        </div>
+    </header>
+
+    <!--
+        Mobile header: single row that never scrolls sideways. The name takes
+        the remaining width and truncates (no staircase wrapping); we show one
+        primary number (Available - the actionable "left to spend"); an inline
+        status dot replaces the desktop PointAlert (absolute-positioned, would
+        be clipped by truncate); Assigned/Spent live inside the group when open.
+    -->
+    <header v-else class="flex items-center gap-2 px-4 py-1.5 text-body-1/80 text-xs">
+        <div class="cursor-grab shrink-0" v-if="allowDrag">
+            <IconDrag class="handle" />
+        </div>
+        <LogerButtonTab @click="isExpanded=!isExpanded" v-else class="shrink-0">
+            <i class="fa" :class="toggleIcon" />
+        </LogerButtonTab>
+        <h4 class="flex-1 min-w-0 truncate font-bold" :class="item.hasOverspent ? 'text-error' : 'text-body'" @click="isExpanded=!isExpanded">
+            {{ item.name }}
+        </h4>
+        <span
+            v-if="item.hasOverspent"
+            class="w-2 h-2 rounded-full bg-error shrink-0 animate-pulse"
+            :title="$t('Has overspent categories')"
+        />
+        <span
+            v-else-if="item.hasUnderfunded"
+            class="w-2 h-2 rounded-full bg-warning shrink-0 animate-pulse"
+            :title="$t('Has underfunded categories')"
+        />
+        <button class="font-bold text-secondary shrink-0 px-1" @click="toggleAdding()">
+            <IMdiMinus v-if="isAdding" title="Add new category" />
+            <IMdiPlus  v-else />
+        </button>
+        <div class="text-right shrink-0 tabular-nums font-semibold text-sm">
+            <MoneyPresenter :value="item.available" />
+        </div>
+        <div class="w-6 flex items-center justify-center shrink-0">
+            <NDropdown
+                trigger="click"
+                key-field="name"
+                :options="options"
+                :on-select="handleOptions"
+            >
+                <LogerButtonTab> <i class="fa fa-ellipsis-v"></i></LogerButtonTab>
+            </NDropdown>
         </div>
     </header>
     <section class="border-l-4 border-primary bg-base-lvl-3" ref="dropdown">
