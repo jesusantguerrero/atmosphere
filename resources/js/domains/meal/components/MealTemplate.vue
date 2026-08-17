@@ -19,8 +19,9 @@ defineProps({
 <template>
   <section class="relative px-8 pt-16 pb-20 mx-auto max-w-screen-2xl">
     <header class="" v-if="showMealTypes && pageProps.mealTypes">
-      <article class="flex justify-between w-full mb-2">
+      <article class="flex items-center justify-between w-full mb-2">
         <SectionTitle> {{ $t('Meals') }} </SectionTitle>
+        <slot name="titleAction" />
       </article>
       <article class="grid grid-cols-2 gap-2 md:flex md:space-x-4">
         <div

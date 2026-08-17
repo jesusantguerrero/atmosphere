@@ -478,15 +478,17 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); detachDrag(); 
     <div class="px-5 pb-20 pt-16 w-full">
       <!-- header: mode toggle + week nav + filter + add -->
       <div class="flex items-center gap-2 mb-2 flex-wrap">
-        <h1 class="text-lg font-bold text-body mr-auto">{{ $t('Weekly routine') }}</h1>
-        <Link
-            href="/calendar"
-            class="text-xs font-semibold px-2.5 py-1 rounded-full border border-base bg-base-lvl-1 text-body-1/70 hover:text-body hover:border-primary/40 transition inline-flex items-center gap-1.5"
-            :title="$t('Calendar')"
-        >
-            <i class="fa fa-calendar-days"></i>
-            {{ $t('Calendar') }}
-        </Link>
+        <div class="flex items-center gap-3 mr-auto">
+          <h1 class="text-lg font-bold text-body">{{ $t('Weekly routine') }}</h1>
+          <Link
+              href="/calendar"
+              class="text-xs font-semibold px-2.5 py-1 rounded-full border border-base bg-base-lvl-1 text-body-1/70 hover:text-body hover:border-primary/40 transition inline-flex items-center gap-1.5"
+              :title="$t('Calendar')"
+          >
+              <i class="fa fa-calendar-days"></i>
+              {{ $t('Calendar') }}
+          </Link>
+        </div>
         <div class="flex rounded-lg bg-base-lvl-1 border border-base p-0.5">
           <button class="text-xs font-semibold px-3 py-1 rounded-md transition"
                   :class="viewMode === 'template' ? 'bg-base-lvl-3 text-body' : 'text-body-1/60'"
