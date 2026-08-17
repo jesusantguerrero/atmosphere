@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import axios from 'axios';
-import { router } from '@inertiajs/vue3';
+import { router, Link } from '@inertiajs/vue3';
 
 import AppLayout from '@/Components/templates/AppLayout.vue';
 import ShoppingChatList from '@/domains/shopping/components/ShoppingChatList.vue';
@@ -131,6 +131,14 @@ const copyShareUrl = async () => {
             @import="importList"
         >
             <template #header-actions>
+                <Link
+                    href="/meal-planner"
+                    class="text-xs px-2 py-1 rounded-md bg-base-lvl-2 text-body-1 hover:bg-base-lvl-1 transition inline-flex items-center"
+                    :title="$t('Meal Planner')"
+                >
+                    <i class="fa fa-utensils mr-1"></i>
+                    {{ $t('Meal Planner') }}
+                </Link>
                 <button
                     type="button"
                     class="text-xs px-2 py-1 rounded-md bg-base-lvl-2 text-body-1 hover:bg-base-lvl-1 transition inline-flex items-center"

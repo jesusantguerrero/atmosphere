@@ -4,7 +4,7 @@
     // @ts-ignore
     import { AtDatePager } from "atmosphere-ui";
     import { useI18n } from "vue-i18n";
-    import { useForm, usePage } from "@inertiajs/vue3";
+    import { useForm, usePage, Link } from "@inertiajs/vue3";
     import { router } from '@inertiajs/vue3';
     import { computed, reactive, ref } from "vue";
     import axios from "axios";
@@ -216,6 +216,16 @@
             </MealSectionNav>
         </template>
         <MealTemplate class="mx-auto">
+            <template #titleAction>
+                <Link
+                    href="/shopping"
+                    class="text-xs font-semibold px-2.5 py-1 rounded-full border border-base bg-base-lvl-1 text-body-1/70 hover:text-body hover:border-primary/40 transition inline-flex items-center gap-1.5"
+                    :title="$t('Shopping list')"
+                >
+                    <i class="fa fa-cart-shopping"></i>
+                    {{ $t('Shopping list') }}
+                </Link>
+            </template>
             <div class="pb-20 space-x-2">
                 <div v-if="state.isGroceryList" class="py-5 overflow-hidden border rounded-md bg-base-lvl-3">
                     <div class="flex items-center justify-between px-5 pb-4 border-b border-base">
