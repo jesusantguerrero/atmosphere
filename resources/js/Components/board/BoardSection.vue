@@ -465,7 +465,7 @@ const { isMac, modKey } = useKeyboardShortcuts({
                 @run-automation="runAutomation"
             />
 
-            <div class="flex items-center">
+            <div class="hidden md:flex items-center">
                 <div class="w-40">
                     <multiselect
                         v-model="modeSelected"

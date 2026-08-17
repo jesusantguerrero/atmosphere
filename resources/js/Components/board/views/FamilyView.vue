@@ -386,13 +386,24 @@ async function addFlat() {
         class="fixed inset-x-0 z-20 px-3 pt-4 pb-2 bg-gradient-to-t from-base-lvl-1 via-base-lvl-1/95 to-transparent"
         :style="{ bottom: 'calc(3.75rem + env(safe-area-inset-bottom))' }"
       >
-        <input
-          v-model="flatDraft"
-          @keyup.enter="addFlat"
-          type="text"
-          :placeholder="'+ ' + $t('Add item')"
-          class="w-full px-4 py-3 text-sm transition border rounded-xl border-base bg-base-lvl-3 text-body placeholder:text-body-1/40 focus:outline-none focus:border-primary"
-        />
+        <form class="flex items-center w-full gap-2" @submit.prevent="addFlat">
+          <input
+            v-model="flatDraft"
+            type="text"
+            :placeholder="$t('Add an item…')"
+            class="flex-1 px-3 py-2.5 text-sm rounded-full bg-base-lvl-2 border border-base text-body focus:border-primary focus:outline-none"
+            autocomplete="off"
+            enterkeyhint="send"
+          />
+          <button
+            type="submit"
+            class="w-10 h-10 flex items-center justify-center rounded-full bg-primary text-white shadow-md transition disabled:opacity-50"
+            :disabled="!flatDraft.trim()"
+            :title="$t('Send')"
+          >
+            <i class="fa fa-paper-plane text-sm" />
+          </button>
+        </form>
       </div>
     </template>
 
