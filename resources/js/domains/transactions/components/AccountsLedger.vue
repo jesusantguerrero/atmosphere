@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, inject, computed, Ref, reactive, watch } from "vue";
+import { ref, inject, computed, Ref, reactive, watch, onMounted } from "vue";
 import { router } from "@inertiajs/vue3";
 import { VueDraggableNext as Draggable } from "vue-draggable-next"
 // @ts-ignore
@@ -44,6 +44,17 @@ const openAccountModal = (account = {}) => {
     accountToEdit.value = account;
     isAccountModalOpen.value = true;
 };
+
+// Auto-open the add-account modal when arriving from a "create account" CTA
+// (e.g. /finance/accounts/create redirects here with ?newAccount=1), so the
+// first-run flow works without a dedicated create page.
+onMounted(() => {
+    try {
+        if (new URLSearchParams(window.location.search).has('newAccount')) {
+            openAccountModal();
+        }
+    } catch (e) { /* noop */ }
+});
 
 const saveReorder = () => {
     // Combine both groups in visual order: credit cards first, then bank accounts
