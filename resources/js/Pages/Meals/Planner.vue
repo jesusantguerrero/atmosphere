@@ -229,14 +229,14 @@
             <div class="pb-20 space-x-2">
                 <div v-if="state.isGroceryList" class="py-5 overflow-hidden border rounded-md bg-base-lvl-3">
                     <div class="flex items-center justify-between px-5 pb-4 border-b border-base">
-                        <p class="text-sm text-body-1 font-semibold">Ingredients this week</p>
+                        <p class="text-sm text-body-1 font-semibold">{{ $t('Ingredients this week') }}</p>
                         <LogerButton
                             variant="secondary"
                             class="h-8 text-sm"
                             :processing="isGenerating"
                             @click="generateShoppingList"
                         >
-                            Add to shopping list
+                            {{ $t('Add to shopping list') }}
                         </LogerButton>
                     </div>
                     <div v-for="(ingredient, name) in ingredients" :key="ingredient.id" class="px-5 pt-3 cursor-pointer text-primary">

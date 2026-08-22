@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { router } from "@inertiajs/vue3";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
@@ -18,17 +19,18 @@ const props = withDefaults(defineProps<{
     meals: null
 });
 
+const { t } = useI18n();
 const mealForm = ref();
 const submit = (redirectTo?: string) => {
   mealForm.value?.submit(redirectTo);
 };
 
 const mealFormLabel = computed(() => {
-  return props.meals ? `Meals / ${props.meals.name}` : "Create recipe";
+  return props.meals ? `${t('Meals')} / ${props.meals.name}` : t('Create recipe');
 });
 
 const saveFormText = computed(() => {
-    return !props.meals?.id ? 'Save' : 'Update';
+    return !props.meals?.id ? t('Save') : t('Update');
 })
 </script>
 
@@ -43,7 +45,7 @@ const saveFormText = computed(() => {
         <template #actions>
           <div class="flex space-x-2">
               <LogerButton class="h-10 text-white bg-primary" rounded @click="submit()">
-                {{ saveFormText }} and keep
+                {{ saveFormText }} {{ $t('and keep') }}
               </LogerButton>
             <LogerButton class="h-10 text-white bg-primary" rounded @click="submit('/meals')">
               {{ saveFormText }}

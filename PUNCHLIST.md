@@ -11,13 +11,13 @@
 
 ## 🧩 Huecos funcionales
 
-- [ ] **Meal → Lista de compras (E2E) no se puede sembrar en un espacio vacío.** La pestaña **Ingredientes está en blanco, sin botón de agregar**; el select de ingrediente en la receta dice "Sin datos" y **no ofrece crear** → "Lo que necesitarás" queda vacío → no hay nada que empujar a la lista. El mecanismo ("Add to shopping list") existe, pero la tubería no arranca.
+- [x] **Meal → Lista de compras (E2E): sembrar ingredientes.** _(fix: la pestaña Ingredientes ahora tiene un "add ingredient" inline (header + empty state) que crea vía `/api/ingredients` y recarga; ya no queda en blanco. El select de la receta usa modo `tag` (permite escribir un nombre nuevo), y con ingredientes sembrados deja de decir "Sin datos".)_
 - [ ] **Inconsistencia de `Create:` en los selects.** El de **Beneficiario** permite crear al vuelo; los de **Cuenta** e **Ingrediente** no → no se puede sembrar desde su propio campo.
 
 ## 🌐 i18n (español)
 
-- [ ] **Formulario "Create recipe" completo en inglés:** Title / Ingredients / Qty / Unit / Actions / Add ingredient / Tags / Link / Dish / Save.
-- [ ] **Sueltos en inglés:** "New Meal", "Recipes", "No accounts found", "No accounts yet", "Add your first account", "Add to shopping list", "LOGGED", "Import / Export CSV / Export PDF".
+- [x] **Formulario "Create recipe" en español** _(MealForm/MealFormLine/Create: Title/Ingredients/Tags/Link/Dish/Time/Qty/Name/Unit/Actions/Add ingredient/Create recipe/Save/Update/"and keep" ahora vía `$t`.)_
+- [x] **Sueltos en inglés** _(New Meal, Recipes, Add to shopping list, "Ingredients this week", Import/Export CSV/Export PDF ahora vía `$t`; "Logged" y "No accounts found." ya usaban `$t`, solo faltaba la traducción — agregada. "Add your first account"/"No accounts yet" viven en `AccountsLedger` y ya usan `$t`.)_
 
 ## ⏳ Pendientes de verificar (necesitan input externo, no son bugs)
 

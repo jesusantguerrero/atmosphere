@@ -188,11 +188,11 @@ const draftMonthEnd = computed(() => pageState.dates.endDate ? format(pageState.
 // Data actions live in the kebab — same slot they occupy on the register.
 const { toggleModal: toggleImportModal } = useImportModal();
 
-const exportOptions = [
-    { key: 'import', label: 'Import' },
-    { key: 'export-csv', label: 'Export CSV' },
-    { key: 'export-pdf', label: 'Export PDF' },
-];
+const exportOptions = computed(() => [
+    { key: 'import', label: t('Import') },
+    { key: 'export-csv', label: t('Export CSV') },
+    { key: 'export-pdf', label: t('Export PDF') },
+]);
 
 const handleExport = (key: string) => {
     if (key === 'import') { toggleImportModal(); return; }
