@@ -45,6 +45,21 @@ class FinanceAccountController extends InertiaController
         $this->appends = [];
     }
 
+    /**
+     * Accounts are created through the AccountModal in the accounts ledger, not
+     * a dedicated page -- so the resource `create` route had no handler and
+     * every first-run CTA / deep-link to /finance/accounts/create returned 500.
+     * Redirect to the transactions overview with a flag that auto-opens the
+     * add-account modal (preserving an optional ?type= hint, e.g. credit_card).
+     */
+    public function create(Request $request): RedirectResponse
+    {
+        return redirect()->route('finance.transactions', array_filter([
+            'newAccount' => 1,
+            'type' => $request->query('type'),
+        ]));
+    }
+
     public function show(Account $account)
     {
         $queryParams = request()->query();

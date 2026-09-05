@@ -94,7 +94,9 @@ class RegisterOccurrence
     public function sync(Occurrence $occurrence)
     {
         $transactions = (new SearchTransactions())->handle($occurrence->conditions);
-        if ($transactions) {
+        // Only rebuild when there is something to rebuild from, so a transient
+        // empty match never wipes a healthy occurrence's history.
+        if ($transactions && $transactions->count()) {
             $occurrence->log = [];
             $occurrence->saveQuietly();
             $dates = $transactions->pluck('date')->toArray();
@@ -107,8 +109,10 @@ class RegisterOccurrence
                     );
                     $occurrence->save();
                 } catch (Exception $e) {
-                    throw $e;
-                    Log::error($e->getMessage());
+                    // A single bad/edge date must NOT abort the whole team's
+                    // sync and leave this occurrence with a wiped log (which is
+                    // why they appeared "paused"). Skip it, like load() does.
+                    Log::error('Occurrence sync skipped a date: '.$e->getMessage());
                     continue;
                 }
             }
@@ -124,7 +128,11 @@ class RegisterOccurrence
 
     private function getDaysDifference($startDate, $endDate, $format = 'Y-m-d')
     {
-        return Carbon::createFromFormat($format, $endDate)->diffInDays(Carbon::createFromFormat($format, $startDate));
+        // Robust to date / datetime / Carbon inputs. Transaction dates can come
+        // through as 'Y-m-d H:i:s' or Carbon instances, which createFromFormat
+        // with a strict 'Y-m-d' would throw on -- and a throw here used to abort
+        // the whole occurrence sync.
+        return Carbon::parse($endDate)->startOfDay()->diffInDays(Carbon::parse($startDate)->startOfDay());
     }
 
     public function fromImport(User $user, OccurrenceData $data) {

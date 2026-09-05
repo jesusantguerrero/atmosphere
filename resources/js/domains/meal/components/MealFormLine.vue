@@ -28,10 +28,10 @@
     </article>
 
     <div class="flex px-2 py-2 overflow-hidden rounded-md bg-base-lvl-3" v-else>
-        <AtField class="px-4" label="Qty">
+        <AtField class="px-4" :label="$t('Qty')">
             <LogerInput bordered rounded type="number" v-model="ingredient.quantity" />
         </AtField>
-        <AtField class="w-full px-4" label="Name">
+        <AtField class="w-full px-4" :label="$t('Name')">
             <div v-if="ingredient.product_id" class="capitalize">
                 {{ ingredient.name }}
             </div>
@@ -43,15 +43,15 @@
                 tag
                 custom-label="name"
                 track-id="id"
-                placeholder="Add ingredient"
+                :placeholder="$t('Add ingredient')"
                 endpoint="/api/ingredients"
                 @update:label="$emit('check', $event)"
             />
         </AtField>
-        <AtField class="px-4" label="Unit">
+        <AtField class="px-4" :label="$t('Unit')">
             <LogerInput rounded v-model="ingredient.unit" class="border border-none rounded-t-none rounded-b-none text-body bg-base border-base-deep-1"/>
         </AtField>
-        <AtField label="Actions">
+        <AtField :label="$t('Actions')">
             <AtButton type="danger" class="items-center h-10" rounded @click="removeIngredient(index)">
                 <i class="fa fa-trash"></i>
             </AtButton>

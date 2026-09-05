@@ -270,7 +270,7 @@ watch(
             <div class="relative w-full md:flex-1">
               <span
                 v-if="showCurrencyPicker && firstRowAccountCurrency"
-                class="absolute right-0 top-0 z-10 px-2 py-0.5 text-[10px] font-bold tracking-wide rounded-full bg-info/10 text-info border border-info/25"
+                class="absolute right-0 top-0 z-10 px-2 py-0.5 text-[11px] font-bold tracking-wide rounded-full bg-info/10 text-info border border-info/25"
               >{{ firstRowAccountCurrency }}</span>
               <AtField
                 :label="$t(accountLabel)"

@@ -48,8 +48,12 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', 'loger.concerns:meals'])->group(function () {
     //  Meal related routes
     Route::get('/meals/overview', MealController::class)->name('meals.overview');
+    // The Recipes tab lives at '/meals'. A stale/guessed '/meals/recipes' (or any
+    // non-numeric '/meals/xxx') matched the '/meals/{meal}' show route and hit
+    // show(int $id) -> TypeError -> 500. Constrain {meal} to numeric so those
+    // fall through to their real route or a clean 404 instead of a 500.
     Route::controller(MealController::class)->group(function () {
-        Route::resource('/meals', MealController::class);
+        Route::resource('/meals', MealController::class)->whereNumber('meal');
         Route::post('/meals/add-plan', 'addPlan')->name('meals.addPlan');
         Route::get('/meals-random', 'random')->name('meals.random');
         Route::post('/meals/{meal}/toggle-favorite', 'toggleFavorite')->name('meals.toggleFavorite');

@@ -91,7 +91,7 @@ const getUrgencyTitle = (occurrence: IOccurrenceCheck): string => {
                 wrap
           />
         </section>
-        <div class="flex items-center justify-center gap-3 mt-3 text-[10px] text-body-1/70" v-if="checks?.length">
+        <div class="flex items-center justify-center gap-3 mt-3 text-[11px] text-body-1/70" v-if="checks?.length">
             <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full" style="background:#ef4444"></span>{{ $t('Overdue') }}</span>
             <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full" style="background:#f59e0b"></span>{{ $t('Due') }}</span>
             <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full" style="background:#22c55e"></span>{{ $t('On track') }}</span>

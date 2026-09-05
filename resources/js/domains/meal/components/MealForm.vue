@@ -72,13 +72,13 @@
 <template>
     <div class="text-body">
         <AtField
-            label="Title"
+            :label="$t('Title')"
         >
             <LogerInput v-model="form.name" rounded />
         </AtField>
 
         <AtField
-            label="Ingredients"
+            :label="$t('Ingredients')"
         >
             <MealFormLine v-for="(ingredient, index) in form.ingredients"
                 :key="`${ingredient.id}-${index}`"
@@ -89,22 +89,22 @@
             />
         </AtField>
         <AtField
-            label="Tags"
+            :label="$t('Tags')"
         >
             <LogerInput v-model="form.tags" rounded />
         </AtField>
         <AtField
-            label="Link"
+            :label="$t('Link')"
         >
             <LogerInput v-model="form.link" rounded />
         </AtField>
         <AtField
-            label="Dish"
+            :label="$t('Dish')"
         >
             <LogerInput v-model="form.dish" rounded />
         </AtField>
         <AtField
-            label="Time"
+            :label="$t('Time')"
         >
             <LogerInput v-model="form.time" rounded />
         </AtField>

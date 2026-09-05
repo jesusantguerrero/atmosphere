@@ -219,11 +219,11 @@ const onItemSaved = (): void => {
                 <!-- Trust strip -->
                 <div class="flex flex-wrap gap-2 pt-2">
                     <span class="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-success/10 text-success border border-success/20">
-                        <i class="fa fa-lock text-[10px]" />
+                        <i class="fa fa-lock text-[11px]" />
                         {{ $t('Read-only access') }}
                     </span>
                     <span class="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-base-lvl-2 text-body-1 border border-base">
-                        <i class="fa fa-ban text-[10px]" />
+                        <i class="fa fa-ban text-[11px]" />
                         {{ $t('Never sold') }}
                     </span>
                     <a
@@ -232,7 +232,7 @@ const onItemSaved = (): void => {
                         rel="noopener"
                         class="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-base-lvl-2 text-body-1 border border-base hover:bg-base-lvl-1 transition"
                     >
-                        <i class="fa fa-code text-[10px]" />
+                        <i class="fa fa-code text-[11px]" />
                         {{ $t('Open source — BSD-3') }}
                     </a>
                 </div>
@@ -280,7 +280,7 @@ const onItemSaved = (): void => {
                                 class="text-xs text-primary hover:underline mt-2 inline-flex items-center gap-1"
                                 @click="expandedServiceId = expandedServiceId === service.id ? null : service.id"
                             >
-                                <i class="fa fa-chevron-right text-[9px] transition-transform" :class="{ 'rotate-90': expandedServiceId === service.id }" />
+                                <i class="fa fa-chevron-right text-[11px] transition-transform" :class="{ 'rotate-90': expandedServiceId === service.id }" />
                                 {{ $t('What we access') }}
                             </button>
                             <div v-if="expandedServiceId === service.id" class="mt-3 p-3 rounded-md bg-base-lvl-2 border border-base text-xs text-body-1/80 space-y-2">
@@ -332,11 +332,11 @@ const onItemSaved = (): void => {
                                 <p class="text-sm text-body-1/80 truncate">{{ integration.hash }}</p>
                                 <p class="text-xs text-body-1/60 mt-1">
                                     <template v-if="integration.last_synced_at">
-                                        <i class="fa fa-rotate text-success/70 text-[10px] mr-1" />
+                                        <i class="fa fa-rotate text-success/70 text-[11px] mr-1" />
                                         {{ $t('Last synced') }} {{ formatRelativeTime(integration.last_synced_at) }}
                                     </template>
                                     <template v-else>
-                                        <i class="fa fa-clock text-body-1/40 text-[10px] mr-1" />
+                                        <i class="fa fa-clock text-body-1/40 text-[11px] mr-1" />
                                         {{ $t('Awaiting first sync') }}
                                     </template>
                                     <span class="mx-1.5 text-body-1/30">·</span>

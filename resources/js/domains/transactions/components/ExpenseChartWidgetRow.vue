@@ -89,7 +89,7 @@ const detailColumn = computed(() => {
 <template>
     <NPopover trigger="click">
         <template #trigger>
-            <p class="inline-flex justify-between px-4 cursor-pointer items-center " :class="classes" @click="$emit('open-details')">
+            <p class="inline-flex cursor-pointer items-center" :class="[classes, hideTitle ? 'justify-end pl-4' : 'justify-between px-4']" @click="$emit('open-details')">
                 <span class="font-bold" v-if="!hideTitle">
                     {{ title ?? item.name }}:
                 </span>

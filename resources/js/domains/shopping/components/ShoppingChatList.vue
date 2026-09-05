@@ -430,7 +430,7 @@ onBeforeUnmount(() => {
                                     @click="chooseList(l.id)"
                                 >
                                     <span class="truncate flex items-center gap-1.5">
-                                        <i v-if="l.shared" class="fa fa-share-nodes text-[10px] text-body-1/50" />
+                                        <i v-if="l.shared" class="fa fa-share-nodes text-[11px] text-body-1/50" />
                                         {{ l.name }}
                                     </span>
                                     <span class="text-[11px] text-body-1/50 shrink-0">{{ l.pending }}</span>
@@ -505,13 +505,13 @@ onBeforeUnmount(() => {
                             <span class="flex-1 text-sm break-words">{{ item.title }}</span>
                             <span
                                 v-if="item.state === 'buy'"
-                                class="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide bg-success/20 text-success"
+                                class="shrink-0 px-2 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wide bg-success/20 text-success"
                             >
                                 {{ $t('Buying') }}
                             </span>
                             <span
                                 v-else-if="item.state === 'skip'"
-                                class="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide bg-error/15 text-error/70"
+                                class="shrink-0 px-2 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wide bg-error/15 text-error/70"
                             >
                                 {{ $t('Skip') }}
                             </span>

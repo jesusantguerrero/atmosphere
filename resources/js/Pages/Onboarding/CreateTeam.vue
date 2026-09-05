@@ -193,7 +193,7 @@ const createBudget = () => {
                                 <p class="text-sm font-bold text-body-1">{{ $t('Finances') }}</p>
                                 <p class="text-xs text-body-1/60">{{ $t('Budgets, accounts and net worth.') }}</p>
                             </div>
-                            <span class="text-[10px] font-semibold text-primary uppercase whitespace-nowrap">{{ $t('Always on') }}</span>
+                            <span class="text-[11px] font-semibold text-primary uppercase whitespace-nowrap">{{ $t('Always on') }}</span>
                         </div>
 
                         <button
@@ -213,7 +213,7 @@ const createBudget = () => {
                                 class="flex items-center justify-center w-5 h-5 border rounded shrink-0"
                                 :class="isOn(m.name) ? 'bg-primary border-primary text-white' : 'border-base-lvl-2'"
                             >
-                                <i v-if="isOn(m.name)" class="text-[10px] fas fa-check" />
+                                <i v-if="isOn(m.name)" class="text-[11px] fas fa-check" />
                             </span>
                         </button>
                     </div>

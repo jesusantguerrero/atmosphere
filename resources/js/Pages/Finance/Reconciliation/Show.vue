@@ -446,7 +446,7 @@ const differenceDirection = computed(() => {
             <AtField :label="$t('Loger balance')">
               <div>
                 <span class="tabular-nums">{{ formatMoney(ledgerBalance, account.currency_code) }}</span>
-                <p v-if="reconciliation.date" class="text-[10px] text-body-1/50 leading-tight">
+                <p v-if="reconciliation.date" class="text-[11px] text-body-1/50 leading-tight">
                   {{ $t('as of') }} {{ reconciliation.date }}
                 </p>
               </div>
@@ -464,7 +464,7 @@ const differenceDirection = computed(() => {
                   </span>
                   <IMdiCheckCircle v-if="isMatched" class="w-4 h-4 text-emerald-500 ml-1" />
                 </div>
-                <p class="text-[10px] text-body-1/50 leading-tight">
+                <p class="text-[11px] text-body-1/50 leading-tight">
                   <template v-if="differenceDirection">{{ differenceDirection.toLowerCase() }} · </template>{{ transactionsMatched }}/{{ totalTransactions }} {{ $t('matched') }}
                 </p>
               </div>

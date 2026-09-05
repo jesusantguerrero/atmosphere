@@ -13,6 +13,7 @@ import { autoAnimatePlugin } from '@formkit/auto-animate/vue'
 import { createPinia } from 'pinia';
 import { vRipple } from './utils/vRipple';
 import ElementPlus from 'element-plus'
+import { ElNotification } from 'element-plus'
 import 'element-plus/dist/index.css'
 import 'element-plus/theme-chalk/dark/css-vars.css'
 
@@ -59,6 +60,34 @@ createInertiaApp({
 
         const t = (...param) => i18n.global.t(...param)
         window.t = t
+
+        // Intercept non-Inertia responses (nginx 502/503/504, 419 session
+        // expiry, HTML 500) so the user gets a friendly toast instead of
+        // Inertia's raw full-page error modal (the white "502 Bad Gateway"
+        // sheet). In dev we keep the modal for genuine app errors (500) so the
+        // Laravel stack trace stays visible; gateway/session errors always
+        // become a toast.
+        const notifyServerError = (message: string) => ElNotification({
+            title: t('Connection problem'),
+            message,
+            type: 'error',
+            duration: 5000,
+            position: 'bottom-right',
+        });
+        router.on('invalid', (event: any) => {
+            const status = event?.detail?.response?.status ?? 0;
+            const isGateway = [0, 419, 502, 503, 504].includes(status);
+            if (import.meta.env.DEV && !isGateway) return; // keep debug modal for 500s in dev
+            event.preventDefault();
+            notifyServerError(status === 419
+                ? t('Your session expired. Please refresh the page.')
+                : t('The server did not respond. Please try again in a moment.'));
+        });
+        router.on('exception', (event: any) => {
+            // Request never completed (network dropped / timeout).
+            event.preventDefault();
+            notifyServerError(t('The server did not respond. Please try again in a moment.'));
+        });
 
         createApp({
             progress: {

@@ -580,13 +580,13 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); detachDrag(); 
               <div class="text-sm font-semibold text-body truncate flex items-center gap-1">
                 {{ rb.title }}
                 <span v-if="blockClashes(rb, selectedMobileDay).length" class="text-[11px] text-error">⚠</span>
-                <span v-if="rb._kind === 'exception'" class="text-[10px] text-primary">★</span>
+                <span v-if="rb._kind === 'exception'" class="text-[11px] text-primary">★</span>
               </div>
               <div class="text-xs text-body-1/60">{{ rb.start }}–{{ rb.end }}</div>
               <div v-if="blockClashes(rb, selectedMobileDay).length" class="text-[11px] text-error mt-0.5 truncate">⚠ {{ clashTip(blockClashes(rb, selectedMobileDay)) }}</div>
               <div v-else-if="rb.note" class="text-[11px] text-body-1/50 mt-0.5 truncate">{{ rb.note }}</div>
             </div>
-            <span v-if="rb.member_id" class="w-6 h-6 rounded-full text-[10px] flex items-center justify-center font-bold text-white flex-none self-center"
+            <span v-if="rb.member_id" class="w-6 h-6 rounded-full text-[11px] flex items-center justify-center font-bold text-white flex-none self-center"
                   :style="{ background: memberColor(rb.member_id) }">{{ initial(rb.member_id) }}</span>
           </div>
           <p v-if="!renderBlocks(selectedMobileDay).length" class="text-center text-xs text-body-1/50 py-8">{{ $t('No blocks this day') }}</p>
@@ -616,7 +616,7 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); detachDrag(); 
           <div ref="gridBodyRef" class="grid relative" style="grid-template-columns:44px repeat(7,1fr);min-width:760px">
             <!-- time gutter -->
             <div class="relative" :style="{ height: gridHeight + 'px' }">
-              <div v-for="h in hours" :key="h" class="absolute right-1.5 text-[9px] text-body-1/40"
+              <div v-for="h in hours" :key="h" class="absolute right-1.5 text-[11px] text-body-1/40"
                    :style="{ top: ((h - startH) * HOUR_H - 5) + 'px' }">{{ (h < 10 ? '0' : '') + h }}:00</div>
             </div>
             <!-- day columns -->
@@ -630,11 +630,11 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); detachDrag(); 
               <div v-if="showNow(day - 1)" class="absolute left-0 right-0 h-0.5 bg-primary z-10"
                    :style="{ top: nowTop + 'px' }"></div>
               <div v-if="dragGhost && dragGhost.day === (day - 1)"
-                   class="absolute left-0.5 right-0.5 rounded-md border-2 border-dashed border-primary bg-primary/10 pointer-events-none z-20 flex items-start justify-center text-[9px] text-primary font-bold pt-0.5"
+                   class="absolute left-0.5 right-0.5 rounded-md border-2 border-dashed border-primary bg-primary/10 pointer-events-none z-20 flex items-start justify-center text-[11px] text-primary font-bold pt-0.5"
                    :style="{ top: dragGhost.top + 'px', height: dragGhost.height + 'px' }">{{ dragGhost.label }}</div>
               <!-- blocks -->
               <div v-for="rb in renderBlocks(day - 1)" :key="rb._kind + rb.id"
-                   class="absolute left-0.5 right-0.5 rounded-md px-1.5 py-0.5 text-[10px] font-semibold overflow-hidden cursor-pointer leading-tight transition"
+                   class="absolute left-0.5 right-0.5 rounded-md px-1.5 py-0.5 text-[11px] font-semibold overflow-hidden cursor-pointer leading-tight transition"
                    :class="[
                      !shown(rb) ? 'opacity-20 grayscale' : '',
                      blockClashes(rb, day - 1).length ? 'ring-2 ring-error' : (rb._kind === 'exception' ? 'ring-1 ring-current' : (viewMode === 'week' ? 'opacity-60 border-dashed' : '')),
@@ -644,13 +644,13 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); detachDrag(); 
                    @pointerdown.stop="startMove(rb, day - 1, $event)">
                 <div class="truncate flex items-center gap-1">
                   {{ rb.title }}
-                  <span v-if="blockClashes(rb, day - 1).length" class="text-[8px] text-error">⚠</span>
-                  <span v-if="rb._kind === 'exception'" class="text-[8px]">★</span>
-                  <span v-else-if="rb.note" class="opacity-60 text-[8px]">✎</span>
+                  <span v-if="blockClashes(rb, day - 1).length" class="text-[11px] text-error">⚠</span>
+                  <span v-if="rb._kind === 'exception'" class="text-[11px]">★</span>
+                  <span v-else-if="rb.note" class="opacity-60 text-[11px]">✎</span>
                 </div>
-                <div class="text-[8px] opacity-70">{{ rb.start }}–{{ rb.end }}</div>
+                <div class="text-[11px] opacity-70">{{ rb.start }}–{{ rb.end }}</div>
                 <button
-                  class="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full text-[7px] flex items-center justify-center font-bold text-white ring-1 ring-white/30"
+                  class="absolute top-0.5 right-0.5 w-4 h-4 rounded-full text-[11px] flex items-center justify-center font-bold text-white ring-1 ring-white/30"
                   :style="{ background: memberColor(rb.member_id) }"
                   @pointerdown.stop
                   @click.stop="openAssign(rb, $event)"
@@ -689,7 +689,7 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); detachDrag(); 
               <input v-model="catNames[c.color]" type="text" :placeholder="$t('Name this category')"
                      class="flex-1 min-w-0 px-2 py-1 text-xs rounded bg-base-lvl-2 border border-base text-body outline-none focus:border-primary" />
               <span class="text-xs font-semibold text-body tabular-nums w-12 text-right">{{ c.hours }}h</span>
-              <span class="text-[10px] text-body-1/50 tabular-nums w-8 text-right">{{ c.pct }}%</span>
+              <span class="text-[11px] text-body-1/50 tabular-nums w-8 text-right">{{ c.pct }}%</span>
             </div>
           </div>
           <button class="w-full mt-4 text-xs font-semibold px-3 py-2 rounded-lg bg-primary text-white disabled:opacity-50"
@@ -733,7 +733,7 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); detachDrag(); 
       <div v-if="dayMenu !== null" class="fixed inset-0 z-40 flex items-center justify-center p-4 bg-black/50" @click.self="dayMenu = null">
         <div class="w-full max-w-xs bg-base-lvl-3 border border-base rounded-2xl shadow-2xl p-4">
           <h3 class="font-bold text-body mb-3">{{ SHORT[dayMenu] }} · {{ $t('Day options') }}</h3>
-          <p class="text-[10px] uppercase tracking-wide text-body-1/50 mb-1.5">{{ $t('Duplicate day to') }}</p>
+          <p class="text-[11px] uppercase tracking-wide text-body-1/50 mb-1.5">{{ $t('Duplicate day to') }}</p>
           <div class="flex flex-wrap gap-1.5 mb-2">
             <button v-for="(dd, di) in SHORT" :key="di" v-show="di !== dayMenu" type="button"
                     class="text-xs px-2 py-1 rounded-lg border transition"
@@ -746,7 +746,7 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); detachDrag(); 
           </div>
           <button type="button" class="w-full text-sm font-semibold bg-primary text-white py-2 rounded-lg disabled:opacity-40 mb-4"
                   :disabled="!copyTargets.length || busyDay" @click="applyDay(dayMenu)">{{ $t('Apply') }}</button>
-          <p class="text-[10px] uppercase tracking-wide text-body-1/50 mb-1.5">{{ $t('Assign whole day to') }}</p>
+          <p class="text-[11px] uppercase tracking-wide text-body-1/50 mb-1.5">{{ $t('Assign whole day to') }}</p>
           <div class="flex flex-col gap-0.5 mb-1">
             <button type="button" class="text-left text-sm px-2 py-1.5 rounded-lg hover:bg-base-lvl-2 text-body-1/80" @click="assignDay(dayMenu, null)">{{ $t('Everyone') }}</button>
             <button v-for="m in members" :key="m.id" type="button"
@@ -782,33 +782,33 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); detachDrag(); 
 
           <div class="flex gap-2 mb-2">
             <div class="flex-1">
-              <label class="block text-[9px] uppercase tracking-wide text-body-1/50 mb-1">{{ $t('Day') }}</label>
+              <label class="block text-[11px] uppercase tracking-wide text-body-1/50 mb-1">{{ $t('Day') }}</label>
               <select v-model.number="form.day" :disabled="isException"
                       class="w-full px-2 py-2 text-sm rounded-lg bg-base-lvl-2 border border-base text-body outline-none disabled:opacity-50">
                 <option v-for="(d, i) in SHORT" :key="i" :value="i">{{ d }}</option>
               </select>
             </div>
             <div>
-              <label class="block text-[9px] uppercase tracking-wide text-body-1/50 mb-1">{{ $t('Start') }}</label>
+              <label class="block text-[11px] uppercase tracking-wide text-body-1/50 mb-1">{{ $t('Start') }}</label>
               <input v-model="form.start" type="time" class="px-2 py-2 text-sm rounded-lg bg-base-lvl-2 border border-base text-body outline-none" />
             </div>
             <div>
-              <label class="block text-[9px] uppercase tracking-wide text-body-1/50 mb-1">{{ $t('End') }}</label>
+              <label class="block text-[11px] uppercase tracking-wide text-body-1/50 mb-1">{{ $t('End') }}</label>
               <input v-model="form.end" type="time" class="px-2 py-2 text-sm rounded-lg bg-base-lvl-2 border border-base text-body outline-none" />
             </div>
           </div>
 
-          <label class="block text-[9px] uppercase tracking-wide text-body-1/50 mb-1">{{ $t('Member') }}</label>
+          <label class="block text-[11px] uppercase tracking-wide text-body-1/50 mb-1">{{ $t('Member') }}</label>
           <select v-model="form.member_id" class="w-full mb-2 px-2 py-2 text-sm rounded-lg bg-base-lvl-2 border border-base text-body outline-none">
             <option :value="null">{{ $t('Everyone') }}</option>
             <option v-for="m in members" :key="m.id" :value="m.id">{{ m.name }}</option>
           </select>
 
-          <label class="block text-[9px] uppercase tracking-wide text-body-1/50 mb-1">{{ $t('Note') }}</label>
+          <label class="block text-[11px] uppercase tracking-wide text-body-1/50 mb-1">{{ $t('Note') }}</label>
           <textarea v-model="form.note" rows="2" :placeholder="$t('Optional details')"
                     class="w-full mb-2 px-3 py-2 text-sm rounded-lg bg-base-lvl-2 border border-base text-body outline-none focus:border-primary resize-none"></textarea>
 
-          <label class="block text-[9px] uppercase tracking-wide text-body-1/50 mb-1">{{ $t('Color') }}</label>
+          <label class="block text-[11px] uppercase tracking-wide text-body-1/50 mb-1">{{ $t('Color') }}</label>
           <div class="flex flex-wrap gap-2 mb-4">
             <button v-for="c in COLORS" :key="c" type="button" class="w-6 h-6 rounded-full border-2 transition"
                     :style="{ background: c, borderColor: form.color === c ? '#E7EAF0' : 'transparent' }"

@@ -326,7 +326,7 @@ async function saveExchangeRate() {
                                                         {{ acc.name }}<span v-if="acc.bank_code" class="opacity-60"> · {{ acc.bank_code }}</span>
                                                     </span>
                                                     <button class="opacity-50 hover:opacity-100 hover:text-red-400 transition flex-shrink-0" @click="toggleGoalAccountLink(goal, acc.id)" title="Unlink">
-                                                        <IMdiClose class="text-[10px]" />
+                                                        <IMdiClose class="text-[11px]" />
                                                     </button>
                                                 </span>
                                                 <span
@@ -334,23 +334,23 @@ async function saveExchangeRate() {
                                                     :key="`cat-${cat.id}`"
                                                     class="inline-flex items-center gap-1 text-[11px] leading-none px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 max-w-[200px]"
                                                 >
-                                                    <IMdiFolder class="text-[10px] flex-shrink-0" />
+                                                    <IMdiFolder class="text-[11px] flex-shrink-0" />
                                                     <span class="truncate">{{ cat.name }}</span>
                                                     <span v-if="cat.team_name" class="opacity-60 truncate"> · {{ cat.team_name }}</span>
                                                     <button class="opacity-50 hover:opacity-100 hover:text-red-400 transition flex-shrink-0" @click="toggleGoalCategoryLink(goal, cat.id)" title="Unlink">
-                                                        <IMdiClose class="text-[10px]" />
+                                                        <IMdiClose class="text-[11px]" />
                                                     </button>
                                                 </span>
                                                 <button
                                                     class="inline-flex items-center gap-0.5 text-[11px] leading-none px-2 py-1 rounded-full border border-dashed border-base text-body-1/50 hover:text-primary hover:border-primary transition"
                                                     @click="editingGoalLinkId = editingGoalLinkId === goal.id ? null : goal.id"
                                                 >
-                                                    <IMdiPlus class="text-[10px]" />
+                                                    <IMdiPlus class="text-[11px]" />
                                                     <span>{{ editingGoalLinkId === goal.id ? $t('Done') : (goal.linked_accounts.length || goal.linked_categories.length ? $t('Add') : $t('Link')) }}</span>
                                                 </button>
                                             </div>
                                             <div v-if="editingGoalLinkId === goal.id" class="mt-2 max-h-48 overflow-y-auto border border-base rounded bg-base-lvl-1 p-2 space-y-1">
-                                                <p class="text-[10px] font-semibold uppercase tracking-wide text-body-1/40 px-1 pt-1">{{ $t('Accounts') }}</p>
+                                                <p class="text-[11px] font-semibold uppercase tracking-wide text-body-1/40 px-1 pt-1">{{ $t('Accounts') }}</p>
                                                 <label
                                                     v-for="a in flatAccounts"
                                                     :key="a.id"
@@ -366,7 +366,7 @@ async function saveExchangeRate() {
                                                     <span class="text-body-1/40 ml-auto">{{ a.group }}</span>
                                                 </label>
                                                 <template v-if="availableCategories.length">
-                                                    <p class="text-[10px] font-semibold uppercase tracking-wide text-body-1/40 px-1 pt-2">{{ $t('Categories') }}</p>
+                                                    <p class="text-[11px] font-semibold uppercase tracking-wide text-body-1/40 px-1 pt-2">{{ $t('Categories') }}</p>
                                                     <template v-for="group in availableCategories" :key="group.team_name">
                                                         <label
                                                             v-for="cat in group.categories"

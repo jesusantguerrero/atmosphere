@@ -303,7 +303,7 @@ const monthLabel = computed(() => formatMonth(currentDate.value, 'MMMM yyyy'));
                                 <div
                                     v-for="event in cell.events.slice(0, 3)"
                                     :key="event.id"
-                                    class="text-[10px] leading-tight px-1 py-0.5 rounded border truncate"
+                                    class="text-[11px] leading-tight px-1 py-0.5 rounded border truncate"
                                     :class="[
                                         kindColor(event.kind),
                                         event.completed_at ? 'line-through opacity-50' : '',
@@ -314,7 +314,7 @@ const monthLabel = computed(() => formatMonth(currentDate.value, 'MMMM yyyy'));
                                 </div>
                                 <p
                                     v-if="cell.events.length > 3"
-                                    class="text-[10px] text-body-1/50 pl-1"
+                                    class="text-[11px] text-body-1/50 pl-1"
                                 >
                                     +{{ cell.events.length - 3 }} more
                                 </p>
@@ -461,7 +461,7 @@ const monthLabel = computed(() => formatMonth(currentDate.value, 'MMMM yyyy'));
                                     class="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary/80"
                                     @click="showFinancials = true"
                                 >
-                                    <i class="text-[10px] fa fa-plus" /> {{ $t('Add amount (optional)') }}
+                                    <i class="text-[11px] fa fa-plus" /> {{ $t('Add amount (optional)') }}
                                 </button>
                                 <div v-else class="grid grid-cols-2 gap-3">
                                     <div>

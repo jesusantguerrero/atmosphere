@@ -407,7 +407,7 @@
                                 <AppIcon size="medium"  />
                                 <sup
                                     v-if="$page.props.environment !== 'production'"
-                                    class="text-[10px] text-body-1/40 font-mono"
+                                    class="text-[11px] text-body-1/40 font-mono"
                                     :title="$page.props.version"
                                 > {{ $page.props.version }}</sup>
                             </Link>
