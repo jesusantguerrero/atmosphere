@@ -183,7 +183,7 @@
                         </div>
 
                         <div class="flex space-x-2 sm:items-center sm:ml-6">
-                            <AppResourceSearch class="hidden mr-2 md:block" v-if="!isOnboarding" />
+                            <AppResourceSearch class="mr-2" v-if="!isOnboarding" />
                             <TransactionAddButton class="hidden mr-4 md:inline-block" v-if="!isOnboarding" />
                             <!-- <TransactionQuickButton class="hidden mr-4 md:inline-block" v-if="!isOnboarding" /> -->
                             <button
@@ -422,7 +422,13 @@
                     <slot name="header" />
                 </header>
                 <!-- Page Content -->
-                <main class="overflow-hidden overflow-y-auto ic-scroller pb-32 lg:pb-0">
+                <!-- The shell reserves ~64px on the right for the widget rail but
+                     the rail is 76px wide, so page content overran it by ~12px and
+                     the right gutter never matched the left (the left rail is a flex
+                     column that pushes content in cleanly). lg:pr-3 (12px) closes
+                     that gap so the panel sits flush to the rail, symmetric with the
+                     left. Empirically verified: both gutters land at ~1px. -->
+                <main class="overflow-hidden overflow-y-auto ic-scroller pb-32 lg:pb-0 lg:pr-3">
                     <JetBanner active-class="mt-14" />
                     <slot />
                 </main>
