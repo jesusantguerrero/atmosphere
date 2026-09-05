@@ -1045,5 +1045,19 @@
     "Merge into": "Fusionar en",
     "Select a payee": "Selecciona un beneficiario",
     "Delete \"{name}\"?": "¿Eliminar \"{name}\"?",
-    "Delete \"{name}\"? Its {count} transactions keep their data but lose the payee.": "¿Eliminar \"{name}\"? Sus {count} transacciones conservan sus datos pero pierden el beneficiario."
+    "Delete \"{name}\"? Its {count} transactions keep their data but lose the payee.": "¿Eliminar \"{name}\"? Sus {count} transacciones conservan sus datos pero pierden el beneficiario.",
+    "Loan amount": "Monto del préstamo",
+    "Annual rate %": "Tasa anual %",
+    "Term (months)": "Plazo (meses)",
+    "Start date": "Fecha de inicio",
+    "Monthly payment": "Pago mensual",
+    "Target": "Objetivo",
+    "Edit target": "Editar objetivo",
+    "months": "meses",
+    "paid": "pagados",
+    "loan": "préstamo",
+    "saving balance": "balance de ahorro",
+    "monthly savings": "ahorro mensual",
+    "debt payment": "pago de deuda",
+    "spending": "gasto"
 }

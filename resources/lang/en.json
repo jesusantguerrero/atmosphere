@@ -964,5 +964,19 @@
     "Merge into": "Merge into",
     "Select a payee": "Select a payee",
     "Delete \"{name}\"?": "Delete \"{name}\"?",
-    "Delete \"{name}\"? Its {count} transactions keep their data but lose the payee.": "Delete \"{name}\"? Its {count} transactions keep their data but lose the payee."
+    "Delete \"{name}\"? Its {count} transactions keep their data but lose the payee.": "Delete \"{name}\"? Its {count} transactions keep their data but lose the payee.",
+    "Loan amount": "Loan amount",
+    "Annual rate %": "Annual rate %",
+    "Term (months)": "Term (months)",
+    "Start date": "Start date",
+    "Monthly payment": "Monthly payment",
+    "Target": "Target",
+    "Edit target": "Edit target",
+    "months": "months",
+    "paid": "paid",
+    "loan": "loan",
+    "saving balance": "saving balance",
+    "monthly savings": "monthly savings",
+    "debt payment": "debt payment",
+    "spending": "spending"
 }

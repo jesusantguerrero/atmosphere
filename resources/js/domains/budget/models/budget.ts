@@ -24,6 +24,10 @@ export interface BudgetTarget {
     note:null
     status: string;
     target_type:string;
+    principal?: number;
+    interest_rate?: number;
+    term_months?: number;
+    loan_start_date?: string | null;
     team_id:number;
     updated_at: string;
     completed_at: string;
@@ -92,7 +96,10 @@ export interface IBudgetCategory extends ICategory {
 
 
 const targetTypeNames = {
-    saving_balance: 'saving balance'
+    saving_balance: 'saving balance',
+    savings_monthly: 'monthly savings',
+    debt_monthly_payment: 'debt payment',
+    loan: 'loan',
 }
 
 export const getTargetName = (code: string) => {

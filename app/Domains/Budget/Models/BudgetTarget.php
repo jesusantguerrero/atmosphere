@@ -23,6 +23,8 @@ class BudgetTarget extends Model
     // WL-7: "Spend less than X in this watchlist for N consecutive months"
     const TYPE_CHALLENGE_UNDER_AMOUNT = 'challenge_under_amount';
 
+    const TYPE_LOAN = 'loan';
+
     protected $fillable = [
         'team_id',
         'user_id',
@@ -40,6 +42,21 @@ class BudgetTarget extends Model
         'frequency_interval_unit',
         'notify',
         'completed_at',
+        // Loan target fields. `amount` still holds the computed monthly payment;
+        // these describe the loan so the payment and payoff can be recomputed.
+        'principal',
+        'interest_rate',
+        'term_months',
+        'loan_start_date',
+    ];
+
+    protected $casts = [
+        'amount' => 'decimal:2',
+        'principal' => 'decimal:2',
+        'interest_rate' => 'decimal:3',
+        'term_months' => 'integer',
+        'loan_start_date' => 'date:Y-m-d',
+        'notify' => 'boolean',
     ];
 
     public function category()

@@ -10,7 +10,7 @@ import { makeOptions } from "@/utils/naiveui";
 import { differenceInCalendarMonths, format, parseISO } from "date-fns";
 import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 import IconTarget from "@/Components/icons/IconTarget.vue";
-import { budgetFrequencies, isSavingBalance, targetTypes } from "@/domains/budget";
+import { budgetFrequencies, isSavingBalance, targetTypes, loanMonthlyPayment } from "@/domains/budget";
 import BudgetTargetCard from "./BudgetTargetCard.vue";
 import { ICategory } from "@/domains/transactions/models";
 import { BudgetTarget } from "../models/budget";
@@ -45,6 +45,10 @@ const state = reactive({
     frequency_interval: 0,
     frequency_interval_unit: 0,
     notify: false,
+    principal: 0,
+    interest_rate: 0,
+    term_months: 0,
+    loan_start_date: null,
   }),
   isEditing: false,
   hasTarget: Boolean(props.item),
@@ -112,6 +116,7 @@ const onSubmit = () => {
     .transform((data) => ({
       ...data,
       frequency_date: data.frequency_date && format(new Date(data.frequency_date), "yyyy-MM-dd"),
+      loan_start_date: data.loan_start_date && format(new Date(data.loan_start_date), "yyyy-MM-dd"),
       parent_id: data.parent_id || state.parentId,
     }))
     [endpoint.method](endpoint.url, {
@@ -174,6 +179,23 @@ const options = [
 const setAmount = (amount: number) => {
   state.form.amount = amount;
 };
+
+// Loan target: the monthly payment is derived from the loan terms, so the user
+// never types the amount directly — we compute it and mirror it into `amount`
+// (the column the MONTHLY funding logic reads) whenever a term changes.
+const loanPayment = computed(() =>
+  loanMonthlyPayment(state.form.principal, state.form.interest_rate, state.form.term_months)
+);
+
+watch(
+  () => [state.form.target_type, state.form.principal, state.form.interest_rate, state.form.term_months],
+  () => {
+    if (state.form.target_type === "loan") {
+      state.form.frequency = "MONTHLY";
+      state.form.amount = Math.round(loanPayment.value * 100) / 100;
+    }
+  }
+);
 
 const clear = () => {
   form.value.amount = 0;
@@ -239,7 +261,7 @@ const handleOptions = (option: string) => {
         <AtErrorBag v-if="errors" :errors="errors" field="account_id" />
       </AtField>
 
-      <AtField label="Amount" errors="errors" field="amount">
+      <AtField v-if="form.target_type !== 'loan'" label="Amount" errors="errors" field="amount">
         <AtInput :number-format="true" v-model="form.amount">
           <template #prefix>
             <span class="flex items-center pl-2"> RD$ </span>
@@ -256,6 +278,38 @@ const handleOptions = (option: string) => {
           </template>
         </AtInput>
       </AtField>
+
+      <section v-if="form.target_type === 'loan'" class="space-y-2">
+        <AtField :label="$t('Loan amount')">
+          <AtInput :number-format="true" v-model="form.principal">
+            <template #prefix>
+              <span class="flex items-center pl-2"> RD$ </span>
+            </template>
+          </AtInput>
+        </AtField>
+
+        <div class="flex gap-2">
+          <AtField :label="$t('Annual rate %')" class="w-full">
+            <AtInput :number-format="true" v-model="form.interest_rate">
+              <template #suffix>
+                <span class="flex items-center pr-2"> % </span>
+              </template>
+            </AtInput>
+          </AtField>
+          <AtField :label="$t('Term (months)')" class="w-full">
+            <AtInput :number-format="true" v-model="form.term_months" />
+          </AtField>
+        </div>
+
+        <AtField :label="$t('Start date')" class="w-full">
+          <NDatePicker type="date" size="large" class="w-full" v-model:value="form.loan_start_date" />
+        </AtField>
+
+        <div class="flex items-center justify-between px-3 py-2 rounded-md bg-base-lvl-2">
+          <span class="text-sm text-body-1/70">{{ $t('Monthly payment') }}</span>
+          <span class="font-bold text-body">RD$ {{ formatMoney(loanPayment) }}</span>
+        </div>
+      </section>
 
       <section v-if="form.target_type == 'spending'">
         <AtButtonGroup

@@ -10,7 +10,7 @@ import BudgetProgress from "./BudgetProgress.vue";
 import BudgetMoneyLine from "./BudgetMoneyLine.vue";
 
 import { getBudgetTarget } from "@/domains/budget/budgetTotals";
-import { isSavingBalance, isSpendingTarget } from "@/domains/budget";
+import { isSavingBalance, isSpendingTarget, isLoanTarget, getLoanPayoff } from "@/domains/budget";
 import { BudgetTarget, getTargetName } from "@/domains/budget/models/budget";
 import { ICategory } from "@/domains/transactions/models";
 import { formatDate, formatMoney, formatMonth, toOrdinals } from "@/utils";
@@ -81,19 +81,41 @@ const isGoal = computed(() => {
     return isSavingBalance(props.item);
 })
 
+const isLoan = computed(() => isLoanTarget(props.item));
+const loan = computed(() => getLoanPayoff(props.item));
+
 
 </script>
 
 <template>
 <div class="w-full">
     <header class="flex justify-between w-full mb-8">
-        <h4 class="text-lg font-bold text-primary">
-            Target: <span class="capitalize"> {{ getTargetName(item.target_type) }} </span>
+        <h4 class="text-lg font-bold text-body">
+            {{ $t('Target') }}: <span class="capitalize"> {{ $t(getTargetName(item.target_type)) }} </span>
         </h4>
-        <button class="text-secondary" @click="$emit('edit')" v-if="editable">
-            Edit target
+        <button class="text-secondary hover:text-primary transition-colors" @click="$emit('edit')" v-if="editable">
+            {{ $t('Edit target') }}
         </button>
     </header>
+
+    <section v-if="isLoan" class="p-4 mb-6 rounded-lg bg-base-lvl-2">
+        <div class="flex items-baseline justify-between">
+            <span class="text-sm text-body-1/60">{{ $t('Monthly payment') }}</span>
+            <span class="text-lg font-bold text-body">{{ formatMoney(item.amount) }}</span>
+        </div>
+        <div class="mt-1 text-xs text-body-1/50">
+            {{ formatMoney(item.principal) }} · {{ Number(item.interest_rate) }}% · {{ item.term_months }} {{ $t('months') }}
+        </div>
+        <div class="mt-3">
+            <div class="w-full h-1.5 rounded-sm bg-secondary/10 overflow-hidden">
+                <div class="h-full bg-success" :style="{ width: loan.percentPaid + '%' }" />
+            </div>
+            <div class="flex justify-between mt-1 text-xs text-body-1/60">
+                <span>{{ loan.paymentsMade }}/{{ item.term_months }} {{ $t('paid') }}</span>
+                <span>{{ $t('Balance') }}: {{ formatMoney(loan.remainingBalance) }}</span>
+            </div>
+        </div>
+    </section>
     <BudgetProgress
         class="h-1.5 rounded-sm"
         :goal="targetAmount"
