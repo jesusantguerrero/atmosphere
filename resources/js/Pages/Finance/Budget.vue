@@ -438,16 +438,13 @@ const budgetCsvExportUrl = computed(() => {
              the labels sit pixel-aligned above the values below. No
              internal padding or ml-auto — flex-1 on the left group
              pushes this to the right naturally. -->
-        <!-- SPENT uses text-left pl-8 (not text-right like the others)
-             because ExpenseChartWidgetRow renders its value with
-             `inline-flex justify-between px-4` + a `ml-4` on the value
-             span → the "DOP X.XX" starts 32px from the left edge of the
-             w-44 chart column. Mimicking that offset here puts the
-             SPENT label directly above its value; text-right would leave
-             a ~90px visual gap on the right side of the column. -->
+        <!-- SPENT is right-aligned like the others: ExpenseChartWidgetRow
+             switches to `justify-end pl-4` when hideTitle, so the value
+             hugs the right edge of the w-44 column. text-right on the
+             label sits it directly above that value. -->
         <div class="hidden md:flex items-center flex-nowrap shrink-0 text-xs uppercase tracking-wide text-body-1/50 font-medium">
           <span class="w-36 text-right">{{ $t('Assigned') }} <InfoHint :title="$t('100% assigned')" :body="$t('assigned_100_hint')" /></span>
-          <span class="w-44 text-left pl-8">{{ $t('Spent') }}</span>
+          <span class="w-44 text-right">{{ $t('Spent') }}</span>
           <span class="w-28 text-right">{{ $t('Available') }} <InfoHint :title="$t('Funded vs overspent')" :body="$t('funded_vs_overspent_hint')" /></span>
           <span class="w-8" aria-hidden="true"></span>
         </div>

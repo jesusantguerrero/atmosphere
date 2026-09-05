@@ -145,7 +145,20 @@ class FinanceTrendController extends Controller
         $teamId = $request->user()->current_team_id;
 
         $groups = TransactionService::getCategoryExpensesGroup($teamId, $startDate, $endDate, null, null);
-        $incomeExpenses = TransactionService::getIncomeVsExpenses($teamId, 3);
+
+        // History length driven by the range toolbar (1M / 3M / 6M / YTD / 1Y).
+        // YTD sends a dynamic count (Jan..current month, 1..12), so accept any
+        // 1..12 span instead of the old fixed [3, 6, 12] whitelist that silently
+        // coerced 1M and YTD back to 6.
+        $months = (int) $request->query('months', 6);
+        $months = ($months >= 1 && $months <= 12) ? $months : 6;
+
+        // Money-in vs money-out over the SAME window the spending chart uses, so
+        // the "Money out" / "Net cashflow" headline reconciles with the monthly
+        // bars and the period average instead of being a fixed 3-month total.
+        // getIncomeVsExpenses is now-anchored and spans now-($months-1)..now, so
+        // for YTD this is a true calendar Jan..current-month range.
+        $incomeExpenses = TransactionService::getIncomeVsExpenses($teamId, max(0, $months - 1));
         // Same two charts the Dashboard's "Financial glance" widget shows, so
         // Insights reuses them behind a Previous / Spending toggle. Anchored to
         // the most recent month that actually has data so they stay populated
@@ -170,33 +183,35 @@ class FinanceTrendController extends Controller
             ->groupBy('name')
             ->map(fn ($rows, $name) => ['name' => $name, 'total' => (float) $rows->sum('total')])
             ->values()->sortByDesc('total')->values();
-        // History length driven by the range toolbar (1M / 3M / 6M / YTD / 1Y).
-        // YTD sends a dynamic count (Jan..current month, 1..12), so accept any
-        // 1..12 span instead of the old fixed [3, 6, 12] whitelist that silently
-        // coerced 1M and YTD back to 6.
-        $months = (int) $request->query('months', 6);
-        $months = ($months >= 1 && $months <= 12) ? $months : 6;
-
         $expensesReport = ReportService::generateCurrentPreviousReport($teamId, 'month', 1, 'expenses', $latestExpenseDate);
+        // Now-anchored (not latest-expense-date anchored): YTD must be a real
+        // calendar Jan..current-month span, and the current month stays the end
+        // of the range even before it has any transactions.
         $spendingSummary = ReportService::generateExpensesByPeriodInDate(
             $teamId,
-            $anchor->copy()->subMonths($months - 1)->startOfMonth()->format('Y-m-d'),
-            $anchor->copy()->endOfMonth()->format('Y-m-d'),
+            Carbon::now()->subMonths($months - 1)->startOfMonth()->format('Y-m-d'),
+            Carbon::now()->endOfMonth()->format('Y-m-d'),
         );
         // Assets vs debts, cumulative by month, for the Patrimonio tab
-        // (reuses the ChartNetWorth widget from /trends/net-worth).
+        // (reuses the ChartNetWorth widget from /trends/net-worth). Now-anchored
+        // so its YTD span matches the other tabs exactly — the range toolbar is
+        // shared, so all four tabs must resolve YTD to the same Jan..current
+        // window instead of slipping to the latest-transaction month.
         $netWorth = collect(TransactionService::getNetWorth(
             $teamId,
-            $anchor->copy()->subMonths($months - 1)->startOfMonth()->format('Y-m-d'),
-            $anchor->copy()->endOfMonth()->format('Y-m-d'),
+            Carbon::now()->subMonths($months - 1)->startOfMonth()->format('Y-m-d'),
+            Carbon::now()->endOfMonth()->format('Y-m-d'),
         ))->values();
         // Money in/out per month for the Income tab's monthly chart.
-        $monthlyFlow = ReportService::getMonthlyFlow($teamId, $months, $latestExpenseDate);
-        // Credit card summary for the Cards tab (reuses the credit-card report service).
+        $monthlyFlow = ReportService::getMonthlyFlow($teamId, $months);
+        // Credit card summary for the Cards tab (reuses the credit-card report
+        // service). A current-balance snapshot over the last card cycle, not a
+        // range series — anchored to now so the whole page reads "as of" the
+        // current month like the other tabs.
         $creditCards = $this->creditCardService->creditCards(
             $teamId,
-            $anchor->copy()->endOfMonth()->format('Y-m-d'),
-            $anchor->copy()->subMonths(2)->startOfMonth()->format('Y-m-d'),
+            Carbon::now()->endOfMonth()->format('Y-m-d'),
+            Carbon::now()->subMonths(2)->startOfMonth()->format('Y-m-d'),
             null,
         );
 
