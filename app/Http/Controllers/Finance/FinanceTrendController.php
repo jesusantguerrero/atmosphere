@@ -205,13 +205,15 @@ class FinanceTrendController extends Controller
         // Money in/out per month for the Income tab's monthly chart.
         $monthlyFlow = ReportService::getMonthlyFlow($teamId, $months);
         // Credit card summary for the Cards tab (reuses the credit-card report
-        // service). A current-balance snapshot over the last card cycle, not a
-        // range series — anchored to now so the whole page reads "as of" the
-        // current month like the other tabs.
+        // service). Balances / limit / utilization are point-in-time and stay
+        // "as of" now regardless of range; the period breakdowns it also returns
+        // (top categories / payees / billing cycles per card) honor the shared
+        // range toolbar via the start date, so the toolbar actually does
+        // something on this tab instead of always showing a fixed 3-month window.
         $creditCards = $this->creditCardService->creditCards(
             $teamId,
             Carbon::now()->endOfMonth()->format('Y-m-d'),
-            Carbon::now()->subMonths(2)->startOfMonth()->format('Y-m-d'),
+            Carbon::now()->subMonths($months - 1)->startOfMonth()->format('Y-m-d'),
             null,
         );
 

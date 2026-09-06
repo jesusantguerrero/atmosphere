@@ -4,6 +4,7 @@ export * from "./budgetCols"
 export * from "./useBudget"
 export * from "./budgetTotals"
 export * from "./getFrequencyMonthFactor"
+export * from "./loan"
 
 export const isSpendingTarget = (budgetMetaData : BudgetTarget) => {
     return budgetMetaData.target_type == 'spending'
@@ -17,7 +18,8 @@ export enum BudgetTargetTypes {
     Spending = 'spending',
     SavingBalance = 'saving_balance',
     SavingMonthly = 'saving_monthly',
-    DebtMonthlyPayment = 'saving_monthly',
+    DebtMonthlyPayment = 'debt_monthly_payment',
+    Loan = 'loan',
 }
 
 export const targetTypes = [
@@ -45,6 +47,12 @@ export const targetTypes = [
         label: 'Debt Monthly Payment',
         description: `Use for: Mortgage, student loans, auto loans, etc
         Budget for payments until you are debt free
+        `
+    }, {
+        value: 'loan',
+        label: 'Loan',
+        description: `For a loan with known terms: auto, personal, mortgage
+        Enter the amount, rate and term — we compute the monthly payment and track payoff
         `
     }
 ];
