@@ -61,7 +61,7 @@ const availableClass = computed(() =>
                 <MoneyPresenter :value="totals.activity" />
             </div>
             <div
-                class="w-28 text-right tabular-nums"
+                class="w-36 text-right tabular-nums"
                 :class="availableClass"
                 :title="$t('Available')"
             >

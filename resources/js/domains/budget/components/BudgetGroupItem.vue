@@ -179,7 +179,7 @@ const fetchDetails = async (category: ICategory) => {
                 :details="details"
                 @open-details="fetchDetails(item)"
             />
-            <div class="w-28 text-right">
+            <div class="w-36 text-right">
                 <MoneyPresenter :value="item.available" />
             </div>
             <div class="w-8 flex items-center justify-center">
