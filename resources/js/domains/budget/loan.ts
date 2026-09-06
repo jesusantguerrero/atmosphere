@@ -62,6 +62,8 @@ export interface LoanPayoff {
     remainingBalance: number;
     paidPrincipal: number;
     percentPaid: number;
+    /** Schedule progress by payment count (matches the "k/n paid" label). */
+    percentByPayments: number;
 }
 
 const termsFromTarget = (t: any): LoanTerms => ({
@@ -84,6 +86,7 @@ export const getLoanPayoff = (target: any, asOf: Date = new Date()): LoanPayoff 
         remainingBalance,
         paidPrincipal,
         percentPaid: principal > 0 ? Math.min(100, (paidPrincipal / principal) * 100) : 0,
+        percentByPayments: termMonths > 0 ? Math.min(100, (paymentsMade / termMonths) * 100) : 0,
     };
 };
 

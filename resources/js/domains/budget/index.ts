@@ -17,7 +17,7 @@ export const isSavingBalance = (budgetMetaData : BudgetTarget) => {
 export enum BudgetTargetTypes {
     Spending = 'spending',
     SavingBalance = 'saving_balance',
-    SavingMonthly = 'saving_monthly',
+    SavingMonthly = 'savings_monthly',
     DebtMonthlyPayment = 'debt_monthly_payment',
     Loan = 'loan',
 }
