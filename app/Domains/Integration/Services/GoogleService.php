@@ -59,6 +59,21 @@ class GoogleService
                     $integration->meta_data = json_encode($tokenResponse['refresh_token']);
                 }
                 $integration->save();
+
+                // A freshly connected mailbox should already turn bank emails
+                // into transactions — provision the Universal Bank Parser
+                // automation now (idempotent, non-destructive) so the user does
+                // not have to build it by hand. Best-effort: a setup hiccup must
+                // never break the connection itself.
+                try {
+                    UniversalBankAutomationService::setup($user, $integration);
+                } catch (\Throwable $e) {
+                    Log::warning('Universal bank automation auto-setup failed: '.$e->getMessage(), [
+                        'user_id' => $user->id,
+                        'integration_id' => $integration->id,
+                    ]);
+                }
+
                 session(['g_token', json_encode($tokenResponse)]);
 
                 return;

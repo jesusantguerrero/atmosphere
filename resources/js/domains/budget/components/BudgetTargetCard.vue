@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { differenceInCalendarMonths, parseISO } from "date-fns";
+import { addMonths, differenceInCalendarMonths, format, parseISO } from "date-fns";
 import { computed } from "vue";
 // @ts-ignore: no definitions
 import exactMath from "@/plugins/exactMath"
@@ -84,6 +84,16 @@ const isGoal = computed(() => {
 const isLoan = computed(() => isLoanTarget(props.item));
 const loan = computed(() => getLoanPayoff(props.item));
 
+// Loan payoff date = start + term. Used so the progress header shows a real
+// date instead of an empty "by " (loans carry no frequency_date).
+const payoffDate = computed(() => {
+    if (!isLoan.value || !props.item.loan_start_date || !props.item.term_months) return "";
+    const start = parseISO(String(props.item.loan_start_date).slice(0, 10));
+    if (isNaN(start.getTime())) return "";
+    return format(addMonths(start, Number(props.item.term_months)), "MMM yyyy");
+});
+const displayDate = computed(() => (isLoan.value ? payoffDate.value : targetDate.value));
+
 
 </script>
 
@@ -108,7 +118,7 @@ const loan = computed(() => getLoanPayoff(props.item));
         </div>
         <div class="mt-3">
             <div class="w-full h-1.5 rounded-sm bg-secondary/10 overflow-hidden">
-                <div class="h-full bg-success" :style="{ width: loan.percentPaid + '%' }" />
+                <div class="h-full bg-success" :style="{ width: loan.percentByPayments + '%' }" />
             </div>
             <div class="flex justify-between mt-1 text-xs text-body-1/60">
                 <span>{{ loan.paymentsMade }}/{{ item.term_months }} {{ $t('paid') }}</span>
@@ -125,7 +135,7 @@ const loan = computed(() => getLoanPayoff(props.item));
         :show-labels="false"
     >
     <template #before>
-        <header class="mb-1 font-bold">{{ formatMoney(targetAmount) }} by {{ targetDate }}</header>
+        <header class="mb-1 font-bold">{{ formatMoney(targetAmount) }}<template v-if="displayDate"> by {{ displayDate }}</template></header>
     </template>
 
     <template v-slot:after="{ progress }">

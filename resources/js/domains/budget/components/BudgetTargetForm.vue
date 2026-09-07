@@ -189,10 +189,14 @@ const loanPayment = computed(() =>
 
 watch(
   () => [state.form.target_type, state.form.principal, state.form.interest_rate, state.form.term_months],
-  () => {
+  (_next, prev) => {
     if (state.form.target_type === "loan") {
       state.form.frequency = "MONTHLY";
       state.form.amount = Math.round(loanPayment.value * 100) / 100;
+    } else if (prev && prev[0] === "loan") {
+      // Switched away from Loan — clear the auto-computed payment so it is not
+      // mistaken for a manually entered amount on the newly chosen target type.
+      state.form.amount = 0;
     }
   }
 );

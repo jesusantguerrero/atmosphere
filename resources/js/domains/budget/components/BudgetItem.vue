@@ -369,7 +369,7 @@ const context = useAppContextStore();
                 :formatter="formatMoney"
                 :category="item"
                 @move="onMoveFromBudget"
-                class="flex items-center h-full w-28"
+                class="flex items-center h-full w-36"
                 :class="Number(item.available) < 0 ? (overspentIsCovered ? 'text-warning font-semibold' : 'text-error font-semibold') : ''"
             >
                 <template #suffix v-if="item.available">

@@ -98,9 +98,10 @@
             <AtInput
                 v-model="category.name"
                 @blur="onBlur(category)"
-                class="font-semibold text-body bg-transparent border border-transparent rounded-md cursor-text transition-colors"
+                class="font-semibold text-body bg-transparent rounded-md cursor-text transition-colors"
                 rounded
-                :class="{'hover:bg-base-lvl-2 hover:border-base focus-within:border-primary focus-within:bg-base-lvl-2': editable}"
+                is-borderless
+                :class="{'hover:bg-base-lvl-2 focus-within:bg-base-lvl-2': editable}"
                 :disabled="!editable"
             >
                 <template #prefix>
