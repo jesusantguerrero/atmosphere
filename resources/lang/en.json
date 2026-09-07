@@ -984,5 +984,9 @@
     "Bank email → transaction": "Bank email → transaction",
     "When your bank emails you about a charge, Loger reads it and files the transaction — using the Gmail connection you already have.": "When your bank emails you about a charge, Loger reads it and files the transaction — using the Gmail connection you already have.",
     "Active — new bank emails are imported automatically": "Active — new bank emails are imported automatically",
-    "Paused": "Paused"
+    "Paused": "Paused",
+    "Bank sync active": "Bank sync active",
+    "Bank sync paused": "Bank sync paused",
+    "Connect your email to import bank transactions": "Connect your email to import bank transactions",
+    "Manage": "Manage"
 }

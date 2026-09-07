@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch } from 'vue';
-import { router, useForm, usePage } from '@inertiajs/vue3';
+import { router, useForm, usePage, Link } from '@inertiajs/vue3';
 import axios from 'axios';
 
 import AppLayout from '@/Components/templates/AppLayout.vue';
@@ -20,6 +20,27 @@ const isLoading = ref(true);
 const selected = ref([]);
 const listRef = ref();
 const { t } = useI18n();
+
+const props = withDefaults(defineProps<{
+    bankTransactions?: { enabled: boolean; exists: boolean; connected: boolean; last_synced_at: string | null };
+}>(), {
+    bankTransactions: () => ({ enabled: false, exists: false, connected: false, last_synced_at: null }),
+});
+const bank = computed(() => props.bankTransactions);
+
+// Same relative-time phrasing as the Integrations page (shared i18n keys).
+const formatRelativeTime = (iso: string | null): string => {
+    if (!iso) return '';
+    const then = new Date(iso).getTime();
+    if (isNaN(then)) return '';
+    const diff = Date.now() - then;
+    const minute = 60_000, hour = 3_600_000, day = 86_400_000;
+    if (diff < minute) return t('just now');
+    if (diff < hour) return t('{n}m ago', { n: Math.floor(diff / minute) });
+    if (diff < day) return t('{n}h ago', { n: Math.floor(diff / hour) });
+    if (diff < 7 * day) return t('{n}d ago', { n: Math.floor(diff / day) });
+    try { return new Date(iso).toLocaleDateString(); } catch { return iso; }
+};
 // Same Inertia-form delete used by the dashboard/finance bulk delete, pointed
 // at the shared /finance/transactions/bulk/delete endpoint.
 const deleteTransactionsForm = useForm({});
@@ -140,6 +161,24 @@ const captureMethods = [
                 <div>
                     <h1 class="text-2xl font-bold text-body">{{ $t('Inbox') }}</h1>
                     <p class="mt-1 text-body-2">{{ $t('Everything you capture lands here first — Claude sorts it, you confirm.') }}</p>
+                    <div class="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+                        <template v-if="bank.connected">
+                            <span class="inline-flex items-center gap-1.5" :class="bank.enabled ? 'text-success' : 'text-body-2'">
+                                <i class="fa fa-circle text-[7px]" />
+                                {{ bank.enabled ? $t('Bank sync active') : $t('Bank sync paused') }}
+                            </span>
+                            <span class="text-body-2/60">·</span>
+                            <span class="text-body-2/70">
+                                <i class="fa fa-rotate text-success/70 mr-1" />
+                                <template v-if="bank.last_synced_at">{{ $t('Last synced') }} {{ formatRelativeTime(bank.last_synced_at) }}</template>
+                                <template v-else>{{ $t('Awaiting first sync') }}</template>
+                            </span>
+                            <Link href="/integrations" class="text-body-2/60 hover:text-primary hover:underline">{{ $t('Manage') }}</Link>
+                        </template>
+                        <Link v-else href="/integrations" class="inline-flex items-center text-primary hover:underline">
+                            <i class="fa fa-plug mr-1" />{{ $t('Connect your email to import bank transactions') }}
+                        </Link>
+                    </div>
                 </div>
                 <LogerButton
                     v-if="hasItems"
