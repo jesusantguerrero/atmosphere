@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Domains\Automation\Models\Automation;
 use App\Domains\Integration\Actions\UniversalBankParser;
 use App\Domains\Integration\Models\Integration;
+use App\Domains\Integration\Services\UniversalBankAutomationService;
 use App\Models\Account;
 use App\Models\User;
 use Illuminate\Console\Command;
@@ -116,23 +117,11 @@ class SetupUniversalBankAutomation extends Command
         // Step 5: Find or create automation
         $this->info('Step 5: Setting up Universal Bank Parser automation...');
 
-        $automation = Automation::updateOrCreate(
-            [
-                'user_id' => $user->id,
-                'team_id' => $teamId,
-                'name' => 'Universal Bank Transaction Parser',
-            ],
-            [
-                'integration_id' => $integrationId,
-                'trigger_id' => 1,
-                'description' => 'Processes transaction emails from BHD, APAP, BSC, and other banks in a single automation',
-                'sentence' => 'When email received from banks, parse and create transaction',
-                'status' => true,
-                'is_background' => true,
-                'config' => [
-                    'bank_patterns' => UniversalBankParser::getAllBankPatterns(),
-                ],
-            ]
+        $automation = UniversalBankAutomationService::setup(
+            $user,
+            $integrationId ? Integration::find($integrationId) : null,
+            $accountId ? (int) $accountId : null,
+            overwrite: true
         );
 
         if ($automation->wasRecentlyCreated) {
@@ -146,47 +135,9 @@ class SetupUniversalBankAutomation extends Command
         // Step 6: Add tasks to automation
         $this->info('Step 6: Adding tasks to automation...');
 
-        // Build Gmail query from all bank email addresses
+        // Tasks (Gmail trigger -> parser -> create transaction) are built by the
+        // service. Recompute the query only for the summary output below.
         $gmailQuery = UniversalBankParser::buildGmailQuery();
-
-        $tasks = [
-            [
-                'entity' => 'App\\Domains\\Integration\\Actions\\GmailReceived',
-                'task_type' => 'trigger',
-                'order' => 0,
-                'name' => 'Gmail Trigger - All Banks',
-                'values' => [
-                    'query' => $gmailQuery,
-                ],
-            ],
-            [
-                'entity' => 'App\\Domains\\Integration\\Actions\\UniversalBankParser',
-                'task_type' => 'component',
-                'order' => 1,
-                'name' => 'Parse Bank Email',
-                'values' => [],
-            ],
-            [
-                'entity' => 'App\\Domains\\Integration\\Actions\\TransactionCreateEntry',
-                'task_type' => 'action',
-                'order' => 2,
-                'name' => 'Create Transaction',
-                'values' => [
-                    'account_id' => $accountId,
-                    'date' => '${date}',
-                    'currency_code' => '${currencyCode}',
-                    'category_id' => '',
-                    'description' => '${description}',
-                    'direction' => 'WITHDRAW',
-                    'total' => '${amount}',
-                    'items' => '',
-                    'payee' => '${payee}',
-                    'metaData' => '',
-                ],
-            ],
-        ];
-
-        $automation->saveTasks($tasks);
 
         $this->info('✓ Tasks added:');
         $this->line('  1. Gmail Trigger (fetches emails from all banks)');
@@ -209,7 +160,7 @@ class SetupUniversalBankAutomation extends Command
                 ['Team ID', $teamId],
                 ['Account', $account->name.' (ID: '.$accountId.')'],
                 ['Integration ID', $integrationId ?? 'Not set'],
-                ['Tasks', count($tasks)],
+                ['Tasks', 3],
             ]
         );
 
