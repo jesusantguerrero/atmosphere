@@ -10,6 +10,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     Route::get('/integrations/social', [IntegrationController::class, 'social'])->name('settings.integrations.social');
     Route::post('/integrations/google', [IntegrationController::class, 'google'])->name('services.google');
     Route::post('/integrations/email-to-tasks', [IntegrationController::class, 'toggleEmailToTasks'])->name('settings.integrations.email-to-tasks');
+    Route::post('/integrations/bank-transactions', [IntegrationController::class, 'toggleBankTransactions'])->name('settings.integrations.bank-transactions');
 });
 
 Route::controller(WhatsappController::class)->group(function () {

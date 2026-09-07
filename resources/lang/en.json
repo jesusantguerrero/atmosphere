@@ -978,5 +978,11 @@
     "saving balance": "saving balance",
     "monthly savings": "monthly savings",
     "debt payment": "debt payment",
-    "spending": "spending"
+    "spending": "spending",
+    "Bank transactions": "Bank transactions",
+    "Import your bank notification emails as transactions automatically.": "Import your bank notification emails as transactions automatically.",
+    "Bank email → transaction": "Bank email → transaction",
+    "When your bank emails you about a charge, Loger reads it and files the transaction — using the Gmail connection you already have.": "When your bank emails you about a charge, Loger reads it and files the transaction — using the Gmail connection you already have.",
+    "Active — new bank emails are imported automatically": "Active — new bank emails are imported automatically",
+    "Paused": "Paused"
 }
