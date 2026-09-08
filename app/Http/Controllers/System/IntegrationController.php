@@ -8,6 +8,7 @@ use App\Domains\Automation\Models\AutomationTask;
 use App\Domains\Automation\Models\AutomationRecipe;
 use App\Domains\Integration\Services\GoogleService;
 use App\Domains\Integration\Services\EmailToTasksAutomation;
+use App\Domains\Integration\Services\UniversalBankAutomationService;
 use App\Domains\Automation\Models\AutomationService;
 
 class IntegrationController
@@ -25,6 +26,7 @@ class IntegrationController
                 'user_id' => $user->id,
             ])->with(['automations'])->get(),
             'emailToTasks' => EmailToTasksAutomation::status($user),
+            'bankTransactions' => UniversalBankAutomationService::status($user),
         ]);
     }
 
@@ -44,6 +46,24 @@ class IntegrationController
         }
 
         return response()->json(EmailToTasksAutomation::status($user));
+    }
+
+    public function toggleBankTransactions(Request $request)
+    {
+        $user = $request->user();
+        $status = UniversalBankAutomationService::status($user);
+
+        if (! $status['connected']) {
+            return response()->json($status, 422);
+        }
+
+        if ($status['enabled']) {
+            UniversalBankAutomationService::disable($user);
+        } else {
+            UniversalBankAutomationService::enable($user);
+        }
+
+        return response()->json(UniversalBankAutomationService::status($user));
     }
 
     public function social()

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Domains\Integration\Services\UniversalBankAutomationService;
+
 class InboxController extends Controller
 {
     /**
@@ -13,6 +15,11 @@ class InboxController extends Controller
      */
     public function __invoke()
     {
-        return inertia('Inbox/Index');
+        return inertia('Inbox/Index', [
+            // Sync status for the header so users can see the bank pipeline is
+            // connected and when it last pulled — the Inbox is where synced
+            // draft transactions land.
+            'bankTransactions' => UniversalBankAutomationService::status(request()->user()),
+        ]);
     }
 }

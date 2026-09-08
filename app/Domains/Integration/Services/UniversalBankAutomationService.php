@@ -7,6 +7,7 @@ use App\Domains\Integration\Actions\GmailReceived;
 use App\Domains\Integration\Actions\TransactionCreateEntry;
 use App\Domains\Integration\Actions\UniversalBankParser;
 use App\Domains\Integration\Models\Integration;
+use App\Domains\Integration\Services\GoogleService;
 use App\Models\Account;
 use App\Models\User;
 
@@ -110,5 +111,59 @@ class UniversalBankAutomationService
         ]);
 
         return $automation;
+    }
+
+    public static function find(User $user, ?int $teamId = null): ?Automation
+    {
+        return Automation::where([
+            'user_id' => $user->id,
+            'team_id' => $teamId ?? $user->current_team_id,
+            'name' => self::NAME,
+        ])->first();
+    }
+
+    /**
+     * State for the Integrations UI: whether bank-email import is on, whether it
+     * has been set up, whether a Gmail account is connected, and when that
+     * mailbox last synced (so the card can show a real "last synced" line).
+     *
+     * @return array{enabled: bool, exists: bool, connected: bool, last_synced_at: ?string}
+     */
+    public static function status(User $user, ?int $teamId = null): array
+    {
+        $automation = self::find($user, $teamId);
+        $integration = GoogleService::findGoogleIntegration(
+            $user->id,
+            $teamId ?? $user->current_team_id,
+            true
+        );
+
+        return [
+            'enabled' => (bool) ($automation?->status),
+            'exists' => (bool) $automation,
+            'connected' => (bool) $integration,
+            'last_synced_at' => $integration?->last_synced_at,
+        ];
+    }
+
+    public static function enable(User $user, ?int $teamId = null): Automation
+    {
+        $existing = self::find($user, $teamId);
+        if ($existing) {
+            $existing->update(['status' => true]);
+
+            return $existing;
+        }
+
+        // No automation yet (mailbox connected before this feature, or it was
+        // never provisioned) — build it now.
+        $automation = self::setup($user, null, null, true);
+
+        return $automation ?? throw new \RuntimeException('Could not set up the bank automation. Add an account or reconnect Gmail.');
+    }
+
+    public static function disable(User $user, ?int $teamId = null): void
+    {
+        self::find($user, $teamId)?->update(['status' => false]);
     }
 }

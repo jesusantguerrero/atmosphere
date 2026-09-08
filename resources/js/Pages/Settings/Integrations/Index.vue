@@ -42,18 +42,27 @@ interface EmailToTasksStatus {
     board: string;
 }
 
+interface BankTransactionsStatus {
+    enabled: boolean;
+    exists: boolean;
+    connected: boolean;
+    last_synced_at: string | null;
+}
+
 const props = withDefaults(defineProps<{
     services?: Service[];
     integrations?: Integration[];
     recipes?: any[];
     tasks?: any[];
     emailToTasks?: EmailToTasksStatus;
+    bankTransactions?: BankTransactionsStatus;
 }>(), {
     services: () => [],
     integrations: () => [],
     recipes: () => [],
     tasks: () => [],
     emailToTasks: () => ({ enabled: false, exists: false, connected: false, query: 'is:starred', board: 'Email' }),
+    bankTransactions: () => ({ enabled: false, exists: false, connected: false, last_synced_at: null }),
 });
 
 // One-click "emails -> tasks" automation state (mirrors the server status).
@@ -69,6 +78,26 @@ const toggleEmailToTasks = async (): Promise<void> => {
         togglingE2t.value = false;
     }
 };
+
+// Bank-email -> transaction automation (mirrors the server status).
+const bt = reactive<BankTransactionsStatus>({ ...props.bankTransactions });
+const togglingBt = ref(false);
+const toggleBankTransactions = async (): Promise<void> => {
+    if (! bt.connected || togglingBt.value) return;
+    togglingBt.value = true;
+    try {
+        const { data } = await axios.post('/integrations/bank-transactions');
+        Object.assign(bt, data);
+    } finally {
+        togglingBt.value = false;
+    }
+};
+
+// The bank sync is surfaced in its own status card above, so keep this
+// system automation out of the generic "Automations" list.
+const BANK_AUTOMATION_NAME = 'Universal Bank Transaction Parser';
+const userAutomationsOf = (i: Integration): Automation[] =>
+    (i.automations ?? []).filter((a) => a.name !== BANK_AUTOMATION_NAME);
 
 const state = reactive({
     isAutomationModalOpen: false,
@@ -92,7 +121,7 @@ const availableServices = computed<Service[]>(() =>
 );
 
 const totalAutomations = computed<number>(() =>
-    props.integrations.reduce((sum, i) => sum + (i.automations?.length ?? 0), 0)
+    props.integrations.reduce((sum, i) => sum + userAutomationsOf(i).length, 0)
 );
 
 const formatDate = (iso: string): string => {
@@ -341,8 +370,8 @@ const onItemSaved = (): void => {
                                     </template>
                                     <span class="mx-1.5 text-body-1/30">·</span>
                                     {{ $t('Connected') }} {{ formatDate(integration.created_at) }}
-                                    <span v-if="integration.automations?.length" class="ml-1.5">
-                                        · {{ integration.automations.length }} {{ $t(integration.automations.length === 1 ? 'automation' : 'automations') }}
+                                    <span v-if="userAutomationsOf(integration).length" class="ml-1.5">
+                                        · {{ userAutomationsOf(integration).length }} {{ $t(userAutomationsOf(integration).length === 1 ? 'automation' : 'automations') }}
                                     </span>
                                 </p>
                             </div>
@@ -372,6 +401,49 @@ const onItemSaved = (): void => {
                 <p class="text-sm text-body-1/70 mt-1 max-w-md mx-auto">
                     {{ $t('More sync sources are on the way. For now you can import bank statements as PDFs or enter transactions manually.') }}
                 </p>
+            </section>
+
+            <!-- Bank transactions (auto-import) -->
+            <section class="space-y-3">
+                <div>
+                    <h2 class="text-sm font-bold uppercase tracking-wide text-body-1/60">{{ $t('Bank transactions') }}</h2>
+                    <p class="text-xs text-body-1/60 mt-0.5">{{ $t('Import your bank notification emails as transactions automatically.') }}</p>
+                </div>
+                <article class="bg-base-lvl-3 rounded-xl border border-base shadow-sm p-5 flex items-start gap-4">
+                    <span class="w-10 h-10 shrink-0 rounded-lg bg-success/10 text-success flex items-center justify-center">
+                        <i class="fa fa-building-columns" />
+                    </span>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="font-bold text-body">{{ $t('Bank email → transaction') }}</h3>
+                        <p class="text-sm text-body-1/80 mt-1">{{ $t('When your bank emails you about a charge, Loger reads it and files the transaction — using the Gmail connection you already have.') }}</p>
+                        <p v-if="!bt.connected" class="text-xs text-body-1/60 mt-2">{{ $t('Connect Google first to enable this.') }}</p>
+                        <template v-else>
+                            <p class="text-xs mt-2" :class="bt.enabled ? 'text-success' : 'text-body-1/60'">
+                                <i class="fa fa-circle text-[7px] mr-1 align-middle" />
+                                {{ bt.enabled ? $t('Active — new bank emails are imported automatically') : $t('Paused') }}
+                            </p>
+                            <p v-if="bt.last_synced_at" class="text-[11px] text-body-1/50 mt-1">
+                                <i class="fa fa-rotate text-success/70 mr-1" />{{ $t('Last synced') }} {{ formatRelativeTime(bt.last_synced_at) }}
+                            </p>
+                        </template>
+                    </div>
+                    <div class="shrink-0 self-center">
+                        <button
+                            type="button"
+                            :disabled="!bt.connected || togglingBt"
+                            :aria-pressed="bt.enabled"
+                            :title="bt.enabled ? $t('Turn off') : $t('Turn on')"
+                            class="relative inline-flex h-6 w-11 items-center rounded-full transition disabled:opacity-40"
+                            :class="bt.enabled ? 'bg-primary' : 'bg-base-lvl-1 border border-base'"
+                            @click="toggleBankTransactions"
+                        >
+                            <span
+                                class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition"
+                                :class="bt.enabled ? 'translate-x-6' : 'translate-x-1'"
+                            />
+                        </button>
+                    </div>
+                </article>
             </section>
 
             <!-- Email → Tasks (one-click automation) -->
@@ -437,7 +509,7 @@ const onItemSaved = (): void => {
                 <div v-if="totalAutomations" class="space-y-2">
                     <template v-for="integration in integrations" :key="integration.id">
                         <div
-                            v-for="automation in integration.automations"
+                            v-for="automation in userAutomationsOf(integration)"
                             :key="automation.id"
                             class="flex items-center justify-between px-4 py-3 rounded-lg bg-base-lvl-2 border border-base"
                         >

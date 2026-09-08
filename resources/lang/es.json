@@ -1059,5 +1059,15 @@
     "saving balance": "balance de ahorro",
     "monthly savings": "ahorro mensual",
     "debt payment": "pago de deuda",
-    "spending": "gasto"
+    "spending": "gasto",
+    "Bank transactions": "Transacciones bancarias",
+    "Import your bank notification emails as transactions automatically.": "Importa los correos de notificación de tu banco como transacciones automáticamente.",
+    "Bank email → transaction": "Correo del banco → transacción",
+    "When your bank emails you about a charge, Loger reads it and files the transaction — using the Gmail connection you already have.": "Cuando tu banco te envía un correo sobre un cargo, Loger lo lee y registra la transacción — usando la conexión de Gmail que ya tienes.",
+    "Active — new bank emails are imported automatically": "Activo — los nuevos correos del banco se importan automáticamente",
+    "Paused": "Pausado",
+    "Bank sync active": "Sincronización bancaria activa",
+    "Bank sync paused": "Sincronización bancaria en pausa",
+    "Connect your email to import bank transactions": "Conecta tu correo para importar transacciones bancarias",
+    "Manage": "Administrar"
 }
