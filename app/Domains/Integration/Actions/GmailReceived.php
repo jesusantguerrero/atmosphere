@@ -50,7 +50,34 @@ class GmailReceived implements AutomationActionContract
         }
 
         $taskConditions = json_decode($trigger->values);
-        $client = GoogleService::getClient($automation->integration_id);
+
+        // The automation may carry a null or stale integration_id (created before
+        // Gmail was linked, or the integration was reconnected/replaced). Resolve
+        // the team's token-bearing Gmail integration and self-heal the row so this
+        // run — and every future one, plus the status card — points at a live
+        // connection instead of fataling on a missing token.
+        $integration = $automation->integration_id
+            ? Integration::find($automation->integration_id)
+            : null;
+        if (! $integration || ! $integration->token) {
+            $integration = GoogleService::findGoogleIntegration(
+                (int) $automation->user_id,
+                (int) $automation->team_id,
+                true
+            );
+        }
+        if (! $integration) {
+            Log::warning('GmailReceived: no connected Gmail integration for automation', [
+                'automation_id' => $automation->id,
+            ]);
+
+            return;
+        }
+        if ((int) $automation->integration_id !== (int) $integration->id) {
+            $automation->forceFill(['integration_id' => $integration->id])->save();
+        }
+
+        $client = GoogleService::getClient($integration->id);
         $service = new ServiceGmail($client);
 
         // Support both query formats:
