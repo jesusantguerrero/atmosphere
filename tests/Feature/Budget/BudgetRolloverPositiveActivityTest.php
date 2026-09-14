@@ -6,6 +6,7 @@ use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Budget\Services\BudgetRolloverService;
 use App\Domains\Journal\Actions\AccountDetailTypesCreate;
 use App\Models\Account;
+use App\Models\Setting;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -116,6 +117,22 @@ class BudgetRolloverPositiveActivityTest extends TestCase
         app(BudgetRolloverService::class)->startFrom($team->id, '2026-08');
 
         $this->assertSame(80.0, $this->availableFor($team, $category), 'budgeted 50 + left 10 + inflow 20');
+    }
+
+    public function test_rounds_available_to_the_team_currency_scale(): void
+    {
+        [$team, $user, $bank, $category] = $this->teamWithBankAndCategory();
+        Setting::updateOrCreate(
+            ['team_id' => $team->id, 'name' => 'team_primary_currency_code'],
+            ['user_id' => $user->id, 'value' => 'JPY']
+        );
+        BudgetMonth::where(['team_id' => $team->id, 'category_id' => $category->id, 'month' => self::MONTH])
+            ->update(['budgeted' => 50.4]);
+        $this->recordLine($team, $user, $bank, $category, 1, 20);
+
+        app(BudgetRolloverService::class)->startFrom($team->id, '2026-08');
+
+        $this->assertSame(80.0, $this->availableFor($team, $category), 'JPY has no decimals: 50.4 + 10 + 20 rounds to 80, not 80.4');
     }
 
     public function test_negative_activity_is_still_subtracted_from_available(): void
