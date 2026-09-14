@@ -81,7 +81,7 @@ class BudgetRolloverService
         } else {
             $available = Money::Of($budgetMonth?->budgeted ?? 0, 'USD', null, RoundingMode::HALF_UP)
                 ->plus(($budgetMonth->left_from_last_month ?? 0), RoundingMode::HALF_UP)
-                ->minus(abs($activity), RoundingMode::HALF_UP)
+                ->plus($activity, RoundingMode::HALF_UP)
                 ->getAmount()
                 ->toFloat();
         }
