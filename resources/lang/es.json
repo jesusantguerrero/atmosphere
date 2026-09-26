@@ -1069,5 +1069,12 @@
     "Bank sync active": "Sincronización bancaria activa",
     "Bank sync paused": "Sincronización bancaria en pausa",
     "Connect your email to import bank transactions": "Conecta tu correo para importar transacciones bancarias",
-    "Manage": "Administrar"
+    "Manage": "Administrar",
+    "overdue payment": "pago vencido",
+    "overdue reminder": "recordatorio vencido",
+    "payment due soon": "pago próximo",
+    "transaction to review": "transacción por revisar",
+    "Due soon": "Próximos",
+    "Overdue payments": "Pagos vencidos",
+    "Payments due soon": "Pagos próximos"
 }

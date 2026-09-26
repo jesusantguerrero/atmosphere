@@ -6,19 +6,24 @@ use App\Domains\Integration\Concerns\PlannedTransactionDTO;
 use App\Domains\Journal\Actions\TransactionDelete;
 use App\Domains\Transaction\Actions\FindLinkedDrafts;
 use App\Domains\Transaction\Actions\FindLinkedTransactions;
+use App\Domains\Transaction\Actions\RecategorizeTransactionLine;
 use App\Domains\Transaction\Exports\TransactionExport;
 use App\Domains\Transaction\Models\Transaction;
+use App\Domains\Transaction\Models\TransactionLine;
 use App\Domains\Transaction\Resources\TransactionResource;
 use App\Domains\Transaction\Services\PlannedTransactionService;
 use App\Domains\Transaction\Services\TransactionService;
 use App\Http\Controllers\Traits\QuerifySlim;
+use App\Http\Requests\RecategorizeTransactionLineRequest;
 use App\Services\MultiCurrencyDisplayService;
 use Dompdf\Dompdf;
 use Dompdf\Options as DompdfOptions;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Freesgen\Atmosphere\Http\Querify;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Insane\Journal\Models\Core\Category;
 use Maatwebsite\Excel\Facades\Excel;
 use Recurr\Rule;
 use Recurr\Transformer\ArrayTransformer;
@@ -307,6 +312,16 @@ class FinanceTransactionController extends InertiaController
         }
 
         return "{$prefix}_as_of_{$today}.{$extension}";
+    }
+
+    public function recategorizeLine(
+        RecategorizeTransactionLineRequest $request,
+        TransactionLine $line,
+        RecategorizeTransactionLine $recategorizeTransactionLine
+    ): RedirectResponse {
+        $recategorizeTransactionLine->handle($line, Category::findOrFail($request->validated('category_id')));
+
+        return back();
     }
 
     // linked transactions

@@ -14,9 +14,9 @@ use App\Http\Controllers\Finance\FinanceAccountController;
 use App\Http\Controllers\Finance\FinanceController;
 use App\Http\Controllers\Finance\FinanceLinesController;
 use App\Http\Controllers\Finance\FinanceTransactionController;
-use App\Http\Controllers\Finance\PayeeManagerController;
 use App\Http\Controllers\Finance\FinanceTrendController;
 use App\Http\Controllers\Finance\FinancialOverviewController;
+use App\Http\Controllers\Finance\PayeeManagerController;
 use App\Http\Controllers\InboxController;
 use App\Http\Controllers\NextPaymentsController;
 use App\Http\Controllers\ProfileSettingsController;
@@ -305,6 +305,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
         Route::get('/api/finance/transactions', 'list')->name('finance.transactions.list');
         Route::get('/finance/transactions', 'index')->name('finance.transactions');
         Route::post('/finance/transactions/bulk/delete', 'bulkDelete')->name('finance.transactions.bulk-delete');
+        Route::patch('/finance/transaction-lines/{line}/category', 'recategorizeLine')->name('finance.transaction-lines.category');
         Route::get('/finance/transactions/export/csv', 'exportCsv')->name('finance.transactions.export-csv');
         Route::get('/finance/transactions/export/pdf', 'exportPdf')->name('finance.transactions.export-pdf');
         Route::get('/finance/transactions/{state}', 'getByState')->name('finance.transactions.states');
@@ -320,6 +321,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     // Next Payments
     Route::controller(NextPaymentsController::class)->group(function () {
         Route::get('/api/next-payments', 'index')->name('next-payments.index');
+        Route::get('/finance/next-payments', 'page')->name('next-payments.page');
         Route::patch('/api/next-payments/{paymentId}/mark-as-paid', 'markAsPaid')->name('next-payments.mark-as-paid');
     });
 
