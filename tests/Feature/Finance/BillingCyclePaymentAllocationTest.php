@@ -6,8 +6,10 @@ use App\Domains\Journal\Actions\AccountDetailTypesCreate;
 use App\Domains\Transaction\Models\BillingCycle;
 use App\Models\Account;
 use App\Models\User;
+use App\Notifications\BillingCycleCutAlert;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Insane\Journal\Models\Core\AccountDetailType;
 use Tests\TestCase;
 
@@ -162,5 +164,38 @@ class BillingCyclePaymentAllocationTest extends TestCase
         $this->assertEqualsWithDelta(4230.80, (float) $cycle->paid, 0.001);
         $this->assertEqualsWithDelta(0.0, (float) $cycle->debt, 0.001);
         $this->assertSame(BillingCycle::STATUS_PAID, $cycle->status);
+    }
+
+    public function test_changing_payment_days_updates_existing_cycle_due_dates(): void
+    {
+        [, $card] = $this->newCardAndBank();
+        $cycle = $this->makeCycle($card, '2026-04-21', '2026-05-21', 4230.80);
+
+        $card->update(['credit_payment_days' => 20]);
+
+        $this->assertSame('2026-06-10', $cycle->fresh()->due_at);
+    }
+
+    public function test_paying_a_cycle_marks_its_notification_read(): void
+    {
+        [$owner, $card, $bank] = $this->newCardAndBank();
+        $cycle = $this->makeCycle($card, '2026-04-21', '2026-05-21', 4230.80);
+        $notificationId = (string) Str::uuid();
+
+        DB::table('notifications')->insert([
+            'id' => $notificationId,
+            'type' => BillingCycleCutAlert::class,
+            'notifiable_type' => $owner::class,
+            'notifiable_id' => $owner->id,
+            'data' => json_encode((new BillingCycleCutAlert($cycle, $card->name, $owner->id))->toArray($owner)),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->recordPayment($bank, $card, '2026-05-25', 4230.80);
+        $cycle->save();
+
+        $this->assertSame(BillingCycle::STATUS_PAID, $cycle->fresh()->status);
+        $this->assertNotNull(DB::table('notifications')->where('id', $notificationId)->value('read_at'));
     }
 }

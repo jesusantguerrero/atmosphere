@@ -45,6 +45,10 @@ export interface IAccount {
     label(arg0: string, label: any): unknown | (string | number | boolean | void | import("vue").VNode<import("vue").RendererNode, import("vue").RendererElement, { [key: string]: any; }> | null | undefined) | import("vue").VNodeArrayChildren;
     credit_limit: number;
     credit_closing_day: any;
+    credit_payment_days?: number | null;
+    credit_renewal_month?: number | null;
+    credit_annual_fee?: number | null;
+    credit_monthly_insurance?: number | null;
     id: number;
     name: string;
     color: string;

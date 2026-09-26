@@ -24,6 +24,7 @@ use App\Listeners\HandleTransactionCreated;
 use App\Listeners\LogForcedLogout;
 use App\Listeners\Menu\ShowInApp;
 use App\Listeners\PushShoppingListUpdate;
+use App\Listeners\SyncCreditCardDueDates;
 use App\Listeners\TrashTeamSettings;
 use App\Listeners\UpdateBudgetAvailable;
 use Illuminate\Auth\Events\CurrentDeviceLogout;
@@ -71,6 +72,7 @@ class EventServiceProvider extends ServiceProvider
         ],
         AccountUpdated::class => [
             CreateBudgetCategory::class,
+            SyncCreditCardDueDates::class,
         ],
         TransactionCreated::class => [
             CreateBudgetTransactionMovement::class,

@@ -106,12 +106,32 @@
               />
             </AtField>
 
+            <AtField label="Days from closing to payment due" class="flex justify-between w-full space-x-4 md:space-x-0">
+              <LogerInput v-model="form.credit_payment_days" type="number" min="0" max="90"
+                class="w-48 md:w-full" placeholder="e.g., 20" />
+            </AtField>
+
             <AtField label="Credit Limit" class="flex justify-between w-full space-x-4 md:space-x-0">
               <MultiCurrencyInput
                 v-model="creditLimitInput"
                 :target-currency="form.currency_code"
                 class="w-48 md:w-full"
               />
+            </AtField>
+
+            <AtField :label="$t('Renewal month')" class="flex justify-between w-full space-x-4 md:space-x-0">
+              <NSelect v-model:value="form.credit_renewal_month" :options="renewalMonthOptions" clearable
+                class="w-48 md:w-full" />
+            </AtField>
+
+            <AtField :label="$t('Estimated annual fee')" class="flex justify-between w-full space-x-4 md:space-x-0">
+              <LogerInput v-model="form.credit_annual_fee" type="number" min="0" step="0.01"
+                class="w-48 md:w-full" placeholder="0.00" />
+            </AtField>
+
+            <AtField :label="$t('Monthly insurance')" class="flex justify-between w-full space-x-4 md:space-x-0">
+              <LogerInput v-model="form.credit_monthly_insurance" type="number" min="0" step="0.01"
+                class="w-48 md:w-full" placeholder="0.00" />
             </AtField>
           </div>
 
@@ -137,7 +157,11 @@
                 <strong>Credit Card Settings:</strong>
                 <ul class="list-disc list-inside ml-4">
                   <li v-if="form.credit_closing_day">Closing Day: {{ form.credit_closing_day }}</li>
+                  <li v-if="form.credit_payment_days !== null">Payment due {{ form.credit_payment_days }} days after closing</li>
                   <li v-if="form.credit_limit">Credit Limit: {{ formatCurrency(form.credit_limit, form.currency_code) }}</li>
+                  <li v-if="form.credit_renewal_month">Renewal month: {{ renewalMonthOptions[form.credit_renewal_month - 1]?.label }}</li>
+                  <li v-if="form.credit_annual_fee">Estimated annual fee: {{ formatCurrency(form.credit_annual_fee, form.currency_code) }}</li>
+                  <li v-if="form.credit_monthly_insurance">Monthly insurance: {{ formatCurrency(form.credit_monthly_insurance, form.currency_code) }}</li>
                 </ul>
               </div>
             </div>
@@ -241,12 +265,20 @@ const form = useForm({
   is_multi_currency: false,
   secondary_currencies: [] as string[],
   credit_closing_day: null,
+  credit_payment_days: null,
+  credit_renewal_month: null,
+  credit_annual_fee: null,
+  credit_monthly_insurance: null,
   credit_limit: null,
   currency_config: {}
 });
 
 const detailTypes = usePage().props.accountDetailTypes;
 const detailOptions = ref(makeOptions(detailTypes, ["id", "label"]));
+const renewalMonthOptions = Array.from({ length: 12 }, (_, index) => ({
+  label: new Intl.DateTimeFormat(undefined, { month: 'long' }).format(new Date(2026, index, 1)),
+  value: index + 1,
+}));
 
 const creditCard = computed(() => {
   return detailOptions.value.find((type) => type.label.toLowerCase() == "credit cards");

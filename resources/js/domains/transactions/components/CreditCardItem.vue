@@ -48,6 +48,20 @@ const creditLimitDate = computed(() => {
     return account.value.credit_closing_day ? ` - ${account.value.credit_closing_day}${suffixes.get(formatter.select(Number(account.value.credit_closing_day)))}` : '';
 })
 
+const renewalNotice = computed(() => {
+    const month = Number(account.value.credit_renewal_month);
+    if (!month) return null;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    let renewalStart = new Date(today.getFullYear(), month - 1, 1);
+    const renewalEnd = new Date(today.getFullYear(), month, 0);
+    if (today > renewalEnd) renewalStart = new Date(today.getFullYear() + 1, month - 1, 1);
+
+    const daysUntil = Math.max(0, Math.ceil((renewalStart.getTime() - today.getTime()) / 86_400_000));
+    return daysUntil <= 30 ? { daysUntil } : null;
+});
+
 
 const CreditCardView = ref<HTMLElement>();
 
@@ -108,6 +122,16 @@ onMounted(() => {
         {{ formatMoney(account.balance, account.currency_code) }}
         / {{ formatMoney(availableCredit, account.currency_code) }}
       </p>
+    </div>
+
+    <div v-if="renewalNotice" class="flex items-center gap-2 pt-3 border-t border-base-lvl-2 text-xs text-warning">
+      <i class="fa fa-calendar" />
+      <span class="font-medium">
+        {{ renewalNotice.daysUntil === 0 ? $t('Renewal this month') : $t('Renewal in {days} days', { days: renewalNotice.daysUntil }) }}
+      </span>
+      <span v-if="account.credit_annual_fee" class="text-body-1/70">
+        · {{ formatMoney(account.credit_annual_fee, account.currency_code) }}
+      </span>
     </div>
   </div>
 </template>

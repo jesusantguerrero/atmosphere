@@ -17,7 +17,8 @@ use Tests\TestCase;
  * if any type=1 line existed since the previous cut. That false-positives on cashback,
  * refunds, and adjustments — hiding cards the user still owes.
  *
- * Suppression must require a real payment (transfer from a cash/bank-type Loger account).
+ * Only real payments (transfers from cash/bank accounts) reduce the statement
+ * amount shown as due; a partial payment leaves its unpaid balance visible.
  */
 class NextPaymentsCashbackSuppressionTest extends TestCase
 {
@@ -192,7 +193,7 @@ class NextPaymentsCashbackSuppressionTest extends TestCase
         );
     }
 
-    public function test_real_payment_suppresses_card(): void
+    public function test_partial_payment_keeps_only_the_remaining_statement_due(): void
     {
         // Today is May 6; relevantCutDate (closingDay=3) → May 3.
         // Payment May 4 is strictly after the cut → suppression applies.
@@ -202,15 +203,15 @@ class NextPaymentsCashbackSuppressionTest extends TestCase
             [$user, $card, $bank] = $this->setupCardWithDebt();
             $teamId = $user->current_team_id;
 
-            // Partial payment leaves $100 debt — exercises both gates: debt > 0 AND suppression.
+            // A partial payment leaves $100 on the closed statement.
             $this->recordPayment($teamId, $user->id, $bank, $card, '2026-05-04', 6900.00);
 
             $payments = (new NextPaymentsService)->getNextPayments($teamId);
+            $payment = $payments->first(fn ($p) => $p['type'] === 'credit_card_payment' && $p['account_id'] === $card->id);
 
-            $this->assertFalse(
-                $payments->contains(fn ($p) => $p['type'] === 'credit_card_payment' && $p['account_id'] === $card->id),
-                'A real payment after the most recent cut should suppress the card from next payments.'
-            );
+            $this->assertNotNull($payment);
+            $this->assertSame(100.0, $payment['total']);
+            $this->assertSame('2026-05-03', $payment['due_date']);
         } finally {
             Carbon::setTestNow();
         }
@@ -250,7 +251,7 @@ class NextPaymentsCashbackSuppressionTest extends TestCase
      * Counterpart: when the cut for this month is in the future, a payment between
      * the previous cut and today legitimately satisfies the just-passed statement.
      */
-    public function test_payment_after_previous_cut_suppresses_when_current_cut_is_future(): void
+    public function test_partial_payment_after_previous_cut_keeps_remaining_statement_due(): void
     {
         $today = Carbon::create(2026, 5, 4, 10, 0, 0);
         Carbon::setTestNow($today);
@@ -265,10 +266,41 @@ class NextPaymentsCashbackSuppressionTest extends TestCase
 
             $payments = (new NextPaymentsService)->getNextPayments($teamId);
 
-            $this->assertFalse(
-                $payments->contains(fn ($p) => $p['type'] === 'credit_card_payment' && $p['account_id'] === $card->id),
-                'When the next cut is still in the future, a payment after the previous cut correctly suppresses.'
-            );
+            $payment = $payments->first(fn ($p) => $p['type'] === 'credit_card_payment' && $p['account_id'] === $card->id);
+
+            $this->assertNotNull($payment);
+            $this->assertSame(100.0, $payment['total']);
+            $this->assertSame('2026-04-20', $payment['due_date']);
+        } finally {
+            Carbon::setTestNow();
+        }
+    }
+
+    public function test_payment_deadline_uses_days_after_closing_and_full_payment_clears_the_due_statement(): void
+    {
+        Carbon::setTestNow(Carbon::create(2026, 5, 9, 10, 0, 0));
+
+        try {
+            [$user, $card, $bank] = $this->setupCardWithDebt(closingDay: 3);
+            $card->update(['credit_payment_days' => 20]);
+
+            $payment = (new NextPaymentsService)->getNextPayments($user->current_team_id)
+                ->first(fn ($p) => $p['type'] === 'credit_card_payment' && $p['account_id'] === $card->id);
+
+            $this->assertSame('2026-05-23', $payment['due_date']);
+            $this->assertSame('pending', $payment['status']);
+
+            $this->recordPayment($user->current_team_id, $user->id, $bank, $card, '2026-05-07', 7000.00);
+
+            $this->assertFalse((new NextPaymentsService)->getNextPayments($user->current_team_id)
+                ->contains(fn ($p) => $p['type'] === 'credit_card_payment' && $p['account_id'] === $card->id));
+
+            $this->seedPurchase($user->current_team_id, $user->id, $card, '2026-05-08', 50.00);
+            $nextPayment = (new NextPaymentsService)->getNextPayments($user->current_team_id)
+                ->first(fn ($p) => $p['type'] === 'credit_card_payment' && $p['account_id'] === $card->id);
+
+            $this->assertSame('2026-06-23', $nextPayment['due_date']);
+            $this->assertSame(50.0, $nextPayment['total']);
         } finally {
             Carbon::setTestNow();
         }

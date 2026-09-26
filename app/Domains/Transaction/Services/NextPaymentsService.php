@@ -87,78 +87,73 @@ class NextPaymentsService
             ->get();
 
         $upcomingPayments = [];
-        $closings = [];
         foreach ($creditCardAccounts as $account) {
-            $closingDay = $account->credit_closing_day;
-
-            // Get current balance of the credit card
-            $currentBalance = $account->balance;
-
-            // For credit cards, negative balance means debt (money owed)
-            $currentDebt = abs(min(0, $currentBalance));
-            $closings[$account->name] = [
-                'name' => $account->name,
-                'debt' => $currentDebt,
-            ];
-            if ($currentDebt > 0) {
-
-                $today = Carbon::now();
-                $currentMonth = $today->copy()->startOfMonth();
-
-                // Find the closing date for this month
-                $closingDate = $currentMonth->copy()->day(min($closingDay, $currentMonth->daysInMonth));
-                $closings[$account->name]['date'] = $closingDate;
-
-                // The "relevant cut" is the most recent closing that has already passed.
-                // A payment AFTER this date satisfies the just-closed statement; a payment
-                // BEFORE it satisfied the previous statement and should not suppress this one.
-                // Without this, an April 15 payment (for the cycle that closed April 3) would
-                // hide the May 3 cut from next payments.
-                if ($today->gte($closingDate)) {
-                    $relevantCutDate = $closingDate;
-                } else {
-                    $previousMonth = $currentMonth->copy()->subMonth();
-                    $relevantCutDate = $previousMonth->copy()->day(min($closingDay, $previousMonth->daysInMonth));
-                }
-
-                // Check if a real payment (transfer from a cash/bank-type account) was made
-                // since the relevant cut. A type=1 line alone isn't enough — that also matches
-                // cashback, refunds, and manual adjustments, which would falsely suppress the
-                // card while debt remains. Mirrors CreditCardReportService::getLastPayment (q-1).
-                $paymentInCurrentPeriod = DB::table('transaction_lines as tl')
-                    ->join('transactions as t', 'tl.transaction_id', '=', 't.id')
-                    ->join('accounts as src', 'src.id', '=', 't.account_id')
-                    ->join('account_detail_types as srcType', 'srcType.id', '=', 'src.account_detail_type_id')
-                    ->where('tl.account_id', $account->id)
-                    ->where('tl.date', '>', $relevantCutDate->format('Y-m-d'))
-                    ->where('tl.type', 1)
-                    ->where('t.status', 'verified')
-                    ->whereColumn('t.account_id', '!=', 'tl.account_id')
-                    ->whereIn('srcType.name', AccountDetailType::ALL_CASH)
-                    ->exists();
-
-                // Only show if no payment was made during this statement period
-                if (! $paymentInCurrentPeriod) {
-                    $upcomingPayments[] = [
-                        'id' => "cc_payment_{$account->id}_{$closingDate->format('Y-m')}",
-                        'type' => 'credit_card_payment',
-                        'title' => "Credit Card Payment - {$account->name}",
-                        'description' => "Credit Card Payment - {$account->name}",
-                        'total' => $currentDebt,
-                        'due_date' => $closingDate->format('Y-m-d'),
-                        'date' => $closingDate->format('Y-m-d'),
-                        'account_id' => $account->id,
-                        'account_name' => $account->name,
-                        'status' => $today->gte($closingDate) ? 'overdue' : 'pending',
-                        'source' => 'dynamic_calculation',
-                        'metadata' => [
-                            'total_debt' => $currentDebt,
-                            'closing_day' => $closingDay,
-                            'current_balance' => $currentBalance,
-                        ],
-                    ];
-                }
+            $closingDay = (int) $account->credit_closing_day;
+            $currentDebt = abs(min(0, (float) $account->balance));
+            if ($currentDebt <= 0.01) {
+                continue;
             }
+
+            $currentMonth = $startDate->copy()->startOfMonth();
+            $thisMonthCut = $currentMonth->copy()->day(min($closingDay, $currentMonth->daysInMonth));
+            $lastCut = $startDate->gte($thisMonthCut)
+                ? $thisMonthCut
+                : $currentMonth->copy()->subMonth()->day(min($closingDay, $currentMonth->copy()->subMonth()->daysInMonth));
+
+            $balanceAtCut = (float) DB::table('transaction_lines as tl')
+                ->join('transactions as t', 'tl.transaction_id', '=', 't.id')
+                ->where('tl.account_id', $account->id)
+                ->where('tl.date', '<=', $lastCut->format('Y-m-d'))
+                ->where('t.status', 'verified')
+                ->selectRaw('COALESCE(SUM(tl.amount * tl.type), 0) as balance')
+                ->value('balance');
+            $statementDebt = abs(min(0, $balanceAtCut));
+
+            $paidAfterCut = (float) DB::table('transaction_lines as tl')
+                ->join('transactions as t', 'tl.transaction_id', '=', 't.id')
+                ->join('accounts as src', 'src.id', '=', 't.account_id')
+                ->join('account_detail_types as srcType', 'srcType.id', '=', 'src.account_detail_type_id')
+                ->where('tl.account_id', $account->id)
+                ->where('tl.date', '>', $lastCut->format('Y-m-d'))
+                ->where('tl.date', '<=', $startDate->format('Y-m-d'))
+                ->where('tl.type', 1)
+                ->where('t.status', 'verified')
+                ->whereColumn('t.account_id', '!=', 'tl.account_id')
+                ->whereIn('srcType.name', AccountDetailType::ALL_CASH)
+                ->sum('tl.amount');
+
+            $remainingStatement = max(0, $statementDebt - $paidAfterCut);
+            if ($remainingStatement > 0.01) {
+                $closingDate = $lastCut;
+                $amountDue = min($currentDebt, $remainingStatement);
+            } else {
+                $closingDate = $lastCut->copy()->addMonthNoOverflow()->day(min($closingDay, $lastCut->copy()->addMonthNoOverflow()->daysInMonth));
+                $amountDue = $currentDebt;
+            }
+
+            if ($amountDue <= 0.01) {
+                continue;
+            }
+
+            $dueDate = $account->paymentDueDateForCut($closingDate);
+            $upcomingPayments[] = [
+                'id' => "cc_payment_{$account->id}_{$closingDate->format('Y-m')}",
+                'type' => 'credit_card_payment',
+                'title' => "Credit Card Payment - {$account->name}",
+                'description' => "Credit Card Payment - {$account->name}",
+                'total' => $amountDue,
+                'due_date' => $dueDate->format('Y-m-d'),
+                'date' => $dueDate->format('Y-m-d'),
+                'account_id' => $account->id,
+                'account_name' => $account->name,
+                'status' => $startDate->copy()->startOfDay()->gt($dueDate) ? 'overdue' : 'pending',
+                'source' => 'dynamic_calculation',
+                'metadata' => [
+                    'total_debt' => $currentDebt,
+                    'closing_day' => $closingDay,
+                    'current_balance' => (float) $account->balance,
+                ],
+            ];
         }
 
         return $upcomingPayments;
