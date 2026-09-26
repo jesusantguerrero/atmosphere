@@ -1,12 +1,12 @@
 <script lang="ts" setup>
-import { capitalize, computed, watch, ref } from "vue";
+import { computed, h, inject, reactive, ref } from "vue";
 import { formatMoney } from "@/utils";
-import { NButton, NDataTable, NPopover } from "naive-ui";
-import { Link } from "@inertiajs/vue3";
+import { NDataTable, NPopover, NSelect } from "naive-ui";
+import { Link, router } from "@inertiajs/vue3";
+import { useI18n } from "vue-i18n";
 
 import { ITransactionLine } from "@/domains/transactions/models";
 import SectionTitle from "@/Components/atoms/SectionTitle.vue";
-import { h } from "vue";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 import { removeTransaction } from "..";
 
@@ -27,6 +27,7 @@ defineEmits(['selected']);
 interface Line {
     id: string,
     line_id: string,
+    category_id: number | null,
     accountName: string,
     date: string,
     payeeName: string,
@@ -38,6 +39,7 @@ const parseDetails = (details: any[]): any[] => {
         return !row ? null : {
             id: row.id,
             line_id: row.line_id,
+            category_id: row.category_id ?? null,
             accountName: row.name,
             date: row.date,
             payeeName: row.payee_name,
@@ -57,33 +59,87 @@ const getCategoryLink = (item: ITransactionLine) => {
     return `/finance/lines?${itemField}=${item.id || item.category_id}${currentSearch}`;
 }
 
+const { t } = useI18n();
+const categoryOptions = inject<any[]>("categoryOptions", []);
+
+/**
+ * Lines recategorized from this popover. A line moved out of the category is
+ * hidden right away; the budget numbers refresh with the reload.
+ */
+const categoryOverrides = reactive<Record<string, number>>({});
+const savingLineIds = reactive(new Set<string>());
+/** Select menus render inside the popover so picking one does not count as a click outside it. */
+const popoverBody = ref<HTMLElement>();
+
 const itemDetail = computed(() => {
-    return parseDetails(props.details ?? "") ?? []
+    const lines = parseDetails(props.details ?? "") ?? [];
+    return lines
+        .map((line: Line) => ({ ...line, category_id: categoryOverrides[line.line_id] ?? line.category_id }))
+        .filter((line: Line) => props.type !== 'categories' || !categoryOverrides[line.line_id] || line.category_id == props.item.id);
 });
 
-const detailColumn = computed(() => {
-    const columns = itemDetail.value.length ? Object.keys(itemDetail.value?.at?.(0)).map(item => ({
-        key: item,
-        title: capitalize(item)
-    })) : [{}]
-    columns.push({
-        key: 'actions',
-        title: 'Actions',
-        render: (row) => {
-        return h(
-          LogerButton,
-          {
-            strong: true,
-            tertiary: true,
+const changeCategory = (row: Line, categoryId: number) => {
+    if (!categoryId || categoryId == row.category_id) {
+        return;
+    }
+
+    savingLineIds.add(row.line_id);
+    router.patch(`/finance/transaction-lines/${row.line_id}/category`, { category_id: categoryId }, {
+        preserveScroll: true,
+        preserveState: true,
+        onSuccess() {
+            categoryOverrides[row.line_id] = categoryId;
+        },
+        onFinish() {
+            savingLineIds.delete(row.line_id);
+        },
+    });
+};
+
+const detailColumn = computed(() => [
+    { key: 'date', title: t('Date'), width: 110 },
+    { key: 'accountName', title: t('Account') },
+    {
+        key: 'payeeName',
+        title: t('Payee'),
+        render: (row: Line) => h('div', { class: 'flex flex-col' }, [
+            h('span', row.payeeName),
+            row.concept && row.concept !== row.payeeName ? h('span', { class: 'text-xs opacity-70' }, row.concept) : null,
+        ]),
+    },
+    { key: 'amount', title: t('Amount'), width: 130, className: 'whitespace-nowrap' },
+    {
+        key: 'category_id',
+        title: t('Category'),
+        width: 220,
+        render: (row: Line) => h(NSelect, {
+            value: row.category_id,
+            options: categoryOptions,
+            filterable: true,
             size: 'small',
-            onClick: () => removeTransaction(row)
-          },
-          { default: () => 'Delete' }
+            loading: savingLineIds.has(row.line_id),
+            disabled: savingLineIds.has(row.line_id),
+            consistentMenuWidth: false,
+            to: popoverBody.value ?? false,
+            onUpdateValue: (categoryId: number) => changeCategory(row, categoryId),
+        }),
+    },
+    {
+        key: 'actions',
+        title: '',
+        width: 90,
+        render: (row: Line) => h(
+            LogerButton,
+            {
+                strong: true,
+                tertiary: true,
+                size: 'small',
+                onClick: () => removeTransaction(row as any)
+            },
+            { default: () => t('Delete') }
         )
-      }
-    })
-    return columns
-})
+    },
+]);
 </script>
 
 <template>
@@ -101,7 +157,7 @@ const detailColumn = computed(() => {
                 </span>
             </p>
         </template>
-        <section class="h-96 w-[900px] overflow-hidden">
+        <section ref="popoverBody" class="relative h-96 w-[900px]">
             <SectionTitle class="flex items-center"> Transaction history
                 <Link
                     class="flex items-center ml-4 hover:underline group hover:text-primary"
