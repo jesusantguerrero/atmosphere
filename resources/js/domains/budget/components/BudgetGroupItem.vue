@@ -121,7 +121,7 @@ const details = ref("");
 const fetchDetails = async (category: ICategory) => {
     const startDate = format(pageState.dates.startDate, 'yyyy-MM-dd');
     const endDate = format(pageState.dates.endDate, 'yyyy-MM-dd');
-
+    details.value = "";
     const response = await axios.get(`/api/category-transactions/${category.id}/details`, {
         params: {
             filter: {
@@ -130,7 +130,7 @@ const fetchDetails = async (category: ICategory) => {
         }
     })
 
-    details.value = response.data?.transactions.at(0).details;
+    details.value = response.data?.transactions.data;
 }
 </script>
 
