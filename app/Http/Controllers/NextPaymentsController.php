@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Domains\Transaction\Services\NextPaymentsService;
+use Carbon\Carbon;
 
 class NextPaymentsController extends Controller
 {
@@ -54,4 +55,44 @@ class NextPaymentsController extends Controller
 
         return response()->json(['message' => 'Failed to mark payment as paid'], 400);
     }
+    /**
+     * Full-page, filterable view of the same unified "next payments" the
+     * dashboard hero counts (budget reminders + credit-card cuts + planned
+     * transactions). Because that list is a synthetic mix of three sources,
+     * no generic /finance/transactions filter can reproduce it — so the hero's
+     * "overdue payments" / "due soon" cards deep-link here with ?filter=... and
+     * we narrow the SAME service output with the SAME day predicate the hero
+     * uses (date strictly before today = overdue; today..+7 = due soon). This
+     * guarantees the page shows exactly the items the card counted.
+     */
+    public function page(Request $request)
+    {
+        $teamId = $request->user()->current_team_id;
+        $filter = $request->get('filter', 'all');
+
+        $today = now()->startOfDay();
+        $payments = $this->nextPaymentsService->getNextPayments($teamId)
+            ->filter(function ($payment) use ($filter, $today) {
+                $raw = $payment['date'] ?? $payment['due_date'] ?? null;
+                if (! $raw) {
+                    // Undated items only belong in the unfiltered "all" view.
+                    return $filter === 'all';
+                }
+                $date = Carbon::parse($raw)->startOfDay();
+
+                return match ($filter) {
+                    'overdue' => $date->lt($today),
+                    'due_soon' => $date->gte($today) && $date->lte($today->copy()->addDays(7)),
+                    default => true,
+                };
+            })
+            ->values();
+
+        return inertia('Finance/NextPayments', [
+            'sectionTitle' => 'Next Payments',
+            'payments' => $payments,
+            'filter' => in_array($filter, ['overdue', 'due_soon'], true) ? $filter : 'all',
+        ]);
+    }
+
 }

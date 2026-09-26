@@ -988,5 +988,12 @@
     "Bank sync active": "Bank sync active",
     "Bank sync paused": "Bank sync paused",
     "Connect your email to import bank transactions": "Connect your email to import bank transactions",
-    "Manage": "Manage"
+    "Manage": "Manage",
+    "overdue payment": "overdue payment",
+    "overdue reminder": "overdue reminder",
+    "payment due soon": "payment due soon",
+    "transaction to review": "transaction to review",
+    "Due soon": "Due soon",
+    "Overdue payments": "Overdue payments",
+    "Payments due soon": "Payments due soon"
 }

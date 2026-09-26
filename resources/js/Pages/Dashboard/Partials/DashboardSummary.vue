@@ -185,23 +185,15 @@ const handlePay = (payment: any) => {
 // transactions narrowed to the overdue or due-soon window respectively.
 // The occurrences page has no overdue filter, so that row is left generic.
 // ---------------------------------------------------------------------------
-const fmtDate = (d: Date): string =>
-    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-
 const goToOverduePayments = () => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const yesterday = new Date(today);
-    yesterday.setDate(today.getDate() - 1);
-    router.visit(`/finance/transactions?filter[status]=planned&filter[date]=1970-01-01~${fmtDate(yesterday)}`);
+    // The overdue set is a mix of budget reminders, credit-card cuts and planned
+    // transactions (NextPaymentsService), which no /finance/transactions filter
+    // can reproduce — so land on the dedicated page that narrows the SAME source.
+    router.visit("/finance/next-payments?filter=overdue");
 };
 
 const goToDueSoonPayments = () => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const soon = new Date(today);
-    soon.setDate(today.getDate() + 7);
-    router.visit(`/finance/transactions?filter[status]=planned&filter[date]=${fmtDate(today)}~${fmtDate(soon)}`);
+    router.visit("/finance/next-payments?filter=due_soon");
 };
 
 </script>
@@ -236,7 +228,7 @@ const goToDueSoonPayments = () => {
                     <span class="flex items-center gap-2 min-w-0">
                         <i class="fa fa-clock text-error flex-shrink-0" />
                         <span class="text-sm font-semibold text-body truncate">
-                            {{ overduePayments.length }} {{ $t('overdue payments') }}
+                            {{ overduePayments.length }} {{ $t(overduePayments.length === 1 ? 'overdue payment' : 'overdue payments') }}
                         </span>
                     </span>
                     <span class="text-sm font-bold text-error tabular-nums flex-shrink-0">
@@ -249,12 +241,12 @@ const goToDueSoonPayments = () => {
                     v-if="overdueReminders.length"
                     type="button"
                     class="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3 px-3 py-2.5 rounded-lg bg-base-lvl-2 border border-error/30 hover:border-error/50 transition text-left"
-                    @click="router.visit('/housing/occurrence')"
+                    @click="router.visit('/housing/occurrence?overdue=1')"
                 >
                     <span class="flex items-center gap-2 min-w-0">
                         <i class="fa fa-bell text-error flex-shrink-0" />
                         <span class="text-sm font-semibold text-body truncate">
-                            {{ overdueReminders.length }} {{ $t('overdue reminders') }}
+                            {{ overdueReminders.length }} {{ $t(overdueReminders.length === 1 ? 'overdue reminder' : 'overdue reminders') }}
                         </span>
                     </span>
                     <span class="text-xs font-semibold text-error flex-shrink-0">{{ $t('Review') }} →</span>
@@ -270,7 +262,7 @@ const goToDueSoonPayments = () => {
                     <span class="flex items-center gap-2 min-w-0">
                         <i class="fa fa-calendar-day text-body-1/60 flex-shrink-0" />
                         <span class="text-sm font-semibold text-body truncate">
-                            {{ dueSoonPayments.length }} {{ $t('payments due soon') }}
+                            {{ dueSoonPayments.length }} {{ $t(dueSoonPayments.length === 1 ? 'payment due soon' : 'payments due soon') }}
                         </span>
                     </span>
                     <span class="text-xs text-body-1/50 flex-shrink-0">{{ $t('next 7 days') }}</span>
@@ -286,7 +278,7 @@ const goToDueSoonPayments = () => {
                     <span class="flex items-center gap-2 min-w-0">
                         <i class="fa fa-receipt text-primary flex-shrink-0" />
                         <span class="text-sm font-semibold text-body truncate">
-                            {{ draftsCount }} {{ $t('transactions to review') }}
+                            {{ draftsCount }} {{ $t(draftsCount === 1 ? 'transaction to review' : 'transactions to review') }}
                         </span>
                     </span>
                     <span class="text-xs font-semibold text-primary flex-shrink-0">{{ $t('Review') }} →</span>

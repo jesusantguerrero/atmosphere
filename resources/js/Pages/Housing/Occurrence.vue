@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { NDropdown } from 'naive-ui';
 import { router, useForm } from '@inertiajs/vue3';
 
@@ -11,6 +11,7 @@ import OccurrenceCard from "@/domains/housing/components/OccurrenceCard.vue";
 
 import { useOccurrenceInstance, OccurrenceAction } from '@/domains/housing/useOccurrenceInstance';
 import { IOccurrenceCheck, OccurrenceItem } from '@/domains/housing/models';
+import { getDayDiff } from '@/utils';
 import { ITransaction } from '@/domains/transactions/models';
 import StatusButtons from '@/Components/molecules/StatusButtons.vue';
 import { useToggleModal } from '@/domains/app/useToggleModal';
@@ -31,6 +32,26 @@ const props = defineProps({
 const onSaved = () => {
     router.reload()
 }
+
+// Overdue view (?overdue=1) — deep-linked from the dashboard's "N overdue
+// reminders" card. A reminder is overdue when it's been at least its average
+// cadence + 3 days since it last happened, matching the dashboard hero and the
+// OccurrenceWidget's red threshold exactly, so the count there and the list
+// here always agree. The list isn't paginated (the controller returns the full
+// team set), so filtering client-side is safe and shows the complete set.
+const isOverdueView = new URLSearchParams(window.location.search).get('overdue') === '1';
+
+const isOverdue = (occurrence: IOccurrenceCheck): boolean => {
+    const avg = occurrence.avg_days_passed;
+    if (!avg || avg <= 0) return false;
+    const days = getDayDiff(occurrence.last_date);
+    return typeof days === 'number' && days >= avg + 3;
+};
+
+const displayedOccurrences = computed<IOccurrenceCheck[]>(() => {
+    const list = (props.occurrences ?? []) as IOccurrenceCheck[];
+    return isOverdueView ? list.filter(isOverdue) : list;
+});
 
 const { applyChange, remove, isProcessing, isLoading } = useOccurrenceInstance()
 
@@ -102,13 +123,17 @@ const dataStatus = {
     label: "All reminders",
     value: "/housing/occurrence",
   },
+  overdue: {
+    label: "Overdue",
+    value: "/housing/occurrence?overdue=1",
+  },
   1: {
     label: "Favorites",
     value: "/housing/occurrence?filter[is_liked]=1",
   },
 };
 
-const currentStatus = ref(props.serverSearchOptions.filters?.is_liked || "all");
+const currentStatus = ref(isOverdueView ? "overdue" : (props.serverSearchOptions.filters?.is_liked || "all"));
 </script>
 
 <template>
@@ -136,9 +161,9 @@ const currentStatus = ref(props.serverSearchOptions.filters?.is_liked || "all");
         </template>
 
         <main class="px-5 mx-auto mt-12 space-y-10 md:space-y-0 md:space-x-10 md:flex max-w-screen-2xl sm:px-6 lg:px-8">
-            <section class="space-y-2 w-full mt-6 mb-20" v-if="occurrences.length">
+            <section class="space-y-2 w-full mt-6 mb-20" v-if="displayedOccurrences.length">
                 <OccurrenceCard
-                    v-for="occurrence in occurrences"
+                    v-for="occurrence in displayedOccurrences"
                     :occurrence
                     class="w-full border rounded-lg shadow-md cursor-pointer text-body bg-base-lvl-3 hover:bg-base-lvl-2"
                     :is-loading="isLoading(occurrence.id)"

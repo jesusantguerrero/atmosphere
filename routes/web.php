@@ -320,6 +320,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     // Next Payments
     Route::controller(NextPaymentsController::class)->group(function () {
         Route::get('/api/next-payments', 'index')->name('next-payments.index');
+        Route::get('/finance/next-payments', 'page')->name('next-payments.page');
         Route::patch('/api/next-payments/{paymentId}/mark-as-paid', 'markAsPaid')->name('next-payments.mark-as-paid');
     });
 
