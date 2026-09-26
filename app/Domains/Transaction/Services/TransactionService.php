@@ -162,9 +162,9 @@ class TransactionService
         ])
             ->whereNot('categories.name', BudgetReservedNames::READY_TO_ASSIGN->value)
             ->whereBetween('transactions.date', [$startDate, $endDate])
-            ->when($category && ! $category?->account_id, fn ($q) => $q->where('categories.id', $category->id))
+            ->when($category && ! $category?->account_id && ! $parentId, fn ($q) => $q->where('categories.id', $category->id))
             ->when($category?->account_id, fn ($q) => $q->where('accounts.id', $category->account_id))
-            ->when($parentId, fn ($q) => $q->where('group.id', $parentId)->groupBy('group.id'))
+            ->when($parentId, fn ($q) => $q->where('group.id', $parentId))
             ->selectRaw('
                 transaction_lines.category_id,
                 categories.name,
