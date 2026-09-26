@@ -47,6 +47,7 @@ class CreditCardReportService
                 a.name,
                 a.id,
                 a.credit_limit,
+                a.credit_payment_days,
                 DATE_FORMAT(?, CONCAT('%Y-%m-', LPAD(a.credit_closing_day, 2, '0'))) AS `from`,
                 DATE_FORMAT(?, CONCAT('%Y-%m-', LPAD(a.credit_closing_day, 2, '0'))) AS `until`", [
                 $startCycleDate,
@@ -311,11 +312,15 @@ class CreditCardReportService
                     'subtotal' => $creditCardAccount->subtotal,
                     'discounts' => $creditCardAccount->discount,
                     'total' => $creditCardAccount->total,
-                    'due_at' => $creditCardAccount->until,
+                    'due_at' => Carbon::parse($creditCardAccount->until)
+                        ->addDays(max(0, (int) ($creditCardAccount->credit_payment_days ?? 0)))
+                        ->format('Y-m-d'),
                 ]);
 
                 // Notify via Telegram when a new billing cycle is created and the cut date has passed
-                if ($billingCycle->wasRecentlyCreated && Carbon::parse($creditCardAccount->until)->lte(now())) {
+                if ($billingCycle->wasRecentlyCreated
+                    && ! in_array($billingCycle->status, [BillingCycle::STATUS_PAID, BillingCycle::STATUS_CANCELLED], true)
+                    && Carbon::parse($creditCardAccount->until)->lte(now())) {
                     $teamUser = User::where('current_team_id', $teamId)->first();
                     if ($teamUser) {
                         $teamUser->notify(new BillingCycleCutAlert(

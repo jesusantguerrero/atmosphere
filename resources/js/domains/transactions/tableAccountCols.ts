@@ -53,19 +53,45 @@ export const tableAccountCols = (accountId?: number, showSelects?: boolean) => [
         sortable: true,
         render(row: any) {
             try {
+                const isTransfer = Boolean(row.is_transfer || row.counter_account_id)
                 const account = row.account_id === accountId ? row.counter_account : row.account
-                const name = row.payee?.name ?? account?.name ?? ''
+                const payeeName = row.payee?.name
+                const desc = typeof row.description === 'string' ? row.description.trim() : ''
+
+                const avatarSeed = payeeName ?? account?.name ?? desc ?? ''
                 const avatar = h('span', {
                     class: 'flex items-center justify-center flex-shrink-0 rounded-full w-7 h-7 text-[11px] font-bold text-white',
-                    style: { background: nameToColor(name) },
-                }, initials(name))
-                const label = row.payee
-                    ? h(Link, { class: 'block font-bold truncate text-body', href: `/finance/lines?filter[payee_id]=${row.payee.id}`, title: row.payee.name }, row.payee.name)
-                    : h('div', { class: 'flex items-center gap-1 min-w-0 text-body-1' }, [
+                    style: { background: nameToColor(avatarSeed) },
+                }, initials(avatarSeed))
+
+                // Primary line: the payee, else (for transfers) the counter
+                // account, else the raw description — bank-synced rows usually
+                // have no payee and the description carries the real meaning, so
+                // it can't just live in a tooltip.
+                let primary
+                let primaryText = ''
+                if (payeeName) {
+                    primaryText = payeeName
+                    primary = h(Link, { class: 'block font-bold truncate text-body', href: `/finance/lines?filter[payee_id]=${row.payee.id}`, title: payeeName }, payeeName)
+                } else if (isTransfer && account) {
+                    primaryText = account?.name ?? ''
+                    primary = h('div', { class: 'flex items-center gap-1 min-w-0 text-body-1' }, [
                         h(Link, { class: 'font-bold underline truncate text-secondary', href: `/finance/accounts/${account.id}` }, `${account?.name}`),
                         h(IconTransfer, { class: 'fa fa-right-left flex-shrink-0' }),
                     ])
-                return h('div', { class: 'flex items-center gap-2.5 min-w-0' }, [avatar, h('div', { class: 'flex-1 min-w-0' }, [label])])
+                } else {
+                    primaryText = desc
+                    primary = h('div', { class: 'font-bold truncate text-body', title: desc }, desc || '—')
+                }
+
+                const lines: any[] = [primary]
+                // Secondary muted description line, when it adds something beyond
+                // what the primary line already shows.
+                if (desc && desc !== primaryText) {
+                    lines.push(h('div', { class: 'text-xs truncate text-body-1/50', title: desc }, desc))
+                }
+
+                return h('div', { class: 'flex items-center gap-2.5 min-w-0' }, [avatar, h('div', { class: 'flex-1 min-w-0' }, lines)])
             } catch(e) {
                 return ''
             }

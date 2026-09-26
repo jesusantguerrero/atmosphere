@@ -2,21 +2,18 @@
 
 namespace App\Listeners;
 
-use Illuminate\Contracts\Queue\ShouldQueue;
+use App\Jobs\RollBudgetForward;
 use Insane\Journal\Models\Core\Transaction;
-use App\Domains\Budget\Services\BudgetCategoryService;
-use App\Domains\Budget\Services\BudgetRolloverService;
 
-class UpdateBudgetAvailable implements ShouldQueue
+class UpdateBudgetAvailable
 {
-    protected $formData;
-
-    public function handle($event)
+    public function handle($event): void
     {
         if ($event->transaction->status == Transaction::STATUS_VERIFIED) {
-            $teamId = $event->transaction->team_id;
-            $date = $event->transaction->date;
-            (new BudgetRolloverService(new BudgetCategoryService()))->startFrom($teamId, substr($date, 0, 7));
+            RollBudgetForward::dispatch(
+                $event->transaction->team_id,
+                substr($event->transaction->date, 0, 7)
+            );
         }
     }
 }

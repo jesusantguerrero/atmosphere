@@ -36,6 +36,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('watchlists:check-streaks')->dailyAt('06:30')->runInBackground();
         $schedule->command('watchlists:suggest-untracked-payees')->weekly()->runInBackground();
         $schedule->command('loger:nudge-credit-cards')->dailyAt('07:00')->runInBackground();
+        $schedule->command('app:check-credit-card-renewals')->dailyAt('07:10')->runInBackground();
         // Reset completed recurring chores each morning so the family screen re-populates.
         $schedule->command('chores:reset-recurring')->dailyAt('00:05')->runInBackground();
         if (config('app.demo')) {

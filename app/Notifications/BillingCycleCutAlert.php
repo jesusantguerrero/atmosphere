@@ -32,6 +32,7 @@ class BillingCycleCutAlert extends LogerNotification
 
         return [
             'message' => "Credit card {$this->accountName} has cut. Billing cycle total: {$total}. Due date: {$this->billingCycle->due_at}",
+            'billing_cycle_id' => $this->billingCycle->id,
             'cta' => 'View billing cycle',
             'link' => "/finance/accounts/{$this->billingCycle->account_id}",
         ];

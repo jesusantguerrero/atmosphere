@@ -47,9 +47,13 @@ class UniversalBankAutomationService
             return $existing;
         }
 
-        $integration ??= Integration::where('user_id', $user->id)
-            ->whereHas('service', fn ($q) => $q->where('name', 'Gmail'))
-            ->first();
+        // Prefer the token-bearing Gmail integration so the automation is born
+        // with a live link (avoids a null integration_id that the runner would
+        // then have to self-heal); fall back to any Gmail row if none has a token.
+        $integration ??= GoogleService::findGoogleIntegration($user->id, $teamId, true)
+            ?? Integration::where('user_id', $user->id)
+                ->whereHas('service', fn ($q) => $q->where('name', 'Gmail'))
+                ->first();
 
         // The create-transaction action resolves a team account on its own when
         // this is blank, so a user with no account yet still gets a working

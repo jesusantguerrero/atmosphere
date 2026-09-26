@@ -48,6 +48,10 @@ const state = reactive({
     number: null,
     bank_code: null,
     credit_closing_day: null,
+    credit_payment_days: null,
+    credit_renewal_month: null,
+    credit_annual_fee: null,
+    credit_monthly_insurance: null,
     credit_limit: null,
     // Multi-currency fields
     currency_code: (window as any)?.logerAppSettings?.currency_code ?? 'USD',
@@ -85,6 +89,11 @@ const getCurrencyDisplay = (currencyCode: string) => {
 const modalTitle = computed(() => {
   return props.formData.id ? t('Edit {name} account', { name: props.formData.name }) : t('Add Account');
 });
+
+const renewalMonthOptions = Array.from({ length: 12 }, (_, index) => ({
+  label: new Intl.DateTimeFormat(undefined, { month: 'long' }).format(new Date(2026, index, 1)),
+  value: index + 1,
+}));
 
 watch(
   () => props.formData,
@@ -283,9 +292,34 @@ const excludedCurrencies = computed(() => {
                     min="1" max="31" />
                 </AtField>
 
+                <AtField label="Days from closing to payment due" class="space-y-2">
+                  <LogerInput v-model="form.credit_payment_days" type="number" class="w-full" placeholder="e.g., 20"
+                    min="0" max="90" />
+                </AtField>
+
                 <AtField label="Credit Limit" class="space-y-2">
                   <InputMoney v-model="form.credit_limit" class="w-full" placeholder="0.00" />
                 </AtField>
+              </div>
+
+              <div class="pt-4 border-t border-base-lvl-1 space-y-4">
+                <div>
+                  <h5 class="text-sm font-medium text-body">{{ $t('Card renewal') }}</h5>
+                  <p class="text-xs text-body-1/60">
+                    {{ $t('Loger will remind you 30 days before to negotiate the annual fee and insurance.') }}
+                  </p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <AtField :label="$t('Renewal month')" class="space-y-2">
+                    <NSelect v-model:value="form.credit_renewal_month" :options="renewalMonthOptions" clearable />
+                  </AtField>
+                  <AtField :label="$t('Estimated annual fee')" class="space-y-2">
+                    <InputMoney v-model="form.credit_annual_fee" class="w-full" placeholder="0.00" />
+                  </AtField>
+                  <AtField :label="$t('Monthly insurance')" class="space-y-2">
+                    <InputMoney v-model="form.credit_monthly_insurance" class="w-full" placeholder="0.00" />
+                  </AtField>
+                </div>
               </div>
             </div>
 

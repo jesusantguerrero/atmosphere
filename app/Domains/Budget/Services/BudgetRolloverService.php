@@ -4,6 +4,7 @@ namespace App\Domains\Budget\Services;
 
 use App\Domains\Budget\Data\BudgetReservedNames;
 use App\Domains\Budget\Models\BudgetMonth;
+use App\Models\Setting;
 use App\Models\Team;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;
@@ -21,10 +22,18 @@ class BudgetRolloverService
 
     private mixed $accounts = [];
 
+    /**
+     * Team primary currency, resolved once per team. Only its scale (number of
+     * decimals) matters here: it drives the rounding of every Money operation.
+     */
+    private string $currencyCode = 'USD';
+
     public function __construct(private BudgetCategoryService $budgetCategoryService) {}
 
     public function rollMonth($teamId, $month, $categories = null)
     {
+        $this->currencyCode = $this->resolveTeamCurrency($teamId);
+
         if (! $categories) {
             $categories = Category::where([
                 'team_id' => $teamId,
@@ -79,9 +88,9 @@ class BudgetRolloverService
                 ->getAmount()
                 ->toFloat();
         } else {
-            $available = Money::Of($budgetMonth?->budgeted ?? 0, 'USD', null, RoundingMode::HALF_UP)
+            $available = Money::of($budgetMonth?->budgeted ?? 0, $this->currencyCode, null, RoundingMode::HALF_UP)
                 ->plus(($budgetMonth->left_from_last_month ?? 0), RoundingMode::HALF_UP)
-                ->minus(abs($activity), RoundingMode::HALF_UP)
+                ->plus($activity, RoundingMode::HALF_UP)
                 ->getAmount()
                 ->toFloat();
         }
@@ -158,7 +167,7 @@ class BudgetRolloverService
         $overspending = abs($results?->overspendingInMonth ?? 0);
         $leftover = $TBB - $budgeted;
 
-        $available = Money::of($leftFromLastMonth, 'DOP', null, RoundingMode::HALF_UP)
+        $available = Money::of($leftFromLastMonth, $this->currencyCode, null, RoundingMode::HALF_UP)
             ->plus($budgeted, RoundingMode::HALF_UP)
             ->plus($results?->funded_spending ?? 0, RoundingMode::HALF_UP)
             ->minus(($results?->payments ?? 0), RoundingMode::HALF_UP)
@@ -207,6 +216,13 @@ class BudgetRolloverService
             'moved_from_last_month' => ($results?->available ?? 0) + $leftover,
             'overspending_previous_month' => $overspending,
         ]);
+    }
+
+    private function resolveTeamCurrency(int $teamId): string
+    {
+        $code = strtoupper(trim((string) (Setting::getByTeam($teamId)['team_primary_currency_code'] ?? '')));
+
+        return preg_match('/^[A-Z]{3}$/', $code) ? $code : 'USD';
     }
 
     public function startFrom($teamId, $yearMonth, $limit = null)

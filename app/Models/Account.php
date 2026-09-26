@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-use App\Models\CurrencyBalance;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Account as BaseAccount;
 use Insane\Journal\Models\Core\AccountDetailType;
 use Insane\Journal\Models\Core\Transaction;
-use Illuminate\Support\Facades\DB;
 
 class Account extends BaseAccount
 {
@@ -97,6 +97,10 @@ class Account extends BaseAccount
             [
                 'is_multi_currency',
                 'secondary_currencies',
+                'credit_payment_days',
+                'credit_renewal_month',
+                'credit_annual_fee',
+                'credit_monthly_insurance',
             ]
         );
 
@@ -105,6 +109,10 @@ class Account extends BaseAccount
             [
                 'is_multi_currency' => 'boolean',
                 'secondary_currencies' => 'array',
+                'credit_payment_days' => 'integer',
+                'credit_renewal_month' => 'integer',
+                'credit_annual_fee' => 'float',
+                'credit_monthly_insurance' => 'float',
             ]
         );
 
@@ -116,6 +124,11 @@ class Account extends BaseAccount
         parent::__construct($attributes);
     }
 
+    public function paymentDueDateForCut(Carbon $cut): Carbon
+    {
+        return $cut->copy()->addDays(max(0, (int) ($this->credit_payment_days ?? 0)));
+    }
+
     /**
      * Accessor that powers the `MultiCurrencyDetailPanel` Vue component on
      * `Pages/Finance/Account.vue`. Returns null for single-currency accounts so
@@ -124,7 +137,7 @@ class Account extends BaseAccount
      */
     public function getAllCurrencyBalancesAttribute(): ?array
     {
-        if (!$this->isMultiCurrency()) {
+        if (! $this->isMultiCurrency()) {
             return null;
         }
 
@@ -299,14 +312,15 @@ class Account extends BaseAccount
      */
     public function addSecondaryCurrency(string $currencyCode): void
     {
-        if (!$this->isMultiCurrency()) {
+        if (! $this->isMultiCurrency()) {
             $this->enableMultiCurrency([$currencyCode]);
+
             return;
         }
 
         $secondaryCurrencies = $this->getSecondaryCurrencies();
-        
-        if (!in_array($currencyCode, $secondaryCurrencies)) {
+
+        if (! in_array($currencyCode, $secondaryCurrencies)) {
             $secondaryCurrencies[] = $currencyCode;
             $this->secondary_currencies = $secondaryCurrencies;
             $this->save();
@@ -327,15 +341,15 @@ class Account extends BaseAccount
     public function removeSecondaryCurrency(string $currencyCode): void
     {
         $secondaryCurrencies = $this->getSecondaryCurrencies();
-        $updatedCurrencies = array_filter($secondaryCurrencies, fn($currency) => $currency !== $currencyCode);
-        
+        $updatedCurrencies = array_filter($secondaryCurrencies, fn ($currency) => $currency !== $currencyCode);
+
         $this->secondary_currencies = array_values($updatedCurrencies);
-        
+
         // If no secondary currencies left, disable multi-currency
         if (empty($updatedCurrencies)) {
             $this->is_multi_currency = false;
         }
-        
+
         $this->save();
 
         // Remove currency balance record
@@ -353,22 +367,22 @@ class Account extends BaseAccount
         if ($currencyCode === $this->getPrimaryCurrency()) {
             return true;
         }
-        
+
         // If not multi-currency, only primary currency is supported
-        if (!$this->isMultiCurrency()) {
+        if (! $this->isMultiCurrency()) {
             return false;
         }
-        
+
         // For multi-currency accounts, check if currency is in secondary currencies
         // OR if no secondary currencies are defined, allow any currency (dynamic support)
         $secondaryCurrencies = $this->getSecondaryCurrencies();
-        
+
         if (empty($secondaryCurrencies)) {
             // If multi-currency is enabled but no specific currencies defined,
             // we allow any currency and will auto-add it when used
             return true;
         }
-        
+
         return in_array($currencyCode, $secondaryCurrencies);
     }
 

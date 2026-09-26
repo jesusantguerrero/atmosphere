@@ -2,6 +2,7 @@
 
 namespace App\Domains\Transaction\Models;
 
+use App\Notifications\BillingCycleCutAlert;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -57,6 +58,23 @@ class BillingCycle extends Model implements IPayableDocument
         static::deleting(function ($invoice) {
             Payment::where('payable_id', $invoice->id)
                 ->where('payable_type', self::class)->delete();
+        });
+        static::saved(function (self $cycle): void {
+            if ($cycle->status !== self::STATUS_PAID && $cycle->status !== self::STATUS_CANCELLED) {
+                return;
+            }
+
+            DB::table('notifications')
+                ->where('type', BillingCycleCutAlert::class)
+                ->whereNull('read_at')
+                ->where(function ($query) use ($cycle): void {
+                    $query->where('data->billing_cycle_id', $cycle->id)
+                        ->orWhere(function ($legacy) use ($cycle): void {
+                            $legacy->where('data->link', "/finance/accounts/{$cycle->account_id}")
+                                ->where('data->message', 'like', '%Due date: '.$cycle->end_at);
+                        });
+                })
+                ->update(['read_at' => now()]);
         });
     }
 

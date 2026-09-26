@@ -114,6 +114,9 @@ class GoogleService
     public static function getClient($integrationId)
     {
         $integration = Integration::find($integrationId);
+        if (! $integration || ! $integration->token) {
+            throw new Exception('No connected Gmail integration with a stored token was found. Reconnect Gmail from the Integrations page.');
+        }
         $client = new GoogleClient;
         $client->setAuthConfig(self::getConfigPath());
 
