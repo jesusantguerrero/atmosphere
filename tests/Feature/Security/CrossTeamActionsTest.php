@@ -4,6 +4,7 @@ namespace Tests\Feature\Security;
 
 use App\Domains\AppCore\Models\CoreModule;
 use App\Domains\Housing\Models\Occurrence;
+use App\Domains\Integration\Models\Integration;
 use App\Domains\Journal\Actions\AccountDetailTypesCreate;
 use App\Domains\LogerProfile\Models\LogerProfile;
 use App\Domains\Transaction\Models\Transaction;
@@ -11,6 +12,7 @@ use App\Domains\Transaction\Models\TransactionLine;
 use App\Models\Account;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 use Insane\Journal\Models\Accounting\Reconciliation;
 use Insane\Journal\Models\Core\AccountDetailType;
@@ -248,6 +250,60 @@ class CrossTeamActionsTest extends TestCase
 
         $ids = collect($response->viewData('page')['props']['transactions'])->pluck('id')->all();
         $this->assertNotContains($theirs->id, $ids);
+    }
+
+    public function test_budget_category_actions_of_another_team_are_denied(): void
+    {
+        $theirCategory = Category::where('team_id', $this->otherUser->current_team_id)->whereNotNull('parent_id')->firstOrFail();
+
+        $this->actingAs($this->user)->get("/budgets/{$theirCategory->id}")->assertNotFound();
+        $this->actingAs($this->user)->patch("/budgets/{$theirCategory->id}/default-role", ['role' => null])->assertForbidden();
+        $this->actingAs($this->user)->post("/budgets/{$theirCategory->id}/months/2026-09-01", ['budgeted' => 100])->assertForbidden();
+        $this->actingAs($this->user)->post("/budgets/{$theirCategory->id}/targets/", ['amount' => 100])->assertForbidden();
+
+        $this->assertDatabaseMissing('budget_months', ['category_id' => $theirCategory->id, 'budgeted' => 100]);
+    }
+
+    public function test_journal_payments_and_invoices_of_another_team_are_not_found(): void
+    {
+        $paymentId = DB::table('payments')->insertGetId([
+            'team_id' => $this->otherUser->current_team_id,
+            'user_id' => $this->otherUser->id,
+            'client_id' => 0,
+            'payable_id' => 0,
+            'payable_type' => 'invoice',
+            'account_id' => 0,
+            'payment_date' => '2026-09-01',
+            'amount' => 50,
+            'concept' => 'Their payment',
+        ]);
+        $invoiceId = DB::table('invoices')->insertGetId([
+            'team_id' => $this->otherUser->current_team_id,
+            'user_id' => $this->otherUser->id,
+            'client_id' => 0,
+            'series' => 'INV',
+            'number' => 1,
+            'date' => '2026-09-01',
+            'due_date' => '2026-09-30',
+            'concept' => 'Their invoice',
+            'description' => 'Their invoice',
+        ]);
+
+        $this->actingAs($this->user)->deleteJson("/payments/{$paymentId}")->assertNotFound();
+        $this->actingAs($this->user)->getJson("/invoices/{$invoiceId}/preview?json=1")->assertNotFound();
+        $this->actingAs($this->user)->post("/invoices/{$invoiceId}/mark-as-paid")->assertNotFound();
+
+        $this->assertDatabaseHas('payments', ['id' => $paymentId]);
+    }
+
+    public function test_integration_tokens_are_not_serialized(): void
+    {
+        $integration = new Integration(['token' => 'secret-access', 'hash' => 'me@example.com']);
+        $integration->meta_data = 'secret-refresh';
+
+        $this->assertArrayNotHasKey('token', $integration->toArray());
+        $this->assertArrayNotHasKey('meta_data', $integration->toArray());
+        $this->assertSame('me@example.com', $integration->toArray()['hash']);
     }
 
     private function teamedUser(): User

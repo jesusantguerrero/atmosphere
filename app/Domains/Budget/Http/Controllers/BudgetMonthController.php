@@ -22,6 +22,7 @@ class BudgetMonthController extends Controller
 
     public function assign(BudgetMovementService $service, Category $category, string $month)
     {
+        $this->authorize('update', $category);
         $isMovement = request()->post('type');
         $postData = $this->getPostData();
         $movement = null;
@@ -52,6 +53,7 @@ class BudgetMonthController extends Controller
 
     public function updateActivity(BudgetCategoryService $service, Category $category, $month)
     {
+        $this->authorize('update', $category);
         $service->updateActivity($category, $month);
 
         return Redirect::back();
@@ -79,6 +81,7 @@ class BudgetMonthController extends Controller
 
     public function split(Request $request, BudgetMovementService $service, Category $category, string $month)
     {
+        $this->authorize('update', $category);
         $data = $request->validate([
             'date' => ['required', 'date'],
             'splits' => ['required', 'array', 'min:1'],
