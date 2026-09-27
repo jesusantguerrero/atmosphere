@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Freesgen\Atmosphere\Http\Querify;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 
 abstract class BaseController extends Controller
@@ -30,7 +33,7 @@ abstract class BaseController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function index(Request $request)
     {
@@ -59,7 +62,7 @@ abstract class BaseController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function store(Request $request)
     {
@@ -79,27 +82,26 @@ abstract class BaseController extends Controller
      * Display the specified resource.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function show($id, Request $request)
     {
         $queryParams = $request->query();
         $relationships = isset($queryParams['relationships']) ? $queryParams['relationships'] : [];
-        $query = $this->model::with($relationships)->find($id);
 
-        return $query;
+        return $this->teamQuery($request)->with($relationships)->findOrFail($id);
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function update(Request $request, $id)
     {
-        $resource = $this->model::find($id);
-        $resource->update($request->post());
+        $resource = $this->teamQuery($request)->findOrFail($id);
+        $resource->update(Arr::except($request->post(), ['team_id', 'user_id']));
 
         return $resource;
     }
@@ -108,14 +110,23 @@ abstract class BaseController extends Controller
      * Remove the specified resource from storage.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function destroy($id)
     {
-        $resource = $this->model::find($id);
+        $resource = $this->teamQuery(request())->findOrFail($id);
         $resource->delete();
 
         return $resource;
+    }
+
+    /**
+     * Records of the current team only; every by-id action goes through this.
+     */
+    protected function teamQuery(Request $request): Builder
+    {
+        return $this->model::query()
+            ->when($this->authorizedTeam, fn (Builder $query) => $query->where('team_id', $request->user()->current_team_id));
     }
 
     public function validateLocal(Request $request)
@@ -127,12 +138,12 @@ abstract class BaseController extends Controller
      * Remove the specified resource from storage.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function bulkDelete(Request $request)
     {
         $items = $request->post();
-        $this->model::whereIn('id', $items)->delete();
+        $this->teamQuery($request)->whereIn('id', $items)->delete();
 
         return $items;
     }

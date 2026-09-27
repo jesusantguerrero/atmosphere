@@ -1481,12 +1481,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/jesusantguerrero/atmosphere-core.git",
-                "reference": "8704d6aa977b5caa252bcf746f36856ee128ce48"
+                "reference": "7a7b7aa97127b876c0246159d895a19dd849aa90"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jesusantguerrero/atmosphere-core/zipball/8704d6aa977b5caa252bcf746f36856ee128ce48",
-                "reference": "8704d6aa977b5caa252bcf746f36856ee128ce48",
+                "url": "https://api.github.com/repos/jesusantguerrero/atmosphere-core/zipball/7a7b7aa97127b876c0246159d895a19dd849aa90",
+                "reference": "7a7b7aa97127b876c0246159d895a19dd849aa90",
                 "shasum": ""
             },
             "require": {
@@ -1529,7 +1529,7 @@
                 "issues": "https://neatlancer.com/forums",
                 "source": "https://neatlancer.com"
             },
-            "time": "2026-08-16T17:50:13+00:00"
+            "time": "2026-09-27T07:36:22+00:00"
         },
         {
             "name": "fruitcake/php-cors",
