@@ -2,16 +2,16 @@
 
 namespace App\Domains\Housing\Http\Controllers;
 
-use App\Jobs\RunTeamChecks;
-use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Domains\Housing\Models\Occurrence;
-use Freesgen\Atmosphere\Http\InertiaController;
-use Illuminate\Support\Carbon as SupportCarbon;
+use App\Domains\Housing\Actions\RegisterOccurrence;
 use App\Domains\Housing\Exports\OccurrenceExport;
 use App\Domains\Housing\Imports\OccurrenceImport;
-use App\Domains\Housing\Actions\RegisterOccurrence;
+use App\Domains\Housing\Models\Occurrence;
 use App\Domains\Transaction\Actions\SearchTransactions;
+use App\Jobs\RunTeamChecks;
+use Freesgen\Atmosphere\Http\InertiaController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon as SupportCarbon;
+use Maatwebsite\Excel\Facades\Excel;
 
 class OccurrenceController extends InertiaController
 {
@@ -37,6 +37,8 @@ class OccurrenceController extends InertiaController
 
     public function addInstance(Occurrence $occurrence, RegisterOccurrence $registerOccurrence)
     {
+        $this->ensureTeamOccurrence($occurrence);
+
         $registerOccurrence->add(
             $occurrence->team_id,
             $occurrence->name,
@@ -48,6 +50,8 @@ class OccurrenceController extends InertiaController
 
     public function removeLastInstance(Occurrence $occurrence, RegisterOccurrence $registerOccurrence)
     {
+        $this->ensureTeamOccurrence($occurrence);
+
         $registerOccurrence->remove(
             $occurrence->id,
         );
@@ -57,22 +61,35 @@ class OccurrenceController extends InertiaController
 
     public function automationPreview(Occurrence $occurrence, SearchTransactions $search)
     {
-        return $search->handle($occurrence->conditions);
+        $this->ensureTeamOccurrence($occurrence);
+
+        return $search->handle($occurrence->conditions, $occurrence->team_id);
     }
 
     public function automationLoad(Occurrence $occurrence, RegisterOccurrence $registerer)
     {
+        $this->ensureTeamOccurrence($occurrence);
+
         return $registerer->load($occurrence);
     }
 
     public function sync(Occurrence $occurrence, RegisterOccurrence $registerer)
     {
+        $this->ensureTeamOccurrence($occurrence);
+
         return $registerer->sync($occurrence);
     }
 
     public function remind(Occurrence $occurrence, RegisterOccurrence $registerer)
     {
+        $this->ensureTeamOccurrence($occurrence);
+
         return $registerer->remind($occurrence);
+    }
+
+    private function ensureTeamOccurrence(Occurrence $occurrence): void
+    {
+        abort_unless((int) $occurrence->team_id === (int) request()->user()->current_team_id, 404);
     }
 
     public function syncAll()
@@ -93,5 +110,4 @@ class OccurrenceController extends InertiaController
 
         return redirect()->back();
     }
-
 }

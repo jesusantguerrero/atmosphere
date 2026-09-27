@@ -2,21 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Domains\Transaction\Services\NextPaymentsService;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class NextPaymentsController extends Controller
 {
-    public function __construct(private NextPaymentsService $nextPaymentsService)
-    {
-    }
+    public function __construct(private NextPaymentsService $nextPaymentsService) {}
 
     public function index(Request $request)
     {
         $teamId = $request->user()->current_team_id;
         $date = $request->get('date');
-        
+
         $nextPayments = $this->nextPaymentsService->getNextPayments($teamId, $date);
 
         return response()->json([
@@ -25,18 +24,19 @@ class NextPaymentsController extends Controller
                 'total_amount' => $nextPayments->sum('amount'),
                 'total_count' => $nextPayments->count(),
                 'by_type' => $nextPayments->groupBy('type')->map->count(),
-            ]
+            ],
         ]);
     }
 
     public function markAsPaid(Request $request, string $paymentId)
     {
+        $teamId = $request->user()->current_team_id;
         $request->validate([
             'amount' => 'required|numeric|min:0',
             'date' => 'required|date',
             'description' => 'nullable|string|max:255',
-            'account_id' => 'nullable|exists:accounts,id',
-            'payee_id' => 'nullable|exists:payees,id',
+            'account_id' => ['nullable', Rule::exists('accounts', 'id')->where('team_id', $teamId)],
+            'payee_id' => ['nullable', Rule::exists('payees', 'id')->where('team_id', $teamId)],
         ]);
 
         $success = $this->nextPaymentsService->markAsPaid($paymentId, [
@@ -55,6 +55,7 @@ class NextPaymentsController extends Controller
 
         return response()->json(['message' => 'Failed to mark payment as paid'], 400);
     }
+
     /**
      * Full-page, filterable view of the same unified "next payments" the
      * dashboard hero counts (budget reminders + credit-card cuts + planned
@@ -94,5 +95,4 @@ class NextPaymentsController extends Controller
             'filter' => in_array($filter, ['overdue', 'due_soon'], true) ? $filter : 'all',
         ]);
     }
-
 }

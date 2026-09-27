@@ -32,6 +32,14 @@ class LogerProfileService
         );
     }
 
+    /**
+     * 404s unless the profile belongs to the given team.
+     */
+    public function ensureTeamProfile(int $teamId, int $profileId): void
+    {
+        abort_unless(LogerProfile::where(['team_id' => $teamId, 'id' => $profileId])->exists(), 404);
+    }
+
     public function getById(int $id)
     {
         return LogerProfileData::from(LogerProfile::find($id));
@@ -96,7 +104,7 @@ class LogerProfileService
             ];
         }
 
-        $teamId = $entities->first()->team_id;
+        $teamId = LogerProfile::findOrFail($profileId)->team_id;
 
         $transactions = TransactionLine::query()
             ->byTeam($teamId)

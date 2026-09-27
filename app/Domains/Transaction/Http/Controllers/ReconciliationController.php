@@ -8,7 +8,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Traits\HasEnrichedRequest;
 use Exception;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Gate;
 use Insane\Journal\Models\Accounting\Reconciliation;
 use Insane\Journal\Models\Accounting\ReconciliationEntry;
 use Insane\Journal\Models\Core\Account;
@@ -22,6 +21,8 @@ class ReconciliationController extends Controller
 
     public function accountReconciliations(Account $account, ReconciliationService $service)
     {
+        $this->authorize('update', $account);
+
         [$startDate, $endDate] = $this->getFilterDates();
 
         $reconciliations = $service->listHistoryOf($account);
@@ -46,6 +47,8 @@ class ReconciliationController extends Controller
 
     public function create(Account $account)
     {
+        $this->authorize('update', $account);
+
         [$startDate, $endDate] = $this->getFilterDates();
 
         return inertia('Finance/Reconciliation/Create', [
@@ -57,6 +60,8 @@ class ReconciliationController extends Controller
 
     public function show(Reconciliation $reconciliation, ReconciliationService $service)
     {
+        $this->authorize('adjust', $reconciliation);
+
         return inertia('Finance/Reconciliation/Show', [
             'account' => $reconciliation->account,
             'transactions' => $this->getReconciliationTransactions($reconciliation),
@@ -76,6 +81,8 @@ class ReconciliationController extends Controller
      */
     public function balanceAt(Account $account, ReconciliationService $service)
     {
+        $this->authorize('update', $account);
+
         $date = request()->get('date') ?? date('Y-m-d');
 
         return response()->json([
@@ -96,12 +103,12 @@ class ReconciliationController extends Controller
         $query = Transaction::whereHas('lines', function ($query) use ($reconciliation) {
             $query->where('account_id', $reconciliation->account_id);
         })
-        ->join('reconciliation_entries', fn ($q) => $q->on('transactions.id', 'reconciliation_entries.transaction_id')
-            ->where('reconciliation_id', $reconciliation->id))
-        ->with(['splits', 'payee', 'category', 'splits.payee', 'account', 'counterAccount'])
-        ->select()
-        ->addSelect(DB::raw('reconciliation_entries.id as entry_id, reconciliation_entries.matched is_matched'))
-        ->orderByDesc('date');
+            ->join('reconciliation_entries', fn ($q) => $q->on('transactions.id', 'reconciliation_entries.transaction_id')
+                ->where('reconciliation_id', $reconciliation->id))
+            ->with(['splits', 'payee', 'category', 'splits.payee', 'account', 'counterAccount'])
+            ->select()
+            ->addSelect(DB::raw('reconciliation_entries.id as entry_id, reconciliation_entries.matched is_matched'))
+            ->orderByDesc('date');
 
         if ($filter === 'pending') {
             $query->where('reconciliation_entries.matched', false);
@@ -120,9 +127,10 @@ class ReconciliationController extends Controller
         return $query->paginate(25)->withQueryString();
     }
 
-
     public function store(Account $account, ReconciliationService $service)
     {
+        $this->authorize('update', $account);
+
         $reconciliation = $service->create($account,
             ReconciliationParamsData::from([
                 ...$this->getPostData(),
@@ -138,16 +146,14 @@ class ReconciliationController extends Controller
 
     public function adjustment(Reconciliation $reconciliation, ReconciliationService $service)
     {
-        if (! Gate::forUser(auth()->user())->check('adjust', $reconciliation)) {
-            back()->with('flash', [
-                'banner' => "Can't reconcile this account",
-            ]);
-        }
+        $this->authorize('adjust', $reconciliation);
         $service->saveAdjustment($reconciliation);
     }
 
     public function update(Reconciliation $reconciliation, ReconciliationService $service)
     {
+        $this->authorize('adjust', $reconciliation);
+
         $reconciliation = $service->update($reconciliation, ReconciliationParamsData::from([
             ...$this->getPostData(),
             'account_id' => $reconciliation->account_id,
@@ -168,6 +174,8 @@ class ReconciliationController extends Controller
 
     public function syncTransactions(Reconciliation $reconciliation, ReconciliationService $service)
     {
+        $this->authorize('adjust', $reconciliation);
+
         $reconciliation = $service->syncTransactions($reconciliation);
 
         if ($reconciliation->difference) {
@@ -183,6 +191,8 @@ class ReconciliationController extends Controller
 
     public function delete(Reconciliation $reconciliation, ReconciliationService $service)
     {
+        $this->authorize('adjust', $reconciliation);
+
         try {
             $accountId = $reconciliation->account_id;
             $service->delete($reconciliation);
@@ -199,11 +209,8 @@ class ReconciliationController extends Controller
 
     public function checkReconciliationEntry(Reconciliation $reconciliation, ReconciliationEntry $reconciliationEntry, ReconciliationService $service)
     {
-        if (! Gate::forUser(auth()->user())->check('adjust', $reconciliation)) {
-            back()->with('flash', [
-                'banner' => "Can't reconcile this account",
-            ]);
-        }
+        $this->authorize('adjust', $reconciliation);
+        abort_unless((int) $reconciliationEntry->reconciliation_id === (int) $reconciliation->id, 404);
         $postData = $this->getPostData();
         $service->checkLine($reconciliation, $reconciliationEntry, $postData['matched']);
     }

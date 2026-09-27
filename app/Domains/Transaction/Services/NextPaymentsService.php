@@ -7,6 +7,7 @@ use App\Domains\Transaction\Models\BillingCycle;
 use App\Domains\Transaction\Models\Transaction;
 use App\Models\Account;
 use Carbon\Carbon;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\AccountDetailType;
@@ -222,7 +223,7 @@ class NextPaymentsService
 
     private function markBudgetCategoryAsPaid(int $targetId, array $transactionData): bool
     {
-        $target = BudgetTarget::find($targetId);
+        $target = BudgetTarget::where('team_id', $transactionData['team_id'])->find($targetId);
         if (! $target) {
             return false;
         }
@@ -240,7 +241,7 @@ class NextPaymentsService
 
     private function markBillingCycleAsPaid(int $cycleId, array $transactionData): bool
     {
-        $cycle = BillingCycle::find($cycleId);
+        $cycle = BillingCycle::where('team_id', $transactionData['team_id'])->find($cycleId);
         if (! $cycle) {
             return false;
         }
@@ -260,14 +261,14 @@ class NextPaymentsService
 
     private function markPlannedTransactionAsPaid(int $transactionId, array $transactionData): bool
     {
-        $plannedTransaction = Transaction::find($transactionId);
+        $plannedTransaction = Transaction::where('team_id', $transactionData['team_id'])->find($transactionId);
         if (! $plannedTransaction) {
             return false;
         }
 
         // Update planned transaction or create new verified transaction
         $plannedTransaction->update([
-            ...$transactionData,
+            ...Arr::except($transactionData, ['team_id', 'user_id']),
             'status' => Transaction::STATUS_VERIFIED,
         ]);
 
@@ -283,7 +284,7 @@ class NextPaymentsService
             return false;
         }
 
-        $account = Account::find($accountId);
+        $account = Account::where('team_id', $transactionData['team_id'])->find($accountId);
         if (! $account) {
             return false;
         }

@@ -10,7 +10,7 @@ class ReconciliationPolicy
 {
     public function adjust(User $user, Reconciliation $reconciliation)
     {
-        return $user->current_team_id === $reconciliation->team_id
+        return (int) $user->current_team_id === (int) $reconciliation->team_id
         ? Response::allow()
         : Response::deny('You do not own this post.');
     }

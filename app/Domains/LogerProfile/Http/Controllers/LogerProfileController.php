@@ -30,6 +30,8 @@ class LogerProfileController extends Controller
 
     public function show(LogerProfileService $profileService, int $profileId)
     {
+        $profileService->ensureTeamProfile(auth()->user()->current_team_id, $profileId);
+
         return inertia('LogerProfile/ProfileView', [
             'profiles' => $profileService->list(auth()->user()->current_team_id),
             'profile' => $profileService->getById($profileId),
@@ -41,6 +43,8 @@ class LogerProfileController extends Controller
 
     public function transactions(int $profileId, LogerProfileService $profileService)
     {
+        $profileService->ensureTeamProfile(auth()->user()->current_team_id, $profileId);
+
         $queryParams = request()->query();
 
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];

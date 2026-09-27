@@ -2,22 +2,20 @@
 
 namespace App\Domains\Housing\Actions;
 
-use Exception;
+use App\Domains\Housing\Contracts\OccurrenceNotifyTypes;
+use App\Domains\Housing\Data\OccurrenceData;
+use App\Domains\Housing\Models\Occurrence;
+use App\Domains\Transaction\Actions\SearchTransactions;
 use App\Models\User;
+use App\Notifications\OccurrenceAlert;
+use Exception;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
-use App\Notifications\OccurrenceAlert;
-use App\Domains\Housing\Models\Occurrence;
-use App\Domains\Housing\Data\OccurrenceData;
-use App\Domains\Integration\Models\Integration;
-use App\Domains\Integration\Services\TelegramService;
-use App\Domains\Integration\Services\WhatsAppService;
-use App\Domains\Transaction\Actions\SearchTransactions;
-use App\Domains\Housing\Contracts\OccurrenceNotifyTypes;
 
 class RegisterOccurrence
 {
-    private function softAdd(Occurrence $occurrence, $date) {
+    private function softAdd(Occurrence $occurrence, $date)
+    {
         $lastDuration = $occurrence->last_date ? $this->getDaysDifference($occurrence->last_date->format('Y-m-d'), $date) : 0;
         $log = (array) $occurrence->log ?? [];
         $log[] = $date;
@@ -35,9 +33,10 @@ class RegisterOccurrence
     public function add(int $teamId, string $name, string $date)
     {
         $occurrence = Occurrence::byTeam($teamId)->byName($name)->first();
-        if ($occurrence && ($occurrence->last_date && $occurrence->last_date->format('Y-m-d') !== $date || !$occurrence->last_date)) {
+        if ($occurrence && ($occurrence->last_date && $occurrence->last_date->format('Y-m-d') !== $date || ! $occurrence->last_date)) {
             $this->softAdd($occurrence, $date);
             $occurrence->save();
+
             return;
         }
 
@@ -52,7 +51,7 @@ class RegisterOccurrence
         ]);
     }
 
-    public function remove(int $id, string $date = null)
+    public function remove(int $id, ?string $date = null)
     {
         $occurrence = Occurrence::find($id);
 
@@ -80,7 +79,7 @@ class RegisterOccurrence
 
     public function load(Occurrence $occurrence)
     {
-        $transactions = (new SearchTransactions())->handle($occurrence->conditions);
+        $transactions = (new SearchTransactions)->handle($occurrence->conditions, $occurrence->team_id);
         foreach ($transactions as $transaction) {
             try {
                 $this->softAdd($occurrence, $transaction->date);
@@ -93,7 +92,7 @@ class RegisterOccurrence
 
     public function sync(Occurrence $occurrence)
     {
-        $transactions = (new SearchTransactions())->handle($occurrence->conditions);
+        $transactions = (new SearchTransactions)->handle($occurrence->conditions, $occurrence->team_id);
         // Only rebuild when there is something to rebuild from, so a transient
         // empty match never wipes a healthy occurrence's history.
         if ($transactions && $transactions->count()) {
@@ -113,6 +112,7 @@ class RegisterOccurrence
                     // sync and leave this occurrence with a wiped log (which is
                     // why they appeared "paused"). Skip it, like load() does.
                     Log::error('Occurrence sync skipped a date: '.$e->getMessage());
+
                     continue;
                 }
             }
@@ -135,12 +135,13 @@ class RegisterOccurrence
         return Carbon::parse($endDate)->startOfDay()->diffInDays(Carbon::parse($startDate)->startOfDay());
     }
 
-    public function fromImport(User $user, OccurrenceData $data) {
+    public function fromImport(User $user, OccurrenceData $data)
+    {
         Occurrence::create([
             'team_id' => $user->current_team_id,
             'user_id' => $user->id,
             ...$data->toArray(),
-            "name" => $data->name . " copy"
+            'name' => $data->name.' copy',
         ]);
     }
 }

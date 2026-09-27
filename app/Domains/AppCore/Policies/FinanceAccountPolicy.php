@@ -8,16 +8,16 @@ use Insane\Journal\Models\Core\Account;
 
 class FinanceAccountPolicy
 {
-    public function show(User $user)
+    public function show(User $user, Account $account)
     {
-        return $user->current_team_id
+        return $this->ownsAccount($user, $account)
         ? Response::allow()
         : Response::deny('You do not own this account.');
     }
 
     public function update(User $user, Account $account)
     {
-        return $user->current_team_id === $account->team_id
+        return $this->ownsAccount($user, $account)
         ? Response::allow()
         : Response::deny('You do not own this account.');
     }
@@ -31,6 +31,11 @@ class FinanceAccountPolicy
     public function delete(User $user, Account $account)
     {
 
-        return $user->current_team_id == $account->team_id;
+        return $this->ownsAccount($user, $account);
+    }
+
+    private function ownsAccount(User $user, Account $account): bool
+    {
+        return (int) $user->current_team_id === (int) $account->team_id;
     }
 }
