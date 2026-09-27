@@ -4,6 +4,7 @@ namespace App\Domains\Journal\Policies;
 
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Insane\Journal\Models\Core\Category;
 
 class CategoryPolicy
 {
@@ -21,7 +22,7 @@ class CategoryPolicy
 
     public function view(User $user, Category $category)
     {
-        return $user->team_id == $category->team_id;
+        return (int) $user->current_team_id === (int) $category->team_id;
     }
 
     public function create(User $user)
@@ -31,11 +32,11 @@ class CategoryPolicy
 
     public function update(User $user, Category $category)
     {
-        return $user->team_id == $category->team_id;
+        return (int) $user->current_team_id === (int) $category->team_id;
     }
 
     public function delete(User $user, Category $category)
     {
-        return $user->team_id == $category->team_id;
+        return (int) $user->current_team_id === (int) $category->team_id;
     }
 }

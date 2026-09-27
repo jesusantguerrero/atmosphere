@@ -94,6 +94,8 @@ class FinanceLinesController extends InertiaController
 
     public function getTransactions(Category $category)
     {
+        $this->authorize('view', $category);
+
         $queryParams = request()->query();
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
         [$startDate, $endDate] = $this->getFilterDates($filters);
@@ -118,6 +120,8 @@ class FinanceLinesController extends InertiaController
 
     public function getDetails(Category $category)
     {
+        $this->authorize('view', $category);
+
         $queryParams = request()->query();
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
         [$startDate, $endDate] = $this->getFilterDates($filters);
