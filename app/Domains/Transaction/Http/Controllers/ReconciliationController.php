@@ -147,7 +147,14 @@ class ReconciliationController extends Controller
     public function adjustment(Reconciliation $reconciliation, ReconciliationService $service)
     {
         $this->authorize('adjust', $reconciliation);
-        $service->saveAdjustment($reconciliation);
+
+        $service->saveAdjustment($reconciliation, ReconciliationParamsData::from([
+            ...$this->getPostData(),
+            'account_id' => $reconciliation->account_id,
+            'user_id' => auth()->user()->id,
+        ]));
+
+        return redirect("/finance/reconciliation/{$reconciliation->id}");
     }
 
     public function update(Reconciliation $reconciliation, ReconciliationService $service)

@@ -1081,5 +1081,9 @@
     "transaction to review": "transacción por revisar",
     "Due soon": "Próximos",
     "Overdue payments": "Pagos vencidos",
-    "Payments due soon": "Pagos próximos"
+    "Payments due soon": "Pagos próximos",
+    "Book difference & finish": "Ajustar y cerrar",
+    "Book the difference as an adjustment and finish": "Registrar la diferencia como ajuste y cerrar",
+    "Book the difference?": "¿Registrar la diferencia como ajuste?",
+    "This creates an adjustment transaction of {amount} so your account matches the statement, and marks this reconciliation complete. You can delete the adjustment later if you find the real cause.": "Crea una transacción de ajuste de {amount} para que tu cuenta cuadre con el estado de cuenta y marca esta conciliación como completada. Puedes borrar el ajuste después si encuentras la causa real."
 }
