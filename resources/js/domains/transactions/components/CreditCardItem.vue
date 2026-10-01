@@ -14,7 +14,8 @@ import IMdiLink from "~icons/mdi/link";
 const props = defineProps<{
   account: Record<string, any>,
   isSelected: boolean,
-  index: number
+  index: number,
+  cutInfo?: { days_since_cut: number | null; cut_at: string | null; statement_unpaid: boolean }
 }>();
 
 const { account  } = toRefs(props)
@@ -33,6 +34,15 @@ const isReconciled = computed(() => {
 
 const availableCredit = computed(() => {
     return  parseFloat(account.value.credit_limit) + parseFloat(account.value.balance);
+})
+
+// Days since the last UNPAID statement cut, fed from the cycle-aware summary
+// (see CreditCardsLedger). Null when the statement is settled, so the badge
+// only shows on cards with an open, unpaid cut.
+const cutDays = computed<number | null>(() => {
+    const c = props.cutInfo;
+    if (!c || !c.statement_unpaid || c.days_since_cut === null || c.days_since_cut === undefined) return null;
+    return c.days_since_cut;
 })
 const creditLimitDate = computed(() => {
     const formatter = new Intl.PluralRules('en-US', {
@@ -122,6 +132,13 @@ onMounted(() => {
         {{ formatMoney(account.balance, account.currency_code) }}
         / {{ formatMoney(availableCredit, account.currency_code) }}
       </p>
+    </div>
+
+    <div v-if="cutDays !== null" class="flex items-center gap-2 pt-3 border-t border-base-lvl-2 text-xs text-error">
+      <i class="fa fa-scissors" />
+      <span class="font-medium">
+        {{ cutDays === 0 ? $t('Cut today · unpaid') : $t('Cut {days}d ago · unpaid', { days: cutDays }) }}
+      </span>
     </div>
 
     <div v-if="renewalNotice" class="flex items-center gap-2 pt-3 border-t border-base-lvl-2 text-xs text-warning">

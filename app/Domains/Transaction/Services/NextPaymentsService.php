@@ -149,6 +149,13 @@ class NextPaymentsService
                 'account_name' => $account->name,
                 'status' => $startDate->copy()->startOfDay()->gt($dueDate) ? 'overdue' : 'pending',
                 'source' => 'dynamic_calculation',
+                // Cut date of the statement this payment settles. When
+                // statement_unpaid is true, cut_date is the last cut that
+                // closed WITHOUT being paid off (days-since-cut is meaningful);
+                // when false the statement is settled and cut_date is the next
+                // upcoming cut.
+                'cut_date' => $closingDate->format('Y-m-d'),
+                'statement_unpaid' => $remainingStatement > 0.01,
                 'metadata' => [
                     'total_debt' => $currentDebt,
                     'closing_day' => $closingDay,
