@@ -82,6 +82,22 @@ const openLinkModal = (account = {}) => {
     isLinkModalOpen.value = true;
 };
 
+// A balance counts as reconciled when the last reconciliation COMPLETED and
+// its recorded amount matches the account's current balance. reconciliation_last.amount
+// comes from the API as a decimal STRING while balance is a number, so the
+// previous strict `amount === balance` was always false — reconciled matched
+// nothing and unreconciled matched everything (the filters appeared not to
+// work). Compare numerically with a cent tolerance instead.
+const toNum = (v: unknown): number => {
+    const n = typeof v === 'string' ? parseFloat(v) : Number(v ?? 0);
+    return Number.isFinite(n) ? n : 0;
+};
+const isAccountReconciled = (a: IAccount): boolean => {
+    const rec = (a as any).reconciliation_last;
+    if (!rec || rec.status !== 'completed') return false;
+    return Math.abs(toNum(rec.amount) - toNum(a.balance)) < 0.01;
+};
+
 // Filter accounts based on reconciliation status and account type
 const filteredAccounts = computed(() => {
     let accounts = props.accounts;
@@ -90,10 +106,10 @@ const filteredAccounts = computed(() => {
         return accounts.filter(isCreditCard);
     }
     if (selectedFilter.value === 'reconciled') {
-        return accounts.filter(a => a.reconciliation_last?.status === 'completed' && a.reconciliation_last?.amount === a.balance);
+        return accounts.filter(isAccountReconciled);
     }
     if (selectedFilter.value === 'unreconciled') {
-        return accounts.filter(a => !a.reconciliation_last || a.reconciliation_last?.status !== 'completed' || a.reconciliation_last?.amount !== a.balance);
+        return accounts.filter(a => !isAccountReconciled(a));
     }
     return accounts;
 });
