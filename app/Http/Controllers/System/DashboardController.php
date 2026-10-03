@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\System;
 
 use App\Domains\Budget\Models\BudgetMonth;
+use App\Domains\Budget\Models\BudgetTarget;
 use App\Domains\Housing\Models\Occurrence;
 use App\Domains\Meal\Services\MealService;
 use App\Domains\Today\Services\TodayService;
@@ -92,6 +93,10 @@ class DashboardController
             'drafts' => Inertia::optional(fn () => TransactionService::getDraftCount($teamId)),
             'checks' => Inertia::optional(fn () => Occurrence::where('team_id', $teamId)->limit(4)->get()),
             'nextPayments' => $nextPayments,
+            // Whether the team has a budget configured at all (targets), so the
+            // dashboard tile can tell "no budget" apart from "budget exists but
+            // nothing assigned this month".
+            'budgetConfigured' => BudgetTarget::where('team_id', $teamId)->exists(),
             'topWatchlists' => $topWatchlists,
         ]);
     }

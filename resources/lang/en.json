@@ -999,5 +999,7 @@
     "Book difference & finish": "Book difference & finish",
     "Book the difference as an adjustment and finish": "Book the difference as an adjustment and finish",
     "Book the difference?": "Book the difference?",
-    "This creates an adjustment transaction of {amount} so your account matches the statement, and marks this reconciliation complete. You can delete the adjustment later if you find the real cause.": "This creates an adjustment transaction of {amount} so your account matches the statement, and marks this reconciliation complete. You can delete the adjustment later if you find the real cause."
+    "This creates an adjustment transaction of {amount} so your account matches the statement, and marks this reconciliation complete. You can delete the adjustment later if you find the real cause.": "This creates an adjustment transaction of {amount} so your account matches the statement, and marks this reconciliation complete. You can delete the adjustment later if you find the real cause.",
+    "Nothing assigned this month": "Nothing assigned this month",
+    "Assign budget": "Assign budget"
 }
