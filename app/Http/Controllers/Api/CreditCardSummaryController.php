@@ -51,6 +51,15 @@ class CreditCardSummaryController
                 $dueAt = Carbon::parse($payment['due_date']);
                 $isOverdue = ($payment['status'] ?? null) === 'overdue';
 
+                // Days elapsed since the last UNPAID statement cut. Null when the
+                // current statement is already settled (nothing is "late since
+                // cut" to report), so the UI only badges cards with an open cut.
+                $statementUnpaid = (bool) ($payment['statement_unpaid'] ?? false);
+                $cutAt = isset($payment['cut_date']) ? Carbon::parse($payment['cut_date']) : null;
+                $daysSinceCut = ($statementUnpaid && $cutAt)
+                    ? (int) $cutAt->copy()->startOfDay()->diffInDays($today->copy()->startOfDay())
+                    : null;
+
                 return [
                     'account_id' => $payment['account_id'],
                     'account_name' => $payment['account_name'],
@@ -59,6 +68,9 @@ class CreditCardSummaryController
                     // Negative when overdue, positive when in the future.
                     'days_until' => (int) $today->copy()->startOfDay()->diffInDays($dueAt->copy()->startOfDay(), false),
                     'is_overdue' => $isOverdue,
+                    'cut_at' => $cutAt?->format('Y-m-d'),
+                    'days_since_cut' => $daysSinceCut,
+                    'statement_unpaid' => $statementUnpaid,
                 ];
             })
             ->sortBy('days_until')

@@ -33,6 +33,7 @@ const props = defineProps<{
     isHousingEnabled: boolean;
     todayItems?: TodayItem[];
     drafts?: number;
+    budgetConfigured?: boolean;
 }>();
 
 const { netWorth } = toRefs(props);
@@ -54,10 +55,15 @@ const currentBudget = computed(() => ({
     savings: Number(props.budgetTotal?.at(-1)?.savings ?? 0),
 }));
 
-const hasBudget = computed(() => Number.isFinite(currentBudget.value.total) && currentBudget.value.total > 0);
+// A budget "exists" if the team has it configured (categories/targets) — even
+// when nothing is assigned THIS month yet. The month's assignment total is a
+// separate thing (budgetAssigned below); conflating them made a fully set-up
+// budget read as "No budget set" the moment a new month rolled over.
+const budgetAssigned = computed(() => Number.isFinite(currentBudget.value.total) && currentBudget.value.total > 0);
+const hasBudget = computed(() => Boolean(props.budgetConfigured) || budgetAssigned.value);
 
 const spentPercentage = computed(() => {
-    if (!hasBudget.value) return 0;
+    if (!budgetAssigned.value) return 0;
     return Math.round((currentBudget.value.spending / currentBudget.value.total) * 100);
 });
 
@@ -318,7 +324,7 @@ const goToDueSoonPayments = () => {
                 @click="router.visit('/budgets')"
             >
                 <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">{{ $t('Budget') }}</p>
-                <template v-if="hasBudget">
+                <template v-if="budgetAssigned">
                     <p class="text-lg font-bold text-body mt-1">{{ spentPercentage }}%
                         <span class="text-xs font-normal text-body-1/50">{{ $t('spent') }}</span>
                     </p>
@@ -332,12 +338,24 @@ const goToDueSoonPayments = () => {
                         />
                     </div>
                 </template>
+                <template v-else-if="hasBudget">
+                    <p class="text-sm font-semibold text-body mt-1">{{ $t('Nothing assigned this month') }}</p>
+                    <p class="text-xs text-primary mt-1">{{ $t('Assign budget') }} →</p>
+                </template>
                 <template v-else>
                     <p class="text-sm font-semibold text-body mt-1">{{ $t('No budget set') }}</p>
                     <p class="text-xs text-primary mt-1">{{ $t('Set your first budget') }} →</p>
                 </template>
             </button>
         </section>
+
+        <!-- Accounts + Watchlists promoted from the right rail so the balances
+             you glance at most are always visible, not one click away. Account
+             groups collapse inline; only an account row or "View all" navigates
+             (so this is a glance view, not a navigation trap). Watchlists
+             self-hide when there are none. -->
+        <AccountBalancesWidget :accounts="accounts" />
+        <WatchlistDashboardWidget :watchlists="topWatchlists" />
 
         <!-- Main content: 2 columns -->
         <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -347,9 +365,6 @@ const goToDueSoonPayments = () => {
                 <RoutineNowNextWidget />
                 <!-- Today / needs attention -->
                 <DueTodayWidget v-if="todayItems?.length" :items="todayItems" />
-
-                <!-- Accounts -->
-                <AccountBalancesWidget :accounts="accounts" />
 
                 <!-- Next payments — only if there are any. Shows the top 3 with a
                      "see all" toggle so the list doesn't dominate the screen. -->

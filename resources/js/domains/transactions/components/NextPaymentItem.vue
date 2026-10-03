@@ -57,6 +57,19 @@ const daysOverdue = computed(() => {
     return Math.max(0, diffDays);
 });
 
+// Days elapsed since the last UNPAID statement cut (backend-provided via
+// cut_date + statement_unpaid). Null when the statement is settled, so the
+// badge only shows for cards carrying an open, unpaid cut.
+const daysSinceCut = computed<number | null>(() => {
+    const p: any = props.payment;
+    if (p.type !== 'credit_card_payment' || !p.statement_unpaid || !p.cut_date) return null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const cut = new Date(p.cut_date + 'T00:00:00');
+    const diff = Math.floor((today.getTime() - cut.getTime()) / 86_400_000);
+    return diff >= 0 ? diff : null;
+});
+
 // Determine urgency level
 const urgencyLevel = computed(() => {
     if (props.payment.type !== 'credit_card_payment') return 'normal';
@@ -154,6 +167,17 @@ const dateBadgeConfig = computed(() => {
                     >
                         <component :is="badgeConfig.icon" class="w-3 h-3" />
                         {{ $t(badgeConfig.text) }}
+                    </span>
+                    <!-- Days-since-cut badge — how long the last unpaid statement
+                         has been closed. Orthogonal to urgency (which counts from
+                         the DUE date); this counts from the CUT date. -->
+                    <span
+                        v-if="daysSinceCut !== null"
+                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold uppercase tracking-wide ring-1 ring-inset bg-base-lvl-2 text-body-1 ring-base dark:ring-white/10"
+                        :title="$t('Days since statement cut')"
+                    >
+                        <i class="fa fa-scissors text-[10px]" />
+                        {{ daysSinceCut === 0 ? $t('Cut today') : $t('{days}d since cut', { days: daysSinceCut }) }}
                     </span>
                     <!-- Cycle status badge — orthogonal to urgency. Shows actual
                          settlement state (PENDING / PARTIALLY_PAID / LATE / PAID /

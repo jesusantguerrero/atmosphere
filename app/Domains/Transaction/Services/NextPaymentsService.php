@@ -7,6 +7,7 @@ use App\Domains\Transaction\Models\BillingCycle;
 use App\Domains\Transaction\Models\Transaction;
 use App\Models\Account;
 use Carbon\Carbon;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\AccountDetailType;
@@ -148,6 +149,13 @@ class NextPaymentsService
                 'account_name' => $account->name,
                 'status' => $startDate->copy()->startOfDay()->gt($dueDate) ? 'overdue' : 'pending',
                 'source' => 'dynamic_calculation',
+                // Cut date of the statement this payment settles. When
+                // statement_unpaid is true, cut_date is the last cut that
+                // closed WITHOUT being paid off (days-since-cut is meaningful);
+                // when false the statement is settled and cut_date is the next
+                // upcoming cut.
+                'cut_date' => $closingDate->format('Y-m-d'),
+                'statement_unpaid' => $remainingStatement > 0.01,
                 'metadata' => [
                     'total_debt' => $currentDebt,
                     'closing_day' => $closingDay,
@@ -222,7 +230,7 @@ class NextPaymentsService
 
     private function markBudgetCategoryAsPaid(int $targetId, array $transactionData): bool
     {
-        $target = BudgetTarget::find($targetId);
+        $target = BudgetTarget::where('team_id', $transactionData['team_id'])->find($targetId);
         if (! $target) {
             return false;
         }
@@ -240,7 +248,7 @@ class NextPaymentsService
 
     private function markBillingCycleAsPaid(int $cycleId, array $transactionData): bool
     {
-        $cycle = BillingCycle::find($cycleId);
+        $cycle = BillingCycle::where('team_id', $transactionData['team_id'])->find($cycleId);
         if (! $cycle) {
             return false;
         }
@@ -260,14 +268,14 @@ class NextPaymentsService
 
     private function markPlannedTransactionAsPaid(int $transactionId, array $transactionData): bool
     {
-        $plannedTransaction = Transaction::find($transactionId);
+        $plannedTransaction = Transaction::where('team_id', $transactionData['team_id'])->find($transactionId);
         if (! $plannedTransaction) {
             return false;
         }
 
         // Update planned transaction or create new verified transaction
         $plannedTransaction->update([
-            ...$transactionData,
+            ...Arr::except($transactionData, ['team_id', 'user_id']),
             'status' => Transaction::STATUS_VERIFIED,
         ]);
 
@@ -283,7 +291,7 @@ class NextPaymentsService
             return false;
         }
 
-        $account = Account::find($accountId);
+        $account = Account::where('team_id', $transactionData['team_id'])->find($accountId);
         if (! $account) {
             return false;
         }

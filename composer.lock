@@ -1481,12 +1481,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/jesusantguerrero/atmosphere-core.git",
-                "reference": "8704d6aa977b5caa252bcf746f36856ee128ce48"
+                "reference": "7a7b7aa97127b876c0246159d895a19dd849aa90"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jesusantguerrero/atmosphere-core/zipball/8704d6aa977b5caa252bcf746f36856ee128ce48",
-                "reference": "8704d6aa977b5caa252bcf746f36856ee128ce48",
+                "url": "https://api.github.com/repos/jesusantguerrero/atmosphere-core/zipball/7a7b7aa97127b876c0246159d895a19dd849aa90",
+                "reference": "7a7b7aa97127b876c0246159d895a19dd849aa90",
                 "shasum": ""
             },
             "require": {
@@ -1529,7 +1529,7 @@
                 "issues": "https://neatlancer.com/forums",
                 "source": "https://neatlancer.com"
             },
-            "time": "2026-08-16T17:50:13+00:00"
+            "time": "2026-09-27T07:36:22+00:00"
         },
         {
             "name": "fruitcake/php-cors",
@@ -2337,12 +2337,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/insane-code/journal.git",
-                "reference": "3b2e1eb15d13053e266f61d9043bb2bb6f4d0ba6"
+                "reference": "0d722a4d9b03621b3eea025a23d934ae99fdfa84"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/insane-code/journal/zipball/3b2e1eb15d13053e266f61d9043bb2bb6f4d0ba6",
-                "reference": "3b2e1eb15d13053e266f61d9043bb2bb6f4d0ba6",
+                "url": "https://api.github.com/repos/insane-code/journal/zipball/0d722a4d9b03621b3eea025a23d934ae99fdfa84",
+                "reference": "0d722a4d9b03621b3eea025a23d934ae99fdfa84",
                 "shasum": ""
             },
             "require": {
@@ -2393,7 +2393,7 @@
                 "issues": "https://github.com/insane-code/journal/issues",
                 "source": "https://github.com/insane-code/journal/tree/master"
             },
-            "time": "2026-04-19T14:37:59+00:00"
+            "time": "2026-09-27T20:39:04+00:00"
         },
         {
             "name": "insane/plan-module",
@@ -2401,12 +2401,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/jesusantguerrero/plan-module.git",
-                "reference": "ad34ca18b2db19cf0830b616b1f01c5621ce431e"
+                "reference": "b08c8a2ff1ef5313b2e5cc10c1a7e405ddd6b1f3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jesusantguerrero/plan-module/zipball/ad34ca18b2db19cf0830b616b1f01c5621ce431e",
-                "reference": "ad34ca18b2db19cf0830b616b1f01c5621ce431e",
+                "url": "https://api.github.com/repos/jesusantguerrero/plan-module/zipball/b08c8a2ff1ef5313b2e5cc10c1a7e405ddd6b1f3",
+                "reference": "b08c8a2ff1ef5313b2e5cc10c1a7e405ddd6b1f3",
                 "shasum": ""
             },
             "default-branch": true,
@@ -2437,7 +2437,7 @@
                 "issues": "https://github.com/jesusantguerrero/plan-module/issues",
                 "source": "https://github.com/jesusantguerrero/plan-module/tree/master"
             },
-            "time": "2026-08-13T14:09:27+00:00"
+            "time": "2026-09-27T09:45:41+00:00"
         },
         {
             "name": "insane/treasurer",
@@ -2509,12 +2509,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/jesusantguerrero/watchlist-module.git",
-                "reference": "6dadff5ec9fce807d8fd5d0e1e1624d0c409c2ef"
+                "reference": "f476fc5e012066b9ee67b486d8d89c274455cb85"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jesusantguerrero/watchlist-module/zipball/6dadff5ec9fce807d8fd5d0e1e1624d0c409c2ef",
-                "reference": "6dadff5ec9fce807d8fd5d0e1e1624d0c409c2ef",
+                "url": "https://api.github.com/repos/jesusantguerrero/watchlist-module/zipball/f476fc5e012066b9ee67b486d8d89c274455cb85",
+                "reference": "f476fc5e012066b9ee67b486d8d89c274455cb85",
                 "shasum": ""
             },
             "default-branch": true,
@@ -2542,7 +2542,7 @@
                 "issues": "https://github.com/jesusantguerrero/watchlist-module/issues",
                 "source": "https://github.com/jesusantguerrero/watchlist-module/tree/main"
             },
-            "time": "2026-05-08T23:46:23+00:00"
+            "time": "2026-09-27T09:45:39+00:00"
         },
         {
             "name": "joshbrw/laravel-module-installer",

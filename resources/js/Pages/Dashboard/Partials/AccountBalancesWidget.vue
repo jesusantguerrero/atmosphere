@@ -125,6 +125,18 @@ const navigateToAccount = (account: IAccount) => {
                 <div v-if="!accounts?.length" class="px-5 py-4 text-sm text-center text-body-1/60">
                     {{ $t('No accounts found.') }}
                 </div>
+
+                <!-- Deep-nav to the full accounts page. Keeps the browse/explore
+                     flow (the old right-rail "Cuentas" tab) one click away
+                     without putting a navigation trap in the glance view. -->
+                <button
+                    v-if="accounts?.length"
+                    type="button"
+                    class="w-full text-center text-xs font-semibold text-primary hover:underline py-2.5"
+                    @click="router.visit('/finance')"
+                >
+                    {{ $t('View all') }} →
+                </button>
             </div>
         </template>
     </WidgetContainer>

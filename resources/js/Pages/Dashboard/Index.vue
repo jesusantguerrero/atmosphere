@@ -65,6 +65,7 @@ const props = withDefaults(
     checks?: IOccurrenceCheck[];
     modules: any[];
     topWatchlists: any[];
+    budgetConfigured?: boolean;
     /** From /today route (now merged here). Action list of items due today. */
     todayItems?: TodayItem[];
     /** From /today route. Cross-pillar timeline including planner items. */
@@ -164,6 +165,7 @@ const deleteBulkTransactions = () => {
         :meals="meals"
         :user="user"
         :top-watchlists="topWatchlists"
+        :budget-configured="budgetConfigured"
         :is-meals-enabled="isModuleEnabled('meals')"
         :is-housing-enabled="isModuleEnabled('housing')"
         :today-items="todayItems"

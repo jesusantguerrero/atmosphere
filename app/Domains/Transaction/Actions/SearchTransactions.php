@@ -2,12 +2,10 @@
 
 namespace App\Domains\Transaction\Actions;
 
-use Exception;
-use function Illuminate\Log\log;
-use Illuminate\Support\Facades\Log;
-
 use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Transaction\Models\TransactionLine;
+use Exception;
+use Illuminate\Support\Facades\Log;
 
 class SearchTransactions
 {
@@ -32,37 +30,44 @@ class SearchTransactions
         $this->modelQuery = TransactionLine::query();
     }
 
-    public function hasValidConditions($conditions) {
+    public function hasValidConditions($conditions)
+    {
         foreach ($conditions as $field => $condition) {
-            if (!$condition) {
+            if (! $condition) {
                 continue;
             }
             foreach ($condition as $param) {
                 try {
-                    if ($param && $param['operator'] &&  $param['value']) {
+                    if ($param && $param['operator'] && $param['value']) {
                         return true;
                     }
                 } catch (Exception $e) {
                     print_r($param);
                     Log::error($e);
+
                     continue;
                 }
             }
         }
     }
 
-    public function handle(mixed $conditions)
+    /**
+     * Verified lines of one team matching the occurrence conditions.
+     */
+    public function handle(mixed $conditions, int $teamId)
     {
         $allConditions = [];
-        if (!$this->hasValidConditions($conditions)) {
+        if (! $this->hasValidConditions($conditions)) {
             return null;
         }
 
+        $this->modelQuery->where('team_id', $teamId);
+
         foreach ($conditions as $field => $condition) {
-            if ($condition) {
+            if ($condition && isset($this->searchConfig[$field])) {
                 $parserName = $this->searchConfig[$field]['type'];
                 if ($field == 'description') {
-                    $field = "concept";
+                    $field = 'concept';
                 }
                 $allConditions[] = [$parserName, $condition];
                 \call_user_func([$this, "get$parserName"], $condition, $field);
@@ -72,8 +77,8 @@ class SearchTransactions
         return $this->modelQuery->orderBy('date')->whereHas('transaction', fn ($q) => $q->where([
             'status' => Transaction::STATUS_VERIFIED,
         ]))
-        ->whereRaw("(anchor = 1 or is_split =1)")
-        ->get();
+            ->whereRaw('(anchor = 1 or is_split =1)')
+            ->get();
     }
 
     public function gettext($condition, $field)

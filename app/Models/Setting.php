@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Freesgen\Atmosphere\Models\Setting as ModelsSetting;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Support\Facades\DB;
 
 class Setting extends ModelsSetting
 {
@@ -30,7 +29,7 @@ class Setting extends ModelsSetting
         $settings = Setting::select('name', 'value')
             ->where([
                 'team_id' => $teamId,
-            ])->where('name', 'like', DB::raw("'{$sectionName}_%'"))->get()->toArray();
+            ])->where('name', 'like', $sectionName.'_%')->get()->toArray();
 
         return self::mapSettings($settings);
     }

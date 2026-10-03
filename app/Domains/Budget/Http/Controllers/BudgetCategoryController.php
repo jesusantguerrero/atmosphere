@@ -98,6 +98,7 @@ class BudgetCategoryController extends InertiaController
 
     public function setDefaultRole(Request $request, BudgetCategoryService $service, Category $category)
     {
+        $this->authorize('update', $category);
         $data = $request->validate([
             'role' => ['nullable', 'string', Rule::in(BudgetDefaultCategory::SUPPORTED_ROLES)],
         ]);
@@ -271,7 +272,7 @@ class BudgetCategoryController extends InertiaController
         $queryParams = request()->query();
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
         [$startDate, $endDate] = $this->getFilterDates($filters);
-        $category = Category::with(['budget'])->find($categoryId);
+        $category = Category::with(['budget'])->where('team_id', request()->user()->current_team_id)->findOrFail($categoryId);
         $statStartDate = now()->subMonth(3)->startOfMonth()->format('Y-m-d');
 
         $stats = ReportService::getExpensesByCategoriesInPeriod(

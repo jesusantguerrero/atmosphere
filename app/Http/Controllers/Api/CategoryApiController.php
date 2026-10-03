@@ -5,10 +5,16 @@ namespace App\Http\Controllers\Api;
 use App\Domains\AppCore\Models\Category;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
 class CategoryApiController extends Controller
 {
+    /**
+     * Fields a bulk update may change; ownership columns are never taken from the request.
+     */
+    private const BULK_UPDATABLE = ['name', 'display_id', 'description', 'index', 'color', 'icon', 'parent_id', 'hidden', 'resource_type_id'];
+
     public function store(Request $request)
     {
         $session = [
@@ -26,10 +32,12 @@ class CategoryApiController extends Controller
 
     public function bulkUpdate(Request $request)
     {
-        $data = $request->post('data');
-        Category::whereIn('id', array_keys($data))->chunkById(100, function ($savedData) use ($data) {
+        $data = $request->post('data') ?? [];
+        $teamId = $request->user()->current_team_id;
+
+        Category::where('team_id', $teamId)->whereIn('id', array_keys($data))->chunkById(100, function ($savedData) use ($data) {
             foreach ($savedData as $item) {
-                $item->update($data[$item->id]);
+                $item->update(Arr::only($data[$item->id], self::BULK_UPDATABLE));
             }
         });
 

@@ -1,6 +1,7 @@
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
+import axios from "axios";
 
 import LogerButtonTab from "@/Components/atoms/LogerButtonTab.vue";
 import AccountModal from "./AccountModal.vue";
@@ -33,6 +34,28 @@ const openAccountModal = (account = {}) => {
 };
 
 const context = useAppContextStore()
+
+// Per-card "days since last unpaid cut", fetched once from the cycle-aware
+// summary endpoint (same source as the Pay-in-full widget). Keyed by
+// account id; only cards with an open unpaid statement appear here.
+interface CutInfo { days_since_cut: number | null; cut_at: string | null; statement_unpaid: boolean }
+const cutInfoMap = ref<Record<number, CutInfo>>({});
+onMounted(async () => {
+    try {
+        const { data } = await axios.get('/credit-card-summary');
+        const map: Record<number, CutInfo> = {};
+        for (const item of (data?.payInFull ?? [])) {
+            map[item.account_id] = {
+                days_since_cut: item.days_since_cut ?? null,
+                cut_at: item.cut_at ?? null,
+                statement_unpaid: !!item.statement_unpaid,
+            };
+        }
+        cutInfoMap.value = map;
+    } catch {
+        // Non-fatal: cards just render without the cut badge.
+    }
+});
 const modalMaxWidth = computed(() => {
     return context.isMobile ? 'mobile' : undefined;
 })
@@ -70,6 +93,7 @@ setIndex()
                 :account="account"
                 :index="index"
                 :is-selected="isSelectedAccount(account.id)"
+                :cut-info="cutInfoMap[account.id]"
                 @click="setIndex(index)"
                 @edit="openAccountModal(account)"
                 @link="openLinkModal(account)"

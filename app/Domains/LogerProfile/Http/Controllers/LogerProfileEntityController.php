@@ -2,10 +2,10 @@
 
 namespace App\Domains\LogerProfile\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Http\Controllers\Traits\HasEnrichedRequest;
 use App\Domains\LogerProfile\Data\ProfileEntityData;
 use App\Domains\LogerProfile\Services\LogerProfileService;
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\Traits\HasEnrichedRequest;
 
 class LogerProfileEntityController extends Controller
 {
@@ -20,6 +20,8 @@ class LogerProfileEntityController extends Controller
 
     public function store(int $profileId, LogerProfileService $profileService)
     {
+        $profileService->ensureTeamProfile(auth()->user()->current_team_id, $profileId);
+
         $profileService->addProfileEntity(
             ProfileEntityData::forVue(
                 array_merge($this->getPostData(), [
@@ -31,6 +33,7 @@ class LogerProfileEntityController extends Controller
 
     public function show(LogerProfileService $profileService, int $profileId)
     {
+        $profileService->ensureTeamProfile(auth()->user()->current_team_id, $profileId);
 
         return inertia('LogerProfile/ProfileView', [
             'profiles' => $profileService->list(auth()->user()->current_team_id),

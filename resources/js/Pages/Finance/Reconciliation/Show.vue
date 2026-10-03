@@ -221,6 +221,42 @@ const syncReconciliation = async () => {
         });
 };
 
+// "Book difference & finish" — the escape hatch when a gap can't be tracked
+// down line by line. Books a plug transaction for the current difference so
+// the account matches the statement, then completes the reconciliation. Sends
+// the on-screen statement balance so the plug equals the number the user sees.
+const showAdjustModal = ref(false);
+const adjustForm = useForm({
+  date: props.reconciliation.date,
+  balance: props.reconciliation.amount,
+});
+
+const requestAdjustment = () => {
+  showAdjustModal.value = true;
+};
+
+const cancelAdjustment = () => {
+  showAdjustModal.value = false;
+};
+
+const confirmAdjustment = () => {
+  if (adjustForm.processing) return;
+  adjustForm
+    .transform((data) => ({
+      ...data,
+      date: props.reconciliation.date,
+      balance: reconcileForm.balance,
+    }))
+    .put(`/finance/reconciliation/${props.reconciliation.id}/save-adjustment`, {
+      onSuccess() {
+        router.reload();
+      },
+      onFinish() {
+        showAdjustModal.value = false;
+      },
+    });
+};
+
 // Two-stage destructive flow — same pattern as transaction delete.
 // Was previously using the native browser confirm() dialog which is
 // jarring and inconsistent with the rest of the app's modal styling.
@@ -496,6 +532,18 @@ const differenceDirection = computed(() => {
               <IMdiSync class="mr-1" :class="{'animate-spin': syncReconciliationForm.processing}" />
               {{ $t('Pull new') }}
             </LogerButton>
+            <!-- Escape hatch: book the leftover difference as an adjustment
+                 and close out. Only shown when there is a gap to book. -->
+            <LogerButton
+              variant="neutral"
+              v-if="reconciliation.status != 'completed' && !isMatched"
+              @click="requestAdjustment()"
+              :processing="adjustForm.processing"
+              :title="$t('Book the difference as an adjustment and finish')"
+            >
+              <IMdiAutoFix class="mr-1" />
+              {{ $t('Book difference & finish') }}
+            </LogerButton>
             <div
               v-if="reconciliation.status != 'completed'"
               class="w-px h-6 bg-base mx-1"
@@ -627,6 +675,32 @@ const differenceDirection = computed(() => {
 
       </section>
     </FinanceTemplate>
+
+    <!-- Confirm modal for booking the difference as an adjustment. -->
+    <ConfirmationModal
+      :show="showAdjustModal"
+      @close="cancelAdjustment"
+    >
+      <template #title>{{ $t('Book the difference?') }}</template>
+      <template #content>
+        <p class="text-sm text-body-1">
+          {{ $t('This creates an adjustment transaction of {amount} so your account matches the statement, and marks this reconciliation complete. You can delete the adjustment later if you find the real cause.', { amount: formatMoney(Math.abs(difference), account.currency_code) }) }}
+        </p>
+      </template>
+      <template #footer>
+        <LogerButton variant="neutral" @click="cancelAdjustment">
+          {{ $t('Cancel') }}
+        </LogerButton>
+        <LogerButton
+          variant="inverse"
+          class="ml-2"
+          :processing="adjustForm.processing"
+          @click="confirmAdjustment"
+        >
+          {{ $t('Book difference & finish') }}
+        </LogerButton>
+      </template>
+    </ConfirmationModal>
 
     <!-- Confirm modal for deleting the entire reconciliation. -->
     <ConfirmationModal

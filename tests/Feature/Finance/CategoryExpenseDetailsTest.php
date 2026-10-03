@@ -79,6 +79,31 @@ class CategoryExpenseDetailsTest extends TestCase
         );
     }
 
+    public function test_details_of_another_teams_category_are_forbidden(): void
+    {
+        $foreignCategory = $this->foreignCategory();
+
+        $this->actingAs($this->user)
+            ->getJson("/api/category-transactions/{$foreignCategory->id}/details?filter[date]=2026-09-01~2026-09-30")
+            ->assertForbidden();
+    }
+
+    public function test_monthly_totals_of_another_teams_category_are_forbidden(): void
+    {
+        $foreignCategory = $this->foreignCategory();
+
+        $this->actingAs($this->user)
+            ->getJson("/api/category-transactions/{$foreignCategory->id}?filter[date]=2026-09-01~2026-09-30")
+            ->assertForbidden();
+    }
+
+    private function foreignCategory(): Category
+    {
+        $otherUser = User::factory()->withPersonalTeam()->create();
+
+        return Category::where('team_id', $otherUser->ownedTeams()->first()->id)->firstOrFail();
+    }
+
     private function childOf(Category $group, string $name): Category
     {
         return Category::create([

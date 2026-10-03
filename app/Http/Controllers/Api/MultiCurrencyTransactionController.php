@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Domains\Transaction\Models\Transaction;
+use App\Domains\Transaction\Services\MultiCurrencyTransactionService;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\MultiCurrencyTransactionResource;
 use App\Models\Account;
-use App\Domains\Transaction\Models\Transaction;
-use App\Domains\Transaction\Services\MultiCurrencyTransactionService;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Exists;
 
 class MultiCurrencyTransactionController extends Controller
 {
@@ -21,27 +22,24 @@ class MultiCurrencyTransactionController extends Controller
 
     /**
      * Create a transaction with multi-currency support
-     * 
-     * @param Request $request
-     * @return JsonResponse
      */
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'account_id' => 'required|exists:accounts,id',
+            'account_id' => ['required', $this->teamRow($request, 'accounts')],
             'total' => 'required|numeric|min:0.01',
             'currency_code' => 'required|string|size:3',
             'description' => 'required|string|max:255',
             'date' => 'required|date',
-            'category_id' => 'nullable|exists:categories,id',
-            'payee_id' => 'nullable|exists:payees,id',
-            'counter_account_id' => 'nullable|exists:accounts,id',
+            'category_id' => ['nullable', $this->teamRow($request, 'categories')],
+            'payee_id' => ['nullable', $this->teamRow($request, 'payees')],
+            'counter_account_id' => ['nullable', $this->teamRow($request, 'accounts')],
             'direction' => 'required|in:credit,debit',
             'status' => 'nullable|in:draft,verified',
         ]);
 
-        $account = Account::findOrFail($validated['account_id']);
-        
+        $account = Account::where('team_id', $request->user()->current_team_id)->findOrFail($validated['account_id']);
+
         // Check if user can create transactions for this account
         Gate::authorize('create', [Transaction::class, $account]);
 
@@ -65,60 +63,57 @@ class MultiCurrencyTransactionController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => new MultiCurrencyTransactionResource($transaction),
-                'message' => 'Transaction created successfully'
+                'message' => 'Transaction created successfully',
             ], 201);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to create transaction: ' . $e->getMessage()
+                'message' => 'Failed to create transaction: '.$e->getMessage(),
             ], 422);
         }
     }
 
     /**
      * Process a credit card payment with currency conversion
-     * 
-     * @param Request $request
-     * @return JsonResponse
      */
     public function processPayment(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'account_id' => 'required|exists:accounts,id',
+            'account_id' => ['required', $this->teamRow($request, 'accounts')],
             'total' => 'required|numeric|min:0.01',
             'exchange_amount' => 'required|numeric|min:0.01',
             'secondary_currency' => 'required|string|size:3',
             'payment_date' => 'required|date',
             'description' => 'nullable|string|max:255',
-            'category_id' => 'nullable|exists:categories,id',
-            'payee_id' => 'nullable|exists:payees,id',
+            'category_id' => ['nullable', $this->teamRow($request, 'categories')],
+            'payee_id' => ['nullable', $this->teamRow($request, 'payees')],
         ]);
 
-        $account = Account::findOrFail($validated['account_id']);
-        
+        $account = Account::where('team_id', $request->user()->current_team_id)->findOrFail($validated['account_id']);
+
         // Check if user can create transactions for this account
         Gate::authorize('create', [Transaction::class, $account]);
 
         // Verify account supports multi-currency
-        if (!$account->isMultiCurrency()) {
+        if (! $account->isMultiCurrency()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Account does not support multi-currency transactions'
+                'message' => 'Account does not support multi-currency transactions',
             ], 422);
         }
 
         // Verify account supports the secondary currency
-        if (!$account->supportsCurrency($validated['secondary_currency'])) {
+        if (! $account->supportsCurrency($validated['secondary_currency'])) {
             return response()->json([
                 'success' => false,
-                'message' => "Account does not support currency {$validated['secondary_currency']}"
+                'message' => "Account does not support currency {$validated['secondary_currency']}",
             ], 422);
         }
 
         try {
             $paymentDate = Carbon::parse($validated['payment_date']);
-            
+
             $additionalData = [
                 'description' => $validated['description'] ?? "Credit card payment - {$validated['secondary_currency']} to {$account->getPrimaryCurrency()}",
                 'category_id' => $validated['category_id'],
@@ -139,34 +134,30 @@ class MultiCurrencyTransactionController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => new MultiCurrencyTransactionResource($transaction),
-                'message' => 'Payment processed successfully'
+                'message' => 'Payment processed successfully',
             ], 201);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to process payment: ' . $e->getMessage()
+                'message' => 'Failed to process payment: '.$e->getMessage(),
             ], 422);
         }
     }
 
     /**
      * Get currency balances for an account
-     * 
-     * @param Request $request
-     * @param int $accountId
-     * @return JsonResponse
      */
     public function getCurrencyBalances(Request $request, int $accountId): JsonResponse
     {
         $account = Account::findOrFail($accountId);
-        
+
         // Check if user can view this account
         Gate::authorize('view', $account);
 
         try {
             $balances = $account->getAllCurrencyBalances();
-            
+
             return response()->json([
                 'success' => true,
                 'data' => [
@@ -175,58 +166,50 @@ class MultiCurrencyTransactionController extends Controller
                     'is_multi_currency' => $account->isMultiCurrency(),
                     'primary_currency' => $account->getPrimaryCurrency(),
                     'secondary_currencies' => $account->getSecondaryCurrencies(),
-                    'balances' => $balances
-                ]
+                    'balances' => $balances,
+                ],
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to retrieve currency balances: ' . $e->getMessage()
+                'message' => 'Failed to retrieve currency balances: '.$e->getMessage(),
             ], 500);
         }
     }
 
     /**
      * Get pending balances for an account (credit card specific)
-     * 
-     * @param Request $request
-     * @param int $accountId
-     * @return JsonResponse
      */
     public function getPendingBalances(Request $request, int $accountId): JsonResponse
     {
         $account = Account::findOrFail($accountId);
-        
+
         // Check if user can view this account
         Gate::authorize('view', $account);
 
         try {
             $pendingBalances = $this->multiCurrencyService->getAllPendingBalances($account);
-            
+
             return response()->json([
                 'success' => true,
                 'data' => [
                     'account_id' => $account->id,
                     'account_name' => $account->name,
-                    'pending_balances' => $pendingBalances
-                ]
+                    'pending_balances' => $pendingBalances,
+                ],
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to retrieve pending balances: ' . $e->getMessage()
+                'message' => 'Failed to retrieve pending balances: '.$e->getMessage(),
             ], 500);
         }
     }
 
     /**
      * Get a single transaction with multi-currency information
-     * 
-     * @param Request $request
-     * @param int $transactionId
-     * @return JsonResponse
      */
     public function show(Request $request, int $transactionId): JsonResponse
     {
@@ -240,22 +223,19 @@ class MultiCurrencyTransactionController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => new MultiCurrencyTransactionResource($transaction)
+                'data' => new MultiCurrencyTransactionResource($transaction),
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to retrieve transaction: ' . $e->getMessage()
+                'message' => 'Failed to retrieve transaction: '.$e->getMessage(),
             ], 500);
         }
     }
 
     /**
      * Get transactions with multi-currency information
-     * 
-     * @param Request $request
-     * @return JsonResponse
      */
     public function index(Request $request): JsonResponse
     {
@@ -273,20 +253,20 @@ class MultiCurrencyTransactionController extends Controller
                 ->where('team_id', $request->user()->current_team_id);
 
             // Filter by account if specified
-            if (!empty($validated['account_id'])) {
+            if (! empty($validated['account_id'])) {
                 $query->where('account_id', $validated['account_id']);
             }
 
             // Filter by currency if specified
-            if (!empty($validated['currency_code'])) {
+            if (! empty($validated['currency_code'])) {
                 $query->where('currency_code', $validated['currency_code']);
             }
 
             // Filter by date range if specified
-            if (!empty($validated['start_date'])) {
+            if (! empty($validated['start_date'])) {
                 $query->where('date', '>=', $validated['start_date']);
             }
-            if (!empty($validated['end_date'])) {
+            if (! empty($validated['end_date'])) {
                 $query->where('date', '<=', $validated['end_date']);
             }
 
@@ -304,17 +284,23 @@ class MultiCurrencyTransactionController extends Controller
                         'last_page' => $transactions->lastPage(),
                         'per_page' => $transactions->perPage(),
                         'total' => $transactions->total(),
-                    ]
-                ]
+                    ],
+                ],
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to retrieve transactions: ' . $e->getMessage()
+                'message' => 'Failed to retrieve transactions: '.$e->getMessage(),
             ], 500);
         }
     }
 
-
+    /**
+     * Row of the current team (or a global row with team_id 0).
+     */
+    private function teamRow(Request $request, string $table): Exists
+    {
+        return Rule::exists($table, 'id')->whereIn('team_id', [$request->user()->current_team_id, 0]);
+    }
 }

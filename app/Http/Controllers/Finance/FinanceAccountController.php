@@ -12,13 +12,15 @@ use App\Domains\Transaction\Services\BankConnectionService;
 use App\Domains\Transaction\Services\CreditCardReportService;
 use App\Domains\Transaction\Services\ReportService;
 use App\Domains\Transaction\Services\TransactionService;
+use App\Models\Account;
 use App\Models\Setting;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Freesgen\Atmosphere\Http\Querify;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use App\Models\Account;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Exists;
 use Insane\Journal\Models\Accounting\ReconciliationEntry;
 use Insane\Journal\Models\Core\Transaction;
 
@@ -68,7 +70,7 @@ class FinanceAccountController extends InertiaController
         $timeZone = $settings['team_timezone'] ?? config('app.timezone');
 
         if (! $response->allowed()) {
-            return redirect(route('finance'));
+            return redirect()->route('finance.transactions');
         }
 
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
@@ -100,17 +102,22 @@ class FinanceAccountController extends InertiaController
         ]);
     }
 
-    public function linkAccount(Account $account, AutomationService $automationService, BankConnectionService $bankConnectionService)
+    public function linkAccount(Account $account, AutomationService $automationService, BankConnectionService $bankConnectionService, Request $request)
     {
-        $data = $this->getPostData(request());
+        $this->authorize('update', $account);
+        $data = $request->validate([
+            'integration_id' => ['required', 'integer', $this->teamIntegrationRule($request)],
+        ]);
+
         $bankConnectionService->linkAccount($account, $automationService, $data['integration_id']);
     }
 
     public function linkAccountToBank(Account $account, Request $request, BankConnectionService $bankConnectionService)
     {
+        $this->authorize('update', $account);
         $data = $request->validate([
             'bank_code' => ['required', 'string'],
-            'integration_id' => ['required', 'integer'],
+            'integration_id' => ['required', 'integer', $this->teamIntegrationRule($request)],
         ]);
 
         $bankConnectionService->linkAccountToBank($account, $data['bank_code'], $data['integration_id']);
@@ -165,6 +172,8 @@ class FinanceAccountController extends InertiaController
 
     public function linkCreditCardPayment(Account $account, Transaction $transaction, BankConnectionService $bankConnectionService)
     {
+        $this->authorize('update', $account);
+        $this->authorize('update', $transaction);
         $data = $this->getPostData(request());
         $bankConnectionService->linkCreditCardPayment($account, $transaction, $data['integration_id']);
     }
@@ -273,10 +282,16 @@ class FinanceAccountController extends InertiaController
 
     public function closeAccount(Account $account)
     {
+        $this->authorize('update', $account);
         $data = $this->getPostData(request());
         $account->closed_at = $data['closed_at'];
         $account->archived = $data['archived'];
         $account->status = $data['status'];
         $account->save();
+    }
+
+    private function teamIntegrationRule(Request $request): Exists
+    {
+        return Rule::exists('integrations', 'id')->where('team_id', $request->user()->current_team_id);
     }
 }

@@ -8,17 +8,13 @@ import {
   watch,
 } from "vue";
 import { usePage } from "@inertiajs/vue3";
-import ToolsAccountsWidget from "./ToolsAccountsWidget.vue";
 import { THEME_FINI } from "@/utils/constants";
 import { setTheme } from "@/composables/useTheme";
 import { useApplicationStore, type AssistantSection } from "@/store/application.store";
 import { useI18n } from "vue-i18n";
 import ToolsCreditCardWidget from "./ToolsCreditCardWidget.vue";
-import ToolsWatchlistWidget from "./ToolsWatchlistWidget.vue";
 import ToolsShoppingListWidget from "./ToolsShoppingListWidget.vue";
 import ToolsBudgetWidget from "./ToolsBudgetWidget.vue";
-import OouiWatchlistLtr from '~icons/ooui/watchlist-ltr';
-import MdiWallet from '~icons/mdi/wallet';
 import MdiCreditCard from '~icons/mdi/credit-card';
 import MdiPiggyBank from '~icons/mdi/piggy-bank';
 import MdiClose from '~icons/mdi/close';
@@ -63,24 +59,6 @@ const sections = computed<AssistantSection[]>(() => ([
     component: shallowRef(ToolsCreditCardWidget),
     icon: MdiCreditCard,
     hideMargin: true,
-  },
-  {
-    name: "accounts",
-    label: "bot",
-    title: t("accountTools.title"),
-    container: "top",
-    component: shallowRef(ToolsAccountsWidget),
-    icon: MdiWallet,
-    hideMargin: true
-  },
-  {
-    name: "watchlist",
-    label: "bot",
-    title: t("watchlistTools.title"),
-    container: "top",
-    component: shallowRef(ToolsWatchlistWidget),
-    icon: OouiWatchlistLtr,
-    hideMargin: true
   },
   {
     name: "shopping-list",

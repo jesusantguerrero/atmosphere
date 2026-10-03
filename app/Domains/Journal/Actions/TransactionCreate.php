@@ -2,6 +2,7 @@
 
 namespace App\Domains\Journal\Actions;
 
+use App\Domains\Journal\Actions\Concerns\EnsuresTeamReferences;
 use App\Domains\Transaction\Services\MultiCurrencyTransactionService;
 use App\Models\Account;
 use Illuminate\Foundation\Auth\User;
@@ -11,6 +12,8 @@ use Insane\Journal\Models\Core\Transaction;
 
 class TransactionCreate implements TransactionCreates
 {
+    use EnsuresTeamReferences;
+
     public function __construct(
         private MultiCurrencyTransactionService $multiCurrencyService
     ) {}
@@ -55,6 +58,8 @@ class TransactionCreate implements TransactionCreates
             'team_id' => $user->current_team_id,
             'user_id' => $user->id,
         ]);
+
+        $this->ensureTeamReferences($user->current_team_id, $transactionData);
 
         if (isset($transactionData['account_id'], $transactionData['currency_code'])) {
             $account = Account::find($transactionData['account_id']);

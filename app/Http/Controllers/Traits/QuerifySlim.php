@@ -9,8 +9,6 @@ class QuerifySlim
 {
     private $modelQuery;
 
-    private $whereRaw;
-
     private $request;
 
     protected $authorizedUser = true;
@@ -63,10 +61,6 @@ class QuerifySlim
             $extendFunction($this->modelQuery, $queryParams);
         }
 
-        if ($this->whereRaw) {
-            $this->modelQuery->whereRaw($this->whereRaw);
-        }
-
         if ($this->authorizedUser) {
             $this->modelQuery->where([$this->tableName.'.user_id' => $request->user()->id]);
         }
@@ -98,26 +92,21 @@ class QuerifySlim
         ];
     }
 
-    private function getSearch($search)
+    /**
+     * Adds the search as one grouped OR clause with bound values, so it can't
+     * escape the team/user scoping or inject SQL.
+     */
+    private function getSearch($search): void
     {
-
-        if (! $search) {
-            return '';
+        if (! $search || ! count($this->searchable)) {
+            return;
         }
-        $whereRaw = '';
-        // handle search
-        foreach ($this->searchable as $field) {
 
-            //  add search fields to where clause
-            if (! $whereRaw) {
-                $whereRaw .= "$field like '%$search%'";
-            } else {
-                $whereRaw .= " or $field like '%$search%'";
+        $this->modelQuery->where(function ($query) use ($search) {
+            foreach ($this->searchable as $field) {
+                $query->orWhere($field, 'like', "%{$search}%");
             }
-        }
-        $this->whereRaw = $whereRaw;
-
-        return $whereRaw;
+        });
     }
 
     private function getRelationships($relationships)

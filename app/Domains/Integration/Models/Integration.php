@@ -15,6 +15,13 @@ class Integration extends Model
 
     protected $fillable = ['user_id', 'team_id', 'automation_service_id', 'name', 'token', 'hash', 'last_synced_at'];
 
+    /**
+     * OAuth access/refresh tokens never leave the server in JSON or Inertia props.
+     *
+     * @var array<int, string>
+     */
+    protected $hidden = ['token', 'meta_data'];
+
     public function automations()
     {
         return $this->hasMany(Automation::class, 'integration_id', 'id');

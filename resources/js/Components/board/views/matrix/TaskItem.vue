@@ -127,8 +127,7 @@
           class="pt-2 text-left whitespace-pre-line task-item__description"
           placeholder="Add a short description"
           :class="{'text-body-1/70 text-sm': !task.description }"
-          v-html="task.description"
-        />
+        >{{ task.description }}</div>
         <div class="mt-5 task-item__checklist">
           <ListContainer v-model:items="task.checklist" :task="task"  @updated="updateItems" />
         </div>
