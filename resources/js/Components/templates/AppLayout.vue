@@ -400,8 +400,8 @@
                     <template #brand>
                         <div class="flex w-full h-full pl-0 mx-auto mb-0" :class="isExpanded ? 'pl-5' :'justify-center'">
                             <Link href="/dashboard" class="pt-3 mx-auto text-center" v-if="!isExpanded">
-                                <img src="/logotype.png" :style="{height: '24px'}" class="mx-auto dark:hidden"/>
-                                <img src="/logotype-dark.png" :style="{height: '24px'}" class="mx-auto hidden dark:block"/>
+                                <img src="/logotype.svg" alt="Loger" :style="{height: '24px'}" class="mx-auto dark:hidden"/>
+                                <img src="/logotype-dark.svg" alt="Loger" :style="{height: '24px'}" class="mx-auto hidden dark:block"/>
                             </Link>
                             <Link href="/dashboard" class="mx-auto text-center " v-else>
                                 <AppIcon size="medium"  />

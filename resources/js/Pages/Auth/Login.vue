@@ -52,8 +52,8 @@ const submit = (formData: Record<string, string>) => {
       @link-pressed="onLinkPressed"
     >
       <template #brand>
-        <Link :href="{ name: 'landing' }"  class="w-full h-20">
-          <AppIcon size="huge" class="text-white" />
+        <Link :href="route('landing')"  class="w-full h-20">
+          <AppIcon size="huge" theme="dark" />
         </Link>
       </template>
       <template #more-actions>

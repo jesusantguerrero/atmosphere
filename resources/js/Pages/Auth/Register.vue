@@ -73,7 +73,7 @@ const formConfig = computed(() => {
     >
     <template #brand>
         <Link :to="{ name: 'landing' }" class="w-full h-20">
-          <AppIcon size="huge" class="text-white" />
+          <AppIcon size="huge" theme="dark" />
         </Link>
       </template>
       <template #prependInput>

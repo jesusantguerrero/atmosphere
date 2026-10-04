@@ -54,7 +54,7 @@ import JetValidationErrors from "@/Components/atoms/ValidationErrors.vue";
         >
         <template #brand>
             <Link :to="{ name: 'landing' }" class="w-full h-20">
-              <AppIcon size="huge" class="text-white" />
+              <AppIcon size="huge" theme="dark" />
             </Link>
           </template>
 

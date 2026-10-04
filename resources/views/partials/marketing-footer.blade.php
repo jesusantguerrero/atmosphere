@@ -2,7 +2,7 @@
     <div class="max-w-6xl mx-auto px-6 py-12">
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-8 mb-8">
             <div>
-                <img src="/logo.svg" alt="Loger" class="h-6 w-auto brightness-0 invert opacity-70 mb-3">
+                <img src="/logo-dark.svg" alt="Loger" class="h-6 w-auto opacity-70 mb-3">
                 <p class="text-sm text-gray-500 leading-relaxed">{{ __('landing.footer.tagline') }}</p>
             </div>
             <div>
