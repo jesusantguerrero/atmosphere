@@ -6,11 +6,13 @@ use App\Domains\Transaction\Data\ReconciliationParamsData;
 use App\Domains\Transaction\Services\ReconciliationService;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Traits\HasEnrichedRequest;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Accounting\Reconciliation;
 use Insane\Journal\Models\Accounting\ReconciliationEntry;
 use Insane\Journal\Models\Core\Account;
+use Insane\Journal\Models\Core\AccountDetailType;
 use Insane\Journal\Models\Core\Transaction;
 
 class ReconciliationController extends Controller
@@ -55,6 +57,63 @@ class ReconciliationController extends Controller
             'account' => $account,
             'transactions' => $account->transactionSplits(0, $startDate, $endDate),
             'dates' => [$startDate, $endDate],
+        ]);
+    }
+
+    /**
+     * Cross-account reconciliation hub. One row per account with its latest
+     * reconciliation (date + status + leftover difference) and how many verified
+     * movements are still unreconciled, sorted MOST-STALE FIRST (never-reconciled
+     * on top, then longest since last reconciled) so the accounts that most need
+     * attention surface without hunting account by account.
+     */
+    public function hub(Request $request)
+    {
+        $teamId = $request->user()->current_team_id;
+        $today = now()->format('Y-m-d');
+
+        $accounts = Account::getByDetailTypes($teamId, AccountDetailType::ALL)->load('detailType');
+        $accountIds = $accounts->pluck('id')->all();
+
+        // One grouped COUNT instead of pulling every unreconciled line per account
+        // (a months-behind card can have hundreds). Mirrors
+        // Account::transactionsToReconcile: verified lines up to today, not yet
+        // attached to any reconciliation entry.
+        $unreconciled = DB::table('transaction_lines')
+            ->join('transactions', 'transactions.id', 'transaction_lines.transaction_id')
+            ->leftJoin('reconciliation_entries', 'reconciliation_entries.transaction_line_id', 'transaction_lines.id')
+            ->where('transactions.status', Transaction::STATUS_VERIFIED)
+            ->whereNull('reconciliation_entries.id')
+            ->where('transactions.date', '<=', $today)
+            ->whereIn('transaction_lines.account_id', $accountIds)
+            ->groupBy('transaction_lines.account_id')
+            ->selectRaw('transaction_lines.account_id as account_id, COUNT(*) as cnt')
+            ->pluck('cnt', 'account_id');
+
+        $rows = $accounts->map(function ($account) use ($unreconciled) {
+            $last = $account->reconciliationLast;
+            $lastDate = $last?->date ? Carbon::parse($last->date) : null;
+
+            return [
+                'id' => $account->id,
+                'name' => $account->name,
+                'type' => $account->detailType?->name,
+                'balance' => (float) $account->balance,
+                'currency_code' => $account->currency_code,
+                'last_id' => $last?->id,
+                'last_date' => $lastDate?->format('Y-m-d'),
+                'last_status' => $last?->status,
+                'last_difference' => $last ? (float) $last->difference : null,
+                'days_since' => $lastDate ? (int) $lastDate->startOfDay()->diffInDays(now()->startOfDay()) : null,
+                'unreconciled_count' => (int) ($unreconciled[$account->id] ?? 0),
+            ];
+        })
+            ->sortByDesc(fn ($r) => $r['days_since'] === null ? PHP_INT_MAX : $r['days_since'])
+            ->values();
+
+        return inertia('Finance/Reconciliation/Hub', [
+            'accounts' => $rows,
+            'sectionTitle' => 'Reconciliation',
         ]);
     }
 
