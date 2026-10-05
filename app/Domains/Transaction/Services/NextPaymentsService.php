@@ -3,6 +3,7 @@
 namespace App\Domains\Transaction\Services;
 
 use App\Domains\Budget\Models\BudgetTarget;
+use App\Domains\Budget\Services\LoanReminderService;
 use App\Domains\Transaction\Models\BillingCycle;
 use App\Domains\Transaction\Models\Transaction;
 use App\Models\Account;
@@ -34,14 +35,18 @@ class NextPaymentsService
 
         // Get budget categories with targets that haven't been paid this month
         $unpaidBudgets = BudgetTarget::where('team_id', $teamId)
-            ->where([
-                'target_type' => 'spending',
-                'notify' => 1,
-            ])
+            ->whereIn('target_type', [BudgetTarget::TYPE_SPENDING, BudgetTarget::TYPE_LOAN])
+            ->where('notify', true)
+            ->whereNull('completed_at')
             ->whereNotNull('frequency_month_date')
-            ->with(['category'])
+            ->with(['category' => fn ($query) => $query->without(['budget', 'matchAccount'])])
             ->get()
-            ->filter(function ($target) use ($teamId, $currentMonth) {
+            ->filter(function ($target) use ($teamId, $currentMonth, $startDate) {
+                if ($target->target_type === BudgetTarget::TYPE_LOAN) {
+                    $paid = (new LoanReminderService)->paidAmount($target, $startDate->copy()->endOfMonth());
+
+                    return (float) $target->amount <= 0 || $paid < (float) $target->amount;
+                }
                 // Check if there's already a transaction for this category this month
                 $hasTransaction = Transaction::where('team_id', $teamId)
                     ->where('category_id', $target->category_id)

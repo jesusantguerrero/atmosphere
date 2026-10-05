@@ -2,10 +2,11 @@
 
 namespace App\Console\Commands;
 
-use App\Models\User;
-use Illuminate\Console\Command;
-use App\Notifications\PlannedAlert;
+use App\Domains\Budget\Services\LoanReminderService;
 use App\Domains\Transaction\Services\PlannedTransactionService;
+use App\Models\User;
+use App\Notifications\PlannedAlert;
+use Illuminate\Console\Command;
 
 class BGPlannedReminders extends Command
 {
@@ -25,12 +26,13 @@ class BGPlannedReminders extends Command
 
     /**
      * Execute the console command.
-     *
-     * @return int
      */
-    public function handle(PlannedTransactionService $plannedService)
+    public function handle(PlannedTransactionService $plannedService, LoanReminderService $loanReminders): int
     {
+        $loanReminders->sendDueReminders();
         $this->sendNotifications($plannedService->getForNotificationType());
+
+        return self::SUCCESS;
     }
 
     public function sendNotifications($plannedTransactions)
