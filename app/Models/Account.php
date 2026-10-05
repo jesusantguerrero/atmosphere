@@ -29,8 +29,27 @@ class Account extends BaseAccount
      * so the all_currency_balances accessor lands in the serialized JSON
      * (sidebar accounts in HandleInertiaRequests, DashboardController, etc.).
      */
-    public static function getByDetailTypes($teamId, $detailTypes = AccountDetailType::ALL)
+    /**
+     * Detail types that are "tracking" (off-budget): they count toward net
+     * worth but stay out of the budget / Ready to Assign. See getNetWorth and
+     * App\\Listeners\\CreateStartingBalance.
+     */
+    public const TRACKING_TYPES = ['loan', 'property'];
+
+    /** Whether this account is an off-budget tracking account (property/loan). */
+    public function isTracking(): bool
     {
+        return in_array($this->detailType?->name, self::TRACKING_TYPES, true);
+    }
+
+    public static function getByDetailTypes($teamId, $detailTypes = null)
+    {
+        // Listings default to the balance-sheet set: the budget cash/card types
+        // plus the off-budget tracking types, so property/loan show in the
+        // accounts list, sidebar and search. Explicit callers (budget, rollover,
+        // reconciliation hub) still pass AccountDetailType::ALL / ALL_CASH.
+        $detailTypes = $detailTypes ?? array_merge(AccountDetailType::ALL, self::TRACKING_TYPES);
+
         $accounts = static::where('accounts.team_id', $teamId)
             ->byDetailTypes($detailTypes)
             ->orderBy('accounts.index')

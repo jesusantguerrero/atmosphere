@@ -285,7 +285,7 @@ class TransactionService
             WHERE t.STATUS = 'verified'
             AND t.deleted_at IS NULL
             AND tl.date <= :monthDate
-            AND adt.name IN ('cash', 'cash_on_hand', 'bank', 'savings', 'credit_card')
+            AND adt.name IN ('cash', 'cash_on_hand', 'bank', 'savings', 'credit_card', 'loan', 'property')
             AND tl.team_id = :teamId
             AND balance_type IS NOT null
          )
