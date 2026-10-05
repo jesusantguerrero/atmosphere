@@ -1109,5 +1109,8 @@
     "Compare your statement with Loger and resolve any differences.": "Compara tu estado de cuenta con Loger y resuelve las diferencias.",
     "Matches Loger: reconcile": "Coincide con Loger: conciliar",
     "Balance matches: reconcile": "Saldo coincide: conciliar",
-    "Could not load the account balance. Try again.": "No se pudo cargar el saldo. Intenta de nuevo."
+    "Could not load the account balance. Try again.": "No se pudo cargar el saldo. Intenta de nuevo.",
+    "Confirm reconciliation": "Confirmar conciliación",
+    "Does your statement match {balance} on {date}?": "¿Tu estado de cuenta coincide con {balance} a fecha {date}?",
+    "Yes, reconcile": "Sí, conciliar"
 }

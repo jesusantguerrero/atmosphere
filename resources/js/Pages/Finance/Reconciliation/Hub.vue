@@ -9,6 +9,8 @@ import AppLayout from "@/Components/templates/AppLayout.vue";
 import FinanceSectionNav from "../Partials/FinanceSectionNav.vue";
 import NumberHider from "@/Components/molecules/NumberHider.vue";
 import AccountReconciliationForm from "../AccountReconciliationForm.vue";
+import ConfirmationModal from "@/Components/atoms/ConfirmationModal.vue";
+import LogerButton from "@/Components/atoms/LogerButton.vue";
 import { formatMoney } from "@/utils";
 
 interface AccountRow {
@@ -127,6 +129,21 @@ const typeLabels: Record<string, string> = {
 const accountToReconcile = ref<AccountRow | null>(null);
 const quickAccountId = ref<number | null>(null);
 const quickForm = useForm({ date: "", balance: 0 });
+const quickConfirmation = ref<AccountRow | null>(null);
+
+const cancelQuickReconciliation = () => {
+    if (quickForm.processing) return;
+    quickConfirmation.value = null;
+    quickAccountId.value = null;
+};
+
+const confirmQuickReconciliation = () => {
+    if (!quickConfirmation.value || quickForm.processing) return;
+    quickForm.post(`/finance/reconciliation/accounts/${quickConfirmation.value.id}`, {
+        onSuccess: () => { quickConfirmation.value = null; },
+        onFinish: () => { quickAccountId.value = null; },
+    });
+};
 
 const quickReconcile = async (account: AccountRow) => {
     if (quickAccountId.value !== null || quickForm.processing) return;
@@ -138,9 +155,8 @@ const quickReconcile = async (account: AccountRow) => {
             params: { date: quickForm.date },
         });
         quickForm.balance = Number(data.balance);
-        quickForm.post(`/finance/reconciliation/accounts/${account.id}`, {
-            onFinish: () => { quickAccountId.value = null; },
-        });
+        if (!Number.isFinite(quickForm.balance)) throw new Error("Invalid account balance");
+        quickConfirmation.value = account;
     } catch {
         quickAccountId.value = null;
         quickForm.setError("balance", t("Could not load the account balance. Try again."));
@@ -348,6 +364,32 @@ const ctaLabel = (a: AccountRow) =>
                 {{ $t("No accounts to reconcile yet.") }}
             </div>
         </main>
+        <ConfirmationModal
+            :show="quickConfirmation !== null"
+            :closeable="!quickForm.processing"
+            max-width="md"
+            :title="$t('Confirm reconciliation')"
+            @close="cancelQuickReconciliation"
+        >
+            <template #content>
+                <p class="font-semibold text-body">{{ quickConfirmation?.name }}</p>
+                <p class="mt-2 text-sm text-body">
+                    {{ $t('Does your statement match {balance} on {date}?', {
+                        balance: formatMoney(quickForm.balance, quickConfirmation?.currency_code),
+                        date: quickForm.date,
+                    }) }}
+                </p>
+                <p v-if="quickForm.errors.balance || quickForm.errors.date" role="alert" class="text-sm text-error mt-2">
+                    {{ quickForm.errors.balance || quickForm.errors.date }}
+                </p>
+            </template>
+            <template #footer>
+                <div class="flex justify-end gap-2">
+                    <LogerButton variant="neutral" :disabled="quickForm.processing" @click="cancelQuickReconciliation">{{ $t('Cancel') }}</LogerButton>
+                    <LogerButton :disabled="quickForm.processing" @click="confirmQuickReconciliation">{{ $t('Yes, reconcile') }}</LogerButton>
+                </div>
+            </template>
+        </ConfirmationModal>
         <AccountReconciliationForm
             v-if="accountToReconcile"
             :account="accountToReconcile"

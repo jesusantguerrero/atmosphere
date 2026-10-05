@@ -37,7 +37,7 @@ context.useForm = initial => ({ ...initial, processing: false, clearErrors() {},
 context.format = () => '2026-10-04';
 context.axios = { get: async () => ({ data: { balance: 125 } }) };
 vm.createContext(context);
-vm.runInContext(ts.transpile(script + '\n globalThis.results = { accountGroups, statusOf, attentionCount, goReconcile, accountToReconcile, quickReconcile };'), context);
+vm.runInContext(ts.transpile(script + '\n globalThis.results = { accountGroups, statusOf, attentionCount, goReconcile, accountToReconcile, quickReconcile, quickConfirmation, cancelQuickReconciliation, confirmQuickReconciliation };'), context);
 const result = context.results;
 assert.equal(result.statusOf(accounts[0]).key, 'review');
 assert.equal(result.statusOf(accounts[1]).key, 'ok');
@@ -50,8 +50,15 @@ result.goReconcile(accounts[0]);
 assert.deepEqual(visits, ['/finance/reconciliation/40']);
 assert.equal(result.accountToReconcile.value.id, 1);
 result.accountToReconcile.value = null;
-result.quickReconcile({ id: 10 }).then(() => {
+result.quickReconcile({ id: 10 }).then(async () => {
  assert.equal(result.accountToReconcile.value, null);
+ assert.equal(quickPosts.length, 0);
+ assert.equal(result.quickConfirmation.value.id, 10);
+ result.cancelQuickReconciliation();
+ result.confirmQuickReconciliation();
+ assert.equal(quickPosts.length, 0);
+ await result.quickReconcile({ id: 10 });
+ result.confirmQuickReconciliation();
  assert.deepEqual(quickPosts, [{ url: '/finance/reconciliation/accounts/10', balance: 125, date: '2026-10-04' }]);
 }).catch(error => { console.error(error); process.exitCode = 1; });
 accounts.splice(0);
