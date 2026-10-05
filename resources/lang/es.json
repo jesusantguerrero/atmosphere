@@ -1112,5 +1112,7 @@
     "Could not load the account balance. Try again.": "No se pudo cargar el saldo. Intenta de nuevo.",
     "Confirm reconciliation": "Confirmar conciliación",
     "Does your statement match {balance} on {date}?": "¿Tu estado de cuenta coincide con {balance} a fecha {date}?",
-    "Yes, reconcile": "Sí, conciliar"
+    "Yes, reconcile": "Sí, conciliar",
+    "Account reconciled successfully.": "Cuenta conciliada correctamente.",
+    "View reconciliation": "Ver conciliación"
 }

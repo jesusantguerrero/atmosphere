@@ -31,6 +31,7 @@ const props = withDefaults(
     defineProps<{
         accounts: AccountRow[];
         sectionTitle?: string;
+        flash?: { banner?: string; reconciliation_id?: number };
     }>(),
     { accounts: () => [] },
 );
@@ -140,6 +141,7 @@ const cancelQuickReconciliation = () => {
 const confirmQuickReconciliation = () => {
     if (!quickConfirmation.value || quickForm.processing) return;
     quickForm.post(`/finance/reconciliation/accounts/${quickConfirmation.value.id}`, {
+        preserveScroll: true,
         onSuccess: () => { quickConfirmation.value = null; },
         onFinish: () => { quickAccountId.value = null; },
     });
@@ -186,6 +188,10 @@ const ctaLabel = (a: AccountRow) =>
         </template>
 
         <main class="px-5 sm:px-6 lg:px-8 mt-16 pb-36 max-w-screen-xl">
+            <div v-if="flash?.reconciliation_id" role="status" class="mb-4 rounded-lg bg-success/10 px-4 py-3 text-sm text-body flex flex-wrap items-center justify-between gap-2">
+                <span>{{ flash.banner }}</span>
+                <a :href="`/finance/reconciliation/${flash.reconciliation_id}`" class="font-semibold underline">{{ $t('View reconciliation') }}</a>
+            </div>
             <p v-if="quickForm.errors.balance || quickForm.errors.date" role="alert" class="text-sm text-error mb-3">
                 {{ quickForm.errors.balance || quickForm.errors.date }}
             </p>

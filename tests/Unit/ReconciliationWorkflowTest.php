@@ -72,22 +72,28 @@ class ReconciliationWorkflowTest extends PendingReconciliationDifferenceTest
         $this->assertEquals(99, $reconciliation->fresh()->difference);
     }
 
-    public function test_creating_an_already_balanced_reconciliation_still_redirects_to_detail(): void
+    public function test_creating_a_completed_reconciliation_returns_to_the_list_with_confirmation(): void
     {
         $user = new User;
         $user->id = 1;
         Auth::setUser($user);
         $account = new Account;
         $account->id = 10;
-        $reconciliation = new Reconciliation(['difference' => 0]);
+        $reconciliation = new Reconciliation(['difference' => 0, 'status' => 'completed']);
         $reconciliation->id = 123;
+        $pending = new Reconciliation(['difference' => 25, 'status' => 'pending']);
+        $pending->id = 124;
         $request = Mockery::mock(ReconciliationRequest::class);
-        $request->shouldReceive('validated')->once()->andReturn(['balance' => 0, 'date' => '2026-01-01']);
+        $request->shouldReceive('validated')->twice()->andReturn(['balance' => 0, 'date' => '2026-01-01']);
         $service = Mockery::mock(ReconciliationService::class);
-        $service->shouldReceive('create')->once()->andReturn($reconciliation);
+        $service->shouldReceive('create')->twice()->andReturn($reconciliation, $pending);
         $controller = Mockery::mock(ReconciliationController::class)->makePartial();
-        $controller->shouldReceive('authorize')->once();
+        $controller->shouldReceive('authorize')->twice();
         $response = $controller->store($account, $service, $request);
-        $this->assertStringEndsWith('/finance/reconciliation/123', $response->getTargetUrl());
+        $this->assertStringEndsWith('/finance/reconciliation', $response->getTargetUrl());
+        $this->assertSame(123, session('flash.reconciliation_id'));
+        $this->assertNotEmpty(session('flash.banner'));
+        $pendingResponse = $controller->store($account, $service, $request);
+        $this->assertStringEndsWith('/finance/reconciliation/124', $pendingResponse->getTargetUrl());
     }
 }

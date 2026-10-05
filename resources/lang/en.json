@@ -1026,5 +1026,7 @@
     "Could not load the account balance. Try again.": "Could not load the account balance. Try again.",
     "Confirm reconciliation": "Confirm reconciliation",
     "Does your statement match {balance} on {date}?": "Does your statement match {balance} on {date}?",
-    "Yes, reconcile": "Yes, reconcile"
+    "Yes, reconcile": "Yes, reconcile",
+    "Account reconciled successfully.": "Account reconciled successfully.",
+    "View reconciliation": "View reconciliation"
 }
