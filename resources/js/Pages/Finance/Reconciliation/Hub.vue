@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { router } from "@inertiajs/vue3";
+import { router, useForm } from "@inertiajs/vue3";
+import axios from "axios";
+import { format } from "date-fns";
 import { useI18n } from "vue-i18n";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
@@ -123,6 +125,27 @@ const typeLabels: Record<string, string> = {
 };
 
 const accountToReconcile = ref<AccountRow | null>(null);
+const quickAccountId = ref<number | null>(null);
+const quickForm = useForm({ date: "", balance: 0 });
+
+const quickReconcile = async (account: AccountRow) => {
+    if (quickAccountId.value !== null || quickForm.processing) return;
+    quickAccountId.value = account.id;
+    quickForm.clearErrors();
+    quickForm.date = format(new Date(), "yyyy-MM-dd");
+    try {
+        const { data } = await axios.get(`/finance/accounts/${account.id}/balance-at`, {
+            params: { date: quickForm.date },
+        });
+        quickForm.balance = Number(data.balance);
+        quickForm.post(`/finance/reconciliation/accounts/${account.id}`, {
+            onFinish: () => { quickAccountId.value = null; },
+        });
+    } catch {
+        quickAccountId.value = null;
+        quickForm.setError("balance", t("Could not load the account balance. Try again."));
+    }
+};
 
 const goReconcile = (a: AccountRow) => {
     if (a.last_status === "pending" && a.last_id) {
@@ -147,6 +170,9 @@ const ctaLabel = (a: AccountRow) =>
         </template>
 
         <main class="px-5 sm:px-6 lg:px-8 mt-16 pb-36 max-w-screen-xl">
+            <p v-if="quickForm.errors.balance || quickForm.errors.date" role="alert" class="text-sm text-error mb-3">
+                {{ quickForm.errors.balance || quickForm.errors.date }}
+            </p>
             <header class="mb-4">
                 <h1 class="text-lg font-bold text-body">
                     {{ $t("Reconciliation") }}
@@ -289,6 +315,16 @@ const ctaLabel = (a: AccountRow) =>
                             </div>
                         </div>
 
+                        <div class="flex flex-col gap-2 flex-shrink-0">
+                        <button
+                            v-if="a.last_status !== 'pending'"
+                            type="button"
+                            class="text-xs font-semibold px-3 py-2 rounded-lg border border-body-1/30 text-body hover:bg-base-lvl-2 disabled:opacity-50"
+                            :disabled="quickAccountId !== null || quickForm.processing"
+                            @click="quickReconcile(a)"
+                        >
+                            {{ $t('Balance matches: reconcile') }}
+                        </button>
                         <button
                             type="button"
                             class="flex-shrink-0 text-sm font-semibold px-3 py-2.5 rounded-lg transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
@@ -301,6 +337,7 @@ const ctaLabel = (a: AccountRow) =>
                         >
                             {{ $t(ctaLabel(a)) }}
                         </button>
+                        </div>
                     </article>
                 </div>
             </section>
