@@ -8,7 +8,8 @@ import ChartHeaderScroller from "./ChartHeaderScroller.vue";
 import NumberHider from "./molecules/NumberHider.vue";
 import { formatMonth } from "@/utils";
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
+const monthLabel = (date: string) => new Intl.DateTimeFormat(locale.value, { month: "short", year: "2-digit" }).format(new Date(`${date}T12:00:00`));
 
 const props = defineProps({
     title: {
@@ -50,6 +51,8 @@ const state = computed(() => ({
     options: {
         colors: ["#7B77D1B3", "#F37EA1B3"],
         borderColors: ["#7B77D1", "#F37EA1"],
+        scales: { x: { ticks: { color: "#94A3B8", maxRotation: 0 } }, y: { ticks: { color: "#94A3B8", callback: (value: number) => hasHiddenValues.value ? "--" : new Intl.NumberFormat(locale.value, { notation: "compact" }).format(value) } } },
+        plugins: { legend: { labels: { color: "#94A3B8" } } },
     },
     series: currentSeries.value
 }));
@@ -83,7 +86,7 @@ const hasHiddenValues = inject('hasHiddenValues', ref(false))
         <LogerChart
             label="name"
             :type="type"
-            :labels="currentSeries[0].labels.map(formatMonth)"
+            :labels="currentSeries[0].labels.map(monthLabel)"
             :options="state.options"
             :series="state.series"
             :has-hidden-values="hasHiddenValues"

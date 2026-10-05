@@ -83,6 +83,8 @@ watch(
         if (fieldValue?.match?.(/^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$/)) {
             // @ts-ignore
             state.form[key] = parseISO(fieldValue);
+        } else if (['amount', 'principal', 'interest_rate', 'term_months'].includes(key)) {
+            state.form[key] = String(fieldValue ?? 0);
         } else if (typeof state.form[key] == 'boolean') {
             state.form[key] = Boolean(fieldValue);
         } else {
@@ -99,6 +101,13 @@ watch(
   },
   { deep: true, immediate: true }
 );
+
+watch(() => state.form.target_type, (type, previous) => {
+  if (type === 'loan' && previous !== 'loan') {
+    state.form.frequency = 'MONTHLY';
+    state.form.notify = true;
+  }
+});
 
 const onSubmit = () => {
   const methods = {
@@ -315,8 +324,9 @@ const handleOptions = (option: string) => {
         </div>
       </section>
 
-      <section v-if="form.target_type == 'spending'">
+      <section v-if="['spending', 'loan'].includes(form.target_type)">
         <AtButtonGroup
+          v-if="form.target_type === 'spending'"
           v-model="form.frequency"
           :options="budgetFrequencies"
           class="text-sm"
@@ -366,7 +376,10 @@ const handleOptions = (option: string) => {
         </p>
       </AtField>
 
-      <AtFieldCheck v-model="form.notify" label="Notify on AVG" />
+      <AtFieldCheck v-model="form.notify" :label="form.target_type === 'loan' ? $t('Remind me before the payment date') : 'Notify on AVG'" />
+      <p v-if="form.target_type === 'loan' && form.notify" class="text-xs text-body-1/70">
+        {{ $t('A reminder is sent three days before the monthly payment date.') }}
+      </p>
 
       <div class="flex justify-between mt-4">
         <div class="flex font-bold">

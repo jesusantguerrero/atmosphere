@@ -1,26 +1,24 @@
 <script setup lang="ts">
-import { computed, ref, toRefs } from "vue";
+import { computed } from "vue";
 import { router } from "@inertiajs/vue3";
 import { useTransactionModal, TRANSACTION_DIRECTIONS } from "@/domains/transactions";
 
 import MoneyPresenter from "@/Components/molecules/MoneyPresenter.vue";
 import BudgetProgress from "@/domains/budget/components/BudgetProgress.vue";
-import NextPaymentsWidget from "@/domains/transactions/components/NextPaymentsWidget.vue";
-import AccountBalancesWidget from "./AccountBalancesWidget.vue";
-import OccurrenceWidget from "@/domains/housing/components/OccurrenceWidget.vue";
+import TodayAgendaWidget from "./TodayAgendaWidget.vue";
 import MealWidget from "@/domains/meal/components/MealWidget.vue";
-import WatchlistDashboardWidget from "@/domains/watchlist/components/WatchlistDashboardWidget.vue";
 import DueTodayWidget, { type TodayItem } from "./DueTodayWidget.vue";
-import RoutineNowNextWidget from "./RoutineNowNextWidget.vue";
 
-import { useNetWorth, INetWorthEntry } from "@/domains/transactions/useNetWorth";
-import { formatMoney, getDayDiff } from "@/utils";
+import { getDayDiff } from "@/utils";
 import { IAccount, ITransaction } from "@/domains/transactions/models";
 import { IBudgetStat } from "@/domains/budget/models/budget";
 import { IOccurrenceCheck } from "@/domains/housing/models";
 
 const props = defineProps<{
-    netWorth: INetWorthEntry[];
+    netWorth: unknown[];
+    income: number | string;
+    agendaDate: string;
+    agendaEvents: any[];
     expenses: number | string;
     accounts: IAccount[];
     budgetTotal: IBudgetStat[];
@@ -36,14 +34,12 @@ const props = defineProps<{
     budgetConfigured?: boolean;
 }>();
 
-const { netWorth } = toRefs(props);
 
 // Reuse the app-wide transaction modal (rendered globally in AppGlobals).
 // Recording the transaction there marks the cycle paid and the global
 // "saved" handler already runs router.reload(), refreshing this dashboard.
 const { openTransactionModal } = useTransactionModal();
 const { TRANSFER, WITHDRAW } = TRANSACTION_DIRECTIONS;
-const { thisMonth, lastMonth, monthMovement, monthMovementVariance } = useNetWorth(netWorth);
 
 // Coerce to Number because the API sends totals as strings (e.g. "0.00").
 // Without this, `!"0.00"` evaluates to `false` (non-empty string is truthy),
@@ -72,18 +68,6 @@ const numericBalance = (a: IAccount): number => {
     const value = parseFloat(String(a.balance ?? 0));
     return Number.isFinite(value) ? value : 0;
 };
-
-const totalBalance = computed(() => {
-    return props.accounts?.reduce((sum, a) => sum + numericBalance(a), 0) ?? 0;
-});
-
-const creditCardDebt = computed(() => {
-    return props.accounts
-        ?.filter(a => a.credit_limit && a.credit_limit > 0)
-        ?.reduce((sum, a) => sum + Math.abs(numericBalance(a)), 0) ?? 0;
-});
-
-const movementIsPositive = computed(() => Number(monthMovement.value) >= 0);
 
 // ---------------------------------------------------------------------------
 // "What needs your attention today" hero.
@@ -120,10 +104,6 @@ const dueSoonPayments = computed(() =>
     })
 );
 
-const overduePaymentsTotal = computed(() =>
-    overduePayments.value.reduce((sum, p) => sum + Number((p as any).total ?? 0), 0)
-);
-
 // Reminders past their usual cadence (avg + 3d), mirrors OccurrenceWidget's
 // "overdue" threshold so the hero and the widget agree.
 const overdueReminders = computed(() =>
@@ -146,14 +126,7 @@ const hasAttention = computed(() =>
     hasUrgent.value || dueSoonPayments.value.length > 0 || draftsCount.value > 0
 );
 
-// ---------------------------------------------------------------------------
-// Next payments density — show the top 3 by default with a "see all" toggle so
-// the list stops dominating half the screen.
-// ---------------------------------------------------------------------------
-const showAllPayments = ref(false);
-const visiblePayments = computed(() =>
-    showAllPayments.value ? props.nextPayments : (props.nextPayments ?? []).slice(0, 3)
-);
+const priorityPayments = computed(() => [...overduePayments.value, ...dueSoonPayments.value].slice(0, 3));
 
 // ---------------------------------------------------------------------------
 // Issue 1 — "Mark as paid" from a next-payment row.
@@ -184,24 +157,6 @@ const handlePay = (payment: any) => {
     });
 };
 
-// ---------------------------------------------------------------------------
-// Issue 2 — deep-link the hero payment rows to the planned/upcoming list
-// already filtered. /finance/transactions honors filter[status] and
-// filter[date] (both override the page defaults), so we land on planned
-// transactions narrowed to the overdue or due-soon window respectively.
-// The occurrences page has no overdue filter, so that row is left generic.
-// ---------------------------------------------------------------------------
-const goToOverduePayments = () => {
-    // The overdue set is a mix of budget reminders, credit-card cuts and planned
-    // transactions (NextPaymentsService), which no /finance/transactions filter
-    // can reproduce — so land on the dedicated page that narrows the SAME source.
-    router.visit("/finance/next-payments?filter=overdue");
-};
-
-const goToDueSoonPayments = () => {
-    router.visit("/finance/next-payments?filter=due_soon");
-};
-
 </script>
 
 <template>
@@ -223,25 +178,20 @@ const goToDueSoonPayments = () => {
                 {{ $t('What needs your attention today') }}
             </h2>
 
-            <div v-if="hasAttention" class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <!-- Overdue payments -->
-                <button
-                    v-if="overduePayments.length"
-                    type="button"
-                    class="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3 px-3 py-2.5 rounded-lg bg-base-lvl-2 border border-error/30 hover:border-error/50 transition text-left"
-                    @click="goToOverduePayments"
-                >
-                    <span class="flex items-center gap-2 min-w-0">
-                        <i class="fa fa-clock text-error flex-shrink-0" />
-                        <span class="text-sm font-semibold text-body truncate">
-                            {{ overduePayments.length }} {{ $t(overduePayments.length === 1 ? 'overdue payment' : 'overdue payments') }}
-                        </span>
+            <div v-if="priorityPayments.length" class="grid gap-2 pt-3">
+                <button v-for="payment in priorityPayments" :key="payment.id" type="button" class="flex w-full min-w-0 flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3 rounded-lg border border-base bg-base-lvl-2 p-3 text-left hover:border-primary/40" @click="handlePay(payment)">
+                    <span class="min-w-0 w-full sm:flex-1">
+                        <span class="block truncate text-sm font-medium text-body">{{ payment.description || payment.title }}</span>
+                        <span class="block text-xs" :class="daysFromToday(payment.date) < 0 ? 'text-error' : 'text-body-1/70'">{{ daysFromToday(payment.date) < 0 ? $t('Overdue Payments') : $t('Upcoming payments') }} · {{ payment.date?.slice(0, 10) }}</span>
                     </span>
-                    <span class="text-sm font-bold text-error tabular-nums flex-shrink-0">
-                        {{ formatMoney(overduePaymentsTotal) }}
+                    <span class="flex w-full items-center justify-between gap-2 sm:block sm:w-auto sm:shrink-0 sm:text-right">
+                        <span class="block text-sm font-semibold text-body"><MoneyPresenter :value="payment.total" /></span>
+                        <span class="block text-xs text-primary">Registrar pago →</span>
                     </span>
                 </button>
-
+            </div>
+            <button v-if="nextPayments?.length" type="button" class="text-sm text-primary py-2 hover:underline" @click="router.visit('/finance/next-payments')">{{ $t('See all') }} ({{ nextPayments.length }}) →</button>
+            <div v-if="overdueReminders.length || draftsCount" class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <!-- Overdue reminders -->
                 <button
                     v-if="overdueReminders.length"
@@ -256,22 +206,6 @@ const goToDueSoonPayments = () => {
                         </span>
                     </span>
                     <span class="text-xs font-semibold text-error flex-shrink-0">{{ $t('Review') }} →</span>
-                </button>
-
-                <!-- Upcoming payments (next 7 days) — informational, not red -->
-                <button
-                    v-if="dueSoonPayments.length"
-                    type="button"
-                    class="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3 px-3 py-2.5 rounded-lg bg-base-lvl-2 border border-base hover:border-primary/30 transition text-left"
-                    @click="goToDueSoonPayments"
-                >
-                    <span class="flex items-center gap-2 min-w-0">
-                        <i class="fa fa-calendar-day text-body-1/60 flex-shrink-0" />
-                        <span class="text-sm font-semibold text-body truncate">
-                            {{ dueSoonPayments.length }} {{ $t(dueSoonPayments.length === 1 ? 'payment due soon' : 'payments due soon') }}
-                        </span>
-                    </span>
-                    <span class="text-xs text-body-1/50 flex-shrink-0">{{ $t('next 7 days') }}</span>
                 </button>
 
                 <!-- Drafts / transactions to review -->
@@ -291,7 +225,7 @@ const goToDueSoonPayments = () => {
                 </button>
             </div>
 
-            <p v-else class="mt-2 text-sm text-body-1/70">
+            <p v-if="!hasAttention" class="mt-2 text-sm text-body-1/70">
                 {{ $t('Nothing needs your attention right now. You are all caught up.') }}
             </p>
         </section>
@@ -303,8 +237,8 @@ const goToDueSoonPayments = () => {
                 class="min-w-0 bg-base-lvl-3 rounded-lg p-4 text-left border border-base hover:border-primary/30 transition cursor-pointer"
                 @click="router.visit('/finance/transactions')"
             >
-                <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">{{ $t('Current Expenses') }}</p>
-                <p class="text-base sm:text-lg font-bold text-body mt-1 truncate">
+                <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">{{ $t('This month expenses') }}</p>
+                <p class="text-sm sm:text-lg font-bold text-body mt-1 break-words">
                     <MoneyPresenter :value="expenses" />
                 </p>
             </button>
@@ -313,19 +247,20 @@ const goToDueSoonPayments = () => {
                 class="min-w-0 bg-base-lvl-3 rounded-lg p-4 text-left border border-base hover:border-primary/30 transition cursor-pointer"
                 @click="router.visit('/finance/transactions')"
             >
-                <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">{{ $t('Total Balance') }}</p>
-                <p class="text-base sm:text-lg font-bold mt-1 truncate" :class="totalBalance >= 0 ? 'text-body' : 'text-error'">
-                    <MoneyPresenter :value="totalBalance" />
+                <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">Ingresos del mes</p>
+                <p class="text-sm sm:text-lg font-bold mt-1 break-words text-success">
+                    <MoneyPresenter :value="income" />
                 </p>
             </button>
 
             <button
-                class="min-w-0 bg-base-lvl-3 rounded-lg p-4 text-left border border-base hover:border-primary/30 transition cursor-pointer"
+                class="col-span-2 md:col-span-1 min-w-0 bg-base-lvl-3 rounded-lg p-4 text-left border border-base hover:border-primary/30 transition cursor-pointer"
                 @click="router.visit('/budgets')"
             >
-                <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">{{ $t('Budget') }}</p>
+                <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">Disponible del presupuesto</p>
                 <template v-if="budgetAssigned">
-                    <p class="text-lg font-bold text-body mt-1">{{ spentPercentage }}%
+                    <p class="text-sm sm:text-lg font-bold mt-1 break-words" :class="currentBudget.total - currentBudget.spending < 0 ? 'text-error' : 'text-body'"><MoneyPresenter :value="currentBudget.total - currentBudget.spending" /></p>
+                    <p class="text-xs text-body-1/70 mt-2">{{ spentPercentage }}%
                         <span class="text-xs font-normal text-body-1/50">{{ $t('spent') }}</span>
                     </p>
                     <div class="mt-2">
@@ -349,69 +284,13 @@ const goToDueSoonPayments = () => {
             </button>
         </section>
 
-        <!-- Accounts + Watchlists promoted from the right rail so the balances
-             you glance at most are always visible, not one click away. Account
-             groups collapse inline; only an account row or "View all" navigates
-             (so this is a glance view, not a navigation trap). Watchlists
-             self-hide when there are none. -->
-        <AccountBalancesWidget :accounts="accounts" />
-        <WatchlistDashboardWidget :watchlists="topWatchlists" />
-
-        <!-- Main content: 2 columns -->
-        <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <!-- Left column: accounts + action items -->
-            <div class="md:col-span-2 space-y-4">
-                <!-- Now / Next from the weekly routine -->
-                <RoutineNowNextWidget />
-                <!-- Today / needs attention -->
-                <DueTodayWidget v-if="todayItems?.length" :items="todayItems" />
-
-                <!-- Next payments — only if there are any. Shows the top 3 with a
-                     "see all" toggle so the list doesn't dominate the screen. -->
-                <div v-if="nextPayments?.length" class="bg-base-lvl-3 rounded-lg border border-base">
-                    <NextPaymentsWidget :payments="visiblePayments" class="px-4" @pay="handlePay" />
-                    <button
-                        v-if="nextPayments.length > 3"
-                        type="button"
-                        class="w-full text-center text-xs font-semibold text-primary hover:underline py-2.5 border-t border-base"
-                        @click="showAllPayments = !showAllPayments"
-                    >
-                        <template v-if="showAllPayments">{{ $t('Show less') }}</template>
-                        <template v-else>{{ $t('See all') }} ({{ nextPayments.length }})</template>
-                    </button>
-                </div>
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <TodayAgendaWidget :events="agendaEvents" :date="agendaDate" />
+            <div v-if="todayItems?.length" class="min-w-0">
+                <DueTodayWidget :items="todayItems.slice(0, 3)" />
             </div>
-
-            <!-- Right column: secondary modules -->
-            <div class="space-y-4">
-                <!-- Occurrences -->
-                <OccurrenceWidget
-                    v-if="isHousingEnabled && checks?.length"
-                    :checks="checks"
-                    :wrap="true"
-                />
-
-                <!-- Today's meals -->
-                <MealWidget
-                    v-if="isMealsEnabled"
-                    :meals="meals?.data ?? []"
-                />
-
-                <!-- Total credit-card debt callout. This is the SUM of every card's
-                     debt — distinct from the per-card balance shown under "Accounts".
-                     Debt is a normal state, so it stays neutral (not red) unless the
-                     user is actually behind on a payment (surfaced in the hero). -->
-                <div
-                    v-if="creditCardDebt > 0"
-                    class="bg-base-lvl-3 rounded-lg border border-base p-4 cursor-pointer hover:border-primary/30 transition"
-                    @click="router.visit('/finance/transactions')"
-                >
-                    <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">{{ $t('Total Credit Card Debt') }}</p>
-                    <p class="text-lg font-bold text-body mt-1">
-                        <MoneyPresenter :value="creditCardDebt" />
-                    </p>
-                    <p class="text-[11px] text-body-1/50 mt-0.5">{{ $t('Across all your cards') }}</p>
-                </div>
+            <div v-if="isMealsEnabled" class="min-w-0 rounded-xl border border-base bg-base-lvl-3 p-4" >
+                <MealWidget :meals="meals?.data ?? []" :compact="true" />
             </div>
         </section>
     </div>

@@ -9,6 +9,7 @@ use App\Domains\Transaction\Models\TransactionLine;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Category as CoreCategory;
 
@@ -282,6 +283,7 @@ class TransactionService
             INNER JOIN accounts on tl.account_id = accounts.id
             INNER JOIN account_detail_types adt on adt.id = accounts.account_detail_type_id
             WHERE t.STATUS = 'verified'
+            AND t.deleted_at IS NULL
             AND tl.date <= :monthDate
             AND adt.name IN ('cash', 'cash_on_hand', 'bank', 'savings', 'credit_card')
             AND tl.team_id = :teamId
@@ -304,7 +306,7 @@ class TransactionService
     public static function getIncomeVsExpenses($teamId, $timeUnitDiff = 2, $timeUnit = 'month', $type = 'expenses')
     {
         $endDate = Carbon::now()->endOfMonth()->format('Y-m-d');
-        $startDate = Carbon::now()->subMonth($timeUnitDiff)->startOfMonth()->format('Y-m-d');
+        $startDate = Carbon::now()->startOfMonth()->subMonths($timeUnitDiff)->format('Y-m-d');
 
         $expenses = self::getInPeriod($teamId, $startDate, $endDate);
         $expensesGroup = $expenses->groupBy('date');
@@ -320,7 +322,7 @@ class TransactionService
         });
 
         $dates = $expensesGroup->keys();
-        $datesCount = count($dates);
+        $datesCount = max(1, $timeUnitDiff + 1);
 
         return
         [
@@ -382,17 +384,18 @@ class TransactionService
     public static function getInPeriod($teamId, $startDate, $endDate)
     {
         return DB::table('categories')
-            ->selectRaw('sum(COALESCE(total,0)) as total, date_format(transactions.date, "%Y-%m-01") as date, categories.name, categories.id, pc.id group_id, pc.name group_name, concat(pc.index, ".", categories.index) index_field')
+            ->selectRaw('sum(COALESCE(total,0)) as total, date_format(transactions.date, "%Y-%m-01") as date, categories.name, categories.id, pc.id group_id, pc.name group_name, concat(pc.`index`, ".", categories.`index`) index_field')
             ->where([
                 'categories.team_id' => $teamId,
                 'categories.resource_type' => 'transactions',
                 'transactions.direction' => Transaction::DIRECTION_CREDIT,
                 'transactions.status' => 'verified',
             ])->whereNotNull('categories.parent_id')
+            ->whereNull('transactions.deleted_at')
             ->where('pc.display_id', '!=', 'inflow')
             ->whereBetween('transactions.date', [$startDate, $endDate])
             ->groupByRaw('categories.id, date_format(transactions.date, "%Y-%m-01")')
-            ->orderByRaw('date_format(transactions.date, "%Y-%m-01"), concat(pc.index,"." ,categories.index)')
+            ->orderByRaw('date_format(transactions.date, "%Y-%m-01"), concat(pc.`index`,"." ,categories.`index`)')
             ->leftJoin('transactions', 'transactions.category_id', '=', 'categories.id')
             ->join(DB::raw('categories pc'), 'pc.id', '=', 'categories.parent_id')
             ->get();
@@ -449,6 +452,23 @@ class TransactionService
             ->orderByRaw('date_format(transactions.date, "%Y-%m-01"), payees.name')
             ->join('transactions', 'transactions.payee_id', '=', 'payees.id')
             ->get();
+    }
+
+    public static function getExpensePayeesInPeriod(int $teamId, string $startDate, string $endDate): Collection
+    {
+        return Transaction::query()
+            ->join('categories', 'categories.id', '=', 'transactions.category_id')
+            ->join('categories as parent_categories', 'parent_categories.id', '=', 'categories.parent_id')
+            ->leftJoin('payees', 'payees.id', '=', 'transactions.payee_id')
+            ->where('categories.team_id', $teamId)
+            ->where('categories.resource_type', 'transactions')
+            ->where('parent_categories.display_id', '!=', 'inflow')
+            ->where('transactions.direction', Transaction::DIRECTION_CREDIT)
+            ->where('transactions.status', 'verified')
+            ->whereBetween('transactions.date', [$startDate, $endDate])
+            ->selectRaw('COALESCE(payees.name, ?) as name, SUM(COALESCE(transactions.total, 0)) as total', [__('Without payee')])
+            ->groupBy('payees.id', 'payees.name')
+            ->toBase()->get();
     }
 
     public static function getPayeeMovementsInPeriod($teamId, $startDate, $endDate, $direction = Transaction::DIRECTION_DEBIT)

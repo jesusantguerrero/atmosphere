@@ -140,11 +140,7 @@ class FinanceTrendController extends Controller
      */
     public function insights(Request $request)
     {
-        $filters = $request->query('filter', []);
-        [$startDate, $endDate] = $this->getFilterDates($filters);
         $teamId = $request->user()->current_team_id;
-
-        $groups = TransactionService::getCategoryExpensesGroup($teamId, $startDate, $endDate, null, null);
 
         // History length driven by the range toolbar (1M / 3M / 6M / YTD / 1Y).
         // YTD sends a dynamic count (Jan..current month, 1..12), so accept any
@@ -152,6 +148,15 @@ class FinanceTrendController extends Controller
         // coerced 1M and YTD back to 6.
         $months = (int) $request->query('months', 6);
         $months = ($months >= 1 && $months <= 12) ? $months : 6;
+        $range = $request->query('range');
+        $range = in_array($range, ['1M', '3M', '6M', 'YTD', '1Y'], true) ? $range : null;
+        if ($range === 'YTD') {
+            $months = Carbon::now()->month;
+        }
+        $endDate = Carbon::now()->endOfMonth()->format(self::DateFormat);
+        $startDate = Carbon::now()->startOfMonth()->subMonths($months - 1)->format(self::DateFormat);
+
+        $groups = TransactionService::getCategoryExpensesGroup($teamId, $startDate, $endDate, null, null);
 
         // Money-in vs money-out over the SAME window the spending chart uses, so
         // the "Money out" / "Net cashflow" headline reconciles with the monthly
@@ -172,9 +177,9 @@ class FinanceTrendController extends Controller
         // showed only that month's payees while "Por Categoría" showed the whole
         // year — the two panels disagreed. Use the toolbar range
         // ($startDate..$endDate) so Categoría and Beneficiario reconcile.
-        $payeesOut = ReportService::getExpensesByPayeeInPeriod($teamId, $startDate, $endDate)
+        $payeesOut = TransactionService::getExpensePayeesInPeriod($teamId, $startDate, $endDate)
             ->groupBy('name')
-            ->map(fn ($rows, $name) => ['name' => $name, 'total' => (float) $rows->sum('total_amount')])
+            ->map(fn ($rows, $name) => ['name' => $name, 'total' => (float) $rows->sum('total')])
             ->values()->sortByDesc('total')->values();
         // Income by payee — same source the category (income) view uses so the
         // Category / Payee totals line up on the money-in widget.
@@ -186,23 +191,44 @@ class FinanceTrendController extends Controller
         // Now-anchored (not latest-expense-date anchored): YTD must be a real
         // calendar Jan..current-month span, and the current month stays the end
         // of the range even before it has any transactions.
-        $spendingSummary = ReportService::generateExpensesByPeriodInDate(
-            $teamId,
-            Carbon::now()->subMonths($months - 1)->startOfMonth()->format('Y-m-d'),
-            Carbon::now()->endOfMonth()->format('Y-m-d'),
-        );
+        $spendingSummary = [];
+        $monthlyFlow = [];
+        $cursor = Carbon::parse($startDate)->startOfMonth();
+        for ($index = 0; $index < $months; $index++) {
+            $month = $cursor->format(self::DateFormat);
+            $expenses = collect($incomeExpenses['expenses'] ?? [])->map(fn ($row) => [
+                'name' => $row['name'],
+                'total_amount' => (float) (string) ($row[$month] ?? 0),
+            ])->values();
+            $expense = (float) $expenses->sum('total_amount');
+            $income = (float) collect($incomeExpenses['incomes'] ?? [])->sum(fn ($row) => (float) (string) ($row[$month] ?? 0));
+            $spendingSummary[$month] = ['total' => $expense, 'data' => $expenses];
+            $monthlyFlow[] = ['month' => $month, 'income' => $income, 'expense' => $expense, 'net' => $income - $expense];
+            $cursor->addMonth();
+        }
         // Assets vs debts, cumulative by month, for the Patrimonio tab
         // (reuses the ChartNetWorth widget from /trends/net-worth). Now-anchored
         // so its YTD span matches the other tabs exactly — the range toolbar is
         // shared, so all four tabs must resolve YTD to the same Jan..current
         // window instead of slipping to the latest-transaction month.
-        $netWorth = collect(TransactionService::getNetWorth(
+        $netWorthHistory = collect(TransactionService::getNetWorth(
             $teamId,
-            Carbon::now()->subMonths($months - 1)->startOfMonth()->format('Y-m-d'),
-            Carbon::now()->endOfMonth()->format('Y-m-d'),
-        ))->values();
+            $startDate,
+            $endDate,
+        ))->sortByDesc('date_unit');
+        $netWorth = collect();
+        $cursor = Carbon::parse($startDate)->startOfMonth();
+        for ($index = 0; $index < $months; $index++) {
+            $monthEnd = $cursor->copy()->endOfMonth()->format(self::DateFormat);
+            $balance = $netWorthHistory->first(fn ($row) => $row->date_unit <= $monthEnd);
+            $netWorth->prepend((object) [
+                'date_unit' => $monthEnd,
+                'assets' => (float) ($balance->assets ?? 0),
+                'debts' => (float) ($balance->debts ?? 0),
+            ]);
+            $cursor->addMonth();
+        }
         // Money in/out per month for the Income tab's monthly chart.
-        $monthlyFlow = ReportService::getMonthlyFlow($teamId, $months);
         // Credit card summary for the Cards tab (reuses the credit-card report
         // service). Balances / limit / utilization are point-in-time and stay
         // "as of" now regardless of range; the period breakdowns it also returns
@@ -211,8 +237,8 @@ class FinanceTrendController extends Controller
         // something on this tab instead of always showing a fixed 3-month window.
         $creditCards = $this->creditCardService->creditCards(
             $teamId,
-            Carbon::now()->endOfMonth()->format('Y-m-d'),
-            Carbon::now()->subMonths($months - 1)->startOfMonth()->format('Y-m-d'),
+            $endDate,
+            $startDate,
             null,
         );
 
@@ -232,6 +258,11 @@ class FinanceTrendController extends Controller
                 'name' => 'insights',
                 'title' => 'Insights',
                 'months' => $months,
+                'startDate' => $startDate,
+                'endDate' => $endDate,
+                'asOfDate' => Carbon::now()->format(self::DateFormat),
+                'range' => $range,
+                'hasNetWorthHistory' => $netWorthHistory->isNotEmpty(),
             ],
         ];
     }
