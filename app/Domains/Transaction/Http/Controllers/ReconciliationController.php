@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Traits\HasEnrichedRequest;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Accounting\Reconciliation;
 use Insane\Journal\Models\Accounting\ReconciliationEntry;

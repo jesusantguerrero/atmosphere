@@ -85,7 +85,7 @@ const ctaLabel = (a: AccountRow) => (a.last_status === "pending" ? "Continue" : 
             <FinanceSectionNav />
         </template>
 
-        <main class="px-5 mx-auto mt-8 mb-20 max-w-screen-md sm:px-6 lg:px-8">
+        <main class="px-5 sm:px-6 lg:px-8 mt-16 mb-20 max-w-screen-xl">
             <header class="mb-4">
                 <h1 class="text-lg font-bold text-body">{{ $t('Reconciliation') }}</h1>
                 <p class="text-sm text-body-1/60 mt-0.5">
