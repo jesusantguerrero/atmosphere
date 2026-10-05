@@ -165,21 +165,20 @@ class FinanceTrendController extends Controller
         // even when demo data lags the system clock; in production the latest
         // active month IS the current month.
         $latestExpenseDate = ReportService::getLatestExpenseDate($teamId);
-        $anchor = $latestExpenseDate
-            ? Carbon::createFromFormat('Y-m-d', $latestExpenseDate)
-            : Carbon::now();
 
-        // Payee breakdowns (money in / money out) for the latest active month,
-        // aggregated per payee. Anchored so they are not empty when data lags.
-        $breakStart = $anchor->copy()->startOfMonth()->format('Y-m-d');
-        $breakEnd = $anchor->copy()->endOfMonth()->format('Y-m-d');
-        $payeesOut = ReportService::getExpensesByPayeeInPeriod($teamId, $breakStart, $breakEnd)
+        // Payee breakdowns (money in / money out) must honor the SAME range as
+        // the category breakdown ($groups) and the spending chart. They used to
+        // be anchored to the latest active month, so selecting "1 año" still
+        // showed only that month's payees while "Por Categoría" showed the whole
+        // year — the two panels disagreed. Use the toolbar range
+        // ($startDate..$endDate) so Categoría and Beneficiario reconcile.
+        $payeesOut = ReportService::getExpensesByPayeeInPeriod($teamId, $startDate, $endDate)
             ->groupBy('name')
             ->map(fn ($rows, $name) => ['name' => $name, 'total' => (float) $rows->sum('total_amount')])
             ->values()->sortByDesc('total')->values();
         // Income by payee — same source the category (income) view uses so the
         // Category / Payee totals line up on the money-in widget.
-        $payeesIn = TransactionService::getTransactionsByPayeeInPeriod($teamId, $breakStart, $breakEnd, Transaction::DIRECTION_DEBIT)
+        $payeesIn = TransactionService::getTransactionsByPayeeInPeriod($teamId, $startDate, $endDate, Transaction::DIRECTION_DEBIT)
             ->groupBy('name')
             ->map(fn ($rows, $name) => ['name' => $name, 'total' => (float) $rows->sum('total')])
             ->values()->sortByDesc('total')->values();

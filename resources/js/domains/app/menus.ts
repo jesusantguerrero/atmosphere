@@ -87,6 +87,10 @@ const menus = {
         url: '/finance/transactions'
     },
     {
+        label: 'Reconciliation',
+        url: '/finance/reconciliation'
+    },
+    {
         label: 'Payees',
         url: '/finance/payees'
     }],

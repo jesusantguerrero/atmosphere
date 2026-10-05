@@ -1,92 +1,46 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-const props = defineProps({
-  size: {
-    type: String,
-    validator(value) {
-      const sizes = ["small", "medium", "large"];
-      return sizes.includes(value);
-    },
-    default: "large",
-  },
-  letterClass: {
-    type: String,
-    default: "text-body-1/80",
-  },
+const props = withDefaults(defineProps<{
+  size?: "small" | "medium" | "large" | "huge";
+  theme?: "auto" | "light" | "dark";
+}>(), {
+  size: "large",
+  theme: "auto",
 });
 
-const sizes = {
-  small: "14px",
-  medium: "24px",
-  large: "32px",
-  huge: "195px",
-};
-
-const sizeClass = computed(() => {
-  return sizes[props.size];
-});
-
-const isHuge = computed(() => props.size == "huge");
+const sizes = { small: "28px", medium: "32px", large: "40px", huge: "224px" };
+const logoStyle = computed(() => props.size === "huge"
+  ? { width: sizes.huge }
+  : { height: sizes[props.size] });
 </script>
 
 <template>
-  <div class="flex flex-col">
-    <img src="/logo.png" :style="{ height: sizeClass }" class="mx-auto max-w-full dark:hidden" v-if="!isHuge" />
-    <img src="/logo-dark.png" :style="{ height: sizeClass }" class="mx-auto max-w-full hidden dark:block" v-if="!isHuge" />
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 253.23 63.81"
-      v-else
-      :style="{ width: sizeClass, maxWidth: '100%' }"
-      class="mx-auto"
-    >
-      <defs></defs>
-      <g id="Layer_1" data-name="Layer 1">
-        <line class="cls-1" x1="243.25" y1="57.54" x2="207.25" y2="57.54" />
-        <line class="cls-1" x1="245.25" y1="27.54" x2="245.25" y2="62.54" />
-        <line class="cls-2" x1="249.81" y1="33.01" x2="225.47" y2="7.79" />
-        <text class="cls-3" transform="translate(-2 62.55) scale(0.87 1)">
-          <tspan class="cls-4">L</tspan>
-          <tspan x="44.97" y="0">OGER</tspan>
-        </text>
-      </g>
-    </svg>
+  <div class="flex flex-col items-center gap-3">
+    <img
+      v-if="theme !== 'dark'"
+      src="/logo.svg"
+      alt="Loger"
+      width="224"
+      height="56"
+      :style="logoStyle"
+      class="h-auto w-auto max-w-full"
+      :class="{ 'dark:hidden': theme === 'auto' }"
+    />
+    <img
+      v-if="theme !== 'light'"
+      src="/logo-dark.svg"
+      alt="Loger"
+      width="224"
+      height="56"
+      :style="logoStyle"
+      class="h-auto w-auto max-w-full"
+      :class="{ 'hidden dark:block': theme === 'auto' }"
+    />
     <small
-      class="inline-block font-brand whitespace-nowrap max-w-full truncate"
-      :class="[isHuge ? 'text-sm mt-4' : 'text-xs text-body-1/80']"
-      >The Family Operating System</small
-    >
+      v-if="size === 'huge'"
+      class="font-sans text-sm leading-normal"
+      :class="theme === 'dark' ? 'text-white/80' : 'text-body-1'"
+    >{{ $t('The Family Operating System') }}</small>
   </div>
 </template>
-
-
-
-<style>
-.cls-1,
-.cls-2 {
-  fill: none;
-  stroke: #f37ea1;
-}
-.cls-1,
-.cls-2,
-.cls-3 {
-  stroke-miterlimit: 10;
-}
-.cls-1 {
-  stroke-width: 10px;
-}
-.cls-2 {
-  stroke-width: 9px;
-}
-.cls-3 {
-  font-size: 86.98px;
-  fill: #626d73;
-  stroke: rgb(var(--c-base-lvl-3));
-  font-family: Kanit-SemiBold, Kanit;
-  font-weight: 600;
-}
-.cls-4 {
-  letter-spacing: -0.01em;
-}
-</style>

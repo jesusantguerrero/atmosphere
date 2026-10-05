@@ -28,9 +28,9 @@ class GoogleCalendarService
      * Timed events from the primary calendar between two instants.
      *
      * @return array{connected: bool, error: ?string, events: array<int, array{title: string, start: string, end: string}>}
-     *         event start/end are 'Y-m-d H:i' in the event's own (local) offset.
+     *                                                                                                                      Event start/end use 'Y-m-d H:i' in the requested timezone, or the event's offset.
      */
-    public static function eventsForTeam(int $teamId, int $userId, DateTimeInterface $timeMin, DateTimeInterface $timeMax, bool $timedOnly = true): array
+    public static function eventsForTeam(int $teamId, int $userId, DateTimeInterface $timeMin, DateTimeInterface $timeMax, bool $timedOnly = true, ?string $timeZone = null): array
     {
         $integration = GoogleService::findGoogleIntegration($userId, $teamId, true);
 
@@ -40,9 +40,10 @@ class GoogleCalendarService
 
         try {
             $client = GoogleService::getClient($integration->id);
-        } catch (Exception $e) {
-            // e.g. "Need authorize again" -- no usable refresh token.
+        } catch (GoogleReauthorizationRequired $e) {
             return ['connected' => false, 'error' => 'reauth', 'events' => []];
+        } catch (Exception $e) {
+            return ['connected' => true, 'error' => 'fetch', 'events' => []];
         }
 
         $token = $client->getAccessToken();
@@ -61,20 +62,13 @@ class GoogleCalendarService
                     'maxResults' => 250,
                 ]);
         } catch (Exception $e) {
-            Log::warning('Google Calendar fetch failed: '.$e->getMessage(), ['team_id' => $teamId]);
+            Log::warning('Google Calendar fetch failed', ['team_id' => $teamId]);
 
             return ['connected' => true, 'error' => 'fetch', 'events' => []];
         }
 
-        if ($response->status() === 403) {
-            // Token authorized before Calendar scope existed -- needs re-consent.
-            return ['connected' => true, 'error' => 'scope', 'events' => []];
-        }
-        if ($response->status() === 401) {
-            return ['connected' => false, 'error' => 'reauth', 'events' => []];
-        }
         if (! $response->successful()) {
-            return ['connected' => true, 'error' => 'fetch', 'events' => []];
+            return self::failureResult($response->status(), $response->json('error.errors.0.reason'));
         }
 
         $events = [];
@@ -85,12 +79,18 @@ class GoogleCalendarService
             $startDt = $ev['start']['dateTime'] ?? null;
             $endDt = $ev['end']['dateTime'] ?? null;
             if ($startDt && $endDt) {                     // timed event
+                $start = Carbon::parse($startDt);
+                $end = Carbon::parse($endDt);
+                if ($timeZone) {
+                    $start->setTimezone($timeZone);
+                    $end->setTimezone($timeZone);
+                }
                 $events[] = [
                     'title' => $ev['summary'] ?? '(sin titulo)',
-                    'start' => Carbon::parse($startDt)->format('Y-m-d H:i'),
-                    'end' => Carbon::parse($endDt)->format('Y-m-d H:i'),
+                    'start' => $start->format('Y-m-d H:i'),
+                    'end' => $end->format('Y-m-d H:i'),
                     'all_day' => false,
-                    'date' => Carbon::parse($startDt)->format('Y-m-d'),
+                    'date' => $start->toDateString(),
                 ];
 
                 continue;
@@ -116,5 +116,19 @@ class GoogleCalendarService
         }
 
         return ['connected' => true, 'error' => null, 'events' => $events];
+    }
+
+    /** @return array{connected: bool, error: string, events: array} */
+    public static function failureResult(int $status, ?string $reason): array
+    {
+        if ($status === 401) {
+            return ['connected' => false, 'error' => 'reauth', 'events' => []];
+        }
+
+        if ($status === 403 && $reason === 'insufficientPermissions') {
+            return ['connected' => true, 'error' => 'scope', 'events' => []];
+        }
+
+        return ['connected' => true, 'error' => 'fetch', 'events' => []];
     }
 }

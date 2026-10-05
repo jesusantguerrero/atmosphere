@@ -203,10 +203,7 @@ const completeReconciliation = () => {
       date: props.reconciliation.date,
     }))
     .put(`/finance/reconciliation/${props.reconciliation.id}`, {
-      onFinish() {
-        reconcileForm.reset();
-        reconcileForm.isVisible = false;
-      },
+      preserveScroll: true,
     });
 };
 
@@ -215,7 +212,7 @@ const syncReconciliation = async () => {
     if (syncReconciliationForm.processing) return
     syncReconciliationForm
         .put(`/finance/reconciliation/${props.reconciliation.id}/sync-transactions`, {
-        only: ['transactions', 'matchedCount', 'totalEntries'],
+        only: ['transactions', 'matchedCount', 'totalEntries', 'ledgerBalance', 'reconciliation'],
             preserveScroll: true,
             preserveState: true,
         });
@@ -477,6 +474,9 @@ const differenceDirection = computed(() => {
                   {{ account.currency_code }}
                 </template>
               </LogerInput>
+              <p v-if="reconcileForm.errors.balance || reconcileForm.errors.date" role="alert" class="text-sm text-error">
+                {{ reconcileForm.errors.balance || reconcileForm.errors.date }}
+              </p>
             </AtField>
 
             <AtField :label="$t('Loger balance')">

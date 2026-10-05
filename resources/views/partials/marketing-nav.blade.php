@@ -7,7 +7,7 @@
 <header class="border-b border-gray-800 bg-gray-950/80 backdrop-blur-sm sticky top-0 z-50">
     <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
         <a href="{{ route('landing') }}" class="flex items-center gap-3">
-            <img src="/logo.svg" alt="Loger" class="h-8 w-auto brightness-0 invert">
+            <img src="/logo-dark.svg" alt="Loger" class="h-8 w-auto">
         </a>
         <nav class="flex items-center gap-6">
             <a href="{{ route('pricing') }}"

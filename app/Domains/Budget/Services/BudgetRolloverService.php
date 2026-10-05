@@ -8,6 +8,8 @@ use App\Models\Setting;
 use App\Models\Team;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;
+use Carbon\CarbonInterface;
+use Carbon\CarbonPeriod;
 use Exception;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -30,9 +32,19 @@ class BudgetRolloverService
 
     public function __construct(private BudgetCategoryService $budgetCategoryService) {}
 
-    public function rollMonth($teamId, $month, $categories = null)
+    /**
+     * Closes `$month` for every category and seeds the next month's carry.
+     *
+     * Returns whether the carry written into the next month differs from what
+     * was already stored there. The next month reads nothing else from this
+     * one, so an unchanged carry means every later month already holds the
+     * right numbers.
+     */
+    public function rollMonth($teamId, $month, $categories = null): bool
     {
         $this->currencyCode = $this->resolveTeamCurrency($teamId);
+        $nextMonth = Carbon::createFromFormat('Y-m-d', $month)->addMonthsWithNoOverflow(1)->format('Y-m-d');
+        $storedCarry = $this->carryInto($teamId, $nextMonth);
 
         if (! $categories) {
             $categories = Category::where([
@@ -58,6 +70,27 @@ class BudgetRolloverService
         }
 
         $this->moveReadyToAssign($teamId, $month, $overspending, $fundedFromBudgets);
+
+        return $storedCarry != $this->carryInto($teamId, $nextMonth);
+    }
+
+    /**
+     * Everything a month inherits from the previous one, keyed by category.
+     * Amounts are normalized so decimal strings from the DB compare equal to
+     * the floats the rollover writes.
+     *
+     * @return array<int, array{left: float, moved: float, overspending: float}>
+     */
+    private function carryInto(int $teamId, string $month): array
+    {
+        return BudgetMonth::where(['team_id' => $teamId, 'month' => $month])
+            ->get(['category_id', 'left_from_last_month', 'moved_from_last_month', 'overspending_previous_month'])
+            ->mapWithKeys(fn (BudgetMonth $row) => [$row->category_id => [
+                'left' => round((float) $row->left_from_last_month, 6),
+                'moved' => round((float) $row->moved_from_last_month, 6),
+                'overspending' => round((float) $row->overspending_previous_month, 6),
+            ]])
+            ->all();
     }
 
     private function getAvailableInMonth($category, $month)
@@ -76,21 +109,21 @@ class BudgetRolloverService
         }
 
         if ($budgetMonth->category->account_id) {
-            $available = Money::of($budgetMonth->left_from_last_month, $category->account->currency_code, null, RoundingMode::HALF_UP)
-                ->plus($budgetMonth->budgeted, RoundingMode::HALF_UP)
-                ->plus($budgetMonth->funded_spending, RoundingMode::HALF_UP)
-                ->minus(($budgetMonth->payments), RoundingMode::HALF_UP)
+            $available = Money::of($budgetMonth->left_from_last_month, $category->account->currency_code, null, RoundingMode::HalfUp)
+                ->plus($budgetMonth->budgeted, RoundingMode::HalfUp)
+                ->plus($budgetMonth->funded_spending, RoundingMode::HalfUp)
+                ->minus(($budgetMonth->payments), RoundingMode::HalfUp)
                 ->getAmount()
                 ->toFloat();
 
-            $activity = Money::of($budgetMonth->funded_spending, $category->account->currency_code, null, RoundingMode::HALF_UP)
+            $activity = Money::of($budgetMonth->funded_spending, $category->account->currency_code, null, RoundingMode::HalfUp)
                 ->minus($budgetMonth->payments)
                 ->getAmount()
                 ->toFloat();
         } else {
-            $available = Money::of($budgetMonth?->budgeted ?? 0, $this->currencyCode, null, RoundingMode::HALF_UP)
-                ->plus(($budgetMonth->left_from_last_month ?? 0), RoundingMode::HALF_UP)
-                ->plus($activity, RoundingMode::HALF_UP)
+            $available = Money::of($budgetMonth?->budgeted ?? 0, $this->currencyCode, null, RoundingMode::HalfUp)
+                ->plus(($budgetMonth->left_from_last_month ?? 0), RoundingMode::HalfUp)
+                ->plus($activity, RoundingMode::HalfUp)
                 ->getAmount()
                 ->toFloat();
         }
@@ -167,10 +200,10 @@ class BudgetRolloverService
         $overspending = abs($results?->overspendingInMonth ?? 0);
         $leftover = $TBB - $budgeted;
 
-        $available = Money::of($leftFromLastMonth, $this->currencyCode, null, RoundingMode::HALF_UP)
-            ->plus($budgeted, RoundingMode::HALF_UP)
-            ->plus($results?->funded_spending ?? 0, RoundingMode::HALF_UP)
-            ->minus(($results?->payments ?? 0), RoundingMode::HALF_UP)
+        $available = Money::of($leftFromLastMonth, $this->currencyCode, null, RoundingMode::HalfUp)
+            ->plus($budgeted, RoundingMode::HalfUp)
+            ->plus($results?->funded_spending ?? 0, RoundingMode::HalfUp)
+            ->minus(($results?->payments ?? 0), RoundingMode::HalfUp)
             ->getAmount()
             ->toFloat();
 
@@ -225,6 +258,16 @@ class BudgetRolloverService
         return preg_match('/^[A-Z]{3}$/', $code) ? $code : 'USD';
     }
 
+    /**
+     * Rolls every calendar month between `$yearMonth` and the current one.
+     *
+     * Months are rolled whether or not they have transactions: the carry
+     * into a month is written by rolling the one before it, so skipping a
+     * quiet month would drop the carry for every month after it.
+     *
+     * @param  string  $yearMonth  `YYYY-MM`
+     * @param  int|null  $limit  roll at most this many months from `$yearMonth`; the current month is always rolled
+     */
     public function startFrom($teamId, $yearMonth, $limit = null)
     {
         $this->team = Team::find($teamId);
@@ -236,26 +279,33 @@ class BudgetRolloverService
             ->whereNot('name', BudgetReservedNames::READY_TO_ASSIGN->value)
             ->get();
 
-        $monthsWithTransactions = DB::table('transaction_lines')
-            ->selectRaw("date_format(transaction_lines.date, '%Y-%m') AS date")
-            ->groupBy(DB::raw("date_format(transaction_lines.date, '%Y-%m')"))
-            ->whereRaw("date_format(transaction_lines.date, '%Y-%m') >= ?", [$yearMonth])
-            ->when($limit, fn ($q) => $q->limit($limit))
-            ->get()
-            ->pluck('date');
+        $currentMonth = now()->format('Y-m');
+        $months = collect(CarbonPeriod::create(
+            min($yearMonth, $currentMonth).'-01',
+            '1 month',
+            max($yearMonth, $currentMonth).'-01',
+        ))
+            ->map(fn (CarbonInterface $date) => $date->format('Y-m'))
+            ->when($limit, fn ($months) => $months->take($limit))
+            ->push($currentMonth)
+            ->unique()
+            ->sort()
+            ->values();
+        $lastMonth = $months->last();
 
-        $monthsWithTransactions = [
-            ...$monthsWithTransactions,
-            now()->format('Y-m'),
-        ];
+        // Once a month's carry comes out unchanged, every month in between
+        // already holds the right numbers. The current month is still rolled:
+        // it may never have been opened (first roll after a month change).
+        $settled = false;
+        foreach ($months as $month) {
+            if ($settled && $month !== $lastMonth) {
+                continue;
+            }
 
-        $total = count($monthsWithTransactions);
-        $count = 0;
-        foreach ($monthsWithTransactions as $month) {
             try {
-                $count++;
-                $this->rollMonth($teamId, $month.'-01', $categories);
+                $settled = ! $this->rollMonth($teamId, $month.'-01', $categories);
             } catch (Exception $e) {
+                $settled = false;
                 Log::error('BudgetRolloverService::rollMonth failed', [
                     'team_id' => $teamId,
                     'month' => $month,

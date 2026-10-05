@@ -297,7 +297,7 @@ class TransactionService
         ", [
             'teamId' => $teamId,
             'monthDate' => $endDate,
-            'limit' => Carbon::createFromFormat('Y-m-d', $endDate)->diffInMonths(Carbon::createFromFormat('Y-m-d', $startDate)) + 1,
+            'limit' => (int) Carbon::createFromFormat('Y-m-d', $endDate)->diffInMonths(Carbon::createFromFormat('Y-m-d', $startDate), true) + 1,
         ]);
     }
 
@@ -332,9 +332,9 @@ class TransactionService
                 return array_merge([
                     'id' => $monthItems->first()->id,
                     'name' => $monthItems->first()->name,
-                    'avg' => Money::of($total, 'USD', null, RoundingMode::HALF_EVEN)
-                        ->dividedBy($datesCount, RoundingMode::HALF_EVEN)->getAmount(),
-                    'total' => Money::of($total, 'USD', null, RoundingMode::HALF_EVEN)->getAmount(),
+                    'avg' => Money::of($total, 'USD', null, RoundingMode::HalfEven)
+                        ->dividedBy($datesCount, RoundingMode::HalfEven)->getAmount(),
+                    'total' => Money::of($total, 'USD', null, RoundingMode::HalfEven)->getAmount(),
                 ],
                     $monthItems->mapWithKeys(function ($item) {
                         return [$item->date => $item->total];
@@ -351,9 +351,9 @@ class TransactionService
                     'name' => $monthItems->first()->name,
                     'group_name' => $monthItems->first()->group_name,
                     'index_field' => $monthItems->first()->index_field,
-                    'avg' => Money::of($total, 'USD', null, RoundingMode::HALF_EVEN)
-                        ->dividedBy($datesCount, RoundingMode::HALF_EVEN)->getAmount(),
-                    'total' => Money::of($total, 'USD', null, RoundingMode::HALF_EVEN)->getAmount(),
+                    'avg' => Money::of($total, 'USD', null, RoundingMode::HalfEven)
+                        ->dividedBy($datesCount, RoundingMode::HalfEven)->getAmount(),
+                    'total' => Money::of($total, 'USD', null, RoundingMode::HalfEven)->getAmount(),
                 ],
                     $monthItems->mapWithKeys(function ($item) {
                         return [$item->date => $item->total];

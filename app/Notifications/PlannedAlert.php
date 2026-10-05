@@ -26,7 +26,7 @@ class PlannedAlert extends LogerNotification
     {
         $name = $this->planned->description;
 
-        $diff = Carbon::createFromFormat('Y-m-d', $this->planned->date)->diffInDays(now(), false);
+        $diff = (int) Carbon::createFromFormat('Y-m-d', $this->planned->date)->diffInDays(now(), false);
         $diffAbs = abs($diff);
 
         $messages = match (true) {

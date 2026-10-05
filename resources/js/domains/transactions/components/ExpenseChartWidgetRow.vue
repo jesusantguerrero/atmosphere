@@ -7,7 +7,7 @@ import { useI18n } from "vue-i18n";
 
 import { ITransactionLine } from "@/domains/transactions/models";
 import SectionTitle from "@/Components/atoms/SectionTitle.vue";
-import LogerButton from "@/Components/atoms/LogerButton.vue";
+import IMdiTrashCanOutline from "~icons/mdi/trash-can-outline";
 import { removeTransaction } from "..";
 
 const props = withDefaults(defineProps<{
@@ -97,21 +97,24 @@ const changeCategory = (row: Line, categoryId: number) => {
 };
 
 const detailColumn = computed(() => [
-    { key: 'date', title: t('Date'), width: 110 },
-    { key: 'accountName', title: t('Account') },
+    { key: 'date', title: t('Date'), width: 100 },
+    { key: 'accountName', title: t('Account'), width: 150, ellipsis: { tooltip: true } },
     {
         key: 'payeeName',
         title: t('Payee'),
-        render: (row: Line) => h('div', { class: 'flex flex-col' }, [
-            h('span', row.payeeName),
-            row.concept && row.concept !== row.payeeName ? h('span', { class: 'text-xs opacity-70' }, row.concept) : null,
+        minWidth: 180,
+        render: (row: Line) => h('div', { class: 'flex min-w-0 flex-col' }, [
+            h('span', { class: 'truncate', title: row.payeeName }, row.payeeName),
+            row.concept && row.concept !== row.payeeName
+                ? h('span', { class: 'truncate text-xs opacity-70', title: row.concept }, row.concept)
+                : null,
         ]),
     },
-    { key: 'amount', title: t('Amount'), width: 130, className: 'whitespace-nowrap' },
+    { key: 'amount', title: t('Amount'), width: 120, align: 'right' as const, className: 'whitespace-nowrap' },
     {
         key: 'category_id',
         title: t('Category'),
-        width: 220,
+        width: 200,
         render: (row: Line) => h(NSelect, {
             value: row.category_id,
             options: categoryOptions,
@@ -127,17 +130,18 @@ const detailColumn = computed(() => [
     {
         key: 'actions',
         title: '',
-        width: 90,
+        width: 48,
+        align: 'center' as const,
         render: (row: Line) => h(
-            LogerButton,
+            'button',
             {
-                strong: true,
-                tertiary: true,
-                size: 'small',
-                onClick: () => removeTransaction(row as any)
+                type: 'button',
+                class: 'rounded p-1 opacity-60 transition hover:bg-error/10 hover:text-error hover:opacity-100',
+                title: t('Delete'),
+                onClick: () => removeTransaction(row as any),
             },
-            { default: () => t('Delete') }
-        )
+            h(IMdiTrashCanOutline)
+        ),
     },
 ]);
 </script>
@@ -157,8 +161,8 @@ const detailColumn = computed(() => [
                 </span>
             </p>
         </template>
-        <section ref="popoverBody" class="relative h-96 w-[900px]">
-            <SectionTitle class="flex items-center"> Transaction history
+        <section ref="popoverBody" class="relative flex w-[860px] max-w-[90vw] flex-col gap-4">
+            <SectionTitle class="flex items-center"> {{ $t('Transaction history') }}
                 <Link
                     class="flex items-center ml-4 hover:underline group hover:text-primary"
                     :href="getCategoryLink(item)">
@@ -167,10 +171,11 @@ const detailColumn = computed(() => [
                 </Link>
             </SectionTitle>
             <NDataTable
-                class="mt-6"
+                size="small"
                 :columns="detailColumn"
                 :data="itemDetail"
-                :max-height="250"
+                :max-height="320"
+                :scroll-x="820"
             />
         </section>
     </NPopover>

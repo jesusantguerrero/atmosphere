@@ -113,7 +113,7 @@ class Occurrence extends Model
 
     public function currentCount()
     {
-        return $this->last_date->diffInDays(now());
+        return (int) $this->last_date->diffInDays(now(), true);
     }
 
     public function diffWithAvg()

@@ -13,7 +13,7 @@
         <meta name="description" content="Loger — personal finance and home management for the rest of the world.">
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
         <link rel="mask-icon" href="/mask-icon.svg" color="#FFFFFF">
-        <meta name="theme-color" content="#ffffff">
+        <meta name="theme-color" content="#121319">
 
         <meta property="og:type" content="website">
         <meta property="og:site_name" content="Loger">

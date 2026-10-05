@@ -2,10 +2,11 @@
 
 namespace Tests\Unit;
 
-use PHPUnit\Framework\TestCase;
-use App\Domains\Transaction\Services\MultiCurrencyTransactionService;
 use App\Domains\Transaction\Models\Transaction;
+use App\Domains\Transaction\Services\MultiCurrencyTransactionService;
 use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Integration test demonstrating the MultiCurrencyTransactionService functionality
@@ -18,10 +19,10 @@ class MultiCurrencyServiceIntegrationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new MultiCurrencyTransactionService();
+        $this->service = new MultiCurrencyTransactionService;
     }
 
-    /** @test */
+    #[Test]
     public function it_demonstrates_exchange_rate_calculation_workflow()
     {
         // Scenario: Credit card transaction in DOP, payment in USD
@@ -30,16 +31,16 @@ class MultiCurrencyServiceIntegrationTest extends TestCase
 
         // Calculate exchange rate (this would be used during payment processing)
         $exchangeRate = $this->service->calculateExchangeRate($dopAmount, $usdAmount);
-        
+
         // Verify the calculated rate
         $this->assertEquals(0.0185, $exchangeRate);
-        
+
         // Verify the rate makes sense for conversion
         $convertedAmount = $dopAmount * $exchangeRate;
         $this->assertEquals($usdAmount, $convertedAmount);
     }
 
-    /** @test */
+    #[Test]
     public function it_demonstrates_payment_currency_impact_calculation()
     {
         // Create a mock transaction using Mockery or simple object
@@ -48,9 +49,9 @@ class MultiCurrencyServiceIntegrationTest extends TestCase
             ['id', 123],
             ['total', 1500.00],
             ['exchange_amount', 27.75],
-            ['date', '2024-01-15']
+            ['date', '2024-01-15'],
         ]);
-        
+
         // Set properties directly
         $mockTransaction->id = 123;
         $mockTransaction->total = 1500.00;
@@ -61,7 +62,7 @@ class MultiCurrencyServiceIntegrationTest extends TestCase
         $impact = $this->service->calculatePaymentCurrencyImpact(
             $mockTransaction,
             'DOP', // From currency
-            'USD', // To currency  
+            'USD', // To currency
             0.0185 // Exchange rate
         );
 
@@ -72,13 +73,13 @@ class MultiCurrencyServiceIntegrationTest extends TestCase
         $this->assertEquals(1500.00, $impact['original_amount']);
         $this->assertEquals(27.75, $impact['converted_amount']);
         $this->assertEquals(0.0185, $impact['exchange_rate']);
-        
+
         // Verify balance impacts (negative because it reduces pending/debt)
         $this->assertEquals(-1500.00, $impact['impact_summary']['DOP']);
         $this->assertEquals(-27.75, $impact['impact_summary']['USD']);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_transaction_data_structure()
     {
         // Test validation of required fields
@@ -103,7 +104,7 @@ class MultiCurrencyServiceIntegrationTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_positive_amounts()
     {
         $invalidData = [
@@ -126,7 +127,7 @@ class MultiCurrencyServiceIntegrationTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_various_currency_combinations()
     {
         // Test different currency conversion scenarios
@@ -138,16 +139,16 @@ class MultiCurrencyServiceIntegrationTest extends TestCase
 
         foreach ($scenarios as $scenario) {
             $rate = $this->service->calculateExchangeRate(
-                $scenario[array_keys($scenario)[0]], 
+                $scenario[array_keys($scenario)[0]],
                 $scenario['usd']
             );
-            
-            $this->assertEquals($scenario['expected_rate'], $rate, 
-                "Failed for scenario: " . json_encode($scenario));
+
+            $this->assertEquals($scenario['expected_rate'], $rate,
+                'Failed for scenario: '.json_encode($scenario));
         }
     }
 
-    /** @test */
+    #[Test]
     public function it_demonstrates_service_method_availability()
     {
         // Verify all required service methods are available

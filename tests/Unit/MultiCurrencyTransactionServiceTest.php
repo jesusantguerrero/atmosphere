@@ -2,9 +2,10 @@
 
 namespace Tests\Unit;
 
-use PHPUnit\Framework\TestCase;
 use App\Domains\Transaction\Services\MultiCurrencyTransactionService;
 use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\TestCase;
 
 class MultiCurrencyTransactionServiceTest extends TestCase
 {
@@ -13,12 +14,10 @@ class MultiCurrencyTransactionServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new MultiCurrencyTransactionService();
+        $this->service = new MultiCurrencyTransactionService;
     }
 
-
-
-    /** @test */
+    #[Test]
     public function it_can_calculate_exchange_rate()
     {
         $rate = $this->service->calculateExchangeRate(1000.00, 18.50);
@@ -28,7 +27,7 @@ class MultiCurrencyTransactionServiceTest extends TestCase
         $this->assertEquals(0.0555, $rate);
     }
 
-    /** @test */
+    #[Test]
     public function it_throws_exception_for_zero_total_in_exchange_rate_calculation()
     {
         $this->expectException(InvalidArgumentException::class);
@@ -37,7 +36,7 @@ class MultiCurrencyTransactionServiceTest extends TestCase
         $this->service->calculateExchangeRate(0, 100);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_exchange_rate_calculation_with_different_values()
     {
         // Test various exchange rate calculations
