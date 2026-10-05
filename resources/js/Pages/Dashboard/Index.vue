@@ -59,6 +59,9 @@ const props = withDefaults(
     budgetTotal: IBudgetStat[];
     nextPayments: ITransaction[];
     transactionTotal: Record<string, any>;
+    incomeTotal: number | string;
+    agendaDate: string;
+    agendaEvents: any[];
     categories: ICategory[];
     accounts: IAccount[];
     onboarding: Record<string, any>;
@@ -158,6 +161,9 @@ const deleteBulkTransactions = () => {
       <DashboardSummary
         :net-worth="netWorth"
         :expenses="transactionTotal.total_amount"
+        :income="incomeTotal"
+        :agenda-date="agendaDate"
+        :agenda-events="agendaEvents"
         :accounts="accounts"
         :budget-total="budgetTotal"
         :next-payments="nextPayments"

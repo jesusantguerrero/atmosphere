@@ -6,6 +6,7 @@ use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Budget\Models\BudgetTarget;
 use App\Domains\Housing\Models\Occurrence;
 use App\Domains\Meal\Services\MealService;
+use App\Domains\Today\Services\CalendarService;
 use App\Domains\Today\Services\TodayService;
 use App\Domains\Transaction\Services\CreditCardReportService;
 use App\Domains\Transaction\Services\PlannedTransactionService;
@@ -14,6 +15,7 @@ use App\Domains\Transaction\Services\TransactionService;
 use App\Http\Controllers\Traits\HasEnrichedRequest;
 use App\Http\Resources\PlannedMealResource;
 use App\Models\Account;
+use Illuminate\Support\Carbon;
 use Inertia\Inertia;
 use Insane\Journal\Models\Core\AccountDetailType;
 use Modules\Watchlist\Services\WatchlistService;
@@ -28,6 +30,7 @@ class DashboardController
         private CreditCardReportService $creditCardReportService,
         private WatchlistService $watchlistService,
         private TodayService $todayService,
+        private CalendarService $calendarService,
     ) {}
 
     public function __invoke()
@@ -68,11 +71,14 @@ class DashboardController
             'meals' => PlannedMealResource::collection($plannedMeals),
             'budgetTotal' => $budget,
             'transactionTotal' => $transactionsTotal,
+            'incomeTotal' => TransactionService::getIncome($teamId, $startDate, $endDate),
             'netWorth' => $netWorth,
             'expenses' => ReportService::generateCurrentPreviousReport($teamId, 'month', 1),
             'spendingSummary' => ReportService::generateExpensesByPeriod($teamId, $startDate),
             'accounts' => $accounts,
             'todayItems' => $todayPayload['today'] ?? [],
+            'agendaDate' => Carbon::today()->toDateString(),
+            'agendaEvents' => $this->calendarService->getEvents($teamId, Carbon::today()->toDateString(), Carbon::today()->toDateString()),
             'upcomingItems' => $todayPayload['upcoming'] ?? [],
             'onboarding' => function () use ($team) {
                 $onboarding = $team->onboarding();

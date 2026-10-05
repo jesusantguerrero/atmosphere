@@ -19,8 +19,6 @@ const filename = 'resources/js/Pages/Dashboard/Partials/DashboardSummary.vue';
 const descriptor = parse(fs.readFileSync(filename,'utf8')).descriptor;
 assert.deepEqual(compileTemplate({source:descriptor.template.content,filename,id:'dashboard'}).errors, []);
 const source = descriptor.scriptSetup.content;
-const start = source.indexOf('const numericBalance =');
-const end = source.indexOf('const movementIsPositive');
 const scrollContext = { document: {body:{style:{overflow:'auto'}},documentElement:{style:{overflow:''}}}, exports:{} };
 vm.createContext(scrollContext);
 vm.runInContext(ts.transpile(fs.readFileSync('resources/js/Components/atoms/modalScrollLock.ts','utf8')),scrollContext);
@@ -34,26 +32,26 @@ assert.equal(scrollContext.document.documentElement.style.overflow,'hidden');
 scrollContext.exports.unlockModalScroll(second);
 assert.equal(scrollContext.document.body.style.overflow,'auto');
 assert.equal(scrollContext.document.documentElement.style.overflow,'');
-const props = {accounts:[
- {balance:'-200',detail_type:{name:'credit_card'}},
- {balance:'50',detail_type:{name:'credit_card'}},
- {balance:'1000',credit_limit:5000,detail_type:{name:'bank'}},
- {balance:'invalid',detail_type:{name:'credit_card'}},
-]};
-const context = {props,computed:fn=>({get value(){return fn();}})};
-vm.createContext(context);
-vm.runInContext(ts.transpile(source.slice(start,end)+'\n globalThis.result={creditCardDebt,totalBalance};'),context);
-assert.equal(context.result.creditCardDebt.value,150);
-assert.equal(context.result.totalBalance.value,850);
-props.accounts = [{balance:50,detail_type:{name:'credit_card'}}];
-assert.equal(context.result.creditCardDebt.value,0);
-props.accounts = [];
-assert.equal(context.result.creditCardDebt.value,0);
 assert.ok(descriptor.template.content.includes('col-span-2 md:col-span-1'));
-assert.ok(!descriptor.template.content.includes('mt-1 truncate'));
-assert.ok(descriptor.template.content.includes('visibleOverduePayments'));
-assert.ok(descriptor.template.content.includes('visiblePendingPayments'));
-for (const path of ['resources/js/Components/atoms/Modal.vue','resources/js/domains/transactions/components/TransactionModal.vue']) {
+assert.ok(descriptor.template.content.includes('v-for="payment in priorityPayments"'));
+assert.ok(descriptor.template.content.includes('@click="handlePay(payment)"'));
+assert.ok(descriptor.template.content.includes(':compact="true"'));
+for (const removed of ['AccountBalancesWidget','WatchlistDashboardWidget','OccurrenceWidget','RoutineNowNextWidget','Net credit card debt']) assert.ok(!descriptor.template.content.includes(removed));
+const context = {props:{nextPayments:[]}, overduePayments:{value:[{id:1},{id:2}]}, dueSoonPayments:{value:[{id:3},{id:4}]},computed:fn=>({get value(){return fn();}})};
+vm.createContext(context);
+const priority = source.slice(source.indexOf('const priorityPayments ='),source.indexOf('// ---------------------------------------------------------------------------\n// Issue 1'));
+vm.runInContext(ts.transpile(priority+'\n globalThis.result=priorityPayments;'),context);
+assert.deepEqual(Array.from(context.result.value,x=>x.id),[1,2,3]);
+context.overduePayments.value=[];context.dueSoonPayments.value=[];
+assert.equal(context.result.value.length,0);
+const agenda = parse(fs.readFileSync('resources/js/Pages/Dashboard/Partials/TodayAgendaWidget.vue','utf8')).descriptor.scriptSetup.content;
+const agendaContext = {props:{date:'2026-10-05',events:[{id:'past',start:'2026-10-05',time:'08:00'},{id:'next',start:'2026-10-05',time:'14:00'},{id:'other',start:'2026-10-06',time:'09:00'}]},googleEvents:{value:[{id:'all',start:'2026-10-05'},{id:'later',start:'2026-10-05',time:'16:00'}]},clock:{value:new Date('2026-10-05T12:00:00')},computed:fn=>({get value(){return fn();}})};
+vm.createContext(agendaContext);
+vm.runInContext(ts.transpile(agenda.slice(agenda.indexOf('const isPast ='),agenda.indexOf('onMounted('))+'\n globalThis.result=visibleEvents;'),agendaContext);
+assert.deepEqual(Array.from(agendaContext.result.value,x=>x.id),['all','next','later']);
+agendaContext.props.events=[];agendaContext.googleEvents.value=[];
+assert.equal(agendaContext.result.value.length,0);
+for (const path of ['resources/js/Components/atoms/Modal.vue','resources/js/domains/transactions/components/TransactionModal.vue','resources/js/domains/meal/components/MealWidget.vue','resources/js/Pages/Dashboard/Index.vue','resources/js/Pages/Dashboard/Partials/TodayAgendaWidget.vue']) {
  const d = parse(fs.readFileSync(path,'utf8')).descriptor;
  assert.deepEqual(compileTemplate({source:d.template.content,filename:path,id:'modal'}).errors,[]);
  if (path.endsWith('/Modal.vue')) {
