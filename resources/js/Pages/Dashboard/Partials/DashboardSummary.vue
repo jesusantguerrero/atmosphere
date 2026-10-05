@@ -77,11 +77,9 @@ const totalBalance = computed(() => {
     return props.accounts?.reduce((sum, a) => sum + numericBalance(a), 0) ?? 0;
 });
 
-const creditCardDebt = computed(() => {
-    return props.accounts
-        ?.filter(a => a.credit_limit && a.credit_limit > 0)
-        ?.reduce((sum, a) => sum + Math.abs(numericBalance(a)), 0) ?? 0;
-});
+const creditCardDebt = computed(() => Math.max(0, -(props.accounts
+    ?.filter(a => (a as any).detail_type?.name === "credit_card")
+    ?.reduce((sum, a) => sum + numericBalance(a), 0) ?? 0)));
 
 const movementIsPositive = computed(() => Number(monthMovement.value) >= 0);
 
@@ -151,9 +149,12 @@ const hasAttention = computed(() =>
 // the list stops dominating half the screen.
 // ---------------------------------------------------------------------------
 const showAllPayments = ref(false);
-const visiblePayments = computed(() =>
-    showAllPayments.value ? props.nextPayments : (props.nextPayments ?? []).slice(0, 3)
-);
+const pendingPayments = computed(() => (props.nextPayments ?? []).filter(p => {
+    const days = daysFromToday((p as any).date);
+    return days === null || days >= 0;
+}));
+const visibleOverduePayments = computed(() => showAllPayments.value ? overduePayments.value : overduePayments.value.slice(0, 3));
+const visiblePendingPayments = computed(() => showAllPayments.value ? pendingPayments.value : pendingPayments.value.slice(0, 3));
 
 // ---------------------------------------------------------------------------
 // Issue 1 — "Mark as paid" from a next-payment row.
@@ -303,8 +304,8 @@ const goToDueSoonPayments = () => {
                 class="min-w-0 bg-base-lvl-3 rounded-lg p-4 text-left border border-base hover:border-primary/30 transition cursor-pointer"
                 @click="router.visit('/finance/transactions')"
             >
-                <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">{{ $t('Current Expenses') }}</p>
-                <p class="text-base sm:text-lg font-bold text-body mt-1 truncate">
+                <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">{{ $t('This month expenses') }}</p>
+                <p class="text-sm sm:text-lg font-bold text-body mt-1 break-words">
                     <MoneyPresenter :value="expenses" />
                 </p>
             </button>
@@ -313,14 +314,15 @@ const goToDueSoonPayments = () => {
                 class="min-w-0 bg-base-lvl-3 rounded-lg p-4 text-left border border-base hover:border-primary/30 transition cursor-pointer"
                 @click="router.visit('/finance/transactions')"
             >
-                <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">{{ $t('Total Balance') }}</p>
-                <p class="text-base sm:text-lg font-bold mt-1 truncate" :class="totalBalance >= 0 ? 'text-body' : 'text-error'">
+                <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">{{ $t('Net account balance') }}</p>
+                <p class="text-sm sm:text-lg font-bold mt-1 break-words" :class="totalBalance >= 0 ? 'text-body' : 'text-error'">
                     <MoneyPresenter :value="totalBalance" />
                 </p>
+                <p class="text-xs text-body-1/70 mt-2">{{ $t("Includes account debts") }}</p>
             </button>
 
             <button
-                class="min-w-0 bg-base-lvl-3 rounded-lg p-4 text-left border border-base hover:border-primary/30 transition cursor-pointer"
+                class="col-span-2 md:col-span-1 min-w-0 bg-base-lvl-3 rounded-lg p-4 text-left border border-base hover:border-primary/30 transition cursor-pointer"
                 @click="router.visit('/budgets')"
             >
                 <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">{{ $t('Budget') }}</p>
@@ -369,9 +371,10 @@ const goToDueSoonPayments = () => {
                 <!-- Next payments — only if there are any. Shows the top 3 with a
                      "see all" toggle so the list doesn't dominate the screen. -->
                 <div v-if="nextPayments?.length" class="bg-base-lvl-3 rounded-lg border border-base">
-                    <NextPaymentsWidget :payments="visiblePayments" class="px-4" @pay="handlePay" />
+                    <NextPaymentsWidget v-if="visibleOverduePayments.length" :payments="visibleOverduePayments" :title="$t('Overdue Payments')" class="px-4" @pay="handlePay" />
+                    <NextPaymentsWidget v-if="visiblePendingPayments.length" :payments="visiblePendingPayments" :title="$t('Upcoming payments')" class="px-4" @pay="handlePay" />
                     <button
-                        v-if="nextPayments.length > 3"
+                        v-if="overduePayments.length > 3 || pendingPayments.length > 3"
                         type="button"
                         class="w-full text-center text-xs font-semibold text-primary hover:underline py-2.5 border-t border-base"
                         @click="showAllPayments = !showAllPayments"
@@ -397,8 +400,7 @@ const goToDueSoonPayments = () => {
                     :meals="meals?.data ?? []"
                 />
 
-                <!-- Total credit-card debt callout. This is the SUM of every card's
-                     debt — distinct from the per-card balance shown under "Accounts".
+                <!-- Total credit-card debt callout. Matches the net balance of the credit-card account group.
                      Debt is a normal state, so it stays neutral (not red) unless the
                      user is actually behind on a payment (surfaced in the hero). -->
                 <div
@@ -406,11 +408,11 @@ const goToDueSoonPayments = () => {
                     class="bg-base-lvl-3 rounded-lg border border-base p-4 cursor-pointer hover:border-primary/30 transition"
                     @click="router.visit('/finance/transactions')"
                 >
-                    <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">{{ $t('Total Credit Card Debt') }}</p>
+                    <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">{{ $t('Net credit card debt') }}</p>
                     <p class="text-lg font-bold text-body mt-1">
                         <MoneyPresenter :value="creditCardDebt" />
                     </p>
-                    <p class="text-[11px] text-body-1/50 mt-0.5">{{ $t('Across all your cards') }}</p>
+                    <p class="text-[11px] text-body-1/50 mt-0.5">{{ $t('Positive card balances offset negative balances') }}</p>
                 </div>
             </div>
         </section>

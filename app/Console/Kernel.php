@@ -31,7 +31,7 @@ class Kernel extends ConsoleKernel
         // Removed: $schedule->command('app:planned-from-budget')->monthly()->runInBackground();
         // Now using dynamic aggregation instead of cron-based conversion
         $schedule->command('bg:generate-billing-cycles')->daily()->runInBackground();
-        $schedule->command('bg:planned-reminders')->daily()->runInBackground();
+        $schedule->command('bg:planned-reminders')->daily()->withoutOverlapping()->runInBackground();
         $schedule->command('watchlists:check-thresholds')->daily()->runInBackground();
         $schedule->command('watchlists:check-streaks')->dailyAt('06:30')->runInBackground();
         $schedule->command('watchlists:suggest-untracked-payees')->weekly()->runInBackground();
