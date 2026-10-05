@@ -48,6 +48,35 @@ assert.equal(result.accountToReconcile.value.id, 1);
 accounts.splice(0);
 assert.equal(result.accountGroups.value.length, 0);
 assert.equal(result.attentionCount.value, 0);
+const formSource = parse(fs.readFileSync('resources/js/Pages/Finance/AccountReconciliationForm.vue', 'utf8')).descriptor.scriptSetup.content.replace(/^import .*;\r?\n/gm, '');
+const submissions = [];
+let form;
+const formContext = {
+ ref: value => ({ value }), computed: fn => ({ get value() { return fn(); } }), watch: () => {},
+ defineEmits: () => () => {}, defineProps: () => ({ account: { id: 10, balance: 999 }, startDetailed: true }), withDefaults: p => p,
+ useForm: initial => (form = { ...initial, processing: false, transform(fn) { this.transformer = fn; return this; }, post(url) { submissions.push({ url, data: this.transformer(this) }); } }),
+ format: () => '2026-10-04',
+};
+vm.createContext(formContext);
+vm.runInContext(ts.transpile(formSource + '\n globalThis.result = { ledgerBalanceAt, loadingBalance, reconcileMatchingBalance, previewDifference };'), formContext);
+const shortcut = formContext.result;
+shortcut.reconcileMatchingBalance();
+assert.equal(submissions.length, 0);
+shortcut.ledgerBalanceAt.value = 0;
+shortcut.reconcileMatchingBalance();
+assert.equal(submissions[0].data.balance, 0);
+assert.equal(shortcut.previewDifference.value, 0);
+shortcut.ledgerBalanceAt.value = -75;
+shortcut.reconcileMatchingBalance();
+assert.equal(submissions[1].data.balance, -75);
+assert.equal(submissions[1].url, '/finance/reconciliation/accounts/10');
+shortcut.loadingBalance.value = true;
+shortcut.reconcileMatchingBalance();
+assert.equal(submissions.length, 2);
+shortcut.loadingBalance.value = false;
+form.processing = true;
+shortcut.reconcileMatchingBalance();
+assert.equal(submissions.length, 2);
 JS;
 
         $process = new Process(['node', '-e', $script], dirname(__DIR__, 2));
