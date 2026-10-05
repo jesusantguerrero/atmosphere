@@ -41,10 +41,11 @@ class RoutineController extends Controller
     public function current(Request $request, PlanService $planService): JsonResponse
     {
         $plan = $this->resolveRoutinePlan($request, $planService);
-        $dow = (int) date('N') - 1;               // 0=Mon .. 6=Sun
-        $now = (int) date('G') * 60 + (int) date('i');
+        $localNow = Carbon::now($this->routineTimeZone($request));
+        $dow = $localNow->dayOfWeekIso - 1;
+        $now = $localNow->hour * 60 + $localNow->minute;
 
-        $todayDate = date('Y-m-d');
+        $todayDate = $localNow->toDateString();
 
         // Effective blocks for today = weekday template with today's dated
         // exceptions overlaid (exception hides the template block it overlaps;
@@ -252,11 +253,14 @@ class RoutineController extends Controller
     {
         $this->guard($request, $plan);
 
+        $timeZone = $this->routineTimeZone($request);
         $anchor = $request->query('date')
-            ? Carbon::createFromFormat('Y-m-d', $request->query('date'))
-            : Carbon::now();
+            ? Carbon::createFromFormat('!Y-m-d', $request->query('date'), $timeZone)
+            : Carbon::now($timeZone);
         $monday = $anchor->copy()->startOfWeek(Carbon::MONDAY);
         $sunday = $monday->copy()->addDays(6);
+        $weekStart = $monday->toDateString();
+        $nextWeekStart = $monday->copy()->addWeek()->toDateString();
 
         $blocks = [];
         foreach ($plan->stages as $stage) {
@@ -266,8 +270,7 @@ class RoutineController extends Controller
                 if (empty($payload['date'])) {
                     continue;                          // template block, not an exception
                 }
-                $d = Carbon::createFromFormat('Y-m-d', $payload['date']);
-                if ($d->between($monday, $sunday)) {
+                if ($payload['date'] >= $weekStart && $payload['date'] < $nextWeekStart) {
                     $blocks[] = $payload;
                 }
             }
@@ -294,9 +297,10 @@ class RoutineController extends Controller
         $this->guard($request, $plan);
         $user = $request->user();
 
+        $timeZone = $this->routineTimeZone($request);
         $anchor = $request->query('date')
-            ? Carbon::createFromFormat('Y-m-d', $request->query('date'))
-            : Carbon::now();
+            ? Carbon::createFromFormat('!Y-m-d', $request->query('date'), $timeZone)
+            : Carbon::now($timeZone);
         $monday = $anchor->copy()->startOfWeek(Carbon::MONDAY)->startOfDay();
         $sunday = $monday->copy()->addDays(6);
 
@@ -305,6 +309,8 @@ class RoutineController extends Controller
             $user->id,
             $monday,
             $sunday->copy()->endOfDay(),
+            true,
+            $timeZone,
         );
 
         $payload = [
@@ -611,6 +617,14 @@ class RoutineController extends Controller
         $m = (int) ($parts[1] ?? 0);
 
         return $h * 60 + $m;
+    }
+
+    private function routineTimeZone(Request $request): string
+    {
+        return Setting::query()
+            ->where('team_id', $request->user()->current_team_id)
+            ->where('name', 'team_timezone')
+            ->value('value') ?: 'America/Santo_Domingo';
     }
 
     private function guard(Request $request, Plan $plan): void

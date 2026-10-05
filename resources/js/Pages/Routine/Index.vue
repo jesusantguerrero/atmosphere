@@ -99,7 +99,7 @@ const fetchClashes = async () => {
     calConnected.value = data.connected ?? false;
     calError.value = data.error ?? null;
   } catch {
-    clashes.value = []; calConnected.value = false; calError.value = "fetch";
+    clashes.value = []; calConnected.value = true; calError.value = "fetch";
   }
 };
 

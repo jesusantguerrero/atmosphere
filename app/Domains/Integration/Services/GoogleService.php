@@ -82,6 +82,7 @@ class GoogleService
         } elseif ($integrationId) {
             $integration = Integration::find($integrationId);
             $integration->token = json_encode($data->access_token);
+            $integration->save();
             session(['g_token', json_encode($data->access_token)]);
 
             return;
@@ -125,6 +126,13 @@ class GoogleService
         if ($client->isAccessTokenExpired()) {
             if ($refreshToken = (json_decode($integration->meta_data ?? '') ?: $integration->meta_data)) {
                 $tokenResponse = $client->fetchAccessTokenWithRefreshToken($refreshToken);
+                if (! is_array($tokenResponse) || ! isset($tokenResponse['access_token'])) {
+                    if (in_array($tokenResponse['error'] ?? null, ['invalid_grant', 'invalid_client'], true)) {
+                        throw new GoogleReauthorizationRequired('Google authorization must be renewed.');
+                    }
+
+                    throw new Exception('Google token refresh failed.');
+                }
                 self::setTokens((object) [
                     'access_token' => $tokenResponse,
                     'refresh_token' => $refreshToken,
@@ -132,7 +140,7 @@ class GoogleService
                     $integration->user,
                     $integrationId);
             } else {
-                throw new Exception('Need authorize again');
+                throw new GoogleReauthorizationRequired('Need authorize again');
             }
         }
 
