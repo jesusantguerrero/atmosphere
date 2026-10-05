@@ -132,7 +132,7 @@ class RegisterOccurrence
         // through as 'Y-m-d H:i:s' or Carbon instances, which createFromFormat
         // with a strict 'Y-m-d' would throw on -- and a throw here used to abort
         // the whole occurrence sync.
-        return Carbon::parse($endDate)->startOfDay()->diffInDays(Carbon::parse($startDate)->startOfDay());
+        return (int) Carbon::parse($endDate)->startOfDay()->diffInDays(Carbon::parse($startDate)->startOfDay(), true);
     }
 
     public function fromImport(User $user, OccurrenceData $data)

@@ -6,7 +6,7 @@ use App\Models\Account;
 use App\Models\CurrencyBalance;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Insane\Journal\Models\Core\Transaction;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class BackfillCurrencyBalancesCommandTest extends TestCase
@@ -21,7 +21,7 @@ class BackfillCurrencyBalancesCommandTest extends TestCase
         $this->user = User::factory()->withPersonalTeam()->create();
     }
 
-    /** @test */
+    #[Test]
     public function it_skips_non_multi_currency_accounts(): void
     {
         Account::factory()->create([
@@ -38,7 +38,7 @@ class BackfillCurrencyBalancesCommandTest extends TestCase
         $this->assertDatabaseCount('currency_balances', 0);
     }
 
-    /** @test */
+    #[Test]
     public function it_writes_zero_when_no_transactions_exist_for_secondary_currency(): void
     {
         $account = Account::factory()->create([
@@ -59,7 +59,7 @@ class BackfillCurrencyBalancesCommandTest extends TestCase
         $this->assertEquals(0.0, (float) $row->pending_balance);
     }
 
-    /** @test */
+    #[Test]
     public function dry_run_does_not_write_to_currency_balances(): void
     {
         Account::factory()->create([
@@ -76,7 +76,7 @@ class BackfillCurrencyBalancesCommandTest extends TestCase
         $this->assertDatabaseCount('currency_balances', 0);
     }
 
-    /** @test */
+    #[Test]
     public function it_is_idempotent(): void
     {
         Account::factory()->create([
@@ -93,7 +93,7 @@ class BackfillCurrencyBalancesCommandTest extends TestCase
         $this->assertDatabaseCount('currency_balances', 1);
     }
 
-    /** @test */
+    #[Test]
     public function team_filter_scopes_to_one_team(): void
     {
         $otherUser = User::factory()->withPersonalTeam()->create();

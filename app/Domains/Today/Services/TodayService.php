@@ -108,7 +108,7 @@ class TodayService
             $today->format('Y-m-d')
         );
 
-        $daysRemaining = max(1, $today->copy()->endOfMonth()->startOfDay()->diffInDays($today->copy()->startOfDay()) + 1); // includes today
+        $daysRemaining = max(1, (int) $today->copy()->endOfMonth()->startOfDay()->diffInDays($today->copy()->startOfDay(), true) + 1); // includes today
         $monthRemaining = $monthBudgeted - abs($monthSpentRow?->total_amount ?? 0);
         $dailyRemaining = $monthRemaining / $daysRemaining;
 
@@ -243,7 +243,7 @@ class TodayService
                 'account_id' => $cycle->account_id,
                 'total' => (float) $cycle->total,
                 'due_at' => optional($cycle->due_at)->format('Y-m-d'),
-                'days_until' => $today->copy()->startOfDay()->diffInDays($cycle->due_at, false),
+                'days_until' => (int) $today->copy()->startOfDay()->diffInDays($cycle->due_at, false),
             ]);
 
         $utilities = Occurrence::query()

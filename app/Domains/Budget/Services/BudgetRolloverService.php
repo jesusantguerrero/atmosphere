@@ -76,21 +76,21 @@ class BudgetRolloverService
         }
 
         if ($budgetMonth->category->account_id) {
-            $available = Money::of($budgetMonth->left_from_last_month, $category->account->currency_code, null, RoundingMode::HALF_UP)
-                ->plus($budgetMonth->budgeted, RoundingMode::HALF_UP)
-                ->plus($budgetMonth->funded_spending, RoundingMode::HALF_UP)
-                ->minus(($budgetMonth->payments), RoundingMode::HALF_UP)
+            $available = Money::of($budgetMonth->left_from_last_month, $category->account->currency_code, null, RoundingMode::HalfUp)
+                ->plus($budgetMonth->budgeted, RoundingMode::HalfUp)
+                ->plus($budgetMonth->funded_spending, RoundingMode::HalfUp)
+                ->minus(($budgetMonth->payments), RoundingMode::HalfUp)
                 ->getAmount()
                 ->toFloat();
 
-            $activity = Money::of($budgetMonth->funded_spending, $category->account->currency_code, null, RoundingMode::HALF_UP)
+            $activity = Money::of($budgetMonth->funded_spending, $category->account->currency_code, null, RoundingMode::HalfUp)
                 ->minus($budgetMonth->payments)
                 ->getAmount()
                 ->toFloat();
         } else {
-            $available = Money::of($budgetMonth?->budgeted ?? 0, $this->currencyCode, null, RoundingMode::HALF_UP)
-                ->plus(($budgetMonth->left_from_last_month ?? 0), RoundingMode::HALF_UP)
-                ->plus($activity, RoundingMode::HALF_UP)
+            $available = Money::of($budgetMonth?->budgeted ?? 0, $this->currencyCode, null, RoundingMode::HalfUp)
+                ->plus(($budgetMonth->left_from_last_month ?? 0), RoundingMode::HalfUp)
+                ->plus($activity, RoundingMode::HalfUp)
                 ->getAmount()
                 ->toFloat();
         }
@@ -167,10 +167,10 @@ class BudgetRolloverService
         $overspending = abs($results?->overspendingInMonth ?? 0);
         $leftover = $TBB - $budgeted;
 
-        $available = Money::of($leftFromLastMonth, $this->currencyCode, null, RoundingMode::HALF_UP)
-            ->plus($budgeted, RoundingMode::HALF_UP)
-            ->plus($results?->funded_spending ?? 0, RoundingMode::HALF_UP)
-            ->minus(($results?->payments ?? 0), RoundingMode::HALF_UP)
+        $available = Money::of($leftFromLastMonth, $this->currencyCode, null, RoundingMode::HalfUp)
+            ->plus($budgeted, RoundingMode::HalfUp)
+            ->plus($results?->funded_spending ?? 0, RoundingMode::HalfUp)
+            ->minus(($results?->payments ?? 0), RoundingMode::HalfUp)
             ->getAmount()
             ->toFloat();
 

@@ -6,13 +6,14 @@ use App\Models\User;
 use App\Notifications\EntryGenerated;
 use App\Notifications\TransactionsImported;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class DedupeImportNotificationsCommandTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function it_keeps_only_the_most_recent_unread_entry_generated_notification(): void
     {
         $user = User::factory()->withPersonalTeam()->create();
@@ -31,7 +32,7 @@ class DedupeImportNotificationsCommandTest extends TestCase
             ->where('type', EntryGenerated::class)->count());
     }
 
-    /** @test */
+    #[Test]
     public function it_is_idempotent(): void
     {
         $user = User::factory()->withPersonalTeam()->create();
@@ -47,7 +48,7 @@ class DedupeImportNotificationsCommandTest extends TestCase
             ->where('type', EntryGenerated::class)->count());
     }
 
-    /** @test */
+    #[Test]
     public function dry_run_does_not_mark_anything_read(): void
     {
         $user = User::factory()->withPersonalTeam()->create();
@@ -62,7 +63,7 @@ class DedupeImportNotificationsCommandTest extends TestCase
             ->where('type', EntryGenerated::class)->count());
     }
 
-    /** @test */
+    #[Test]
     public function it_leaves_single_unread_notifications_alone(): void
     {
         $user = User::factory()->withPersonalTeam()->create();
@@ -74,7 +75,7 @@ class DedupeImportNotificationsCommandTest extends TestCase
             ->where('type', EntryGenerated::class)->count());
     }
 
-    /** @test */
+    #[Test]
     public function it_dedupes_transactions_imported_type_too(): void
     {
         $user = User::factory()->withPersonalTeam()->create();

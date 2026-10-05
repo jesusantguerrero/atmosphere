@@ -17,10 +17,10 @@ class RouteNamesTest extends TestCase
 
     public function test_routes_can_be_cached_without_duplicate_name_errors(): void
     {
-        $exitCode = $this->artisan('route:cache');
-
-        $exitCode->assertSuccessful();
-
-        $this->artisan('route:clear');
+        try {
+            $this->artisan('route:cache')->assertSuccessful()->run();
+        } finally {
+            $this->artisan('route:clear')->run();
+        }
     }
 }

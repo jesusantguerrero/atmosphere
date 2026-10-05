@@ -49,7 +49,7 @@ class CheckCreditCardRenewals extends Command
                     $renewalStart->addYear();
                 }
 
-                if ($today->diffInDays($renewalStart, false) > 30) {
+                if ((int) $today->diffInDays($renewalStart, false) > 30) {
                     return;
                 }
 

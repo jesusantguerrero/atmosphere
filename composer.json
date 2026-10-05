@@ -14,10 +14,10 @@
         }
     ],
     "require": {
-        "php": "^8.2",
+        "php": "^8.3",
         "ext-mailparse": "*",
-        "brick/money": "^0.6.0",
-        "doctrine/dbal": "^3.3",
+        "brick/money": "^0.10",
+        
         "dompdf/dompdf": "^2.0.3",
         "ernysans/laraworld": "^1.0",
         "freesgen/atmosphere": "dev-inertia-v2-compat",
@@ -26,18 +26,18 @@
         "inertiajs/inertia-laravel": "^3.3",
         "insane/journal": "dev-master@dev",
         "insane/plan-module": "dev-master",
-        "insane/treasurer": "dev-master",
-        "insane/watchlist-module": "dev-main",
+        "insane/treasurer": "dev-laravel-13",
+        "insane/watchlist-module": "dev-laravel-13",
         "joshbrw/laravel-module-installer": "^2.0",
         "lab404/laravel-impersonate": "^1.7",
-        "laravel/framework": "^11.0",
+        "laravel/framework": "^13.0",
         "laravel/jetstream": "^5.0",
         "laravel/pulse": "^1.0@beta",
         "laravel/sanctum": "^4.0",
-        "laravel/tinker": "^2.8",
+        "laravel/tinker": "^3.0",
         "maatwebsite/excel": "^3.1",
         "mvanduijker/laravel-mercure-broadcaster": "^3.5",
-        "nwidart/laravel-modules": "^9.0",
+        "nwidart/laravel-modules": "*",
         "php-mime-mail-parser/php-mime-mail-parser": "^8.0",
         "phpoffice/phpspreadsheet": "^1.27",
         "rlanvin/php-rrule": "^2.4",
@@ -47,21 +47,21 @@
         "spatie/laravel-navigation": "^1.2",
         "spatie/laravel-onboard": "^2.4",
         "spatie/laravel-typescript-transformer": "^2.3",
-        "staudenmeir/belongs-to-through": "^2.5",
-        "symfony/dom-crawler": "^6.0",
+        "staudenmeir/belongs-to-through": "^2.17",
+        "symfony/dom-crawler": "^7.0",
         "tightenco/ziggy": "^1.5.0"
     },
     "require-dev": {
-        "barryvdh/laravel-debugbar": "^3.13",
-        "brianium/paratest": "^7.0",
+        "barryvdh/laravel-debugbar": "^4.0",
+        "brianium/paratest": "^7.8",
         "fakerphp/faker": "^1.9.1",
         "insane/remotr": "dev-main",
         "laravel/boost": "^2.5",
         "laravel/pint": "^1.13",
         "mockery/mockery": "^1.4.2",
-        "nunomaduro/collision": "^8.1",
-        "phpunit/phpunit": "^10.0",
-        "spatie/laravel-ignition": "^2.0"
+        "nunomaduro/collision": "^8.6",
+        "phpunit/phpunit": "^12.0",
+        "spatie/laravel-ignition": "*"
     },
     "autoload": {
         "psr-4": {
@@ -110,7 +110,8 @@
         "sort-packages": true,
         "process-timeout": 0,
         "allow-plugins": {
-            "joshbrw/laravel-module-installer": true
+            "joshbrw/laravel-module-installer": true,
+            "wikimedia/composer-merge-plugin": false
         }
     },
     "minimum-stability": "dev",

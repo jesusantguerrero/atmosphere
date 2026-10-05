@@ -62,7 +62,7 @@ class MealMenu extends Model
         $clonedMenu->save();
 
         foreach ($sourcePlans as $sourcePlan) {
-            $dayOffset = Carbon::parse($sourcePlan->date)->startOfDay()->diffInDays($sourceStartDate);
+            $dayOffset = (int) Carbon::parse($sourcePlan->date)->startOfDay()->diffInDays($sourceStartDate, true);
             $newDate = $targetStartDate->copy()->addDays($dayOffset);
 
             MealPlan::create([

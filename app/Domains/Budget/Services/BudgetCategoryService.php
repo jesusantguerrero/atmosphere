@@ -54,7 +54,7 @@ class BudgetCategoryService
         } else {
             $monthBalance = (float) $category->getMonthBalance($yearMonth)->balance;
 
-            $available = Money::of($budgeted, 'USD', null, RoundingMode::HALF_UP)
+            $available = Money::of($budgeted, 'USD', null, RoundingMode::HalfUp)
                 ->plus($monthBudget?->left_from_last_month ?? 0)
                 ->plus($monthBalance)
                 ->getAmount()

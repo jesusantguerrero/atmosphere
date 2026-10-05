@@ -3,11 +3,12 @@
 namespace Tests\Unit;
 
 use App\Domains\Transaction\Models\Transaction;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 class TransactionCurrencyTest extends TestCase
 {
-    /** @test */
+    #[Test]
     public function it_can_calculate_exchange_rate()
     {
         $transaction = new Transaction;
@@ -25,7 +26,7 @@ class TransactionCurrencyTest extends TestCase
         $this->assertEquals(0.333333, $rate);
     }
 
-    /** @test */
+    #[Test]
     public function it_throws_exception_for_zero_total_in_exchange_rate_calculation()
     {
         $transaction = new Transaction;
@@ -36,7 +37,7 @@ class TransactionCurrencyTest extends TestCase
         $transaction->calculateExchangeRate(0.0, 85.0);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_currency_conversion_methods()
     {
         $transaction = new Transaction;
@@ -56,7 +57,7 @@ class TransactionCurrencyTest extends TestCase
         $this->assertEquals(0.85, $transaction->getExchangeRate());
     }
 
-    /** @test */
+    #[Test]
     public function it_has_fillable_exchange_fields()
     {
         $transaction = new Transaction;
@@ -69,9 +70,8 @@ class TransactionCurrencyTest extends TestCase
     /**
      * Regression for LM-8: child $fillable used to shadow parent's,
      * silently dropping team_id/user_id/category_id/etc. during mass assignment.
-     *
-     * @test
      */
+    #[Test]
     public function fillable_includes_parent_fields_to_prevent_silent_drop(): void
     {
         $fillable = (new Transaction)->getFillable();
@@ -94,7 +94,7 @@ class TransactionCurrencyTest extends TestCase
         $this->assertContains('exchange_amount', $fillable);
     }
 
-    /** @test */
+    #[Test]
     public function mass_assignment_persists_parent_and_child_fields(): void
     {
         $transaction = (new Transaction)->fill([

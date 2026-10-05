@@ -87,7 +87,7 @@ class MealMenuController
         $targetStartDate = Carbon::parse($request->target_start_date)->startOfDay();
 
         foreach ($sourcePlans as $sourcePlan) {
-            $dayOffset = Carbon::parse($sourcePlan->date)->startOfDay()->diffInDays($sourceStartDate);
+            $dayOffset = (int) Carbon::parse($sourcePlan->date)->startOfDay()->diffInDays($sourceStartDate, true);
             $newDate = $targetStartDate->copy()->addDays($dayOffset);
 
             MealPlan::create([

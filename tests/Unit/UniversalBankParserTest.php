@@ -11,6 +11,7 @@ use App\Domains\Integration\Actions\Qik\Qik;
 use App\Domains\Integration\Actions\UniversalBankParser;
 use App\Exceptions\UnsupportedBankException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use ReflectionClass;
 use Tests\TestCase;
 
@@ -51,7 +52,7 @@ class UniversalBankParserTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_detects_bhd_bank_from_exact_email()
     {
         $reflection = new ReflectionClass(UniversalBankParser::class);
@@ -63,7 +64,7 @@ class UniversalBankParserTest extends TestCase
         $this->assertEquals('BHD', $bankCode);
     }
 
-    /** @test */
+    #[Test]
     public function it_detects_bhd_bank_from_second_email_address()
     {
         $reflection = new ReflectionClass(UniversalBankParser::class);
@@ -75,7 +76,7 @@ class UniversalBankParserTest extends TestCase
         $this->assertEquals('BHD', $bankCode);
     }
 
-    /** @test */
+    #[Test]
     public function it_detects_bhd_bank_from_domain()
     {
         $reflection = new ReflectionClass(UniversalBankParser::class);
@@ -87,7 +88,7 @@ class UniversalBankParserTest extends TestCase
         $this->assertEquals('BHD', $bankCode);
     }
 
-    /** @test */
+    #[Test]
     public function it_detects_apap_bank_from_email()
     {
         $reflection = new ReflectionClass(UniversalBankParser::class);
@@ -99,7 +100,7 @@ class UniversalBankParserTest extends TestCase
         $this->assertEquals('APAP', $bankCode);
     }
 
-    /** @test */
+    #[Test]
     public function it_detects_apap_bank_from_domain()
     {
         $reflection = new ReflectionClass(UniversalBankParser::class);
@@ -111,7 +112,7 @@ class UniversalBankParserTest extends TestCase
         $this->assertEquals('APAP', $bankCode);
     }
 
-    /** @test */
+    #[Test]
     public function it_detects_bsc_bank_from_email()
     {
         $reflection = new ReflectionClass(UniversalBankParser::class);
@@ -123,7 +124,7 @@ class UniversalBankParserTest extends TestCase
         $this->assertEquals('BSC', $bankCode);
     }
 
-    /** @test */
+    #[Test]
     public function it_detects_bsc_bank_from_domain()
     {
         $reflection = new ReflectionClass(UniversalBankParser::class);
@@ -135,7 +136,7 @@ class UniversalBankParserTest extends TestCase
         $this->assertEquals('BSC', $bankCode);
     }
 
-    /** @test */
+    #[Test]
     public function it_detects_qik_bank_from_email()
     {
         $reflection = new ReflectionClass(UniversalBankParser::class);
@@ -147,7 +148,7 @@ class UniversalBankParserTest extends TestCase
         $this->assertEquals('QIK', $bankCode);
     }
 
-    /** @test */
+    #[Test]
     public function it_detects_qik_bank_from_domain()
     {
         $reflection = new ReflectionClass(UniversalBankParser::class);
@@ -159,7 +160,7 @@ class UniversalBankParserTest extends TestCase
         $this->assertEquals('QIK', $bankCode);
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_null_for_unknown_bank()
     {
         $reflection = new ReflectionClass(UniversalBankParser::class);
@@ -171,7 +172,7 @@ class UniversalBankParserTest extends TestCase
         $this->assertNull($bankCode);
     }
 
-    /** @test */
+    #[Test]
     public function it_detects_bank_case_insensitively()
     {
         $reflection = new ReflectionClass(UniversalBankParser::class);
@@ -187,7 +188,7 @@ class UniversalBankParserTest extends TestCase
         $this->assertEquals('BSC', $bankCode3);
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_bhd_handler_for_bhd_code()
     {
         $reflection = new ReflectionClass(UniversalBankParser::class);
@@ -199,7 +200,7 @@ class UniversalBankParserTest extends TestCase
         $this->assertEquals(BHD::class, $handler);
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_apap_handler_for_apap_code()
     {
         $reflection = new ReflectionClass(UniversalBankParser::class);
@@ -211,7 +212,7 @@ class UniversalBankParserTest extends TestCase
         $this->assertEquals(APAP::class, $handler);
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_bsc_handler_for_bsc_code()
     {
         $reflection = new ReflectionClass(UniversalBankParser::class);
@@ -223,7 +224,7 @@ class UniversalBankParserTest extends TestCase
         $this->assertEquals(BSC::class, $handler);
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_qik_handler_for_qik_code()
     {
         $reflection = new ReflectionClass(UniversalBankParser::class);
@@ -235,7 +236,7 @@ class UniversalBankParserTest extends TestCase
         $this->assertEquals(Qik::class, $handler);
     }
 
-    /** @test */
+    #[Test]
     public function it_throws_exception_for_unsupported_bank_code()
     {
         $this->expectException(UnsupportedBankException::class);
@@ -248,7 +249,7 @@ class UniversalBankParserTest extends TestCase
         $method->invoke(null, 'UNKNOWN');
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_email_data_requires_from_field()
     {
         $this->expectException(\InvalidArgumentException::class);
@@ -263,7 +264,7 @@ class UniversalBankParserTest extends TestCase
         );
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_email_format()
     {
         $this->expectException(\InvalidArgumentException::class);
@@ -278,7 +279,7 @@ class UniversalBankParserTest extends TestCase
         );
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_null_for_unknown_bank_in_handle()
     {
         $payload = [
@@ -301,7 +302,7 @@ class UniversalBankParserTest extends TestCase
         $this->assertNull($result);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_correct_name()
     {
         $parser = new UniversalBankParser;
@@ -309,7 +310,7 @@ class UniversalBankParserTest extends TestCase
         $this->assertEquals('UniversalBankParser', $parser->getName());
     }
 
-    /** @test */
+    #[Test]
     public function it_has_correct_label()
     {
         $parser = new UniversalBankParser;
@@ -317,7 +318,7 @@ class UniversalBankParserTest extends TestCase
         $this->assertEquals('Universal Bank Parser', $parser->label());
     }
 
-    /** @test */
+    #[Test]
     public function it_has_descriptive_description()
     {
         $parser = new UniversalBankParser;
@@ -329,7 +330,7 @@ class UniversalBankParserTest extends TestCase
         $this->assertStringContainsString('APAP', $description);
     }
 
-    /** @test */
+    #[Test]
     public function it_gets_bank_config_from_automation()
     {
         $reflection = new ReflectionClass(UniversalBankParser::class);
@@ -343,7 +344,7 @@ class UniversalBankParserTest extends TestCase
         $this->assertEquals(['alertas@bhd.com.do', 'notificaciones@bhd.com.do'], $config['BHD']['email_addresses']);
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_empty_array_when_no_bank_patterns_configured()
     {
         $automationWithoutConfig = Automation::factory()->create([
@@ -360,7 +361,7 @@ class UniversalBankParserTest extends TestCase
         $this->assertEmpty($config);
     }
 
-    /** @test */
+    #[Test]
     public function it_extracts_email_from_display_name_format()
     {
         $reflection = new ReflectionClass(UniversalBankParser::class);
@@ -372,7 +373,7 @@ class UniversalBankParserTest extends TestCase
         $this->assertEquals('Alertas@bhd.com.do', $email);
     }
 
-    /** @test */
+    #[Test]
     public function it_extracts_email_from_plain_format()
     {
         $reflection = new ReflectionClass(UniversalBankParser::class);
@@ -384,7 +385,7 @@ class UniversalBankParserTest extends TestCase
         $this->assertEquals('alertas@bhd.com.do', $email);
     }
 
-    /** @test */
+    #[Test]
     public function it_detects_bank_from_email_with_display_name()
     {
         $reflection = new ReflectionClass(UniversalBankParser::class);
@@ -401,7 +402,7 @@ class UniversalBankParserTest extends TestCase
         $this->assertEquals('BHD', $bankCode);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_email_with_display_name()
     {
         $reflection = new ReflectionClass(UniversalBankParser::class);

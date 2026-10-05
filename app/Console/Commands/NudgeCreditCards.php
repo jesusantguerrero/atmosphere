@@ -112,7 +112,7 @@ class NudgeCreditCards extends Command
         }
 
         $name = $this->cardName($cycle);
-        $daysLeft = $today->diffInDays($dueDay);
+        $daysLeft = (int) $today->diffInDays($dueDay, true);
         $message = $daysLeft === 1
             ? 'Due tomorrow.'
             : "Due in {$daysLeft} days.";

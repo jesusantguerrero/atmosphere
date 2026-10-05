@@ -342,7 +342,7 @@ class TodayPageTest extends TestCase
                 ->where('today.money.month_remaining', 3000)
                 ->where(
                     'today.money.days_in_month_left',
-                    max(1, now()->endOfMonth()->startOfDay()->diffInDays(now()->startOfDay()) + 1)
+                    max(1, (int) now()->endOfMonth()->startOfDay()->diffInDays(now()->startOfDay(), true) + 1)
                 )
             );
     }
