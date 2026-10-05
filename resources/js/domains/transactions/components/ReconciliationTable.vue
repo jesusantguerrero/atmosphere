@@ -14,11 +14,12 @@ withDefaults(defineProps<{
     title?: string,
     cols?: Record<string, any>[],
     isLoading: boolean;
+    readonly?: boolean;
 }>(), {
     cols: () => tableCols
 });
 
-const emit = defineEmits(["removed", "edit", "approved", "unmatched", "selectionChange"]);
+const emit = defineEmits(["removed", "edit", "approved", "unmatched", "selectionChange", "toggleCheck", "findLinked"]);
 
 const isTransferModalOpen = ref(false);
 
@@ -106,7 +107,7 @@ const getTransactionColor = (row: ITransaction) => {
       :show-prepend="true"
       :table-data="transactions"
       :is-loading="isLoading"
-      :selectable="true"
+      :selectable="!readonly"
       @edit="handleEdit"
       @selection-change="onSelectionChange"
       :height="580"
@@ -120,6 +121,8 @@ const getTransactionColor = (row: ITransaction) => {
       <template v-slot:actions="{ scope: { row } }">
         <div class="flex justify-end w-full text-right">
             <button
+                :disabled="readonly"
+                :aria-label="$t(row.is_matched ? 'Unmark' : 'Mark matched')"
                 class="flex items-center justify-center border-2 rounded-full w-7 h-7 "
                 :class="[row.is_matched ? 'border-primary bg-secondary text-white' : 'border-body-1 text-body-1' ]"
                 @click="$emit('toggleCheck', row)"
@@ -128,6 +131,7 @@ const getTransactionColor = (row: ITransaction) => {
                 <IMdiCheck />
             </button>
           <NDropdown
+            v-if="!readonly"
             trigger="click"
             key-field="name"
             :options="options(row)"

@@ -68,6 +68,7 @@ interface ReconciliationEntry {
 // DELETE. 'Unmatch' (the common case) just clears the match flag.
 
 const pendingDelete = ref<ReconciliationEntry | null>(null);
+const deletingTransaction = ref(false);
 
 const requestRemoveTransaction = (transaction: ReconciliationEntry) => {
   pendingDelete.value = transaction;
@@ -78,7 +79,8 @@ const cancelRemoveTransaction = () => {
 };
 
 const confirmRemoveTransaction = () => {
-  if (!pendingDelete.value) return;
+  if (!pendingDelete.value || deletingTransaction.value) return;
+  deletingTransaction.value = true;
   const tx = pendingDelete.value;
   router.delete(`/transactions/${tx.transaction_id}`, {
     onSuccess() {
@@ -86,6 +88,7 @@ const confirmRemoveTransaction = () => {
     },
     onFinish() {
       pendingDelete.value = null;
+      deletingTransaction.value = false;
     },
   });
 };
@@ -116,6 +119,7 @@ const unmatchTransaction = (entry: ReconciliationEntry) => {
 const selectedRows = ref<any[]>([]);
 const reconciliationTableRef = ref<any>(null);
 const bulkProcessing = ref(false);
+const bulkError = ref(false);
 
 const onSelectionChange = (rows: any[]) => {
   selectedRows.value = Array.isArray(rows) ? rows : [];
@@ -124,11 +128,12 @@ const onSelectionChange = (rows: any[]) => {
 const bulkSetMatched = async (matched: boolean) => {
   if (!selectedRows.value.length || bulkProcessing.value) return;
   bulkProcessing.value = true;
+  bulkError.value = false;
   try {
     // Fire all PUTs in parallel — the per-row endpoint is idempotent
     // and the backend recomputes totals on each, so we just need to
     // reload once at the end.
-    await Promise.all(
+    const results = await Promise.allSettled(
       selectedRows.value
         .filter((row) => row.entry_id)
         .map((row) =>
@@ -138,8 +143,11 @@ const bulkSetMatched = async (matched: boolean) => {
           )
         )
     );
-    reconciliationTableRef.value?.clearSelection?.();
-    selectedRows.value = [];
+    bulkError.value = results.some(result => result.status === 'rejected');
+    if (!bulkError.value) {
+      reconciliationTableRef.value?.clearSelection?.();
+      selectedRows.value = [];
+    }
     router.reload({ only: ['transactions', 'matchedCount', 'totalEntries'] });
   } finally {
     bulkProcessing.value = false;
@@ -196,7 +204,7 @@ const reconcileForm = useForm({
 });
 
 const completeReconciliation = () => {
-    if (reconcileForm.processing) return
+    if (reconcileForm.processing || adjustForm.processing || syncReconciliationForm.processing || bulkProcessing.value) return
   reconcileForm
     .transform((data) => ({
       ...data,
@@ -209,7 +217,7 @@ const completeReconciliation = () => {
 
 const syncReconciliationForm = useForm({});
 const syncReconciliation = async () => {
-    if (syncReconciliationForm.processing) return
+    if (syncReconciliationForm.processing || reconcileForm.processing || adjustForm.processing || bulkProcessing.value) return
     syncReconciliationForm
         .put(`/finance/reconciliation/${props.reconciliation.id}/sync-transactions`, {
         only: ['transactions', 'matchedCount', 'totalEntries', 'ledgerBalance', 'reconciliation'],
@@ -237,7 +245,7 @@ const cancelAdjustment = () => {
 };
 
 const confirmAdjustment = () => {
-  if (adjustForm.processing) return;
+  if (adjustForm.processing || reconcileForm.processing || syncReconciliationForm.processing || bulkProcessing.value) return;
   adjustForm
     .transform((data) => ({
       ...data,
@@ -246,9 +254,6 @@ const confirmAdjustment = () => {
     }))
     .put(`/finance/reconciliation/${props.reconciliation.id}/save-adjustment`, {
       onSuccess() {
-        router.reload();
-      },
-      onFinish() {
         showAdjustModal.value = false;
       },
     });
@@ -258,6 +263,7 @@ const confirmAdjustment = () => {
 // Was previously using the native browser confirm() dialog which is
 // jarring and inconsistent with the rest of the app's modal styling.
 const showDeleteReconciliationModal = ref(false);
+const deletingReconciliation = ref(false);
 
 const requestDeleteReconciliation = () => {
   showDeleteReconciliationModal.value = true;
@@ -268,15 +274,15 @@ const cancelDeleteReconciliation = () => {
 };
 
 const confirmDeleteReconciliation = () => {
+  if (deletingReconciliation.value) return;
+  deletingReconciliation.value = true;
   router.delete(`/finance/reconciliation/${props.reconciliation.id}`, {
-    only: ['transactions', 'matchedCount', 'totalEntries'],
-    preserveScroll: true,
-    preserveState: true,
     onSuccess() {
-      router.visit(`/finance/accounts/${props.reconciliation.account_id}`);
+      showDeleteReconciliationModal.value = false;
     },
     onFinish() {
       showDeleteReconciliationModal.value = false;
+      deletingReconciliation.value = false;
     },
   });
 };
@@ -323,6 +329,7 @@ const buildListParams = (extra: Record<string, any> = {}) => {
 };
 
 const reloadList = (params: Record<string, any>) => {
+  bulkClear();
   router.get(window.location.pathname, params, {
     preserveState: true,
     preserveScroll: true,
@@ -385,7 +392,7 @@ const difference = computed(() => {
   return (ledgerBalance.value ?? 0) - stmt;
 });
 
-const isMatched = computed(() => Math.abs(difference.value) < 0.01);
+const isMatched = computed(() => Math.abs(difference.value) < 0.005);
 
 const differenceColor = computed(() => {
   return isMatched.value ? 'text-emerald-600' : 'text-error';
@@ -403,7 +410,7 @@ const differenceDirection = computed(() => {
 
 <template>
   <AppLayout
-    @back="router.visit('/finance/transactions')"
+    @back="router.visit('/finance/reconciliation')"
     :title="account.name"
     :show-back-button="true"
   >
@@ -414,7 +421,7 @@ const differenceDirection = computed(() => {
     <template #title>
     <section class="flex items-center flex-wrap gap-2">
         <h1 class="font-bold">
-            <span class="text-body-1/60">Reconciliation of </span>
+            <span class="text-body-1/60">{{ $t('Reconciliation of') }} </span>
             <span>{{ account.name }}</span>
         </h1>
         <!-- Status badge so the user immediately knows whether this
@@ -469,6 +476,7 @@ const differenceDirection = computed(() => {
                 class="opacity-100 cursor-text"
                 v-model="reconcileForm.balance"
                 :number-format="true"
+                :disabled="reconciliation.status === 'completed'"
               >
                 <template #prefix>
                   {{ account.currency_code }}
@@ -492,7 +500,7 @@ const differenceDirection = computed(() => {
                  being driven to zero. Direction + match count live in its
                  sublabel: it's where the eye already is when asking
                  "am I done?". -->
-            <AtField :label="differenceLabel">
+            <AtField :label="$t(differenceLabel)">
               <div>
                 <div class="flex items-baseline gap-1">
                   <span class="font-bold tabular-nums text-lg" :class="differenceColor">
@@ -501,7 +509,7 @@ const differenceDirection = computed(() => {
                   <IMdiCheckCircle v-if="isMatched" class="w-4 h-4 text-emerald-500 ml-1" />
                 </div>
                 <p class="text-[11px] text-body-1/50 leading-tight">
-                  <template v-if="differenceDirection">{{ differenceDirection.toLowerCase() }} · </template>{{ transactionsMatched }}/{{ totalTransactions }} {{ $t('matched') }}
+                  <template v-if="differenceDirection">{{ $t(differenceDirection) }} · </template>{{ transactionsMatched }}/{{ totalTransactions }} {{ $t('Matched') }}
                 </p>
               </div>
             </AtField>
@@ -517,7 +525,7 @@ const differenceDirection = computed(() => {
               v-if="reconciliation.status != 'completed'"
               @click="completeReconciliation()"
               :processing="reconcileForm.processing"
-              :disabled="reconcileForm.balance === null || reconcileForm.balance === undefined || reconcileForm.balance === ''"
+              :disabled="adjustForm.processing || syncReconciliationForm.processing || bulkProcessing || reconcileForm.balance === null || reconcileForm.balance === undefined || reconcileForm.balance === ''"
             >
               <IMdiCheck class="mr-1" />
               {{ $t('Complete') }}
@@ -527,6 +535,7 @@ const differenceDirection = computed(() => {
               v-if="reconciliation.status != 'completed'"
               @click="syncReconciliation()"
               :processing="syncReconciliationForm.processing"
+              :disabled="reconcileForm.processing || adjustForm.processing || bulkProcessing"
               :title="$t('Pull new transactions from the account')"
             >
               <IMdiSync class="mr-1" :class="{'animate-spin': syncReconciliationForm.processing}" />
@@ -539,6 +548,7 @@ const differenceDirection = computed(() => {
               v-if="reconciliation.status != 'completed' && !isMatched"
               @click="requestAdjustment()"
               :processing="adjustForm.processing"
+              :disabled="adjustForm.processing || reconcileForm.processing || syncReconciliationForm.processing"
               :title="$t('Book the difference as an adjustment and finish')"
             >
               <IMdiAutoFix class="mr-1" />
@@ -646,12 +656,17 @@ const differenceDirection = computed(() => {
           </div>
         </Transition>
 
+    <p v-if="bulkError" role="alert" class="text-sm text-error px-6">
+      {{ $t('Some transactions could not be updated. Review the refreshed list and retry.') }}
+    </p>
+
         <ReconciliationTable
           ref="reconciliationTableRef"
           :cols="tableAccountCols(props.reconciliation.account_id)"
           :transactions="transactionList"
           :server-search-options="serverSearchOptions"
           :is-loading="isLoading"
+          :readonly="reconciliation.status === 'completed'"
           @toggleCheck="toggleCheck"
           @findLinked="findLinked"
           @unmatched="unmatchTransaction"
@@ -683,6 +698,7 @@ const differenceDirection = computed(() => {
     >
       <template #title>{{ $t('Book the difference?') }}</template>
       <template #content>
+        <p v-if="adjustForm.errors.balance || adjustForm.errors.date" role="alert" class="text-sm text-error">{{ adjustForm.errors.balance || adjustForm.errors.date }}</p>
         <p class="text-sm text-body-1">
           {{ $t('This creates an adjustment transaction of {amount} so your account matches the statement, and marks this reconciliation complete. You can delete the adjustment later if you find the real cause.', { amount: formatMoney(Math.abs(difference), account.currency_code) }) }}
         </p>
@@ -695,6 +711,7 @@ const differenceDirection = computed(() => {
           variant="inverse"
           class="ml-2"
           :processing="adjustForm.processing"
+          :disabled="adjustForm.processing || reconcileForm.processing || syncReconciliationForm.processing"
           @click="confirmAdjustment"
         >
           {{ $t('Book difference & finish') }}
@@ -720,6 +737,7 @@ const differenceDirection = computed(() => {
         <LogerButton
           variant="error"
           class="ml-2"
+          :disabled="deletingReconciliation"
           @click="confirmDeleteReconciliation"
         >
           {{ $t('Delete reconciliation') }}
@@ -746,6 +764,7 @@ const differenceDirection = computed(() => {
         <LogerButton
           variant="error"
           class="ml-2"
+          :disabled="deletingTransaction"
           @click="confirmRemoveTransaction"
         >
           {{ $t('Delete transaction') }}

@@ -11,17 +11,18 @@ class UpdateOpenReconciliations implements ShouldQueue
     /**
      * Create the event listener.
      */
-    public function __construct(private ReconciliationService $service)
-    {
-        //
-    }
+    public function __construct(private ReconciliationService $service) {}
 
     /**
      * Handle the event.
      */
     public function handle(TransactionCreated $event): void
     {
-        $this->service->checkOpenReconciliation($event->transaction->account, $event->transaction);
-        $this->service->checkOpenReconciliation($event->transaction->account, $event->transaction);
+        if ($event->transaction->account) {
+            $this->service->checkOpenReconciliation($event->transaction->account, $event->transaction);
+        }
+        if ($event->transaction->counterAccount && $event->transaction->counterAccount->id !== $event->transaction->account?->id) {
+            $this->service->checkOpenReconciliation($event->transaction->counterAccount, $event->transaction);
+        }
     }
 }

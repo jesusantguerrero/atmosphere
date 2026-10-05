@@ -19,7 +19,7 @@ class PendingReconciliationDifferenceTest extends TestCase
             'driver' => 'sqlite', 'database' => ':memory:', 'prefix' => '',
         ]]);
         Schema::create('reconciliations', function (Blueprint $table): void {
-            $table->integer('id');
+            $table->increments('id');
             $table->integer('account_id');
             $table->date('date');
             $table->decimal('amount', 15, 2);

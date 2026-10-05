@@ -73,68 +73,75 @@ class ReconciliationService
             ->get();
     }
 
-    public function create(Account $account, ReconciliationParamsData $params)
+    public function create(Account $account, ReconciliationParamsData $params): Reconciliation
     {
-        $transactions = $account->transactionsToReconcile(null, $params->date);
+        return DB::transaction(function () use ($account, $params): Reconciliation {
+            $transactions = $account->transactionsToReconcile(null, $params->date);
 
-        if ($dateReconciliation = $this->getByDate($account->team_id, $account->id, $params->date)) {
-            $this->update($dateReconciliation, $params);
+            if ($dateReconciliation = $this->getByDate($account->team_id, $account->id, $params->date)) {
+                $this->update($dateReconciliation, $params);
 
-            return $dateReconciliation;
-        }
+                return $dateReconciliation;
+            }
 
-        $diff = $this->balanceAsOf($account, $params->date) - $params->balance;
-        $reconciliation = Reconciliation::create([
-            'user_id' => $params->user_id,
-            'team_id' => $account->team_id,
-            'account_id' => $account->id,
-            'date' => $params->date,
-            'amount' => $params->balance,
-            'difference' => $diff,
-            'status' => $diff ? Reconciliation::STATUS_PENDING : Reconciliation::STATUS_COMPLETED,
-        ]);
+            $diff = round($this->balanceAsOf($account, $params->date) - $params->balance, 2);
+            $reconciliation = Reconciliation::create([
+                'user_id' => $params->user_id,
+                'team_id' => $account->team_id,
+                'account_id' => $account->id,
+                'date' => $params->date,
+                'amount' => $params->balance,
+                'difference' => $diff,
+                'status' => $diff ? Reconciliation::STATUS_PENDING : Reconciliation::STATUS_COMPLETED,
+            ]);
 
-        $reconciliation->createEntries($transactions->toArray());
+            $reconciliation->createEntries($transactions->toArray());
 
-        return $reconciliation;
+            return $reconciliation;
+        });
     }
 
     public function update(Reconciliation $reconciliation, ReconciliationParamsData $params): Reconciliation
     {
-        $extraTransactions = $reconciliation->account->transactionsToReconcile(null, $reconciliation->date);
-        $diff = $this->balanceAsOf($reconciliation->account, $reconciliation->date) - $params->balance;
+        return DB::transaction(function () use ($reconciliation, $params): Reconciliation {
+            $wasCompleted = $reconciliation->status === Reconciliation::STATUS_COMPLETED;
+            $extraTransactions = $reconciliation->account->transactionsToReconcile(null, $reconciliation->date);
+            $diff = round($this->balanceAsOf($reconciliation->account, $reconciliation->date) - $params->balance, 2);
 
-        $reconciliation->update([
-            'amount' => $params->balance,
-            'difference' => $diff,
-            'status' => $diff ? Reconciliation::STATUS_PENDING : Reconciliation::STATUS_COMPLETED,
-        ]);
-
-        if (count($extraTransactions)) {
-            $reconciliation->addEntries($extraTransactions->toArray());
-        }
-
-        if ($reconciliation->status === Reconciliation::STATUS_COMPLETED) {
-            $reconciliation->checkStatus();
-        }
-
-        return $reconciliation;
-    }
-
-    public function delete(Reconciliation $reconciliation)
-    {
-        $entries = $reconciliation->entries()->select(['id', 'transaction_line_id'])->get();
-
-        TransactionLine::whereIn('id', $entries->pluck('transaction_line_id'))
-            ->update([
-                'matched' => false,
+            $reconciliation->update([
+                'amount' => $params->balance,
+                'difference' => $diff,
+                'status' => $diff ? Reconciliation::STATUS_PENDING : Reconciliation::STATUS_COMPLETED,
             ]);
 
-        $reconciliation->entries()->whereIn('id', $entries->pluck('id'))->delete();
+            if (count($extraTransactions)) {
+                $reconciliation->addEntries($extraTransactions->toArray());
+            }
 
-        $reconciliation->delete();
+            if ($wasCompleted || $reconciliation->status === Reconciliation::STATUS_COMPLETED) {
+                $reconciliation->checkStatus();
+            }
 
-        return $reconciliation;
+            return $reconciliation;
+        });
+    }
+
+    public function delete(Reconciliation $reconciliation): Reconciliation
+    {
+        return DB::transaction(function () use ($reconciliation): Reconciliation {
+            $entries = $reconciliation->entries()->select(['id', 'transaction_line_id'])->get();
+
+            TransactionLine::whereIn('id', $entries->pluck('transaction_line_id'))
+                ->update([
+                    'matched' => false,
+                ]);
+
+            $reconciliation->entries()->whereIn('id', $entries->pluck('id'))->delete();
+
+            $reconciliation->delete();
+
+            return $reconciliation;
+        });
     }
 
     /**
@@ -155,7 +162,7 @@ class ReconciliationService
     public function saveAdjustment(Reconciliation $reconciliation, ReconciliationParamsData $params): Reconciliation
     {
         return DB::transaction(function () use ($reconciliation, $params) {
-            $diff = $this->balanceAsOf($reconciliation->account, $reconciliation->date) - $params->balance;
+            $diff = round($this->balanceAsOf($reconciliation->account, $reconciliation->date) - $params->balance, 2);
 
             if (abs($diff) >= 0.005) {
                 Transaction::createTransaction([
@@ -205,7 +212,7 @@ class ReconciliationService
         $extraTransactions = $reconciliation->account->transactionsToReconcile(null, $reconciliation->date);
         $reconciliation->addEntries($extraTransactions->toArray());
         $reconciliation->update([
-            'difference' => $this->balanceAsOf($reconciliation->account, $reconciliation->date) - (float) $reconciliation->amount,
+            'difference' => round($this->balanceAsOf($reconciliation->account, $reconciliation->date) - (float) $reconciliation->amount, 2),
         ]);
 
         if ($reconciliation->status === Reconciliation::STATUS_COMPLETED) {
@@ -215,20 +222,18 @@ class ReconciliationService
         return $reconciliation;
     }
 
-    public function checkOpenReconciliation(Account $account, Transaction|CoreTransaction $transaction)
+    public function checkOpenReconciliation(Account $account, Transaction|CoreTransaction $transaction): void
     {
-        $reconciliation = Reconciliation::where([
+        $pendingReconciliations = Reconciliation::where([
             'account_id' => $account->id,
             'status' => Reconciliation::STATUS_PENDING,
         ])
             ->where('date', '>=', $transaction->date)
-            ->first();
+            ->get();
 
-        if (! $reconciliation) {
-            return;
+        foreach ($pendingReconciliations as $pendingReconciliation) {
+            $this->syncTransactions($pendingReconciliation);
         }
-
-        return $this->syncTransactions($reconciliation);
     }
 
     public function getByDate($teamId, $accountId, $date)
