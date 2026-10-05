@@ -115,7 +115,7 @@
     // add) hide the floating capture FAB so it doesn't duplicate the action
     // or cover their bottom input. Reactive to Inertia navigations via page.url.
     const quickCapturePage = usePage();
-    const hideFabOnRoutes = ['/shopping', '/housing/chores'];
+    const hideFabOnRoutes = ['/shopping', '/housing/chores', '/finance/reconciliation'];
     const showQuickCapture = computed(() => {
         const url = (quickCapturePage.url || '').split('?')[0];
         return !hideFabOnRoutes.some(r => url === r || url.startsWith(r + '/'));

@@ -77,8 +77,7 @@ const reconciliation = () => {
         date: format(data.date, 'yyyy-MM-dd'),
     })).post(`/finance/reconciliation/accounts/${props.account.id}`, {
         preserveScroll: true,
-        only: ['transactions', 'accounts', 'stats'],
-        onFinish() {
+        onSuccess() {
             onClose()
         }
     });
@@ -101,6 +100,9 @@ const doQuickReconciliation = () => {
 >
 
     <template #content>
+        <p v-if="reconcileForm.errors.balance || reconcileForm.errors.date" role="alert" class="text-sm text-error">
+            {{ reconcileForm.errors.balance || reconcileForm.errors.date }}
+        </p>
         <article v-if="!reconcileForm.hasDifference">
             <h4>{{ $t('Is your current account balance') }}</h4>
             <h2 class="text-lg"> {{ formatMoney(account.balance) }} </h2>

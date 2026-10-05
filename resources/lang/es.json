@@ -1102,5 +1102,9 @@
     "balance": "saldo",
     "Continue": "Continuar",
     "Reconcile": "Conciliar",
-    "No accounts to reconcile yet.": "Aún no hay cuentas por conciliar."
+    "No accounts to reconcile yet.": "Aún no hay cuentas por conciliar.",
+    "In progress": "En curso",
+    "To review": "Por revisar",
+    "Movements to review": "Movimientos por revisar",
+    "Compare your statement with Loger and resolve any differences.": "Compara tu estado de cuenta con Loger y resuelve las diferencias."
 }

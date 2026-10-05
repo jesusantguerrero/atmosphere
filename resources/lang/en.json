@@ -1016,5 +1016,9 @@
     "balance": "balance",
     "Continue": "Continue",
     "Reconcile": "Reconcile",
-    "No accounts to reconcile yet.": "No accounts to reconcile yet."
+    "No accounts to reconcile yet.": "No accounts to reconcile yet.",
+    "In progress": "In progress",
+    "To review": "To review",
+    "Movements to review": "Movements to review",
+    "Compare your statement with Loger and resolve any differences.": "Compare your statement with Loger and resolve any differences."
 }

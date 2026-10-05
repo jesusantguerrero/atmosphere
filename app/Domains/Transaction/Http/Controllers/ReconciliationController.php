@@ -6,10 +6,14 @@ use App\Domains\Transaction\Data\ReconciliationParamsData;
 use App\Domains\Transaction\Services\ReconciliationService;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Traits\HasEnrichedRequest;
+use App\Http\Requests\ReconciliationEntryRequest;
+use App\Http\Requests\ReconciliationRequest;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Inertia\Response;
 use Insane\Journal\Models\Accounting\Reconciliation;
 use Insane\Journal\Models\Accounting\ReconciliationEntry;
 use Insane\Journal\Models\Core\Account;
@@ -22,14 +26,14 @@ class ReconciliationController extends Controller
 
     use HasEnrichedRequest;
 
-    public function accountReconciliations(Account $account, ReconciliationService $service)
+    public function accountReconciliations(Account $account, ReconciliationService $service): Response
     {
         $this->authorize('update', $account);
 
         [$startDate, $endDate] = $this->getFilterDates();
 
         $reconciliations = $service->listHistoryOf($account);
-        $lastReconciliation = $reconciliations->last();
+        $lastReconciliation = $reconciliations->first();
         $unreconciledTransactions = $lastReconciliation
             ? $account->transactionsToReconcile(null, $lastReconciliation->date)
             : collect();
@@ -68,13 +72,17 @@ class ReconciliationController extends Controller
      * on top, then longest since last reconciled) so the accounts that most need
      * attention surface without hunting account by account.
      */
-    public function hub(Request $request)
+    public function hub(Request $request, ReconciliationService $service): Response
     {
         $teamId = $request->user()->current_team_id;
         $today = now()->format('Y-m-d');
 
         $accounts = Account::getByDetailTypes($teamId, AccountDetailType::ALL)->load('detailType');
         $accountIds = $accounts->pluck('id')->all();
+        $pendingDifferences = $service->pendingDifferences($accounts
+            ->pluck('reconciliationLast')
+            ->filter(fn ($reconciliation) => $reconciliation?->status === Reconciliation::STATUS_PENDING)
+            ->pluck('id')->all());
 
         // One grouped COUNT instead of pulling every unreconciled line per account
         // (a months-behind card can have hundreds). Mirrors
@@ -91,7 +99,7 @@ class ReconciliationController extends Controller
             ->selectRaw('transaction_lines.account_id as account_id, COUNT(*) as cnt')
             ->pluck('cnt', 'account_id');
 
-        $rows = $accounts->map(function ($account) use ($unreconciled) {
+        $rows = $accounts->map(function ($account) use ($unreconciled, $pendingDifferences) {
             $last = $account->reconciliationLast;
             $lastDate = $last?->date ? Carbon::parse($last->date) : null;
 
@@ -104,7 +112,7 @@ class ReconciliationController extends Controller
                 'last_id' => $last?->id,
                 'last_date' => $lastDate?->format('Y-m-d'),
                 'last_status' => $last?->status,
-                'last_difference' => $last ? (float) $last->difference : null,
+                'last_difference' => $last ? $pendingDifferences->get($last->id, (float) $last->difference) : null,
                 'days_since' => $lastDate ? (int) $lastDate->startOfDay()->diffInDays(now()->startOfDay()) : null,
                 'unreconciled_count' => (int) ($unreconciled[$account->id] ?? 0),
             ];
@@ -187,29 +195,27 @@ class ReconciliationController extends Controller
         return $query->paginate(25)->withQueryString();
     }
 
-    public function store(Account $account, ReconciliationService $service)
+    public function store(Account $account, ReconciliationService $service, ReconciliationRequest $request): RedirectResponse
     {
         $this->authorize('update', $account);
 
         $reconciliation = $service->create($account,
             ReconciliationParamsData::from([
-                ...$this->getPostData(),
+                ...$request->validated(),
                 'account_id' => $account->id,
                 'user_id' => auth()->user()->id,
             ])
         );
 
-        if ($reconciliation->difference) {
-            return redirect("/finance/reconciliation/$reconciliation->id");
-        }
+        return redirect("/finance/reconciliation/$reconciliation->id");
     }
 
-    public function adjustment(Reconciliation $reconciliation, ReconciliationService $service)
+    public function adjustment(Reconciliation $reconciliation, ReconciliationService $service, ReconciliationRequest $request): RedirectResponse
     {
         $this->authorize('adjust', $reconciliation);
 
         $service->saveAdjustment($reconciliation, ReconciliationParamsData::from([
-            ...$this->getPostData(),
+            ...$request->validated(),
             'account_id' => $reconciliation->account_id,
             'user_id' => auth()->user()->id,
         ]));
@@ -217,12 +223,12 @@ class ReconciliationController extends Controller
         return redirect("/finance/reconciliation/{$reconciliation->id}");
     }
 
-    public function update(Reconciliation $reconciliation, ReconciliationService $service)
+    public function update(Reconciliation $reconciliation, ReconciliationService $service, ReconciliationRequest $request): RedirectResponse
     {
         $this->authorize('adjust', $reconciliation);
 
         $reconciliation = $service->update($reconciliation, ReconciliationParamsData::from([
-            ...$this->getPostData(),
+            ...$request->validated(),
             'account_id' => $reconciliation->account_id,
             'user_id' => auth()->user()->id,
         ])
@@ -233,13 +239,13 @@ class ReconciliationController extends Controller
                 'banner' => "Can't reconcile this account",
             ]);
         } else {
-            back()->with('flash', [
+            return back()->with('flash', [
                 'banner' => 'Updated correctly',
             ]);
         }
     }
 
-    public function syncTransactions(Reconciliation $reconciliation, ReconciliationService $service)
+    public function syncTransactions(Reconciliation $reconciliation, ReconciliationService $service): RedirectResponse
     {
         $this->authorize('adjust', $reconciliation);
 
@@ -250,13 +256,13 @@ class ReconciliationController extends Controller
                 'banner' => "Can't reconcile this account",
             ]);
         } else {
-            back()->with('flash', [
+            return back()->with('flash', [
                 'banner' => 'Updated correctly',
             ]);
         }
     }
 
-    public function delete(Reconciliation $reconciliation, ReconciliationService $service)
+    public function delete(Reconciliation $reconciliation, ReconciliationService $service): RedirectResponse
     {
         $this->authorize('adjust', $reconciliation);
 
@@ -264,21 +270,23 @@ class ReconciliationController extends Controller
             $accountId = $reconciliation->account_id;
             $service->delete($reconciliation);
 
-            return redirect("/finance/reconciliation/$accountId")->with('flash', [
-                'banner' => "Can't reconcile this account",
+            return redirect("/finance/accounts/$accountId/reconciliations")->with('flash', [
+                'banner' => 'Deleted correctly',
             ]);
         } catch (Exception) {
-            back()->with('flash', [
-                'banner' => 'Updated correctly',
+            return back()->with('flash', [
+                'banner' => "Can't delete this reconciliation",
             ]);
         }
     }
 
-    public function checkReconciliationEntry(Reconciliation $reconciliation, ReconciliationEntry $reconciliationEntry, ReconciliationService $service)
+    public function checkReconciliationEntry(Reconciliation $reconciliation, ReconciliationEntry $reconciliationEntry, ReconciliationService $service, ReconciliationEntryRequest $request): RedirectResponse
     {
         $this->authorize('adjust', $reconciliation);
         abort_unless((int) $reconciliationEntry->reconciliation_id === (int) $reconciliation->id, 404);
-        $postData = $this->getPostData();
-        $service->checkLine($reconciliation, $reconciliationEntry, $postData['matched']);
+        $postData = $request->validated();
+        $service->checkLine($reconciliation, $reconciliationEntry, (bool) $postData['matched']);
+
+        return back();
     }
 }

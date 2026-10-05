@@ -5,7 +5,7 @@ import { useI18n } from "vue-i18n";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import FinanceSectionNav from "../Partials/FinanceSectionNav.vue";
-import MoneyPresenter from "@/Components/molecules/MoneyPresenter.vue";
+import NumberHider from "@/Components/molecules/NumberHider.vue";
 import { formatMoney } from "@/utils";
 
 interface AccountRow {
@@ -22,10 +22,13 @@ interface AccountRow {
     unreconciled_count: number;
 }
 
-const props = withDefaults(defineProps<{
-    accounts: AccountRow[];
-    sectionTitle?: string;
-}>(), { accounts: () => [] });
+const props = withDefaults(
+    defineProps<{
+        accounts: AccountRow[];
+        sectionTitle?: string;
+    }>(),
+    { accounts: () => [] },
+);
 
 const { t } = useI18n();
 
@@ -37,16 +40,68 @@ type Status = { key: string; label: string; cls: string; dot: string };
 
 const statusOf = (a: AccountRow): Status => {
     if (a.last_status === "pending")
-        return { key: "pending", label: "Pending", cls: "text-amber-500", dot: "bg-amber-500" };
+        return {
+            key: "pending",
+            label: "Pending",
+            cls: "text-amber-700 dark:text-amber-400",
+            dot: "bg-amber-500",
+        };
     if (a.last_date == null)
-        return { key: "never", label: "Never reconciled", cls: "text-error", dot: "bg-error" };
+        return {
+            key: "never",
+            label: "Never reconciled",
+            cls: "text-error",
+            dot: "bg-error",
+        };
+    if (a.unreconciled_count > 0)
+        return {
+            key: "review",
+            label: "Movements to review",
+            cls: "text-amber-700 dark:text-amber-400",
+            dot: "bg-amber-500",
+        };
     if ((a.days_since ?? 0) > OVERDUE_DAYS)
-        return { key: "overdue", label: "Overdue", cls: "text-amber-500", dot: "bg-amber-500" };
-    return { key: "ok", label: "Up to date", cls: "text-success", dot: "bg-success" };
+        return {
+            key: "overdue",
+            label: "Overdue",
+            cls: "text-amber-700 dark:text-amber-400",
+            dot: "bg-amber-500",
+        };
+    return {
+        key: "ok",
+        label: "Up to date",
+        cls: "text-success",
+        dot: "bg-success",
+    };
 };
 
 const needsAttention = (a: AccountRow) => statusOf(a).key !== "ok";
-const attentionCount = computed(() => props.accounts.filter(needsAttention).length);
+const attentionCount = computed(
+    () => props.accounts.filter(needsAttention).length,
+);
+const accountGroups = computed(() =>
+    [
+        {
+            key: "pending",
+            label: "In progress",
+            accounts: props.accounts.filter(
+                (a) => statusOf(a).key === "pending",
+            ),
+        },
+        {
+            key: "review",
+            label: "To review",
+            accounts: props.accounts.filter(
+                (a) => !["pending", "ok"].includes(statusOf(a).key),
+            ),
+        },
+        {
+            key: "ok",
+            label: "Up to date",
+            accounts: props.accounts.filter((a) => statusOf(a).key === "ok"),
+        },
+    ].filter((group) => group.accounts.length),
+);
 
 // Human "time since last reconciled". Days under ~6 weeks read as days,
 // beyond that as months — a card 8 months behind shouldn't say "243 days".
@@ -76,77 +131,185 @@ const goReconcile = (a: AccountRow) => {
     }
 };
 
-const ctaLabel = (a: AccountRow) => (a.last_status === "pending" ? "Continue" : "Reconcile");
+const ctaLabel = (a: AccountRow) =>
+    a.last_status === "pending" ? "Continue" : "Reconcile";
 </script>
 
 <template>
-    <AppLayout :title="$t('Reconciliation')" @back="router.visit('/finance')" :show-back-button="true">
+    <AppLayout
+        :title="$t('Reconciliation')"
+        @back="router.visit('/finance')"
+        :show-back-button="true"
+    >
         <template #header>
             <FinanceSectionNav />
         </template>
 
-        <main class="px-5 sm:px-6 lg:px-8 mt-16 mb-20 max-w-screen-xl">
+        <main class="px-5 sm:px-6 lg:px-8 mt-16 pb-36 max-w-screen-xl">
             <header class="mb-4">
-                <h1 class="text-lg font-bold text-body">{{ $t('Reconciliation') }}</h1>
-                <p class="text-sm text-body-1/60 mt-0.5">
+                <h1 class="text-lg font-bold text-body">
+                    {{ $t("Reconciliation") }}
+                </h1>
+                <p class="text-sm text-body-1/80 mt-1">
                     <template v-if="attentionCount">
                         {{ attentionCount }}
-                        {{ attentionCount === 1 ? $t('account needs attention') : $t('accounts need attention') }}
-                        · {{ $t('most behind first') }}
+                        {{
+                            attentionCount === 1
+                                ? $t("account needs attention")
+                                : $t("accounts need attention")
+                        }}
                     </template>
-                    <template v-else>{{ $t('Everything is reconciled. Nice.') }}</template>
+                    <template v-else-if="accounts.length">{{
+                        $t("Everything is reconciled. Nice.")
+                    }}</template>
+                </p>
+                <p class="text-sm text-body-1/80 mt-2">
+                    {{
+                        $t(
+                            "Compare your statement with Loger and resolve any differences.",
+                        )
+                    }}
                 </p>
             </header>
 
-            <section class="bg-base-lvl-3 rounded-lg border border-base divide-y divide-base overflow-hidden">
-                <article
-                    v-for="a in accounts"
-                    :key="a.id"
-                    class="flex items-center gap-4 px-4 py-3 hover:bg-base-lvl-2 transition cursor-pointer"
-                    @click="goReconcile(a)"
+            <section
+                v-for="group in accountGroups"
+                :key="group.key"
+                class="mb-6"
+                :aria-labelledby="`group-${group.key}`"
+            >
+                <h2
+                    :id="`group-${group.key}`"
+                    class="text-sm font-semibold text-body mb-2"
                 >
-                    <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" :class="statusOf(a).dot" :title="$t(statusOf(a).label)" />
-
-                    <div class="min-w-0 flex-1">
-                        <div class="flex items-center gap-2 min-w-0">
-                            <span class="text-sm font-semibold text-body truncate">{{ a.name }}</span>
-                            <span class="text-[11px] text-body-1/40 flex-shrink-0">{{ $t(typeLabels[a.type ?? ''] ?? (a.type ?? '')) }}</span>
-                        </div>
-                        <div class="text-xs mt-0.5 flex items-center gap-2 flex-wrap">
-                            <span :class="statusOf(a).cls" class="font-semibold">{{ $t(statusOf(a).label) }}</span>
-                            <span class="text-body-1/50">· {{ lastLabel(a) }}</span>
-                            <span v-if="a.last_status === 'pending' && a.last_difference" class="text-amber-500">
-                                · {{ $t('difference') }} {{ formatMoney(Math.abs(a.last_difference), a.currency_code) }}
-                            </span>
-                            <span v-if="a.unreconciled_count" class="text-body-1/50">
-                                · {{ a.unreconciled_count }} {{ $t('unreconciled') }}
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="text-right flex-shrink-0 hidden sm:block">
-                        <div class="text-sm font-semibold tabular-nums" :class="a.balance >= 0 ? 'text-body' : 'text-error'">
-                            <MoneyPresenter :value="a.balance" />
-                        </div>
-                        <div class="text-[11px] text-body-1/40">{{ $t('balance') }}</div>
-                    </div>
-
-                    <button
-                        type="button"
-                        class="flex-shrink-0 text-xs font-bold px-3 py-2 rounded-lg transition"
-                        :class="needsAttention(a)
-                            ? 'bg-primary text-white hover:brightness-105'
-                            : 'bg-base-lvl-2 text-body-1/70 hover:text-body'"
-                        @click.stop="goReconcile(a)"
+                    {{ $t(group.label) }}
+                    <span class="text-body-1/80"
+                        >({{ group.accounts.length }})</span
                     >
-                        {{ $t(ctaLabel(a)) }}
-                    </button>
-                </article>
+                </h2>
+                <div
+                    class="bg-base-lvl-3 rounded-lg border border-base divide-y divide-base overflow-hidden"
+                >
+                    <article
+                        v-for="a in group.accounts"
+                        :key="a.id"
+                        class="flex items-center gap-3 sm:gap-4 px-4 py-4"
+                    >
+                        <span
+                            class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                            :class="statusOf(a).dot"
+                            :title="$t(statusOf(a).label)"
+                        />
 
-                <div v-if="!accounts.length" class="px-5 py-10 text-center text-sm text-body-1/60">
-                    {{ $t('No accounts to reconcile yet.') }}
+                        <div class="min-w-0 flex-1">
+                            <div
+                                class="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-2 min-w-0"
+                            >
+                                <a
+                                    :href="
+                                        a.last_status === 'pending' && a.last_id
+                                            ? `/finance/reconciliation/${a.last_id}`
+                                            : `/finance/accounts/${a.id}/reconciliations`
+                                    "
+                                    class="text-sm font-semibold text-body break-words w-full sm:w-auto hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                                    @click.prevent="goReconcile(a)"
+                                    >{{ a.name }}</a
+                                >
+                                <span
+                                    class="text-xs text-body-1/80 flex-shrink-0"
+                                    >{{
+                                        $t(
+                                            typeLabels[a.type ?? ""] ??
+                                                a.type ??
+                                                "",
+                                        )
+                                    }}</span
+                                >
+                            </div>
+                            <div
+                                class="text-xs mt-0.5 flex items-center gap-2 flex-wrap"
+                            >
+                                <span
+                                    :class="statusOf(a).cls"
+                                    class="font-semibold"
+                                    >{{ $t(statusOf(a).label) }}</span
+                                >
+                                <span v-if="a.last_date" class="text-body-1/80"
+                                    >· {{ lastLabel(a) }}</span
+                                >
+                                <span
+                                    v-if="
+                                        a.last_status === 'pending' &&
+                                        a.last_difference
+                                    "
+                                    class="text-amber-700 dark:text-amber-400"
+                                >
+                                    · {{ $t("difference") }}
+                                    {{
+                                        formatMoney(
+                                            Math.abs(a.last_difference),
+                                            a.currency_code,
+                                        )
+                                    }}
+                                </span>
+                                <span
+                                    v-if="a.unreconciled_count"
+                                    class="text-body-1/80"
+                                >
+                                    · {{ a.unreconciled_count }}
+                                    {{ $t("unreconciled") }}
+                                </span>
+                            </div>
+                            <div
+                                class="sm:hidden text-sm tabular-nums text-body mt-2"
+                            >
+                                <span class="relative inline-block"
+                                    ><NumberHider />{{
+                                        formatMoney(a.balance, a.currency_code)
+                                    }}</span
+                                >
+                            </div>
+                        </div>
+
+                        <div class="text-right flex-shrink-0 hidden sm:block">
+                            <div
+                                class="text-sm font-semibold tabular-nums"
+                                :class="
+                                    a.balance >= 0 ? 'text-body' : 'text-error'
+                                "
+                            >
+                                <span class="relative inline-block"
+                                    ><NumberHider />{{
+                                        formatMoney(a.balance, a.currency_code)
+                                    }}</span
+                                >
+                            </div>
+                            <div class="text-xs text-body-1/80">
+                                {{ $t("balance") }}
+                            </div>
+                        </div>
+
+                        <button
+                            type="button"
+                            class="flex-shrink-0 text-sm font-semibold px-3 py-2.5 rounded-lg transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                            :class="
+                                a.last_status === 'pending'
+                                    ? 'bg-primary text-white hover:brightness-105'
+                                    : 'border border-body-1/30 bg-base-lvl-3 text-body hover:bg-base-lvl-2'
+                            "
+                            @click.stop="goReconcile(a)"
+                        >
+                            {{ $t(ctaLabel(a)) }}
+                        </button>
+                    </article>
                 </div>
             </section>
+            <div
+                v-if="!accounts.length"
+                class="px-5 py-10 text-center text-sm text-body-1/60"
+            >
+                {{ $t("No accounts to reconcile yet.") }}
+            </div>
         </main>
     </AppLayout>
 </template>
