@@ -16,7 +16,8 @@ import { formatMoney } from "@/utils";
 const emit = defineEmits(['close']);
 const props = withDefaults(defineProps<{
     isVisible: boolean;
-    account: IAccount,
+    startDetailed?: boolean;
+    account: Pick<IAccount, 'id' | 'name' | 'balance' | 'currency_code'>,
 }>(), {});
 
 // reconciliation
@@ -24,7 +25,7 @@ const reconcileForm = useForm({
     isVisible: false,
     date: new Date(),
     balance: 0,
-    hasDifference: false,
+    hasDifference: props.startDetailed ?? false,
 })
 
 // ── Loger balance as of the picked date ─────────────────────────
@@ -51,7 +52,7 @@ const fetchBalanceAt = async () => {
 watch(() => reconcileForm.date, fetchBalanceAt);
 watch(() => reconcileForm.hasDifference, (isDetailed) => {
     if (isDetailed) fetchBalanceAt();
-});
+}, { immediate: true });
 
 const previewDifference = computed(() => {
     if (ledgerBalanceAt.value === null) return null;

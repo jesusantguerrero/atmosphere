@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { router } from "@inertiajs/vue3";
 import { useI18n } from "vue-i18n";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import FinanceSectionNav from "../Partials/FinanceSectionNav.vue";
 import NumberHider from "@/Components/molecules/NumberHider.vue";
+import AccountReconciliationForm from "../AccountReconciliationForm.vue";
 import { formatMoney } from "@/utils";
 
 interface AccountRow {
@@ -121,13 +122,13 @@ const typeLabels: Record<string, string> = {
     credit_card: "Credit Card",
 };
 
-// Pending reconciliation → resume it (Show). Otherwise open the account's
-// reconciliation home to start a new one.
+const accountToReconcile = ref<AccountRow | null>(null);
+
 const goReconcile = (a: AccountRow) => {
     if (a.last_status === "pending" && a.last_id) {
         router.visit(`/finance/reconciliation/${a.last_id}`);
     } else {
-        router.visit(`/finance/accounts/${a.id}/reconciliations`);
+        accountToReconcile.value = a;
     }
 };
 
@@ -212,7 +213,6 @@ const ctaLabel = (a: AccountRow) =>
                                             : `/finance/accounts/${a.id}/reconciliations`
                                     "
                                     class="text-sm font-semibold text-body break-words w-full sm:w-auto hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-                                    @click.prevent="goReconcile(a)"
                                     >{{ a.name }}</a
                                 >
                                 <span
@@ -311,5 +311,12 @@ const ctaLabel = (a: AccountRow) =>
                 {{ $t("No accounts to reconcile yet.") }}
             </div>
         </main>
+        <AccountReconciliationForm
+            v-if="accountToReconcile"
+            :account="accountToReconcile"
+            :is-visible="true"
+            start-detailed
+            @close="accountToReconcile = null"
+        />
     </AppLayout>
 </template>

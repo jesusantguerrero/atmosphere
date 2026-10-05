@@ -31,9 +31,9 @@ const accounts = [
  { id: 5, last_date: '2026-01-01', days_since: 90, last_status: 'completed', unreconciled_count: 0 },
 ];
 const visits = [];
-const context = { computed: fn => ({ get value() { return fn(); } }), defineProps: () => ({ accounts }), withDefaults: p => p, useI18n: () => ({ t: k => k }), router: { visit: url => visits.push(url) } };
+const context = { ref: value => ({ value }), computed: fn => ({ get value() { return fn(); } }), defineProps: () => ({ accounts }), withDefaults: p => p, useI18n: () => ({ t: k => k }), router: { visit: url => visits.push(url) } };
 vm.createContext(context);
-vm.runInContext(ts.transpile(script + '\n globalThis.results = { accountGroups, statusOf, attentionCount, goReconcile };'), context);
+vm.runInContext(ts.transpile(script + '\n globalThis.results = { accountGroups, statusOf, attentionCount, goReconcile, accountToReconcile };'), context);
 const result = context.results;
 assert.equal(result.statusOf(accounts[0]).key, 'review');
 assert.equal(result.statusOf(accounts[1]).key, 'ok');
@@ -43,7 +43,8 @@ assert.equal(result.attentionCount.value, 4);
 assert.deepEqual(JSON.parse(JSON.stringify(result.accountGroups.value.map(g => [g.key, g.accounts.map(a => a.id)]))), [['pending', [4]], ['review', [1, 3, 5]], ['ok', [2]]]);
 result.goReconcile(accounts[3]);
 result.goReconcile(accounts[0]);
-assert.deepEqual(visits, ['/finance/reconciliation/40', '/finance/accounts/1/reconciliations']);
+assert.deepEqual(visits, ['/finance/reconciliation/40']);
+assert.equal(result.accountToReconcile.value.id, 1);
 accounts.splice(0);
 assert.equal(result.accountGroups.value.length, 0);
 assert.equal(result.attentionCount.value, 0);
