@@ -90,7 +90,7 @@ const rankRows = (arr: any[], showAll = false) => {
   const max = Math.max(1, ...arr.map((i) => i.total));
   const tot = arr.reduce((a, i) => a + i.total, 0) || 1;
   const visible = showAll ? arr : arr.slice(0, 8);
-  const rows = visible.map((i) => ({ name: i.name, amount: i.total, pct: (i.total / tot) * 100, w: (i.total / max) * 100 }));
+  const rows = visible.map((i) => ({ id: i.id, name: i.name, amount: i.total, pct: (i.total / tot) * 100, w: (i.total / max) * 100 }));
   if (!showAll && arr.length > 8) {
     const remainder = arr.slice(8).reduce((sum, row) => sum + row.total, 0);
     rows.push({ name: t("Others"), amount: remainder, pct: remainder / tot * 100, w: Math.min(100, remainder / max * 100) });
@@ -98,10 +98,10 @@ const rankRows = (arr: any[], showAll = false) => {
   return rows;
 };
 const payeesInRows = computed<any[]>(() =>
-  (props.data?.payeesIn ?? []).map((x: any) => ({ name: x.name, total: abs(x.total) })).sort((a, b) => b.total - a.total)
+  (props.data?.payeesIn ?? []).map((x: any) => ({ id: x.id, name: x.name, total: abs(x.total) })).sort((a, b) => b.total - a.total)
 );
 const payeesOutRows = computed<any[]>(() =>
-  (props.data?.payeesOut ?? []).map((x: any) => ({ name: x.name, total: abs(x.total) })).sort((a, b) => b.total - a.total)
+  (props.data?.payeesOut ?? []).map((x: any) => ({ id: x.id, name: x.name, total: abs(x.total) })).sort((a, b) => b.total - a.total)
 );
 const breakdownDims = [
   { id: "categoria", label: "Category" },
@@ -115,6 +115,13 @@ const showAllIn = ref(false);
 const showAllOut = ref(false);
 const moneyInRows = computed(() => rankRows(moneyInSrc.value, showAllIn.value));
 const moneyOutRows = computed(() => rankRows(moneyOutSrc.value, showAllOut.value));
+// drill-down: a payee breakdown row links to the transactions list filtered by
+// that payee, carrying the current period so the list matches what's on screen.
+const periodDateParam = computed(() => {
+  const s = props.metaData?.startDate, e = props.metaData?.endDate;
+  return s && e ? `&filter[date]=${s}~${e}` : "";
+});
+const payeeHref = (id: number) => `/finance/transactions?filter[payee_id]=${id}${periodDateParam.value}`;
 const totalIn = computed(() => grandIn.value);
 const totalOut = computed(() => grandOut.value);
 
@@ -409,7 +416,7 @@ const chartMeta = computed(() => {
             <button v-if="moneyOutSrc.length > 8" class="min-h-[32px] px-2 text-primary font-medium" :aria-expanded="showAllOut" @click="showAllOut = !showAllOut">{{ showAllOut ? $t('Show top 8') : $t('View all') }}</button>
           </div>
           <div v-for="(r, i) in moneyOutRows" :key="i" class="grid items-center gap-3 py-2 border-t border-base-lvl-2" style="grid-template-columns:minmax(0, 2fr) minmax(48px, 0.8fr) auto">
-            <div class="text-sm font-medium text-body break-words" :title="r.name">{{ r.name }}</div>
+            <component :is="r.id ? 'a' : 'div'" :href="r.id ? payeeHref(r.id) : null" class="text-sm font-medium text-body break-words" :class="r.id ? 'hover:text-primary hover:underline' : ''" :title="r.name">{{ r.name }}</component>
             <div class="flex items-center gap-2 text-xs text-body-1"><span style="min-width:38px">{{ r.pct.toFixed(1) }}%</span><span class="flex-1 h-1 rounded-full bg-base-lvl-2 relative overflow-hidden"><span class="absolute inset-y-0 left-0 rounded-full" :style="{ width: r.w + '%', background: '#E8837E' }"></span></span></div>
             <div class="text-right text-sm font-semibold tabular-nums">−{{ currency }} {{ money(r.amount).main }}</div>
           </div>
@@ -424,7 +431,7 @@ const chartMeta = computed(() => {
             <button v-if="moneyInSrc.length > 8" class="min-h-[32px] px-2 text-primary font-medium" :aria-expanded="showAllIn" @click="showAllIn = !showAllIn">{{ showAllIn ? $t('Show top 8') : $t('View all') }}</button>
           </div>
           <div v-for="(r, i) in moneyInRows" :key="i" class="grid items-center gap-3 py-2 border-t border-base-lvl-2" style="grid-template-columns:minmax(0, 2fr) minmax(48px, 0.8fr) auto">
-            <div class="text-sm font-medium text-body break-words" :title="r.name">{{ r.name }}</div>
+            <component :is="r.id ? 'a' : 'div'" :href="r.id ? payeeHref(r.id) : null" class="text-sm font-medium text-body break-words" :class="r.id ? 'hover:text-primary hover:underline' : ''" :title="r.name">{{ r.name }}</component>
             <div class="flex items-center gap-2 text-xs text-body-1"><span style="min-width:38px">{{ r.pct.toFixed(1) }}%</span><span class="flex-1 h-1 rounded-full bg-base-lvl-2 relative overflow-hidden"><span class="absolute inset-y-0 left-0 rounded-full" :style="{ width: r.w + '%', background: '#56C08A' }"></span></span></div>
             <div class="text-right text-sm font-semibold tabular-nums">{{ currency }} {{ money(r.amount).main }}</div>
           </div>
@@ -457,7 +464,7 @@ const chartMeta = computed(() => {
             <button v-if="moneyInSrc.length > 8" class="min-h-[32px] px-2 text-primary font-medium" :aria-expanded="showAllIn" @click="showAllIn = !showAllIn">{{ showAllIn ? $t('Show top 8') : $t('View all') }}</button>
           </div>
           <div v-for="(r, i) in moneyInRows" :key="i" class="grid items-center gap-3 py-2 border-t border-base-lvl-2" style="grid-template-columns:minmax(0, 2fr) minmax(48px, 0.8fr) auto">
-            <div class="text-sm font-medium text-body break-words" :title="r.name">{{ r.name }}</div>
+            <component :is="r.id ? 'a' : 'div'" :href="r.id ? payeeHref(r.id) : null" class="text-sm font-medium text-body break-words" :class="r.id ? 'hover:text-primary hover:underline' : ''" :title="r.name">{{ r.name }}</component>
             <div class="flex items-center gap-2 text-xs text-body-1"><span style="min-width:38px">{{ r.pct.toFixed(1) }}%</span><span class="flex-1 h-1 rounded-full bg-base-lvl-2 relative overflow-hidden"><span class="absolute inset-y-0 left-0 rounded-full" :style="{ width: r.w + '%', background: '#56C08A' }"></span></span></div>
             <div class="text-right text-sm font-semibold tabular-nums">{{ currency }} {{ money(r.amount).main }}</div>
           </div>
@@ -487,7 +494,7 @@ const chartMeta = computed(() => {
             <button v-if="(cards.topCategoriesByCard ?? []).length > 8" class="min-h-[32px] px-2 text-primary" @click="showAllCards = !showAllCards">{{ showAllCards ? $t('Show top 8') : $t('View all') }}</button>
           </div>
           <div v-for="(r, i) in cardCategories" :key="i" class="grid items-center gap-3 py-2 border-t border-base-lvl-2" style="grid-template-columns:minmax(0, 2fr) minmax(48px, 0.8fr) auto">
-            <div class="text-sm font-medium text-body break-words" :title="r.name">{{ r.name }}</div>
+            <component :is="r.id ? 'a' : 'div'" :href="r.id ? payeeHref(r.id) : null" class="text-sm font-medium text-body break-words" :class="r.id ? 'hover:text-primary hover:underline' : ''" :title="r.name">{{ r.name }}</component>
             <div class="flex items-center gap-2 text-xs text-body-1"><span style="min-width:38px">{{ r.pct.toFixed(1) }}%</span><span class="flex-1 h-1 rounded-full bg-base-lvl-2 relative overflow-hidden"><span class="absolute inset-y-0 left-0 rounded-full" :style="{ width: r.w + '%', background: '#E8837E' }"></span></span></div>
             <div class="text-right text-sm font-semibold tabular-nums">−{{ currency }} {{ money(r.amount).main }}</div>
           </div>
