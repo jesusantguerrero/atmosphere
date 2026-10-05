@@ -207,6 +207,10 @@ class ReconciliationController extends Controller
             ])
         );
 
+        if ($reconciliation->status === Reconciliation::STATUS_COMPLETED) {
+            return $this->completedResponse($reconciliation);
+        }
+
         return redirect("/finance/reconciliation/$reconciliation->id");
     }
 
@@ -220,7 +224,7 @@ class ReconciliationController extends Controller
             'user_id' => auth()->user()->id,
         ]));
 
-        return redirect("/finance/reconciliation/{$reconciliation->id}");
+        return $this->completedResponse($reconciliation);
     }
 
     public function update(Reconciliation $reconciliation, ReconciliationService $service, ReconciliationRequest $request): RedirectResponse
@@ -239,10 +243,16 @@ class ReconciliationController extends Controller
                 'banner' => "Can't reconcile this account",
             ]);
         } else {
-            return back()->with('flash', [
-                'banner' => 'Updated correctly',
-            ]);
+            return $this->completedResponse($reconciliation);
         }
+    }
+
+    private function completedResponse(Reconciliation $reconciliation): RedirectResponse
+    {
+        return redirect()->route('finance.reconciliation.hub')->with('flash', [
+            'banner' => __('Account reconciled successfully.'),
+            'reconciliation_id' => $reconciliation->id,
+        ]);
     }
 
     public function syncTransactions(Reconciliation $reconciliation, ReconciliationService $service): RedirectResponse
