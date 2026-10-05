@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Domains\Transaction\Models\Transaction;
+use App\Models\Account;
 use Illuminate\Http\Request;
 use Insane\Journal\Models\Core\Payee;
 
@@ -38,6 +39,7 @@ class SearchController extends Controller
         $teamId = $request->user()->current_team_id;
 
         return array_filter([
+            'accounts' => $this->searchAccounts($teamId, $searchText),
             'transactions' => $this->searchTransactions($teamId, $searchText),
             'payees' => $this->searchPayees($teamId, $searchText),
         ]);
@@ -84,6 +86,44 @@ class SearchController extends Controller
                 'total' => $transaction->total,
                 'direction' => $transaction->direction,
                 'currency_code' => $transaction->currency_code,
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Accounts matched by name — so typing an account name ("Sirena Apap")
+     * surfaces the account itself, not only its transactions, and lands you on
+     * the account page.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function searchAccounts(int $teamId, string $searchText): array
+    {
+        $term = '%'.$this->escapeLike($searchText).'%';
+
+        $typeLabels = [
+            'cash' => 'Cash',
+            'bank' => 'Bank',
+            'cash_on_hand' => 'Cash on Hand',
+            'savings' => 'Savings',
+            'credit_card' => 'Credit Card',
+        ];
+
+        return Account::query()
+            ->where('accounts.team_id', $teamId)
+            ->where('accounts.name', 'like', $term)
+            ->with('detailType:id,name')
+            ->orderBy('accounts.name')
+            ->limit(self::LIMIT_PER_GROUP)
+            ->get()
+            ->map(fn (Account $account) => [
+                'type' => 'accounts',
+                'id' => $account->id,
+                'title' => $account->name,
+                'subtitle' => $typeLabels[$account->detailType?->name] ?? 'Account',
+                'total' => (float) $account->balance,
+                'currency_code' => $account->currency_code,
             ])
             ->values()
             ->all();
