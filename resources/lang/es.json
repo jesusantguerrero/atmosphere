@@ -1170,5 +1170,6 @@
     "Net credit card debt": "Deuda neta de tarjetas",
     "Positive card balances offset negative balances": "Los saldos a favor compensan los saldos negativos",
     "accounts": "Cuentas",
-    "Search transactions, accounts and payees": "Buscar transacciones, cuentas y beneficiarios"
+    "Search transactions, accounts and payees": "Buscar transacciones, cuentas y beneficiarios",
+    "Select a valid account for this transaction.": "Selecciona una cuenta válida para esta transacción."
 }
