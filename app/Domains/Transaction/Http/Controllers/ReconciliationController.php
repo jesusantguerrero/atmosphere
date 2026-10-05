@@ -294,6 +294,7 @@ class ReconciliationController extends Controller
     {
         $this->authorize('adjust', $reconciliation);
         abort_unless((int) $reconciliationEntry->reconciliation_id === (int) $reconciliation->id, 404);
+        abort_if($reconciliation->status === Reconciliation::STATUS_COMPLETED, 409, 'Completed reconciliations cannot be unchecked.');
         $postData = $request->validated();
         $service->checkLine($reconciliation, $reconciliationEntry, (bool) $postData['matched']);
 

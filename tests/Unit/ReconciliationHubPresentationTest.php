@@ -18,7 +18,7 @@ const { parse, compileTemplate } = require('@vue/compiler-sfc');
 const source = fs.readFileSync('resources/js/Pages/Finance/Reconciliation/Hub.vue', 'utf8');
 const { descriptor } = parse(source);
 assert.deepEqual(compileTemplate({ source: descriptor.template.content, filename: 'Hub.vue', id: 'hub' }).errors, []);
-for (const filename of ['resources/js/Pages/Finance/AccountReconciliationForm.vue', 'resources/js/Pages/Finance/Reconciliation/Show.vue']) {
+for (const filename of ['resources/js/Pages/Finance/AccountReconciliationForm.vue', 'resources/js/Pages/Finance/Reconciliation/Show.vue', 'resources/js/domains/transactions/components/ReconciliationTable.vue']) {
  const component = parse(fs.readFileSync(filename, 'utf8')).descriptor;
  assert.deepEqual(compileTemplate({ source: component.template.content, filename, id: filename }).errors, []);
 }
@@ -33,7 +33,7 @@ const accounts = [
 const visits = [];
 const context = { ref: value => ({ value }), computed: fn => ({ get value() { return fn(); } }), defineProps: () => ({ accounts }), withDefaults: p => p, useI18n: () => ({ t: k => k }), router: { visit: url => visits.push(url) } };
 const quickPosts = [];
-context.useForm = initial => ({ ...initial, processing: false, clearErrors() {}, setError() {}, post(url, options) { quickPosts.push({ url, balance: this.balance, date: this.date }); options.onFinish(); } });
+context.useForm = initial => ({ ...initial, processing: false, clearErrors() {}, setError() {}, post(url, options) { assert.equal(options.preserveScroll, true); quickPosts.push({ url, balance: this.balance, date: this.date }); options.onFinish(); } });
 context.format = () => '2026-10-04';
 context.axios = { get: async () => ({ data: { balance: 125 } }) };
 vm.createContext(context);
@@ -74,7 +74,7 @@ const formContext = {
  format: () => '2026-10-04',
 };
 vm.createContext(formContext);
-vm.runInContext(ts.transpile(formSource + '\n globalThis.result = { ledgerBalanceAt, loadingBalance, reconcileMatchingBalance, previewDifference };'), formContext);
+vm.runInContext(ts.transpile(formSource + '\n globalThis.result = { ledgerBalanceAt, loadingBalance, balanceError, fetchBalanceAt, reconcileMatchingBalance, previewDifference };'), formContext);
 const shortcut = formContext.result;
 shortcut.reconcileMatchingBalance();
 assert.equal(submissions.length, 0);
@@ -93,9 +93,74 @@ shortcut.loadingBalance.value = false;
 form.processing = true;
 shortcut.reconcileMatchingBalance();
 assert.equal(submissions.length, 2);
+(async () => {
+ const requests = [];
+ form.processing = false;
+ form.date = 1;
+ formContext.axios = { get: () => new Promise((resolve, reject) => requests.push({ resolve, reject })) };
+ const first = shortcut.fetchBalanceAt();
+ form.date = 2;
+ const second = shortcut.fetchBalanceAt();
+ requests[1].resolve({ data: { balance: 200 } });
+ await second;
+ requests[0].resolve({ data: { balance: 100 } });
+ await first;
+ assert.equal(shortcut.ledgerBalanceAt.value, 200);
+ const failed = shortcut.fetchBalanceAt();
+ requests[2].reject(new Error('offline'));
+ await failed;
+ assert.equal(shortcut.ledgerBalanceAt.value, null);
+ assert.equal(shortcut.balanceError.value, true);
+ assert.equal(shortcut.loadingBalance.value, false);
+ form.date = null;
+ await shortcut.fetchBalanceAt();
+ assert.equal(requests.length, 3);
+})().catch(error => { console.error(error); process.exitCode = 1; });
+const showSource = parse(fs.readFileSync('resources/js/Pages/Finance/Reconciliation/Show.vue', 'utf8')).descriptor.scriptSetup.content.replace(/^import .*;\r?\n/gm, '');
+const showVisits = [];
+const reloads = [];
+const showProps = { reconciliation: { id: 1, account_id: 10, date: '2026-01-01', amount: 0 }, account: { balance: 0 }, transactions: { data: [] }, serverSearchOptions: {} };
+const showContext = {
+ ref: value => ({ value }), computed: fn => ({ get value() { return fn(); } }), watch: () => {}, onMounted: () => {}, provide: () => {},
+ defineProps: () => showProps, withDefaults: p => p, toRefs: p => Object.fromEntries(Object.entries(p).map(([key, value]) => [key, { value }])),
+ useTransactionModal: () => ({ openTransactionModal() {} }), useServerSearch: () => ({ state: {} }),
+ useForm: initial => ({ ...initial, processing: false, transform(fn) { this.transformer = fn; return this; }, put(url, options) { showVisits.push({ url, options }); } }),
+ window: { location: { search: '', pathname: '/finance/reconciliation/1' } }, URLSearchParams,
+ router: { reload: options => reloads.push(options), delete: (url, options) => showVisits.push({ url, options }), get: (url, params) => showVisits.push({ url, params }) },
+ axios: { put: async (url) => { if (url.includes('/2/check')) throw new Error('offline'); } },
+};
+vm.createContext(showContext);
+vm.runInContext(ts.transpile(showSource + '\n globalThis.result = { selectedRows, bulkSetMatched, bulkError, bulkProcessing, confirmDeleteReconciliation, confirmAdjustment, goToPage };'), showContext);
+(async () => {
+ const detail = showContext.result;
+ detail.selectedRows.value = [{ entry_id: 1 }, { entry_id: 2 }];
+ await detail.bulkSetMatched(true);
+ assert.equal(detail.bulkError.value, true);
+ assert.equal(detail.bulkProcessing.value, false);
+ assert.equal(detail.selectedRows.value.length, 2);
+ assert.equal(reloads.length, 1);
+ showContext.axios.put = async () => {};
+ await detail.bulkSetMatched(true);
+ assert.equal(detail.bulkError.value, false);
+ assert.equal(detail.selectedRows.value.length, 0);
+ detail.selectedRows.value = [{ entry_id: 1 }];
+ detail.goToPage(2);
+ assert.equal(detail.selectedRows.value.length, 0);
+ detail.confirmDeleteReconciliation();
+ detail.confirmDeleteReconciliation();
+ const deletions = showVisits.filter(visit => visit.url === '/finance/reconciliation/1' && visit.options);
+ assert.equal(deletions.length, 1);
+ assert.equal(deletions[0].options.only, undefined);
+ detail.confirmAdjustment();
+ const adjustment = showVisits.find(visit => visit.url.endsWith('/save-adjustment'));
+ const before = reloads.length;
+ adjustment.options.onSuccess();
+ assert.equal(reloads.length, before);
+})().catch(error => { console.error(error); process.exitCode = 1; });
 JS;
 
-        $process = new Process(['node', '-e', $script], dirname(__DIR__, 2));
+        $process = new Process(['node'], dirname(__DIR__, 2));
+        $process->setInput($script);
         $process->run();
 
         $this->assertTrue($process->isSuccessful(), $process->getErrorOutput());

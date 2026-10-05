@@ -23,7 +23,7 @@ const props = withDefaults(defineProps<{
 // reconciliation
 const reconcileForm = useForm({
     isVisible: false,
-    date: new Date(),
+    date: Date.now() as number | null,
     balance: 0,
     hasDifference: props.startDetailed ?? false,
 })
@@ -36,16 +36,24 @@ const reconcileForm = useForm({
 const ledgerBalanceAt = ref<number | null>(null);
 const loadingBalance = ref(false);
 
+const balanceError = ref(false);
+let balanceRequestId = 0;
 const fetchBalanceAt = async () => {
+    const requestId = ++balanceRequestId;
+    ledgerBalanceAt.value = null;
+    balanceError.value = false;
+    loadingBalance.value = false;
     if (!reconcileForm.date) return;
     loadingBalance.value = true;
     try {
         const { data } = await axios.get(`/finance/accounts/${props.account.id}/balance-at`, {
             params: { date: format(reconcileForm.date, 'yyyy-MM-dd') },
         });
-        ledgerBalanceAt.value = Number(data.balance);
+        if (requestId === balanceRequestId) ledgerBalanceAt.value = Number(data.balance);
+    } catch {
+        if (requestId === balanceRequestId) balanceError.value = true;
     } finally {
-        loadingBalance.value = false;
+        if (requestId === balanceRequestId) loadingBalance.value = false;
     }
 };
 
@@ -60,19 +68,23 @@ const previewDifference = computed(() => {
 });
 
 const previewMatches = computed(() => {
-    return previewDifference.value !== null && Math.abs(previewDifference.value) < 0.01;
+    return previewDifference.value !== null && Math.abs(previewDifference.value) < 0.005;
 });
 
 // Statements come from the past — a future-dated reconciliation is meaningless.
 const disableFutureDates = (ts: number) => ts > Date.now();
 
 const onClose = () => {
+    ++balanceRequestId;
+    loadingBalance.value = false;
+    reconcileForm.clearErrors();
     reconcileForm.reset()
     ledgerBalanceAt.value = null;
     emit('close')
 }
 
 const reconciliation = () => {
+    if (reconcileForm.processing || !reconcileForm.date) return;
     reconcileForm.transform(data => ({
         ...data,
         date: format(data.date, 'yyyy-MM-dd'),
@@ -125,7 +137,7 @@ const reconcileMatchingBalance = () => {
                     class="ml-2"
                     @click="doQuickReconciliation"
                     :class="{ 'opacity-25': reconcileForm.processing }"
-                    :disabled="reconcileForm.processing"
+                    :disabled="reconcileForm.processing || !reconcileForm.date"
                 >
                     {{ $t('Yes') }}
                 </LogerButton>
@@ -160,6 +172,10 @@ const reconcileMatchingBalance = () => {
             </span>
         </div>
 
+        <p v-if="balanceError" role="alert" class="text-sm text-error">
+            {{ $t('Could not load the account balance. Try again.') }}
+            <button type="button" class="underline" @click="fetchBalanceAt">{{ $t('Retry') }}</button>
+        </p>
         <AtField :label="$t('statement balance')">
             <LogerInput
                 ref="input"
@@ -209,7 +225,7 @@ const reconcileMatchingBalance = () => {
                 class="ml-2"
                 @click="reconciliation"
                 :class="{ 'opacity-25': reconcileForm.processing }"
-                :disabled="reconcileForm.processing"
+                :disabled="reconcileForm.processing || !reconcileForm.date"
             >
                 {{ $t('Save') }}
             </LogerButton>
