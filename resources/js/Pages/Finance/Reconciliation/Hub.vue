@@ -1,11 +1,16 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import { router } from "@inertiajs/vue3";
+import { computed, ref } from "vue";
+import { router, useForm } from "@inertiajs/vue3";
+import axios from "axios";
+import { format } from "date-fns";
 import { useI18n } from "vue-i18n";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import FinanceSectionNav from "../Partials/FinanceSectionNav.vue";
 import NumberHider from "@/Components/molecules/NumberHider.vue";
+import AccountReconciliationForm from "../AccountReconciliationForm.vue";
+import ConfirmationModal from "@/Components/atoms/ConfirmationModal.vue";
+import LogerButton from "@/Components/atoms/LogerButton.vue";
 import { formatMoney } from "@/utils";
 
 interface AccountRow {
@@ -121,13 +126,48 @@ const typeLabels: Record<string, string> = {
     credit_card: "Credit Card",
 };
 
-// Pending reconciliation → resume it (Show). Otherwise open the account's
-// reconciliation home to start a new one.
+const accountToReconcile = ref<AccountRow | null>(null);
+const quickAccountId = ref<number | null>(null);
+const quickForm = useForm({ date: "", balance: 0 });
+const quickConfirmation = ref<AccountRow | null>(null);
+
+const cancelQuickReconciliation = () => {
+    if (quickForm.processing) return;
+    quickConfirmation.value = null;
+    quickAccountId.value = null;
+};
+
+const confirmQuickReconciliation = () => {
+    if (!quickConfirmation.value || quickForm.processing) return;
+    quickForm.post(`/finance/reconciliation/accounts/${quickConfirmation.value.id}`, {
+        onSuccess: () => { quickConfirmation.value = null; },
+        onFinish: () => { quickAccountId.value = null; },
+    });
+};
+
+const quickReconcile = async (account: AccountRow) => {
+    if (quickAccountId.value !== null || quickForm.processing) return;
+    quickAccountId.value = account.id;
+    quickForm.clearErrors();
+    quickForm.date = format(new Date(), "yyyy-MM-dd");
+    try {
+        const { data } = await axios.get(`/finance/accounts/${account.id}/balance-at`, {
+            params: { date: quickForm.date },
+        });
+        quickForm.balance = Number(data.balance);
+        if (!Number.isFinite(quickForm.balance)) throw new Error("Invalid account balance");
+        quickConfirmation.value = account;
+    } catch {
+        quickAccountId.value = null;
+        quickForm.setError("balance", t("Could not load the account balance. Try again."));
+    }
+};
+
 const goReconcile = (a: AccountRow) => {
     if (a.last_status === "pending" && a.last_id) {
         router.visit(`/finance/reconciliation/${a.last_id}`);
     } else {
-        router.visit(`/finance/accounts/${a.id}/reconciliations`);
+        accountToReconcile.value = a;
     }
 };
 
@@ -146,6 +186,9 @@ const ctaLabel = (a: AccountRow) =>
         </template>
 
         <main class="px-5 sm:px-6 lg:px-8 mt-16 pb-36 max-w-screen-xl">
+            <p v-if="quickForm.errors.balance || quickForm.errors.date" role="alert" class="text-sm text-error mb-3">
+                {{ quickForm.errors.balance || quickForm.errors.date }}
+            </p>
             <header class="mb-4">
                 <h1 class="text-lg font-bold text-body">
                     {{ $t("Reconciliation") }}
@@ -212,7 +255,6 @@ const ctaLabel = (a: AccountRow) =>
                                             : `/finance/accounts/${a.id}/reconciliations`
                                     "
                                     class="text-sm font-semibold text-body break-words w-full sm:w-auto hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-                                    @click.prevent="goReconcile(a)"
                                     >{{ a.name }}</a
                                 >
                                 <span
@@ -289,6 +331,16 @@ const ctaLabel = (a: AccountRow) =>
                             </div>
                         </div>
 
+                        <div class="flex flex-col gap-2 flex-shrink-0">
+                        <button
+                            v-if="a.last_status !== 'pending'"
+                            type="button"
+                            class="text-xs font-semibold px-3 py-2 rounded-lg border border-body-1/30 text-body hover:bg-base-lvl-2 disabled:opacity-50"
+                            :disabled="quickAccountId !== null || quickForm.processing"
+                            @click="quickReconcile(a)"
+                        >
+                            {{ $t('Balance matches: reconcile') }}
+                        </button>
                         <button
                             type="button"
                             class="flex-shrink-0 text-sm font-semibold px-3 py-2.5 rounded-lg transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
@@ -301,6 +353,7 @@ const ctaLabel = (a: AccountRow) =>
                         >
                             {{ $t(ctaLabel(a)) }}
                         </button>
+                        </div>
                     </article>
                 </div>
             </section>
@@ -311,5 +364,38 @@ const ctaLabel = (a: AccountRow) =>
                 {{ $t("No accounts to reconcile yet.") }}
             </div>
         </main>
+        <ConfirmationModal
+            :show="quickConfirmation !== null"
+            :closeable="!quickForm.processing"
+            max-width="md"
+            :title="$t('Confirm reconciliation')"
+            @close="cancelQuickReconciliation"
+        >
+            <template #content>
+                <p class="font-semibold text-body">{{ quickConfirmation?.name }}</p>
+                <p class="mt-2 text-sm text-body">
+                    {{ $t('Does your statement match {balance} on {date}?', {
+                        balance: formatMoney(quickForm.balance, quickConfirmation?.currency_code),
+                        date: quickForm.date,
+                    }) }}
+                </p>
+                <p v-if="quickForm.errors.balance || quickForm.errors.date" role="alert" class="text-sm text-error mt-2">
+                    {{ quickForm.errors.balance || quickForm.errors.date }}
+                </p>
+            </template>
+            <template #footer>
+                <div class="flex justify-end gap-2">
+                    <LogerButton variant="neutral" :disabled="quickForm.processing" @click="cancelQuickReconciliation">{{ $t('Cancel') }}</LogerButton>
+                    <LogerButton :disabled="quickForm.processing" @click="confirmQuickReconciliation">{{ $t('Yes, reconcile') }}</LogerButton>
+                </div>
+            </template>
+        </ConfirmationModal>
+        <AccountReconciliationForm
+            v-if="accountToReconcile"
+            :account="accountToReconcile"
+            :is-visible="true"
+            start-detailed
+            @close="accountToReconcile = null"
+        />
     </AppLayout>
 </template>

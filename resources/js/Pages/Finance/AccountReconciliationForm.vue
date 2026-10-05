@@ -16,7 +16,8 @@ import { formatMoney } from "@/utils";
 const emit = defineEmits(['close']);
 const props = withDefaults(defineProps<{
     isVisible: boolean;
-    account: IAccount,
+    startDetailed?: boolean;
+    account: Pick<IAccount, 'id' | 'name' | 'balance' | 'currency_code'>,
 }>(), {});
 
 // reconciliation
@@ -24,7 +25,7 @@ const reconcileForm = useForm({
     isVisible: false,
     date: new Date(),
     balance: 0,
-    hasDifference: false,
+    hasDifference: props.startDetailed ?? false,
 })
 
 // ── Loger balance as of the picked date ─────────────────────────
@@ -51,7 +52,7 @@ const fetchBalanceAt = async () => {
 watch(() => reconcileForm.date, fetchBalanceAt);
 watch(() => reconcileForm.hasDifference, (isDetailed) => {
     if (isDetailed) fetchBalanceAt();
-});
+}, { immediate: true });
 
 const previewDifference = computed(() => {
     if (ledgerBalanceAt.value === null) return null;
@@ -87,6 +88,12 @@ const doQuickReconciliation = () => {
     reconcileForm.balance = props.account.balance;
     reconciliation()
 }
+
+const reconcileMatchingBalance = () => {
+    if (loadingBalance.value || ledgerBalanceAt.value === null || reconcileForm.processing) return;
+    reconcileForm.balance = ledgerBalanceAt.value;
+    reconciliation();
+};
 
 
 </script>
@@ -170,7 +177,7 @@ const doQuickReconciliation = () => {
         <!-- Live difference preview: green when the statement matches Loger
              as of that date, red with the gap when it doesn't. -->
         <div
-            v-if="previewDifference !== null && Number(reconcileForm.balance)"
+            v-if="previewDifference !== null"
             class="flex items-center justify-between px-3 py-2 rounded-md text-sm"
             :class="previewMatches ? 'bg-success/10 text-success' : 'bg-error/10 text-error'"
         >
@@ -185,9 +192,17 @@ const doQuickReconciliation = () => {
     </template>
 
     <template #footer v-if="reconcileForm.hasDifference">
-        <section class="flex justify-between">
+        <section class="flex flex-wrap justify-between gap-2">
             <LogerButton @click="onClose" variant="neutral">
                 {{ $t('Cancel') }}
+            </LogerButton>
+
+            <LogerButton
+                variant="neutral"
+                :disabled="loadingBalance || ledgerBalanceAt === null || reconcileForm.processing"
+                @click="reconcileMatchingBalance"
+            >
+                {{ $t('Matches Loger: reconcile') }}
             </LogerButton>
 
             <LogerButton

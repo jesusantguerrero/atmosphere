@@ -1020,5 +1020,11 @@
     "In progress": "In progress",
     "To review": "To review",
     "Movements to review": "Movements to review",
-    "Compare your statement with Loger and resolve any differences.": "Compare your statement with Loger and resolve any differences."
+    "Compare your statement with Loger and resolve any differences.": "Compare your statement with Loger and resolve any differences.",
+    "Matches Loger: reconcile": "Matches Loger: reconcile",
+    "Balance matches: reconcile": "Balance matches: reconcile",
+    "Could not load the account balance. Try again.": "Could not load the account balance. Try again.",
+    "Confirm reconciliation": "Confirm reconciliation",
+    "Does your statement match {balance} on {date}?": "Does your statement match {balance} on {date}?",
+    "Yes, reconcile": "Yes, reconcile"
 }
