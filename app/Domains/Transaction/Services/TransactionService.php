@@ -5,6 +5,7 @@ namespace App\Domains\Transaction\Services;
 use App\Domains\Budget\Data\BudgetReservedNames;
 use App\Domains\Transaction\Imports\TransactionsImport;
 use App\Domains\Transaction\Models\Transaction;
+use Insane\Journal\Models\Core\AccountDetailType;
 use App\Domains\Transaction\Models\TransactionLine;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;
@@ -468,6 +469,28 @@ class TransactionService
             ->whereBetween('transactions.date', [$startDate, $endDate])
             ->selectRaw('COALESCE(payees.name, ?) as name, SUM(COALESCE(transactions.total, 0)) as total', [__('Without payee')])
             ->groupBy('payees.id', 'payees.name')
+            ->toBase()->get();
+    }
+
+    /**
+     * Total outflow per account for the period — ALL verified withdrawals, not
+     * just categorized ones. This is the bank-reconciliation lens: it should
+     * tie out to what actually left each account on the statement, so unlike the
+     * category view it does not require a budget category.
+     */
+    public static function getExpensesByAccountInPeriod(int $teamId, string $startDate, string $endDate): Collection
+    {
+        return Transaction::query()
+            ->join('accounts', 'accounts.id', '=', 'transactions.account_id')
+            ->join('account_detail_types as adt', 'adt.id', '=', 'accounts.account_detail_type_id')
+            ->where('transactions.team_id', $teamId)
+            ->where('transactions.direction', Transaction::DIRECTION_CREDIT)
+            ->where('transactions.status', 'verified')
+            ->whereNull('transactions.deleted_at')
+            ->whereIn('adt.name', AccountDetailType::ALL)
+            ->whereBetween('transactions.date', [$startDate, $endDate])
+            ->selectRaw('accounts.id as id, accounts.name as name, SUM(COALESCE(transactions.total, 0)) as total')
+            ->groupBy('accounts.id', 'accounts.name')
             ->toBase()->get();
     }
 

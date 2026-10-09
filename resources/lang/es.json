@@ -1171,5 +1171,9 @@
     "Positive card balances offset negative balances": "Los saldos a favor compensan los saldos negativos",
     "accounts": "Cuentas",
     "Search transactions, accounts and payees": "Buscar transacciones, cuentas y beneficiarios",
-    "Select a valid account for this transaction.": "Selecciona una cuenta válida para esta transacción."
+    "Select a valid account for this transaction.": "Selecciona una cuenta válida para esta transacción.",
+    "By account": "Por cuenta",
+    "Breakdown": "Desglose",
+    "All outflows": "Todas las salidas",
+    "Categorized": "Categorizado"
 }

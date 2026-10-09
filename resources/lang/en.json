@@ -1086,5 +1086,9 @@
     "Positive card balances offset negative balances": "Positive card balances offset negative balances",
     "accounts": "accounts",
     "Search transactions, accounts and payees": "Search transactions, accounts and payees",
-    "Select a valid account for this transaction.": "Select a valid account for this transaction."
+    "Select a valid account for this transaction.": "Select a valid account for this transaction.",
+    "By account": "By account",
+    "Breakdown": "Breakdown",
+    "All outflows": "All outflows",
+    "Categorized": "Categorized"
 }

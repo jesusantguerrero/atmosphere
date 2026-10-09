@@ -148,6 +148,17 @@ const cardOptions = { colors: ["#E8837EB3"], borderColors: ["#E8837E"], ...chart
 const catTop = computed(() => expenseByCat.value.slice(0, 12));
 const catLabels = computed(() => catTop.value.map((c) => c.name));
 const catSeries = computed(() => [{ name: t("Spend"), data: catTop.value.map((c) => c.total) }]);
+// Spending breakdown lens for the Gastos tab: by category (budget-aligned) or
+// by account (every verified outflow, to reconcile against the bank).
+const accountsOutRows = computed<any[]>(() =>
+  (props.data?.expensesByAccount ?? []).map((x: any) => ({ name: x.name, total: abs(x.total) })).sort((a, b) => b.total - a.total)
+);
+const gastoBreakdownDims = [ { id: "categoria", label: "By category" }, { id: "cuenta", label: "By account" } ];
+const gastoDim = ref("categoria");
+const showAllGasto = ref(false);
+const gastoSrc = computed<any[]>(() => (gastoDim.value === "cuenta" ? accountsOutRows.value : expenseByCat.value));
+const gastoRows = computed(() => rankRows(gastoSrc.value, showAllGasto.value));
+const gastoTotal = computed<number>(() => gastoSrc.value.reduce((a, x) => a + x.total, 0));
 const catOptions = { colors: ["#7C6FF0B3"], borderColors: ["#7C6FF0"], ...chartAxis };
 
 // ---- tabs
@@ -440,7 +451,8 @@ const chartMeta = computed(() => {
       </div>
 
       <!-- Spending: category + trend widgets -->
-      <div v-else-if="activeTab === 'gastos'" class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-8">
+      <div v-else-if="activeTab === 'gastos'" class="mt-8 space-y-5">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div class="bg-base-lvl-3/50 border border-base rounded-xl p-5">
           <div class="flex items-start justify-between gap-3">
             <div>
@@ -464,6 +476,31 @@ const chartMeta = computed(() => {
           <h3 class="text-lg font-extrabold text-body">{{ $t('Recent months with activity') }}</h3>
           <div class="text-[11px] text-body-1/70 mb-3">{{ expReportMonths.map(m => formatMonth(m.month)).join(' / ') }} · {{ $t('Daily cumulative') }}</div>
           <ChartCurrentVsPrevious class="w-full" title="" :data="expReport" />
+        </div>
+        </div>
+        <!-- Numeric breakdown: by category (budget) or by account (bank reconciliation) -->
+        <div class="bg-base-lvl-3/50 border border-base rounded-xl p-5">
+          <div class="flex items-start justify-between gap-3 mb-3">
+            <div>
+              <h3 class="text-lg font-extrabold text-body">{{ $t('Breakdown') }}</h3>
+              <div class="flex gap-1 mt-2 p-0.5 rounded-lg bg-base-lvl-1 border border-base w-max">
+                <button v-for="dm in gastoBreakdownDims" :key="dm.id" class="px-3 py-1 text-xs font-medium rounded-md transition" :class="gastoDim === dm.id ? 'bg-base-lvl-3 text-body' : 'text-body-1/70 hover:text-body-1'" @click="gastoDim = dm.id; showAllGasto = false">{{ $t(dm.label) }}</button>
+              </div>
+            </div>
+            <div class="text-right shrink-0">
+              <div class="text-error font-bold tabular-nums leading-none">{{ currency }} {{ money(gastoTotal).main }}<span class="text-xs opacity-60">.{{ money(gastoTotal).cents }}</span></div>
+              <div class="text-[10px] text-body-1/60 mt-0.5">{{ $t('Total') }} · {{ gastoDim === 'cuenta' ? $t('All outflows') : $t('Categorized') }} · {{ periodLabel }}</div>
+            </div>
+          </div>
+          <div class="flex items-center justify-end">
+            <button v-if="gastoSrc.length > 8" class="min-h-[28px] px-2 text-primary font-medium text-xs" @click="showAllGasto = !showAllGasto">{{ showAllGasto ? $t('Show top 8') : $t('View all') }}</button>
+          </div>
+          <div v-for="(r, i) in gastoRows" :key="i" class="grid items-center gap-3 py-2 border-t border-base-lvl-2" style="grid-template-columns:minmax(0, 2fr) minmax(48px, 0.8fr) auto">
+            <div class="text-sm font-medium text-body break-words" :title="r.name">{{ r.name }}</div>
+            <div class="flex items-center gap-2 text-xs text-body-1"><span style="min-width:38px">{{ r.pct.toFixed(1) }}%</span><span class="flex-1 h-1 rounded-full bg-base-lvl-2 relative overflow-hidden"><span class="absolute inset-y-0 left-0 rounded-full" :style="{ width: r.w + '%', background: '#E8837E' }"></span></span></div>
+            <div class="text-right text-sm font-semibold tabular-nums">{{ currency }} {{ money(r.amount).main }}</div>
+          </div>
+          <p v-if="!gastoRows.length" class="text-sm text-body-1/70 py-6 text-center">{{ $t('No data for this period.') }}</p>
         </div>
       </div>
 

@@ -187,6 +187,11 @@ class FinanceTrendController extends Controller
             ->groupBy('name')
             ->map(fn ($rows, $name) => ['name' => $name, 'total' => (float) $rows->sum('total')])
             ->values()->sortByDesc('total')->values();
+        // Spending by ACCOUNT for the period (bank-reconciliation lens): every
+        // verified outflow per account, categorized or not.
+        $expensesByAccount = TransactionService::getExpensesByAccountInPeriod($teamId, $startDate, $endDate)
+            ->map(fn ($r) => ['name' => $r->name, 'total' => (float) $r->total])
+            ->sortByDesc('total')->values();
         $expensesReport = ReportService::generateCurrentPreviousReport($teamId, 'month', 1, 'expenses', $latestExpenseDate);
         // Now-anchored (not latest-expense-date anchored): YTD must be a real
         // calendar Jan..current-month span, and the current month stays the end
@@ -247,6 +252,7 @@ class FinanceTrendController extends Controller
                 'groups' => $groups,
                 'payeesOut' => $payeesOut,
                 'payeesIn' => $payeesIn,
+                'expensesByAccount' => $expensesByAccount,
                 'incomeExpenses' => $incomeExpenses,
                 'expensesReport' => $expensesReport,
                 'spendingSummary' => $spendingSummary,
