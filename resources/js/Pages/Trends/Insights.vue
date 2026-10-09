@@ -266,7 +266,7 @@ const hero = computed(() => {
       label: t("Credit used"),
       value: num(cards.value.creditTotal),
       negative: false,
-      sub: hasCards.value ? t(`{pct}% of your ${currency.value} {capacity} limit`, { pct: num(cards.value.creditLineUsage).toFixed(0), capacity: money(num(cards.value.creditCapacity)).main }) : t("No credit cards yet."),
+      sub: hasCards.value ? t(`{pct}% of your {currency} {capacity} limit`, { currency: currency.value, pct: num(cards.value.creditLineUsage).toFixed(0), capacity: money(num(cards.value.creditCapacity)).main }) : t("No credit cards yet."),
     };
   }
   const a = num(nwLatest.value?.assets);
@@ -274,7 +274,7 @@ const hero = computed(() => {
   const net = a + de;
   const net3 = num(nw3ago.value?.assets) + num(nw3ago.value?.debts);
   const diff = net - net3;
-  return { label: t("Net worth"), value: net, negative: net < 0, sub: showNwComparison.value ? t(`{sign}${currency.value} {amount} vs 3 months ago`, { sign: diff >= 0 ? "+" : "−", amount: shortK(diff) }) : "" };
+  return { label: t("Net worth"), value: net, negative: net < 0, sub: showNwComparison.value ? t(`{sign}{currency} {amount} vs 3 months ago`, { currency: currency.value, sign: diff >= 0 ? "+" : "−", amount: shortK(diff) }) : "" };
 });
 
 // ---- narrative per tab
@@ -285,16 +285,16 @@ const narrative = computed<any[]>(() => {
     const avg = spendMonths.value.length ? spendMonths.value.reduce((s, m) => s + m.total, 0) / spendMonths.value.length : 0;
     const out: any[] = [];
     if (p)
-      out.push({ icon: c < p ? "↘" : "↗", title: c < p ? t("Spending is trending down") : t("Spending is going up"), text: t(`You closed {month} at ${currency.value} {amount}, {pct}% {dir} than {prev}.`, { month: formatMonth(latestSpend.value.month), amount: money(c).main, pct: Math.abs(pctChange(c, p)).toFixed(0), dir: c < p ? t("less") : t("more"), prev: formatMonth(prevSpend.value.month) }) });
-    out.push({ icon: "✱", title: t("Average for the period"), text: t(`You average ${currency.value} {amount} per month over the last {n} months.`, { amount: money(avg).main, n: spendMonths.value.length }) });
+      out.push({ icon: c < p ? "↘" : "↗", title: c < p ? t("Spending is trending down") : t("Spending is going up"), text: t(`You closed {month} at {currency} {amount}, {pct}% {dir} than {prev}.`, { currency: currency.value, month: formatMonth(latestSpend.value.month), amount: money(c).main, pct: Math.abs(pctChange(c, p)).toFixed(0), dir: c < p ? t("less") : t("more"), prev: formatMonth(prevSpend.value.month) }) });
+    out.push({ icon: "✱", title: t("Average for the period"), text: t(`You average {currency} {amount} per month over the last {n} months.`, { currency: currency.value, amount: money(avg).main, n: spendMonths.value.length }) });
     return out;
   }
   if (activeTab.value === "income") {
     const top = incomeRows.value[0];
     const tot = grandIn.value || 1;
     const out: any[] = [];
-    if (top) out.push({ icon: "↗", title: t("Top income source"), text: t(`{name} brought in ${currency.value} {amount} — {pct}% of your income.`, { name: top.name, amount: money(top.total).main, pct: ((top.total / tot) * 100).toFixed(0) }) });
-    out.push({ icon: "✱", title: t("Income vs spending"), text: t(`You brought in ${currency.value} {in} and spent ${currency.value} {out} this period.`, { in: money(grandIn.value).main, out: money(grandOut.value).main }) });
+    if (top) out.push({ icon: "↗", title: t("Top income source"), text: t(`{name} brought in {currency} {amount} — {pct}% of your income.`, { currency: currency.value, name: top.name, amount: money(top.total).main, pct: ((top.total / tot) * 100).toFixed(0) }) });
+    out.push({ icon: "✱", title: t("Income vs spending"), text: t(`You brought in {currency} {in} and spent {currency} {out} this period.`, { currency: currency.value, in: money(grandIn.value).main, out: money(grandOut.value).main }) });
     return out;
   }
   if (activeTab.value === "cards") {
@@ -310,7 +310,7 @@ const narrative = computed<any[]>(() => {
   const net = a + de;
   const net3 = num(nw3ago.value?.assets) + num(nw3ago.value?.debts);
   const out: any[] = [
-    { icon: net < 0 ? "↗" : "↘", title: net < 0 ? t("Net worth is negative") : t("Net worth is positive"), text: t(`Debts (${currency.value} {debts}) {rel} assets (${currency.value} {assets}). The net stands at {net}.`, { debts: money(de).main, rel: abs(de) > a ? t("exceed") : t("are below"), assets: money(a).main, net: `${net < 0 ? "−" : ""}${currency.value} ${money(net).main}` }) },
+    { icon: net < 0 ? "↗" : "↘", title: net < 0 ? t("Net worth is negative") : t("Net worth is positive"), text: t(`Debts ({currency} {debts}) {rel} assets ({currency} {assets}). The net stands at {net}.`, { currency: currency.value, debts: money(de).main, rel: abs(de) > a ? t("exceed") : t("are below"), assets: money(a).main, net: `${net < 0 ? "−" : ""}${currency.value} ${money(net).main}` }) },
   ];
   if (showNwComparison.value) {
     out.push({ icon: "↗", title: t("vs 3 months ago"), text: t("Three months ago the net was {net}.", { net: `${net3 < 0 ? "−" : ""}${currency.value} ${money(net3).main}` }) });
