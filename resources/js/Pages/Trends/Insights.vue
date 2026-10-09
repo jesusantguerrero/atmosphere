@@ -442,9 +442,23 @@ const chartMeta = computed(() => {
       <!-- Spending: category + trend widgets -->
       <div v-else-if="activeTab === 'gastos'" class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-8">
         <div class="bg-base-lvl-3/50 border border-base rounded-xl p-5">
-          <h3 class="text-lg font-extrabold text-body">{{ $t('By category') }}</h3>
-          <div class="text-[11px] text-body-1/70 mb-3">{{ chartMeta.legend }}</div>
-          <div style="height:300px"><LogerChart type="bar" :labels="catLabels" :series="catSeries" :options="catOptions" /></div>
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <h3 class="text-lg font-extrabold text-body">{{ $t('By category') }}</h3>
+              <div class="text-[11px] text-body-1/70">{{ chartMeta.legend }}</div>
+            </div>
+            <div class="text-right shrink-0">
+              <div class="text-error font-bold tabular-nums leading-none">{{ currency }} {{ money(totalOut).main }}<span class="text-xs opacity-60">.{{ money(totalOut).cents }}</span></div>
+              <div class="text-[10px] text-body-1/60 mt-0.5">{{ $t('Total') }} · {{ periodLabel }}</div>
+            </div>
+          </div>
+          <div style="height:300px" class="mt-3"><LogerChart type="bar" :labels="catLabels" :series="catSeries" :options="catOptions" /></div>
+          <div v-if="spendMonths.length > 1" class="mt-3 pt-3 border-t border-base-lvl-2 flex flex-wrap gap-x-4 gap-y-1">
+            <span v-for="(m, i) in spendMonths" :key="i" class="text-xs text-body-1">
+              <span class="text-body-1/60">{{ formatMonth(m.month) }}</span>
+              <span class="font-semibold tabular-nums ml-1">{{ currency }} {{ money(m.total).main }}</span>
+            </span>
+          </div>
         </div>
         <div class="bg-base-lvl-3/50 border border-base rounded-xl p-5">
           <h3 class="text-lg font-extrabold text-body">{{ $t('Recent months with activity') }}</h3>
