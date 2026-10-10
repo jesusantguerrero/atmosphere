@@ -50,7 +50,7 @@ class InsightsPeriodTest extends TestCase
         $reports = Mockery::mock('alias:'.ReportService::class);
         $cards = Mockery::mock(CreditCardReportService::class);
         $transactions->shouldReceive('getCategoryExpensesGroup')->once()->with(2, $startDate, $endDate, null, null)->andReturn([]);
-        $transactions->shouldReceive('getIncomeVsExpenses')->once()->with(2, $months - 1)->andReturn([
+        $transactions->shouldReceive('getIncomeVsExpenses')->once()->with(2, $months - 1, 'month', 'expenses', Mockery::type(Carbon::class))->andReturn([
             'expenses' => [['name' => 'School', $startDate => 1100, 'total' => 1100]],
             'incomes' => [['name' => 'Employer', $startDate => 3000, 'total' => 3000]],
         ]);
@@ -63,6 +63,7 @@ class InsightsPeriodTest extends TestCase
             ['name' => 'Employer', 'total' => 1000],
             ['name' => 'Employer', 'total' => 2000],
         ]));
+        $transactions->shouldReceive('getExpensesByAccountInPeriod')->once()->with(2, $startDate, $endDate)->andReturn(collect());
         $reports->shouldReceive('generateCurrentPreviousReport')->once()->andReturn([]);
         $transactions->shouldReceive('getNetWorth')->once()->with(2, $startDate, $endDate)->andReturn([
             (object) ['date_unit' => '2025-10-31', 'assets' => 100, 'debts' => 0],
@@ -85,5 +86,32 @@ class InsightsPeriodTest extends TestCase
         $this->assertSame(3000.0, $result['data']['monthlyFlow'][0]['income']);
         $this->assertSame(1100.0, $result['data']['payeesOut'][0]['total']);
         $this->assertSame(3000.0, $result['data']['payeesIn'][0]['total']);
+    }
+
+    public function test_period_can_be_navigated_back_and_never_past_the_current_month(): void
+    {
+        Carbon::setTestNow('2026-10-31 12:00:00');
+        $transactions = Mockery::mock('alias:'.TransactionService::class);
+        $reports = Mockery::mock('alias:'.ReportService::class);
+        $cards = Mockery::mock(CreditCardReportService::class);
+        $transactions->shouldReceive('getCategoryExpensesGroup')->once()->with(2, '2026-08-01', '2026-08-31', null, null)->andReturn([]);
+        $transactions->shouldReceive('getIncomeVsExpenses')->once()->with(2, 0, 'month', 'expenses', Mockery::on(fn ($anchor) => $anchor->format('Y-m') === '2026-08'))->andReturn([]);
+        $reports->shouldReceive('getLatestExpenseDate')->once()->andReturn('2026-10-31');
+        $transactions->shouldReceive('getExpensePayeesInPeriod')->once()->andReturn(collect());
+        $transactions->shouldReceive('getTransactionsByPayeeInPeriod')->once()->andReturn(collect());
+        $transactions->shouldReceive('getExpensesByAccountInPeriod')->once()->with(2, '2026-08-01', '2026-08-31')->andReturn(collect());
+        $reports->shouldReceive('generateCurrentPreviousReport')->once()->andReturn([]);
+        $transactions->shouldReceive('getNetWorth')->once()->andReturn([]);
+        $cards->shouldReceive('creditCards')->once()->with(2, '2026-08-31', '2026-08-01', null)->andReturn([]);
+
+        $request = Request::create('/trends', 'GET', ['months' => 1, 'range' => '1M', 'end' => '2026-08']);
+        $user = new User;
+        $user->current_team_id = 2;
+        $request->setUserResolver(fn () => $user);
+        $result = (new FinanceTrendController($reports, $cards))->insights($request);
+
+        $this->assertSame('2026-08', $result['metaData']['anchorMonth']);
+        $this->assertFalse($result['metaData']['isCurrentPeriod']);
+        $this->assertSame('2026-08-31', $result['metaData']['asOfDate']);
     }
 }

@@ -5,13 +5,13 @@ namespace App\Domains\Transaction\Services;
 use App\Domains\Budget\Data\BudgetReservedNames;
 use App\Domains\Transaction\Imports\TransactionsImport;
 use App\Domains\Transaction\Models\Transaction;
-use Insane\Journal\Models\Core\AccountDetailType;
 use App\Domains\Transaction\Models\TransactionLine;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Insane\Journal\Models\Core\AccountDetailType;
 use Insane\Journal\Models\Core\Category as CoreCategory;
 
 class TransactionService
@@ -304,10 +304,11 @@ class TransactionService
         ]);
     }
 
-    public static function getIncomeVsExpenses($teamId, $timeUnitDiff = 2, $timeUnit = 'month', $type = 'expenses')
+    public static function getIncomeVsExpenses($teamId, $timeUnitDiff = 2, $timeUnit = 'month', $type = 'expenses', ?CarbonCarbonInterface $anchor = null)
     {
-        $endDate = Carbon::now()->endOfMonth()->format('Y-m-d');
-        $startDate = Carbon::now()->startOfMonth()->subMonths($timeUnitDiff)->format('Y-m-d');
+        $anchor ??= Carbon::now();
+        $endDate = $anchor->copy()->endOfMonth()->format('Y-m-d');
+        $startDate = $anchor->copy()->startOfMonth()->subMonths($timeUnitDiff)->format('Y-m-d');
 
         $expenses = self::getInPeriod($teamId, $startDate, $endDate);
         $expensesGroup = $expenses->groupBy('date');
@@ -476,15 +477,23 @@ class TransactionService
      * Total outflow per account for the period — ALL verified withdrawals, not
      * just categorized ones. This is the bank-reconciliation lens: it should
      * tie out to what actually left each account on the statement, so unlike the
-     * category view it does not require a budget category.
+     * category view it does not require a budget category. Movements between the
+     * user's own accounts (card payments, transfers) are excluded: they are not
+     * spending, and the purchases already count on the card account itself.
      */
     public static function getExpensesByAccountInPeriod(int $teamId, string $startDate, string $endDate): Collection
     {
         return Transaction::query()
             ->join('accounts', 'accounts.id', '=', 'transactions.account_id')
             ->join('account_detail_types as adt', 'adt.id', '=', 'accounts.account_detail_type_id')
+            ->leftJoin('accounts as counter_accounts', 'counter_accounts.id', '=', 'transactions.counter_account_id')
+            ->leftJoin('account_detail_types as counter_adt', 'counter_adt.id', '=', 'counter_accounts.account_detail_type_id')
             ->where('transactions.team_id', $teamId)
             ->where('transactions.direction', Transaction::DIRECTION_CREDIT)
+            ->where('transactions.is_transfer', false)
+            ->where(function ($query) {
+                $query->whereNull('counter_adt.name')->orWhereNotIn('counter_adt.name', AccountDetailType::ALL);
+            })
             ->where('transactions.status', 'verified')
             ->whereNull('transactions.deleted_at')
             ->whereIn('adt.name', AccountDetailType::ALL)
