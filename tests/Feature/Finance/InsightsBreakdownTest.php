@@ -69,6 +69,7 @@ class InsightsBreakdownTest extends TestCase
             $incomeOnly = TransactionService::getIncomeVsExpenses(2, 0);
             $this->assertCount(0, $incomeOnly['expenses']);
             $this->assertEquals(1000, (float) (string) $incomeOnly['incomes']->first()['avg']);
+            $this->assertCount(0, TransactionService::getIncomeVsExpenses(2, 0, 'month', 'expenses', Carbon::parse('2026-09-15'))['incomes']);
         } finally {
             Carbon::setTestNow();
         }

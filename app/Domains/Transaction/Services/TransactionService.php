@@ -8,6 +8,7 @@ use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Transaction\Models\TransactionLine;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -304,7 +305,7 @@ class TransactionService
         ]);
     }
 
-    public static function getIncomeVsExpenses($teamId, $timeUnitDiff = 2, $timeUnit = 'month', $type = 'expenses', ?CarbonCarbonInterface $anchor = null)
+    public static function getIncomeVsExpenses($teamId, $timeUnitDiff = 2, $timeUnit = 'month', $type = 'expenses', ?CarbonInterface $anchor = null)
     {
         $anchor ??= Carbon::now();
         $endDate = $anchor->copy()->endOfMonth()->format('Y-m-d');
