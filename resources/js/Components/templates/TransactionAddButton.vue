@@ -3,7 +3,7 @@
     import { AtButton } from 'atmosphere-ui';
     import JetDropdown from '@/Components/atoms/Dropdown.vue'
     import LogerButtonTab from '@/Components/atoms/LogerButtonTab.vue';
-    import { usePage } from '@inertiajs/vue3';
+    import { usePage, router } from '@inertiajs/vue3';
 
     import { TRANSACTION_DIRECTIONS,  useTransactionModal } from '@/domains/transactions';
     import { useToggleModal } from '@/domains/app/useToggleModal';
@@ -51,6 +51,12 @@
                 <LogerButtonTab class="w-full font-bold" @click="open('transfer')">
                     <IMdiBankTransfer class="mr-2 text-md" />
                     {{ $t('Transfer') }}
+                </LogerButtonTab>
+
+                <h4 class="px-2 mt-2 border-t border-base pt-2 text-body-1/80"> {{ $t('Accounts') }}: </h4>
+                <LogerButtonTab class="w-full font-bold" @click="router.visit('/finance/accounts?newAccount=1')">
+                    <IMdiBankPlus class="mr-2 text-md" />
+                    {{ $t('New account') }}
                 </LogerButtonTab>
 
                 <h4 class="px-2 mt-2 border-t border-base pt-2 text-body-1/80"> {{ $t('Planner') }}: </h4>
