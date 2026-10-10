@@ -94,16 +94,20 @@ class CreditCardReportService
             ->get();
     }
 
-    public function getTopCategoriesByCreditCard($teamId, $startDate, $endDate, $creditCardId = null)
+    public function getTopCategoriesByCreditCard($teamId, $startDate, $endDate, $creditCardId = null, ?array $accountIds = null)
     {
         $cacheKey = $this->reportCacheKey('topCategoriesByCreditCard', [
             $teamId,
             (string) $startDate,
             (string) $endDate,
             $creditCardId,
+            $accountIds,
         ]);
 
-        return Cache::remember($cacheKey, self::REPORT_CACHE_TTL_SECONDS, function () use ($teamId, $startDate, $endDate) {
+        return Cache::remember($cacheKey, self::REPORT_CACHE_TTL_SECONDS, function () use ($teamId, $startDate, $endDate, $accountIds) {
+            $accountFilter = ! empty($accountIds)
+                ? ' AND tl.account_id IN ('.implode(',', array_map('intval', $accountIds)).')'
+                : '';
             $readyToAssign = Category::where([
                 'team_id' => $teamId,
             ])
@@ -125,7 +129,7 @@ class CreditCardReportService
             INNER JOIN accounts a on tl.account_id = a.id AND a.credit_closing_day IS NOT NULL
             INNER JOIN categories c on c.id = tl.category_id
             WHERE tl.date >= :startDate AND tl.date <= :endDate
-            AND tl.team_id = :teamId
+            AND tl.team_id = :teamId{$accountFilter}
             GROUP BY tl.account_id, tl.category_id
             ORDER BY a.id, ABS(COALESCE(SUM(tl.amount * tl.type), 0))
         )
@@ -145,15 +149,19 @@ class CreditCardReportService
         });
     }
 
-    public function getTopPayeesByAccount($teamId, $startDate, $endDate, $asToday = null)
+    public function getTopPayeesByAccount($teamId, $startDate, $endDate, $asToday = null, ?array $accountIds = null)
     {
         $cacheKey = $this->reportCacheKey('topPayeesByAccount', [
             $teamId,
             (string) $startDate,
             (string) $endDate,
+            $accountIds,
         ]);
 
-        return Cache::remember($cacheKey, self::REPORT_CACHE_TTL_SECONDS, function () use ($teamId, $startDate, $endDate) {
+        return Cache::remember($cacheKey, self::REPORT_CACHE_TTL_SECONDS, function () use ($teamId, $startDate, $endDate, $accountIds) {
+            $accountFilter = ! empty($accountIds)
+                ? ' AND tl.account_id IN ('.implode(',', array_map('intval', $accountIds)).')'
+                : '';
             $readyToAssign = Category::where([
                 'team_id' => $teamId,
             ])
@@ -174,7 +182,7 @@ class CreditCardReportService
         INNER JOIN accounts a on tl.account_id = a.id AND a.credit_closing_day IS NOT NULL
         INNER JOIN payees p on p.id = tl.payee_id
         WHERE tl.date >= :startDate AND tl.date <= :endDate
-        AND tl.team_id = :teamId
+        AND tl.team_id = :teamId{$accountFilter}
         GROUP BY tl.payee_id
         ORDER BY ABS(COALESCE(SUM(tl.amount * tl.type), 0)) desc
         ", [
@@ -186,16 +194,17 @@ class CreditCardReportService
         });
     }
 
-    public function getBillingCyclesByCardInPeriod($teamId, $startDate, $endDate, $creditCardId = null)
+    public function getBillingCyclesByCardInPeriod($teamId, $startDate, $endDate, $creditCardId = null, ?array $accountIds = null)
     {
         $cacheKey = $this->reportCacheKey('billingCyclesByCardInPeriod', [
             $teamId,
             (string) $startDate,
             (string) $endDate,
             $creditCardId,
+            $accountIds,
         ]);
 
-        return Cache::remember($cacheKey, self::REPORT_CACHE_TTL_SECONDS, function () use ($teamId, $startDate, $endDate, $creditCardId) {
+        return Cache::remember($cacheKey, self::REPORT_CACHE_TTL_SECONDS, function () use ($teamId, $startDate, $endDate, $creditCardId, $accountIds) {
             $billingData = DB::table(DB::raw('accounts a'))
                 ->where('a.team_id', $teamId)
                 ->whereNotNull('a.credit_closing_day')
@@ -207,6 +216,7 @@ class CreditCardReportService
                 a.id
             ')
                 ->when($creditCardId, fn ($q) => $q->where('a.id', $creditCardId))
+                ->when(! empty($accountIds), fn ($q) => $q->whereIn('a.id', $accountIds))
                 ->leftJoin(DB::raw('billing_cycles bc'), 'a.id', 'bc.account_id')
                 ->whereBetween('bc.end_at', [$startDate, $endDate])
                 ->groupBy('a.id')
@@ -273,9 +283,9 @@ class CreditCardReportService
             'creditTotalDelta' => $creditTotalDelta,
             'creditCapacity' => $creditCapacity,
             'creditLineUsage' => $creditCapacity > 0 ? round($creditTotal / $creditCapacity * 100, 2) : 0.0,
-            'topCategoriesByCard' => $this->getTopCategoriesByCreditCard($teamId, $startPeriodDate, $date),
-            'billingCyclesByCard' => $this->getBillingCyclesByCardInPeriod($teamId, $startPeriodDate, $date),
-            'topPayeesByCard' => $this->getTopPayeesByAccount($teamId, is_string($startPeriodDate) ? $startPeriodDate : $startPeriodDate->format('Y-m-d'), $date),
+            'topCategoriesByCard' => $this->getTopCategoriesByCreditCard($teamId, $startPeriodDate, $date, null, $accountIds),
+            'billingCyclesByCard' => $this->getBillingCyclesByCardInPeriod($teamId, $startPeriodDate, $date, null, $accountIds),
+            'topPayeesByCard' => $this->getTopPayeesByAccount($teamId, is_string($startPeriodDate) ? $startPeriodDate : $startPeriodDate->format('Y-m-d'), $date, null, $accountIds),
         ];
     }
 

@@ -1098,5 +1098,7 @@
     "New account": "New account",
     "New reconciliation": "New reconciliation",
     "New category": "New category",
-    "New reminder": "New reminder"
+    "New reminder": "New reminder",
+    "Filter accounts": "Filter accounts",
+    "Exclude categories": "Exclude categories"
 }

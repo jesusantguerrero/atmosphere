@@ -104,6 +104,7 @@ const deltaDisplay = computed(() => {
                     {{ formatMonth(pageState.dates.startDate, 'MMMM yyyy') }}
                 </AtDatePager>
                 <AccountFilters
+                    hide-categories
                     v-model:accounts="pageState.filters.account"
                     v-model:categories="pageState.filters.category"
                 />
