@@ -2,6 +2,7 @@
 
 namespace App\Domains\Journal\Actions;
 
+use App\Http\Requests\CreditCardSettingsRequest;
 use App\Models\Account;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Gate;
@@ -16,7 +17,9 @@ class AccountCreate implements AccountCreates
         // mass-assign goes through its constructor merge that adds `is_multi_currency`
         // and `secondary_currencies` to fillable. Otherwise LM-8's strict mode throws.
         $this->validate($user);
-        Validator::make($accountData, self::creditCardRules())->validate();
+        $settings = new CreditCardSettingsRequest;
+        $settings->setUserResolver(fn () => $user);
+        Validator::make($accountData, [...self::creditCardRules(), ...$settings->rules()], $settings->messages())->validate();
 
         return Account::create([
             ...$accountData,

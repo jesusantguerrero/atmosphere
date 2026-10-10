@@ -11,6 +11,7 @@ import BackgroundCard from "@/Components/molecules/BackgroundCard.vue";
 import { useTrendOptions } from "./Partials/trendOptions";
 const trendOptions = useTrendOptions();
 import TrendTemplate from "./Partials/TrendTemplate.vue";
+import CreditCardJourney from "./Partials/CreditCardJourney.vue";
 import TrendSectionNav from "./Partials/TrendSectionNav.vue";
 import ChartTopCreditCard from "@/Components//ChartTopCreditCard.vue";
 
@@ -24,6 +25,7 @@ import { formatMonth } from "@/utils";
 const props = withDefaults(defineProps<{
     user: Record<string, any>;
     data: {
+        journey: any;
         hasCreditCards: boolean;
         lastCycleBalances: any[];
         creditTotal: number;
@@ -207,13 +209,15 @@ const deltaDisplay = computed(() => {
                 </table>
             </section>
 
+            <CreditCardJourney v-if="data.journey" :journey="data.journey" :billing="data.billingCyclesByCard.data" />
+
             <section class="mt-4 flex flex-col lg:flex-row gap-4">
                 <section class="w-full lg:w-4/12 space-y-2">
                     <div
                         v-if="data.billingCyclesByCard?.discountTotal"
                         class="bg-base-lvl-3 border border-base rounded-lg px-4 py-3 flex items-baseline justify-between"
                     >
-                        <span class="text-xs uppercase tracking-wide text-body-1/60">Rewards earned</span>
+                        <span class="text-xs uppercase tracking-wide text-body-1/60">Descuentos registrados</span>
                         <span class="text-lg font-bold text-green-500 tabular-nums">
                             {{ formatMoney(data.billingCyclesByCard.discountTotal) }}
                         </span>

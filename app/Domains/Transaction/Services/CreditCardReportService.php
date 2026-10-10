@@ -277,6 +277,7 @@ class CreditCardReportService
 
         return [
             'hasCreditCards' => $hasCreditCards,
+            'journey' => app(CreditCardJourneyService::class)->report((int) $teamId, $startPeriodDate->format('Y-m-d'), $date, $accountIds),
             'lastCycleBalances' => $lastCycleBalances,
             'creditTotal' => $creditTotal,
             'creditTotalPrevious' => $creditTotalPrevious,
