@@ -19,7 +19,9 @@ import AccountReconciliationForm from "./AccountReconciliationForm.vue";
 
 import { NDatePicker, NDropdown } from "naive-ui";
 
-import { useTransactionModal, TRANSACTION_DIRECTIONS, removeTransaction } from "@/domains/transactions";
+import { useTransactionModal, TRANSACTION_DIRECTIONS, removeTransaction, saveAccountsReorder } from "@/domains/transactions";
+import AccountsLedger from "@/domains/transactions/components/AccountsLedger.vue";
+import AccountModal from "@/domains/transactions/components/AccountModal.vue";
 import { tableAccountCols } from "@/domains/transactions";
 import { paymentMethods } from "@/domains/transactions/constants";
 import { useAppContextStore } from "@/store";
@@ -54,6 +56,7 @@ const props = withDefaults(defineProps<{
 });
 
 const isLoading = ref(false);
+const isAccountModalOpen = ref(false);
 const approvingIds = reactive(new Set<number>());
 const suppressNextLoading = ref(false);
 const { serverSearchOptions, accountId, accounts, transactions: verifiedTransactions } = toRefs(props);
@@ -539,7 +542,24 @@ const draftCount = computed(() => (props.drafts || []).length);
 </script>
 
 <template>
-    <AppLayout @back="router.visit('/finance/transactions')" :show-back-button="true">
+    <!-- No account in the URL (/finance/accounts): the page is the accounts index,
+         with the running total and every account one click from its register. -->
+    <AppLayout v-if="!selectedAccount" @back="router.visit('/finance/transactions')" :show-back-button="true">
+        <template #header>
+            <FinanceSectionNav />
+        </template>
+        <template #title>
+            <h1 class="font-bold">{{ $t('Accounts') }}</h1>
+        </template>
+        <FinanceTemplate :title="$t('Accounts')" :accounts="accounts" :hide-panel="true">
+            <AccountsLedger
+                :accounts="accounts"
+                class="w-full max-w-2xl px-4 py-2 mt-4 space-y-4 rounded-md bg-base-lvl-3"
+                @reordered="saveAccountsReorder"
+            />
+        </FinanceTemplate>
+    </AppLayout>
+    <AppLayout v-else @back="router.visit('/finance/transactions')" :show-back-button="true">
         <!-- The tabs row navigates, and nothing else: period/Import/kebab moved
              down to the register card's toolbar, where the controls actually
              apply. Keeps the sub-nav a single-purpose, quiet row. -->
@@ -579,7 +599,10 @@ const draftCount = computed(() => (props.drafts || []).length);
                     <div v-if="isCreditCard" class="text-xs text-body-1/50 tabular-nums">{{ $t('Balance') }} {{ formatMoney(selectedAccount?.balance) }}</div>
                 </div>
 
-                <div class="flex items-center gap-2">
+                <div class="flex flex-wrap items-center gap-2">
+                    <button type="button" class="inline-flex min-h-[44px] items-center justify-center rounded-lg border border-base px-3 text-sm font-semibold text-body hover:bg-base-lvl-3 focus-visible:ring-2 focus-visible:ring-primary" @click="isAccountModalOpen = true">
+                        Editar cuenta
+                    </button>
                     <button
                         v-if="isCreditCard"
                         type="button"
@@ -872,6 +895,8 @@ const draftCount = computed(() => (props.drafts || []).length);
             <AccountReconciliationForm :show="reconcileForm.isVisible" @close="reconcileForm.isVisible = false"
                 :account="selectedAccount" />
         </FinanceTemplate>
+
+        <AccountModal v-if="isAccountModalOpen" :show="isAccountModalOpen" :account="selectedAccount" :max-width="context.isMobile ? 'mobile' : undefined" @close="isAccountModalOpen = false" />
 
         <Modal :show="showImportPdf" max-width="lg" :closeable="true" :is-open="showImportPdf" :automatic="false" :full-height="false" @close="showImportPdf = false">
             <header class="flex items-center px-6 py-4 font-bold bg-base-lvl-3">
