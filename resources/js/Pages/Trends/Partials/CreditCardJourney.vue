@@ -23,6 +23,10 @@ interface PreparationCurrency {
   categories: Array<{name: string; amount: number}>; cards: Array<{name: string; amount: number}>;
 }
 const recordedMoney = (value: number | null, currency: string) => value === null ? 'Sin registros' : money(value, currency);
+const monthlyAverage = (value: number | null, currency: string) => recordedMoney(value === null ? null : value / 6, currency);
+const preparationHref = (period: { from: string; until: string }) => route('finance.trends', {
+  months: 6, range: 'Custom', end: period.until.slice(0, 7),
+});
 const preparationInsights = (data: PreparationCurrency) => {
   const insights: string[] = [];
   if (data.income !== null && data.expense !== null) {
@@ -55,7 +59,13 @@ const includeClosed = ref(false);
 const selected = computed(() => props.journey.events.find(event => event.id === selectedId.value) || props.journey.events.at(-1));
 const visibleCards = computed(() => props.journey.cards.filter(card => card.active_in_period || (includeClosed.value && card.closed_before_period)));
 const dateLabel = (date: string, precision = 'day') => new Intl.DateTimeFormat('es', { ...(precision === 'month' ? {} : { day: 'numeric' as const }), month: 'short', year: 'numeric' }).format(new Date(`${date}T12:00:00`));
-const money = (value: number, currency: string) => new Intl.NumberFormat('es-DO', { style: 'currency', currency, currencyDisplay: 'code' }).format(value);
+const money = (value: number, currency: string) => {
+  try {
+    return new Intl.NumberFormat('es-DO', { style: 'currency', currency, currencyDisplay: 'code' }).format(value);
+  } catch {
+    return `${currency} ${new Intl.NumberFormat('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value)}`;
+  }
+};
 const eventLabel = (event: JourneyEvent, index: number) => event.kind === 'today' ? 'Así estás hoy'
   : event.kind === 'period' ? 'Foto del período'
   : event.kind === 'closed' ? `Cerraste ${event.name}`
@@ -149,11 +159,12 @@ watch(() => props.journey, () => { selectedId.value = ''; }, { deep: true });
       <article v-for="data in selected.preparation.currencies" :key="data.currency" class="mt-4 rounded-xl border border-base bg-base-lvl-2 p-4 md:p-5">
         <div class="flex flex-wrap justify-between gap-2"><h4 class="font-semibold">Tus registros en {{ data.currency }}</h4><span class="text-xs text-body-1/70">Movimientos en {{ data.months_recorded }} de 6 meses · cobertura no confirmada</span></div>
         <dl class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div><dt class="text-xs text-body-1/70">Ingresos registrados</dt><dd class="mt-1 font-semibold">{{ recordedMoney(data.income, data.currency) }}</dd></div>
-          <div><dt class="text-xs text-body-1/70">Gastos netos registrados</dt><dd class="mt-1 font-semibold">{{ recordedMoney(data.expense, data.currency) }}</dd></div>
-          <div><dt class="text-xs text-body-1/70">Compras netas en tarjetas</dt><dd class="mt-1 font-semibold">{{ recordedMoney(data.purchases, data.currency) }}</dd></div>
-          <div><dt class="text-xs text-body-1/70">Abonos desde tus cuentas</dt><dd class="mt-1 font-semibold">{{ recordedMoney(data.payments, data.currency) }}</dd></div>
+          <div><dt class="text-xs text-body-1/70">Ingresos registrados</dt><dd class="mt-1 font-semibold">{{ recordedMoney(data.income, data.currency) }}<span class="mt-1 block text-xs font-normal text-body-1/70">{{ monthlyAverage(data.income, data.currency) }} / mes</span></dd></div>
+          <div><dt class="text-xs text-body-1/70">Gastos netos registrados</dt><dd class="mt-1 font-semibold">{{ recordedMoney(data.expense, data.currency) }}<span class="mt-1 block text-xs font-normal text-body-1/70">{{ monthlyAverage(data.expense, data.currency) }} / mes</span></dd></div>
+          <div><dt class="text-xs text-body-1/70">Compras netas en tarjetas</dt><dd class="mt-1 font-semibold">{{ recordedMoney(data.purchases, data.currency) }}<span class="mt-1 block text-xs font-normal text-body-1/70">{{ monthlyAverage(data.purchases, data.currency) }} / mes</span></dd></div>
+          <div><dt class="text-xs text-body-1/70">Abonos desde tus cuentas</dt><dd class="mt-1 font-semibold">{{ recordedMoney(data.payments, data.currency) }}<span class="mt-1 block text-xs font-normal text-body-1/70">{{ monthlyAverage(data.payments, data.currency) }} / mes</span></dd></div>
         </dl>
+        <p class="mt-3 text-xs text-body-1/70">Promedio mensual: total registrado dividido entre los seis meses del período, incluso si faltan registros.</p>
         <div class="mt-5"><h5 class="text-sm font-semibold">Lo que muestran estos movimientos</h5><ul v-if="preparationInsights(data).length" class="mt-2 grid gap-2 text-sm text-body-1/80"><li v-for="insight in preparationInsights(data)" :key="insight">{{ insight }}</li></ul><p v-else class="mt-2 text-sm text-body-1/70">Los registros disponibles no permiten comparar ingresos, gastos, compras y abonos entre sí.</p></div>
         <div v-if="data.cards.length || data.categories.length" class="mt-5 grid gap-4 md:grid-cols-2">
           <div><h5 class="text-sm font-semibold">Tarjetas que más usabas</h5><div v-for="card in data.cards" :key="card.name" class="mt-2 flex justify-between gap-3 text-sm"><span>{{ card.name }}</span><span>{{ money(card.amount, data.currency) }}</span></div></div>
@@ -161,6 +172,7 @@ watch(() => props.journey, () => { selectedId.value = ''; }, { deep: true });
         </div>
         <details class="mt-5"><summary class="cursor-pointer text-sm text-primary">Ver los seis meses y comprobar los datos</summary><div class="mt-3 overflow-x-auto"><table class="w-full text-sm"><thead><tr class="text-left text-body-1/70"><th class="py-2">Mes</th><th class="py-2">Ingresos</th><th class="py-2">Gastos netos</th></tr></thead><tbody><tr v-for="month in data.monthly" :key="month.month" class="border-t border-base"><td class="py-2">{{ dateLabel(`${month.month}-01`, 'month') }}</td><td class="py-2">{{ recordedMoney(month.income, data.currency) }}</td><td class="py-2">{{ recordedMoney(month.expense, data.currency) }}</td></tr></tbody></table></div></details>
       </article>
+      <Link :href="preparationHref(selected.preparation)" class="mt-4 inline-flex min-h-[44px] items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">Ver Insights de este período →</Link>
       <p class="mt-4 text-xs leading-relaxed text-body-1/70">Lectura de movimientos verificados en Loger, no explicación de la aprobación del banco. Ingresos y gastos excluyen transferencias, saldos iniciales y ajustes de conciliación; las devoluciones reducen el gasto. Los abonos incluyen transferencias identificadas desde cuentas de efectivo hacia tarjetas, en su moneda principal. Tener registros en un mes no confirma que estén todos. No se infieren puntualidad, límites históricos ni evaluación crediticia.</p>
     </section>
     <details v-if="selected && ['opened', 'closed'].includes(selected.kind)" :key="selected.id" class="history-comparison border-base">

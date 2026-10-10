@@ -149,7 +149,7 @@ class FinanceTrendController extends Controller
         $months = (int) $request->query('months', 6);
         $months = ($months >= 1 && $months <= 12) ? $months : 6;
         $range = $request->query('range');
-        $range = in_array($range, ['1M', '3M', '6M', 'YTD', '1Y'], true) ? $range : null;
+        $range = in_array($range, ['1M', '3M', '6M', 'YTD', '1Y', 'Custom'], true) ? $range : null;
         $anchor = $this->resolveInsightsAnchor($request->query('end'));
         if ($range === 'YTD') {
             $months = $anchor->month;

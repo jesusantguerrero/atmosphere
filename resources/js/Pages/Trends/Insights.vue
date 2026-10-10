@@ -222,7 +222,7 @@ const balanceDate = computed(() => {
   return date ? new Intl.DateTimeFormat(locale.value, { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(`${date}T12:00:00`)) : '';
 });
 const visitPeriod = (r: string, end?: string) => {
-  const months = r === "YTD" ? ytdMonths() : rangeMap[r];
+  const months = r === "Custom" ? Number(props.metaData?.months ?? 6) : r === "YTD" ? ytdMonths() : rangeMap[r];
   router.get(location.pathname, { months, range: r, ...(end ? { end } : {}) }, { preserveState: true, preserveScroll: true, only: ["data", "metaData"] });
 };
 const setRange = (r: string) => {
@@ -236,7 +236,7 @@ const isCurrentPeriod = computed(() => props.metaData?.isCurrentPeriod !== false
 const shiftPeriod = (direction: -1 | 1) => {
   const anchor = props.metaData?.anchorMonth;
   if (!anchor) return;
-  const step = range.value === "YTD" ? 12 : rangeMap[range.value] ?? 1;
+  const step = range.value === "Custom" ? Number(props.metaData?.months ?? 6) : range.value === "YTD" ? 12 : rangeMap[range.value] ?? 1;
   const [y, m] = anchor.split("-").map(Number);
   const next = new Date(y, m - 1 + direction * step, 1);
   const label = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}`;
@@ -394,6 +394,7 @@ const chartMeta = computed(() => {
           <button class="min-h-[36px] min-w-[36px] rounded-md text-body-1 hover:text-body hover:bg-base-lvl-3 focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-30 disabled:pointer-events-none" :disabled="isCurrentPeriod" :aria-label="$t('Next period')" @click="shiftPeriod(1)">›</button>
         </div>
         <div class="flex gap-1" :aria-label="$t('Selected period')">
+          <span v-if="range === 'Custom'" class="rounded-md bg-base-lvl-3 px-3 py-2 text-sm font-semibold text-body">Personalizado</span>
           <button v-for="r in ['1M','3M','6M','YTD','1Y']" :key="r" class="min-h-[36px] px-3 text-sm rounded-md focus-visible:ring-2 focus-visible:ring-primary" :class="range === r ? 'bg-base-lvl-3 text-body font-semibold' : 'text-body-1 hover:text-body'" :aria-pressed="range === r" @click="setRange(r)">{{ r }}</button>
         </div>
       </div>

@@ -88,30 +88,43 @@ class InsightsPeriodTest extends TestCase
         $this->assertSame(3000.0, $result['data']['payeesIn'][0]['total']);
     }
 
-    public function test_period_can_be_navigated_back_and_never_past_the_current_month(): void
+    #[DataProvider('historicalPeriods')]
+    public function test_period_can_be_navigated_back_and_never_past_the_current_month(int $months, string $range, string $anchor, string $start, string $end): void
     {
         Carbon::setTestNow('2026-10-31 12:00:00');
         $transactions = Mockery::mock('alias:'.TransactionService::class);
         $reports = Mockery::mock('alias:'.ReportService::class);
         $cards = Mockery::mock(CreditCardReportService::class);
-        $transactions->shouldReceive('getCategoryExpensesGroup')->once()->with(2, '2026-08-01', '2026-08-31', null, null)->andReturn([]);
-        $transactions->shouldReceive('getIncomeVsExpenses')->once()->with(2, 0, 'month', 'expenses', Mockery::on(fn ($anchor) => $anchor->format('Y-m') === '2026-08'))->andReturn([]);
+        $transactions->shouldReceive('getCategoryExpensesGroup')->once()->with(2, $start, $end, null, null)->andReturn([]);
+        $transactions->shouldReceive('getIncomeVsExpenses')->once()->with(2, $months - 1, 'month', 'expenses', Mockery::on(fn ($date) => $date->format('Y-m') === $anchor))->andReturn([]);
         $reports->shouldReceive('getLatestExpenseDate')->once()->andReturn('2026-10-31');
         $transactions->shouldReceive('getExpensePayeesInPeriod')->once()->andReturn(collect());
         $transactions->shouldReceive('getTransactionsByPayeeInPeriod')->once()->andReturn(collect());
-        $transactions->shouldReceive('getExpensesByAccountInPeriod')->once()->with(2, '2026-08-01', '2026-08-31')->andReturn(collect());
+        $transactions->shouldReceive('getExpensesByAccountInPeriod')->once()->with(2, $start, $end)->andReturn(collect());
         $reports->shouldReceive('generateCurrentPreviousReport')->once()->andReturn([]);
         $transactions->shouldReceive('getNetWorth')->once()->andReturn([]);
-        $cards->shouldReceive('creditCards')->once()->with(2, '2026-08-31', '2026-08-01', null)->andReturn([]);
+        $cards->shouldReceive('creditCards')->once()->with(2, $end, $start, null)->andReturn([]);
 
-        $request = Request::create('/trends', 'GET', ['months' => 1, 'range' => '1M', 'end' => '2026-08']);
+        $request = Request::create('/trends', 'GET', ['months' => $months, 'range' => $range, 'end' => $anchor]);
         $user = new User;
         $user->current_team_id = 2;
         $request->setUserResolver(fn () => $user);
         $result = (new FinanceTrendController($reports, $cards))->insights($request);
 
-        $this->assertSame('2026-08', $result['metaData']['anchorMonth']);
+        $this->assertSame($anchor, $result['metaData']['anchorMonth']);
+        $this->assertSame($start, $result['metaData']['startDate']);
+        $this->assertSame($end, $result['metaData']['endDate']);
+        $this->assertSame($range, $result['metaData']['range']);
+        $this->assertCount($months, $result['data']['monthlyFlow']);
         $this->assertFalse($result['metaData']['isCurrentPeriod']);
-        $this->assertSame('2026-08-31', $result['metaData']['asOfDate']);
+        $this->assertSame($end, $result['metaData']['asOfDate']);
+    }
+
+    public static function historicalPeriods(): array
+    {
+        return [
+            'past month' => [1, '1M', '2026-08', '2026-08-01', '2026-08-31'],
+            'card preparation across years' => [6, 'Custom', '2024-01', '2023-08-01', '2024-01-31'],
+        ];
     }
 }
