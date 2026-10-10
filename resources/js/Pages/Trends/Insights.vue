@@ -192,11 +192,26 @@ const balanceDate = computed(() => {
   const date = props.metaData?.asOfDate ?? nwLatest.value?.date_unit ?? props.metaData?.endDate;
   return date ? new Intl.DateTimeFormat(locale.value, { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(`${date}T12:00:00`)) : '';
 });
+const visitPeriod = (r: string, end?: string) => {
+  const months = r === "YTD" ? ytdMonths() : rangeMap[r];
+  router.get(location.pathname, { months, range: r, ...(end ? { end } : {}) }, { preserveState: true, preserveScroll: true, only: ["data", "metaData"] });
+};
 const setRange = (r: string) => {
   if (range.value === r) return;
   range.value = r;
-  const months = r === "YTD" ? ytdMonths() : rangeMap[r];
-  router.get(location.pathname, { months, range: r }, { preserveState: true, preserveScroll: true, only: ["data", "metaData"] });
+  visitPeriod(r, props.metaData?.isCurrentPeriod === false ? props.metaData?.anchorMonth : undefined);
+};
+// period navigator: step the window back/forward by its own length (1M walks month
+// by month, 3M by quarter, YTD/1Y by year). The server clamps at the current month.
+const isCurrentPeriod = computed(() => props.metaData?.isCurrentPeriod !== false);
+const shiftPeriod = (direction: -1 | 1) => {
+  const anchor = props.metaData?.anchorMonth;
+  if (!anchor) return;
+  const step = range.value === "YTD" ? 12 : rangeMap[range.value] ?? 1;
+  const [y, m] = anchor.split("-").map(Number);
+  const next = new Date(y, m - 1 + direction * step, 1);
+  const label = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}`;
+  visitPeriod(range.value, label);
 };
 
 const toneClass = (tone: string) => (tone === "success" ? "text-success" : tone === "error" ? "text-error" : tone === "amber" ? "text-amber-500" : "text-body");
@@ -344,7 +359,11 @@ const chartMeta = computed(() => {
     <template #header>
       <TrendSectionNav :sections="trendOptions" />
       <div class="flex flex-wrap items-center justify-between gap-3 border-b border-base-lvl-2 bg-base-lvl-1 pl-4 pr-4 lg:pr-24 py-3">
-        <span class="text-sm font-semibold text-body">{{ periodLabel }}</span>
+        <div class="flex items-center gap-1">
+          <button class="min-h-[36px] min-w-[36px] rounded-md text-body-1 hover:text-body hover:bg-base-lvl-3 focus-visible:ring-2 focus-visible:ring-primary" :aria-label="$t('Previous period')" @click="shiftPeriod(-1)">‹</button>
+          <span class="text-sm font-semibold text-body min-w-[96px] text-center">{{ periodLabel }}</span>
+          <button class="min-h-[36px] min-w-[36px] rounded-md text-body-1 hover:text-body hover:bg-base-lvl-3 focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-30 disabled:pointer-events-none" :disabled="isCurrentPeriod" :aria-label="$t('Next period')" @click="shiftPeriod(1)">›</button>
+        </div>
         <div class="flex gap-1" :aria-label="$t('Selected period')">
           <button v-for="r in ['1M','3M','6M','YTD','1Y']" :key="r" class="min-h-[36px] px-3 text-sm rounded-md focus-visible:ring-2 focus-visible:ring-primary" :class="range === r ? 'bg-base-lvl-3 text-body font-semibold' : 'text-body-1 hover:text-body'" :aria-pressed="range === r" @click="setRange(r)">{{ r }}</button>
         </div>

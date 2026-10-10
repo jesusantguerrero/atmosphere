@@ -8,92 +8,49 @@ export const MODULES = {
 }
 
 const menus = {
-    [MODULES.HOUSING]: [{
-        label: 'Overview',
-        url: '/housing'
-    },
-    {
-        label: 'Chores',
-        url: '/housing/chores'
-    },
-    {
-        label: 'Reminders',
-        url: '/housing/occurrence'
-    },
-    {
-        label: 'Plans',
-        url: '/housing/plans'
-    },
-    {
-        label: 'Routine',
-        url: '/housing/routine'
-    },
-    {
-        label: 'Utilities',
-        url: '/housing/utilities'
-    },
-    {
-        label: 'People',
-        url: '/loger-profiles'
-    }
-    ],
-    [MODULES.MEAL]: [
+    // Household sub-nav intentionally reduced to the two surfaces that
+    // get daily use. Overview, Plans, Routine, Utilities, People still
+    // exist and are reachable by URL; they just don't crowd the top
+    // bar. "Bills" is Occurrences (recurring utility/subscription bills).
+    [MODULES.HOUSING]: [
         {
-            label: 'Overview',
-            url: '/meals/overview'
+            label: 'Bills',
+            url: '/housing/occurrence'
         },
+        {
+            label: 'Chores',
+            url: '/housing/chores'
+        },
+    ],
+    // Food sub-nav reduced to the two action surfaces: plan the week,
+    // buy the ingredients. Overview, Recipes, Ingredients and Templates
+    // still exist at their URLs and are reachable from inside Planner
+    // (recipe pickers, template loaders) and Shopping List.
+    [MODULES.MEAL]: [
         {
             label: 'Planner',
             url: '/meal-planner'
-        }, {
-            label: 'Recipes',
-            url: '/meals'
-        },
-        {
-            label: 'Ingredients',
-            url: '/ingredients'
         },
         {
             label: 'Shopping List',
             url: '/shopping'
         },
+    ],
+    // Finance sub-nav reduced to Budget (intent / limits) + Accounts
+    // (truth / balances). Overview, Goals, Planners, Watchlist,
+    // Transactions, Reconciliation and Payees still exist. Reconciliation
+    // in particular is one click deep: Accounts -> account page shows the
+    // "Last reconciled · date" affordance which links to the history.
+    [MODULES.FINANCE]: [
         {
-            label: 'Templates',
-            url: '/meals/menus/templates',
+            label: 'Budget',
+            url: '/budgets'
+        },
+        {
+            label: 'Accounts',
+            url: '/finance/accounts'
         },
     ],
-    [MODULES.FINANCE]: [{
-        label: 'Overview',
-        url: '/finance'
-    },
-    {
-        label: 'Budget',
-        url: '/budgets'
-    },
-    {
-        label: 'Goals',
-        url: '/finance/goals'
-    },
-    {
-        label: 'Planners',
-        url: '/finance/planners/house-buyer'
-    },
-    {
-        label: 'Watchlist',
-        url: '/finance/watchlist'
-    },
-    {
-        label: 'Transactions',
-        url: '/finance/transactions'
-    },
-    {
-        label: 'Reconciliation',
-        url: '/finance/reconciliation'
-    },
-    {
-        label: 'Payees',
-        url: '/finance/payees'
-    }],
     [MODULES.TRENDS]: [
         {
             label: 'Spending',

@@ -150,11 +150,12 @@ class FinanceTrendController extends Controller
         $months = ($months >= 1 && $months <= 12) ? $months : 6;
         $range = $request->query('range');
         $range = in_array($range, ['1M', '3M', '6M', 'YTD', '1Y'], true) ? $range : null;
+        $anchor = $this->resolveInsightsAnchor($request->query('end'));
         if ($range === 'YTD') {
-            $months = Carbon::now()->month;
+            $months = $anchor->month;
         }
-        $endDate = Carbon::now()->endOfMonth()->format(self::DateFormat);
-        $startDate = Carbon::now()->startOfMonth()->subMonths($months - 1)->format(self::DateFormat);
+        $endDate = $anchor->copy()->endOfMonth()->format(self::DateFormat);
+        $startDate = $anchor->copy()->startOfMonth()->subMonths($months - 1)->format(self::DateFormat);
 
         $groups = TransactionService::getCategoryExpensesGroup($teamId, $startDate, $endDate, null, null);
 
@@ -163,7 +164,7 @@ class FinanceTrendController extends Controller
         // bars and the period average instead of being a fixed 3-month total.
         // getIncomeVsExpenses is now-anchored and spans now-($months-1)..now, so
         // for YTD this is a true calendar Jan..current-month range.
-        $incomeExpenses = TransactionService::getIncomeVsExpenses($teamId, max(0, $months - 1));
+        $incomeExpenses = TransactionService::getIncomeVsExpenses($teamId, max(0, $months - 1), 'month', 'expenses', $anchor);
         // Same two charts the Dashboard's "Financial glance" widget shows, so
         // Insights reuses them behind a Previous / Spending toggle. Anchored to
         // the most recent month that actually has data so they stay populated
@@ -266,7 +267,9 @@ class FinanceTrendController extends Controller
                 'months' => $months,
                 'startDate' => $startDate,
                 'endDate' => $endDate,
-                'asOfDate' => Carbon::now()->format(self::DateFormat),
+                'asOfDate' => min(Carbon::now(), $anchor->copy()->endOfMonth())->format(self::DateFormat),
+                'anchorMonth' => $anchor->format('Y-m'),
+                'isCurrentPeriod' => $anchor->isSameMonth(Carbon::now()),
                 'range' => $range,
                 'hasNetWorthHistory' => $netWorthHistory->isNotEmpty(),
             ],
@@ -478,6 +481,25 @@ class FinanceTrendController extends Controller
                 'title' => 'Relationships',
             ],
         ];
+    }
+
+    /**
+     * Last month of the Insights window. Defaults to the current month and never
+     * points past it, so the period navigator can only walk backwards in time.
+     */
+    private function resolveInsightsAnchor(?string $end): Carbon
+    {
+        $now = Carbon::now()->startOfMonth();
+        if (! $end || ! preg_match('/^\d{4}-\d{2}$/', $end)) {
+            return $now;
+        }
+        try {
+            $anchor = Carbon::createFromFormat('Y-m-d', $end.'-01')->startOfMonth();
+        } catch (\Throwable) {
+            return $now;
+        }
+
+        return $anchor->greaterThan($now) ? $now : $anchor;
     }
 
     private function getFilterDates($filters)

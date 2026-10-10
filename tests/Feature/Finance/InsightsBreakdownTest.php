@@ -140,4 +140,51 @@ JS;
         $process->setInput($script)->run();
         $this->assertTrue($process->isSuccessful(), $process->getErrorOutput());
     }
+
+    public function test_expenses_by_account_exclude_transfers_and_card_payments(): void
+    {
+        config(['database.default' => 'insights_test', 'database.connections.insights_test' => ['driver' => 'sqlite', 'database' => ':memory:', 'prefix' => '']]);
+        Schema::create('account_detail_types', function (Blueprint $table): void {
+            $table->integer('id');
+            $table->string('name');
+        });
+        Schema::create('accounts', function (Blueprint $table): void {
+            $table->integer('id');
+            $table->string('name');
+            $table->integer('account_detail_type_id');
+        });
+        Schema::create('transactions', function (Blueprint $table): void {
+            $table->integer('team_id')->default(2);
+            $table->integer('account_id');
+            $table->integer('counter_account_id')->nullable();
+            $table->boolean('is_transfer')->default(false);
+            $table->string('direction');
+            $table->string('status')->default('verified');
+            $table->date('date')->default('2026-10-10');
+            $table->decimal('total');
+            $table->softDeletes();
+        });
+        DB::table('account_detail_types')->insert([['id' => 1, 'name' => 'bank'], ['id' => 2, 'name' => 'credit_card'], ['id' => 3, 'name' => 'expense']]);
+        DB::table('accounts')->insert([
+            ['id' => 1, 'name' => 'Debit', 'account_detail_type_id' => 1],
+            ['id' => 2, 'name' => 'Visa', 'account_detail_type_id' => 2],
+            ['id' => 3, 'name' => 'Savings', 'account_detail_type_id' => 1],
+            ['id' => 4, 'name' => 'Supermarket payee', 'account_detail_type_id' => 3],
+        ]);
+        $base = ['account_id' => 1, 'counter_account_id' => null, 'is_transfer' => false, 'direction' => 'WITHDRAW', 'total' => 100];
+        DB::table('transactions')->insert([
+            array_replace($base, ['counter_account_id' => 4]),
+            array_replace($base, ['counter_account_id' => null, 'total' => 50]),
+            array_replace($base, ['counter_account_id' => 2, 'total' => 1000]),
+            array_replace($base, ['counter_account_id' => 3, 'total' => 2000]),
+            array_replace($base, ['is_transfer' => true, 'total' => 3000]),
+            array_replace($base, ['account_id' => 2, 'total' => 400]),
+        ]);
+
+        $rows = TransactionService::getExpensesByAccountInPeriod(2, '2026-10-01', '2026-10-31');
+
+        $this->assertEquals(150, $rows->firstWhere('name', 'Debit')->total);
+        $this->assertEquals(400, $rows->firstWhere('name', 'Visa')->total);
+        $this->assertCount(2, $rows);
+    }
 }
