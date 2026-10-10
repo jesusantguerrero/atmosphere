@@ -19,6 +19,12 @@ export default defineConfig({
           { text: 'Markdown Examples', link: '/markdown-examples' },
           { text: 'Runtime API Examples', link: '/api-examples' }
         ]
+      },
+      {
+        text: 'Mobile',
+        items: [
+          { text: 'Mobile MVP (Expo)', link: '/mobile-mvp-expo' }
+        ]
       }
     ],
 

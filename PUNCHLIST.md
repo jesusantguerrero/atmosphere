@@ -23,3 +23,23 @@
 
 - [ ] **Parser de PDF de estado de cuenta.** Bloqueado por el 500 de crear cuenta (o usar un espacio que ya tenga cuenta). PDF de prueba listo para comparar fila por fila: **BHD ahorros, 28 movimientos, 01–31 marzo 2026** (02/03 → 31/03). *Nota:* el "Import" que shipeó en Transacciones es un importador **CSV** (Budget / Transactions / Occurrence Checks, en inglés) — **no** es el parser de PDF de estado de cuenta.
 - [ ] **Notificaciones (disparadores).** Generar un bill / sobregiro y esperar el aviso para verificarlo.
+
+
+## 📱 Mobile MVP (Expo / React Native)
+
+Plan y contrato de API completos: **`docs/mobile-mvp-expo.md`** (también en `.planning/docs/` local y en el proyecto Loger). Backend Phase 0 hecho; falta arrancar la app Expo.
+
+### Backend (hecho, en `chore/laravel-13`, falta deploy — sin migración)
+- [x] Fix 500 `GET /api/categories` (faltaba `index()`) — `28c4f49d`
+- [x] Superficie `/api/mobile/*` (overview + GET/POST transactions) — `3b016ddd`
+- [ ] Verificar `/api/mobile/overview` contra MySQL real (no se pudo testear desde la VM)
+- [ ] (Opcional) `AccountResource` slim · búsqueda server-side de payees · transferencia en quick-add
+
+### Mobile (por arrancar — ver doc para detalle)
+- [ ] Phase 1 — Esqueleto Expo (nav, auth token + `expo-secure-store`, cliente API, reuse de i18n)
+- [ ] Phase 2 — Pantallas core (home `/api/mobile/overview`, quick-add, cuentas, recientes)
+- [ ] Phase 3 — Tarjetas (`/credit-card-summary`) + glance de patrimonio
+- [ ] Phase 4 — Pulido, EAS build, push, release interno
+
+### Decisiones a confirmar antes de codear mobile
+- [ ] Repo aparte vs carpeta `/mobile` · UI kit · charts · navegación · base URL por entorno

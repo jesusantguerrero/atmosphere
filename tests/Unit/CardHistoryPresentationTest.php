@@ -46,7 +46,7 @@ let editTree = editScope.exports.render(editContext, []);
 editTree.children[0].props.onClick();
 assert.equal(editContext.isAccountModalOpen,true);
 editTree = editScope.exports.render(editContext, []);
-assert.equal(editTree.children[1].props.account.id,1667);
+assert.equal(editTree.children[1].props['form-data'].id,1667);
 assert.equal(editTree.children[1].props['max-width'],'mobile');
 editTree.children[1].props.onClose();
 assert.equal(editContext.isAccountModalOpen,false);
@@ -61,8 +61,30 @@ app.config.globalProperties.$t = value => value;
 app.component('AppLayout',wrapper);
 app.component('FinanceTemplate',wrapper);
 app.component('FinanceSectionNav',{render:() => vue.h('nav')});
-app.component('AccountsLedger',{render:() => vue.h('div','Accounts ledger')});
-renderToString(app).then(html => { assert.ok(html.includes('Accounts ledger')); assert.ok(html.includes('Accounts')); }).catch(error => { console.error(error); process.exitCode = 1; });
+app.component('AccountsOverview',{render:() => vue.h('div','Accounts overview')});
+renderToString(app).then(html => { assert.ok(html.includes('Accounts overview')); assert.ok(html.includes('Accounts')); }).catch(error => { console.error(error); process.exitCode = 1; });
+const overview = parse(fs.readFileSync('resources/js/Pages/Finance/Partials/AccountsOverview.vue','utf8')).descriptor;
+assert.deepEqual(compileTemplate({source:overview.template.content,filename:'Overview.vue',id:'overview'}).errors,[]);
+const accounts = [
+ {id:1,name:'Bank DOP',currency_code:'DOP',balance:1000,archived:'0'},
+ {id:2,name:'Banesco',bank_code:'Banesco',currency_code:'DOP',balance:-200,credit_limit:1000,credit_closing_day:15},
+ {id:3,name:'Closed',currency_code:'DOP',balance:-9999,credit_limit:20000,credit_closing_day:20,closed_at:'2026-01-01'},
+ {id:4,name:'USD bank',currency_code:'USD',balance:50},
+];
+const overviewContext = {computed:vue.computed,ref:vue.ref,onMounted:()=>{},defineProps:()=>({accounts}),useAppContextStore:()=>({isMobile:false}),useAccountsStore:()=>({accounts:[]})};
+vm.createContext(overviewContext);
+vm.runInContext(ts.transpile(overview.scriptSetup.content.replace(/^import .*;\r?\n/gm,'') + '\n globalThis.result = { filtered, filter, search, summaries, reconciliation };'),overviewContext);
+const o = overviewContext.result;
+assert.equal(o.filtered.value.length,4);
+o.filter.value='active';
+assert.equal(o.filtered.value.length,3);
+assert.deepEqual(JSON.parse(JSON.stringify(o.summaries.value)),[{currency:'DOP',cash:1000,debt:200,available:800},{currency:'USD',cash:50,debt:0,available:0}]);
+o.filter.value='cards'; assert.equal(o.filtered.value[0].id,2);
+o.filter.value='closed'; assert.equal(o.filtered.value[0].id,3);
+o.filter.value='active'; o.search.value='banesco'; assert.equal(o.filtered.value[0].id,2);
+assert.equal(o.reconciliation({balance:100,reconciliation_last:{status:'completed',amount:'100.00'}}),'Conciliada');
+assert.equal(o.reconciliation({balance:110,reconciliation_last:{status:'completed',amount:'100.00'}}),'Por revisar');
+assert.equal(o.reconciliation({balance:100,reconciliation_last:{status:'pending',amount:100}}),'Conciliación pendiente');
 JS;
         $process = new Process(['node', '-e', $script], dirname(__DIR__, 2));
         $process->run();

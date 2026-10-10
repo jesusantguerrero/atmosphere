@@ -40,4 +40,12 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('ap
     });
 });
 
+// Mobile app surface: clean, token-authenticated URLs under /api/mobile.
+// Reuses existing controllers/services; only reshapes payloads for the phone.
+Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mobile')->name('mobile.')->group(function () {
+    Route::get('/overview', [\App\Http\Controllers\Api\MobileController::class, 'overview'])->name('overview');
+    Route::get('/transactions', [\App\Http\Controllers\Api\MultiCurrencyTransactionController::class, 'index'])->name('transactions.index');
+    Route::post('/transactions', [\App\Http\Controllers\Api\MultiCurrencyTransactionController::class, 'store'])->name('transactions.store');
+});
+
 Route::post('/sanctum/token', [ApiLoginController::class, 'login']);
