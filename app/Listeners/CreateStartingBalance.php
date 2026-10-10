@@ -6,6 +6,7 @@ use App\Domains\AppCore\Models\Category;
 use App\Domains\Budget\Data\BudgetReservedNames;
 use Illuminate\Support\Carbon;
 use Insane\Journal\Events\AccountCreated;
+use Insane\Journal\Models\Core\AccountDetailType;
 use Insane\Journal\Models\Core\Payee;
 use Insane\Journal\Models\Core\Transaction;
 
@@ -42,7 +43,15 @@ class CreateStartingBalance
             $categoryGroupId = null;
             $transactionCategoryId = null;
             $isDeposit = $amount > 0;
-            if ($isDeposit) {
+            // Off-budget tracking accounts (property/loan) must NOT push their
+            // opening balance into Ready to Assign; book it as a transfer to the
+            // Starting Balance equity account instead (no budget category).
+            $isTracking = in_array(
+                optional(AccountDetailType::find($account->account_detail_type_id))->name,
+                \App\Models\Account::TRACKING_TYPES,
+                true
+            );
+            if ($isDeposit && ! $isTracking) {
                 $categoryGroupId = Category::findOrCreateByName($session, BudgetReservedNames::INFLOW->value);
                 $transactionCategoryId = Category::findOrCreateByName($session, BudgetReservedNames::READY_TO_ASSIGN->value, $categoryGroupId);
             }

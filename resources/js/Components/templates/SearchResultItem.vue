@@ -35,6 +35,19 @@ const { t } = useI18n();
             </div>
         </template>
 
+        <template v-else-if="item.type == 'accounts'">
+            <div class="min-w-0">
+                <p class="text-sm font-medium truncate text-body-1">{{ item.title }}</p>
+                <p class="text-xs text-body-1/60">{{ t(item.subtitle || 'Account') }}</p>
+            </div>
+            <div class="text-right shrink-0">
+                <p class="text-sm font-bold" :class="item.total >= 0 ? 'text-body-1' : 'text-error'">
+                    {{ formatMoney(item.total, item.currency_code) }}
+                </p>
+                <p class="text-xs text-body-1/60">{{ t('balance') }}</p>
+            </div>
+        </template>
+
         <template v-else-if="item.type == 'payees'">
             <div class="min-w-0">
                 <p class="text-sm font-medium truncate text-body-1">{{ item.title }}</p>

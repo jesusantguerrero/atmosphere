@@ -69,6 +69,24 @@ class AccountDetailTypesCreate implements AccountDetailTypesCreates
                 ],
             ],
             [
+                'name' => 'property',
+                'label' => 'Property / Asset',
+                'description' => 'Track a property or other asset held at a value, outside the budget. Counts toward net worth; revalue with a manual adjustment.',
+                'config' => [
+                    'balance_type' => Account::BALANCE_TYPE_DEBIT,
+                    'category_id' => null,
+                ],
+            ],
+            [
+                'name' => 'loan',
+                'label' => 'Loan / Liability',
+                'description' => 'Track a loan or other liability, outside the budget. Counts as debt toward net worth; pay it down with a transfer.',
+                'config' => [
+                    'balance_type' => Account::BALANCE_TYPE_CREDIT,
+                    'category_id' => null,
+                ],
+            ],
+            [
                 'name' => AccountDetailType::CLIENT_TRUST,
                 'label' => 'Client trust account',
                 'description' => 'Use a Cash on hand account to track cash your company keeps for occasional expenses, also called petty cash.

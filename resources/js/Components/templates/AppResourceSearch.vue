@@ -107,6 +107,10 @@ const selectTab = (tab: string) => {
 const urlFor = (item: Record<string, any>) => {
     const search = encodeURIComponent(item.title ?? '');
 
+    if (item.type == 'accounts') {
+        return `/finance/accounts/${item.id}`;
+    }
+
     if (item.type == 'payees') {
         return `/finance/transactions?search=${search}`;
     }
@@ -166,7 +170,7 @@ onKeyStroke(['k', 'K'], (event: KeyboardEvent) => {
                         ref="searchInput"
                         v-model="state.searchText"
                         type="text"
-                        :placeholder="t('Search transactions and payees')"
+                        :placeholder="t('Search transactions, accounts and payees')"
                         class="w-full text-sm bg-transparent border-0 outline-none text-body-1 focus:ring-0"
                         @keydown.down.prevent="move(1)"
                         @keydown.up.prevent="move(-1)"

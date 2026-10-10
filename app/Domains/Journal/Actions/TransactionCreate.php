@@ -7,6 +7,7 @@ use App\Domains\Transaction\Services\MultiCurrencyTransactionService;
 use App\Models\Account;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 use Insane\Journal\Contracts\TransactionCreates;
 use Insane\Journal\Models\Core\Transaction;
 
@@ -60,6 +61,18 @@ class TransactionCreate implements TransactionCreates
         ]);
 
         $this->ensureTeamReferences($user->current_team_id, $transactionData);
+
+        // A transaction must post to a real account. The quick-add form could
+        // submit account_id = 0 (no account picked), creating an orphan row that
+        // inflated "Ready to Assign" / income and made the detail view 500.
+        $accountId = $transactionData['account_id'] ?? null;
+        if (! $accountId || ! Account::where('id', $accountId)
+            ->where('team_id', $user->current_team_id)
+            ->exists()) {
+            throw ValidationException::withMessages([
+                'account_id' => __('Select a valid account for this transaction.'),
+            ]);
+        }
 
         if (isset($transactionData['account_id'], $transactionData['currency_code'])) {
             $account = Account::find($transactionData['account_id']);
