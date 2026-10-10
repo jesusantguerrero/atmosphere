@@ -38,7 +38,8 @@ const selectedCategories = computed({
 </script>
 
 <template>
-        <section class="w-full">
+    <div class="flex gap-2" :class="col ? 'flex-col w-full' : 'flex-row flex-wrap items-center'">
+        <section :class="col ? 'w-full' : 'w-44 min-w-[11rem]'">
             <label v-if="includeLabels">Accounts:</label>
             <NSelect
                 filterable
@@ -50,10 +51,11 @@ const selectedCategories = computed({
                 multiple
                 v-model:value="selectedAccounts"
                 :default-expand-all="true"
+                :consistent-menu-width="false"
                 :options="accountsOptions"
             />
         </section>
-        <section class="w-full">
+        <section :class="col ? 'w-full' : 'w-44 min-w-[11rem]'">
             <label v-if="includeLabels">Categories:</label>
             <NSelect
                 filterable
@@ -66,7 +68,9 @@ const selectedCategories = computed({
                 :max-tag-count="tagMaxCount"
                 v-model:value="selectedCategories"
                 :default-expand-all="true"
+                :consistent-menu-width="false"
                 :options="categoryOptions"
             />
         </section>
+    </div>
 </template>

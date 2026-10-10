@@ -89,20 +89,25 @@ const deltaDisplay = computed(() => {
     <template #header>
       <TrendSectionNav :sections="trendOptions">
         <template #actions>
+            <!-- Give each control a real width: inside the fixed, overflow-hidden
+                 header these collapsed to ~68px (w-full with no width context),
+                 truncating the month label and the selects to "Exclu...".
+                 lg:pr-24 clears the global widget rail the header slot overlaps. -->
+            <div class="flex flex-wrap items-center justify-end gap-2 lg:pr-24">
                 <AtDatePager
-                    class="w-full h-12 border-none bg-base-lvl-1 text-body"
+                    class="w-40 shrink-0 h-12 border-none bg-base-lvl-1 text-body"
                     v-model:startDate="pageState.dates.startDate"
                     v-model:endDate="pageState.dates.endDate"
                     @change="executeSearchWithDelay(500)"
                     controlsClass="bg-transparent text-body hover:bg-base-lvl-1"
                     next-mode="month">
-            {{ formatMonth(pageState.dates.startDate, 'MMMM yyyy') }}
-        </AtDatePager>
+                    {{ formatMonth(pageState.dates.startDate, 'MMMM yyyy') }}
+                </AtDatePager>
                 <AccountFilters
-                    class="w-full"
                     v-model:accounts="pageState.filters.account"
                     v-model:categories="pageState.filters.category"
                 />
+            </div>
         </template>
       </TrendSectionNav>
     </template>
