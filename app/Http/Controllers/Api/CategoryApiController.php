@@ -15,6 +15,23 @@ class CategoryApiController extends Controller
      */
     private const BULK_UPDATABLE = ['name', 'display_id', 'description', 'index', 'color', 'icon', 'parent_id', 'hidden', 'resource_type_id'];
 
+    /**
+     * Team transaction categories as top-level groups with their
+     * subCategories eager-loaded -- the same shape HandleInertiaRequests
+     * ships to the web app, so the mobile category picker matches it.
+     */
+    public function index(Request $request)
+    {
+        return Category::where([
+            'categories.team_id' => $request->user()->current_team_id,
+            'categories.resource_type' => 'transactions',
+        ])
+            ->whereNull('parent_id')
+            ->orderBy('index')
+            ->with('subCategories')
+            ->get();
+    }
+
     public function store(Request $request)
     {
         $session = [
