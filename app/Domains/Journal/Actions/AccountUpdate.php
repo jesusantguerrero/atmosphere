@@ -2,6 +2,7 @@
 
 namespace App\Domains\Journal\Actions;
 
+use App\Http\Requests\CreditCardSettingsRequest;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
@@ -13,7 +14,15 @@ class AccountUpdate implements AccountUpdates
     public function update(User $user, Account $account, array $accountData): Account
     {
         $this->validate($user, $account);
-        Validator::make($accountData, self::creditCardRules())->validate();
+        $settings = new CreditCardSettingsRequest;
+        $settings->setUserResolver(fn () => $user);
+        Validator::make([
+            'credit_opened_at' => $account->getRawOriginal('credit_opened_at'),
+            'closed_at' => $account->getRawOriginal('closed_at'),
+            ...$accountData,
+        ], [...self::creditCardRules(), ...$settings->rules()], $settings->messages())->validate();
+        $account = \App\Models\Account::query()->findOrFail($account->id);
+        unset($accountData['team_id'], $accountData['user_id']);
         $account->update($accountData);
 
         return $account;

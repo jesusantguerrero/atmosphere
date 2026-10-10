@@ -10,6 +10,7 @@ const props = withDefaults(defineProps<{
     includeLabels: boolean;
     col: boolean;
     tagMaxCount: number;
+    hideCategories?: boolean;
 }>(), {
     tagMaxCount: 3
 });
@@ -38,7 +39,8 @@ const selectedCategories = computed({
 </script>
 
 <template>
-        <section class="w-full">
+    <div class="flex gap-2" :class="col ? 'flex-col w-full' : 'flex-row flex-wrap items-center'">
+        <section :class="col ? 'w-full' : 'w-44 min-w-[11rem]'">
             <label v-if="includeLabels">Accounts:</label>
             <NSelect
                 filterable
@@ -46,14 +48,15 @@ const selectedCategories = computed({
                 tag
                 size="large"
                 class="w-full"
-                placeholder="Exclude accounts"
+                :placeholder="$t('Filter accounts')"
                 multiple
                 v-model:value="selectedAccounts"
                 :default-expand-all="true"
+                :consistent-menu-width="false"
                 :options="accountsOptions"
             />
         </section>
-        <section class="w-full">
+        <section v-if="!hideCategories" :class="col ? 'w-full' : 'w-44 min-w-[11rem]'">
             <label v-if="includeLabels">Categories:</label>
             <NSelect
                 filterable
@@ -62,11 +65,13 @@ const selectedCategories = computed({
                 size="large"
                 multiple
                 class="w-full"
-                placeholder="Exclude categories"
+                :placeholder="$t('Exclude categories')"
                 :max-tag-count="tagMaxCount"
                 v-model:value="selectedCategories"
                 :default-expand-all="true"
+                :consistent-menu-width="false"
                 :options="categoryOptions"
             />
         </section>
+    </div>
 </template>

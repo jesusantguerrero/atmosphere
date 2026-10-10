@@ -53,6 +53,10 @@ const state = reactive({
     credit_annual_fee: null,
     credit_monthly_insurance: null,
     credit_limit: null,
+    credit_opened_at: null,
+    credit_opened_precision: 'day',
+    closed_at: null,
+    credit_rewards: { points: null, spend: null, point_value: null, category_rates: [] },
     // Multi-currency fields
     currency_code: (window as any)?.logerAppSettings?.currency_code ?? 'USD',
     is_multi_currency: false,
@@ -66,6 +70,10 @@ const state = reactive({
 
 // Multi-currency state
 const newSecondaryCurrency = ref('');
+const openingMonth = computed({
+  get: () => state.form.credit_opened_at?.slice(0, 7) || '',
+  set: (value: string) => { state.form.credit_opened_at = value ? `${value}-01` : null; },
+});
 
 const addSecondaryCurrency = () => {
   if (newSecondaryCurrency.value && !(state.form.secondary_currencies || []).includes(newSecondaryCurrency.value)) {
@@ -101,6 +109,11 @@ watch(
     Object.keys(state.form.data()).forEach((field) => {
       if (field == "date") {
         state.form[field] = new Date(newValue[field]);
+      } else if (field === "credit_rewards") {
+        state.form.credit_rewards = { points: null, spend: null, point_value: null, category_rates: [], ...(newValue[field] || {}) };
+        state.form.credit_rewards.category_rates ||= [];
+      } else if (field === "credit_opened_at" || field === "closed_at") {
+        state.form[field] = newValue[field]?.slice(0, 10) || null;
       } else if (field === "secondary_currencies") {
         // Ensure secondary_currencies is always an array
         const value = newValue[field];
@@ -146,6 +159,13 @@ const submit = () => {
   state.form
     .transform((form) => {
       form.display_id = Slug(form.name, "_");
+      form.credit_opened_at ||= null;
+      form.closed_at ||= null;
+      if (form.credit_rewards) {
+        for (const key of ['points', 'spend', 'point_value']) {
+          if (form.credit_rewards[key] === '') form.credit_rewards[key] = null;
+        }
+      }
       return form;
     })
     .submit(action.method, action.url(), {
@@ -189,6 +209,9 @@ const remove = () => {
   }
 };
 
+const rewardCategoryOptions = computed(() => ((usePage().props.categories || []) as any[]).flatMap(group =>
+  [group, ...(group.sub_categories || group.subCategories || [])]
+).filter(category => category.id).map(category => ({ label: category.name, value: category.id })));
 const detailTypes = usePage().props.accountDetailTypes;
 
 // Raw options keep the ORIGINAL (English) labels so logic that keys off them
@@ -302,6 +325,42 @@ const excludedCurrencies = computed(() => {
                 </AtField>
               </div>
 
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <AtField label="Fecha de apertura real" :error="form.errors.credit_opened_at">
+                  <LogerInput v-if="form.credit_opened_precision === 'month'" v-model="openingMonth" type="month" class="w-full" />
+                  <LogerInput v-else v-model="form.credit_opened_at" type="date" class="w-full" />
+                  <label class="flex items-center gap-2 text-xs text-body-1/70"><input type="checkbox" :checked="form.credit_opened_precision === 'month'" @change="form.credit_opened_precision = ($event.target as HTMLInputElement).checked ? 'month' : 'day'; form.credit_opened_at = null" /> Solo conozco el mes y año</label>
+                  <p class="text-xs text-body-1/60">Fecha en que el banco te otorgó la tarjeta. Déjala vacía si no la conoces.</p>
+                </AtField>
+                <AtField v-if="form.closed_at" label="Fecha de cierre" :error="form.errors.closed_at">
+                  <LogerInput v-model="form.closed_at" type="date" class="w-full" />
+                </AtField>
+              </div>
+              <div class="pt-4 border-t border-base-lvl-1 space-y-4">
+                <h5 class="text-sm font-medium text-body">Programa de puntos</h5>
+                <p class="text-xs text-body-1/60">Regla en {{ form.currency_code }}. Se usa para estimar puntos; no representa el saldo confirmado por el banco.</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <AtField label="Puntos ganados" :error="form.errors['credit_rewards.points']">
+                    <LogerInput v-model="form.credit_rewards.points" type="number" min="0.01" step="any" placeholder="1" />
+                  </AtField>
+                  <AtField label="Por cada importe gastado" :error="form.errors['credit_rewards.spend']">
+                    <LogerInput v-model="form.credit_rewards.spend" type="number" min="0.01" step="any" placeholder="100" />
+                  </AtField>
+                  <AtField label="Valor de canje por punto (opcional)" :error="form.errors['credit_rewards.point_value']">
+                    <LogerInput v-model="form.credit_rewards.point_value" type="number" min="0" step="any" placeholder="Sin convertir a dinero" />
+                  </AtField>
+                </div>
+              </div>
+              <div class="space-y-3">
+                <h5 class="text-sm font-medium text-body">Excepciones de puntos por categoría</h5>
+                <div v-for="(rule, index) in form.credit_rewards.category_rates" :key="index" class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                  <AtField label="Categoría" :error="form.errors[`credit_rewards.category_rates.${index}.category_id`]"><NSelect v-model:value="rule.category_id" :options="rewardCategoryOptions" filterable /></AtField>
+                  <AtField label="Puntos" :error="form.errors[`credit_rewards.category_rates.${index}.points`]"><LogerInput v-model="rule.points" type="number" min="0" step="any" /></AtField>
+                  <AtField label="Por cada importe" :error="form.errors[`credit_rewards.category_rates.${index}.spend`]"><LogerInput v-model="rule.spend" type="number" min="0.01" step="any" /></AtField>
+                  <button type="button" class="text-sm text-primary underline" @click="form.credit_rewards.category_rates.splice(index, 1)">Quitar excepción</button>
+                </div>
+                <button type="button" class="text-sm text-primary underline" @click="form.credit_rewards.category_rates.push({ category_id: null, points: 1, spend: 100 })">Añadir excepción</button>
+              </div>
               <div class="pt-4 border-t border-base-lvl-1 space-y-4">
                 <div>
                   <h5 class="text-sm font-medium text-body">{{ $t('Card renewal') }}</h5>

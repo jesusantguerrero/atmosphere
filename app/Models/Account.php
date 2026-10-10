@@ -120,6 +120,10 @@ class Account extends BaseAccount
                 'credit_renewal_month',
                 'credit_annual_fee',
                 'credit_monthly_insurance',
+                'credit_opened_at',
+                'credit_opened_precision',
+                'closed_at',
+                'credit_rewards',
             ]
         );
 
@@ -132,6 +136,9 @@ class Account extends BaseAccount
                 'credit_renewal_month' => 'integer',
                 'credit_annual_fee' => 'float',
                 'credit_monthly_insurance' => 'float',
+                'credit_opened_at' => 'date:Y-m-d',
+                'closed_at' => 'datetime',
+                'credit_rewards' => 'array',
             ]
         );
 

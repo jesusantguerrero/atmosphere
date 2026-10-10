@@ -44,6 +44,10 @@ export interface ICategory {
 export interface IAccount {
     label(arg0: string, label: any): unknown | (string | number | boolean | void | import("vue").VNode<import("vue").RendererNode, import("vue").RendererElement, { [key: string]: any; }> | null | undefined) | import("vue").VNodeArrayChildren;
     credit_limit: number;
+    credit_opened_at?: string | null;
+    credit_opened_precision?: 'day' | 'month';
+    closed_at?: string | null;
+    credit_rewards?: { points: number | null; spend: number | null; point_value: number | null; category_rates?: Array<{ category_id: number; points: number; spend: number }> };
     credit_closing_day: any;
     credit_payment_days?: number | null;
     credit_renewal_month?: number | null;
