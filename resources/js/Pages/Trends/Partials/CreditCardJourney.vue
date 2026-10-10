@@ -13,7 +13,35 @@ interface JourneyEvent {
   id: string; account_id?: number; date: string; kind: string; name: string;
   date_precision?: 'day' | 'month'; snapshot_date?: string;
   cards: SnapshotCard[]; before_cards?: SnapshotCard[];
+  preparation?: { from: string; until: string; currencies: PreparationCurrency[] };
 }
+interface PreparationCurrency {
+  currency: string; income: number | null; expense: number | null; purchases: number | null; payments: number | null;
+  months_recorded: number; debt_before: number | null; debt_after: number | null;
+  debt_accounts_before: number[]; debt_accounts_after: number[];
+  monthly: Array<{month: string; income: number | null; expense: number | null}>;
+  categories: Array<{name: string; amount: number}>; cards: Array<{name: string; amount: number}>;
+}
+const recordedMoney = (value: number | null, currency: string) => value === null ? 'Sin registros' : money(value, currency);
+const preparationInsights = (data: PreparationCurrency) => {
+  const insights: string[] = [];
+  if (data.income !== null && data.expense !== null) {
+    insights.push(data.income >= data.expense ? `Tus ingresos registrados superaron los gastos por ${money(data.income - data.expense, data.currency)} en estos seis meses.` : `Tus gastos registrados superaron los ingresos por ${money(data.expense - data.income, data.currency)} en estos seis meses.`);
+  }
+  if (data.purchases !== null && data.payments !== null) {
+    insights.push(data.payments >= data.purchases ? 'Los abonos identificados desde tus cuentas cubrieron las compras netas registradas en tarjetas durante el período.' : 'Las compras netas registradas en tarjetas superaron los abonos identificados desde tus cuentas durante el período.');
+  }
+  if (data.debt_before !== null && data.debt_after !== null && JSON.stringify([...data.debt_accounts_before].sort()) === JSON.stringify([...data.debt_accounts_after].sort())) {
+    const delta = data.debt_after - data.debt_before;
+    insights.push(delta === 0 ? 'La deuda reconstruida de las mismas tarjetas se mantuvo al comparar ambos extremos.' : `La deuda reconstruida de las mismas tarjetas ${delta < 0 ? 'disminuyó' : 'aumentó'} ${money(Math.abs(delta), data.currency)} entre el inicio y el final del período.`);
+  }
+  if (data.monthly.every(month => month.income !== null)) {
+    const first = data.monthly.slice(0, 3).reduce((sum, month) => sum + Number(month.income), 0) / 3;
+    const last = data.monthly.slice(3).reduce((sum, month) => sum + Number(month.income), 0) / 3;
+    insights.push(`El promedio mensual de ingresos registrados pasó de ${money(first, data.currency)} en los primeros tres meses a ${money(last, data.currency)} en los últimos tres.`);
+  }
+  return insights;
+};
 const props = defineProps<{
   journey: { events: JourneyEvent[]; cards: JourneyCard[]; missing_opening_dates: number };
   billing: Array<{ id: number; discounts: number }>;
@@ -114,6 +142,27 @@ watch(() => props.journey, () => { selectedId.value = ''; }, { deep: true });
     </div>
 
     <p v-if="selected?.date_precision === 'month'" class="history-footnote text-body-1/60">Apertura conocida por mes; el día exacto no está registrado. Esta foto corresponde al {{ dateLabel(selected.snapshot_date || selected.date) }}.</p>
+    <section v-if="selected?.preparation" class="mt-6 border-t border-base pt-5" aria-labelledby="preparation-title">
+      <h3 id="preparation-title" class="text-lg font-bold">Cómo llegaste a este momento</h3>
+      <p class="mt-1 text-sm text-body-1/70">Seis meses completos anteriores a la apertura · {{ dateLabel(selected.preparation.from) }} — {{ dateLabel(selected.preparation.until) }}.</p>
+      <p v-if="!selected.preparation.currencies.length" class="mt-4 text-sm text-body-1/70">No hay movimientos verificados para analizar este período. Esto no significa que no tuvieras ingresos, gastos o pagos.</p>
+      <article v-for="data in selected.preparation.currencies" :key="data.currency" class="mt-4 rounded-xl border border-base bg-base-lvl-2 p-4 md:p-5">
+        <div class="flex flex-wrap justify-between gap-2"><h4 class="font-semibold">Tus registros en {{ data.currency }}</h4><span class="text-xs text-body-1/70">Movimientos en {{ data.months_recorded }} de 6 meses · cobertura no confirmada</span></div>
+        <dl class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div><dt class="text-xs text-body-1/70">Ingresos registrados</dt><dd class="mt-1 font-semibold">{{ recordedMoney(data.income, data.currency) }}</dd></div>
+          <div><dt class="text-xs text-body-1/70">Gastos netos registrados</dt><dd class="mt-1 font-semibold">{{ recordedMoney(data.expense, data.currency) }}</dd></div>
+          <div><dt class="text-xs text-body-1/70">Compras netas en tarjetas</dt><dd class="mt-1 font-semibold">{{ recordedMoney(data.purchases, data.currency) }}</dd></div>
+          <div><dt class="text-xs text-body-1/70">Abonos desde tus cuentas</dt><dd class="mt-1 font-semibold">{{ recordedMoney(data.payments, data.currency) }}</dd></div>
+        </dl>
+        <div class="mt-5"><h5 class="text-sm font-semibold">Lo que muestran estos movimientos</h5><ul v-if="preparationInsights(data).length" class="mt-2 grid gap-2 text-sm text-body-1/80"><li v-for="insight in preparationInsights(data)" :key="insight">{{ insight }}</li></ul><p v-else class="mt-2 text-sm text-body-1/70">Los registros disponibles no permiten comparar ingresos, gastos, compras y abonos entre sí.</p></div>
+        <div v-if="data.cards.length || data.categories.length" class="mt-5 grid gap-4 md:grid-cols-2">
+          <div><h5 class="text-sm font-semibold">Tarjetas que más usabas</h5><div v-for="card in data.cards" :key="card.name" class="mt-2 flex justify-between gap-3 text-sm"><span>{{ card.name }}</span><span>{{ money(card.amount, data.currency) }}</span></div></div>
+          <div><h5 class="text-sm font-semibold">Categorías de mayor consumo en tarjetas</h5><div v-for="category in data.categories" :key="category.name" class="mt-2 flex justify-between gap-3 text-sm"><span>{{ category.name }}</span><span>{{ money(category.amount, data.currency) }}</span></div></div>
+        </div>
+        <details class="mt-5"><summary class="cursor-pointer text-sm text-primary">Ver los seis meses y comprobar los datos</summary><div class="mt-3 overflow-x-auto"><table class="w-full text-sm"><thead><tr class="text-left text-body-1/70"><th class="py-2">Mes</th><th class="py-2">Ingresos</th><th class="py-2">Gastos netos</th></tr></thead><tbody><tr v-for="month in data.monthly" :key="month.month" class="border-t border-base"><td class="py-2">{{ dateLabel(`${month.month}-01`, 'month') }}</td><td class="py-2">{{ recordedMoney(month.income, data.currency) }}</td><td class="py-2">{{ recordedMoney(month.expense, data.currency) }}</td></tr></tbody></table></div></details>
+      </article>
+      <p class="mt-4 text-xs leading-relaxed text-body-1/70">Lectura de movimientos verificados en Loger, no explicación de la aprobación del banco. Ingresos y gastos excluyen transferencias, saldos iniciales y ajustes de conciliación; las devoluciones reducen el gasto. Los abonos incluyen transferencias identificadas desde cuentas de efectivo hacia tarjetas, en su moneda principal. Tener registros en un mes no confirma que estén todos. No se infieren puntualidad, límites históricos ni evaluación crediticia.</p>
+    </section>
     <details v-if="selected && ['opened', 'closed'].includes(selected.kind)" :key="selected.id" class="history-comparison border-base">
       <summary class="text-primary">Comparar antes y después de este momento</summary>
       <div class="history-comparison-grid">
