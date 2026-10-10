@@ -90,7 +90,7 @@ const rankRows = (arr: any[], showAll = false) => {
   const max = Math.max(1, ...arr.map((i) => i.total));
   const tot = arr.reduce((a, i) => a + i.total, 0) || 1;
   const visible = showAll ? arr : arr.slice(0, 8);
-  const rows = visible.map((i) => ({ id: i.id, name: i.name, amount: i.total, pct: (i.total / tot) * 100, w: (i.total / max) * 100 }));
+  const rows = visible.map((i) => ({ id: i.id, uncategorized: i.uncategorized, name: i.name, amount: i.total, pct: (i.total / tot) * 100, w: (i.total / max) * 100 }));
   if (!showAll && arr.length > 8) {
     const remainder = arr.slice(8).reduce((sum, row) => sum + row.total, 0);
     rows.push({ name: t("Others"), amount: remainder, pct: remainder / tot * 100, w: Math.min(100, remainder / max * 100) });
@@ -156,12 +156,20 @@ const accountsOutRows = computed<any[]>(() =>
 const gastoBreakdownDims = [ { id: "categoria", label: "By category" }, { id: "cuenta", label: "By account" } ];
 const gastoDim = ref("categoria");
 const showAllGasto = ref(false);
-const gastoSrc = computed<any[]>(() => (gastoDim.value === "cuenta" ? accountsOutRows.value : expenseByCat.value));
+const gastoSrc = computed<any[]>(() => {
+  if (gastoDim.value === "cuenta") return accountsOutRows.value;
+  // Category view: append a "Sin categoría" bucket so it reflects ALL real
+  // spend and reconciles with the by-account total (both exclude transfers).
+  const rows = [...expenseByCat.value];
+  if (uncategorizedTotal.value > 1) rows.push({ name: t("Uncategorized"), total: uncategorizedTotal.value, uncategorized: true });
+  return rows;
+});
 const gastoRows = computed(() => rankRows(gastoSrc.value, showAllGasto.value));
 const gastoTotal = computed<number>(() => gastoSrc.value.reduce((a, x) => a + x.total, 0));
 // drill-down: a breakdown row links to the transactions list filtered by that
 // account (cuenta) or category (categoria), carrying the current period.
 const gastoHref = (r: any) => {
+  if (r.uncategorized) return uncategorizedHref.value;
   if (!r.id) return null;
   const s = props.metaData?.startDate, e = props.metaData?.endDate;
   const date = s && e ? `&filter[date]=${s}~${e}` : "";
@@ -529,15 +537,15 @@ const chartMeta = computed(() => {
             </div>
             <div class="text-right shrink-0">
               <div class="text-error font-bold tabular-nums leading-none">{{ currency }} {{ money(gastoTotal).main }}<span class="text-xs opacity-60">.{{ money(gastoTotal).cents }}</span></div>
-              <div class="text-[10px] text-body-1/60 mt-0.5">{{ $t('Total') }} · {{ gastoDim === 'cuenta' ? $t('Excl. transfers') : $t('Categorized') }} · {{ periodLabel }}</div>
-              <a v-if="uncategorizedTotal > 1" :href="uncategorizedHref" class="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-error/15 text-error hover:bg-error/25" :title="$t('Jump to transactions without a category')">{{ $t('Uncategorized') }} · {{ currency }} {{ money(uncategorizedTotal).main }} →</a>
+              <div class="text-[10px] text-body-1/60 mt-0.5">{{ $t('Total') }} · {{ $t('Excl. transfers') }} · {{ periodLabel }}</div>
+              <a v-if="uncategorizedTotal > 1 && gastoDim === 'cuenta'" :href="uncategorizedHref" class="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-error/15 text-error hover:bg-error/25" :title="$t('Jump to transactions without a category')">{{ $t('Uncategorized') }} · {{ currency }} {{ money(uncategorizedTotal).main }} →</a>
             </div>
           </div>
           <div class="flex items-center justify-end">
             <button v-if="gastoSrc.length > 8" class="min-h-[28px] px-2 text-primary font-medium text-xs" @click="showAllGasto = !showAllGasto">{{ showAllGasto ? $t('Show top 8') : $t('View all') }}</button>
           </div>
           <div v-for="(r, i) in gastoRows" :key="i" class="grid items-center gap-3 py-2 border-t border-base-lvl-2" style="grid-template-columns:minmax(0, 2fr) minmax(48px, 0.8fr) auto">
-            <component :is="r.id ? 'a' : 'div'" :href="r.id ? gastoHref(r) : null" class="text-sm font-medium text-body break-words" :class="r.id ? 'hover:text-primary hover:underline' : ''" :title="r.name">{{ r.name }}</component>
+            <component :is="(r.id || r.uncategorized) ? 'a' : 'div'" :href="(r.id || r.uncategorized) ? gastoHref(r) : null" class="text-sm font-medium text-body break-words" :class="[(r.id || r.uncategorized) ? 'hover:text-primary hover:underline' : '', r.uncategorized ? 'text-error font-semibold' : '']" :title="r.name">{{ r.name }}</component>
             <div class="flex items-center gap-2 text-xs text-body-1"><span style="min-width:38px">{{ r.pct.toFixed(1) }}%</span><span class="flex-1 h-1 rounded-full bg-base-lvl-2 relative overflow-hidden"><span class="absolute inset-y-0 left-0 rounded-full" :style="{ width: r.w + '%', background: '#E8837E' }"></span></span></div>
             <div class="text-right text-sm font-semibold tabular-nums">{{ currency }} {{ money(r.amount).main }}</div>
           </div>
