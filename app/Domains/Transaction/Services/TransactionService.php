@@ -498,6 +498,15 @@ class TransactionService
             ->where('transactions.status', 'verified')
             ->whereNull('transactions.deleted_at')
             ->whereIn('adt.name', AccountDetailType::ALL)
+            // Exclude internal transfers (counter account is another balance-sheet
+            // account, e.g. paying a card from checking): that moves money between
+            // the user's own accounts, so counting it would double-count real
+            // consumption. Keep outflows whose counter is a payee/expense.
+            ->leftJoin('accounts as ca', 'ca.id', '=', 'transactions.counter_account_id')
+            ->leftJoin('account_detail_types as cadt', 'cadt.id', '=', 'ca.account_detail_type_id')
+            ->where(function ($q) {
+                $q->whereNull('cadt.name')->orWhereNotIn('cadt.name', AccountDetailType::ALL);
+            })
             ->whereBetween('transactions.date', [$startDate, $endDate])
             ->selectRaw('accounts.id as id, accounts.name as name, SUM(COALESCE(transactions.total, 0)) as total')
             ->groupBy('accounts.id', 'accounts.name')

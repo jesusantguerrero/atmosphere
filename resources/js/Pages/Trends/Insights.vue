@@ -75,7 +75,7 @@ const showNwComparison = computed<boolean>(() => !!nw3ago.value && nw3ago.value 
 const ie = computed<any>(() => props.data?.incomeExpenses ?? {});
 const expenseByCat = computed<any[]>(() =>
   Object.values(ie.value.expenses ?? {})
-    .map((e: any) => ({ name: e.name, total: abs(e.total) }))
+    .map((e: any) => ({ id: e.id, name: e.name, total: abs(e.total) }))
     .sort((a, b) => b.total - a.total)
 );
 const monthExpenseTotal = computed<number>(() => expenseByCat.value.reduce((a, x) => a + x.total, 0));
@@ -151,7 +151,7 @@ const catSeries = computed(() => [{ name: t("Spend"), data: catTop.value.map((c)
 // Spending breakdown lens for the Gastos tab: by category (budget-aligned) or
 // by account (every verified outflow, to reconcile against the bank).
 const accountsOutRows = computed<any[]>(() =>
-  (props.data?.expensesByAccount ?? []).map((x: any) => ({ name: x.name, total: abs(x.total) })).sort((a, b) => b.total - a.total)
+  (props.data?.expensesByAccount ?? []).map((x: any) => ({ id: x.id, name: x.name, total: abs(x.total) })).sort((a, b) => b.total - a.total)
 );
 const gastoBreakdownDims = [ { id: "categoria", label: "By category" }, { id: "cuenta", label: "By account" } ];
 const gastoDim = ref("categoria");
@@ -159,6 +159,15 @@ const showAllGasto = ref(false);
 const gastoSrc = computed<any[]>(() => (gastoDim.value === "cuenta" ? accountsOutRows.value : expenseByCat.value));
 const gastoRows = computed(() => rankRows(gastoSrc.value, showAllGasto.value));
 const gastoTotal = computed<number>(() => gastoSrc.value.reduce((a, x) => a + x.total, 0));
+// drill-down: a breakdown row links to the transactions list filtered by that
+// account (cuenta) or category (categoria), carrying the current period.
+const gastoHref = (r: any) => {
+  if (!r.id) return null;
+  const s = props.metaData?.startDate, e = props.metaData?.endDate;
+  const date = s && e ? `&filter[date]=${s}~${e}` : "";
+  const key = gastoDim.value === "cuenta" ? "account_id" : "category_id";
+  return `/finance/transactions?filter[${key}]=${r.id}${date}`;
+};
 const catOptions = { colors: ["#7C6FF0B3"], borderColors: ["#7C6FF0"], ...chartAxis };
 
 // ---- tabs
@@ -508,14 +517,14 @@ const chartMeta = computed(() => {
             </div>
             <div class="text-right shrink-0">
               <div class="text-error font-bold tabular-nums leading-none">{{ currency }} {{ money(gastoTotal).main }}<span class="text-xs opacity-60">.{{ money(gastoTotal).cents }}</span></div>
-              <div class="text-[10px] text-body-1/60 mt-0.5">{{ $t('Total') }} · {{ gastoDim === 'cuenta' ? $t('All outflows') : $t('Categorized') }} · {{ periodLabel }}</div>
+              <div class="text-[10px] text-body-1/60 mt-0.5">{{ $t('Total') }} · {{ gastoDim === 'cuenta' ? $t('Excl. transfers') : $t('Categorized') }} · {{ periodLabel }}</div>
             </div>
           </div>
           <div class="flex items-center justify-end">
             <button v-if="gastoSrc.length > 8" class="min-h-[28px] px-2 text-primary font-medium text-xs" @click="showAllGasto = !showAllGasto">{{ showAllGasto ? $t('Show top 8') : $t('View all') }}</button>
           </div>
           <div v-for="(r, i) in gastoRows" :key="i" class="grid items-center gap-3 py-2 border-t border-base-lvl-2" style="grid-template-columns:minmax(0, 2fr) minmax(48px, 0.8fr) auto">
-            <div class="text-sm font-medium text-body break-words" :title="r.name">{{ r.name }}</div>
+            <component :is="r.id ? 'a' : 'div'" :href="r.id ? gastoHref(r) : null" class="text-sm font-medium text-body break-words" :class="r.id ? 'hover:text-primary hover:underline' : ''" :title="r.name">{{ r.name }}</component>
             <div class="flex items-center gap-2 text-xs text-body-1"><span style="min-width:38px">{{ r.pct.toFixed(1) }}%</span><span class="flex-1 h-1 rounded-full bg-base-lvl-2 relative overflow-hidden"><span class="absolute inset-y-0 left-0 rounded-full" :style="{ width: r.w + '%', background: '#E8837E' }"></span></span></div>
             <div class="text-right text-sm font-semibold tabular-nums">{{ currency }} {{ money(r.amount).main }}</div>
           </div>

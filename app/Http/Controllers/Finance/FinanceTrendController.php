@@ -191,7 +191,7 @@ class FinanceTrendController extends Controller
         // Spending by ACCOUNT for the period (bank-reconciliation lens): every
         // verified outflow per account, categorized or not.
         $expensesByAccount = TransactionService::getExpensesByAccountInPeriod($teamId, $startDate, $endDate)
-            ->map(fn ($r) => ['name' => $r->name, 'total' => (float) $r->total])
+            ->map(fn ($r) => ['id' => $r->id, 'name' => $r->name, 'total' => (float) $r->total])
             ->sortByDesc('total')->values();
         $expensesReport = ReportService::generateCurrentPreviousReport($teamId, 'month', 1, 'expenses', $latestExpenseDate);
         // Now-anchored (not latest-expense-date anchored): YTD must be a real
