@@ -6,10 +6,13 @@
     import { usePage, router } from '@inertiajs/vue3';
 
     import { TRANSACTION_DIRECTIONS,  useTransactionModal } from '@/domains/transactions';
+    import { useImportModal } from '@/domains/transactions/useImportModal';
     import { useToggleModal } from '@/domains/app/useToggleModal';
     const  { DEPOSIT, WITHDRAW, TRANSFER } = TRANSACTION_DIRECTIONS;
     const { openTransactionModal } = useTransactionModal();
     const { openModal: openBulkPlanner } = useToggleModal('bulkPlanner');
+    const { openModal: openImport } = useImportModal();
+    const { openModal: openOccurrence } = useToggleModal('occurrence');
 
     const page = usePage().props;
     const open = (mode: string) => {
@@ -52,11 +55,29 @@
                     <IMdiBankTransfer class="mr-2 text-md" />
                     {{ $t('Transfer') }}
                 </LogerButtonTab>
+                <LogerButtonTab class="w-full font-bold" @click="openImport()">
+                    <IMdiFileImport class="mr-2 text-md" />
+                    {{ $t('Import') }}
+                </LogerButtonTab>
 
                 <h4 class="px-2 mt-2 border-t border-base pt-2 text-body-1/80"> {{ $t('Accounts') }}: </h4>
                 <LogerButtonTab class="w-full font-bold" @click="router.visit('/finance/accounts?newAccount=1')">
                     <IMdiBankPlus class="mr-2 text-md" />
                     {{ $t('New account') }}
+                </LogerButtonTab>
+                <LogerButtonTab class="w-full font-bold" @click="router.visit('/finance/reconciliation')">
+                    <IMdiScaleBalance class="mr-2 text-md" />
+                    {{ $t('New reconciliation') }}
+                </LogerButtonTab>
+
+                <h4 class="px-2 mt-2 border-t border-base pt-2 text-body-1/80"> {{ $t('Budget') }}: </h4>
+                <LogerButtonTab class="w-full font-bold" @click="router.visit('/budgets')">
+                    <IMdiTagPlus class="mr-2 text-md" />
+                    {{ $t('New category') }}
+                </LogerButtonTab>
+                <LogerButtonTab class="w-full font-bold" @click="router.visit('/finance/goals')">
+                    <IMdiBullseyeArrow class="mr-2 text-md" />
+                    {{ $t('New goal') }}
                 </LogerButtonTab>
 
                 <h4 class="px-2 mt-2 border-t border-base pt-2 text-body-1/80"> {{ $t('Planner') }}: </h4>
@@ -64,8 +85,11 @@
                     <IMdiCalendarMultipleCheck class="mr-2 text-md" />
                     {{ $t('Plan a batch') }}
                 </LogerButtonTab>
+                <LogerButtonTab class="w-full font-bold" @click="openOccurrence()">
+                    <IMdiBellPlus class="mr-2 text-md" />
+                    {{ $t('New reminder') }}
+                </LogerButtonTab>
             </div>
         </template>
     </JetDropdown>
 </template>
-
