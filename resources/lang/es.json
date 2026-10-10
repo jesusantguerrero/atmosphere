@@ -1177,5 +1177,8 @@
     "All outflows": "Todas las salidas",
     "Categorized": "Categorizado",
     "Previous period": "Período anterior",
-    "Next period": "Período siguiente"
+    "Next period": "Período siguiente",
+    "Excl. transfers": "Sin transferencias",
+    "Uncategorized": "Sin categorizar",
+    "Jump to transactions without a category": "Ir a las transacciones sin categoría"
 }

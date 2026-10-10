@@ -83,7 +83,7 @@ class FinanceTransactionController extends InertiaController
             ],
         ]);
 
-        return $query->getModelQuery($request, 'transactions', function ($query) {
+        return $query->getModelQuery($request, 'transactions', function ($query) use ($filters) {
             $query->selectRaw('
                 transactions.id,
                 transactions.description,
@@ -112,6 +112,11 @@ class FinanceTransactionController extends InertiaController
                 // showing in the Inbox/list while getDraftCount (Eloquent) reported
                 // 0, and re-deleting them did nothing (already gone). Exclude them.
                 ->whereNull('transactions.deleted_at');
+
+            // "Sin categorizar" shortcut: only outflows with no budget category.
+            if (! empty($filters['uncategorized'])) {
+                $query->whereNull('transactions.category_id');
+            }
         });
     }
 
