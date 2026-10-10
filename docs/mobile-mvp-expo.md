@@ -175,3 +175,169 @@ body: {
 2. Jesús despliega el backend (`git push` + `php artisan route:clear` / deploy; `yarn build` solo si tocó la web — aquí no).
 3. Verificar en vivo con un token: `GET /api/mobile/overview`, `POST /api/mobile/transactions`.
 4. Scaffoldear Expo (Phase 1).
+
+---
+
+## Esquema de payloads y respuestas (con ejemplos)
+
+> Los **nombres y tipos de campo son reales** (capturados en vivo + del código).
+> Los **valores son ilustrativos/sanitizados** (no son datos reales). Los
+> endpoints `/api/mobile/*` aún no están deployados: sus ejemplos se derivan del
+> controlador, no de una captura en vivo — confirmar formas exactas tras deploy.
+
+### Errores comunes (rutas autenticadas)
+```jsonc
+401 { "message": "Unauthenticated." }               // token ausente/inválido/expirado
+403 { "message": "This action is unauthorized." }   // Gate (p.ej. recurso de otro team)
+422 { "message": "The given data was invalid.",
+      "errors": { "campo": ["mensaje"] } }           // validación
+404 { "message": "..." }                             // no encontrado
+500 { "message": "Server Error" }                    // (debug oculto en prod)
+```
+
+### 1. Login — `POST /api/sanctum/token`  (sin auth)
+Request:
+```jsonc
+// headers: Accept: application/json
+{ "email": "user@example.com", "password": "••••••",
+  "device_name": "jesus-iphone-15",   // req: nombra el token
+  "code": "123456",                    // opc: TOTP 2FA
+  "recovery_code": "xxxx-xxxx" }       // opc: alterno al TOTP
+```
+200 — **string JSON plano** con el token (guardar en secure-store):
+```json
+"3|AbCdEf0123456789plainTextTokenHere"
+```
+402 — credenciales malas / 2FA requerido:
+```json
+{ "status": 402, "message": "The provided credentials are incorrect." }
+```
+
+### 2. Usuario — `GET /api/user`  (Bearer)
+200 → objeto User (`id, name, email, current_team_id, …`).
+
+### 3. Home — `GET /api/mobile/overview`  (Bearer)
+```jsonc
+{
+  "accounts": [
+    { "id": 101, "name": "BHD Cuenta Corriente", "current_balance": 15230.55,
+      "balance_type": "debit",  "currency_code": "DOP",
+      "account_detail_type_id": 2, "credit_closing_day": null, "type": 1 },
+    { "id": 1735, "name": "Qik Visa Clásica", "current_balance": -20056.92,
+      "balance_type": "credit", "currency_code": "DOP",
+      "account_detail_type_id": 6, "credit_closing_day": 25, "type": -1 }
+  ],
+  "netWorth": { "assets": 1400000.00, "debts": -1034000.00, "net": 366000.00 },
+  "nextPayments": [ /* items = /api/next-payments.data, ver §9 */ ],
+  "cardsToPay":   [ /* subset de nextPayments con type == "credit_card_payment" */ ]
+}
+```
+`balance_type`: `debit`=activo, `credit`=pasivo. `type`: 1=activo, -1=pasivo.
+`credit_closing_day` solo en tarjetas. `net = assets + debts` (debts viene negativo).
+
+### 4. Quick-add — `POST /api/mobile/transactions`  (Bearer)
+Request:
+```jsonc
+{
+  "account_id": 101,          // req
+  "total": 1850.00,           // req, > 0
+  "currency_code": "DOP",     // req, 3 letras
+  "description": "Supermercado Nacional",       // req
+  "date": "2026-10-10",       // req, YYYY-MM-DD
+  "direction": "credit",      // req: "credit"=salida (WITHDRAW) | "debit"=entrada (DEPOSIT)
+  "category_id": 153,         // opc
+  "payee_id": 79,             // opc
+  "counter_account_id": null, // opc (transferencias)
+  "status": "verified"        // opc: "verified" (default) | "draft"
+}
+```
+200/201:
+```jsonc
+{
+  "success": true,
+  "data": {
+    "id": 98231, "description": "Supermercado Nacional", "total": 1850.0,
+    "currency_code": "DOP", "date": "2026-10-10", "direction": "credit",
+    "status": "verified", "created_at": "…", "updated_at": "…",
+    "account":  { "id": 101, "name": "BHD Cuenta Corriente", "currency_code": "DOP",
+                  "is_multi_currency": false, "primary_currency": "DOP",
+                  "secondary_currencies": [] },
+    "category": { "id": 153, "name": "Comida" },                 // solo si se envió
+    "payee":    { "id": 79,  "name": "Supermercado Nacional" },  // solo si se envió
+    "multi_currency": { "is_converted": false, "secondary_currency_amount": 1850.0,
+                        "is_secondary_currency": false, "display_currencies": { /* … */ } }
+  }
+}
+```
+Errores: `422` (campos), `403` (cuenta de otro team).
+
+### 5. Recientes — `GET /api/mobile/transactions`  (Bearer)
+200 → `{ "data": [ <igual que data de §4>, … ] }`. Acepta filtros/paginación de MultiCurrency@index.
+
+### 6. Cuentas (completo) — `GET /api/accounts`  (Bearer o cookie)
+200 → array de modelos Account completos. Campos útiles:
+```jsonc
+[ { "id": 101, "name": "BHD Cuenta Corriente",
+    "current_balance": "15230.55", "opening_balance": "0.00",   // ⚠️ string
+    "balance_type": "debit", "currency_code": "DOP",
+    "account_detail_type_id": 2, "credit_closing_day": null, "credit_min_payment": null,
+    "is_multi_currency": false, "type": 1, "status": "active",
+    "display_id": "…", "bank_code": "BHD", "index": 0,
+    "created_at": "…", "updated_at": "…" } ]
+```
+
+### 7. Categorías (picker) — `GET /api/categories`  (Bearer o cookie)
+200 → grupos top-level con `subCategories` (los seleccionables son las hijas):
+```jsonc
+[ { "id": 10, "name": "Gastos del hogar", "parent_id": null, "index": 0,
+    "resource_type": "transactions", "color": "#…", "icon": "…",
+    "subCategories": [
+      { "id": 153, "name": "Comida",   "parent_id": 10, "index": 0 },
+      { "id": 154, "name": "Alquiler", "parent_id": 10, "index": 1 } ] } ]
+```
+
+### 8. Payees (picker) — `GET /api/payees`  (Bearer o cookie)
+200 → array grande (~400+). ⚠️ hay payees con `name` vacío.
+```jsonc
+[ { "id": 79, "team_id": 2, "user_id": 2, "account_id": 100,
+    "name": "Supermercado Nacional", "created_at": "…", "updated_at": "…" } ]
+```
+
+### 9. Próximos pagos — `GET /api/next-payments`  (Bearer o cookie)
+```jsonc
+{
+  "summary": { "total_amount": 44056.92, "total_count": 10,
+               "by_type": { "budget_category": 7, "credit_card_payment": 3 } },
+  "data": [
+    { "id": "budget_3", "type": "budget_category", "description": "Alquiler",
+      "title": "Alquiler", "total": "24000.00", "due_date": "2026-10-07",
+      "date": "2026-10-07", "category_id": 154, "category_name": "Alquiler",
+      "status": "pending", "source": "budget_target",
+      "metadata": { "target_id": 3, "frequency": "MONTHLY" } },
+    { "id": "cc_payment_1735_2026-11", "type": "credit_card_payment",
+      "title": "Credit Card Payment - Qik Visa Clásica", "total": 20056.92,
+      "due_date": "2026-11-10", "account_id": 1735, "status": "pending",
+      "source": "dynamic_calculation", "cut_date": "2026-10-25",
+      "statement_unpaid": true, "metadata": { /* … */ } }
+  ]
+}
+```
+Tipos de item: `budget_category`, `credit_card_payment`, `planned_transaction`.
+`status` ∈ { `pending`, `overdue` }.
+
+### 10. Tarjetas — `GET /credit-card-summary`  (Bearer o cookie)
+```jsonc
+{
+  "payInFull": [   // tarjetas con estado sin pagar y vencimiento cerca/pasado
+    { "account_id": 1735, "account_name": "Qik Visa Clásica", "total": 20056.92,
+      "due_at": "2026-11-10", "days_until": 30, "is_overdue": false,
+      "statement_unpaid": true, "cut_date": "2026-10-25", "days_since_cut": 5 } ],
+  "inactive": [    // candidatas a cancelar: saldo 0 y sin actividad 6+ meses
+    { "account_id": 1800, "account_name": "Tarjeta vieja", "total": 0,
+      "months_inactive": 8 } ]
+}
+```
+(Campos de ciclo como `days_since_cut`/`months_inactive` son ilustrativos — confirmar en deploy.)
+
+### 11. Lista por cuenta — `GET /api/finance/transactions?filter[account]=ID`  (Bearer o cookie)
+200 → lista filtrada (QuerifySlim). Soporta `filter[...]`, `page`, etc. Item ≈ transacción con `id, date, description, total/amount, direction, status, category, payee, account_id`. (Confirmar forma exacta en deploy.)
