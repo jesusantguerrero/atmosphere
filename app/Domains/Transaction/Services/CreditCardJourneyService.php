@@ -6,6 +6,7 @@ use App\Domains\Budget\Data\BudgetReservedNames;
 use App\Models\Account;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Insane\Journal\Models\Core\AccountDetailType;
 use Insane\Journal\Models\Core\Transaction;
 use Insane\Journal\Models\Core\TransactionLine;
 
@@ -48,6 +49,7 @@ class CreditCardJourneyService
             }
         }
         usort($events, fn ($left, $right) => strcmp($left['date'], $right['date']));
+        $this->addPreparation($events, $teamId, $accounts, $lines);
         $snapshotDate = min($endDate, now()->toDateString());
         if ($accounts->isNotEmpty()) {
             $events[] = [
@@ -95,6 +97,82 @@ class CreditCardJourneyService
         })->values()->all();
 
         return ['events' => $events, 'cards' => $rewards, 'missing_opening_dates' => $accounts->whereNull('credit_opened_at')->count()];
+    }
+
+    private function addPreparation(array &$events, int $teamId, Collection $accounts, Collection $balanceLines): void
+    {
+        if ($events === []) {
+            return;
+        }
+        $from = Carbon::parse($events[0]['date'])->startOfMonth()->subMonthsNoOverflow(6)->toDateString();
+        $until = Carbon::parse($events[array_key_last($events)]['date'])->startOfMonth()->subDay()->toDateString();
+        $base = TransactionLine::query()->withoutEagerLoads()
+            ->join('transactions', 'transactions.id', '=', 'transaction_lines.transaction_id')
+            ->join('accounts', 'accounts.id', '=', 'transaction_lines.account_id')
+            ->join('account_detail_types', 'account_detail_types.id', '=', 'accounts.account_detail_type_id')
+            ->where('transaction_lines.team_id', $teamId)->where('transactions.team_id', $teamId)->where('accounts.team_id', $teamId)
+            ->where('transactions.status', Transaction::STATUS_VERIFIED)
+            ->whereDoesntHave('transaction.payee', fn ($query) => $query->where('name', 'Starting Balance'))
+            ->whereBetween('transaction_lines.date', [$from, Carbon::parse($until)->endOfDay()])
+            ->where(function ($query): void {
+                $query->whereNull('transactions.description')->orWhereNotIn('transactions.description', ['Starting Balance', 'Loger adjustment']);
+            });
+        $flows = (clone $base)->join('categories', 'categories.id', '=', 'transaction_lines.category_id')
+            ->where('transactions.is_transfer', false)->whereIn('account_detail_types.name', AccountDetailType::ALL)
+            ->select(['transactions.currency_code', 'transaction_lines.account_id', 'categories.name as category_name', 'account_detail_types.name as account_type'])
+            ->selectRaw("DATE_FORMAT(transaction_lines.date, '%Y-%m') as month, SUM(transaction_lines.amount * transaction_lines.type) as net, COUNT(*) as records")
+            ->groupByRaw("DATE_FORMAT(transaction_lines.date, '%Y-%m'), transactions.currency_code, transaction_lines.account_id, categories.name, account_detail_types.name")
+            ->get();
+        $payments = (clone $base)->where('transactions.is_transfer', true)
+            ->whereColumn('transactions.currency_code', 'accounts.currency_code')
+            ->whereIn('transaction_lines.account_id', $accounts->pluck('id'))->where('transaction_lines.type', 1)
+            ->where(function ($query): void {
+                $query->whereHas('transaction.account', fn ($account) => $account->whereHas('detailType', fn ($type) => $type->whereIn('name', AccountDetailType::ALL_CASH)))
+                    ->orWhereHas('transaction.counterAccount', fn ($account) => $account->whereHas('detailType', fn ($type) => $type->whereIn('name', AccountDetailType::ALL_CASH)));
+            })
+            ->select(['transactions.currency_code', 'transaction_lines.account_id'])
+            ->selectRaw("DATE_FORMAT(transaction_lines.date, '%Y-%m') as month, SUM(transaction_lines.amount) as paid, COUNT(*) as records")
+            ->groupByRaw("DATE_FORMAT(transaction_lines.date, '%Y-%m'), transactions.currency_code, transaction_lines.account_id")->get();
+        foreach ($events as &$event) {
+            if ($event['kind'] !== 'opened') {
+                continue;
+            }
+            $end = Carbon::parse($event['date'])->startOfMonth()->subDay();
+            $start = $end->copy()->startOfMonth()->subMonthsNoOverflow(5);
+            $periodFlows = $flows->filter(fn ($row) => $row->month >= $start->format('Y-m') && $row->month <= $end->format('Y-m'));
+            $periodPayments = $payments->filter(fn ($row) => $row->month >= $start->format('Y-m') && $row->month <= $end->format('Y-m'));
+            $currencies = $periodFlows->pluck('currency_code')->merge($periodPayments->pluck('currency_code'))->unique();
+            $event['preparation'] = ['from' => $start->toDateString(), 'until' => $end->toDateString(), 'currencies' => []];
+            foreach ($currencies as $currency) {
+                $rows = $periodFlows->where('currency_code', $currency);
+                $paid = $periodPayments->where('currency_code', $currency);
+                $income = $rows->where('category_name', BudgetReservedNames::READY_TO_ASSIGN->value)->whereIn('account_type', AccountDetailType::ALL_CASH);
+                $expenses = $rows->where('category_name', '<>', BudgetReservedNames::READY_TO_ASSIGN->value);
+                $cardExpenses = $expenses->whereIn('account_id', $accounts->pluck('id'));
+                $monthly = [];
+                for ($i = 0; $i < 6; $i++) {
+                    $month = $start->copy()->addMonthsNoOverflow($i)->format('Y-m');
+                    $incoming = $income->where('month', $month);
+                    $outgoing = $expenses->where('month', $month);
+                    $monthly[] = ['month' => $month, 'income' => $incoming->isEmpty() ? null : (float) $incoming->sum('net'),
+                        'expense' => $outgoing->isEmpty() ? null : -(float) $outgoing->sum('net')];
+                }
+                $debtBefore = collect($this->snapshot($accounts, $balanceLines, $start->copy()->subDay()->toDateString()))->where('currency', $currency)->whereNotNull('balance');
+                $debtAfter = collect($this->snapshot($accounts, $balanceLines, $end->toDateString()))->where('currency', $currency)->whereNotNull('balance');
+                $event['preparation']['currencies'][] = [
+                    'currency' => $currency, 'income' => $income->isEmpty() ? null : (float) $income->sum('net'),
+                    'expense' => $expenses->isEmpty() ? null : -(float) $expenses->sum('net'),
+                    'purchases' => $cardExpenses->isEmpty() ? null : -(float) $cardExpenses->sum('net'),
+                    'payments' => $paid->isEmpty() ? null : (float) $paid->sum('paid'),
+                    'months_recorded' => $rows->pluck('month')->merge($paid->pluck('month'))->unique()->count(), 'monthly' => $monthly,
+                    'debt_before' => $debtBefore->isEmpty() ? null : (float) $debtBefore->sum('balance'),
+                    'debt_after' => $debtAfter->isEmpty() ? null : (float) $debtAfter->sum('balance'),
+                    'debt_accounts_before' => $debtBefore->pluck('id')->all(), 'debt_accounts_after' => $debtAfter->pluck('id')->all(),
+                    'categories' => $cardExpenses->groupBy('category_name')->map(fn ($group, $name) => ['name' => $name, 'amount' => -(float) $group->sum('net')])->filter(fn ($row) => $row['amount'] > 0)->sortByDesc('amount')->take(3)->values()->all(),
+                    'cards' => $cardExpenses->groupBy('account_id')->map(fn ($group, $id) => ['name' => $accounts->firstWhere('id', $id)?->name, 'amount' => -(float) $group->sum('net')])->filter(fn ($row) => $row['amount'] > 0)->sortByDesc('amount')->take(3)->values()->all(),
+                ];
+            }
+        }
     }
 
     private function snapshot(Collection $accounts, Collection $lines, string $date, bool $includeUnknown = false): array

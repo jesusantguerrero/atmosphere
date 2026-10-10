@@ -152,6 +152,55 @@ class CreditCardJourneyTest extends TestCase
             ->assertUnprocessable()->assertJsonValidationErrors('credit_opened_precision');
     }
 
+    public function test_preparation_uses_prior_verified_records_without_counting_transfers_as_income_or_refunds_as_payments(): void
+    {
+        $category = Category::factory()->create(['team_id' => $this->user->current_team_id, 'user_id' => $this->user->id, 'name' => 'Food']);
+        $income = Category::factory()->create(['team_id' => $this->user->current_team_id, 'user_id' => $this->user->id, 'name' => 'Ready to Assign']);
+        $old = $this->card(['credit_opened_at' => '2025-01-01']);
+        $new = $this->card(['credit_opened_at' => '2026-08-01', 'credit_opened_precision' => 'month']);
+        $bank = $this->card(['credit_closing_day' => null, 'account_detail_type_id' => AccountDetailType::where('name', AccountDetailType::BANK)->value('id')]);
+        $record = function (Account $account, Category $category, float $amount, int $type, string $date, bool $transfer = false, string $currency = 'DOP', string $description = 'Recorded movement') use ($bank): void {
+            $transaction = Transaction::create(['team_id' => $this->user->current_team_id, 'user_id' => $this->user->id,
+                'account_id' => $account->id, 'counter_account_id' => $transfer ? $bank->id : null, 'date' => $date, 'number' => 1,
+                'description' => $description, 'total' => $amount, 'status' => 'verified', 'is_transfer' => $transfer, 'currency_code' => $currency]);
+            $transaction->lines()->create(['team_id' => $this->user->current_team_id, 'user_id' => $this->user->id,
+                'account_id' => $account->id, 'category_id' => $category->id, 'date' => $date, 'amount' => $amount, 'type' => $type]);
+        };
+        $record($bank, $income, 10000, 1, '2026-02-02');
+        $record($bank, $income, 90000, 1, '2026-02-03', true);
+        $record($bank, $income, 80000, 1, '2026-02-04', false, 'DOP', 'Starting Balance');
+        $record($bank, $income, 80000, 1, '2026-02-04', false, 'DOP', 'Loger adjustment');
+        $record($bank, $income, 100, 1, '2026-03-04', false, 'USD');
+        $this->purchase($old, $category, 1000, 'verified', false, '2026-02-05');
+        $record($old, $category, 200, 1, '2026-02-06');
+        $record($old, $income, 700, 1, '2026-02-07', true);
+        $this->purchase($old, $category, 9999, 'draft', false, '2026-04-01');
+        $this->purchase($new, $category, 9999, 'verified', false, '2026-08-10');
+        $record($bank, $income, 9999, 1, '2026-01-31');
+        $report = $this->report([$old->id, $new->id]);
+        $preparation = collect($report['events'])->firstWhere('id', $new->id.'-opened')['preparation'];
+        $this->assertSame('2026-02-01', $preparation['from']);
+        $this->assertSame('2026-07-31', $preparation['until']);
+        $dop = collect($preparation['currencies'])->firstWhere('currency', 'DOP');
+        $this->assertEquals(10000, $dop['income']);
+        $this->assertEquals(800, $dop['expense']);
+        $this->assertEquals(800, $dop['purchases']);
+        $this->assertEquals(700, $dop['payments']);
+        $this->assertSame(1, $dop['months_recorded']);
+        $this->assertNull($dop['monthly'][1]['income']);
+        $this->assertEquals(800, $dop['categories'][0]['amount']);
+        $usd = collect($preparation['currencies'])->firstWhere('currency', 'USD');
+        $this->assertEquals(100, $usd['income']);
+        $this->assertNull($usd['expense']);
+        $this->assertSame([], app(CreditCardJourneyService::class)->report($this->user->current_team_id + 1000, '2026-08-01', '2026-08-31')['events']);
+    }
+
+    public function test_preparation_is_empty_without_prior_movements(): void
+    {
+        $card = $this->card(['credit_opened_at' => '2026-08-10']);
+        $this->assertSame([], collect($this->report()['events'])->firstWhere('id', $card->id.'-opened')['preparation']['currencies']);
+    }
+
     private function report(?array $accountIds = null): array
     {
         return app(CreditCardJourneyService::class)->report($this->user->current_team_id, '2026-08-01', '2026-08-31', $accountIds);
