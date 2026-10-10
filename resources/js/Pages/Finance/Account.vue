@@ -19,8 +19,8 @@ import AccountReconciliationForm from "./AccountReconciliationForm.vue";
 
 import { NDatePicker, NDropdown } from "naive-ui";
 
-import { useTransactionModal, TRANSACTION_DIRECTIONS, removeTransaction, saveAccountsReorder } from "@/domains/transactions";
-import AccountsLedger from "@/domains/transactions/components/AccountsLedger.vue";
+import { useTransactionModal, TRANSACTION_DIRECTIONS, removeTransaction } from "@/domains/transactions";
+import AccountsOverview from "./Partials/AccountsOverview.vue";
 import AccountModal from "@/domains/transactions/components/AccountModal.vue";
 import { tableAccountCols } from "@/domains/transactions";
 import { paymentMethods } from "@/domains/transactions/constants";
@@ -552,11 +552,7 @@ const draftCount = computed(() => (props.drafts || []).length);
             <h1 class="font-bold">{{ $t('Accounts') }}</h1>
         </template>
         <FinanceTemplate :title="$t('Accounts')" :accounts="accounts" :hide-panel="true">
-            <AccountsLedger
-                :accounts="accounts"
-                class="w-full max-w-2xl px-4 py-2 mt-4 space-y-4 rounded-md bg-base-lvl-3"
-                @reordered="saveAccountsReorder"
-            />
+            <AccountsOverview :accounts="accounts" />
         </FinanceTemplate>
     </AppLayout>
     <AppLayout v-else @back="router.visit('/finance/transactions')" :show-back-button="true">
@@ -896,7 +892,7 @@ const draftCount = computed(() => (props.drafts || []).length);
                 :account="selectedAccount" />
         </FinanceTemplate>
 
-        <AccountModal v-if="isAccountModalOpen" :show="isAccountModalOpen" :account="selectedAccount" :max-width="context.isMobile ? 'mobile' : undefined" @close="isAccountModalOpen = false" />
+        <AccountModal v-if="isAccountModalOpen" :show="isAccountModalOpen" :form-data="selectedAccount" :max-width="context.isMobile ? 'mobile' : undefined" @close="isAccountModalOpen = false" />
 
         <Modal :show="showImportPdf" max-width="lg" :closeable="true" :is-open="showImportPdf" :automatic="false" :full-height="false" @close="showImportPdf = false">
             <header class="flex items-center px-6 py-4 font-bold bg-base-lvl-3">

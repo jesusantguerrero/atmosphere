@@ -21,6 +21,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Exists;
+use Inertia\Inertia;
+use Inertia\Response;
 use Insane\Journal\Models\Accounting\ReconciliationEntry;
 use Insane\Journal\Models\Core\Transaction;
 
@@ -31,6 +33,17 @@ class FinanceAccountController extends InertiaController
     const DateFormat = 'Y-m-d';
 
     private $reportService;
+
+    public function index(Request $request): Response
+    {
+        return Inertia::render('Finance/Account', [
+            'accounts' => Account::getByDetailTypes($request->user()->current_team_id),
+            'transactions' => [],
+            'billingCycles' => [],
+            'stats' => ['total' => 0, 'credit' => 0, 'debit' => 0],
+            'serverSearchOptions' => [],
+        ]);
+    }
 
     public function __construct(Account $account, ReportService $reportService, private CreditCardReportService $creditCardReportService)
     {
