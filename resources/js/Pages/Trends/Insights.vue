@@ -168,6 +168,18 @@ const gastoHref = (r: any) => {
   const key = gastoDim.value === "cuenta" ? "account_id" : "category_id";
   return `/finance/transactions?filter[${key}]=${r.id}${date}`;
 };
+// Uncategorized real spend = all outflows (excl. transfers) minus categorized.
+// A shortcut chip links to those transactions so they can be classified.
+const uncategorizedTotal = computed<number>(() => {
+  const accounts = accountsOutRows.value.reduce((a, x) => a + x.total, 0);
+  const categorized = expenseByCat.value.reduce((a, x) => a + x.total, 0);
+  return Math.max(0, accounts - categorized);
+});
+const uncategorizedHref = computed(() => {
+  const s = props.metaData?.startDate, e = props.metaData?.endDate;
+  const date = s && e ? `&filter[date]=${s}~${e}` : "";
+  return `/finance/transactions?filter[uncategorized]=1${date}`;
+});
 const catOptions = { colors: ["#7C6FF0B3"], borderColors: ["#7C6FF0"], ...chartAxis };
 
 // ---- tabs
@@ -518,6 +530,7 @@ const chartMeta = computed(() => {
             <div class="text-right shrink-0">
               <div class="text-error font-bold tabular-nums leading-none">{{ currency }} {{ money(gastoTotal).main }}<span class="text-xs opacity-60">.{{ money(gastoTotal).cents }}</span></div>
               <div class="text-[10px] text-body-1/60 mt-0.5">{{ $t('Total') }} · {{ gastoDim === 'cuenta' ? $t('Excl. transfers') : $t('Categorized') }} · {{ periodLabel }}</div>
+              <a v-if="uncategorizedTotal > 1" :href="uncategorizedHref" class="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-error/15 text-error hover:bg-error/25" :title="$t('Jump to transactions without a category')">{{ $t('Uncategorized') }} · {{ currency }} {{ money(uncategorizedTotal).main }} →</a>
             </div>
           </div>
           <div class="flex items-center justify-end">
