@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Api;
 
 use App\Domains\AppCore\Models\Category;
 use App\Domains\AppCore\Models\Planner;
+use App\Domains\Budget\Data\BudgetAssignData;
+use App\Domains\Budget\Data\BudgetMovementData;
 use App\Domains\Budget\Data\BudgetReservedNames;
 use App\Domains\Budget\Services\BudgetCategoryService;
+use App\Domains\Budget\Services\BudgetMovementService;
 use App\Domains\Today\Services\CalendarService;
 use App\Domains\Today\Services\TodayService;
 use App\Domains\Transaction\Models\Transaction;
@@ -102,14 +105,21 @@ class MobileController extends Controller
         $month = ($request->query('month') ?? now()->format('Y-m')).'-01';
         $service = new BudgetCategoryService;
 
-        $readyToAssign = 0.0;
-        $readyCategory = Category::where('team_id', $teamId)
-            ->where('display_id', 'ready_to_assign')
-            ->first();
+        // Inflow category holds activity (income) and left_from_last_month.
+        // RTA = inflow.activity + inflow.left_from_last_month - totalAssigned
+        // This matches the web frontend's useBudget.ts calculation.
+        $inflowData = ['activity' => 0, 'left_from_last_month' => 0];
+        $inflowGroup = Category::where([
+            'team_id' => $teamId,
+            'resource_type' => 'transactions',
+            'name' => BudgetReservedNames::INFLOW->value,
+        ])->whereNull('parent_id')->with('subCategories')->first();
 
-        if ($readyCategory) {
-            $info = $service->getBudgetInfo($readyCategory, $month);
-            $readyToAssign = (float) ($info['available'] ?? 0);
+        if ($inflowGroup) {
+            $rtaChild = $inflowGroup->subCategories->first();
+            if ($rtaChild) {
+                $inflowData = $service->getBudgetData($rtaChild, $month);
+            }
         }
 
         $groups = Category::where([
@@ -126,17 +136,20 @@ class MobileController extends Controller
             ->map(function (Category $group) use ($service, $month) {
                 $children = $group->subCategories->map(function (Category $cat) use ($service, $month) {
                     try {
-                        $info = $service->getBudgetInfo($cat, $month);
+                        $data = $service->getBudgetData($cat, $month);
                     } catch (\Throwable) {
-                        $info = [];
+                        $data = [];
                     }
 
                     return [
                         'id' => $cat->id,
                         'name' => $cat->name,
-                        'budgeted' => (float) ($info['budgeted'] ?? 0),
-                        'activity' => (float) ($info['activity'] ?? 0),
-                        'available' => (float) ($info['available'] ?? 0),
+                        'budgeted' => (float) ($data['budgeted'] ?? 0),
+                        'activity' => (float) ($data['activity'] ?? 0),
+                        'available' => (float) ($data['available'] ?? 0),
+                        'left_from_last_month' => (float) ($data['left_from_last_month'] ?? 0),
+                        'funded_spending' => (float) ($data['funded_spending'] ?? 0),
+                        'payments' => (float) ($data['payments'] ?? 0),
                         'has_target' => $cat->budget !== null,
                     ];
                 });
@@ -152,11 +165,74 @@ class MobileController extends Controller
             })
             ->values();
 
+        $totalAssigned = $groups->sum('budgeted');
+        $readyToAssign = (float) ($inflowData['activity'] ?? 0)
+            + (float) ($inflowData['left_from_last_month'] ?? 0)
+            - $totalAssigned;
+
         return response()->json([
             'month' => substr($month, 0, 7),
             'ready_to_assign' => round($readyToAssign, 2),
             'groups' => $groups,
         ]);
+    }
+
+    /**
+     * Assign money to a category for a month, exactly like the web: `budgeted` is the
+     * category's new total for the month and the amount comes out of Ready to Assign.
+     */
+    public function assignBudget(Request $request, BudgetMovementService $service): JsonResponse
+    {
+        $validated = $request->validate([
+            'category_id' => ['required', 'integer'],
+            'month' => ['required', 'date_format:Y-m'],
+            'budgeted' => ['required', 'numeric', 'min:0'],
+        ]);
+
+        $user = $request->user();
+        $category = Category::where('team_id', $user->current_team_id)->findOrFail($validated['category_id']);
+
+        $service->registerAssignment(new BudgetAssignData(
+            $user->current_team_id,
+            $user->id,
+            $validated['month'].'-01',
+            $category->id,
+            (float) $validated['budgeted'],
+        ));
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Move money from one category to another within a month. The service caps the
+     * amount at what the source category has available.
+     */
+    public function moveBudget(Request $request, BudgetMovementService $service): JsonResponse
+    {
+        $validated = $request->validate([
+            'source_category_id' => ['required', 'integer'],
+            'destination_category_id' => ['required', 'integer', 'different:source_category_id'],
+            'month' => ['required', 'date_format:Y-m'],
+            'amount' => ['required', 'numeric', 'min:0.01'],
+        ]);
+
+        $user = $request->user();
+        $teamId = $user->current_team_id;
+        $source = Category::where('team_id', $teamId)->findOrFail($validated['source_category_id']);
+        $destination = Category::where('team_id', $teamId)->findOrFail($validated['destination_category_id']);
+
+        $service->registerMovement(new BudgetMovementData(
+            null,
+            $teamId,
+            $user->id,
+            $source->id,
+            $destination->id,
+            'movement',
+            $validated['month'].'-01',
+            (float) $validated['amount'],
+        ));
+
+        return response()->json(['success' => true]);
     }
 
     /**
