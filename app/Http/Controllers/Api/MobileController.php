@@ -44,7 +44,7 @@ class MobileController extends Controller
         $accounts = collect(Account::getByDetailTypes($teamId))->map(fn ($a) => [
             'id' => $a->id,
             'name' => $a->name,
-            'current_balance' => (float) $a->current_balance,
+            'current_balance' => (float) $a->balance,
             'balance_type' => $a->balance_type,
             'currency_code' => $a->currency_code,
             'account_detail_type_id' => $a->account_detail_type_id,
