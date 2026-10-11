@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Domains\Today\Services\TodayService;
 use App\Domains\Transaction\Services\NextPaymentsService;
 use App\Domains\Transaction\Services\TransactionService;
 use App\Http\Controllers\Controller;
@@ -17,6 +18,17 @@ use Illuminate\Support\Carbon;
  */
 class MobileController extends Controller
 {
+    /**
+     * The same daily glance the web "Today" page renders: money pace,
+     * things needing attention, due today, upcoming and this week's meals.
+     */
+    public function today(Request $request, TodayService $today): JsonResponse
+    {
+        $user = $request->user();
+
+        return response()->json($today->buildPayload($user->current_team_id, $user->id));
+    }
+
     /**
      * One-call home payload: account balances, the current net-worth
      * position, upcoming payments, and the cards that still need paying
