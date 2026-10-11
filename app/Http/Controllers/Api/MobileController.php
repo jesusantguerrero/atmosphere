@@ -41,16 +41,23 @@ class MobileController extends Controller
         $monthStart = $today->copy()->startOfMonth()->format('Y-m-d');
         $monthEnd = $today->copy()->endOfMonth()->format('Y-m-d');
 
-        $accounts = collect(Account::getByDetailTypes($teamId))->map(fn ($a) => [
-            'id' => $a->id,
-            'name' => $a->name,
-            'current_balance' => (float) $a->balance,
-            'balance_type' => $a->balance_type,
-            'currency_code' => $a->currency_code,
-            'account_detail_type_id' => $a->account_detail_type_id,
-            'credit_closing_day' => $a->credit_closing_day,
-            'type' => $a->type,
-        ])->values();
+        // Closed accounts stay out of the phone's lists and the account picker. Only
+        // closed_at is reliable: `archived` defaults to 1 in the accounts table.
+        $accounts = collect(Account::getByDetailTypes($teamId)->loadMissing('detailType'))
+            ->reject(fn ($a) => $a->closed_at !== null)
+            ->map(fn ($a) => [
+                'id' => $a->id,
+                'name' => $a->name,
+                'current_balance' => (float) $a->balance,
+                'balance_type' => $a->balance_type,
+                'currency_code' => $a->currency_code,
+                'account_detail_type_id' => $a->account_detail_type_id,
+                // bank | cash | cash_on_hand | savings | credit_card | property | loan — lets the app group accounts.
+                'detail_type' => $a->detailType?->name,
+                'credit_closing_day' => $a->credit_closing_day,
+                'type' => $a->type,
+            ])
+            ->values();
 
         // getNetWorth returns running totals, newest row first.
         $netWorthRows = TransactionService::getNetWorth($teamId, $monthStart, $monthEnd);
