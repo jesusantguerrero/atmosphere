@@ -48,6 +48,8 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
     Route::get('/today', [MobileController::class, 'today'])->name('today');
     Route::get('/overview', [MobileController::class, 'overview'])->name('overview');
     Route::get('/budget', [MobileController::class, 'budget'])->name('budget');
+    Route::post('/budget/assign', [MobileController::class, 'assignBudget'])->name('budget.assign');
+    Route::post('/budget/move', [MobileController::class, 'moveBudget'])->name('budget.move');
     Route::get('/calendar', [MobileController::class, 'calendar'])->name('calendar');
     Route::get('/routine', [MobileController::class, 'routine'])->name('routine');
     Route::get('/transactions', [MultiCurrencyTransactionController::class, 'index'])->name('transactions.index');
