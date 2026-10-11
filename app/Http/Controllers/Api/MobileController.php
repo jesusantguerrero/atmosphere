@@ -116,12 +116,17 @@ class MobileController extends Controller
             ->whereNull('parent_id')
             ->whereNot('name', BudgetReservedNames::READY_TO_ASSIGN->value)
             ->whereNot('name', BudgetReservedNames::INFLOW->value)
+            ->whereNot('name', BudgetReservedNames::CREDIT_CARD_PAYMENTS->value)
             ->orderBy('index')
-            ->with(['subCategories', 'subCategories.budget'])
+            ->with(['subCategories', 'subCategories.budget', 'subCategories.account'])
             ->get()
             ->map(function (Category $group) use ($service, $month) {
                 $children = $group->subCategories->map(function (Category $cat) use ($service, $month) {
-                    $info = $service->getBudgetInfo($cat, $month);
+                    try {
+                        $info = $service->getBudgetInfo($cat, $month);
+                    } catch (\Throwable) {
+                        $info = [];
+                    }
 
                     return [
                         'id' => $cat->id,
