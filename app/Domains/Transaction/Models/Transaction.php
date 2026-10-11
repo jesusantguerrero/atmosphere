@@ -4,13 +4,14 @@ namespace App\Domains\Transaction\Models;
 
 use App\Domains\AppCore\Models\Planner;
 use App\Domains\Transaction\Traits\TransactionTrait;
+use App\Models\Account;
 use App\Models\CurrencyBalance;
 use App\Models\Team;
 use Database\Factories\TransactionFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Insane\Journal\Models\Core\Account;
 use Insane\Journal\Models\Core\Category;
 use Insane\Journal\Models\Core\Transaction as CoreTransaction;
 
@@ -43,6 +44,16 @@ class Transaction extends CoreTransaction
     public function schedule()
     {
         return $this->morphOne(Planner::class, 'dateable', 'dateable_type', 'dateable_id');
+    }
+
+    public function account(): BelongsTo
+    {
+        return $this->belongsTo(Account::class);
+    }
+
+    public function counterAccount(): BelongsTo
+    {
+        return $this->belongsTo(Account::class, 'counter_account_id');
     }
 
     public function team()
