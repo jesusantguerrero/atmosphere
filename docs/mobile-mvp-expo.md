@@ -79,6 +79,20 @@ Soporta 2FA (TOTP `code` o `recovery_code`) igual que el login web.
 }
 ```
 
+**`GET /api/mobile/today`** — el "Hoy" de la web en una llamada (`TodayService::buildPayload`):
+```jsonc
+{
+  "money":     { "today_spent": float, "daily_remaining": float, "month_remaining": float,
+                 "days_in_month_left": int, "currency_code": string|null },
+  "attention": [{ "id","message","cta","link" }],          // alertas de watchlist sin leer (mes actual)
+  "today":     [{ "kind": "planner"|"relationship", "id","name","subtitle","status","total"? }],
+  "upcoming":  [{ "kind": "billing_cycle"|"utility"|"planner", "id","name","account_id","total",
+                  "due_at": "YYYY-MM-DD", "days_until": int }],   // days_until < 0 = vencido
+  "meal":      [{ "id","meal_id","name","meal_type","is_liked","date","day_label" }]  // semana en curso
+}
+```
+`money.currency_code` puede venir `null`: usar la moneda de las cuentas de `/api/mobile/overview`.
+
 **`POST /api/mobile/transactions`** — quick-add (reusa MultiCurrency@store):
 ```jsonc
 body: {
@@ -87,15 +101,19 @@ body: {
   "currency_code": "DOP" (req, size 3),
   "description": string (req),
   "date": "YYYY-MM-DD" (req),
-  "direction": "credit" | "debit" (req),
+  "direction": "WITHDRAW" | "DEPOSIT" (req),   // también acepta "credit" | "debit" (legacy, ver nota)
   "category_id": int?, "payee_id": int?, "counter_account_id": int?,
   "status": "draft" | "verified"?   // default verified
 }
 -> { success:true, data: <MultiCurrencyTransactionResource> }
 ```
-> Semántica de `direction`: en Loger `DIRECTION_DEBIT='DEPOSIT'` (entrada,
-> type 1) y `DIRECTION_CREDIT='WITHDRAW'` (salida, type -1). Para un gasto
-> normal: `direction=credit`. Confirmar el mapeo exacto al construir el form.
+> Semántica de `direction`: lo que guarda el modelo es `DIRECTION_DEBIT='DEPOSIT'`
+> (entrada, type 1) y `DIRECTION_CREDIT='WITHDRAW'` (salida, type -1). **Enviar
+> `WITHDRAW` para un gasto y `DEPOSIT` para un ingreso**; las lecturas
+> (`GET /api/mobile/transactions`) devuelven esos mismos valores.
+> `credit`/`debit` siguen siendo válidos solo por compatibilidad: el controlador
+> los guarda tal cual, **sin convertirlos**, así que no equivalen a
+> `WITHDRAW`/`DEPOSIT` en los cálculos. No usarlos en clientes nuevos.
 > Transferencias: usar `counter_account_id` (fuera del MVP mínimo).
 
 **`GET /api/mobile/transactions`** — recientes (MultiCurrency@index).
@@ -235,6 +253,30 @@ Request:
 `balance_type`: `debit`=activo, `credit`=pasivo. `type`: 1=activo, -1=pasivo.
 `credit_closing_day` solo en tarjetas. `net = assets + debts` (debts viene negativo).
 
+### 3b. Hoy — `GET /api/mobile/today`  (Bearer)
+```jsonc
+{
+  "money": { "today_spent": 1850.0, "daily_remaining": 2410.5, "month_remaining": 62673.0,
+             "days_in_month_left": 26, "currency_code": null },
+  "attention": [
+    { "id": "9f1c…", "message": "Comida alcanzó el 90% del presupuesto", "cta": "Ver", "link": "/budgets" }
+  ],
+  "today": [
+    { "kind": "planner", "id": "planner-12", "name": "Pagar internet", "subtitle": null,
+      "status": "pending", "total": 1500.0 }
+  ],
+  "upcoming": [
+    { "kind": "billing_cycle", "id": "cycle-77", "name": "Qik Visa Clásica", "account_id": 1735,
+      "total": 20056.92, "due_at": "2026-10-15", "days_until": 5 }
+  ],
+  "meal": [
+    { "id": 301, "meal_id": 18, "name": "Pollo al horno", "meal_type": "dinner",
+      "is_liked": false, "date": "2026-10-10", "day_label": "Sábado" }
+  ]
+}
+```
+Cada lista puede venir vacía. Valores de ejemplo; los nombres y tipos de campo son los reales.
+
 ### 4. Quick-add — `POST /api/mobile/transactions`  (Bearer)
 Request:
 ```jsonc
@@ -244,7 +286,7 @@ Request:
   "currency_code": "DOP",     // req, 3 letras
   "description": "Supermercado Nacional",       // req
   "date": "2026-10-10",       // req, YYYY-MM-DD
-  "direction": "credit",      // req: "credit"=salida (WITHDRAW) | "debit"=entrada (DEPOSIT)
+  "direction": "WITHDRAW",    // req: "WITHDRAW"=salida | "DEPOSIT"=entrada ("credit"/"debit" legacy, sin conversión)
   "category_id": 153,         // opc
   "payee_id": 79,             // opc
   "counter_account_id": null, // opc (transferencias)
@@ -257,7 +299,7 @@ Request:
   "success": true,
   "data": {
     "id": 98231, "description": "Supermercado Nacional", "total": 1850.0,
-    "currency_code": "DOP", "date": "2026-10-10", "direction": "credit",
+    "currency_code": "DOP", "date": "2026-10-10", "direction": "WITHDRAW",
     "status": "verified", "created_at": "…", "updated_at": "…",
     "account":  { "id": 101, "name": "BHD Cuenta Corriente", "currency_code": "DOP",
                   "is_multi_currency": false, "primary_currency": "DOP",
@@ -272,7 +314,17 @@ Request:
 Errores: `422` (campos), `403` (cuenta de otro team).
 
 ### 5. Recientes — `GET /api/mobile/transactions`  (Bearer)
-200 → `{ "data": [ <igual que data de §4>, … ] }`. Acepta filtros/paginación de MultiCurrency@index.
+Query: `account_id`, `currency_code`, `start_date`, `end_date`, `limit` (1–100, default 20), `page`.
+200 →
+```jsonc
+{
+  "success": true,
+  "data": {
+    "transactions": [ /* igual que data de §4 */ ],
+    "pagination": { "current_page": 1, "last_page": 4, "per_page": 20 /* … */ }
+  }
+}
+```
 
 ### 6. Cuentas (completo) — `GET /api/accounts`  (Bearer o cookie)
 200 → array de modelos Account completos. Campos útiles:

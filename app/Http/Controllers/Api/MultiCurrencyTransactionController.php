@@ -34,7 +34,9 @@ class MultiCurrencyTransactionController extends Controller
             'category_id' => ['nullable', $this->teamRow($request, 'categories')],
             'payee_id' => ['nullable', $this->teamRow($request, 'payees')],
             'counter_account_id' => ['nullable', $this->teamRow($request, 'accounts')],
-            'direction' => 'required|in:credit,debit',
+            // DEPOSIT / WITHDRAW are what the model stores (the mobile app sends these);
+            // credit / debit stay accepted for existing API clients.
+            'direction' => 'required|in:credit,debit,DEPOSIT,WITHDRAW',
             'status' => 'nullable|in:draft,verified',
         ]);
 
