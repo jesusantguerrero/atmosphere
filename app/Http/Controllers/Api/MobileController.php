@@ -13,9 +13,12 @@ use App\Domains\Transaction\Services\NextPaymentsService;
 use App\Domains\Transaction\Services\TransactionService;
 use App\Http\Controllers\Controller;
 use App\Models\Account;
+use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Modules\Plan\Entities\PlanTypes;
+use Modules\Plan\Services\PlanService;
 
 /**
  * Thin, token-authenticated surface for the mobile app. Everything here
@@ -271,5 +274,93 @@ class MobileController extends Controller
                 'date' => $transaction->date,
             ],
         ], 201);
+    }
+
+    /**
+     * Weekly routine: the full time-block template (7 days) plus the
+     * block happening right now and the next one today.
+     */
+    public function routine(Request $request, PlanService $planService): JsonResponse
+    {
+        $user = $request->user();
+        $teamId = $user->current_team_id;
+        $plan = $planService->getPlanTypeModel($teamId, PlanTypes::ROUTINE);
+
+        if (! $plan) {
+            return response()->json([
+                'plan' => null,
+                'current' => null,
+                'next' => null,
+            ]);
+        }
+
+        $timeZone = Setting::query()
+            ->where('team_id', $teamId)
+            ->where('name', 'team_timezone')
+            ->value('value') ?: 'America/Santo_Domingo';
+
+        $localNow = Carbon::now($timeZone);
+        $dow = $localNow->dayOfWeekIso - 1;
+        $nowMinutes = $localNow->hour * 60 + $localNow->minute;
+
+        $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+        // Build the full weekly template (undated blocks only).
+        $blocks = [];
+        foreach ($plan->stages as $stage) {
+            $day = (int) $stage->order;
+            foreach ($stage->items()->orderBy('order')->get() as $item) {
+                $f = $item->fields->pluck('value', 'field_name')->toArray();
+                if (! empty($f['date'])) {
+                    continue; // skip dated exceptions
+                }
+                $blocks[] = [
+                    'id' => $item->id,
+                    'day' => $day,
+                    'title' => $item->title,
+                    'start' => $f['start'] ?? '00:00',
+                    'end' => $f['end'] ?? '00:00',
+                    'color' => $f['color'] ?? '#6E9BE6',
+                    'member_id' => isset($f['member']) && $f['member'] !== '' ? (int) $f['member'] : null,
+                    'note' => $f['note'] ?? '',
+                ];
+            }
+        }
+
+        // Current & next block for today.
+        $todayBlocks = collect($blocks)
+            ->filter(fn ($b) => $b['day'] === $dow)
+            ->sortBy(fn ($b) => $this->toMinutes($b['start']))
+            ->values();
+
+        $current = null;
+        $next = null;
+        foreach ($todayBlocks as $b) {
+            $s = $this->toMinutes($b['start']);
+            $e = $this->toMinutes($b['end']);
+            if ($s <= $nowMinutes && $nowMinutes < $e) {
+                $current = $b;
+            }
+            if ($s > $nowMinutes && $next === null) {
+                $next = $b;
+            }
+        }
+
+        return response()->json([
+            'plan' => [
+                'id' => $plan->id,
+                'blocks' => $blocks,
+                'days' => $days,
+            ],
+            'current' => $current,
+            'next' => $next,
+        ]);
+    }
+
+    private function toMinutes(string $hhmm): int
+    {
+        $parts = explode(':', trim($hhmm));
+
+        return ((int) ($parts[0] ?? 0)) * 60 + (int) ($parts[1] ?? 0);
     }
 }
