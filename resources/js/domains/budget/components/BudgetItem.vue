@@ -47,6 +47,11 @@ const accountMatch = computed(() => {
     return props.item.match_account && accounts?.find?.((account: any ) => props.item.match_account.account_id == account.id);
 });
 
+const isSnoozed = computed(() => {
+    const sm = props.item.budget?.snoozed_month;
+    return !!sm && sm === String(props.item.month ?? '').slice(0, 7);
+});
+
 const lastMonthAmount = computed(() => {
     // @ts-ignore:
     return props.item.budgets?.at?.(2)?.budgeted ?? 0
@@ -101,6 +106,7 @@ enum BudgetAssignOptions {
     Target = 'target',
     MatchAccount = 'matchAccount',
     Underfunded = 'underfunded',
+    Snooze = 'snooze',
     LastMonth = 'lastMonth',
     Average = 'average',
     SetSavingsDefault = 'set_savings_default',
@@ -141,6 +147,11 @@ const assignOptions = computed(() => {
         name: BudgetAssignOptions.Underfunded,
         label: `Set account match (${formatMoney(underfundedAmount)})`,
         hidden: !budgetTarget.value || !underfundedAmount
+    },
+    {
+        name: BudgetAssignOptions.Snooze,
+        label: isSnoozed.value ? 'Unsnooze target' : 'Snooze target (this month)',
+        hidden: !budgetTarget.value || !isCurrentMonth.value
     },
     {
         name: BudgetAssignOptions.LastMonth,
@@ -193,6 +204,14 @@ const setDefaultRole = (role: string | null) => {
     })
 }
 
+const snoozeTarget = () => {
+    router.patch(`/budgets/${props.item.id}/snooze-target`, { month: currentMonth.value }, {
+        preserveScroll: true,
+        preserveState: true,
+        only: ['budgets'],
+    })
+}
+
 const handleAssignOptions = (option: string) => {
   const targetAmount = props.item.budget ? getBudgetTarget(props.item.budget) : 0;
   switch (option) {
@@ -219,6 +238,9 @@ const handleAssignOptions = (option: string) => {
       return;
     case BudgetAssignOptions.ClearDefaultRole:
       setDefaultRole(null);
+      return;
+    case BudgetAssignOptions.Snooze:
+      snoozeTarget();
       return;
     default:
       setAmount(0);

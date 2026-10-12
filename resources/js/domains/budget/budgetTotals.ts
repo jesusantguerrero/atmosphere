@@ -51,8 +51,14 @@ export const getCategoriesTotals = (categories: Record<string, any>, config = {
                 config.onOverAssigned(category)
                 categoryTotals.hasOverAssigned = true;
             } else if (progress < monthlyTarget) {
-                config.onUnderFunded(category)
-                categoryTotals.hasUnderFunded = true;
+                // Snooze Target: skip the amber underfunded flag for the month
+                // the target is snoozed for (compared against the shown month).
+                const snoozedMonth = budgetTarget?.snoozed_month;
+                const isSnoozed = !!snoozedMonth && snoozedMonth === String(category.month ?? '').slice(0, 7);
+                if (!isSnoozed) {
+                    config.onUnderFunded(category)
+                    categoryTotals.hasUnderFunded = true;
+                }
             } else if (progress == monthlyTarget) {
                 config.onFunded(category)
                 categoryTotals.hasFunded = true;

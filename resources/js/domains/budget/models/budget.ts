@@ -24,6 +24,7 @@ export interface BudgetTarget {
     note:null
     status: string;
     target_type:string;
+    snoozed_month?: string;
     principal?: number;
     interest_rate?: number;
     term_months?: number;
