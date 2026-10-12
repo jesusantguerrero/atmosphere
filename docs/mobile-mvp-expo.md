@@ -393,3 +393,51 @@ Tipos de item: `budget_category`, `credit_card_payment`, `planned_transaction`.
 
 ### 11. Lista por cuenta — `GET /api/finance/transactions?filter[account]=ID`  (Bearer o cookie)
 200 → lista filtrada (QuerifySlim). Soporta `filter[...]`, `page`, etc. Item ≈ transacción con `id, date, description, total/amount, direction, status, category, payee, account_id`. (Confirmar forma exacta en deploy.)
+
+---
+
+## Cobertura de API vs web — qué está bloqueado por backend para mobile
+
+El web de Loger es **Inertia de punta a punta**: las pantallas devuelven
+`inertia(...)` (props + HTML) y las mutaciones `return back()` (redirect que
+Inertia recarga). Eso **no es una API** que el móvil (token + JSON) pueda
+consumir. Técnicamente Inertia responde JSON con el header `X-Inertia`, pero
+acopla a nombres de componentes y a sesión/cookie — frágil, no versionable;
+no cuenta como API mobile. Por eso, salvo el puñado de endpoints JSON que ya
+existen, **el resto está bloqueado por backend** hasta exponer endpoints.
+
+### Ya tiene API JSON (el móvil solo necesita pantallas)
+- Auth: `POST /api/sanctum/token`, `GET /api/user`
+- Home/overview + crear/listar transacción: `/api/mobile/*`
+- Cuentas (lectura): `GET /api/accounts`
+- Categorías / payees (pickers): `GET /api/categories`, `GET /api/payees`
+- Próximos pagos (lectura): `GET /api/next-payments`
+- Tarjetas (resumen): `GET /credit-card-summary`
+- Dashboard (incluye netWorth): `GET /api/dashboard`
+- Lectura extra: `GET /budget-summary`, `GET /budget-alerts`, `balance-at`,
+  transaction list `GET /api/finance/transactions`, `approve` (JSON)
+
+### Bloqueado por backend (Inertia-only → requiere API nueva)
+- **Presupuesto (ZBB) completo**: grid del budget (lectura) y **assign /
+  mover dinero / targets / snooze / split / match-accounts / rollover**. Hoy
+  todo es Inertia + `back()`; solo `summary`/`alerts` son JSON. Es el que más
+  valor tendría en móvil y hoy **no se puede**.
+- **Transacciones (más allá de crear/listar)**: editar, borrar, transferir,
+  recategorizar, verificar drafts, `mark-as-paid`, bulk, import CSV/PDF, export.
+- **Conciliación**: hub, detalle, crear, ajustar, sync (solo `balance-at` es JSON).
+- **Trends / Insights**: insights, net-worth histórico, gasto por categoría /
+  cuenta, relationships/personas (solo CC-summary y dashboard.netWorth son JSON).
+- **Cuentas (escritura)**: crear/editar, link-bank, sync-emails, cerrar, import PDF.
+- **Housing**: recordatorios (occurrence), utilidades, chores/routine.
+- **Meals + lista de compras**: recetas, planner, shopping list, ingredientes.
+- **Integraciones**: automatización bancaria Gmail, inbox, email-to-tasks.
+- **Metas / fondo de emergencia / watchlists.**
+- **Ajustes / seguridad / preferencias / perfiles / notificaciones / Today / Calendar.**
+
+### Recomendación
+Ir exponiendo bajo el BFF `/api/mobile/*` (token, reusando services) a medida
+que cada pantalla mobile lo necesite, en este orden de valor:
+1. **Budget read + assign/move** (JSON) — lo más usado y hoy imposible en móvil.
+2. **Transacción: editar / borrar / transferir / verificar** (completa el quick-add).
+3. **Trends/insights** (lectura) para las vistas de análisis.
+4. Conciliación, recordatorios, metas — según se prioricen.
