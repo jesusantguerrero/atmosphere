@@ -239,10 +239,10 @@ Request:
 {
   "accounts": [
     { "id": 101, "name": "BHD Cuenta Corriente", "current_balance": 15230.55,
-      "balance_type": "debit",  "currency_code": "DOP",
+      "balance_type": "DEBIT",  "currency_code": "DOP", "detail_type": "bank",
       "account_detail_type_id": 2, "credit_closing_day": null, "type": 1 },
     { "id": 1735, "name": "Qik Visa Clásica", "current_balance": -20056.92,
-      "balance_type": "credit", "currency_code": "DOP",
+      "balance_type": "CREDIT", "currency_code": "DOP", "detail_type": "credit_card",
       "account_detail_type_id": 6, "credit_closing_day": 25, "type": -1 }
   ],
   "netWorth": { "assets": 1400000.00, "debts": -1034000.00, "net": 366000.00 },
@@ -250,8 +250,9 @@ Request:
   "cardsToPay":   [ /* subset de nextPayments con type == "credit_card_payment" */ ]
 }
 ```
-`balance_type`: `debit`=activo, `credit`=pasivo. `type`: 1=activo, -1=pasivo.
-`credit_closing_day` solo en tarjetas. `net = assets + debts` (debts viene negativo).
+`balance_type` llega en **MAYÚSCULAS** (`DEBIT`=activo, `CREDIT`=pasivo). `type`: 1=activo, -1=pasivo.
+`detail_type` ∈ `bank|cash|cash_on_hand|savings|credit_card|property|loan` (la app agrupa por él; cae a `balance_type` si falta).
+`current_balance` viene de `$account->balance`. Las cuentas con `closed_at` quedan fuera. `net = assets + debts` (debts negativo).
 
 ### 3b. Hoy — `GET /api/mobile/today`  (Bearer)
 ```jsonc
@@ -396,48 +397,33 @@ Tipos de item: `budget_category`, `credit_card_payment`, `planned_transaction`.
 
 ---
 
-## Cobertura de API vs web — qué está bloqueado por backend para mobile
+## Estado real de `/api/mobile/*` — qué ya está y qué falta
 
-El web de Loger es **Inertia de punta a punta**: las pantallas devuelven
-`inertia(...)` (props + HTML) y las mutaciones `return back()` (redirect que
-Inertia recarga). Eso **no es una API** que el móvil (token + JSON) pueda
-consumir. Técnicamente Inertia responde JSON con el header `X-Inertia`, pero
-acopla a nombres de componentes y a sesión/cookie — frágil, no versionable;
-no cuenta como API mobile. Por eso, salvo el puñado de endpoints JSON que ya
-existen, **el resto está bloqueado por backend** hasta exponer endpoints.
+> La lógica de negocio vive en Actions/Services (compartida con el web); los
+> endpoints mobile la **reusan** — exponer una pantalla es, en esencia, añadir
+> la ruta JSON. La app Expo vive en otro repo (`loger-mobile`). El handoff de
+> backend al día (y los pendientes con prioridad) está en
+> `.planning/mobile-backend.md` (local, no viaja en git).
 
-### Ya tiene API JSON (el móvil solo necesita pantallas)
-- Auth: `POST /api/sanctum/token`, `GET /api/user`
-- Home/overview + crear/listar transacción: `/api/mobile/*`
-- Cuentas (lectura): `GET /api/accounts`
-- Categorías / payees (pickers): `GET /api/categories`, `GET /api/payees`
-- Próximos pagos (lectura): `GET /api/next-payments`
-- Tarjetas (resumen): `GET /credit-card-summary`
-- Dashboard (incluye netWorth): `GET /api/dashboard`
-- Lectura extra: `GET /budget-summary`, `GET /budget-alerts`, `balance-at`,
-  transaction list `GET /api/finance/transactions`, `approve` (JSON)
+### Ya expuesto en `/api/mobile/*` (la app ya lo consume)
+- `POST /api/sanctum/token` — login (2FA)
+- `GET /today` — payload de la página Today (`money, attention, today, upcoming, meal`)
+- `GET /overview` — cuentas (agrupables por `detail_type`), `netWorth`, próximos pagos, tarjetas a pagar
+- `GET /transactions` · `POST /transactions` — listar (paginado) + quick-add
+- `GET /budget?month=YYYY-MM` — grupos + categorías (`budgeted/activity/available`), `ready_to_assign`
+- `POST /budget/assign` — fijar el asignado del mes de una categoría
+- `POST /budget/move` — mover dinero entre categorías
+- `GET /calendar?month=YYYY-MM` — agenda (Planner + ciclos + occurrences)
+- `GET /routine` — rutina semanal
+- `POST /events` · `PATCH /events/{planner}/complete` — crear/completar evento
+- `POST /transfers` — transferencia entre cuentas
 
-### Bloqueado por backend (Inertia-only → requiere API nueva)
-- **Presupuesto (ZBB) completo**: grid del budget (lectura) y **assign /
-  mover dinero / targets / snooze / split / match-accounts / rollover**. Hoy
-  todo es Inertia + `back()`; solo `summary`/`alerts` son JSON. Es el que más
-  valor tendría en móvil y hoy **no se puede**.
-- **Transacciones (más allá de crear/listar)**: editar, borrar, transferir,
-  recategorizar, verificar drafts, `mark-as-paid`, bulk, import CSV/PDF, export.
-- **Conciliación**: hub, detalle, crear, ajustar, sync (solo `balance-at` es JSON).
-- **Trends / Insights**: insights, net-worth histórico, gasto por categoría /
-  cuenta, relationships/personas (solo CC-summary y dashboard.netWorth son JSON).
-- **Cuentas (escritura)**: crear/editar, link-bank, sync-emails, cerrar, import PDF.
-- **Housing**: recordatorios (occurrence), utilidades, chores/routine.
-- **Meals + lista de compras**: recetas, planner, shopping list, ingredientes.
-- **Integraciones**: automatización bancaria Gmail, inbox, email-to-tasks.
-- **Metas / fondo de emergencia / watchlists.**
-- **Ajustes / seguridad / preferencias / perfiles / notificaciones / Today / Calendar.**
-
-### Recomendación
-Ir exponiendo bajo el BFF `/api/mobile/*` (token, reusando services) a medida
-que cada pantalla mobile lo necesite, en este orden de valor:
-1. **Budget read + assign/move** (JSON) — lo más usado y hoy imposible en móvil.
-2. **Transacción: editar / borrar / transferir / verificar** (completa el quick-add).
-3. **Trends/insights** (lectura) para las vistas de análisis.
-4. Conciliación, recordatorios, metas — según se prioricen.
+### Aún NO expuesto (el web sí lo tiene; falta endpoint mobile)
+- **Trends / Insights** más allá de `netWorth` (ya en overview): gasto por categoría/cuenta, patrimonio histórico, relationships.
+- **Transacciones: editar / borrar / recategorizar / verificar drafts / mark-as-paid** (solo crear/listar expuesto).
+- **Conciliación** — hub, detalle, ajustar, sync.
+- **Cuentas (escritura)** — crear/editar, link-bank, sync-emails, cerrar, import PDF/CSV.
+- **Tareas / chores** (`/housing/chores`) — listar + completar (backlog).
+- **Comida / meal planner** completo (backlog).
+- **Integraciones** (Gmail/inbox/email-to-tasks), **metas / fondo de emergencia / watchlists**, **ajustes / perfiles / notificaciones**.
+- **Búsqueda de payees** (`GET /api/payees?search=`, backlog).
