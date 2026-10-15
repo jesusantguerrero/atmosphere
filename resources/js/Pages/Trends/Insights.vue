@@ -130,7 +130,13 @@ const periodDateParam = computed(() => {
   const s = props.metaData?.startDate, e = props.metaData?.endDate;
   return s && e ? `&filter[date]=${s}~${e}` : "";
 });
-const payeeHref = (id: number) => `/finance/transactions?filter[payee_id]=${id}${periodDateParam.value}`;
+// Dimension-aware drill-down: a category row must filter by category_id, a
+// payee row by payee_id. Using payee_id for a category id (the old bug) landed
+// the user on an empty/wrong transactions list.
+const txnHref = (key: string, id: number) => id ? `/finance/transactions?filter[${key}]=${id}${periodDateParam.value}` : null;
+const outHref = (r: any) => txnHref(outDim.value === 'categoria' ? 'category_id' : 'payee_id', r.id);
+const inHref = (r: any) => txnHref(inDim.value === 'categoria' ? 'category_id' : 'payee_id', r.id);
+const catHref = (r: any) => txnHref('category_id', r.id);
 const totalIn = computed(() => grandIn.value);
 const totalOut = computed(() => grandOut.value);
 
@@ -485,7 +491,7 @@ const chartMeta = computed(() => {
             <button v-if="moneyOutSrc.length > 8" class="min-h-[32px] px-2 text-primary font-medium" :aria-expanded="showAllOut" @click="showAllOut = !showAllOut">{{ showAllOut ? $t('Show top 8') : $t('View all') }}</button>
           </div>
           <div v-for="(r, i) in moneyOutRows" :key="i" class="grid items-center gap-3 py-2 border-t border-base-lvl-2" style="grid-template-columns:minmax(0, 2fr) minmax(48px, 0.8fr) auto">
-            <component :is="r.id ? 'a' : 'div'" :href="r.id ? payeeHref(r.id) : null" class="text-sm font-medium text-body break-words" :class="r.id ? 'hover:text-primary hover:underline' : ''" :title="r.name">{{ r.name }}</component>
+            <component :is="r.id ? 'a' : 'div'" :href="outHref(r)" class="text-sm font-medium text-body break-words" :class="r.id ? 'hover:text-primary hover:underline' : ''" :title="r.name">{{ r.name }}</component>
             <div class="flex items-center gap-2 text-xs text-body-1"><span style="min-width:38px">{{ r.pct.toFixed(1) }}%</span><span class="flex-1 h-1 rounded-full bg-base-lvl-2 relative overflow-hidden"><span class="absolute inset-y-0 left-0 rounded-full" :style="{ width: r.w + '%', background: '#E8837E' }"></span></span></div>
             <div class="text-right text-sm font-semibold tabular-nums">−{{ currency }} {{ money(r.amount).main }}</div>
           </div>
@@ -500,7 +506,7 @@ const chartMeta = computed(() => {
             <button v-if="moneyInSrc.length > 8" class="min-h-[32px] px-2 text-primary font-medium" :aria-expanded="showAllIn" @click="showAllIn = !showAllIn">{{ showAllIn ? $t('Show top 8') : $t('View all') }}</button>
           </div>
           <div v-for="(r, i) in moneyInRows" :key="i" class="grid items-center gap-3 py-2 border-t border-base-lvl-2" style="grid-template-columns:minmax(0, 2fr) minmax(48px, 0.8fr) auto">
-            <component :is="r.id ? 'a' : 'div'" :href="r.id ? payeeHref(r.id) : null" class="text-sm font-medium text-body break-words" :class="r.id ? 'hover:text-primary hover:underline' : ''" :title="r.name">{{ r.name }}</component>
+            <component :is="r.id ? 'a' : 'div'" :href="inHref(r)" class="text-sm font-medium text-body break-words" :class="r.id ? 'hover:text-primary hover:underline' : ''" :title="r.name">{{ r.name }}</component>
             <div class="flex items-center gap-2 text-xs text-body-1"><span style="min-width:38px">{{ r.pct.toFixed(1) }}%</span><span class="flex-1 h-1 rounded-full bg-base-lvl-2 relative overflow-hidden"><span class="absolute inset-y-0 left-0 rounded-full" :style="{ width: r.w + '%', background: '#56C08A' }"></span></span></div>
             <div class="text-right text-sm font-semibold tabular-nums">{{ currency }} {{ money(r.amount).main }}</div>
           </div>
@@ -574,7 +580,7 @@ const chartMeta = computed(() => {
             <button v-if="moneyInSrc.length > 8" class="min-h-[32px] px-2 text-primary font-medium" :aria-expanded="showAllIn" @click="showAllIn = !showAllIn">{{ showAllIn ? $t('Show top 8') : $t('View all') }}</button>
           </div>
           <div v-for="(r, i) in moneyInRows" :key="i" class="grid items-center gap-3 py-2 border-t border-base-lvl-2" style="grid-template-columns:minmax(0, 2fr) minmax(48px, 0.8fr) auto">
-            <component :is="r.id ? 'a' : 'div'" :href="r.id ? payeeHref(r.id) : null" class="text-sm font-medium text-body break-words" :class="r.id ? 'hover:text-primary hover:underline' : ''" :title="r.name">{{ r.name }}</component>
+            <component :is="r.id ? 'a' : 'div'" :href="inHref(r)" class="text-sm font-medium text-body break-words" :class="r.id ? 'hover:text-primary hover:underline' : ''" :title="r.name">{{ r.name }}</component>
             <div class="flex items-center gap-2 text-xs text-body-1"><span style="min-width:38px">{{ r.pct.toFixed(1) }}%</span><span class="flex-1 h-1 rounded-full bg-base-lvl-2 relative overflow-hidden"><span class="absolute inset-y-0 left-0 rounded-full" :style="{ width: r.w + '%', background: '#56C08A' }"></span></span></div>
             <div class="text-right text-sm font-semibold tabular-nums">{{ currency }} {{ money(r.amount).main }}</div>
           </div>
@@ -604,7 +610,7 @@ const chartMeta = computed(() => {
             <button v-if="(cards.topCategoriesByCard ?? []).length > 8" class="min-h-[32px] px-2 text-primary" @click="showAllCards = !showAllCards">{{ showAllCards ? $t('Show top 8') : $t('View all') }}</button>
           </div>
           <div v-for="(r, i) in cardCategories" :key="i" class="grid items-center gap-3 py-2 border-t border-base-lvl-2" style="grid-template-columns:minmax(0, 2fr) minmax(48px, 0.8fr) auto">
-            <component :is="r.id ? 'a' : 'div'" :href="r.id ? payeeHref(r.id) : null" class="text-sm font-medium text-body break-words" :class="r.id ? 'hover:text-primary hover:underline' : ''" :title="r.name">{{ r.name }}</component>
+            <component :is="r.id ? 'a' : 'div'" :href="catHref(r)" class="text-sm font-medium text-body break-words" :class="r.id ? 'hover:text-primary hover:underline' : ''" :title="r.name">{{ r.name }}</component>
             <div class="flex items-center gap-2 text-xs text-body-1"><span style="min-width:38px">{{ r.pct.toFixed(1) }}%</span><span class="flex-1 h-1 rounded-full bg-base-lvl-2 relative overflow-hidden"><span class="absolute inset-y-0 left-0 rounded-full" :style="{ width: r.w + '%', background: '#E8837E' }"></span></span></div>
             <div class="text-right text-sm font-semibold tabular-nums">−{{ currency }} {{ money(r.amount).main }}</div>
           </div>
