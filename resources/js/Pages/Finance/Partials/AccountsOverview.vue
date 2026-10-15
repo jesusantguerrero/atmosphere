@@ -14,7 +14,7 @@ const search = ref('');
 const filter = ref('all');
 const editing = ref<Partial<IAccount> | null>(null);
 const list = computed(() => store.accounts.length ? store.accounts : props.accounts);
-const isArchived = (account: any) => account.archived === true || account.archived === 1 || account.archived === '1';
+const isArchived = (account: any) => account.status === 'disabled';
 const isClosed = (account: any) => Boolean(account.closed_at) || isArchived(account);
 const isCard = (account: IAccount) => Boolean(account.credit_closing_day);
 const status = (account: any) => account.closed_at ? 'Cerrada' : isArchived(account) ? 'Archivada' : 'Activa';
