@@ -89,11 +89,20 @@ const incomeRows = computed<any[]>(() =>
 const rankRows = (arr: any[], showAll = false) => {
   const max = Math.max(1, ...arr.map((i) => i.total));
   const tot = arr.reduce((a, i) => a + i.total, 0) || 1;
-  const visible = showAll ? arr : arr.slice(0, 8);
-  const rows = visible.map((i) => ({ id: i.id, uncategorized: i.uncategorized, name: i.name, amount: i.total, pct: (i.total / tot) * 100, w: (i.total / max) * 100 }));
-  if (!showAll && arr.length > 8) {
-    const remainder = arr.slice(8).reduce((sum, row) => sum + row.total, 0);
-    rows.push({ name: t("Others"), amount: remainder, pct: remainder / tot * 100, w: Math.min(100, remainder / max * 100) });
+  const toRow = (i: any) => ({ id: i.id, uncategorized: i.uncategorized, name: i.name, amount: i.total, pct: (i.total / tot) * 100, w: (i.total / max) * 100 });
+
+  if (showAll) return arr.map(toRow);
+
+  // "Sin categoría" es un pendiente (hay que asignarlas): nunca la escondas
+  // dentro de "Otros" — se fija como su propia fila clickable siempre.
+  const pinned = arr.filter((i) => i.uncategorized);
+  const rest = arr.filter((i) => !i.uncategorized);
+  const rows = [...rest.slice(0, 8), ...pinned].map(toRow);
+
+  const overflow = rest.slice(8);
+  if (overflow.length) {
+    const remainder = overflow.reduce((sum, row) => sum + row.total, 0);
+    rows.push({ name: t("Others"), isOthers: true, amount: remainder, pct: remainder / tot * 100, w: Math.min(100, remainder / max * 100) });
   }
   return rows;
 };
@@ -546,7 +555,7 @@ const chartMeta = computed(() => {
             <button v-if="gastoSrc.length > 8" class="min-h-[28px] px-2 text-primary font-medium text-xs" @click="showAllGasto = !showAllGasto">{{ showAllGasto ? $t('Show top 8') : $t('View all') }}</button>
           </div>
           <div v-for="(r, i) in gastoRows" :key="i" class="grid items-center gap-3 py-2 border-t border-base-lvl-2" style="grid-template-columns:minmax(0, 2fr) minmax(48px, 0.8fr) auto">
-            <component :is="(r.id || r.uncategorized) ? 'a' : 'div'" :href="(r.id || r.uncategorized) ? gastoHref(r) : null" class="text-sm font-medium text-body break-words" :class="[(r.id || r.uncategorized) ? 'hover:text-primary hover:underline' : '', r.uncategorized ? 'text-error font-semibold' : '']" :title="r.name">{{ r.name }}</component>
+            <component :is="(r.id || r.uncategorized) ? 'a' : (r.isOthers ? 'button' : 'div')" :href="(r.id || r.uncategorized) ? gastoHref(r) : null" type="button" @click="r.isOthers ? (showAllGasto = true) : null" class="text-sm font-medium text-body break-words text-left" :class="[(r.id || r.uncategorized || r.isOthers) ? 'hover:text-primary hover:underline' : '', r.uncategorized ? 'text-error font-semibold' : '']" :title="r.isOthers ? $t('View all') : r.name">{{ r.name }}</component>
             <div class="flex items-center gap-2 text-xs text-body-1"><span style="min-width:38px">{{ r.pct.toFixed(1) }}%</span><span class="flex-1 h-1 rounded-full bg-base-lvl-2 relative overflow-hidden"><span class="absolute inset-y-0 left-0 rounded-full" :style="{ width: r.w + '%', background: '#E8837E' }"></span></span></div>
             <div class="text-right text-sm font-semibold tabular-nums">{{ currency }} {{ money(r.amount).main }}</div>
           </div>
