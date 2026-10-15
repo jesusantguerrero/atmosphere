@@ -323,6 +323,8 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
         Route::get('/api/next-payments', 'index')->name('next-payments.index');
         Route::get('/finance/next-payments', 'page')->name('next-payments.page');
         Route::patch('/api/next-payments/{paymentId}/mark-as-paid', 'markAsPaid')->name('next-payments.mark-as-paid');
+        Route::post('/api/next-payments/dismiss', 'dismiss')->name('next-payments.dismiss');
+        Route::delete('/api/next-payments/dismiss', 'undismiss')->name('next-payments.undismiss');
     });
 
     // Trends

@@ -317,21 +317,25 @@ const budgetCsvExportUrl = computed(() => {
           <AtButton
             v-if="visibleFilters.overspent"
             @click="toggleFilter('overspent')"
-            class="flex items-center justify-between space-x-2 rounded-md min-w-fit group"
+            class="relative flex items-center justify-between gap-1.5 rounded-md min-w-0 max-w-full group"
             :class="[
               filters.overspent
                 ? (overspentIsCovered ? 'bg-warning text-white' : 'bg-primary text-white')
                 : (overspentIsCovered ? 'text-warning' : 'text-primary')
             ]"
           >
-            <span class="relative">
+            <!-- min-w-0 + truncate so a long label ellipsizes at phone width
+                 instead of overflowing and clipping off the left edge. -->
+            <span class="truncate min-w-0">
               {{ filterGroups.overSpent.length }} {{ overspentIsCovered ? $t('categories to fund') : $t('overspent categories') }}
-              <PointAlert v-if="!filters.overspent && !overspentIsCovered" />
             </span>
 
-            <div class="text-white text-sm rounded-full group-hover:bg-base-lvl-3/20 p-0.5">
+            <div class="shrink-0 text-white text-sm rounded-full group-hover:bg-base-lvl-3/20 p-0.5">
               <IconClose />
             </div>
+            <!-- Anchored to the button (relative above), not the truncated
+                 text span, so the dot is never clipped by the ellipsis. -->
+            <PointAlert v-if="!filters.overspent && !overspentIsCovered" />
           </AtButton>
 
           <InfoHint :title="$t('Funded vs overspent')" :body="$t('funded_vs_overspent_hint')" />
@@ -455,7 +459,7 @@ const budgetCsvExportUrl = computed(() => {
            capping the table around ~1280px, leaving huge empty lateral space
            on wider screens — the assign card and column headers already fit
            any width, so let the table breathe. -->
-      <section data-budget-table class="w-full mt-4 rounded-lg text-body bg-base">
+      <section data-budget-table class="w-full mt-4 pb-24 lg:pb-0 rounded-lg text-body bg-base">
           <article class="w-full space-y-4">
             <BudgetErrorBanner />
             <BudgetCategories :budgets="budgets" />

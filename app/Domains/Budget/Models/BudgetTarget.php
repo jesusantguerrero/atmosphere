@@ -41,6 +41,7 @@ class BudgetTarget extends Model
         'frequency_interval',
         'frequency_interval_unit',
         'notify',
+        'snoozed_month',
         'completed_at',
         // Loan target fields. `amount` still holds the computed monthly payment;
         // these describe the loan so the payment and payoff can be recomputed.

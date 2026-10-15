@@ -255,6 +255,28 @@ class BudgetCategoryController extends InertiaController
         ];
     }
 
+    /**
+     * YNAB-style "Snooze Target": silence a category's underfunded (amber) alert
+     * for a single month without touching the long-term target. Toggles —
+     * snoozing the already-snoozed month clears it. Stored as YYYY-MM on the
+     * target; the frontend hides the amber when it matches the shown month.
+     */
+    public function snoozeTarget(Request $request, Category $category): RedirectResponse
+    {
+        abort_unless($category->team_id === auth()->user()->current_team_id, 403);
+
+        $validated = $request->validate(['month' => 'required|date']);
+        $month = Carbon::parse($validated['month'])->format('Y-m');
+
+        $target = $category->budget()->first();
+        abort_unless($target, 404, 'This category has no target to snooze.');
+
+        $target->snoozed_month = $target->snoozed_month === $month ? null : $month;
+        $target->save();
+
+        return back();
+    }
+
     protected function budgetAlerts()
     {
         $queryParams = request()->query();
