@@ -4,6 +4,7 @@ import { router } from "@inertiajs/vue3";
 
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import FinanceSectionNav from "@/Pages/Finance/Partials/FinanceSectionNav.vue";
+import FinanceTemplate from "@/Pages/Finance/Partials/FinanceTemplate.vue";
 import StatusButtons from "@/Components/molecules/StatusButtons.vue";
 import NextPaymentsWidget from "@/domains/transactions/components/NextPaymentsWidget.vue";
 
@@ -77,7 +78,7 @@ const title = computed(() => {
             </FinanceSectionNav>
         </template>
 
-        <main class="px-5 mx-auto mt-8 mb-20 max-w-screen-md sm:px-6 lg:px-8">
+        <FinanceTemplate :title="$t('Next Payments')" :hide-panel="true">
             <header class="flex items-center justify-between mb-2">
                 <h2 class="text-lg font-bold text-body">{{ $t(title) }}</h2>
                 <span
@@ -94,6 +95,6 @@ const title = computed(() => {
                 :hide-title="true"
                 @pay="handlePay"
             />
-        </main>
+        </FinanceTemplate>
     </AppLayout>
 </template>
