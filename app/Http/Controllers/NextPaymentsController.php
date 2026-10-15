@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domains\Transaction\Models\NextPaymentDismissal;
 use App\Domains\Transaction\Services\NextPaymentsService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -66,6 +67,47 @@ class NextPaymentsController extends Controller
      * uses (date strictly before today = overdue; today..+7 = due soon). This
      * guarantees the page shows exactly the items the card counted.
      */
+    /**
+     * Dismiss a synthetic next-payment for one month ("ya lo pagué en otra
+     * cuenta"). No transaction is created; NextPaymentsService just hides it.
+     * The item reappears next month if it is recurring.
+     */
+    public function dismiss(Request $request)
+    {
+        $teamId = $request->user()->current_team_id;
+        $validated = $request->validate([
+            'payment_id' => 'required|string|max:191',
+            'period' => 'required|date_format:Y-m',
+        ]);
+
+        NextPaymentDismissal::firstOrCreate(
+            [
+                'team_id' => $teamId,
+                'payment_key' => $validated['payment_id'],
+                'period' => $validated['period'],
+            ],
+            ['user_id' => $request->user()->id]
+        );
+
+        return back();
+    }
+
+    public function undismiss(Request $request)
+    {
+        $teamId = $request->user()->current_team_id;
+        $validated = $request->validate([
+            'payment_id' => 'required|string|max:191',
+            'period' => 'required|date_format:Y-m',
+        ]);
+
+        NextPaymentDismissal::where('team_id', $teamId)
+            ->where('payment_key', $validated['payment_id'])
+            ->where('period', $validated['period'])
+            ->delete();
+
+        return back();
+    }
+
     public function page(Request $request)
     {
         $teamId = $request->user()->current_team_id;

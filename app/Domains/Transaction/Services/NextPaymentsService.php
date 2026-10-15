@@ -7,6 +7,7 @@ use App\Domains\Budget\Services\LoanReminderService;
 use App\Domains\Transaction\Models\BillingCycle;
 use App\Domains\Transaction\Models\Transaction;
 use App\Models\Account;
+use App\Domains\Transaction\Models\NextPaymentDismissal;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
@@ -20,11 +21,24 @@ class NextPaymentsService
         $currentDate = $date ? Carbon::parse($date) : Carbon::now();
         $endDate = $currentDate->copy()->addMonths(2)->endOfMonth();
 
+        // Items the user dismissed for a given month ("ya lo pagué en otra
+        // cuenta"), keyed by synthetic payment id + period. Recurring items
+        // reappear the next month on their own.
+        $dismissed = NextPaymentDismissal::where('team_id', $teamId)
+            ->get()
+            ->map(fn ($d) => $d->payment_key.'|'.$d->period)
+            ->flip();
+
         return collect([
             ...$this->getUnpaidBudgetCategories($teamId, $currentDate, $endDate),
             ...$this->getUpcomingCreditCardPayments($teamId, $currentDate, $endDate),
             ...$this->getPlannedTransactions($teamId, $currentDate, $endDate),
         ])
+            ->reject(function ($payment) use ($dismissed) {
+                $period = substr((string) ($payment['due_date'] ?? ''), 0, 7);
+
+                return $dismissed->has(($payment['id'] ?? '').'|'.$period);
+            })
             ->sortBy('due_date')
             ->values();
     }

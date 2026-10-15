@@ -157,6 +157,16 @@ const handlePay = (payment: any) => {
     });
 };
 
+// Descartar un next-payment por un mes ("ya lo pagué en otra cuenta"). No crea
+// transacción: guarda (id, mes) en next_payment_dismissals y el service lo oculta.
+const dismiss = (payment: any) => {
+    const period = String(payment.due_date ?? payment.date ?? '').slice(0, 7);
+    if (!period) return;
+    router.post('/api/next-payments/dismiss', { payment_id: payment.id, period }, {
+        preserveScroll: true,
+    });
+};
+
 </script>
 
 <template>
@@ -179,16 +189,22 @@ const handlePay = (payment: any) => {
             </h2>
 
             <div v-if="priorityPayments.length" class="grid gap-2 pt-3">
-                <button v-for="payment in priorityPayments" :key="payment.id" type="button" class="flex w-full min-w-0 flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3 rounded-lg border border-base bg-base-lvl-2 p-3 text-left hover:border-primary/40" @click="handlePay(payment)">
-                    <span class="min-w-0 w-full sm:flex-1">
-                        <span class="block truncate text-sm font-medium text-body">{{ payment.description || payment.title }}</span>
-                        <span class="block text-xs" :class="daysFromToday(payment.date) < 0 ? 'text-error' : 'text-body-1/70'">{{ daysFromToday(payment.date) < 0 ? $t('Overdue Payments') : $t('Upcoming payments') }} · {{ payment.date?.slice(0, 10) }}</span>
-                    </span>
-                    <span class="flex w-full items-center justify-between gap-2 sm:block sm:w-auto sm:shrink-0 sm:text-right">
-                        <span class="block text-sm font-semibold text-body"><MoneyPresenter :value="payment.total" /></span>
-                        <span class="block text-xs text-primary">Registrar pago →</span>
-                    </span>
-                </button>
+                <div v-for="payment in priorityPayments" :key="payment.id" class="flex items-stretch gap-1 rounded-lg border border-base bg-base-lvl-2 hover:border-primary/40">
+                    <button type="button" class="flex min-w-0 flex-1 flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3 p-3 text-left" @click="handlePay(payment)">
+                        <span class="min-w-0 w-full sm:flex-1">
+                            <span class="block truncate text-sm font-medium text-body">{{ payment.description || payment.title }}</span>
+                            <span class="block text-xs" :class="daysFromToday(payment.date) < 0 ? 'text-error' : 'text-body-1/70'">{{ daysFromToday(payment.date) < 0 ? $t('Overdue Payments') : $t('Upcoming payments') }} · {{ payment.date?.slice(0, 10) }}</span>
+                        </span>
+                        <span class="flex w-full items-center justify-between gap-2 sm:block sm:w-auto sm:shrink-0 sm:text-right">
+                            <span class="block text-sm font-semibold text-body"><MoneyPresenter :value="payment.total" /></span>
+                            <span class="block text-xs text-primary">Registrar pago →</span>
+                        </span>
+                    </button>
+                    <!-- Descartar este mes (ya pagado en otra cuenta): oculta sin crear transacción -->
+                    <button type="button" class="shrink-0 px-3 text-body-1/40 hover:text-error transition-colors" :title="$t('Dismiss — already paid elsewhere')" @click="dismiss(payment)">
+                        <i class="fa fa-xmark" />
+                    </button>
+                </div>
             </div>
             <button v-if="nextPayments?.length" type="button" class="text-sm text-primary py-2 hover:underline" @click="router.visit('/finance/next-payments')">{{ $t('See all') }} ({{ nextPayments.length }}) →</button>
             <div v-if="overdueReminders.length || draftsCount" class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
