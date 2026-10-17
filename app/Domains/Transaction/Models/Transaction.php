@@ -8,10 +8,12 @@ use App\Models\Account;
 use App\Models\CurrencyBalance;
 use App\Models\Team;
 use Database\Factories\TransactionFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Insane\Journal\Models\Core\AccountDetailType;
 use Insane\Journal\Models\Core\Category;
 use Insane\Journal\Models\Core\Transaction as CoreTransaction;
 
@@ -22,6 +24,22 @@ class Transaction extends CoreTransaction
     use TransactionTrait;
 
     const STATUS_PLANNED = 'planned';
+
+    public function scopeUncategorizedExpenses(Builder $query): Builder
+    {
+        return $query->whereNull('transactions.category_id')
+            ->where('transactions.direction', self::DIRECTION_CREDIT)
+            ->where('transactions.status', self::STATUS_VERIFIED)
+            ->where(function ($query) {
+                $query->where('transactions.is_transfer', false)->orWhereNull('transactions.is_transfer');
+            })
+            ->whereNotExists(function ($query) {
+                $query->selectRaw('1')->from('accounts as uncategorized_counter')
+                    ->join('account_detail_types as uncategorized_type', 'uncategorized_type.id', '=', 'uncategorized_counter.account_detail_type_id')
+                    ->whereColumn('uncategorized_counter.id', 'transactions.counter_account_id')
+                    ->whereIn('uncategorized_type.name', AccountDetailType::ALL);
+            });
+    }
 
     /**
      * Loger-specific fillable additions to the journal package's Transaction.

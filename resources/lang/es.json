@@ -1208,5 +1208,10 @@
     "Don't show again": "No volver a mostrar",
     "done": "completados",
     "Collapse": "Contraer",
-    "Show budget setup": "Mostrar configuración del presupuesto"
+    "Show budget setup": "Mostrar configuración del presupuesto",
+    "All dates": "Todos los periodos",
+    "Difference to review": "Diferencia por revisar",
+    "Budget total includes available categories plus money to assign. Differences can have several causes.": "El total suma lo disponible en categorías y el dinero por asignar. Una diferencia puede tener varias causas.",
+    "Remaining to pay": "pendiente para pagar",
+    "Review uncategorized": "Ver sin categoría"
 }

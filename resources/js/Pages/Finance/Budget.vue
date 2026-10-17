@@ -55,6 +55,10 @@ const props = defineProps({
     type: Number,
     default: 0
   },
+  uncategorizedTotals: {
+    type: Array,
+    default: () => [],
+  },
   scheduledTotal: {
     type: Number,
     default: 0
@@ -239,7 +243,8 @@ onMounted(() => {
 })
 
 const readyToAssignBalance = computed(() => {
-    return readyToAssign.value.balance
+    const balance = Number(readyToAssign.value.balance) || 0;
+    return Math.abs(balance) < 0.005 ? 0 : balance;
 })
 
 const readyToAssignLeft = computed(() => {
@@ -305,8 +310,7 @@ const budgetCsvExportUrl = computed(() => {
         :accounts="accounts"
         :budgets="budgets"
         :ready-to-assign="readyToAssign"
-        :start-date="pageState.dates?.startDate"
-        :end-date="pageState.dates?.endDate"
+        :uncategorized-totals="uncategorizedTotals"
       />
 
       <!--

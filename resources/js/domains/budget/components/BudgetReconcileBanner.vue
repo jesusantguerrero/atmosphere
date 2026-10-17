@@ -1,20 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { format } from 'date-fns';
 import formatMoney from '@/utils/formatMoney';
 
-// Zero-sum reconciliation (Fase 1, read-only). Per currency:
-//   Σ Available (every category, credit-card payment categories included)
-//     + Ready to Assign  =  cash in on-budget accounts
-// The difference is uncategorized spend — invisible in the table today — and
-// links to those transactions. Multi-currency is bucketed per currency and
-// never converted, matching .planning/budget-cuadre.md.
 const props = defineProps<{
     accounts?: any[];
     budgets?: any[] | Record<string, any>;
     readyToAssign?: { balance?: number } | null;
-    startDate?: any;
-    endDate?: any;
+    uncategorizedTotals?: { currency_code: string; total: number | string; count: number }[];
 }>();
 
 const baseCurrency = (window as any)?.logerAppSettings?.currency_code || 'DOP';
@@ -64,20 +56,13 @@ const rows = computed(() => {
 
 const hasGap = computed(() => rows.value.some((r) => Math.abs(r.uncategorized) >= 0.01));
 
-const fmtDate = (d: any) => {
-    try { return d ? format(new Date(d), 'yyyy-MM-dd') : null; } catch (e) { return null; }
-};
-const uncategorizedHref = computed(() => {
-    const s = fmtDate(props.startDate);
-    const e = fmtDate(props.endDate);
-    const date = s && e ? `&filter[date]=${s}~${e}` : '';
-    return `/finance/transactions?filter[uncategorized]=1${date}`;
-});
+const uncategorizedHref = (currency: string): string =>
+    `/finance/transactions?filter[uncategorized]=1&filter[currency_code]=${encodeURIComponent(currency)}`;
 </script>
 
 <template>
     <div
-        v-if="rows.length"
+        v-if="rows.length || uncategorizedTotals?.length"
         class="px-4 py-3 mt-3 rounded-lg border border-body-1/15 bg-base-lvl-2"
     >
         <div v-if="!hasGap" class="flex items-center gap-2 text-sm font-medium text-success">
@@ -91,7 +76,9 @@ const uncategorizedHref = computed(() => {
                 class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm"
             >
                 <span class="text-body-1">
-                    {{ $t('Available + To assign') }}
+                    {{ $t('Available') }} <b class="text-body tabular-nums">{{ formatMoney(r.assigned - (r.cur === baseCurrency ? Number(readyToAssign?.balance || 0) : 0), r.cur) }}</b>
+                    + {{ $t('To assign') }} <b class="text-body tabular-nums">{{ formatMoney(r.cur === baseCurrency ? Number(readyToAssign?.balance || 0) : 0, r.cur) }}</b>
+                    =
                     <b class="text-body tabular-nums">{{ formatMoney(r.assigned, r.cur) }}</b>
                 </span>
                 <span class="text-body-1">vs</span>
@@ -99,12 +86,12 @@ const uncategorizedHref = computed(() => {
                     {{ $t('Cash in accounts') }}
                     <b class="text-body tabular-nums">{{ formatMoney(r.cash, r.cur) }}</b>
                 </span>
-                <a
-                    v-if="Math.abs(r.uncategorized) >= 0.01"
-                    :href="uncategorizedHref"
-                    class="font-semibold text-error hover:underline tabular-nums md:ml-auto"
-                >{{ formatMoney(r.uncategorized, r.cur) }} {{ $t('Uncategorized') }} &rarr;</a>
+                <span v-if="Math.abs(r.uncategorized) >= 0.01" class="font-medium tabular-nums text-body-1 md:ml-auto">{{ $t('Difference to review') }} {{ formatMoney(r.uncategorized, r.cur) }}</span>
             </div>
+        </div>
+        <p class="mt-2 text-xs text-body-1">{{ $t('Budget total includes available categories plus money to assign. Differences can have several causes.') }}</p>
+        <div v-if="uncategorizedTotals?.length" class="mt-3 flex flex-wrap gap-x-4 gap-y-2 border-t border-body-1/15 pt-3">
+            <a v-for="total in uncategorizedTotals" :key="total.currency_code" :href="uncategorizedHref(total.currency_code)" class="text-sm font-medium text-primary hover:underline">{{ formatMoney(total.total, total.currency_code) }} {{ $t('Uncategorized') }} · {{ total.count }} {{ $t('Transactions') }} · {{ $t('All dates') }} →</a>
         </div>
     </div>
 </template>

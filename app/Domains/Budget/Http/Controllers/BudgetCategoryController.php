@@ -73,6 +73,11 @@ class BudgetCategoryController extends InertiaController
                 'scheduledTotal' => $this->getScheduledTotal($teamId, $startDate, $endDate),
                 'budgetDefaults' => BudgetCategoryService::getDefaultsByRole($teamId),
                 'categoryAverages' => TransactionService::getCategoryAverages($teamId, 3),
+                'uncategorizedTotals' => Transaction::query()->uncategorizedExpenses()
+                    ->where('transactions.team_id', $teamId)
+                    ->where('transactions.user_id', $request->user()->id)
+                    ->selectRaw('currency_code, SUM(total) as total, COUNT(*) as count')
+                    ->groupBy('currency_code')->get(),
             ]);
     }
 

@@ -17,6 +17,22 @@ const ts = require('typescript');
 const { parse, compileTemplate } = require('@vue/compiler-sfc');
 const vue = require('vue');
 const { renderToString } = require('@vue/server-renderer');
+const moneyScope={window:{logerAppSettings:{currency_code:'DOP'}},exports:{}};
+vm.createContext(moneyScope);
+vm.runInContext(ts.transpile(fs.readFileSync('resources/js/utils/formatMoney.ts','utf8'),{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020}),moneyScope);
+for(const amount of [-0,-1e-12,-0.004,0,0.004]) {
+ assert.equal(moneyScope.exports.formatMoney(amount),moneyScope.exports.formatMoney(0));
+}
+assert.ok(moneyScope.exports.formatMoney(-0.01).includes('-'));
+assert.equal(moneyScope.exports.formatMoney(-0.4,'JPY'),moneyScope.exports.formatMoney(0,'JPY'));
+const budgetPage=parse(fs.readFileSync('resources/js/Pages/Finance/Budget.vue','utf8')).descriptor;
+const balanceProps=vue.ref({balance:-1e-12});
+const balanceScope={computed:vue.computed,readyToAssign:balanceProps};
+vm.createContext(balanceScope);
+vm.runInContext(ts.transpile('const readyToAssignBalance ='+budgetPage.scriptSetup.content.split('const readyToAssignBalance =')[1].split('const readyToAssignLeft')[0]+'\n globalThis.balance=readyToAssignBalance;'),balanceScope);
+assert.equal(balanceScope.balance.value,0);
+balanceProps.value.balance=-0.01;
+assert.equal(balanceScope.balance.value,-0.01);
 const spanish=JSON.parse(fs.readFileSync('resources/lang/es.json','utf8'));
 for (const [filename,keys] of [['BudgetTargetForm.vue',['Set target','Cancel','Save']],['BudgetMatchForm.vue',['Set Account Match','Cancel','Save']]]) {
  const component=parse(fs.readFileSync('resources/js/domains/budget/components/'+filename,'utf8')).descriptor;
@@ -38,7 +54,9 @@ vm.createContext(bannerScope);
 vm.runInContext(ts.transpile(banner.scriptSetup.content.replace(/^import .*;\r?\n/gm,'')+'\n globalThis.result={rows,hasGap,uncategorizedHref};',{target:ts.ScriptTarget.ES2020}),bannerScope);
 assert.equal(bannerScope.result.hasGap.value,false);
 assert.deepEqual(JSON.parse(JSON.stringify(bannerScope.result.rows.value)),[{cur:'DOP',cash:1000,assigned:1000,uncategorized:0},{cur:'USD',cash:50,assigned:50,uncategorized:0}]);
-assert.ok(bannerScope.result.uncategorizedHref.value.includes('filter[date]=2026-10-01~2026-10-31'));
+assert.equal(bannerScope.result.uncategorizedHref('DOP'),'/finance/transactions?filter[uncategorized]=1&filter[currency_code]=DOP');
+assert.ok(!bannerScope.result.uncategorizedHref('DOP').includes('filter[date]'));
+assert.ok(banner.template.content.includes("$t('Difference to review')"));
 const cardItem=parse(fs.readFileSync('resources/js/domains/budget/components/BudgetItem.vue','utf8')).descriptor;
 assert.ok(cardItem.template.content.includes(':href="brechaHref"'));
 assert.ok(cardItem.template.content.includes("$t('you owe')"));

@@ -23,7 +23,6 @@ use Freesgen\Atmosphere\Http\Querify;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Insane\Journal\Models\Core\AccountDetailType;
 use Insane\Journal\Models\Core\Category;
 use Maatwebsite\Excel\Facades\Excel;
 use Recurr\Rule;
@@ -79,7 +78,7 @@ class FinanceTransactionController extends InertiaController
                 'counterLine.account',
             ],
             'filters' => [
-                'date' => $status == 'draft' ? null : "{$dates['0']}~{$dates['1']}",
+                'date' => $status == 'draft' || ! empty($filters['uncategorized']) ? null : "{$dates['0']}~{$dates['1']}",
                 'status' => Transaction::STATUS_VERIFIED,
             ],
         ]);
@@ -114,22 +113,8 @@ class FinanceTransactionController extends InertiaController
                 // 0, and re-deleting them did nothing (already gone). Exclude them.
                 ->whereNull('transactions.deleted_at');
 
-            // "Sin categorizar" shortcut: mirror getExpensesByAccountInPeriod so
-            // this list ties out to the "Sin categoría" figure in Trends. Only
-            // OUTFLOWS that aren't transfers and whose counter account isn't one
-            // of the user's own budget/tracking accounts (card payments,
-            // inter-account moves). Those are not spending — the purchases
-            // already count on the card — so they must not show up in a
-            // "transactions missing a category" list.
             if (! empty($filters['uncategorized'])) {
-                $query->whereNull('transactions.category_id')
-                    ->where('transactions.direction', Transaction::DIRECTION_CREDIT)
-                    ->where('transactions.is_transfer', false)
-                    ->leftJoin(DB::raw('account_detail_types uncat_counter_adt'), 'uncat_counter_adt.id', 'ca.account_detail_type_id')
-                    ->where(function ($sub) {
-                        $sub->whereNull('uncat_counter_adt.name')
-                            ->orWhereNotIn('uncat_counter_adt.name', AccountDetailType::ALL);
-                    });
+                $query->whereIn('transactions.id', Transaction::query()->uncategorizedExpenses()->select('transactions.id'));
             }
         });
     }
