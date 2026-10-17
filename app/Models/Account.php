@@ -53,6 +53,7 @@ class Account extends BaseAccount
         $accounts = static::where('accounts.team_id', $teamId)
             ->byDetailTypes($detailTypes)
             ->orderBy('accounts.index')
+            ->orderBy('accounts.id')
             ->with(['reconciliationLast'])
             ->get();
 
