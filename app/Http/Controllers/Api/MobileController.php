@@ -25,6 +25,7 @@ use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Modules\Plan\Entities\Plan;
 use Modules\Plan\Entities\PlanItem;
 use Modules\Plan\Entities\PlanTypes;
 use Modules\Plan\Services\PlanService;
@@ -582,6 +583,134 @@ class MobileController extends Controller
             ]);
 
         return response()->json(['recipes' => $meals]);
+    }
+
+    /**
+     * Shopping list: the active list with stages and items (pending/buy/skip).
+     * Reuses the same Plan-based structure as the web's /shopping page.
+     */
+    public function shoppingList(Request $request, PlanService $planService): JsonResponse
+    {
+        $user = $request->user();
+        $teamId = $user->current_team_id;
+
+        $requestedId = $request->query('plan');
+        $plan = null;
+
+        if ($requestedId) {
+            $plan = Plan::where([
+                'id' => $requestedId,
+                'team_id' => $teamId,
+                'plan_type_name' => PlanTypes::SHOPPING_LIST,
+            ])->first();
+        }
+
+        if (! $plan) {
+            $plan = $planService->getPlanTypeModel($teamId, PlanTypes::SHOPPING_LIST);
+        }
+
+        if (! $plan) {
+            $plan = $planService->createPlanBoard(
+                $user->currentTeam,
+                PlanTypes::SHOPPING_LIST,
+                'Shopping List',
+            );
+        }
+
+        $allLists = Plan::where([
+            'team_id' => $teamId,
+            'plan_type_name' => PlanTypes::SHOPPING_LIST,
+        ])->orderBy('id')->get()->map(function (Plan $p) {
+            $items = $p->stages->flatMap(fn ($s) => $s->items);
+
+            return [
+                'id' => $p->id,
+                'name' => $p->name,
+                'total' => $items->count(),
+                'pending' => $items->where('state', PlanItem::STATE_PENDING)->count(),
+                'shared' => (bool) $p->share_token,
+            ];
+        })->values();
+
+        return response()->json([
+            'plan' => [
+                'id' => $plan->id,
+                'name' => $plan->name,
+                'stages' => $plan->stages->map(fn ($stage) => [
+                    'id' => $stage->id,
+                    'name' => $stage->name,
+                    'items' => $stage->items()->orderBy('order')->get()->map(fn ($item) => [
+                        'id' => $item->id,
+                        'title' => $item->title,
+                        'state' => $item->state ?? PlanItem::STATE_PENDING,
+                        'is_done' => (bool) $item->is_done,
+                        'order' => (int) $item->order,
+                    ]),
+                ])->values(),
+            ],
+            'lists' => $allLists,
+            'activeListId' => $plan->id,
+        ]);
+    }
+
+    /**
+     * Add an item to a shopping list.
+     */
+    public function addShoppingItem(Request $request, Plan $plan): JsonResponse
+    {
+        abort_if((int) $plan->team_id !== (int) $request->user()->current_team_id, 403);
+
+        $data = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'stage_id' => ['nullable', 'integer'],
+        ]);
+
+        $stage = null;
+        if (! empty($data['stage_id'])) {
+            $stage = $plan->stages()->where('id', $data['stage_id'])->first();
+        }
+        $stage = $stage ?? $plan->stages->first();
+        abort_if(! $stage, 422, 'List has no stages.');
+
+        $item = PlanItem::create([
+            'plan_id' => $plan->id,
+            'team_id' => $plan->team_id,
+            'user_id' => $request->user()->id,
+            'stage_id' => $stage->id,
+            'title' => trim($data['title']),
+            'state' => PlanItem::STATE_PENDING,
+            'order' => ((int) $stage->items()->max('order')) + 1,
+        ]);
+
+        return response()->json([
+            'id' => $item->id,
+            'title' => $item->title,
+            'state' => $item->state,
+            'order' => (int) $item->order,
+            'stage_id' => $item->stage_id,
+        ], 201);
+    }
+
+    /**
+     * Cycle a shopping item's state: pending → buy → skip → pending.
+     */
+    public function cycleShoppingItem(Request $request, Plan $plan, PlanItem $item): JsonResponse
+    {
+        abort_if((int) $plan->team_id !== (int) $request->user()->current_team_id, 403);
+        abort_if($item->stage?->plan_id !== $plan->id, 404);
+
+        $next = $request->input('state');
+        if ($next === null) {
+            $item->cycleState();
+        } else {
+            $item->setState($next);
+        }
+
+        return response()->json([
+            'id' => $item->id,
+            'state' => $item->state,
+            'is_done' => (bool) $item->is_done,
+        ]);
     }
 
     private function toMinutes(string $hhmm): int

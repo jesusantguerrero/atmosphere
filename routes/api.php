@@ -66,6 +66,11 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
     // Meals
     Route::get('/meals', [MobileController::class, 'meals'])->name('meals.index');
     Route::get('/meals/recipes', [MobileController::class, 'recipes'])->name('meals.recipes');
+
+    // Shopping list
+    Route::get('/shopping', [MobileController::class, 'shoppingList'])->name('shopping.index');
+    Route::post('/shopping/{plan}/items', [MobileController::class, 'addShoppingItem'])->name('shopping.items.add');
+    Route::post('/shopping/{plan}/items/{item}/cycle', [MobileController::class, 'cycleShoppingItem'])->name('shopping.items.cycle');
 });
 
 Route::post('/sanctum/token', [ApiLoginController::class, 'login']);

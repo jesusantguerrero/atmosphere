@@ -536,6 +536,42 @@ Defaults: semana en curso (lunes–domingo). `meals` usa `PlannedMealResource`.
 ```
 Todas las recetas del team. `is_liked` para filtrar favoritas client-side.
 
+### 25. Shopping list — `GET /api/mobile/shopping?plan=ID`  (Bearer)
+```jsonc
+{
+  "plan": {
+    "id": 7, "name": "Shopping List",
+    "stages": [
+      { "id": 15, "name": "Frutas",
+        "items": [
+          { "id": 100, "title": "Manzanas", "state": "pending", "is_done": false, "order": 0 },
+          { "id": 101, "title": "Bananos", "state": "buy", "is_done": true, "order": 1 }
+        ] }
+    ]
+  },
+  "lists": [
+    { "id": 7, "name": "Shopping List", "total": 12, "pending": 8, "shared": false },
+    { "id": 9, "name": "Costco trip", "total": 5, "pending": 5, "shared": true }
+  ],
+  "activeListId": 7
+}
+```
+`?plan=ID` switches lists (omit for default). `state` ∈ `pending|buy|skip`.
+Items cycle: pending → buy → skip → pending. `is_done` syncs with `state=buy`.
+
+### 26. Add shopping item — `POST /api/mobile/shopping/{plan_id}/items`  (Bearer)
+```jsonc
+{ "title": "Leche", "stage_id": 15 }
+```
+`stage_id` optional (defaults to first stage).
+→ `201 { "id", "title", "state": "pending", "order", "stage_id" }`
+
+### 27. Cycle shopping item — `POST /api/mobile/shopping/{plan_id}/items/{item_id}/cycle`  (Bearer)
+```jsonc
+{ "state": "buy" }   // optional: explicit state; omit to auto-cycle
+```
+→ `{ "id", "state": "buy", "is_done": true }`
+
 ---
 
 ## Estado real de `/api/mobile/*` — qué ya está y qué falta
@@ -561,6 +597,9 @@ Todas las recetas del team. `is_liked` para filtrar favoritas client-side.
 **Tab Comida:**
 - `GET /meals?start=YYYY-MM-DD&end=YYYY-MM-DD` — plan de comidas de la semana + meal types
 - `GET /meals/recipes` — todas las recetas del team
+- `GET /shopping?plan=ID` — lista de compras activa (stages + items con estado pending/buy/skip)
+- `POST /shopping/{plan}/items` — agregar item a la lista
+- `POST /shopping/{plan}/items/{item}/cycle` — ciclar estado (pending→buy→skip)
 
 **Tab Tareas:**
 - `GET /chores?done=today|all` — tareas del hogar (plan CHORES con `PlanItemResource`) + members
