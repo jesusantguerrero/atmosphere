@@ -11,6 +11,7 @@ const props = withDefaults(defineProps<{
     isOpen: boolean;
     automatic: boolean;
     fullHeight: boolean;
+    position?: 'default' | 'top';
     }>(), {
         show: false,
         maxWidth: '2xl',
@@ -80,7 +81,7 @@ const classes = computed(() => {
 <template>
     <teleport to="body">
         <transition leave-active-class="duration-200">
-            <div v-show="show" class="fixed inset-0 custom-modal sm:px-0" scroll-region :class="[containerClass, fullHeight ? 'overflow-hidden' : 'overflow-y-auto']">
+            <div v-show="show" class="fixed inset-0 custom-modal sm:px-0" scroll-region :style="position === 'top' ? { zIndex: 1600 } : undefined" :class="[containerClass, fullHeight ? 'overflow-hidden' : 'overflow-y-auto']">
                 <transition
                     enter-active-class="duration-300 ease-out"
                     enter-from-class="opacity-0"
@@ -101,8 +102,8 @@ const classes = computed(() => {
                     leave-from-class="translate-y-0 opacity-100 sm:scale-100"
                     leave-to-class="translate-y-4 opacity-0 sm:translate-y-0 sm:scale-95">
                     <div v-show="show"
-                    class="fixed bottom-0 overflow-hidden transition-all transform rounded-lg shadow-xl md:mb-6 md:relative bg-base-lvl-3 sm:w-full sm:mx-auto"
-                    :class="[maxWidthClass, fullHeight && 'h-screen h-[100dvh] flex flex-col']">
+                    class="overflow-hidden transition-all transform rounded-lg shadow-xl bg-base-lvl-3 sm:w-full sm:mx-auto"
+                    :class="[maxWidthClass, position === 'top' ? 'relative w-full mx-auto md:mb-6' : 'fixed bottom-0 md:mb-6 md:relative', fullHeight && 'h-screen h-[100dvh] flex flex-col']">
                         <slot v-if="show" :close="close" />
                     </div>
                 </transition>
