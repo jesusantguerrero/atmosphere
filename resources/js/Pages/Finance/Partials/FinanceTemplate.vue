@@ -104,18 +104,18 @@
         margins, top offset, flex behavior) stay identical between modes.
     -->
     <article
-        class="mx-auto space-y-6 md:space-y-0 relative md:flex max-w-screen-2xl"
-        :class="articleClasses"
+        class="mx-auto space-y-6 relative max-w-screen-2xl"
+        :class="[articleClasses, dense ? 'xl:flex xl:space-y-0' : 'md:flex md:space-y-0']"
     >
         <main
-            class="overflow-hidden"
-            :class="[mainClasses, showPanel() ? 'md:w-6/12 lg:w-7/12 xl:w-8/12 2xl:w-10/12' : 'md:w-full']"
+            class="min-w-0"
+            :class="[mainClasses, dense ? 'overflow-x-clip' : 'overflow-hidden', showPanel() ? (dense ? 'w-full xl:w-8/12' : 'md:w-6/12 lg:w-7/12 xl:w-8/12 2xl:w-10/12') : 'md:w-full']"
         >
             <slot name="prepend-panel" v-if="hidePanel" />
             <slot />
         </main>
 
-        <aside class="space-y-4 md:w-3/12 md:sticky md:top-0" v-if="showPanel()">
+        <aside class="min-w-0 space-y-4" :class="dense ? 'w-full xl:w-4/12 xl:sticky xl:top-0' : 'md:w-3/12 md:sticky md:top-0'" v-if="showPanel()">
             <section class="w-full aside-content" :class="asideInnerClasses">
                 <slot name="prepend-panel" />
                 <slot name="panel">

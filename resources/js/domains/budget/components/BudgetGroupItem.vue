@@ -142,7 +142,7 @@ const fetchDetails = async (category: ICategory) => {
         below and (b) the ASSIGNED / SPENT / AVAILABLE labels rendered in
         Budget.vue's row 2.
     -->
-    <header v-if="!isMobile" class="flex justify-between px-4 py-0.5 text-body-1/80 text-xs">
+    <header v-if="!isMobile" class="flex min-h-[44px] items-center justify-between bg-base-lvl-2 px-3 py-2 text-sm text-body-1">
         <div class="flex items-center space-x-2">
             <LogerButtonTab @click="isExpanded=!isExpanded">
                 <i class="fa" :class="toggleIcon" />
@@ -202,7 +202,7 @@ const fetchDetails = async (category: ICategory) => {
         status dot replaces the desktop PointAlert (absolute-positioned, would
         be clipped by truncate); Assigned/Spent live inside the group when open.
     -->
-    <header v-else class="flex items-center gap-2 px-4 py-1.5 text-body-1/80 text-xs">
+    <header v-else class="flex min-h-[44px] items-center gap-2 bg-base-lvl-2 px-3 py-2 text-sm text-body-1">
         <div class="cursor-grab shrink-0" v-if="allowDrag">
             <IconDrag class="handle" />
         </div>
@@ -240,7 +240,7 @@ const fetchDetails = async (category: ICategory) => {
             </NDropdown>
         </div>
     </header>
-    <section class="border-l-4 border-primary bg-base-lvl-3" ref="dropdown">
+    <section class="bg-base" ref="dropdown">
         <slot v-if="isExpanded || isAdding" :isExpanded="isExpanded" :toggleAdding="toggleAdding" :isAdding="isAdding" name="content"/>
     </section>
 

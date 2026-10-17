@@ -17,6 +17,60 @@ const ts = require('typescript');
 const { parse, compileTemplate } = require('@vue/compiler-sfc');
 const vue = require('vue');
 const { renderToString } = require('@vue/server-renderer');
+const spanish=JSON.parse(fs.readFileSync('resources/lang/es.json','utf8'));
+for (const [filename,keys] of [['BudgetTargetForm.vue',['Set target','Cancel','Save']],['BudgetMatchForm.vue',['Set Account Match','Cancel','Save']]]) {
+ const component=parse(fs.readFileSync('resources/js/domains/budget/components/'+filename,'utf8')).descriptor;
+ assert.deepEqual(compileTemplate({source:component.template.content,filename,id:filename}).errors,[]);
+ for(const key of keys) {
+  assert.ok(component.template.content.includes("$t('"+key+"')"));
+  assert.ok(spanish[key] && spanish[key]!==key);
+ }
+}
+assert.equal(spanish['Add a note...'],'Añade una nota…');
+for (const file of ['resources/js/Pages/Finance/Partials/FinanceTemplate.vue','resources/js/domains/budget/components/BudgetOnboarding.vue','resources/js/Pages/Finance/Budget.vue','resources/js/Pages/Finance/Partials/BudgetCategories.vue','resources/js/domains/budget/components/BudgetGroupItem.vue','resources/js/domains/budget/components/BudgetItem.vue','resources/js/domains/budget/components/BudgetReconcileBanner.vue']) {
+ const component=parse(fs.readFileSync(file,'utf8')).descriptor;
+ assert.deepEqual(compileTemplate({source:component.template.content,filename:file,id:file}).errors,[]);
+}
+const banner=parse(fs.readFileSync('resources/js/domains/budget/components/BudgetReconcileBanner.vue','utf8')).descriptor;
+const bannerProps={accounts:[{id:1,currency_code:'DOP',balance:1000},{id:2,currency_code:'DOP',balance:-200,credit_closing_day:15},{id:3,currency_code:'USD',balance:50}],budgets:{data:[{subCategories:[{available:700},{account_id:2,available:200},{account_id:3,available:50}]}]},readyToAssign:{balance:100},startDate:'2026-10-01',endDate:'2026-10-31'};
+const bannerScope={computed:vue.computed,window:{logerAppSettings:{currency_code:'DOP'}},defineProps:()=>bannerProps,format:date=>date.toISOString().slice(0,10)};
+vm.createContext(bannerScope);
+vm.runInContext(ts.transpile(banner.scriptSetup.content.replace(/^import .*;\r?\n/gm,'')+'\n globalThis.result={rows,hasGap,uncategorizedHref};',{target:ts.ScriptTarget.ES2020}),bannerScope);
+assert.equal(bannerScope.result.hasGap.value,false);
+assert.deepEqual(JSON.parse(JSON.stringify(bannerScope.result.rows.value)),[{cur:'DOP',cash:1000,assigned:1000,uncategorized:0},{cur:'USD',cash:50,assigned:50,uncategorized:0}]);
+assert.ok(bannerScope.result.uncategorizedHref.value.includes('filter[date]=2026-10-01~2026-10-31'));
+const cardItem=parse(fs.readFileSync('resources/js/domains/budget/components/BudgetItem.vue','utf8')).descriptor;
+assert.ok(cardItem.template.content.includes(':href="brechaHref"'));
+assert.ok(cardItem.template.content.includes("$t('you owe')"));
+assert.ok(cardItem.template.content.includes("$t('Ready to pay')"));
+assert.ok(!cardItem.template.content.includes('coveragePct +'));
+assert.ok(!cardItem.template.content.includes('NPopover'));
+const cardProps={item:{account_id:2,available:150}};
+const cardScope={computed:vue.computed,ref:vue.ref,props:cardProps,accounts:bannerProps.accounts,pageState:{dates:{startDate:new Date('2026-10-01'),endDate:new Date('2026-10-31')}},format:date=>date.toISOString().slice(0,10)};
+vm.createContext(cardScope);
+vm.runInContext(ts.transpile('const card ='+cardItem.scriptSetup.content.split('const card =')[1].split('const onAssignBudget')[0]+'\n globalThis.result={cardDebt,apartado,coveragePct,brecha,coverageClass,brechaHref};'),cardScope);
+assert.equal(cardScope.result.cardDebt.value,200);
+assert.equal(cardScope.result.coveragePct.value,75);
+assert.equal(cardScope.result.brecha.value,50);
+assert.equal(cardScope.result.coverageClass.value,'bg-error');
+assert.ok(cardScope.result.brechaHref.value.includes('filter[account_id]=2'));
+const customTable = parse(fs.readFileSync('resources/js/Components/atoms/CustomTable.vue','utf8')).descriptor;
+const tableCompiled = compileTemplate({source:customTable.template.content,filename:'CustomTable.vue',id:'custom-table'});
+assert.deepEqual(tableCompiled.errors,[]);
+const tableScope = {exports:{},require};
+vm.createContext(tableScope);
+vm.runInContext(ts.transpile(tableCompiled.code,{module:ts.ModuleKind.CommonJS}),tableScope);
+const tableContext = {appearance:'finance',tableData:[{name:'Example'}],cols:[{name:'name',label:'Name'}],colStyle:()=>({}),getHeaderClass:()=>'',isLoading:false,$slots:{},$emit:()=>{}};
+Promise.all(['finance','default'].map(appearance=>renderToString(vue.createSSRApp({render:tableScope.exports.render,data:()=>({...tableContext,appearance})})))).then(([finance,standard])=>{
+ assert.ok(finance.includes('bg-base-lvl-2'));
+ assert.ok(finance.includes('h-16'));
+ assert.ok(finance.includes('Example'));
+ assert.ok(standard.includes('py-4'));
+ assert.ok(!standard.includes('h-16'));
+}).catch(error=>{console.error(error);process.exitCode=1;});
+const transactionTable = parse(fs.readFileSync('resources/js/domains/transactions/components/TransactionTable.vue','utf8')).descriptor;
+assert.deepEqual(compileTemplate({source:transactionTable.template.content,filename:'TransactionTable.vue',id:'transactions'}).errors,[]);
+assert.ok(transactionTable.template.content.includes('appearance="finance"'));
 const journey = parse(fs.readFileSync('resources/js/Pages/Trends/Partials/CreditCardJourney.vue', 'utf8')).descriptor;
 assert.deepEqual(compileTemplate({ source: journey.template.content, filename: 'Journey.vue', id: 'journey' }).errors, []);
 const helpers = journey.scriptSetup.content.split('const recordedMoney')[1].split('const preparationInsights')[0];
@@ -64,6 +118,15 @@ app.component('FinanceSectionNav',{render:() => vue.h('nav')});
 app.component('AccountsOverview',{render:() => vue.h('div','Accounts overview')});
 renderToString(app).then(html => { assert.ok(html.includes('Accounts overview')); assert.ok(html.includes('Accounts')); }).catch(error => { console.error(error); process.exitCode = 1; });
 const overview = parse(fs.readFileSync('resources/js/Pages/Finance/Partials/AccountsOverview.vue','utf8')).descriptor;
+const transactionsLink = overview.template.content.match(/<Link[^>]*:href="route\('finance.transactions'\)"[^>]*>[\s\S]*?<\/Link>/)[0];
+const linkCompiled = compileTemplate({source:transactionsLink,filename:'TransactionsLink.vue',id:'transactions-link'});
+assert.deepEqual(linkCompiled.errors,[]);
+const linkScope = {exports:{},require};
+vm.createContext(linkScope);
+vm.runInContext(ts.transpile(linkCompiled.code,{module:ts.ModuleKind.CommonJS}),linkScope);
+const linkTree = linkScope.exports.render({route:name=>{assert.equal(name,'finance.transactions');return '/finance/transactions';}},[]);
+assert.equal(linkTree.props.href,'/finance/transactions');
+assert.ok(JSON.stringify(linkTree.children).includes('Ver todas las transacciones'));
 assert.deepEqual(compileTemplate({source:overview.template.content,filename:'Overview.vue',id:'overview'}).errors,[]);
 const accounts = [
  {id:1,name:'Bank DOP',currency_code:'DOP',balance:1000,archived:'0'},
@@ -71,9 +134,11 @@ const accounts = [
  {id:3,name:'Closed',currency_code:'DOP',balance:-9999,credit_limit:20000,credit_closing_day:20,closed_at:'2026-01-01'},
  {id:4,name:'USD bank',currency_code:'USD',balance:50},
 ];
-const overviewContext = {computed:vue.computed,ref:vue.ref,onMounted:()=>{},defineProps:()=>({accounts}),useAppContextStore:()=>({isMobile:false}),useAccountsStore:()=>({accounts:[]})};
+let timerCallback, unmountCallback, clearedTimer;
+const accountStore = {accounts, reorder:async()=>{}};
+const overviewContext = {computed:vue.computed,ref:vue.ref,onMounted:()=>{},onUnmounted:callback=>{unmountCallback=callback;},setTimeout:(callback,delay)=>{assert.equal(delay,3000);timerCallback=callback;return 1;},clearTimeout:id=>{clearedTimer=id;},defineProps:()=>({accounts}),useAppContextStore:()=>({isMobile:false}),useAccountsStore:()=>accountStore};
 vm.createContext(overviewContext);
-vm.runInContext(ts.transpile(overview.scriptSetup.content.replace(/^import .*;\r?\n/gm,'') + '\n globalThis.result = { filtered, filter, search, summaries, reconciliation, groups, collapsedGroups, toggleGroup };'),overviewContext);
+vm.runInContext(ts.transpile(overview.scriptSetup.content.replace(/^import .*;\r?\n/gm,'') + '\n globalThis.result = { filtered, filter, search, summaries, reconciliation, groups, collapsedGroups, toggleGroup, saveOrder, orderMessage, isSavingOrder };'),overviewContext);
 const o = overviewContext.result;
 assert.equal(o.filter.value,'active');
 assert.equal(o.filtered.value.length,3);
@@ -106,11 +171,27 @@ assert.equal(headerTree.children[0].props['aria-expanded'],false);
 assert.equal(o.groups.value[0].accounts.map(a=>a.id).join(','),beforeCollapse);
 o.toggleGroup('Otras cuentas');
 assert.equal(o.collapsedGroups.value['Otras cuentas'],true);
+(async()=>{
+ await o.saveOrder(accounts);
+ assert.equal(o.orderMessage.value,'Orden guardado');
+ assert.equal(o.isSavingOrder.value,false);
+ timerCallback();
+ assert.equal(o.orderMessage.value,'');
+ await o.saveOrder(accounts);
+ assert.equal(clearedTimer,1);
+ accountStore.reorder=async()=>{throw new Error('Network failure');};
+ await o.saveOrder(accounts);
+ assert.equal(o.orderMessage.value,'No se pudo guardar el orden. Inténtalo de nuevo.');
+ assert.equal(o.isSavingOrder.value,false);
+ unmountCallback();
+ assert.equal(clearedTimer,1);
+})().catch(error=>{console.error(error);process.exitCode=1;});
 headerTree.children[0].props.onClick();
 assert.equal(o.collapsedGroups.value[headerContext.group.name],false);
 assert.equal(o.collapsedGroups.value['Otras cuentas'],true);
 JS;
-        $process = new Process(['node', '-e', $script], dirname(__DIR__, 2));
+        $process = new Process(['node'], dirname(__DIR__, 2));
+        $process->setInput($script);
         $process->run();
         $this->assertTrue($process->isSuccessful(), $process->getErrorOutput().$process->getOutput());
     }

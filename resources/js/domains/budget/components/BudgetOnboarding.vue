@@ -72,7 +72,7 @@ const expand = () => {
   <!-- Expanded panel -->
   <aside
     v-if="shouldShow && !collapsed"
-    class="fixed bottom-4 right-[100px] z-40 w-[360px] max-w-[calc(100vw-32px)] rounded-xl border border-base bg-base-lvl-3 shadow-2xl overflow-hidden"
+    class="fixed bottom-24 right-4 sm:bottom-4 sm:right-[100px] z-40 w-[360px] max-w-[calc(100vw-32px)] rounded-xl border border-base bg-base-lvl-3 shadow-2xl overflow-hidden"
   >
     <header class="flex items-start justify-between gap-2 px-5 pt-4 pb-3 border-b border-base">
       <div class="flex-1 min-w-0">
@@ -197,7 +197,7 @@ const expand = () => {
   <button
     v-if="shouldShow && collapsed"
     type="button"
-    class="fixed bottom-4 right-[100px] z-40 flex items-center gap-2 pl-3 pr-4 py-2.5 rounded-full bg-primary text-white shadow-xl hover:shadow-2xl hover:bg-primary/90 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+    class="fixed bottom-24 right-4 sm:bottom-4 sm:right-[100px] z-40 flex items-center gap-2 pl-3 pr-4 py-2.5 rounded-full bg-primary text-white shadow-xl hover:shadow-2xl hover:bg-primary/90 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
     :title="$t('Show budget setup')"
     :aria-label="$t('Show budget setup')"
     @click="expand"
