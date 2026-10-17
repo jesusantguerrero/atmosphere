@@ -33,6 +33,7 @@ import { createBudgetCategory } from "@/domains/budget/createBudgetCategory";
 import { useBudget } from "@/domains/budget";
 import { SearchFilterMode, useServerSearch } from "@/composables/useServerSearchV2";
 import BudgetCategories from "./Partials/BudgetCategories.vue";
+import BudgetReconcileBanner from "@/domains/budget/components/BudgetReconcileBanner.vue";
 import BudgetErrorBanner from "@/domains/budget/components/BudgetErrorBanner.vue";
 import BudgetOnboarding from "@/domains/budget/components/BudgetOnboarding.vue";
 
@@ -295,6 +296,17 @@ const budgetCsvExportUrl = computed(() => {
         v-model:startDate="pageState.dates.startDate"
         v-model:endDate="pageState.dates.endDate"
         @change="executeSearchWithDelay(5)"
+      />
+
+      <!-- Zero-sum reconciliation bar: Σ Available + To-assign vs cash in
+           on-budget accounts; the gap is uncategorized spend (see
+           .planning/budget-cuadre.md). Read-only. -->
+      <BudgetReconcileBanner
+        :accounts="accounts"
+        :budgets="budgets"
+        :ready-to-assign="readyToAssign"
+        :start-date="pageState.dates?.startDate"
+        :end-date="pageState.dates?.endDate"
       />
 
       <!--

@@ -120,7 +120,7 @@ const handleBudgetMovement = (budgetMovementData: any) => {
 
     <Draggable
         v-if="visibleCategories?.length"
-        class="w-full space-y-0.5 overflow-auto dragArea list-group ic-scroller"
+        class="flex w-full flex-col gap-3 overflow-auto dragArea list-group ic-scroller"
         :list="visibleCategories"
         handle=".handle"
         @end="saveReorder(visibleCategories)"
@@ -132,10 +132,10 @@ const handleBudgetMovement = (budgetMovementData: any) => {
             :force-expanded="filters.overspent"
             :class="[cardShadow]"
             :is-mobile="isMobile"
-            class="bg-base-lvl-3"
+            class="overflow-hidden rounded-lg border border-body-1/15 bg-base"
         >
         <template v-slot:content="{ isExpanded, isAdding, toggleAdding }">
-            <div class="bg-base-lvl-3">
+            <div class="bg-base">
             <div v-if="isAdding" class="px-4 pt-2" :class="{'pb-4': !isExpanded}">
                 <LogerInput
                     :placeholder="$t('Add subcategory')"
@@ -147,17 +147,17 @@ const handleBudgetMovement = (budgetMovementData: any) => {
 
             <Draggable
                 v-if="isExpanded"
-                class="py-2 space-y-2"
+                class="py-0"
                 :list="itemGroup.subCategories"
                 handle=".handle"
                 group="budget-categories"
                 @change="onSubCategoryChange($event, itemGroup)"
             >
                 <BudgetItem
-                    class=" border-base-lvl-3 hover:bg-primary/20"
+                    class="hover:bg-base-lvl-3/70"
                     v-for="item in itemGroup.subCategories"
                     :class="[selectedBudget?.id == item.id ?
-                        'bg-base-lvl-2 border-base-lvl-3' : 'bg-base-lvl-3' ]"
+                        'bg-base-lvl-2' : 'bg-base' ]"
                     :key="item.id"
                     :item="item"
                     :is-mobile="isMobile"

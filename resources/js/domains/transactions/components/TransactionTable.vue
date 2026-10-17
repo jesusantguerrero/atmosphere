@@ -83,12 +83,6 @@ const amountSign = (row: ITransaction) => {
   return row.direction === 'WITHDRAW' ? '−' : '+';
 };
 
-const moneyParts = (value: any, currency?: string) => {
-  const s = formatMoney(value, currency);
-  const i = s.lastIndexOf('.');
-  return i === -1 ? { main: s, cents: '' } : { main: s.slice(0, i), cents: s.slice(i + 1) };
-};
-
 const getTransactionColor = (row: ITransaction) => {
 // @ts-ignore
   if (row.payee?.name || row.payee_name) {
@@ -108,8 +102,9 @@ const getTransactionColor = (row: ITransaction) => {
 </script>
 
 <template>
-  <div class="pb-20 mt-5 bg-base-lvl-3">
+  <div class="mb-20 mt-3 overflow-hidden rounded-lg border border-body-1/15 bg-base">
     <CustomTable
+      appearance="finance"
       :cols="cols"
       :show-prepend="true"
       :table-data="transactions"
@@ -133,8 +128,8 @@ const getTransactionColor = (row: ITransaction) => {
           >
             {{ $t('Approve') }}
           </button>
-          <div class="font-bold tabular-nums" :class="[getTransactionColor(row)]">
-            <span v-if="amountSign(row)" class="mr-0.5">{{ amountSign(row) }}</span>{{ moneyParts(row.total, row.currency_code).main }}<span v-if="moneyParts(row.total, row.currency_code).cents" class="text-[0.72em] align-top opacity-60">.{{ moneyParts(row.total, row.currency_code).cents }}</span>
+          <div class="font-medium tabular-nums" :class="[getTransactionColor(row)]">
+            <span v-if="amountSign(row)" class="mr-0.5">{{ amountSign(row) }}</span>{{ formatMoney(row.total, row.currency_code) }}
           </div>
         </div>
       </template>
@@ -152,7 +147,7 @@ const getTransactionColor = (row: ITransaction) => {
 
       <template v-slot:status="{ scope: { row } }">
         <span v-if="row.is_reconciled" class="text-green-600" title="Conciliado"><IMdiCheckCircle /></span>
-        <span v-else class="text-body-1/25" title="Sin conciliar">—</span>
+        <span v-else class="text-body-1" title="Sin conciliar">—</span>
       </template>
 
       <template v-slot:actions="{ scope: { row } }">
@@ -165,7 +160,7 @@ const getTransactionColor = (row: ITransaction) => {
             :on-select="(optionName) => handleOptions(optionName, row)"
             @click.stop
           >
-            <button class="px-2 hover:bg-base-lvl-3 ">
+            <button type="button" :aria-label="$t('Transaction actions')" class="flex h-11 w-11 items-center justify-center rounded-lg text-body-1 hover:bg-base-lvl-3 hover:text-primary focus-visible:ring-2 focus-visible:ring-primary">
                 <IIonEllipsisVertical />
             </button>
           </NDropdown>

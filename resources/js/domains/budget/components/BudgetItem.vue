@@ -284,6 +284,31 @@ const currentMonth = computed(() => {
     return format(startOfMonth(pageState.dates.endDate), 'yyyy-MM-dd');
 })
 
+// Credit-card payment category: item.account_id points to the card account, so
+// this row reframes AVAILABLE as the "Payment" set aside to pay the card.
+// "Debes" is the card's live balance; the gap between what's set aside and what
+// is owed is uncategorized card spend that never reached this category — the
+// link jumps straight to those transactions so they can be classified.
+const card = computed<any>(() => props.item.account_id
+    ? (accounts?.find?.((account: any) => account.id === props.item.account_id) ?? null)
+    : null);
+const isCreditCard = computed(() => !!card.value);
+const cardDebt = computed(() => Math.max(0, -Number(card.value?.balance ?? 0)));
+const apartado = computed(() => Number(props.item.available ?? 0));
+const coveragePct = computed(() => cardDebt.value > 0
+    ? Math.min(100, Math.round((apartado.value / cardDebt.value) * 100))
+    : 100);
+const brecha = computed(() => Math.max(0, cardDebt.value - apartado.value));
+const coverageClass = computed(() => {
+    if (brecha.value <= 0) return 'bg-success';
+    return coveragePct.value >= 80 ? 'bg-warning' : 'bg-error';
+});
+const brechaHref = computed(() => {
+    const start = format(pageState.dates.startDate, 'yyyy-MM-dd');
+    const end = format(pageState.dates.endDate, 'yyyy-MM-dd');
+    return `/finance/transactions?filter[uncategorized]=1&filter[account_id]=${props.item.account_id}&filter[date]=${start}~${end}`;
+});
+
 const onAssignBudget = () => {
     nextTick(() => {
         if (Number(props.item.budgeted) !== Number(budgeted.value) && budgeted.value !== null) {
@@ -329,7 +354,7 @@ const context = useAppContextStore();
 
 
 <template>
-<div class="px-4 py-2 cursor-pointer group" @click.stop="onRowClick">
+<div class="min-h-[64px] border-t border-body-1/10 px-3 py-3 text-sm cursor-pointer group" @click.stop="onRowClick">
     <section class="md:flex space-between">
         <div class="flex items-center w-full space-x-4 ">
             <!-- On mobile (no hover state), show the drag handle always so reorder is
@@ -341,6 +366,7 @@ const context = useAppContextStore();
                 <IconDrag class="handle" />
             </div>
             <BudgetItemHeader :item="item" :show-delete="showDelete" />
+
         </div>
         <div class="flex items-center md:justify-end justify-between text-right flex-nowrap">
             <div ref="inputContainer" title="Money Assigned" class="w-36" @click.stop>
@@ -409,6 +435,22 @@ const context = useAppContextStore();
             <div class="w-8" aria-hidden="true"></div>
         </div>
     </section>
+    <!-- Credit-card payment row: "Pago" reframing — what you set aside vs what
+         you owe, plus the uncategorized gap that links to those transactions. -->
+    <div
+        v-if="isCreditCard"
+        class="flex flex-wrap items-center justify-end gap-2 mt-1 text-xs text-body-1"
+        @click.stop
+    >
+        <span class="font-medium text-body">{{ $t('Payment') }}</span>
+        <span>{{ $t('of') }} <b class="text-body tabular-nums">{{ formatMoney(cardDebt, card?.currency_code) }}</b> {{ $t('you owe') }}</span>
+        <a
+            v-if="brecha > 0"
+            :href="brechaHref"
+            class="font-semibold text-error hover:underline tabular-nums"
+        >{{ formatMoney(brecha, card?.currency_code) }} {{ $t('Uncategorized') }} &rarr;</a>
+        <span v-else class="font-semibold text-success">{{ $t('Ready to pay') }} &check;</span>
+    </div>
     <div
         v-if="spentPercent !== null"
         class="relative w-full h-1 mt-1 overflow-hidden rounded-sm bg-base-lvl-2"

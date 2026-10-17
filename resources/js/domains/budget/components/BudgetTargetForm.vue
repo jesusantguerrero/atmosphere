@@ -258,11 +258,11 @@ const handleOptions = (option: string) => {
       <span class="mr-2">
         <IconTarget />
       </span>
-      Set target
+      {{ $t('Set target') }}
     </LogerButtonTab>
 
     <div v-else-if="state.isEditing">
-      <AtField label="Target Type">
+      <AtField :label="$t('Target Type')">
         <NSelect
           filterable
           clearable
@@ -274,7 +274,7 @@ const handleOptions = (option: string) => {
         <AtErrorBag v-if="errors" :errors="errors" field="account_id" />
       </AtField>
 
-      <AtField v-if="form.target_type !== 'loan'" label="Amount" errors="errors" field="amount">
+      <AtField v-if="form.target_type !== 'loan'" :label="$t('Amount')" errors="errors" field="amount">
         <AtInput :number-format="true" v-model="form.amount">
           <template #prefix>
             <span class="flex items-center pl-2"> RD$ </span>
@@ -334,7 +334,7 @@ const handleOptions = (option: string) => {
         />
 
         <AtField
-          label="Every"
+          :label="$t('Every')"
           v-if="['MONTHLY', 'WEEKLY'].includes(form.frequency)"
           :errors="errors"
           :field="frequencyUnit.field"
@@ -359,7 +359,7 @@ const handleOptions = (option: string) => {
       </section>
 
       <AtField
-            label="Date"
+            :label="$t('Date')"
             class="w-full"
             v-if="isSavingBalance(form) || !['MONTHLY', 'WEEKLY'].includes(form.frequency)"
         >
@@ -376,7 +376,7 @@ const handleOptions = (option: string) => {
         </p>
       </AtField>
 
-      <AtFieldCheck v-model="form.notify" :label="form.target_type === 'loan' ? $t('Remind me before the payment date') : 'Notify on AVG'" />
+      <AtFieldCheck v-model="form.notify" :label="form.target_type === 'loan' ? $t('Remind me before the payment date') : $t('Notify on AVG')" />
       <p v-if="form.target_type === 'loan' && form.notify" class="text-xs text-body-1/70">
         {{ $t('A reminder is sent three days before the monthly payment date.') }}
       </p>
@@ -384,14 +384,14 @@ const handleOptions = (option: string) => {
       <div class="flex justify-between mt-4">
         <div class="flex font-bold">
           <at-button class="block h-full text-body-1" @click="onCancel">
-            Cancel
+            {{ $t('Cancel') }}
           </at-button>
         </div>
         <AtButton
           class="block h-full text-white rounded-md bg-primary"
           @click="onSubmit()"
         >
-          Save
+          {{ $t('Save') }}
         </AtButton>
       </div>
     </div>

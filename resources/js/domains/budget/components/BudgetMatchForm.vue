@@ -143,11 +143,11 @@ const { form } = toRefs(state);
       <span class="mr-2">
         <IconTarget />
       </span>
-      Set Account Match
+      {{ $t('Set Account Match') }}
     </LogerButtonTab>
 
     <div v-else-if="state.isEditing">
-      <AtField label="Match with account">
+      <AtField :label="$t('Match with account')">
           <AccountFilter
                 class="w-full"
                 show-all
@@ -158,14 +158,14 @@ const { form } = toRefs(state);
       <div class="flex justify-between mt-4">
         <div class="flex font-bold">
           <at-button class="block h-full text-body-1" @click="onCancel">
-            Cancel
+            {{ $t('Cancel') }}
           </at-button>
         </div>
         <AtButton
           class="block h-full text-white rounded-md bg-primary"
           @click="onSubmit()"
         >
-          Save
+          {{ $t('Save') }}
         </AtButton>
       </div>
     </div>

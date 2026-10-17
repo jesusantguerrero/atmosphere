@@ -18,6 +18,7 @@ const props = withDefaults(defineProps<{
     hideEmptyText?: boolean;
     skeletonLines?: number;
     rowClass?: (row: T, index: number) => string;
+    appearance?: 'default' | 'finance';
 }>(), {
     emptyText: "No data found",
     config() { return { }},
@@ -77,17 +78,17 @@ const colStyle = (col: Record<string, any>) => ({
 <template>
     <table
         class="table-fixed"
+        :class="appearance === 'finance' ? 'text-sm' : ''"
         style="width: 100%"
         :data="tableData"
         :header-cell-class-name="getHeaderClass"
         @row-click="$emit('row-click', $event)"
     >
         <thead>
-            <tr class="px-2 py-4 font-bold text-left border-b border-base-lvl-2 text-body">
+            <tr class="text-left border-b" :class="appearance === 'finance' ? 'border-body-1/15 bg-base-lvl-2 text-xs font-semibold text-body-1' : 'px-2 py-4 font-bold border-base-lvl-2 text-body'">
                 <th v-for="col in cols"
                  :key="col.name"
-                 class="px-2 py-4"
-                 :class="[col.headerClass]"
+                 :class="[col.headerClass, appearance === 'finance' ? 'h-11 px-3 py-2' : 'px-2 py-4']"
                  :style="colStyle(col)"
                 >
                     <button
@@ -135,11 +136,11 @@ const colStyle = (col: Record<string, any>) => ({
             </tr>
             <tr v-for="(data, index) in tableData"
                 :key="`data-row-${index}`"
-                class="text-body transition-colors border-b border-base-lvl-2 hover:bg-base-lvl-1"
-                :class="[rowClass?.(data, index) ?? '']"
+                class="text-body border-b"
+                :class="[rowClass?.(data, index) ?? '', appearance === 'finance' ? 'h-16 border-body-1/10 hover:bg-base-lvl-3/70' : 'transition-colors border-base-lvl-2 hover:bg-base-lvl-1']"
             >
-                <td v-for="col in cols" :key="col.name" class="h-full align-baseline" :style="colStyle(col)">
-                    <div class="flex flex-col w-full h-full px-2 py-3 text-left" :class="col.class">
+                <td v-for="col in cols" :key="col.name" class="h-full" :class="appearance === 'finance' ? 'align-middle' : 'align-baseline'" :style="colStyle(col)">
+                    <div class="flex flex-col w-full h-full text-left" :class="[col.class, appearance === 'finance' ? 'px-3 py-2' : 'px-2 py-3']">
                             <slot :name="col.name" v-bind:scope="{row: data, value: data[col.name], col, field: col.name, $index: index }">
                                 <div v-if="col.type == 'calc'" :class="col.class">
                                     {{ col.formula(data) }}
