@@ -5,8 +5,8 @@ import { onKeyStroke, useDebounceFn } from '@vueuse/core';
 import { endOfMonth, format, parseISO, startOfMonth } from 'date-fns';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
+import { Dialog, DialogPanel, DialogTitle } from '@headlessui/vue';
 
-import Modal from '@/Components/atoms/Modal.vue';
 import SearchResultItem from './SearchResultItem.vue';
 
 // Mirrors SearchController::MIN_LENGTH — below this the server returns nothing,
@@ -154,6 +154,9 @@ onKeyStroke(['k', 'K'], (event: KeyboardEvent) => {
     <div>
         <button
             type="button"
+            :aria-label="t('Search for anything')"
+            aria-haspopup="dialog"
+            :aria-expanded="state.isOpen"
             @click="open"
             class="flex items-center gap-2 px-3 py-1.5 text-sm transition-colors border rounded-md text-body-1/60 border-body-1/10 hover:text-body-1 hover:border-body-1/20"
         >
@@ -162,67 +165,83 @@ onKeyStroke(['k', 'K'], (event: KeyboardEvent) => {
             <span class="hidden px-1.5 py-0.5 text-xs rounded bg-base-lvl-2 lg:inline">⌘K</span>
         </button>
 
-        <Modal :show="state.isOpen" max-width="xl" @close="close">
-            <section class="flex flex-col">
-                <header class="flex items-center gap-3 px-4 py-3 border-b border-body-1/10">
-                    <IMdiMagnify class="text-body-1/40" />
+        <Dialog :open="state.isOpen" :initial-focus="searchInput" class="relative z-[1600]" @close="close">
+            <div class="fixed inset-0 bg-black/60" aria-hidden="true" />
+            <div class="fixed inset-0 flex items-start justify-center overflow-y-auto p-3 lg:px-6 lg:pt-[12vh]">
+            <DialogPanel class="flex w-full max-h-[calc(100dvh-1.5rem)] flex-col overflow-hidden rounded-2xl border border-body-1/15 bg-base-lvl-3 text-body-1 shadow-2xl lg:max-w-xl">
+                <header class="flex shrink-0 flex-col gap-3 border-b border-body-1/10 p-4">
+                    <div class="flex items-center justify-between gap-3">
+                        <DialogTitle class="text-base font-semibold">{{ t('Search for anything') }}</DialogTitle>
+                        <button
+                            type="button"
+                            class="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg px-3 text-sm font-medium text-body-1 hover:bg-base-lvl-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                            @click="close"
+                        >
+                            {{ t('Close') }}
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-3 rounded-xl border border-body-1/20 bg-base-lvl-2 px-3 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary">
+                    <IMdiMagnify class="shrink-0 text-xl text-body-1/70" />
                     <input
                         ref="searchInput"
                         v-model="state.searchText"
                         type="text"
+                        :aria-label="t('Search transactions, accounts and payees')"
                         :placeholder="t('Search transactions, accounts and payees')"
-                        class="w-full text-sm bg-transparent border-0 outline-none text-body-1 focus:ring-0"
+                        class="min-h-[48px] min-w-0 w-full border-0 bg-transparent px-0 text-base text-body-1 placeholder:text-body-1/70 focus:ring-0"
                         @keydown.down.prevent="move(1)"
                         @keydown.up.prevent="move(-1)"
                         @keydown.enter.prevent="goTo(visibleResults[state.activeIndex])"
                     />
+                    </div>
                 </header>
 
-                <nav v-if="tabs.length" class="flex gap-2 px-4 py-2 border-b border-body-1/10">
+                <nav v-if="tabs.length" class="flex shrink-0 gap-2 overflow-x-auto px-4 py-2 border-b border-body-1/10">
                     <button
                         v-for="tab in tabs"
                         :key="tab"
                         type="button"
                         @click="selectTab(tab)"
-                        class="px-3 py-1 text-xs font-bold capitalize rounded-md"
+                        class="min-h-[44px] shrink-0 px-3 py-2 text-sm font-medium capitalize rounded-lg"
                         :class="state.selectedTab == tab ? 'bg-primary text-white' : 'bg-base-lvl-2 text-body-1/70'"
                     >
                         {{ t(tab) }}
                     </button>
                 </nav>
 
-                <div class="py-2 overflow-auto max-h-80 min-h-[8rem]">
+                <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain py-2 lg:max-h-80" aria-live="polite" :aria-busy="state.isLoading">
                     <button
                         v-for="(item, index) in visibleResults"
                         :key="`${item.type}-${item.id}`"
                         type="button"
-                        class="block w-full"
+                        class="block min-h-[48px] w-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
                         @click="goTo(item)"
                         @mouseenter="state.activeIndex = index"
                     >
                         <SearchResultItem :item="item" :active="state.activeIndex == index" />
                     </button>
 
-                    <p v-if="state.isLoading" class="py-8 text-sm text-center text-body-1/50">
+                    <p v-if="state.isLoading" class="px-4 py-10 text-sm text-center text-body-1/75">
                         {{ t('Searching...') }}
                     </p>
                     <p
                         v-else-if="hasSearched && !visibleResults.length"
-                        class="py-8 text-sm text-center text-body-1/50"
+                        class="px-4 py-10 text-sm text-center text-body-1/75"
                     >
                         {{ t('No results found') }}
                     </p>
-                    <p v-else-if="!hasSearched" class="py-8 text-sm text-center text-body-1/50">
+                    <p v-else-if="!hasSearched" class="px-4 py-10 text-sm text-center text-body-1/75">
                         {{ t('Type at least 3 characters') }}
                     </p>
                 </div>
 
-                <footer class="flex gap-4 px-4 py-2 text-xs border-t text-body-1/50 border-body-1/10">
+                <footer class="hidden shrink-0 gap-4 px-4 py-3 text-xs border-t text-body-1/70 border-body-1/10 lg:flex">
                     <span>↑↓ {{ t('Navigate') }}</span>
                     <span>↵ {{ t('Open') }}</span>
                     <span>esc {{ t('Close') }}</span>
                 </footer>
-            </section>
-        </Modal>
+            </DialogPanel>
+            </div>
+        </Dialog>
     </div>
 </template>
