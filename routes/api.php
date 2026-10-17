@@ -57,6 +57,15 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
     Route::post('/events', [MobileController::class, 'storeEvent'])->name('events.store');
     Route::patch('/events/{planner}/complete', [MobileController::class, 'completeEvent'])->name('events.complete');
     Route::post('/transfers', [MobileController::class, 'transfer'])->name('transfers.store');
+
+    // Chores (household tasks)
+    Route::get('/chores', [MobileController::class, 'chores'])->name('chores.index');
+    Route::patch('/chores/{item}/toggle', [MobileController::class, 'toggleChore'])->name('chores.toggle');
+    Route::post('/chores', [MobileController::class, 'storeChore'])->name('chores.store');
+
+    // Meals
+    Route::get('/meals', [MobileController::class, 'meals'])->name('meals.index');
+    Route::get('/meals/recipes', [MobileController::class, 'recipes'])->name('meals.recipes');
 });
 
 Route::post('/sanctum/token', [ApiLoginController::class, 'login']);

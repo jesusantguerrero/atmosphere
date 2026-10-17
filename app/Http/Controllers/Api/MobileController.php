@@ -9,17 +9,23 @@ use App\Domains\Budget\Data\BudgetMovementData;
 use App\Domains\Budget\Data\BudgetReservedNames;
 use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Domains\Budget\Services\BudgetMovementService;
+use App\Domains\LogerProfile\Models\LogerProfile;
+use App\Domains\Meal\Models\Meal;
+use App\Domains\Meal\Models\MealType;
+use App\Domains\Meal\Services\MealService;
 use App\Domains\Today\Services\CalendarService;
 use App\Domains\Today\Services\TodayService;
 use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Transaction\Services\NextPaymentsService;
 use App\Domains\Transaction\Services\TransactionService;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\PlannedMealResource;
 use App\Models\Account;
 use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Modules\Plan\Entities\PlanItem;
 use Modules\Plan\Entities\PlanTypes;
 use Modules\Plan\Services\PlanService;
 
@@ -431,6 +437,151 @@ class MobileController extends Controller
             'current' => $current,
             'next' => $next,
         ]);
+    }
+
+    /**
+     * Household chores: the family task board. Same data the web's
+     * /housing/chores page renders, filtered to pending + completed-today
+     * by default so the mobile list matches the web.
+     */
+    public function chores(Request $request, PlanService $planService): JsonResponse
+    {
+        $user = $request->user();
+        $teamId = $user->current_team_id;
+
+        // Mirror the web ChoreController default: show pending + done-today.
+        if (! $request->has('done')) {
+            $request->merge(['done' => 'today']);
+        }
+
+        $chores = $planService->getPlanType($teamId, PlanTypes::CHORES, $request);
+
+        $members = LogerProfile::where('team_id', $teamId)
+            ->get(['id', 'name'])
+            ->map(fn ($p) => ['id' => $p->id, 'name' => $p->name])
+            ->values();
+
+        return response()->json([
+            'chores' => $chores,
+            'members' => $members,
+        ]);
+    }
+
+    /**
+     * Toggle a chore item's done state. For recurring chores (rrule),
+     * the PlanItem boot logic handles commit_date stamping automatically.
+     */
+    public function toggleChore(Request $request, PlanItem $item): JsonResponse
+    {
+        abort_if((int) $item->team_id !== (int) $request->user()->current_team_id, 403);
+
+        $item->is_done = ! $item->is_done;
+        $item->save();
+
+        return response()->json([
+            'success' => true,
+            'is_done' => (bool) $item->is_done,
+            'commit_date' => $item->commit_date,
+        ]);
+    }
+
+    /**
+     * Create a new chore item in the team's CHORES plan board.
+     */
+    public function storeChore(Request $request, PlanService $planService): JsonResponse
+    {
+        $validated = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'owner' => ['nullable', 'string', 'max:255'],
+            'recurrence' => ['nullable', 'string', 'in:daily,weekdays,weekly,once'],
+        ]);
+
+        $user = $request->user();
+        $teamId = $user->current_team_id;
+
+        $plan = $planService->getPlanTypeModel($teamId, PlanTypes::CHORES);
+        if (! $plan) {
+            $plan = $planService->createPlanBoard($user->currentTeam, PlanTypes::CHORES);
+        }
+
+        $stage = $plan->stages()->first();
+        abort_if(! $stage, 422, 'Chore board has no stage.');
+
+        $itemData = [
+            'plan_id' => $plan->id,
+            'team_id' => $teamId,
+            'user_id' => $user->id,
+            'stage_id' => $stage->id,
+            'title' => $validated['title'],
+        ];
+
+        if (! empty($validated['recurrence'])) {
+            $itemData['rrule'] = PlanItem::rruleForPreset($validated['recurrence']);
+        }
+
+        $item = PlanItem::create($itemData);
+
+        // Save the owner field if provided.
+        if (! empty($validated['owner'])) {
+            $item->saveFields([
+                ['name' => 'Owner', 'value' => $validated['owner'], 'field_name' => 'owner'],
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $item->id,
+                'title' => $item->title,
+                'is_done' => (bool) $item->is_done,
+                'rrule' => $item->rrule,
+            ],
+        ], 201);
+    }
+
+    /**
+     * Meal planner: planned meals for a date range (defaults to current week).
+     * Returns the same shape as PlannedMealResource used on the dashboard,
+     * plus meal types so the app can group by breakfast/lunch/dinner.
+     */
+    public function meals(Request $request, MealService $mealService): JsonResponse
+    {
+        $request->validate([
+            'start' => 'nullable|date',
+            'end' => 'nullable|date|after_or_equal:start',
+        ]);
+
+        $teamId = $request->user()->current_team_id;
+        $start = $request->query('start') ?? now()->startOfWeek()->format('Y-m-d');
+        $end = $request->query('end') ?? now()->endOfWeek()->format('Y-m-d');
+
+        $plans = $mealService->getMealScheduleInFrame($teamId, $start, $end);
+
+        return response()->json([
+            'start' => $start,
+            'end' => $end,
+            'meals' => PlannedMealResource::collection($plans),
+            'mealTypes' => MealType::where('team_id', $teamId)->get(['id', 'name']),
+        ]);
+    }
+
+    /**
+     * Recipe list: all saved meals/recipes for the team.
+     */
+    public function recipes(Request $request): JsonResponse
+    {
+        $meals = Meal::where('team_id', $request->user()->current_team_id)
+            ->with('mealType')
+            ->get()
+            ->map(fn (Meal $m) => [
+                'id' => $m->id,
+                'name' => $m->name,
+                'meal_type' => $m->mealType?->name,
+                'meal_type_id' => $m->meal_type_id,
+                'is_liked' => (bool) $m->is_liked,
+            ]);
+
+        return response()->json(['recipes' => $meals]);
     }
 
     private function toMinutes(string $hhmm): int

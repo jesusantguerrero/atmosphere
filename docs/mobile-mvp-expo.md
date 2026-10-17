@@ -395,6 +395,147 @@ Tipos de item: `budget_category`, `credit_card_payment`, `planned_transaction`.
 ### 11. Lista por cuenta — `GET /api/finance/transactions?filter[account]=ID`  (Bearer o cookie)
 200 → lista filtrada (QuerifySlim). Soporta `filter[...]`, `page`, etc. Item ≈ transacción con `id, date, description, total/amount, direction, status, category, payee, account_id`. (Confirmar forma exacta en deploy.)
 
+### 12. Presupuesto — `GET /api/mobile/budget?month=YYYY-MM`  (Bearer)
+```jsonc
+{
+  "month": "2026-10",
+  "ready_to_assign": 0.00,
+  "groups": [
+    { "id": 10, "name": "Gastos del hogar", "budgeted": 35000.0, "activity": -18500.0, "available": 16500.0,
+      "children": [
+        { "id": 153, "name": "Comida", "budgeted": 20000.0, "activity": -12000.0, "available": 8000.0,
+          "left_from_last_month": 0.0, "funded_spending": 0.0, "payments": 0.0, "has_target": true },
+        { "id": 154, "name": "Alquiler", "budgeted": 15000.0, "activity": -6500.0, "available": 8500.0,
+          "left_from_last_month": 0.0, "funded_spending": 0.0, "payments": 0.0, "has_target": false }
+      ] }
+  ]
+}
+```
+RTA = `inflow.activity + inflow.left_from_last_month - totalAssigned` (misma fórmula que la web).
+Excluye los grupos reservados: `Ready to Assign`, `Inflow`, `Credit Card Payments`.
+
+### 13. Asignar presupuesto — `POST /api/mobile/budget/assign`  (Bearer)
+```jsonc
+{ "category_id": 153, "month": "2026-10", "budgeted": 20000.0 }
+```
+`budgeted` es el **total del mes** (se fija, no se suma). → `{ "success": true }`
+
+### 14. Mover presupuesto — `POST /api/mobile/budget/move`  (Bearer)
+```jsonc
+{ "source_category_id": 153, "destination_category_id": 154, "month": "2026-10", "amount": 5000.0 }
+```
+`amount` se recorta a lo disponible en origen. → `{ "success": true }`
+
+### 15. Calendario — `GET /api/mobile/calendar?month=YYYY-MM`  (Bearer)
+```jsonc
+{
+  "month": "2026-10",
+  "events": [
+    { "id": 12, "planner_id": 12, "title": "Pagar internet", "start": "2026-10-15",
+      "end": "2026-10-15", "kind": "billing", "status": "pending", "total": 1500.0,
+      "source": "billing_cycle", "notes": null, "completed_at": null }
+  ]
+}
+```
+Agrega 3 fuentes: planners, billing cycles, occurrences. `kind` ∈ `planner|billing|occurrence|relationship`.
+
+### 16. Rutina semanal — `GET /api/mobile/routine`  (Bearer)
+```jsonc
+{
+  "plan": { "id": 5, "days": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
+    "blocks": [
+      { "id": 88, "day": 0, "title": "Ejercicio", "start": "06:00", "end": "07:00",
+        "color": "#6E9BE6", "member_id": null, "note": "" }
+    ] },
+  "current": { /* bloque activo ahora o null */ },
+  "next":    { /* próximo bloque hoy o null */ }
+}
+```
+`day` = 0–6 (lunes–domingo). `current`/`next` calculados contra la hora local del team.
+
+### 17. Crear evento — `POST /api/mobile/events`  (Bearer)
+```jsonc
+{ "name": "Cita médico", "date": "2026-10-20", "end_date": null, "notes": null, "total": null, "source": null }
+```
+→ `201 { "success": true, "data": { "id", "name", "date", "status" } }`
+
+### 18. Completar evento — `PATCH /api/mobile/events/{planner_id}/complete`  (Bearer)
+```jsonc
+{ "notes": "Pagado con tarjeta" }   // opcional
+```
+→ `{ "success": true }`
+
+### 19. Transferencia — `POST /api/mobile/transfers`  (Bearer)
+```jsonc
+{ "from_account_id": 101, "to_account_id": 1735, "total": 20000.0, "description": "Pago tarjeta", "date": "2026-10-10" }
+```
+→ `201 { "success": true, "data": { "id", "description", "total", "date" } }`
+
+### 20. Tareas del hogar — `GET /api/mobile/chores?done=today|all`  (Bearer)
+```jsonc
+{
+  "chores": {
+    "id": 1, "name": "CHORES",
+    "fields": [ /* board field definitions */ ],
+    "labels": [ /* board labels */ ],
+    "stages": [
+      { "id": 1, "board_id": 1, "name": "Main",
+        "items": [
+          { "id": 42, "title": "Lavar platos", "resource_type": null, "is_done": false,
+            "rrule": "DTSTART:20261017\nRRULE:FREQ=DAILY;INTERVAL=1;UNTIL=30991231",
+            "points": null, "commit_date": null, "color": null, "stage": "Main", "board_id": 1,
+            "fields": [
+              { "id": 10, "name": "Owner", "value": "Jesus", "type": "text", "options": null }
+            ],
+            "owner": "Jesus" }
+        ] }
+    ]
+  },
+  "members": [ { "id": 1, "name": "Jesus" }, { "id": 2, "name": "Karla" } ]
+}
+```
+`done=today` (default): pendientes + completadas hoy. `done=all`: todas.
+Cada item lleva campos dinámicos aplanados (`owner`, etc.) además del array `fields`.
+`is_done` + `commit_date` determinan el estado. `rrule` indica recurrencia (daily/weekly/once).
+`members` = perfiles del team, para filtrar por persona.
+
+### 21. Toggle tarea — `PATCH /api/mobile/chores/{item_id}/toggle`  (Bearer)
+→ `{ "success": true, "is_done": true, "commit_date": "2026-10-17" }`
+Flip `is_done`. Para tareas recurrentes, el modelo auto-estampa `commit_date` al completar
+y la limpia al deshacer. El cron `chores:reset-recurring` resetea las diarias.
+
+### 22. Crear tarea — `POST /api/mobile/chores`  (Bearer)
+```jsonc
+{ "title": "Barrer terraza", "owner": "Karla", "recurrence": "daily" }
+```
+`recurrence` ∈ `daily|weekdays|weekly|once` (default: `daily` vía boot del modelo).
+`owner` se guarda como campo dinámico del plan item.
+→ `201 { "success": true, "data": { "id", "title", "is_done", "rrule" } }`
+
+### 23. Plan de comidas — `GET /api/mobile/meals?start=YYYY-MM-DD&end=YYYY-MM-DD`  (Bearer)
+```jsonc
+{
+  "start": "2026-10-12", "end": "2026-10-18",
+  "meals": [
+    { "id": 301, "mealId": 18, "name": "Pollo al horno", "mealTypeName": "Almuerzo",
+      "is_liked": false, "is_meal_liked": true, "mealTypeId": 2, "date": "2026-10-15" }
+  ],
+  "mealTypes": [ { "id": 1, "name": "Desayuno" }, { "id": 2, "name": "Almuerzo" }, { "id": 3, "name": "Cena" } ]
+}
+```
+Defaults: semana en curso (lunes–domingo). `meals` usa `PlannedMealResource`.
+`mealTypes` para que la app sepa qué tipos de comida hay configurados.
+
+### 24. Recetas — `GET /api/mobile/meals/recipes`  (Bearer)
+```jsonc
+{
+  "recipes": [
+    { "id": 18, "name": "Pollo al horno", "meal_type": "Almuerzo", "meal_type_id": 2, "is_liked": true }
+  ]
+}
+```
+Todas las recetas del team. `is_liked` para filtrar favoritas client-side.
+
 ---
 
 ## Estado real de `/api/mobile/*` — qué ya está y qué falta
@@ -406,16 +547,31 @@ Tipos de item: `budget_category`, `credit_card_payment`, `planned_transaction`.
 > `.planning/mobile-backend.md` (local, no viaja en git).
 
 ### Ya expuesto en `/api/mobile/*` (la app ya lo consume)
+
+**Tab Hoy:**
 - `POST /api/sanctum/token` — login (2FA)
 - `GET /today` — payload de la página Today (`money, attention, today, upcoming, meal`)
 - `GET /overview` — cuentas (agrupables por `detail_type`), `netWorth`, próximos pagos, tarjetas a pagar
-- `GET /transactions` · `POST /transactions` — listar (paginado) + quick-add
+
+**Tab Agenda:**
+- `GET /calendar?month=YYYY-MM` — agenda (Planner + ciclos + occurrences)
+- `GET /routine` — rutina semanal (bloques de tiempo, actual + siguiente)
+- `POST /events` · `PATCH /events/{planner}/complete` — crear/completar evento
+
+**Tab Comida:**
+- `GET /meals?start=YYYY-MM-DD&end=YYYY-MM-DD` — plan de comidas de la semana + meal types
+- `GET /meals/recipes` — todas las recetas del team
+
+**Tab Tareas:**
+- `GET /chores?done=today|all` — tareas del hogar (plan CHORES con `PlanItemResource`) + members
+- `PATCH /chores/{item}/toggle` — marcar hecha/deshacer (respeta recurrencia)
+- `POST /chores` — crear tarea (title, owner, recurrence)
+
+**Tab Dinero:**
 - `GET /budget?month=YYYY-MM` — grupos + categorías (`budgeted/activity/available`), `ready_to_assign`
 - `POST /budget/assign` — fijar el asignado del mes de una categoría
 - `POST /budget/move` — mover dinero entre categorías
-- `GET /calendar?month=YYYY-MM` — agenda (Planner + ciclos + occurrences)
-- `GET /routine` — rutina semanal
-- `POST /events` · `PATCH /events/{planner}/complete` — crear/completar evento
+- `GET /transactions` · `POST /transactions` — listar (paginado) + quick-add
 - `POST /transfers` — transferencia entre cuentas
 
 ### Aún NO expuesto (el web sí lo tiene; falta endpoint mobile)
@@ -423,7 +579,6 @@ Tipos de item: `budget_category`, `credit_card_payment`, `planned_transaction`.
 - **Transacciones: editar / borrar / recategorizar / verificar drafts / mark-as-paid** (solo crear/listar expuesto).
 - **Conciliación** — hub, detalle, ajustar, sync.
 - **Cuentas (escritura)** — crear/editar, link-bank, sync-emails, cerrar, import PDF/CSV.
-- **Tareas / chores** (`/housing/chores`) — listar + completar (backlog).
-- **Comida / meal planner** completo (backlog).
+- **Comida (escritura)** — crear receta, agregar al plan, shopping list (solo lectura expuesta).
 - **Integraciones** (Gmail/inbox/email-to-tasks), **metas / fondo de emergencia / watchlists**, **ajustes / perfiles / notificaciones**.
 - **Búsqueda de payees** (`GET /api/payees?search=`, backlog).
