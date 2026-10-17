@@ -42,6 +42,9 @@ export interface ICategory {
     budgeted: number;
 }
 export interface IAccount {
+    index?: number | null;
+    status?: string;
+    bank_code?: string | null;
     label(arg0: string, label: any): unknown | (string | number | boolean | void | import("vue").VNode<import("vue").RendererNode, import("vue").RendererElement, { [key: string]: any; }> | null | undefined) | import("vue").VNodeArrayChildren;
     credit_limit: number;
     credit_opened_at?: string | null;

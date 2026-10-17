@@ -149,6 +149,7 @@ Route::middleware(['auth:sanctum', 'verified'])->prefix('/api')->name('api.')->g
     Route::get('/accounts/{account}/unlinked-payments', [AccountApiController::class, 'unlinkedPayments']);
     Route::get('/accounts/{account}/multi-currency-balances', [AccountApiController::class, 'getMultiCurrencyBalances']);
 
+    Route::patch('/accounts/reorder', [AccountApiController::class, 'reorder'])->name('accounts.reorder');
     Route::apiResource('/accounts', AccountApiController::class);
     Route::apiResource('/categories', CategoryApiController::class);
 

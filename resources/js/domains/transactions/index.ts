@@ -2,6 +2,7 @@ import { router } from "@inertiajs/vue3"
 import axios from "axios"
 import { IAccount, ITransaction } from "./models"
 import { useTransactionStore } from "@/store/transactions"
+import { useAccountsStore } from "@/store/accounts.store"
 
 
 export * from "./formatters"
@@ -28,12 +29,7 @@ export const isCreditCard = (account: Pick<IAccount, 'credit_limit'>) => {
 };
 
 export const saveAccountsReorder = (items: IAccount[]) => {
-    const accounts = items?.reduce((savedItems, account) => {
-        savedItems[account.id] = account;
-        return savedItems;
-    }, {} as Record<number, IAccount>);
-
-    return axios.patch('/api/accounts/', { accounts });
+    return useAccountsStore().reorder(items.map(account => account.id));
 };
 
 type Numeric = number | string | null | undefined;

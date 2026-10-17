@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Domains\Transaction\Services\CreditCardReportService;
+use App\Http\Requests\ReorderAccountsRequest;
 use App\Models\Account;
 use App\Services\MultiCurrencyDisplayService;
 use Illuminate\Http\JsonResponse;
@@ -47,6 +48,29 @@ class AccountApiController extends BaseController
         Account::where('team_id', $request->user()->current_team_id)->whereIn('id', array_keys($accounts))->chunkById(100, function ($savedAccounts) use ($accounts) {
             foreach ($savedAccounts as $account) {
                 $account->update(Arr::except($accounts[$account->id], ['id', 'team_id', 'user_id']));
+            }
+        });
+
+        return response()->json(['success' => true]);
+    }
+
+    public function reorder(ReorderAccountsRequest $request): JsonResponse
+    {
+        $accountIds = $request->validated('account_ids');
+
+        (new Account)->getConnection()->transaction(function () use ($request, $accountIds): void {
+            $accounts = Account::query()
+                ->where('team_id', $request->user()->current_team_id)
+                ->whereIn('id', $accountIds)
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('id');
+
+            foreach ($accountIds as $index => $accountId) {
+                $account = $accounts->get($accountId);
+                $this->authorize('update', $account);
+                $account->forceFill(['index' => $index])->saveQuietly();
             }
         });
 

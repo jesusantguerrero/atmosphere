@@ -21,5 +21,24 @@ export const useAccountsStore = defineStore("accounts", () => {
         setAccounts(data);
     };
 
-    return { accounts, setAccounts, refresh };
+    const reorder = async (orderedIds: number[]): Promise<void> => {
+        const previous = accounts.value;
+        const selectedIds = new Set(orderedIds);
+        const byId = new Map(previous.map(account => [account.id, account]));
+        let position = 0;
+        const ordered = previous.map(account => selectedIds.has(account.id)
+            ? byId.get(orderedIds[position++])
+            : account);
+
+        setAccounts(ordered.map((account, index) => ({ ...account, index })));
+
+        try {
+            await axios.patch('/api/accounts/reorder', { account_ids: accounts.value.map(account => account.id) });
+        } catch (error) {
+            setAccounts(previous);
+            throw error;
+        }
+    };
+
+    return { accounts, setAccounts, refresh, reorder };
 });
