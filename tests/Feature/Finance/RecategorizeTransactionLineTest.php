@@ -67,6 +67,20 @@ class RecategorizeTransactionLineTest extends TestCase
         $this->assertSame($this->groceries->id, (int) $transaction->fresh()->category_id);
     }
 
+    public function test_register_exposes_the_editable_line_and_accepts_inline_json_changes(): void
+    {
+        [$transaction, $line] = $this->seedExpense($this->groceries, 450);
+
+        $this->actingAs($this->user)->getJson('/api/finance/transactions?filter[date]=2026-09-01~2026-09-30')
+            ->assertOk()
+            ->assertJsonFragment(['category_line_id' => $line->id, 'category_id' => $this->groceries->id]);
+
+        $this->patchJson("/finance/transaction-lines/{$line->id}/category", ['category_id' => $this->personal->id])
+            ->assertOk()->assertJsonPath('category_id', $this->personal->id);
+
+        $this->assertSame($this->personal->id, (int) $transaction->fresh()->category_id);
+    }
+
     public function test_it_rejects_a_category_from_another_team(): void
     {
         [, $line] = $this->seedExpense($this->groceries, 100);

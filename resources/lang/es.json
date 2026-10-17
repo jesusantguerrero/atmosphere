@@ -1213,5 +1213,8 @@
     "Difference to review": "Diferencia por revisar",
     "Budget total includes available categories plus money to assign. Differences can have several causes.": "El total suma lo disponible en categorías y el dinero por asignar. Una diferencia puede tener varias causas.",
     "Remaining to pay": "pendiente para pagar",
-    "Review uncategorized": "Ver sin categoría"
+    "Review uncategorized": "Ver sin categoría",
+    "Choose category": "Seleccionar categoría",
+    "Split transaction": "Transacción dividida",
+    "Could not save category. Try again.": "No se pudo guardar la categoría. Inténtalo de nuevo."
 }

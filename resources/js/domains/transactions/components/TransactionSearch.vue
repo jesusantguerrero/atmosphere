@@ -6,6 +6,9 @@ import TransactionsTable from "@/domains/transactions/components/TransactionsLis
 import { ITransaction } from "@/domains/transactions/models/transactions";
 
 import { fromDBToAllAccounts, transactionDBToTransaction } from "@/domains/transactions";
+import InlineTransactionCategory from './InlineTransactionCategory.vue';
+
+const emit = defineEmits(['categorized']);
 
 const props = defineProps({
   transactions: {
@@ -68,7 +71,13 @@ const parser = props.allAccounts ? fromDBToAllAccounts : transactionDBToTransact
       :parser="parser"
       @edit="handleEdit"
       @removed="removeTransaction"
-    />
+    >
+      <template #after-row="{ transaction }">
+        <div v-if="transaction.category_line_id" class="border-b border-body-1/10 px-4 pb-3">
+          <InlineTransactionCategory :key="`${transaction.id}-${transaction.category_id}`" :transaction="transaction" @saved="emit('categorized')" />
+        </div>
+      </template>
+    </TransactionsTable>
   </div>
 </template>
 
