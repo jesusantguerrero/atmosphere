@@ -6,9 +6,18 @@ use App\Domains\Budget\Http\Controllers\BudgetMatchAccountController;
 use App\Domains\Budget\Http\Controllers\BudgetMonthController;
 use App\Domains\Budget\Http\Controllers\BudgetTargetController;
 use App\Domains\Budget\Http\Controllers\GoalsController;
+use App\Http\Controllers\CategoryManagerController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
+    Route::controller(CategoryManagerController::class)->prefix('finance/category-manager')->name('category-manager.')->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::post('/', 'store')->name('store');
+        Route::patch('/{category}', 'update')->name('update');
+        Route::post('/{category}/preview', 'preview')->name('preview');
+        Route::post('/{category}/merge', 'merge')->name('merge');
+        Route::post('/merges/{merge}/undo', 'undo')->name('undo');
+    });
     Route::resource('/budgets', BudgetCategoryController::class);
     Route::patch('/budgets/{category}/default-role', [BudgetCategoryController::class, 'setDefaultRole'])->name('budget.set-default-role');
     Route::patch('/budgets/{category}/move-to-group/{group}', [BudgetCategoryController::class, 'moveToGroup'])->name('budget.move-to-group');
