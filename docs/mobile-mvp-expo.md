@@ -240,10 +240,12 @@ Request:
   "accounts": [
     { "id": 101, "name": "BHD Cuenta Corriente", "current_balance": 15230.55,
       "balance_type": "DEBIT",  "currency_code": "DOP", "detail_type": "bank",
-      "account_detail_type_id": 2, "credit_closing_day": null, "type": 1 },
+      "account_detail_type_id": 2, "credit_closing_day": null, "credit_limit": null,
+      "type": 1, "reconciliation_last": { "status": "completed", "amount": 15230.55 } },
     { "id": 1735, "name": "Qik Visa Clásica", "current_balance": -20056.92,
       "balance_type": "CREDIT", "currency_code": "DOP", "detail_type": "credit_card",
-      "account_detail_type_id": 6, "credit_closing_day": 25, "type": -1 }
+      "account_detail_type_id": 6, "credit_closing_day": 25, "credit_limit": 290000.00,
+      "type": -1, "reconciliation_last": null }
   ],
   "netWorth": { "assets": 1400000.00, "debts": -1034000.00, "net": 366000.00 },
   "nextPayments": [ /* items = /api/next-payments.data, ver §9 */ ],
@@ -253,6 +255,8 @@ Request:
 `balance_type` llega en **MAYÚSCULAS** (`DEBIT`=activo, `CREDIT`=pasivo). `type`: 1=activo, -1=pasivo.
 `detail_type` ∈ `bank|cash|cash_on_hand|savings|credit_card|property|loan` (la app agrupa por él; cae a `balance_type` si falta).
 `current_balance` viene de `$account->balance`. Las cuentas con `closed_at` quedan fuera. `net = assets + debts` (debts negativo).
+`credit_limit` (float|null): si `> 0`, la cuenta es tarjeta de crédito. **Crédito disponible = credit_limit + current_balance** (el saldo es negativo).
+`reconciliation_last` (`{status, amount}` | null): `status` ∈ `completed|pending`. Conciliada = `status === 'completed'` y `|amount − current_balance| < 0.01`.
 
 ### 3b. Hoy — `GET /api/mobile/today`  (Bearer)
 ```jsonc

@@ -74,7 +74,12 @@ class MobileController extends Controller
                 // bank | cash | cash_on_hand | savings | credit_card | property | loan — lets the app group accounts.
                 'detail_type' => $a->detailType?->name,
                 'credit_closing_day' => $a->credit_closing_day,
+                'credit_limit' => $a->credit_limit ? (float) $a->credit_limit : null,
                 'type' => $a->type,
+                'reconciliation_last' => $a->reconciliationLast ? [
+                    'status' => $a->reconciliationLast->status,
+                    'amount' => (float) $a->reconciliationLast->amount,
+                ] : null,
             ])
             ->values();
 
