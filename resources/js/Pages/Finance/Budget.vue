@@ -276,7 +276,9 @@ const budgetCsvExportUrl = computed(() => {
     :show-back-button="true"
   >
     <template #header>
-      <FinanceSectionNav />
+      <FinanceSectionNav>
+        <template #actions><LogerButton @click="router.visit(route('category-manager.index'))">{{ $t('Manage categories') }}</LogerButton></template>
+      </FinanceSectionNav>
     </template>
 
     <FinanceTemplate :accounts="accounts" :panel-size="panelSize" dense>
@@ -355,6 +357,12 @@ const budgetCsvExportUrl = computed(() => {
           </AtButton>
 
           <InfoHint :title="$t('Funded vs overspent')" :body="$t('funded_vs_overspent_hint')" />
+          <LogerButtonCircle
+            class="md:hidden"
+            :title="$t('Manage categories')"
+            :aria-label="$t('Manage categories')"
+            @click="router.visit(route('category-manager.index'))"
+          ><IMdiFolder /></LogerButtonCircle>
 
           <!-- Filter icon opens a popover with the Funded/Not-funded
                segmented control. Active-state dot appears on the icon
