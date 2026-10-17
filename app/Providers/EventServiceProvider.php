@@ -23,6 +23,7 @@ use App\Listeners\CreateTeamSettings;
 use App\Listeners\HandleTransactionCreated;
 use App\Listeners\LogForcedLogout;
 use App\Listeners\Menu\ShowInApp;
+use App\Listeners\NotifyAccountOverdraft;
 use App\Listeners\PushShoppingListUpdate;
 use App\Listeners\SyncCreditCardDueDates;
 use App\Listeners\TrashTeamSettings;
@@ -82,12 +83,14 @@ class EventServiceProvider extends ServiceProvider
             UpdateOpenReconciliations::class,
             UpdateBudgetAvailable::class,
             AutoLinkCreditCardPayment::class,
+            NotifyAccountOverdraft::class,
         ],
         TransactionUpdated::class => [
             CreateBudgetTransactionMovement::class,
             UpdateBudgetAvailable::class,
             UpdatePlannedTransactions::class,
             AutoLinkCreditCardPayment::class,
+            NotifyAccountOverdraft::class,
         ],
         TransactionDeleted::class => [
             CreateBudgetTransactionMovement::class,
