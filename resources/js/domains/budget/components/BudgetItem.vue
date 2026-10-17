@@ -303,11 +303,8 @@ const coverageClass = computed(() => {
     if (brecha.value <= 0) return 'bg-success';
     return coveragePct.value >= 80 ? 'bg-warning' : 'bg-error';
 });
-const brechaHref = computed(() => {
-    const start = format(pageState.dates.startDate, 'yyyy-MM-dd');
-    const end = format(pageState.dates.endDate, 'yyyy-MM-dd');
-    return `/finance/transactions?filter[uncategorized]=1&filter[account_id]=${props.item.account_id}&filter[date]=${start}~${end}`;
-});
+const brechaHref = computed(() =>
+    `/finance/transactions?filter[uncategorized]=1&filter[account_id]=${props.item.account_id}`);
 
 const onAssignBudget = () => {
     nextTick(() => {
@@ -448,7 +445,7 @@ const context = useAppContextStore();
             v-if="brecha > 0"
             :href="brechaHref"
             class="font-semibold text-error hover:underline tabular-nums"
-        >{{ formatMoney(brecha, card?.currency_code) }} {{ $t('Uncategorized') }} &rarr;</a>
+        >{{ formatMoney(brecha, card?.currency_code) }} {{ $t('Remaining to pay') }} · {{ $t('Review uncategorized') }} &rarr;</a>
         <span v-else class="font-semibold text-success">{{ $t('Ready to pay') }} &check;</span>
     </div>
     <div

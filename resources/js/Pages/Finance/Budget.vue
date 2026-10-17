@@ -55,6 +55,10 @@ const props = defineProps({
     type: Number,
     default: 0
   },
+  uncategorizedTotals: {
+    type: Array,
+    default: () => [],
+  },
   scheduledTotal: {
     type: Number,
     default: 0
@@ -305,8 +309,7 @@ const budgetCsvExportUrl = computed(() => {
         :accounts="accounts"
         :budgets="budgets"
         :ready-to-assign="readyToAssign"
-        :start-date="pageState.dates?.startDate"
-        :end-date="pageState.dates?.endDate"
+        :uncategorized-totals="uncategorizedTotals"
       />
 
       <!--

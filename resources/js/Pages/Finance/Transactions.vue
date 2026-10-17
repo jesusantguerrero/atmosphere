@@ -40,7 +40,8 @@ const props = withDefaults(defineProps<{
 
 // mobile
 const context = useAppContextStore();
-const showAllTransactions = ref(false);
+const isUncategorizedView = new URLSearchParams(location.search).get('filter[uncategorized]') === '1';
+const showAllTransactions = ref(isUncategorizedView);
 const showTransactionTable = computed(() => {
   return context.isMobile ? showAllTransactions.value : true;
 });
@@ -69,7 +70,7 @@ const {
      executeSearch,
      reset,
      hasFilters,
-} = useServerSearch(serverSearchOptions, { manual: false, defaultDates: true }, async (urlParams) => {
+} = useServerSearch(serverSearchOptions, { manual: false, defaultDates: !isUncategorizedView }, async (urlParams) => {
     if (isLoading.value) return;
     const url = `/api/finance/transactions?${urlParams}`;
     isLoading.value = true
@@ -155,7 +156,7 @@ watch(() => pageState?.filters, (filters) => {
     }
 }, { immediate: true })
 
-const monthName = computed(() => formatMonth(pageState.dates.startDate, "MMMM"))
+const monthName = computed(() => pageState.dates.startDate ? formatMonth(pageState.dates.startDate, "MMMM") : t("All dates"))
 
 const listData = computed(() => {
     return transactions.data;
@@ -214,11 +215,14 @@ const shiftMonth = (delta: number) => goToMonth(addMonths(periodStart(), delta))
 
 const goToCurrentMonth = () => goToMonth(new Date());
 
-const periodTimestamp = computed(() => periodStart().getTime());
+const periodTimestamp = computed(() => pageState.dates.startDate ? periodStart().getTime() : null);
 
 const onMonthPicked = (timestamp: number | null) => {
     if (timestamp) {
         goToMonth(new Date(timestamp));
+    } else if (isUncategorizedView) {
+        pageState.dates.startDate = null;
+        pageState.dates.endDate = null;
     }
 };
 
@@ -289,7 +293,8 @@ const isCurrentMonth = computed(() => isSameMonth(periodStart(), new Date()));
                     size="small"
                     class="w-32"
                     :value="periodTimestamp"
-                    :clearable="false"
+                    :placeholder="$t('All dates')"
+                    :clearable="isUncategorizedView"
                     @update:value="onMonthPicked"
                 />
 
