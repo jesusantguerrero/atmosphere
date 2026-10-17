@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Domains\Transaction\Models\Transaction;
+use App\Models\Account;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Insane\Journal\Models\Core\Payee;
@@ -106,7 +107,8 @@ class SearchTest extends TestCase
         $response = $this->actingAs($user)->getJson('/search?search=Farmacia');
 
         $response->assertOk();
-        $this->assertSame(['payees'], array_keys($response->json()));
+        $this->assertArrayNotHasKey('transactions', $response->json());
+        $response->assertJsonPath('payees.0.title', 'Farmacia Carol');
     }
 
     public function test_it_treats_wildcards_as_literal_text(): void
@@ -138,5 +140,32 @@ class SearchTest extends TestCase
     public function test_it_requires_authentication(): void
     {
         $this->getJson('/search?search=anything')->assertUnauthorized();
+    }
+
+    public function test_account_results_have_navigation_and_currency_data_and_stay_in_the_current_team(): void
+    {
+        [$user, $team] = $this->makeUser();
+        [$otherUser, $otherTeam] = $this->makeUser();
+        $account = Account::create([
+            'team_id' => $team->id,
+            'user_id' => $user->id,
+            'name' => 'QA search efectivo',
+            'currency_code' => 'DOP',
+        ]);
+        Account::create([
+            'team_id' => $otherTeam->id,
+            'user_id' => $otherUser->id,
+            'name' => 'QA search private',
+            'currency_code' => 'USD',
+        ]);
+
+        $this->actingAs($user)->getJson('/search?search=QA%20search')
+            ->assertOk()
+            ->assertJsonCount(1, 'accounts')
+            ->assertJsonPath('accounts.0.id', $account->id)
+            ->assertJsonPath('accounts.0.type', 'accounts')
+            ->assertJsonPath('accounts.0.title', 'QA search efectivo')
+            ->assertJsonPath('accounts.0.currency_code', 'DOP')
+            ->assertJsonPath('accounts.0.total', 0);
     }
 }
