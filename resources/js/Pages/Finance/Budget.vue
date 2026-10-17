@@ -243,7 +243,8 @@ onMounted(() => {
 })
 
 const readyToAssignBalance = computed(() => {
-    return readyToAssign.value.balance
+    const balance = Number(readyToAssign.value.balance) || 0;
+    return Math.abs(balance) < 0.005 ? 0 : balance;
 })
 
 const readyToAssignLeft = computed(() => {

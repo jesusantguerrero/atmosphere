@@ -17,6 +17,22 @@ const ts = require('typescript');
 const { parse, compileTemplate } = require('@vue/compiler-sfc');
 const vue = require('vue');
 const { renderToString } = require('@vue/server-renderer');
+const moneyScope={window:{logerAppSettings:{currency_code:'DOP'}},exports:{}};
+vm.createContext(moneyScope);
+vm.runInContext(ts.transpile(fs.readFileSync('resources/js/utils/formatMoney.ts','utf8'),{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020}),moneyScope);
+for(const amount of [-0,-1e-12,-0.004,0,0.004]) {
+ assert.equal(moneyScope.exports.formatMoney(amount),moneyScope.exports.formatMoney(0));
+}
+assert.ok(moneyScope.exports.formatMoney(-0.01).includes('-'));
+assert.equal(moneyScope.exports.formatMoney(-0.4,'JPY'),moneyScope.exports.formatMoney(0,'JPY'));
+const budgetPage=parse(fs.readFileSync('resources/js/Pages/Finance/Budget.vue','utf8')).descriptor;
+const balanceProps=vue.ref({balance:-1e-12});
+const balanceScope={computed:vue.computed,readyToAssign:balanceProps};
+vm.createContext(balanceScope);
+vm.runInContext(ts.transpile('const readyToAssignBalance ='+budgetPage.scriptSetup.content.split('const readyToAssignBalance =')[1].split('const readyToAssignLeft')[0]+'\n globalThis.balance=readyToAssignBalance;'),balanceScope);
+assert.equal(balanceScope.balance.value,0);
+balanceProps.value.balance=-0.01;
+assert.equal(balanceScope.balance.value,-0.01);
 const spanish=JSON.parse(fs.readFileSync('resources/lang/es.json','utf8'));
 for (const [filename,keys] of [['BudgetTargetForm.vue',['Set target','Cancel','Save']],['BudgetMatchForm.vue',['Set Account Match','Cancel','Save']]]) {
  const component=parse(fs.readFileSync('resources/js/domains/budget/components/'+filename,'utf8')).descriptor;
