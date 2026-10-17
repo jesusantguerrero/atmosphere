@@ -116,8 +116,8 @@ defineExpose({ selectAll, clearSelection });
 
     <div>
         <template v-if="transactionsParsed.length">
+            <template v-for="(transaction, index) in transactionsParsed" :key="transaction.id">
             <TransactionCard
-                v-for="(transaction, index) in transactionsParsed"
                 v-bind="transaction"
                 :mark-as-paid="allowMarkAsPaid"
                 :mark-as-approved="allowMarkAsApproved"
@@ -125,7 +125,6 @@ defineExpose({ selectAll, clearSelection });
                 :allow-select="allowSelect"
                 :allow-match="allowMatch"
                 :allow-edit="allowEdit"
-                :key="transaction.id"
                 :isSelected="isSelected(transaction)"
                 class="odd:bg-base-lvl-1 even:bg-base-lvl-2"
                 @selected="handleSelect(transaction, index, $event)"
@@ -134,6 +133,8 @@ defineExpose({ selectAll, clearSelection });
                 @removed="$emit('removed', transactions[index])"
                 @edit="$emit('edit', transactions[index])"
             />
+            <slot name="after-row" :transaction="transactions[index]" />
+            </template>
             <div class="flex items-center justify-between px-4 py-5 bg-base-lvl-1 text-body-1" v-if="showSum">
                 <div class="font-bold">Selected Items sum</div>
                 <div class="space-y-1 text-right">

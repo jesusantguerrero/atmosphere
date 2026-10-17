@@ -8,6 +8,7 @@ import CustomTable from "@/Components/atoms/CustomTable.vue";
 import { tableCols } from "@/domains/transactions";
 import formatMoney from "@/utils/formatMoney";
 import { ITransaction, TransactionConfig } from "@/domains/transactions/models";
+import InlineTransactionCategory from './InlineTransactionCategory.vue';
 
 const { t } = useI18n();
 
@@ -24,7 +25,7 @@ withDefaults(defineProps<{
     emptyText: 'No data found',
 });
 
-const emit = defineEmits(["removed", "edit", "approved", "duplicate", "sort"]);
+const emit = defineEmits(["removed", "edit", "approved", "duplicate", "sort", "categorized"]);
 
 const isTransferModalOpen = ref(false);
 
@@ -116,6 +117,11 @@ const getTransactionColor = (row: ITransaction) => {
     >
       <template v-if="$slots.empty" #empty>
         <slot name="empty" />
+      </template>
+
+      <template #description="{ scope: { row } }">
+        <p>{{ row.description }}</p>
+        <InlineTransactionCategory :key="`${row.id}-${row.category_id}`" :transaction="row" @saved="emit('categorized')" />
       </template>
 
       <template v-slot:total="{ scope: { row } }">

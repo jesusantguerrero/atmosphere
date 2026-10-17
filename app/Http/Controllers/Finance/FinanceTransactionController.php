@@ -20,6 +20,7 @@ use Dompdf\Dompdf;
 use Dompdf\Options as DompdfOptions;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Freesgen\Atmosphere\Http\Querify;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -93,6 +94,9 @@ class FinanceTransactionController extends InertiaController
                 transactions.total,
                 transactions.account_id,
                 transactions.counter_account_id,
+                transactions.category_id,
+                transactions.has_splits,
+                transactions.is_transfer,
                 transactions.payee_id,
                 categories.name category_name,
                 payees.name payee_name,
@@ -112,6 +116,10 @@ class FinanceTransactionController extends InertiaController
                 // showing in the Inbox/list while getDraftCount (Eloquent) reported
                 // 0, and re-deleting them did nothing (already gone). Exclude them.
                 ->whereNull('transactions.deleted_at');
+
+            $query->selectSub(TransactionLine::query()
+                ->select('id')->whereColumn('transaction_id', 'transactions.id')
+                ->where('anchor', 1)->orderBy('id')->limit(1), 'category_line_id');
 
             if (! empty($filters['uncategorized'])) {
                 $query->whereIn('transactions.id', Transaction::query()->uncategorizedExpenses()->select('transactions.id'));
@@ -322,8 +330,12 @@ class FinanceTransactionController extends InertiaController
         RecategorizeTransactionLineRequest $request,
         TransactionLine $line,
         RecategorizeTransactionLine $recategorizeTransactionLine
-    ): RedirectResponse {
+    ): JsonResponse|RedirectResponse {
         $recategorizeTransactionLine->handle($line, Category::findOrFail($request->validated('category_id')));
+
+        if ($request->expectsJson()) {
+            return response()->json(['category_id' => $line->fresh()->category_id]);
+        }
 
         return back();
     }

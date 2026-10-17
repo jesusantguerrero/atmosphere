@@ -100,6 +100,11 @@ const selectedAccountId = computed(() => {
   return pageState?.filters?.account_id;
 });
 
+const refreshCategories = async (): Promise<void> => {
+    const response = await axios.get(`/api/finance/transactions${location.search}`);
+    transactions.data = response.data;
+};
+
 provide("selectedAccountId", selectedAccountId.value);
 
 const isDraft = computed(() => {
@@ -357,6 +362,7 @@ const isCurrentMonth = computed(() => isSameMonth(periodStart(), new Date()));
             @removed="removeTransaction($event, ['verified'])"
             @duplicate="handleDuplicate"
             @edit="handleEdit"
+            @categorized="refreshCategories"
         >
             <template #empty>
                 <div class="mx-6 my-8 flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-base-lvl-2 px-6 py-12 text-center">

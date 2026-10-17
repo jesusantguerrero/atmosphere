@@ -17,6 +17,27 @@ const ts = require('typescript');
 const { parse, compileTemplate } = require('@vue/compiler-sfc');
 const vue = require('vue');
 const { renderToString } = require('@vue/server-renderer');
+for(const file of ['InlineTransactionCategory.vue','TransactionSearch.vue','TransactionsList.vue']) {
+ const component=parse(fs.readFileSync('resources/js/domains/transactions/components/'+file,'utf8')).descriptor;
+ assert.deepEqual(compileTemplate({source:component.template.content,filename:file,id:file}).errors,[]);
+}
+const inlineCategory=parse(fs.readFileSync('resources/js/domains/transactions/components/InlineTransactionCategory.vue','utf8')).descriptor;
+const requests=[],saved=[];
+const inlineScope={ref:vue.ref,inject:()=>[],defineProps:()=>({transaction:{category_line_id:123,category_id:1}}),defineEmits:()=>event=>saved.push(event),axios:{patch:async(url,data)=>{requests.push({url,data});}}};
+vm.createContext(inlineScope);
+vm.runInContext(ts.transpile(inlineCategory.scriptSetup.content.replace(/^import .*;\r?\n/gm,'')+'\n globalThis.result={save,selected,saving,error};'),inlineScope);
+(async()=>{
+ await inlineScope.result.save(2);
+ assert.equal(requests[0].url,'/finance/transaction-lines/123/category');
+ assert.equal(requests[0].data.category_id,2);
+ assert.equal(inlineScope.result.selected.value,2);
+ assert.equal(saved[0],'saved');
+ inlineScope.axios.patch=async()=>{throw new Error('Failed');};
+ await inlineScope.result.save(3);
+ assert.equal(inlineScope.result.selected.value,2);
+ assert.equal(inlineScope.result.error.value,true);
+ assert.equal(inlineScope.result.saving.value,false);
+})().catch(error=>{console.error(error);process.exitCode=1;});
 const moneyScope={window:{logerAppSettings:{currency_code:'DOP'}},exports:{}};
 vm.createContext(moneyScope);
 vm.runInContext(ts.transpile(fs.readFileSync('resources/js/utils/formatMoney.ts','utf8'),{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020}),moneyScope);
