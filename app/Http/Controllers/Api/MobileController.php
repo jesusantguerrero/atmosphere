@@ -904,8 +904,8 @@ class MobileController extends Controller
             $balance = $netWorthHistory->first(fn ($row) => $row->date_unit <= $monthEnd);
             $netWorthMonths[] = [
                 'month' => $cursor->format('Y-m-d'),
-                'assets' => (float) ($balance->assets ?? 0),
-                'debts' => (float) ($balance->debts ?? 0),
+                'assets' => (float) (string) ($balance->assets ?? 0),
+                'debts' => (float) (string) ($balance->debts ?? 0),
             ];
             $cursor->addMonth();
         }
@@ -920,17 +920,18 @@ class MobileController extends Controller
         }
 
         // Expense categories from incomeExpenses (already per-category with totals as arrays)
+        // Totals may be BigDecimal objects — cast through string first.
         $expenseCategories = collect($incomeExpenses['expenses'] ?? [])->map(fn ($row) => [
             'id' => $row['id'] ?? null,
             'name' => $row['name'] ?? 'Unknown',
-            'total' => (float) ($row['total'] ?? 0),
+            'total' => (float) (string) ($row['total'] ?? 0),
         ])->filter(fn ($c) => $c['total'] > 0)->sortByDesc('total')->values();
 
         // Income categories from incomeExpenses
         $incomeCategories = collect($incomeExpenses['incomes'] ?? [])->map(fn ($row) => [
             'id' => $row['id'] ?? null,
             'name' => $row['name'] ?? 'Unknown',
-            'total' => (float) ($row['total'] ?? 0),
+            'total' => (float) (string) ($row['total'] ?? 0),
         ])->filter(fn ($c) => $c['total'] > 0)->sortByDesc('total')->values();
 
         // Payee breakdowns (grouped by name; payee id not selected by the query)
@@ -938,7 +939,7 @@ class MobileController extends Controller
             ->groupBy('name')
             ->map(fn ($rows, $name) => [
                 'name' => $name,
-                'total' => (float) $rows->sum('total'),
+                'total' => (float) (string) $rows->sum('total'),
             ])
             ->values()->sortByDesc('total')->values();
 
@@ -946,13 +947,13 @@ class MobileController extends Controller
             ->groupBy('name')
             ->map(fn ($rows, $name) => [
                 'name' => $name,
-                'total' => (float) $rows->sum('total'),
+                'total' => (float) (string) $rows->sum('total'),
             ])
             ->values()->sortByDesc('total')->values();
 
         // Spending by account
         $expenseAccounts = TransactionService::getExpensesByAccountInPeriod($teamId, $startDate, $endDate)
-            ->map(fn ($r) => ['id' => $r->id, 'name' => $r->name, 'total' => (float) $r->total])
+            ->map(fn ($r) => ['id' => $r->id, 'name' => $r->name, 'total' => (float) (string) $r->total])
             ->sortByDesc('total')->values();
 
         return response()->json([
