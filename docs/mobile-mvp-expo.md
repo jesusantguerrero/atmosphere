@@ -88,10 +88,12 @@ Soporta 2FA (TOTP `code` o `recovery_code`) igual que el login web.
   "today":     [{ "kind": "planner"|"relationship", "id","name","subtitle","status","total"? }],
   "upcoming":  [{ "kind": "billing_cycle"|"utility"|"planner", "id","name","account_id","total",
                   "due_at": "YYYY-MM-DD", "days_until": int }],   // days_until < 0 = vencido
-  "meal":      [{ "id","meal_id","name","meal_type","is_liked","date","day_label" }]  // semana en curso
+  "meal":      [{ "id","meal_id","name","meal_type","is_liked","date","day_label" }],  // semana en curso
+  "pending_review_count": 3   // borradores en bandeja (badge); usa TransactionService::getDraftCount
 }
 ```
 `money.currency_code` puede venir `null`: usar la moneda de las cuentas de `/api/mobile/overview`.
+`pending_review_count` (int): cantidad de transacciones `status=draft` del team. Sirve para la insignia de la bandeja sin tener que traer las filas completas.
 
 **`POST /api/mobile/transactions`** — quick-add (reusa MultiCurrency@store):
 ```jsonc
@@ -277,7 +279,8 @@ Request:
   "meal": [
     { "id": 301, "meal_id": 18, "name": "Pollo al horno", "meal_type": "dinner",
       "is_liked": false, "date": "2026-10-10", "day_label": "Sábado" }
-  ]
+  ],
+  "pending_review_count": 3
 }
 ```
 Cada lista puede venir vacía. Valores de ejemplo; los nombres y tipos de campo son los reales.
@@ -576,6 +579,73 @@ Items cycle: pending → buy → skip → pending. `is_done` syncs with `state=b
 ```
 → `{ "id", "state": "buy", "is_done": true }`
 
+### 28. Aprobar borrador — `POST /api/mobile/transactions/{transaction_id}/approve`  (Bearer)
+Sin body. Cambia `status` de `draft` a `verified`.
+→ `{ "success": true }`
+Errores: `403` (otro team), `404` (no existe).
+
+### 29. Borrar transacción — `DELETE /api/mobile/transactions/{transaction_id}`  (Bearer)
+Elimina una transacción (borra entries de conciliación asociadas).
+→ `{ "success": true }`
+Errores: `403` (otro team / Gate), `404`.
+
+### 30. Borrar en lote — `POST /api/mobile/transactions/bulk-delete`  (Bearer)
+```jsonc
+{ "ids": [98231, 98232, 98240] }
+```
+→ `{ "success": true, "deleted": 3 }`
+Solo borra las que pertenecen al team del usuario. Las que no existen o son de otro team se ignoran silenciosamente.
+
+### 31. Ocurrencias — `GET /api/mobile/occurrences`  (Bearer)
+```jsonc
+{
+  "occurrences": [
+    { "id": 5, "name": "Lavar carro", "type": "utility",
+      "last_date": "2026-10-01", "avg_days_passed": 14.0,
+      "occurrence_count": 8, "days_since_last": 16, "is_overdue": true,
+      "days_until_next": -2 }
+  ]
+}
+```
+`is_overdue` = `days_since_last >= avg_days_passed + 3` (misma regla que la web).
+`days_until_next`: positivo = faltan días, negativo = vencida, `null` = sin datos.
+`type` ∈ `utility|relationship|null`. Solo activas (`is_active=true`) con `last_date`.
+
+### 32. Registrar ocurrencia — `POST /api/mobile/occurrences/{occurrence_id}/instances`  (Bearer)
+Sin body. Registra "pasó ahora" (fecha de hoy). Recalcula `avg_days_passed`, `last_date`, etc.
+→ `{ "success": true, "last_date": "2026-10-17", "occurrence_count": 9 }`
+Errores: `403` (otro team).
+
+### 33. Deshacer última ocurrencia — `DELETE /api/mobile/occurrences/{occurrence_id}/instances`  (Bearer)
+Sin body. Elimina la última entrada del log y recalcula estadísticas.
+→ `{ "success": true, "last_date": "2026-10-01", "occurrence_count": 8 }`
+Errores: `403` (otro team).
+
+### 34. Insights (Tendencias) — `GET /api/mobile/insights?months=6&end=2026-10&range=6M`  (Bearer)
+```jsonc
+{
+  "period": { "start": "2026-05-01", "end": "2026-10-31", "months": 6,
+              "anchor": "2026-10", "is_current": true },
+  "months": [
+    { "month": "2026-05-01", "income": 85000.0, "expense": 62000.0,
+      "assets": 1200000.0, "debts": -950000.0 }
+  ],
+  "expense_categories": [ { "id": 153, "name": "Comida", "total": 120000.0 } ],
+  "income_categories":  [ { "id": 200, "name": "Salario", "total": 510000.0 } ],
+  "expense_payees":     [ { "id": 79, "name": "Supermercado Nacional", "total": 45000.0 } ],
+  "income_payees":      [ { "id": 90, "name": "Empresa SA", "total": 510000.0 } ],
+  "expense_accounts":   [ { "id": 101, "name": "BHD Cuenta Corriente", "total": 180000.0 } ]
+}
+```
+Query params:
+- `months` (1–12, default 6): ventana de meses.
+- `end` (YYYY-MM, default mes actual): ancla final del periodo. No permite futuro.
+- `range` ∈ `1M|3M|6M|YTD|1Y`: si `YTD`, `months` se calcula automáticamente (ene..ancla).
+
+`months[].income/expense` = flujo mensual. `assets/debts` = patrimonio a cierre de mes (debts negativo).
+Categorías/payees/cuentas son totales del periodo completo, ordenados de mayor a menor.
+Misma fuente de datos que `FinanceTrendController::insights` (web), reformateado para mobile.
+
 ---
 
 ## Estado real de `/api/mobile/*` — qué ya está y qué falta
@@ -590,8 +660,11 @@ Items cycle: pending → buy → skip → pending. `is_done` syncs with `state=b
 
 **Tab Hoy:**
 - `POST /api/sanctum/token` — login (2FA)
-- `GET /today` — payload de la página Today (`money, attention, today, upcoming, meal`)
+- `GET /today` — payload de la página Today (`money, attention, today, upcoming, meal, pending_review_count`)
 - `GET /overview` — cuentas (agrupables por `detail_type`), `netWorth`, próximos pagos, tarjetas a pagar
+- `GET /occurrences` — lista de ocurrencias con `days_since_last`, `is_overdue`, `avg_days_passed`
+- `POST /occurrences/{id}/instances` — registrar "pasó ahora"
+- `DELETE /occurrences/{id}/instances` — deshacer última ocurrencia
 
 **Tab Agenda:**
 - `GET /calendar?month=YYYY-MM` — agenda (Planner + ciclos + occurrences)
@@ -616,12 +689,15 @@ Items cycle: pending → buy → skip → pending. `is_done` syncs with `state=b
 - `POST /budget/move` — mover dinero entre categorías
 - `GET /transactions` · `POST /transactions` — listar (paginado) + quick-add
 - `POST /transfers` — transferencia entre cuentas
+- `POST /transactions/{id}/approve` — aprobar borrador (draft → verified)
+- `DELETE /transactions/{id}` — borrar transacción
+- `POST /transactions/bulk-delete` — borrar en lote
+- `GET /insights?months=6&end=YYYY-MM` — tendencias (gasto/ingreso/patrimonio por mes, desglose por categoría/payee/cuenta)
 
 ### Aún NO expuesto (el web sí lo tiene; falta endpoint mobile)
-- **Trends / Insights** más allá de `netWorth` (ya en overview): gasto por categoría/cuenta, patrimonio histórico, relationships.
-- **Transacciones: editar / borrar / recategorizar / verificar drafts / mark-as-paid** (solo crear/listar expuesto).
+- **Transacciones: editar / recategorizar / mark-as-paid** (aprobar/borrar ya expuestos).
 - **Conciliación** — hub, detalle, ajustar, sync.
 - **Cuentas (escritura)** — crear/editar, link-bank, sync-emails, cerrar, import PDF/CSV.
-- **Comida (escritura)** — crear receta, agregar al plan, shopping list (solo lectura expuesta).
+- **Comida (escritura)** — crear receta, agregar al plan.
 - **Integraciones** (Gmail/inbox/email-to-tasks), **metas / fondo de emergencia / watchlists**, **ajustes / perfiles / notificaciones**.
 - **Búsqueda de payees** (`GET /api/payees?search=`, backlog).

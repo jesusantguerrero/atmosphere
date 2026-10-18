@@ -9,6 +9,9 @@ use App\Domains\Budget\Data\BudgetMovementData;
 use App\Domains\Budget\Data\BudgetReservedNames;
 use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Domains\Budget\Services\BudgetMovementService;
+use App\Domains\Housing\Actions\RegisterOccurrence;
+use App\Domains\Housing\Models\Occurrence;
+use App\Domains\Journal\Actions\TransactionDelete;
 use App\Domains\LogerProfile\Models\LogerProfile;
 use App\Domains\Meal\Models\Meal;
 use App\Domains\Meal\Models\MealType;
@@ -44,8 +47,10 @@ class MobileController extends Controller
     public function today(Request $request, TodayService $today): JsonResponse
     {
         $user = $request->user();
+        $payload = $today->buildPayload($user->current_team_id, $user->id);
+        $payload['pending_review_count'] = TransactionService::getDraftCount($user->current_team_id);
 
-        return response()->json($today->buildPayload($user->current_team_id, $user->id));
+        return response()->json($payload);
     }
 
     /**
@@ -716,6 +721,272 @@ class MobileController extends Controller
             'state' => $item->state,
             'is_done' => (bool) $item->is_done,
         ]);
+    }
+
+    // ─── Inbox (draft transactions) ──────────────────────────────
+
+    /**
+     * Approve a draft transaction, changing its status to verified.
+     */
+    public function approveTransaction(Request $request, Transaction $transaction): JsonResponse
+    {
+        abort_if((int) $transaction->team_id !== (int) $request->user()->current_team_id, 403);
+
+        $transaction->approve();
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Delete a single draft transaction.
+     */
+    public function deleteTransaction(Request $request, Transaction $transaction, TransactionDelete $transactionDelete): JsonResponse
+    {
+        abort_if((int) $transaction->team_id !== (int) $request->user()->current_team_id, 403);
+
+        $transactionDelete->delete($request->user(), $transaction);
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Bulk-delete draft transactions by ID.
+     */
+    public function bulkDeleteTransactions(Request $request, TransactionDelete $transactionDelete): JsonResponse
+    {
+        $data = $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'integer',
+        ]);
+
+        $user = $request->user();
+        $transactions = Transaction::whereIn('id', $data['ids'])
+            ->where('team_id', $user->current_team_id)
+            ->get();
+
+        foreach ($transactions as $transaction) {
+            $transactionDelete->delete($user, $transaction);
+        }
+
+        return response()->json(['success' => true, 'deleted' => $transactions->count()]);
+    }
+
+    // ─── Occurrences ──────────────────────────────────────────────
+
+    /**
+     * All occurrences for the team with computed cadence fields the app needs
+     * to render the "Explorar" carousel and overdue badges.
+     */
+    public function occurrences(Request $request): JsonResponse
+    {
+        $teamId = $request->user()->current_team_id;
+
+        $occurrences = Occurrence::byTeam($teamId)
+            ->where('is_active', true)
+            ->whereNotNull('last_date')
+            ->orderBy('name')
+            ->get()
+            ->map(function (Occurrence $o) {
+                $daysSinceLast = $o->last_date
+                    ? (int) $o->last_date->diffInDays(now(), true)
+                    : null;
+                $avg = (float) $o->avg_days_passed;
+                $isOverdue = $daysSinceLast !== null && $avg > 0 && $daysSinceLast >= $avg + Occurrence::DAYS_BEFORE;
+
+                return [
+                    'id' => $o->id,
+                    'name' => $o->name,
+                    'type' => $o->type,
+                    'last_date' => $o->last_date?->format('Y-m-d'),
+                    'avg_days_passed' => round($avg, 1),
+                    'occurrence_count' => (int) $o->occurrence_count,
+                    'days_since_last' => $daysSinceLast,
+                    'is_overdue' => $isOverdue,
+                    'days_until_next' => $o->daysUntilNext(),
+                ];
+            })
+            ->values();
+
+        return response()->json(['occurrences' => $occurrences]);
+    }
+
+    /**
+     * Record "happened now" for an occurrence.
+     */
+    public function addOccurrenceInstance(Request $request, Occurrence $occurrence, RegisterOccurrence $registerOccurrence): JsonResponse
+    {
+        abort_if((int) $occurrence->team_id !== (int) $request->user()->current_team_id, 403);
+
+        $registerOccurrence->add(
+            $occurrence->team_id,
+            $occurrence->name,
+            Carbon::now()->format('Y-m-d')
+        );
+
+        $occurrence->refresh();
+
+        return response()->json([
+            'success' => true,
+            'last_date' => $occurrence->last_date?->format('Y-m-d'),
+            'occurrence_count' => (int) $occurrence->occurrence_count,
+        ]);
+    }
+
+    /**
+     * Remove the last instance of an occurrence.
+     */
+    public function removeOccurrenceInstance(Request $request, Occurrence $occurrence, RegisterOccurrence $registerOccurrence): JsonResponse
+    {
+        abort_if((int) $occurrence->team_id !== (int) $request->user()->current_team_id, 403);
+
+        $registerOccurrence->remove($occurrence->id);
+
+        $occurrence->refresh();
+
+        return response()->json([
+            'success' => true,
+            'last_date' => $occurrence->last_date?->format('Y-m-d'),
+            'occurrence_count' => (int) $occurrence->occurrence_count,
+        ]);
+    }
+
+    // ─── Insights (Tendencias) ────────────────────────────────────
+
+    /**
+     * Financial insights/trends reshaped for the mobile Insights screen.
+     * Same calculation as FinanceTrendController::insights, different payload.
+     */
+    public function insights(Request $request): JsonResponse
+    {
+        $teamId = $request->user()->current_team_id;
+
+        $months = (int) $request->query('months', 6);
+        $months = ($months >= 1 && $months <= 12) ? $months : 6;
+        $range = $request->query('range');
+        $range = in_array($range, ['1M', '3M', '6M', 'YTD', '1Y'], true) ? $range : null;
+
+        $anchor = $this->resolveInsightsAnchor($request->query('end'));
+        if ($range === 'YTD') {
+            $months = $anchor->month;
+        }
+
+        $endDate = $anchor->copy()->endOfMonth()->format('Y-m-d');
+        $startDate = $anchor->copy()->startOfMonth()->subMonths($months - 1)->format('Y-m-d');
+
+        // Monthly income vs expenses
+        $incomeExpenses = TransactionService::getIncomeVsExpenses($teamId, max(0, $months - 1), 'month', 'expenses', $anchor);
+
+        // Build month-by-month flow
+        $monthlyFlow = [];
+        $cursor = Carbon::parse($startDate)->startOfMonth();
+        for ($i = 0; $i < $months; $i++) {
+            $month = $cursor->format('Y-m-d');
+            $expense = (float) collect($incomeExpenses['expenses'] ?? [])->sum(fn ($row) => (float) (string) ($row[$month] ?? 0));
+            $income = (float) collect($incomeExpenses['incomes'] ?? [])->sum(fn ($row) => (float) (string) ($row[$month] ?? 0));
+            $monthlyFlow[] = ['month' => $month, 'income' => $income, 'expense' => $expense];
+            $cursor->addMonth();
+        }
+
+        // Net worth (assets vs debts) by month
+        $netWorthHistory = collect(TransactionService::getNetWorth($teamId, $startDate, $endDate))->sortByDesc('date_unit');
+        $netWorthMonths = [];
+        $cursor = Carbon::parse($startDate)->startOfMonth();
+        for ($i = 0; $i < $months; $i++) {
+            $monthEnd = $cursor->copy()->endOfMonth()->format('Y-m-d');
+            $balance = $netWorthHistory->first(fn ($row) => $row->date_unit <= $monthEnd);
+            $netWorthMonths[] = [
+                'month' => $cursor->format('Y-m-d'),
+                'assets' => (float) ($balance->assets ?? 0),
+                'debts' => (float) ($balance->debts ?? 0),
+            ];
+            $cursor->addMonth();
+        }
+
+        // Merge flow + net worth into a single months array
+        $monthsData = [];
+        foreach ($monthlyFlow as $idx => $flow) {
+            $monthsData[] = array_merge($flow, [
+                'assets' => $netWorthMonths[$idx]['assets'] ?? 0,
+                'debts' => $netWorthMonths[$idx]['debts'] ?? 0,
+            ]);
+        }
+
+        // Category breakdowns
+        $groups = TransactionService::getCategoryExpensesGroup($teamId, $startDate, $endDate, null, null);
+
+        // Expense categories — flatten groups into a single list
+        $expenseCategories = collect($groups)->flatMap(function ($group) {
+            return collect($group['categories'] ?? [])->map(fn ($cat) => [
+                'id' => $cat['id'] ?? null,
+                'name' => $cat['name'] ?? 'Unknown',
+                'total' => (float) ($cat['total'] ?? 0),
+            ]);
+        })->filter(fn ($c) => $c['total'] > 0)->sortByDesc('total')->values();
+
+        // Income categories from incomeExpenses
+        $incomeCategories = collect($incomeExpenses['incomes'] ?? [])->map(fn ($row) => [
+            'id' => $row['id'] ?? null,
+            'name' => $row['name'] ?? 'Unknown',
+            'total' => (float) collect($row)->except(['id', 'name', 'account_id', 'currency_code'])->sum(fn ($v) => (float) (string) $v),
+        ])->filter(fn ($c) => $c['total'] > 0)->sortByDesc('total')->values();
+
+        // Payee breakdowns
+        $expensePayees = TransactionService::getExpensePayeesInPeriod($teamId, $startDate, $endDate)
+            ->groupBy('name')
+            ->map(fn ($rows, $name) => [
+                'id' => $rows->first()->id ?? null,
+                'name' => $name,
+                'total' => (float) $rows->sum('total'),
+            ])
+            ->values()->sortByDesc('total')->values();
+
+        $incomePayees = TransactionService::getTransactionsByPayeeInPeriod($teamId, $startDate, $endDate, Transaction::DIRECTION_DEBIT)
+            ->groupBy('name')
+            ->map(fn ($rows, $name) => [
+                'id' => $rows->first()->id ?? null,
+                'name' => $name,
+                'total' => (float) $rows->sum('total'),
+            ])
+            ->values()->sortByDesc('total')->values();
+
+        // Spending by account
+        $expenseAccounts = TransactionService::getExpensesByAccountInPeriod($teamId, $startDate, $endDate)
+            ->map(fn ($r) => ['id' => $r->id, 'name' => $r->name, 'total' => (float) $r->total])
+            ->sortByDesc('total')->values();
+
+        return response()->json([
+            'period' => [
+                'start' => $startDate,
+                'end' => $endDate,
+                'months' => $months,
+                'anchor' => $anchor->format('Y-m'),
+                'is_current' => $anchor->isSameMonth(Carbon::now()),
+            ],
+            'months' => $monthsData,
+            'expense_categories' => $expenseCategories,
+            'income_categories' => $incomeCategories,
+            'expense_payees' => $expensePayees,
+            'income_payees' => $incomePayees,
+            'expense_accounts' => $expenseAccounts,
+        ]);
+    }
+
+    // ─── Helpers ──────────────────────────────────────────────────
+
+    private function resolveInsightsAnchor(?string $end): Carbon
+    {
+        $now = Carbon::now()->startOfMonth();
+        if (! $end || ! preg_match('/^\d{4}-\d{2}$/', $end)) {
+            return $now;
+        }
+
+        try {
+            $anchor = Carbon::createFromFormat('Y-m-d', $end.'-01')->startOfMonth();
+        } catch (\Throwable) {
+            return $now;
+        }
+
+        return $anchor->greaterThan($now) ? $now : $anchor;
     }
 
     private function toMinutes(string $hhmm): int

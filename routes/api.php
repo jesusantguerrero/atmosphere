@@ -71,6 +71,19 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
     Route::get('/shopping', [MobileController::class, 'shoppingList'])->name('shopping.index');
     Route::post('/shopping/{plan}/items', [MobileController::class, 'addShoppingItem'])->name('shopping.items.add');
     Route::post('/shopping/{plan}/items/{item}/cycle', [MobileController::class, 'cycleShoppingItem'])->name('shopping.items.cycle');
+
+    // Inbox (draft transactions)
+    Route::post('/transactions/{transaction}/approve', [MobileController::class, 'approveTransaction'])->name('transactions.approve');
+    Route::delete('/transactions/{transaction}', [MobileController::class, 'deleteTransaction'])->name('transactions.delete');
+    Route::post('/transactions/bulk-delete', [MobileController::class, 'bulkDeleteTransactions'])->name('transactions.bulk-delete');
+
+    // Occurrences
+    Route::get('/occurrences', [MobileController::class, 'occurrences'])->name('occurrences.index');
+    Route::post('/occurrences/{occurrence}/instances', [MobileController::class, 'addOccurrenceInstance'])->name('occurrences.instances.add');
+    Route::delete('/occurrences/{occurrence}/instances', [MobileController::class, 'removeOccurrenceInstance'])->name('occurrences.instances.remove');
+
+    // Insights (Tendencias)
+    Route::get('/insights', [MobileController::class, 'insights'])->name('insights');
 });
 
 Route::post('/sanctum/token', [ApiLoginController::class, 'login']);
