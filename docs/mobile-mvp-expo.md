@@ -84,7 +84,7 @@ Soporta 2FA (TOTP `code` o `recovery_code`) igual que el login web.
 {
   "money":     { "today_spent": float, "daily_remaining": float, "month_remaining": float,
                  "days_in_month_left": int, "currency_code": string|null },
-  "attention": [{ "id","message","cta","link" }],          // alertas de watchlist sin leer (mes actual)
+  "attention": [{ "id","type","message","cta",... }],       // alertas watchlist + metas sub-fondeadas (≤7 días)
   "today":     [{ "kind": "planner"|"relationship", "id","name","subtitle","status","total"? }],
   "upcoming":  [{ "kind": "billing_cycle"|"utility"|"planner", "id","name","account_id","total",
                   "due_at": "YYYY-MM-DD", "days_until": int }],   // days_until < 0 = vencido
@@ -266,7 +266,9 @@ Request:
   "money": { "today_spent": 1850.0, "daily_remaining": 2410.5, "month_remaining": 62673.0,
              "days_in_month_left": 26, "currency_code": null },
   "attention": [
-    { "id": "9f1c…", "message": "Comida alcanzó el 90% del presupuesto", "cta": "Ver", "link": "/budgets" }
+    { "id": "9f1c…", "type": "watchlist_threshold", "message": "Comida alcanzó el 90% del presupuesto", "cta": "Ver", "link": "/budgets" },
+    { "id": "target-1040", "type": "target_underfunded", "message": "Loan vehicle 27th: faltan 11,956.77 antes del 27 Oct",
+      "cta": "Asignar", "category_id": 1040, "needed": 11956.77, "due_date": "2026-10-27" }
   ],
   "today": [
     { "kind": "planner", "id": "planner-12", "name": "Pagar internet", "subtitle": null,
@@ -411,9 +413,11 @@ Tipos de item: `budget_category`, `credit_card_payment`, `planned_transaction`.
     { "id": 10, "name": "Gastos del hogar", "budgeted": 35000.0, "activity": -18500.0, "available": 16500.0,
       "children": [
         { "id": 153, "name": "Comida", "budgeted": 20000.0, "activity": -12000.0, "available": 8000.0,
-          "left_from_last_month": 0.0, "funded_spending": 0.0, "payments": 0.0, "has_target": true },
+          "left_from_last_month": 0.0, "funded_spending": 0.0, "payments": 0.0, "has_target": true,
+          "target": { "amount": 20000.0, "needed": 12000.0, "due_date": "2026-10-15", "frequency": "MONTHLY", "target_type": "spending" } },
         { "id": 154, "name": "Alquiler", "budgeted": 15000.0, "activity": -6500.0, "available": 8500.0,
-          "left_from_last_month": 0.0, "funded_spending": 0.0, "payments": 0.0, "has_target": false }
+          "left_from_last_month": 0.0, "funded_spending": 0.0, "payments": 0.0, "has_target": false,
+          "target": null }
       ] }
   ]
 }

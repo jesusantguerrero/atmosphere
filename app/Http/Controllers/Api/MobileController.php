@@ -167,6 +167,32 @@ class MobileController extends Controller
                         $data = [];
                     }
 
+                    $target = null;
+                    if ($cat->budget) {
+                        $bt = $cat->budget;
+                        $available = (float) ($data['available'] ?? 0);
+                        $targetAmount = (float) $bt->amount;
+                        $needed = max(0, $targetAmount - $available);
+
+                        // Build the due date for the requested month from frequency_month_date.
+                        $dueDate = null;
+                        if ($bt->frequency === 'monthly' && $bt->frequency_month_date) {
+                            $monthCarbon = \Carbon\Carbon::parse($month);
+                            $day = min((int) $bt->frequency_month_date, $monthCarbon->daysInMonth);
+                            $dueDate = $monthCarbon->copy()->day($day)->format('Y-m-d');
+                        } elseif ($bt->frequency_date) {
+                            $dueDate = \Carbon\Carbon::parse($bt->frequency_date)->format('Y-m-d');
+                        }
+
+                        $target = [
+                            'amount' => $targetAmount,
+                            'needed' => round($needed, 2),
+                            'due_date' => $dueDate,
+                            'frequency' => strtoupper($bt->frequency ?? 'MONTHLY'),
+                            'target_type' => $bt->target_type,
+                        ];
+                    }
+
                     return [
                         'id' => $cat->id,
                         'name' => $cat->name,
@@ -177,6 +203,7 @@ class MobileController extends Controller
                         'funded_spending' => (float) ($data['funded_spending'] ?? 0),
                         'payments' => (float) ($data['payments'] ?? 0),
                         'has_target' => $cat->budget !== null,
+                        'target' => $target,
                     ];
                 });
 
