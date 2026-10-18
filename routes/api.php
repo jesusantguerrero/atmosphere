@@ -73,8 +73,15 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
 
     // Shopping list
     Route::get('/shopping', [MobileController::class, 'shoppingList'])->name('shopping.index');
+    Route::post('/shopping/{plan}/stages', [MobileController::class, 'addShoppingStage'])->name('shopping.stages.add');
+    Route::patch('/shopping/{plan}/stages/{stage}', [MobileController::class, 'updateShoppingStage'])->name('shopping.stages.update');
+    Route::delete('/shopping/{plan}/stages/{stage}', [MobileController::class, 'deleteShoppingStage'])->name('shopping.stages.delete');
     Route::post('/shopping/{plan}/items', [MobileController::class, 'addShoppingItem'])->name('shopping.items.add');
+    Route::patch('/shopping/{plan}/items/{item}', [MobileController::class, 'updateShoppingItem'])->name('shopping.items.update');
+    Route::delete('/shopping/{plan}/items/{item}', [MobileController::class, 'deleteShoppingItem'])->name('shopping.items.delete');
     Route::post('/shopping/{plan}/items/{item}/cycle', [MobileController::class, 'cycleShoppingItem'])->name('shopping.items.cycle');
+    Route::post('/shopping/{plan}/reset', [MobileController::class, 'resetShoppingList'])->name('shopping.reset');
+    Route::post('/shopping/{plan}/check-all', [MobileController::class, 'checkAllShoppingItems'])->name('shopping.check-all');
 
     // Inbox (draft transactions)
     Route::post('/transactions/{transaction}/approve', [MobileController::class, 'approveTransaction'])->name('transactions.approve');
