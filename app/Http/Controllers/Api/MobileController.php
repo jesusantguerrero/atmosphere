@@ -36,6 +36,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use Laravel\Jetstream\Contracts\DeletesUsers;
 use Modules\Plan\Entities\Plan;
 use Modules\Plan\Entities\PlanItem;
@@ -683,6 +684,7 @@ class MobileController extends Controller
             'plan' => [
                 'id' => $plan->id,
                 'name' => $plan->name,
+                'share_url' => $plan->share_token ? route('shared.list', $plan->share_token) : null,
                 'stages' => $plan->stages->map(fn ($stage) => [
                     'id' => $stage->id,
                     'name' => $stage->name,
@@ -884,6 +886,37 @@ class MobileController extends Controller
             ]);
 
         return response()->json(['checked' => true]);
+    }
+
+    /**
+     * Enable sharing for a shopping list (idempotent — reuses existing token).
+     */
+    public function shareShoppingList(Request $request, Plan $plan): JsonResponse
+    {
+        abort_if((int) $plan->team_id !== (int) $request->user()->current_team_id, 403);
+
+        if (! $plan->share_token) {
+            $plan->share_token = (string) Str::uuid();
+            $plan->save();
+        }
+
+        return response()->json([
+            'shared' => true,
+            'url' => route('shared.list', $plan->share_token),
+        ]);
+    }
+
+    /**
+     * Disable sharing for a shopping list.
+     */
+    public function unshareShoppingList(Request $request, Plan $plan): JsonResponse
+    {
+        abort_if((int) $plan->team_id !== (int) $request->user()->current_team_id, 403);
+
+        $plan->share_token = null;
+        $plan->save();
+
+        return response()->json(['shared' => false]);
     }
 
     // ─── Inbox (draft transactions) ──────────────────────────────
