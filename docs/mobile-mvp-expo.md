@@ -551,7 +551,7 @@ Todas las recetas del team. `is_liked` para filtrar favoritas client-side.
 ```jsonc
 {
   "plan": {
-    "id": 7, "name": "Shopping List",
+    "id": 7, "name": "Shopping List", "share_url": "https://loger.app/shared/list/abc-uuid" | null,
     "stages": [
       { "id": 15, "name": "Frutas",
         "items": [
@@ -618,6 +618,17 @@ All items → `pending` / `is_done=false`. → `{ "reset": true }`
 
 **Check all:** `POST /api/mobile/shopping/{plan_id}/check-all` (Bearer)
 All `pending` items → `buy` / `is_done=true`. → `{ "checked": true }`
+
+### 27e. Compartir lista
+
+**Activar sharing:** `POST /api/mobile/shopping/{plan_id}/share` (Bearer)
+Idempotente — si ya tiene token, devuelve la misma URL.
+→ `{ "shared": true, "url": "https://loger.app/shared/list/uuid" }`
+
+**Desactivar sharing:** `DELETE /api/mobile/shopping/{plan_id}/share` (Bearer)
+→ `{ "shared": false }`
+
+`GET /shopping` incluye `share_url` en el plan activo (o `null` si no está compartida).
 
 ### 28. Aprobar borrador — `POST /api/mobile/transactions/{transaction_id}/approve`  (Bearer)
 Sin body. Cambia `status` de `draft` a `verified`.
