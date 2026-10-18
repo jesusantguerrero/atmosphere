@@ -39,4 +39,20 @@ return [
         'rest_api_key' => env('ONESIGNAL_REST_API_KEY'),
     ],
 
+    'google_auth' => [
+        'client_ids' => array_filter([
+            env('GOOGLE_AUTH_WEB_CLIENT_ID'),
+            env('GOOGLE_AUTH_ANDROID_CLIENT_ID'),
+            env('GOOGLE_AUTH_IOS_CLIENT_ID'),
+        ]),
+    ],
+
+    'apple_auth' => [
+        'bundle_id' => env('APPLE_AUTH_BUNDLE_ID', 'com.neatlancer.neathome'),
+    ],
+
+    'inbound_email' => [
+        'domain' => env('INBOUND_EMAIL_DOMAIN', 'parse.loger.app'),
+    ],
+
 ];

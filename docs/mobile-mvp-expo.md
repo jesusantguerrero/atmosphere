@@ -88,10 +88,12 @@ Soporta 2FA (TOTP `code` o `recovery_code`) igual que el login web.
   "today":     [{ "kind": "planner"|"relationship", "id","name","subtitle","status","total"? }],
   "upcoming":  [{ "kind": "billing_cycle"|"utility"|"planner", "id","name","account_id","total",
                   "due_at": "YYYY-MM-DD", "days_until": int }],   // days_until < 0 = vencido
-  "meal":      [{ "id","meal_id","name","meal_type","is_liked","date","day_label" }]  // semana en curso
+  "meal":      [{ "id","meal_id","name","meal_type","is_liked","date","day_label" }],  // semana en curso
+  "pending_review_count": 3   // borradores en bandeja (badge); usa TransactionService::getDraftCount
 }
 ```
 `money.currency_code` puede venir `null`: usar la moneda de las cuentas de `/api/mobile/overview`.
+`pending_review_count` (int): cantidad de transacciones `status=draft` del team. Sirve para la insignia de la bandeja sin tener que traer las filas completas.
 
 **`POST /api/mobile/transactions`** — quick-add (reusa MultiCurrency@store):
 ```jsonc
@@ -277,7 +279,8 @@ Request:
   "meal": [
     { "id": 301, "meal_id": 18, "name": "Pollo al horno", "meal_type": "dinner",
       "is_liked": false, "date": "2026-10-10", "day_label": "Sábado" }
-  ]
+  ],
+  "pending_review_count": 3
 }
 ```
 Cada lista puede venir vacía. Valores de ejemplo; los nombres y tipos de campo son los reales.
@@ -576,6 +579,124 @@ Items cycle: pending → buy → skip → pending. `is_done` syncs with `state=b
 ```
 → `{ "id", "state": "buy", "is_done": true }`
 
+### 28. Aprobar borrador — `POST /api/mobile/transactions/{transaction_id}/approve`  (Bearer)
+Sin body. Cambia `status` de `draft` a `verified`.
+→ `{ "success": true }`
+Errores: `403` (otro team), `404` (no existe).
+
+### 29. Borrar transacción — `DELETE /api/mobile/transactions/{transaction_id}`  (Bearer)
+Elimina una transacción (borra entries de conciliación asociadas).
+→ `{ "success": true }`
+Errores: `403` (otro team / Gate), `404`.
+
+### 30. Borrar en lote — `POST /api/mobile/transactions/bulk-delete`  (Bearer)
+```jsonc
+{ "ids": [98231, 98232, 98240] }
+```
+→ `{ "success": true, "deleted": 3 }`
+Solo borra las que pertenecen al team del usuario. Las que no existen o son de otro team se ignoran silenciosamente.
+
+### 31. Ocurrencias — `GET /api/mobile/occurrences`  (Bearer)
+```jsonc
+{
+  "occurrences": [
+    { "id": 5, "name": "Lavar carro", "type": "utility",
+      "last_date": "2026-10-01", "avg_days_passed": 14.0,
+      "occurrence_count": 8, "days_since_last": 16, "is_overdue": true,
+      "days_until_next": -2 }
+  ]
+}
+```
+`is_overdue` = `days_since_last >= avg_days_passed + 3` (misma regla que la web).
+`days_until_next`: positivo = faltan días, negativo = vencida, `null` = sin datos.
+`type` ∈ `utility|relationship|null`. Solo activas (`is_active=true`) con `last_date`.
+
+### 32. Registrar ocurrencia — `POST /api/mobile/occurrences/{occurrence_id}/instances`  (Bearer)
+Sin body. Registra "pasó ahora" (fecha de hoy). Recalcula `avg_days_passed`, `last_date`, etc.
+→ `{ "success": true, "last_date": "2026-10-17", "occurrence_count": 9 }`
+Errores: `403` (otro team).
+
+### 33. Deshacer última ocurrencia — `DELETE /api/mobile/occurrences/{occurrence_id}/instances`  (Bearer)
+Sin body. Elimina la última entrada del log y recalcula estadísticas.
+→ `{ "success": true, "last_date": "2026-10-01", "occurrence_count": 8 }`
+Errores: `403` (otro team).
+
+### 34. Insights (Tendencias) — `GET /api/mobile/insights?months=6&end=2026-10&range=6M`  (Bearer)
+```jsonc
+{
+  "period": { "start": "2026-05-01", "end": "2026-10-31", "months": 6,
+              "anchor": "2026-10", "is_current": true },
+  "months": [
+    { "month": "2026-05-01", "income": 85000.0, "expense": 62000.0,
+      "assets": 1200000.0, "debts": -950000.0 }
+  ],
+  "expense_categories": [ { "id": 153, "name": "Comida", "total": 120000.0 } ],
+  "income_categories":  [ { "id": 200, "name": "Salario", "total": 510000.0 } ],
+  "expense_payees":     [ { "id": 79, "name": "Supermercado Nacional", "total": 45000.0 } ],
+  "income_payees":      [ { "id": 90, "name": "Empresa SA", "total": 510000.0 } ],
+  "expense_accounts":   [ { "id": 101, "name": "BHD Cuenta Corriente", "total": 180000.0 } ]
+}
+```
+Query params:
+- `months` (1–12, default 6): ventana de meses.
+- `end` (YYYY-MM, default mes actual): ancla final del periodo. No permite futuro.
+- `range` ∈ `1M|3M|6M|YTD|1Y`: si `YTD`, `months` se calcula automáticamente (ene..ancla).
+
+`months[].income/expense` = flujo mensual. `assets/debts` = patrimonio a cierre de mes (debts negativo).
+Categorías/payees/cuentas son totales del periodo completo, ordenados de mayor a menor.
+Misma fuente de datos que `FinanceTrendController::insights` (web), reformateado para mobile.
+
+### 35. Borrar cuenta — `DELETE /api/mobile/account`  (Bearer)
+```jsonc
+{ "password": "••••••" }   // requerido solo si el usuario tiene contraseña (no social-only)
+```
+Borra al usuario, sus tokens, foto de perfil, y — si es el único miembro — sus equipos y todos los datos (cuentas, transacciones, presupuesto, etc.). Usa la misma acción que la web (`DeleteUser` + `DeleteTeam`).
+→ `{ "success": true }`
+Errores:
+- `422 { password: ["incorrect"] }` — contraseña incorrecta.
+- `422 { message: "You own a team with other members…" }` — debe transferir el equipo primero.
+
+### 36. Login con Google — `POST /api/mobile/auth/google`  (sin auth)
+```jsonc
+{ "id_token": "<Google id_token>", "device_name": "jesus-iphone-15", "name": "Jesus" }
+```
+Verifica el `id_token` contra `oauth2.googleapis.com/tokeninfo`. Vincula por `email` a un usuario existente o crea uno nuevo (con equipo personal). `name` es opcional (solo para registro nuevo).
+→ `"3|AbCdEf0123456789plainTextTokenHere"` (string plano, igual que `/api/sanctum/token`)
+Errores: `401` (token inválido).
+Config requerida: `GOOGLE_AUTH_WEB_CLIENT_ID`, `GOOGLE_AUTH_ANDROID_CLIENT_ID`, `GOOGLE_AUTH_IOS_CLIENT_ID` en `.env`.
+
+### 37. Login con Apple — `POST /api/mobile/auth/apple`  (sin auth)
+```jsonc
+{ "id_token": "<Apple id_token>", "device_name": "jesus-iphone-15", "name": "Jesus" }
+```
+Verifica el JWT contra Apple JWKS (`appleid.apple.com/auth/keys`). Vincula por `apple_id` (sub) o `email` a usuario existente, o crea uno nuevo. Apple solo envía email la primera vez; puede ser relay privado.
+→ `"3|AbCdEf0123456789plainTextTokenHere"` (string plano)
+Errores: `401` (token inválido), `422` (email requerido en primer login).
+Config requerida: `APPLE_AUTH_BUNDLE_ID` en `.env` (default: `com.neatlancer.neathome`).
+Migración: `google_id` y `apple_id` añadidos a tabla `users` (`2026_10_18_001509`).
+
+### 38. Share-to-app (parsear email bancario) — `POST /api/mobile/parse-email`  (Bearer)
+```jsonc
+{ "from": "alertas@bhd.com.do", "subject": "Alerta de transacción", "body": "<html>...</html>" }
+```
+El usuario comparte un email bancario desde la bandeja del teléfono a la app. El backend detecta el banco (BHD, APAP, BSC, Qik) y parsea el email con los mismos parsers que usa el sync de Gmail. Si lo reconoce, crea una transacción borrador.
+→ `{ "parsed": true, "transaction": { "id": 123, "date": "2026-10-17", "payee": "Supermercado Nacional", "amount": 1500.00, "currency_code": "DOP", "description": "Visa Gold BHD", "status": "draft" } }`
+Si el email no es reconocido: `{ "parsed": false, "message": "Could not recognize the bank email format." }`
+
+### 39. Dirección de reenvío de emails — `GET /api/mobile/inbound-email/address`  (Bearer)
+Sin body. Devuelve la dirección única del usuario para configurar reenvío automático de emails bancarios.
+→ `{ "address": "txns-42-a1b2c3d4@parse.loger.app" }`
+El usuario añade esta dirección como regla de reenvío en Gmail/Outlook. Los emails reenviados llegan al webhook §40.
+Config requerida: `INBOUND_EMAIL_DOMAIN` en `.env` (default: `parse.loger.app`).
+
+### 40. Webhook de email reenviado — `POST /api/mobile/inbound-email`  (sin auth — usuario en recipient)
+Endpoint público que recibe emails de Mailgun/Postmark inbound routing. El usuario se resuelve del recipient (`txns-{userId}-{hmac}@domain`). Acepta los campos estándar de Mailgun:
+```jsonc
+{ "from": "alertas@bhd.com.do", "recipient": "txns-42-a1b2c3d4@parse.loger.app", "subject": "...", "body-html": "<html>..." }
+```
+Mismo pipeline de parsing que §38. → `{ "parsed": true, "transaction": {...} }` o `{ "parsed": false, ... }`.
+Errores: `404` (recipient desconocido), `422` (faltan from o body).
+
 ---
 
 ## Estado real de `/api/mobile/*` — qué ya está y qué falta
@@ -588,10 +709,18 @@ Items cycle: pending → buy → skip → pending. `is_done` syncs with `state=b
 
 ### Ya expuesto en `/api/mobile/*` (la app ya lo consume)
 
-**Tab Hoy:**
+**Auth:**
 - `POST /api/sanctum/token` — login (2FA)
-- `GET /today` — payload de la página Today (`money, attention, today, upcoming, meal`)
+- `POST /auth/google` — login/registro con Google (sin auth, devuelve token)
+- `POST /auth/apple` — login/registro con Apple (sin auth, devuelve token)
+- `DELETE /account` — borrar cuenta permanentemente (destructivo, con confirmación de password)
+
+**Tab Hoy:**
+- `GET /today` — payload de la página Today (`money, attention, today, upcoming, meal, pending_review_count`)
 - `GET /overview` — cuentas (agrupables por `detail_type`), `netWorth`, próximos pagos, tarjetas a pagar
+- `GET /occurrences` — lista de ocurrencias con `days_since_last`, `is_overdue`, `avg_days_passed`
+- `POST /occurrences/{id}/instances` — registrar "pasó ahora"
+- `DELETE /occurrences/{id}/instances` — deshacer última ocurrencia
 
 **Tab Agenda:**
 - `GET /calendar?month=YYYY-MM` — agenda (Planner + ciclos + occurrences)
@@ -616,12 +745,20 @@ Items cycle: pending → buy → skip → pending. `is_done` syncs with `state=b
 - `POST /budget/move` — mover dinero entre categorías
 - `GET /transactions` · `POST /transactions` — listar (paginado) + quick-add
 - `POST /transfers` — transferencia entre cuentas
+- `POST /transactions/{id}/approve` — aprobar borrador (draft → verified)
+- `DELETE /transactions/{id}` — borrar transacción
+- `POST /transactions/bulk-delete` — borrar en lote
+- `GET /insights?months=6&end=YYYY-MM` — tendencias (gasto/ingreso/patrimonio por mes, desglose por categoría/payee/cuenta)
 
 ### Aún NO expuesto (el web sí lo tiene; falta endpoint mobile)
-- **Trends / Insights** más allá de `netWorth` (ya en overview): gasto por categoría/cuenta, patrimonio histórico, relationships.
-- **Transacciones: editar / borrar / recategorizar / verificar drafts / mark-as-paid** (solo crear/listar expuesto).
+- **Transacciones: editar / recategorizar / mark-as-paid** (aprobar/borrar ya expuestos).
 - **Conciliación** — hub, detalle, ajustar, sync.
 - **Cuentas (escritura)** — crear/editar, link-bank, sync-emails, cerrar, import PDF/CSV.
-- **Comida (escritura)** — crear receta, agregar al plan, shopping list (solo lectura expuesta).
-- **Integraciones** (Gmail/inbox/email-to-tasks), **metas / fondo de emergencia / watchlists**, **ajustes / perfiles / notificaciones**.
+- **Comida (escritura)** — crear receta, agregar al plan.
+- **Integraciones** (Gmail full sync), **metas / fondo de emergencia / watchlists**, **ajustes / perfiles / notificaciones**.
+
+**Parseo de emails bancarios (alternativa a Gmail sync):**
+- `POST /parse-email` — share-to-app: parsea email bancario compartido desde el teléfono
+- `GET /inbound-email/address` — dirección única del usuario para reenvío automático
+- `POST /inbound-email` — webhook de email reenviado (público, user en recipient)
 - **Búsqueda de payees** (`GET /api/payees?search=`, backlog).

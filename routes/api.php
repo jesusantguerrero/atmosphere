@@ -71,6 +71,35 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
     Route::get('/shopping', [MobileController::class, 'shoppingList'])->name('shopping.index');
     Route::post('/shopping/{plan}/items', [MobileController::class, 'addShoppingItem'])->name('shopping.items.add');
     Route::post('/shopping/{plan}/items/{item}/cycle', [MobileController::class, 'cycleShoppingItem'])->name('shopping.items.cycle');
+
+    // Inbox (draft transactions)
+    Route::post('/transactions/{transaction}/approve', [MobileController::class, 'approveTransaction'])->name('transactions.approve');
+    Route::delete('/transactions/{transaction}', [MobileController::class, 'deleteTransaction'])->name('transactions.delete');
+    Route::post('/transactions/bulk-delete', [MobileController::class, 'bulkDeleteTransactions'])->name('transactions.bulk-delete');
+
+    // Occurrences
+    Route::get('/occurrences', [MobileController::class, 'occurrences'])->name('occurrences.index');
+    Route::post('/occurrences/{occurrence}/instances', [MobileController::class, 'addOccurrenceInstance'])->name('occurrences.instances.add');
+    Route::delete('/occurrences/{occurrence}/instances', [MobileController::class, 'removeOccurrenceInstance'])->name('occurrences.instances.remove');
+
+    // Insights (Tendencias)
+    Route::get('/insights', [MobileController::class, 'insights'])->name('insights');
+
+    // Account deletion (store requirement)
+    Route::delete('/account', [MobileController::class, 'deleteAccount'])->name('account.delete');
+
+    // Email parsing (share-to-app)
+    Route::post('/parse-email', [MobileController::class, 'parseEmail'])->name('parse-email');
+    Route::get('/inbound-email/address', [MobileController::class, 'inboundEmailAddress'])->name('inbound-email.address');
+});
+
+// Public mobile endpoints (no Bearer required)
+Route::prefix('mobile')->name('mobile.')->group(function () {
+    Route::post('/auth/google', [MobileController::class, 'authGoogle'])->name('auth.google');
+    Route::post('/auth/apple', [MobileController::class, 'authApple'])->name('auth.apple');
+
+    // Inbound email webhook (user resolved from recipient address)
+    Route::post('/inbound-email', [MobileController::class, 'inboundEmail'])->name('inbound-email');
 });
 
 Route::post('/sanctum/token', [ApiLoginController::class, 'login']);
