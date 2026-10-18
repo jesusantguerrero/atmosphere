@@ -5,6 +5,8 @@ namespace App\Domains\Today\Services;
 use App\Domains\AppCore\Models\Planner;
 use App\Domains\Budget\Data\BudgetReservedNames;
 use App\Domains\Budget\Models\BudgetMonth;
+use App\Domains\Budget\Models\BudgetTarget;
+use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Domains\Housing\Models\Occurrence;
 use App\Domains\Meal\Services\MealService;
 use App\Domains\Transaction\Models\BillingCycle;
@@ -12,6 +14,7 @@ use App\Domains\Transaction\Services\TransactionService;
 use App\Notifications\WatchlistThresholdAlert;
 use Carbon\Carbon;
 use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Support\Collection;
 
 /**
  * TODAY-1 v0.1 — aggregates the four widgets on /today using only primitives that
@@ -33,7 +36,7 @@ class TodayService
 
         return [
             'money' => $this->money($teamId, $today),
-            'attention' => $this->attention($userId, $today),
+            'attention' => $this->attention($teamId, $userId, $today),
             'today' => $this->today($teamId, $today),
             'upcoming' => $this->upcoming($teamId, $today),
             'meal' => $this->meal($teamId),
@@ -122,15 +125,13 @@ class TodayService
     }
 
     /**
-     * ATTENTION: unread watchlist threshold alerts triggered this month.
-     * The WL-1 engine writes these to `notifications`; we surface them here too
-     * so the user doesn't have to open the bell to see them.
+     * ATTENTION: watchlist threshold alerts + underfunded budget targets due soon.
      *
      * @return array<int, array<string, mixed>>
      */
-    private function attention(int $userId, Carbon $today): array
+    private function attention(int $teamId, int $userId, Carbon $today): array
     {
-        return DatabaseNotification::query()
+        $watchlistAlerts = DatabaseNotification::query()
             ->where('notifiable_id', $userId)
             ->where('type', WatchlistThresholdAlert::class)
             ->whereNull('read_at')
@@ -140,11 +141,75 @@ class TodayService
             ->get()
             ->map(fn ($n) => [
                 'id' => $n->id,
+                'type' => 'watchlist_threshold',
                 'message' => $n->data['message'] ?? '',
                 'cta' => $n->data['cta'] ?? null,
                 'link' => $n->data['link'] ?? null,
-            ])
-            ->all();
+            ]);
+
+        $targetAlerts = $this->underfundedTargets($teamId, $today);
+
+        return $watchlistAlerts->merge($targetAlerts)->values()->all();
+    }
+
+    /**
+     * Budget targets with needed > 0 and due within the next 7 days (or overdue).
+     *
+     * @return Collection<int, array<string, mixed>>
+     */
+    private function underfundedTargets(int $teamId, Carbon $today): Collection
+    {
+        $month = $today->format('Y-m').'-01';
+        $service = new BudgetCategoryService;
+
+        return BudgetTarget::query()
+            ->where('team_id', $teamId)
+            ->where('frequency', 'monthly')
+            ->whereNotNull('frequency_month_date')
+            ->whereNull('completed_at')
+            ->with('category')
+            ->get()
+            ->map(function (BudgetTarget $bt) use ($service, $month, $today) {
+                if (! $bt->category) {
+                    return null;
+                }
+
+                try {
+                    $data = $service->getBudgetData($bt->category, $month);
+                } catch (\Throwable) {
+                    return null;
+                }
+
+                $available = (float) ($data['available'] ?? 0);
+                $needed = max(0, (float) $bt->amount - $available);
+                if ($needed <= 0) {
+                    return null;
+                }
+
+                $day = min((int) $bt->frequency_month_date, $today->copy()->endOfMonth()->day);
+                $dueDate = $today->copy()->day($day);
+                $daysUntil = $today->diffInDays($dueDate, false);
+
+                // Show if due within 7 days ahead or already overdue this month.
+                if ($daysUntil > 7) {
+                    return null;
+                }
+
+                $formattedNeeded = number_format($needed, 2, '.', ',');
+                $formattedDue = $dueDate->format('d M');
+
+                return [
+                    'id' => 'target-'.$bt->category_id,
+                    'type' => 'target_underfunded',
+                    'message' => "{$bt->category->name}: faltan {$formattedNeeded} antes del {$formattedDue}",
+                    'cta' => 'Asignar',
+                    'category_id' => $bt->category_id,
+                    'needed' => round($needed, 2),
+                    'due_date' => $dueDate->format('Y-m-d'),
+                ];
+            })
+            ->filter()
+            ->values();
     }
 
     /**
