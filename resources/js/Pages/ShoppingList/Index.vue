@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import axios from 'axios';
-import { router, Link } from '@inertiajs/vue3';
+import { ref, computed } from "vue";
+import axios from "axios";
+import { router, Link } from "@inertiajs/vue3";
 
-import AppLayout from '@/Components/templates/AppLayout.vue';
-import ShoppingChatList from '@/domains/shopping/components/ShoppingChatList.vue';
+import AppLayout from "@/Components/templates/AppLayout.vue";
+import ShoppingChatList from "@/domains/shopping/components/ShoppingChatList.vue";
 
 interface Item {
     id: number;
     title: string;
-    state: 'pending' | 'buy' | 'skip';
+    state: "pending" | "buy" | "skip";
     is_done: boolean;
     order: number;
 }
@@ -50,7 +50,8 @@ const showShareSheet = ref(false);
 // Computed so switching lists (which swaps props.plan) always retargets the
 // mutation endpoints at the currently-active list.
 const endpoints = computed(() => ({
-    cycle: (itemId: number) => `/shopping/${props.plan.id}/items/${itemId}/cycle`,
+    cycle: (itemId: number) =>
+        `/shopping/${props.plan.id}/items/${itemId}/cycle`,
     add: `/shopping/${props.plan.id}/items`,
     reset: `/shopping/${props.plan.id}/reset`,
     destroy: (itemId: number) => `/shopping/${props.plan.id}/items/${itemId}`,
@@ -64,7 +65,7 @@ const switchList = (id: number) => {
 const createList = async (name: string) => {
     const clean = name.trim();
     if (!clean) return;
-    const { data } = await axios.post('/shopping/lists', { name: clean });
+    const { data } = await axios.post("/shopping/lists", { name: clean });
     router.visit(`/shopping?plan=${data.activeListId}`);
 };
 
@@ -77,12 +78,12 @@ const renameList = async ({ id, name }: { id: number; name: string }) => {
 
 const deleteList = async (id: number) => {
     await axios.delete(`/shopping/${id}`);
-    router.visit('/shopping');
+    router.visit("/shopping");
 };
 
 const importList = async ({ name, text }: { name: string; text: string }) => {
     if (!text.trim()) return;
-    const { data } = await axios.post('/shopping/import', { name, text });
+    const { data } = await axios.post("/shopping/import", { name, text });
     router.visit(`/shopping?plan=${data.activeListId}`);
 };
 
@@ -112,7 +113,7 @@ const copyShareUrl = async () => {
         <template #title>
             <h4 class="text-xs font-bold flex items-center gap-2 lg:ml-6">
                 <IMdiCartOutline class="w-4 h-4" />
-                {{ $t('Shopping list') }}
+                {{ $t("Shopping list") }}
             </h4>
         </template>
 
@@ -120,7 +121,7 @@ const copyShareUrl = async () => {
             :plan="plan"
             :lists="lists"
             :active-list-id="activeListId"
-            api-base="/shopping"
+            :api-base="`/shopping/${plan.id}`"
             :mercure-url="mercureUrl"
             :show-owner-controls="true"
             :endpoints="endpoints"
@@ -137,16 +138,20 @@ const copyShareUrl = async () => {
                     :title="$t('Meal Planner')"
                 >
                     <i class="fa fa-utensils mr-1"></i>
-                    {{ $t('Meal Planner') }}
+                    {{ $t("Meal Planner") }}
                 </Link>
                 <button
                     type="button"
                     class="text-xs px-2 py-1 rounded-md bg-base-lvl-2 text-body-1 hover:bg-base-lvl-1 transition inline-flex items-center"
-                    :title="shareUrl ? $t('Manage sharing') : $t('Share with someone')"
+                    :title="
+                        shareUrl
+                            ? $t('Manage sharing')
+                            : $t('Share with someone')
+                    "
                     @click="showShareSheet = !showShareSheet"
                 >
                     <IMdiShareVariant class="w-3.5 h-3.5 mr-1" />
-                    {{ shareUrl ? $t('Sharing') : $t('Share') }}
+                    {{ shareUrl ? $t("Sharing") : $t("Share") }}
                 </button>
             </template>
         </ShoppingChatList>
@@ -156,12 +161,20 @@ const copyShareUrl = async () => {
                 v-if="showShareSheet"
                 class="fixed inset-x-3 bottom-20 max-w-sm mx-auto bg-base-lvl-3 border border-base rounded-xl shadow-2xl p-4 z-30"
             >
-                <h3 class="font-bold text-body mb-2">{{ $t('Share this list') }}</h3>
+                <h3 class="font-bold text-body mb-2">
+                    {{ $t("Share this list") }}
+                </h3>
                 <p v-if="!shareUrl" class="text-sm text-body-1/70 mb-3">
-                    {{ $t('Anyone with the link can edit. Updates appear here in real time.') }}
+                    {{
+                        $t(
+                            "Anyone with the link can edit. Updates appear here in real time.",
+                        )
+                    }}
                 </p>
                 <div v-else class="mb-3">
-                    <p class="text-xs text-body-1/60 mb-1">{{ $t('Share link') }}</p>
+                    <p class="text-xs text-body-1/60 mb-1">
+                        {{ $t("Share link") }}
+                    </p>
                     <div class="flex items-center gap-2">
                         <input
                             :value="shareUrl"
@@ -173,17 +186,23 @@ const copyShareUrl = async () => {
                             class="text-xs px-2 py-1.5 rounded-md bg-primary text-white inline-flex items-center"
                             @click="copyShareUrl"
                         >
-                            <IMdiContentCopy class="mr-1" />{{ $t('Copy') }}
+                            <IMdiContentCopy class="mr-1" />{{ $t("Copy") }}
                         </button>
                     </div>
                 </div>
                 <button
                     type="button"
                     class="w-full text-sm py-2 rounded-md font-semibold transition"
-                    :class="shareUrl ? 'bg-error/10 text-error hover:bg-error/20' : 'bg-primary text-white'"
+                    :class="
+                        shareUrl
+                            ? 'bg-error/10 text-error hover:bg-error/20'
+                            : 'bg-primary text-white'
+                    "
                     @click="enableShare"
                 >
-                    {{ shareUrl ? $t('Stop sharing') : $t('Enable share link') }}
+                    {{
+                        shareUrl ? $t("Stop sharing") : $t("Enable share link")
+                    }}
                 </button>
             </div>
         </Teleport>
