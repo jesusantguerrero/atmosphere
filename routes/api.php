@@ -84,6 +84,15 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
 
     // Insights (Tendencias)
     Route::get('/insights', [MobileController::class, 'insights'])->name('insights');
+
+    // Account deletion (store requirement)
+    Route::delete('/account', [MobileController::class, 'deleteAccount'])->name('account.delete');
+});
+
+// Social auth (public, no Bearer required)
+Route::prefix('mobile')->name('mobile.')->group(function () {
+    Route::post('/auth/google', [MobileController::class, 'authGoogle'])->name('auth.google');
+    Route::post('/auth/apple', [MobileController::class, 'authApple'])->name('auth.apple');
 });
 
 Route::post('/sanctum/token', [ApiLoginController::class, 'login']);

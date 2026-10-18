@@ -646,6 +646,35 @@ Query params:
 Categorías/payees/cuentas son totales del periodo completo, ordenados de mayor a menor.
 Misma fuente de datos que `FinanceTrendController::insights` (web), reformateado para mobile.
 
+### 35. Borrar cuenta — `DELETE /api/mobile/account`  (Bearer)
+```jsonc
+{ "password": "••••••" }   // requerido solo si el usuario tiene contraseña (no social-only)
+```
+Borra al usuario, sus tokens, foto de perfil, y — si es el único miembro — sus equipos y todos los datos (cuentas, transacciones, presupuesto, etc.). Usa la misma acción que la web (`DeleteUser` + `DeleteTeam`).
+→ `{ "success": true }`
+Errores:
+- `422 { password: ["incorrect"] }` — contraseña incorrecta.
+- `422 { message: "You own a team with other members…" }` — debe transferir el equipo primero.
+
+### 36. Login con Google — `POST /api/mobile/auth/google`  (sin auth)
+```jsonc
+{ "id_token": "<Google id_token>", "device_name": "jesus-iphone-15", "name": "Jesus" }
+```
+Verifica el `id_token` contra `oauth2.googleapis.com/tokeninfo`. Vincula por `email` a un usuario existente o crea uno nuevo (con equipo personal). `name` es opcional (solo para registro nuevo).
+→ `"3|AbCdEf0123456789plainTextTokenHere"` (string plano, igual que `/api/sanctum/token`)
+Errores: `401` (token inválido).
+Config requerida: `GOOGLE_AUTH_WEB_CLIENT_ID`, `GOOGLE_AUTH_ANDROID_CLIENT_ID`, `GOOGLE_AUTH_IOS_CLIENT_ID` en `.env`.
+
+### 37. Login con Apple — `POST /api/mobile/auth/apple`  (sin auth)
+```jsonc
+{ "id_token": "<Apple id_token>", "device_name": "jesus-iphone-15", "name": "Jesus" }
+```
+Verifica el JWT contra Apple JWKS (`appleid.apple.com/auth/keys`). Vincula por `apple_id` (sub) o `email` a usuario existente, o crea uno nuevo. Apple solo envía email la primera vez; puede ser relay privado.
+→ `"3|AbCdEf0123456789plainTextTokenHere"` (string plano)
+Errores: `401` (token inválido), `422` (email requerido en primer login).
+Config requerida: `APPLE_AUTH_BUNDLE_ID` en `.env` (default: `com.neatlancer.neathome`).
+Migración: `google_id` y `apple_id` añadidos a tabla `users` (`2026_10_18_001509`).
+
 ---
 
 ## Estado real de `/api/mobile/*` — qué ya está y qué falta
@@ -658,8 +687,13 @@ Misma fuente de datos que `FinanceTrendController::insights` (web), reformateado
 
 ### Ya expuesto en `/api/mobile/*` (la app ya lo consume)
 
-**Tab Hoy:**
+**Auth:**
 - `POST /api/sanctum/token` — login (2FA)
+- `POST /auth/google` — login/registro con Google (sin auth, devuelve token)
+- `POST /auth/apple` — login/registro con Apple (sin auth, devuelve token)
+- `DELETE /account` — borrar cuenta permanentemente (destructivo, con confirmación de password)
+
+**Tab Hoy:**
 - `GET /today` — payload de la página Today (`money, attention, today, upcoming, meal, pending_review_count`)
 - `GET /overview` — cuentas (agrupables por `detail_type`), `netWorth`, próximos pagos, tarjetas a pagar
 - `GET /occurrences` — lista de ocurrencias con `days_since_last`, `is_overdue`, `avg_days_passed`
