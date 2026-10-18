@@ -1067,18 +1067,54 @@ class MobileController extends Controller
         return response()->json(['success' => true]);
     }
 
-    // ─── Account deletion (store requirement) ───────────────────
+    // ─── Session & account ──────────────────────────────────────
+
+    /**
+     * Revoke the current access token (logout).
+     *
+     * DELETE /api/mobile/session
+     */
+    public function logout(Request $request): JsonResponse
+    {
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Return the authenticated user with mobile-specific fields.
+     *
+     * GET /api/mobile/me
+     */
+    public function me(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        return response()->json([
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'profile_photo_url' => $user->profile_photo_url,
+            'has_password' => (bool) $user->password,
+            'auth_provider' => $user->google_id ? 'google' : ($user->apple_id ? 'apple' : null),
+            'language' => $user->language,
+            'current_team_id' => $user->current_team_id,
+        ]);
+    }
 
     /**
      * Permanently delete the authenticated user's account, their tokens,
      * and — if they are the sole owner — their team and all its data.
+     *
+     * Password-based accounts: requires { password }.
+     * Social-only accounts: requires { provider, id_token } to re-verify identity.
      */
     public function deleteAccount(Request $request, DeletesUsers $deletesUsers): JsonResponse
     {
         $user = $request->user();
 
-        // If the user has a password (not social-only), require it for confirmation.
         if ($user->password) {
+            // Password-based: confirm with password.
             $request->validate(['password' => ['required', 'string']]);
 
             if (! Hash::check($request->input('password'), $user->password)) {
@@ -1086,6 +1122,29 @@ class MobileController extends Controller
                     'message' => 'The provided password is incorrect.',
                     'errors' => ['password' => ['The provided password is incorrect.']],
                 ], 422);
+            }
+        } else {
+            // Social-only: re-verify the provider token.
+            $request->validate([
+                'provider' => ['required', 'string', 'in:google,apple'],
+                'id_token' => ['required', 'string'],
+            ]);
+
+            $provider = $request->input('provider');
+            $payload = $provider === 'google'
+                ? $this->verifyGoogleToken($request->input('id_token'))
+                : $this->verifyAppleToken($request->input('id_token'));
+
+            if (! $payload) {
+                return response()->json(['message' => 'Invalid provider token.'], 401);
+            }
+
+            // Ensure the token's subject matches the user's linked ID.
+            $sub = $payload['sub'] ?? null;
+            $expected = $provider === 'google' ? $user->google_id : $user->apple_id;
+
+            if (! $sub || $sub !== $expected) {
+                return response()->json(['message' => 'Provider identity does not match this account.'], 422);
             }
         }
 

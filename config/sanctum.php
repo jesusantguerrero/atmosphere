@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Middleware\EncryptCookies;
+use App\Http\Middleware\VerifyCsrfToken;
+
 return [
 
     /*
@@ -29,7 +32,7 @@ return [
     |
     */
 
-    'expiration' => null,
+    'expiration' => env('SANCTUM_TOKEN_EXPIRATION', 60 * 24 * 90), // 90 days
 
     /*
     |--------------------------------------------------------------------------
@@ -43,8 +46,8 @@ return [
     */
 
     'middleware' => [
-        'verify_csrf_token' => App\Http\Middleware\VerifyCsrfToken::class,
-        'encrypt_cookies' => App\Http\Middleware\EncryptCookies::class,
+        'verify_csrf_token' => VerifyCsrfToken::class,
+        'encrypt_cookies' => EncryptCookies::class,
     ],
 
 ];

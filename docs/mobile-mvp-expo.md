@@ -815,3 +815,9 @@ Sin body. → `{ "success": true }`
 - `GET /inbound-email/address` — dirección única del usuario para reenvío automático
 - `POST /inbound-email` — webhook de email reenviado (público, user en recipient)
 - **Búsqueda de payees** (`GET /api/payees?search=`, backlog).
+
+**Sesión & perfil:**
+- `GET /me` — perfil del usuario (`id, name, email, profile_photo_url, has_password, auth_provider, language, current_team_id`)
+- `DELETE /session` — logout (revoca el token actual)
+- Token expiration: **90 días** (configurable via `SANCTUM_TOKEN_EXPIRATION` env)
+- `DELETE /account` — ahora requiere re-verificación: `password` para cuentas con contraseña, `{provider, id_token}` para social-only
