@@ -85,6 +85,11 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
     // Insights (Tendencias)
     Route::get('/insights', [MobileController::class, 'insights'])->name('insights');
 
+    // Notifications
+    Route::get('/notifications', [MobileController::class, 'notifications'])->name('notifications.index');
+    Route::put('/notifications/{notification}/read', [MobileController::class, 'markNotificationRead'])->name('notifications.read');
+    Route::patch('/notifications/read-all', [MobileController::class, 'markAllNotificationsRead'])->name('notifications.read-all');
+
     // Account deletion (store requirement)
     Route::delete('/account', [MobileController::class, 'deleteAccount'])->name('account.delete');
 
