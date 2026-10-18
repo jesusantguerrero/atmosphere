@@ -973,6 +973,67 @@ class MobileController extends Controller
         ]);
     }
 
+    // ─── Notifications ──────────────────────────────────────────
+
+    /**
+     * List notifications for the authenticated user.
+     *
+     * GET /api/mobile/notifications?filter=unread|all&page=1
+     */
+    public function notifications(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $filter = $request->query('filter', 'unread');
+
+        $query = $filter === 'all'
+            ? $user->notifications()
+            : $user->unreadNotifications();
+
+        $paginated = $query->latest()->paginate(20);
+
+        return response()->json([
+            'unread_count' => $user->unreadNotifications()->count(),
+            'data' => collect($paginated->items())->map(fn ($n) => [
+                'id' => $n->id,
+                'type' => class_basename($n->type),
+                'message' => $n->data['message'] ?? '',
+                'cta' => $n->data['cta'] ?? null,
+                'link' => $n->data['link'] ?? null,
+                'data' => collect($n->data)->except(['message', 'cta', 'link'])->all(),
+                'read_at' => $n->read_at?->toIso8601String(),
+                'created_at' => $n->created_at->toIso8601String(),
+            ]),
+            'current_page' => $paginated->currentPage(),
+            'last_page' => $paginated->lastPage(),
+        ]);
+    }
+
+    /**
+     * Mark a single notification as read.
+     *
+     * PUT /api/mobile/notifications/{id}/read
+     */
+    public function markNotificationRead(Request $request, string $notificationId): JsonResponse
+    {
+        $request->user()->unreadNotifications()
+            ->where('id', $notificationId)
+            ->update(['read_at' => now()]);
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Mark all notifications as read.
+     *
+     * PATCH /api/mobile/notifications/read-all
+     */
+    public function markAllNotificationsRead(Request $request): JsonResponse
+    {
+        $request->user()->unreadNotifications()->update(['read_at' => now()]);
+
+        return response()->json(['success' => true]);
+    }
+
     // ─── Account deletion (store requirement) ───────────────────
 
     /**

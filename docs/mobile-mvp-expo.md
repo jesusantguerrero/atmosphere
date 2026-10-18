@@ -697,6 +697,35 @@ Endpoint público que recibe emails de Mailgun/Postmark inbound routing. El usua
 Mismo pipeline de parsing que §38. → `{ "parsed": true, "transaction": {...} }` o `{ "parsed": false, ... }`.
 Errores: `404` (recipient desconocido), `422` (faltan from o body).
 
+### 41. Notificaciones — `GET /api/mobile/notifications?filter=unread|all&page=1`  (Bearer)
+Lista paginada (20/pág) de notificaciones del usuario. Cada item:
+```jsonc
+{
+  "unread_count": 3,
+  "data": [
+    {
+      "id": "uuid",
+      "type": "EntryGenerated",           // class_basename (sin namespace)
+      "message": "New transactions have been imported",
+      "cta": "Review now",
+      "link": "/finance/transactions?filter[status]=draft",
+      "data": { "billing_cycle_id": 5 },  // campos extra según el tipo
+      "read_at": null,                     // null = no leída
+      "created_at": "2026-10-17T14:30:00+00:00"
+    }
+  ],
+  "current_page": 1,
+  "last_page": 2
+}
+```
+Tipos posibles: `EntryGenerated`, `BillingCycleCutAlert`, `PlannedAlert`, `OccurrenceAlert`, `TransactionsImported`, `WatchlistThresholdAlert`, `WatchlistStreakAlert`, `WatchlistAutoSuggestionAlert`, `CreditCardRenewalAlert`, `LoanPaymentAlert`, `AccountOverdraftAlert`.
+
+### 42. Marcar notificación leída — `PUT /api/mobile/notifications/{id}/read`  (Bearer)
+Sin body. → `{ "success": true }`
+
+### 43. Marcar todas leídas — `PATCH /api/mobile/notifications/read-all`  (Bearer)
+Sin body. → `{ "success": true }`
+
 ---
 
 ## Estado real de `/api/mobile/*` — qué ya está y qué falta
@@ -750,12 +779,17 @@ Errores: `404` (recipient desconocido), `422` (faltan from o body).
 - `POST /transactions/bulk-delete` — borrar en lote
 - `GET /insights?months=6&end=YYYY-MM` — tendencias (gasto/ingreso/patrimonio por mes, desglose por categoría/payee/cuenta)
 
+**Notificaciones:**
+- `GET /notifications?filter=unread|all` — lista paginada con `unread_count`, tipo, mensaje, link, datos extra
+- `PUT /notifications/{id}/read` — marcar una como leída
+- `PATCH /notifications/read-all` — marcar todas como leídas
+
 ### Aún NO expuesto (el web sí lo tiene; falta endpoint mobile)
 - **Transacciones: editar / recategorizar / mark-as-paid** (aprobar/borrar ya expuestos).
 - **Conciliación** — hub, detalle, ajustar, sync.
 - **Cuentas (escritura)** — crear/editar, link-bank, sync-emails, cerrar, import PDF/CSV.
 - **Comida (escritura)** — crear receta, agregar al plan.
-- **Integraciones** (Gmail full sync), **metas / fondo de emergencia / watchlists**, **ajustes / perfiles / notificaciones**.
+- **Integraciones** (Gmail full sync), **metas / fondo de emergencia / watchlists**, **ajustes / perfiles**.
 
 **Parseo de emails bancarios (alternativa a Gmail sync):**
 - `POST /parse-email` — share-to-app: parsea email bancario compartido desde el teléfono
