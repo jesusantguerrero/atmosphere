@@ -139,6 +139,7 @@ class TodayService
             ->orderByDesc('created_at')
             ->limit(5)
             ->get()
+            ->toBase()
             ->map(fn ($n) => [
                 'id' => $n->id,
                 'type' => 'watchlist_threshold',
@@ -149,7 +150,7 @@ class TodayService
 
         $targetAlerts = $this->underfundedTargets($teamId, $today);
 
-        return $watchlistAlerts->merge($targetAlerts)->values()->all();
+        return collect($watchlistAlerts)->merge($targetAlerts)->values()->all();
     }
 
     /**
