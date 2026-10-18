@@ -45,6 +45,10 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('ap
 // Mobile app surface: clean, token-authenticated URLs under /api/mobile.
 // Reuses existing controllers/services; only reshapes payloads for the phone.
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mobile')->name('mobile.')->group(function () {
+    // Session & profile
+    Route::get('/me', [MobileController::class, 'me'])->name('me');
+    Route::delete('/session', [MobileController::class, 'logout'])->name('session.destroy');
+
     Route::get('/today', [MobileController::class, 'today'])->name('today');
     Route::get('/overview', [MobileController::class, 'overview'])->name('overview');
     Route::get('/budget', [MobileController::class, 'budget'])->name('budget');
