@@ -51,4 +51,8 @@ return [
         'bundle_id' => env('APPLE_AUTH_BUNDLE_ID', 'com.neatlancer.neathome'),
     ],
 
+    'inbound_email' => [
+        'domain' => env('INBOUND_EMAIL_DOMAIN', 'parse.loger.app'),
+    ],
+
 ];

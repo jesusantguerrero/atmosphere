@@ -87,12 +87,19 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
 
     // Account deletion (store requirement)
     Route::delete('/account', [MobileController::class, 'deleteAccount'])->name('account.delete');
+
+    // Email parsing (share-to-app)
+    Route::post('/parse-email', [MobileController::class, 'parseEmail'])->name('parse-email');
+    Route::get('/inbound-email/address', [MobileController::class, 'inboundEmailAddress'])->name('inbound-email.address');
 });
 
-// Social auth (public, no Bearer required)
+// Public mobile endpoints (no Bearer required)
 Route::prefix('mobile')->name('mobile.')->group(function () {
     Route::post('/auth/google', [MobileController::class, 'authGoogle'])->name('auth.google');
     Route::post('/auth/apple', [MobileController::class, 'authApple'])->name('auth.apple');
+
+    // Inbound email webhook (user resolved from recipient address)
+    Route::post('/inbound-email', [MobileController::class, 'inboundEmail'])->name('inbound-email');
 });
 
 Route::post('/sanctum/token', [ApiLoginController::class, 'login']);

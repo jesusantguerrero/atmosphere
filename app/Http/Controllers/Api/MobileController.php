@@ -11,6 +11,9 @@ use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Domains\Budget\Services\BudgetMovementService;
 use App\Domains\Housing\Actions\RegisterOccurrence;
 use App\Domains\Housing\Models\Occurrence;
+use App\Domains\Integration\Actions\TransactionCreateEntry;
+use App\Domains\Integration\Actions\UniversalBankParser;
+use App\Domains\Integration\Services\UniversalBankAutomationService;
 use App\Domains\Journal\Actions\TransactionDelete;
 use App\Domains\LogerProfile\Models\LogerProfile;
 use App\Domains\Meal\Models\Meal;
@@ -1092,6 +1095,170 @@ class MobileController extends Controller
         $token = $user->createToken($request->input('device_name'))->plainTextToken;
 
         return response()->json($token);
+    }
+
+    // ─── Email parsing (Share-to-app + Email forwarding) ────────
+
+    /**
+     * Share-to-app: mobile user shares a bank email, we parse + create draft.
+     *
+     * POST /api/mobile/parse-email  (Bearer)
+     * { from: "alertas@bhd.com.do", subject?: "...", body: "<html>..." }
+     */
+    public function parseEmail(Request $request): JsonResponse
+    {
+        $request->validate([
+            'from' => ['required', 'string'],
+            'subject' => ['nullable', 'string'],
+            'body' => ['required', 'string'],
+        ]);
+
+        return $this->parseAndCreateBankTransaction(
+            $request->user(),
+            $request->input('from'),
+            $request->input('subject', ''),
+            $request->input('body')
+        );
+    }
+
+    /**
+     * Inbound email webhook: Mailgun/Postmark forwards bank emails here.
+     *
+     * POST /api/mobile/inbound-email  (public — user resolved from recipient)
+     * Mailgun sends: from, sender, recipient, subject, body-html, body-plain, etc.
+     */
+    public function inboundEmail(Request $request): JsonResponse
+    {
+        $recipient = $request->input('recipient', '');
+        $user = $this->resolveUserFromInboundAddress($recipient);
+
+        if (! $user) {
+            return response()->json(['error' => 'Unknown recipient.'], 404);
+        }
+
+        $from = $request->input('from', $request->input('sender', ''));
+        $subject = $request->input('subject', '');
+        $body = $request->input('body-html',
+            $request->input('stripped-html',
+                $request->input('body-plain',
+                    $request->input('body', ''))));
+
+        if (! $from || ! $body) {
+            return response()->json(['error' => 'Missing from or body.'], 422);
+        }
+
+        return $this->parseAndCreateBankTransaction($user, $from, $subject, $body);
+    }
+
+    /**
+     * Return the authenticated user's unique inbound email address.
+     *
+     * GET /api/mobile/inbound-email/address  (Bearer)
+     */
+    public function inboundEmailAddress(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $domain = config('services.inbound_email.domain', 'parse.loger.app');
+        $sig = substr(hash_hmac('sha256', (string) $user->id, config('app.key')), 0, 8);
+
+        return response()->json([
+            'address' => "txns-{$user->id}-{$sig}@{$domain}",
+        ]);
+    }
+
+    /**
+     * Core logic shared by parse-email and inbound-email.
+     *
+     * Detects the bank, parses the email through the existing Universal Bank
+     * Parser → TransactionCreateEntry pipeline, returns the created transaction.
+     */
+    private function parseAndCreateBankTransaction(
+        User $user,
+        string $from,
+        string $subject,
+        string $body
+    ): JsonResponse {
+        // Ensure the user's bank automation exists (needed for the parser pipeline).
+        $automation = UniversalBankAutomationService::find($user, $user->current_team_id)
+            ?? UniversalBankAutomationService::setup($user);
+
+        if (! $automation) {
+            return response()->json(['parsed' => false, 'message' => 'Could not set up email parsing.'], 500);
+        }
+
+        // Build the same payload shape that GmailReceived produces.
+        $payload = [
+            'from' => $from,
+            'subject' => $subject,
+            'message' => $body,
+            'id' => 'share-'.now()->timestamp.'-'.random_int(1000, 9999),
+            'messageId' => null,
+            'date' => now()->toRfc822String(),
+        ];
+
+        // Resolve automation tasks (trigger → parser → creator).
+        $tasks = $automation->tasks;
+        $trigger = $tasks->where('task_type', 'trigger')->first();
+        $parserTask = $tasks->where('task_type', 'component')->first();
+        $createTask = $tasks->where('task_type', 'action')->first();
+
+        if (! $trigger || ! $parserTask || ! $createTask) {
+            return response()->json(['parsed' => false, 'message' => 'Email automation not properly configured.'], 500);
+        }
+
+        // Step 1 — parse the email.
+        $parsed = UniversalBankParser::handle($automation, $payload, $parserTask, $trigger, $trigger);
+
+        if (! $parsed) {
+            return response()->json([
+                'parsed' => false,
+                'message' => 'Could not recognize the bank email format.',
+            ]);
+        }
+
+        // Step 2 — create the draft transaction.
+        $transaction = TransactionCreateEntry::handle($automation, $parsed, $createTask, $parserTask, $trigger);
+
+        if (! $transaction) {
+            return response()->json([
+                'parsed' => false,
+                'message' => 'Could not create transaction from parsed email.',
+            ]);
+        }
+
+        return response()->json([
+            'parsed' => true,
+            'transaction' => [
+                'id' => $transaction->id,
+                'date' => $transaction->date,
+                'payee' => $transaction->payee_name ?? $parsed['payee'] ?? null,
+                'amount' => (float) ($parsed['amount'] ?? $transaction->total),
+                'currency_code' => $parsed['currencyCode'] ?? $transaction->currency_code,
+                'description' => $transaction->description,
+                'status' => $transaction->status,
+            ],
+        ]);
+    }
+
+    /**
+     * Resolve user from an inbound email recipient address.
+     * Format: txns-{userId}-{8-char hmac}@domain
+     */
+    private function resolveUserFromInboundAddress(string $recipient): ?User
+    {
+        if (! preg_match('/^txns-(\d+)-([a-f0-9]{8})@/', $recipient, $matches)) {
+            return null;
+        }
+
+        $userId = (int) $matches[1];
+        $sig = $matches[2];
+        $expected = substr(hash_hmac('sha256', (string) $userId, config('app.key')), 0, 8);
+
+        if (! hash_equals($expected, $sig)) {
+            return null;
+        }
+
+        return User::find($userId);
     }
 
     // ─── Helpers ──────────────────────────────────────────────────

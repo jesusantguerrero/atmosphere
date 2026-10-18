@@ -675,6 +675,28 @@ Errores: `401` (token inválido), `422` (email requerido en primer login).
 Config requerida: `APPLE_AUTH_BUNDLE_ID` en `.env` (default: `com.neatlancer.neathome`).
 Migración: `google_id` y `apple_id` añadidos a tabla `users` (`2026_10_18_001509`).
 
+### 38. Share-to-app (parsear email bancario) — `POST /api/mobile/parse-email`  (Bearer)
+```jsonc
+{ "from": "alertas@bhd.com.do", "subject": "Alerta de transacción", "body": "<html>...</html>" }
+```
+El usuario comparte un email bancario desde la bandeja del teléfono a la app. El backend detecta el banco (BHD, APAP, BSC, Qik) y parsea el email con los mismos parsers que usa el sync de Gmail. Si lo reconoce, crea una transacción borrador.
+→ `{ "parsed": true, "transaction": { "id": 123, "date": "2026-10-17", "payee": "Supermercado Nacional", "amount": 1500.00, "currency_code": "DOP", "description": "Visa Gold BHD", "status": "draft" } }`
+Si el email no es reconocido: `{ "parsed": false, "message": "Could not recognize the bank email format." }`
+
+### 39. Dirección de reenvío de emails — `GET /api/mobile/inbound-email/address`  (Bearer)
+Sin body. Devuelve la dirección única del usuario para configurar reenvío automático de emails bancarios.
+→ `{ "address": "txns-42-a1b2c3d4@parse.loger.app" }`
+El usuario añade esta dirección como regla de reenvío en Gmail/Outlook. Los emails reenviados llegan al webhook §40.
+Config requerida: `INBOUND_EMAIL_DOMAIN` en `.env` (default: `parse.loger.app`).
+
+### 40. Webhook de email reenviado — `POST /api/mobile/inbound-email`  (sin auth — usuario en recipient)
+Endpoint público que recibe emails de Mailgun/Postmark inbound routing. El usuario se resuelve del recipient (`txns-{userId}-{hmac}@domain`). Acepta los campos estándar de Mailgun:
+```jsonc
+{ "from": "alertas@bhd.com.do", "recipient": "txns-42-a1b2c3d4@parse.loger.app", "subject": "...", "body-html": "<html>..." }
+```
+Mismo pipeline de parsing que §38. → `{ "parsed": true, "transaction": {...} }` o `{ "parsed": false, ... }`.
+Errores: `404` (recipient desconocido), `422` (faltan from o body).
+
 ---
 
 ## Estado real de `/api/mobile/*` — qué ya está y qué falta
@@ -733,5 +755,10 @@ Migración: `google_id` y `apple_id` añadidos a tabla `users` (`2026_10_18_0015
 - **Conciliación** — hub, detalle, ajustar, sync.
 - **Cuentas (escritura)** — crear/editar, link-bank, sync-emails, cerrar, import PDF/CSV.
 - **Comida (escritura)** — crear receta, agregar al plan.
-- **Integraciones** (Gmail/inbox/email-to-tasks), **metas / fondo de emergencia / watchlists**, **ajustes / perfiles / notificaciones**.
+- **Integraciones** (Gmail full sync), **metas / fondo de emergencia / watchlists**, **ajustes / perfiles / notificaciones**.
+
+**Parseo de emails bancarios (alternativa a Gmail sync):**
+- `POST /parse-email` — share-to-app: parsea email bancario compartido desde el teléfono
+- `GET /inbound-email/address` — dirección única del usuario para reenvío automático
+- `POST /inbound-email` — webhook de email reenviado (público, user en recipient)
 - **Búsqueda de payees** (`GET /api/payees?search=`, backlog).
