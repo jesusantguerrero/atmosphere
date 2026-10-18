@@ -583,6 +583,42 @@ Items cycle: pending → buy → skip → pending. `is_done` syncs with `state=b
 ```
 → `{ "id", "state": "buy", "is_done": true }`
 
+### 27b. Stages CRUD — shopping list categories
+
+**Create stage:** `POST /api/mobile/shopping/{plan_id}/stages` (Bearer)
+```jsonc
+{ "name": "Lácteos" }
+```
+→ `201 { "id", "name", "items": [] }`
+
+**Rename stage:** `PATCH /api/mobile/shopping/{plan_id}/stages/{stage_id}` (Bearer)
+```jsonc
+{ "name": "Dairy" }
+```
+→ `{ "id", "name" }`
+
+**Delete stage:** `DELETE /api/mobile/shopping/{plan_id}/stages/{stage_id}` (Bearer)
+→ `{ "deleted": true }` (items move to the first remaining stage)
+
+### 27c. Item update & delete
+
+**Update item:** `PATCH /api/mobile/shopping/{plan_id}/items/{item_id}` (Bearer)
+```jsonc
+{ "title": "Leche deslactosada", "stage_id": 16 }
+```
+Both fields optional. → `{ "id", "title", "state", "stage_id" }`
+
+**Delete item:** `DELETE /api/mobile/shopping/{plan_id}/items/{item_id}` (Bearer)
+→ `{ "deleted": true }`
+
+### 27d. Bulk operations
+
+**Reset list:** `POST /api/mobile/shopping/{plan_id}/reset` (Bearer)
+All items → `pending` / `is_done=false`. → `{ "reset": true }`
+
+**Check all:** `POST /api/mobile/shopping/{plan_id}/check-all` (Bearer)
+All `pending` items → `buy` / `is_done=true`. → `{ "checked": true }`
+
 ### 28. Aprobar borrador — `POST /api/mobile/transactions/{transaction_id}/approve`  (Bearer)
 Sin body. Cambia `status` de `draft` a `verified`.
 → `{ "success": true }`

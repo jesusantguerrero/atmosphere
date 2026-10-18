@@ -39,6 +39,7 @@ use Illuminate\Support\Facades\Http;
 use Laravel\Jetstream\Contracts\DeletesUsers;
 use Modules\Plan\Entities\Plan;
 use Modules\Plan\Entities\PlanItem;
+use Modules\Plan\Entities\PlanStage;
 use Modules\Plan\Entities\PlanTypes;
 use Modules\Plan\Services\PlanService;
 
@@ -757,6 +758,132 @@ class MobileController extends Controller
             'state' => $item->state,
             'is_done' => (bool) $item->is_done,
         ]);
+    }
+
+    /**
+     * Create a new stage (category column) on a shopping list.
+     */
+    public function addShoppingStage(Request $request, Plan $plan): JsonResponse
+    {
+        abort_if((int) $plan->team_id !== (int) $request->user()->current_team_id, 403);
+
+        $data = $request->validate(['name' => ['required', 'string', 'max:120']]);
+
+        $stage = $plan->stages()->create([
+            'user_id' => $request->user()->id,
+            'team_id' => $plan->team_id,
+            'name' => trim($data['name']),
+            'order' => ((int) $plan->stages()->max('order')) + 1,
+        ]);
+
+        return response()->json([
+            'id' => $stage->id,
+            'name' => $stage->name,
+            'items' => [],
+        ], 201);
+    }
+
+    /**
+     * Rename or delete a shopping list stage (category column).
+     */
+    public function updateShoppingStage(Request $request, Plan $plan, PlanStage $stage): JsonResponse
+    {
+        abort_if((int) $plan->team_id !== (int) $request->user()->current_team_id, 403);
+        abort_if((int) $stage->plan_id !== (int) $plan->id, 404);
+
+        $data = $request->validate(['name' => ['required', 'string', 'max:120']]);
+        $stage->update(['name' => trim($data['name'])]);
+
+        return response()->json(['id' => $stage->id, 'name' => $stage->name]);
+    }
+
+    public function deleteShoppingStage(Request $request, Plan $plan, PlanStage $stage): JsonResponse
+    {
+        abort_if((int) $plan->team_id !== (int) $request->user()->current_team_id, 403);
+        abort_if((int) $stage->plan_id !== (int) $plan->id, 404);
+
+        // Move orphan items to the first remaining stage before deleting.
+        $fallback = $plan->stages()->where('id', '!=', $stage->id)->orderBy('order')->first();
+        if ($fallback) {
+            PlanItem::where('stage_id', $stage->id)->update(['stage_id' => $fallback->id]);
+        }
+
+        $stage->delete();
+
+        return response()->json(['deleted' => true]);
+    }
+
+    /**
+     * Update a shopping item (move to another stage, rename).
+     */
+    public function updateShoppingItem(Request $request, Plan $plan, PlanItem $item): JsonResponse
+    {
+        abort_if((int) $plan->team_id !== (int) $request->user()->current_team_id, 403);
+        abort_if($item->stage?->plan_id !== $plan->id, 404);
+
+        $data = $request->validate([
+            'title' => ['sometimes', 'string', 'max:255'],
+            'stage_id' => ['sometimes', 'integer'],
+        ]);
+
+        if (isset($data['stage_id'])) {
+            abort_if(! $plan->stages()->where('id', $data['stage_id'])->exists(), 422);
+        }
+
+        $item->update($data);
+
+        return response()->json([
+            'id' => $item->id,
+            'title' => $item->title,
+            'state' => $item->state,
+            'stage_id' => $item->stage_id,
+        ]);
+    }
+
+    public function deleteShoppingItem(Request $request, Plan $plan, PlanItem $item): JsonResponse
+    {
+        abort_if((int) $plan->team_id !== (int) $request->user()->current_team_id, 403);
+        abort_if($item->stage?->plan_id !== $plan->id, 404);
+
+        $item->delete();
+
+        return response()->json(['deleted' => true]);
+    }
+
+    /**
+     * Reset all items in a shopping list back to pending.
+     */
+    public function resetShoppingList(Request $request, Plan $plan): JsonResponse
+    {
+        abort_if((int) $plan->team_id !== (int) $request->user()->current_team_id, 403);
+
+        PlanItem::query()
+            ->whereHas('stage', fn ($q) => $q->where('plan_id', $plan->id))
+            ->update([
+                'state' => PlanItem::STATE_PENDING,
+                'is_done' => false,
+                'commit_date' => null,
+            ]);
+
+        return response()->json(['reset' => true]);
+    }
+
+    /**
+     * Mark all pending items in a shopping list as "buy".
+     */
+    public function checkAllShoppingItems(Request $request, Plan $plan): JsonResponse
+    {
+        abort_if((int) $plan->team_id !== (int) $request->user()->current_team_id, 403);
+
+        PlanItem::query()
+            ->whereHas('stage', fn ($q) => $q->where('plan_id', $plan->id))
+            ->where('state', PlanItem::STATE_PENDING)
+            ->update([
+                'state' => PlanItem::STATE_BUY,
+                'is_done' => true,
+            ]);
+
+        return response()->json(['checked' => true]);
     }
 
     // ─── Inbox (draft transactions) ──────────────────────────────
