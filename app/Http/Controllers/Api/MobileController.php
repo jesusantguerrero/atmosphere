@@ -150,68 +150,77 @@ class MobileController extends Controller
             }
         }
 
-        $groups = Category::where([
+        // All outflow groups (everything except Ready to Assign and Inflow).
+        // This INCLUDES Credit Card Payments — matching the web's useBudget.ts
+        // where outflow = data.filter(g => g.name != 'Inflow').
+        $allOutflow = Category::where([
             'team_id' => $teamId,
             'resource_type' => 'transactions',
         ])
             ->whereNull('parent_id')
             ->whereNot('name', BudgetReservedNames::READY_TO_ASSIGN->value)
             ->whereNot('name', BudgetReservedNames::INFLOW->value)
-            ->whereNot('name', BudgetReservedNames::CREDIT_CARD_PAYMENTS->value)
             ->orderBy('index')
             ->with(['subCategories', 'subCategories.budget', 'subCategories.account'])
-            ->get()
-            ->map(function (Category $group) use ($service, $month) {
-                $children = $group->subCategories->map(function (Category $cat) use ($service, $month) {
-                    try {
-                        $data = $service->getBudgetData($cat, $month);
-                    } catch (\Throwable) {
-                        $data = [];
+            ->get();
+
+        $mapChildren = function (Category $group) use ($service, $month) {
+            return $group->subCategories->map(function (Category $cat) use ($service, $month) {
+                try {
+                    $data = $service->getBudgetData($cat, $month);
+                } catch (\Throwable) {
+                    $data = [];
+                }
+
+                $target = null;
+                if ($cat->budget) {
+                    $bt = $cat->budget;
+                    $available = (float) ($data['available'] ?? 0);
+                    $targetAmount = (float) $bt->amount;
+                    $needed = max(0, $targetAmount - $available);
+
+                    $dueDate = null;
+                    if ($bt->frequency === 'monthly' && $bt->frequency_month_date) {
+                        $monthCarbon = \Carbon\Carbon::parse($month);
+                        $day = min((int) $bt->frequency_month_date, $monthCarbon->daysInMonth);
+                        $dueDate = $monthCarbon->copy()->day($day)->format('Y-m-d');
+                    } elseif ($bt->frequency_date) {
+                        $dueDate = \Carbon\Carbon::parse($bt->frequency_date)->format('Y-m-d');
                     }
 
-                    $target = null;
-                    if ($cat->budget) {
-                        $bt = $cat->budget;
-                        $available = (float) ($data['available'] ?? 0);
-                        $targetAmount = (float) $bt->amount;
-                        $needed = max(0, $targetAmount - $available);
-
-                        // Build the due date for the requested month from frequency_month_date.
-                        $dueDate = null;
-                        if ($bt->frequency === 'monthly' && $bt->frequency_month_date) {
-                            $monthCarbon = \Carbon\Carbon::parse($month);
-                            $day = min((int) $bt->frequency_month_date, $monthCarbon->daysInMonth);
-                            $dueDate = $monthCarbon->copy()->day($day)->format('Y-m-d');
-                        } elseif ($bt->frequency_date) {
-                            $dueDate = \Carbon\Carbon::parse($bt->frequency_date)->format('Y-m-d');
-                        }
-
-                        $target = [
-                            'amount' => $targetAmount,
-                            'needed' => round($needed, 2),
-                            'due_date' => $dueDate,
-                            'frequency' => strtoupper($bt->frequency ?? 'MONTHLY'),
-                            'target_type' => $bt->target_type,
-                        ];
-                    }
-
-                    return [
-                        'id' => $cat->id,
-                        'name' => $cat->name,
-                        'budgeted' => (float) ($data['budgeted'] ?? 0),
-                        'activity' => (float) ($data['activity'] ?? 0),
-                        'available' => (float) ($data['available'] ?? 0),
-                        'left_from_last_month' => (float) ($data['left_from_last_month'] ?? 0),
-                        'funded_spending' => (float) ($data['funded_spending'] ?? 0),
-                        'payments' => (float) ($data['payments'] ?? 0),
-                        'has_target' => $cat->budget !== null,
-                        'target' => $target,
+                    $target = [
+                        'amount' => $targetAmount,
+                        'needed' => round($needed, 2),
+                        'due_date' => $dueDate,
+                        'frequency' => strtoupper($bt->frequency ?? 'MONTHLY'),
+                        'target_type' => $bt->target_type,
                     ];
-                });
+                }
+
+                return [
+                    'id' => $cat->id,
+                    'name' => $cat->name,
+                    'budgeted' => (float) ($data['budgeted'] ?? 0),
+                    'activity' => (float) ($data['activity'] ?? 0),
+                    'available' => (float) ($data['available'] ?? 0),
+                    'left_from_last_month' => (float) ($data['left_from_last_month'] ?? 0),
+                    'funded_spending' => (float) ($data['funded_spending'] ?? 0),
+                    'payments' => (float) ($data['payments'] ?? 0),
+                    'has_target' => $cat->budget !== null,
+                    'target' => $target,
+                ];
+            });
+        };
+
+        $groups = $allOutflow
+            ->map(function (Category $group) use ($mapChildren) {
+                $isCreditCards = $group->name === BudgetReservedNames::CREDIT_CARD_PAYMENTS->value;
+                $children = $mapChildren($group);
 
                 return [
                     'id' => $group->id,
                     'name' => $group->name,
+                    'kind' => $isCreditCards ? 'credit_card_payments' : 'expense',
                     'budgeted' => $children->sum('budgeted'),
                     'activity' => $children->sum('activity'),
                     'available' => $children->sum('available'),
@@ -220,15 +229,35 @@ class MobileController extends Controller
             })
             ->values();
 
+        // RTA uses ALL outflow budgeted (including Credit Card Payments) — same as web.
         $totalAssigned = $groups->sum('budgeted');
         $readyToAssign = (float) ($inflowData['activity'] ?? 0)
             + (float) ($inflowData['left_from_last_month'] ?? 0)
             - $totalAssigned;
 
+        // Reconciliation summary (mirrors BudgetReconcileBanner.vue).
+        $availableTotal = $groups->sum('available');
+        $budgetTotal = round($availableTotal + $readyToAssign, 2);
+
+        // Cash in on-budget accounts (exclude credit cards and resource accounts).
+        $cashInAccounts = (float) Account::where('team_id', $teamId)
+            ->whereNull('credit_closing_day')
+            ->whereNull('resource_type_id')
+            ->sum('balance');
+
+        $difference = round($budgetTotal - $cashInAccounts, 2);
+
         return response()->json([
             'month' => substr($month, 0, 7),
             'ready_to_assign' => round($readyToAssign, 2),
             'groups' => $groups,
+            'summary' => [
+                'available' => round($availableTotal, 2),
+                'to_assign' => round($readyToAssign, 2),
+                'budget_total' => $budgetTotal,
+                'cash_in_accounts' => round($cashInAccounts, 2),
+                'difference' => $difference,
+            ],
         ]);
     }
 

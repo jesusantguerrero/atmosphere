@@ -408,9 +408,10 @@ Tipos de item: `budget_category`, `credit_card_payment`, `planned_transaction`.
 ```jsonc
 {
   "month": "2026-10",
-  "ready_to_assign": 0.00,
+  "ready_to_assign": -1000.00,
   "groups": [
-    { "id": 10, "name": "Gastos del hogar", "budgeted": 35000.0, "activity": -18500.0, "available": 16500.0,
+    { "id": 10, "name": "Gastos del hogar", "kind": "expense",
+      "budgeted": 35000.0, "activity": -18500.0, "available": 16500.0,
       "children": [
         { "id": 153, "name": "Comida", "budgeted": 20000.0, "activity": -12000.0, "available": 8000.0,
           "left_from_last_month": 0.0, "funded_spending": 0.0, "payments": 0.0, "has_target": true,
@@ -418,12 +419,27 @@ Tipos de item: `budget_category`, `credit_card_payment`, `planned_transaction`.
         { "id": 154, "name": "Alquiler", "budgeted": 15000.0, "activity": -6500.0, "available": 8500.0,
           "left_from_last_month": 0.0, "funded_spending": 0.0, "payments": 0.0, "has_target": false,
           "target": null }
+      ] },
+    { "id": 99, "name": "Credit Card Payments", "kind": "credit_card_payments",
+      "budgeted": 110506.59, "activity": -90000.0, "available": 20506.59,
+      "children": [
+        { "id": 500, "name": "Qik Visa Clásica", "budgeted": 110506.59, "activity": -90000.0, "available": 20506.59,
+          "left_from_last_month": 0.0, "funded_spending": 0.0, "payments": 0.0, "has_target": false, "target": null }
       ] }
-  ]
+  ],
+  "summary": {
+    "available": 1509751.30,
+    "to_assign": -1000.00,
+    "budget_total": 1508751.30,
+    "cash_in_accounts": 1477084.79,
+    "difference": 31666.51
+  }
 }
 ```
 RTA = `inflow.activity + inflow.left_from_last_month - totalAssigned` (misma fórmula que la web).
-Excluye los grupos reservados: `Ready to Assign`, `Inflow`, `Credit Card Payments`.
+`totalAssigned` = sum of `budgeted` across ALL outflow groups (including Credit Card Payments).
+Each group has `kind`: `"expense"` or `"credit_card_payments"`. Excludes only `Ready to Assign` and `Inflow`.
+`summary`: reconciliation data matching `BudgetReconcileBanner.vue`. `cash_in_accounts` = sum of on-budget account balances (excludes credit cards and resource-type accounts).
 
 ### 13. Asignar presupuesto — `POST /api/mobile/budget/assign`  (Bearer)
 ```jsonc
