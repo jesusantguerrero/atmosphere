@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import axios from 'axios';
-import { useI18n } from 'vue-i18n';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import axios from "axios";
+import { useI18n } from "vue-i18n";
 
 const { t } = useI18n();
 
 interface Item {
     id: number;
     title: string;
-    state: 'pending' | 'buy' | 'skip';
+    state: "pending" | "buy" | "skip";
     is_done: boolean;
     order: number;
 }
@@ -55,50 +55,56 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-    (e: 'switch', id: number): void;
-    (e: 'create', name: string): void;
-    (e: 'rename', payload: { id: number; name: string }): void;
-    (e: 'delete', id: number): void;
-    (e: 'import', payload: { name: string; text: string }): void;
+    (e: "switch", id: number): void;
+    (e: "create", name: string): void;
+    (e: "rename", payload: { id: number; name: string }): void;
+    (e: "delete", id: number): void;
+    (e: "import", payload: { name: string; text: string }): void;
 }>();
 
 const showListMenu = ref(false);
 const showImport = ref(false);
-const importName = ref('');
-const importText = ref('');
+const importName = ref("");
+const importText = ref("");
 
 const chooseList = (id: number) => {
     showListMenu.value = false;
-    emit('switch', id);
+    emit("switch", id);
 };
 const promptCreate = () => {
     showListMenu.value = false;
-    const name = window.prompt('Name of the new list?');
-    if (name && name.trim()) emit('create', name.trim());
+    const name = window.prompt("Name of the new list?");
+    if (name && name.trim()) emit("create", name.trim());
 };
 const promptRename = () => {
     showListMenu.value = false;
-    const name = window.prompt('Rename list', props.plan.name);
-    if (name && name.trim()) emit('rename', { id: props.plan.id, name: name.trim() });
+    const name = window.prompt("Rename list", props.plan.name);
+    if (name && name.trim())
+        emit("rename", { id: props.plan.id, name: name.trim() });
 };
 const confirmDelete = () => {
     showListMenu.value = false;
-    if (window.confirm(t('Delete "{name}" and all its items?', { name: props.plan.name }))) emit('delete', props.plan.id);
+    if (
+        window.confirm(
+            t('Delete "{name}" and all its items?', { name: props.plan.name }),
+        )
+    )
+        emit("delete", props.plan.id);
 };
 const openImport = () => {
     showListMenu.value = false;
-    importName.value = '';
-    importText.value = '';
+    importName.value = "";
+    importText.value = "";
     showImport.value = true;
 };
 const submitImport = () => {
     if (!importText.value.trim()) return;
-    emit('import', { name: importName.value.trim(), text: importText.value });
+    emit("import", { name: importName.value.trim(), text: importText.value });
     showImport.value = false;
 };
 
 const stages = ref<Stage[]>(JSON.parse(JSON.stringify(props.plan.stages)));
-const composer = ref<string>('');
+const composer = ref<string>("");
 const sending = ref(false);
 
 watch(
@@ -106,7 +112,7 @@ watch(
     (next) => {
         stages.value = JSON.parse(JSON.stringify(next.stages));
     },
-    { deep: true }
+    { deep: true },
 );
 
 const allItems = computed<Item[]>(() => stages.value.flatMap((s) => s.items));
@@ -120,8 +126,8 @@ const STATE_ORDER = { pending: 0, buy: 1, skip: 2 } as const;
 // The default list's raw name is a system constant (e.g. SHOPPING_LIST); show a
 // friendly translated title instead — this is the only screen a shared guest sees.
 const listTitle = computed(() => {
-    const n = (props.plan.name ?? '').trim();
-    return /^[A-Z][A-Z0-9_]+$/.test(n) ? t('Shopping list') : n;
+    const n = (props.plan.name ?? "").trim();
+    return /^[A-Z][A-Z0-9_]+$/.test(n) ? t("Shopping list") : n;
 });
 const visibleItems = computed<Item[]>(() =>
     [...allItems.value].sort((a, b) => {
@@ -129,7 +135,7 @@ const visibleItems = computed<Item[]>(() =>
         const sb = STATE_ORDER[b.state];
         if (sa !== sb) return sa - sb;
         return a.order - b.order;
-    })
+    }),
 );
 
 // Categories = stages. Section headers show only when >1 stage; a single
@@ -145,14 +151,14 @@ const visibleSections = computed(() =>
             if (sa !== sb) return sa - sb;
             return a.order - b.order;
         }),
-    }))
+    })),
 );
 
 const counts = computed(() => ({
     total: allItems.value.length,
-    pending: allItems.value.filter((i) => i.state === 'pending').length,
-    buy: allItems.value.filter((i) => i.state === 'buy').length,
-    skip: allItems.value.filter((i) => i.state === 'skip').length,
+    pending: allItems.value.filter((i) => i.state === "pending").length,
+    buy: allItems.value.filter((i) => i.state === "buy").length,
+    skip: allItems.value.filter((i) => i.state === "skip").length,
 }));
 
 const findItem = (id: number) => allItems.value.find((i) => i.id === id);
@@ -178,17 +184,78 @@ const addItemLocally = (item: Item) => {
     if (stages.value[0]) stages.value[0].items.push(item);
 };
 
-const cycleItem = async (item: Item) => {
-    const previous = item.state;
-    const next: Item['state'] =
-        previous === 'pending' ? 'buy' : previous === 'buy' ? 'skip' : 'pending';
-
-    applyItemUpdate({ id: item.id, state: next, is_done: next === 'buy' });
+// ─── Stage (category) CRUD ──────────────────────────────────────
+const addCategory = async () => {
+    const name = window.prompt(t("Category name"));
+    if (!name || !name.trim()) return;
 
     try {
-        await axios.post(props.endpoints.cycle(item.id), { state: next }, requestConfig());
+        const { data } = await axios.post(`${props.apiBase}/stages`, {
+            name: name.trim(),
+        });
+        stages.value.push({ id: data.id, name: data.name, items: [] });
     } catch {
-        applyItemUpdate({ id: item.id, state: previous, is_done: previous === 'buy' });
+        // silent
+    }
+};
+
+const renameCategory = async (stage: Stage) => {
+    const name = window.prompt(t("Rename category"), stage.name);
+    if (!name || !name.trim() || name.trim() === stage.name) return;
+
+    try {
+        await axios.patch(`${props.apiBase}/stages/${stage.id}`, {
+            name: name.trim(),
+        });
+        stage.name = name.trim();
+    } catch {
+        // silent
+    }
+};
+
+const deleteCategory = async (stage: Stage) => {
+    if (
+        !window.confirm(
+            t('Delete "{name}"? Items will move to the first category.', {
+                name: stage.name,
+            }),
+        )
+    )
+        return;
+
+    const fallback = stages.value.find((s) => s.id !== stage.id);
+    try {
+        await axios.delete(`${props.apiBase}/stages/${stage.id}`);
+        if (fallback) fallback.items.push(...stage.items);
+        stages.value = stages.value.filter((s) => s.id !== stage.id);
+    } catch {
+        // silent
+    }
+};
+
+const cycleItem = async (item: Item) => {
+    const previous = item.state;
+    const next: Item["state"] =
+        previous === "pending"
+            ? "buy"
+            : previous === "buy"
+              ? "skip"
+              : "pending";
+
+    applyItemUpdate({ id: item.id, state: next, is_done: next === "buy" });
+
+    try {
+        await axios.post(
+            props.endpoints.cycle(item.id),
+            { state: next },
+            requestConfig(),
+        );
+    } catch {
+        applyItemUpdate({
+            id: item.id,
+            state: previous,
+            is_done: previous === "buy",
+        });
     }
 };
 
@@ -198,16 +265,20 @@ const submitComposer = async () => {
 
     sending.value = true;
     try {
-        const response = await axios.post(props.endpoints.add, { title }, requestConfig());
+        const response = await axios.post(
+            props.endpoints.add,
+            { title },
+            requestConfig(),
+        );
         const created: Item = {
             id: response.data.id,
             title: response.data.title,
-            state: response.data.state ?? 'pending',
-            is_done: response.data.state === 'buy',
+            state: response.data.state ?? "pending",
+            is_done: response.data.state === "buy",
             order: response.data.order ?? allItems.value.length + 1,
         };
         addItemLocally(created);
-        composer.value = '';
+        composer.value = "";
     } finally {
         sending.value = false;
     }
@@ -215,7 +286,12 @@ const submitComposer = async () => {
 
 const removeItem = async (item: Item) => {
     if (!props.endpoints.destroy) return;
-    if (!window.confirm(t('Remove "{title}" from this list?', { title: item.title }))) return;
+    if (
+        !window.confirm(
+            t('Remove "{title}" from this list?', { title: item.title }),
+        )
+    )
+        return;
 
     const snapshot = stages.value.map((s) => ({ ...s, items: [...s.items] }));
     removeItemLocally(item.id);
@@ -228,33 +304,39 @@ const removeItem = async (item: Item) => {
 };
 
 const reset = async () => {
-    if (!window.confirm(t('Reset every item to pending? This starts a fresh trip.'))) return;
+    if (
+        !window.confirm(
+            t("Reset every item to pending? This starts a fresh trip."),
+        )
+    )
+        return;
     await axios.post(props.endpoints.reset, {}, requestConfig());
     for (const stage of stages.value) {
         for (const item of stage.items) {
-            item.state = 'pending';
+            item.state = "pending";
             item.is_done = false;
         }
     }
 };
 
-const stateClass = (state: Item['state']) => {
-    if (state === 'buy') return 'bg-success/10 text-body border-success/40';
-    if (state === 'skip') return 'bg-error/5 text-body-1/50 border-error/30 line-through';
-    return 'bg-base-lvl-2 text-body border-base';
+const stateClass = (state: Item["state"]) => {
+    if (state === "buy") return "bg-success/10 text-body border-success/40";
+    if (state === "skip")
+        return "bg-error/5 text-body-1/50 border-error/30 line-through";
+    return "bg-base-lvl-2 text-body border-base";
 };
 
-const stateIcon = (state: Item['state']) => {
-    if (state === 'buy') return 'fa-check text-success';
-    if (state === 'skip') return 'fa-xmark text-error';
-    return 'fa-circle text-body-1/30';
+const stateIcon = (state: Item["state"]) => {
+    if (state === "buy") return "fa-check text-success";
+    if (state === "skip") return "fa-xmark text-error";
+    return "fa-circle text-body-1/30";
 };
 
 // Tag the OneSignal subscription with this list's share token so the backend
 // listener can target push notifications to everyone viewing this list. We
 // only tag when sharing is enabled (i.e. there's a token to address). The
 // global OneSignal SDK is loaded by app.blade.php and exposed on `window`.
-const oneSignalTagKey = 'shopping_list';
+const oneSignalTagKey = "shopping_list";
 const tagToken = computed<string | null>(() => {
     if (!props.mercureUrl) return null;
     const match = props.mercureUrl.match(/\/shared\/list\/([^?&/]+)/);
@@ -274,17 +356,23 @@ declare global {
 const oneSignalSubscriptionId = ref<string | null>(null);
 
 const captureOneSignalSubscriptionId = () => {
-    if (typeof window === 'undefined' || !window.OneSignalDeferred) return;
+    if (typeof window === "undefined" || !window.OneSignalDeferred) return;
     window.OneSignalDeferred.push(async (OneSignal: any) => {
         try {
             const id = OneSignal?.User?.PushSubscription?.id;
             if (id) oneSignalSubscriptionId.value = String(id);
             // The id may not be available right away (subscription not opted-in
             // yet). Listen for the `change` event so we capture it on opt-in.
-            OneSignal?.User?.PushSubscription?.addEventListener?.('change', (event: any) => {
-                const next = event?.current?.id ?? OneSignal?.User?.PushSubscription?.id ?? null;
-                oneSignalSubscriptionId.value = next ? String(next) : null;
-            });
+            OneSignal?.User?.PushSubscription?.addEventListener?.(
+                "change",
+                (event: any) => {
+                    const next =
+                        event?.current?.id ??
+                        OneSignal?.User?.PushSubscription?.id ??
+                        null;
+                    oneSignalSubscriptionId.value = next ? String(next) : null;
+                },
+            );
         } catch {
             // Silent — exclusion is best-effort.
         }
@@ -292,7 +380,7 @@ const captureOneSignalSubscriptionId = () => {
 };
 
 const tagOneSignal = (token: string) => {
-    if (typeof window === 'undefined' || !window.OneSignalDeferred) return;
+    if (typeof window === "undefined" || !window.OneSignalDeferred) return;
     window.OneSignalDeferred.push(async (OneSignal: any) => {
         try {
             await OneSignal.User.addTag(oneSignalTagKey, token);
@@ -303,7 +391,7 @@ const tagOneSignal = (token: string) => {
 };
 
 const untagOneSignal = () => {
-    if (typeof window === 'undefined' || !window.OneSignalDeferred) return;
+    if (typeof window === "undefined" || !window.OneSignalDeferred) return;
     window.OneSignalDeferred.push(async (OneSignal: any) => {
         try {
             await OneSignal.User.removeTag(oneSignalTagKey);
@@ -318,7 +406,7 @@ const untagOneSignal = () => {
 const requestConfig = () => {
     const headers: Record<string, string> = {};
     if (oneSignalSubscriptionId.value) {
-        headers['X-OneSignal-Subscription-Id'] = oneSignalSubscriptionId.value;
+        headers["X-OneSignal-Subscription-Id"] = oneSignalSubscriptionId.value;
     }
     return { headers };
 };
@@ -327,36 +415,41 @@ const requestConfig = () => {
 let eventSource: EventSource | null = null;
 
 const wireMercure = () => {
-    if (!props.mercureUrl || typeof window === 'undefined' || typeof EventSource === 'undefined') return;
+    if (
+        !props.mercureUrl ||
+        typeof window === "undefined" ||
+        typeof EventSource === "undefined"
+    )
+        return;
 
     eventSource = new EventSource(props.mercureUrl);
     eventSource.onmessage = (event) => {
         try {
             const payload = JSON.parse(event.data);
-            if (payload.action === 'reset') {
+            if (payload.action === "reset") {
                 for (const stage of stages.value) {
                     for (const item of stage.items) {
-                        item.state = 'pending';
+                        item.state = "pending";
                         item.is_done = false;
                     }
                 }
                 return;
             }
-            if (payload.action === 'deleted' && payload.item) {
+            if (payload.action === "deleted" && payload.item) {
                 removeItemLocally(payload.item.id);
                 return;
             }
-            if (payload.action === 'created' && payload.item) {
+            if (payload.action === "created" && payload.item) {
                 addItemLocally({
                     id: payload.item.id,
                     title: payload.item.title,
-                    state: payload.item.state ?? 'pending',
+                    state: payload.item.state ?? "pending",
                     is_done: payload.item.is_done ?? false,
                     order: payload.item.order ?? 0,
                 });
                 return;
             }
-            if (payload.action === 'updated' && payload.item) {
+            if (payload.action === "updated" && payload.item) {
                 applyItemUpdate({
                     id: payload.item.id,
                     state: payload.item.state,
@@ -398,7 +491,9 @@ onBeforeUnmount(() => {
          Using fixed positioning so the chat composer at the bottom of this
          flex column stays visible without the user having to scroll past
          the AppShell chrome to reach it. -->
-    <div class="fixed inset-x-0 top-16 bottom-14 lg:bottom-0 flex flex-col bg-base-lvl-1 z-10">
+    <div
+        class="fixed inset-x-0 top-16 bottom-14 lg:bottom-0 flex flex-col bg-base-lvl-1 z-10"
+    >
         <!-- Header: list name + filter chips + owner controls -->
         <header class="bg-base-lvl-3 border-b border-base">
             <div class="max-w-5xl mx-auto px-4 py-3 w-full">
@@ -411,47 +506,100 @@ onBeforeUnmount(() => {
                             @click="showListMenu = !showListMenu"
                         >
                             <span class="truncate">{{ listTitle }}</span>
-                            <i class="fa fa-chevron-down text-xs text-body-1/60 shrink-0" />
+                            <i
+                                class="fa fa-chevron-down text-xs text-body-1/60 shrink-0"
+                            />
                         </button>
-                        <h1 v-else class="text-lg font-bold text-body truncate">{{ listTitle }}</h1>
+                        <h1 v-else class="text-lg font-bold text-body truncate">
+                            {{ listTitle }}
+                        </h1>
                         <p class="text-xs text-body-1/60 mt-0.5">
-                            {{ $t('{buy} buying · {skip} skipped · {pending} pending', { buy: counts.buy, skip: counts.skip, pending: counts.pending }) }}
+                            {{
+                                $t(
+                                    "{buy} buying · {skip} skipped · {pending} pending",
+                                    {
+                                        buy: counts.buy,
+                                        skip: counts.skip,
+                                        pending: counts.pending,
+                                    },
+                                )
+                            }}
                         </p>
 
                         <template v-if="showListMenu">
-                            <div class="fixed inset-0 z-20" @click="showListMenu = false" />
-                            <div class="absolute left-0 top-9 z-30 w-64 max-w-[80vw] bg-base-lvl-3 border border-base rounded-xl shadow-2xl py-1.5">
+                            <div
+                                class="fixed inset-0 z-20"
+                                @click="showListMenu = false"
+                            />
+                            <div
+                                class="absolute left-0 top-9 z-30 w-64 max-w-[80vw] bg-base-lvl-3 border border-base rounded-xl shadow-2xl py-1.5"
+                            >
                                 <button
                                     v-for="l in lists"
                                     :key="l.id"
                                     type="button"
                                     class="w-full flex items-center justify-between gap-2 px-3 py-2 text-sm text-left hover:bg-base-lvl-2 transition"
-                                    :class="l.id === plan.id ? 'text-primary font-semibold' : 'text-body'"
+                                    :class="
+                                        l.id === plan.id
+                                            ? 'text-primary font-semibold'
+                                            : 'text-body'
+                                    "
                                     @click="chooseList(l.id)"
                                 >
-                                    <span class="truncate flex items-center gap-1.5">
-                                        <i v-if="l.shared" class="fa fa-share-nodes text-[11px] text-body-1/50" />
+                                    <span
+                                        class="truncate flex items-center gap-1.5"
+                                    >
+                                        <i
+                                            v-if="l.shared"
+                                            class="fa fa-share-nodes text-[11px] text-body-1/50"
+                                        />
                                         {{ l.name }}
                                     </span>
-                                    <span class="text-[11px] text-body-1/50 shrink-0">{{ l.pending }}</span>
+                                    <span
+                                        class="text-[11px] text-body-1/50 shrink-0"
+                                        >{{ l.pending }}</span
+                                    >
                                 </button>
                                 <div class="my-1 border-t border-base" />
-                                <button type="button" class="w-full text-left px-3 py-2 text-sm text-body hover:bg-base-lvl-2 transition" @click="promptCreate">
-                                    <i class="fa fa-plus w-4 text-body-1/60" /> {{ $t('New list') }}
+                                <button
+                                    type="button"
+                                    class="w-full text-left px-3 py-2 text-sm text-body hover:bg-base-lvl-2 transition"
+                                    @click="promptCreate"
+                                >
+                                    <i class="fa fa-plus w-4 text-body-1/60" />
+                                    {{ $t("New list") }}
                                 </button>
-                                <button type="button" class="w-full text-left px-3 py-2 text-sm text-body hover:bg-base-lvl-2 transition" @click="openImport">
-                                    <i class="fa fa-paste w-4 text-body-1/60" /> {{ $t('Import from text') }}
+                                <button
+                                    type="button"
+                                    class="w-full text-left px-3 py-2 text-sm text-body hover:bg-base-lvl-2 transition"
+                                    @click="openImport"
+                                >
+                                    <i class="fa fa-paste w-4 text-body-1/60" />
+                                    {{ $t("Import from text") }}
                                 </button>
-                                <button type="button" class="w-full text-left px-3 py-2 text-sm text-body hover:bg-base-lvl-2 transition" @click="promptRename">
-                                    <i class="fa fa-pen w-4 text-body-1/60" /> {{ $t('Rename this list') }}
+                                <button
+                                    type="button"
+                                    class="w-full text-left px-3 py-2 text-sm text-body hover:bg-base-lvl-2 transition"
+                                    @click="promptRename"
+                                >
+                                    <i class="fa fa-pen w-4 text-body-1/60" />
+                                    {{ $t("Rename this list") }}
                                 </button>
-                                <button type="button" class="w-full text-left px-3 py-2 text-sm text-error hover:bg-error/10 transition" @click="confirmDelete">
-                                    <i class="fa fa-trash w-4" /> {{ $t('Delete this list') }}
+                                <button
+                                    type="button"
+                                    class="w-full text-left px-3 py-2 text-sm text-error hover:bg-error/10 transition"
+                                    @click="confirmDelete"
+                                >
+                                    <i class="fa fa-trash w-4" />
+                                    {{ $t("Delete this list") }}
                                 </button>
                             </div>
                         </template>
                     </div>
-                    <div v-if="showOwnerControls" class="flex items-center gap-2 shrink-0">
+                    <div
+                        v-if="showOwnerControls"
+                        class="flex items-center gap-2 shrink-0"
+                    >
                         <!-- Page-level secondary actions (e.g. Share) inject here -->
                         <slot name="header-actions" />
                         <button
@@ -461,7 +609,7 @@ onBeforeUnmount(() => {
                             @click="reset"
                         >
                             <i class="fa fa-rotate-left mr-1" />
-                            {{ $t('Reset') }}
+                            {{ $t("Reset") }}
                         </button>
                     </div>
                 </div>
@@ -476,9 +624,9 @@ onBeforeUnmount(() => {
                     class="flex flex-col items-center justify-center text-center text-body-1/60 py-16 px-6"
                 >
                     <div class="text-4xl mb-2">🛒</div>
-                    <p class="text-sm">{{ $t('Nothing here yet.') }}</p>
+                    <p class="text-sm">{{ $t("Nothing here yet.") }}</p>
                     <p class="text-xs text-body-1/40 mt-1">
-                        {{ $t('Type an item below and hit send.') }}
+                        {{ $t("Type an item below and hit send.") }}
                     </p>
                 </div>
 
@@ -487,13 +635,53 @@ onBeforeUnmount(() => {
                     :key="section.id"
                     v-show="section.items.length || hasCategories"
                 >
-                    <h3
+                    <div
                         v-if="hasCategories"
-                        class="text-[11px] font-bold uppercase tracking-wide text-body-1/60 px-1 mb-2"
+                        class="flex items-center justify-between px-1 mb-2"
                     >
-                        {{ section.name }}
-                    </h3>
-                    <div class="space-y-2 md:space-y-0 md:grid md:grid-cols-2 xl:grid-cols-3 md:gap-2">
+                        <h3
+                            class="text-[11px] font-bold uppercase tracking-wide text-body-1/60"
+                        >
+                            {{ section.name }}
+                        </h3>
+                        <div
+                            v-if="showOwnerControls"
+                            class="flex items-center gap-1"
+                        >
+                            <button
+                                type="button"
+                                class="text-body-1/30 hover:text-body transition px-1"
+                                :title="$t('Rename category')"
+                                @click="
+                                    renameCategory(
+                                        stages.find(
+                                            (s) => s.id === section.id,
+                                        )!,
+                                    )
+                                "
+                            >
+                                <i class="fa fa-pen text-[10px]" />
+                            </button>
+                            <button
+                                v-if="stages.length > 1"
+                                type="button"
+                                class="text-body-1/30 hover:text-error transition px-1"
+                                :title="$t('Delete category')"
+                                @click="
+                                    deleteCategory(
+                                        stages.find(
+                                            (s) => s.id === section.id,
+                                        )!,
+                                    )
+                                "
+                            >
+                                <i class="fa fa-trash text-[10px]" />
+                            </button>
+                        </div>
+                    </div>
+                    <div
+                        class="space-y-2 md:space-y-0 md:grid md:grid-cols-2 xl:grid-cols-3 md:gap-2"
+                    >
                         <div
                             v-for="item in section.items"
                             :key="item.id"
@@ -501,19 +689,24 @@ onBeforeUnmount(() => {
                             :class="stateClass(item.state)"
                             @click="cycleItem(item)"
                         >
-                            <i class="fa text-base shrink-0" :class="stateIcon(item.state)" />
-                            <span class="flex-1 text-sm break-words">{{ item.title }}</span>
+                            <i
+                                class="fa text-base shrink-0"
+                                :class="stateIcon(item.state)"
+                            />
+                            <span class="flex-1 text-sm break-words">{{
+                                item.title
+                            }}</span>
                             <span
                                 v-if="item.state === 'buy'"
                                 class="shrink-0 px-2 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wide bg-success/20 text-success"
                             >
-                                {{ $t('Buying') }}
+                                {{ $t("Buying") }}
                             </span>
                             <span
                                 v-else-if="item.state === 'skip'"
                                 class="shrink-0 px-2 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wide bg-error/15 text-error/70"
                             >
-                                {{ $t('Skip') }}
+                                {{ $t("Skip") }}
                             </span>
                             <button
                                 v-if="endpoints.destroy"
@@ -527,6 +720,16 @@ onBeforeUnmount(() => {
                         </div>
                     </div>
                 </section>
+
+                <button
+                    v-if="showOwnerControls"
+                    type="button"
+                    class="w-full flex items-center justify-center gap-1.5 py-2 text-xs text-body-1/50 hover:text-body transition rounded-lg border border-dashed border-base-lvl-1 hover:border-base"
+                    @click="addCategory"
+                >
+                    <i class="fa fa-plus" />
+                    {{ $t("New category") }}
+                </button>
             </div>
         </main>
 
@@ -563,10 +766,18 @@ onBeforeUnmount(() => {
                 class="fixed inset-0 z-40 flex items-center justify-center p-4 bg-black/50"
                 @click.self="showImport = false"
             >
-                <div class="w-full max-w-lg bg-base-lvl-3 border border-base rounded-2xl shadow-2xl p-4">
-                    <h3 class="font-bold text-body mb-1">{{ $t('Import a list') }}</h3>
+                <div
+                    class="w-full max-w-lg bg-base-lvl-3 border border-base rounded-2xl shadow-2xl p-4"
+                >
+                    <h3 class="font-bold text-body mb-1">
+                        {{ $t("Import a list") }}
+                    </h3>
                     <p class="text-xs text-body-1/60 mb-3">
-                        {{ $t('Paste a list. Lines starting with a dash are items; other lines become categories.') }}
+                        {{
+                            $t(
+                                "Paste a list. Lines starting with a dash are items; other lines become categories.",
+                            )
+                        }}
                     </p>
                     <input
                         v-model="importName"
@@ -586,7 +797,7 @@ onBeforeUnmount(() => {
                             class="text-sm px-3 py-2 rounded-lg text-body-1 hover:bg-base-lvl-2 transition"
                             @click="showImport = false"
                         >
-                            {{ $t('Cancel') }}
+                            {{ $t("Cancel") }}
                         </button>
                         <button
                             type="button"
@@ -594,7 +805,7 @@ onBeforeUnmount(() => {
                             :disabled="!importText.trim()"
                             @click="submitImport"
                         >
-                            {{ $t('Import') }}
+                            {{ $t("Import") }}
                         </button>
                     </div>
                 </div>
