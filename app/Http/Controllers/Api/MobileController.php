@@ -22,6 +22,7 @@ use App\Domains\Meal\Services\MealService;
 use App\Domains\Today\Services\CalendarService;
 use App\Domains\Today\Services\TodayService;
 use App\Domains\Transaction\Models\Transaction;
+use App\Domains\Transaction\Services\CreditCardReportService;
 use App\Domains\Transaction\Services\NextPaymentsService;
 use App\Domains\Transaction\Services\TransactionService;
 use App\Http\Controllers\Controller;
@@ -956,6 +957,37 @@ class MobileController extends Controller
             ->map(fn ($r) => ['id' => $r->id, 'name' => $r->name, 'total' => (float) (string) $r->total])
             ->sortByDesc('total')->values();
 
+        // Credit card summary (same service the web Insights "Tarjetas" tab uses)
+        $ccService = app(CreditCardReportService::class);
+        $creditCards = $ccService->creditCards($teamId, $endDate, $startDate);
+
+        $creditCardData = [
+            'has_credit_cards' => $creditCards['hasCreditCards'],
+            'credit_total' => (float) (string) ($creditCards['creditTotal'] ?? 0),
+            'credit_total_previous' => (float) (string) ($creditCards['creditTotalPrevious'] ?? 0),
+            'credit_total_delta' => (float) (string) ($creditCards['creditTotalDelta'] ?? 0),
+            'credit_capacity' => (float) (string) ($creditCards['creditCapacity'] ?? 0),
+            'credit_line_usage' => (float) ($creditCards['creditLineUsage'] ?? 0),
+            'cards' => collect($creditCards['lastCycleBalances'] ?? [])->map(fn ($c) => [
+                'id' => $c->id,
+                'name' => $c->name,
+                'credit_limit' => (float) (string) ($c->credit_limit ?? 0),
+                'cycle_total' => (float) (string) ($c->total ?? 0),
+                'cycle_from' => $c->from ?? null,
+                'cycle_until' => $c->until ?? null,
+            ])->values(),
+            'top_categories' => collect($creditCards['topCategoriesByCard'] ?? [])->map(fn ($r) => [
+                'card_name' => $r->name,
+                'category' => $r->cat_name,
+                'total' => (float) (string) ($r->total ?? 0),
+            ])->values(),
+            'top_payees' => collect($creditCards['topPayeesByCard'] ?? [])->map(fn ($r) => [
+                'card_name' => $r->name ?? null,
+                'payee' => $r->cat_name ?? null,
+                'total' => (float) (string) ($r->total ?? 0),
+            ])->values(),
+        ];
+
         return response()->json([
             'period' => [
                 'start' => $startDate,
@@ -970,6 +1002,7 @@ class MobileController extends Controller
             'expense_payees' => $expensePayees,
             'income_payees' => $incomePayees,
             'expense_accounts' => $expenseAccounts,
+            'credit_cards' => $creditCardData,
         ]);
     }
 

@@ -634,7 +634,25 @@ Errores: `403` (otro team).
   "income_categories":  [ { "id": 200, "name": "Salario", "total": 510000.0 } ],
   "expense_payees":     [ { "id": 79, "name": "Supermercado Nacional", "total": 45000.0 } ],
   "income_payees":      [ { "id": 90, "name": "Empresa SA", "total": 510000.0 } ],
-  "expense_accounts":   [ { "id": 101, "name": "BHD Cuenta Corriente", "total": 180000.0 } ]
+  "expense_accounts":   [ { "id": 101, "name": "BHD Cuenta Corriente", "total": 180000.0 } ],
+  "credit_cards": {
+    "has_credit_cards": true,
+    "credit_total": 45000.0,           // total del último ciclo (todas las tarjetas)
+    "credit_total_previous": 38000.0,  // ciclo anterior
+    "credit_total_delta": 7000.0,      // diferencia
+    "credit_capacity": 290000.0,       // suma de credit_limit
+    "credit_line_usage": 15.52,        // % utilización
+    "cards": [
+      { "id": 5, "name": "BHD Visa Gold", "credit_limit": 290000.0,
+        "cycle_total": 45000.0, "cycle_from": "2026-09-15", "cycle_until": "2026-10-15" }
+    ],
+    "top_categories": [
+      { "card_name": "BHD Visa Gold", "category": "Comida", "total": 18000.0 }
+    ],
+    "top_payees": [
+      { "card_name": "BHD Visa Gold", "payee": "Supermercado Nacional", "total": 12000.0 }
+    ]
+  }
 }
 ```
 Query params:
@@ -644,6 +662,7 @@ Query params:
 
 `months[].income/expense` = flujo mensual. `assets/debts` = patrimonio a cierre de mes (debts negativo).
 Categorías/payees/cuentas son totales del periodo completo, ordenados de mayor a menor.
+`credit_cards` incluye resumen de tarjetas de crédito: total del ciclo actual vs anterior, utilización, y top categorías/payees por tarjeta (misma fuente que la web: `CreditCardReportService`).
 Misma fuente de datos que `FinanceTrendController::insights` (web), reformateado para mobile.
 
 ### 35. Borrar cuenta — `DELETE /api/mobile/account`  (Bearer)
