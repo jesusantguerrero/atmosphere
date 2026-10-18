@@ -916,30 +916,24 @@ class MobileController extends Controller
             ]);
         }
 
-        // Category breakdowns
-        $groups = TransactionService::getCategoryExpensesGroup($teamId, $startDate, $endDate, null, null);
-
-        // Expense categories — flatten groups into a single list
-        $expenseCategories = collect($groups)->flatMap(function ($group) {
-            return collect($group['categories'] ?? [])->map(fn ($cat) => [
-                'id' => $cat['id'] ?? null,
-                'name' => $cat['name'] ?? 'Unknown',
-                'total' => (float) ($cat['total'] ?? 0),
-            ]);
-        })->filter(fn ($c) => $c['total'] > 0)->sortByDesc('total')->values();
+        // Expense categories from incomeExpenses (already per-category with totals as arrays)
+        $expenseCategories = collect($incomeExpenses['expenses'] ?? [])->map(fn ($row) => [
+            'id' => $row['id'] ?? null,
+            'name' => $row['name'] ?? 'Unknown',
+            'total' => (float) ($row['total'] ?? 0),
+        ])->filter(fn ($c) => $c['total'] > 0)->sortByDesc('total')->values();
 
         // Income categories from incomeExpenses
         $incomeCategories = collect($incomeExpenses['incomes'] ?? [])->map(fn ($row) => [
             'id' => $row['id'] ?? null,
             'name' => $row['name'] ?? 'Unknown',
-            'total' => (float) collect($row)->except(['id', 'name', 'account_id', 'currency_code'])->sum(fn ($v) => (float) (string) $v),
+            'total' => (float) ($row['total'] ?? 0),
         ])->filter(fn ($c) => $c['total'] > 0)->sortByDesc('total')->values();
 
-        // Payee breakdowns
+        // Payee breakdowns (grouped by name; payee id not selected by the query)
         $expensePayees = TransactionService::getExpensePayeesInPeriod($teamId, $startDate, $endDate)
             ->groupBy('name')
             ->map(fn ($rows, $name) => [
-                'id' => $rows->first()->id ?? null,
                 'name' => $name,
                 'total' => (float) $rows->sum('total'),
             ])
@@ -948,7 +942,6 @@ class MobileController extends Controller
         $incomePayees = TransactionService::getTransactionsByPayeeInPeriod($teamId, $startDate, $endDate, Transaction::DIRECTION_DEBIT)
             ->groupBy('name')
             ->map(fn ($rows, $name) => [
-                'id' => $rows->first()->id ?? null,
                 'name' => $name,
                 'total' => (float) $rows->sum('total'),
             ])
