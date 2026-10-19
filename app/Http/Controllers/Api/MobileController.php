@@ -1378,6 +1378,7 @@ class MobileController extends Controller
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'owner' => ['nullable', 'string', 'max:255'],
+            'due_date' => ['nullable', 'date'],
             'recurrence' => ['nullable', 'string', 'in:daily,weekdays,weekly,once'],
         ]);
 
@@ -1404,6 +1405,10 @@ class MobileController extends Controller
             $itemData['rrule'] = PlanItem::rruleForPreset($validated['recurrence']);
         }
 
+        if (array_key_exists('due_date', $validated)) {
+            $itemData['commit_date'] = $validated['due_date'];
+        }
+
         $item = PlanItem::create($itemData);
 
         // Save the owner field if provided.
@@ -1420,6 +1425,7 @@ class MobileController extends Controller
                 'title' => $item->title,
                 'is_done' => (bool) $item->is_done,
                 'rrule' => $item->rrule,
+                'commit_date' => $item->commit_date,
             ],
         ], 201);
     }
@@ -1434,6 +1440,7 @@ class MobileController extends Controller
         $validated = $request->validate([
             'title' => ['sometimes', 'string', 'max:255'],
             'owner' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'due_date' => ['sometimes', 'nullable', 'date'],
             'recurrence' => ['sometimes', 'nullable', 'string', 'in:daily,weekdays,weekly,once'],
         ]);
 
@@ -1448,6 +1455,14 @@ class MobileController extends Controller
         }
 
         $item->save();
+
+        // commit_date set via withoutEvents to bypass the PlanItem::updating
+        // hook which nullifies it when is_done is false.
+        if (array_key_exists('due_date', $validated)) {
+            PlanItem::withoutEvents(function () use ($item, $validated) {
+                $item->update(['commit_date' => $validated['due_date']]);
+            });
+        }
 
         if (array_key_exists('owner', $validated)) {
             $item->load('stage.board');

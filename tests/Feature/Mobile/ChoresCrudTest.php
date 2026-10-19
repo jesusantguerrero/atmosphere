@@ -88,6 +88,46 @@ class ChoresCrudTest extends TestCase
         ])->assertForbidden();
     }
 
+    public function test_update_chore_due_date(): void
+    {
+        [$user, $item] = $this->makeChore();
+        Sanctum::actingAs($user);
+
+        $response = $this->patchJson("/api/mobile/chores/{$item->id}", [
+            'due_date' => '2026-10-25',
+        ])->assertOk();
+
+        $this->assertEquals('2026-10-25', $item->fresh()->commit_date);
+        $this->assertEquals('2026-10-25', $response->json('commit_date'));
+    }
+
+    public function test_update_chore_clear_due_date(): void
+    {
+        [$user, $item] = $this->makeChore();
+        Sanctum::actingAs($user);
+
+        $item->forceFill(['commit_date' => '2026-10-20'])->save();
+
+        $this->patchJson("/api/mobile/chores/{$item->id}", [
+            'due_date' => null,
+        ])->assertOk();
+
+        $this->assertNull($item->fresh()->commit_date);
+    }
+
+    public function test_store_chore_with_due_date(): void
+    {
+        [$user, $item] = $this->makeChore();
+        Sanctum::actingAs($user);
+
+        $response = $this->postJson('/api/mobile/chores', [
+            'title' => 'New chore with date',
+            'due_date' => '2026-11-01',
+        ])->assertCreated();
+
+        $this->assertEquals('2026-11-01', $response->json('data.commit_date'));
+    }
+
     public function test_cannot_delete_other_teams_chore(): void
     {
         [$user, $item] = $this->makeChore();
