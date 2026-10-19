@@ -668,6 +668,52 @@ Agrega 3 fuentes: planners, billing cycles, occurrences. `kind` ∈ `planner|bil
 ```
 `day` = 0–6 (lunes–domingo). `current`/`next` calculados contra la hora local del team.
 
+### 16b. Crear bloque — `POST /api/mobile/routine/{plan}/blocks`  (Bearer)
+```jsonc
+// Request
+{ "day": 0, "title": "Morning workout", "start": "09:00", "end": "10:00", "color": "#FF5733", "member_id": null, "note": "Gym session" }
+// Response 201
+{ "id": 88, "day": 0, "title": "Morning workout", "start": "09:00", "end": "10:00", "color": "#FF5733", "member_id": null, "note": "Gym session", "date": null, "skip": false }
+```
+`day` 0–6 (Mon–Sun). `color`, `member_id`, `note` opcionales. Soporta `date` (excepción puntual) y `skip` (anular bloque).
+
+### 16c. Editar bloque — `PUT /api/mobile/routine/{plan}/blocks/{item}`  (Bearer)
+```jsonc
+// Request (misma forma que 16b, todos requeridos)
+{ "day": 1, "title": "Yoga", "start": "07:00", "end": "08:00", "color": "#33FF57" }
+// Response 200
+{ "id": 88, "day": 1, "title": "Yoga", "start": "07:00", "end": "08:00", ... }
+```
+
+### 16d. Eliminar bloque — `DELETE /api/mobile/routine/{plan}/blocks/{item}`  (Bearer)
+```jsonc
+// Response 200
+{ "deleted": true }
+```
+
+### 16e. Copiar día — `POST /api/mobile/routine/{plan}/copy-day`  (Bearer)
+```jsonc
+// Request
+{ "from": 0, "to": [1, 2], "mode": "replace" }
+// Response 201
+{ "blocks": [ /* bloques creados */ ], "mode": "replace", "replaced": [1, 2] }
+```
+`mode`: `replace` (borra destino primero, default) o `append` (agrega sin borrar).
+
+### 16f. Categorías de rutina — `GET /api/mobile/routine/{plan}/categories`  (Bearer)
+```jsonc
+// Response 200
+{ "categories": [ { "color": "#FF0000", "name": "Work" }, { "color": "#00FF00", "name": "Exercise" } ] }
+```
+
+### 16g. Guardar categorías — `PUT /api/mobile/routine/{plan}/categories`  (Bearer)
+```jsonc
+// Request
+{ "categories": [ { "color": "#FF0000", "name": "Work" }, { "color": "#00FF00", "name": "Exercise" } ] }
+// Response 200
+{ "categories": [ ... ] }
+```
+
 ### 17. Crear evento — `POST /api/mobile/events`  (Bearer)
 ```jsonc
 { "name": "Cita médico", "date": "2026-10-20", "end_date": null, "notes": null, "total": null, "source": null }
