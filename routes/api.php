@@ -72,8 +72,10 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
     Route::post('/budget/categories/{category}/targets/{target}/complete', [MobileController::class, 'completeBudgetTarget'])->name('budget.targets.complete');
     Route::patch('/budget/categories/{category}/snooze-target', [MobileController::class, 'snoozeBudgetTarget'])->name('budget.targets.snooze');
 
-    // Category transactions
+    // Category transactions + movements
     Route::get('/budget/categories/{category}/transactions', [MobileController::class, 'categoryTransactions'])->name('budget.categories.transactions');
+    Route::get('/budget/categories/{category}/movements', [MobileController::class, 'categoryMovements'])->name('budget.categories.movements');
+    Route::delete('/budget/movements/{movement}', [MobileController::class, 'destroyMovement'])->name('budget.movements.destroy');
 
     Route::get('/calendar', [MobileController::class, 'calendar'])->name('calendar');
     Route::get('/routine', [MobileController::class, 'routine'])->name('routine');

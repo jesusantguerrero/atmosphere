@@ -557,6 +557,44 @@ El target completo en `GET /budget` ahora incluye: `id`, `target_type`, `amount`
 ```
 Filtra por `category_id` y rango del mes. `month` es obligatorio. Paginado con `page` y `limit` (default 50, max 100).
 
+### 14g. Pagos de tarjeta de crédito — enrichment en `GET /api/mobile/budget`
+
+Las categorías hijas del grupo `credit_card_payments` incluyen un campo `payment`:
+```jsonc
+{
+  "id": 42, "name": "Visa Gold Payment", "payment": {
+    "account_id": 7,
+    "owed": 15000.00,       // max(0, -account.balance)
+    "set_aside": 10000.00,  // = available (budgeted for this category)
+    "gap": 5000.00,         // max(0, owed - set_aside)
+    "coverage_pct": 66,     // min(100, round(set_aside/owed * 100))
+    "ready_to_pay": false   // gap <= 0
+  }
+}
+```
+Para categorías que NO pertenecen al grupo CC, `payment` es `null`.
+
+### 14h. Movimientos de una categoría — `GET /api/mobile/budget/categories/{id}/movements?month=YYYY-MM`  (Bearer)
+```jsonc
+// GET /api/mobile/budget/categories/42/movements?month=2026-10
+{
+  "data": [
+    { "id": 1, "type": "movement",   // "movement" | "assignment"
+      "amount": 500.00, "date": "2026-10-18",
+      "from": { "id": 42, "name": "Groceries" },
+      "to":   { "id": 43, "name": "Transport" },
+      "created_at": "2026-10-18T14:30:00+00:00" }
+  ]
+}
+```
+Devuelve movimientos y asignaciones que involucren la categoría dada en el mes. `type=assignment` tiene `from: null`.
+
+### 14i. Eliminar movimiento — `DELETE /api/mobile/budget/movements/{id}`  (Bearer)
+```jsonc
+{ "success": true }
+```
+Revierte el movimiento (devuelve fondos al origen) y elimina el registro. Recalcula rollover.
+
 ### 15. Calendario — `GET /api/mobile/calendar?month=YYYY-MM`  (Bearer)
 ```jsonc
 {
