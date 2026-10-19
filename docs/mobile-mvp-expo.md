@@ -428,18 +428,21 @@ Tipos de item: `budget_category`, `credit_card_payment`, `planned_transaction`.
       ] }
   ],
   "summary": {
-    "available": 1509751.30,
-    "to_assign": -1000.00,
-    "budget_total": 1508751.30,
-    "cash_in_accounts": 1477084.79,
-    "difference": 31666.51
+    "rows": [
+      { "currency_code": "DOP", "available": 1509751.30, "to_assign": -1000.00,
+        "budget_total": 1508751.30, "cash_in_accounts": 1477084.79, "difference": 31666.51 }
+    ],
+    "uncategorized": [
+      { "currency_code": "DOP", "total": 29000.00, "count": 3 }
+    ]
   }
 }
 ```
 RTA = `inflow.activity + inflow.left_from_last_month - totalAssigned` (misma fórmula que la web).
 `totalAssigned` = sum of `budgeted` across ALL outflow groups (including Credit Card Payments).
 Each group has `kind`: `"expense"` or `"credit_card_payments"`. Excludes only `Ready to Assign` and `Inflow`.
-`summary`: reconciliation data matching `BudgetReconcileBanner.vue`. `cash_in_accounts` = sum of on-budget account balances (excludes credit cards and resource-type accounts).
+`summary.rows[]`: one row per currency with reconciliation data matching `BudgetReconcileBanner.vue`. Each category's `available` is routed to its linked account's currency (or team base currency). `to_assign` only appears on the base-currency row; others get `0`. `cash_in_accounts` = sum of on-budget account balances for that currency (excludes credit cards, resource-type accounts, and closed accounts). Rows where both `budget_total` and `cash_in_accounts` are near zero are omitted.
+`summary.uncategorized[]`: verified expense transactions with no category (all dates, same scope as the web's `BudgetReconcileBanner`). Each entry: `{currency_code, total, count}`.
 
 ### 13. Asignar presupuesto — `POST /api/mobile/budget/assign`  (Bearer)
 ```jsonc
