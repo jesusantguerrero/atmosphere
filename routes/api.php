@@ -92,6 +92,8 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
     Route::get('/chores', [MobileController::class, 'chores'])->name('chores.index');
     Route::patch('/chores/{item}/toggle', [MobileController::class, 'toggleChore'])->name('chores.toggle');
     Route::post('/chores', [MobileController::class, 'storeChore'])->name('chores.store');
+    Route::patch('/chores/{item}', [MobileController::class, 'updateChore'])->name('chores.update');
+    Route::delete('/chores/{item}', [MobileController::class, 'deleteChore'])->name('chores.destroy');
 
     // Meals
     Route::get('/meals', [MobileController::class, 'meals'])->name('meals.index');

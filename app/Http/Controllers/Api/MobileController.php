@@ -1324,6 +1324,63 @@ class MobileController extends Controller
     }
 
     /**
+     * Update a chore item (title, owner, recurrence).
+     */
+    public function updateChore(Request $request, PlanItem $item): JsonResponse
+    {
+        abort_if((int) $item->team_id !== (int) $request->user()->current_team_id, 403);
+
+        $validated = $request->validate([
+            'title' => ['sometimes', 'string', 'max:255'],
+            'owner' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'recurrence' => ['sometimes', 'nullable', 'string', 'in:daily,weekdays,weekly,once'],
+        ]);
+
+        if (array_key_exists('title', $validated)) {
+            $item->title = $validated['title'];
+        }
+
+        if (array_key_exists('recurrence', $validated)) {
+            $item->rrule = $validated['recurrence']
+                ? PlanItem::rruleForPreset($validated['recurrence'])
+                : null;
+        }
+
+        $item->save();
+
+        if (array_key_exists('owner', $validated)) {
+            $item->load('stage.board');
+            $item->saveFields([
+                ['name' => 'Owner', 'value' => $validated['owner'] ?? '', 'field_name' => 'owner'],
+            ]);
+            $item->load('fields');
+        }
+
+        $ownerField = $item->fields->first(fn ($f) => strtolower($f->field_name) === 'owner');
+
+        return response()->json([
+            'id' => $item->id,
+            'title' => $item->title,
+            'is_done' => (bool) $item->is_done,
+            'rrule' => $item->rrule,
+            'commit_date' => $item->commit_date,
+            'owner' => $ownerField?->value ?: null,
+        ]);
+    }
+
+    /**
+     * Delete a chore item.
+     */
+    public function deleteChore(Request $request, PlanItem $item): JsonResponse
+    {
+        abort_if((int) $item->team_id !== (int) $request->user()->current_team_id, 403);
+
+        $item->delete();
+
+        return response()->json(['deleted' => true]);
+    }
+
+    /**
      * Meal planner: planned meals for a date range (defaults to current week).
      * Returns the same shape as PlannedMealResource used on the dashboard,
      * plus meal types so the app can group by breakfast/lunch/dinner.
