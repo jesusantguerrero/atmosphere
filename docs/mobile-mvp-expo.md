@@ -727,6 +727,20 @@ y la limpia al deshacer. El cron `chores:reset-recurring` resetea las diarias.
 `owner` se guarda como campo dinámico del plan item.
 → `201 { "success": true, "data": { "id", "title", "is_done", "rrule" } }`
 
+### 22b. Editar tarea — `PATCH /api/mobile/chores/{item_id}`  (Bearer)
+```jsonc
+// Request (todos opcionales)
+{ "title": "Barrer sala", "owner": "Jesus", "recurrence": "weekly" }
+// Response
+{ "id": 42, "title": "Barrer sala", "is_done": false, "rrule": "...", "commit_date": null, "owner": "Jesus" }
+```
+`recurrence: "once"` quita la recurrencia (rrule = null). `owner` crea/actualiza el campo dinámico.
+
+### 22c. Eliminar tarea — `DELETE /api/mobile/chores/{item_id}`  (Bearer)
+```jsonc
+{ "deleted": true }
+```
+
 ### 23. Plan de comidas — `GET /api/mobile/meals?start=YYYY-MM-DD&end=YYYY-MM-DD`  (Bearer)
 ```jsonc
 {
