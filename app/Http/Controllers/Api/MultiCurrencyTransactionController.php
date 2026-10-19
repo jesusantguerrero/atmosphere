@@ -246,6 +246,8 @@ class MultiCurrencyTransactionController extends Controller
             'currency_code' => 'nullable|string|size:3',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date',
+            'month' => ['nullable', 'regex:/^\d{4}-\d{2}$/'],
+            'uncategorized' => 'nullable|boolean',
             'limit' => 'nullable|integer|min:1|max:100',
             'page' => 'nullable|integer|min:1',
         ]);
@@ -264,12 +266,24 @@ class MultiCurrencyTransactionController extends Controller
                 $query->where('currency_code', $validated['currency_code']);
             }
 
+            // Filter by month (YYYY-MM)
+            if (! empty($validated['month'])) {
+                $monthStart = $validated['month'].'-01';
+                $monthEnd = Carbon::parse($monthStart)->endOfMonth()->format('Y-m-d');
+                $query->where('date', '>=', $monthStart)->where('date', '<=', $monthEnd);
+            }
+
             // Filter by date range if specified
             if (! empty($validated['start_date'])) {
                 $query->where('date', '>=', $validated['start_date']);
             }
             if (! empty($validated['end_date'])) {
                 $query->where('date', '<=', $validated['end_date']);
+            }
+
+            // Uncategorized expenses filter (same criteria as budget summary.uncategorized)
+            if (! empty($validated['uncategorized'])) {
+                $query->uncategorizedExpenses();
             }
 
             $limit = $validated['limit'] ?? 20;

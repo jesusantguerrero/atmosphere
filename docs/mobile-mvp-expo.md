@@ -885,6 +885,61 @@ Errores: `403` (otro team / Gate), `404`.
 → `{ "success": true, "deleted": 3 }`
 Solo borra las que pertenecen al team del usuario. Las que no existen o son de otro team se ignoran silenciosamente.
 
+### 30b. Detalle de transacción — `GET /api/mobile/transactions/{id}`  (Bearer)
+```jsonc
+→ {
+    "id": 99001,
+    "description": "Almuerzo Adrian Tropical",
+    "total": 850.00,
+    "currency_code": "DOP",
+    "date": "2026-10-15",
+    "direction": "WITHDRAW",
+    "status": "verified",
+    "notes": null,
+    "is_transfer": false,
+    "account": { "id": 101, "name": "BHD Checking" },
+    "counter_account": null,
+    "category": { "id": 42, "name": "Food & Dining" },
+    "payee": { "id": 15, "name": "Adrian Tropical" },
+    "exchange_rate": null,
+    "exchange_amount": null,
+    "created_at": "2026-10-15T12:30:00Z"
+  }
+```
+Incluye `account`, `category`, `payee` con `{id, name}` o `null`. `exchange_rate`/`exchange_amount` presentes si es transacción multi-moneda.
+
+### 30c. Editar transacción — `PATCH /api/mobile/transactions/{id}`  (Bearer)
+```jsonc
+{ "description": "Almuerzo corregido", "category_id": 43, "total": 900.0 }
+```
+→ `{ "success": true, "transaction": { "id", "description", "total", "currency_code", "date", "direction", "status", "account", "category", "payee" } }`
+Campos opcionales: `description`, `total`, `date`, `account_id`, `category_id` (nullable), `payee_id` (nullable), `direction` (`DEPOSIT`|`WITHDRAW`), `notes`. Rechaza transferencias con `422`.
+
+### 30d. Payees — `GET /api/mobile/payees?search=&limit=`  (Bearer)
+```jsonc
+→ [ { "id": 15, "name": "Adrian Tropical" }, { "id": 22, "name": "Supermercado Nacional" } ]
+```
+`search` filtra por nombre (LIKE). `limit` default 50, max 100. Excluye payees sin nombre.
+
+### 30e. Crear payee — `POST /api/mobile/payees`  (Bearer)
+```jsonc
+{ "name": "La Sirena" }
+```
+→ `201 { "id": 87, "name": "La Sirena" }`
+Si ya existe un payee con ese nombre para el equipo, devuelve el existente (idempotente).
+
+### 30f. Categorías planas — `GET /api/mobile/categories`  (Bearer)
+```jsonc
+→ [ { "id": 42, "name": "Food & Dining", "group": { "id": 5, "name": "Expenses" } }, ... ]
+```
+Solo categorías de transacciones (con `parent_id`), ordenadas por `index`. Incluye `group` con `{id, name}` del padre.
+
+### 30g. Transacciones sin categorizar — filtro en `GET /api/mobile/transactions`
+```
+GET /api/mobile/transactions?uncategorized=1&currency_code=DOP&month=2026-10
+```
+Nuevos parámetros en el endpoint existente (§5): `uncategorized=1` (solo gastos verificados sin categoría y sin ser transferencia), `month=YYYY-MM` (filtro por mes). Misma paginación y forma de respuesta que §5.
+
 ### 31. Ocurrencias — `GET /api/mobile/occurrences`  (Bearer)
 ```jsonc
 {
