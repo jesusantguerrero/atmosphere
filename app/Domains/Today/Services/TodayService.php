@@ -181,8 +181,17 @@ class TodayService
                     return null;
                 }
 
-                $available = (float) ($data['available'] ?? 0);
-                $needed = max(0, (float) $bt->amount - $available);
+                // For spending-type targets, use funded (budgeted + left_from_last_month)
+                // instead of available, so targets that were funded and spent don't
+                // reappear as underfunded.
+                $spendingTypes = ['spending', 'debt_monthly_payment', 'loan', 'savings_monthly'];
+                if (in_array($bt->target_type, $spendingTypes, true)) {
+                    $funded = (float) ($data['budgeted'] ?? 0) + (float) ($data['left_from_last_month'] ?? 0);
+                    $needed = max(0, (float) $bt->amount - $funded);
+                } else {
+                    $available = (float) ($data['available'] ?? 0);
+                    $needed = max(0, (float) $bt->amount - $available);
+                }
                 if ($needed <= 0) {
                     return null;
                 }

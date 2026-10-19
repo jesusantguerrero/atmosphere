@@ -190,7 +190,18 @@ class MobileController extends Controller
                     $bt = $cat->budget;
                     $available = (float) ($data['available'] ?? 0);
                     $targetAmount = (float) $bt->amount;
-                    $needed = max(0, $targetAmount - $available);
+
+                    // For spending-type targets (spending, debt, loan, savings_monthly),
+                    // "needed" should be based on what was funded (budgeted + left_from_last_month),
+                    // not on available (which drops as money is spent). This prevents
+                    // fully-funded-and-spent targets from showing as "still needs X".
+                    $spendingTypes = ['spending', 'debt_monthly_payment', 'loan', 'savings_monthly'];
+                    if (in_array($bt->target_type, $spendingTypes, true)) {
+                        $funded = (float) ($data['budgeted'] ?? 0) + (float) ($data['left_from_last_month'] ?? 0);
+                        $needed = max(0, $targetAmount - $funded);
+                    } else {
+                        $needed = max(0, $targetAmount - $available);
+                    }
 
                     $dueDate = null;
                     $freq = strtolower($bt->frequency ?? '');
@@ -345,9 +356,32 @@ class MobileController extends Controller
             ->values()
             ->all();
 
+        // Ready to Assign info for allocate/cover actions.
+        $rtaStatus = $readyToAssign > 0.01 ? 'available' : ($readyToAssign < -0.01 ? 'overspent' : 'empty');
+
+        $scheduledTotal = 0.0;
+        try {
+            $monthEnd = Carbon::parse($month)->endOfMonth()->format('Y-m-d');
+            $scheduledTotal = (float) app(NextPaymentsService::class)
+                ->getNextPayments($teamId, $month)
+                ->filter(fn ($p) => isset($p['due_date']) && $p['due_date'] >= $month && $p['due_date'] <= $monthEnd)
+                ->sum('total');
+        } catch (\Throwable) {
+        }
+
+        $defaults = BudgetCategoryService::getDefaultsByRole($teamId);
+
         return response()->json([
             'month' => substr($month, 0, 7),
             'ready_to_assign' => round($readyToAssign, 2),
+            'ready_to_assign_info' => [
+                'status' => $rtaStatus,
+                'amount' => round($readyToAssign, 2),
+                'scheduled_total' => round($scheduledTotal, 2),
+                'after_scheduled' => round($readyToAssign - $scheduledTotal, 2),
+                'default_savings_category_id' => $defaults['savings'] ?? null,
+                'default_spending_category_id' => $defaults['spending'] ?? null,
+            ],
             'groups' => $groups,
             'summary' => [
                 'rows' => $rows,
@@ -460,6 +494,88 @@ class MobileController extends Controller
             'copied' => $result['copied'],
             'skipped' => $result['skipped'],
         ]);
+    }
+
+    // ── Ready to Assign: allocate & cover ──────────────────────────
+
+    /**
+     * Allocate leftover (split Ready to Assign into one or more categories).
+     * Mirrors the web's BudgetBalanceAssign "All to Savings / Spending / 50-50".
+     */
+    public function allocateLeftover(Request $request, BudgetMovementService $service): JsonResponse
+    {
+        $validated = $request->validate([
+            'month' => ['required', 'date_format:Y-m'],
+            'splits' => ['required', 'array', 'min:1'],
+            'splits.*.destination_category_id' => ['required', 'integer'],
+            'splits.*.amount' => ['required', 'numeric', 'min:0.01'],
+        ]);
+
+        $user = $request->user();
+        $teamId = $user->current_team_id;
+
+        // Validate all destination categories belong to the team.
+        $catIds = collect($validated['splits'])->pluck('destination_category_id')->unique();
+        $existing = Category::where('team_id', $teamId)->whereIn('id', $catIds)->pluck('id');
+        if ($existing->count() !== $catIds->count()) {
+            return response()->json(['message' => 'One or more categories not found.'], 422);
+        }
+
+        // Source = Inflow's first subcategory (Ready to Assign).
+        $inflowGroup = Category::where([
+            'team_id' => $teamId,
+            'resource_type' => 'transactions',
+            'name' => BudgetReservedNames::INFLOW->value,
+        ])->whereNull('parent_id')->with('subCategories')->first();
+
+        $sourceCategoryId = $inflowGroup?->subCategories->first()?->id;
+
+        $service->registerSplit(
+            $teamId,
+            $user->id,
+            $sourceCategoryId,
+            $validated['month'].'-01',
+            $validated['splits'],
+        );
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Cover overspend ("Fix this"): move money from a source category to
+     * Ready to Assign to bring the RTA balance back to zero.
+     */
+    public function coverOverspend(Request $request, BudgetMovementService $service): JsonResponse
+    {
+        $validated = $request->validate([
+            'month' => ['required', 'date_format:Y-m'],
+            'source_category_id' => ['required', 'integer'],
+            'amount' => ['required', 'numeric', 'min:0.01'],
+        ]);
+
+        $user = $request->user();
+        $teamId = $user->current_team_id;
+
+        Category::where('team_id', $teamId)->findOrFail($validated['source_category_id']);
+
+        // Destination = Ready to Assign category.
+        $rtaCategoryId = Category::findOrCreateByName(
+            ['team_id' => $teamId, 'user_id' => $user->id],
+            BudgetReservedNames::READY_TO_ASSIGN->value,
+        );
+
+        $service->registerMovement(new BudgetMovementData(
+            null,
+            $teamId,
+            $user->id,
+            (int) $validated['source_category_id'],
+            $rtaCategoryId,
+            'movement',
+            $validated['month'].'-01',
+            (float) $validated['amount'],
+        ));
+
+        return response()->json(['success' => true]);
     }
 
     // ── Budget Groups CRUD ──────────────────────────────────────────
@@ -651,6 +767,29 @@ class MobileController extends Controller
         $category->delete();
 
         return response()->json(['success' => true]);
+    }
+
+    /**
+     * Set or clear the default role (savings / spending) for a category.
+     * Same as the web's `PATCH /budgets/{category}/default-role`.
+     */
+    public function setDefaultRole(Request $request, int $categoryId, BudgetCategoryService $service): JsonResponse
+    {
+        $validated = $request->validate([
+            'role' => ['nullable', 'string', 'in:savings,spending'],
+        ]);
+
+        $teamId = $request->user()->current_team_id;
+        $category = Category::where('team_id', $teamId)
+            ->where('resource_type', 'transactions')
+            ->findOrFail($categoryId);
+
+        $service->setDefaultRole($category, $validated['role'] ?? null);
+
+        return response()->json([
+            'id' => $category->id,
+            'role' => $validated['role'] ?? null,
+        ]);
     }
 
     // ── Budget Targets CRUD ─────────────────────────────────────

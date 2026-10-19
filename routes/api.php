@@ -55,6 +55,8 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
     Route::post('/budget/assign', [MobileController::class, 'assignBudget'])->name('budget.assign');
     Route::post('/budget/move', [MobileController::class, 'moveBudget'])->name('budget.move');
     Route::post('/budget/months/{month}/copy-from-previous', [MobileController::class, 'copyFromPrevious'])->name('budget.copy-from-previous')->where('month', '\d{4}-\d{2}');
+    Route::post('/budget/ready-to-assign/allocate', [MobileController::class, 'allocateLeftover'])->name('budget.rta.allocate');
+    Route::post('/budget/ready-to-assign/cover', [MobileController::class, 'coverOverspend'])->name('budget.rta.cover');
 
     // Budget groups CRUD
     Route::post('/budget/groups', [MobileController::class, 'createBudgetGroup'])->name('budget.groups.store');
@@ -65,6 +67,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
     Route::post('/budget/categories', [MobileController::class, 'createBudgetCategory'])->name('budget.categories.store');
     Route::patch('/budget/categories/{category}', [MobileController::class, 'updateBudgetCategory'])->name('budget.categories.update');
     Route::delete('/budget/categories/{category}', [MobileController::class, 'deleteBudgetCategory'])->name('budget.categories.destroy');
+    Route::patch('/budget/categories/{category}/default-role', [MobileController::class, 'setDefaultRole'])->name('budget.categories.default-role');
 
     // Budget targets CRUD
     Route::post('/budget/categories/{category}/targets', [MobileController::class, 'createBudgetTarget'])->name('budget.targets.store');
