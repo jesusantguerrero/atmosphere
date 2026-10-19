@@ -92,6 +92,12 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
     Route::post('/payees', [MobileController::class, 'createPayee'])->name('payees.store');
     Route::get('/categories', [MobileController::class, 'categoriesFlat'])->name('categories.index');
 
+    // Accounts CRUD
+    Route::post('/accounts', [MobileController::class, 'storeAccount'])->name('accounts.store');
+    Route::get('/accounts/{account}', [MobileController::class, 'showAccount'])->name('accounts.show');
+    Route::patch('/accounts/{account}', [MobileController::class, 'updateAccount'])->name('accounts.update');
+    Route::put('/accounts/{account}/close', [MobileController::class, 'closeAccount'])->name('accounts.close');
+
     Route::post('/events', [MobileController::class, 'storeEvent'])->name('events.store');
     Route::patch('/events/{planner}', [MobileController::class, 'updateEvent'])->name('events.update');
     Route::delete('/events/{planner}', [MobileController::class, 'deleteEvent'])->name('events.destroy');

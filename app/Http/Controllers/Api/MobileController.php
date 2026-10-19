@@ -18,6 +18,8 @@ use App\Domains\Housing\Models\Occurrence;
 use App\Domains\Integration\Actions\TransactionCreateEntry;
 use App\Domains\Integration\Actions\UniversalBankParser;
 use App\Domains\Integration\Services\UniversalBankAutomationService;
+use App\Domains\Journal\Actions\AccountCreate;
+use App\Domains\Journal\Actions\AccountUpdate;
 use App\Domains\Journal\Actions\TransactionDelete;
 use App\Domains\Journal\Actions\TransactionUpdate;
 use App\Domains\LogerProfile\Models\LogerProfile;
@@ -42,6 +44,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use Insane\Journal\Models\Core\AccountDetailType;
 use Insane\Journal\Models\Core\Payee;
 use Laravel\Jetstream\Contracts\DeletesUsers;
 use Modules\Plan\Entities\Plan;
@@ -1999,6 +2002,124 @@ class MobileController extends Controller
             });
 
         return response()->json($categories);
+    }
+
+    // ─── Accounts CRUD ───────────────────────────────────────────
+
+    /**
+     * Create a new account for the team.
+     */
+    public function storeAccount(Request $request, AccountCreate $accountCreate): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'detail_type' => ['required', 'string'],
+            'currency_code' => ['required', 'string', 'size:3'],
+            'opening_balance' => ['nullable', 'numeric'],
+            'credit_limit' => ['nullable', 'numeric', 'min:0'],
+            'credit_closing_day' => ['nullable', 'integer', 'between:1,31'],
+            'credit_payment_days' => ['nullable', 'integer', 'between:0,90'],
+        ]);
+
+        $detailType = AccountDetailType::where('name', $validated['detail_type'])->first();
+        abort_if(! $detailType, 422, 'Invalid detail_type.');
+
+        $data = array_merge($validated, [
+            'account_detail_type_id' => $detailType->id,
+            'display_id' => Str::slug($validated['name']),
+        ]);
+        unset($data['detail_type']);
+
+        $account = $accountCreate->create($request->user(), $data);
+        $account->loadMissing('detailType');
+
+        return response()->json([
+            'success' => true,
+            'account' => $this->formatAccount($account),
+        ], 201);
+    }
+
+    /**
+     * Show a single account with detail.
+     */
+    public function showAccount(Request $request, Account $account): JsonResponse
+    {
+        abort_if((int) $account->team_id !== (int) $request->user()->current_team_id, 403);
+
+        $account->loadMissing(['detailType', 'reconciliationLast']);
+
+        return response()->json($this->formatAccount($account));
+    }
+
+    /**
+     * Update an account's editable fields.
+     */
+    public function updateAccount(Request $request, Account $account, AccountUpdate $accountUpdate): JsonResponse
+    {
+        abort_if((int) $account->team_id !== (int) $request->user()->current_team_id, 403);
+
+        $validated = $request->validate([
+            'name' => ['sometimes', 'string', 'max:255'],
+            'credit_limit' => ['sometimes', 'nullable', 'numeric', 'min:0'],
+            'credit_closing_day' => ['sometimes', 'nullable', 'integer', 'between:1,31'],
+            'credit_payment_days' => ['sometimes', 'nullable', 'integer', 'between:0,90'],
+            'currency_code' => ['sometimes', 'string', 'size:3'],
+        ]);
+
+        $accountUpdate->update($request->user(), $account, $validated);
+        $account->refresh()->loadMissing(['detailType', 'reconciliationLast']);
+
+        return response()->json([
+            'success' => true,
+            'account' => $this->formatAccount($account),
+        ]);
+    }
+
+    /**
+     * Close or reopen an account.
+     */
+    public function closeAccount(Request $request, Account $account): JsonResponse
+    {
+        abort_if((int) $account->team_id !== (int) $request->user()->current_team_id, 403);
+
+        $validated = $request->validate([
+            'closed' => ['required', 'boolean'],
+        ]);
+
+        $account->update([
+            'closed_at' => $validated['closed'] ? now() : null,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'closed_at' => $account->fresh()->closed_at,
+        ]);
+    }
+
+    /**
+     * Format an account for mobile API responses.
+     */
+    private function formatAccount(Account $account): array
+    {
+        return [
+            'id' => $account->id,
+            'name' => $account->name,
+            'current_balance' => (float) $account->balance,
+            'currency_code' => $account->currency_code,
+            'balance_type' => $account->balance_type,
+            'type' => $account->type,
+            'detail_type' => $account->detailType?->name,
+            'account_detail_type_id' => $account->account_detail_type_id,
+            'credit_limit' => $account->credit_limit ? (float) $account->credit_limit : null,
+            'credit_closing_day' => $account->credit_closing_day,
+            'credit_payment_days' => $account->credit_payment_days,
+            'opening_balance' => (float) ($account->opening_balance ?? 0),
+            'closed_at' => $account->closed_at,
+            'reconciliation_last' => $account->reconciliationLast ? [
+                'status' => $account->reconciliationLast->status,
+                'amount' => (float) $account->reconciliationLast->amount,
+            ] : null,
+        ];
     }
 
     // ─── Occurrences ──────────────────────────────────────────────

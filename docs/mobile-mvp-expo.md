@@ -940,6 +940,30 @@ GET /api/mobile/transactions?uncategorized=1&currency_code=DOP&month=2026-10
 ```
 Nuevos parámetros en el endpoint existente (§5): `uncategorized=1` (solo gastos verificados sin categoría y sin ser transferencia), `month=YYYY-MM` (filtro por mes). Misma paginación y forma de respuesta que §5.
 
+### 30h. Crear cuenta — `POST /api/mobile/accounts`  (Bearer)
+```jsonc
+{ "name": "BHD Checking", "detail_type": "bank", "currency_code": "DOP", "credit_limit": 0 }
+// detail_type: bank | cash | cash_on_hand | savings | credit_card | property | loan
+// Para tarjeta: credit_limit, credit_closing_day, credit_payment_days opcionales
+```
+→ `201 { "success": true, "account": { "id", "name", "current_balance", "currency_code", "balance_type", "type", "detail_type", "credit_limit", "credit_closing_day", "credit_payment_days", "opening_balance", "closed_at", "reconciliation_last" } }`
+
+### 30i. Detalle de cuenta — `GET /api/mobile/accounts/{id}`  (Bearer)
+→ misma forma que `account` en §30h. Incluye `reconciliation_last: { status, amount } | null`.
+
+### 30j. Editar cuenta — `PATCH /api/mobile/accounts/{id}`  (Bearer)
+```jsonc
+{ "name": "Renamed", "credit_limit": 500000 }
+```
+→ `{ "success": true, "account": { ... } }`
+Campos opcionales: `name`, `credit_limit`, `credit_closing_day`, `credit_payment_days`, `currency_code`.
+
+### 30k. Cerrar / reabrir cuenta — `PUT /api/mobile/accounts/{id}/close`  (Bearer)
+```jsonc
+{ "closed": true }   // true = cerrar, false = reabrir
+```
+→ `{ "success": true, "closed_at": "2026-10-18T..." | null }`
+
 ### 31. Ocurrencias — `GET /api/mobile/occurrences`  (Bearer)
 ```jsonc
 {
