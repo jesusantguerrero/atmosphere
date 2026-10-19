@@ -249,14 +249,12 @@ class MobileController extends Controller
         $assignedByCurrency[$baseCurrency] = ($assignedByCurrency[$baseCurrency] ?? 0) + $readyToAssign;
 
         // Cash in on-budget accounts by currency (exclude credit cards and resource accounts).
-        $cashByCurrency = Account::where('team_id', $teamId)
-            ->whereNull('credit_closing_day')
-            ->whereNull('resource_type_id')
-            ->whereNull('closed_at')
-            ->selectRaw('currency_code, SUM(balance) as total')
+        // `balance` is a computed accessor (SUM of transaction_lines), not a DB column —
+        // load via getByDetailTypes() which batch-precomputes balances, then filter in PHP.
+        $cashByCurrency = Account::getByDetailTypes($teamId)
+            ->reject(fn (Account $a) => $a->closed_at || $a->credit_closing_day || $a->resource_type_id)
             ->groupBy('currency_code')
-            ->pluck('total', 'currency_code')
-            ->map(fn ($v) => (float) $v)
+            ->map(fn ($group) => (float) $group->sum('balance'))
             ->all();
 
         $allCurrencies = array_unique(array_merge(
