@@ -29,9 +29,11 @@ use App\Domains\Meal\Models\MealType;
 use App\Domains\Meal\Services\MealService;
 use App\Domains\Today\Services\CalendarService;
 use App\Domains\Today\Services\TodayService;
+use App\Domains\Transaction\Data\ReconciliationParamsData;
 use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Transaction\Services\CreditCardReportService;
 use App\Domains\Transaction\Services\NextPaymentsService;
+use App\Domains\Transaction\Services\ReconciliationService;
 use App\Domains\Transaction\Services\TransactionService;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PlannedMealResource;
@@ -45,6 +47,8 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use Insane\Journal\Models\Accounting\Reconciliation;
+use Insane\Journal\Models\Accounting\ReconciliationEntry;
 use Insane\Journal\Models\Core\AccountDetailType;
 use Insane\Journal\Models\Core\Payee;
 use Laravel\Jetstream\Contracts\DeletesUsers;
@@ -2420,6 +2424,155 @@ class MobileController extends Controller
                 'amount' => (float) $account->reconciliationLast->amount,
             ] : null,
         ];
+    }
+
+    // ─── Reconciliation ───────────────────────────────────────────
+
+    /**
+     * Current reconciliation state for an account: last reconciliation,
+     * ledger balance as-of-date, and pending entries.
+     */
+    public function getReconciliation(Request $request, Account $account, ReconciliationService $service): JsonResponse
+    {
+        abort_if((int) $account->team_id !== (int) $request->user()->current_team_id, 403);
+
+        $last = $account->reconciliationLast;
+        $date = $last?->date ?? now()->toDateString();
+        $clearedBalance = $service->balanceAsOf($account, $date);
+
+        $entries = [];
+        if ($last && $last->status === Reconciliation::STATUS_PENDING) {
+            $entries = $last->entries()
+                ->select(['id', 'transaction_id', 'transaction_line_id', 'matched'])
+                ->get()
+                ->map(fn (ReconciliationEntry $e) => [
+                    'id' => $e->id,
+                    'transaction_id' => $e->transaction_id,
+                    'transaction_line_id' => $e->transaction_line_id,
+                    'matched' => (bool) $e->matched,
+                ])
+                ->values();
+        }
+
+        return response()->json([
+            'reconciliation' => $last ? [
+                'id' => $last->id,
+                'date' => $last->date,
+                'amount' => (float) $last->amount,
+                'difference' => (float) $last->difference,
+                'status' => $last->status,
+                'entries' => $entries,
+            ] : null,
+            'cleared_balance' => $clearedBalance,
+        ]);
+    }
+
+    /**
+     * Start a new reconciliation for an account.
+     */
+    public function storeReconciliation(Request $request, Account $account, ReconciliationService $service): JsonResponse
+    {
+        abort_if((int) $account->team_id !== (int) $request->user()->current_team_id, 403);
+
+        $validated = $request->validate([
+            'balance' => ['required', 'numeric'],
+            'date' => ['required', 'date'],
+        ]);
+
+        $reconciliation = $service->create($account, new ReconciliationParamsData(
+            account_id: $account->id,
+            balance: $validated['balance'],
+            date: $validated['date'],
+            user_id: $request->user()->id,
+        ));
+
+        $reconciliation->load('entries');
+
+        return response()->json([
+            'reconciliation' => [
+                'id' => $reconciliation->id,
+                'date' => $reconciliation->date,
+                'amount' => (float) $reconciliation->amount,
+                'difference' => (float) $reconciliation->difference,
+                'status' => $reconciliation->status,
+                'entries' => $reconciliation->entries->map(fn (ReconciliationEntry $e) => [
+                    'id' => $e->id,
+                    'transaction_id' => $e->transaction_id,
+                    'transaction_line_id' => $e->transaction_line_id,
+                    'matched' => (bool) $e->matched,
+                ])->values(),
+            ],
+        ], 201);
+    }
+
+    /**
+     * Toggle a reconciliation entry's matched flag.
+     */
+    public function checkReconciliationEntry(
+        Request $request,
+        Reconciliation $reconciliation,
+        ReconciliationEntry $entry,
+        ReconciliationService $service,
+    ): JsonResponse {
+        abort_if((int) $reconciliation->team_id !== (int) $request->user()->current_team_id, 403);
+        abort_if((int) $entry->reconciliation_id !== (int) $reconciliation->id, 404);
+
+        $validated = $request->validate([
+            'matched' => ['required', 'boolean'],
+        ]);
+
+        $service->checkLine($reconciliation, $entry, $validated['matched']);
+
+        return response()->json([
+            'id' => $entry->id,
+            'matched' => $validated['matched'],
+        ]);
+    }
+
+    /**
+     * Book an adjustment transaction and complete the reconciliation.
+     */
+    public function saveReconciliationAdjustment(
+        Request $request,
+        Reconciliation $reconciliation,
+        ReconciliationService $service,
+    ): JsonResponse {
+        abort_if((int) $reconciliation->team_id !== (int) $request->user()->current_team_id, 403);
+
+        $validated = $request->validate([
+            'balance' => ['required', 'numeric'],
+        ]);
+
+        $service->saveAdjustment($reconciliation, new ReconciliationParamsData(
+            account_id: $reconciliation->account_id,
+            balance: $validated['balance'],
+            date: $reconciliation->date,
+            user_id: $request->user()->id,
+        ));
+
+        $reconciliation->refresh();
+
+        return response()->json([
+            'id' => $reconciliation->id,
+            'status' => $reconciliation->status,
+            'difference' => (float) $reconciliation->difference,
+        ]);
+    }
+
+    /**
+     * Delete a pending reconciliation.
+     */
+    public function deleteReconciliation(
+        Request $request,
+        Reconciliation $reconciliation,
+        ReconciliationService $service,
+    ): JsonResponse {
+        abort_if((int) $reconciliation->team_id !== (int) $request->user()->current_team_id, 403);
+        abort_if($reconciliation->status === Reconciliation::STATUS_COMPLETED, 422, 'Cannot delete completed reconciliation.');
+
+        $service->delete($reconciliation);
+
+        return response()->json(['deleted' => true]);
     }
 
     // ─── Occurrences ──────────────────────────────────────────────

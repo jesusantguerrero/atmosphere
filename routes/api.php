@@ -105,6 +105,13 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
     Route::patch('/accounts/{account}', [MobileController::class, 'updateAccount'])->name('accounts.update');
     Route::put('/accounts/{account}/close', [MobileController::class, 'closeAccount'])->name('accounts.close');
 
+    // Reconciliation
+    Route::get('/accounts/{account}/reconciliation', [MobileController::class, 'getReconciliation'])->name('accounts.reconciliation');
+    Route::post('/accounts/{account}/reconciliation', [MobileController::class, 'storeReconciliation'])->name('accounts.reconciliation.store');
+    Route::put('/reconciliations/{reconciliation}/entries/{entry}/check', [MobileController::class, 'checkReconciliationEntry'])->name('reconciliation.entry.check');
+    Route::put('/reconciliations/{reconciliation}/adjustment', [MobileController::class, 'saveReconciliationAdjustment'])->name('reconciliation.adjustment');
+    Route::delete('/reconciliations/{reconciliation}', [MobileController::class, 'deleteReconciliation'])->name('reconciliation.destroy');
+
     Route::post('/events', [MobileController::class, 'storeEvent'])->name('events.store');
     Route::patch('/events/{planner}', [MobileController::class, 'updateEvent'])->name('events.update');
     Route::delete('/events/{planner}', [MobileController::class, 'deleteEvent'])->name('events.destroy');

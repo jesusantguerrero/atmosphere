@@ -1079,6 +1079,46 @@ Campos opcionales: `name`, `credit_limit`, `credit_closing_day`, `credit_payment
 ```
 → `{ "success": true, "closed_at": "2026-10-18T..." | null }`
 
+### 30l. Reconciliación — `GET /api/mobile/accounts/{id}/reconciliation`  (Bearer)
+→ Estado actual de conciliación para una cuenta.
+```jsonc
+{
+  "reconciliation": {           // null si nunca se concilió
+    "id": 1,
+    "date": "2026-10-15",
+    "amount": 1000,             // saldo del estado de cuenta
+    "difference": -50,          // ledger − statement
+    "status": "pending",        // "pending" | "completed"
+    "entries": [                // solo si pending
+      { "id": 1, "transaction_id": 5, "transaction_line_id": 12, "matched": false }
+    ]
+  },
+  "cleared_balance": 950        // saldo del libro hasta la fecha
+}
+```
+
+### 30m. Crear conciliación — `POST /api/mobile/accounts/{id}/reconciliation`  (Bearer)
+```jsonc
+{ "balance": 5000, "date": "2026-10-18" }
+```
+→ `201` con `{ "reconciliation": { id, date, amount, difference, status, entries[] } }`
+
+### 30n. Marcar entrada — `PUT /api/mobile/reconciliations/{id}/entries/{entry_id}/check`  (Bearer)
+```jsonc
+{ "matched": true }
+```
+→ `{ "id": 1, "matched": true }`
+
+### 30o. Ajuste y completar — `PUT /api/mobile/reconciliations/{id}/adjustment`  (Bearer)
+```jsonc
+{ "balance": 5000 }
+```
+→ `{ "id": 1, "status": "completed", "difference": 0 }`
+Crea transacción de ajuste si `|ledger − balance| ≥ 0.005`, luego completa.
+
+### 30p. Eliminar conciliación — `DELETE /api/mobile/reconciliations/{id}`  (Bearer)
+→ `{ "deleted": true }` — Solo pending; completed retorna 422.
+
 ### 31. Ocurrencias — `GET /api/mobile/occurrences`  (Bearer)
 ```jsonc
 {
@@ -1288,9 +1328,9 @@ Sin body. → `{ "success": true }`
 
 ### Aún NO expuesto (el web sí lo tiene; falta endpoint mobile)
 - **Transacciones: editar / recategorizar / mark-as-paid** (aprobar/borrar ya expuestos).
-- **Conciliación** — hub, detalle, ajustar, sync.
-- **Cuentas (escritura)** — crear/editar, link-bank, sync-emails, cerrar, import PDF/CSV.
-- **Comida (escritura)** — crear receta, agregar al plan.
+- **Cuentas (escritura)** — link-bank, sync-emails, import PDF/CSV.
+- ~~**Conciliación**~~ ✅ §30l–§30p
+- ~~**Comida (escritura)**~~ ✅ §24b–§24j
 - **Integraciones** (Gmail full sync), **metas / fondo de emergencia / watchlists**, **ajustes / perfiles**.
 
 **Parseo de emails bancarios (alternativa a Gmail sync):**
