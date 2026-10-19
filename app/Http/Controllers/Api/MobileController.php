@@ -169,9 +169,12 @@ class MobileController extends Controller
             ->with(['subCategories', 'subCategories.budget', 'subCategories.account'])
             ->get();
 
+        // Pre-load all accounts for CC payment enrichment.
+        $accountsById = Account::getByDetailTypes($teamId)->keyBy('id');
+
         $availableByCurrency = [];
-        $mapChildren = function (Category $group) use ($service, $month, $baseCurrency, &$availableByCurrency) {
-            return $group->subCategories->map(function (Category $cat) use ($service, $month, $baseCurrency, &$availableByCurrency) {
+        $mapChildren = function (Category $group, bool $isCreditCardGroup = false) use ($service, $month, $baseCurrency, &$availableByCurrency, $accountsById) {
+            return $group->subCategories->map(function (Category $cat) use ($service, $month, $baseCurrency, &$availableByCurrency, $accountsById, $isCreditCardGroup) {
                 try {
                     $data = $service->getBudgetData($cat, $month);
                 } catch (\Throwable) {
@@ -226,6 +229,26 @@ class MobileController extends Controller
                     ];
                 }
 
+                // CC payment enrichment: if category is linked to a credit card account.
+                $payment = null;
+                if ($isCreditCardGroup && $cat->account_id) {
+                    $ccAccount = $accountsById->get($cat->account_id);
+                    if ($ccAccount) {
+                        $owed = max(0, -1 * (float) $ccAccount->balance);
+                        $setAside = (float) ($data['available'] ?? 0);
+                        $gap = max(0, round($owed - $setAside, 2));
+                        $coveragePct = $owed > 0 ? min(100, (int) round(($setAside / $owed) * 100)) : 100;
+                        $payment = [
+                            'account_id' => $ccAccount->id,
+                            'owed' => round($owed, 2),
+                            'set_aside' => round($setAside, 2),
+                            'gap' => $gap,
+                            'coverage_pct' => $coveragePct,
+                            'ready_to_pay' => $gap <= 0,
+                        ];
+                    }
+                }
+
                 return [
                     'id' => $cat->id,
                     'name' => $cat->name,
@@ -238,6 +261,7 @@ class MobileController extends Controller
                     'payments' => (float) ($data['payments'] ?? 0),
                     'has_target' => $cat->budget !== null,
                     'target' => $target,
+                    'payment' => $payment,
                 ];
             });
         };
@@ -245,7 +269,7 @@ class MobileController extends Controller
         $groups = $allOutflow
             ->map(function (Category $group) use ($mapChildren) {
                 $isCreditCards = $group->name === BudgetReservedNames::CREDIT_CARD_PAYMENTS->value;
-                $children = $mapChildren($group);
+                $children = $mapChildren($group, $isCreditCards);
 
                 return [
                     'id' => $group->id,
@@ -804,6 +828,62 @@ class MobileController extends Controller
             ]),
             'last_page' => $transactions->lastPage(),
         ]);
+    }
+
+    // ── Budget Movements (history + undo) ───────────────────────
+
+    public function categoryMovements(Request $request, int $categoryId): JsonResponse
+    {
+        $validated = $request->validate([
+            'month' => ['required', 'date_format:Y-m'],
+        ]);
+
+        $teamId = $request->user()->current_team_id;
+        Category::where('team_id', $teamId)
+            ->where('resource_type', 'transactions')
+            ->findOrFail($categoryId);
+
+        $monthStart = $validated['month'].'-01';
+        $monthEnd = Carbon::parse($monthStart)->endOfMonth()->format('Y-m-d');
+
+        $movements = BudgetMovement::where('team_id', $teamId)
+            ->where(function ($q) use ($categoryId) {
+                $q->where('source_category_id', $categoryId)
+                    ->orWhere('destination_category_id', $categoryId);
+            })
+            ->whereBetween('date', [$monthStart, $monthEnd])
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(fn (BudgetMovement $m) => [
+                'id' => $m->id,
+                'type' => $m->source_category_id ? 'movement' : 'assignment',
+                'amount' => (float) $m->amount,
+                'date' => $m->date,
+                'from' => $m->source_category_id ? [
+                    'id' => $m->source_category_id,
+                    'name' => $m->source_category_name,
+                ] : null,
+                'to' => [
+                    'id' => $m->destination_category_id,
+                    'name' => $m->destination_category_name,
+                ],
+                'created_at' => $m->created_at?->toIso8601String(),
+            ]);
+
+        return response()->json(['data' => $movements]);
+    }
+
+    public function destroyMovement(Request $request, int $movementId, BudgetMovementService $service): JsonResponse
+    {
+        $movement = BudgetMovement::findOrFail($movementId);
+
+        if (! $request->user()->allTeams()->pluck('id')->contains($movement->team_id)) {
+            abort(403);
+        }
+
+        $service->revertMovement($movement);
+
+        return response()->json(['success' => true]);
     }
 
     /**
