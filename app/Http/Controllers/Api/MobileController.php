@@ -8,6 +8,7 @@ use App\Domains\Budget\Data\BudgetAssignData;
 use App\Domains\Budget\Data\BudgetMovementData;
 use App\Domains\Budget\Data\BudgetReservedNames;
 use App\Domains\Budget\Models\BudgetMonth;
+use App\Domains\Budget\Models\BudgetMovement;
 use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Domains\Budget\Services\BudgetMovementService;
 use App\Domains\Housing\Actions\RegisterOccurrence;
@@ -207,6 +208,7 @@ class MobileController extends Controller
                 return [
                     'id' => $cat->id,
                     'name' => $cat->name,
+                    'note' => $cat->description,
                     'budgeted' => (float) ($data['budgeted'] ?? 0),
                     'activity' => (float) ($data['activity'] ?? 0),
                     'available' => (float) ($data['available'] ?? 0),
@@ -413,6 +415,197 @@ class MobileController extends Controller
             'copied' => $result['copied'],
             'skipped' => $result['skipped'],
         ]);
+    }
+
+    // ── Budget Groups CRUD ──────────────────────────────────────────
+
+    public function createBudgetGroup(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+        ]);
+
+        $teamId = $request->user()->current_team_id;
+
+        $maxIndex = Category::where('team_id', $teamId)
+            ->where('resource_type', 'transactions')
+            ->whereNull('parent_id')
+            ->max('index') ?? 0;
+
+        $group = Category::create([
+            'name' => $validated['name'],
+            'team_id' => $teamId,
+            'resource_type' => 'transactions',
+            'parent_id' => null,
+            'index' => $maxIndex + 1,
+            'depth' => 0,
+        ]);
+
+        return response()->json([
+            'id' => $group->id,
+            'name' => $group->name,
+        ], 201);
+    }
+
+    public function updateBudgetGroup(Request $request, int $groupId): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+        ]);
+
+        $teamId = $request->user()->current_team_id;
+        $group = Category::where('team_id', $teamId)
+            ->whereNull('parent_id')
+            ->where('resource_type', 'transactions')
+            ->findOrFail($groupId);
+
+        $reserved = array_map(fn (BudgetReservedNames $n) => $n->value, BudgetReservedNames::cases());
+        if (in_array($group->name, $reserved, true)) {
+            return response()->json(['message' => 'Cannot rename a reserved group.'], 422);
+        }
+
+        $group->update(['name' => $validated['name']]);
+
+        return response()->json(['id' => $group->id, 'name' => $group->name]);
+    }
+
+    public function deleteBudgetGroup(Request $request, int $groupId): JsonResponse
+    {
+        $teamId = $request->user()->current_team_id;
+        $group = Category::where('team_id', $teamId)
+            ->whereNull('parent_id')
+            ->where('resource_type', 'transactions')
+            ->findOrFail($groupId);
+
+        $reserved = array_map(fn (BudgetReservedNames $n) => $n->value, BudgetReservedNames::cases());
+        if (in_array($group->name, $reserved, true)) {
+            return response()->json(['message' => 'Cannot delete a reserved group.'], 422);
+        }
+
+        // Move orphan subcategories to the first non-reserved group.
+        if ($group->subCategories()->count() > 0) {
+            $fallback = Category::where('team_id', $teamId)
+                ->whereNull('parent_id')
+                ->where('resource_type', 'transactions')
+                ->whereNotIn('name', $reserved)
+                ->where('id', '!=', $group->id)
+                ->orderBy('index')
+                ->first();
+
+            if ($fallback) {
+                $group->subCategories()->update(['parent_id' => $fallback->id]);
+            } else {
+                return response()->json(['message' => 'No other group to move categories into.'], 422);
+            }
+        }
+
+        $group->delete();
+
+        return response()->json(['success' => true]);
+    }
+
+    // ── Budget Categories CRUD ──────────────────────────────────────
+
+    public function createBudgetCategory(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'group_id' => ['required', 'integer'],
+        ]);
+
+        $teamId = $request->user()->current_team_id;
+
+        // Verify the group belongs to this team.
+        $group = Category::where('team_id', $teamId)
+            ->whereNull('parent_id')
+            ->where('resource_type', 'transactions')
+            ->findOrFail($validated['group_id']);
+
+        $maxIndex = $group->subCategories()->max('index') ?? 0;
+
+        $category = Category::create([
+            'name' => $validated['name'],
+            'team_id' => $teamId,
+            'resource_type' => 'transactions',
+            'parent_id' => $group->id,
+            'index' => $maxIndex + 1,
+            'depth' => 1,
+        ]);
+
+        return response()->json([
+            'id' => $category->id,
+            'name' => $category->name,
+            'group_id' => $group->id,
+        ], 201);
+    }
+
+    public function updateBudgetCategory(Request $request, int $categoryId): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => ['sometimes', 'string', 'max:255'],
+            'note' => ['sometimes', 'nullable', 'string', 'max:5000'],
+            'group_id' => ['sometimes', 'integer'],
+        ]);
+
+        $teamId = $request->user()->current_team_id;
+        $category = Category::where('team_id', $teamId)
+            ->whereNotNull('parent_id')
+            ->where('resource_type', 'transactions')
+            ->findOrFail($categoryId);
+
+        $updates = [];
+
+        if (array_key_exists('name', $validated)) {
+            $updates['name'] = $validated['name'];
+        }
+
+        if (array_key_exists('note', $validated)) {
+            $updates['description'] = $validated['note'];
+        }
+
+        if (array_key_exists('group_id', $validated)) {
+            $group = Category::where('team_id', $teamId)
+                ->whereNull('parent_id')
+                ->where('resource_type', 'transactions')
+                ->findOrFail($validated['group_id']);
+            $updates['parent_id'] = $group->id;
+        }
+
+        if (! empty($updates)) {
+            $category->update($updates);
+        }
+
+        return response()->json([
+            'id' => $category->id,
+            'name' => $category->name,
+            'note' => $category->description,
+            'group_id' => $category->parent_id,
+        ]);
+    }
+
+    public function deleteBudgetCategory(Request $request, int $categoryId): JsonResponse
+    {
+        $teamId = $request->user()->current_team_id;
+        $category = Category::where('team_id', $teamId)
+            ->whereNotNull('parent_id')
+            ->where('resource_type', 'transactions')
+            ->findOrFail($categoryId);
+
+        // Prevent deleting categories with transactions or budget movements (same as web).
+        $hasTransactions = Transaction::where('category_id', $category->id)->exists();
+        $hasMovements = BudgetMovement::where('destination_category_id', $category->id)
+            ->orWhere('source_category_id', $category->id)
+            ->exists();
+
+        if ($hasTransactions || $hasMovements) {
+            return response()->json([
+                'message' => 'Cannot delete a category with transactions or budget movements.',
+            ], 422);
+        }
+
+        $category->delete();
+
+        return response()->json(['success' => true]);
     }
 
     /**

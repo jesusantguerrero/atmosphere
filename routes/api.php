@@ -55,6 +55,17 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
     Route::post('/budget/assign', [MobileController::class, 'assignBudget'])->name('budget.assign');
     Route::post('/budget/move', [MobileController::class, 'moveBudget'])->name('budget.move');
     Route::post('/budget/months/{month}/copy-from-previous', [MobileController::class, 'copyFromPrevious'])->name('budget.copy-from-previous')->where('month', '\d{4}-\d{2}');
+
+    // Budget groups CRUD
+    Route::post('/budget/groups', [MobileController::class, 'createBudgetGroup'])->name('budget.groups.store');
+    Route::patch('/budget/groups/{group}', [MobileController::class, 'updateBudgetGroup'])->name('budget.groups.update');
+    Route::delete('/budget/groups/{group}', [MobileController::class, 'deleteBudgetGroup'])->name('budget.groups.destroy');
+
+    // Budget categories CRUD
+    Route::post('/budget/categories', [MobileController::class, 'createBudgetCategory'])->name('budget.categories.store');
+    Route::patch('/budget/categories/{category}', [MobileController::class, 'updateBudgetCategory'])->name('budget.categories.update');
+    Route::delete('/budget/categories/{category}', [MobileController::class, 'deleteBudgetCategory'])->name('budget.categories.destroy');
+
     Route::get('/calendar', [MobileController::class, 'calendar'])->name('calendar');
     Route::get('/routine', [MobileController::class, 'routine'])->name('routine');
     Route::get('/transactions', [MultiCurrencyTransactionController::class, 'index'])->name('transactions.index');

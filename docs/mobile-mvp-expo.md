@@ -416,7 +416,7 @@ Tipos de item: `budget_category`, `credit_card_payment`, `planned_transaction`.
         { "id": 153, "name": "Comida", "budgeted": 20000.0, "activity": -12000.0, "available": 8000.0,
           "left_from_last_month": 0.0, "funded_spending": 0.0, "payments": 0.0, "has_target": true,
           "target": { "amount": 20000.0, "needed": 12000.0, "due_date": "2026-10-15", "frequency": "MONTHLY", "target_type": "spending" } },
-        { "id": 154, "name": "Alquiler", "budgeted": 15000.0, "activity": -6500.0, "available": 8500.0,
+        { "id": 154, "name": "Alquiler", "note": "Due on the 5th", "budgeted": 15000.0, "activity": -6500.0, "available": 8500.0,
           "left_from_last_month": 0.0, "funded_spending": 0.0, "payments": 0.0, "has_target": false,
           "target": null }
       ] },
@@ -464,6 +464,48 @@ Copia todas las asignaciones (`budgeted > 0`) del mes anterior al mes indicado. 
 - Sin `overwrite` y el mes ya tiene asignaciones → `409 { "has_assignments": true, "count": 5 }`. La app muestra confirmación y reenvía con `overwrite: true`.
 - Con `overwrite: true` o mes vacío → `200 { "success": true, "copied": 5, "skipped": 0 }`.
 `skipped` = categorías con monto idéntico al anterior (sin cambio).
+
+### 14c. Grupos de presupuesto — CRUD  (Bearer)
+
+**Crear:** `POST /api/mobile/budget/groups`
+```jsonc
+{ "name": "Entertainment" }
+// → 201 { "id": 42, "name": "Entertainment" }
+```
+
+**Renombrar:** `PATCH /api/mobile/budget/groups/{id}`
+```jsonc
+{ "name": "Fun Money" }
+// → 200 { "id": 42, "name": "Fun Money" }
+```
+No se pueden renombrar grupos reservados (Inflow, Ready to Assign, Credit Card Payments) → 422.
+
+**Eliminar:** `DELETE /api/mobile/budget/groups/{id}`
+```jsonc
+// → 200 { "success": true }
+```
+Las subcategorías se mueven al primer grupo no-reservado. No se pueden eliminar grupos reservados → 422.
+
+### 14d. Categorías de presupuesto — CRUD  (Bearer)
+
+**Crear:** `POST /api/mobile/budget/categories`
+```jsonc
+{ "name": "Groceries", "group_id": 42 }
+// → 201 { "id": 200, "name": "Groceries", "group_id": 42 }
+```
+
+**Editar (nombre, nota, mover a grupo):** `PATCH /api/mobile/budget/categories/{id}`
+```jsonc
+{ "name": "Food", "note": "Includes restaurants", "group_id": 10 }
+// → 200 { "id": 200, "name": "Food", "note": "Includes restaurants", "group_id": 10 }
+```
+Todos los campos son opcionales; enviar solo los que cambian. `note` se almacena como `categories.description`.
+
+**Eliminar:** `DELETE /api/mobile/budget/categories/{id}`
+```jsonc
+// → 200 { "success": true }
+```
+422 si la categoría tiene transacciones o movimientos de presupuesto asociados.
 
 ### 15. Calendario — `GET /api/mobile/calendar?month=YYYY-MM`  (Bearer)
 ```jsonc
