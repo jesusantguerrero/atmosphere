@@ -507,6 +507,41 @@ Todos los campos son opcionales; enviar solo los que cambian. `note` se almacena
 ```
 422 si la categoría tiene transacciones o movimientos de presupuesto asociados.
 
+### 14e. Metas de presupuesto (Targets) — CRUD  (Bearer)
+
+**Crear:** `POST /api/mobile/budget/categories/{id}/targets`
+```jsonc
+{ "target_type": "spending", "amount": 5000, "frequency": "MONTHLY", "frequency_month_date": 15, "notify": true }
+// → 201 { "id": 8, "target_type": "spending", "amount": 5000, "frequency": "MONTHLY",
+//         "frequency_month_date": 15, "frequency_week_day": null, "frequency_date": null,
+//         "notify": true, "snoozed_month": null, "completed_at": null, "loan": null }
+```
+`target_type`: `spending | saving_balance | savings_monthly | debt_monthly_payment | loan`.
+`frequency`: `MONTHLY | WEEKLY | DATE`.
+Para `loan`: enviar `principal`, `interest_rate`, `term_months`, `loan_start_date`; la app calcula `amount` (cuota mensual).
+422 si la categoría ya tiene una meta.
+
+**Editar:** `PUT /api/mobile/budget/categories/{id}/targets/{targetId}`
+```jsonc
+{ "amount": 7000, "frequency_month_date": 20 }
+// → 200 { ...target completo actualizado }
+```
+
+**Completar:** `POST /api/mobile/budget/categories/{id}/targets/{targetId}/complete`
+```jsonc
+{ "completed_at": "2026-10" }   // opcional; si no, usa el último mes con transacciones
+// → 200 { ...target con completed_at }
+```
+
+**Snooze (toggle):** `PATCH /api/mobile/budget/categories/{id}/snooze-target`
+```jsonc
+{ "month": "2026-10" }
+// → 200 { ...target con snoozed_month: "2026-10" (o null si ya estaba snoozed) }
+```
+Silencia la alerta de "sub-fondeado" para un solo mes sin tocar la meta.
+
+El target completo en `GET /budget` ahora incluye: `id`, `target_type`, `amount`, `needed`, `due_date`, `frequency`, `frequency_month_date`, `frequency_week_day`, `frequency_date`, `notify`, `snoozed_month`, `completed_at`, `loan: {principal, interest_rate, term_months, loan_start_date} | null`.
+
 ### 15. Calendario — `GET /api/mobile/calendar?month=YYYY-MM`  (Bearer)
 ```jsonc
 {

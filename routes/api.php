@@ -66,6 +66,12 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
     Route::patch('/budget/categories/{category}', [MobileController::class, 'updateBudgetCategory'])->name('budget.categories.update');
     Route::delete('/budget/categories/{category}', [MobileController::class, 'deleteBudgetCategory'])->name('budget.categories.destroy');
 
+    // Budget targets CRUD
+    Route::post('/budget/categories/{category}/targets', [MobileController::class, 'createBudgetTarget'])->name('budget.targets.store');
+    Route::put('/budget/categories/{category}/targets/{target}', [MobileController::class, 'updateBudgetTarget'])->name('budget.targets.update');
+    Route::post('/budget/categories/{category}/targets/{target}/complete', [MobileController::class, 'completeBudgetTarget'])->name('budget.targets.complete');
+    Route::patch('/budget/categories/{category}/snooze-target', [MobileController::class, 'snoozeBudgetTarget'])->name('budget.targets.snooze');
+
     Route::get('/calendar', [MobileController::class, 'calendar'])->name('calendar');
     Route::get('/routine', [MobileController::class, 'routine'])->name('routine');
     Route::get('/transactions', [MultiCurrencyTransactionController::class, 'index'])->name('transactions.index');

@@ -9,8 +9,10 @@ use App\Domains\Budget\Data\BudgetMovementData;
 use App\Domains\Budget\Data\BudgetReservedNames;
 use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Budget\Models\BudgetMovement;
+use App\Domains\Budget\Models\BudgetTarget;
 use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Domains\Budget\Services\BudgetMovementService;
+use App\Domains\Budget\Services\BudgetTargetService;
 use App\Domains\Housing\Actions\RegisterOccurrence;
 use App\Domains\Housing\Models\Occurrence;
 use App\Domains\Integration\Actions\TransactionCreateEntry;
@@ -197,11 +199,24 @@ class MobileController extends Controller
                     }
 
                     $target = [
+                        'id' => $bt->id,
                         'amount' => $targetAmount,
                         'needed' => round($needed, 2),
                         'due_date' => $dueDate,
-                        'frequency' => strtoupper($bt->frequency ?? 'MONTHLY'),
                         'target_type' => $bt->target_type,
+                        'frequency' => strtoupper($bt->frequency ?? 'MONTHLY'),
+                        'frequency_month_date' => $bt->frequency_month_date ? (int) $bt->frequency_month_date : null,
+                        'frequency_week_day' => $bt->frequency_week_day,
+                        'frequency_date' => $bt->frequency_date,
+                        'notify' => (bool) $bt->notify,
+                        'snoozed_month' => $bt->snoozed_month,
+                        'completed_at' => $bt->completed_at,
+                        'loan' => $bt->target_type === 'loan' ? [
+                            'principal' => (float) ($bt->principal ?? 0),
+                            'interest_rate' => (float) ($bt->interest_rate ?? 0),
+                            'term_months' => (int) ($bt->term_months ?? 0),
+                            'loan_start_date' => $bt->loan_start_date ? Carbon::parse($bt->loan_start_date)->format('Y-m-d') : null,
+                        ] : null,
                     ];
                 }
 
@@ -606,6 +621,133 @@ class MobileController extends Controller
         $category->delete();
 
         return response()->json(['success' => true]);
+    }
+
+    // ── Budget Targets CRUD ─────────────────────────────────────
+
+    public function createBudgetTarget(Request $request, int $categoryId, BudgetTargetService $service): JsonResponse
+    {
+        $validated = $request->validate([
+            'target_type' => ['required', 'string', 'in:spending,saving_balance,savings_monthly,debt_monthly_payment,loan'],
+            'amount' => ['required_unless:target_type,loan', 'numeric', 'min:0'],
+            'frequency' => ['sometimes', 'string', 'in:MONTHLY,WEEKLY,DATE'],
+            'frequency_month_date' => ['sometimes', 'nullable', 'integer', 'min:1', 'max:31'],
+            'frequency_week_day' => ['sometimes', 'nullable', 'string'],
+            'frequency_date' => ['sometimes', 'nullable', 'date'],
+            'notify' => ['sometimes', 'boolean'],
+            'principal' => ['sometimes', 'numeric', 'min:0'],
+            'interest_rate' => ['sometimes', 'numeric', 'min:0', 'max:1000'],
+            'term_months' => ['sometimes', 'integer', 'min:0', 'max:1200'],
+            'loan_start_date' => ['sometimes', 'nullable', 'date'],
+        ]);
+
+        $teamId = $request->user()->current_team_id;
+        $category = Category::where('team_id', $teamId)
+            ->whereNotNull('parent_id')
+            ->where('resource_type', 'transactions')
+            ->findOrFail($categoryId);
+
+        if ($category->budget) {
+            return response()->json(['message' => 'Category already has a target. Use PUT to update.'], 422);
+        }
+
+        $target = $service->add($category, $request->user(), $validated);
+
+        return response()->json($this->formatTarget($target), 201);
+    }
+
+    public function updateBudgetTarget(Request $request, int $categoryId, int $targetId, BudgetTargetService $service): JsonResponse
+    {
+        $validated = $request->validate([
+            'target_type' => ['sometimes', 'string', 'in:spending,saving_balance,savings_monthly,debt_monthly_payment,loan'],
+            'amount' => ['sometimes', 'numeric', 'min:0'],
+            'frequency' => ['sometimes', 'string', 'in:MONTHLY,WEEKLY,DATE'],
+            'frequency_month_date' => ['sometimes', 'nullable', 'integer', 'min:1', 'max:31'],
+            'frequency_week_day' => ['sometimes', 'nullable', 'string'],
+            'frequency_date' => ['sometimes', 'nullable', 'date'],
+            'notify' => ['sometimes', 'boolean'],
+            'principal' => ['sometimes', 'numeric', 'min:0'],
+            'interest_rate' => ['sometimes', 'numeric', 'min:0', 'max:1000'],
+            'term_months' => ['sometimes', 'integer', 'min:0', 'max:1200'],
+            'loan_start_date' => ['sometimes', 'nullable', 'date'],
+        ]);
+
+        $teamId = $request->user()->current_team_id;
+        $category = Category::where('team_id', $teamId)
+            ->whereNotNull('parent_id')
+            ->where('resource_type', 'transactions')
+            ->findOrFail($categoryId);
+
+        $target = $category->budget;
+        abort_unless($target && $target->id === $targetId, 404);
+
+        $service->update($category, $target, $request->user(), $validated);
+
+        return response()->json($this->formatTarget($target->fresh()));
+    }
+
+    public function completeBudgetTarget(Request $request, int $categoryId, int $targetId, BudgetTargetService $service): JsonResponse
+    {
+        $request->validate([
+            'completed_at' => ['sometimes', 'nullable', 'date'],
+        ]);
+
+        $teamId = $request->user()->current_team_id;
+        $category = Category::where('team_id', $teamId)
+            ->whereNotNull('parent_id')
+            ->where('resource_type', 'transactions')
+            ->findOrFail($categoryId);
+
+        $target = $category->budget;
+        abort_unless($target && $target->id === $targetId, 404);
+
+        $service->complete($target, $category, $request->all());
+
+        return response()->json($this->formatTarget($target->fresh()));
+    }
+
+    public function snoozeBudgetTarget(Request $request, int $categoryId): JsonResponse
+    {
+        $validated = $request->validate([
+            'month' => ['required', 'date_format:Y-m'],
+        ]);
+
+        $teamId = $request->user()->current_team_id;
+        $category = Category::where('team_id', $teamId)
+            ->whereNotNull('parent_id')
+            ->where('resource_type', 'transactions')
+            ->findOrFail($categoryId);
+
+        $target = $category->budget;
+        abort_unless($target, 404, 'This category has no target to snooze.');
+
+        $target->snoozed_month = $target->snoozed_month === $validated['month'] ? null : $validated['month'];
+        $target->save();
+
+        return response()->json($this->formatTarget($target));
+    }
+
+    /** @return array<string, mixed> */
+    private function formatTarget(BudgetTarget $target): array
+    {
+        return [
+            'id' => $target->id,
+            'target_type' => $target->target_type,
+            'amount' => (float) $target->amount,
+            'frequency' => strtoupper($target->frequency ?? 'MONTHLY'),
+            'frequency_month_date' => $target->frequency_month_date ? (int) $target->frequency_month_date : null,
+            'frequency_week_day' => $target->frequency_week_day,
+            'frequency_date' => $target->frequency_date,
+            'notify' => (bool) $target->notify,
+            'snoozed_month' => $target->snoozed_month,
+            'completed_at' => $target->completed_at,
+            'loan' => $target->target_type === 'loan' ? [
+                'principal' => (float) ($target->principal ?? 0),
+                'interest_rate' => (float) ($target->interest_rate ?? 0),
+                'term_months' => (int) ($target->term_months ?? 0),
+                'loan_start_date' => $target->loan_start_date ? Carbon::parse($target->loan_start_date)->format('Y-m-d') : null,
+            ] : null,
+        ];
     }
 
     /**
