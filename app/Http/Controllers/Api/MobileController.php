@@ -132,6 +132,7 @@ class MobileController extends Controller
         $teamId = $request->user()->current_team_id;
         $month = ($request->query('month') ?? now()->format('Y-m')).'-01';
         $service = new BudgetCategoryService;
+        $baseCurrency = strtoupper(trim((string) (Setting::getByTeam($teamId)['team_primary_currency_code'] ?? ''))) ?: 'DOP';
 
         // Inflow category holds activity (income) and left_from_last_month.
         // RTA = inflow.activity + inflow.left_from_last_month - totalAssigned
@@ -164,13 +165,18 @@ class MobileController extends Controller
             ->with(['subCategories', 'subCategories.budget', 'subCategories.account'])
             ->get();
 
-        $mapChildren = function (Category $group) use ($service, $month) {
-            return $group->subCategories->map(function (Category $cat) use ($service, $month) {
+        $availableByCurrency = [];
+        $mapChildren = function (Category $group) use ($service, $month, $baseCurrency, &$availableByCurrency) {
+            return $group->subCategories->map(function (Category $cat) use ($service, $month, $baseCurrency, &$availableByCurrency) {
                 try {
                     $data = $service->getBudgetData($cat, $month);
                 } catch (\Throwable) {
                     $data = [];
                 }
+
+                // Route available to the account's currency (for multi-currency reconciliation).
+                $catCurrency = $cat->account?->currency_code ?? $baseCurrency;
+                $availableByCurrency[$catCurrency] = ($availableByCurrency[$catCurrency] ?? 0) + (float) ($data['available'] ?? 0);
 
                 $target = null;
                 if ($cat->budget) {
@@ -235,28 +241,71 @@ class MobileController extends Controller
             + (float) ($inflowData['left_from_last_month'] ?? 0)
             - $totalAssigned;
 
-        // Reconciliation summary (mirrors BudgetReconcileBanner.vue).
-        $availableTotal = $groups->sum('available');
-        $budgetTotal = round($availableTotal + $readyToAssign, 2);
+        // ── Reconciliation summary (mirrors BudgetReconcileBanner.vue) ──
+        // Per-currency rows: route each category's available to its account's
+        // currency, add RTA to base currency, compare vs on-budget cash.
+        $assignedByCurrency = $availableByCurrency;
+        $assignedByCurrency[$baseCurrency] = ($assignedByCurrency[$baseCurrency] ?? 0) + $readyToAssign;
 
-        // Cash in on-budget accounts (exclude credit cards and resource accounts).
-        $cashInAccounts = (float) Account::where('team_id', $teamId)
+        // Cash in on-budget accounts by currency (exclude credit cards and resource accounts).
+        $cashByCurrency = Account::where('team_id', $teamId)
             ->whereNull('credit_closing_day')
             ->whereNull('resource_type_id')
-            ->sum('balance');
+            ->whereNull('closed_at')
+            ->selectRaw('currency_code, SUM(balance) as total')
+            ->groupBy('currency_code')
+            ->pluck('total', 'currency_code')
+            ->map(fn ($v) => (float) $v)
+            ->all();
 
-        $difference = round($budgetTotal - $cashInAccounts, 2);
+        $allCurrencies = array_unique(array_merge(
+            array_keys($availableByCurrency),
+            array_keys($cashByCurrency),
+        ));
+
+        $rows = [];
+        foreach ($allCurrencies as $cur) {
+            $avail = round($availableByCurrency[$cur] ?? 0, 2);
+            $toAssign = $cur === $baseCurrency ? round($readyToAssign, 2) : 0.0;
+            $budgetTotal = round($avail + $toAssign, 2);
+            $cash = round($cashByCurrency[$cur] ?? 0, 2);
+
+            if (abs($budgetTotal) < 0.01 && abs($cash) < 0.01) {
+                continue;
+            }
+
+            $rows[] = [
+                'currency_code' => $cur,
+                'available' => $avail,
+                'to_assign' => $toAssign,
+                'budget_total' => $budgetTotal,
+                'cash_in_accounts' => $cash,
+                'difference' => round($budgetTotal - $cash, 2),
+            ];
+        }
+
+        // Uncategorized expenses (all dates, same query as BudgetCategoryController).
+        $uncategorized = Transaction::query()->uncategorizedExpenses()
+            ->where('transactions.team_id', $teamId)
+            ->where('transactions.user_id', $request->user()->id)
+            ->selectRaw('currency_code, SUM(total) as total, COUNT(*) as count')
+            ->groupBy('currency_code')
+            ->get()
+            ->map(fn ($row) => [
+                'currency_code' => $row->currency_code,
+                'total' => round((float) $row->total, 2),
+                'count' => (int) $row->count,
+            ])
+            ->values()
+            ->all();
 
         return response()->json([
             'month' => substr($month, 0, 7),
             'ready_to_assign' => round($readyToAssign, 2),
             'groups' => $groups,
             'summary' => [
-                'available' => round($availableTotal, 2),
-                'to_assign' => round($readyToAssign, 2),
-                'budget_total' => $budgetTotal,
-                'cash_in_accounts' => round($cashInAccounts, 2),
-                'difference' => $difference,
+                'rows' => $rows,
+                'uncategorized' => $uncategorized,
             ],
         ]);
     }
