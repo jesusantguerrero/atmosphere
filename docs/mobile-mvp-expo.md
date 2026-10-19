@@ -595,6 +595,52 @@ Devuelve movimientos y asignaciones que involucren la categoría dada en el mes.
 ```
 Revierte el movimiento (devuelve fondos al origen) y elimina el registro. Recalcula rollover.
 
+### 14j. Ready to Assign info — enrichment en `GET /api/mobile/budget`
+
+El response incluye `ready_to_assign_info`:
+```jsonc
+{
+  "ready_to_assign_info": {
+    "status": "available",          // "available" | "overspent" | "empty"
+    "amount": 5000.00,
+    "scheduled_total": 1200.00,     // facturas pendientes del mes
+    "after_scheduled": 3800.00,     // amount - scheduled_total
+    "default_savings_category_id": 42,   // null si no hay
+    "default_spending_category_id": 55   // null si no hay
+  }
+}
+```
+
+### 14k. Repartir sobrante — `POST /api/mobile/budget/ready-to-assign/allocate`  (Bearer)
+```jsonc
+// Request
+{ "month": "2026-10", "splits": [
+    { "destination_category_id": 42, "amount": 3000 },
+    { "destination_category_id": 55, "amount": 2000 }
+]}
+// Response
+{ "success": true }
+```
+Mueve dinero de Ready to Assign a una o más categorías. Equivale al "All to Savings / All to Spending / 50-50" de la web.
+
+### 14l. Cubrir sobre-asignación — `POST /api/mobile/budget/ready-to-assign/cover`  (Bearer)
+```jsonc
+// Request
+{ "month": "2026-10", "source_category_id": 42, "amount": 1500 }
+// Response
+{ "success": true }
+```
+"Fix this": mueve dinero de una categoría hacia Ready to Assign para cubrir un RTA negativo.
+
+### 14m. Rol por defecto de categoría — `PATCH /api/mobile/budget/categories/{id}/default-role`  (Bearer)
+```jsonc
+// Request
+{ "role": "savings" }   // "savings" | "spending" | null (para quitar)
+// Response
+{ "id": 42, "role": "savings" }
+```
+Asigna el rol por defecto (ahorro / gasto) para la acción "Todo a Ahorro / Todo a Gasto". Un solo default por rol por equipo.
+
 ### 15. Calendario — `GET /api/mobile/calendar?month=YYYY-MM`  (Bearer)
 ```jsonc
 {
