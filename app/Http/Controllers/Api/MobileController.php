@@ -1096,6 +1096,80 @@ class MobileController extends Controller
     }
 
     /**
+     * Update a planner event (name, date, notes, total).
+     */
+    public function updateEvent(Request $request, Planner $planner): JsonResponse
+    {
+        abort_if($planner->team_id !== $request->user()->current_team_id, 403);
+
+        $validated = $request->validate([
+            'name' => ['sometimes', 'string', 'max:255'],
+            'date' => ['sometimes', 'date'],
+            'end_date' => ['sometimes', 'nullable', 'date'],
+            'notes' => ['sometimes', 'nullable', 'string', 'max:1000'],
+            'total' => ['sometimes', 'nullable', 'numeric', 'min:0'],
+        ]);
+
+        $planner->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'event' => [
+                'id' => $planner->id,
+                'planner_id' => $planner->id,
+                'title' => $planner->name,
+                'start' => $planner->date->format('Y-m-d'),
+                'end' => $planner->end_date?->format('Y-m-d') ?? $planner->date->format('Y-m-d'),
+                'status' => $planner->status,
+                'total' => $planner->total ? (float) $planner->total : null,
+                'notes' => $planner->notes,
+                'completed_at' => $planner->completed_at?->format('Y-m-d'),
+            ],
+        ]);
+    }
+
+    /**
+     * Delete a planner event.
+     */
+    public function deleteEvent(Request $request, Planner $planner): JsonResponse
+    {
+        abort_if($planner->team_id !== $request->user()->current_team_id, 403);
+
+        $planner->delete();
+
+        return response()->json(['deleted' => true]);
+    }
+
+    /**
+     * Cancel a planner event.
+     */
+    public function cancelEvent(Request $request, Planner $planner): JsonResponse
+    {
+        abort_if($planner->team_id !== $request->user()->current_team_id, 403);
+
+        $planner->markAsCancelled($request->input('notes'));
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Reopen a completed/cancelled event back to pending.
+     */
+    public function reopenEvent(Request $request, Planner $planner): JsonResponse
+    {
+        abort_if($planner->team_id !== $request->user()->current_team_id, 403);
+
+        $planner->update([
+            'status' => Planner::STATUS_PENDING,
+            'completed_at' => null,
+            'completed_by' => null,
+            'completion_notes' => null,
+        ]);
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
      * Create an account-to-account transfer. Builds a transaction with
      * a counter account so the journal engine debits/credits both sides.
      */

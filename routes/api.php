@@ -85,7 +85,11 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
     Route::get('/transactions', [MultiCurrencyTransactionController::class, 'index'])->name('transactions.index');
     Route::post('/transactions', [MultiCurrencyTransactionController::class, 'store'])->name('transactions.store');
     Route::post('/events', [MobileController::class, 'storeEvent'])->name('events.store');
+    Route::patch('/events/{planner}', [MobileController::class, 'updateEvent'])->name('events.update');
+    Route::delete('/events/{planner}', [MobileController::class, 'deleteEvent'])->name('events.destroy');
     Route::patch('/events/{planner}/complete', [MobileController::class, 'completeEvent'])->name('events.complete');
+    Route::patch('/events/{planner}/cancel', [MobileController::class, 'cancelEvent'])->name('events.cancel');
+    Route::patch('/events/{planner}/reopen', [MobileController::class, 'reopenEvent'])->name('events.reopen');
     Route::post('/transfers', [MobileController::class, 'transfer'])->name('transfers.store');
 
     // Chores (household tasks)
