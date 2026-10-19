@@ -84,6 +84,14 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
     Route::get('/routine', [MobileController::class, 'routine'])->name('routine');
     Route::get('/transactions', [MultiCurrencyTransactionController::class, 'index'])->name('transactions.index');
     Route::post('/transactions', [MultiCurrencyTransactionController::class, 'store'])->name('transactions.store');
+    Route::get('/transactions/{transaction}', [MobileController::class, 'showTransaction'])->name('transactions.show');
+    Route::patch('/transactions/{transaction}', [MobileController::class, 'updateTransaction'])->name('transactions.update');
+
+    // Payees & categories for pickers
+    Route::get('/payees', [MobileController::class, 'payees'])->name('payees.index');
+    Route::post('/payees', [MobileController::class, 'createPayee'])->name('payees.store');
+    Route::get('/categories', [MobileController::class, 'categoriesFlat'])->name('categories.index');
+
     Route::post('/events', [MobileController::class, 'storeEvent'])->name('events.store');
     Route::patch('/events/{planner}', [MobileController::class, 'updateEvent'])->name('events.update');
     Route::delete('/events/{planner}', [MobileController::class, 'deleteEvent'])->name('events.destroy');

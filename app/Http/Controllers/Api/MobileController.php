@@ -19,6 +19,7 @@ use App\Domains\Integration\Actions\TransactionCreateEntry;
 use App\Domains\Integration\Actions\UniversalBankParser;
 use App\Domains\Integration\Services\UniversalBankAutomationService;
 use App\Domains\Journal\Actions\TransactionDelete;
+use App\Domains\Journal\Actions\TransactionUpdate;
 use App\Domains\LogerProfile\Models\LogerProfile;
 use App\Domains\Meal\Models\Meal;
 use App\Domains\Meal\Models\MealType;
@@ -41,6 +42,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use Insane\Journal\Models\Core\Payee;
 use Laravel\Jetstream\Contracts\DeletesUsers;
 use Modules\Plan\Entities\Plan;
 use Modules\Plan\Entities\PlanItem;
@@ -1831,6 +1833,172 @@ class MobileController extends Controller
         }
 
         return response()->json(['success' => true, 'deleted' => $transactions->count()]);
+    }
+
+    /**
+     * Show a single transaction with full detail (account, category, payee).
+     */
+    public function showTransaction(Request $request, Transaction $transaction): JsonResponse
+    {
+        abort_if((int) $transaction->team_id !== (int) $request->user()->current_team_id, 403);
+
+        $transaction->load(['account', 'counterAccount', 'category', 'payee']);
+
+        return response()->json([
+            'id' => $transaction->id,
+            'description' => $transaction->description,
+            'total' => (float) $transaction->total,
+            'currency_code' => $transaction->currency_code,
+            'date' => $transaction->date,
+            'direction' => $transaction->direction,
+            'status' => $transaction->status,
+            'notes' => $transaction->notes,
+            'is_transfer' => (bool) $transaction->is_transfer,
+            'account' => $transaction->account ? [
+                'id' => $transaction->account->id,
+                'name' => $transaction->account->name,
+            ] : null,
+            'counter_account' => $transaction->counterAccount ? [
+                'id' => $transaction->counterAccount->id,
+                'name' => $transaction->counterAccount->name,
+            ] : null,
+            'category' => $transaction->category ? [
+                'id' => $transaction->category->id,
+                'name' => $transaction->category->name,
+            ] : null,
+            'payee' => $transaction->payee ? [
+                'id' => $transaction->payee->id,
+                'name' => $transaction->payee->name,
+            ] : null,
+            'exchange_rate' => $transaction->exchange_rate ? (float) $transaction->exchange_rate : null,
+            'exchange_amount' => $transaction->exchange_amount ? (float) $transaction->exchange_amount : null,
+            'created_at' => $transaction->created_at,
+        ]);
+    }
+
+    /**
+     * Update a transaction (description, total, date, account, category, payee, direction).
+     */
+    public function updateTransaction(Request $request, Transaction $transaction, TransactionUpdate $transactionUpdate): JsonResponse
+    {
+        abort_if((int) $transaction->team_id !== (int) $request->user()->current_team_id, 403);
+
+        if ($transaction->is_transfer) {
+            return response()->json([
+                'message' => 'Transfers cannot be edited directly. Delete and recreate instead.',
+            ], 422);
+        }
+
+        $validated = $request->validate([
+            'description' => ['sometimes', 'string', 'max:255'],
+            'total' => ['sometimes', 'numeric', 'min:0'],
+            'date' => ['sometimes', 'date'],
+            'account_id' => ['sometimes', 'integer'],
+            'category_id' => ['sometimes', 'nullable', 'integer'],
+            'payee_id' => ['sometimes', 'nullable', 'integer'],
+            'direction' => ['sometimes', 'in:DEPOSIT,WITHDRAW'],
+            'notes' => ['sometimes', 'nullable', 'string', 'max:1000'],
+        ]);
+
+        // The journal package's sanitizeData requires account_id, currency_code
+        // and payee_id/counter_account_id — merge from existing transaction.
+        $data = array_merge([
+            'account_id' => $transaction->account_id,
+            'currency_code' => $transaction->currency_code,
+            'payee_id' => $transaction->payee_id,
+            'counter_account_id' => $transaction->counter_account_id,
+        ], $validated);
+
+        $transactionUpdate->update($request->user(), $transaction, $data);
+        $transaction->refresh()->load(['account', 'category', 'payee']);
+
+        return response()->json([
+            'success' => true,
+            'transaction' => [
+                'id' => $transaction->id,
+                'description' => $transaction->description,
+                'total' => (float) $transaction->total,
+                'currency_code' => $transaction->currency_code,
+                'date' => $transaction->date,
+                'direction' => $transaction->direction,
+                'status' => $transaction->status,
+                'account' => $transaction->account ? ['id' => $transaction->account->id, 'name' => $transaction->account->name] : null,
+                'category' => $transaction->category ? ['id' => $transaction->category->id, 'name' => $transaction->category->name] : null,
+                'payee' => $transaction->payee ? ['id' => $transaction->payee->id, 'name' => $transaction->payee->name] : null,
+            ],
+        ]);
+    }
+
+    /**
+     * List payees for the team, optionally filtered by search term.
+     */
+    public function payees(Request $request): JsonResponse
+    {
+        $teamId = $request->user()->current_team_id;
+        $search = $request->query('search');
+        $limit = min((int) ($request->query('limit') ?? 50), 100);
+
+        $query = Payee::where('team_id', $teamId)
+            ->whereNotNull('name')
+            ->where('name', '!=', '');
+
+        if ($search) {
+            $query->where('name', 'like', '%'.$search.'%');
+        }
+
+        $payees = $query->orderBy('name')
+            ->limit($limit)
+            ->get(['id', 'name']);
+
+        return response()->json($payees);
+    }
+
+    /**
+     * Create a new payee for the team.
+     */
+    public function createPayee(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+        ]);
+
+        $user = $request->user();
+        $payee = Payee::findOrCreateByName([
+            'user_id' => $user->id,
+            'team_id' => $user->current_team_id,
+        ], $validated['name']);
+
+        return response()->json([
+            'id' => $payee->id,
+            'name' => $payee->name,
+        ], 201);
+    }
+
+    /**
+     * Flat list of transaction categories for picker dropdowns.
+     */
+    public function categoriesFlat(Request $request): JsonResponse
+    {
+        $teamId = $request->user()->current_team_id;
+
+        $categories = Category::where('team_id', $teamId)
+            ->where('resource_type', 'transactions')
+            ->whereNotNull('parent_id')
+            ->with('group:id,name')
+            ->orderBy('index')
+            ->get()
+            ->map(function ($cat) {
+                return [
+                    'id' => $cat->id,
+                    'name' => $cat->name,
+                    'group' => $cat->group ? [
+                        'id' => $cat->group->id,
+                        'name' => $cat->group->name,
+                    ] : null,
+                ];
+            });
+
+        return response()->json($categories);
     }
 
     // ─── Occurrences ──────────────────────────────────────────────
