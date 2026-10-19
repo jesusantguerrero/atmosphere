@@ -674,11 +674,31 @@ Agrega 3 fuentes: planners, billing cycles, occurrences. `kind` ∈ `planner|bil
 ```
 → `201 { "success": true, "data": { "id", "name", "date", "status" } }`
 
+### 17b. Editar evento — `PATCH /api/mobile/events/{planner_id}`  (Bearer)
+```jsonc
+// Request (todos opcionales)
+{ "name": "Cita reprogramada", "date": "2026-10-25", "end_date": null, "notes": "Cambio", "total": 500 }
+// Response
+{ "success": true, "event": { "id": 12, "planner_id": 12, "title": "Cita reprogramada",
+    "start": "2026-10-25", "end": "2026-10-25", "status": "pending",
+    "total": 500, "notes": "Cambio", "completed_at": null } }
+```
+
+### 17c. Eliminar evento — `DELETE /api/mobile/events/{planner_id}`  (Bearer)
+→ `{ "deleted": true }`
+
 ### 18. Completar evento — `PATCH /api/mobile/events/{planner_id}/complete`  (Bearer)
 ```jsonc
 { "notes": "Pagado con tarjeta" }   // opcional
 ```
 → `{ "success": true }`
+
+### 18b. Cancelar evento — `PATCH /api/mobile/events/{planner_id}/cancel`  (Bearer)
+→ `{ "success": true }`
+
+### 18c. Reabrir evento — `PATCH /api/mobile/events/{planner_id}/reopen`  (Bearer)
+→ `{ "success": true }`
+Devuelve el evento a `pending` y limpia `completed_at`.
 
 ### 19. Transferencia — `POST /api/mobile/transfers`  (Bearer)
 ```jsonc
