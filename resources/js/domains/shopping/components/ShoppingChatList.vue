@@ -185,13 +185,25 @@ const addItemLocally = (item: Item) => {
 };
 
 // ─── Stage (category) CRUD ──────────────────────────────────────
-const addCategory = async () => {
-    const name = window.prompt(t("Category name"));
-    if (!name || !name.trim()) return;
+const newCategoryName = ref("");
+const isAddingCategory = ref(false);
+const renamingStageId = ref<number | null>(null);
+const renamingName = ref("");
+const confirmDeleteStageId = ref<number | null>(null);
+
+const startAddCategory = () => {
+    newCategoryName.value = "";
+    isAddingCategory.value = true;
+};
+
+const commitAddCategory = async () => {
+    const name = newCategoryName.value.trim();
+    isAddingCategory.value = false;
+    if (!name) return;
 
     try {
         const { data } = await axios.post(`${props.apiBase}/stages`, {
-            name: name.trim(),
+            name,
         });
         stages.value.push({ id: data.id, name: data.name, items: [] });
     } catch {
@@ -199,30 +211,30 @@ const addCategory = async () => {
     }
 };
 
-const renameCategory = async (stage: Stage) => {
-    const name = window.prompt(t("Rename category"), stage.name);
-    if (!name || !name.trim() || name.trim() === stage.name) return;
+const startRename = (stage: Stage) => {
+    renamingStageId.value = stage.id;
+    renamingName.value = stage.name;
+};
+
+const commitRename = async (stage: Stage) => {
+    const name = renamingName.value.trim();
+    renamingStageId.value = null;
+    if (!name || name === stage.name) return;
 
     try {
-        await axios.patch(`${props.apiBase}/stages/${stage.id}`, {
-            name: name.trim(),
-        });
-        stage.name = name.trim();
+        await axios.patch(`${props.apiBase}/stages/${stage.id}`, { name });
+        stage.name = name;
     } catch {
         // silent
     }
 };
 
-const deleteCategory = async (stage: Stage) => {
-    if (
-        !window.confirm(
-            t('Delete "{name}"? Items will move to the first category.', {
-                name: stage.name,
-            }),
-        )
-    )
-        return;
+const cancelRename = () => {
+    renamingStageId.value = null;
+};
 
+const deleteCategory = async (stage: Stage) => {
+    confirmDeleteStageId.value = null;
     const fallback = stages.value.find((s) => s.id !== stage.id);
     try {
         await axios.delete(`${props.apiBase}/stages/${stage.id}`);
@@ -639,13 +651,61 @@ onBeforeUnmount(() => {
                         v-if="hasCategories"
                         class="flex items-center justify-between px-1 mb-2"
                     >
-                        <h3
-                            class="text-[11px] font-bold uppercase tracking-wide text-body-1/60"
+                        <template
+                            v-if="
+                                renamingStageId === section.id &&
+                                showOwnerControls
+                            "
                         >
-                            {{ section.name }}
-                        </h3>
+                            <input
+                                ref="renameInput"
+                                v-model="renamingName"
+                                class="flex-1 text-[11px] font-bold uppercase tracking-wide bg-transparent border-b border-primary/50 outline-none text-body-1 px-0 py-0.5"
+                                @keyup.enter="
+                                    commitRename(
+                                        stages.find(
+                                            (s) => s.id === section.id,
+                                        )!,
+                                    )
+                                "
+                                @keyup.escape="cancelRename"
+                                @blur="
+                                    commitRename(
+                                        stages.find(
+                                            (s) => s.id === section.id,
+                                        )!,
+                                    )
+                                "
+                                @vue:mounted="
+                                    ($event) =>
+                                        ($event.el as HTMLInputElement).focus()
+                                "
+                            />
+                        </template>
+                        <template v-else>
+                            <h3
+                                class="text-[11px] font-bold uppercase tracking-wide text-body-1/60"
+                                :class="{
+                                    'cursor-pointer hover:text-body-1 transition':
+                                        showOwnerControls,
+                                }"
+                                @dblclick="
+                                    showOwnerControls &&
+                                    startRename(
+                                        stages.find(
+                                            (s) => s.id === section.id,
+                                        )!,
+                                    )
+                                "
+                            >
+                                {{ section.name }}
+                            </h3>
+                        </template>
                         <div
-                            v-if="showOwnerControls"
+                            v-if="
+                                showOwnerControls &&
+                                renamingStageId !== section.id
+                            "
                             class="flex items-center gap-1"
                         >
                             <button
@@ -653,7 +713,7 @@ onBeforeUnmount(() => {
                                 class="text-body-1/30 hover:text-body transition px-1"
                                 :title="$t('Rename category')"
                                 @click="
-                                    renameCategory(
+                                    startRename(
                                         stages.find(
                                             (s) => s.id === section.id,
                                         )!,
@@ -668,16 +728,47 @@ onBeforeUnmount(() => {
                                 class="text-body-1/30 hover:text-error transition px-1"
                                 :title="$t('Delete category')"
                                 @click="
-                                    deleteCategory(
-                                        stages.find(
-                                            (s) => s.id === section.id,
-                                        )!,
-                                    )
+                                    confirmDeleteStageId =
+                                        confirmDeleteStageId === section.id
+                                            ? null
+                                            : section.id
                                 "
                             >
                                 <i class="fa fa-trash text-[10px]" />
                             </button>
                         </div>
+                    </div>
+                    <!-- Inline delete confirmation -->
+                    <div
+                        v-if="confirmDeleteStageId === section.id"
+                        class="flex items-center gap-2 px-3 py-2 mb-2 rounded-lg bg-error/10 text-sm"
+                    >
+                        <span class="flex-1 text-body-1">
+                            {{
+                                $t(
+                                    'Delete "{name}"? Items move to the first category.',
+                                    { name: section.name },
+                                )
+                            }}
+                        </span>
+                        <button
+                            type="button"
+                            class="px-2.5 py-1 rounded text-xs font-medium bg-error text-white hover:bg-error/80 transition"
+                            @click="
+                                deleteCategory(
+                                    stages.find((s) => s.id === section.id)!,
+                                )
+                            "
+                        >
+                            {{ $t("Delete") }}
+                        </button>
+                        <button
+                            type="button"
+                            class="px-2.5 py-1 rounded text-xs font-medium text-body-1/70 hover:text-body transition"
+                            @click="confirmDeleteStageId = null"
+                        >
+                            {{ $t("Cancel") }}
+                        </button>
                     </div>
                     <div
                         class="space-y-2 md:space-y-0 md:grid md:grid-cols-2 xl:grid-cols-3 md:gap-2"
@@ -721,15 +812,34 @@ onBeforeUnmount(() => {
                     </div>
                 </section>
 
-                <button
-                    v-if="showOwnerControls"
-                    type="button"
-                    class="w-full flex items-center justify-center gap-1.5 py-2 text-xs text-body-1/50 hover:text-body transition rounded-lg border border-dashed border-base-lvl-1 hover:border-base"
-                    @click="addCategory"
-                >
-                    <i class="fa fa-plus" />
-                    {{ $t("New category") }}
-                </button>
+                <div v-if="showOwnerControls">
+                    <div
+                        v-if="isAddingCategory"
+                        class="flex items-center gap-2 px-3 py-2 rounded-lg border border-primary/30 bg-base-lvl-2"
+                    >
+                        <input
+                            v-model="newCategoryName"
+                            class="flex-1 text-sm bg-transparent outline-none text-body placeholder:text-body-1/40"
+                            :placeholder="$t('Category name')"
+                            @keyup.enter="commitAddCategory"
+                            @keyup.escape="isAddingCategory = false"
+                            @blur="commitAddCategory"
+                            @vue:mounted="
+                                ($event) =>
+                                    ($event.el as HTMLInputElement).focus()
+                            "
+                        />
+                    </div>
+                    <button
+                        v-else
+                        type="button"
+                        class="w-full flex items-center justify-center gap-1.5 py-2 text-xs text-body-1/50 hover:text-body transition rounded-lg border border-dashed border-base-lvl-1 hover:border-base"
+                        @click="startAddCategory"
+                    >
+                        <i class="fa fa-plus" />
+                        {{ $t("New category") }}
+                    </button>
+                </div>
             </div>
         </main>
 
