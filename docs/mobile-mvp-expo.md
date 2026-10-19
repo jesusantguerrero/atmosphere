@@ -542,6 +542,21 @@ Silencia la alerta de "sub-fondeado" para un solo mes sin tocar la meta.
 
 El target completo en `GET /budget` ahora incluye: `id`, `target_type`, `amount`, `needed`, `due_date`, `frequency`, `frequency_month_date`, `frequency_week_day`, `frequency_date`, `notify`, `snoozed_month`, `completed_at`, `loan: {principal, interest_rate, term_months, loan_start_date} | null`.
 
+### 14f. Transacciones de una categoría — `GET /api/mobile/budget/categories/{id}/transactions?month=YYYY-MM`  (Bearer)
+```jsonc
+// GET /api/mobile/budget/categories/153/transactions?month=2026-10&page=1&limit=50
+{
+  "data": [
+    { "id": 5001, "description": "Supermercado Nacional", "total": 1500.50,
+      "currency_code": "DOP", "date": "2026-10-18", "direction": "WITHDRAW",
+      "status": "verified", "account": { "id": 1, "name": "BHD" },
+      "payee": { "name": "Supermercado Nacional" } }
+  ],
+  "last_page": 1
+}
+```
+Filtra por `category_id` y rango del mes. `month` es obligatorio. Paginado con `page` y `limit` (default 50, max 100).
+
 ### 15. Calendario — `GET /api/mobile/calendar?month=YYYY-MM`  (Bearer)
 ```jsonc
 {

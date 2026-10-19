@@ -190,7 +190,13 @@ class MobileController extends Controller
                     $needed = max(0, $targetAmount - $available);
 
                     $dueDate = null;
-                    if ($bt->frequency === 'monthly' && $bt->frequency_month_date) {
+                    $freq = strtolower($bt->frequency ?? '');
+                    if ($freq === 'monthly' && $bt->frequency_month_date) {
+                        $monthCarbon = \Carbon\Carbon::parse($month);
+                        $day = min((int) $bt->frequency_month_date, $monthCarbon->daysInMonth);
+                        $dueDate = $monthCarbon->copy()->day($day)->format('Y-m-d');
+                    } elseif ($bt->frequency_month_date) {
+                        // Fallback: frequency_month_date present without explicit 'monthly'
                         $monthCarbon = \Carbon\Carbon::parse($month);
                         $day = min((int) $bt->frequency_month_date, $monthCarbon->daysInMonth);
                         $dueDate = $monthCarbon->copy()->day($day)->format('Y-m-d');
@@ -703,7 +709,14 @@ class MobileController extends Controller
 
         $service->complete($target, $category, $request->all());
 
-        return response()->json($this->formatTarget($target->fresh()));
+        // If the service couldn't find a last transaction month, fall back to now.
+        $target = $target->fresh();
+        if (! $target->completed_at) {
+            $target->update(['completed_at' => now()->format('Y-m-d')]);
+            $target = $target->fresh();
+        }
+
+        return response()->json($this->formatTarget($target));
     }
 
     public function snoozeBudgetTarget(Request $request, int $categoryId): JsonResponse
@@ -748,6 +761,49 @@ class MobileController extends Controller
                 'loan_start_date' => $target->loan_start_date ? Carbon::parse($target->loan_start_date)->format('Y-m-d') : null,
             ] : null,
         ];
+    }
+
+    // ── Category Transactions ─────────────────────────────────
+
+    public function categoryTransactions(Request $request, int $categoryId): JsonResponse
+    {
+        $validated = $request->validate([
+            'month' => ['required', 'date_format:Y-m'],
+            'page' => ['sometimes', 'integer', 'min:1'],
+            'limit' => ['sometimes', 'integer', 'min:1', 'max:100'],
+        ]);
+
+        $teamId = $request->user()->current_team_id;
+        $category = Category::where('team_id', $teamId)
+            ->where('resource_type', 'transactions')
+            ->findOrFail($categoryId);
+
+        $monthStart = $validated['month'].'-01';
+        $monthEnd = Carbon::parse($monthStart)->endOfMonth()->format('Y-m-d');
+        $limit = $validated['limit'] ?? 50;
+
+        $transactions = Transaction::with(['account', 'payee'])
+            ->where('team_id', $teamId)
+            ->where('category_id', $category->id)
+            ->whereBetween('date', [$monthStart, $monthEnd])
+            ->orderBy('date', 'desc')
+            ->orderBy('id', 'desc')
+            ->paginate($limit);
+
+        return response()->json([
+            'data' => $transactions->map(fn (Transaction $t) => [
+                'id' => $t->id,
+                'description' => $t->description,
+                'total' => (float) $t->total,
+                'currency_code' => $t->currency_code,
+                'date' => $t->date,
+                'direction' => $t->direction,
+                'status' => $t->status,
+                'account' => $t->account ? ['id' => $t->account->id, 'name' => $t->account->name] : null,
+                'payee' => $t->payee ? ['name' => $t->payee->name] : null,
+            ]),
+            'last_page' => $transactions->lastPage(),
+        ]);
     }
 
     /**
