@@ -115,7 +115,16 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
 
     // Meals
     Route::get('/meals', [MobileController::class, 'meals'])->name('meals.index');
+    Route::post('/meals/plan', [MobileController::class, 'storeMealPlan'])->name('meals.plan.store');
+    Route::patch('/meals/plan/{planner}', [MobileController::class, 'updateMealPlan'])->name('meals.plan.update');
+    Route::delete('/meals/plan/{planner}', [MobileController::class, 'deleteMealPlan'])->name('meals.plan.destroy');
     Route::get('/meals/recipes', [MobileController::class, 'recipes'])->name('meals.recipes');
+    Route::post('/meals/recipes', [MobileController::class, 'storeRecipe'])->name('meals.recipes.store');
+    Route::patch('/meals/recipes/{meal}', [MobileController::class, 'updateRecipe'])->name('meals.recipes.update');
+    Route::delete('/meals/recipes/{meal}', [MobileController::class, 'deleteRecipe'])->name('meals.recipes.destroy');
+    Route::post('/meals/recipes/{meal}/favorite', [MobileController::class, 'toggleRecipeFavorite'])->name('meals.recipes.favorite');
+    Route::post('/meals/recipes/{meal}/shopping-list', [MobileController::class, 'recipeToShoppingList'])->name('meals.recipes.shopping-list');
+    Route::get('/meals/random', [MobileController::class, 'randomMeal'])->name('meals.random');
 
     // Shopping list
     Route::get('/shopping', [MobileController::class, 'shoppingList'])->name('shopping.index');

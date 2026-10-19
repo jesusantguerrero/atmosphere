@@ -24,6 +24,7 @@ use App\Domains\Journal\Actions\TransactionDelete;
 use App\Domains\Journal\Actions\TransactionUpdate;
 use App\Domains\LogerProfile\Models\LogerProfile;
 use App\Domains\Meal\Models\Meal;
+use App\Domains\Meal\Models\MealPlan;
 use App\Domains\Meal\Models\MealType;
 use App\Domains\Meal\Services\MealService;
 use App\Domains\Today\Services\CalendarService;
@@ -1502,6 +1503,269 @@ class MobileController extends Controller
             ]);
 
         return response()->json(['recipes' => $meals]);
+    }
+
+    /**
+     * Schedule a meal on a date. Uses MealService::scheduleMealOnDate
+     * which creates both MealPlan and Planner records.
+     */
+    public function storeMealPlan(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'meal_id' => 'required|integer|exists:meals,id',
+            'date' => 'required|date',
+            'meal_type_id' => 'required|integer|exists:meal_types,id',
+        ]);
+
+        $meal = Meal::findOrFail($validated['meal_id']);
+        abort_if((int) $meal->team_id !== (int) $request->user()->current_team_id, 403);
+
+        MealService::scheduleMealOnDate($meal->id, $validated['date'], $validated);
+
+        $planner = Planner::where([
+            'team_id' => $request->user()->current_team_id,
+            'dateable_type' => MealPlan::class,
+        ])->latest('id')->first();
+
+        return response()->json([
+            'success' => true,
+            'plan' => $planner ? (new PlannedMealResource($planner->load('dateable.mealType')))->resolve() : null,
+        ], 201);
+    }
+
+    /**
+     * Update a planned meal (move date, change meal type).
+     */
+    public function updateMealPlan(Request $request, Planner $planner): JsonResponse
+    {
+        abort_if((int) $planner->team_id !== (int) $request->user()->current_team_id, 403);
+        abort_if($planner->dateable_type !== MealPlan::class, 422, 'Not a meal plan.');
+
+        $validated = $request->validate([
+            'date' => 'nullable|date',
+            'meal_type_id' => 'nullable|integer|exists:meal_types,id',
+            'meal_id' => 'nullable|integer|exists:meals,id',
+        ]);
+
+        if (isset($validated['meal_id'])) {
+            $meal = Meal::findOrFail($validated['meal_id']);
+            abort_if((int) $meal->team_id !== (int) $request->user()->current_team_id, 403);
+        }
+
+        $mealPlan = $planner->dateable;
+
+        if (isset($validated['date'])) {
+            $date = Carbon::parse($validated['date'])->setTimezone('UTC')->toDateTimeString();
+            $planner->update(['date' => $date]);
+            $mealPlan->update(['date' => $date]);
+        }
+
+        if (isset($validated['meal_type_id'])) {
+            $mealPlan->update(['meal_type_id' => $validated['meal_type_id']]);
+        }
+
+        if (isset($validated['meal_id'])) {
+            $mealPlan->update([
+                'meal_id' => $validated['meal_id'],
+                'name' => $meal->name,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'plan' => (new PlannedMealResource($planner->fresh()->load('dateable.mealType')))->resolve(),
+        ]);
+    }
+
+    /**
+     * Remove a planned meal from the schedule.
+     */
+    public function deleteMealPlan(Request $request, Planner $planner): JsonResponse
+    {
+        abort_if((int) $planner->team_id !== (int) $request->user()->current_team_id, 403);
+        abort_if($planner->dateable_type !== MealPlan::class, 422, 'Not a meal plan.');
+
+        $planner->dateable->delete();
+        $planner->delete();
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Create a new recipe (meal).
+     */
+    public function storeRecipe(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'meal_type_id' => 'nullable|integer|exists:meal_types,id',
+            'notes' => 'nullable|string',
+            'ingredients' => 'nullable|array',
+            'ingredients.*.name' => 'required_with:ingredients|string',
+            'ingredients.*.quantity' => 'nullable|numeric',
+            'ingredients.*.unit' => 'nullable|string',
+        ]);
+
+        $meal = Meal::create([
+            'team_id' => $request->user()->current_team_id,
+            'user_id' => $request->user()->id,
+            'name' => $validated['name'],
+            'meal_type_id' => $validated['meal_type_id'] ?? null,
+            'notes' => $validated['notes'] ?? null,
+        ]);
+
+        if (! empty($validated['ingredients'])) {
+            $items = collect($validated['ingredients'])->map(fn ($i) => [
+                'product_id' => 'new::'.$i['name'],
+                'quantity' => $i['quantity'] ?? 1,
+                'unit' => $i['unit'] ?? '',
+            ])->toArray();
+            $meal->saveIngredients($items);
+        }
+
+        $meal->load('ingredients', 'mealType');
+
+        return response()->json([
+            'success' => true,
+            'recipe' => [
+                'id' => $meal->id,
+                'name' => $meal->name,
+                'meal_type' => $meal->mealType?->name,
+                'meal_type_id' => $meal->meal_type_id,
+                'notes' => $meal->notes,
+                'is_liked' => (bool) $meal->is_liked,
+                'ingredients' => $meal->ingredients->map(fn ($i) => [
+                    'id' => $i->id,
+                    'name' => $i->name,
+                    'quantity' => (float) $i->quantity,
+                    'unit' => $i->unit,
+                ]),
+            ],
+        ], 201);
+    }
+
+    /**
+     * Update an existing recipe.
+     */
+    public function updateRecipe(Request $request, Meal $meal): JsonResponse
+    {
+        abort_if((int) $meal->team_id !== (int) $request->user()->current_team_id, 403);
+
+        $validated = $request->validate([
+            'name' => 'nullable|string|max:255',
+            'meal_type_id' => 'nullable|integer|exists:meal_types,id',
+            'notes' => 'nullable|string',
+            'ingredients' => 'nullable|array',
+            'ingredients.*.name' => 'required_with:ingredients|string',
+            'ingredients.*.quantity' => 'nullable|numeric',
+            'ingredients.*.unit' => 'nullable|string',
+        ]);
+
+        $meal->update(array_filter([
+            'name' => $validated['name'] ?? null,
+            'meal_type_id' => $validated['meal_type_id'] ?? null,
+            'notes' => array_key_exists('notes', $validated) ? $validated['notes'] : null,
+        ], fn ($v) => $v !== null));
+
+        if (isset($validated['ingredients'])) {
+            $items = collect($validated['ingredients'])->map(fn ($i) => [
+                'product_id' => 'new::'.$i['name'],
+                'quantity' => $i['quantity'] ?? 1,
+                'unit' => $i['unit'] ?? '',
+            ])->toArray();
+            $meal->saveIngredients($items);
+        }
+
+        $meal->load('ingredients', 'mealType');
+
+        return response()->json([
+            'success' => true,
+            'recipe' => [
+                'id' => $meal->id,
+                'name' => $meal->name,
+                'meal_type' => $meal->mealType?->name,
+                'meal_type_id' => $meal->meal_type_id,
+                'notes' => $meal->notes,
+                'is_liked' => (bool) $meal->is_liked,
+                'ingredients' => $meal->ingredients->map(fn ($i) => [
+                    'id' => $i->id,
+                    'name' => $i->name,
+                    'quantity' => (float) $i->quantity,
+                    'unit' => $i->unit,
+                ]),
+            ],
+        ]);
+    }
+
+    /**
+     * Delete a recipe.
+     */
+    public function deleteRecipe(Request $request, Meal $meal): JsonResponse
+    {
+        abort_if((int) $meal->team_id !== (int) $request->user()->current_team_id, 403);
+
+        $meal->ingredients()->delete();
+        $meal->delete();
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Toggle a recipe's favorite status.
+     */
+    public function toggleRecipeFavorite(Request $request, Meal $meal): JsonResponse
+    {
+        abort_if((int) $meal->team_id !== (int) $request->user()->current_team_id, 403);
+
+        $isLiked = $meal->toggleFavorite();
+
+        return response()->json(['success' => true, 'is_liked' => $isLiked]);
+    }
+
+    /**
+     * Add a recipe's ingredients to the shopping list.
+     */
+    public function recipeToShoppingList(Request $request, Meal $meal, MealService $mealService): JsonResponse
+    {
+        abort_if((int) $meal->team_id !== (int) $request->user()->current_team_id, 403);
+
+        $mealService->addToShoppingList($meal->ingredients->toArray());
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Random meal suggestion, biased toward favorites.
+     */
+    public function randomMeal(Request $request): JsonResponse
+    {
+        $teamId = $request->user()->current_team_id;
+        $mealTypeId = $request->query('meal_type_id');
+
+        $query = Meal::where('team_id', $teamId);
+        if ($mealTypeId) {
+            $query->where('meal_type_id', $mealTypeId);
+        }
+
+        $favorites = (clone $query)->favorites()->get();
+        $pool = $favorites->isNotEmpty() ? $favorites : $query->get();
+
+        if ($pool->isEmpty()) {
+            return response()->json(['meal' => null]);
+        }
+
+        $meal = $pool->random();
+
+        return response()->json([
+            'meal' => [
+                'id' => $meal->id,
+                'name' => $meal->name,
+                'meal_type' => $meal->mealType?->name,
+                'meal_type_id' => $meal->meal_type_id,
+                'is_liked' => (bool) $meal->is_liked,
+                'notes' => $meal->notes,
+            ],
+        ]);
     }
 
     /**

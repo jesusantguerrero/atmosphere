@@ -785,6 +785,75 @@ Defaults: semana en curso (lunes–domingo). `meals` usa `PlannedMealResource`.
 ```
 Todas las recetas del team. `is_liked` para filtrar favoritas client-side.
 
+### 24b. Programar comida — `POST /api/mobile/meals/plan`  (Bearer)
+```jsonc
+// Request
+{ "meal_id": 18, "date": "2026-10-20", "meal_type_id": 2 }
+// Response 201
+{ "success": true, "plan": { "id": 44, "mealId": 3, "name": "Pollo al horno", "mealTypeName": "Almuerzo", "is_liked": false, "is_meal_liked": true, "mealTypeId": 2, "date": "2026-10-20" } }
+```
+Usa `MealService::scheduleMealOnDate`. Crea MealPlan + Planner.
+
+### 24c. Mover comida — `PATCH /api/mobile/meals/plan/{planner}`  (Bearer)
+```jsonc
+// Request (todos opcionales)
+{ "date": "2026-10-22", "meal_type_id": 3, "meal_id": 19 }
+// Response 200
+{ "success": true, "plan": { /* PlannedMealResource */ } }
+```
+Actualiza fecha, tipo de comida o cambia la receta.
+
+### 24d. Quitar comida del plan — `DELETE /api/mobile/meals/plan/{planner}`  (Bearer)
+```jsonc
+// Response 200
+{ "success": true }
+```
+Borra el Planner y su MealPlan asociado.
+
+### 24e. Crear receta — `POST /api/mobile/meals/recipes`  (Bearer)
+```jsonc
+// Request
+{ "name": "Pasta Carbonara", "meal_type_id": 2, "notes": "Receta clásica", "ingredients": [ { "name": "Spaghetti", "quantity": 500, "unit": "g" }, { "name": "Bacon", "quantity": 200, "unit": "g" } ] }
+// Response 201
+{ "success": true, "recipe": { "id": 25, "name": "Pasta Carbonara", "meal_type": "Almuerzo", "meal_type_id": 2, "notes": "Receta clásica", "is_liked": false, "ingredients": [ { "id": 1, "name": "Spaghetti", "quantity": 500, "unit": "g" } ] } }
+```
+Solo `name` es obligatorio. `ingredients` y `notes` son opcionales.
+
+### 24f. Editar receta — `PATCH /api/mobile/meals/recipes/{meal}`  (Bearer)
+```jsonc
+// Request (todos opcionales)
+{ "name": "Nuevo nombre", "meal_type_id": 3, "notes": "Notas actualizadas", "ingredients": [ { "name": "Arroz", "quantity": 2, "unit": "cups" } ] }
+// Response 200
+{ "success": true, "recipe": { /* misma forma que 24e */ } }
+```
+Si se envía `ingredients`, reemplaza todos los ingredientes existentes.
+
+### 24g. Borrar receta — `DELETE /api/mobile/meals/recipes/{meal}`  (Bearer)
+```jsonc
+// Response 200
+{ "success": true }
+```
+
+### 24h. Favorita (toggle) — `POST /api/mobile/meals/recipes/{meal}/favorite`  (Bearer)
+```jsonc
+// Response 200
+{ "success": true, "is_liked": true }
+```
+
+### 24i. Receta a lista de compras — `POST /api/mobile/meals/recipes/{meal}/shopping-list`  (Bearer)
+```jsonc
+// Response 200
+{ "success": true }
+```
+Agrega los ingredientes de la receta a la lista de compras activa.
+
+### 24j. Comida aleatoria — `GET /api/mobile/meals/random?meal_type_id=`  (Bearer)
+```jsonc
+// Response 200
+{ "meal": { "id": 18, "name": "Pollo al horno", "meal_type": "Almuerzo", "meal_type_id": 2, "is_liked": true, "notes": "..." } | null }
+```
+Favorece recetas marcadas como favoritas. `null` si no hay recetas. `meal_type_id` opcional filtra por tipo.
+
 ### 25. Shopping list — `GET /api/mobile/shopping?plan=ID`  (Bearer)
 ```jsonc
 {
