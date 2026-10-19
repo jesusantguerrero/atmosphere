@@ -4,6 +4,7 @@ use App\Domains\AppCore\Http\Controllers\ApiLoginController;
 use App\Http\Controllers\Api\DashboardApiController;
 use App\Http\Controllers\Api\MobileController;
 use App\Http\Controllers\Api\MultiCurrencyTransactionController;
+use App\Http\Controllers\RoutineController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -82,6 +83,12 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
 
     Route::get('/calendar', [MobileController::class, 'calendar'])->name('calendar');
     Route::get('/routine', [MobileController::class, 'routine'])->name('routine');
+    Route::post('/routine/{plan}/blocks', [RoutineController::class, 'storeBlock'])->name('routine.blocks.store');
+    Route::put('/routine/{plan}/blocks/{item}', [RoutineController::class, 'updateBlock'])->name('routine.blocks.update');
+    Route::delete('/routine/{plan}/blocks/{item}', [RoutineController::class, 'destroyBlock'])->name('routine.blocks.destroy');
+    Route::post('/routine/{plan}/copy-day', [RoutineController::class, 'copyDay'])->name('routine.copy-day');
+    Route::get('/routine/{plan}/categories', [MobileController::class, 'routineCategories'])->name('routine.categories');
+    Route::put('/routine/{plan}/categories', [RoutineController::class, 'saveCategories'])->name('routine.categories.save');
     Route::get('/transactions', [MultiCurrencyTransactionController::class, 'index'])->name('transactions.index');
     Route::post('/transactions', [MultiCurrencyTransactionController::class, 'store'])->name('transactions.store');
     Route::get('/transactions/{transaction}', [MobileController::class, 'showTransaction'])->name('transactions.show');

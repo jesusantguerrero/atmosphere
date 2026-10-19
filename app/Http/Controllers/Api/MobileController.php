@@ -1304,6 +1304,27 @@ class MobileController extends Controller
     }
 
     /**
+     * Routine categories (color → name legend).
+     */
+    public function routineCategories(Request $request, Plan $plan): JsonResponse
+    {
+        abort_if((int) $plan->team_id !== (int) $request->user()->current_team_id, 403);
+
+        $setting = Setting::where([
+            'team_id' => $request->user()->current_team_id,
+            'name' => 'routine_categories',
+        ])->first();
+
+        $categories = [];
+        if ($setting && $setting->value) {
+            $decoded = json_decode($setting->value, true);
+            $categories = is_array($decoded) ? $decoded : [];
+        }
+
+        return response()->json(['categories' => $categories]);
+    }
+
+    /**
      * Household chores: the family task board. Same data the web's
      * /housing/chores page renders, filtered to pending + completed-today
      * by default so the mobile list matches the web.
