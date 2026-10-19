@@ -33,7 +33,7 @@ class ApiLoginController extends Controller
                 ]);
             }
 
-            if ($user->hasEnabledTwoFactorAuthentication() && ! $this->passesTwoFactor($user, $request)) {
+            if (filled($user->two_factor_secret) && $user->hasEnabledTwoFactorAuthentication() && ! $this->passesTwoFactor($user, $request)) {
                 throw ValidationException::withMessages([
                     'code' => ['A valid two factor authentication code is required.'],
                 ]);
