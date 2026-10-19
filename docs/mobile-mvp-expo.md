@@ -456,6 +456,15 @@ Each group has `kind`: `"expense"` or `"credit_card_payments"`. Excludes only `R
 ```
 `amount` se recorta a lo disponible en origen. → `{ "success": true }`
 
+### 14b. Copiar del mes anterior — `POST /api/mobile/budget/months/{YYYY-MM}/copy-from-previous`  (Bearer)
+```jsonc
+{ "overwrite": false }   // optional, default false
+```
+Copia todas las asignaciones (`budgeted > 0`) del mes anterior al mes indicado. Excluye categorías reservadas (Ready to Assign, Inflow, Credit Card Payments). Usa `registerAssignment()` (misma lógica que assign manual, con rollover).
+- Sin `overwrite` y el mes ya tiene asignaciones → `409 { "has_assignments": true, "count": 5 }`. La app muestra confirmación y reenvía con `overwrite: true`.
+- Con `overwrite: true` o mes vacío → `200 { "success": true, "copied": 5, "skipped": 0 }`.
+`skipped` = categorías con monto idéntico al anterior (sin cambio).
+
 ### 15. Calendario — `GET /api/mobile/calendar?month=YYYY-MM`  (Bearer)
 ```jsonc
 {

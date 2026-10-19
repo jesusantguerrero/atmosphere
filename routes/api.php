@@ -54,6 +54,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
     Route::get('/budget', [MobileController::class, 'budget'])->name('budget');
     Route::post('/budget/assign', [MobileController::class, 'assignBudget'])->name('budget.assign');
     Route::post('/budget/move', [MobileController::class, 'moveBudget'])->name('budget.move');
+    Route::post('/budget/months/{month}/copy-from-previous', [MobileController::class, 'copyFromPrevious'])->name('budget.copy-from-previous')->where('month', '\d{4}-\d{2}');
     Route::get('/calendar', [MobileController::class, 'calendar'])->name('calendar');
     Route::get('/routine', [MobileController::class, 'routine'])->name('routine');
     Route::get('/transactions', [MultiCurrencyTransactionController::class, 'index'])->name('transactions.index');

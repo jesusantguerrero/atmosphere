@@ -7,6 +7,7 @@ use App\Domains\AppCore\Models\Planner;
 use App\Domains\Budget\Data\BudgetAssignData;
 use App\Domains\Budget\Data\BudgetMovementData;
 use App\Domains\Budget\Data\BudgetReservedNames;
+use App\Domains\Budget\Models\BudgetMonth;
 use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Domains\Budget\Services\BudgetMovementService;
 use App\Domains\Housing\Actions\RegisterOccurrence;
@@ -366,6 +367,54 @@ class MobileController extends Controller
         ));
 
         return response()->json(['success' => true]);
+    }
+
+    /**
+     * Copy budget assignments from the previous month into the target month.
+     * Returns 409 if the month already has assignments and overwrite is not set.
+     */
+    public function copyFromPrevious(Request $request, BudgetMovementService $service, string $month): JsonResponse
+    {
+        $request->validate([
+            'overwrite' => ['sometimes', 'boolean'],
+        ]);
+
+        $teamId = $request->user()->current_team_id;
+        $targetMonth = $month.'-01';
+        $overwrite = $request->boolean('overwrite');
+
+        // Pre-check: if month already has assignments and overwrite is off, return 409.
+        if (! $overwrite) {
+            $reserved = array_map(fn (BudgetReservedNames $n) => $n->value, BudgetReservedNames::cases());
+
+            $existingCount = BudgetMonth::query()
+                ->where('budget_months.team_id', $teamId)
+                ->where('budget_months.month', $targetMonth)
+                ->where('budget_months.budgeted', '>', 0)
+                ->join('categories', 'categories.id', 'budget_months.category_id')
+                ->whereNotIn('categories.name', $reserved)
+                ->count();
+
+            if ($existingCount > 0) {
+                return response()->json([
+                    'has_assignments' => true,
+                    'count' => $existingCount,
+                ], 409);
+            }
+        }
+
+        $result = $service->copyFromPrevious(
+            $teamId,
+            $request->user()->id,
+            $targetMonth,
+            $overwrite,
+        );
+
+        return response()->json([
+            'success' => true,
+            'copied' => $result['copied'],
+            'skipped' => $result['skipped'],
+        ]);
     }
 
     /**
