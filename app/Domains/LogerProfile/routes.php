@@ -12,6 +12,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', 'loger.conce
         Route::post('/boards', 'createBoard')->name('boards.store');
         Route::patch('/boards/{boardId}', 'updateBoard')->name('boards.update');
         Route::post('/boards/{boardId}/notebooks', 'createNotebook')->name('notebooks.store');
+        Route::patch('/boards/{boardId}/notebooks/{notebookId}', 'updateNotebook')->name('notebooks.update');
         Route::post('/boards/{boardId}/pages', 'createPage')->name('pages.store');
         Route::patch('/items/{itemId}', 'updateItem')->name('items.update');
         Route::put('/links', 'saveLinks')->name('links.update');

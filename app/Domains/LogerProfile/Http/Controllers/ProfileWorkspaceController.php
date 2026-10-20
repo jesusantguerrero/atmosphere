@@ -57,6 +57,16 @@ class ProfileWorkspaceController extends Controller
         return $this->result($profile, ['notebook_id' => (string) $notebook->id]);
     }
 
+    public function updateNotebook(ProfileWorkspaceRequest $request, int $profileId, int $boardId, int $notebookId): JsonResponse
+    {
+        $profile = $this->profile($request, $profileId);
+        $board = $this->workspace->linked($profile, 'plan', $boardId);
+        $notebook = $board->stages()->findOrFail($notebookId);
+        $notebook->update(['name' => $request->validated('name')]);
+
+        return $this->result($profile);
+    }
+
     public function createPage(ProfileWorkspaceRequest $request, int $profileId, int $boardId): JsonResponse
     {
         $profile = $this->profile($request, $profileId);

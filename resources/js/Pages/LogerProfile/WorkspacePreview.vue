@@ -209,6 +209,12 @@ const openBoard = (board: ProfileBoard) => {
     pageId.value = "";
     void nextTick(() => boardHeader.value?.scrollIntoView({ block: "start" }));
 };
+const saveNotebook = async (notebook: ProfileStage) => {
+    if (!activeBoard.value || !notebook.name.trim()) return;
+    await persist("patch", `/boards/${activeBoard.value.id}/notebooks/${notebook.id}`, {
+        name: notebook.name.trim(),
+    });
+};
 const openNotebook = (notebook: ProfileStage) => {
     stageId.value = notebook.id;
     pageId.value = notebook.items[0]?.id ?? "";
@@ -504,15 +510,13 @@ const setTab = (id: string) => {
                             :key="stage.id"
                             class="mb-5"
                         >
-                            <button
-                                class="mb-2 text-sm font-semibold"
-                                @click="
-                                    stageId = stage.id;
-                                    pageId = stage.items[0]?.id || '';
-                                "
-                            >
-                                {{ stage.name }}
-                            </button>
+                            <input
+                                v-model="stage.name"
+                                @change="saveNotebook(stage)"
+                                :disabled="saving"
+                                aria-label="Nombre del cuaderno"
+                                class="mb-2 w-full border-0 bg-transparent p-0 text-sm font-semibold focus:ring-0"
+                            />
                             <div class="flex flex-col gap-1">
                                 <button
                                     v-for="page in stage.items"
