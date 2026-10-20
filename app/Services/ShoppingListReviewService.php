@@ -1,0 +1,240 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\User;
+use App\Notifications\ShoppingListReady;
+use Illuminate\Support\Str;
+use Modules\Plan\Entities\FieldValue;
+use Modules\Plan\Entities\Plan;
+use Modules\Plan\Entities\PlanItem;
+
+class ShoppingListReviewService
+{
+    private const FIELD = 'shopping_review';
+
+    private function version(Plan $plan): string
+    {
+        $items = PlanItem::query()->without(['fields', 'checklist'])->where('team_id', $plan->team_id)->where('plan_id', $plan->id)->orderBy('id')->get(['id', 'stage_id', 'title', 'state']);
+
+        return hash('sha256', json_encode([$items->map(fn ($item) => [$item->id, $item->stage_id, $item->title, $item->state === 'skip' ? 'available' : 'needed'])->all(), $this->itemDetails($plan)], JSON_THROW_ON_ERROR));
+    }
+
+    public function status(Plan $plan): array
+    {
+        $value = FieldValue::query()->where(['team_id' => $plan->team_id, 'entity_type' => Plan::class, 'entity_id' => $plan->id, 'resource' => 'plan', 'field_name' => self::FIELD])->value('value');
+        $review = $value ? json_decode($value, true) : [];
+        $currentVersion = $this->version($plan);
+
+        return [
+            'id' => $review['id'] ?? null,
+            'status' => ! empty($review['completed_at']) ? 'completed' : (! empty($review['reviewed_at']) ? (($review['version'] ?? null) === $currentVersion ? 'ready' : 'changed') : 'none'),
+            'note' => $review['note'] ?? '', 'reviewed_at' => $review['reviewed_at'] ?? null,
+            'completed_at' => $review['completed_at'] ?? null, 'version' => $review['version'] ?? null,
+            'current_version' => $currentVersion,
+            'reviewed_ids' => $this->reviewedIds($plan),
+            'item_details' => $this->itemDetails($plan),
+        ];
+    }
+
+    private function store(Plan $plan, array $review, string $fieldName = self::FIELD): void
+    {
+        $field = $plan->findOrCreateField(['name' => $fieldName, 'title' => 'Revisión de compra', 'type' => 'text']);
+        $identity = ['field_id' => $field->id, 'entity_id' => $plan->id, 'entity_type' => Plan::class];
+        $value = FieldValue::query()->where($identity)->first() ?? (new FieldValue)->forceFill($identity);
+        $value->forceFill(['team_id' => $plan->team_id, 'user_id' => $plan->user_id, 'resource' => 'plan', 'field_name' => $fieldName, 'field_title' => 'Revisión de compra', 'value' => json_encode($review, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR)])->save();
+    }
+
+    private function itemSignature(PlanItem $item): string
+    {
+        return hash('sha256', json_encode([$item->title, $item->state === 'skip' ? 'available' : 'needed'], JSON_THROW_ON_ERROR));
+    }
+
+    private function marks(Plan $plan): array
+    {
+        $value = FieldValue::query()->where(['team_id' => $plan->team_id, 'entity_type' => Plan::class, 'entity_id' => $plan->id, 'resource' => 'plan', 'field_name' => 'shopping_reviewed_items'])->value('value');
+
+        return $value ? (json_decode($value, true) ?? []) : [];
+    }
+
+    public function reviewedIds(Plan $plan): array
+    {
+        $marks = $this->marks($plan);
+
+        return PlanItem::query()->without(['fields', 'checklist'])->where('team_id', $plan->team_id)->where('plan_id', $plan->id)->get()->filter(fn (PlanItem $item) => ($marks[$item->id] ?? null) === $this->itemSignature($item))->pluck('id')->values()->all();
+    }
+
+    public function itemDetails(Plan $plan): array
+    {
+        $value = FieldValue::query()->where(['team_id' => $plan->team_id, 'entity_type' => Plan::class, 'entity_id' => $plan->id, 'resource' => 'plan', 'field_name' => 'shopping_item_details'])->value('value');
+
+        return $value ? (json_decode($value, true) ?? []) : [];
+    }
+
+    public function saveItemDetails(Plan $plan, PlanItem $item, string $quantity, string $note): void
+    {
+        $plan->getConnection()->transaction(function () use ($plan, $item, $quantity, $note): void {
+            Plan::query()->whereKey($plan->id)->lockForUpdate()->firstOrFail();
+            $details = $this->itemDetails($plan);
+            if (trim($quantity) === '' && trim($note) === '') {
+                unset($details[$item->id]);
+            } else {
+                $details[$item->id] = ['quantity' => trim($quantity), 'note' => trim($note)];
+            }
+            $this->store($plan, $details, 'shopping_item_details');
+        });
+    }
+
+    public function unmarkReviewed(Plan $plan, PlanItem $item): void
+    {
+        $plan->getConnection()->transaction(function () use ($plan, $item): void {
+            Plan::query()->whereKey($plan->id)->lockForUpdate()->firstOrFail();
+            $marks = $this->marks($plan);
+            unset($marks[$item->id]);
+            $this->store($plan, $marks, 'shopping_reviewed_items');
+        });
+    }
+
+    public function markReviewed(Plan $plan, PlanItem $item): void
+    {
+        $plan->getConnection()->transaction(function () use ($plan, $item): void {
+            Plan::query()->whereKey($plan->id)->lockForUpdate()->firstOrFail();
+            $marks = $this->marks($plan);
+            $marks[$item->id] = $this->itemSignature($item);
+            $this->store($plan, $marks, 'shopping_reviewed_items');
+        });
+    }
+
+    public function clearReviewed(Plan $plan): void
+    {
+        $this->store($plan, [], 'shopping_reviewed_items');
+    }
+
+    private function sessionField(Plan $plan, string $name): array
+    {
+        $value = FieldValue::query()->where(['team_id' => $plan->team_id, 'entity_type' => Plan::class, 'entity_id' => $plan->id, 'resource' => 'plan', 'field_name' => $name])->value('value');
+
+        return $value ? (json_decode($value, true) ?? []) : [];
+    }
+
+    public function activeSession(Plan $plan): ?array
+    {
+        $active = $this->sessionField($plan, 'shopping_active_session');
+        if (! $active) {
+            return null;
+        }
+        $existing = collect($active['items'])->keyBy('id');
+        $details = $this->itemDetails($plan);
+        $active['items'] = PlanItem::query()->without(['fields', 'checklist'])->with('stage')->where('team_id', $plan->team_id)->where('plan_id', $plan->id)->where(fn ($query) => $query->where('state', PlanItem::STATE_PENDING)->orWhereIn('id', $active['purchased_ids']))->orderBy('order')->get()->map(fn (PlanItem $item) => $existing->get($item->id) ?? ['id' => $item->id, 'title' => $item->title, 'stage_id' => $item->stage_id, 'category' => $item->stage?->name, 'details' => $details[$item->id] ?? null])->all();
+
+        return $active;
+    }
+
+    public function visits(Plan $plan): array
+    {
+        return FieldValue::query()->where(['team_id' => $plan->team_id, 'entity_type' => Plan::class, 'entity_id' => $plan->id, 'resource' => 'plan'])->where('field_name', 'like', 'shopping_visit_%')->latest('id')->limit(20)->pluck('value')->map(fn (string $value) => json_decode($value, true))->all();
+    }
+
+    public function startSession(Plan $plan, int $userId): array
+    {
+        return $plan->getConnection()->transaction(function () use ($plan, $userId) {
+            Plan::query()->whereKey($plan->id)->lockForUpdate()->firstOrFail();
+            if ($active = $this->activeSession($plan)) {
+                return $active;
+            }
+            $details = $this->itemDetails($plan);
+            $items = PlanItem::query()->without(['fields', 'checklist'])->with('stage')->where('team_id', $plan->team_id)->where('plan_id', $plan->id)->where('state', PlanItem::STATE_PENDING)->orderBy('order')->get()->map(fn (PlanItem $item) => ['id' => $item->id, 'title' => $item->title, 'stage_id' => $item->stage_id, 'category' => $item->stage?->name, 'details' => $details[$item->id] ?? null])->all();
+            abort_if(empty($items), 422, 'No hay productos pendientes para iniciar una compra.');
+            $session = ['id' => (string) Str::uuid(), 'started_at' => now()->toIso8601String(), 'user_id' => $userId, 'review_id' => $this->status($plan)['id'], 'items' => $items, 'purchased_ids' => []];
+            $this->store($plan, $session, 'shopping_active_session');
+
+            return $session;
+        });
+    }
+
+    public function updateSessionCart(Plan $plan, PlanItem $item): void
+    {
+        $plan->getConnection()->transaction(function () use ($plan, $item): void {
+            Plan::query()->whereKey($plan->id)->lockForUpdate()->firstOrFail();
+            $active = $this->sessionField($plan, 'shopping_active_session') ?: null;
+            if (! $active) {
+                return;
+            }
+            if (! in_array($item->id, array_column($active['items'], 'id'), true)) {
+                $active['items'][] = ['id' => $item->id, 'title' => $item->title, 'stage_id' => $item->stage_id, 'category' => $item->stage?->name, 'details' => $this->itemDetails($plan)[$item->id] ?? null];
+            }
+            $ids = array_values(array_diff($active['purchased_ids'], [$item->id]));
+            if ($item->state === PlanItem::STATE_BUY) {
+                $ids[] = $item->id;
+            }
+            $active['purchased_ids'] = $ids;
+            $this->store($plan, $active, 'shopping_active_session');
+        });
+    }
+
+    public function finishSession(Plan $plan, array $data): array
+    {
+        return $plan->getConnection()->transaction(function () use ($plan, $data) {
+            Plan::query()->whereKey($plan->id)->lockForUpdate()->firstOrFail();
+            $field = 'shopping_visit_'.$data['session_id'];
+            if ($finished = $this->sessionField($plan, $field)) {
+                return $finished;
+            }
+            $active = $this->activeSession($plan);
+            abort_unless($active && $active['id'] === $data['session_id'], 409, 'La sesión de compra cambió. Actualiza la lista.');
+            $bought = array_values(array_filter($active['items'], fn (array $item) => in_array($item['id'], $active['purchased_ids'], true)));
+            abort_if(empty($bought), 422, 'Marca al menos un producto en el carrito antes de terminar.');
+            $visit = [...$active, 'completed_at' => now()->toIso8601String(), 'total' => number_format((float) $data['total'], 2, '.', ''), 'currency' => $data['currency'], 'note' => trim($data['note'] ?? ''), 'purchased_items' => $bought, 'remaining_items' => array_values(array_filter($active['items'], fn (array $item) => ! in_array($item['id'], $active['purchased_ids'], true)))];
+            unset($visit['items'], $visit['purchased_ids']);
+            $this->store($plan, $visit, $field);
+            $this->store($plan, [], 'shopping_active_session');
+            $current = $this->status($plan);
+            if ($current['id']) {
+                $this->complete($plan, $current['id']);
+            }
+            $this->clearReviewed($plan);
+            $this->store($plan, [], 'shopping_item_details');
+            PlanItem::query()->where('team_id', $plan->team_id)->where('plan_id', $plan->id)->update(['state' => PlanItem::STATE_PENDING, 'is_done' => false, 'commit_date' => null]);
+
+            return $visit;
+        });
+    }
+
+    public function confirm(Plan $plan, string $note, string $expectedVersion): array
+    {
+        $changed = false;
+        $result = $plan->getConnection()->transaction(function () use ($plan, $note, $expectedVersion, &$changed) {
+            Plan::query()->whereKey($plan->id)->lockForUpdate()->firstOrFail();
+            $current = $this->status($plan);
+            abort_unless(hash_equals($current['current_version'], $expectedVersion), 409, 'La lista cambió. Actualízala antes de confirmar.');
+            if ($current['status'] === 'ready' && $current['note'] === trim($note)) {
+                return $current;
+            }
+            $this->store($plan, ['id' => (string) Str::uuid(), 'note' => trim($note), 'reviewed_at' => now()->toIso8601String(), 'completed_at' => null, 'version' => $current['current_version']]);
+            $changed = true;
+
+            return $this->status($plan);
+        });
+        if ($changed) {
+            User::find($plan->user_id)?->notify(new ShoppingListReady($plan->id, $plan->name, $result['id']));
+        }
+
+        return $result;
+    }
+
+    public function complete(Plan $plan, string $reviewId): array
+    {
+        return $plan->getConnection()->transaction(function () use ($plan, $reviewId) {
+            Plan::query()->whereKey($plan->id)->lockForUpdate()->firstOrFail();
+            $current = $this->status($plan);
+            abort_unless($current['id'] === $reviewId && $current['reviewed_at'], 409, 'Hay una revisión más reciente. Actualiza la lista.');
+            if ($current['status'] !== 'completed') {
+                $this->clearReviewed($plan);
+                $this->store($plan, [], 'shopping_item_details');
+                $this->store($plan, ['id' => $current['id'], 'note' => $current['note'], 'reviewed_at' => $current['reviewed_at'], 'completed_at' => now()->toIso8601String(), 'version' => $current['version']]);
+            }
+
+            return $this->status($plan);
+        });
+    }
+}

@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import ShoppingChatList from '@/domains/shopping/components/ShoppingChatList.vue';
+import ShoppingChatList from "@/domains/shopping/components/ShoppingChatList.vue";
 
 interface Item {
     id: number;
     title: string;
-    state: 'pending' | 'buy' | 'skip';
+    state: "pending" | "buy" | "skip";
     is_done: boolean;
     order: number;
 }
@@ -28,6 +28,8 @@ const props = defineProps<{
 }>();
 
 const endpoints = {
+    review: `/shared/list/${props.token}/review`,
+    confirmReview: `/shared/list/${props.token}/review`,
     cycle: (itemId: number) => `/shared/list/${props.token}/toggle/${itemId}`,
     add: `/shared/list/${props.token}/items`,
     reset: `/shared/list/${props.token}/reset`,
@@ -43,6 +45,7 @@ const endpoints = {
         :api-base="`/shared/list/${token}`"
         :mercure-url="mercureUrl"
         :show-owner-controls="false"
+        :inventory-mode="true"
         :endpoints="endpoints"
     />
 </template>

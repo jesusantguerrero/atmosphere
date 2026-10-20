@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\Services\ShoppingListReviewService;
 use Duijker\LaravelMercureBroadcaster\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
@@ -57,9 +58,12 @@ class ShoppingListItemUpdated implements ShouldBroadcastNow
         return [
             'action' => $this->action,
             'plan_id' => $this->plan->id,
+            'review' => app(ShoppingListReviewService::class)->status($this->plan),
             'item' => $this->item ? [
                 'id' => $this->item->id,
                 'title' => $this->item->title,
+                'stage_id' => $this->item->stage_id,
+                'stage_name' => $this->item->stage?->name,
                 'state' => $this->item->state ?? PlanItem::STATE_PENDING,
                 'is_done' => (bool) $this->item->is_done,
                 'order' => (int) ($this->item->order ?? 0),
