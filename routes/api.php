@@ -153,6 +153,8 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
     Route::post('/shopping/{plan}/check-all', [MobileController::class, 'checkAllShoppingItems'])->name('shopping.check-all');
     Route::post('/shopping/{plan}/share', [MobileController::class, 'shareShoppingList'])->name('shopping.share');
     Route::delete('/shopping/{plan}/share', [MobileController::class, 'unshareShoppingList'])->name('shopping.unshare');
+    Route::post('/shopping/{plan}/sessions/start', [MobileController::class, 'startShoppingSession'])->name('shopping.sessions.start');
+    Route::post('/shopping/{plan}/sessions/finish', [MobileController::class, 'finishShoppingSession'])->name('shopping.sessions.finish');
 
     // Inbox (draft transactions)
     Route::post('/transactions/{transaction}/approve', [MobileController::class, 'approveTransaction'])->name('transactions.approve');

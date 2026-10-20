@@ -905,6 +905,17 @@ Favorece recetas marcadas como favoritas. `null` si no hay recetas. `meal_type_i
 {
   "plan": {
     "id": 7, "name": "Shopping List", "share_url": "https://loger.app/shared/list/abc-uuid" | null,
+    "session": {                        // sesión activa o null
+      "id": "uuid", "started_at": "ISO8601", "user_id": 1,
+      "items": [{ "id": 100, "title": "Manzanas", "stage_id": 15, "category": "Frutas", "details": null }],
+      "purchased_ids": [100]
+    },
+    "visits": [                         // últimas 20 visitas, más reciente primero
+      { "id": "uuid", "started_at": "ISO8601", "completed_at": "ISO8601",
+        "user_id": 1, "total": "1250.50", "currency": "DOP", "note": "",
+        "purchased_items": [{ "id": 100, "title": "Manzanas", "category": "Frutas" }],
+        "remaining_items": [{ "id": 101, "title": "Bananos" }] }
+    ],
     "stages": [
       { "id": 15, "name": "Frutas",
         "items": [
@@ -982,6 +993,21 @@ Idempotente — si ya tiene token, devuelve la misma URL.
 → `{ "shared": false }`
 
 `GET /shopping` incluye `share_url` en el plan activo (o `null` si no está compartida).
+
+### 27f. Iniciar compra — `POST /api/mobile/shopping/{plan_id}/sessions/start`  (Bearer)
+Sin body. Inicia una sesión de compra con los ítems pendientes.
+→ `201 { "session": { id, started_at, user_id, items: [{id, title, stage_id, category, details}], purchased_ids: [] } }`
+Si ya hay una sesión activa, devuelve esa (`200`). `422` si no hay ítems pendientes.
+El `cycle` de ítems actualiza `purchased_ids` automáticamente cuando hay sesión activa.
+
+### 27g. Terminar compra — `POST /api/mobile/shopping/{plan_id}/sessions/finish`  (Bearer)
+```jsonc
+{ "session_id": "uuid", "total": 1250.50, "currency": "DOP", "note": "Compra semanal" }
+```
+→ `{ "visit": { id, started_at, completed_at, total, currency, note, purchased_items[], remaining_items[] }, "plan": { ... } }`
+Guarda la visita, reinicia todos los ítems a `pending`, limpia la sesión activa.
+`409` si `session_id` no coincide con la sesión activa. `422` si no hay ítems comprados.
+`currency` ∈ `DOP|USD|EUR`. `note` opcional (max 2000 chars).
 
 ### 28. Aprobar borrador — `POST /api/mobile/transactions/{transaction_id}/approve`  (Bearer)
 Sin body. Cambia `status` de `draft` a `verified`.
@@ -1089,8 +1115,9 @@ Campos opcionales: `name`, `credit_limit`, `credit_closing_day`, `credit_payment
     "amount": 1000,             // saldo del estado de cuenta
     "difference": -50,          // ledger − statement
     "status": "pending",        // "pending" | "completed"
-    "entries": [                // solo si pending
-      { "id": 1, "transaction_id": 5, "transaction_line_id": 12, "matched": false }
+    "entries": [                // solo si pending; incluye datos de la transacción
+      { "id": 1, "transaction_id": 5, "transaction_line_id": 12, "matched": false,
+        "description": "Supermercado", "date": "2026-10-10", "total": 500.00, "direction": "WITHDRAW" }
     ]
   },
   "cleared_balance": 950        // saldo del libro hasta la fecha
