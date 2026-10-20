@@ -11,6 +11,7 @@ use App\Domains\Housing\Models\Occurrence;
 use App\Domains\Meal\Services\MealService;
 use App\Domains\Transaction\Models\BillingCycle;
 use App\Domains\Transaction\Services\TransactionService;
+use App\Models\Setting;
 use App\Notifications\WatchlistThresholdAlert;
 use Carbon\Carbon;
 use Illuminate\Notifications\DatabaseNotification;
@@ -120,7 +121,7 @@ class TodayService
             'daily_remaining' => round($dailyRemaining, 2),
             'month_remaining' => round($monthRemaining, 2),
             'days_in_month_left' => $daysRemaining,
-            'currency_code' => null,
+            'currency_code' => strtoupper(trim((string) (Setting::getByTeam($teamId)['team_primary_currency_code'] ?? ''))) ?: 'DOP',
         ];
     }
 
@@ -162,6 +163,7 @@ class TodayService
     {
         $month = $today->format('Y-m').'-01';
         $service = new BudgetCategoryService;
+        $baseCurrency = strtoupper(trim((string) (Setting::getByTeam($teamId)['team_primary_currency_code'] ?? ''))) ?: 'DOP';
 
         return BudgetTarget::query()
             ->where('team_id', $teamId)
@@ -170,7 +172,7 @@ class TodayService
             ->whereNull('completed_at')
             ->with('category')
             ->get()
-            ->map(function (BudgetTarget $bt) use ($service, $month, $today) {
+            ->map(function (BudgetTarget $bt) use ($service, $month, $today, $baseCurrency) {
                 if (! $bt->category) {
                     return null;
                 }
@@ -212,6 +214,10 @@ class TodayService
                     'id' => 'target-'.$bt->category_id,
                     'type' => 'target_underfunded',
                     'message' => "{$bt->category->name}: faltan {$formattedNeeded} antes del {$formattedDue}",
+                    'name' => $bt->category->name,
+                    'amount_needed' => round($needed, 2),
+                    'currency_code' => $baseCurrency,
+                    'days_overdue' => (int) -$daysUntil,
                     'cta' => 'Asignar',
                     'category_id' => $bt->category_id,
                     'needed' => round($needed, 2),
