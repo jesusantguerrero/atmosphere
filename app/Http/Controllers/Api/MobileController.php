@@ -41,6 +41,7 @@ use App\Models\Account;
 use App\Models\Setting;
 use App\Models\Team;
 use App\Models\User;
+use App\Services\ShoppingListReviewService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -1855,11 +1856,15 @@ class MobileController extends Controller
             ];
         })->values();
 
+        $reviews = app(ShoppingListReviewService::class);
+
         return response()->json([
             'plan' => [
                 'id' => $plan->id,
                 'name' => $plan->name,
                 'share_url' => $plan->share_token ? route('shared.list', $plan->share_token) : null,
+                'session' => $reviews->activeSession($plan),
+                'visits' => $reviews->visits($plan),
                 'stages' => $plan->stages->map(fn ($stage) => [
                     'id' => $stage->id,
                     'name' => $stage->name,
@@ -1929,6 +1934,8 @@ class MobileController extends Controller
         } else {
             $item->setState($next);
         }
+
+        app(ShoppingListReviewService::class)->updateSessionCart($plan, $item->fresh());
 
         return response()->json([
             'id' => $item->id,
@@ -2092,6 +2099,58 @@ class MobileController extends Controller
         $plan->save();
 
         return response()->json(['shared' => false]);
+    }
+
+    // ─── Shopping sessions ──────────────────────────────────────
+
+    /**
+     * Start a shopping session (trip). Returns existing if one is active.
+     */
+    public function startShoppingSession(Request $request, Plan $plan, ShoppingListReviewService $reviews): JsonResponse
+    {
+        abort_if((int) $plan->team_id !== (int) $request->user()->current_team_id, 403);
+
+        $session = $reviews->startSession($plan, $request->user()->id);
+
+        return response()->json(['session' => $session], $session ? 201 : 200);
+    }
+
+    /**
+     * Finish a shopping session: record the visit, reset the list.
+     */
+    public function finishShoppingSession(Request $request, Plan $plan, ShoppingListReviewService $reviews): JsonResponse
+    {
+        abort_if((int) $plan->team_id !== (int) $request->user()->current_team_id, 403);
+
+        $validated = $request->validate([
+            'session_id' => ['required', 'uuid'],
+            'total' => ['required', 'numeric', 'min:0', 'max:999999999.99'],
+            'currency' => ['required', 'string', 'in:DOP,USD,EUR'],
+            'note' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $visit = $reviews->finishSession($plan, $validated);
+
+        return response()->json([
+            'visit' => $visit,
+            'plan' => [
+                'id' => $plan->id,
+                'name' => $plan->name,
+                'session' => $reviews->activeSession($plan->fresh()),
+                'visits' => $reviews->visits($plan),
+                'stages' => $plan->fresh()->stages->map(fn ($stage) => [
+                    'id' => $stage->id,
+                    'name' => $stage->name,
+                    'items' => $stage->items()->orderBy('order')->get()->map(fn ($item) => [
+                        'id' => $item->id,
+                        'title' => $item->title,
+                        'state' => $item->state ?? PlanItem::STATE_PENDING,
+                        'is_done' => (bool) $item->is_done,
+                        'order' => (int) $item->order,
+                    ]),
+                ])->values(),
+            ],
+        ]);
     }
 
     // ─── Inbox (draft transactions) ──────────────────────────────
@@ -2442,16 +2501,7 @@ class MobileController extends Controller
 
         $entries = [];
         if ($last && $last->status === Reconciliation::STATUS_PENDING) {
-            $entries = $last->entries()
-                ->select(['id', 'transaction_id', 'transaction_line_id', 'matched'])
-                ->get()
-                ->map(fn (ReconciliationEntry $e) => [
-                    'id' => $e->id,
-                    'transaction_id' => $e->transaction_id,
-                    'transaction_line_id' => $e->transaction_line_id,
-                    'matched' => (bool) $e->matched,
-                ])
-                ->values();
+            $entries = $this->enrichedReconciliationEntries($last);
         }
 
         return response()->json([
@@ -2486,8 +2536,6 @@ class MobileController extends Controller
             user_id: $request->user()->id,
         ));
 
-        $reconciliation->load('entries');
-
         return response()->json([
             'reconciliation' => [
                 'id' => $reconciliation->id,
@@ -2495,12 +2543,7 @@ class MobileController extends Controller
                 'amount' => (float) $reconciliation->amount,
                 'difference' => (float) $reconciliation->difference,
                 'status' => $reconciliation->status,
-                'entries' => $reconciliation->entries->map(fn (ReconciliationEntry $e) => [
-                    'id' => $e->id,
-                    'transaction_id' => $e->transaction_id,
-                    'transaction_line_id' => $e->transaction_line_id,
-                    'matched' => (bool) $e->matched,
-                ])->values(),
+                'entries' => $this->enrichedReconciliationEntries($reconciliation),
             ],
         ], 201);
     }
@@ -2573,6 +2616,41 @@ class MobileController extends Controller
         $service->delete($reconciliation);
 
         return response()->json(['deleted' => true]);
+    }
+
+    /**
+     * Reconciliation entries enriched with transaction description, date, total and direction.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function enrichedReconciliationEntries(Reconciliation $reconciliation): array
+    {
+        return $reconciliation->entries()
+            ->join('transaction_lines', 'transaction_lines.id', 'reconciliation_entries.transaction_line_id')
+            ->join('transactions', 'transactions.id', 'reconciliation_entries.transaction_id')
+            ->select([
+                'reconciliation_entries.id',
+                'reconciliation_entries.transaction_id',
+                'reconciliation_entries.transaction_line_id',
+                'reconciliation_entries.matched',
+                'transactions.description',
+                'transactions.date',
+                'transactions.total',
+                'transactions.direction',
+            ])
+            ->get()
+            ->map(fn ($e) => [
+                'id' => $e->id,
+                'transaction_id' => $e->transaction_id,
+                'transaction_line_id' => $e->transaction_line_id,
+                'matched' => (bool) $e->matched,
+                'description' => $e->description,
+                'date' => $e->date,
+                'total' => (float) $e->total,
+                'direction' => $e->direction,
+            ])
+            ->values()
+            ->toArray();
     }
 
     // ─── Occurrences ──────────────────────────────────────────────

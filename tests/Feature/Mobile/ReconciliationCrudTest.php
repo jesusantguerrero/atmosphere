@@ -50,6 +50,31 @@ class ReconciliationCrudTest extends TestCase
             'difference' => -1000,
             'status' => 'pending',
         ]);
+        DB::table('transactions')->insert([
+            'id' => 1,
+            'team_id' => $account->team_id,
+            'user_id' => $user->id,
+            'date' => '2026-10-10',
+            'description' => 'Grocery store',
+            'total' => 500,
+            'direction' => 'WITHDRAW',
+            'status' => 'verified',
+        ]);
+        DB::table('transaction_lines')->insert([
+            'id' => 1,
+            'transaction_id' => 1,
+            'account_id' => $account->id,
+            'date' => '2026-10-10',
+            'amount' => 500,
+            'type' => -1,
+        ]);
+        DB::table('reconciliation_entries')->insert([
+            'id' => 1,
+            'reconciliation_id' => 1,
+            'transaction_id' => 1,
+            'transaction_line_id' => 1,
+            'matched' => false,
+        ]);
 
         $response = $this->getJson("/api/mobile/accounts/{$account->id}/reconciliation")
             ->assertOk();
@@ -57,7 +82,14 @@ class ReconciliationCrudTest extends TestCase
         $this->assertEquals(1, $response->json('reconciliation.id'));
         $this->assertEquals('pending', $response->json('reconciliation.status'));
         $this->assertEquals(1000, $response->json('reconciliation.amount'));
-        $this->assertIsArray($response->json('reconciliation.entries'));
+        $this->assertCount(1, $response->json('reconciliation.entries'));
+
+        $entry = $response->json('reconciliation.entries.0');
+        $this->assertEquals('Grocery store', $entry['description']);
+        $this->assertEquals('2026-10-10', $entry['date']);
+        $this->assertEquals(500, $entry['total']);
+        $this->assertEquals('WITHDRAW', $entry['direction']);
+        $this->assertFalse($entry['matched']);
     }
 
     public function test_store_reconciliation(): void
