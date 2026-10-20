@@ -13,6 +13,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Exists;
+use Insane\Journal\Events\TransactionCreated;
 
 class MultiCurrencyTransactionController extends Controller
 {
@@ -61,6 +62,8 @@ class MultiCurrencyTransactionController extends Controller
                 // Use standard transaction creation for primary currency
                 $transaction = Transaction::create($transactionData);
             }
+
+            event(new TransactionCreated($transaction, $transactionData));
 
             return response()->json([
                 'success' => true,

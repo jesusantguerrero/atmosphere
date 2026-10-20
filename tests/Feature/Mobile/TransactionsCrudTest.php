@@ -7,6 +7,8 @@ use App\Domains\Transaction\Models\Transaction;
 use App\Models\Account;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
+use Insane\Journal\Events\TransactionCreated;
 use Insane\Journal\Models\Core\Payee;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -243,6 +245,27 @@ class TransactionsCrudTest extends TestCase
         $names = collect($response->json())->pluck('name')->toArray();
         $this->assertContains('Groceries', $names);
         $this->assertNotNull($response->json('0.group'));
+    }
+
+    public function test_store_transaction_fires_created_event(): void
+    {
+        [$user, $team, $account, $category, $payee] = $this->makeSetup();
+        Sanctum::actingAs($user);
+
+        Event::fake([TransactionCreated::class]);
+
+        $this->postJson('/api/mobile/transactions', [
+            'account_id' => $account->id,
+            'total' => 450.00,
+            'currency_code' => 'DOP',
+            'description' => 'Supermercado',
+            'date' => '2026-10-20',
+            'direction' => 'WITHDRAW',
+            'category_id' => $category->id,
+            'payee_id' => $payee->id,
+        ])->assertCreated();
+
+        Event::assertDispatched(TransactionCreated::class);
     }
 
     // ── Helpers ──────────────────────────────────────────────────────
