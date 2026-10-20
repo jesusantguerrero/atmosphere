@@ -39,7 +39,8 @@
     }>()
 
     const context = useAppContextStore()
-    const pageProps = usePage().props
+    const navigationPage = usePage()
+    const pageProps = navigationPage.props
 
     const { appMenu, headerMenu, mobileMenu } = useAppMenu(t, pageProps.modules)
     const serverMenu = computed(() => {
@@ -58,14 +59,7 @@
             label: t('User Profile'),
             to: '/user/profile',
             as: Link
-        }] : (
-            // Admin as a first-class sidebar entry for operators. The nav
-            // dropdown already exposes it; this mirrors that gate (super_admin
-            // / admin) and the /admin routes' `superadmin` Gate.
-            ['admin', 'super_admin'].includes(pageProps.auth?.user?.role)
-                ? [...appMenu, { icon: 'fas fa-shield-alt', name: 'admin', label: t('Admin'), to: '/admin', as: Link, isActiveFunction: (url, path) => /^\/admin/.test(path) }]
-                : appMenu
-        )
+        }] : appMenu
         // serverMenu.value.map(item => ({
         //     label: item.title,
         //     name: item.title,
@@ -108,7 +102,7 @@
     }
 
     const currentPath = computed(() => {
-        return document?.location?.pathname
+        return navigationPage.url.split(/[?#]/)[0]
     })
 
     // Pages with their own inline add UI (bottom "add item" input / per-lane

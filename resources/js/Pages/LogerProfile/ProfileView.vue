@@ -8,7 +8,7 @@ import AppLayout from '@/Components/templates/AppLayout.vue';
 import LogerProfileTemplate from '@/Components/templates/LogerProfileTemplate.vue';
 import LogerButton from '@/Components/atoms/LogerButton.vue';
 import WelcomeCard from '@/Components/organisms/WelcomeCard.vue';
-import ProfileSectionNav from '@/Components/templates/ProfileSectionNav.vue';
+import ProfilesPillarNav from '@/Components/templates/ProfilesPillarNav.vue';
 import LogerProfileModal from '@/Components/LogerProfileModal.vue';
 import ProfileEntityModal from '@/Components/ProfileEntityModal.vue';
 import OccurrenceWidget from "@/domains/housing/components/OccurrenceWidget.vue";
@@ -95,7 +95,7 @@ const budgets = computed(() => {
 <template>
     <AppLayout title="Family">
         <template #header>
-            <ProfileSectionNav :loger-profile="profiles">
+            <ProfilesPillarNav>
                   <template #actions>
                       <div>
                         <LogerButton variant="inverse" @click="isModalOpen = !isModalOpen">
@@ -103,7 +103,7 @@ const budgets = computed(() => {
                         </LogerButton>
                       </div>
                   </template>
-            </ProfileSectionNav>
+            </ProfilesPillarNav>
         </template>
 
 

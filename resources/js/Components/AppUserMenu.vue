@@ -49,6 +49,10 @@ const { toggleModal: toggleImportModal } = useImportModal();
                 <span class="flex items-center gap-2"><IMdiAccountOutline /> {{ $t('Profile') }}</span>
             </JetDropdownLink>
 
+            <JetDropdownLink v-if="['admin', 'super_admin'].includes(user?.role)" href="/admin">
+                <span class="flex items-center gap-2"><i class="fas fa-shield-alt" aria-hidden="true"></i> {{ $t('Admin') }}</span>
+            </JetDropdownLink>
+
             <JetDropdownLink :href="route('api-tokens.index')" v-if="hasApiFeatures">
                 <span class="flex items-center gap-2"><IMdiKeyOutline /> {{ $t('API Tokens') }}</span>
             </JetDropdownLink>
