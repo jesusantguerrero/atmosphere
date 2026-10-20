@@ -109,13 +109,21 @@ export const useAppMenu = (t: any, modules: any[]) => {
             label: t('Household'),
             to: '/housing',
             as: Link,
-            // Profiles/Family now live INSIDE Household as the "People" sub-tab.
-            // Keep the pillar visible if either module is on, and highlight it
-            // when viewing /loger-profiles so the context stays coherent.
-            hidden: !(isModuleEnabled('housing') || isModuleEnabled('profiles')),
-            isActiveFunction(url:string, currentPath: string) {
-                return /housing|loger-profiles/.test(currentPath)
-             }
+            hidden: !isModuleEnabled('housing'),
+            isActiveFunction(url: string, currentPath: string) {
+                return /^\/housing(?:\/|$)/.test(currentPath)
+            }
+        },
+        {
+            icon: 'fas fa-users',
+            label: t('Profiles'),
+            name: 'profiles',
+            to: '/loger-profiles/overview',
+            as: Link,
+            hidden: !isModuleEnabled('profiles'),
+            isActiveFunction(url: string, currentPath: string) {
+                return /^\/loger-profiles(?:\/|$)/.test(currentPath)
+            }
         }
     ];
 
@@ -146,7 +154,7 @@ export const useAppMenu = (t: any, modules: any[]) => {
         { icon: 'fas fa-bolt',         name: 'Today',  label: t('Today'),  to: '/today',          as: Link, activeMatch: /^\/(today|dashboard)/ },
         { icon: 'fas fa-calendar',     name: 'Agenda', label: t('Agenda'), to: '/calendar',       as: Link, activeMatch: /^\/calendar/ },
         { icon: 'fas fa-utensils',     name: 'Food',   label: t('Food'),   to: '/meal-planner',   as: Link, activeMatch: /(meal-planner|meals|ingredients)/ },
-        { icon: 'fas fa-check-circle', name: 'Tasks',  label: t('Tasks'),  to: '/housing/chores', as: Link, activeMatch: /(housing|loger-profiles)/ },
+        { icon: 'fas fa-check-circle', name: 'Tasks',  label: t('Tasks'),  to: '/housing/chores', as: Link, activeMatch: /^\/housing(?:\/|$)/ },
         { icon: 'fas fa-dollar-sign',  name: 'Money',  label: t('Money'),  to: '/budgets',        as: Link, activeMatch: /(finance|budgets)/ },
     ];
 

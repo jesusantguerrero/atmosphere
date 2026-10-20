@@ -5,13 +5,20 @@ namespace App\Domains\LogerProfile\Http\Controllers;
 use App\Domains\LogerProfile\Data\LogerProfileData;
 use App\Domains\LogerProfile\Exceptions\ProfileNotFound;
 use App\Domains\LogerProfile\Services\LogerProfileService;
+use App\Domains\LogerProfile\Services\ProfileWorkspaceService;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Traits\HasEnrichedRequest;
 use Exception;
+use Inertia\Response;
 
 class LogerProfileController extends Controller
 {
     use HasEnrichedRequest;
+
+    public function workspaceOverview(ProfileWorkspaceService $workspace): Response
+    {
+        return inertia('LogerProfile/Overview', ['profiles' => $workspace->overview((int) request()->user()->current_team_id)]);
+    }
 
     public function index(LogerProfileService $profileService)
     {

@@ -1,5 +1,6 @@
 export const MODULES = {
     HOUSING: 'housing',
+    PROFILES: 'profiles',
     MEAL: 'meal',
     FINANCE: 'finance',
     RELATIONSHIP: 'relationship',
@@ -8,6 +9,10 @@ export const MODULES = {
 }
 
 const menus = {
+    [MODULES.PROFILES]: [
+        { label: 'Overview', url: '/loger-profiles/overview' },
+        { label: 'Profiles', url: '/loger-profiles' },
+    ],
     // Household sub-nav intentionally reduced to the two surfaces that
     // get daily use. Overview, Plans, Routine, Utilities, People still
     // exist and are reachable by URL; they just don't crowd the top
