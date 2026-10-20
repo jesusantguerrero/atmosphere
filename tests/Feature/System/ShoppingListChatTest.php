@@ -4,12 +4,16 @@ namespace Tests\Feature\System;
 
 use App\Events\ShoppingListItemUpdated;
 use App\Models\User;
+use Illuminate\Events\Dispatcher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Str;
 use Modules\Plan\Entities\Plan;
 use Modules\Plan\Entities\PlanItem;
 use Modules\Plan\Entities\PlanTypes;
 use Modules\Plan\Services\PlanService;
+use Symfony\Component\Mercure\Exception\RuntimeException;
 use Tests\TestCase;
 
 /**
@@ -233,5 +237,17 @@ class ShoppingListChatTest extends TestCase
     {
         $this->postJson('/shared/list/not-a-real-token/reset')
             ->assertNotFound();
+    }
+
+    public function test_public_addition_stays_successful_when_live_sync_is_unavailable(): void
+    {
+        $user = User::factory()->withPersonalTeam()->create();
+        $plan = $this->makeShoppingList($user);
+        $plan->forceFill(['share_token' => (string) Str::uuid()])->save();
+        Event::swap(new Dispatcher($this->app));
+        Broadcast::shouldReceive('queue')->once()->andThrow(new RuntimeException('Hub unavailable'));
+        $this->postJson('/shared/list/'.$plan->share_token.'/items', ['title' => 'Leche'])
+            ->assertCreated()->assertJsonPath('title', 'Leche');
+        $this->assertSame(1, PlanItem::where('plan_id', $plan->id)->where('title', 'Leche')->count());
     }
 }

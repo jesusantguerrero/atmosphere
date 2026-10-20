@@ -50,6 +50,8 @@ const showShareSheet = ref(false);
 // Computed so switching lists (which swaps props.plan) always retargets the
 // mutation endpoints at the currently-active list.
 const endpoints = computed(() => ({
+    review: `/shopping/${props.plan.id}/review`,
+    completeReview: `/shopping/${props.plan.id}/review/complete`,
     cycle: (itemId: number) =>
         `/shopping/${props.plan.id}/items/${itemId}/cycle`,
     add: `/shopping/${props.plan.id}/items`,

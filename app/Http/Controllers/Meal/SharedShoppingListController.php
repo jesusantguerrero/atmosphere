@@ -4,11 +4,18 @@ namespace App\Http\Controllers\Meal;
 
 use App\Events\ShoppingListItemUpdated;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\SharedShoppingCategoryRequest;
+use App\Http\Requests\SharedShoppingItemRequest;
+use App\Http\Requests\SharedShoppingToggleRequest;
+use App\Http\Requests\ShoppingListReviewRequest;
+use App\Services\ShoppingListReviewService;
+use Illuminate\Broadcasting\BroadcastException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Response;
 use Modules\Plan\Entities\Plan;
 use Modules\Plan\Entities\PlanItem;
+use Symfony\Component\Mercure\Exception\RuntimeException as MercureException;
 
 /**
  * Shared shopping-list endpoints — accessed by anyone holding the public
@@ -29,12 +36,26 @@ class SharedShoppingListController extends Controller
         ]);
     }
 
+    public function review(string $token): JsonResponse
+    {
+        return response()->json(['plan' => $this->planPayload($this->planByToken($token))]);
+    }
+
+    public function confirmReview(ShoppingListReviewRequest $request, string $token, ShoppingListReviewService $reviews): JsonResponse
+    {
+        $plan = $this->planByToken($token);
+        $review = $reviews->confirm($plan, (string) $request->validated('note', ''), $request->validated('current_version'));
+        $this->notifyChange($request, $plan, null, 'reviewed');
+
+        return response()->json(['review' => $review]);
+    }
+
     /**
      * Set an item's 3-state directly (pending/buy/skip) or cycle through them
      * when no `state` is supplied. The payload supports both modes so the UI
      * can use a single tap to advance through states OR explicit state pickers.
      */
-    public function toggleItem(Request $request, string $token, int $itemId): JsonResponse
+    public function toggleItem(SharedShoppingToggleRequest $request, string $token, int $itemId): JsonResponse
     {
         $plan = $this->planByToken($token);
         $item = $this->itemForPlan($plan, $itemId);
@@ -47,12 +68,18 @@ class SharedShoppingListController extends Controller
             $item->setState($next);
         }
 
-        ShoppingListItemUpdated::dispatch($plan, $item->fresh(), 'updated', $this->actorSubscriptionId($request));
+        if ($request->boolean('reviewed', true)) {
+            app(ShoppingListReviewService::class)->markReviewed($plan, $item->fresh());
+        } else {
+            app(ShoppingListReviewService::class)->unmarkReviewed($plan, $item->fresh());
+        }
+        $this->notifyChange($request, $plan, $item->fresh(), 'updated');
 
         return response()->json([
             'id' => $item->id,
             'state' => $item->state,
             'is_done' => (bool) $item->is_done,
+            'review' => app(ShoppingListReviewService::class)->status($plan),
         ]);
     }
 
@@ -60,15 +87,22 @@ class SharedShoppingListController extends Controller
      * Add a new item to the shared list mid-trip — the partner spotting
      * something they forgot. Lands in the first stage by default.
      */
-    public function addItem(Request $request, string $token): JsonResponse
+    public function addItem(SharedShoppingItemRequest $request, string $token): JsonResponse
     {
         $plan = $this->planByToken($token);
 
-        $data = $request->validate([
-            'title' => ['required', 'string', 'max:255'],
-        ]);
-
-        $stage = $plan->stages->first();
+        $data = $request->validated();
+        $stage = isset($data['stage_id'])
+            ? $plan->stages()->whereKey($data['stage_id'])->first()
+            : $plan->stages->first();
+        abort_if(isset($data['stage_id']) && ! $stage, 422, 'Selecciona una categoría de esta lista.');
+        if (! empty($data['category_name'])) {
+            $name = trim($data['category_name']);
+            $stage = $plan->stages()->where('name', $name)->first() ?? $plan->stages()->create([
+                'user_id' => $plan->user_id, 'team_id' => $plan->team_id,
+                'name' => $name, 'order' => ((int) $plan->stages()->max('order')) + 1,
+            ]);
+        }
         if (! $stage) {
             return response()->json(['error' => 'List has no stages.'], 422);
         }
@@ -83,12 +117,16 @@ class SharedShoppingListController extends Controller
             'order' => ((int) $stage->items()->max('order')) + 1,
         ]);
 
-        ShoppingListItemUpdated::dispatch($plan, $item, 'created', $this->actorSubscriptionId($request));
+        app(ShoppingListReviewService::class)->markReviewed($plan, $item);
+        $this->notifyChange($request, $plan, $item, 'created');
 
         return response()->json([
             'id' => $item->id,
             'title' => $item->title,
+            'stage_id' => $stage->id,
+            'stage' => ['id' => $stage->id, 'name' => $stage->name],
             'state' => $item->state,
+            'review' => app(ShoppingListReviewService::class)->status($plan),
         ], 201);
     }
 
@@ -97,6 +135,23 @@ class SharedShoppingListController extends Controller
      * item resets to `pending`. Matches the wife's weekly workflow — same
      * list, fresh checkboxes.
      */
+    public function moveCategory(SharedShoppingCategoryRequest $request, string $token, int $itemId): JsonResponse
+    {
+        $plan = $this->planByToken($token);
+        $item = $this->itemForPlan($plan, $itemId);
+        $stage = $plan->stages()->whereKey($request->validated('stage_id'))->first();
+        abort_unless($stage, 422, 'Selecciona una categoría de esta lista.');
+        if ((int) $item->stage_id !== (int) $stage->id) {
+            $item->update(['stage_id' => $stage->id, 'order' => ((int) $stage->items()->max('order')) + 1]);
+        }
+        if ($request->hasAny(['quantity', 'note'])) {
+            app(ShoppingListReviewService::class)->saveItemDetails($plan, $item, (string) $request->validated('quantity', ''), (string) $request->validated('note', ''));
+        }
+        $this->notifyChange($request, $plan, $item->fresh(), 'updated');
+
+        return response()->json(['plan' => $this->planPayload($plan->fresh())]);
+    }
+
     public function resetTrip(Request $request, string $token): JsonResponse
     {
         $plan = $this->planByToken($token);
@@ -105,9 +160,10 @@ class SharedShoppingListController extends Controller
             ->whereHas('stage', fn ($q) => $q->where('plan_id', $plan->id))
             ->update(['state' => PlanItem::STATE_PENDING, 'is_done' => false, 'commit_date' => null]);
 
-        ShoppingListItemUpdated::dispatch($plan, null, 'reset', $this->actorSubscriptionId($request));
+        app(ShoppingListReviewService::class)->clearReviewed($plan);
+        $this->notifyChange($request, $plan, null, 'reset');
 
-        return response()->json(['reset' => true]);
+        return response()->json(['reset' => true, 'review' => app(ShoppingListReviewService::class)->status($plan)]);
     }
 
     /**
@@ -115,6 +171,15 @@ class SharedShoppingListController extends Controller
      * keeps the public mutating endpoints from echoing pushes back to the
      * partner's own device when they make the change.
      */
+    private function notifyChange(Request $request, Plan $plan, ?PlanItem $item, string $action): void
+    {
+        try {
+            ShoppingListItemUpdated::dispatch($plan, $item, $action, $this->actorSubscriptionId($request));
+        } catch (BroadcastException|MercureException $exception) {
+            report($exception);
+        }
+    }
+
     private function actorSubscriptionId(Request $request): ?string
     {
         $value = $request->header('X-OneSignal-Subscription-Id');
@@ -153,6 +218,7 @@ class SharedShoppingListController extends Controller
         return [
             'id' => $plan->id,
             'name' => $plan->name,
+            'review' => app(ShoppingListReviewService::class)->status($plan),
             'stages' => $plan->stages->map(fn ($stage) => [
                 'id' => $stage->id,
                 'name' => $stage->name,

@@ -11,8 +11,11 @@ use App\Http\Controllers\ShoppingListController;
 use Illuminate\Support\Facades\Route;
 
 // Public shared list routes (no auth required) — token IS the auth.
+Route::get('/shared/list/{token}/review', [SharedShoppingListController::class, 'review'])->name('shared.list.review');
+Route::post('/shared/list/{token}/review', [SharedShoppingListController::class, 'confirmReview'])->middleware('throttle:20,1')->name('shared.list.review.confirm');
 Route::get('/shared/list/{token}', [SharedShoppingListController::class, 'show'])->name('shared.list');
 Route::post('/shared/list/{token}/toggle/{item}', [SharedShoppingListController::class, 'toggleItem'])->name('shared.list.toggle');
+Route::patch('/shared/list/{token}/items/{item}/category', [SharedShoppingListController::class, 'moveCategory'])->middleware('throttle:60,1')->name('shared.list.category');
 Route::post('/shared/list/{token}/items', [SharedShoppingListController::class, 'addItem'])->name('shared.list.add');
 Route::post('/shared/list/{token}/reset', [SharedShoppingListController::class, 'resetTrip'])->name('shared.list.reset');
 
@@ -23,6 +26,10 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     Route::get('/shopping/lists', [ShoppingListController::class, 'lists'])->name('shopping.lists');
     Route::post('/shopping/lists', [ShoppingListController::class, 'createList'])->name('shopping.lists.create');
     Route::post('/shopping/import', [ShoppingListController::class, 'import'])->name('shopping.import');
+    Route::post('/shopping/{plan}/sessions/start', [ShoppingListController::class, 'startSession'])->name('shopping.sessions.start');
+    Route::post('/shopping/{plan}/sessions/finish', [ShoppingListController::class, 'finishSession'])->name('shopping.sessions.finish');
+    Route::get('/shopping/{plan}/review', [ShoppingListController::class, 'review'])->name('shopping.review');
+    Route::post('/shopping/{plan}/review/complete', [ShoppingListController::class, 'completeReview'])->name('shopping.review.complete');
     Route::post('/shopping/{plan}/items', [ShoppingListController::class, 'addItem'])->name('shopping.items.add');
     Route::post('/shopping/{plan}/stages', [ShoppingListController::class, 'addStage'])->name('shopping.stages.add');
     Route::put('/shopping/{plan}', [ShoppingListController::class, 'renameList'])->name('shopping.rename');

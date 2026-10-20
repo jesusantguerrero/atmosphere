@@ -3,15 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Events\ShoppingListItemUpdated;
+use App\Http\Requests\ShoppingListReviewRequest;
+use App\Http\Requests\ShoppingSessionRequest;
+use App\Services\ShoppingListReviewService;
+use Illuminate\Broadcasting\BroadcastException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Inertia\Response;
 use Modules\Plan\Entities\Plan;
 use Modules\Plan\Entities\PlanItem;
 use Modules\Plan\Entities\PlanTypes;
 use Modules\Plan\Services\PlanService;
+use Symfony\Component\Mercure\Exception\RuntimeException as MercureException;
 
 /**
  * Authed shopping-list endpoints. Mirrors the public share-token flow so the
@@ -36,6 +41,39 @@ class ShoppingListController extends Controller
             'shareToken' => $plan->share_token,
             'mercureUrl' => $this->mercureSubscribeUrl($plan),
         ]);
+    }
+
+    public function review(Request $request, Plan $plan): JsonResponse
+    {
+        $this->guard($request, $plan);
+
+        return response()->json(['plan' => $this->planPayload($plan)]);
+    }
+
+    public function startSession(ShoppingSessionRequest $request, Plan $plan, ShoppingListReviewService $reviews): JsonResponse
+    {
+        $this->guard($request, $plan);
+        $reviews->startSession($plan, $request->user()->id);
+
+        return response()->json(['plan' => $this->planPayload($plan->fresh())]);
+    }
+
+    public function finishSession(ShoppingSessionRequest $request, Plan $plan, ShoppingListReviewService $reviews): JsonResponse
+    {
+        $this->guard($request, $plan);
+        $visit = $reviews->finishSession($plan, $request->validated());
+        $this->notifyChange($request, $plan, null, 'visit_completed');
+
+        return response()->json(['visit' => $visit, 'plan' => $this->planPayload($plan->fresh())]);
+    }
+
+    public function completeReview(ShoppingListReviewRequest $request, Plan $plan, ShoppingListReviewService $reviews): JsonResponse
+    {
+        $this->guard($request, $plan);
+        $review = $reviews->complete($plan, $request->validated('review_id'));
+        $this->notifyChange($request, $plan, null, 'review_completed');
+
+        return response()->json(['review' => $review]);
     }
 
     /**
@@ -260,11 +298,13 @@ class ShoppingListController extends Controller
                 if ($itemText !== null && trim($itemText) !== '') {
                     $current['items'][] = trim($itemText);
                 }
+
                 continue;
             }
 
             if ($name === null && $current === null && mb_strpos($line, "\u{1F6D2}") !== false) {
                 $name = trim(str_replace("\u{1F6D2}", '', $line));
+
                 continue;
             }
 
@@ -298,7 +338,6 @@ class ShoppingListController extends Controller
             ];
         })->values()->all();
     }
-
 
     private function resolveActivePlan(Request $request, PlanService $planService): Plan
     {
@@ -341,12 +380,15 @@ class ShoppingListController extends Controller
             $item->setState($next);
         }
 
-        ShoppingListItemUpdated::dispatch($plan, $item->fresh(), 'updated', $this->actorSubscriptionId($request));
+        app(ShoppingListReviewService::class)->updateSessionCart($plan, $item->fresh());
+        $this->notifyChange($request, $plan, $item->fresh(), 'updated');
 
         return response()->json([
             'id' => $item->id,
             'state' => $item->state,
             'is_done' => (bool) $item->is_done,
+            'review' => app(ShoppingListReviewService::class)->status($plan),
+            'session' => app(ShoppingListReviewService::class)->activeSession($plan),
         ]);
     }
 
@@ -378,7 +420,7 @@ class ShoppingListController extends Controller
             'order' => ((int) $stage->items()->max('order')) + 1,
         ]);
 
-        ShoppingListItemUpdated::dispatch($plan, $item, 'created', $this->actorSubscriptionId($request));
+        $this->notifyChange($request, $plan, $item, 'created');
 
         return response()->json([
             'id' => $item->id,
@@ -386,6 +428,7 @@ class ShoppingListController extends Controller
             'state' => $item->state,
             'order' => (int) $item->order,
             'stage_id' => $item->stage_id,
+            'review' => app(ShoppingListReviewService::class)->status($plan),
         ], 201);
     }
 
@@ -399,9 +442,9 @@ class ShoppingListController extends Controller
 
         $item->delete();
 
-        ShoppingListItemUpdated::dispatch($plan, $snapshot, 'deleted', $this->actorSubscriptionId($request));
+        $this->notifyChange($request, $plan, $snapshot, 'deleted');
 
-        return response()->json(['deleted' => true]);
+        return response()->json(['deleted' => true, 'review' => app(ShoppingListReviewService::class)->status($plan)]);
     }
 
     public function reset(Request $request, Plan $plan): JsonResponse
@@ -416,9 +459,10 @@ class ShoppingListController extends Controller
                 'commit_date' => null,
             ]);
 
-        ShoppingListItemUpdated::dispatch($plan, null, 'reset', $this->actorSubscriptionId($request));
+        app(ShoppingListReviewService::class)->clearReviewed($plan);
+        $this->notifyChange($request, $plan, null, 'reset');
 
-        return response()->json(['reset' => true]);
+        return response()->json(['reset' => true, 'review' => app(ShoppingListReviewService::class)->status($plan)]);
     }
 
     /**
@@ -449,6 +493,15 @@ class ShoppingListController extends Controller
      * Extracts the OneSignal subscription ID the frontend sends with each
      * mutation so the listener can suppress an echo push back to the actor.
      */
+    private function notifyChange(Request $request, Plan $plan, ?PlanItem $item, string $action): void
+    {
+        try {
+            ShoppingListItemUpdated::dispatch($plan, $item, $action, $this->actorSubscriptionId($request));
+        } catch (BroadcastException|MercureException $exception) {
+            report($exception);
+        }
+    }
+
     private function actorSubscriptionId(Request $request): ?string
     {
         $value = $request->header('X-OneSignal-Subscription-Id');
@@ -479,6 +532,9 @@ class ShoppingListController extends Controller
         return [
             'id' => $plan->id,
             'name' => $plan->name,
+            'session' => app(ShoppingListReviewService::class)->activeSession($plan),
+            'visits' => app(ShoppingListReviewService::class)->visits($plan),
+            'review' => app(ShoppingListReviewService::class)->status($plan),
             'stages' => $plan->stages->map(fn ($stage) => [
                 'id' => $stage->id,
                 'name' => $stage->name,
