@@ -9,6 +9,12 @@ services:
     image: freesgen/loger
     container_name: loger-app
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
     volumes:
       - ./docker-compose/web/timezone:/etc/timezone
       - ./storage:/var/www/storage
@@ -42,7 +48,8 @@ services:
     volumes:
       - /var/.config/gcloud/loger/credentials.json:/var/www/credentials.json
     depends_on:
-      - loger
+      loger:
+        condition: service_healthy
   queue:
     build:
       context: ./
@@ -52,4 +59,5 @@ services:
     environment:
       PHP_FPM_POOL_NAME: "loger_queue"
     depends_on:
-      - loger
+      loger:
+        condition: service_healthy
