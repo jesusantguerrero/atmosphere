@@ -5,9 +5,9 @@ namespace App\Domains\Transaction\Services;
 use App\Domains\Budget\Models\BudgetTarget;
 use App\Domains\Budget\Services\LoanReminderService;
 use App\Domains\Transaction\Models\BillingCycle;
+use App\Domains\Transaction\Models\NextPaymentDismissal;
 use App\Domains\Transaction\Models\Transaction;
 use App\Models\Account;
-use App\Domains\Transaction\Models\NextPaymentDismissal;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
@@ -56,6 +56,10 @@ class NextPaymentsService
             ->with(['category' => fn ($query) => $query->without(['budget', 'matchAccount'])])
             ->get()
             ->filter(function ($target) use ($teamId, $currentMonth, $startDate) {
+                if (! $target->category) {
+                    return false;
+                }
+
                 if ($target->target_type === BudgetTarget::TYPE_LOAN) {
                     $paid = (new LoanReminderService)->paidAmount($target, $startDate->copy()->endOfMonth());
 
@@ -82,7 +86,7 @@ class NextPaymentsService
                     'due_date' => $dueDate ? $dueDate->format('Y-m-d') : null,
                     'date' => $dueDate ? $dueDate->format('Y-m-d') : null,
                     'category_id' => $target->category_id,
-                    'category_name' => $target->category->name,
+                    'category_name' => $target->category?->name ?? 'Budget Category',
                     'status' => 'pending',
                     'source' => 'budget_target',
                     'metadata' => [
