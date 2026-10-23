@@ -3,6 +3,7 @@
 use App\Domains\AppCore\Http\Controllers\ApiLoginController;
 use App\Http\Controllers\Api\DashboardApiController;
 use App\Http\Controllers\Api\MobileController;
+use App\Http\Controllers\Api\MobilePreferencesController;
 use App\Http\Controllers\Api\MobileProfileController;
 use App\Http\Controllers\Api\MobileTwoFactorController;
 use App\Http\Controllers\Api\MultiCurrencyTransactionController;
@@ -63,6 +64,11 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
     Route::get('/me/two-factor/recovery-codes', [MobileTwoFactorController::class, 'recoveryCodes'])->name('me.two-factor.recovery-codes');
     Route::post('/me/two-factor/recovery-codes', [MobileTwoFactorController::class, 'regenerateRecoveryCodes'])->name('me.two-factor.recovery-codes.regenerate');
     Route::delete('/me/two-factor', [MobileTwoFactorController::class, 'disable'])->middleware('throttle:10,1')->name('me.two-factor.disable');
+
+    Route::get('/me/notification-preferences', [MobilePreferencesController::class, 'notificationPreferences'])->name('me.notification-preferences');
+    Route::put('/me/notification-preferences', [MobilePreferencesController::class, 'updateNotificationPreferences'])->name('me.notification-preferences.update');
+    Route::get('/me/modules', [MobilePreferencesController::class, 'modules'])->name('me.modules');
+    Route::put('/me/modules', [MobilePreferencesController::class, 'updateModules'])->name('me.modules.update');
 
     Route::get('/today', [MobileController::class, 'today'])->name('today');
     Route::get('/overview', [MobileController::class, 'overview'])->name('overview');
