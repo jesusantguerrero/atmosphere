@@ -14,6 +14,7 @@ use Insane\Journal\Models\Accounting\Reconciliation;
 use Insane\Journal\Models\Accounting\ReconciliationEntry;
 use Insane\Journal\Models\Core\Account;
 use Insane\Journal\Models\Core\AccountDetailType;
+use Insane\Journal\Models\Core\Payee;
 use Insane\Journal\Models\Core\Transaction as CoreTransaction;
 
 class ReconciliationService
@@ -263,8 +264,9 @@ class ReconciliationService
                     'team_id' => $reconciliation->team_id,
                     'user_id' => $reconciliation->user_id,
                     'account_id' => $reconciliation->account_id,
-                    'payee_id' => 'new',
-                    'payee_label' => 'Loger adjustment',
+                    // Resolved here instead of letting the journal create it from a `payee_label`: that key (like
+                    // `items`) is not a column, and outside production the model refuses unknown attributes.
+                    'payee_id' => Payee::findOrCreateByName(['team_id' => $reconciliation->team_id, 'user_id' => $reconciliation->user_id], 'Loger adjustment')->id,
                     'date' => Carbon::parse($reconciliation->date)->format('Y-m-d'),
                     'currency_code' => $reconciliation->account->currency_code,
                     'category_id' => Category::findOrCreateByName($reconciliation, BudgetReservedNames::READY_TO_ASSIGN->value),
@@ -272,7 +274,6 @@ class ReconciliationService
                     'direction' => $diff > 0 ? Transaction::DIRECTION_CREDIT : Transaction::DIRECTION_DEBIT,
                     'status' => Transaction::STATUS_VERIFIED,
                     'total' => abs($diff),
-                    'items' => [],
                 ]);
             }
 
