@@ -37,6 +37,7 @@ use App\Domains\Transaction\Services\ReconciliationService;
 use App\Domains\Transaction\Services\TransactionService;
 use App\Domains\Transaction\Services\TransactionSplits;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DraftTransactionsRangeRequest;
 use App\Http\Requests\UpdateReconciliationRequest;
 use App\Http\Requests\UpdateShoppingVisitRequest;
 use App\Http\Resources\PlannedMealResource;
@@ -46,6 +47,7 @@ use App\Models\Team;
 use App\Models\User;
 use App\Services\ShoppingListReviewService;
 use App\Services\ShoppingVisitLinker;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -2269,6 +2271,39 @@ class MobileController extends Controller
         $transactionDelete->delete($request->user(), $transaction);
 
         return response()->json(['success' => true]);
+    }
+
+    /**
+     * Approve every draft of the team, optionally only those dated within start..end.
+     */
+    public function approveAllDrafts(DraftTransactionsRangeRequest $request): JsonResponse
+    {
+        $drafts = $this->draftsInRange($request)->get();
+
+        $drafts->each(fn (Transaction $transaction) => $transaction->approve());
+
+        return response()->json(['success' => true, 'approved' => $drafts->count()]);
+    }
+
+    /**
+     * Delete every draft of the team, optionally only those dated within start..end.
+     */
+    public function removeAllDrafts(DraftTransactionsRangeRequest $request, TransactionDelete $transactionDelete): JsonResponse
+    {
+        $drafts = $this->draftsInRange($request)->get();
+
+        $drafts->each(fn (Transaction $transaction) => $transactionDelete->delete($request->user(), $transaction));
+
+        return response()->json(['success' => true, 'deleted' => $drafts->count()]);
+    }
+
+    private function draftsInRange(DraftTransactionsRangeRequest $request): Builder
+    {
+        return Transaction::query()
+            ->where('team_id', $request->user()->current_team_id)
+            ->where('status', Transaction::STATUS_DRAFT)
+            ->when($request->validated('start'), fn (Builder $query, string $start) => $query->whereDate('date', '>=', $start))
+            ->when($request->validated('end'), fn (Builder $query, string $end) => $query->whereDate('date', '<=', $end));
     }
 
     /**

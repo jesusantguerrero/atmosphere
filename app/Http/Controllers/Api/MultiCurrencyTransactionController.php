@@ -4,17 +4,17 @@ namespace App\Http\Controllers\Api;
 
 use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Transaction\Services\MultiCurrencyTransactionService;
+use App\Domains\Transaction\Services\TransactionSplits;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\MultiCurrencyTransactionResource;
 use App\Models\Account;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Exists;
-use App\Domains\Transaction\Services\TransactionSplits;
-use Illuminate\Support\Facades\DB;
 use Insane\Journal\Events\TransactionCreated;
 
 class MultiCurrencyTransactionController extends Controller
@@ -272,6 +272,7 @@ class MultiCurrencyTransactionController extends Controller
             'end_date' => 'nullable|date',
             'month' => ['nullable', 'regex:/^\d{4}-\d{2}$/'],
             'uncategorized' => 'nullable|boolean',
+            'status' => 'nullable|in:verified,draft,scheduled',
             'search' => 'nullable|string|max:100',
             'limit' => 'nullable|integer|min:1|max:100',
             'page' => 'nullable|integer|min:1',
@@ -304,6 +305,11 @@ class MultiCurrencyTransactionController extends Controller
             }
             if (! empty($validated['end_date'])) {
                 $query->where('date', '<=', $validated['end_date']);
+            }
+
+            // The app calls a not-yet-happened transaction "scheduled"; the database calls it "planned"
+            if (! empty($validated['status'])) {
+                $query->where('status', $validated['status'] === 'scheduled' ? Transaction::STATUS_PLANNED : $validated['status']);
             }
 
             // Free-text search over the description and the payee's name

@@ -175,6 +175,8 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
     // Inbox (draft transactions)
     Route::post('/transactions/{transaction}/approve', [MobileController::class, 'approveTransaction'])->name('transactions.approve');
     Route::delete('/transactions/{transaction}', [MobileController::class, 'deleteTransaction'])->name('transactions.delete');
+    Route::post('/transactions/approve-all-drafts', [MobileController::class, 'approveAllDrafts'])->name('transactions.approve-all-drafts');
+    Route::post('/transactions/remove-all-drafts', [MobileController::class, 'removeAllDrafts'])->name('transactions.remove-all-drafts');
     Route::post('/transactions/bulk-delete', [MobileController::class, 'bulkDeleteTransactions'])->name('transactions.bulk-delete');
 
     // Occurrences

@@ -403,6 +403,99 @@ class TransactionsCrudTest extends TestCase
         $this->assertCount(2, $this->getJson('/api/mobile/transactions')->json('data.transactions'));
     }
 
+    public function test_transactions_can_be_filtered_by_status(): void
+    {
+        [$user, $team, $account] = $this->makeSetup();
+        Sanctum::actingAs($user);
+        $this->makeTransaction($user, $account, 'verified', '2026-10-10', 'Paid');
+        $this->makeTransaction($user, $account, 'draft', '2026-10-10', 'Imported');
+        $this->makeTransaction($user, $account, 'planned', '2026-10-20', 'Rent');
+
+        $found = fn (string $query) => collect($this->getJson('/api/mobile/transactions'.$query)->assertOk()->json('data.transactions'))->pluck('description')->all();
+
+        $this->assertSame(['Paid'], $found('?status=verified'));
+        $this->assertSame(['Imported'], $found('?status=draft'));
+        $this->assertSame(['Rent'], $found('?status=scheduled'));
+        $this->assertCount(3, $found(''));
+        $this->getJson('/api/mobile/transactions?status=planned')->assertStatus(422)->assertJsonValidationErrors('status');
+    }
+
+    public function test_approve_all_drafts_only_touches_the_teams_drafts_in_range(): void
+    {
+        [$user, $team, $account] = $this->makeSetup();
+        Sanctum::actingAs($user);
+        $inRange = $this->makeTransaction($user, $account, 'draft', '2026-10-10');
+        $outOfRange = $this->makeTransaction($user, $account, 'draft', '2026-09-10');
+        $verified = $this->makeTransaction($user, $account, 'verified', '2026-10-11');
+        [$other, , $otherAccount] = $this->makeSetup();
+        $foreign = $this->makeTransaction($other, $otherAccount, 'draft', '2026-10-10');
+
+        $this->postJson('/api/mobile/transactions/approve-all-drafts', ['start' => '2026-10-01', 'end' => '2026-10-31'])
+            ->assertOk()
+            ->assertJson(['success' => true, 'approved' => 1]);
+
+        $this->assertSame('verified', $inRange->fresh()->status);
+        $this->assertSame('draft', $outOfRange->fresh()->status);
+        $this->assertSame('verified', $verified->fresh()->status);
+        $this->assertSame('draft', $foreign->fresh()->status);
+
+        $this->postJson('/api/mobile/transactions/approve-all-drafts')->assertOk()->assertJson(['approved' => 1]);
+        $this->assertSame('verified', $outOfRange->fresh()->status);
+        $this->assertSame('draft', $foreign->fresh()->status);
+    }
+
+    public function test_remove_all_drafts_deletes_only_the_teams_drafts_in_range(): void
+    {
+        [$user, $team, $account] = $this->makeSetup();
+        Sanctum::actingAs($user);
+        $inRange = $this->makeTransaction($user, $account, 'draft', '2026-10-10');
+        $outOfRange = $this->makeTransaction($user, $account, 'draft', '2026-09-10');
+        $verified = $this->makeTransaction($user, $account, 'verified', '2026-10-11');
+        [$other, , $otherAccount] = $this->makeSetup();
+        $foreign = $this->makeTransaction($other, $otherAccount, 'draft', '2026-10-10');
+
+        $this->postJson('/api/mobile/transactions/remove-all-drafts', ['start' => '2026-10-01', 'end' => '2026-10-31'])
+            ->assertOk()
+            ->assertJson(['success' => true, 'deleted' => 1]);
+
+        $this->assertNull(Transaction::find($inRange->id));
+        $this->assertNotNull(Transaction::find($outOfRange->id));
+        $this->assertNotNull(Transaction::find($verified->id));
+        $this->assertNotNull(Transaction::find($foreign->id));
+
+        $this->postJson('/api/mobile/transactions/remove-all-drafts')->assertOk()->assertJson(['deleted' => 1]);
+        $this->assertNull(Transaction::find($outOfRange->id));
+        $this->assertNotNull(Transaction::find($foreign->id));
+    }
+
+    public function test_bulk_draft_actions_validate_the_range(): void
+    {
+        [$user] = $this->makeSetup();
+        Sanctum::actingAs($user);
+
+        $this->postJson('/api/mobile/transactions/approve-all-drafts', ['start' => '2026-10-31', 'end' => '2026-10-01'])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('end');
+        $this->postJson('/api/mobile/transactions/remove-all-drafts', ['start' => 'soon'])
+            ->assertStatus(422)
+            ->assertJsonStructure(['message', 'errors']);
+    }
+
+    private function makeTransaction(User $user, Account $account, string $status, string $date, string $description = 'Sirena'): Transaction
+    {
+        return Transaction::create([
+            'team_id' => $account->team_id,
+            'user_id' => $user->id,
+            'account_id' => $account->id,
+            'date' => $date,
+            'description' => $description,
+            'total' => 100,
+            'direction' => 'WITHDRAW',
+            'currency_code' => 'DOP',
+            'status' => $status,
+        ]);
+    }
+
     private function payload($account, $category, float $total): array
     {
         return array_filter([
