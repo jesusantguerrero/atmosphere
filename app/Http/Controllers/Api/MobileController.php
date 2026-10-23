@@ -37,6 +37,7 @@ use App\Domains\Transaction\Services\ReconciliationService;
 use App\Domains\Transaction\Services\TransactionService;
 use App\Domains\Transaction\Services\TransactionSplits;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UpdateReconciliationRequest;
 use App\Http\Requests\UpdateShoppingVisitRequest;
 use App\Http\Resources\PlannedMealResource;
 use App\Models\Account;
@@ -2694,7 +2695,7 @@ class MobileController extends Controller
     }
 
     /**
-     * Delete a pending reconciliation.
+     * Delete a reconciliation, pending or completed. Its transactions stay; they just stop being matched.
      */
     public function deleteReconciliation(
         Request $request,
@@ -2702,7 +2703,6 @@ class MobileController extends Controller
         ReconciliationService $service,
     ): JsonResponse {
         abort_if((int) $reconciliation->team_id !== (int) $request->user()->current_team_id, 403);
-        abort_if($reconciliation->status === Reconciliation::STATUS_COMPLETED, 422, 'Cannot delete completed reconciliation.');
 
         $service->delete($reconciliation);
 
@@ -2770,21 +2770,48 @@ class MobileController extends Controller
         return response()->json(['date' => $date, 'balance' => $service->balanceAsOf($account, $date)]);
     }
 
+    /** One reconciliation, pending or completed, with its entries enriched with the transaction they point to. */
+    public function showReconciliation(Request $request, Reconciliation $reconciliation, ReconciliationService $service): JsonResponse
+    {
+        abort_if((int) $reconciliation->team_id !== (int) $request->user()->current_team_id, 403);
+
+        return response()->json(['reconciliation' => $this->reconciliationPayload($reconciliation, $service, $this->enrichedReconciliationEntries($reconciliation))]);
+    }
+
+    /** Back to pending, nothing matched. Only the latest reconciliation of an account can be reopened. */
+    public function reopenReconciliation(Request $request, Reconciliation $reconciliation, ReconciliationService $service): JsonResponse
+    {
+        abort_if((int) $reconciliation->team_id !== (int) $request->user()->current_team_id, 403);
+        abort_if($reconciliation->status !== Reconciliation::STATUS_COMPLETED, 422, 'Only a completed reconciliation can be reopened.');
+        abort_if(! $service->isLatestOfAccount($reconciliation), 422, 'Only the most recent reconciliation of an account can be reopened.');
+
+        $service->reopen($reconciliation);
+
+        return response()->json(['reconciliation' => $this->reconciliationPayload($reconciliation->refresh(), $service, $this->enrichedReconciliationEntries($reconciliation))]);
+    }
+
     /**
-     * Correct the statement balance of a reconciliation in progress. Unlike the web's "Complete" this never closes
-     * it: it only moves `amount` and recomputes `difference`; the adjustment endpoint is what finishes it.
+     * Correct the statement balance and/or the date of a reconciliation in progress. Unlike the web's "Complete" this
+     * never closes it: the balance only moves `amount` and recomputes `difference`; the adjustment endpoint is what
+     * finishes it. A new date rebuilds the entries for that date range.
      */
-    public function updateReconciliation(Request $request, Reconciliation $reconciliation, ReconciliationService $service): JsonResponse
+    public function updateReconciliation(UpdateReconciliationRequest $request, Reconciliation $reconciliation, ReconciliationService $service): JsonResponse
     {
         abort_if((int) $reconciliation->team_id !== (int) $request->user()->current_team_id, 403);
         abort_if($reconciliation->status === Reconciliation::STATUS_COMPLETED, 422, 'A completed reconciliation cannot be edited.');
 
-        $validated = $request->validate(['balance' => ['required', 'numeric']]);
+        $validated = $request->validated();
 
-        $reconciliation->update([
-            'amount' => $validated['balance'],
-            'difference' => round($service->balanceAsOf($reconciliation->account, $reconciliation->date) - (float) $validated['balance'], 2),
-        ]);
+        if (isset($validated['balance'])) {
+            $reconciliation->update([
+                'amount' => $validated['balance'],
+                'difference' => round($service->balanceAsOf($reconciliation->account, $reconciliation->date) - (float) $validated['balance'], 2),
+            ]);
+        }
+
+        if (isset($validated['date']) && $validated['date'] !== Carbon::parse($reconciliation->date)->toDateString()) {
+            $service->changeDate($reconciliation, $validated['date']);
+        }
 
         return response()->json(['reconciliation' => $this->reconciliationPayload($reconciliation->refresh(), $service, $this->enrichedReconciliationEntries($reconciliation))]);
     }

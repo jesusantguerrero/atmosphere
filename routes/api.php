@@ -114,6 +114,8 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
     Route::get('/reconciliations', [MobileController::class, 'reconciliationHub'])->name('reconciliation.hub');
     Route::get('/accounts/{account}/reconciliations', [MobileController::class, 'accountReconciliations'])->name('accounts.reconciliations');
     Route::get('/accounts/{account}/balance-at', [MobileController::class, 'accountBalanceAt'])->name('accounts.balance-at');
+    Route::get('/reconciliations/{reconciliation}', [MobileController::class, 'showReconciliation'])->name('reconciliation.show');
+    Route::post('/reconciliations/{reconciliation}/reopen', [MobileController::class, 'reopenReconciliation'])->name('reconciliation.reopen');
     Route::patch('/reconciliations/{reconciliation}', [MobileController::class, 'updateReconciliation'])->name('reconciliation.update');
     Route::put('/reconciliations/{reconciliation}/sync-transactions', [MobileController::class, 'syncReconciliation'])->name('reconciliation.sync');
     Route::put('/reconciliations/{reconciliation}/entries/{entry}/check', [MobileController::class, 'checkReconciliationEntry'])->name('reconciliation.entry.check');

@@ -177,6 +177,49 @@ class ReconciliationService
         });
     }
 
+    public function isLatestOfAccount(Reconciliation $reconciliation): bool
+    {
+        $latest = Reconciliation::query()
+            ->where(['team_id' => $reconciliation->team_id, 'account_id' => $reconciliation->account_id])
+            ->orderByDesc('date')
+            ->orderByDesc('id')
+            ->first(['id']);
+
+        return $latest?->id === $reconciliation->id;
+    }
+
+    /** Puts a completed reconciliation back in progress: nothing stays matched and the difference is recomputed. */
+    public function reopen(Reconciliation $reconciliation): Reconciliation
+    {
+        return DB::transaction(function () use ($reconciliation): Reconciliation {
+            $reconciliation->update([
+                'status' => Reconciliation::STATUS_PENDING,
+                'difference' => round($this->balanceAsOf($reconciliation->account, $reconciliation->date) - (float) $reconciliation->amount, 2),
+            ]);
+            $reconciliation->checkStatus();
+
+            return $reconciliation;
+        });
+    }
+
+    /** Moves a pending reconciliation to another date, rebuilding its entries for the new range and keeping the matches that still apply. */
+    public function changeDate(Reconciliation $reconciliation, string $date): Reconciliation
+    {
+        return DB::transaction(function () use ($reconciliation, $date): Reconciliation {
+            $keptMatchedLineIds = $reconciliation->entries()->where('matched', true)->pluck('transaction_line_id');
+
+            $reconciliation->update(['date' => $date]);
+            $reconciliation->entries()->delete();
+            $reconciliation->createEntries($reconciliation->account->transactionsToReconcile(null, $date)->toArray());
+            $reconciliation->entries()->whereIn('transaction_line_id', $keptMatchedLineIds)->update(['matched' => true]);
+            $reconciliation->update([
+                'difference' => round($this->balanceAsOf($reconciliation->account, $date) - (float) $reconciliation->amount, 2),
+            ]);
+
+            return $reconciliation;
+        });
+    }
+
     public function delete(Reconciliation $reconciliation): Reconciliation
     {
         return DB::transaction(function () use ($reconciliation): Reconciliation {
