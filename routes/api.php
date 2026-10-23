@@ -77,6 +77,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
     Route::post('/budget/categories/{category}/targets/{target}/complete', [MobileController::class, 'completeBudgetTarget'])->name('budget.targets.complete');
     Route::patch('/budget/categories/{category}/snooze-target', [MobileController::class, 'snoozeBudgetTarget'])->name('budget.targets.snooze');
     Route::delete('/budget/categories/{category}/targets/{target}', [MobileController::class, 'archiveBudgetTarget'])->name('budget.targets.archive');
+    Route::post('/budget/categories/{category}/targets/{target}/restore', [MobileController::class, 'restoreBudgetTarget'])->name('budget.targets.restore');
     Route::get('/budget/categories/{category}/targets/archived', [MobileController::class, 'archivedBudgetTargets'])->name('budget.targets.archived');
 
     // Category transactions + movements

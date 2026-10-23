@@ -261,6 +261,48 @@ class BudgetTargetsTest extends TestCase
         $this->getJson("/api/mobile/budget/categories/{$category->id}/targets/archived")->assertJsonCount(1, 'targets');
     }
 
+    public function test_restore_brings_an_archived_target_back_unless_the_category_has_another(): void
+    {
+        [$user, $team, $category] = $this->makeSetup();
+        Sanctum::actingAs($user);
+        $payload = ['target_type' => 'spending', 'amount' => 300, 'frequency' => 'MONTHLY'];
+        $oldId = $this->postJson("/api/mobile/budget/categories/{$category->id}/targets", $payload)->json('id');
+        $this->deleteJson("/api/mobile/budget/categories/{$category->id}/targets/{$oldId}")->assertOk();
+        $month = now()->format('Y-m');
+
+        $this->postJson("/api/mobile/budget/categories/{$category->id}/targets/{$oldId}/restore")
+            ->assertOk()
+            ->assertJsonPath('id', $oldId)
+            ->assertJsonPath('archived_at', null);
+        $this->assertNotNull(BudgetTarget::find($oldId));
+        $this->assertTrue($this->categoryOf($category->id, $month)['has_target']);
+        $this->getJson("/api/mobile/budget/categories/{$category->id}/targets/archived")->assertJsonCount(0, 'targets');
+
+        $this->deleteJson("/api/mobile/budget/categories/{$category->id}/targets/{$oldId}")->assertOk();
+        $newId = $this->postJson("/api/mobile/budget/categories/{$category->id}/targets", $payload)->json('id');
+
+        $this->postJson("/api/mobile/budget/categories/{$category->id}/targets/{$oldId}/restore")->assertStatus(422);
+        $this->assertNotNull(BudgetTarget::withoutGlobalScope('live')->find($oldId)->archived_at);
+
+        $this->postJson("/api/mobile/budget/categories/{$category->id}/targets/{$newId}/restore")->assertNotFound();
+        $this->postJson("/api/mobile/budget/categories/{$category->id}/targets/999999/restore")->assertNotFound();
+    }
+
+    public function test_restore_target_is_scoped_to_the_team(): void
+    {
+        [$user, $team, $category] = $this->makeSetup();
+        Sanctum::actingAs($user);
+        $id = $this->postJson("/api/mobile/budget/categories/{$category->id}/targets", ['target_type' => 'spending', 'amount' => 100, 'frequency' => 'MONTHLY'])->json('id');
+        $this->deleteJson("/api/mobile/budget/categories/{$category->id}/targets/{$id}")->assertOk();
+
+        $other = User::factory()->withPersonalTeam()->create();
+        $other->forceFill(['current_team_id' => $other->ownedTeams()->first()->id])->save();
+        Sanctum::actingAs($other->fresh());
+
+        $this->postJson("/api/mobile/budget/categories/{$category->id}/targets/{$id}/restore")->assertNotFound();
+        $this->assertNotNull(BudgetTarget::withoutGlobalScope('live')->find($id)->archived_at);
+    }
+
     public function test_archive_target_is_scoped_to_the_team(): void
     {
         [$user, $team, $category] = $this->makeSetup();

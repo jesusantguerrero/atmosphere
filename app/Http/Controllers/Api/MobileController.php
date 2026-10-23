@@ -918,6 +918,25 @@ class MobileController extends Controller
         return response()->json(['id' => $target->id, 'archived_at' => $target->archived_at]);
     }
 
+    /** Brings an archived target back, as long as the category has no live target taking its place. */
+    public function restoreBudgetTarget(Request $request, int $categoryId, int $targetId): JsonResponse
+    {
+        $category = Category::where('team_id', $request->user()->current_team_id)
+            ->whereNotNull('parent_id')
+            ->where('resource_type', 'transactions')
+            ->findOrFail($categoryId);
+
+        $target = BudgetTarget::archived()
+            ->where(['team_id' => $category->team_id, 'category_id' => $category->id])
+            ->findOrFail($targetId);
+
+        abort_if($category->budget()->exists(), 422, 'This category already has a target. Archive it before restoring another one.');
+
+        $target->forceFill(['archived_at' => null])->save();
+
+        return response()->json([...$this->formatTarget($target), 'archived_at' => null]);
+    }
+
     /** The category's archived targets, newest first: the history of what it used to aim for. */
     public function archivedBudgetTargets(Request $request, int $categoryId): JsonResponse
     {
