@@ -16,6 +16,8 @@ defineProps({
 <template>
 <LogerButtonCircle
     type="button"
+    aria-label="Notificaciones"
+    title="Notificaciones"
 >
     <IconBell class="text-md" />
     <div v-if="notifications > 0" class="absolute bottom-0 right-0 w-4 h-4 text-xs text-white rounded-full shadow-md bg-error">

@@ -17,11 +17,15 @@ class LogerProfileController extends Controller
 
     public function workspaceOverview(ProfileWorkspaceService $workspace): Response
     {
+        app(LogerProfileService::class)->ensurePersonalProfile(request()->user());
+
         return inertia('LogerProfile/Overview', ['profiles' => $workspace->overview((int) request()->user()->current_team_id)]);
     }
 
     public function index(LogerProfileService $profileService)
     {
+        $profileService->ensurePersonalProfile(request()->user());
+
         return inertia('LogerProfile/Index', [
             'profiles' => $profileService->list(auth()->user()->current_team_id),
         ]);

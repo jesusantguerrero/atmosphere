@@ -88,6 +88,7 @@ class EventServiceProvider extends ServiceProvider
             LinkShoppingVisit::class,
         ],
         TransactionUpdated::class => [
+            CheckOccurrence::class,
             CreateBudgetTransactionMovement::class,
             UpdateBudgetAvailable::class,
             UpdatePlannedTransactions::class,

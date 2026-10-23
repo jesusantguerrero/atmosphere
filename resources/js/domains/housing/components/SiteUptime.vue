@@ -18,7 +18,7 @@ import { NPopover } from "naive-ui"
       };
 
       const lastResponses = computed(() => {
-          return props.responses.reverse().slice(0, props.max).reverse();
+          return props.responses.slice(-props.max);
       });
   </script>
 

@@ -15,6 +15,7 @@ use App\Domains\Transaction\Services\PlannedTransactionService;
 use App\Domains\Transaction\Services\TransactionService;
 use App\Http\Controllers\Traits\QuerifySlim;
 use App\Http\Requests\RecategorizeTransactionLineRequest;
+use App\Jobs\RunTeamChecks;
 use App\Services\MultiCurrencyDisplayService;
 use Dompdf\Dompdf;
 use Dompdf\Options as DompdfOptions;
@@ -397,6 +398,7 @@ class FinanceTransactionController extends InertiaController
     {
         $this->authorize('update', $transaction);
         $transaction->approve();
+        RunTeamChecks::dispatch($transaction->team_id);
 
         return response()->json(['message' => 'Transaction approved']);
     }
@@ -446,6 +448,8 @@ class FinanceTransactionController extends InertiaController
             ->where('status', Transaction::STATUS_DRAFT)
             ->get()
             ->each(fn (Transaction $transaction) => $transaction->approve());
+
+        RunTeamChecks::dispatch($user->current_team_id);
 
         return back();
     }

@@ -145,7 +145,8 @@ class Occurrence extends Model
         $activatedField = self::NOTIFY_FIELDS[$type->value]['activatedField'];
         $countField = self::NOTIFY_FIELDS[$type->value]['countField'];
 
-        return Occurrence::where($activatedField, true)
+        return Occurrence::where('is_active', true)
+            ->where($activatedField, true)
             ->where($countField, '>', 1)
             ->get()
             ->filter(fn ($occurrence) => $type->value == OccurrenceNotifyTypes::AVG->value

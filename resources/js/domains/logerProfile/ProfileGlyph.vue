@@ -1,6 +1,11 @@
 <script setup lang="ts">
 withDefaults(defineProps<{ name?: string }>(), { name: "book" });
 const paths: Record<string, string> = {
+    expand: "M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5",
+    collapse: "M3 8h5V3m8 0v5h5M8 21v-5H3m18 0h-5v5",
+    pencil: "m15 4 5 5M4 20l5-1L21 7l-5-5L4 14v6Z",
+    sidebar: "M3 4h18v16H3zM9 4v16",
+    more: "M12 5h.01M12 12h.01M12 19h.01",
     folder: "M3 7V4h6l2 3h10v13H3V7Z",
     book: "M4 3h12a2 2 0 0 1 2 2v14H6a2 2 0 0 1-2-2V3Zm0 12h14M8 3v12",
     calendar: "M4 5h16v15H4zM7 2v6m10-6v6M4 10h16",

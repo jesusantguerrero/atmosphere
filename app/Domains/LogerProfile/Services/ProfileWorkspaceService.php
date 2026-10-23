@@ -26,7 +26,7 @@ class ProfileWorkspaceService
 
     public function overview(int $teamId): array
     {
-        $profiles = LogerProfile::query()->where('team_id', $teamId)->orderBy('name')->get();
+        $profiles = LogerProfile::query()->where('team_id', $teamId)->orderByRaw('CASE WHEN personal_user_id = ? THEN 0 ELSE 1 END', [auth()->id() ?? 0])->orderBy('name')->get();
         $links = LogerProfileEntity::query()->without('entity')->where('team_id', $teamId)->whereIn('profile_id', $profiles->modelKeys())->get();
         $planIds = $links->where('entity_type', Plan::class)->pluck('entity_id');
         $itemIds = $links->where('entity_type', PlanItem::class)->pluck('entity_id');
@@ -43,7 +43,7 @@ class ProfileWorkspaceService
                 ->map(fn ($item) => $this->page($item, $linkedItems->contains($item->id) || $plans->get($item->plan_id)?->plan_type_name === PlanTypes::CHORES));
 
             return [
-                'id' => $profile->id, 'name' => $profile->name,
+                'id' => $profile->id, 'name' => $profile->name, 'personal_user_id' => $profile->personal_user_id,
                 'url' => route('loger-profiles.show', ['profileId' => $profile->id], false),
                 'pending' => $pages->where('kind', 'task')->where('done', false)->values()->all(),
                 'upcoming' => $pages->where('kind', 'event')->where('done', false)->filter(fn ($page) => $page['when'] && Carbon::parse($page['when'])->greaterThanOrEqualTo(today()))->sortBy('when')->values()->all(),

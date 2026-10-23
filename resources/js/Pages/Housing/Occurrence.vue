@@ -137,7 +137,7 @@ const currentStatus = ref(isOverdueView ? "overdue" : (props.serverSearchOptions
 </script>
 
 <template>
-    <AppLayout :title="$t('Reminders')">
+    <AppLayout :title="$t('Occurrences')">
         <template #header>
             <HouseSectionNav>
                   <template #actions>

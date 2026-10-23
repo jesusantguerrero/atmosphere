@@ -371,6 +371,7 @@
     "Add profile": "Add profile",
     "No profiles yet": "No profiles yet",
     "Add a profile for each person and see everything linked to them in one place.": "Add a profile for each person and see everything linked to them in one place.",
+    "Occurrences": "Occurrences",
     "Reminders": "Reminders",
     "Add Reminder": "Add Reminder",
     "Chore boards": "Chore boards",
@@ -1107,5 +1108,17 @@
     "Ready to pay": "Ready to pay",
     "Your budget matches your accounts": "Your budget matches your accounts",
     "Available + To assign": "Available + To assign",
-    "Cash in accounts": "Cash in accounts"
+    "Cash in accounts": "Cash in accounts",
+    "Detect occurrences from verified transactions using the fields below.": "Detect occurrences from verified transactions using the fields below.",
+    "Match the following conditions and groups": "Match the following conditions and groups",
+    "All conditions (AND)": "All conditions (AND)",
+    "Any condition (OR)": "Any condition (OR)",
+    "Condition group": "Condition group",
+    "Remove group": "Remove group",
+    "Inside this group": "Inside this group",
+    "Add condition group": "Add condition group",
+    "Always exclude": "Always exclude",
+    "Matching any exclusion skips the transaction, even when the rule above matches.": "Matching any exclusion skips the transaction, even when the rule above matches.",
+    "Within each list, matching one selected item is enough. Empty fields do not restrict the rule.": "Within each list, matching one selected item is enough. Empty fields do not restrict the rule.",
+    "Any account": "Any account"
 }

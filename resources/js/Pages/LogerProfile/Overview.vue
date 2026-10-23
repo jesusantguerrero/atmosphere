@@ -8,6 +8,7 @@ import type { ProfilePage } from "@/domains/logerProfile/profilePreview";
 type ProfileSummary = {
     id: number;
     name: string;
+    personal_user_id?: number;
     url: string;
     pending: ProfilePage[];
     upcoming: ProfilePage[];
@@ -95,7 +96,20 @@ const dateLabel = (date?: string) =>
                                 <h3
                                     class="break-words font-semibold text-body-1"
                                 >
-                                    {{ profile.name }}
+                                    {{
+                                        Number(profile.personal_user_id) ===
+                                        Number($page.props.auth.user.id)
+                                            ? "Yo"
+                                            : profile.name
+                                    }}
+                                    <span
+                                        v-if="
+                                            Number(profile.personal_user_id) ===
+                                            Number($page.props.auth.user.id)
+                                        "
+                                        class="ml-1 rounded bg-primary/10 px-1.5 py-0.5 text-xs text-primary"
+                                        >Tú</span
+                                    >
                                 </h3>
                                 <Glyph
                                     name="arrow"

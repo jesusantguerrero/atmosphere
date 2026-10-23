@@ -8,7 +8,7 @@ use App\Domains\Housing\Models\Occurrence;
 use App\Domains\Transaction\Actions\SearchTransactions;
 use App\Models\User;
 use App\Notifications\OccurrenceAlert;
-use Exception;
+use Carbon\Exceptions\InvalidFormatException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 
@@ -77,47 +77,53 @@ class RegisterOccurrence
         }
     }
 
-    public function load(Occurrence $occurrence)
+    public function load(Occurrence $occurrence): void
     {
-        $transactions = (new SearchTransactions)->handle($occurrence->conditions, $occurrence->team_id);
-        foreach ($transactions as $transaction) {
-            try {
-                $this->softAdd($occurrence, $transaction->date);
-            } catch (Exception) {
-                continue;
-            }
-        }
-        $occurrence->update();
+        $this->sync($occurrence);
     }
 
-    public function sync(Occurrence $occurrence)
+    public function sync(Occurrence $occurrence): void
     {
-        $transactions = (new SearchTransactions)->handle($occurrence->conditions, $occurrence->team_id);
-        // Only rebuild when there is something to rebuild from, so a transient
-        // empty match never wipes a healthy occurrence's history.
-        if ($transactions && $transactions->count()) {
-            $occurrence->log = [];
-            $occurrence->saveQuietly();
-            $dates = $transactions->pluck('date')->toArray();
-
-            foreach ($dates as $date) {
-                try {
-                    $this->softAdd(
-                        $occurrence,
-                        $date
-                    );
-                    $occurrence->save();
-                } catch (Exception $e) {
-                    // A single bad/edge date must NOT abort the whole team's
-                    // sync and leave this occurrence with a wiped log (which is
-                    // why they appeared "paused"). Skip it, like load() does.
-                    Log::error('Occurrence sync skipped a date: '.$e->getMessage());
-
-                    continue;
-                }
-            }
+        $transactions = app(SearchTransactions::class)->handle($occurrence->conditions, $occurrence->team_id);
+        if ($transactions === null || $transactions->isEmpty()) {
+            return;
         }
 
+        $dates = $transactions->pluck('date')
+            ->map(fn ($date) => $this->normalizeDate($date))
+            ->filter()->unique()->sort()->values()->all();
+        if (! $dates) {
+            return;
+        }
+
+        $count = count($dates);
+        $lastDate = $count ? $dates[$count - 1] : null;
+        $totalDays = $count > 1 ? $this->getDaysDifference($dates[0], $lastDate) : 0;
+        $previousDays = $count > 1 ? $this->getDaysDifference($dates[$count - 2], $lastDate) : 0;
+
+        $occurrence->update([
+            'log' => $dates,
+            'last_date' => $lastDate,
+            'occurrence_count' => $count,
+            'total_days' => $totalDays,
+            'previous_days_count' => $previousDays,
+            'avg_days_passed' => $count > 1 ? $totalDays / ($count - 1) : 0,
+        ]);
+    }
+
+    private function normalizeDate(mixed $date): ?string
+    {
+        if ($date === null || $date === '' || (! is_string($date) && ! $date instanceof \DateTimeInterface)) {
+            return null;
+        }
+
+        try {
+            return Carbon::parse($date)->toDateString();
+        } catch (InvalidFormatException) {
+            Log::warning('Occurrence sync skipped an invalid transaction date.');
+
+            return null;
+        }
     }
 
     public function remind(Occurrence $occurrence)

@@ -9,7 +9,7 @@ import ProfilesPillarNav from "@/Components/templates/ProfilesPillarNav.vue";
 import LogerProfileModal from "@/Components/LogerProfileModal.vue";
 
 defineProps<{
-    profiles: Record<string, string>[];
+    profiles: { id: number; name: string; personal_user_id?: number }[];
 }>();
 
 const isModalOpen = ref(false);
@@ -78,7 +78,20 @@ const onSaved = () => {
                             {{ profile.name?.charAt(0)?.toUpperCase() }}
                         </div>
                         <h3 class="font-semibold text-body capitalize truncate">
-                            {{ profile.name }}
+                            {{
+                                Number(profile.personal_user_id) ===
+                                Number($page.props.auth.user.id)
+                                    ? "Yo"
+                                    : profile.name
+                            }}
+                            <span
+                                v-if="
+                                    Number(profile.personal_user_id) ===
+                                    Number($page.props.auth.user.id)
+                                "
+                                class="ml-1 rounded bg-primary/10 px-1.5 py-0.5 text-xs text-primary"
+                                >Tú</span
+                            >
                         </h3>
                     </Link>
                 </div>
