@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Accounting\Reconciliation;
 use Insane\Journal\Models\Accounting\ReconciliationEntry;
 use Insane\Journal\Models\Core\Account;
+use Insane\Journal\Models\Core\AccountDetailType;
 use Insane\Journal\Models\Core\Transaction as CoreTransaction;
 
 class ReconciliationService
@@ -56,6 +57,56 @@ class ReconciliationService
             ->where('transactions.status', CoreTransaction::STATUS_VERIFIED)
             ->where('transaction_lines.date', '<=', $date)
             ->sum(DB::raw('amount * type'));
+    }
+
+    /**
+     * The cross-account hub: one row per account with its latest reconciliation (date, status, leftover
+     * difference) and how many verified movements are still unreconciled, most stale first (never reconciled on
+     * top, then the longest since the last one). Same figures as the web's hub page.
+     *
+     * @return Collection<int, array<string, mixed>>
+     */
+    public function hubRows(int $teamId): Collection
+    {
+        $today = now()->format('Y-m-d');
+        $accounts = Account::getByDetailTypes($teamId, AccountDetailType::ALL)->load('detailType');
+        $pendingDifferences = $this->pendingDifferences($accounts
+            ->pluck('reconciliationLast')
+            ->filter(fn ($reconciliation) => $reconciliation?->status === Reconciliation::STATUS_PENDING)
+            ->pluck('id')->all());
+
+        // One grouped COUNT: verified lines up to today not yet attached to any reconciliation entry.
+        $unreconciled = DB::table('transaction_lines')
+            ->join('transactions', 'transactions.id', 'transaction_lines.transaction_id')
+            ->leftJoin('reconciliation_entries', 'reconciliation_entries.transaction_line_id', 'transaction_lines.id')
+            ->where('transactions.status', CoreTransaction::STATUS_VERIFIED)
+            ->whereNull('reconciliation_entries.id')
+            ->where('transactions.date', '<=', $today)
+            ->whereIn('transaction_lines.account_id', $accounts->pluck('id')->all())
+            ->groupBy('transaction_lines.account_id')
+            ->selectRaw('transaction_lines.account_id as account_id, COUNT(*) as cnt')
+            ->pluck('cnt', 'account_id');
+
+        return $accounts->map(function ($account) use ($unreconciled, $pendingDifferences) {
+            $last = $account->reconciliationLast;
+            $lastDate = $last?->date ? Carbon::parse($last->date) : null;
+
+            return [
+                'id' => $account->id,
+                'name' => $account->name,
+                'type' => $account->detailType?->name,
+                'balance' => (float) $account->balance,
+                'currency_code' => $account->currency_code,
+                'last_id' => $last?->id,
+                'last_date' => $lastDate?->format('Y-m-d'),
+                'last_status' => $last?->status,
+                'last_difference' => $last ? $pendingDifferences->get($last->id, (float) $last->difference) : null,
+                'days_since' => $lastDate ? (int) $lastDate->startOfDay()->diffInDays(now()->startOfDay()) : null,
+                'unreconciled_count' => (int) ($unreconciled[$account->id] ?? 0),
+            ];
+        })
+            ->sortByDesc(fn ($row) => $row['days_since'] === null ? PHP_INT_MAX : $row['days_since'])
+            ->values();
     }
 
     public function listHistoryOf(Account $account)

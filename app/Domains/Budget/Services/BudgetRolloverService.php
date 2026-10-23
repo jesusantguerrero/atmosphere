@@ -57,12 +57,18 @@ class BudgetRolloverService
         $fundedFromBudgets = 0;
         $overspendingCategories = [];
 
+        // One read per month instead of two per category. Only this loop writes these rows (the current month's
+        // activity/available and the next month's carry), except for account categories, whose current-month row
+        // is rewritten by updateFundedSpending() just before it is read; those are read fresh, as they always were.
+        $currentRows = $this->monthRows($teamId, $month);
+        $nextRows = $this->monthRows($teamId, $nextMonth);
+
         foreach ($categories as $category) {
             if ($category->account_id) {
                 $fundedFromBudgets += $this->budgetCategoryService->updateFundedSpending($category, $month);
             }
-            $available = $this->getAvailableInMonth($category, $month);
-            $this->setMonthBudget($category, $month, $available);
+            $available = $this->getAvailableInMonth($category, $month, $category->account_id ? null : $currentRows);
+            $this->setMonthBudget($category, $month, $available, $nextRows);
             if ($available < 0) {
                 $overspending += abs($available);
                 $overspendingCategories[] = $category->display_id;
@@ -93,11 +99,22 @@ class BudgetRolloverService
             ->all();
     }
 
-    private function getAvailableInMonth($category, $month)
+    /** The month's rows of a team keyed by category (the oldest one wins, as `first()` did per category). */
+    private function monthRows(int $teamId, string $month)
+    {
+        return BudgetMonth::where(['team_id' => $teamId, 'month' => $month, 'name' => $month])
+            ->orderBy('id')
+            ->get()
+            ->unique('category_id')
+            ->keyBy('category_id');
+    }
+
+    /** @param  \Illuminate\Support\Collection|null  $rows  The month's rows of the team by category; a category missing from it has no row. */
+    private function getAvailableInMonth($category, $month, $rows = null)
     {
         $activity = (new BudgetCategoryService($category))->getCategoryActivity($category, $month);
 
-        $budgetMonth = BudgetMonth::where([
+        $budgetMonth = $rows !== null ? $rows->get($category->id) : BudgetMonth::where([
             'category_id' => $category->id,
             'team_id' => $category->team_id,
             'month' => $month,
@@ -137,18 +154,35 @@ class BudgetRolloverService
         return $available;
     }
 
-    private function setMonthBudget($category, $month, $available = 0)
+    /** @param  \Illuminate\Support\Collection|null  $rows  The next month's rows of the team by category. */
+    private function setMonthBudget($category, $month, $available = 0, $rows = null)
     {
         $nextMonth = Carbon::createFromFormat('Y-m-d', $month)->addMonthsWithNoOverflow(1)->format('Y-m-d');
-        BudgetMonth::updateOrCreate([
+        $identity = [
             'category_id' => $category->id,
             'team_id' => $category->team_id,
             'month' => $nextMonth,
             'name' => $nextMonth,
-        ], [
+        ];
+        $values = [
             'user_id' => $category->user_id,
             'left_from_last_month' => $available > 0 ? $available : 0,
-        ]);
+        ];
+
+        $existing = $rows !== null ? $rows->get($category->id) : BudgetMonth::where($identity)->first();
+        if (! $existing) {
+            BudgetMonth::create($identity + $values);
+
+            return;
+        }
+
+        // Same row, same carry: nothing to write (the decimal column reads back as "0.00", which Eloquent
+        // would otherwise see as different from a plain 0 and rewrite on every roll).
+        if ((int) $existing->user_id === (int) $values['user_id'] && round((float) $existing->left_from_last_month, 6) === round((float) $values['left_from_last_month'], 6)) {
+            return;
+        }
+
+        $existing->update($values);
     }
 
     private function moveReadyToAssign($teamId, $month, $overspending = 0, $fundedFromBudgets = 0)

@@ -21,6 +21,7 @@ use App\Listeners\CreateOccurrenceAutomation;
 use App\Listeners\CreateStartingBalance;
 use App\Listeners\CreateTeamSettings;
 use App\Listeners\HandleTransactionCreated;
+use App\Listeners\LinkShoppingVisit;
 use App\Listeners\LogForcedLogout;
 use App\Listeners\Menu\ShowInApp;
 use App\Listeners\NotifyAccountOverdraft;
@@ -84,6 +85,7 @@ class EventServiceProvider extends ServiceProvider
             UpdateBudgetAvailable::class,
             AutoLinkCreditCardPayment::class,
             NotifyAccountOverdraft::class,
+            LinkShoppingVisit::class,
         ],
         TransactionUpdated::class => [
             CreateBudgetTransactionMovement::class,
@@ -91,6 +93,7 @@ class EventServiceProvider extends ServiceProvider
             UpdatePlannedTransactions::class,
             AutoLinkCreditCardPayment::class,
             NotifyAccountOverdraft::class,
+            LinkShoppingVisit::class,
         ],
         TransactionDeleted::class => [
             CreateBudgetTransactionMovement::class,

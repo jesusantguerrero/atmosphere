@@ -5,6 +5,7 @@ namespace App\Domains\Budget\Models;
 use App\Domains\AppCore\Models\Category;
 use App\Domains\Transaction\Models\Transaction;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -43,6 +44,7 @@ class BudgetTarget extends Model
         'notify',
         'snoozed_month',
         'completed_at',
+        'archived_at',
         // Loan target fields. `amount` still holds the computed monthly payment;
         // these describe the loan so the payment and payoff can be recomputed.
         'principal',
@@ -51,7 +53,23 @@ class BudgetTarget extends Model
         'loan_start_date',
     ];
 
+    /**
+     * An archived target is gone for everything live (the category's `budget` relation, alerts, planned
+     * transactions, loan reminders, goals, next payments...), but its row and history are kept. Ask for them
+     * with `BudgetTarget::archived()` / `withoutGlobalScope('live')`.
+     */
+    protected static function booted(): void
+    {
+        static::addGlobalScope('live', fn (Builder $query) => $query->whereNull($query->getModel()->getTable().'.archived_at'));
+    }
+
+    public function scopeArchived(Builder $query): Builder
+    {
+        return $query->withoutGlobalScope('live')->whereNotNull($query->getModel()->getTable().'.archived_at');
+    }
+
     protected $casts = [
+        'archived_at' => 'datetime',
         'amount' => 'decimal:2',
         'principal' => 'decimal:2',
         'interest_rate' => 'decimal:3',

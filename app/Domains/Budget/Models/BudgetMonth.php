@@ -2,6 +2,7 @@
 
 namespace App\Domains\Budget\Models;
 
+use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Domains\AppCore\Models\Category;
 use App\Domains\Budget\Data\BudgetReservedNames;
 use App\Domains\Budget\Models\Traits\BudgetMonthTrait;
@@ -166,10 +167,10 @@ class BudgetMonth extends Model
         $monthDate = Carbon::createFromFormat('Y-m-d', $this->month);
         if (! $this->category->account) {
             $this->update([
-                'activity' => $this->category->getMonthBalance($monthDate->format('Y-m'))->balance,
+                'activity' => BudgetCategoryService::monthBalance($this->category, $monthDate->format('Y-m'))->balance,
             ]);
         } else {
-            $accountTransactions = $this->category->account->getMonthBalance($monthDate->format('Y-m'))->balance;
+            $accountTransactions = BudgetCategoryService::monthBalance($this->category->account, $monthDate->format('Y-m'))->balance;
             $this->update([
                 'activity' => $accountTransactions,
             ]);
