@@ -1020,9 +1020,13 @@ class MobileController extends Controller
         $monthEnd = Carbon::parse($monthStart)->endOfMonth()->format('Y-m-d');
         $limit = $validated['limit'] ?? 50;
 
-        $transactions = Transaction::with(['account', 'payee'])
+        $inThisCategory = fn ($lines) => $lines->where('category_id', $category->id);
+
+        $transactions = Transaction::with(['account', 'payee', 'splits' => $inThisCategory])
             ->where('team_id', $teamId)
-            ->where('category_id', $category->id)
+            ->where(fn (Builder $query) => $query
+                ->where('category_id', $category->id)
+                ->orWhereHas('splits', $inThisCategory))
             ->whereBetween('date', [$monthStart, $monthEnd])
             ->orderBy('date', 'desc')
             ->orderBy('id', 'desc')
@@ -1037,6 +1041,9 @@ class MobileController extends Controller
                 'date' => $t->date,
                 'direction' => $t->direction,
                 'status' => $t->status,
+                'has_splits' => (bool) $t->has_splits,
+                // For a split purchase only the line that falls in this category counts here, not the whole total.
+                'split_amount' => $t->has_splits && $t->splits->isNotEmpty() ? (float) $t->splits->sum('amount') : null,
                 'account' => $t->account ? ['id' => $t->account->id, 'name' => $t->account->name] : null,
                 'payee' => $t->payee ? ['name' => $t->payee->name] : null,
             ]),
