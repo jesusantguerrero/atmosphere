@@ -31,12 +31,13 @@ use App\Domains\Today\Services\CalendarService;
 use App\Domains\Today\Services\TodayService;
 use App\Domains\Transaction\Data\ReconciliationParamsData;
 use App\Domains\Transaction\Models\Transaction;
-use App\Domains\Transaction\Services\TransactionSplits;
 use App\Domains\Transaction\Services\CreditCardReportService;
 use App\Domains\Transaction\Services\NextPaymentsService;
 use App\Domains\Transaction\Services\ReconciliationService;
 use App\Domains\Transaction\Services\TransactionService;
+use App\Domains\Transaction\Services\TransactionSplits;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UpdateShoppingVisitRequest;
 use App\Http\Resources\PlannedMealResource;
 use App\Models\Account;
 use App\Models\Setting;
@@ -46,12 +47,12 @@ use App\Services\ShoppingListReviewService;
 use App\Services\ShoppingVisitLinker;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Insane\Journal\Models\Accounting\Reconciliation;
 use Insane\Journal\Models\Accounting\ReconciliationEntry;
 use Insane\Journal\Models\Core\AccountDetailType;
@@ -2146,6 +2147,25 @@ class MobileController extends Controller
         $plan->save();
 
         return response()->json(['shared' => false]);
+    }
+
+    /**
+     * Change the store of a finished trip and, if no charge is linked yet, try to auto-link it again.
+     */
+    public function updateShoppingVisit(UpdateShoppingVisitRequest $request, Plan $plan, string $session, ShoppingListReviewService $reviews): JsonResponse
+    {
+        abort_if((int) $plan->team_id !== (int) $request->user()->current_team_id, 403);
+
+        $payeeId = $request->validated('payee_id');
+        $visit = $reviews->setVisitPayee($plan, $session, $payeeId === null ? null : (int) $payeeId);
+
+        if (empty($visit['transaction_id'])) {
+            app(ShoppingVisitLinker::class)->linkVisit($plan, $visit);
+        }
+
+        return response()->json([
+            'visit' => $reviews->decorate($plan->team_id, [$reviews->visit($plan, $session) ?? $visit])[0],
+        ]);
     }
 
     // ─── Shopping sessions ──────────────────────────────────────

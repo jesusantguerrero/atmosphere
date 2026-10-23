@@ -4,8 +4,8 @@ use App\Domains\AppCore\Http\Controllers\ApiLoginController;
 use App\Http\Controllers\Api\DashboardApiController;
 use App\Http\Controllers\Api\MobileController;
 use App\Http\Controllers\Api\MultiCurrencyTransactionController;
-use App\Http\Controllers\ShoppingListController;
 use App\Http\Controllers\RoutineController;
+use App\Http\Controllers\ShoppingListController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -167,6 +167,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
     Route::delete('/shopping/{plan}/share', [MobileController::class, 'unshareShoppingList'])->name('shopping.unshare');
     Route::post('/shopping/{plan}/sessions/start', [MobileController::class, 'startShoppingSession'])->name('shopping.sessions.start');
     Route::post('/shopping/{plan}/sessions/finish', [MobileController::class, 'finishShoppingSession'])->name('shopping.sessions.finish');
+    Route::patch('/shopping/{plan}/visits/{session}', [MobileController::class, 'updateShoppingVisit'])->name('shopping.visits.update')->whereUuid('session');
 
     // Inbox (draft transactions)
     Route::post('/transactions/{transaction}/approve', [MobileController::class, 'approveTransaction'])->name('transactions.approve');
