@@ -916,6 +916,25 @@ class MobileController extends Controller
         return response()->json(['id' => $target->id, 'archived_at' => $target->archived_at]);
     }
 
+    /**
+     * Bring an archived target back. Only while the category has no live target of its own (it holds one at a
+     * time); the restored one keeps its amount, frequency and history as they were.
+     */
+    public function restoreBudgetTarget(Request $request, int $categoryId, int $targetId): JsonResponse
+    {
+        $category = Category::where('team_id', $request->user()->current_team_id)
+            ->whereNotNull('parent_id')
+            ->where('resource_type', 'transactions')
+            ->findOrFail($categoryId);
+
+        $target = BudgetTarget::archived()->where(['team_id' => $category->team_id, 'category_id' => $category->id])->findOrFail($targetId);
+        abort_if($category->budget !== null, 422, 'This category already has a target. Archive it first to bring this one back.');
+
+        $target->forceFill(['archived_at' => null])->save();
+
+        return response()->json($this->formatTarget($target));
+    }
+
     /** The category's archived targets, newest first: the history of what it used to aim for. */
     public function archivedBudgetTargets(Request $request, int $categoryId): JsonResponse
     {
@@ -2163,6 +2182,24 @@ class MobileController extends Controller
     }
 
     /**
+     * Set (or clear) the store of a trip already saved. With the store known the trip is matched against the
+     * card charges again, so forgetting it when finishing the trip is not final.
+     */
+    public function updateShoppingVisit(Request $request, Plan $plan, string $session, ShoppingListReviewService $reviews, ShoppingVisitLinker $linker): JsonResponse
+    {
+        abort_if((int) $plan->team_id !== (int) $request->user()->current_team_id, 403);
+
+        $validated = $request->validate([
+            'payee_id' => ['present', 'nullable', 'integer', Rule::exists('payees', 'id')->where('team_id', $plan->team_id)],
+        ]);
+
+        $visit = $reviews->setVisitPayee($plan, $session, $validated['payee_id']);
+        $linker->linkVisit($plan, $visit);
+
+        return response()->json(['visit' => $reviews->decorate($plan->team_id, [$reviews->visit($plan, $session) ?? $visit])[0]]);
+    }
+
+    /**
      * Finish a shopping session: record the visit, reset the list.
      */
     public function finishShoppingSession(Request $request, Plan $plan, ShoppingListReviewService $reviews): JsonResponse
@@ -2682,8 +2719,7 @@ class MobileController extends Controller
         ReconciliationService $service,
     ): JsonResponse {
         abort_if((int) $reconciliation->team_id !== (int) $request->user()->current_team_id, 403);
-        abort_if($reconciliation->status === Reconciliation::STATUS_COMPLETED, 422, 'Cannot delete completed reconciliation.');
-
+        // Pending or completed, like the web: its movements are released (unmatched), the transactions stay.
         $service->delete($reconciliation);
 
         return response()->json(['deleted' => true]);
@@ -2759,12 +2795,48 @@ class MobileController extends Controller
         abort_if((int) $reconciliation->team_id !== (int) $request->user()->current_team_id, 403);
         abort_if($reconciliation->status === Reconciliation::STATUS_COMPLETED, 422, 'A completed reconciliation cannot be edited.');
 
-        $validated = $request->validate(['balance' => ['required', 'numeric']]);
-
-        $reconciliation->update([
-            'amount' => $validated['balance'],
-            'difference' => round($service->balanceAsOf($reconciliation->account, $reconciliation->date) - (float) $validated['balance'], 2),
+        $validated = $request->validate([
+            'balance' => ['required_without:date', 'numeric'],
+            'date' => ['required_without:balance', 'date_format:Y-m-d'],
         ]);
+
+        // A new statement date: what happened after it is released and what happened since the old one is added.
+        if (isset($validated['date']) && $validated['date'] !== substr((string) $reconciliation->date, 0, 10)) {
+            abort_if($service->getByDate($reconciliation->team_id, $reconciliation->account_id, $validated['date']), 422, 'There is already a reconciliation of this account on that date.');
+            $service->moveDate($reconciliation, $validated['date']);
+        }
+
+        // The difference follows the (possibly new) date and the typed balance.
+        $balance = isset($validated['balance']) ? (float) $validated['balance'] : (float) $reconciliation->amount;
+        $reconciliation->update([
+            'amount' => $balance,
+            'difference' => round($service->balanceAsOf($reconciliation->account, $reconciliation->date) - $balance, 2),
+        ]);
+
+        return response()->json(['reconciliation' => $this->reconciliationPayload($reconciliation->refresh(), $service, $this->enrichedReconciliationEntries($reconciliation))]);
+    }
+
+    /** One reconciliation with its movements, pending or completed (the history of an account opens these). */
+    public function showReconciliation(Request $request, Reconciliation $reconciliation, ReconciliationService $service): JsonResponse
+    {
+        abort_if((int) $reconciliation->team_id !== (int) $request->user()->current_team_id, 403);
+
+        return response()->json(['reconciliation' => $this->reconciliationPayload($reconciliation, $service, $this->enrichedReconciliationEntries($reconciliation))]);
+    }
+
+    /**
+     * Open a completed reconciliation again, like editing its statement balance on the web: it goes back to
+     * pending with its movements unmatched. Only the latest one of the account, so earlier ones stay as they were.
+     */
+    public function reopenReconciliation(Request $request, Reconciliation $reconciliation, ReconciliationService $service): JsonResponse
+    {
+        abort_if((int) $reconciliation->team_id !== (int) $request->user()->current_team_id, 403);
+        abort_if($reconciliation->status !== Reconciliation::STATUS_COMPLETED, 422, 'Only a completed reconciliation can be reopened.');
+
+        $latest = Reconciliation::where(['team_id' => $reconciliation->team_id, 'account_id' => $reconciliation->account_id])->orderByDesc('date')->orderByDesc('id')->first();
+        abort_if($latest && (int) $latest->id !== (int) $reconciliation->id, 422, 'Only the latest reconciliation of the account can be reopened.');
+
+        $service->reopen($reconciliation);
 
         return response()->json(['reconciliation' => $this->reconciliationPayload($reconciliation->refresh(), $service, $this->enrichedReconciliationEntries($reconciliation))]);
     }

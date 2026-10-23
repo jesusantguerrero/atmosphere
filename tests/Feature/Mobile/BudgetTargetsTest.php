@@ -291,6 +291,48 @@ class BudgetTargetsTest extends TestCase
         $this->assertSame(1, BudgetTarget::archived()->where('team_id', $team->id)->count());
     }
 
+    public function test_an_archived_target_can_be_brought_back_while_the_category_has_none(): void
+    {
+        [$user, $team, $category] = $this->makeSetup();
+        Sanctum::actingAs($user);
+        $month = now()->format('Y-m');
+        $id = $this->postJson("/api/mobile/budget/categories/{$category->id}/targets", ['target_type' => 'spending', 'amount' => 24000, 'frequency' => 'MONTHLY', 'frequency_month_date' => 7])->json('id');
+        $this->deleteJson("/api/mobile/budget/categories/{$category->id}/targets/{$id}")->assertOk();
+        $this->assertFalse($this->categoryOf($category->id, $month)['has_target']);
+
+        $this->postJson("/api/mobile/budget/categories/{$category->id}/targets/{$id}/restore")
+            ->assertOk()
+            ->assertJsonPath('id', $id)
+            ->assertJsonPath('amount', 24000);
+
+        $row = $this->categoryOf($category->id, $month);
+        $this->assertTrue($row['has_target']);
+        $this->assertEquals(24000, $row['target']['amount']);
+        $this->getJson("/api/mobile/budget/categories/{$category->id}/targets/archived")->assertJsonCount(0, 'targets');
+        // It is live again, so it is not "archived" and cannot be restored twice.
+        $this->postJson("/api/mobile/budget/categories/{$category->id}/targets/{$id}/restore")->assertNotFound();
+    }
+
+    public function test_an_archived_target_cannot_come_back_over_a_live_one_or_across_teams(): void
+    {
+        [$user, $team, $category] = $this->makeSetup();
+        Sanctum::actingAs($user);
+        $old = $this->postJson("/api/mobile/budget/categories/{$category->id}/targets", ['target_type' => 'spending', 'amount' => 100, 'frequency' => 'MONTHLY'])->json('id');
+        $this->deleteJson("/api/mobile/budget/categories/{$category->id}/targets/{$old}")->assertOk();
+        $current = $this->postJson("/api/mobile/budget/categories/{$category->id}/targets", ['target_type' => 'spending', 'amount' => 200, 'frequency' => 'MONTHLY'])->json('id');
+
+        // One live target at a time: the new one has to be archived first.
+        $this->postJson("/api/mobile/budget/categories/{$category->id}/targets/{$old}/restore")->assertStatus(422);
+        $this->assertNotNull(BudgetTarget::withoutGlobalScope('live')->find($old)->archived_at);
+        $this->deleteJson("/api/mobile/budget/categories/{$category->id}/targets/{$current}")->assertOk();
+        $this->postJson("/api/mobile/budget/categories/{$category->id}/targets/{$old}/restore")->assertOk();
+
+        $other = User::factory()->withPersonalTeam()->create();
+        $other->forceFill(['current_team_id' => $other->ownedTeams()->first()->id])->save();
+        Sanctum::actingAs($other->fresh());
+        $this->postJson("/api/mobile/budget/categories/{$category->id}/targets/{$current}/restore")->assertNotFound();
+    }
+
     /** The category's row in GET /budget. */
     private function categoryOf(int $categoryId, string $month): array
     {

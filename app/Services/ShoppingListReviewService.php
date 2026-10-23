@@ -166,6 +166,34 @@ class ShoppingListReviewService
     }
 
     /**
+     * Sets (or clears with null) the store of a trip already saved. A charge the trip was already tied to stays tied
+     * unless it was at another store: then the two would contradict each other, so the link is dropped (and
+     * the linker may find the right charge afterwards). Returns the stored trip, not decorated.
+     */
+    public function setVisitPayee(Plan $plan, string $sessionId, ?int $payeeId): array
+    {
+        return $plan->getConnection()->transaction(function () use ($plan, $sessionId, $payeeId) {
+            Plan::query()->whereKey($plan->id)->lockForUpdate()->firstOrFail();
+            $field = 'shopping_visit_'.$sessionId;
+            $visit = $this->sessionField($plan, $field);
+            abort_if(! $visit, 404);
+
+            if ($payeeId === null) {
+                unset($visit['payee_id']);
+            } else {
+                $visit['payee_id'] = $payeeId;
+                $charge = ! empty($visit['transaction_id']) ? Transaction::query()->where('team_id', $plan->team_id)->find($visit['transaction_id']) : null;
+                if ($charge && (int) $charge->payee_id !== $payeeId) {
+                    unset($visit['transaction_id']);
+                }
+            }
+            $this->store($plan, $visit, $field);
+
+            return $visit;
+        });
+    }
+
+    /**
      * What a visit refers to, resolved when it is read (never stored): the store (`payee`) the trip was at and the
      * transaction (`transaction`) that paid for it, once it has been linked.
      *

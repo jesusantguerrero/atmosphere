@@ -264,7 +264,7 @@ class ReconciliationCrudTest extends TestCase
         $this->assertNull(Reconciliation::find(1));
     }
 
-    public function test_cannot_delete_completed_reconciliation(): void
+    public function test_a_completed_reconciliation_can_be_deleted_and_releases_its_movements(): void
     {
         [$user, $account] = $this->makeSetup();
         Sanctum::actingAs($user);
@@ -280,8 +280,8 @@ class ReconciliationCrudTest extends TestCase
             'status' => 'completed',
         ]);
 
-        $this->deleteJson('/api/mobile/reconciliations/1')
-            ->assertStatus(422);
+        $this->deleteJson('/api/mobile/reconciliations/1')->assertOk()->assertJsonPath('deleted', true);
+        $this->assertDatabaseMissing('reconciliations', ['id' => 1]);
     }
 
     public function test_cannot_access_other_teams_reconciliation(): void
@@ -370,6 +370,129 @@ class ReconciliationCrudTest extends TestCase
     }
 
     // ── Helpers ──────────────────────────────────────────────────────
+
+    // ── Completed reconciliations: see them, reopen the latest, delete; move the date of one in progress ──
+
+    public function test_a_completed_reconciliation_can_be_opened_to_see_its_movements(): void
+    {
+        [$user, $account] = $this->makeSetupWithBalance(5000);
+        Sanctum::actingAs($user);
+        $id = $this->postJson("/api/mobile/accounts/{$account->id}/reconciliation", ['balance' => 5000, 'date' => '2026-10-18'])->json('reconciliation.id');
+
+        $shown = $this->getJson("/api/mobile/reconciliations/{$id}")->assertOk();
+        $this->assertEquals('completed', $shown->json('reconciliation.status'));
+        $this->assertEquals(1, $shown->json('reconciliation.total_entries'));
+        $this->assertEquals(1, $shown->json('reconciliation.matched_count'));
+        $this->assertCount(1, $shown->json('reconciliation.entries'));
+        $this->assertEquals(5000, $shown->json('reconciliation.ledger_balance'));
+    }
+
+    public function test_the_latest_completed_reconciliation_can_be_reopened(): void
+    {
+        [$user, $account] = $this->makeSetupWithBalance(5000);
+        Sanctum::actingAs($user);
+        $id = $this->postJson("/api/mobile/accounts/{$account->id}/reconciliation", ['balance' => 5000, 'date' => '2026-10-18'])->json('reconciliation.id');
+        $this->assertEquals(1, DB::table('transaction_lines')->where('matched', true)->count());
+
+        $reopened = $this->postJson("/api/mobile/reconciliations/{$id}/reopen")->assertOk();
+
+        $this->assertEquals('pending', $reopened->json('reconciliation.status'));
+        $this->assertEquals(0, $reopened->json('reconciliation.matched_count'));
+        $this->assertEquals(1, $reopened->json('reconciliation.total_entries'));
+        $this->assertEquals(0, DB::table('transaction_lines')->where('matched', true)->count());
+        $this->assertEquals('pending', DB::table('reconciliations')->find($id)->status);
+
+        // It is in progress now: it cannot be reopened again, and it can be finished.
+        $this->postJson("/api/mobile/reconciliations/{$id}/reopen")->assertStatus(422);
+        $this->putJson("/api/mobile/reconciliations/{$id}/adjustment", ['balance' => 5000])->assertOk()->assertJsonPath('status', 'completed');
+    }
+
+    public function test_only_the_latest_reconciliation_of_an_account_can_be_reopened(): void
+    {
+        [$user, $account] = $this->makeSetupWithBalance(5000);
+        Sanctum::actingAs($user);
+        $first = $this->postJson("/api/mobile/accounts/{$account->id}/reconciliation", ['balance' => 5000, 'date' => '2026-10-18'])->json('reconciliation.id');
+        $second = $this->postJson("/api/mobile/accounts/{$account->id}/reconciliation", ['balance' => 5000, 'date' => '2026-10-25'])->json('reconciliation.id');
+
+        $this->postJson("/api/mobile/reconciliations/{$first}/reopen")->assertStatus(422);
+        $this->assertEquals('completed', DB::table('reconciliations')->find($first)->status);
+        $this->postJson("/api/mobile/reconciliations/{$second}/reopen")->assertOk();
+    }
+
+    public function test_deleting_a_completed_reconciliation_unmatches_its_movements_but_keeps_the_transactions(): void
+    {
+        [$user, $account] = $this->makeSetupWithBalance(5000);
+        Sanctum::actingAs($user);
+        $id = $this->postJson("/api/mobile/accounts/{$account->id}/reconciliation", ['balance' => 5000, 'date' => '2026-10-18'])->json('reconciliation.id');
+        $this->assertEquals(1, DB::table('transaction_lines')->where('matched', true)->count());
+
+        $this->deleteJson("/api/mobile/reconciliations/{$id}")->assertOk();
+
+        $this->assertSame(0, DB::table('reconciliations')->where('id', $id)->count());
+        $this->assertSame(0, DB::table('reconciliation_entries')->where('reconciliation_id', $id)->count());
+        $this->assertSame(0, DB::table('transaction_lines')->where('matched', true)->count());
+        $this->assertSame(1, DB::table('transactions')->count()); // the movement itself stays
+    }
+
+    public function test_moving_the_statement_date_releases_later_movements_and_adds_earlier_ones(): void
+    {
+        [$user, $account] = $this->makeSetupWithBalance(5000); // +5000 on 2026-10-10
+        DB::table('transactions')->insert(['id' => 2, 'team_id' => $account->team_id, 'user_id' => $user->id, 'date' => '2026-10-15', 'status' => 'verified']);
+        DB::table('transaction_lines')->insert(['id' => 2, 'transaction_id' => 2, 'account_id' => $account->id, 'date' => '2026-10-15', 'amount' => 300, 'type' => -1]);
+        Sanctum::actingAs($user);
+        $id = $this->postJson("/api/mobile/accounts/{$account->id}/reconciliation", ['balance' => 4500, 'date' => '2026-10-18'])->json('reconciliation.id');
+
+        // Earlier: the movement of the 15th does not belong to it any more.
+        $earlier = $this->patchJson("/api/mobile/reconciliations/{$id}", ['date' => '2026-10-12'])->assertOk();
+        $this->assertEquals('2026-10-12', substr($earlier->json('reconciliation.date'), 0, 10));
+        $this->assertEquals(1, $earlier->json('reconciliation.total_entries'));
+        $this->assertEquals(5000, $earlier->json('reconciliation.ledger_balance'));
+        $this->assertEquals(500, $earlier->json('reconciliation.difference')); // 5000 - 4500
+        $this->assertSame(0, DB::table('reconciliation_entries')->where(['reconciliation_id' => $id, 'transaction_line_id' => 2])->count());
+
+        // Later: it is back, and the balance can change in the same call.
+        $later = $this->patchJson("/api/mobile/reconciliations/{$id}", ['date' => '2026-10-20', 'balance' => 4700])->assertOk();
+        $this->assertEquals(2, $later->json('reconciliation.total_entries'));
+        $this->assertEquals(4700, $later->json('reconciliation.ledger_balance'));
+        $this->assertEquals(0, $later->json('reconciliation.difference'));
+        $this->assertEquals('pending', $later->json('reconciliation.status'));
+    }
+
+    public function test_the_statement_date_must_be_free_valid_and_of_a_reconciliation_in_progress(): void
+    {
+        [$user, $account] = $this->makeSetupWithBalance(5000);
+        Sanctum::actingAs($user);
+        $id = $this->postJson("/api/mobile/accounts/{$account->id}/reconciliation", ['balance' => 4500, 'date' => '2026-10-18'])->json('reconciliation.id');
+        $this->postJson("/api/mobile/accounts/{$account->id}/reconciliation", ['balance' => 4500, 'date' => '2026-10-25'])->assertCreated();
+
+        $this->patchJson("/api/mobile/reconciliations/{$id}", ['date' => '2026-10-25'])->assertStatus(422); // taken
+        $this->patchJson("/api/mobile/reconciliations/{$id}", ['date' => 'tomorrow'])->assertStatus(422);
+        $this->patchJson("/api/mobile/reconciliations/{$id}", [])->assertStatus(422);
+        $this->assertEquals('2026-10-18', substr((string) DB::table('reconciliations')->find($id)->date, 0, 10));
+
+        $this->putJson("/api/mobile/reconciliations/{$id}/adjustment", ['balance' => 4500])->assertOk();
+        $this->patchJson("/api/mobile/reconciliations/{$id}", ['date' => '2026-10-20'])->assertStatus(422); // completed
+    }
+
+    public function test_adjusting_a_real_difference_books_the_plug_transaction_and_closes_it(): void
+    {
+        [$user, $account] = $this->makeSetupWithBalance(5000);
+        Sanctum::actingAs($user);
+        $id = $this->postJson("/api/mobile/accounts/{$account->id}/reconciliation", ['balance' => 4500, 'date' => '2026-10-18'])->json('reconciliation.id');
+
+        $this->putJson("/api/mobile/reconciliations/{$id}/adjustment", ['balance' => 4500])
+            ->assertOk()
+            ->assertJsonPath('status', 'completed')
+            ->assertJsonPath('difference', 0);
+
+        // The books now say what the statement says, through one "Loger adjustment" of the gap.
+        $plug = DB::table('transactions')->where('description', 'Loger adjustment')->first();
+        $this->assertNotNull($plug);
+        $this->assertEquals(500, $plug->total);
+        $this->assertEquals('2026-10-18', substr((string) $plug->date, 0, 10));
+        $this->assertEquals(4500, DB::table('transaction_lines')->where('account_id', $account->id)->sum(DB::raw('amount * type')));
+        $this->assertEquals('completed', DB::table('reconciliations')->find($id)->status);
+    }
 
     // ── What the app needs to reconcile like the web ────────────────────
 

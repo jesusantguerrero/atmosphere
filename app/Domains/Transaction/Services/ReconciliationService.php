@@ -14,6 +14,7 @@ use Insane\Journal\Models\Accounting\Reconciliation;
 use Insane\Journal\Models\Accounting\ReconciliationEntry;
 use Insane\Journal\Models\Core\Account;
 use Insane\Journal\Models\Core\AccountDetailType;
+use Insane\Journal\Models\Core\Payee;
 use Insane\Journal\Models\Core\Transaction as CoreTransaction;
 
 class ReconciliationService
@@ -177,6 +178,43 @@ class ReconciliationService
         });
     }
 
+    /**
+     * Opens a completed reconciliation again, the way the web does when its statement balance is edited: it goes
+     * back to pending, every match of its movements is cleared and the difference is recomputed.
+     */
+    public function reopen(Reconciliation $reconciliation): Reconciliation
+    {
+        return DB::transaction(function () use ($reconciliation): Reconciliation {
+            $reconciliation->update(['status' => Reconciliation::STATUS_PENDING]);
+            $reconciliation->checkStatus(); // not completed any more: entries and lines go back to unmatched
+            $reconciliation->update(['difference' => round($this->balanceAsOf($reconciliation->account, $reconciliation->date) - (float) $reconciliation->amount, 2)]);
+
+            return $reconciliation;
+        });
+    }
+
+    /**
+     * Moves a reconciliation in progress to another statement date. What happened after the new date no longer
+     * belongs to it (those movements are released), what happened between the old and the new date is added, and
+     * the difference is recomputed.
+     */
+    public function moveDate(Reconciliation $reconciliation, string $date): Reconciliation
+    {
+        return DB::transaction(function () use ($reconciliation, $date): Reconciliation {
+            $late = $reconciliation->entries()
+                ->join('transaction_lines', 'transaction_lines.id', 'reconciliation_entries.transaction_line_id')
+                ->where('transaction_lines.date', '>', $date)
+                ->get(['reconciliation_entries.id', 'reconciliation_entries.transaction_line_id']);
+
+            TransactionLine::whereIn('id', $late->pluck('transaction_line_id'))->update(['matched' => false]);
+            ReconciliationEntry::whereIn('id', $late->pluck('id'))->delete();
+
+            $reconciliation->update(['date' => $date]);
+
+            return $this->syncTransactions($reconciliation->refresh());
+        });
+    }
+
     public function delete(Reconciliation $reconciliation): Reconciliation
     {
         return DB::transaction(function () use ($reconciliation): Reconciliation {
@@ -220,8 +258,9 @@ class ReconciliationService
                     'team_id' => $reconciliation->team_id,
                     'user_id' => $reconciliation->user_id,
                     'account_id' => $reconciliation->account_id,
-                    'payee_id' => 'new',
-                    'payee_label' => 'Loger adjustment',
+                    // The payee is resolved here instead of letting the journal create it from a `payee_label`: that
+                    // key (like `items`) is not a column, and outside production the model refuses unknown attributes.
+                    'payee_id' => Payee::findOrCreateByName(['team_id' => $reconciliation->team_id, 'user_id' => $reconciliation->user_id], 'Loger adjustment')->id,
                     'date' => Carbon::parse($reconciliation->date)->format('Y-m-d'),
                     'currency_code' => $reconciliation->account->currency_code,
                     'category_id' => Category::findOrCreateByName($reconciliation, BudgetReservedNames::READY_TO_ASSIGN->value),
@@ -229,7 +268,6 @@ class ReconciliationService
                     'direction' => $diff > 0 ? Transaction::DIRECTION_CREDIT : Transaction::DIRECTION_DEBIT,
                     'status' => Transaction::STATUS_VERIFIED,
                     'total' => abs($diff),
-                    'items' => [],
                 ]);
             }
 

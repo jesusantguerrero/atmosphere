@@ -372,6 +372,72 @@ class ShoppingSessionTest extends TestCase
         $this->assertNull($this->getJson("/api/mobile/shopping?plan={$plan->id}")->json('plan.visits.0.transaction'));
     }
 
+    // ── Fixing the store of a trip already saved ───────────────────────
+
+    public function test_the_store_of_a_saved_trip_can_be_added_and_the_trip_is_matched_again(): void
+    {
+        [$user, $plan, $stage] = $this->makeSetup();
+        Sanctum::actingAs($user);
+        $store = $this->makeStore($user, 'La Sirena');
+        $other = $this->makeStore($user, 'Nacional');
+        // The charge is already in, and the trip was saved without saying where.
+        $charge = $this->charge($user, 640, $store);
+        $visit = $this->finishTrip($plan, $stage, $user, 640)->json('visit');
+        $this->assertNull($visit['payee']);
+
+        $fixed = $this->patchJson("/api/mobile/shopping/{$plan->id}/visits/{$visit['id']}", ['payee_id' => $store->id])->assertOk()->json('visit');
+
+        $this->assertEquals('La Sirena', $fixed['payee']['name']);
+        // Without a store the trip was linked on amount and date alone: it keeps that charge, and a charge of
+        // another store is not accepted once the store is known.
+        $this->assertEquals($charge, $fixed['transaction']['id']);
+        $changed = $this->patchJson("/api/mobile/shopping/{$plan->id}/visits/{$visit['id']}", ['payee_id' => $other->id])->assertOk()->json('visit');
+        $this->assertEquals('Nacional', $changed['payee']['name']);
+        $this->assertNull($changed['transaction']);
+        $this->assertEquals('Nacional', $this->getJson("/api/mobile/shopping?plan={$plan->id}")->json('plan.visits.0.payee.name'));
+    }
+
+    public function test_adding_the_store_later_finds_the_charge_that_was_already_in(): void
+    {
+        [$user, $plan, $stage] = $this->makeSetup();
+        Sanctum::actingAs($user);
+        $store = $this->makeStore($user, 'La Sirena');
+        $elsewhere = $this->makeStore($user, 'Gasolinera');
+        // Two charges of the same amount on the same days: the amount alone cannot tell which one it was.
+        $this->charge($user, 900, $elsewhere);
+        $theOne = $this->charge($user, 900, $store);
+        $visit = $this->finishTrip($plan, $stage, $user, 900)->json('visit');
+        $this->assertNull($visit['transaction']);
+
+        $fixed = $this->patchJson("/api/mobile/shopping/{$plan->id}/visits/{$visit['id']}", ['payee_id' => $store->id])->assertOk()->json('visit');
+
+        $this->assertEquals($theOne, $fixed['transaction']['id']);
+    }
+
+    public function test_the_store_of_a_trip_can_be_cleared_and_only_with_a_real_store_of_the_team(): void
+    {
+        [$user, $plan, $stage] = $this->makeSetup();
+        Sanctum::actingAs($user);
+        $store = $this->makeStore($user, 'La Sirena');
+        $charge = $this->charge($user, 300, $store);
+        $visit = $this->finishTrip($plan, $stage, $user, 300, $store)->json('visit');
+        $this->assertEquals($charge, $visit['transaction']['id']);
+
+        $cleared = $this->patchJson("/api/mobile/shopping/{$plan->id}/visits/{$visit['id']}", ['payee_id' => null])->assertOk()->json('visit');
+        $this->assertNull($cleared['payee']);
+        $this->assertEquals($charge, $cleared['transaction']['id']); // clearing the store does not undo a link that was right
+
+        $stranger = $this->makeStore(User::factory()->withPersonalTeam()->create(), 'Not mine');
+        $this->patchJson("/api/mobile/shopping/{$plan->id}/visits/{$visit['id']}", ['payee_id' => $stranger->id])->assertStatus(422);
+        $this->patchJson("/api/mobile/shopping/{$plan->id}/visits/{$visit['id']}", [])->assertStatus(422); // the field must be sent
+        $this->patchJson("/api/mobile/shopping/{$plan->id}/visits/".\Illuminate\Support\Str::uuid(), ['payee_id' => $store->id])->assertNotFound();
+
+        $outsider = User::factory()->withPersonalTeam()->create();
+        $outsider->forceFill(['current_team_id' => $outsider->ownedTeams()->first()->id])->save();
+        Sanctum::actingAs($outsider->fresh());
+        $this->patchJson("/api/mobile/shopping/{$plan->id}/visits/{$visit['id']}", ['payee_id' => null])->assertForbidden();
+    }
+
     // ── Helpers for the trips ──────────────────────────────────────────
 
     private function makeStore(User $user, string $name): Payee
