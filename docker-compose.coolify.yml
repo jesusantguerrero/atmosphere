@@ -32,6 +32,9 @@ services:
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
   task:
+    build:
+      context: ./
+      dockerfile: coolify.Dockerfile
     image: freesgen/loger
     command: ["php", "/var/www/html/artisan", "schedule:work"]
     environment:
@@ -41,6 +44,9 @@ services:
     depends_on:
       - loger
   queue:
+    build:
+      context: ./
+      dockerfile: coolify.Dockerfile
     image: freesgen/loger
     command: ["php", "/var/www/html/artisan", "queue:work", "--tries=3"]
     environment:
