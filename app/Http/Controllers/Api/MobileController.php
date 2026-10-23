@@ -60,6 +60,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Insane\Journal\Events\TransactionCreated;
 use Insane\Journal\Models\Accounting\Reconciliation;
 use Insane\Journal\Models\Accounting\ReconciliationEntry;
 use Insane\Journal\Models\Core\AccountDetailType;
@@ -1299,6 +1300,8 @@ class MobileController extends Controller
 
             return $transaction;
         });
+
+        event(new TransactionCreated($transaction, $transaction->toArray()));
 
         return response()->json([
             'success' => true,
