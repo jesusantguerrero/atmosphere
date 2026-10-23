@@ -466,6 +466,26 @@ class ReconciliationCrudTest extends TestCase
 
     // ── Helpers ──────────────────────────────────────────────────────
 
+    public function test_adjusting_a_real_difference_books_the_plug_transaction_and_closes_it(): void
+    {
+        [$user, $account] = $this->makeSetupWithBalance(5000);
+        Sanctum::actingAs($user);
+        $id = $this->postJson("/api/mobile/accounts/{$account->id}/reconciliation", ['balance' => 4500, 'date' => '2026-10-18'])->json('reconciliation.id');
+
+        $this->putJson("/api/mobile/reconciliations/{$id}/adjustment", ['balance' => 4500])
+            ->assertOk()
+            ->assertJsonPath('status', 'completed')
+            ->assertJsonPath('difference', 0);
+
+        // The books now say what the statement says, through one "Loger adjustment" of the gap.
+        $plug = DB::table('transactions')->where('description', 'Loger adjustment')->first();
+        $this->assertNotNull($plug);
+        $this->assertEquals(500, $plug->total);
+        $this->assertEquals('2026-10-18', substr((string) $plug->date, 0, 10));
+        $this->assertEquals(4500, DB::table('transaction_lines')->where('account_id', $account->id)->sum(DB::raw('amount * type')));
+        $this->assertEquals('completed', DB::table('reconciliations')->find($id)->status);
+    }
+
     // ── What the app needs to reconcile like the web ────────────────────
 
     public function test_payload_carries_the_ledger_balance_and_the_matched_counts(): void
