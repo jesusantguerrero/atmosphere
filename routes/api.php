@@ -3,6 +3,7 @@
 use App\Domains\AppCore\Http\Controllers\ApiLoginController;
 use App\Http\Controllers\Api\DashboardApiController;
 use App\Http\Controllers\Api\MobileController;
+use App\Http\Controllers\Api\MobileProfileController;
 use App\Http\Controllers\Api\MultiCurrencyTransactionController;
 use App\Http\Controllers\RoutineController;
 use App\Http\Controllers\ShoppingListController;
@@ -50,6 +51,11 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
     // Session & profile
     Route::get('/me', [MobileController::class, 'me'])->name('me');
     Route::delete('/session', [MobileController::class, 'logout'])->name('session.destroy');
+    Route::patch('/me', [MobileProfileController::class, 'update'])->name('me.update');
+    Route::put('/me/password', [MobileProfileController::class, 'updatePassword'])->name('me.password.update');
+    Route::post('/me/confirm-password', [MobileProfileController::class, 'confirmPassword'])->name('me.password.confirm');
+    Route::get('/me/sessions', [MobileProfileController::class, 'sessions'])->name('me.sessions');
+    Route::delete('/me/sessions/others', [MobileProfileController::class, 'revokeOtherSessions'])->name('me.sessions.others.destroy');
 
     Route::get('/today', [MobileController::class, 'today'])->name('today');
     Route::get('/overview', [MobileController::class, 'overview'])->name('overview');
