@@ -79,6 +79,37 @@ class EventsCrudTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_an_event_is_stored_with_its_kind_and_the_calendar_returns_it(): void
+    {
+        [$user, $legacy] = $this->makeEvent();
+        Sanctum::actingAs($user);
+        $date = now()->format('Y-m-d');
+
+        $defaulted = $this->postJson('/api/mobile/events', ['name' => 'Dentist', 'date' => $date])->assertCreated();
+        $task = $this->postJson('/api/mobile/events', ['name' => 'Call the bank', 'date' => $date, 'kind' => 'task'])->assertCreated();
+
+        $this->assertSame('event', $defaulted->json('data.kind'));
+        $this->assertSame('task', $task->json('data.kind'));
+        $this->assertSame('task', Planner::find($task->json('data.id'))->kind);
+
+        $legacy->update(['date' => $date]);
+        $kinds = collect($this->getJson('/api/mobile/calendar?month='.now()->format('Y-m'))->assertOk()->json('events'))->pluck('kind', 'planner_id');
+
+        $this->assertSame('event', $kinds[$defaulted->json('data.id')]);
+        $this->assertSame('task', $kinds[$task->json('data.id')]);
+        $this->assertSame('task', $kinds[$legacy->id]); // rows from before kinds existed stay tasks
+    }
+
+    public function test_an_unknown_event_kind_is_rejected(): void
+    {
+        [$user] = $this->makeEvent();
+        Sanctum::actingAs($user);
+
+        $this->postJson('/api/mobile/events', ['name' => 'Party', 'date' => now()->format('Y-m-d'), 'kind' => 'party'])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('kind');
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────
 
     private function makeEvent(): array

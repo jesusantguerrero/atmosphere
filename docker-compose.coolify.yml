@@ -9,6 +9,12 @@ services:
     image: freesgen/loger
     container_name: loger-app
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
     volumes:
       - ./docker-compose/web/timezone:/etc/timezone
       - ./storage:/var/www/storage
@@ -32,6 +38,9 @@ services:
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
   task:
+    build:
+      context: ./
+      dockerfile: coolify.Dockerfile
     image: freesgen/loger
     command: ["php", "/var/www/html/artisan", "schedule:work"]
     environment:
@@ -39,11 +48,16 @@ services:
     volumes:
       - /var/.config/gcloud/loger/credentials.json:/var/www/credentials.json
     depends_on:
-      - loger
+      loger:
+        condition: service_healthy
   queue:
+    build:
+      context: ./
+      dockerfile: coolify.Dockerfile
     image: freesgen/loger
     command: ["php", "/var/www/html/artisan", "queue:work", "--tries=3"]
     environment:
       PHP_FPM_POOL_NAME: "loger_queue"
     depends_on:
-      - loger
+      loger:
+        condition: service_healthy

@@ -4,10 +4,10 @@ namespace Tests\Feature\Mobile;
 
 use App\Models\Account;
 use App\Models\User;
-use Insane\Journal\Models\Core\Payee;
 use App\Services\ShoppingListReviewService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
+use Insane\Journal\Models\Core\Payee;
 use Laravel\Sanctum\Sanctum;
 use Modules\Plan\Entities\PlanItem;
 use Modules\Plan\Entities\PlanTypes;
@@ -230,9 +230,9 @@ class ShoppingSessionTest extends TestCase
 
         $this->putJson("/api/mobile/shopping/{$listId}", ['name' => 'Farmacia 2'])->assertOk()->assertJsonPath('name', 'Farmacia 2');
 
-        $imported = $this->postJson('/api/mobile/shopping/import', ['name' => 'Fiesta', 'text' => "Bebidas
+        $imported = $this->postJson('/api/mobile/shopping/import', ['name' => 'Fiesta', 'text' => 'Bebidas
 - Ron
-- Hielo"])->assertCreated();
+- Hielo'])->assertCreated();
         $this->assertCount($before + 2, $imported->json('lists'));
 
         $this->deleteJson("/api/mobile/shopping/{$listId}")->assertOk()->assertJsonPath('deleted', true);
@@ -297,6 +297,57 @@ class ShoppingSessionTest extends TestCase
         $visit = $this->finishTrip($plan, $stage, $user, 980, $store)->json('visit');
 
         $this->assertEquals($charge, $visit['transaction']['id']);
+    }
+
+    public function test_editing_the_visit_payee_links_the_charge_that_was_waiting_for_it(): void
+    {
+        [$user, $plan, $stage] = $this->makeSetup();
+        Sanctum::actingAs($user);
+        $store = $this->makeStore($user, 'La Sirena');
+        $charge = $this->charge($user, 700, $store);
+        $visit = $this->finishTrip($plan, $stage, $user, 700, $this->makeStore($user, 'Wrong store'))->json('visit');
+        $this->assertNull($visit['transaction']);
+
+        $updated = $this->patchJson("/api/mobile/shopping/{$plan->id}/visits/{$visit['id']}", ['payee_id' => $store->id])
+            ->assertOk()
+            ->json('visit');
+
+        $this->assertEquals('La Sirena', $updated['payee']['name']);
+        $this->assertEquals($charge, $updated['transaction']['id']);
+    }
+
+    public function test_editing_the_visit_payee_can_clear_it_and_keeps_an_existing_link(): void
+    {
+        [$user, $plan, $stage] = $this->makeSetup();
+        Sanctum::actingAs($user);
+        $store = $this->makeStore($user, 'La Sirena');
+        $charge = $this->charge($user, 450, $store);
+        $visit = $this->finishTrip($plan, $stage, $user, 450, $store)->json('visit');
+
+        $updated = $this->patchJson("/api/mobile/shopping/{$plan->id}/visits/{$visit['id']}", ['payee_id' => null])
+            ->assertOk()
+            ->json('visit');
+
+        $this->assertNull($updated['payee']);
+        $this->assertEquals($charge, $updated['transaction']['id']);
+    }
+
+    public function test_editing_the_visit_payee_validates_and_guards_the_team(): void
+    {
+        [$user, $plan, $stage] = $this->makeSetup();
+        Sanctum::actingAs($user);
+        $visit = $this->finishTrip($plan, $stage, $user, 100)->json('visit');
+        $url = "/api/mobile/shopping/{$plan->id}/visits/{$visit['id']}";
+
+        $foreign = $this->makeStore(User::factory()->withPersonalTeam()->create(), 'Not mine');
+        $this->patchJson($url, ['payee_id' => $foreign->id])->assertStatus(422)->assertJsonValidationErrors('payee_id');
+        $this->patchJson($url, [])->assertStatus(422);
+        $this->patchJson("/api/mobile/shopping/{$plan->id}/visits/".Str::uuid(), ['payee_id' => null])->assertNotFound();
+
+        $other = User::factory()->withPersonalTeam()->create();
+        $other->forceFill(['current_team_id' => $other->ownedTeams()->first()->id])->save();
+        Sanctum::actingAs($other->fresh());
+        $this->patchJson($url, ['payee_id' => null])->assertForbidden();
     }
 
     public function test_only_a_charge_that_fits_the_amount_the_store_and_the_days_is_linked(): void
@@ -415,6 +466,72 @@ class ShoppingSessionTest extends TestCase
             'direction' => $direction,
             'payee_id' => $store->id,
         ])->assertStatus(201)->json('data.id');
+    }
+
+    public function test_an_item_moves_to_the_first_stage_of_another_list_taking_its_details_along(): void
+    {
+        [$user, $plan, $stage] = $this->makeSetup();
+        Sanctum::actingAs($user);
+        $destination = app(PlanService::class)->createPlanBoard($user->currentTeam, PlanTypes::SHOPPING_LIST, 'Pharmacy');
+        $firstStage = $destination->stages()->first();
+        $item = $this->addItem($plan, $stage, $user, 'Aspirin');
+        app(ShoppingListReviewService::class)->saveItemDetails($plan, $item, '2 boxes', 'No coating');
+
+        $this->patchJson("/api/mobile/shopping/{$plan->id}/items/{$item->id}", ['plan_id' => $destination->id])
+            ->assertOk()
+            ->assertJson(['id' => $item->id, 'plan_id' => $destination->id, 'stage_id' => $firstStage->id]);
+
+        $item->refresh();
+        $this->assertSame($destination->id, (int) $item->plan_id);
+        $this->assertSame($firstStage->id, (int) $item->stage_id);
+        $reviews = app(ShoppingListReviewService::class);
+        $this->assertSame(['quantity' => '2 boxes', 'note' => 'No coating'], $reviews->itemDetails($destination)[$item->id]);
+        $this->assertArrayNotHasKey($item->id, $reviews->itemDetails($plan));
+    }
+
+    public function test_an_item_can_move_to_a_chosen_stage_of_another_list(): void
+    {
+        [$user, $plan, $stage] = $this->makeSetup();
+        Sanctum::actingAs($user);
+        $destination = app(PlanService::class)->createPlanBoard($user->currentTeam, PlanTypes::SHOPPING_LIST, 'Pharmacy');
+        $chosen = $destination->stages()->create(['name' => 'Baby', 'order' => 99, 'user_id' => $user->id, 'team_id' => $destination->team_id]);
+        $item = $this->addItem($plan, $stage, $user, 'Diapers');
+
+        $this->patchJson("/api/mobile/shopping/{$plan->id}/items/{$item->id}", ['plan_id' => $destination->id, 'stage_id' => $chosen->id])
+            ->assertOk()
+            ->assertJson(['plan_id' => $destination->id, 'stage_id' => $chosen->id]);
+
+        $other = $this->addItem($plan, $stage, $user, 'Wipes');
+        $this->patchJson("/api/mobile/shopping/{$plan->id}/items/{$other->id}", ['plan_id' => $destination->id, 'stage_id' => $stage->id])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('stage_id');
+        $this->assertSame($plan->id, (int) $other->fresh()->plan_id);
+    }
+
+    public function test_an_item_cannot_move_to_a_list_of_another_team(): void
+    {
+        [$user, $plan, $stage] = $this->makeSetup();
+        $item = $this->addItem($plan, $stage, $user, 'Aspirin');
+        $stranger = User::factory()->withPersonalTeam()->create();
+        $foreign = app(PlanService::class)->createPlanBoard($stranger->ownedTeams()->first(), PlanTypes::SHOPPING_LIST, 'Not mine');
+        Sanctum::actingAs($user);
+
+        $this->patchJson("/api/mobile/shopping/{$plan->id}/items/{$item->id}", ['plan_id' => $foreign->id])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('plan_id');
+        $this->patchJson("/api/mobile/shopping/{$plan->id}/items/{$item->id}", ['plan_id' => 999999])->assertStatus(422);
+        $this->assertSame($plan->id, (int) $item->fresh()->plan_id);
+    }
+
+    public function test_renaming_an_item_still_works_and_reports_its_list(): void
+    {
+        [$user, $plan, $stage] = $this->makeSetup();
+        Sanctum::actingAs($user);
+        $item = $this->addItem($plan, $stage, $user, 'Milk');
+
+        $this->patchJson("/api/mobile/shopping/{$plan->id}/items/{$item->id}", ['title' => 'Oat milk'])
+            ->assertOk()
+            ->assertJson(['title' => 'Oat milk', 'plan_id' => $plan->id, 'stage_id' => $stage->id]);
     }
 
     public function test_team_isolation_on_sessions(): void

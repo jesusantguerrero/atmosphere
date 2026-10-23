@@ -31,12 +31,17 @@ use App\Domains\Today\Services\CalendarService;
 use App\Domains\Today\Services\TodayService;
 use App\Domains\Transaction\Data\ReconciliationParamsData;
 use App\Domains\Transaction\Models\Transaction;
-use App\Domains\Transaction\Services\TransactionSplits;
 use App\Domains\Transaction\Services\CreditCardReportService;
 use App\Domains\Transaction\Services\NextPaymentsService;
 use App\Domains\Transaction\Services\ReconciliationService;
 use App\Domains\Transaction\Services\TransactionService;
+use App\Domains\Transaction\Services\TransactionSplits;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DraftTransactionsRangeRequest;
+use App\Http\Requests\UpdateReconciliationRequest;
+use App\Http\Requests\UpdateShoppingItemRequest;
+use App\Http\Requests\UpdateShoppingVisitRequest;
+use App\Http\Resources\Mobile\MobileUserResource;
 use App\Http\Resources\PlannedMealResource;
 use App\Models\Account;
 use App\Models\Setting;
@@ -44,14 +49,17 @@ use App\Models\Team;
 use App\Models\User;
 use App\Services\ShoppingListReviewService;
 use App\Services\ShoppingVisitLinker;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Insane\Journal\Models\Accounting\Reconciliation;
 use Insane\Journal\Models\Accounting\ReconciliationEntry;
 use Insane\Journal\Models\Core\AccountDetailType;
@@ -916,6 +924,25 @@ class MobileController extends Controller
         return response()->json(['id' => $target->id, 'archived_at' => $target->archived_at]);
     }
 
+    /** Brings an archived target back, as long as the category has no live target taking its place. */
+    public function restoreBudgetTarget(Request $request, int $categoryId, int $targetId): JsonResponse
+    {
+        $category = Category::where('team_id', $request->user()->current_team_id)
+            ->whereNotNull('parent_id')
+            ->where('resource_type', 'transactions')
+            ->findOrFail($categoryId);
+
+        $target = BudgetTarget::archived()
+            ->where(['team_id' => $category->team_id, 'category_id' => $category->id])
+            ->findOrFail($targetId);
+
+        abort_if($category->budget()->exists(), 422, 'This category already has a target. Archive it before restoring another one.');
+
+        $target->forceFill(['archived_at' => null])->save();
+
+        return response()->json([...$this->formatTarget($target), 'archived_at' => null]);
+    }
+
     /** The category's archived targets, newest first: the history of what it used to aim for. */
     public function archivedBudgetTargets(Request $request, int $categoryId): JsonResponse
     {
@@ -997,9 +1024,13 @@ class MobileController extends Controller
         $monthEnd = Carbon::parse($monthStart)->endOfMonth()->format('Y-m-d');
         $limit = $validated['limit'] ?? 50;
 
-        $transactions = Transaction::with(['account', 'payee'])
+        $inThisCategory = fn ($lines) => $lines->where('category_id', $category->id);
+
+        $transactions = Transaction::with(['account', 'payee', 'splits' => $inThisCategory])
             ->where('team_id', $teamId)
-            ->where('category_id', $category->id)
+            ->where(fn (Builder $query) => $query
+                ->where('category_id', $category->id)
+                ->orWhereHas('splits', $inThisCategory))
             ->whereBetween('date', [$monthStart, $monthEnd])
             ->orderBy('date', 'desc')
             ->orderBy('id', 'desc')
@@ -1014,6 +1045,9 @@ class MobileController extends Controller
                 'date' => $t->date,
                 'direction' => $t->direction,
                 'status' => $t->status,
+                'has_splits' => (bool) $t->has_splits,
+                // For a split purchase only the line that falls in this category counts here, not the whole total.
+                'split_amount' => $t->has_splits && $t->splits->isNotEmpty() ? (float) $t->splits->sum('amount') : null,
                 'account' => $t->account ? ['id' => $t->account->id, 'name' => $t->account->name] : null,
                 'payee' => $t->payee ? ['name' => $t->payee->name] : null,
             ]),
@@ -1108,6 +1142,7 @@ class MobileController extends Controller
             'notes' => ['nullable', 'string', 'max:1000'],
             'total' => ['nullable', 'numeric', 'min:0'],
             'source' => ['nullable', 'string', 'max:100'],
+            'kind' => ['nullable', Rule::in([Planner::KIND_EVENT, Planner::KIND_TASK])],
         ]);
 
         $user = $request->user();
@@ -1121,6 +1156,7 @@ class MobileController extends Controller
             'notes' => $validated['notes'] ?? null,
             'total' => $validated['total'] ?? null,
             'source' => $validated['source'] ?? null,
+            'kind' => $validated['kind'] ?? Planner::KIND_EVENT,
             'status' => Planner::STATUS_PENDING,
         ]);
 
@@ -1130,6 +1166,7 @@ class MobileController extends Controller
                 'id' => $planner->id,
                 'name' => $planner->name,
                 'date' => $planner->date->format('Y-m-d'),
+                'kind' => $planner->kind,
                 'status' => $planner->status,
             ],
         ], 201);
@@ -2047,24 +2084,47 @@ class MobileController extends Controller
     /**
      * Update a shopping item (move to another stage, rename).
      */
-    public function updateShoppingItem(Request $request, Plan $plan, PlanItem $item): JsonResponse
+    /**
+     * Rename an item, change its category, or move it to another list of the team (`plan_id`): it lands in the
+     * first stage of the destination, or in `stage_id` when that is given.
+     */
+    public function updateShoppingItem(UpdateShoppingItemRequest $request, Plan $plan, PlanItem $item, ShoppingListReviewService $reviews): JsonResponse
     {
         abort_if((int) $plan->team_id !== (int) $request->user()->current_team_id, 403);
         abort_if($item->stage?->plan_id !== $plan->id, 404);
 
-        $data = $request->validate([
-            'title' => ['sometimes', 'string', 'max:255'],
-            'stage_id' => ['sometimes', 'integer'],
-        ]);
+        $data = $request->validated();
+        $destination = isset($data['plan_id']) && (int) $data['plan_id'] !== $plan->id ? Plan::findOrFail($data['plan_id']) : $plan;
 
-        if (isset($data['stage_id'])) {
-            abort_if(! $plan->stages()->where('id', $data['stage_id'])->exists(), 422);
+        if (isset($data['stage_id']) || $destination->isNot($plan)) {
+            $stage = isset($data['stage_id'])
+                ? $destination->stages()->where('id', $data['stage_id'])->first()
+                : $destination->stages()->first();
+
+            if (! $stage) {
+                throw ValidationException::withMessages(['stage_id' => 'La categoría no pertenece a la lista de destino.']);
+            }
+
+            $data['stage_id'] = $stage->id;
         }
 
-        $item->update($data);
+        if ($destination->isNot($plan)) {
+            $details = $reviews->itemDetails($plan)[$item->id] ?? null;
+            $data['order'] = ((int) $stage->items()->max('order')) + 1;
+
+            $item->update($data);
+            $reviews->unmarkReviewed($plan, $item);
+            if ($details) {
+                $reviews->saveItemDetails($plan, $item, '', '');
+                $reviews->saveItemDetails($destination, $item, $details['quantity'] ?? '', $details['note'] ?? '');
+            }
+        } else {
+            $item->update(Arr::except($data, ['plan_id']));
+        }
 
         return response()->json([
             'id' => $item->id,
+            'plan_id' => $item->plan_id,
             'title' => $item->title,
             'state' => $item->state,
             'stage_id' => $item->stage_id,
@@ -2148,6 +2208,25 @@ class MobileController extends Controller
         return response()->json(['shared' => false]);
     }
 
+    /**
+     * Change the store of a finished trip and, if no charge is linked yet, try to auto-link it again.
+     */
+    public function updateShoppingVisit(UpdateShoppingVisitRequest $request, Plan $plan, string $session, ShoppingListReviewService $reviews): JsonResponse
+    {
+        abort_if((int) $plan->team_id !== (int) $request->user()->current_team_id, 403);
+
+        $payeeId = $request->validated('payee_id');
+        $visit = $reviews->setVisitPayee($plan, $session, $payeeId === null ? null : (int) $payeeId);
+
+        if (empty($visit['transaction_id'])) {
+            app(ShoppingVisitLinker::class)->linkVisit($plan, $visit);
+        }
+
+        return response()->json([
+            'visit' => $reviews->decorate($plan->team_id, [$reviews->visit($plan, $session) ?? $visit])[0],
+        ]);
+    }
+
     // ─── Shopping sessions ──────────────────────────────────────
 
     /**
@@ -2229,6 +2308,39 @@ class MobileController extends Controller
         $transactionDelete->delete($request->user(), $transaction);
 
         return response()->json(['success' => true]);
+    }
+
+    /**
+     * Approve every draft of the team, optionally only those dated within start..end.
+     */
+    public function approveAllDrafts(DraftTransactionsRangeRequest $request): JsonResponse
+    {
+        $drafts = $this->draftsInRange($request)->get();
+
+        $drafts->each(fn (Transaction $transaction) => $transaction->approve());
+
+        return response()->json(['success' => true, 'approved' => $drafts->count()]);
+    }
+
+    /**
+     * Delete every draft of the team, optionally only those dated within start..end.
+     */
+    public function removeAllDrafts(DraftTransactionsRangeRequest $request, TransactionDelete $transactionDelete): JsonResponse
+    {
+        $drafts = $this->draftsInRange($request)->get();
+
+        $drafts->each(fn (Transaction $transaction) => $transactionDelete->delete($request->user(), $transaction));
+
+        return response()->json(['success' => true, 'deleted' => $drafts->count()]);
+    }
+
+    private function draftsInRange(DraftTransactionsRangeRequest $request): Builder
+    {
+        return Transaction::query()
+            ->where('team_id', $request->user()->current_team_id)
+            ->where('status', Transaction::STATUS_DRAFT)
+            ->when($request->validated('start'), fn (Builder $query, string $start) => $query->whereDate('date', '>=', $start))
+            ->when($request->validated('end'), fn (Builder $query, string $end) => $query->whereDate('date', '<=', $end));
     }
 
     /**
@@ -2674,7 +2786,7 @@ class MobileController extends Controller
     }
 
     /**
-     * Delete a pending reconciliation.
+     * Delete a reconciliation, pending or completed. Its transactions stay; they just stop being matched.
      */
     public function deleteReconciliation(
         Request $request,
@@ -2682,7 +2794,6 @@ class MobileController extends Controller
         ReconciliationService $service,
     ): JsonResponse {
         abort_if((int) $reconciliation->team_id !== (int) $request->user()->current_team_id, 403);
-        abort_if($reconciliation->status === Reconciliation::STATUS_COMPLETED, 422, 'Cannot delete completed reconciliation.');
 
         $service->delete($reconciliation);
 
@@ -2750,21 +2861,48 @@ class MobileController extends Controller
         return response()->json(['date' => $date, 'balance' => $service->balanceAsOf($account, $date)]);
     }
 
+    /** One reconciliation, pending or completed, with its entries enriched with the transaction they point to. */
+    public function showReconciliation(Request $request, Reconciliation $reconciliation, ReconciliationService $service): JsonResponse
+    {
+        abort_if((int) $reconciliation->team_id !== (int) $request->user()->current_team_id, 403);
+
+        return response()->json(['reconciliation' => $this->reconciliationPayload($reconciliation, $service, $this->enrichedReconciliationEntries($reconciliation))]);
+    }
+
+    /** Back to pending, nothing matched. Only the latest reconciliation of an account can be reopened. */
+    public function reopenReconciliation(Request $request, Reconciliation $reconciliation, ReconciliationService $service): JsonResponse
+    {
+        abort_if((int) $reconciliation->team_id !== (int) $request->user()->current_team_id, 403);
+        abort_if($reconciliation->status !== Reconciliation::STATUS_COMPLETED, 422, 'Only a completed reconciliation can be reopened.');
+        abort_if(! $service->isLatestOfAccount($reconciliation), 422, 'Only the most recent reconciliation of an account can be reopened.');
+
+        $service->reopen($reconciliation);
+
+        return response()->json(['reconciliation' => $this->reconciliationPayload($reconciliation->refresh(), $service, $this->enrichedReconciliationEntries($reconciliation))]);
+    }
+
     /**
-     * Correct the statement balance of a reconciliation in progress. Unlike the web's "Complete" this never closes
-     * it: it only moves `amount` and recomputes `difference`; the adjustment endpoint is what finishes it.
+     * Correct the statement balance and/or the date of a reconciliation in progress. Unlike the web's "Complete" this
+     * never closes it: the balance only moves `amount` and recomputes `difference`; the adjustment endpoint is what
+     * finishes it. A new date rebuilds the entries for that date range.
      */
-    public function updateReconciliation(Request $request, Reconciliation $reconciliation, ReconciliationService $service): JsonResponse
+    public function updateReconciliation(UpdateReconciliationRequest $request, Reconciliation $reconciliation, ReconciliationService $service): JsonResponse
     {
         abort_if((int) $reconciliation->team_id !== (int) $request->user()->current_team_id, 403);
         abort_if($reconciliation->status === Reconciliation::STATUS_COMPLETED, 422, 'A completed reconciliation cannot be edited.');
 
-        $validated = $request->validate(['balance' => ['required', 'numeric']]);
+        $validated = $request->validated();
 
-        $reconciliation->update([
-            'amount' => $validated['balance'],
-            'difference' => round($service->balanceAsOf($reconciliation->account, $reconciliation->date) - (float) $validated['balance'], 2),
-        ]);
+        if (isset($validated['balance'])) {
+            $reconciliation->update([
+                'amount' => $validated['balance'],
+                'difference' => round($service->balanceAsOf($reconciliation->account, $reconciliation->date) - (float) $validated['balance'], 2),
+            ]);
+        }
+
+        if (isset($validated['date']) && $validated['date'] !== Carbon::parse($reconciliation->date)->toDateString()) {
+            $service->changeDate($reconciliation, $validated['date']);
+        }
 
         return response()->json(['reconciliation' => $this->reconciliationPayload($reconciliation->refresh(), $service, $this->enrichedReconciliationEntries($reconciliation))]);
     }
@@ -3122,18 +3260,7 @@ class MobileController extends Controller
      */
     public function me(Request $request): JsonResponse
     {
-        $user = $request->user();
-
-        return response()->json([
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'profile_photo_url' => $user->profile_photo_url,
-            'has_password' => (bool) $user->password,
-            'auth_provider' => $user->google_id ? 'google' : ($user->apple_id ? 'apple' : null),
-            'language' => $user->language,
-            'current_team_id' => $user->current_team_id,
-        ]);
+        return response()->json(MobileUserResource::make($request->user()));
     }
 
     /**
