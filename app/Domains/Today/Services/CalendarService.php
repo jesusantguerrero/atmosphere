@@ -42,7 +42,7 @@ class CalendarService
                 'title' => $p->name ?: ($p->dateable_type ? class_basename($p->dateable_type) : 'Task'),
                 'start' => $p->date->format('Y-m-d'),
                 'end' => $p->end_date?->format('Y-m-d'),
-                'kind' => $p->dateable_type ? strtolower(class_basename($p->dateable_type)) : 'task',
+                'kind' => $p->dateable_type ? strtolower(class_basename($p->dateable_type)) : ($p->kind ?? Planner::KIND_TASK),
                 'status' => $p->status,
                 'total' => $p->total !== null ? (float) $p->total : null,
                 'source' => $p->source,

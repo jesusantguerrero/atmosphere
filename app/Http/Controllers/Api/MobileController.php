@@ -1141,6 +1141,7 @@ class MobileController extends Controller
             'notes' => ['nullable', 'string', 'max:1000'],
             'total' => ['nullable', 'numeric', 'min:0'],
             'source' => ['nullable', 'string', 'max:100'],
+            'kind' => ['nullable', Rule::in([Planner::KIND_EVENT, Planner::KIND_TASK])],
         ]);
 
         $user = $request->user();
@@ -1154,6 +1155,7 @@ class MobileController extends Controller
             'notes' => $validated['notes'] ?? null,
             'total' => $validated['total'] ?? null,
             'source' => $validated['source'] ?? null,
+            'kind' => $validated['kind'] ?? Planner::KIND_EVENT,
             'status' => Planner::STATUS_PENDING,
         ]);
 
@@ -1163,6 +1165,7 @@ class MobileController extends Controller
                 'id' => $planner->id,
                 'name' => $planner->name,
                 'date' => $planner->date->format('Y-m-d'),
+                'kind' => $planner->kind,
                 'status' => $planner->status,
             ],
         ], 201);
