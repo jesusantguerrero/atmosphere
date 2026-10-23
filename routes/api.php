@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\DashboardApiController;
 use App\Http\Controllers\Api\MobileController;
 use App\Http\Controllers\Api\MobilePreferencesController;
 use App\Http\Controllers\Api\MobileProfileController;
+use App\Http\Controllers\Api\MobileTeamController;
 use App\Http\Controllers\Api\MobileTwoFactorController;
 use App\Http\Controllers\Api\MultiCurrencyTransactionController;
 use App\Http\Controllers\RoutineController;
@@ -69,6 +70,12 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
     Route::put('/me/notification-preferences', [MobilePreferencesController::class, 'updateNotificationPreferences'])->name('me.notification-preferences.update');
     Route::get('/me/modules', [MobilePreferencesController::class, 'modules'])->name('me.modules');
     Route::put('/me/modules', [MobilePreferencesController::class, 'updateModules'])->name('me.modules.update');
+
+    Route::get('/team/members', [MobileTeamController::class, 'members'])->name('team.members');
+    Route::post('/team/invitations', [MobileTeamController::class, 'invite'])->name('team.invitations.store');
+    Route::delete('/team/invitations/{invitation}', [MobileTeamController::class, 'cancelInvitation'])->whereNumber('invitation')->name('team.invitations.destroy');
+    Route::put('/team/members/{user}', [MobileTeamController::class, 'updateRole'])->whereNumber('user')->name('team.members.update');
+    Route::delete('/team/members/{user}', [MobileTeamController::class, 'removeMember'])->whereNumber('user')->name('team.members.destroy');
 
     Route::get('/today', [MobileController::class, 'today'])->name('today');
     Route::get('/overview', [MobileController::class, 'overview'])->name('overview');
