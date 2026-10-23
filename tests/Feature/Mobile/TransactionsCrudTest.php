@@ -269,6 +269,32 @@ class TransactionsCrudTest extends TestCase
         Event::assertDispatched(TransactionCreated::class);
     }
 
+    public function test_transfer_fires_created_event(): void
+    {
+        [$user, $team, $account] = $this->makeSetup();
+        Sanctum::actingAs($user);
+
+        $toAccount = Account::create([
+            'team_id' => $team->id,
+            'user_id' => $user->id,
+            'name' => 'Savings',
+            'currency_code' => 'DOP',
+            'balance_type' => 'DEBIT',
+            'type' => 1,
+        ]);
+
+        Event::fake([TransactionCreated::class]);
+
+        $this->postJson('/api/mobile/transfers', [
+            'from_account_id' => $account->id,
+            'to_account_id' => $toAccount->id,
+            'total' => 1000,
+            'date' => '2026-10-20',
+        ])->assertCreated();
+
+        Event::assertDispatched(TransactionCreated::class);
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────
 
     // ── Lines: what balances, the budget and reconciliations are summed from ──
