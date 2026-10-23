@@ -10,6 +10,7 @@ use App\Domains\LogerProfile\Models\LogerProfile;
 use App\Domains\LogerProfile\Models\LogerProfileEntity;
 use App\Domains\Transaction\Models\TransactionLine;
 use App\Models\User;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class LogerProfileService
 {
@@ -23,8 +24,19 @@ class LogerProfileService
 
         return LogerProfile::unguarded(fn () => LogerProfile::query()->firstOrCreate($identity, [
             'user_id' => $user->id,
-            'name' => $user->name,
+            'name' => $user->name ?: 'Yo',
         ]));
+    }
+
+    public function collectionPage(int $teamId, string $search = '', string $sort = 'name'): LengthAwarePaginator
+    {
+        return LogerProfile::query()->where('team_id', $teamId)
+            ->when($search !== '', fn ($query) => $query->where('name', 'like', '%'.$search.'%'))
+            ->orderByRaw('CASE WHEN personal_user_id = ? THEN 0 ELSE 1 END', [auth()->id() ?? 0])
+            ->orderBy('name', $sort === 'name_desc' ? 'desc' : 'asc')
+            ->orderBy('id')
+            ->paginate(24, ['id', 'name', 'personal_user_id'])
+            ->withQueryString();
     }
 
     public function list($teamId)

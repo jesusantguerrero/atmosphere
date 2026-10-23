@@ -1,61 +1,90 @@
 <script setup lang="ts">
-import { onMounted, provide, computed, watch, reactive, ref, toRefs } from "vue";
+import {
+    onMounted,
+    provide,
+    computed,
+    watch,
+    reactive,
+    ref,
+    toRefs,
+} from "vue";
 import { router } from "@inertiajs/vue3";
 import Multiselect from "vue-multiselect";
-import { VueDraggableNext as Draggable } from "vue-draggable-next"
+import { VueDraggableNext as Draggable } from "vue-draggable-next";
 import { throttle } from "lodash";
-import { ElNotification } from 'element-plus';
-import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts';
+import { ElNotification } from "element-plus";
+import { useKeyboardShortcuts } from "@/composables/useKeyboardShortcuts";
 
 import ListView from "./views/List/ListView.vue";
 import MatrixView from "./views/matrix/MatrixBoard.vue";
 import FamilyView from "./views/FamilyView.vue";
 import ItemModal from "./ItemModal.vue";
 import AutomationModal from "../AutomationModal.vue";
-import BulkSelectionBar from '../BulkSelectionBar.vue';
+import BulkSelectionBar from "../BulkSelectionBar.vue";
 import KeyboardShortcutsHelp from "./KeyboardShortcutsHelp.vue";
 
 import BoardTitle from "./BoardTitle.vue";
-import BoardItemContainer from '@/Components/board/BoardItemContainer.vue';
+import BoardItemContainer from "@/Components/board/BoardItemContainer.vue";
 
-const emit = defineEmits(['search'])
-const props = withDefaults(defineProps<{
-    board: Object;
-    automations: boolean;
-    users: any[];
-    filters: Record<string, any>
-    multiStage: boolean;
-    resourceName: string;
-    layout: string;
-}>(), {
-    filters: () => ({
-        search: '',
-        done: '',
-        sort: ''
-    })
-});
+const emit = defineEmits(["search"]);
+const props = withDefaults(
+    defineProps<{
+        board: Object;
+        automations: boolean;
+        users: any[];
+        filters: Record<string, any>;
+        multiStage: boolean;
+        resourceName: string;
+        layout: string;
+    }>(),
+    {
+        filters: () => ({
+            search: "",
+            done: "",
+            sort: "",
+        }),
+    },
+);
 
-provide('users', props.users);
+provide("users", props.users);
+const relatedTaskProfiles = ref({});
+provide("relatedTaskProfiles", relatedTaskProfiles);
+watch(
+    () => props.board,
+    async (board) => {
+        if (!board?.id) return;
+        try {
+            const { data } = await axios.get(
+                route("profile-task-links.index"),
+                { params: { plan_id: board.id } },
+            );
+            relatedTaskProfiles.value = data.links;
+        } catch {
+            relatedTaskProfiles.value = {};
+        }
+    },
+    { immediate: true },
+);
 
 const views = {
-    list:{
+    list: {
         name: "list",
         title: "List",
         component: ListView,
-        icon: "fa fa-th-list"
+        icon: "fa fa-th-list",
     },
-    matrix:{
+    matrix: {
         name: "matrix",
         title: "Matrix",
         component: MatrixView,
-        icon: "fa fa-border-all"
+        icon: "fa fa-border-all",
     },
-    family:{
+    family: {
         name: "family",
         title: "Family",
         component: FamilyView,
-        icon: "fa fa-users"
-    }
+        icon: "fa fa-users",
+    },
 };
 
 const state = reactive({
@@ -66,51 +95,60 @@ const state = reactive({
     comments: [],
     contacts: [
         {
-            name: "Jesus Guerrero"
-        }
+            name: "Jesus Guerrero",
+        },
     ],
     searchOptions: {
         search: props.filters.search,
         done: props.filters.done,
-        sort: props.filters.sort
+        sort: props.filters.sort,
     },
     openedItem: {},
     isEditMode: false,
     isItemModalOpen: false,
-    isAutomationModalOpen: false
+    isAutomationModalOpen: false,
 });
 
-watch(() => props.layout, () => {
-    state.modeSelected = props.layout;
-});
+watch(
+    () => props.layout,
+    () => {
+        state.modeSelected = props.layout;
+    },
+);
 
-watch(state.searchOptions, throttle(() => {
-    let query = pickBy(state.searchOptions);
-    query = Object.keys(query).length ?  '?' + new URLSearchParams(pickBy(state.searchOptions)) : '';
-    emit('search', query)
-}, 200),{
-    deep: true,
-});
+watch(
+    state.searchOptions,
+    throttle(() => {
+        let query = pickBy(state.searchOptions);
+        query = Object.keys(query).length
+            ? "?" + new URLSearchParams(pickBy(state.searchOptions))
+            : "";
+        emit("search", query);
+    }, 200),
+    {
+        deep: true,
+    },
+);
 
 const containerComponent = computed(() => {
-    return views[state.modeSelected].component
+    return views[state.modeSelected].component;
 });
 
 const kanbanData = computed(() => {
     const statusField = props.board.fields.find(
-        field => field.name == "status"
+        (field) => field.name == "status",
     );
 
     if (statusField && props.board.stages.length) {
         const quadrants = {};
-        (props.board.labels ?? []).forEach(label => {
+        (props.board.labels ?? []).forEach((label) => {
             if (label.field_id == statusField.id) {
                 quadrants[label.name] = {
                     id: label.id,
                     fieldId: label.field_id,
                     attributes: label,
                     items: [],
-                    newTask: {}
+                    newTask: {},
                 };
             }
         });
@@ -118,19 +156,20 @@ const kanbanData = computed(() => {
         // Fallback bucket so items whose status has no matching label don't
         // crash this computed — it is bound (:kanban-data) for every non-list
         // view, so a throw here blanks the whole board, not just Kanban.
-        if (!quadrants['backlog']) {
-            quadrants['backlog'] = {
+        if (!quadrants["backlog"]) {
+            quadrants["backlog"] = {
                 id: null,
                 fieldId: statusField.id,
-                attributes: { name: 'backlog', color: 'gray' },
+                attributes: { name: "backlog", color: "gray" },
                 items: [],
-                newTask: {}
+                newTask: {},
             };
         }
 
-        props.board.stages.forEach(stage => {
-            (stage.items ?? []).forEach(item => {
-                const bucket = quadrants[item[statusField.name]] ?? quadrants['backlog'];
+        props.board.stages.forEach((stage) => {
+            (stage.items ?? []).forEach((item) => {
+                const bucket =
+                    quadrants[item[statusField.name]] ?? quadrants["backlog"];
                 bucket.items.push(item);
             });
         });
@@ -140,42 +179,52 @@ const kanbanData = computed(() => {
 });
 
 const viewsKeys = computed(() => {
-    return Object.values(views).map( view => view.name)
+    return Object.values(views).map((view) => view.name);
 });
 
 const selectedItems = computed(() => {
     return props.board.stages.reduce((selectedItems, stage) => {
-        selectedItems.push(...stage.items?.filter(item => item.selected) ?? [])
-        return selectedItems
-    }, [])
+        selectedItems.push(
+            ...(stage.items?.filter((item) => item.selected) ?? []),
+        );
+        return selectedItems;
+    }, []);
 });
 
 onMounted(() => {
-    window.document.onscroll = function() {
+    const taskId = new URLSearchParams(window.location.search).get("task");
+    const task = props.board.stages
+        .flatMap((stage) => stage.items ?? [])
+        .find((item) => String(item.id) === taskId);
+    if (task) openItem(task);
+    window.document.onscroll = function () {
         requestAnimationFrame(() => {
-            setStickyHeaders()
-        })
+            setStickyHeaders();
+        });
     };
 
     function setStickyHeaders() {
-        const tables = document.querySelectorAll(".ic-list")
+        const tables = document.querySelectorAll(".ic-list");
         tables.forEach((table, index) => {
-            const falseHeader = table.querySelectorAll('.false-header');
+            const falseHeader = table.querySelectorAll(".false-header");
 
-            if (window.pageYOffset >= (table.offsetTop - 60) && window.pageYOffset <= (table.offsetTop + table.offsetHeight - 157)) {
-                table.querySelectorAll('.sticky_header').forEach((header)=> {
-                    header.classList.add("sticky-active")
-                    falseHeader.forEach((fh) => fh.classList.add('active'))
-                    header.style.transform = `translate3d(0px, ${window.pageYOffset - table.offsetTop + 60}px, 1px)`
-                })
+            if (
+                window.pageYOffset >= table.offsetTop - 60 &&
+                window.pageYOffset <= table.offsetTop + table.offsetHeight - 157
+            ) {
+                table.querySelectorAll(".sticky_header").forEach((header) => {
+                    header.classList.add("sticky-active");
+                    falseHeader.forEach((fh) => fh.classList.add("active"));
+                    header.style.transform = `translate3d(0px, ${window.pageYOffset - table.offsetTop + 60}px, 1px)`;
+                });
             } else {
-                table.querySelectorAll('.sticky_header').forEach((header)=> {
-                    header.classList.remove("sticky-active")
-                    falseHeader.forEach((fh) => fh.classList.remove('active'))
-                    header.style.transform = ``
-                })
+                table.querySelectorAll(".sticky_header").forEach((header) => {
+                    header.classList.remove("sticky-active");
+                    falseHeader.forEach((fh) => fh.classList.remove("active"));
+                    header.style.transform = ``;
+                });
             }
-        })
+        });
     }
 });
 
@@ -191,9 +240,13 @@ const loadingStates = reactive({
 });
 
 // Provide to child components
-provide('loadingStates', loadingStates);
+provide("loadingStates", loadingStates);
 
-function addItem(item: Record<string, string>, stage: Record<string, string>, reload = true) {
+function addItem(
+    item: Record<string, string>,
+    stage: Record<string, string>,
+    reload = true,
+) {
     const method = item.id ? "PUT" : "POST";
     const param = item.id ? `/${item.id}` : "";
     const isUpdate = !!item.id;
@@ -211,36 +264,45 @@ function addItem(item: Record<string, string>, stage: Record<string, string>, re
     axios({
         url: `/housing/plans/${props.board.id}/items${param}`,
         method,
-        data: item
-    }).then(() => {
-        ElNotification({
-            title: 'Success',
-            message: isUpdate ? 'Task updated successfully' : 'Task created successfully',
-            type: 'success',
-            duration: 3000,
-        });
+        data: item,
+    })
+        .then(() => {
+            ElNotification({
+                title: "Success",
+                message: isUpdate
+                    ? "Task updated successfully"
+                    : "Task created successfully",
+                type: "success",
+                duration: 3000,
+            });
 
-        if (reload) {
-            // Match every other mutation path in this component: a plain reload
-            // re-renders fresh server state. preserveState kept the stale in-place
-            // mutated board.stages, so new items didn't show and users re-added
-            // them (duplicates).
-            router.reload({ preserveScroll: true });
-        }
-    }).catch((error) => {
-        ElNotification({
-            title: 'Error',
-            message: error.response?.data?.message || (isUpdate ? 'Failed to update task' : 'Failed to create task'),
-            type: 'error',
-            duration: 5000,
+            if (reload) {
+                // Match every other mutation path in this component: a plain reload
+                // re-renders fresh server state. preserveState kept the stale in-place
+                // mutated board.stages, so new items didn't show and users re-added
+                // them (duplicates).
+                router.reload({ preserveScroll: true });
+            }
+        })
+        .catch((error) => {
+            ElNotification({
+                title: "Error",
+                message:
+                    error.response?.data?.message ||
+                    (isUpdate
+                        ? "Failed to update task"
+                        : "Failed to create task"),
+                type: "error",
+                duration: 5000,
+            });
+        })
+        .finally(() => {
+            if (isUpdate) {
+                loadingStates.updatingItem = null;
+            } else {
+                loadingStates.addingItem = false;
+            }
         });
-    }).finally(() => {
-        if (isUpdate) {
-            loadingStates.updatingItem = null;
-        } else {
-            loadingStates.addingItem = false;
-        }
-    });
 }
 
 function addStage(stage = {}, reload = true) {
@@ -252,7 +314,7 @@ function addStage(stage = {}, reload = true) {
     return axios({
         url: `/api/stages${param}`,
         method,
-        data: stage
+        data: stage,
     }).then(({ data }) => {
         if (reload) {
             router.reload({ preserveScroll: true });
@@ -268,8 +330,8 @@ function updateBoardName(board = {}, reload = true) {
         url: `/api/plans${param}`,
         method,
         data: {
-            name: board.name
-        }
+            name: board.name,
+        },
     }).then(() => {
         if (reload) {
             router.reload({ preserveScroll: true });
@@ -280,13 +342,13 @@ function updateBoardName(board = {}, reload = true) {
 function runAutomation(automationId) {
     return axios({
         url: `/api/automations/${automationId}/run`,
-        method: "POST"
+        method: "POST",
     }).then(({ data }) => {
         this.$notify({
             type: "success",
             title: "Automation sync",
-            message: "Updated"
-        })
+            message: "Updated",
+        });
         router.reload({ preserveScroll: true });
     });
 }
@@ -295,15 +357,17 @@ function saveReorder() {
     if (loadingStates.reordering) return;
     loadingStates.reordering = true;
 
-    props.board.stages.forEach(async (stage: Record<string, string|number>, index: number) => {
-        stage.order = index;
-        await addStage(stage, false);
-    });
+    props.board.stages.forEach(
+        async (stage: Record<string, string | number>, index: number) => {
+            stage.order = index;
+            await addStage(stage, false);
+        },
+    );
 
     ElNotification({
-        title: 'Success',
-        message: 'Stages reordered successfully',
-        type: 'success',
+        title: "Success",
+        message: "Stages reordered successfully",
+        type: "success",
         duration: 3000,
     });
 
@@ -313,21 +377,23 @@ function saveReorder() {
 
 function toggleDone() {
     const nextValues = {
-        'with' : 'only',
-        'only' : '',
-        '' : 'with'
-    }
+        with: "only",
+        only: "",
+        "": "with",
+    };
 
     state.searchOptions.done = nextValues[state.searchOptions.done];
 }
 
 function pickBy(object) {
-    return object ? Object.entries(object).reduce((result, [key, value]) => {
-        if (value) {
-            result[key] = value;
-        }
-        return result;
-    }, {}) : {}
+    return object
+        ? Object.entries(object).reduce((result, [key, value]) => {
+              if (value) {
+                  result[key] = value;
+              }
+              return result;
+          }, {})
+        : {};
 }
 
 function sort(field) {
@@ -339,7 +405,7 @@ function sort(field) {
 }
 
 function clearSort() {
-    state.searchOptions.sort = ""
+    state.searchOptions.sort = "";
 }
 
 function openItem(item) {
@@ -358,30 +424,35 @@ function confirmDeleteItem(item, reload = true) {
 
             axios({
                 url: `/housing/plans/${props.board.id}/items/${item.id}`,
-                method: "delete"
-            }).then(() => {
-                ElNotification({
-                    title: 'Success',
-                    message: 'Task deleted successfully',
-                    type: 'success',
-                    duration: 3000,
-                });
+                method: "delete",
+            })
+                .then(() => {
+                    ElNotification({
+                        title: "Success",
+                        message: "Task deleted successfully",
+                        type: "success",
+                        duration: 3000,
+                    });
 
-                if (reload) {
-                    state.itemToDelete = false;
-                    router.reload({ preserveScroll: true });
-                }
-            }).catch((error) => {
-                ElNotification({
-                    title: 'Error',
-                    message: error.response?.data?.message || 'Failed to delete task',
-                    type: 'error',
-                    duration: 5000,
+                    if (reload) {
+                        state.itemToDelete = false;
+                        router.reload({ preserveScroll: true });
+                    }
+                })
+                .catch((error) => {
+                    ElNotification({
+                        title: "Error",
+                        message:
+                            error.response?.data?.message ||
+                            "Failed to delete task",
+                        type: "error",
+                        duration: 5000,
+                    });
+                })
+                .finally(() => {
+                    loadingStates.deletingItem = null;
                 });
-            }).finally(() => {
-                loadingStates.deletingItem = null;
-            });
-        }
+        },
     });
 }
 
@@ -394,24 +465,26 @@ function confirmDeleteItems(items, reload = true) {
             axios({
                 url: `/api/items/bulk/delete`,
                 method: "post",
-                data: items.map(item => item.id)
+                data: items.map((item) => item.id),
             }).then(() => {
                 router.reload({ preserveScroll: true });
             });
-        }
+        },
     });
 }
 
 const selectedStage = ref();
 const tasks = computed(() => {
-  return props.board.stages?.at?.(0)?.items
+    return props.board.stages?.at?.(0)?.items;
 });
 
 const inbox = computed(() => {
-const inbox = selectedStage.value
-    ? tasks.value.filter((task: Record<string, any>) => task.stage == selectedStage.value)
-    : tasks.value.filter((task: Record<string, any>) => task);
-  return inbox;
+    const inbox = selectedStage.value
+        ? tasks.value.filter(
+              (task: Record<string, any>) => task.stage == selectedStage.value,
+          )
+        : tasks.value.filter((task: Record<string, any>) => task);
+    return inbox;
 });
 
 const {
@@ -420,8 +493,8 @@ const {
     searchOptions,
     openedItem,
     isEditMode,
-    isItemModalOpen
-} = toRefs(state)
+    isItemModalOpen,
+} = toRefs(state);
 
 // Keyboard shortcuts
 const searchInputRef = ref<HTMLInputElement>();
@@ -437,7 +510,7 @@ const { isMac, modKey } = useKeyboardShortcuts({
         searchInputRef.value?.focus();
     },
     onToggleView: () => {
-        state.modeSelected = state.modeSelected === 'list' ? 'matrix' : 'list';
+        state.modeSelected = state.modeSelected === "list" ? "matrix" : "list";
     },
     onDelete: () => {
         if (selectedItems.value.length > 0) {
@@ -449,11 +522,11 @@ const { isMac, modKey } = useKeyboardShortcuts({
     },
     onHelp: () => {
         showHelpModal.value = true;
-    }
+    },
 });
 </script>
 
- <template>
+<template>
     <div class="px-8 pb-24">
         <header class="flex justify-between board__toolbar">
             <BoardTitle
@@ -474,19 +547,23 @@ const { isMac, modKey } = useKeyboardShortcuts({
                         :options="viewsKeys"
                         class="w-full"
                     >
-                     <template #singleLabel="{ option }">
-                         <span class="option__title">
+                        <template #singleLabel="{ option }">
+                            <span class="option__title">
                                 <i :class="views[option].icon" class="mr-2"></i>
                                 {{ $t(views[option].title) }}
                             </span>
-                    </template>
-                    <template #option="{ option }">
-                        <div class="option__desc">
-                            <span class="option__title"><i :class="views[option].icon" class="mr-2"></i>
-                                {{ $t(views[option].title) }}
-                            </span>
-                        </div>
-                    </template>
+                        </template>
+                        <template #option="{ option }">
+                            <div class="option__desc">
+                                <span class="option__title"
+                                    ><i
+                                        :class="views[option].icon"
+                                        class="mr-2"
+                                    ></i>
+                                    {{ $t(views[option].title) }}
+                                </span>
+                            </div>
+                        </template>
                     </multiselect>
                 </div>
                 <input
@@ -501,8 +578,9 @@ const { isMac, modKey } = useKeyboardShortcuts({
                 <span class="ml-2 toolbar-buttons">
                     <i class="fa fa-user"></i>
                 </span>
-                <span class="ml-2 toolbar-buttons"
-                    :class="{active: searchOptions.done}"
+                <span
+                    class="ml-2 toolbar-buttons"
+                    :class="{ active: searchOptions.done }"
                     @click="toggleDone()"
                     ><i class="fa fa-eye"></i
                 ></span>
@@ -513,7 +591,11 @@ const { isMac, modKey } = useKeyboardShortcuts({
                     <i class="fa fa-filter"></i>
                 </span>
 
-                <span class="ml-2 toolbar-buttons" :class="{active: searchOptions.sort}" @click="clearSort()">
+                <span
+                    class="ml-2 toolbar-buttons"
+                    :class="{ active: searchOptions.sort }"
+                    @click="clearSort()"
+                >
                     <i class="fa fa-sort"></i>
                 </span>
             </div>
@@ -559,14 +641,22 @@ const { isMac, modKey } = useKeyboardShortcuts({
                 :boards="[board]"
                 :tasks="inbox"
             >
-
                 <template #empty>
-                <div class="w-full mx-auto prose prose-xl text-center">
-                    <img src="../../../img/undraw_empty.svg" class="w-4/12 mx-auto" />
-                    <small class="mt-4 text-body-1/70">
-                    {{ $t('Nothing to do. Add new tasks from here or mark in your') }}
-                    <a href="#" @click="">boards</a> {{ $t('as todo') }}</small>
-                </div>
+                    <div class="w-full mx-auto prose prose-xl text-center">
+                        <img
+                            src="../../../img/undraw_empty.svg"
+                            class="w-4/12 mx-auto"
+                        />
+                        <small class="mt-4 text-body-1/70">
+                            {{
+                                $t(
+                                    "Nothing to do. Add new tasks from here or mark in your",
+                                )
+                            }}
+                            <a href="#" @click="">boards</a>
+                            {{ $t("as todo") }}</small
+                        >
+                    </div>
                 </template>
             </BoardItemContainer>
 
@@ -582,7 +672,10 @@ const { isMac, modKey } = useKeyboardShortcuts({
                 class="flex pt-5"
             />
 
-            <div class="flex justify-center w-full py-5" v-if="modeSelected == 'list' && multiStage">
+            <div
+                class="flex justify-center w-full py-5"
+                v-if="modeSelected == 'list' && multiStage"
+            >
                 <button
                     class="flex items-center justify-center w-8 h-8 px-2 text-purple-400 border-2 border-purple-400 rounded-full hover:bg-purple-400 hover:text-white"
                     @click="addStage()"
@@ -593,15 +686,15 @@ const { isMac, modKey } = useKeyboardShortcuts({
         </div>
 
         <ItemModal
-            @cancel="isItemModalOpen=false"
-            @saved="isItemModalOpen=false"
+            @cancel="isItemModalOpen = false"
+            @saved="isItemModalOpen = false"
             :record-data="openedItem"
             :is-open="isItemModalOpen"
         />
 
         <AutomationModal
-            @cancel="state.isAutomationModalOpen=false"
-            @saved="state.isAutomationModalOpen=false"
+            @cancel="state.isAutomationModalOpen = false"
+            @saved="state.isAutomationModalOpen = false"
             :record-data="{}"
             :board="board"
             :is-open="state.isAutomationModalOpen"
@@ -614,8 +707,6 @@ const { isMac, modKey } = useKeyboardShortcuts({
         />
     </div>
 </template>
-
-
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="scss">

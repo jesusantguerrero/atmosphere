@@ -16,7 +16,7 @@ const assert=require('node:assert/strict');
 const ts=require('typescript');
 const vue=require('vue');
 const {parse,compileTemplate}=require('@vue/compiler-sfc');
-for(const file of ['resources/js/Components/NotebookLiveEditor.vue','resources/js/Components/templates/AppShell.vue','resources/js/Components/molecules/AppNotificationBell.vue','resources/js/Components/NotebookInline.vue','resources/js/Components/NotebookReading.vue','resources/js/Pages/LogerProfile/WorkspacePreview.vue','resources/js/domains/logerProfile/ProfileGlyph.vue','resources/js/Pages/LogerProfile/Overview.vue','resources/js/Pages/LogerProfile/Index.vue','resources/js/Pages/LogerProfile/ProfileView.vue','resources/js/Components/templates/ProfilesPillarNav.vue','resources/js/Components/templates/AppLayout.vue','resources/js/Components/AppUserMenu.vue']) {
+for(const file of ['resources/js/Components/TaskProfileLinks.vue','resources/js/Components/board/ItemModal.vue','resources/js/Components/board/BoardSection.vue','resources/js/Components/board/views/FamilyView.vue','resources/js/Components/NotebookLiveEditor.vue','resources/js/Components/templates/AppShell.vue','resources/js/Components/molecules/AppNotificationBell.vue','resources/js/Components/NotebookInline.vue','resources/js/Components/NotebookReading.vue','resources/js/Pages/LogerProfile/WorkspacePreview.vue','resources/js/domains/logerProfile/ProfileGlyph.vue','resources/js/Pages/LogerProfile/Overview.vue','resources/js/Pages/LogerProfile/Index.vue','resources/js/Pages/LogerProfile/ProfileView.vue','resources/js/Components/templates/ProfilesPillarNav.vue','resources/js/Components/templates/AppLayout.vue','resources/js/Components/AppUserMenu.vue']) {
  const component=parse(fs.readFileSync(file,'utf8')).descriptor;
  assert.deepEqual(compileTemplate({source:component.template.content,filename:file,id:file}).errors,[]);
 }
@@ -47,6 +47,17 @@ let editedMarkdown;
 const editorContext={...vue,defineProps:()=>({modelValue:'# Title\n\n**First** paragraph\n\n- Item',disabled:false}),defineEmits:()=>((event,value)=>{editedMarkdown=value;})};
 vm.createContext(editorContext);vm.runInContext(ts.transpile(editorScript+'\nglobalThis.editorApi={pieces,active,update,finishBlock,blocks};',{target:ts.ScriptTarget.ES2020}),editorContext);
 const editorApi=editorContext.editorApi;assert.equal(editorApi.blocks.value.length,3);editorApi.active.value=2;editorApi.update({target:{value:'Changed\n\nNew paragraph'}});assert.equal(editedMarkdown,'# Title\n\nChanged\n\nNew paragraph\n\n- Item');editorApi.finishBlock();assert.equal(editorApi.blocks.value.length,4);assert.equal(editorApi.active.value,null);
+const indexDescriptor=parse(fs.readFileSync('resources/js/Pages/LogerProfile/Index.vue','utf8')).descriptor;
+const indexScript=indexDescriptor.scriptSetup.content.replace(/^import[\s\S]*?from\s+['"][^'"]+['"];\r?\n/gm,'');
+for(const count of [0,1,4,20,100]) {
+ const data=Array.from({length:Math.min(count,24)},(_,i)=>({id:i+1,name:'Profile '+i,personal_user_id:i===0?12:null}));
+ let requestCount=0;
+ const indexContext={...vue,onMounted:()=>{},onBeforeUnmount:()=>{},usePage:()=>({props:{auth:{user:{id:12}}}}),defineProps:()=>({profiles:{data,total:count,current_page:1,last_page:Math.ceil(count/24)},profileCount:count,filters:{search:'',sort:'name'}}),router:{get:()=>{requestCount++;},reload:()=>{}},route:()=>'/loger-profiles'};
+ vm.createContext(indexContext);vm.runInContext(ts.transpile(indexScript+'\nglobalThis.indexApi={visibleProfiles,showTools,search,sort,searchProfiles,clearSearch};',{target:ts.ScriptTarget.ES2020}),indexContext);
+ const api=indexContext.indexApi;assert.equal(api.visibleProfiles.value.length,Math.min(count,24));assert.equal(api.showTools.value,count>=8);api.search.value='missing';
+ if(count<=24){assert.equal(api.visibleProfiles.value.length,0);api.searchProfiles();assert.equal(requestCount,0);}else{api.searchProfiles();assert.equal(requestCount,1);}
+ api.clearSearch();assert.equal(api.visibleProfiles.value.length,Math.min(count,24));
+}
 const navSource=fs.readFileSync('resources/js/domains/app/index.ts','utf8').replace(/^import[^\n]+\r?\n/gm,'').replace(/^export \* from[^\n]+\r?\n/gm,'');
 const nav={exports:{},Link:{},IconPlus:{},IconTransferVue:{},cloneDeep:value=>value};
 vm.runInNewContext(ts.transpile(navSource,{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020}),nav);

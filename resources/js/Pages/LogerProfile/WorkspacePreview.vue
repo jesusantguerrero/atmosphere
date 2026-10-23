@@ -11,6 +11,7 @@ import axios from "axios";
 import { router } from "@inertiajs/vue3";
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import ProfilesPillarNav from "@/Components/templates/ProfilesPillarNav.vue";
+import TaskProfileLinks from "@/Components/TaskProfileLinks.vue";
 import NotebookLiveEditor from "@/Components/NotebookLiveEditor.vue";
 import NotebookReading from "@/Components/NotebookReading.vue";
 import Modal from "@/Components/atoms/Modal.vue";
@@ -940,6 +941,10 @@ const setTab = (id: string) => {
                                 placeholder="Añadir fecha y hora"
                                 class="workspace-input"
                         /></label>
+                        <TaskProfileLinks
+                            v-if="selectedPage.kind === 'task'"
+                            :task-id="selectedPage.id"
+                        />
                         <NotebookReading
                             v-if="!editingPage && selectedPage.body.trim()"
                             :content="selectedPage.body"
@@ -1164,7 +1169,13 @@ const setTab = (id: string) => {
                                             ? 'text-body-1/35 line-through'
                                             : 'text-body-1/80'
                                     "
-                                    >{{ page.title }}</span
+                                    >{{ page.title
+                                    }}<a
+                                        v-if="page.source_url"
+                                        :href="page.source_url"
+                                        class="ml-2 inline-block min-h-[24px] text-xs text-primary underline"
+                                        >Abrir tarea</a
+                                    ></span
                                 ></label
                             >
                         </div>

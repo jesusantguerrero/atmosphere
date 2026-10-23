@@ -3,9 +3,13 @@
 use App\Domains\LogerProfile\Http\Controllers\LogerProfileController;
 use App\Domains\LogerProfile\Http\Controllers\LogerProfileEntityController;
 use App\Domains\LogerProfile\Http\Controllers\ProfileWorkspaceController;
+use App\Http\Controllers\TaskProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', 'loger.concerns:profiles'])->group(function () {
+    Route::get('/profile-task-links', [TaskProfileController::class, 'index'])->name('profile-task-links.index');
+    Route::get('/profile-task-links/{itemId}', [TaskProfileController::class, 'show'])->name('profile-task-links.show');
+    Route::put('/profile-task-links/{itemId}', [TaskProfileController::class, 'update'])->name('profile-task-links.update');
     Route::get('/loger-profiles/overview', [LogerProfileController::class, 'workspaceOverview'])->name('loger-profiles.overview');
     Route::get('/loger-profiles/{profileId}/preview', [ProfileWorkspaceController::class, 'show'])->name('loger-profiles.preview');
     Route::prefix('/loger-profiles/{profileId}/workspace')->name('profile-workspace.')->controller(ProfileWorkspaceController::class)->group(function () {

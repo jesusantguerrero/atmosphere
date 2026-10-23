@@ -51,6 +51,19 @@ class ProfileWorkspaceService
         })->all();
     }
 
+    public function setTaskProfiles(PlanItem $task, array $profileIds): void
+    {
+        $task->getConnection()->transaction(function () use ($task, $profileIds): void {
+            $profiles = LogerProfile::query()->where('team_id', $task->team_id)->whereIn('id', $profileIds)->get();
+            abort_unless($profiles->count() === count(array_unique($profileIds)), 422);
+            PlanItem::query()->without(['fields', 'checklist'])->whereKey($task->id)->lockForUpdate()->firstOrFail();
+            LogerProfileEntity::query()->without('entity')->where('team_id', $task->team_id)->where('entity_type', PlanItem::class)->where('entity_id', $task->id)->whereNotIn('profile_id', $profileIds)->delete();
+            foreach ($profiles as $profile) {
+                $this->link($profile, $task, 'task');
+            }
+        });
+    }
+
     public function links(LogerProfile $profile): Collection
     {
         return LogerProfileEntity::query()->without('entity')->where('team_id', $profile->team_id)->where('profile_id', $profile->id)->get();
@@ -192,6 +205,7 @@ class ProfileWorkspaceService
             'body' => $values->get('description')?->value ?? '',
             'kind' => $values->get('page_kind')?->value ?? ($task ? 'task' : 'note'),
             'when' => $values->get('date')?->value ?? null,
+            'source_url' => route('plans.show', ['plan' => $item->plan_id], false).'?task='.$item->id,
         ];
     }
 

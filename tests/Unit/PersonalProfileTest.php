@@ -44,4 +44,29 @@ class PersonalProfileTest extends TestCase
         $this->assertNull($namesake->fresh()->personal_user_id);
         $this->assertSame(4, LogerProfile::query()->count());
     }
+
+    public function test_collection_is_team_scoped_paginated_searchable_and_personal_first(): void
+    {
+        $user = new User;
+        $user->forceFill(['id' => 12, 'name' => 'Zoe', 'current_team_id' => 30]);
+        $this->actingAs($user);
+        $service = new LogerProfileService;
+        $personal = $service->ensurePersonalProfile($user);
+        for ($index = 0; $index < 60; $index++) {
+            LogerProfile::query()->create(['team_id' => 30, 'user_id' => 12, 'name' => sprintf('Profile %02d', $index)]);
+        }
+        LogerProfile::query()->create(['team_id' => 31, 'user_id' => 12, 'name' => 'Foreign Profile']);
+        $page = $service->collectionPage(30);
+        $this->assertSame(61, $page->total());
+        $this->assertSame(24, $page->count());
+        $this->assertSame($personal->id, $page->items()[0]->id);
+        $this->assertSame(3, $page->lastPage());
+        $matches = $service->collectionPage(30, 'Profile 02');
+        $this->assertSame(1, $matches->total());
+        $this->assertSame('Profile 02', $matches->items()[0]->name);
+        $this->assertSame(0, $service->collectionPage(30, 'Foreign')->total());
+        $descending = $service->collectionPage(30, '', 'name_desc');
+        $this->assertSame($personal->id, $descending->items()[0]->id);
+        $this->assertSame('Profile 59', $descending->items()[1]->name);
+    }
 }

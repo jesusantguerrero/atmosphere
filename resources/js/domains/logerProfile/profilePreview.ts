@@ -7,6 +7,7 @@ export type ProfilePage = {
     kind: PageKind;
     done: boolean;
     when?: string;
+    source_url?: string;
 };
 export type ProfileStage = { id: string; name: string; items: ProfilePage[] };
 export type ProfileBoard = {
