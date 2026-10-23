@@ -41,6 +41,7 @@ use App\Http\Requests\DraftTransactionsRangeRequest;
 use App\Http\Requests\UpdateReconciliationRequest;
 use App\Http\Requests\UpdateShoppingItemRequest;
 use App\Http\Requests\UpdateShoppingVisitRequest;
+use App\Http\Resources\Mobile\MobileUserResource;
 use App\Http\Resources\PlannedMealResource;
 use App\Models\Account;
 use App\Models\Setting;
@@ -3259,18 +3260,7 @@ class MobileController extends Controller
      */
     public function me(Request $request): JsonResponse
     {
-        $user = $request->user();
-
-        return response()->json([
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'profile_photo_url' => $user->profile_photo_url,
-            'has_password' => (bool) $user->password,
-            'auth_provider' => $user->google_id ? 'google' : ($user->apple_id ? 'apple' : null),
-            'language' => $user->language,
-            'current_team_id' => $user->current_team_id,
-        ]);
+        return response()->json(MobileUserResource::make($request->user()));
     }
 
     /**

@@ -3,6 +3,10 @@
 use App\Domains\AppCore\Http\Controllers\ApiLoginController;
 use App\Http\Controllers\Api\DashboardApiController;
 use App\Http\Controllers\Api\MobileController;
+use App\Http\Controllers\Api\MobilePreferencesController;
+use App\Http\Controllers\Api\MobileProfileController;
+use App\Http\Controllers\Api\MobileTeamController;
+use App\Http\Controllers\Api\MobileTwoFactorController;
 use App\Http\Controllers\Api\MultiCurrencyTransactionController;
 use App\Http\Controllers\RoutineController;
 use App\Http\Controllers\ShoppingListController;
@@ -50,6 +54,28 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
     // Session & profile
     Route::get('/me', [MobileController::class, 'me'])->name('me');
     Route::delete('/session', [MobileController::class, 'logout'])->name('session.destroy');
+    Route::patch('/me', [MobileProfileController::class, 'update'])->name('me.update');
+    Route::put('/me/password', [MobileProfileController::class, 'updatePassword'])->middleware('throttle:10,1')->name('me.password.update');
+    Route::post('/me/confirm-password', [MobileProfileController::class, 'confirmPassword'])->middleware('throttle:10,1')->name('me.password.confirm');
+    Route::get('/me/sessions', [MobileProfileController::class, 'sessions'])->name('me.sessions');
+    Route::delete('/me/sessions/others', [MobileProfileController::class, 'revokeOtherSessions'])->middleware('throttle:10,1')->name('me.sessions.others.destroy');
+
+    Route::post('/me/two-factor', [MobileTwoFactorController::class, 'enable'])->middleware('throttle:10,1')->name('me.two-factor.enable');
+    Route::post('/me/two-factor/confirm', [MobileTwoFactorController::class, 'confirm'])->middleware('throttle:6,1')->name('me.two-factor.confirm');
+    Route::get('/me/two-factor/recovery-codes', [MobileTwoFactorController::class, 'recoveryCodes'])->name('me.two-factor.recovery-codes');
+    Route::post('/me/two-factor/recovery-codes', [MobileTwoFactorController::class, 'regenerateRecoveryCodes'])->name('me.two-factor.recovery-codes.regenerate');
+    Route::delete('/me/two-factor', [MobileTwoFactorController::class, 'disable'])->middleware('throttle:10,1')->name('me.two-factor.disable');
+
+    Route::get('/me/notification-preferences', [MobilePreferencesController::class, 'notificationPreferences'])->name('me.notification-preferences');
+    Route::put('/me/notification-preferences', [MobilePreferencesController::class, 'updateNotificationPreferences'])->name('me.notification-preferences.update');
+    Route::get('/me/modules', [MobilePreferencesController::class, 'modules'])->name('me.modules');
+    Route::put('/me/modules', [MobilePreferencesController::class, 'updateModules'])->name('me.modules.update');
+
+    Route::get('/team/members', [MobileTeamController::class, 'members'])->name('team.members');
+    Route::post('/team/invitations', [MobileTeamController::class, 'invite'])->name('team.invitations.store');
+    Route::delete('/team/invitations/{invitation}', [MobileTeamController::class, 'cancelInvitation'])->whereNumber('invitation')->name('team.invitations.destroy');
+    Route::put('/team/members/{user}', [MobileTeamController::class, 'updateRole'])->whereNumber('user')->name('team.members.update');
+    Route::delete('/team/members/{user}', [MobileTeamController::class, 'removeMember'])->whereNumber('user')->name('team.members.destroy');
 
     Route::get('/today', [MobileController::class, 'today'])->name('today');
     Route::get('/overview', [MobileController::class, 'overview'])->name('overview');
