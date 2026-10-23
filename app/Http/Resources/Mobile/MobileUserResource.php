@@ -28,6 +28,7 @@ class MobileUserResource extends JsonResource
             'language' => $this->language,
             'current_team_id' => $this->current_team_id,
             'two_factor_enabled' => $this->hasEnabledTwoFactorAuthentication(),
+            'two_factor_confirmed' => filled($this->two_factor_secret) && $this->two_factor_confirmed_at !== null,
         ];
     }
 }

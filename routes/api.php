@@ -4,6 +4,7 @@ use App\Domains\AppCore\Http\Controllers\ApiLoginController;
 use App\Http\Controllers\Api\DashboardApiController;
 use App\Http\Controllers\Api\MobileController;
 use App\Http\Controllers\Api\MobileProfileController;
+use App\Http\Controllers\Api\MobileTwoFactorController;
 use App\Http\Controllers\Api\MultiCurrencyTransactionController;
 use App\Http\Controllers\RoutineController;
 use App\Http\Controllers\ShoppingListController;
@@ -52,10 +53,16 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
     Route::get('/me', [MobileController::class, 'me'])->name('me');
     Route::delete('/session', [MobileController::class, 'logout'])->name('session.destroy');
     Route::patch('/me', [MobileProfileController::class, 'update'])->name('me.update');
-    Route::put('/me/password', [MobileProfileController::class, 'updatePassword'])->name('me.password.update');
-    Route::post('/me/confirm-password', [MobileProfileController::class, 'confirmPassword'])->name('me.password.confirm');
+    Route::put('/me/password', [MobileProfileController::class, 'updatePassword'])->middleware('throttle:10,1')->name('me.password.update');
+    Route::post('/me/confirm-password', [MobileProfileController::class, 'confirmPassword'])->middleware('throttle:10,1')->name('me.password.confirm');
     Route::get('/me/sessions', [MobileProfileController::class, 'sessions'])->name('me.sessions');
-    Route::delete('/me/sessions/others', [MobileProfileController::class, 'revokeOtherSessions'])->name('me.sessions.others.destroy');
+    Route::delete('/me/sessions/others', [MobileProfileController::class, 'revokeOtherSessions'])->middleware('throttle:10,1')->name('me.sessions.others.destroy');
+
+    Route::post('/me/two-factor', [MobileTwoFactorController::class, 'enable'])->middleware('throttle:10,1')->name('me.two-factor.enable');
+    Route::post('/me/two-factor/confirm', [MobileTwoFactorController::class, 'confirm'])->middleware('throttle:6,1')->name('me.two-factor.confirm');
+    Route::get('/me/two-factor/recovery-codes', [MobileTwoFactorController::class, 'recoveryCodes'])->name('me.two-factor.recovery-codes');
+    Route::post('/me/two-factor/recovery-codes', [MobileTwoFactorController::class, 'regenerateRecoveryCodes'])->name('me.two-factor.recovery-codes.regenerate');
+    Route::delete('/me/two-factor', [MobileTwoFactorController::class, 'disable'])->middleware('throttle:10,1')->name('me.two-factor.disable');
 
     Route::get('/today', [MobileController::class, 'today'])->name('today');
     Route::get('/overview', [MobileController::class, 'overview'])->name('overview');
