@@ -39,6 +39,7 @@ use App\Domains\Transaction\Services\TransactionSplits;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DraftTransactionsRangeRequest;
 use App\Http\Requests\UpdateReconciliationRequest;
+use App\Http\Requests\UpdateShoppingItemRequest;
 use App\Http\Requests\UpdateShoppingVisitRequest;
 use App\Http\Resources\PlannedMealResource;
 use App\Models\Account;
@@ -50,12 +51,14 @@ use App\Services\ShoppingVisitLinker;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Insane\Journal\Models\Accounting\Reconciliation;
 use Insane\Journal\Models\Accounting\ReconciliationEntry;
 use Insane\Journal\Models\Core\AccountDetailType;
@@ -2077,24 +2080,47 @@ class MobileController extends Controller
     /**
      * Update a shopping item (move to another stage, rename).
      */
-    public function updateShoppingItem(Request $request, Plan $plan, PlanItem $item): JsonResponse
+    /**
+     * Rename an item, change its category, or move it to another list of the team (`plan_id`): it lands in the
+     * first stage of the destination, or in `stage_id` when that is given.
+     */
+    public function updateShoppingItem(UpdateShoppingItemRequest $request, Plan $plan, PlanItem $item, ShoppingListReviewService $reviews): JsonResponse
     {
         abort_if((int) $plan->team_id !== (int) $request->user()->current_team_id, 403);
         abort_if($item->stage?->plan_id !== $plan->id, 404);
 
-        $data = $request->validate([
-            'title' => ['sometimes', 'string', 'max:255'],
-            'stage_id' => ['sometimes', 'integer'],
-        ]);
+        $data = $request->validated();
+        $destination = isset($data['plan_id']) && (int) $data['plan_id'] !== $plan->id ? Plan::findOrFail($data['plan_id']) : $plan;
 
-        if (isset($data['stage_id'])) {
-            abort_if(! $plan->stages()->where('id', $data['stage_id'])->exists(), 422);
+        if (isset($data['stage_id']) || $destination->isNot($plan)) {
+            $stage = isset($data['stage_id'])
+                ? $destination->stages()->where('id', $data['stage_id'])->first()
+                : $destination->stages()->first();
+
+            if (! $stage) {
+                throw ValidationException::withMessages(['stage_id' => 'La categoría no pertenece a la lista de destino.']);
+            }
+
+            $data['stage_id'] = $stage->id;
         }
 
-        $item->update($data);
+        if ($destination->isNot($plan)) {
+            $details = $reviews->itemDetails($plan)[$item->id] ?? null;
+            $data['order'] = ((int) $stage->items()->max('order')) + 1;
+
+            $item->update($data);
+            $reviews->unmarkReviewed($plan, $item);
+            if ($details) {
+                $reviews->saveItemDetails($plan, $item, '', '');
+                $reviews->saveItemDetails($destination, $item, $details['quantity'] ?? '', $details['note'] ?? '');
+            }
+        } else {
+            $item->update(Arr::except($data, ['plan_id']));
+        }
 
         return response()->json([
             'id' => $item->id,
+            'plan_id' => $item->plan_id,
             'title' => $item->title,
             'state' => $item->state,
             'stage_id' => $item->stage_id,
