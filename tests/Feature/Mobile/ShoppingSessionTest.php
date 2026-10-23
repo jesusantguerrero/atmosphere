@@ -2,7 +2,9 @@
 
 namespace Tests\Feature\Mobile;
 
+use App\Models\Account;
 use App\Models\User;
+use Insane\Journal\Models\Core\Payee;
 use App\Services\ShoppingListReviewService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
@@ -215,6 +217,204 @@ class ShoppingSessionTest extends TestCase
         // Most recent first
         $this->assertEquals('200.00', $visits[0]['total']);
         $this->assertEquals('100.00', $visits[1]['total']);
+    }
+
+    public function test_lists_can_be_created_renamed_imported_and_deleted(): void
+    {
+        [$user, $plan] = $this->makeSetup();
+        Sanctum::actingAs($user);
+
+        $created = $this->postJson('/api/mobile/shopping/lists', ['name' => 'Farmacia'])->assertCreated();
+        $listId = $created->json('activeListId');
+        $before = count($created->json('lists')) - 1;
+
+        $this->putJson("/api/mobile/shopping/{$listId}", ['name' => 'Farmacia 2'])->assertOk()->assertJsonPath('name', 'Farmacia 2');
+
+        $imported = $this->postJson('/api/mobile/shopping/import', ['name' => 'Fiesta', 'text' => "Bebidas
+- Ron
+- Hielo"])->assertCreated();
+        $this->assertCount($before + 2, $imported->json('lists'));
+
+        $this->deleteJson("/api/mobile/shopping/{$listId}")->assertOk()->assertJsonPath('deleted', true);
+        $this->assertDatabaseMissing('plans', ['id' => $listId]);
+    }
+
+    public function test_lists_of_another_team_cannot_be_changed(): void
+    {
+        [$user, $plan] = $this->makeSetup();
+        $other = User::factory()->withPersonalTeam()->create();
+        $other->forceFill(['current_team_id' => $other->ownedTeams()->first()->id])->save();
+        Sanctum::actingAs($other->fresh());
+
+        $this->putJson("/api/mobile/shopping/{$plan->id}", ['name' => 'Mine now'])->assertForbidden();
+        $this->deleteJson("/api/mobile/shopping/{$plan->id}")->assertForbidden();
+        $this->assertDatabaseHas('plans', ['id' => $plan->id, 'name' => 'Test Shopping List']);
+    }
+
+    // ── The trip and the card charge that paid for it ─────────────────────
+
+    public function test_a_finished_trip_remembers_the_store_it_was_at(): void
+    {
+        [$user, $plan, $stage] = $this->makeSetup();
+        Sanctum::actingAs($user);
+        $store = $this->makeStore($user, 'La Sirena');
+
+        $visit = $this->finishTrip($plan, $stage, $user, 1250.50, $store)->json('visit');
+
+        $this->assertEquals($store->id, $visit['payee']['id']);
+        $this->assertEquals('La Sirena', $visit['payee']['name']);
+        $this->assertNull($visit['transaction']);
+        $this->assertEquals('La Sirena', $this->getJson("/api/mobile/shopping?plan={$plan->id}")->json('plan.visits.0.payee.name'));
+
+        $other = User::factory()->withPersonalTeam()->create();
+        $foreign = $this->makeStore($other, 'Not mine');
+        [$sid] = $this->startTrip($plan, $stage, $user, 'Eggs');
+        $this->postJson("/api/mobile/shopping/{$plan->id}/sessions/finish", ['session_id' => $sid, 'total' => 10, 'currency' => 'DOP', 'payee_id' => $foreign->id])->assertStatus(422);
+    }
+
+    public function test_the_charge_that_arrives_after_the_trip_is_linked_to_it(): void
+    {
+        [$user, $plan, $stage] = $this->makeSetup();
+        Sanctum::actingAs($user);
+        $store = $this->makeStore($user, 'La Sirena');
+        $this->finishTrip($plan, $stage, $user, 1250.50, $store);
+
+        $charge = $this->charge($user, 1250.50, $store);
+
+        $visit = $this->getJson("/api/mobile/shopping?plan={$plan->id}")->json('plan.visits.0');
+        $this->assertEquals($charge, $visit['transaction_id']);
+        $this->assertEquals($charge, $visit['transaction']['id']);
+        $this->assertEquals(1250.50, $visit['transaction']['total']);
+    }
+
+    public function test_a_charge_that_was_already_in_is_linked_when_the_trip_is_saved(): void
+    {
+        [$user, $plan, $stage] = $this->makeSetup();
+        Sanctum::actingAs($user);
+        $store = $this->makeStore($user, 'La Sirena');
+        $charge = $this->charge($user, 980, $store);
+
+        $visit = $this->finishTrip($plan, $stage, $user, 980, $store)->json('visit');
+
+        $this->assertEquals($charge, $visit['transaction']['id']);
+    }
+
+    public function test_only_a_charge_that_fits_the_amount_the_store_and_the_days_is_linked(): void
+    {
+        [$user, $plan, $stage] = $this->makeSetup();
+        Sanctum::actingAs($user);
+        $store = $this->makeStore($user, 'La Sirena');
+        $elsewhere = $this->makeStore($user, 'Gasolinera');
+        $this->finishTrip($plan, $stage, $user, 500, $store);
+
+        $this->charge($user, 499, $store); // other amount
+        $this->charge($user, 500, $elsewhere); // other store
+        $this->charge($user, 500, $store, now()->addDays(20)->toDateString()); // weeks later
+        $this->charge($user, 500, $store, now()->subDays(5)->toDateString()); // before the trip
+        $this->assertNull($this->getJson("/api/mobile/shopping?plan={$plan->id}")->json('plan.visits.0.transaction'));
+
+        $fits = $this->charge($user, 500, $store, now()->addDays(3)->toDateString());
+        $this->assertEquals($fits, $this->getJson("/api/mobile/shopping?plan={$plan->id}")->json('plan.visits.0.transaction.id'));
+    }
+
+    public function test_two_charges_that_both_fit_a_trip_are_not_guessed(): void
+    {
+        [$user, $plan, $stage] = $this->makeSetup();
+        Sanctum::actingAs($user);
+        $store = $this->makeStore($user, 'La Sirena');
+        $this->charge($user, 700, $store);
+        $this->charge($user, 700, $store);
+
+        // Both are already in when the trip is saved: there is nothing to tell them apart, so it is left alone.
+        $visit = $this->finishTrip($plan, $stage, $user, 700, $store)->json('visit');
+
+        $this->assertNull($visit['transaction']);
+    }
+
+    public function test_the_first_charge_that_fits_keeps_the_trip(): void
+    {
+        [$user, $plan, $stage] = $this->makeSetup();
+        Sanctum::actingAs($user);
+        $store = $this->makeStore($user, 'La Sirena');
+        $this->finishTrip($plan, $stage, $user, 700, $store);
+
+        $first = $this->charge($user, 700, $store);
+        $this->charge($user, 700, $store); // a look-alike later does not take it over
+
+        $this->assertEquals($first, $this->getJson("/api/mobile/shopping?plan={$plan->id}")->json('plan.visits.0.transaction.id'));
+    }
+
+    public function test_a_charge_pays_only_one_trip(): void
+    {
+        [$user, $plan, $stage] = $this->makeSetup();
+        Sanctum::actingAs($user);
+        $store = $this->makeStore($user, 'La Sirena');
+        $this->finishTrip($plan, $stage, $user, 300, $store);
+        $first = $this->charge($user, 300, $store);
+
+        // A second trip for the same amount does not take the charge the first one already has.
+        $second = $this->finishTrip($plan, $stage, $user, 300, $store)->json('visit');
+
+        $this->assertNull($second['transaction']);
+        $visits = $this->getJson("/api/mobile/shopping?plan={$plan->id}")->json('plan.visits');
+        $this->assertEquals([null, $first], array_map(fn ($visit) => $visit['transaction_id'] ?? null, $visits));
+    }
+
+    public function test_income_is_never_the_charge_of_a_trip(): void
+    {
+        [$user, $plan, $stage] = $this->makeSetup();
+        Sanctum::actingAs($user);
+        $store = $this->makeStore($user, 'La Sirena');
+        $this->finishTrip($plan, $stage, $user, 400, $store);
+
+        $this->charge($user, 400, $store, null, 'DEPOSIT');
+
+        $this->assertNull($this->getJson("/api/mobile/shopping?plan={$plan->id}")->json('plan.visits.0.transaction'));
+    }
+
+    // ── Helpers for the trips ──────────────────────────────────────────
+
+    private function makeStore(User $user, string $name): Payee
+    {
+        return Payee::create(['team_id' => $user->ownedTeams()->first()->id, 'user_id' => $user->id, 'name' => $name]);
+    }
+
+    /** @return array{0: string} */
+    private function startTrip($plan, $stage, $user, string $item): array
+    {
+        $milk = $this->addItem($plan, $stage, $user, $item);
+        $sid = $this->postJson("/api/mobile/shopping/{$plan->id}/sessions/start")->json('session.id');
+        $this->postJson("/api/mobile/shopping/{$plan->id}/items/{$milk->id}/cycle", ['state' => 'buy']);
+
+        return [$sid];
+    }
+
+    private function finishTrip($plan, $stage, $user, float $total, ?Payee $store = null)
+    {
+        [$sid] = $this->startTrip($plan, $stage, $user, 'Item '.uniqid());
+
+        return $this->postJson("/api/mobile/shopping/{$plan->id}/sessions/finish", [
+            'session_id' => $sid,
+            'total' => $total,
+            'currency' => 'DOP',
+            ...($store ? ['payee_id' => $store->id] : []),
+        ])->assertOk();
+    }
+
+    private function charge(User $user, float $total, Payee $store, ?string $date = null, string $direction = 'WITHDRAW'): int
+    {
+        $teamId = $user->ownedTeams()->first()->id;
+        $account = Account::where('team_id', $teamId)->first() ?? Account::create(['team_id' => $teamId, 'user_id' => $user->id, 'name' => 'Visa', 'currency_code' => 'DOP', 'balance_type' => 'DEBIT', 'type' => 1]);
+
+        return $this->postJson('/api/mobile/transactions', [
+            'account_id' => $account->id,
+            'total' => $total,
+            'currency_code' => 'DOP',
+            'description' => 'VISA '.$store->name,
+            'date' => $date ?? now()->toDateString(),
+            'direction' => $direction,
+            'payee_id' => $store->id,
+        ])->assertStatus(201)->json('data.id');
     }
 
     public function test_team_isolation_on_sessions(): void

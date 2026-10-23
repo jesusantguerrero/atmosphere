@@ -13,6 +13,8 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Exists;
+use App\Domains\Transaction\Services\TransactionSplits;
+use Illuminate\Support\Facades\DB;
 use Insane\Journal\Events\TransactionCreated;
 
 class MultiCurrencyTransactionController extends Controller
@@ -39,7 +41,17 @@ class MultiCurrencyTransactionController extends Controller
             // credit / debit stay accepted for existing API clients.
             'direction' => 'required|in:credit,debit,DEPOSIT,WITHDRAW',
             'status' => 'nullable|in:draft,verified',
+            ...TransactionSplits::rules($request->user()->current_team_id),
         ]);
+
+        // A purchase split across categories: the lines carry the categories, the transaction itself has none.
+        $items = [];
+        if (! empty($validated['items'])) {
+            $items = TransactionSplits::lines($validated['items'], (float) $validated['total'], $validated['payee_id'] ?? null);
+            $validated['has_splits'] = true;
+            $validated['category_id'] = null;
+        }
+        unset($validated['items']);
 
         $account = Account::where('team_id', $request->user()->current_team_id)->findOrFail($validated['account_id']);
 
@@ -59,8 +71,17 @@ class MultiCurrencyTransactionController extends Controller
                 // Use multi-currency service for secondary currency transactions
                 $transaction = $this->multiCurrencyService->createCreditCardTransaction($transactionData);
             } else {
-                // Use standard transaction creation for primary currency
-                $transaction = Transaction::create($transactionData);
+                // Standard transaction in the account's own currency. The row alone moves nothing: the journal's
+                // lines are what balances, the budget and reconciliations are summed from, so they are created
+                // here the way the journal's own createTransaction() does (minus its look-alike lookup, which
+                // would swallow a second identical purchase of the same day).
+                $transaction = DB::transaction(function () use ($transactionData, $items) {
+                    $data = Transaction::sanitizeData(['counter_account_id' => null, 'payee_id' => null, ...$transactionData]);
+                    $transaction = Transaction::create($data);
+                    $transaction->createLines($items, $data);
+
+                    return $transaction;
+                });
             }
 
             event(new TransactionCreated($transaction, $transactionData));
@@ -251,6 +272,7 @@ class MultiCurrencyTransactionController extends Controller
             'end_date' => 'nullable|date',
             'month' => ['nullable', 'regex:/^\d{4}-\d{2}$/'],
             'uncategorized' => 'nullable|boolean',
+            'search' => 'nullable|string|max:100',
             'limit' => 'nullable|integer|min:1|max:100',
             'page' => 'nullable|integer|min:1',
         ]);
@@ -282,6 +304,15 @@ class MultiCurrencyTransactionController extends Controller
             }
             if (! empty($validated['end_date'])) {
                 $query->where('date', '<=', $validated['end_date']);
+            }
+
+            // Free-text search over the description and the payee's name
+            if (! empty($validated['search'])) {
+                $term = '%'.addcslashes($validated['search'], '%_\\').'%';
+                $query->where(function ($search) use ($term) {
+                    $search->where('description', 'like', $term)
+                        ->orWhereHas('payee', fn ($payee) => $payee->where('name', 'like', $term));
+                });
             }
 
             // Uncategorized expenses filter (same criteria as budget summary.uncategorized)

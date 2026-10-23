@@ -371,6 +371,122 @@ class ReconciliationCrudTest extends TestCase
 
     // ── Helpers ──────────────────────────────────────────────────────
 
+    // ── What the app needs to reconcile like the web ────────────────────
+
+    public function test_payload_carries_the_ledger_balance_and_the_matched_counts(): void
+    {
+        [$user, $account] = $this->makeSetupWithBalance(5000);
+        Sanctum::actingAs($user);
+
+        $response = $this->postJson("/api/mobile/accounts/{$account->id}/reconciliation", ['balance' => 4500, 'date' => '2026-10-18'])->assertCreated();
+
+        $this->assertEquals(5000, $response->json('reconciliation.ledger_balance'));
+        $this->assertEquals(0, $response->json('reconciliation.matched_count'));
+        $this->assertEquals(1, $response->json('reconciliation.total_entries'));
+        $this->assertEquals(500, $response->json('reconciliation.difference')); // what it always had
+
+        $entry = $response->json('reconciliation.entries.0.id');
+        $id = $response->json('reconciliation.id');
+        $this->putJson("/api/mobile/reconciliations/{$id}/entries/{$entry}/check", ['matched' => true])->assertOk();
+
+        $again = $this->getJson("/api/mobile/accounts/{$account->id}/reconciliation")->assertOk();
+        $this->assertEquals(1, $again->json('reconciliation.matched_count'));
+        $this->assertEquals(5000, $again->json('reconciliation.ledger_balance'));
+    }
+
+    public function test_editing_the_statement_balance_recomputes_the_difference_without_closing_it(): void
+    {
+        [$user, $account] = $this->makeSetupWithBalance(5000);
+        Sanctum::actingAs($user);
+        $id = $this->postJson("/api/mobile/accounts/{$account->id}/reconciliation", ['balance' => 4500, 'date' => '2026-10-18'])->json('reconciliation.id');
+
+        // Typing the balance that matches the books does NOT complete it (only the adjustment endpoint does).
+        $response = $this->patchJson("/api/mobile/reconciliations/{$id}", ['balance' => 5000])->assertOk();
+        $this->assertEquals('pending', $response->json('reconciliation.status'));
+        $this->assertEquals(0, $response->json('reconciliation.difference'));
+        $this->assertEquals(5000, $response->json('reconciliation.amount'));
+        $this->assertNotEmpty($response->json('reconciliation.entries'));
+
+        $this->patchJson("/api/mobile/reconciliations/{$id}", ['balance' => 4000])->assertOk()->assertJsonPath('reconciliation.difference', 1000);
+        $this->patchJson("/api/mobile/reconciliations/{$id}", [])->assertStatus(422);
+
+        $this->putJson("/api/mobile/reconciliations/{$id}/adjustment", ['balance' => 5000])->assertOk();
+        $this->patchJson("/api/mobile/reconciliations/{$id}", ['balance' => 1])->assertStatus(422); // completed
+    }
+
+    public function test_pull_new_adds_the_movements_that_arrived_after_it_was_opened(): void
+    {
+        [$user, $account] = $this->makeSetupWithBalance(5000);
+        Sanctum::actingAs($user);
+        $id = $this->postJson("/api/mobile/accounts/{$account->id}/reconciliation", ['balance' => 4500, 'date' => '2026-10-18'])->json('reconciliation.id');
+
+        DB::table('transactions')->insert(['id' => 2, 'team_id' => $account->team_id, 'user_id' => $user->id, 'date' => '2026-10-12', 'status' => 'verified']);
+        DB::table('transaction_lines')->insert(['id' => 2, 'transaction_id' => 2, 'account_id' => $account->id, 'date' => '2026-10-12', 'amount' => 300, 'type' => -1]);
+
+        $response = $this->putJson("/api/mobile/reconciliations/{$id}/sync-transactions")->assertOk();
+
+        $this->assertEquals(2, $response->json('reconciliation.total_entries'));
+        $this->assertCount(2, $response->json('reconciliation.entries'));
+        $this->assertEquals(4700, $response->json('reconciliation.ledger_balance'));
+        $this->assertEquals(200, $response->json('reconciliation.difference')); // 4700 − 4500
+    }
+
+    public function test_balance_at_a_date_ignores_what_happened_after(): void
+    {
+        [$user, $account] = $this->makeSetupWithBalance(5000);
+        Sanctum::actingAs($user);
+
+        $this->getJson("/api/mobile/accounts/{$account->id}/balance-at?date=2026-10-18")->assertOk()->assertJsonPath('balance', 5000)->assertJsonPath('date', '2026-10-18');
+        $this->getJson("/api/mobile/accounts/{$account->id}/balance-at?date=2026-10-01")->assertOk()->assertJsonPath('balance', 0);
+        $this->getJson("/api/mobile/accounts/{$account->id}/balance-at?date=not-a-date")->assertStatus(422);
+    }
+
+    public function test_history_and_hub_list_reconciliations_by_account(): void
+    {
+        [$user, $account] = $this->makeSetupWithBalance(5000);
+        Sanctum::actingAs($user);
+        $id = $this->postJson("/api/mobile/accounts/{$account->id}/reconciliation", ['balance' => 4500, 'date' => '2026-10-18'])->json('reconciliation.id');
+
+        $history = $this->getJson("/api/mobile/accounts/{$account->id}/reconciliations")->assertOk();
+        $this->assertEquals($id, $history->json('last_id'));
+        $this->assertEquals('pending', $history->json('reconciliations.0.status'));
+        $this->assertEquals(1, $history->json('reconciliations.0.total_transactions'));
+        $this->assertEquals(0, $history->json('reconciliations.0.matched_transactions'));
+
+        $hub = collect($this->getJson('/api/mobile/reconciliations')->assertOk()->json('accounts'))->firstWhere('id', $account->id);
+        $this->assertNotNull($hub);
+        $this->assertEquals($id, $hub['last_id']);
+        $this->assertEquals('pending', $hub['last_status']);
+        $this->assertEquals(500, $hub['last_difference']);
+    }
+
+    public function test_new_reconciliation_endpoints_are_scoped_to_the_team(): void
+    {
+        [$user, $account] = $this->makeSetupWithBalance(5000);
+        Sanctum::actingAs($user);
+        $id = $this->postJson("/api/mobile/accounts/{$account->id}/reconciliation", ['balance' => 4500, 'date' => '2026-10-18'])->json('reconciliation.id');
+
+        $other = User::factory()->withPersonalTeam()->create();
+        $other->forceFill(['current_team_id' => $other->ownedTeams()->first()->id])->save();
+        Sanctum::actingAs($other->fresh());
+
+        $this->patchJson("/api/mobile/reconciliations/{$id}", ['balance' => 1])->assertForbidden();
+        $this->putJson("/api/mobile/reconciliations/{$id}/sync-transactions")->assertForbidden();
+        $this->getJson("/api/mobile/accounts/{$account->id}/reconciliations")->assertForbidden();
+        $this->getJson("/api/mobile/accounts/{$account->id}/balance-at")->assertForbidden();
+        $this->assertNull(collect($this->getJson('/api/mobile/reconciliations')->assertOk()->json('accounts'))->firstWhere('id', $account->id));
+    }
+
+    /** An account whose books hold one verified deposit of `$amount` on 2026-10-10. */
+    private function makeSetupWithBalance(float $amount): array
+    {
+        [$user, $account] = $this->makeSetup();
+        DB::table('transactions')->insert(['id' => 1, 'team_id' => $account->team_id, 'user_id' => $user->id, 'date' => '2026-10-10', 'status' => 'verified']);
+        DB::table('transaction_lines')->insert(['id' => 1, 'transaction_id' => 1, 'account_id' => $account->id, 'date' => '2026-10-10', 'amount' => $amount, 'type' => 1]);
+
+        return [$user, $account];
+    }
+
     private function makeSetup(): array
     {
         $user = User::factory()->withPersonalTeam()->create();

@@ -31,6 +31,7 @@ use App\Domains\Today\Services\CalendarService;
 use App\Domains\Today\Services\TodayService;
 use App\Domains\Transaction\Data\ReconciliationParamsData;
 use App\Domains\Transaction\Models\Transaction;
+use App\Domains\Transaction\Services\TransactionSplits;
 use App\Domains\Transaction\Services\CreditCardReportService;
 use App\Domains\Transaction\Services\NextPaymentsService;
 use App\Domains\Transaction\Services\ReconciliationService;
@@ -42,8 +43,11 @@ use App\Models\Setting;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\ShoppingListReviewService;
+use App\Services\ShoppingVisitLinker;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
@@ -893,6 +897,43 @@ class MobileController extends Controller
         return response()->json($this->formatTarget($target));
     }
 
+    /**
+     * Take a target down. It is archived, not deleted: the row and its history stay, but the category no longer
+     * has a target (no "still needs", no alerts) and can be given a new one.
+     */
+    public function archiveBudgetTarget(Request $request, int $categoryId, int $targetId): JsonResponse
+    {
+        $category = Category::where('team_id', $request->user()->current_team_id)
+            ->whereNotNull('parent_id')
+            ->where('resource_type', 'transactions')
+            ->findOrFail($categoryId);
+
+        $target = $category->budget;
+        abort_unless($target && $target->id === $targetId, 404);
+
+        $target->forceFill(['archived_at' => now()])->save();
+
+        return response()->json(['id' => $target->id, 'archived_at' => $target->archived_at]);
+    }
+
+    /** The category's archived targets, newest first: the history of what it used to aim for. */
+    public function archivedBudgetTargets(Request $request, int $categoryId): JsonResponse
+    {
+        $category = Category::where('team_id', $request->user()->current_team_id)
+            ->whereNotNull('parent_id')
+            ->where('resource_type', 'transactions')
+            ->findOrFail($categoryId);
+
+        return response()->json([
+            'targets' => BudgetTarget::archived()
+                ->where(['team_id' => $category->team_id, 'category_id' => $category->id])
+                ->orderByDesc('archived_at')
+                ->get()
+                ->map(fn (BudgetTarget $target) => [...$this->formatTarget($target), 'archived_at' => $target->archived_at])
+                ->values(),
+        ]);
+    }
+
     public function snoozeBudgetTarget(Request $request, int $categoryId): JsonResponse
     {
         $validated = $request->validate([
@@ -1203,18 +1244,24 @@ class MobileController extends Controller
         $description = $validated['description']
             ?? "Transfer: {$fromAccount->name} → {$toAccount->name}";
 
-        $transaction = Transaction::create([
-            'team_id' => $teamId,
-            'user_id' => $user->id,
-            'account_id' => $fromAccount->id,
-            'counter_account_id' => $toAccount->id,
-            'total' => $validated['total'],
-            'description' => $description,
-            'date' => $validated['date'],
-            'direction' => 'WITHDRAW',
-            'currency_code' => $fromAccount->currency_code,
-            'status' => 'verified',
-        ]);
+        // The row alone moves nothing: the journal lines (one on each account) are what balances are summed from.
+        $transaction = DB::transaction(function () use ($teamId, $user, $fromAccount, $toAccount, $validated, $description) {
+            $transaction = Transaction::create([
+                'team_id' => $teamId,
+                'user_id' => $user->id,
+                'account_id' => $fromAccount->id,
+                'counter_account_id' => $toAccount->id,
+                'total' => $validated['total'],
+                'description' => $description,
+                'date' => $validated['date'],
+                'direction' => 'WITHDRAW',
+                'currency_code' => $fromAccount->currency_code,
+                'status' => 'verified',
+            ]);
+            $transaction->createLines([], $transaction->toArray());
+
+            return $transaction;
+        });
 
         return response()->json([
             'success' => true,
@@ -2127,9 +2174,14 @@ class MobileController extends Controller
             'total' => ['required', 'numeric', 'min:0', 'max:999999999.99'],
             'currency' => ['required', 'string', 'in:DOP,USD,EUR'],
             'note' => ['nullable', 'string', 'max:2000'],
+            // The store the trip was at; with its amount and date it is what ties the visit to the card charge.
+            'payee_id' => ['nullable', 'integer', Rule::exists('payees', 'id')->where('team_id', $plan->team_id)],
         ]);
 
         $visit = $reviews->finishSession($plan, $validated);
+        // The charge may already be in (a bank import, or paid before saving the trip).
+        app(ShoppingVisitLinker::class)->linkVisit($plan, $visit);
+        $visit = $reviews->decorate($plan->team_id, [$reviews->visit($plan, $visit['id']) ?? $visit])[0];
 
         return response()->json([
             'visit' => $visit,
@@ -2220,6 +2272,8 @@ class MobileController extends Controller
             'status' => $transaction->status,
             'notes' => $transaction->notes,
             'is_transfer' => (bool) $transaction->is_transfer,
+            'has_splits' => (bool) $transaction->has_splits,
+            'splits' => TransactionSplits::of($transaction),
             'account' => $transaction->account ? [
                 'id' => $transaction->account->id,
                 'name' => $transaction->account->name,
@@ -2264,7 +2318,28 @@ class MobileController extends Controller
             'payee_id' => ['sometimes', 'nullable', 'integer'],
             'direction' => ['sometimes', 'in:DEPOSIT,WITHDRAW'],
             'notes' => ['sometimes', 'nullable', 'string', 'max:1000'],
+            ...TransactionSplits::rules($request->user()->current_team_id),
         ]);
+
+        // Editing a purchase split across categories. The journal rebuilds a transaction's lines from `items` on
+        // every update, so without them the split would silently collapse into one line (no category): keep the
+        // existing lines unless the app sends new ones or an explicit single category.
+        $total = (float) ($validated['total'] ?? $transaction->total);
+        $payeeId = array_key_exists('payee_id', $validated) ? $validated['payee_id'] : $transaction->payee_id;
+        if (! empty($validated['items'])) {
+            $validated['items'] = TransactionSplits::lines($validated['items'], $total, $payeeId);
+            $validated['has_splits'] = true;
+            $validated['category_id'] = null;
+        } elseif ($transaction->has_splits) {
+            if (! empty($validated['category_id'])) {
+                $validated['has_splits'] = false; // the user chose one category: it stops being a split
+            } else {
+                $validated['items'] = TransactionSplits::lines(TransactionSplits::of($transaction)->all(), $total, $payeeId);
+                $validated['has_splits'] = true;
+            }
+        } else {
+            unset($validated['items']);
+        }
 
         // The journal package's sanitizeData requires account_id, currency_code
         // and payee_id/counter_account_id — merge from existing transaction.
@@ -2275,7 +2350,17 @@ class MobileController extends Controller
             'counter_account_id' => $transaction->counter_account_id,
         ], $validated);
 
-        $transactionUpdate->update($request->user(), $transaction, $data);
+        // The journal's updateTransaction() mass-assigns every key it gets and `items` is not a column, so the split
+        // lines are kept out of it and rebuilt right after (its own update leaves plain lines in their place).
+        $items = $data['items'] ?? [];
+        unset($data['items']);
+
+        DB::transaction(function () use ($request, $transaction, $transactionUpdate, $data, $items) {
+            $transactionUpdate->update($request->user(), $transaction, $data);
+            if ($items) {
+                $transaction->refresh()->createLines($items, $transaction->toArray());
+            }
+        });
         $transaction->refresh()->load(['account', 'category', 'payee']);
 
         return response()->json([
@@ -2505,14 +2590,7 @@ class MobileController extends Controller
         }
 
         return response()->json([
-            'reconciliation' => $last ? [
-                'id' => $last->id,
-                'date' => $last->date,
-                'amount' => (float) $last->amount,
-                'difference' => (float) $last->difference,
-                'status' => $last->status,
-                'entries' => $entries,
-            ] : null,
+            'reconciliation' => $last ? $this->reconciliationPayload($last, $service, $entries) : null,
             'cleared_balance' => $clearedBalance,
         ]);
     }
@@ -2537,14 +2615,7 @@ class MobileController extends Controller
         ));
 
         return response()->json([
-            'reconciliation' => [
-                'id' => $reconciliation->id,
-                'date' => $reconciliation->date,
-                'amount' => (float) $reconciliation->amount,
-                'difference' => (float) $reconciliation->difference,
-                'status' => $reconciliation->status,
-                'entries' => $this->enrichedReconciliationEntries($reconciliation),
-            ],
+            'reconciliation' => $this->reconciliationPayload($reconciliation, $service, $this->enrichedReconciliationEntries($reconciliation)),
         ], 201);
     }
 
@@ -2616,6 +2687,96 @@ class MobileController extends Controller
         $service->delete($reconciliation);
 
         return response()->json(['deleted' => true]);
+    }
+
+    /**
+     * A reconciliation as the app reads it. On top of what it always had: the book balance as of its date
+     * (`ledger_balance`, so the app does not have to derive it) and how many of its movements are matched.
+     *
+     * @param  array<int, array<string, mixed>>  $entries
+     * @return array<string, mixed>
+     */
+    private function reconciliationPayload(Reconciliation $reconciliation, ReconciliationService $service, array $entries): array
+    {
+        return [
+            'id' => $reconciliation->id,
+            'date' => $reconciliation->date,
+            'amount' => (float) $reconciliation->amount,
+            'difference' => (float) $reconciliation->difference,
+            'status' => $reconciliation->status,
+            'ledger_balance' => $service->balanceAsOf($reconciliation->account, $reconciliation->date),
+            'matched_count' => $reconciliation->entries()->where('matched', true)->count(),
+            'total_entries' => $reconciliation->entries()->count(),
+            'entries' => $entries,
+        ];
+    }
+
+    /** Cross-account hub: every account with its latest reconciliation and what is still unreconciled. */
+    public function reconciliationHub(Request $request, ReconciliationService $service): JsonResponse
+    {
+        return response()->json(['accounts' => $service->hubRows($request->user()->current_team_id)]);
+    }
+
+    /** One account's reconciliations, newest first, and how many movements are unreconciled since the last. */
+    public function accountReconciliations(Request $request, Account $account, ReconciliationService $service): JsonResponse
+    {
+        abort_if((int) $account->team_id !== (int) $request->user()->current_team_id, 403);
+
+        $history = $service->listHistoryOf($account);
+        $last = $history->first();
+
+        return response()->json([
+            'reconciliations' => $history->map(fn ($reconciliation) => [
+                'id' => $reconciliation->id,
+                'date' => $reconciliation->date,
+                'amount' => (float) $reconciliation->amount,
+                'difference' => (float) $reconciliation->difference,
+                'status' => $reconciliation->status,
+                'total_transactions' => (int) $reconciliation->total_transactions,
+                'matched_transactions' => (int) $reconciliation->matched_transactions,
+            ])->values(),
+            'last_id' => $last?->id,
+            'unreconciled_count' => $last ? $account->transactionsToReconcile(null, $last->date)->count() : 0,
+        ]);
+    }
+
+    /** The book balance of an account as of a date (default today): what the statement should be compared with. */
+    public function accountBalanceAt(Request $request, Account $account, ReconciliationService $service): JsonResponse
+    {
+        abort_if((int) $account->team_id !== (int) $request->user()->current_team_id, 403);
+        $validated = $request->validate(['date' => ['nullable', 'date_format:Y-m-d']]);
+        $date = $validated['date'] ?? now()->toDateString();
+
+        return response()->json(['date' => $date, 'balance' => $service->balanceAsOf($account, $date)]);
+    }
+
+    /**
+     * Correct the statement balance of a reconciliation in progress. Unlike the web's "Complete" this never closes
+     * it: it only moves `amount` and recomputes `difference`; the adjustment endpoint is what finishes it.
+     */
+    public function updateReconciliation(Request $request, Reconciliation $reconciliation, ReconciliationService $service): JsonResponse
+    {
+        abort_if((int) $reconciliation->team_id !== (int) $request->user()->current_team_id, 403);
+        abort_if($reconciliation->status === Reconciliation::STATUS_COMPLETED, 422, 'A completed reconciliation cannot be edited.');
+
+        $validated = $request->validate(['balance' => ['required', 'numeric']]);
+
+        $reconciliation->update([
+            'amount' => $validated['balance'],
+            'difference' => round($service->balanceAsOf($reconciliation->account, $reconciliation->date) - (float) $validated['balance'], 2),
+        ]);
+
+        return response()->json(['reconciliation' => $this->reconciliationPayload($reconciliation->refresh(), $service, $this->enrichedReconciliationEntries($reconciliation))]);
+    }
+
+    /** Pull the movements that arrived since the reconciliation was opened ("Pull new" on the web). */
+    public function syncReconciliation(Request $request, Reconciliation $reconciliation, ReconciliationService $service): JsonResponse
+    {
+        abort_if((int) $reconciliation->team_id !== (int) $request->user()->current_team_id, 403);
+
+        $service->syncTransactions($reconciliation);
+
+        return response()->json(['reconciliation' => $this->reconciliationPayload($reconciliation->refresh(), $service, $this->enrichedReconciliationEntries($reconciliation))]);
     }
 
     /**

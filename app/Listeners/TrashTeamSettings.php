@@ -57,7 +57,7 @@ class TrashTeamSettings
         Budget::where(['team_id' => $team->id])->delete();
         BudgetMonth::where(['team_id' => $team->id])->delete();
         BudgetMovement::where(['team_id' => $team->id])->delete();
-        BudgetTarget::where(['team_id' => $team->id])->delete();
+        BudgetTarget::withoutGlobalScope('live')->where(['team_id' => $team->id])->delete();
 
         // housing
         Occurrence::where(['team_id' => $team->id])->delete();
