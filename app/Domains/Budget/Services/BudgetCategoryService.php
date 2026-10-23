@@ -52,7 +52,7 @@ class BudgetCategoryService
                 ->getAmount()
                 ->toFloat();
         } else {
-            $monthBalance = (float) $category->getMonthBalance($yearMonth)->balance;
+            $monthBalance = (float) self::monthBalance($category, $yearMonth)->balance;
 
             $available = Money::of($budgeted, 'USD', null, RoundingMode::HalfUp)
                 ->plus($monthBudget?->left_from_last_month ?? 0)
@@ -183,9 +183,9 @@ class BudgetCategoryService
         $activity = 0;
 
         if ($category->account) {
-            $transactions = $category->account->getMonthBalance($monthDate->format('Y-m'))->balance;
+            $transactions = self::monthBalance($category->account, $monthDate->format('Y-m'))->balance;
         } else {
-            $activity = $category->getMonthBalance($monthDate->format('Y-m'))?->balance;
+            $activity = self::monthBalance($category, $monthDate->format('Y-m'))?->balance;
         }
 
         BudgetMonth::updateOrCreate([
@@ -216,6 +216,26 @@ class BudgetCategoryService
         ]);
     }
 
+    /**
+     * The month's activity of a category (or of a credit-card account), the same figure and the same query as
+     * `getMonthBalance()` on the model. `TransactionLine` eager-loads its payee, both accounts and its labels by
+     * default; here only the SUM is read, so those were four wasted queries on every call, and rolling a budget
+     * month makes this call once per category.
+     */
+    public static function monthBalance($model, string $yearMonth)
+    {
+        if ($model->resource_type_id) {
+            return $model->getMonthBalance($yearMonth);
+        }
+
+        return $model->transactionLines()
+            ->withoutEagerLoads()
+            ->whereHas('transaction', fn ($q) => $q->where('status', \App\Domains\Transaction\Models\Transaction::STATUS_VERIFIED))
+            ->whereRaw("date_format(transaction_lines.date, '%Y-%m') = ?", [$yearMonth])
+            ->selectRaw('COALESCE(SUM(amount * type), 0) as balance')
+            ->first();
+    }
+
     public function getCategoryActivity(Category $category, string $month)
     {
         $monthDate = Carbon::createFromFormat('Y-m-d', $month);
@@ -225,7 +245,7 @@ class BudgetCategoryService
         if ($category->account) {
             $transactions = $this->getCreditCardBalance($category->account, $monthDate->format('Y-m'))->balance;
         } else {
-            $activity = $category->getMonthBalance($monthDate->format('Y-m'))?->balance;
+            $activity = self::monthBalance($category, $monthDate->format('Y-m'))?->balance;
         }
 
         return ($activity + $transactions) ?? 0;
