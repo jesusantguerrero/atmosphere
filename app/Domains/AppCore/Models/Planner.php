@@ -24,6 +24,10 @@ class Planner extends Model
 
     const STATUS_CANCELLED = 'cancelled';
 
+    const KIND_EVENT = 'event';
+
+    const KIND_TASK = 'task';
+
     protected $fillable = [
         'team_id',
         'user_id',
@@ -33,6 +37,7 @@ class Planner extends Model
         'notes',
         'total',
         'source',
+        'kind',
         'date',
         'end_date',
         'frequency',

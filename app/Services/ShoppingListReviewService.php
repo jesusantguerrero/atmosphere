@@ -4,9 +4,9 @@ namespace App\Services;
 
 use App\Domains\Transaction\Models\Transaction;
 use App\Models\User;
-use Insane\Journal\Models\Core\Payee;
 use App\Notifications\ShoppingListReady;
 use Illuminate\Support\Str;
+use Insane\Journal\Models\Core\Payee;
 use Modules\Plan\Entities\FieldValue;
 use Modules\Plan\Entities\Plan;
 use Modules\Plan\Entities\PlanItem;
@@ -162,6 +162,25 @@ class ShoppingListReviewService
             $this->store($plan, $visit, $field);
 
             return $this->decorate($plan->team_id, [$visit])[0];
+        });
+    }
+
+    /** Changes (or clears with null) the store a finished trip was at. The transaction link is left as it is. */
+    public function setVisitPayee(Plan $plan, string $sessionId, ?int $payeeId): array
+    {
+        return $plan->getConnection()->transaction(function () use ($plan, $sessionId, $payeeId) {
+            Plan::query()->whereKey($plan->id)->lockForUpdate()->firstOrFail();
+            $field = 'shopping_visit_'.$sessionId;
+            $visit = $this->sessionField($plan, $field);
+            abort_if(! $visit, 404);
+            if ($payeeId === null) {
+                unset($visit['payee_id']);
+            } else {
+                $visit['payee_id'] = $payeeId;
+            }
+            $this->store($plan, $visit, $field);
+
+            return $visit;
         });
     }
 
