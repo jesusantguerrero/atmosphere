@@ -208,6 +208,97 @@ class BudgetTargetsTest extends TestCase
         $this->assertTrue($found, 'Category with target not found in budget response.');
     }
 
+    public function test_archive_target_takes_it_down_but_keeps_its_history(): void
+    {
+        [$user, $team, $category] = $this->makeSetup();
+        Sanctum::actingAs($user);
+
+        $id = $this->postJson("/api/mobile/budget/categories/{$category->id}/targets", [
+            'target_type' => 'spending',
+            'amount' => 24000,
+            'frequency' => 'MONTHLY',
+            'frequency_month_date' => 7,
+        ])->assertStatus(201)->json('id');
+
+        $month = now()->format('Y-m');
+        $this->assertTrue($this->categoryOf($category->id, $month)['has_target']);
+
+        $this->deleteJson("/api/mobile/budget/categories/{$category->id}/targets/{$id}")
+            ->assertOk()
+            ->assertJsonPath('id', $id)
+            ->assertJsonStructure(['id', 'archived_at']);
+
+        // The category no longer has a target: nothing "still needs" and no alert for it.
+        $row = $this->categoryOf($category->id, $month);
+        $this->assertFalse($row['has_target']);
+        $this->assertNull($row['target']);
+
+        // The row and its data are kept.
+        $this->assertDatabaseHas('budget_targets', ['id' => $id, 'category_id' => $category->id, 'amount' => 24000]);
+        $this->assertNotNull(BudgetTarget::withoutGlobalScope('live')->find($id)->archived_at);
+        $this->assertNull(BudgetTarget::find($id));
+
+        // It is listed in the category's history, newest first.
+        $this->getJson("/api/mobile/budget/categories/{$category->id}/targets/archived")
+            ->assertOk()
+            ->assertJsonPath('targets.0.id', $id)
+            ->assertJsonPath('targets.0.amount', 24000);
+
+        // Nothing live can be done to it any more.
+        $this->putJson("/api/mobile/budget/categories/{$category->id}/targets/{$id}", ['target_type' => 'spending', 'amount' => 1])->assertNotFound();
+        $this->postJson("/api/mobile/budget/categories/{$category->id}/targets/{$id}/complete")->assertNotFound();
+        $this->patchJson("/api/mobile/budget/categories/{$category->id}/snooze-target", ['month' => $month])->assertNotFound();
+        $this->deleteJson("/api/mobile/budget/categories/{$category->id}/targets/{$id}")->assertNotFound();
+
+        // And the category can get a new target afterwards, while the old one stays in the history.
+        $newId = $this->postJson("/api/mobile/budget/categories/{$category->id}/targets", [
+            'target_type' => 'spending',
+            'amount' => 500,
+            'frequency' => 'MONTHLY',
+        ])->assertStatus(201)->json('id');
+        $this->assertNotEquals($id, $newId);
+        $this->assertTrue($this->categoryOf($category->id, $month)['has_target']);
+        $this->getJson("/api/mobile/budget/categories/{$category->id}/targets/archived")->assertJsonCount(1, 'targets');
+    }
+
+    public function test_archive_target_is_scoped_to_the_team(): void
+    {
+        [$user, $team, $category] = $this->makeSetup();
+        Sanctum::actingAs($user);
+        $id = $this->postJson("/api/mobile/budget/categories/{$category->id}/targets", ['target_type' => 'spending', 'amount' => 100, 'frequency' => 'MONTHLY'])->json('id');
+
+        $other = User::factory()->withPersonalTeam()->create();
+        $other->forceFill(['current_team_id' => $other->ownedTeams()->first()->id])->save();
+        Sanctum::actingAs($other->fresh());
+
+        $this->deleteJson("/api/mobile/budget/categories/{$category->id}/targets/{$id}")->assertNotFound();
+        $this->assertNull(BudgetTarget::withoutGlobalScope('live')->find($id)->archived_at);
+    }
+
+    public function test_archived_target_stops_feeding_the_planned_transactions_and_today_alerts(): void
+    {
+        [$user, $team, $category] = $this->makeSetup();
+        Sanctum::actingAs($user);
+        $id = $this->postJson("/api/mobile/budget/categories/{$category->id}/targets", ['target_type' => 'spending', 'amount' => 24000, 'frequency' => 'MONTHLY', 'frequency_month_date' => 7, 'notify' => true])->json('id');
+
+        $this->assertSame(1, BudgetTarget::whereNotNull('frequency_month_date')->where('notify', 1)->count());
+
+        $this->deleteJson("/api/mobile/budget/categories/{$category->id}/targets/{$id}")->assertOk();
+
+        // The queries the planned-transaction and alert jobs run no longer see it.
+        $this->assertSame(0, BudgetTarget::whereNotNull('frequency_month_date')->where('notify', 1)->count());
+        $this->assertSame(0, BudgetTarget::where('team_id', $team->id)->count());
+        $this->assertSame(1, BudgetTarget::archived()->where('team_id', $team->id)->count());
+    }
+
+    /** The category's row in GET /budget. */
+    private function categoryOf(int $categoryId, string $month): array
+    {
+        return collect($this->getJson("/api/mobile/budget?month={$month}")->assertOk()->json('groups'))
+            ->flatMap(fn ($group) => $group['children'])
+            ->firstWhere('id', $categoryId);
+    }
+
     private function makeSetup(): array
     {
         $user = User::factory()->withPersonalTeam()->create();

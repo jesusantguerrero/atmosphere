@@ -7,6 +7,7 @@ use App\Domains\Transaction\Models\Transaction;
 use App\Models\Account;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Insane\Journal\Events\TransactionCreated;
 use Insane\Journal\Models\Core\Payee;
@@ -269,6 +270,158 @@ class TransactionsCrudTest extends TestCase
     }
 
     // ── Helpers ──────────────────────────────────────────────────────
+
+    // ── Lines: what balances, the budget and reconciliations are summed from ──
+
+    public function test_creating_a_transaction_posts_its_lines(): void
+    {
+        [$user, $team, $account, $category] = $this->makeSetup();
+        Sanctum::actingAs($user);
+
+        $id = $this->postJson('/api/mobile/transactions', $this->payload($account, $category, 250))->assertStatus(201)->json('data.id');
+
+        $lines = DB::table('transaction_lines')->where('transaction_id', $id)->get();
+        $this->assertCount(2, $lines); // the category side and the account side
+        $this->assertEquals(250, $lines->sum('amount') / 2);
+        $this->assertEquals($category->id, $lines->firstWhere('anchor', 1)->category_id);
+        $this->assertEquals(-250, DB::table('transaction_lines')->where('account_id', $account->id)->sum(DB::raw('amount * type'))); // the money left the account
+    }
+
+    public function test_two_identical_purchases_of_the_same_day_are_both_kept(): void
+    {
+        [$user, $team, $account, $category] = $this->makeSetup();
+        Sanctum::actingAs($user);
+
+        $first = $this->postJson('/api/mobile/transactions', $this->payload($account, $category, 100))->assertStatus(201)->json('data.id');
+        $second = $this->postJson('/api/mobile/transactions', $this->payload($account, $category, 100))->assertStatus(201)->json('data.id');
+
+        $this->assertNotEquals($first, $second);
+        $this->assertEquals(-200, DB::table('transaction_lines')->where('account_id', $account->id)->sum(DB::raw('amount * type')));
+    }
+
+    // ── Splits: one purchase, several categories ───────────────────────
+
+    public function test_a_purchase_can_be_split_across_categories(): void
+    {
+        [$user, $team, $account, $groceries, $payee] = $this->makeSetup();
+        $cleaning = $this->makeCategory($team, 'Cleaning');
+        Sanctum::actingAs($user);
+
+        $response = $this->postJson('/api/mobile/transactions', [
+            ...$this->payload($account, null, 1000),
+            'payee_id' => $payee->id,
+            'items' => [
+                ['category_id' => $groceries->id, 'amount' => 700],
+                ['category_id' => $cleaning->id, 'amount' => 300, 'concept' => 'Detergent'],
+            ],
+        ])->assertStatus(201);
+        $id = $response->json('data.id');
+
+        $this->assertTrue($response->json('data.has_splits'));
+        $transaction = DB::table('transactions')->find($id);
+        $this->assertNull($transaction->category_id);
+        $this->assertEquals(1000, $transaction->total);
+
+        // Each split is a category line plus its counter line; the account moved by the whole amount.
+        $splits = DB::table('transaction_lines')->where(['transaction_id' => $id, 'is_split' => 1])->orderBy('id')->get();
+        $this->assertSame([$groceries->id, $cleaning->id], $splits->pluck('category_id')->map(fn ($c) => (int) $c)->all());
+        $this->assertEquals([700.0, 300.0], $splits->pluck('amount')->map(fn ($a) => (float) $a)->all());
+        $this->assertCount(4, DB::table('transaction_lines')->where('transaction_id', $id)->get());
+        $this->assertEquals(-1000, DB::table('transaction_lines')->where('account_id', $account->id)->sum(DB::raw('amount * type')));
+
+        // The app reads them back to edit.
+        $show = $this->getJson("/api/mobile/transactions/{$id}")->assertOk();
+        $this->assertTrue($show->json('has_splits'));
+        $this->assertCount(2, $show->json('splits'));
+        $this->assertEquals(['Groceries', 'Cleaning'], array_column($show->json('splits'), 'category_name'));
+        $this->assertEquals(300, $show->json('splits.1.amount'));
+        $this->assertEquals('Detergent', $show->json('splits.1.concept'));
+    }
+
+    public function test_a_split_needs_two_lines_that_add_up_and_belong_to_the_team(): void
+    {
+        [$user, $team, $account, $groceries] = $this->makeSetup();
+        $cleaning = $this->makeCategory($team, 'Cleaning');
+        Sanctum::actingAs($user);
+
+        $base = $this->payload($account, null, 1000);
+        $this->postJson('/api/mobile/transactions', [...$base, 'items' => [['category_id' => $groceries->id, 'amount' => 700], ['category_id' => $cleaning->id, 'amount' => 200]]])
+            ->assertStatus(422)->assertJsonValidationErrors('items');
+        $this->postJson('/api/mobile/transactions', [...$base, 'items' => [['category_id' => $groceries->id, 'amount' => 1000]]])
+            ->assertStatus(422)->assertJsonValidationErrors('items');
+
+        $other = User::factory()->withPersonalTeam()->create();
+        $foreign = $this->makeCategory($other->ownedTeams()->first(), 'Not mine');
+        $this->postJson('/api/mobile/transactions', [...$base, 'items' => [['category_id' => $groceries->id, 'amount' => 500], ['category_id' => $foreign->id, 'amount' => 500]]])
+            ->assertStatus(422)->assertJsonValidationErrors('items.1.category_id');
+
+        $this->assertSame(0, DB::table('transactions')->count());
+    }
+
+    public function test_editing_a_split_purchase_does_not_collapse_it(): void
+    {
+        [$user, $team, $account, $groceries, $payee] = $this->makeSetup();
+        $cleaning = $this->makeCategory($team, 'Cleaning');
+        Sanctum::actingAs($user);
+        $id = $this->postJson('/api/mobile/transactions', [
+            ...$this->payload($account, null, 1000),
+            'payee_id' => $payee->id,
+            'items' => [['category_id' => $groceries->id, 'amount' => 700], ['category_id' => $cleaning->id, 'amount' => 300]],
+        ])->assertStatus(201)->json('data.id');
+
+        // Only the description changes: the two lines stay.
+        $this->patchJson("/api/mobile/transactions/{$id}", ['description' => 'Sirena weekly'])->assertOk();
+        $this->assertCount(2, DB::table('transaction_lines')->where(['transaction_id' => $id, 'is_split' => 1])->get());
+
+        // The total changes without new amounts: refused, the lines would no longer add up.
+        $this->patchJson("/api/mobile/transactions/{$id}", ['total' => 1200])->assertStatus(422)->assertJsonValidationErrors('items');
+
+        // New amounts and total together.
+        $this->patchJson("/api/mobile/transactions/{$id}", ['total' => 1200, 'items' => [['category_id' => $groceries->id, 'amount' => 900], ['category_id' => $cleaning->id, 'amount' => 300]]])->assertOk();
+        $this->assertEquals([900.0, 300.0], DB::table('transaction_lines')->where(['transaction_id' => $id, 'is_split' => 1])->orderBy('id')->pluck('amount')->map(fn ($a) => (float) $a)->all());
+        $this->assertEquals(-1200, DB::table('transaction_lines')->where('account_id', $account->id)->sum(DB::raw('amount * type')));
+
+        // Picking one category turns it back into a plain purchase.
+        $this->patchJson("/api/mobile/transactions/{$id}", ['category_id' => $groceries->id])->assertOk();
+        $this->assertFalse((bool) DB::table('transactions')->find($id)->has_splits);
+        $this->assertSame(0, DB::table('transaction_lines')->where(['transaction_id' => $id, 'is_split' => 1])->count());
+        $this->assertEquals($groceries->id, DB::table('transaction_lines')->where(['transaction_id' => $id, 'anchor' => 1])->value('category_id'));
+    }
+
+    public function test_transactions_can_be_searched_by_description_or_payee(): void
+    {
+        [$user, $team, $account, $category, $payee] = $this->makeSetup();
+        Sanctum::actingAs($user);
+        $this->postJson('/api/mobile/transactions', [...$this->payload($account, $category, 100), 'description' => 'Sirena weekly'])->assertStatus(201);
+        $this->postJson('/api/mobile/transactions', [...$this->payload($account, $category, 200), 'description' => 'Gasolina', 'payee_id' => $payee->id])->assertStatus(201);
+
+        $found = fn (string $search) => collect($this->getJson('/api/mobile/transactions?search='.urlencode($search))->assertOk()->json('data.transactions'))->pluck('description')->all();
+
+        $this->assertSame(['Sirena weekly'], $found('siren'));
+        $this->assertSame(['Gasolina'], $found('Test Payee')); // the payee's name
+        $this->assertSame([], $found('%')); // wildcards are literal
+        $this->assertCount(2, $this->getJson('/api/mobile/transactions')->json('data.transactions'));
+    }
+
+    private function payload($account, $category, float $total): array
+    {
+        return array_filter([
+            'account_id' => $account->id,
+            'total' => $total,
+            'currency_code' => 'DOP',
+            'description' => 'Sirena',
+            'date' => '2026-10-10',
+            'direction' => 'WITHDRAW',
+            'category_id' => $category?->id,
+        ], fn ($value) => $value !== null);
+    }
+
+    private function makeCategory($team, string $name): Category
+    {
+        $group = Category::firstOrCreate(['name' => 'Expenses', 'team_id' => $team->id, 'resource_type' => 'transactions', 'parent_id' => null], ['depth' => 0, 'index' => 99]);
+
+        return Category::create(['name' => $name, 'team_id' => $team->id, 'resource_type' => 'transactions', 'parent_id' => $group->id, 'depth' => 1, 'index' => 1]);
+    }
 
     private function makeSetup(): array
     {

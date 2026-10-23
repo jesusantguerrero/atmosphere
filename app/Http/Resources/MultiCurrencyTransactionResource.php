@@ -22,6 +22,7 @@ class MultiCurrencyTransactionResource extends JsonResource
             'date' => $this->date,
             'direction' => $this->direction,
             'status' => $this->status,
+            'has_splits' => (bool) $this->has_splits,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             

@@ -4,6 +4,7 @@ use App\Domains\AppCore\Http\Controllers\ApiLoginController;
 use App\Http\Controllers\Api\DashboardApiController;
 use App\Http\Controllers\Api\MobileController;
 use App\Http\Controllers\Api\MultiCurrencyTransactionController;
+use App\Http\Controllers\ShoppingListController;
 use App\Http\Controllers\RoutineController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -75,6 +76,8 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
     Route::put('/budget/categories/{category}/targets/{target}', [MobileController::class, 'updateBudgetTarget'])->name('budget.targets.update');
     Route::post('/budget/categories/{category}/targets/{target}/complete', [MobileController::class, 'completeBudgetTarget'])->name('budget.targets.complete');
     Route::patch('/budget/categories/{category}/snooze-target', [MobileController::class, 'snoozeBudgetTarget'])->name('budget.targets.snooze');
+    Route::delete('/budget/categories/{category}/targets/{target}', [MobileController::class, 'archiveBudgetTarget'])->name('budget.targets.archive');
+    Route::get('/budget/categories/{category}/targets/archived', [MobileController::class, 'archivedBudgetTargets'])->name('budget.targets.archived');
 
     // Category transactions + movements
     Route::get('/budget/categories/{category}/transactions', [MobileController::class, 'categoryTransactions'])->name('budget.categories.transactions');
@@ -108,6 +111,11 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
     // Reconciliation
     Route::get('/accounts/{account}/reconciliation', [MobileController::class, 'getReconciliation'])->name('accounts.reconciliation');
     Route::post('/accounts/{account}/reconciliation', [MobileController::class, 'storeReconciliation'])->name('accounts.reconciliation.store');
+    Route::get('/reconciliations', [MobileController::class, 'reconciliationHub'])->name('reconciliation.hub');
+    Route::get('/accounts/{account}/reconciliations', [MobileController::class, 'accountReconciliations'])->name('accounts.reconciliations');
+    Route::get('/accounts/{account}/balance-at', [MobileController::class, 'accountBalanceAt'])->name('accounts.balance-at');
+    Route::patch('/reconciliations/{reconciliation}', [MobileController::class, 'updateReconciliation'])->name('reconciliation.update');
+    Route::put('/reconciliations/{reconciliation}/sync-transactions', [MobileController::class, 'syncReconciliation'])->name('reconciliation.sync');
     Route::put('/reconciliations/{reconciliation}/entries/{entry}/check', [MobileController::class, 'checkReconciliationEntry'])->name('reconciliation.entry.check');
     Route::put('/reconciliations/{reconciliation}/adjustment', [MobileController::class, 'saveReconciliationAdjustment'])->name('reconciliation.adjustment');
     Route::delete('/reconciliations/{reconciliation}', [MobileController::class, 'deleteReconciliation'])->name('reconciliation.destroy');
@@ -142,6 +150,10 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
 
     // Shopping list
     Route::get('/shopping', [MobileController::class, 'shoppingList'])->name('shopping.index');
+    Route::post('/shopping/lists', [ShoppingListController::class, 'createList'])->name('shopping.lists.create');
+    Route::post('/shopping/import', [ShoppingListController::class, 'import'])->name('shopping.import');
+    Route::put('/shopping/{plan}', [ShoppingListController::class, 'renameList'])->name('shopping.rename');
+    Route::delete('/shopping/{plan}', [ShoppingListController::class, 'deleteList'])->name('shopping.delete');
     Route::post('/shopping/{plan}/stages', [MobileController::class, 'addShoppingStage'])->name('shopping.stages.add');
     Route::patch('/shopping/{plan}/stages/{stage}', [MobileController::class, 'updateShoppingStage'])->name('shopping.stages.update');
     Route::delete('/shopping/{plan}/stages/{stage}', [MobileController::class, 'deleteShoppingStage'])->name('shopping.stages.delete');

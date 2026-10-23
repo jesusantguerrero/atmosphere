@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use App\Domains\Transaction\Models\Transaction;
 use App\Models\User;
+use Insane\Journal\Models\Core\Payee;
 use App\Notifications\ShoppingListReady;
 use Illuminate\Support\Str;
 use Modules\Plan\Entities\FieldValue;
@@ -132,7 +134,59 @@ class ShoppingListReviewService
 
     public function visits(Plan $plan): array
     {
-        return FieldValue::query()->where(['team_id' => $plan->team_id, 'entity_type' => Plan::class, 'entity_id' => $plan->id, 'resource' => 'plan'])->where('field_name', 'like', 'shopping_visit_%')->latest('id')->limit(20)->pluck('value')->map(fn (string $value) => json_decode($value, true))->all();
+        return $this->decorate($plan->team_id, FieldValue::query()->where(['team_id' => $plan->team_id, 'entity_type' => Plan::class, 'entity_id' => $plan->id, 'resource' => 'plan'])->where('field_name', 'like', 'shopping_visit_%')->latest('id')->limit(20)->pluck('value')->map(fn (string $value) => json_decode($value, true))->all());
+    }
+
+    /** One finished trip by its session id, or null. */
+    public function visit(Plan $plan, string $sessionId): ?array
+    {
+        return $this->sessionField($plan, 'shopping_visit_'.$sessionId) ?: null;
+    }
+
+    /**
+     * Links a visit to the transaction that paid for it (the card charge, which usually arrives after the trip), or
+     * unlinks it with null. The link is the transaction's id inside the visit; nothing else is touched.
+     */
+    public function linkVisit(Plan $plan, string $sessionId, ?int $transactionId): array
+    {
+        return $plan->getConnection()->transaction(function () use ($plan, $sessionId, $transactionId) {
+            Plan::query()->whereKey($plan->id)->lockForUpdate()->firstOrFail();
+            $field = 'shopping_visit_'.$sessionId;
+            $visit = $this->sessionField($plan, $field);
+            abort_if(! $visit, 404);
+            if ($transactionId === null) {
+                unset($visit['transaction_id']);
+            } else {
+                $visit['transaction_id'] = $transactionId;
+            }
+            $this->store($plan, $visit, $field);
+
+            return $this->decorate($plan->team_id, [$visit])[0];
+        });
+    }
+
+    /**
+     * What a visit refers to, resolved when it is read (never stored): the store (`payee`) the trip was at and the
+     * transaction (`transaction`) that paid for it, once it has been linked.
+     *
+     * @param  array<int, array<string, mixed>>  $visits
+     * @return array<int, array<string, mixed>>
+     */
+    public function decorate(int $teamId, array $visits): array
+    {
+        $payees = Payee::query()->where('team_id', $teamId)->whereIn('id', collect($visits)->pluck('payee_id')->filter()->unique()->values())->pluck('name', 'id');
+        $transactions = Transaction::query()->where('team_id', $teamId)->whereIn('id', collect($visits)->pluck('transaction_id')->filter()->unique()->values())->get()->keyBy('id');
+
+        return array_map(function (array $visit) use ($payees, $transactions) {
+            $payeeId = $visit['payee_id'] ?? null;
+            $transaction = $transactions->get($visit['transaction_id'] ?? null);
+
+            return [
+                ...$visit,
+                'payee' => $payeeId && $payees->has($payeeId) ? ['id' => (int) $payeeId, 'name' => $payees->get($payeeId)] : null,
+                'transaction' => $transaction ? ['id' => $transaction->id, 'description' => $transaction->description, 'total' => (float) $transaction->total, 'currency_code' => $transaction->currency_code, 'date' => (string) $transaction->date] : null,
+            ];
+        }, $visits);
     }
 
     public function startSession(Plan $plan, int $userId): array
@@ -184,7 +238,7 @@ class ShoppingListReviewService
             abort_unless($active && $active['id'] === $data['session_id'], 409, 'La sesión de compra cambió. Actualiza la lista.');
             $bought = array_values(array_filter($active['items'], fn (array $item) => in_array($item['id'], $active['purchased_ids'], true)));
             abort_if(empty($bought), 422, 'Marca al menos un producto en el carrito antes de terminar.');
-            $visit = [...$active, 'completed_at' => now()->toIso8601String(), 'total' => number_format((float) $data['total'], 2, '.', ''), 'currency' => $data['currency'], 'note' => trim($data['note'] ?? ''), 'purchased_items' => $bought, 'remaining_items' => array_values(array_filter($active['items'], fn (array $item) => ! in_array($item['id'], $active['purchased_ids'], true)))];
+            $visit = [...$active, 'completed_at' => now()->toIso8601String(), 'total' => number_format((float) $data['total'], 2, '.', ''), 'currency' => $data['currency'], 'note' => trim($data['note'] ?? ''), ...(! empty($data['payee_id']) ? ['payee_id' => (int) $data['payee_id']] : []), 'purchased_items' => $bought, 'remaining_items' => array_values(array_filter($active['items'], fn (array $item) => ! in_array($item['id'], $active['purchased_ids'], true)))];
             unset($visit['items'], $visit['purchased_ids']);
             $this->store($plan, $visit, $field);
             $this->store($plan, [], 'shopping_active_session');
