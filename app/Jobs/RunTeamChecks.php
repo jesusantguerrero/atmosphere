@@ -2,13 +2,13 @@
 
 namespace App\Jobs;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Queue\InteractsWithQueue;
+use App\Domains\Housing\Actions\RegisterOccurrence;
 use App\Domains\Housing\Models\Occurrence;
+use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-use App\Domains\Housing\Actions\RegisterOccurrence;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
 
 class RunTeamChecks implements ShouldQueue
 {
@@ -29,6 +29,7 @@ class RunTeamChecks implements ShouldQueue
     {
         $checks = Occurrence::where([
             'team_id' => $this->teamId,
+            'is_active' => true,
         ])->get();
 
         foreach ($checks as $check) {

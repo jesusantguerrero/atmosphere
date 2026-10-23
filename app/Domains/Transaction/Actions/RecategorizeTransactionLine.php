@@ -5,6 +5,7 @@ namespace App\Domains\Transaction\Actions;
 use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Domains\Transaction\Models\TransactionLine;
 use App\Jobs\RollBudgetForward;
+use App\Jobs\RunTeamChecks;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Category;
 use Insane\Journal\Models\Core\Transaction;
@@ -42,6 +43,7 @@ class RecategorizeTransactionLine
 
         if ($line->transaction?->status === Transaction::STATUS_VERIFIED) {
             RollBudgetForward::dispatch($line->team_id, substr($line->date, 0, 7));
+            RunTeamChecks::dispatch($line->team_id);
         }
 
         return $line;

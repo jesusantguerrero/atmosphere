@@ -7,8 +7,10 @@ use App\Domains\Housing\Exports\OccurrenceExport;
 use App\Domains\Housing\Imports\OccurrenceImport;
 use App\Domains\Housing\Models\Occurrence;
 use App\Domains\Transaction\Actions\SearchTransactions;
+use App\Http\Requests\OccurrencePreviewRequest;
 use App\Jobs\RunTeamChecks;
 use Freesgen\Atmosphere\Http\InertiaController;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon as SupportCarbon;
 use Maatwebsite\Excel\Facades\Excel;
@@ -22,6 +24,7 @@ class OccurrenceController extends InertiaController
             'index' => 'Housing/Occurrence',
         ];
         $this->searchable = ['id', 'name'];
+        $this->validationRules = ['name' => ['required', 'string', 'max:255']];
         $this->includes = [];
         $this->appends = [];
         $this->resourceName = 'occurrences';
@@ -59,6 +62,16 @@ class OccurrenceController extends InertiaController
         return redirect()->back();
     }
 
+    public function previewConditions(OccurrencePreviewRequest $request, SearchTransactions $search): JsonResponse
+    {
+        return response()->json($search->handle($request->validated('conditions'), $request->user()->current_team_id) ?? []);
+    }
+
+    protected function afterSave($postData, $resource): void
+    {
+        app(RegisterOccurrence::class)->sync($resource);
+    }
+
     public function automationPreview(Occurrence $occurrence, SearchTransactions $search)
     {
         $this->ensureTeamOccurrence($occurrence);
@@ -70,14 +83,18 @@ class OccurrenceController extends InertiaController
     {
         $this->ensureTeamOccurrence($occurrence);
 
-        return $registerer->load($occurrence);
+        $registerer->load($occurrence);
+
+        return redirect()->back();
     }
 
     public function sync(Occurrence $occurrence, RegisterOccurrence $registerer)
     {
         $this->ensureTeamOccurrence($occurrence);
 
-        return $registerer->sync($occurrence);
+        $registerer->sync($occurrence);
+
+        return redirect()->back();
     }
 
     public function remind(Occurrence $occurrence, RegisterOccurrence $registerer)
@@ -94,7 +111,9 @@ class OccurrenceController extends InertiaController
 
     public function syncAll()
     {
-        RunTeamChecks::dispatch(request()->user()->current_team_id);
+        RunTeamChecks::dispatchSync(request()->user()->current_team_id);
+
+        return redirect()->back();
     }
 
     public function export()

@@ -1,9 +1,19 @@
 <script setup lang="ts">
-import { computed, nextTick, ref } from "vue";
+import {
+    computed,
+    nextTick,
+    ref,
+    onMounted,
+    onBeforeUnmount,
+    watch,
+} from "vue";
 import axios from "axios";
 import { router } from "@inertiajs/vue3";
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import ProfilesPillarNav from "@/Components/templates/ProfilesPillarNav.vue";
+import TaskProfileLinks from "@/Components/TaskProfileLinks.vue";
+import NotebookLiveEditor from "@/Components/NotebookLiveEditor.vue";
+import NotebookReading from "@/Components/NotebookReading.vue";
 import Modal from "@/Components/atoms/Modal.vue";
 import Glyph from "@/domains/logerProfile/ProfileGlyph.vue";
 import {
@@ -54,6 +64,9 @@ const props = defineProps<{
     workspace: Workspace;
 }>();
 const state = ref<Workspace>(JSON.parse(JSON.stringify(props.workspace)));
+const savedWorkspace = ref<Workspace>(
+    JSON.parse(JSON.stringify(props.workspace)),
+);
 const boards = computed(() => state.value.boards);
 const categories = computed(() => state.value.categories);
 const purchases = computed(() => state.value.purchases);
@@ -93,8 +106,52 @@ const selectedStage = computed(() =>
 const selectedPage = computed(() =>
     selectedStage.value?.items.find((page) => page.id === pageId.value),
 );
+const pageStats = computed(() => {
+    const text = selectedPage.value?.body ?? "";
+    return {
+        words: text.trim() ? text.trim().split(/\s+/u).length : 0,
+        characters: Array.from(text).length,
+    };
+});
+const hasUnsavedPage = computed(() => {
+    const saved = savedWorkspace.value.boards
+        .flatMap(pagesOf)
+        .find((page) => page.id === pageId.value);
+    return (
+        !!selectedPage.value &&
+        JSON.stringify(selectedPage.value) !== JSON.stringify(saved)
+    );
+});
+const editingPage = ref(false);
+const indexVisible = ref(true);
+const focusMode = ref(false);
+const toolsVisible = ref(false);
+const statisticsVisible = ref(false);
+const toggleReading = async () => {
+    if (editingPage.value) await finishEditing();
+    else editingPage.value = true;
+};
+const pageSearch = ref("");
+const visiblePages = computed(
+    () =>
+        selectedStage.value?.items.filter((page) =>
+            `${page.title} ${page.body}`
+                .toLocaleLowerCase()
+                .includes(pageSearch.value.toLocaleLowerCase()),
+        ) ?? [],
+);
+const selectPage = (id: string) => {
+    if (saving.value) return;
+    pageId.value = id;
+    editingPage.value = false;
+};
+const finishEditing = async () => {
+    if (!selectedPage.value) return;
+    await savePage(selectedPage.value);
+    if (!error.value) editingPage.value = false;
+};
 const viewNames: Record<BoardView, string> = {
-    notebook: "Páginas",
+    notebook: "Cuaderno",
     kanban: "Tarjetas",
     list: "Lista",
 };
@@ -147,6 +204,9 @@ const persist = async (method: string, path: string, data: unknown) => {
             data,
         });
         state.value = response.data.workspace;
+        savedWorkspace.value = JSON.parse(
+            JSON.stringify(response.data.workspace),
+        );
         saveStatus.value = "Guardado";
         return response.data;
     } catch (failure: any) {
@@ -202,6 +262,21 @@ const changeView = async (key: BoardView) => {
     )
         view.value = key;
 };
+const navigateViews = async (event: KeyboardEvent, key: BoardView) => {
+    const keys: BoardView[] = ["notebook", "kanban", "list"];
+    if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+    event.preventDefault();
+    const index = keys.indexOf(key);
+    const target =
+        event.key === "Home"
+            ? 0
+            : event.key === "End"
+              ? 2
+              : (index + (event.key === "ArrowRight" ? 1 : 2)) % 3;
+    const group = (event.currentTarget as HTMLElement).parentElement;
+    await changeView(keys[target]);
+    (group?.querySelectorAll('[role="radio"]')[target] as HTMLElement)?.focus();
+};
 const openBoard = (board: ProfileBoard) => {
     activeBoardId.value = board.id;
     view.value = board.view;
@@ -211,11 +286,17 @@ const openBoard = (board: ProfileBoard) => {
 };
 const saveNotebook = async (notebook: ProfileStage) => {
     if (!activeBoard.value || !notebook.name.trim()) return;
-    await persist("patch", `/boards/${activeBoard.value.id}/notebooks/${notebook.id}`, {
-        name: notebook.name.trim(),
-    });
+    await persist(
+        "patch",
+        `/boards/${activeBoard.value.id}/notebooks/${notebook.id}`,
+        {
+            name: notebook.name.trim(),
+        },
+    );
 };
 const openNotebook = (notebook: ProfileStage) => {
+    editingPage.value = false;
+    pageSearch.value = "";
     stageId.value = notebook.id;
     pageId.value = notebook.items[0]?.id ?? "";
     view.value = "notebook";
@@ -252,6 +333,7 @@ const openPage = (board: ProfileBoard, page: ProfilePage) => {
             stage.items.some((item) => item.id === page.id),
         )?.id ?? "";
     pageId.value = page.id;
+    editingPage.value = false;
     view.value = "notebook";
 };
 const newPage = async () => {
@@ -259,10 +341,11 @@ const newPage = async () => {
     const response = await persist(
         "post",
         `/boards/${activeBoard.value.id}/pages`,
-        { stage_id: Number(selectedStage.value.id), title: "Nueva página" },
+        { stage_id: Number(selectedStage.value.id), title: "Sin título" },
     );
     if (response) {
         pageId.value = response.item_id;
+        editingPage.value = true;
         view.value = "notebook";
     }
 };
@@ -281,6 +364,64 @@ const createBoard = async () => {
         if (board) openBoard(board);
     }
 };
+const followPageLink = (title: string) => {
+    const page = selectedStage.value?.items.find(
+        (item) => item.title.toLocaleLowerCase() === title.toLocaleLowerCase(),
+    );
+    if (page) selectPage(page.id);
+};
+const saveShortcut = (event: KeyboardEvent) => {
+    if (
+        (event.ctrlKey || event.metaKey) &&
+        event.key.toLowerCase() === "s" &&
+        selectedPage.value &&
+        editingPage.value
+    ) {
+        event.preventDefault();
+        if (!saving.value) void finishEditing();
+    }
+};
+onMounted(() => window.addEventListener("keydown", saveShortcut));
+onBeforeUnmount(() => window.removeEventListener("keydown", saveShortcut));
+onMounted(() => {
+    if (window.matchMedia?.("(max-width: 1023px)").matches)
+        indexVisible.value = false;
+    const query = new URLSearchParams(window.location.search);
+    const board = boards.value.find((item) => item.id === query.get("board"));
+    if (!board) return;
+    activeBoardId.value = board.id;
+    const notebook = board.stages.find(
+        (item) => item.id === query.get("notebook"),
+    );
+    stageId.value = notebook?.id ?? "";
+    pageId.value =
+        notebook?.items.find((item) => item.id === query.get("page"))?.id ??
+        notebook?.items[0]?.id ??
+        "";
+    const requestedView = query.get("view");
+    view.value =
+        requestedView === "kanban" || requestedView === "list"
+            ? requestedView
+            : "notebook";
+});
+watch(
+    [activeBoardId, stageId, pageId, view],
+    () => {
+        if (typeof window === "undefined") return;
+        const url = new URL(window.location.href);
+        for (const [key, value] of Object.entries({
+            board: activeBoardId.value,
+            notebook: stageId.value,
+            page: pageId.value,
+            view: activeBoardId.value ? view.value : "",
+        })) {
+            if (value) url.searchParams.set(key, value);
+            else url.searchParams.delete(key);
+        }
+        window.history.replaceState(window.history.state, "", url);
+    },
+    { flush: "post" },
+);
 const setTab = (id: string) => {
     tab.value = id;
     activeBoardId.value = null;
@@ -290,14 +431,21 @@ const setTab = (id: string) => {
 <template>
     <AppLayout
         :title="profile.name"
+        :focus-mode="focusMode && !!selectedStage"
+        :hide-tools="!!selectedStage && !toolsVisible"
         :show-back-button="true"
         @back="router.visit('/loger-profiles')"
     >
         <template #header><ProfilesPillarNav /></template>
         <main
-            class="profile-workspace mx-auto mt-12 w-full max-w-7xl px-4 pb-12 pt-5 text-body-1 sm:px-6 lg:px-8"
+            :class="focusMode && selectedStage ? '!mt-0' : ''"
+            class="profile-workspace mx-auto mt-12 w-full max-w-[1600px] px-4 pb-8 pt-3 text-body-1 sm:px-6 lg:px-8"
         >
-            <p role="status" class="mb-3 text-right text-xs text-body-1/50">
+            <p
+                v-if="!selectedStage"
+                role="status"
+                class="mb-3 text-right text-xs text-body-1/70"
+            >
                 {{ saveStatus }}
             </p>
             <p
@@ -307,7 +455,19 @@ const setTab = (id: string) => {
             >
                 {{ error }}
             </p>
+            <div
+                v-if="activeBoard && !selectedStage"
+                class="mb-1 flex items-center gap-2 text-sm text-body-1/75"
+            >
+                <button
+                    class="min-h-[44px] hover:text-primary"
+                    @click="activeBoardId = null"
+                >
+                    {{ profile.name }}</button
+                ><span>/ {{ activeBoard.name }}</span>
+            </div>
             <header
+                v-if="!activeBoard"
                 class="flex flex-wrap items-center justify-between gap-5 pb-6"
             >
                 <div class="flex min-w-0 items-center gap-4">
@@ -318,7 +478,7 @@ const setTab = (id: string) => {
                     </div>
                     <div class="min-w-0">
                         <button
-                            class="mb-1 text-xs text-body-1/60 hover:text-primary"
+                            class="mb-1 text-xs text-body-1/75 hover:text-primary"
                             @click="router.visit('/loger-profiles')"
                         >
                             Perfiles /
@@ -328,7 +488,7 @@ const setTab = (id: string) => {
                         >
                             {{ profile.name }}
                         </h1>
-                        <p class="mt-1 text-sm text-body-1/60">
+                        <p class="mt-1 text-sm text-body-1/75">
                             Su día a día, sus historias y todo lo que los
                             conecta.
                         </p>
@@ -346,8 +506,9 @@ const setTab = (id: string) => {
                 </div>
             </header>
             <nav
+                v-if="!selectedStage"
                 aria-label="Secciones del perfil"
-                class="profile-tabs mb-6 flex gap-6 overflow-x-auto overflow-y-hidden border-b border-body-1/10"
+                class="profile-tabs mb-4 flex gap-4 overflow-x-auto overflow-y-hidden border-b border-body-1/10"
             >
                 <button
                     v-for="item in tabs"
@@ -356,7 +517,7 @@ const setTab = (id: string) => {
                     :class="
                         tab === item.id && !activeBoard
                             ? 'border-primary font-semibold text-primary'
-                            : 'border-transparent text-body-1/60 hover:text-body-1'
+                            : 'border-transparent text-body-1/75 hover:text-body-1'
                     "
                     :aria-current="
                         tab === item.id && !activeBoard ? 'page' : undefined
@@ -375,11 +536,40 @@ const setTab = (id: string) => {
             <template v-if="activeBoard">
                 <div
                     ref="boardHeader"
-                    class="mb-5 flex scroll-mt-32 flex-wrap items-start justify-between gap-4"
+                    class="mb-2 flex min-h-[44px] scroll-mt-32 flex-wrap items-center justify-between gap-2"
                 >
-                    <div>
+                    <div
+                        v-if="selectedStage"
+                        class="flex min-w-0 items-center gap-2 text-sm"
+                    >
                         <button
-                            class="mb-3 flex items-center gap-1 text-xs text-body-1/60 hover:text-primary"
+                            :aria-label="'Volver a ' + activeBoard.name"
+                            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-body-1/75 hover:bg-body-1/5"
+                            @click="backFromNotebook"
+                        >
+                            ←
+                        </button>
+                        <button
+                            class="truncate text-body-1/75 hover:text-primary"
+                            @click="activeBoardId = null"
+                        >
+                            {{ profile.name }}
+                        </button>
+                        <span class="text-body-1/40">/</span>
+                        <button
+                            class="truncate text-body-1/75 hover:text-primary"
+                            @click="backFromNotebook"
+                        >
+                            {{ activeBoard.name }}
+                        </button>
+                        <span class="text-body-1/40">/</span>
+                        <h2 class="truncate text-sm font-semibold">
+                            {{ selectedStage.name }}
+                        </h2>
+                    </div>
+                    <div v-else>
+                        <button
+                            class="mb-3 flex items-center gap-1 text-xs text-body-1/75 hover:text-primary"
                             @click="backFromNotebook"
                         >
                             {{
@@ -396,21 +586,13 @@ const setTab = (id: string) => {
                                 :style="{ color: activeBoard.color }"
                             />{{ selectedStage?.name ?? activeBoard.name }}
                         </h2>
-                        <p class="mt-1 text-sm text-body-1/60">
-                            {{
-                                selectedStage
-                                    ? activeBoard.name +
-                                      " / " +
-                                      selectedStage.name
-                                    : activeBoard.description
-                            }}
-                        </p>
                     </div>
-                    <div class="flex flex-wrap items-center gap-3">
+                    <div class="flex shrink-0 items-center gap-3">
                         <div
                             class="flex rounded-lg border border-body-1/10 bg-base-lvl-3 p-1"
                             v-if="selectedStage"
-                            aria-label="Vista de las páginas"
+                            role="radiogroup"
+                            aria-label="Vista del cuaderno"
                         >
                             <button
                                 v-for="(label, key) in viewNames"
@@ -419,9 +601,12 @@ const setTab = (id: string) => {
                                 :class="
                                     view === key
                                         ? 'bg-body-1/10 font-semibold text-body-1'
-                                        : 'text-body-1/50'
+                                        : 'text-body-1/70'
                                 "
-                                :aria-pressed="view === key"
+                                role="radio"
+                                :aria-checked="view === key"
+                                :tabindex="view === key ? 0 : -1"
+                                @keydown="navigateViews($event, key)"
                                 @click="changeView(key)"
                             >
                                 {{ label }}
@@ -433,7 +618,7 @@ const setTab = (id: string) => {
                             :disabled="saving"
                             @click="newPage"
                         >
-                            <Glyph name="plus" />Nueva página
+                            <Glyph name="plus" />Añadir página
                         </button>
                         <button
                             v-else
@@ -451,11 +636,11 @@ const setTab = (id: string) => {
                     <div class="mb-5 flex items-center justify-between gap-3">
                         <div>
                             <h3 class="text-base font-semibold">Cuadernos</h3>
-                            <p class="mt-1 text-sm text-body-1/60">
+                            <p class="mt-1 text-sm text-body-1/75">
                                 Cada cuaderno reúne sus propias páginas.
                             </p>
                         </div>
-                        <span class="text-xs text-body-1/50"
+                        <span class="text-xs text-body-1/70"
                             >{{ activeBoard.stages.length }} cuadernos</span
                         >
                     </div>
@@ -475,7 +660,7 @@ const setTab = (id: string) => {
                                 {{ notebook.name }}
                             </h4>
                             <div
-                                class="mt-auto flex w-full items-center justify-between gap-2 text-xs text-body-1/60"
+                                class="mt-auto flex w-full items-center justify-between gap-2 text-xs text-body-1/75"
                             >
                                 <span
                                     >{{ notebook.items.length }}
@@ -488,7 +673,7 @@ const setTab = (id: string) => {
                             </div>
                         </button>
                         <button
-                            class="flex min-h-[180px] flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-body-1/20 p-5 text-sm text-body-1/60 hover:border-primary hover:text-primary"
+                            class="flex min-h-[180px] flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-body-1/20 p-5 text-sm text-body-1/75 hover:border-primary hover:text-primary"
                             @click="panel = 'notebook'"
                         >
                             <Glyph name="plus" />Crear cuaderno
@@ -497,40 +682,188 @@ const setTab = (id: string) => {
                 </section>
                 <section
                     v-else-if="view === 'notebook'"
-                    class="grid min-h-[460px] overflow-hidden rounded-xl border border-body-1/10 bg-base-lvl-3 lg:grid-cols-[230px_minmax(0,1fr)]"
+                    :style="
+                        focusMode
+                            ? { minHeight: 'calc(100dvh - 72px)' }
+                            : undefined
+                    "
+                    class="grid min-h-[calc(100dvh-190px)] overflow-hidden rounded-xl border border-body-1/10 bg-base-lvl-3"
+                    :class="
+                        indexVisible
+                            ? 'grid-rows-[auto_auto_1fr_auto] lg:grid-cols-[230px_minmax(0,1fr)] lg:grid-rows-[auto_1fr_auto]'
+                            : 'grid-cols-1 grid-rows-[auto_1fr_auto]'
+                    "
                 >
+                    <div
+                        class="flex min-h-[48px] items-center justify-between gap-2 border-b border-body-1/10 px-2 lg:col-span-full"
+                    >
+                        <button
+                            class="flex h-11 w-11 items-center justify-center rounded-md text-body-1/70 hover:bg-body-1/5 focus-visible:ring-2 focus-visible:ring-primary"
+                            :aria-expanded="indexVisible"
+                            aria-controls="notebook-index"
+                            :aria-label="
+                                indexVisible
+                                    ? 'Ocultar índice'
+                                    : 'Mostrar índice'
+                            "
+                            :title="
+                                indexVisible
+                                    ? 'Ocultar índice'
+                                    : 'Mostrar índice'
+                            "
+                            @click="indexVisible = !indexVisible"
+                        >
+                            <Glyph name="sidebar" />
+                        </button>
+                        <div class="flex items-center gap-1">
+                            <button
+                                class="flex h-11 w-11 items-center justify-center rounded-md text-body-1/80 hover:bg-body-1/5 focus-visible:ring-2 focus-visible:ring-primary"
+                                :aria-pressed="focusMode"
+                                :aria-label="
+                                    focusMode
+                                        ? 'Salir de concentración'
+                                        : 'Modo concentración'
+                                "
+                                :title="
+                                    focusMode
+                                        ? 'Salir de concentración'
+                                        : 'Modo concentración'
+                                "
+                                @click="focusMode = !focusMode"
+                            >
+                                <Glyph
+                                    :name="focusMode ? 'collapse' : 'expand'"
+                                />
+                            </button>
+                            <button
+                                v-if="selectedPage"
+                                class="flex h-11 w-11 items-center justify-center rounded-md text-body-1/70 hover:bg-body-1/5 focus-visible:ring-2 focus-visible:ring-primary"
+                                :class="
+                                    editingPage
+                                        ? 'bg-primary/15 text-primary ring-1 ring-primary/40'
+                                        : ''
+                                "
+                                :aria-pressed="editingPage"
+                                :disabled="saving"
+                                :aria-label="
+                                    editingPage
+                                        ? 'Guardar y leer'
+                                        : 'Editar página'
+                                "
+                                :title="
+                                    editingPage
+                                        ? 'Guardar y leer'
+                                        : 'Editar página'
+                                "
+                                @click="toggleReading"
+                            >
+                                <Glyph
+                                    :name="editingPage ? 'book' : 'pencil'"
+                                />
+                            </button>
+                            <details
+                                class="relative"
+                                @keydown.esc="
+                                    (
+                                        $event.currentTarget as HTMLDetailsElement
+                                    ).open = false
+                                "
+                            >
+                                <summary
+                                    aria-label="Opciones de página"
+                                    title="Opciones de página"
+                                    class="flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-md text-body-1/70 hover:bg-body-1/5 focus-visible:ring-2 focus-visible:ring-primary"
+                                >
+                                    <Glyph name="more" />
+                                </summary>
+                                <div
+                                    class="absolute right-0 top-full z-20 flex w-60 flex-col gap-2 rounded-lg border border-body-1/15 bg-base-lvl-3 p-3 shadow-xl"
+                                >
+                                    <button
+                                        class="min-h-[44px] rounded px-2 text-left text-sm hover:bg-body-1/5"
+                                        :disabled="saving"
+                                        @click="newPage"
+                                    >
+                                        Añadir página
+                                    </button>
+                                    <label
+                                        class="flex min-h-[44px] items-center gap-2 text-sm"
+                                        ><input
+                                            type="checkbox"
+                                            v-model="toolsVisible"
+                                        />Mostrar herramientas</label
+                                    >
+                                    <label
+                                        class="flex min-h-[44px] items-center gap-2 text-sm"
+                                        ><input
+                                            type="checkbox"
+                                            v-model="statisticsVisible"
+                                        />Mostrar estadísticas</label
+                                    >
+                                    <label
+                                        v-if="selectedPage"
+                                        class="flex flex-col gap-2 text-xs text-body-1/70"
+                                        >Tipo de página<select
+                                            v-model="selectedPage.kind"
+                                            aria-label="Tipo de página"
+                                            :disabled="saving"
+                                            @change="savePage(selectedPage)"
+                                            class="workspace-input"
+                                        >
+                                            <option value="note">Página</option>
+                                            <option value="task">Tarea</option>
+                                            <option value="event">
+                                                Evento
+                                            </option>
+                                        </select></label
+                                    >
+                                    <label
+                                        class="flex flex-col gap-2 text-xs text-body-1/70"
+                                        >Nombre del cuaderno<input
+                                            v-model="selectedStage.name"
+                                            aria-label="Nombre del cuaderno"
+                                            :disabled="saving"
+                                            @change="
+                                                saveNotebook(selectedStage)
+                                            "
+                                            class="workspace-input"
+                                    /></label>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
                     <aside
+                        v-if="indexVisible"
+                        id="notebook-index"
                         class="border-b border-body-1/10 bg-base-lvl-2/40 p-4 lg:border-b-0 lg:border-r"
                     >
-                        <p class="mb-4 text-xs text-body-1/50">
-                            Páginas de este cuaderno
-                        </p>
+                        <input
+                            v-model="pageSearch"
+                            type="search"
+                            aria-label="Buscar en el cuaderno"
+                            placeholder="Buscar en el cuaderno…"
+                            class="workspace-input my-3 w-full"
+                        />
                         <div
                             v-for="stage in [selectedStage]"
                             :key="stage.id"
                             class="mb-5"
                         >
-                            <input
-                                v-model="stage.name"
-                                @change="saveNotebook(stage)"
-                                :disabled="saving"
-                                aria-label="Nombre del cuaderno"
-                                class="mb-2 w-full border-0 bg-transparent p-0 text-sm font-semibold focus:ring-0"
-                            />
                             <div class="flex flex-col gap-1">
                                 <button
-                                    v-for="page in stage.items"
+                                    v-for="page in visiblePages"
                                     :key="page.id"
-                                    class="flex items-start gap-2 rounded-md px-2 py-2 text-left text-xs leading-5"
+                                    class="flex min-h-[44px] items-start gap-2 rounded-md px-2 py-3 text-left text-sm leading-5"
+                                    :aria-current="
+                                        pageId === page.id ? 'page' : undefined
+                                    "
+                                    :disabled="saving"
                                     :class="
                                         pageId === page.id
                                             ? 'bg-primary/10 text-primary'
-                                            : 'text-body-1/60 hover:bg-body-1/5'
+                                            : 'text-body-1/75 hover:bg-body-1/5'
                                     "
-                                    @click="
-                                        stageId = stage.id;
-                                        pageId = page.id;
-                                    "
+                                    @click="selectPage(page.id)"
                                 >
                                     <Glyph
                                         :name="
@@ -545,34 +878,26 @@ const setTab = (id: string) => {
                                 </button>
                             </div>
                         </div>
+                        <p
+                            v-if="!visiblePages.length"
+                            class="py-3 text-sm text-body-1/75"
+                        >
+                            No hay páginas que coincidan.
+                        </p>
                     </aside>
                     <article
                         v-if="selectedPage"
-                        class="min-w-0 px-5 py-7 sm:px-10 lg:px-12"
+                        class="min-w-0 px-4 py-5 sm:px-6 lg:px-8"
                     >
-                        <div
-                            class="mb-7 flex flex-wrap items-center justify-between gap-3 text-xs text-body-1/50"
+                        <h3
+                            v-if="!editingPage"
+                            class="break-words text-2xl font-semibold leading-tight sm:text-3xl"
                         >
-                            <span
-                                >{{ activeBoard.name }} /
-                                {{ selectedStage?.name }}</span
-                            ><label class="flex items-center gap-2"
-                                >Mostrar como<select
-                                    v-model="selectedPage.kind"
-                                    @change="savePage(selectedPage)"
-                                    aria-label="Tipo de página"
-                                    :disabled="saving"
-                                    class="rounded-md border border-body-1/10 bg-base px-2 py-1 text-body-1"
-                                >
-                                    <option value="note">Página</option>
-                                    <option value="task">Tarea</option>
-                                    <option value="event">Evento</option>
-                                </select></label
-                            >
-                        </div>
+                            {{ selectedPage.title }}
+                        </h3>
                         <input
+                            v-else
                             v-model="selectedPage.title"
-                            @change="savePage(selectedPage)"
                             aria-label="Título de la página"
                             :disabled="saving"
                             class="w-full border-0 bg-transparent p-0 text-2xl font-semibold leading-tight focus:ring-0 sm:text-3xl"
@@ -592,52 +917,96 @@ const setTab = (id: string) => {
                                     : "Marcar como completada"
                             }}</label
                         >
+                        <p
+                            v-if="selectedPage.kind === 'event' && !editingPage"
+                            class="mt-5 text-sm text-body-1/85"
+                        >
+                            <span class="mr-2 font-medium"
+                                >Fecha del evento</span
+                            >
+                            <time
+                                v-if="selectedPage.when"
+                                :datetime="selectedPage.when"
+                                >{{ displayWhen(selectedPage.when) }}</time
+                            >
+                            <span v-else>Sin fecha programada</span>
+                        </p>
                         <label
-                            v-if="selectedPage.kind === 'event'"
-                            class="mt-5 flex flex-col gap-2 text-sm text-body-1/60"
+                            v-if="selectedPage.kind === 'event' && editingPage"
+                            class="mt-5 flex flex-col gap-2 text-sm text-body-1/75"
                             >Cuándo<input
                                 v-model="selectedPage.when"
                                 type="datetime-local"
                                 :disabled="saving"
-                                @change="savePage(selectedPage)"
                                 placeholder="Añadir fecha y hora"
                                 class="workspace-input"
                         /></label>
-                        <textarea
+                        <TaskProfileLinks
+                            v-if="selectedPage.kind === 'task'"
+                            :task-id="selectedPage.id"
+                        />
+                        <NotebookReading
+                            v-if="!editingPage && selectedPage.body.trim()"
+                            :content="selectedPage.body"
+                            :pages="selectedStage?.items ?? []"
+                            @open-page="followPageLink"
+                            class="mt-8"
+                        />
+                        <p v-else-if="!editingPage" class="mt-8 text-body-1/75">
+                            Esta página aún no tiene contenido. Pulsa Editar
+                            para empezar.
+                        </p>
+                        <NotebookLiveEditor
+                            v-if="editingPage"
+                            :key="selectedPage.id"
                             v-model="selectedPage.body"
-                            @change="savePage(selectedPage)"
-                            aria-label="Contenido de la página"
                             :disabled="saving"
-                            placeholder="Empieza a escribir aquí…"
-                            class="mt-6 min-h-[240px] w-full resize-y border-0 bg-transparent p-0 text-sm leading-7 text-body-1/80 focus:ring-0"
-                        ></textarea>
+                            :pages="selectedStage?.items ?? []"
+                        />
                         <button
-                            class="workspace-button workspace-primary"
+                            v-if="editingPage"
+                            class="workspace-button workspace-primary mt-4"
                             :disabled="saving"
-                            @click="savePage(selectedPage)"
+                            @click="finishEditing"
                         >
                             Guardar página
                         </button>
-                        <p
-                            class="mt-4 border-t border-body-1/10 pt-4 text-xs text-body-1/40"
-                        >
-                            Esta página pertenece a {{ selectedStage?.name }},
-                            dentro de {{ activeBoard.name }}, y está vinculada a
-                            {{ profile.name }}.
-                        </p>
                     </article>
                     <div
                         v-else
                         class="flex flex-col items-center justify-center gap-4 p-10 text-center"
                     >
                         <Glyph class="!h-8 !w-8 text-body-1/30" />
-                        <p class="text-sm text-body-1/60">
+                        <p class="text-sm text-body-1/75">
                             Tu primera página empieza aquí.
                         </p>
                         <button class="workspace-button" @click="newPage">
                             Crear página
                         </button>
                     </div>
+                    <footer
+                        v-if="selectedPage"
+                        aria-label="Estado del documento"
+                        class="flex h-6 items-center justify-end gap-4 overflow-x-auto whitespace-nowrap border-t border-body-1/10 px-3 text-[11px] leading-none text-body-1/70 lg:col-span-full"
+                    >
+                        <span role="status" aria-live="polite">{{
+                            saving
+                                ? "Guardando…"
+                                : hasUnsavedPage
+                                  ? "Cambios sin guardar"
+                                  : "Guardado"
+                        }}</span>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <span>{{
+                                editingPage ? "Edición" : "Lectura"
+                            }}</span
+                            ><span v-if="statisticsVisible"
+                                >{{ pageStats.words }} palabras</span
+                            ><span v-if="statisticsVisible"
+                                >{{ pageStats.characters }} caracteres</span
+                            >
+                        </div>
+                    </footer>
                 </section>
                 <section
                     v-else-if="view === 'kanban'"
@@ -664,7 +1033,7 @@ const setTab = (id: string) => {
                                 class="rounded-lg border border-body-1/10 bg-base-lvl-3 p-4 text-left transition hover:border-primary/40"
                                 @click="openPage(activeBoard, page)"
                             >
-                                <span class="text-xs text-body-1/50">{{
+                                <span class="text-xs text-body-1/70">{{
                                     kindNames[page.kind]
                                 }}</span>
                                 <h4
@@ -679,14 +1048,14 @@ const setTab = (id: string) => {
                                 </h4>
                                 <p
                                     v-if="page.when"
-                                    class="mt-4 text-xs text-body-1/50"
+                                    class="mt-4 text-xs text-body-1/70"
                                 >
                                     {{ displayWhen(page.when) }}
                                 </p>
                             </button>
                         </div>
                         <button
-                            class="mt-3 w-full rounded-md py-2 text-left text-xs text-body-1/50 hover:text-primary"
+                            class="mt-3 w-full rounded-md py-2 text-left text-xs text-body-1/70 hover:text-primary"
                             @click="
                                 stageId = stage.id;
                                 newPage();
@@ -702,7 +1071,7 @@ const setTab = (id: string) => {
                 >
                     <template v-for="stage in [selectedStage]" :key="stage.id"
                         ><h3
-                            class="bg-base-lvl-2/40 px-5 py-3 text-xs font-semibold text-body-1/60"
+                            class="bg-base-lvl-2/40 px-5 py-3 text-xs font-semibold text-body-1/75"
                         >
                             {{ stage.name }}
                         </h3>
@@ -761,7 +1130,7 @@ const setTab = (id: string) => {
                                     <p class="text-sm font-medium">
                                         {{ event.title }}
                                     </p>
-                                    <p class="mt-1 text-xs text-body-1/50">
+                                    <p class="mt-1 text-xs text-body-1/70">
                                         {{ event.board.name }} /
                                         {{ displayWhen(event.when) }}
                                     </p>
@@ -780,7 +1149,7 @@ const setTab = (id: string) => {
                                 <h2 class="text-base font-semibold">
                                     Por hacer
                                 </h2>
-                                <span class="text-xs text-body-1/50"
+                                <span class="text-xs text-body-1/70"
                                     >{{ pending.length }} pendientes</span
                                 >
                             </div>
@@ -800,7 +1169,13 @@ const setTab = (id: string) => {
                                             ? 'text-body-1/35 line-through'
                                             : 'text-body-1/80'
                                     "
-                                    >{{ page.title }}</span
+                                    >{{ page.title
+                                    }}<a
+                                        v-if="page.source_url"
+                                        :href="page.source_url"
+                                        class="ml-2 inline-block min-h-[24px] text-xs text-primary underline"
+                                        >Abrir tarea</a
+                                    ></span
                                 ></label
                             >
                         </div>
@@ -816,7 +1191,7 @@ const setTab = (id: string) => {
                                 <h2 class="text-base font-semibold">
                                     Sus carpetas
                                 </h2>
-                                <p class="mt-1 text-xs text-body-1/50">
+                                <p class="mt-1 text-xs text-body-1/70">
                                     Un espacio para cada parte de su vida.
                                 </p>
                             </div>
@@ -847,12 +1222,12 @@ const setTab = (id: string) => {
                                     {{ board.name }}
                                 </h3>
                                 <p
-                                    class="mt-1 text-xs leading-5 text-body-1/50"
+                                    class="mt-1 text-xs leading-5 text-body-1/70"
                                 >
                                     {{ board.description }}
                                 </p>
                                 <div
-                                    class="mt-auto flex w-full items-center justify-between gap-2 pt-5 text-xs text-body-1/50"
+                                    class="mt-auto flex w-full items-center justify-between gap-2 pt-5 text-xs text-body-1/70"
                                 >
                                     <span
                                         >{{ board.stages.length }}
@@ -886,7 +1261,7 @@ const setTab = (id: string) => {
                             <h2
                                 class="mb-4 flex items-center gap-2 text-base font-semibold"
                             >
-                                <Glyph name="wallet" class="text-body-1/50" />Su
+                                <Glyph name="wallet" class="text-body-1/70" />Su
                                 presupuesto
                             </h2>
                             <div
@@ -930,7 +1305,7 @@ const setTab = (id: string) => {
                                 </h3>
                                 <p
                                     v-if="!state.transactions.length"
-                                    class="text-sm text-body-1/50"
+                                    class="text-sm text-body-1/70"
                                 >
                                     No hay transacciones en las categorías
                                     vinculadas.
@@ -942,7 +1317,7 @@ const setTab = (id: string) => {
                                 >
                                     <div>
                                         <p>{{ item.name }}</p>
-                                        <p class="mt-1 text-xs text-body-1/50">
+                                        <p class="mt-1 text-xs text-body-1/70">
                                             {{ item.category }}
                                         </p>
                                     </div>
@@ -963,7 +1338,7 @@ const setTab = (id: string) => {
                             >
                                 <Glyph
                                     name="basket"
-                                    class="text-body-1/50"
+                                    class="text-body-1/70"
                                 />Para comprar
                             </h2>
                             <div
@@ -1015,7 +1390,7 @@ const setTab = (id: string) => {
                         <h2 class="mb-2 text-base font-semibold">
                             Sus seguimientos
                         </h2>
-                        <p class="mb-5 text-sm text-body-1/50">
+                        <p class="mb-5 text-sm text-body-1/70">
                             Las necesidades recurrentes que quieres tener
                             presentes.
                         </p>
@@ -1026,7 +1401,7 @@ const setTab = (id: string) => {
                         >
                             <div>
                                 <h3 class="font-medium">{{ item.name }}</h3>
-                                <p class="mt-1 text-sm text-body-1/50">
+                                <p class="mt-1 text-sm text-body-1/70">
                                     {{ item.detail }}
                                 </p>
                             </div>
@@ -1052,7 +1427,7 @@ const setTab = (id: string) => {
                         "
                         class="rounded-xl border border-dashed border-body-1/20 p-8 text-center"
                     >
-                        <p class="text-sm text-body-1/60">
+                        <p class="text-sm text-body-1/75">
                             Todavía no hay elementos vinculados en esta sección.
                         </p>
                         <button
@@ -1069,7 +1444,7 @@ const setTab = (id: string) => {
                     <h2 class="mb-1 text-sm font-semibold">
                         Conectado a {{ profile.name }}
                     </h2>
-                    <p class="mb-5 text-xs leading-5 text-body-1/50">
+                    <p class="mb-5 text-xs leading-5 text-body-1/70">
                         Información que ya tiene su lugar en Loger.
                     </p>
                     <button
@@ -1137,7 +1512,7 @@ const setTab = (id: string) => {
                         <button
                             v-for="item in occurrences"
                             :key="item.name"
-                            class="mb-3 flex w-full items-center gap-2 text-left text-sm text-body-1/60"
+                            class="mb-3 flex w-full items-center gap-2 text-left text-sm text-body-1/75"
                             @click="setTab('tracking')"
                         >
                             <span
@@ -1168,13 +1543,13 @@ const setTab = (id: string) => {
                                       : "Conecta lo que ya existe"
                             }}
                         </h2>
-                        <p class="mt-1 text-xs text-body-1/50">
+                        <p class="mt-1 text-xs text-body-1/70">
                             Organiza la información vinculada a este perfil.
                         </p>
                     </div>
                     <button
                         aria-label="Cerrar"
-                        class="px-2 text-xl text-body-1/50"
+                        class="px-2 text-xl text-body-1/70"
                         @click="panel = null"
                     >
                         ×
@@ -1205,7 +1580,7 @@ const setTab = (id: string) => {
                                 :class="
                                     boardView === key
                                         ? 'border-primary bg-primary/5 text-primary'
-                                        : 'border-body-1/10 text-body-1/60'
+                                        : 'border-body-1/10 text-body-1/75'
                                 "
                                 ><input
                                     v-model="boardView"
@@ -1215,7 +1590,7 @@ const setTab = (id: string) => {
                                 /><Glyph />{{ label }}</label
                             >
                         </div>
-                        <p class="mt-3 text-xs text-body-1/50">
+                        <p class="mt-3 text-xs text-body-1/70">
                             Puedes cambiar de vista después. Las páginas siguen
                             siendo las mismas.
                         </p>
@@ -1232,7 +1607,7 @@ const setTab = (id: string) => {
                     class="flex flex-col gap-5"
                     @submit.prevent="createNotebook"
                 >
-                    <p class="text-sm text-body-1/60">
+                    <p class="text-sm text-body-1/75">
                         Se guardará dentro de {{ activeBoard?.name }}. Aquí
                         podrás añadir sus páginas.
                     </p>
@@ -1256,7 +1631,7 @@ const setTab = (id: string) => {
                     </button>
                 </form>
                 <div v-else class="flex flex-col gap-4">
-                    <p class="text-sm leading-6 text-body-1/60">
+                    <p class="text-sm leading-6 text-body-1/75">
                         El perfil reúne información de otros lugares, sin
                         duplicarla. Selecciona los elementos que deseas reunir
                         aquí. Quitar un vínculo conserva el elemento original.
@@ -1285,7 +1660,7 @@ const setTab = (id: string) => {
                         </label>
                         <p
                             v-if="!filteredLinks.length"
-                            class="text-sm text-body-1/50"
+                            class="text-sm text-body-1/70"
                         >
                             No se encontraron elementos.
                         </p>
@@ -1320,7 +1695,7 @@ const setTab = (id: string) => {
     @apply w-full rounded-lg border border-body-1/15 bg-base px-3 py-2 text-sm text-body-1 focus:border-primary focus:ring-primary;
 }
 .connection-row {
-    @apply flex w-full items-center gap-3 border-b border-body-1/5 py-4 text-left text-body-1/50 transition hover:text-primary;
+    @apply flex w-full items-center gap-3 border-b border-body-1/5 py-4 text-left text-body-1/70 transition hover:text-primary;
 }
 .connection-row > span {
     @apply min-w-0 flex-1;
@@ -1341,6 +1716,6 @@ const setTab = (id: string) => {
     @apply mt-1 rounded text-primary focus:ring-primary;
 }
 .connection-option small {
-    @apply mt-1 block text-xs text-body-1/50;
+    @apply mt-1 block text-xs text-body-1/70;
 }
 </style>

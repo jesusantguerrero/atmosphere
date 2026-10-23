@@ -1,5 +1,5 @@
 <script setup lang="ts">
-    import { provide, ref, computed, onMounted, watch } from 'vue'
+    import { provide, ref, computed, onMounted, watch, defineComponent, h } from 'vue'
     import { router } from '@inertiajs/vue3'
     import { AtSide, AtTeamSelect } from "atmosphere-ui"
     import { useLocalStorage } from "@vueuse/core"
@@ -33,11 +33,17 @@
 
     const props = defineProps<{
         title: string;
+        hideTools?: boolean;
+        focusMode?: boolean;
         showBackButton: boolean;
         isOnboarding: boolean;
         user: Record<string, any>
     }>()
 
+    const AccessibleNavigationLink = defineComponent({
+        inheritAttrs: false,
+        setup: (_, { attrs, slots }) => () => h(Link, { ...attrs, 'aria-label': attrs.label, title: attrs.label }, slots),
+    });
     const context = useAppContextStore()
     const navigationPage = usePage()
     const pageProps = navigationPage.props
@@ -157,6 +163,8 @@
 <template>
     <AppProvider>
         <AppShell
+            :hide-tools="hideTools || focusMode"
+            :focus-mode="focusMode"
             :is-expanded="isExpanded"
             :nav-class="[!$slots.header && `${panelShadow} border-b`]"
             :is-aside-expanded="isAsideExpanded"
@@ -380,9 +388,9 @@
                     title="Loger"
                     :class="panelShadow"
                     v-model:isExpanded="isExpanded"
-                    :menu="currentMenu"
+                    :menu="currentMenu.map(item => ({ ...item, as: AccessibleNavigationLink }))"
                     :counters="navCounters"
-                    :header-menu="headerMenu"
+                    :header-menu="headerMenu.map(item => ({ ...item, as: AccessibleNavigationLink }))"
                     :current-path="currentPath"
                     brand-container-class="py-2"
                     nav-container-class="px-2 pt-1 space-y-2 border-t"
@@ -412,7 +420,7 @@
 
             <template #main-section>
                 <!-- Page Heading -->
-                <header v-if="$slots.header" :class="[isExpanded ? 'lg:pr-56' : 'lg:pr-20', panelShadow]" class="fixed z-30 w-full overflow-hidden border-b bg-base-lvl-3 base-deep-1">
+                <header v-if="$slots.header && !focusMode" :class="[isExpanded ? 'lg:pr-56' : 'lg:pr-20', panelShadow]" class="fixed z-30 w-full overflow-hidden border-b bg-base-lvl-3 base-deep-1">
                     <slot name="header" />
                 </header>
                 <!-- Page Content -->
@@ -426,8 +434,8 @@
                     <JetBanner active-class="mt-14" />
                     <slot />
                 </main>
-                <MobileMenuBar :menu="mobileMenu" @action="handleActions" />
-                <MobileQuickCapture v-if="showQuickCapture" />
+                <MobileMenuBar v-if="!focusMode" :menu="mobileMenu" @action="handleActions" />
+                <MobileQuickCapture v-if="showQuickCapture && !focusMode" />
             </template>
 
             <template #aside-widget>

@@ -26,7 +26,7 @@ class ProfileWorkspaceService
 
     public function overview(int $teamId): array
     {
-        $profiles = LogerProfile::query()->where('team_id', $teamId)->orderBy('name')->get();
+        $profiles = LogerProfile::query()->where('team_id', $teamId)->orderByRaw('CASE WHEN personal_user_id = ? THEN 0 ELSE 1 END', [auth()->id() ?? 0])->orderBy('name')->get();
         $links = LogerProfileEntity::query()->without('entity')->where('team_id', $teamId)->whereIn('profile_id', $profiles->modelKeys())->get();
         $planIds = $links->where('entity_type', Plan::class)->pluck('entity_id');
         $itemIds = $links->where('entity_type', PlanItem::class)->pluck('entity_id');
@@ -43,12 +43,25 @@ class ProfileWorkspaceService
                 ->map(fn ($item) => $this->page($item, $linkedItems->contains($item->id) || $plans->get($item->plan_id)?->plan_type_name === PlanTypes::CHORES));
 
             return [
-                'id' => $profile->id, 'name' => $profile->name,
+                'id' => $profile->id, 'name' => $profile->name, 'personal_user_id' => $profile->personal_user_id,
                 'url' => route('loger-profiles.show', ['profileId' => $profile->id], false),
                 'pending' => $pages->where('kind', 'task')->where('done', false)->values()->all(),
                 'upcoming' => $pages->where('kind', 'event')->where('done', false)->filter(fn ($page) => $page['when'] && Carbon::parse($page['when'])->greaterThanOrEqualTo(today()))->sortBy('when')->values()->all(),
             ];
         })->all();
+    }
+
+    public function setTaskProfiles(PlanItem $task, array $profileIds): void
+    {
+        $task->getConnection()->transaction(function () use ($task, $profileIds): void {
+            $profiles = LogerProfile::query()->where('team_id', $task->team_id)->whereIn('id', $profileIds)->get();
+            abort_unless($profiles->count() === count(array_unique($profileIds)), 422);
+            PlanItem::query()->without(['fields', 'checklist'])->whereKey($task->id)->lockForUpdate()->firstOrFail();
+            LogerProfileEntity::query()->without('entity')->where('team_id', $task->team_id)->where('entity_type', PlanItem::class)->where('entity_id', $task->id)->whereNotIn('profile_id', $profileIds)->delete();
+            foreach ($profiles as $profile) {
+                $this->link($profile, $task, 'task');
+            }
+        });
     }
 
     public function links(LogerProfile $profile): Collection
@@ -192,6 +205,7 @@ class ProfileWorkspaceService
             'body' => $values->get('description')?->value ?? '',
             'kind' => $values->get('page_kind')?->value ?? ($task ? 'task' : 'note'),
             'when' => $values->get('date')?->value ?? null,
+            'source_url' => route('plans.show', ['plan' => $item->plan_id], false).'?task='.$item->id,
         ];
     }
 

@@ -13,6 +13,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', 'loger.conce
     Route::resource('/housing/occurrence', OccurrenceController::class);
 
     Route::controller(OccurrenceController::class)->group(function () {
+        Route::post('/housing/occurrences/preview', 'previewConditions')->name('housing.occurrences.preview');
         Route::post('/housing/occurrences/{occurrence}/instances', 'addInstance');
         Route::delete('/housing/occurrences/{occurrence}/instances', 'removeLastInstance');
         Route::delete('/housing/occurrences/{occurrence}', 'destroy');

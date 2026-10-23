@@ -1,10 +1,12 @@
 <template>
     <dialog-modal :show="isOpen" @close="$emit('closed')">
-        <template #title>
-            Edit Item
-        </template>
+        <template #title> Edit Item </template>
 
         <template #content>
+            <TaskProfileLinks
+                v-if="isOpen && recordData?.id"
+                :task-id="recordData.id"
+            />
             <form action="" @submit.prevent="save">
                 <div class="form-group">
                     <label for="title"> Title </label>
@@ -113,9 +115,7 @@
                     </multiselect>
                 </div>
 
-                <div v-if="isLoading">
-                    Loading fields...
-                </div>
+                <div v-if="isLoading">Loading fields...</div>
 
                 <div v-if="visibleFields" class="grid grid-cols-2">
                     <div
@@ -138,68 +138,68 @@
         </template>
 
         <template #footer>
-            <PrimaryButton @click="$emit('cancel')">
-                Cancel
-            </PrimaryButton>
-            <PrimaryButton @click="save()">
-                Save
-            </PrimaryButton>
+            <PrimaryButton @click="$emit('cancel')"> Cancel </PrimaryButton>
+            <PrimaryButton @click="save()"> Save </PrimaryButton>
         </template>
     </dialog-modal>
 </template>
 
 <script>
+import TaskProfileLinks from "@/Components/TaskProfileLinks.vue";
 import DialogModal from "@/Components/atoms/DialogModal.vue";
 import PrimaryButton from "@/Components/atoms/LogerButton.vue";
 import ItemGroupCell from "./ItemGroupCell.vue";
-import { VueDraggableNext as Draggable } from "vue-draggable-next"
+import { VueDraggableNext as Draggable } from "vue-draggable-next";
 export default {
     components: {
+        TaskProfileLinks,
         ItemGroupCell,
         DialogModal,
         PrimaryButton,
-        Draggable
+        Draggable,
     },
     inject: ["users"],
     props: {
         isOpen: {
-            type: Boolean
+            type: Boolean,
         },
         recordData: {
-            type: Object
+            type: Object,
         },
         type: {
             type: String,
-            default: 'task'
+            default: "task",
         },
         boards: {
-            type: Array
-        }
+            type: Array,
+        },
     },
     data() {
         return {
             isLoading: false,
             formData: {},
-            newCheck: {}
+            newCheck: {},
         };
     },
     watch: {
         recordData() {
             this.formData = this.recordData;
-        }
+        },
     },
     computed: {
         visibleFields() {
             if (this.formData.board && this.formData.board.fields) {
                 return this.formData.board.fields
-                .map(field => {
-                    field.order = this.fieldOrder.findIndex(fieldname => field.name == fieldname);
-                    return field;
-                })
-                .filter(field => !field.hide)
-                .sort((a, b) => a.order - b.order)
+                    .map((field) => {
+                        field.order = this.fieldOrder.findIndex(
+                            (fieldname) => field.name == fieldname,
+                        );
+                        return field;
+                    })
+                    .filter((field) => !field.hide)
+                    .sort((a, b) => a.order - b.order);
             }
-            return []
+            return [];
         },
         fieldOrder() {
             const fields = {
@@ -210,49 +210,73 @@ export default {
                     "date",
                     "time",
                     "due_date",
-                    "end_time"
-                ]
-            }
+                    "end_time",
+                ],
+            };
 
             return fields[this.type] || [];
         },
         typeFields() {
             const fields = {
                 event: [
-                    {name : 'date', 'type': 'date', title: "Date"},
-                    {name : 'time', 'type': 'time', title: "Time"},
-                    {name : 'due_date', 'type': 'date',title: "Due Date" },
-                    {name : 'end_time', 'type': 'time', title: "End Time"}
+                    { name: "date", type: "date", title: "Date" },
+                    { name: "time", type: "time", title: "Time" },
+                    { name: "due_date", type: "date", title: "Due Date" },
+                    { name: "end_time", type: "time", title: "End Time" },
                 ],
                 daily: [
-                    {name : 'repeat_on_week', type: 'checkbox_multiple', title: "Repeat On"},
-                    {name : 'repeat_on_month', type: 'radio_single', title: "Repeat On"},
-                    {name : 'repeat_every', type: 'text', title: "Repeat Every"},
-                    {name : 'due_date', type: 'date',title: "Due Date" },
+                    {
+                        name: "repeat_on_week",
+                        type: "checkbox_multiple",
+                        title: "Repeat On",
+                    },
+                    {
+                        name: "repeat_on_month",
+                        type: "radio_single",
+                        title: "Repeat On",
+                    },
+                    {
+                        name: "repeat_every",
+                        type: "text",
+                        title: "Repeat Every",
+                    },
+                    { name: "due_date", type: "date", title: "Due Date" },
                 ],
                 habit: [
-                    {name : 'is_positive', 'type': 'checkbox', title: "Positive"},
-                    {name : 'is_negative', 'type': 'checkbox', title: "Negative"},
-                    {name : 'reset_streak', 'type': 'label', title: "Reset Streak" },
-                ]
-            }
+                    {
+                        name: "is_positive",
+                        type: "checkbox",
+                        title: "Positive",
+                    },
+                    {
+                        name: "is_negative",
+                        type: "checkbox",
+                        title: "Negative",
+                    },
+                    {
+                        name: "reset_streak",
+                        type: "label",
+                        title: "Reset Streak",
+                    },
+                ],
+            };
             return fields[this.type] || [];
-        }
+        },
     },
     methods: {
         prepareForm() {
-            const formData = { ...this.formData, resource_type: this.type }
+            const formData = { ...this.formData, resource_type: this.type };
             if (this.formData.board) {
-                formData.board_id = this.formData.board.id
+                formData.board_id = this.formData.board.id;
             }
 
             if (this.formData.stage) {
-                formData.stage_id = this.formData.stage.id
+                formData.stage_id = this.formData.stage.id;
             }
 
-            delete formData.board
-            delete formData.stage
-            return formData
+            delete formData.board;
+            delete formData.stage;
+            return formData;
         },
 
         save() {
@@ -265,66 +289,65 @@ export default {
                     type: "info",
                     message: `Board and title are required`,
                 });
-                return
+                return;
             }
 
             if (this.formData.board && this.formData.board.fields) {
-                formData.fields = this.formData.board.fields.map(field => {
+                formData.fields = this.formData.board.fields.map((field) => {
                     return {
                         field_id: field.id,
                         field_name: field.name,
                         name: field.name,
                         type: field.type,
                         value: formData[field.name],
-                    }
-                })
+                    };
+                });
             } else {
-                formData.fields = this.formData.fields.map(field => {
-                    field.name = field.field_name
+                formData.fields = this.formData.fields.map((field) => {
+                    field.name = field.field_name;
                     return field;
-                })
+                });
             }
-
 
             axios({
                 url: `/items${param}`,
                 method,
-                data: formData
+                data: formData,
             }).then(() => {
                 this.$emit("saved");
             });
         },
 
         getBoardData() {
-            this.isLoading = true
+            this.isLoading = true;
             Promise.all([
                 axios({
                     url: `/api/stages/`,
                     params: {
-                        "filter[board_id]": this.formData.board.id
-                    }
+                        "filter[board_id]": this.formData.board.id,
+                    },
                 }),
                 axios({
                     url: "/api/fields",
                     params: {
-                        "filter[board_id]": this.formData.board.id
-                    }
-                })
+                        "filter[board_id]": this.formData.board.id,
+                    },
+                }),
             ]).then(([stagesResponse, fieldsResponse]) => {
-                let fields = fieldsResponse.data.data
-                const stages = stagesResponse.data.data
-                this.formData.board["stages"] = stages
-                this.formData["stage"] = stages[0]
+                let fields = fieldsResponse.data.data;
+                const stages = stagesResponse.data.data;
+                this.formData.board["stages"] = stages;
+                this.formData["stage"] = stages[0];
 
-                const fieldNames = fields.map(field => field.name);
+                const fieldNames = fields.map((field) => field.name);
                 this.typeFields.forEach((field) => {
                     if (!fieldNames.includes(field.name)) {
                         fields.push(field);
                     }
                 });
 
-                this.formData.board["fields"] = fields
-                this.isLoading = false
+                this.formData.board["fields"] = fields;
+                this.isLoading = false;
             });
         },
 
@@ -340,8 +363,8 @@ export default {
             }
             this.formData.checklist = [this.newCheck];
             this.newCheck = {};
-        }
-    }
+        },
+    },
 };
 </script>
 
@@ -409,7 +432,6 @@ h1 {
             display: flex;
             align-items: center;
         }
-
     }
 }
 

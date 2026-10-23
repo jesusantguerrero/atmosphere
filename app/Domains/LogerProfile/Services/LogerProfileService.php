@@ -9,17 +9,45 @@ use App\Domains\LogerProfile\Exceptions\ProfileNotFound;
 use App\Domains\LogerProfile\Models\LogerProfile;
 use App\Domains\LogerProfile\Models\LogerProfileEntity;
 use App\Domains\Transaction\Models\TransactionLine;
+use App\Models\User;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class LogerProfileService
 {
+    public function ensurePersonalProfile(User $user): LogerProfile
+    {
+        $identity = ['team_id' => $user->current_team_id, 'personal_user_id' => $user->id];
+        $existing = LogerProfile::query()->where($identity)->first();
+        if ($existing) {
+            return $existing;
+        }
+
+        return LogerProfile::unguarded(fn () => LogerProfile::query()->firstOrCreate($identity, [
+            'user_id' => $user->id,
+            'name' => $user->name ?: 'Yo',
+        ]));
+    }
+
+    public function collectionPage(int $teamId, string $search = '', string $sort = 'name'): LengthAwarePaginator
+    {
+        return LogerProfile::query()->where('team_id', $teamId)
+            ->when($search !== '', fn ($query) => $query->where('name', 'like', '%'.$search.'%'))
+            ->orderByRaw('CASE WHEN personal_user_id = ? THEN 0 ELSE 1 END', [auth()->id() ?? 0])
+            ->orderBy('name', $sort === 'name_desc' ? 'desc' : 'asc')
+            ->orderBy('id')
+            ->paginate(24, ['id', 'name', 'personal_user_id'])
+            ->withQueryString();
+    }
+
     public function list($teamId)
     {
         return LogerProfile::select([
             'name',
             'id',
+            'personal_user_id',
         ])->where([
             'team_id' => $teamId,
-        ])->get();
+        ])->orderByRaw('CASE WHEN personal_user_id = ? THEN 0 ELSE 1 END', [auth()->id() ?? 0])->orderBy('name')->get();
     }
 
     public function create(LogerProfileData $data)

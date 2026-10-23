@@ -1,5 +1,7 @@
 <script setup>
 defineProps({
+  hideTools: Boolean,
+  focusMode: Boolean,
   navClass: {
     type: [String, Object],
   },
@@ -18,7 +20,7 @@ defineProps({
   <main
     class="min-h-screen bg-base-lvl-3 home-container"
     v-auto-animate
-    :class="{ expanded: isExpanded, 'aside-expanded': isAsideExpanded }"
+    :class="{ expanded: isExpanded, 'aside-expanded': isAsideExpanded, 'hide-tools': hideTools, 'focus-mode': focusMode }"
   >
     <nav class="app-header md:pl-{var(--app)} bg-base-lvl-3 border-b" :class="navClass">
       <slot name="navigation" />
@@ -216,4 +218,12 @@ html {
     }
   }
 }
+</style>
+
+<style scoped>
+.home-container.hide-tools { --app-aside-width: 0px; }
+.hide-tools .aside-widget-container { display: none; }
+.home-container.focus-mode { --app-side-width: 0px; --app-aside-width: 0px; }
+.focus-mode .app-header, .focus-mode .app-side-container, .focus-mode .aside-widget-container { display: none; }
+.focus-mode .app-content__inner { padding-top: 0; }
 </style>

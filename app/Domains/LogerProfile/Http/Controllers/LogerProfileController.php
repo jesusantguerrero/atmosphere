@@ -4,6 +4,7 @@ namespace App\Domains\LogerProfile\Http\Controllers;
 
 use App\Domains\LogerProfile\Data\LogerProfileData;
 use App\Domains\LogerProfile\Exceptions\ProfileNotFound;
+use App\Domains\LogerProfile\Models\LogerProfile;
 use App\Domains\LogerProfile\Services\LogerProfileService;
 use App\Domains\LogerProfile\Services\ProfileWorkspaceService;
 use App\Http\Controllers\Controller;
@@ -17,13 +18,23 @@ class LogerProfileController extends Controller
 
     public function workspaceOverview(ProfileWorkspaceService $workspace): Response
     {
+        app(LogerProfileService::class)->ensurePersonalProfile(request()->user());
+
         return inertia('LogerProfile/Overview', ['profiles' => $workspace->overview((int) request()->user()->current_team_id)]);
     }
 
     public function index(LogerProfileService $profileService)
     {
+        $profileService->ensurePersonalProfile(request()->user());
+
+        $teamId = (int) request()->user()->current_team_id;
+        $search = (string) request()->string('search')->trim()->limit(120, '');
+        $sort = request()->query('sort') === 'name_desc' ? 'name_desc' : 'name';
+
         return inertia('LogerProfile/Index', [
-            'profiles' => $profileService->list(auth()->user()->current_team_id),
+            'profiles' => $profileService->collectionPage($teamId, $search, $sort),
+            'profileCount' => LogerProfile::query()->where('team_id', $teamId)->count(),
+            'filters' => ['search' => $search, 'sort' => $sort],
         ]);
     }
 

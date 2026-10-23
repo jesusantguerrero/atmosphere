@@ -4,8 +4,8 @@ namespace App\Domains\Transaction\Actions;
 
 use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Transaction\Models\TransactionLine;
-use Exception;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 
 class SearchTransactions
 {
@@ -13,93 +13,98 @@ class SearchTransactions
 
     public const DATE_BEFORE = 1;
 
-    private $searchConfig = [
-        'description' => [
-            'type' => 'text',
-        ],
-        'category_id' => [
-            'type' => 'array',
-        ],
-    ];
+    private const TEXT_OPERATORS = ['contains' => 'LIKE', 'is' => '='];
 
-    private $modelQuery;
+    private const ID_FIELDS = ['category_id', 'payee_id', 'account_id'];
 
-    public function __construct()
+    private function normalizeFields(array $conditions): array
     {
+        $valid = [];
+        foreach (self::ID_FIELDS as $field) {
+            $ids = array_values(array_filter((array) ($conditions[$field] ?? []), fn ($id) => is_scalar($id) && ctype_digit((string) $id) && (int) $id > 0));
+            if ($ids) {
+                $valid[$field] = $ids;
+            }
+        }
+        foreach ((array) ($conditions['description'] ?? []) as $condition) {
+            if (is_array($condition) && is_string($condition['operator'] ?? null) && isset(self::TEXT_OPERATORS[$condition['operator']]) && is_scalar($condition['value'] ?? null) && trim((string) $condition['value']) !== '') {
+                $valid['description'][] = $condition;
+            }
+        }
 
-        $this->modelQuery = TransactionLine::query();
+        return $valid;
     }
 
-    public function hasValidConditions($conditions)
+    private function validConditions(mixed $conditions): array
     {
-        foreach ($conditions as $field => $condition) {
-            if (! $condition) {
+        if (! is_array($conditions)) {
+            return [];
+        }
+
+        $valid = $this->normalizeFields($conditions);
+        foreach ((array) ($conditions['groups'] ?? []) as $group) {
+            if (is_array($group) && ($fields = $this->normalizeFields($group))) {
+                $valid['groups'][] = ['match' => ($group['match'] ?? 'all') === 'any' ? 'any' : 'all', ...$fields];
+            }
+        }
+        if (! $valid) {
+            return [];
+        }
+
+        $valid['match'] = ($conditions['match'] ?? 'all') === 'any' ? 'any' : 'all';
+        $valid['exclude'] = is_array($conditions['exclude'] ?? null) ? $this->normalizeFields($conditions['exclude']) : [];
+
+        return $valid;
+    }
+
+    public function hasValidConditions(mixed $conditions): bool
+    {
+        return $this->validConditions($conditions) !== [];
+    }
+
+    private function applyNode(Builder $query, array $conditions): void
+    {
+        $method = ($conditions['match'] ?? 'all') === 'any' ? 'orWhere' : 'where';
+        foreach (self::ID_FIELDS as $field) {
+            if (! isset($conditions[$field])) {
                 continue;
             }
-            foreach ($condition as $param) {
-                try {
-                    if ($param && $param['operator'] && $param['value']) {
-                        return true;
-                    }
-                } catch (Exception $e) {
-                    print_r($param);
-                    Log::error($e);
-
-                    continue;
+            $query->{$method}(function (Builder $query) use ($field, $conditions): void {
+                if ($field === 'category_id') {
+                    $query->whereIn($field, $conditions[$field]);
+                } else {
+                    $query->whereHas('transaction', fn (Builder $query) => $query->whereIn($field, $conditions[$field]));
                 }
-            }
+            });
+        }
+        foreach ($conditions['description'] ?? [] as $condition) {
+            $operator = self::TEXT_OPERATORS[$condition['operator']];
+            $value = $operator === 'LIKE' ? "%{$condition['value']}%" : $condition['value'];
+            $query->{$method}('concept', $operator, $value);
+        }
+        foreach ($conditions['groups'] ?? [] as $group) {
+            $query->{$method}(fn (Builder $query) => $this->applyNode($query, $group));
         }
     }
 
     /**
      * Verified lines of one team matching the occurrence conditions.
      */
-    public function handle(mixed $conditions, int $teamId)
+    public function handle(mixed $conditions, int $teamId): ?Collection
     {
-        $allConditions = [];
-        if (! $this->hasValidConditions($conditions)) {
+        $conditions = $this->validConditions($conditions);
+        if (! $conditions) {
             return null;
         }
 
-        $this->modelQuery->where('team_id', $teamId);
-
-        foreach ($conditions as $field => $condition) {
-            if ($condition && isset($this->searchConfig[$field])) {
-                $parserName = $this->searchConfig[$field]['type'];
-                if ($field == 'description') {
-                    $field = 'concept';
-                }
-                $allConditions[] = [$parserName, $condition];
-                \call_user_func([$this, "get$parserName"], $condition, $field);
-            }
+        $query = TransactionLine::query()->where('team_id', $teamId)
+            ->where(fn (Builder $query) => $this->applyNode($query, $conditions));
+        if ($conditions['exclude']) {
+            $query->whereNot(fn (Builder $query) => $this->applyNode($query, ['match' => 'any', ...$conditions['exclude']]));
         }
 
-        return $this->modelQuery->orderBy('date')->whereHas('transaction', fn ($q) => $q->where([
-            'status' => Transaction::STATUS_VERIFIED,
-        ]))
-            ->whereRaw('(anchor = 1 or is_split =1)')
-            ->get();
-    }
-
-    public function gettext($condition, $field)
-    {
-        $operators = [
-            'contains' => 'LIKE',
-            'is' => '=',
-        ];
-
-        foreach ($condition as $param) {
-            if (! $param['operator'] || ! $param['value']) {
-                continue;
-            }
-            $operator = $operators[$param['operator']];
-            $value = $operator == 'LIKE' ? "%{$param['value']}%" : $param['value'];
-            $this->modelQuery->where($field, $operator, $value);
-        }
-    }
-
-    public function getarray($condition, $field)
-    {
-        $this->modelQuery->whereIn($field, $condition);
+        return $query->whereHas('transaction', fn (Builder $query) => $query->where('status', Transaction::STATUS_VERIFIED))
+            ->where(fn (Builder $query) => $query->where('anchor', 1)->orWhere('is_split', 1))
+            ->orderBy('date')->orderBy('id')->get();
     }
 }

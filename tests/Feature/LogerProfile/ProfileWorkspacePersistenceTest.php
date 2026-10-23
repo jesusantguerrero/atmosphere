@@ -148,7 +148,7 @@ class ProfileWorkspacePersistenceTest extends TestCase
         $this->assertCount(2, $summary['pending']);
         $this->assertCount(2, $summary['upcoming']);
         $this->assertSame('/loger-profiles/'.$demo->id, $summary['url']);
-        $this->get('/loger-profiles/overview')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page->component('LogerProfile/Overview')->has('profiles', 2));
+        $this->get('/loger-profiles/overview')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page->component('LogerProfile/Overview')->has('profiles', 3));
         $this->assertFalse(collect($summaries)->contains('name', 'Other family'));
     }
 

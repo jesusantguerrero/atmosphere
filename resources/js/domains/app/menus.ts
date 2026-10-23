@@ -16,10 +16,10 @@ const menus = {
     // Household sub-nav intentionally reduced to the two surfaces that
     // get daily use. Overview, Plans, Routine, Utilities, People still
     // exist and are reachable by URL; they just don't crowd the top
-    // bar. "Bills" is Occurrences (recurring utility/subscription bills).
+    // bar. Occurrences include household events and habits, not only bills.
     [MODULES.HOUSING]: [
         {
-            label: 'Bills',
+            label: 'Occurrences',
             url: '/housing/occurrence'
         },
         {
