@@ -68,7 +68,14 @@ class GoogleCalendarService
         }
 
         if (! $response->successful()) {
-            return self::failureResult($response->status(), $response->json('error.errors.0.reason'));
+            $reason = $response->json('error.errors.0.reason');
+            Log::warning('Google Calendar request rejected', [
+                'team_id' => $teamId,
+                'status' => $response->status(),
+                'reason' => $reason,
+            ]);
+
+            return self::failureResult($response->status(), $reason);
         }
 
         $events = [];

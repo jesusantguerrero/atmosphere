@@ -1308,5 +1308,13 @@
     "Switch to dark mode": "Cambiar a modo oscuro",
     "Hide amounts": "Ocultar montos",
     "Show amounts": "Mostrar montos",
-    "Your account": "Tu cuenta"
+    "Your account": "Tu cuenta",
+    "{count} overdue": "{count} vencidos",
+    "{count} due soon": "{count} próximos",
+    "Past due": "Vencido",
+    "Upcoming": "Próximo",
+    "Record payment": "Registrar pago",
+    "See all {count}": "Ver las {count}",
+    "Already paid": "Ya pagado",
+    "Payment dismissed for this month": "Pago descartado por este mes"
 }

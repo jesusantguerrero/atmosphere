@@ -1141,5 +1141,13 @@
     "Switch to dark mode": "Switch to dark mode",
     "Hide amounts": "Hide amounts",
     "Show amounts": "Show amounts",
-    "Your account": "Your account"
+    "Your account": "Your account",
+    "{count} overdue": "{count} overdue",
+    "{count} due soon": "{count} due soon",
+    "Past due": "Past due",
+    "Upcoming": "Upcoming",
+    "Record payment": "Record payment",
+    "See all {count}": "See all {count}",
+    "Already paid": "Already paid",
+    "Payment dismissed for this month": "Payment dismissed for this month"
 }
