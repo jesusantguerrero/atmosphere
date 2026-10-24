@@ -1,5 +1,5 @@
 <script setup lang="ts">
-    import { provide, ref, computed, onMounted, watch, defineComponent, h } from 'vue'
+    import { provide, ref, computed, onMounted, nextTick, watch, defineComponent, h } from 'vue'
     import { router } from '@inertiajs/vue3'
     import { AtSide, AtTeamSelect } from "atmosphere-ui"
     import { useLocalStorage } from "@vueuse/core"
@@ -107,6 +107,18 @@
         })
     }
 
+    const teamSelectRef = ref<HTMLElement | null>(null)
+    const labelTeamButton = () => {
+        nextTick(() => {
+            const btn = teamSelectRef.value?.querySelector('button')
+            if (btn && !btn.getAttribute('aria-label')) {
+                const name = pageProps.auth?.user?.current_team?.name ?? ''
+                btn.setAttribute('aria-label', t('Switch space') + (name ? `: ${name}` : ''))
+            }
+        })
+    }
+    onMounted(labelTeamButton)
+
     const currentPath = computed(() => {
         return navigationPage.url.split(/[?#]/)[0]
     })
@@ -205,7 +217,7 @@
                                 @click="router.visit('/notifications')"
                              />
                              <!-- <LogerAssistant /> -->
-                             <div class="team-select-fix flex items-center" v-if="$page.props.auth.user?.all_teams.length && !context.isMobile" :aria-label="$t('Switch space')" role="navigation">
+                             <div ref="teamSelectRef" class="team-select-fix flex items-center" v-if="$page.props.auth.user?.all_teams.length && !context.isMobile" :aria-label="$t('Switch space')" role="navigation">
                              <AtTeamSelect
                                 :aria-label="$t('Current space') + ': ' + ($page.props.auth.user?.current_team?.name ?? '')"
                                 :has-team-features="$page.props.jetstream.hasTeamFeatures"

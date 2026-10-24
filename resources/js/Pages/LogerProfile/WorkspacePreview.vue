@@ -129,7 +129,12 @@ const toolsVisible = ref(false);
 const statisticsVisible = ref(false);
 const toggleReading = async () => {
     if (editingPage.value) await finishEditing();
-    else editingPage.value = true;
+    else {
+        if (selectedPage.value?.title === 'Sin título') {
+            selectedPage.value.title = '';
+        }
+        editingPage.value = true;
+    }
 };
 const pageSearch = ref("");
 const visiblePages = computed(
@@ -1524,7 +1529,7 @@ const setTab = (id: string) => {
                     </button>
                     <button class="connection-row" @click="setTab('boards')">
                         <Glyph name="book" /><span
-                            ><b>{{ boards.length }} carpetas</b
+                            ><b>{{ boards.length }} {{ boards.length === 1 ? 'carpeta' : 'carpetas' }}</b
                             ><small>Cuadernos y páginas</small></span
                         ><Glyph name="arrow" />
                     </button>
