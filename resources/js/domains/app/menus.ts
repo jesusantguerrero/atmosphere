@@ -1,4 +1,5 @@
 export const MODULES = {
+    CALENDAR: 'calendar',
     HOUSING: 'housing',
     PROFILES: 'profiles',
     MEAL: 'meal',
@@ -9,6 +10,16 @@ export const MODULES = {
 }
 
 const menus = {
+    [MODULES.CALENDAR]: [
+        {
+            label: 'Calendar',
+            url: '/calendar'
+        },
+        {
+            label: 'Routine',
+            url: '/calendar/routine'
+        },
+    ],
     [MODULES.PROFILES]: [
         { label: 'Overview', url: '/loger-profiles/overview' },
         { label: 'Profiles', url: '/loger-profiles' },

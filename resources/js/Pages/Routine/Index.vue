@@ -3,8 +3,7 @@ import { ref, computed, onBeforeUnmount } from "vue";
 import axios from "axios";
 import { useI18n } from "vue-i18n";
 import AppLayout from "@/Components/templates/AppLayout.vue";
-import HouseSectionNav from "@/Components/templates/HouseSectionNav.vue";
-import { Link } from "@inertiajs/vue3";
+import CalendarSectionNav from "@/Components/templates/CalendarSectionNav.vue";
 
 interface Block {
   id: number;
@@ -62,7 +61,7 @@ const weekLabel = computed(() => {
 });
 
 const fetchWeek = async () => {
-  const { data } = await axios.get(`/housing/routine/${props.plan.id}/week`, {
+  const { data } = await axios.get(`/calendar/routine/${props.plan.id}/week`, {
     params: { date: isoOf(weekDates.value[0]) },
   });
   exceptions.value = data.blocks ?? [];
@@ -92,7 +91,7 @@ const calError = ref<string | null>(null);
 const fetchClashes = async () => {
   if (viewMode.value !== "week") return;
   try {
-    const { data } = await axios.get(`/housing/routine/${props.plan.id}/calendar-clashes`, {
+    const { data } = await axios.get(`/calendar/routine/${props.plan.id}/calendar-clashes`, {
       params: { date: isoOf(weekDates.value[0]) },
     });
     clashes.value = data.clashes ?? [];
@@ -175,7 +174,7 @@ const saveCategories = async () => {
   if (savingCats.value) return;
   savingCats.value = true;
   const payload = timeBudget.value.map((r) => ({ color: r.color, name: catNames.value[r.color] || "" }));
-  try { await axios.put(`/housing/routine/${props.plan.id}/categories`, { categories: payload }); }
+  try { await axios.put(`/calendar/routine/${props.plan.id}/categories`, { categories: payload }); }
   finally { savingCats.value = false; }
 };
 
@@ -250,11 +249,11 @@ const save = async () => {
   const wasException = isException.value;
   try {
     if (isEdit.value) {
-      const { data } = await axios.put(`/housing/routine/${props.plan.id}/blocks/${form.value.id}`, payloadOf(form.value));
+      const { data } = await axios.put(`/calendar/routine/${props.plan.id}/blocks/${form.value.id}`, payloadOf(form.value));
       if (wasException) { await fetchWeek(); }
       else { const i = blocks.value.findIndex((b) => b.id === data.id); if (i !== -1) blocks.value[i] = data; }
     } else {
-      const { data } = await axios.post(`/housing/routine/${props.plan.id}/blocks`, payloadOf(form.value));
+      const { data } = await axios.post(`/calendar/routine/${props.plan.id}/blocks`, payloadOf(form.value));
       if (wasException) { await fetchWeek(); }
       else { blocks.value.push(data); }
     }
@@ -273,7 +272,7 @@ const remove = async () => {
   if (!isEdit.value) return;
   const removed = { ...form.value };
   showModal.value = false;
-  await axios.delete(`/housing/routine/${props.plan.id}/blocks/${removed.id}`).catch(() => {});
+  await axios.delete(`/calendar/routine/${props.plan.id}/blocks/${removed.id}`).catch(() => {});
   if (removed.date) { await fetchWeek(); }
   else { blocks.value = blocks.value.filter((b) => b.id !== removed.id); }
   clearToast();
@@ -285,7 +284,7 @@ const undoDelete = async () => {
   if (!toast.value) return;
   const b = toast.value.block;
   clearToast();
-  const { data } = await axios.post(`/housing/routine/${props.plan.id}/blocks`, payloadOf(b));
+  const { data } = await axios.post(`/calendar/routine/${props.plan.id}/blocks`, payloadOf(b));
   if (b.date) { await fetchWeek(); } else { blocks.value.push(data); }
 };
 
@@ -302,7 +301,7 @@ const setBlockMember = async (b: Block, memberId: number | null) => {
   assignMenu.value = null;
   if (b.member_id === memberId) return;
   const next = { ...b, member_id: memberId };
-  const { data } = await axios.put(`/housing/routine/${props.plan.id}/blocks/${b.id}`, payloadOf(next));
+  const { data } = await axios.put(`/calendar/routine/${props.plan.id}/blocks/${b.id}`, payloadOf(next));
   if (b.date) { await fetchWeek(); }
   else { const i = blocks.value.findIndex((x) => x.id === data.id); if (i !== -1) blocks.value[i] = data; }
 };
@@ -326,7 +325,7 @@ const removeToday = async () => {
   if (!tmplMenu.value) return;
   const { block, date } = tmplMenu.value;
   tmplMenu.value = null;
-  await axios.post(`/housing/routine/${props.plan.id}/blocks`, {
+  await axios.post(`/calendar/routine/${props.plan.id}/blocks`, {
     ...payloadOf(block), date, skip: true,
   });
   await fetchWeek();
@@ -358,7 +357,7 @@ const applyDay = async (from: number) => {
   if (!copyTargets.value.length || busyDay.value) return;
   busyDay.value = true;
   try {
-    const { data } = await axios.post(`/housing/routine/${props.plan.id}/copy-day`, {
+    const { data } = await axios.post(`/calendar/routine/${props.plan.id}/copy-day`, {
       from, to: copyTargets.value, mode: copyMode.value,
     });
     const replaced: number[] = data.replaced ?? [];
@@ -371,7 +370,7 @@ const assignDay = async (day: number, memberId: number | null) => {
   if (busyDay.value) return;
   busyDay.value = true;
   try {
-    await axios.post(`/housing/routine/${props.plan.id}/assign-day`, { day, member_id: memberId });
+    await axios.post(`/calendar/routine/${props.plan.id}/assign-day`, { day, member_id: memberId });
     blocks.value = blocks.value.map((b) => (b.day === day ? { ...b, member_id: memberId } : b));
     dayMenu.value = null;
   } finally { busyDay.value = false; }
@@ -435,7 +434,7 @@ const onDragMove = (e: PointerEvent) => {
 };
 
 const persistBlockChange = async (orig: RenderBlock, next: any) => {
-  const { data } = await axios.put(`/housing/routine/${props.plan.id}/blocks/${orig.id}`, payloadOf(next));
+  const { data } = await axios.put(`/calendar/routine/${props.plan.id}/blocks/${orig.id}`, payloadOf(next));
   if (orig.date) { await fetchWeek(); }
   else { const i = blocks.value.findIndex((b) => b.id === (data?.id ?? orig.id)); if (i !== -1) blocks.value[i] = data; }
 };
@@ -472,7 +471,7 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); detachDrag(); 
 <template>
   <AppLayout :title="$t('Routine')">
     <template #header>
-      <HouseSectionNav />
+      <CalendarSectionNav />
     </template>
 
     <div class="px-5 pb-20 pt-16 w-full">
@@ -480,14 +479,6 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); detachDrag(); 
       <div class="flex items-center gap-2 mb-2 flex-wrap">
         <div class="flex items-center gap-3 mr-auto">
           <h1 class="text-lg font-bold text-body">{{ $t('Weekly routine') }}</h1>
-          <Link
-              href="/calendar"
-              class="text-xs font-semibold px-2.5 py-1 rounded-full border border-base bg-base-lvl-1 text-body-1/70 hover:text-body hover:border-primary/40 transition inline-flex items-center gap-1.5"
-              :title="$t('Calendar')"
-          >
-              <i class="fa fa-calendar-days"></i>
-              {{ $t('Calendar') }}
-          </Link>
         </div>
         <div class="flex rounded-lg bg-base-lvl-1 border border-base p-0.5">
           <button class="text-xs font-semibold px-3 py-1 rounded-md transition"
