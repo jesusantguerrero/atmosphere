@@ -922,6 +922,8 @@
     "Space Settings": "Ajustes del espacio",
     "Create New Space": "Crear nuevo espacio",
     "Switch Space": "Cambiar de espacio",
+    "Switch space": "Cambiar de espacio",
+    "Current space": "Espacio actual",
     "All meals": "Todas las comidas",
     "{buy} buying · {skip} skipped · {pending} pending": "{buy} comprando · {skip} omitido · {pending} pendiente",
     "What am I eating today?": "¿Qué voy a comer hoy?",
