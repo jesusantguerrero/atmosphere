@@ -213,7 +213,7 @@ const monthLabel = computed(() => formatMonth(currentDate.value, 'MMMM yyyy'));
         <template #header>
             <CalendarSectionNav />
         </template>
-        <main class="px-4 mx-auto mt-5 mb-10 max-w-screen-2xl sm:px-6 lg:px-8 space-y-4">
+        <main class="px-4 mx-auto pt-16 mb-10 max-w-screen-2xl sm:px-6 lg:px-8 space-y-4">
             <!-- Header -->
             <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
