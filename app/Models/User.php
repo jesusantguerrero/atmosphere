@@ -127,13 +127,14 @@ class User extends Authenticatable
      * Merge the stored preferences over the defaults so a partially-saved or
      * legacy row never leaves a channel undefined.
      *
-     * @return array{email: bool, push: bool}
+     * @return array{email: bool, push: bool, types?: array<string, array{email?: bool, push?: bool}>}
      */
     public function notificationPrefs(): array
     {
         $stored = $this->notification_prefs;
+        $prefs = is_array($stored) ? $stored : [];
 
-        return array_merge(self::defaultNotificationPrefs(), is_array($stored) ? $stored : []);
+        return array_merge(self::defaultNotificationPrefs(), $prefs);
     }
 
     /**
@@ -142,6 +143,27 @@ class User extends Authenticatable
     public function wantsNotificationChannel(string $channel): bool
     {
         return (bool) ($this->notificationPrefs()[$channel] ?? false);
+    }
+
+    /**
+     * Whether this user wants a specific notification type on a channel.
+     * Per-type overrides take precedence; absent = channel-level default.
+     */
+    public function wantsNotificationType(string $typeKey, string $channel): bool
+    {
+        $prefs = $this->notificationPrefs();
+
+        if (! $this->wantsNotificationChannel($channel)) {
+            return false;
+        }
+
+        $typePrefs = $prefs['types'][$typeKey] ?? null;
+
+        if (is_array($typePrefs) && array_key_exists($channel, $typePrefs)) {
+            return (bool) $typePrefs[$channel];
+        }
+
+        return true;
     }
 
     /**

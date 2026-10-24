@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Mobile\UpdateModulesRequest;
 use App\Http\Requests\Mobile\UpdateNotificationPreferencesRequest;
 use App\Models\User;
+use App\Notifications\LogerNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -23,11 +24,30 @@ class MobilePreferencesController extends Controller
         $user = $request->user();
         $current = $user->notificationPrefs();
         $channels = $request->validated('channels');
+        $types = $request->validated('types');
 
-        $user->notification_prefs = [
+        $prefs = [
             'email' => (bool) ($channels['email'] ?? $current['email']),
             'push' => (bool) ($channels['push'] ?? $current['push']),
         ];
+
+        if (is_array($types)) {
+            $knownKeys = array_keys(LogerNotification::NOTIFICATION_TYPES);
+            $prefs['types'] = [];
+            foreach ($types as $key => $channelPrefs) {
+                if (in_array($key, $knownKeys, true) && is_array($channelPrefs)) {
+                    $prefs['types'][$key] = array_filter(
+                        $channelPrefs,
+                        fn ($v, $k) => in_array($k, ['email', 'push'], true) && is_bool($v),
+                        ARRAY_FILTER_USE_BOTH,
+                    );
+                }
+            }
+        } elseif (isset($current['types'])) {
+            $prefs['types'] = $current['types'];
+        }
+
+        $user->notification_prefs = $prefs;
         $user->save();
 
         return response()->json($this->notificationPreferencesPayload($user));
@@ -59,16 +79,31 @@ class MobilePreferencesController extends Controller
     }
 
     /**
-     * @return array{channels: array{email: bool, push: bool}}
+     * @return array{channels: array{email: bool, push: bool}, types: array<int, array{key: string, label: string, email: bool, push: bool}>}
      */
     private function notificationPreferencesPayload(User $user): array
     {
         $prefs = $user->notificationPrefs();
+        $storedTypes = $prefs['types'] ?? [];
 
-        return ['channels' => [
-            'email' => (bool) $prefs['email'],
-            'push' => (bool) $prefs['push'],
-        ]];
+        $types = [];
+        foreach (LogerNotification::NOTIFICATION_TYPES as $key => $label) {
+            $typePrefs = $storedTypes[$key] ?? [];
+            $types[] = [
+                'key' => $key,
+                'label' => $label,
+                'email' => (bool) ($typePrefs['email'] ?? $prefs['email']),
+                'push' => (bool) ($typePrefs['push'] ?? $prefs['push']),
+            ];
+        }
+
+        return [
+            'channels' => [
+                'email' => (bool) $prefs['email'],
+                'push' => (bool) $prefs['push'],
+            ],
+            'types' => $types,
+        ];
     }
 
     /**
