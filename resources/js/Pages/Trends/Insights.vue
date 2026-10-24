@@ -442,7 +442,7 @@ const chartMeta = computed(() => {
       <div class="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-8">
         <div>
           <div class="flex flex-wrap gap-1 mb-6 p-1 rounded-lg bg-base-lvl-1 border border-base w-max">
-            <button v-for="tab in tabs" :key="tab.id" class="px-3 py-2 text-sm font-medium rounded-md transition" :class="activeTab === tab.id ? 'bg-base-lvl-3 text-body' : 'text-body-1/70 hover:text-body-1'" :aria-pressed="activeTab === tab.id" @click="activeTab = tab.id">{{ $t(tab.label) }}</button>
+            <button v-for="tab in tabs" :key="tab.id" class="px-3 py-2 text-sm font-medium rounded-md transition" :class="activeTab === tab.id ? 'bg-base-lvl-3 text-body' : 'text-body-1/75 hover:text-body-1'" :aria-pressed="activeTab === tab.id" @click="activeTab = tab.id">{{ $t(tab.label) }}</button>
           </div>
 
           <div class="space-y-5">
@@ -450,7 +450,7 @@ const chartMeta = computed(() => {
               <div class="text-primary text-sm leading-6 w-4 shrink-0">{{ b.icon }}</div>
               <div>
                 <div class="text-sm font-bold text-body mb-0.5">{{ b.title }}</div>
-                <p class="text-sm text-body-1/70 leading-relaxed">{{ b.text }}</p>
+                <p class="text-sm text-body-1/80 leading-relaxed">{{ b.text }}</p>
               </div>
             </div>
           </div>
@@ -460,7 +460,7 @@ const chartMeta = computed(() => {
         <div class="min-w-0">
           <div class="flex items-baseline justify-between mb-3">
             <span class="flex items-center gap-2 text-xs text-body-1"><span v-if="chartMeta.swatch" class="w-2.5 h-2.5 rounded-sm" :style="{ background: chartMeta.swatch }"></span>{{ chartMeta.legend }}</span>
-            <span class="text-[11px] text-body-1/70">{{ chartMeta.right }}</span>
+            <span class="text-[11px] text-body-1/80">{{ chartMeta.right }}</span>
           </div>
 
           <div class="overflow-hidden">
@@ -490,14 +490,14 @@ const chartMeta = computed(() => {
           <h3 class="text-lg font-extrabold text-body w-max cursor-help border-b border-dotted border-body-1/20" :title="$t('Total money spent in the selected period.')">{{ $t('Money out') }}</h3>
           <div class="text-error font-bold tabular-nums mb-3">−{{ currency }} {{ money(totalOut).main }}<span class="text-xs opacity-60">.{{ money(totalOut).cents }}</span></div>
           <div class="flex gap-1 mb-4 p-0.5 rounded-lg bg-base-lvl-1 border border-base w-max">
-            <button v-for="dm in breakdownDims" :key="dm.id" class="px-3 py-1 text-xs font-medium rounded-md transition" :class="outDim === dm.id ? 'bg-base-lvl-3 text-body' : 'text-body-1/70 hover:text-body-1'" @click="outDim = dm.id; showAllOut = false">{{ $t(dm.label) }}</button>
+            <button v-for="dm in breakdownDims" :key="dm.id" class="px-3 py-1 text-xs font-medium rounded-md transition" :class="outDim === dm.id ? 'bg-base-lvl-3 text-body' : 'text-body-1/75 hover:text-body-1'" @click="outDim = dm.id; showAllOut = false">{{ $t(dm.label) }}</button>
           </div>
           <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-body-1 mb-2">
             <span>{{ periodLabel }} · {{ $t('Accumulated') }}</span>
             <button v-if="moneyOutSrc.length > 8" class="min-h-[32px] px-2 text-primary font-medium" :aria-expanded="showAllOut" @click="showAllOut = !showAllOut">{{ showAllOut ? $t('Show top 8') : $t('View all') }}</button>
           </div>
           <div v-for="(r, i) in moneyOutRows" :key="i" class="grid items-center gap-3 py-2 border-t border-base-lvl-2" style="grid-template-columns:minmax(0, 2fr) minmax(48px, 0.8fr) auto">
-            <component :is="r.id ? 'a' : 'div'" :href="outHref(r)" class="text-sm font-medium text-body break-words" :class="r.id ? 'hover:text-primary hover:underline' : ''" :title="r.name">{{ r.name }}</component>
+            <component :is="r.id ? 'a' : (r.isOthers ? 'button' : 'div')" :href="r.id ? outHref(r) : null" type="button" @click="r.isOthers ? (showAllOut = true) : null" class="text-sm font-medium break-words text-left" :class="[r.id || r.isOthers ? 'hover:text-primary hover:underline' : '', r.isOthers ? 'text-primary' : 'text-body']" :title="r.isOthers ? $t('View all') : r.name">{{ r.name }}<span v-if="r.isOthers" class="ml-1">→</span></component>
             <div class="flex items-center gap-2 text-xs text-body-1"><span style="min-width:38px">{{ r.pct.toFixed(1) }}%</span><span class="flex-1 h-1 rounded-full bg-base-lvl-2 relative overflow-hidden"><span class="absolute inset-y-0 left-0 rounded-full" :style="{ width: r.w + '%', background: '#E8837E' }"></span></span></div>
             <div class="text-right text-sm font-semibold tabular-nums">−{{ currency }} {{ money(r.amount).main }}</div>
           </div>
@@ -512,7 +512,7 @@ const chartMeta = computed(() => {
             <button v-if="moneyInSrc.length > 8" class="min-h-[32px] px-2 text-primary font-medium" :aria-expanded="showAllIn" @click="showAllIn = !showAllIn">{{ showAllIn ? $t('Show top 8') : $t('View all') }}</button>
           </div>
           <div v-for="(r, i) in moneyInRows" :key="i" class="grid items-center gap-3 py-2 border-t border-base-lvl-2" style="grid-template-columns:minmax(0, 2fr) minmax(48px, 0.8fr) auto">
-            <component :is="r.id ? 'a' : 'div'" :href="inHref(r)" class="text-sm font-medium text-body break-words" :class="r.id ? 'hover:text-primary hover:underline' : ''" :title="r.name">{{ r.name }}</component>
+            <component :is="r.id ? 'a' : (r.isOthers ? 'button' : 'div')" :href="r.id ? inHref(r) : null" type="button" @click="r.isOthers ? (showAllIn = true) : null" class="text-sm font-medium break-words text-left" :class="[r.id || r.isOthers ? 'hover:text-primary hover:underline' : '', r.isOthers ? 'text-primary' : 'text-body']" :title="r.isOthers ? $t('View all') : r.name">{{ r.name }}<span v-if="r.isOthers" class="ml-1">→</span></component>
             <div class="flex items-center gap-2 text-xs text-body-1"><span style="min-width:38px">{{ r.pct.toFixed(1) }}%</span><span class="flex-1 h-1 rounded-full bg-base-lvl-2 relative overflow-hidden"><span class="absolute inset-y-0 left-0 rounded-full" :style="{ width: r.w + '%', background: '#56C08A' }"></span></span></div>
             <div class="text-right text-sm font-semibold tabular-nums">{{ currency }} {{ money(r.amount).main }}</div>
           </div>
@@ -527,25 +527,25 @@ const chartMeta = computed(() => {
           <div class="flex items-start justify-between gap-3">
             <div>
               <h3 class="text-lg font-extrabold text-body">{{ $t('By category') }}</h3>
-              <div class="text-[11px] text-body-1/70">{{ chartMeta.legend }}</div>
+              <div class="text-[11px] text-body-1/80">{{ chartMeta.legend }}</div>
             </div>
             <div class="text-right shrink-0">
               <div class="text-error font-bold tabular-nums leading-none">{{ currency }} {{ money(totalOut).main }}<span class="text-xs opacity-60">.{{ money(totalOut).cents }}</span></div>
-              <div class="text-[10px] text-body-1/60 mt-0.5">{{ $t('Total') }} · {{ periodLabel }}</div>
+              <div class="text-[10px] text-body-1/70 mt-0.5">{{ $t('Total') }} · {{ periodLabel }}</div>
             </div>
           </div>
-          <div style="height:300px" class="mt-3"><LogerChart type="bar" :labels="catLabels" :series="catSeries" :options="catOptions" /></div>
+          <div style="height:300px" class="mt-3" role="img" :aria-label="$t('By category')"><LogerChart type="bar" :labels="catLabels" :series="catSeries" :options="catOptions" /></div>
           <div v-if="spendMonths.length > 1" class="mt-3 pt-3 border-t border-base-lvl-2 flex flex-wrap gap-x-4 gap-y-1">
             <span v-for="(m, i) in spendMonths" :key="i" class="text-xs text-body-1">
-              <span class="text-body-1/60">{{ formatMonth(m.month) }}</span>
+              <span class="text-body-1/70">{{ formatMonth(m.month) }}</span>
               <span class="font-semibold tabular-nums ml-1">{{ currency }} {{ money(m.total).main }}</span>
             </span>
           </div>
         </div>
         <div class="bg-base-lvl-3/50 border border-base rounded-xl p-5">
           <h3 class="text-lg font-extrabold text-body">{{ $t('Recent months with activity') }}</h3>
-          <div class="text-[11px] text-body-1/70 mb-3">{{ expReportMonths.map(m => formatMonth(m.month)).join(' / ') }} · {{ $t('Daily cumulative') }}</div>
-          <ChartCurrentVsPrevious class="w-full" title="" :data="expReport" />
+          <div class="text-[11px] text-body-1/80 mb-3">{{ expReportMonths.map(m => formatMonth(m.month)).join(' / ') }} · {{ $t('Daily cumulative') }}</div>
+          <div role="img" :aria-label="$t('Recent months with activity')"><ChartCurrentVsPrevious class="w-full" title="" :data="expReport" /></div>
         </div>
         </div>
         <!-- Numeric breakdown: by category (budget) or by account (bank reconciliation) -->
@@ -554,12 +554,12 @@ const chartMeta = computed(() => {
             <div>
               <h3 class="text-lg font-extrabold text-body">{{ $t('Breakdown') }}</h3>
               <div class="flex gap-1 mt-2 p-0.5 rounded-lg bg-base-lvl-1 border border-base w-max">
-                <button v-for="dm in gastoBreakdownDims" :key="dm.id" class="px-3 py-1 text-xs font-medium rounded-md transition" :class="gastoDim === dm.id ? 'bg-base-lvl-3 text-body' : 'text-body-1/70 hover:text-body-1'" @click="gastoDim = dm.id; showAllGasto = false">{{ $t(dm.label) }}</button>
+                <button v-for="dm in gastoBreakdownDims" :key="dm.id" class="px-3 py-1 text-xs font-medium rounded-md transition" :class="gastoDim === dm.id ? 'bg-base-lvl-3 text-body' : 'text-body-1/75 hover:text-body-1'" @click="gastoDim = dm.id; showAllGasto = false">{{ $t(dm.label) }}</button>
               </div>
             </div>
             <div class="text-right shrink-0">
               <div class="text-error font-bold tabular-nums leading-none">{{ currency }} {{ money(gastoTotal).main }}<span class="text-xs opacity-60">.{{ money(gastoTotal).cents }}</span></div>
-              <div class="text-[10px] text-body-1/60 mt-0.5">{{ $t('Total') }} · {{ $t('Excl. transfers') }} · {{ periodLabel }}</div>
+              <div class="text-[10px] text-body-1/70 mt-0.5">{{ $t('Total') }} · {{ $t('Excl. transfers') }} · {{ periodLabel }}</div>
               <a v-if="uncategorizedTotal > 1 && gastoDim === 'cuenta'" :href="uncategorizedHref" class="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-error/15 text-error hover:bg-error/25" :title="$t('Jump to transactions without a category')">{{ $t('Uncategorized') }} · {{ currency }} {{ money(uncategorizedTotal).main }} →</a>
             </div>
           </div>
@@ -567,7 +567,7 @@ const chartMeta = computed(() => {
             <button v-if="gastoSrc.length > 8" class="min-h-[28px] px-2 text-primary font-medium text-xs" @click="showAllGasto = !showAllGasto">{{ showAllGasto ? $t('Show top 8') : $t('View all') }}</button>
           </div>
           <div v-for="(r, i) in gastoRows" :key="i" class="grid items-center gap-3 py-2 border-t border-base-lvl-2" style="grid-template-columns:minmax(0, 2fr) minmax(48px, 0.8fr) auto">
-            <component :is="(r.id || r.uncategorized) ? 'a' : (r.isOthers ? 'button' : 'div')" :href="(r.id || r.uncategorized) ? gastoHref(r) : null" type="button" @click="r.isOthers ? (showAllGasto = true) : null" class="text-sm font-medium text-body break-words text-left" :class="[(r.id || r.uncategorized || r.isOthers) ? 'hover:text-primary hover:underline' : '', r.uncategorized ? 'text-error font-semibold' : '']" :title="r.isOthers ? $t('View all') : r.name">{{ r.name }}</component>
+            <component :is="(r.id || r.uncategorized) ? 'a' : (r.isOthers ? 'button' : 'div')" :href="(r.id || r.uncategorized) ? gastoHref(r) : null" type="button" @click="r.isOthers ? (showAllGasto = true) : null" class="text-sm font-medium break-words text-left" :class="[(r.id || r.uncategorized || r.isOthers) ? 'hover:text-primary hover:underline' : '', r.uncategorized ? 'text-error font-semibold' : '', r.isOthers ? 'text-primary' : 'text-body']" :title="r.isOthers ? $t('View all') : r.name">{{ r.name }}<span v-if="r.isOthers" class="ml-1">→</span></component>
             <div class="flex items-center gap-2 text-xs text-body-1"><span style="min-width:38px">{{ r.pct.toFixed(1) }}%</span><span class="flex-1 h-1 rounded-full bg-base-lvl-2 relative overflow-hidden"><span class="absolute inset-y-0 left-0 rounded-full" :style="{ width: r.w + '%', background: '#E8837E' }"></span></span></div>
             <div class="text-right text-sm font-semibold tabular-nums">{{ currency }} {{ money(r.amount).main }}</div>
           </div>
@@ -586,7 +586,7 @@ const chartMeta = computed(() => {
             <button v-if="moneyInSrc.length > 8" class="min-h-[32px] px-2 text-primary font-medium" :aria-expanded="showAllIn" @click="showAllIn = !showAllIn">{{ showAllIn ? $t('Show top 8') : $t('View all') }}</button>
           </div>
           <div v-for="(r, i) in moneyInRows" :key="i" class="grid items-center gap-3 py-2 border-t border-base-lvl-2" style="grid-template-columns:minmax(0, 2fr) minmax(48px, 0.8fr) auto">
-            <component :is="r.id ? 'a' : 'div'" :href="inHref(r)" class="text-sm font-medium text-body break-words" :class="r.id ? 'hover:text-primary hover:underline' : ''" :title="r.name">{{ r.name }}</component>
+            <component :is="r.id ? 'a' : (r.isOthers ? 'button' : 'div')" :href="r.id ? inHref(r) : null" type="button" @click="r.isOthers ? (showAllIn = true) : null" class="text-sm font-medium break-words text-left" :class="[r.id || r.isOthers ? 'hover:text-primary hover:underline' : '', r.isOthers ? 'text-primary' : 'text-body']" :title="r.isOthers ? $t('View all') : r.name">{{ r.name }}<span v-if="r.isOthers" class="ml-1">→</span></component>
             <div class="flex items-center gap-2 text-xs text-body-1"><span style="min-width:38px">{{ r.pct.toFixed(1) }}%</span><span class="flex-1 h-1 rounded-full bg-base-lvl-2 relative overflow-hidden"><span class="absolute inset-y-0 left-0 rounded-full" :style="{ width: r.w + '%', background: '#56C08A' }"></span></span></div>
             <div class="text-right text-sm font-semibold tabular-nums">{{ currency }} {{ money(r.amount).main }}</div>
           </div>
@@ -605,7 +605,7 @@ const chartMeta = computed(() => {
             </div>
             <div class="text-right text-sm tabular-nums">{{ currency }} {{ money(c.balance).main }}</div>
             <div class="h-1 rounded-full bg-base-lvl-2 relative overflow-hidden mx-2"><span class="absolute inset-y-0 left-0 rounded-full" :style="{ width: Math.min(100, c.pct) + '%', background: c.pct >= 70 ? '#E8837E' : c.pct >= 30 ? '#E7B45A' : '#56C08A' }"></span></div>
-            <div class="text-right text-xs text-body-1/60 tabular-nums" style="min-width:42px">{{ c.pct.toFixed(1) }}%</div>
+            <div class="text-right text-xs text-body-1/70 tabular-nums" style="min-width:42px">{{ c.pct.toFixed(1) }}%</div>
           </div>
           <p v-if="!cardTable.length" class="text-sm text-body-1/70 py-6 text-center">{{ $t('No data for this period.') }}</p>
         </div>

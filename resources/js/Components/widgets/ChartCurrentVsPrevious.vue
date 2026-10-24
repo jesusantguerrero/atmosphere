@@ -38,8 +38,8 @@ const state = reactive({
         labels: [...Array(32).keys()].slice(1),
     },
     options: {
-        colors: ["#7B77D120", "#F598B420"],
-        borderColors: ["#7B77D1B3", "#F598B4B3"],
+        colors: ["#7B77D120", "#94A3B820"],
+        borderColors: ["#7B77D1B3", "#94A3B8B3"],
         tension: 0,
         interaction: {
             intersect: false,
