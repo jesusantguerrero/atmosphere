@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, h } from "vue";
+import { useI18n } from "vue-i18n";
 import { router } from "@inertiajs/vue3";
+import { ElNotification } from "element-plus";
 import { useTransactionModal, TRANSACTION_DIRECTIONS } from "@/domains/transactions";
 
 import MoneyPresenter from "@/Components/molecules/MoneyPresenter.vue";
@@ -128,6 +130,27 @@ const hasAttention = computed(() =>
 
 const priorityPayments = computed(() => [...overduePayments.value, ...dueSoonPayments.value].slice(0, 3));
 
+// Drives the card accent: red when something is overdue, amber when only
+// upcoming items or drafts are pending, green when everything is clear.
+const attentionTone = computed(() => {
+    if (hasUrgent.value) return "urgent";
+    if (hasAttention.value) return "pending";
+    return "clear";
+});
+
+const isOverdue = (payment: any): boolean => (daysFromToday(payment.date) ?? 0) < 0;
+
+// "19 oct". Built from the date parts so a "YYYY-MM-DD" string isn't shifted
+// a day back by UTC parsing.
+const { locale, t } = useI18n();
+const shortDate = (dateStr?: string | null): string => {
+    const [year, month, day] = String(dateStr ?? "").slice(0, 10).split("-").map(Number);
+    if (!year || !month || !day) return "";
+    return new Date(year, month - 1, day)
+        .toLocaleDateString(locale.value, { day: "numeric", month: "short" })
+        .replace(".", "");
+};
+
 // ---------------------------------------------------------------------------
 // Issue 1 — "Mark as paid" from a next-payment row.
 // Mirrors Finance/Account.vue's payCycle(): opens the SAME global transaction
@@ -162,8 +185,24 @@ const handlePay = (payment: any) => {
 const dismiss = (payment: any) => {
     const period = String(payment.due_date ?? payment.date ?? '').slice(0, 7);
     if (!period) return;
-    router.post('/api/next-payments/dismiss', { payment_id: payment.id, period }, {
+    const payload = { payment_id: payment.id, period };
+    router.post('/api/next-payments/dismiss', payload, {
         preserveScroll: true,
+        onSuccess: () => {
+            const notice = ElNotification({
+                type: "success",
+                title: t("Payment dismissed for this month"),
+                message: h("button", {
+                    type: "button",
+                    class: "font-semibold underline",
+                    onClick: () => {
+                        notice.close();
+                        router.delete('/api/next-payments/dismiss', { data: payload, preserveScroll: true });
+                    },
+                }, t("Undo")),
+                duration: 6000,
+            });
+        },
     });
 };
 
@@ -174,76 +213,82 @@ const dismiss = (payment: any) => {
         <!-- Hero: what needs your attention today. Prominent block at the very
              top so overdue/upcoming items and drafts to review read as the
              primary signal; the rest of the dashboard is demoted below it. -->
-        <section
-            class="rounded-xl border p-5"
-            :class="hasUrgent
-                ? 'border-error/40 bg-error/5'
-                : 'border-base bg-base-lvl-3'"
-        >
-            <h2 class="text-sm font-bold text-body flex items-center gap-2">
-                <i
-                    class="fa"
-                    :class="hasUrgent ? 'fa-triangle-exclamation text-error' : 'fa-circle-check text-success'"
-                />
-                {{ $t('What needs your attention today') }}
-            </h2>
+        <section class="attention-card" :class="`is-${attentionTone}`" aria-labelledby="attention-title">
+            <header class="attention-head">
+                <span class="attention-dot" aria-hidden="true" />
+                <h2 id="attention-title" class="attention-title">{{ $t('What needs your attention today') }}</h2>
+                <span v-if="overduePayments.length" class="attention-count">
+                    {{ $t('{count} overdue', { count: overduePayments.length }) }}
+                </span>
+                <span v-else-if="dueSoonPayments.length" class="attention-count">
+                    {{ $t('{count} due soon', { count: dueSoonPayments.length }) }}
+                </span>
+            </header>
 
-            <div v-if="priorityPayments.length" class="grid gap-2 pt-3">
-                <div v-for="payment in priorityPayments" :key="payment.id" class="flex items-stretch gap-1 rounded-lg border border-base bg-base-lvl-2 hover:border-primary/40">
-                    <button type="button" class="flex min-w-0 flex-1 flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3 p-3 text-left" @click="handlePay(payment)">
-                        <span class="min-w-0 w-full sm:flex-1">
-                            <span class="block truncate text-sm font-medium text-body">{{ payment.description || payment.title }}</span>
-                            <span class="block text-xs" :class="daysFromToday(payment.date) < 0 ? 'text-error' : 'text-body-1/70'">{{ daysFromToday(payment.date) < 0 ? $t('Overdue Payments') : $t('Upcoming payments') }} · {{ payment.date?.slice(0, 10) }}</span>
-                        </span>
-                        <span class="flex w-full items-center justify-between gap-2 sm:block sm:w-auto sm:shrink-0 sm:text-right">
-                            <span class="block text-sm font-semibold text-body"><MoneyPresenter :value="payment.total" /></span>
-                            <span class="block text-xs text-primary">Registrar pago →</span>
-                        </span>
-                    </button>
-                    <!-- Descartar este mes (ya pagado en otra cuenta): oculta sin crear transacción -->
-                    <button type="button" class="shrink-0 px-3 text-body-1/40 hover:text-error transition-colors" :title="$t('Dismiss — already paid elsewhere')" @click="dismiss(payment)">
-                        <i class="fa fa-xmark" />
-                    </button>
+            <div
+                v-for="payment in priorityPayments"
+                :key="payment.id"
+                class="attention-item"
+                :class="isOverdue(payment) ? 'is-overdue' : 'is-upcoming'"
+            >
+                <div class="attention-line">
+                    <p class="attention-item-title truncate">{{ payment.description || payment.title }}</p>
+                    <p class="attention-amount"><MoneyPresenter :value="payment.total" /></p>
+                </div>
+                <div class="attention-line">
+                    <p class="attention-item-sub">
+                        <b>{{ isOverdue(payment) ? $t('Past due') : $t('Upcoming') }}</b> · {{ shortDate(payment.date) }}
+                    </p>
+                    <div class="attention-actions">
+                        <button type="button" class="attention-pay" @click="handlePay(payment)">
+                            {{ $t('Record payment') }}
+                        </button>
+                        <!-- Descartar este mes (ya pagado en otra cuenta): oculta sin crear transacción -->
+                        <button
+                            type="button"
+                            class="attention-dismiss"
+                            :title="$t('Dismiss — already paid elsewhere')"
+                            :aria-label="$t('Dismiss — already paid elsewhere')"
+                            @click="dismiss(payment)"
+                        >
+                            {{ $t('Already paid') }}
+                        </button>
+                    </div>
                 </div>
             </div>
-            <button v-if="nextPayments?.length" type="button" class="text-sm text-primaryDark dark:text-primary py-2 hover:underline" @click="router.visit('/finance/next-payments')">{{ $t('See all') }} ({{ nextPayments.length }}) →</button>
-            <div v-if="overdueReminders.length || draftsCount" class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <!-- Overdue reminders -->
-                <button
-                    v-if="overdueReminders.length"
-                    type="button"
-                    class="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3 px-3 py-2.5 rounded-lg bg-base-lvl-2 border border-error/30 hover:border-error/50 transition text-left"
-                    @click="router.visit('/housing/occurrence?overdue=1')"
-                >
-                    <span class="flex items-center gap-2 min-w-0">
-                        <i class="fa fa-bell text-error flex-shrink-0" />
-                        <span class="text-sm font-semibold text-body truncate">
-                            {{ overdueReminders.length }} {{ $t(overdueReminders.length === 1 ? 'overdue reminder' : 'overdue reminders') }}
-                        </span>
-                    </span>
-                    <span class="text-xs font-semibold text-error flex-shrink-0">{{ $t('Review') }} →</span>
-                </button>
 
-                <!-- Drafts / transactions to review -->
-                <button
-                    v-if="draftsCount"
-                    type="button"
-                    class="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3 px-3 py-2.5 rounded-lg bg-base-lvl-2 border border-base hover:border-primary/30 transition text-left"
-                    @click="router.visit('/inbox')"
-                >
-                    <span class="flex items-center gap-2 min-w-0">
-                        <i class="fa fa-receipt text-primary flex-shrink-0" />
-                        <span class="text-sm font-semibold text-body truncate">
-                            {{ draftsCount }} {{ $t(draftsCount === 1 ? 'transaction to review' : 'transactions to review') }}
-                        </span>
-                    </span>
-                    <span class="text-xs font-semibold text-primary flex-shrink-0">{{ $t('Review') }} →</span>
-                </button>
-            </div>
+            <button
+                v-if="overdueReminders.length"
+                type="button"
+                class="attention-strip"
+                @click="router.visit('/housing/occurrence?overdue=1')"
+            >
+                <i class="fa fa-bell attention-strip-icon" aria-hidden="true" />
+                <b>{{ overdueReminders.length }} {{ $t(overdueReminders.length === 1 ? 'overdue reminder' : 'overdue reminders') }}</b>
+                <span class="attention-strip-link">{{ $t('Review') }} →</span>
+            </button>
 
-            <p v-if="!hasAttention" class="mt-2 text-sm text-body-1/70">
+            <button
+                v-if="draftsCount"
+                type="button"
+                class="attention-strip is-neutral"
+                @click="router.visit('/inbox')"
+            >
+                <i class="fa fa-receipt attention-strip-icon" aria-hidden="true" />
+                <b>{{ draftsCount }} {{ $t(draftsCount === 1 ? 'transaction to review' : 'transactions to review') }}</b>
+                <span class="attention-strip-link">{{ $t('Review') }} →</span>
+            </button>
+
+            <p v-if="!hasAttention" class="attention-empty">
+                <i class="fa fa-circle-check" aria-hidden="true" />
                 {{ $t('Nothing needs your attention right now. You are all caught up.') }}
             </p>
+
+            <footer v-if="nextPayments?.length" class="attention-foot">
+                <button type="button" @click="router.visit('/finance/next-payments')">
+                    {{ $t('See all {count}', { count: nextPayments.length }) }} →
+                </button>
+            </footer>
         </section>
 
         <!-- Secondary stats row (demoted below the hero). -->
@@ -315,3 +360,235 @@ const dismiss = (payment: any) => {
         </section>
     </div>
 </template>
+
+<style scoped>
+/* Tokens from the "Qué necesita tu atención hoy" spec (light / dark). */
+.attention-card {
+    --c-card: #ffffff;
+    --c-line: #e6e8ec;
+    --c-ink: #111827;
+    --c-mut: #6a707a;
+    --c-strip: #fbfbfc;
+    --c-hover: rgba(0, 0, 0, 0.015);
+    --c-shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 1px 3px rgba(16, 24, 40, 0.04);
+    --c-btn: #be123c;
+    --c-btn-hover: #a50f34;
+    --c-urgent: #be123c;
+    --c-urgent-bar: #dc2626;
+    --c-urgent-chip: #fdecef;
+    --c-pending: #b45309;
+    --c-pending-chip: #fef3e2;
+    --c-clear: #16a34a;
+    --c-clear-chip: #e7f6ec;
+
+    background: var(--c-card);
+    border: 1px solid var(--c-line);
+    border-radius: 14px;
+    box-shadow: var(--c-shadow);
+    overflow: hidden;
+    color: var(--c-ink);
+}
+
+/* Whole selector inside :global() — `:global(.dark) .attention-card` compiles to just `.dark`. */
+:global(.dark .attention-card) {
+    --c-card: #191e27;
+    --c-line: #242b38;
+    --c-ink: #e7eaf0;
+    --c-mut: #9ca3af;
+    --c-strip: #1b2028;
+    --c-hover: rgba(255, 255, 255, 0.02);
+    --c-shadow: none;
+    --c-btn: #e11d48;
+    --c-btn-hover: #c4123e;
+    --c-urgent: #f2617a;
+    --c-urgent-bar: #f2617a;
+    --c-urgent-chip: rgba(242, 97, 122, 0.16);
+    --c-pending: #e7b45a;
+    --c-pending-chip: rgba(231, 180, 90, 0.16);
+    --c-clear: #56c08a;
+    --c-clear-chip: rgba(86, 192, 138, 0.16);
+}
+
+.attention-card.is-urgent { --c-state: var(--c-urgent); --c-bar: var(--c-urgent-bar); --c-chip: var(--c-urgent-chip); }
+.attention-card.is-pending { --c-state: var(--c-pending); --c-bar: var(--c-pending); --c-chip: var(--c-pending-chip); }
+.attention-card.is-clear { --c-state: var(--c-clear); --c-bar: var(--c-clear); --c-chip: var(--c-clear-chip); }
+
+.attention-head {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 13px 16px 11px;
+    border-bottom: 1px solid var(--c-line);
+}
+.attention-dot {
+    flex: 0 0 auto;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--c-bar);
+    box-shadow: 0 0 0 4px var(--c-chip);
+}
+.attention-title {
+    margin: 0;
+    font-size: 14.5px;
+    font-weight: 750;
+}
+.attention-count {
+    margin-left: auto;
+    flex: 0 0 auto;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--c-state);
+    background: var(--c-chip);
+    padding: 3px 9px;
+    border-radius: 20px;
+}
+
+.attention-item {
+    --c-row-state: var(--c-pending);
+    --c-row-bar: var(--c-pending);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--c-line);
+}
+.attention-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-width: 0;
+}
+.attention-item.is-overdue {
+    --c-row-state: var(--c-urgent);
+    --c-row-bar: var(--c-urgent-bar);
+}
+.attention-item:hover { background: var(--c-hover); }
+.attention-item::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 10px;
+    bottom: 10px;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background: var(--c-row-bar);
+}
+.attention-item-title {
+    font-size: 13.5px;
+    font-weight: 600;
+}
+.attention-item-sub {
+    margin-top: 1px;
+    font-size: 11.5px;
+    color: var(--c-mut);
+}
+.attention-item-sub b {
+    color: var(--c-row-state);
+    font-weight: 700;
+}
+.attention-amount {
+    flex: 0 0 auto;
+    text-align: right;
+    font-size: 14.5px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+.attention-actions {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+}
+.attention-pay {
+    display: inline-block;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #ffffff;
+    background: var(--c-btn);
+    padding: 3px 9px;
+    border-radius: 7px;
+}
+.attention-pay:hover { background: var(--c-btn-hover); }
+.attention-dismiss {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--c-mut);
+    padding: 3px 6px;
+    border-radius: 7px;
+}
+.attention-dismiss:hover {
+    color: var(--c-ink);
+    text-decoration: underline;
+}
+
+/* Touch: nothing depends on hover and every control is at least 44×44. */
+@media (max-width: 480px) {
+    .attention-pay,
+    .attention-dismiss {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 0 12px;
+    }
+}
+
+.attention-strip {
+    --c-strip-state: var(--c-urgent);
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 9px;
+    padding: 11px 16px;
+    background: var(--c-strip);
+    border-bottom: 1px solid var(--c-line);
+    font-size: 12.8px;
+    text-align: left;
+}
+.attention-strip.is-neutral { --c-strip-state: var(--c-mut); }
+@media (max-width: 480px) {
+    .attention-strip { min-height: 44px; }
+}
+.attention-strip b { font-weight: 700; }
+.attention-strip-icon { color: var(--c-strip-state); }
+.attention-strip-link {
+    margin-left: auto;
+    flex: 0 0 auto;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--c-strip-state);
+}
+.attention-strip:hover .attention-strip-link { text-decoration: underline; }
+
+.attention-empty {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 16px;
+    font-size: 13px;
+    color: var(--c-mut);
+}
+.attention-empty i { color: var(--c-clear); }
+
+.attention-foot {
+    padding: 10px 16px;
+    text-align: center;
+}
+.attention-foot button {
+    font-size: 12.3px;
+    font-weight: 600;
+    color: var(--c-mut);
+}
+.attention-foot button:hover {
+    color: var(--c-state);
+    text-decoration: underline;
+}
+
+.attention-card button:focus-visible {
+    outline: 2px solid var(--c-state);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+</style>
