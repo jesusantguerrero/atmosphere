@@ -16,10 +16,10 @@ const defaultShadow = window?.cardShadow ?? "";
     <div  :class="defaultShadow">
         <RandomMealCard v-if="!compact" class="border-b rounded-b-none" />
         <div class="px-4 py-2 space-y-2 cursor-pointer rounded-b-md min-h-min bg-base-lvl-3">
-            <div class="text-center">
+            <header class="flex items-center justify-between gap-3">
                 <SectionTitle type="secondary"> {{ $t('Menu for today') }}</SectionTitle>
-            </div>
-            <Link v-if="meals.length" class="block text-center text-sm text-primary hover:underline" href="/planner">{{ $t('Go to planner') }} →</Link>
+                <Link v-if="meals.length" class="inline-flex min-h-[44px] items-center text-sm text-primary hover:underline" href="/planner">{{ $t('Go to planner') }} →</Link>
+            </header>
             <slot v-if="meals.length">
                 <div v-for="plannedMeal in meals" :key="plannedMeal.id">
                     <h4 class="font-bold capitalize text-body-1">
@@ -28,10 +28,9 @@ const defaultShadow = window?.cardShadow ?? "";
                     <small class="capitalize text-primary">{{ plannedMeal.mealTypeName }}</small>
                 </div>
             </slot>
-            <div v-else class="py-1.5 text-center">
-
+            <div v-else class="py-1.5">
                 <h4 class="py-1 text-sm font-bold text-body-1"> {{ $t('No meals') }} </h4>
-                <Link  class="mx-auto text-primary" href="/planner">{{ $t('Go to planner')}}</Link>
+                <Link class="text-sm text-primary hover:underline" href="/planner">{{ $t('Go to planner')}} →</Link>
             </div>
         </div>
     </div>

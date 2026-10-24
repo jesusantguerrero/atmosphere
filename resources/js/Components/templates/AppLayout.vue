@@ -205,7 +205,7 @@
                                 @click="router.visit('/notifications')"
                              />
                              <!-- <LogerAssistant /> -->
-                             <div class="team-select-fix flex items-center" v-if="$page.props.auth.user?.all_teams.length && !context.isMobile">
+                             <div class="team-select-fix flex items-center" v-if="$page.props.auth.user?.all_teams.length && !context.isMobile" :aria-label="$t('Switch space')" role="navigation">
                              <AtTeamSelect
                                 :has-team-features="$page.props.jetstream.hasTeamFeatures"
                                 :can-create-teams="$page.props.jetstream.canCreateTeams"

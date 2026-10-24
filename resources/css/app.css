@@ -5,8 +5,8 @@
 
 /* Theme tokens — light (default) and dark (.dark on <html>). Generated from tailwindTheme. */
 :root {
-    --c-primary: 243 126 161;
-    --c-primaryDark: 184 17 67;
+    --c-primary: 194 58 96;
+    --c-primaryDark: 155 35 70;
     --c-secondary: 123 119 209;
     --c-accent: 247 130 194;
     --c-neutral: 243 244 246;
@@ -20,7 +20,7 @@
     --c-warning: 211 158 23;
     --c-error: 246 25 9;
     --c-body: 17 24 39;
-    --c-body-1: 55 65 81;
+    --c-body-1: 42 50 65;
     --c-border: 229 231 235;
 }
 .dark {

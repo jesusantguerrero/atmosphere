@@ -253,7 +253,7 @@ const dismiss = (payment: any) => {
                 class="min-w-0 bg-base-lvl-3 rounded-lg p-4 text-left border border-base hover:border-primary/30 transition cursor-pointer"
                 @click="router.visit('/finance/transactions')"
             >
-                <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">{{ $t('This month expenses') }}</p>
+                <p class="text-xs text-body-1/60 uppercase tracking-wide font-medium">{{ $t('This month expenses') }}</p>
                 <p class="text-sm sm:text-lg font-bold text-body mt-1 break-words">
                     <MoneyPresenter :value="expenses" />
                 </p>
@@ -263,7 +263,7 @@ const dismiss = (payment: any) => {
                 class="min-w-0 bg-base-lvl-3 rounded-lg p-4 text-left border border-base hover:border-primary/30 transition cursor-pointer"
                 @click="router.visit('/finance/transactions')"
             >
-                <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">{{ $t('This month income') }}</p>
+                <p class="text-xs text-body-1/60 uppercase tracking-wide font-medium">{{ $t('This month income') }}</p>
                 <p class="text-sm sm:text-lg font-bold mt-1 break-words text-success">
                     <MoneyPresenter :value="income" />
                 </p>
@@ -273,13 +273,13 @@ const dismiss = (payment: any) => {
                 class="col-span-2 md:col-span-1 min-w-0 bg-base-lvl-3 rounded-lg p-4 text-left border border-base hover:border-primary/30 transition cursor-pointer"
                 @click="router.visit('/budgets')"
             >
-                <p class="text-xs text-body-1/50 uppercase tracking-wide font-medium">{{ currentBudget.total - currentBudget.spending < 0 ? $t('Over budget') : $t('Budget available') }}</p>
+                <p class="text-xs text-body-1/60 uppercase tracking-wide font-medium">{{ currentBudget.total - currentBudget.spending < 0 ? $t('Over budget') : $t('Budget available') }}</p>
                 <template v-if="budgetAssigned">
                     <p class="text-sm sm:text-lg font-bold mt-1 break-words" :class="currentBudget.total - currentBudget.spending < 0 ? 'text-error' : 'text-body'"><MoneyPresenter :value="currentBudget.total - currentBudget.spending" /></p>
                     <p class="text-xs text-body-1/70 mt-2">{{ spentPercentage }}%
-                        <span class="text-xs font-normal text-body-1/50">{{ $t('spent') }}</span>
+                        <span class="text-xs font-normal text-body-1/60">{{ $t('spent') }}</span>
                         <template v-if="currentBudget.spending > currentBudget.total">
-                            <span class="text-xs font-normal text-body-1/50"> · </span>
+                            <span class="text-xs font-normal text-body-1/60"> · </span>
                             <span class="text-xs font-medium text-error"><MoneyPresenter :value="currentBudget.spending - currentBudget.total" /> {{ $t('over') }}</span>
                         </template>
                     </p>
