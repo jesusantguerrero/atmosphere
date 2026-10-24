@@ -12,10 +12,10 @@ interface AgendaEvent {
 }
 
 const props = defineProps<{ events: AgendaEvent[]; date: string }>();
-defineEmits<{ (e: 'retry'): void }>();
 const googleEvents = ref<AgendaEvent[]>([]);
 const loading = ref(true);
 const unavailable = ref(false);
+const connected = ref<boolean | null>(null);
 const clock = ref(new Date());
 let clockInterval: ReturnType<typeof setInterval>;
 const isPast = (event: AgendaEvent): boolean => Boolean(event.completed_at) || Boolean(event.time && new Date(`${props.date}T${event.time}:00`) < clock.value);
@@ -24,17 +24,24 @@ const visibleEvents = computed(() => [...(props.events ?? []), ...googleEvents.v
     .sort((a, b) => Number(isPast(a)) - Number(isPast(b)) || (a.time ?? '').localeCompare(b.time ?? ''))
     .slice(0, 3));
 
-onMounted(async () => {
-    clockInterval = setInterval(() => { clock.value = new Date(); }, 60000);
+const fetchGoogleEvents = async () => {
+    loading.value = true;
+    unavailable.value = false;
     try {
         const { data } = await axios.get('/calendar/google-events', { params: { start: props.date, end: props.date } });
         googleEvents.value = data.events ?? [];
+        connected.value = Boolean(data.connected);
         unavailable.value = Boolean(data.error);
     } catch {
         unavailable.value = true;
     } finally {
         loading.value = false;
     }
+};
+
+onMounted(() => {
+    clockInterval = setInterval(() => { clock.value = new Date(); }, 60000);
+    fetchGoogleEvents();
 });
 onUnmounted(() => clearInterval(clockInterval));
 </script>
@@ -52,10 +59,11 @@ onUnmounted(() => clearInterval(clockInterval));
             </Link>
         </div>
         <p v-else-if="loading" class="text-sm text-body-1/70">{{ $t('Loading agenda...') }}</p>
-        <p v-else-if="unavailable" class="text-sm text-body-1/70">
-            {{ $t('We could not load your agenda.') }}
-            <button type="button" class="ml-1 text-primary hover:underline" @click="$emit('retry')">{{ $t('Retry') }}</button>
-        </p>
+        <div v-else-if="unavailable" class="text-sm text-body-1/70">
+            <p>{{ $t('We could not load your agenda.') }}
+                <button type="button" class="ml-1 text-sm text-primary hover:underline" @click="fetchGoogleEvents">{{ $t('Retry') }}</button>
+            </p>
+        </div>
         <p v-else class="text-sm text-body-1/70">{{ $t('No events today. A clear day.') }}</p>
         <p v-if="unavailable && visibleEvents.length" class="pt-2 text-xs text-body-1/70">{{ $t('Google events could not be loaded.') }}</p>
     </section>
