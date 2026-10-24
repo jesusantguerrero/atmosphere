@@ -19,6 +19,7 @@ import {
 import { es } from 'date-fns/locale';
 
 import AppLayout from '@/Components/templates/AppLayout.vue';
+import CalendarSectionNav from '@/Components/templates/CalendarSectionNav.vue';
 import LogerButton from '@/Components/atoms/LogerButton.vue';
 import DayMonthToggle from '@/Components/molecules/DayMonthToggle.vue';
 import { formatMonth, formatDate, formatMoney } from '@/utils';
@@ -209,21 +210,14 @@ const monthLabel = computed(() => formatMonth(currentDate.value, 'MMMM yyyy'));
 
 <template>
     <AppLayout :title="$t('Calendar')">
+        <template #header>
+            <CalendarSectionNav />
+        </template>
         <main class="px-4 mx-auto mt-5 mb-10 max-w-screen-2xl sm:px-6 lg:px-8 space-y-4">
             <!-- Header -->
             <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <div class="flex items-center gap-3">
-                        <h1 class="text-2xl font-bold text-body">{{ $t('Calendar') }}</h1>
-                        <Link
-                            href="/housing/routine"
-                            class="text-xs font-semibold px-2.5 py-1 rounded-full border border-base bg-base-lvl-1 text-body-1/70 hover:text-body hover:border-primary/40 transition inline-flex items-center gap-1.5"
-                            :title="$t('Weekly routine')"
-                        >
-                            <i class="fa fa-repeat"></i>
-                            {{ $t('Routine') }}
-                        </Link>
-                    </div>
+                    <h1 class="text-2xl font-bold text-body">{{ $t('Calendar') }}</h1>
                     <p class="text-sm text-body-1/70">{{ monthLabel }}</p>
                 </div>
                 <div class="flex flex-wrap items-center gap-3">

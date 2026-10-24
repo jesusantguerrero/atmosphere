@@ -39,17 +39,17 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     Route::post('/shopping/{plan}/reset', [ShoppingListController::class, 'reset'])->name('shopping.reset');
     Route::post('/shopping/{plan}/share', [ShoppingListController::class, 'toggleShare'])->name('shopping.share');
 
-    // Weekly routine (time-block planner) — Plan-based, no new table.
-    Route::get('/housing/routine', [RoutineController::class, 'index'])->name('routine.index');
-    Route::get('/housing/routine/current', [RoutineController::class, 'current'])->name('routine.current');
-    Route::post('/housing/routine/{plan}/blocks', [RoutineController::class, 'storeBlock'])->name('routine.blocks.store');
-    Route::put('/housing/routine/{plan}/blocks/{item}', [RoutineController::class, 'updateBlock'])->name('routine.blocks.update');
-    Route::delete('/housing/routine/{plan}/blocks/{item}', [RoutineController::class, 'destroyBlock'])->name('routine.blocks.destroy');
-    Route::post('/housing/routine/{plan}/copy-day', [RoutineController::class, 'copyDay'])->name('routine.copy-day');
-    Route::post('/housing/routine/{plan}/assign-day', [RoutineController::class, 'assignDay'])->name('routine.assign-day');
-    Route::get('/housing/routine/{plan}/week', [RoutineController::class, 'week'])->name('routine.week');
-    Route::get('/housing/routine/{plan}/calendar-clashes', [RoutineController::class, 'calendarClashes'])->name('routine.calendar-clashes');
-    Route::put('/housing/routine/{plan}/categories', [RoutineController::class, 'saveCategories'])->name('routine.categories');
+    // Weekly routine (time-block planner) — cross-cutting agenda concern, lives under /calendar.
+    Route::get('/calendar/routine', [RoutineController::class, 'index'])->name('routine.index');
+    Route::get('/calendar/routine/current', [RoutineController::class, 'current'])->name('routine.current');
+    Route::post('/calendar/routine/{plan}/blocks', [RoutineController::class, 'storeBlock'])->name('routine.blocks.store');
+    Route::put('/calendar/routine/{plan}/blocks/{item}', [RoutineController::class, 'updateBlock'])->name('routine.blocks.update');
+    Route::delete('/calendar/routine/{plan}/blocks/{item}', [RoutineController::class, 'destroyBlock'])->name('routine.blocks.destroy');
+    Route::post('/calendar/routine/{plan}/copy-day', [RoutineController::class, 'copyDay'])->name('routine.copy-day');
+    Route::post('/calendar/routine/{plan}/assign-day', [RoutineController::class, 'assignDay'])->name('routine.assign-day');
+    Route::get('/calendar/routine/{plan}/week', [RoutineController::class, 'week'])->name('routine.week');
+    Route::get('/calendar/routine/{plan}/calendar-clashes', [RoutineController::class, 'calendarClashes'])->name('routine.calendar-clashes');
+    Route::put('/calendar/routine/{plan}/categories', [RoutineController::class, 'saveCategories'])->name('routine.categories');
 });
 
 Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', 'loger.concerns:meals'])->group(function () {

@@ -27,7 +27,7 @@ class RoutineIndexTest extends TestCase
         $user = User::factory()->withPersonalTeam()->create();
 
         $this->actingAs($user)
-            ->get('/housing/routine')
+            ->get('/calendar/routine')
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Routine/Index')
@@ -41,8 +41,8 @@ class RoutineIndexTest extends TestCase
     {
         $user = User::factory()->withPersonalTeam()->create();
 
-        $first = $this->actingAs($user)->get('/housing/routine');
-        $second = $this->actingAs($user)->get('/housing/routine');
+        $first = $this->actingAs($user)->get('/calendar/routine');
+        $second = $this->actingAs($user)->get('/calendar/routine');
 
         $this->assertSame(
             $first->viewData('page')['props']['plan']['id'],
@@ -55,23 +55,23 @@ class RoutineIndexTest extends TestCase
         $user = User::factory()->withPersonalTeam()->create();
 
         $this->actingAs($user)
-            ->getJson('/housing/routine/current')
+            ->getJson('/calendar/routine/current')
             ->assertOk()
             ->assertJsonStructure(['current', 'next']);
     }
 
     public function test_requires_authentication(): void
     {
-        $this->get('/housing/routine')->assertRedirect('/login');
+        $this->get('/calendar/routine')->assertRedirect('/login');
     }
 
     public function test_week_includes_sunday_exception_and_excludes_next_monday(): void
     {
         $user = User::factory()->withPersonalTeam()->create();
-        $planId = $this->actingAs($user)->get('/housing/routine')->viewData('page')['props']['plan']['id'];
+        $planId = $this->actingAs($user)->get('/calendar/routine')->viewData('page')['props']['plan']['id'];
 
         foreach (['2026-09-27' => 'Sunday exception', '2026-09-28' => 'Next Monday exception'] as $date => $title) {
-            $this->postJson("/housing/routine/{$planId}/blocks", [
+            $this->postJson("/calendar/routine/{$planId}/blocks", [
                 'day' => 0,
                 'date' => $date,
                 'title' => $title,
@@ -80,7 +80,7 @@ class RoutineIndexTest extends TestCase
             ])->assertCreated();
         }
 
-        $this->getJson("/housing/routine/{$planId}/week?date=2026-09-21")
+        $this->getJson("/calendar/routine/{$planId}/week?date=2026-09-21")
             ->assertOk()
             ->assertJsonPath('week_start', '2026-09-21')
             ->assertJsonPath('week_end', '2026-09-27')
@@ -88,7 +88,7 @@ class RoutineIndexTest extends TestCase
             ->assertJsonPath('blocks.0.date', '2026-09-27')
             ->assertJsonPath('blocks.0.day', 6);
 
-        $this->getJson("/housing/routine/{$planId}/week?date=2026-09-27")
+        $this->getJson("/calendar/routine/{$planId}/week?date=2026-09-27")
             ->assertJsonCount(1, 'blocks')
             ->assertJsonPath('blocks.0.date', '2026-09-27');
     }
@@ -96,9 +96,9 @@ class RoutineIndexTest extends TestCase
     public function test_current_uses_local_sunday_when_utc_is_already_monday(): void
     {
         $user = User::factory()->withPersonalTeam()->create();
-        $planId = $this->actingAs($user)->get('/housing/routine')->viewData('page')['props']['plan']['id'];
+        $planId = $this->actingAs($user)->get('/calendar/routine')->viewData('page')['props']['plan']['id'];
 
-        $this->postJson("/housing/routine/{$planId}/blocks", [
+        $this->postJson("/calendar/routine/{$planId}/blocks", [
             'day' => 0,
             'date' => '2026-09-27',
             'title' => 'Sunday evening',
@@ -108,7 +108,7 @@ class RoutineIndexTest extends TestCase
 
         Carbon::setTestNow(Carbon::parse('2026-09-28 00:30:00', 'UTC'));
         try {
-            $this->getJson('/housing/routine/current')
+            $this->getJson('/calendar/routine/current')
                 ->assertOk()
                 ->assertJsonPath('current.date', '2026-09-27')
                 ->assertJsonPath('current.title', 'Sunday evening');
