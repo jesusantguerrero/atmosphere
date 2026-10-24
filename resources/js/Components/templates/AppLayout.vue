@@ -192,7 +192,8 @@
                                 v-if="!isOnboarding"
                                 type="button"
                                 @click="toggleDark"
-                                :title="isDark ? 'Light mode' : 'Dark mode'"
+                                :title="isDark ? $t('Switch to light mode') : $t('Switch to dark mode')"
+                                :aria-label="isDark ? $t('Switch to light mode') : $t('Switch to dark mode')"
                                 class="px-1 transition-colors text-body-1/60 hover:text-body-1"
                             >
                                 <IMdiWeatherSunny v-if="isDark" />
