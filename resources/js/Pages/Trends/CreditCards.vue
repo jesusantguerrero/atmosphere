@@ -136,19 +136,19 @@ const deltaDisplay = computed(() => {
                     class="w-full cursor-pointer text-body-1 bg-base-lvl-3"
                     :value="data.lastCycleBalances?.length ?? 0"
                     :label="$t('Credits Qty')"
-                    label-class="capitalize text-secondary font-base"
+                    label-class="text-secondary font-base"
                 />
                 <BackgroundCard
                     class="w-full cursor-pointer text-body-1 bg-base-lvl-3"
                     :value="formatMoney(data.creditCapacity)"
                     :label="$t('Total Capacity')"
-                    label-class="capitalize text-secondary font-base"
+                    label-class="text-secondary font-base"
                 />
                 <BackgroundCard
                     class="w-full cursor-pointer text-body-1 bg-base-lvl-3"
                     :value="formatMoney(data.creditTotal)"
                     :label="$t('Credit Total')"
-                    label-class="capitalize text-secondary font-base"
+                    label-class="text-secondary font-base"
                 >
                     <template #value>
                         <div class="flex items-baseline justify-center gap-2">
@@ -164,7 +164,7 @@ const deltaDisplay = computed(() => {
                     :value="`${data.creditLineUsage}%`"
                     :label="$t('Credit Line Usage')"
                     :text-class="`text-2xl font-bold ${usageColorClass}`"
-                    label-class="capitalize text-secondary font-base"
+                    label-class="text-secondary font-base"
                 />
             </header>
             <section class="w-full mt-4 bg-base-lvl-3 border border-base rounded-lg overflow-hidden">
