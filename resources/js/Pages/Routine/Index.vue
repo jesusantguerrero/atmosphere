@@ -28,7 +28,7 @@ const blocks = ref<Block[]>([...props.plan.blocks]);       // weekly template
 const exceptions = ref<Block[]>([]);                       // dated, current week
 const SHORT = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 const HOUR_H = 40;
-const COLORS = ["#56C08A", "#6E9BE6", "#E8A54F", "#E87FA8", "#A98BE0", "#B79B82", "#5CC2C2", "#E0736F", "#6B7686"];
+const COLORS = ["#56C08A", "#6E9BE6", "#E8A54F", "#E87FA8", "#A98BE0", "#B79B82", "#5CC2C2", "#E0736F", "#9CA3AF"];
 
 const toMin = (t: string) => {
   const [h, m] = String(t || "0:0").split(":");
@@ -482,10 +482,10 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); detachDrag(); 
         </div>
         <div class="flex rounded-lg bg-base-lvl-1 border border-base p-0.5">
           <button class="text-xs font-semibold px-3 py-1 rounded-md transition"
-                  :class="viewMode === 'template' ? 'bg-base-lvl-3 text-body' : 'text-body-1/60'"
+                  :class="viewMode === 'template' ? 'bg-base-lvl-3 text-body' : 'text-body-1/75'"
                   @click="setMode('template')">{{ $t('Template') }}</button>
           <button class="text-xs font-semibold px-3 py-1 rounded-md transition"
-                  :class="viewMode === 'week' ? 'bg-base-lvl-3 text-body' : 'text-body-1/60'"
+                  :class="viewMode === 'week' ? 'bg-base-lvl-3 text-body' : 'text-body-1/75'"
                   @click="setMode('week')">{{ $t('This week') }}</button>
         </div>
         <button class="hidden md:inline-flex text-xs font-semibold px-3 py-1.5 rounded-lg border transition"
@@ -496,9 +496,9 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); detachDrag(); 
       <div class="flex items-center gap-2 mb-4 flex-wrap">
         <!-- week nav -->
         <div v-if="viewMode === 'week'" class="flex items-center gap-1 mr-2">
-          <button class="w-7 h-7 rounded-lg bg-base-lvl-1 border border-base text-body-1/70 hover:text-body" @click="shiftWeek(-1)">‹</button>
+          <button class="w-7 h-7 rounded-lg bg-base-lvl-1 border border-base text-body-1/70 hover:text-body" :aria-label="$t('Previous week')" @click="shiftWeek(-1)">‹</button>
           <span class="text-xs font-semibold text-body px-1 min-w-[92px] text-center">{{ weekLabel }}</span>
-          <button class="w-7 h-7 rounded-lg bg-base-lvl-1 border border-base text-body-1/70 hover:text-body" @click="shiftWeek(1)">›</button>
+          <button class="w-7 h-7 rounded-lg bg-base-lvl-1 border border-base text-body-1/70 hover:text-body" :aria-label="$t('Next week')" @click="shiftWeek(1)">›</button>
           <button class="text-[11px] font-semibold px-2 py-1 rounded-lg bg-base-lvl-1 border border-base text-body-1/70 hover:text-body" @click="goThisWeek">{{ $t('Today') }}</button>
         </div>
 
@@ -593,7 +593,7 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); detachDrag(); 
         <div class="grid border-b border-base bg-base-lvl-2" style="grid-template-columns:44px repeat(7,1fr)">
           <div></div>
           <div v-for="(d, i) in SHORT" :key="i" class="relative py-2 text-center text-[11px] font-bold"
-               :class="isTodayCol(i) ? 'text-primary' : ((viewMode === 'template' && i === nowDow) ? 'text-body' : 'text-body-1/60')">
+               :class="isTodayCol(i) ? 'text-primary' : ((viewMode === 'template' && i === nowDow) ? 'text-body' : 'text-body-1/75')">
             {{ d }}<span v-if="viewMode === 'week'" class="ml-1 opacity-70">{{ weekDates[i].getDate() }}</span>
             <button
               v-if="viewMode === 'template'"
@@ -607,7 +607,7 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); detachDrag(); 
           <div ref="gridBodyRef" class="grid relative" style="grid-template-columns:44px repeat(7,1fr);min-width:760px">
             <!-- time gutter -->
             <div class="relative" :style="{ height: gridHeight + 'px' }">
-              <div v-for="h in hours" :key="h" class="absolute right-1.5 text-[11px] text-body-1/40"
+              <div v-for="h in hours" :key="h" class="absolute right-1.5 text-[11px] text-body-1/80"
                    :style="{ top: ((h - startH) * HOUR_H - 5) + 'px' }">{{ (h < 10 ? '0' : '') + h }}:00</div>
             </div>
             <!-- day columns -->
@@ -639,13 +639,14 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); detachDrag(); 
                   <span v-if="rb._kind === 'exception'" class="text-[11px]">★</span>
                   <span v-else-if="rb.note" class="opacity-60 text-[11px]">✎</span>
                 </div>
-                <div class="text-[11px] opacity-70">{{ rb.start }}–{{ rb.end }}</div>
+                <div class="text-[11px] opacity-90">{{ rb.start }}–{{ rb.end }}</div>
                 <button
                   class="absolute top-0.5 right-0.5 w-4 h-4 rounded-full text-[11px] flex items-center justify-center font-bold text-white ring-1 ring-white/30"
                   :style="{ background: memberColor(rb.member_id) }"
                   @pointerdown.stop
                   @click.stop="openAssign(rb, $event)"
-                  :title="$t('Assign member')"
+                  :title="rb.member_id ? memberName(rb.member_id) : $t('Assign member')"
+                  :aria-label="rb.member_id ? $t('Assigned to {name}', { name: memberName(rb.member_id) }) : $t('Assign member')"
                 >{{ rb.member_id ? initial(rb.member_id) : '+' }}</button>
                 <div class="absolute left-0 right-0 bottom-0 h-1.5 cursor-ns-resize hover:bg-primary/40" @pointerdown.stop="startResize(rb, day - 1, $event)"></div>
               </div>
