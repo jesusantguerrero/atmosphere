@@ -342,7 +342,7 @@ async function saveExchangeRate() {
                                                     </button>
                                                 </span>
                                                 <button
-                                                    class="inline-flex items-center gap-0.5 text-[11px] leading-none px-2 py-1 rounded-full border border-dashed border-base text-body-1/50 hover:text-primary hover:border-primary transition"
+                                                    class="inline-flex items-center gap-0.5 text-[11px] leading-none px-2 py-1 rounded-full border border-dashed border-base text-body-1/70 hover:text-primary hover:border-primary transition"
                                                     @click="editingGoalLinkId = editingGoalLinkId === goal.id ? null : goal.id"
                                                 >
                                                     <IMdiPlus class="text-[11px]" />
@@ -388,7 +388,7 @@ async function saveExchangeRate() {
                                         </td>
                                         <td class="px-5 py-3 text-right tabular-nums align-top">
                                             <div>{{ formatMoney(goal.current_balance, quoteCurrency) }}</div>
-                                            <div class="text-xs text-body-1/50">
+                                            <div class="text-xs text-body-1/70">
                                                 <span v-if="goal.target_amount">/ {{ formatMoney(goal.target_amount, quoteCurrency) }}</span>
                                                 <span v-else>—</span>
                                             </div>
@@ -416,7 +416,7 @@ async function saveExchangeRate() {
                                 </tfoot>
                             </table>
 
-                            <div v-else-if="!showGoalPicker" class="px-5 py-8 text-center text-body-1/40 text-sm">
+                            <div v-else-if="!showGoalPicker" class="px-5 py-8 text-center text-body-1/70 text-sm">
                                 {{ $t('Click') }} <strong>{{ $t('Add') }}</strong> {{ $t('to pin goals to this view.') }}
                             </div>
                         </div>
@@ -440,7 +440,7 @@ async function saveExchangeRate() {
                                 <tbody>
                                     <template v-for="group in accounts" :key="group.group">
                                         <tr class="bg-base-lvl-1">
-                                            <td class="px-5 py-1.5 text-xs font-semibold uppercase tracking-wide text-body-1/60" colspan="3">
+                                            <td class="px-5 py-1.5 text-xs font-semibold uppercase tracking-wide text-body-1/70" colspan="3">
                                                 {{ groupLabel(group.group) }}
                                             </td>
                                         </tr>
@@ -462,7 +462,7 @@ async function saveExchangeRate() {
                                                         <button
                                                             type="button"
                                                             class="ml-1.5 text-xs"
-                                                            :class="account.bank_code ? 'text-body-1/60 hover:text-primary' : 'text-body-1/40 hover:text-primary'"
+                                                            :class="account.bank_code ? 'text-body-1/70 hover:text-primary' : 'text-body-1/60 hover:text-primary'"
                                                             @click.stop="openBankEditor(account)"
                                                         >
                                                             <span v-if="account.bank_code">· {{ account.bank_code }}</span>
@@ -500,12 +500,12 @@ async function saveExchangeRate() {
                                                     {{ formatMoney(account.quote_balance, quoteCurrency) }}
                                                 </template>
                                                 <template v-else-if="account.base_in_quote !== null">
-                                                    <span class="text-body-1/50">{{ formatMoney(account.base_in_quote, quoteCurrency) }}</span>
+                                                    <span class="text-body-1/70">{{ formatMoney(account.base_in_quote, quoteCurrency) }}</span>
                                                 </template>
                                             </td>
                                         </tr>
                                         <tr class="border-b-2 border-base bg-base-lvl-1/50">
-                                            <td class="px-5 py-1.5 text-xs font-semibold text-body-1/60 pl-8">{{ $t('Subtotal') }}</td>
+                                            <td class="px-5 py-1.5 text-xs font-semibold text-body-1/70 pl-8">{{ $t('Subtotal') }}</td>
                                             <td class="px-5 py-1.5 text-right text-xs font-semibold tabular-nums">
                                                 <span v-if="group.subtotals.base">{{ formatMoney(group.subtotals.base, baseCurrency) }}</span>
                                             </td>
@@ -546,9 +546,9 @@ async function saveExchangeRate() {
                                     <span v-if="entry.bank_code" class="inline-block px-2 py-0.5 rounded text-xs font-semibold bg-primary/10 text-primary">
                                         {{ entry.bank_code }}
                                     </span>
-                                    <span v-else class="italic text-body-1/50">{{ $t('Unlinked') }}</span>
+                                    <span v-else class="italic text-body-1/70">{{ $t('Unlinked') }}</span>
                                 </td>
-                                <td class="px-5 py-2 text-right text-body-1/60 tabular-nums">{{ entry.account_count }}</td>
+                                <td class="px-5 py-2 text-right text-body-1/70 tabular-nums">{{ entry.account_count }}</td>
                                 <td class="px-5 py-2 text-right tabular-nums">{{ formatMoney(entry.total_in_quote, quoteCurrency) }}</td>
                             </tr>
                         </tbody>

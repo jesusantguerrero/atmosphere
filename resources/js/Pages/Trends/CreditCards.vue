@@ -227,7 +227,7 @@ const deltaDisplay = computed(() => {
                         :credit-card-data="data.billingCyclesByCard.data"
                     />
                 </section>
-                <section class="w-full lg:w-8/12">
+                <section class="w-full lg:w-8/12" role="img" :aria-label="$t('Expenses by category')">
                     <ChartTopCreditCard
                         class="bg-base-lvl-3 rounded-md overflow-hidden"
                         group-name="name"
@@ -235,7 +235,7 @@ const deltaDisplay = computed(() => {
                     />
                 </section>
             </section>
-            <section class="w-full mt-4">
+            <section class="w-full mt-4" role="img" :aria-label="$t('Expenses by payee')">
                 <ChartTopCreditCard
                     class="bg-base-lvl-3 rounded-md overflow-hidden"
                     :data="data.topPayeesByCard"
