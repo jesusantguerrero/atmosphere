@@ -87,11 +87,12 @@ const chartData = computed(() => {
       backgroundColor: props.options.colors[index],
       ...(props.options.borderColors && {
         borderColor: props.options.borderColors[index],
+        borderWidth: props.options.borderWidth ?? 0,
       }),
       ...item,
     }));
 
-    const defaultColor = props.options.colors[0]
+    const defaultColor = props.options.summaryLineColor ?? props.options.colors[0]
 
     return {
     labels: props.labels,

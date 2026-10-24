@@ -2,6 +2,7 @@
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { router } from "@inertiajs/vue3";
+import { useDarkMode } from "@/composables/useDarkMode";
 import AppLayout from "@/Components/templates/AppLayout.vue";
 import TrendSectionNav from "./Partials/TrendSectionNav.vue";
 import { useTrendOptions } from "./Partials/trendOptions";
@@ -13,6 +14,7 @@ import LogerChart from "@/Components/organisms/LogerChart.vue";
 
 const props = defineProps<{ data?: any; metaData?: any }>();
 const { t, locale } = useI18n();
+const { isDark } = useDarkMode();
 
 // Currency code from the team/user settings. Falls back to DOP so
 // existing behavior for the primary market (Dominican Republic) is
@@ -34,15 +36,19 @@ const shortK = (n: number) => {
 };
 const pctChange = (curr: number, prev: number) => (prev ? ((curr - prev) / Math.abs(prev)) * 100 : 0);
 
-const chartAxis = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: { legend: { display: false } },
-  scales: {
-    x: { grid: { display: false }, ticks: { color: "#69727F" } },
-    y: { grid: { color: "rgba(255,255,255,0.05)" }, ticks: { color: "#69727F" } },
-  },
-};
+const chartAxis = computed(() => {
+  const tick = isDark.value ? '#A6AFBD' : '#69727F';
+  const grid = isDark.value ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)';
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { display: false }, ticks: { color: tick } },
+      y: { grid: { color: grid }, ticks: { color: tick } },
+    },
+  };
+});
 
 // ---- sources
 const spending = computed<any>(() => props.data?.spendingSummary ?? {});
@@ -149,7 +155,7 @@ const netFlow = computed(() => grandIn.value - grandOut.value);
 const flow = computed<any[]>(() => props.data?.monthlyFlow ?? []);
 const incLabels = computed(() => flow.value.map((m: any) => formatMonth(m.month)));
 const incSeries = computed(() => [{ name: t("Income"), data: flow.value.map((m: any) => abs(m.income)) }]);
-const incOptions = { colors: ["#56C08AB3"], borderColors: ["#56C08A"], ...chartAxis };
+const incOptions = computed(() => ({ colors: ["#56C08A33"], borderColors: ["#56C08A"], borderWidth: 1.5, ...chartAxis.value }));
 
 // credit cards (Cards tab)
 const cards = computed<any>(() => props.data?.creditCards ?? {});
@@ -157,7 +163,7 @@ const hasCards = computed(() => cards.value.hasCreditCards === true);
 const cardBalances = computed<any[]>(() => (cards.value.lastCycleBalances ?? []).map((c: any) => ({ name: c.name, total: abs(c.total) })));
 const cardLabels = computed(() => cardBalances.value.map((c) => c.name));
 const cardSeries = computed(() => [{ name: t("Balance"), data: cardBalances.value.map((c) => c.total) }]);
-const cardOptions = { colors: ["#E8837EB3"], borderColors: ["#E8837E"], ...chartAxis };
+const cardOptions = computed(() => ({ colors: ["#E8837E33"], borderColors: ["#E8837E"], borderWidth: 1.5, ...chartAxis.value }));
 
 // categories bar (widget under Spending)
 const catTop = computed(() => expenseByCat.value.slice(0, 12));
@@ -203,7 +209,7 @@ const uncategorizedHref = computed(() => {
   const date = s && e ? `&filter[date]=${s}~${e}` : "";
   return `/finance/transactions?filter[uncategorized]=1${date}`;
 });
-const catOptions = { colors: ["#7C6FF0B3"], borderColors: ["#7C6FF0"], ...chartAxis };
+const catOptions = computed(() => ({ colors: ["#7C6FF033"], borderColors: ["#7C6FF0"], borderWidth: 1.5, ...chartAxis.value }));
 
 // ---- tabs
 const tabs = [
@@ -391,15 +397,15 @@ const narrative = computed<any[]>(() => {
 // ---- chart context label
 const periodCountLabel = (n: number) => t(n === 1 ? "{n} month · {currency}" : "{n} months · {currency}", { n, currency: currency.value });
 const chartMeta = computed(() => {
-  if (activeTab.value === "gastos") return { legend: t("Monthly spend"), right: periodCountLabel(spendMonths.value.length) };
-  if (activeTab.value === "income") return { legend: t("Monthly income"), right: periodCountLabel(flow.value.length) };
-  if (activeTab.value === "cards") return { legend: t("Last cycle amounts"), right: t("{n} cards", { n: cardBalances.value.length }) };
-  return { legend: t("Debts vs Assets"), right: periodCountLabel(nwChrono.value.length) };
+  if (activeTab.value === "gastos") return { legend: t("Monthly spend"), right: periodCountLabel(spendMonths.value.length), swatch: "#7C6FF0" };
+  if (activeTab.value === "income") return { legend: t("Monthly income"), right: periodCountLabel(flow.value.length), swatch: "#56C08A" };
+  if (activeTab.value === "cards") return { legend: t("Last cycle amounts"), right: t("{n} cards", { n: cardBalances.value.length }), swatch: "#E8837E" };
+  return { legend: t("Net worth"), right: periodCountLabel(nwChrono.value.length), swatch: "" };
 });
 </script>
 
 <template>
-  <AppLayout title="Insights">
+  <AppLayout :title="$t('Insights')">
     <template #header>
       <TrendSectionNav :sections="trendOptions" />
       <div class="flex flex-wrap items-center justify-between gap-3 border-b border-base-lvl-2 bg-base-lvl-1 pl-4 pr-4 lg:pr-24 py-3">
@@ -453,24 +459,24 @@ const chartMeta = computed(() => {
         <!-- main chart -->
         <div class="min-w-0">
           <div class="flex items-baseline justify-between mb-3">
-            <span class="flex items-center gap-2 text-xs text-body-1"><span class="w-2.5 h-2.5 rounded-sm" style="background:#7C6FF0"></span>{{ chartMeta.legend }}</span>
+            <span class="flex items-center gap-2 text-xs text-body-1"><span v-if="chartMeta.swatch" class="w-2.5 h-2.5 rounded-sm" :style="{ background: chartMeta.swatch }"></span>{{ chartMeta.legend }}</span>
             <span class="text-[11px] text-body-1/70">{{ chartMeta.right }}</span>
           </div>
 
           <div class="overflow-hidden">
-            <div v-if="activeTab === 'gastos'" key="c-gastos" style="height:360px" class="p-3">
+            <div v-if="activeTab === 'gastos'" key="c-gastos" style="height:360px" class="p-3" role="img" :aria-label="chartMeta.legend">
               <LogerChart v-if="grandOut" type="bar" :labels="spendMonths.map(m => formatMonth(m.month))" :series="[{ name: $t('Spending'), data: spendMonths.map(m => m.total) }]" :options="catOptions" />
               <div v-else class="h-full flex items-center justify-center text-sm text-body-1/70">{{ $t('No data for this period.') }}</div>
             </div>
-            <div v-else-if="activeTab === 'income'" key="c-inc" style="height:360px" class="p-3">
+            <div v-else-if="activeTab === 'income'" key="c-inc" style="height:360px" class="p-3" role="img" :aria-label="chartMeta.legend">
               <LogerChart v-if="grandIn" type="bar" :labels="incLabels" :series="incSeries" :options="incOptions" />
               <div v-else class="h-full flex items-center justify-center text-sm text-body-1/70">{{ $t('No data for this period.') }}</div>
             </div>
-            <div v-else-if="activeTab === 'cards'" key="c-cards" style="height:360px" class="p-3">
+            <div v-else-if="activeTab === 'cards'" key="c-cards" style="height:360px" class="p-3" role="img" :aria-label="chartMeta.legend">
               <LogerChart v-if="hasCards && cardSeries[0].data.length" type="bar" :labels="cardLabels" :series="cardSeries" :options="cardOptions" />
               <div v-else class="h-full flex items-center justify-center text-sm text-body-1/70">{{ $t('No credit cards yet.') }}</div>
             </div>
-            <div v-else key="c-pat" class="p-3">
+            <div v-else key="c-pat" class="p-3" role="img" :aria-label="chartMeta.legend">
               <ChartNetWorth v-if="metaData?.hasNetWorthHistory !== false" :data="nwChrono" type="bar" hide-headers />
               <div v-else class="h-72 flex items-center justify-center text-sm text-body-1/70">{{ $t('No data for this period.') }}</div>
             </div>
