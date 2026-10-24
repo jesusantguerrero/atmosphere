@@ -44,6 +44,7 @@ class OneSignalChannel
             heading: $payload['heading'] ?? config('app.name', 'Loger'),
             message: $payload['message'],
             url: isset($payload['url']) ? ['web' => $payload['url']] : null,
+            data: $payload['data'] ?? null,
         );
     }
 
