@@ -230,7 +230,7 @@ async function saveExchangeRate() {
             <div class="space-y-5 mt-5">
 
                 <!-- Net Worth bar with inline exchange rate -->
-                <section class="bg-primary text-white rounded-lg px-5 py-4 flex flex-wrap items-center justify-between gap-3">
+                <section class="bg-primaryDark text-white rounded-lg px-5 py-4 flex flex-wrap items-center justify-between gap-3">
                     <div class="flex items-center gap-6">
                         <div>
                             <p class="text-xs uppercase tracking-wide opacity-70 inline-flex items-center gap-1">{{ $t('Net worth') }} <InfoHint :title="$t('Net worth')" :body="$t('net_worth_hint')" /></p>
@@ -280,7 +280,7 @@ async function saveExchangeRate() {
 
                             <!-- Goal picker -->
                             <div v-if="showGoalPicker" class="px-5 py-3 border-b border-base bg-base-lvl-1 space-y-2">
-                                <p class="text-xs text-body-1/50 mb-2">{{ $t('Select goals to show in this view:') }}</p>
+                                <p class="text-xs text-body-1/70 mb-2">{{ $t('Select goals to show in this view:') }}</p>
                                 <label
                                     v-for="goal in availableGoals"
                                     :key="goal.id"
@@ -305,7 +305,7 @@ async function saveExchangeRate() {
                             <!-- Pinned goals table -->
                             <table v-if="pinnedGoals.length" class="w-full text-sm">
                                 <thead>
-                                    <tr class="text-xs uppercase text-body-1/50 bg-base-lvl-2">
+                                    <tr class="text-xs uppercase text-body-1/80 bg-base-lvl-2">
                                         <th class="text-left px-5 py-2 font-medium">{{ $t('Goal') }}</th>
                                         <th class="text-right px-5 py-2 font-medium">{{ $t('Balance / Target') }}</th>
                                         <th class="text-right px-5 py-2 font-medium">{{ $t('Diff') }}</th>
@@ -431,7 +431,7 @@ async function saveExchangeRate() {
 
                             <table class="w-full text-sm">
                                 <thead>
-                                    <tr class="text-xs uppercase text-body-1/50 bg-base-lvl-2">
+                                    <tr class="text-xs uppercase text-body-1/80 bg-base-lvl-2">
                                         <th class="text-left px-5 py-2 font-medium">{{ $t('Account') }}</th>
                                         <th class="text-right px-5 py-2 font-medium">{{ baseCurrency }}</th>
                                         <th class="text-right px-5 py-2 font-medium">{{ quoteCurrency }}</th>
@@ -534,7 +534,7 @@ async function saveExchangeRate() {
                     </div>
                     <table class="w-full text-sm">
                         <thead>
-                            <tr class="text-xs uppercase text-body-1/50 bg-base-lvl-2">
+                            <tr class="text-xs uppercase text-body-1/80 bg-base-lvl-2">
                                 <th class="text-left px-5 py-2 font-medium">{{ $t('Bank') }}</th>
                                 <th class="text-right px-5 py-2 font-medium">{{ $t('Accounts') }}</th>
                                 <th class="text-right px-5 py-2 font-medium">{{ quoteCurrency }}</th>
