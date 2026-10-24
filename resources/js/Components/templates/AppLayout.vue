@@ -207,6 +207,7 @@
                              <!-- <LogerAssistant /> -->
                              <div class="team-select-fix flex items-center" v-if="$page.props.auth.user?.all_teams.length && !context.isMobile" :aria-label="$t('Switch space')" role="navigation">
                              <AtTeamSelect
+                                :aria-label="$t('Current space') + ': ' + ($page.props.auth.user?.current_team?.name ?? '')"
                                 :has-team-features="$page.props.jetstream.hasTeamFeatures"
                                 :can-create-teams="$page.props.jetstream.canCreateTeams"
                                 :current-team="$page.props.auth.user.current_team"

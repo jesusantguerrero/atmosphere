@@ -206,7 +206,7 @@ const dismiss = (payment: any) => {
                     </button>
                 </div>
             </div>
-            <button v-if="nextPayments?.length" type="button" class="text-sm text-primary py-2 hover:underline" @click="router.visit('/finance/next-payments')">{{ $t('See all') }} ({{ nextPayments.length }}) →</button>
+            <button v-if="nextPayments?.length" type="button" class="text-sm text-primaryDark dark:text-primary py-2 hover:underline" @click="router.visit('/finance/next-payments')">{{ $t('See all') }} ({{ nextPayments.length }}) →</button>
             <div v-if="overdueReminders.length || draftsCount" class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <!-- Overdue reminders -->
                 <button

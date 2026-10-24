@@ -68,6 +68,10 @@ class DashboardController
 
         return inertia('Dashboard/Index', [
             'sectionTitle' => 'Dashboard',
+            'user' => [
+                'name' => $request->user()->name,
+                'current_team_id' => $request->user()->current_team_id,
+            ],
             'meals' => PlannedMealResource::collection($plannedMeals),
             'budgetTotal' => $budget,
             'transactionTotal' => $transactionsTotal,
