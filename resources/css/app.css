@@ -21,7 +21,7 @@
     --c-error: 185 28 28;
     --c-body: 17 24 39;
     --c-body-1: 42 50 65;
-    --c-border: 229 231 235;
+    --c-border: 209 213 219;
 }
 .dark {
     --c-primary: 242 97 122;
@@ -39,7 +39,7 @@
     --c-error: 239 107 103;
     --c-body: 231 234 240;
     --c-body-1: 155 164 178;
-    --c-border: 32 38 49;
+    --c-border: 48 56 68;
 }
 
 /* Base text color follows the theme (untyped text was falling back to black). */
