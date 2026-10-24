@@ -625,6 +625,27 @@ class TransactionService
     }
 
     /**
+     * Broader duplicate check: same account + date + total + direction + currency.
+     *
+     * Catches the common case where a bank sends two emails for one charge
+     * (alert + notification) that have different messageIds/descriptions but
+     * represent the same underlying transaction.
+     */
+    public function findDuplicateByAccountSignature(array $transactionData): ?Transaction
+    {
+        if (empty($transactionData['account_id'])) {
+            return null;
+        }
+
+        return Transaction::where('account_id', $transactionData['account_id'])
+            ->where('date', $transactionData['date'])
+            ->where('total', $transactionData['total'])
+            ->where('direction', $transactionData['direction'])
+            ->where('currency_code', $transactionData['currency_code'])
+            ->first();
+    }
+
+    /**
      * Match an already-imported bank row by its bank-side identifiers.
      *
      * The bank's confirmation number (stored in `reference`) is unique per

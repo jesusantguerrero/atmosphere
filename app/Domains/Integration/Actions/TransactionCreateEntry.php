@@ -7,14 +7,16 @@ use App\Domains\Automation\Models\Automation;
 use App\Domains\Automation\Models\AutomationTaskAction;
 use App\Domains\Integration\Concerns\TransactionDataDTO;
 use App\Domains\Transaction\Models\TransactionLine;
+use App\Domains\Transaction\Services\PayeeResolver;
 use App\Domains\Transaction\Services\TransactionService;
 use App\Helpers\FormulaHelper;
+use App\Models\ProcessedEmail;
 use App\Models\Setting;
 use App\Models\User;
 use App\Notifications\EntryGenerated;
-use App\Domains\Transaction\Services\PayeeResolver;
+use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Support\Facades\Log;
 use Insane\Journal\Models\Core\Account;
-use Insane\Journal\Models\Core\Payee;
 use Insane\Journal\Models\Core\Transaction;
 
 class TransactionCreateEntry implements AutomationActionContract
@@ -118,13 +120,41 @@ class TransactionCreateEntry implements AutomationActionContract
             $transactionData['status'] = Transaction::STATUS_VERIFIED;
         }
 
+        $total = (float) $transactionData['total'];
+        if ($total <= 0) {
+            Log::warning('TransactionCreateEntry: skipping zero/negative total from email', [
+                'automation_id' => $automation->id,
+                'gmail_id' => $payload['id'] ?? null,
+                'raw_total' => $transactionData['total'],
+            ]);
+
+            return null;
+        }
+
+        $gmailId = $payload['id'] ?? null;
+        if ($gmailId && ProcessedEmail::wasProcessed($automation->team_id, $gmailId)) {
+            return null;
+        }
+
         $transactionService = new TransactionService;
 
         if ($transaction = $transactionService->findIfDuplicated($transactionData)) {
+            self::markEmailProcessed($automation, $payload, $transaction);
+
             return $transaction;
         }
 
-        $transaction = Transaction::createTransaction($transactionData);
+        if ($transaction = $transactionService->findDuplicateByAccountSignature($transactionData)) {
+            self::markEmailProcessed($automation, $payload, $transaction);
+
+            return $transaction;
+        }
+
+        $transaction = Transaction::createTransaction(
+            collect($transactionData)->except(['items', 'payee_name'])->all()
+        );
+
+        self::markEmailProcessed($automation, $payload, $transaction);
 
         /**
          * Dedupe import notifications: an automation that ingests a batch
@@ -222,6 +252,26 @@ class TransactionCreateEntry implements AutomationActionContract
         }
 
         return $destinationAccount;
+    }
+
+    private static function markEmailProcessed(Automation $automation, mixed $payload, ?Transaction $transaction): void
+    {
+        $gmailId = $payload['id'] ?? null;
+        if (! $gmailId) {
+            return;
+        }
+
+        try {
+            ProcessedEmail::record(
+                $automation->team_id,
+                $gmailId,
+                $payload['messageId'] ?? null,
+                $automation->id,
+                $transaction?->id
+            );
+        } catch (UniqueConstraintViolationException) {
+            // already recorded
+        }
     }
 
     public function getName(): string
