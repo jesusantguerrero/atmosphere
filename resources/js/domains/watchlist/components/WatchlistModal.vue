@@ -210,7 +210,7 @@ const isType = (typeName: string) => form.type == typeName;
               v-for="tpl in templates"
               :key="tpl.name"
               type="button"
-              class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-semibold hover:bg-primary/20 transition"
+              class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary-ink text-sm font-semibold hover:bg-primary/20 transition"
               @click="pickTemplate(tpl)"
             >
               <i :class="tpl.icon" />
@@ -304,7 +304,7 @@ const isType = (typeName: string) => form.type == typeName;
               type="button"
               class="px-3 py-2 text-left rounded-md border transition"
               :class="form.direction === opt.value
-                ? 'border-primary bg-primary/10 text-primary'
+                ? 'border-primary bg-primary/10 text-primary-ink'
                 : 'border-base bg-base-lvl-3 text-body-1 hover:border-primary/50'"
               @click="form.direction = opt.value"
             >

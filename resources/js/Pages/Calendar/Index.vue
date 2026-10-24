@@ -128,13 +128,13 @@ const kindColor = (kind: string): string => {
     const map: Record<string, string> = {
         billing: 'bg-warning/20 text-warning border-warning/30',
         mealplan: 'bg-secondary/20 text-secondary border-secondary/30',
-        task: 'bg-primary/20 text-primary border-primary/30',
+        task: 'bg-primary/20 text-primary-ink border-primary/30',
         utility: 'bg-accent/20 text-accent border-accent/30',
         relationship: 'bg-error/20 text-error dark:text-body border-error/30',
         occurrence: 'bg-body-1/20 text-body-1 border-body-1/30',
         google: 'bg-[#4285F4]/15 text-[#4285F4] border-[#4285F4]/30',
     };
-    return map[kind] || 'bg-primary/20 text-primary border-primary/30';
+    return map[kind] || 'bg-primary/20 text-primary-ink border-primary/30';
 };
 
 const kindIcon = (kind: string): string => {

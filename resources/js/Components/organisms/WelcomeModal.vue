@@ -74,7 +74,7 @@ const visibleCards = allModuleCards.filter((card) =>
         <div class="bg-base-lvl-3 px-6 pt-6 pb-4">
             <div class="flex items-start justify-between mb-1">
                 <div class="flex items-center gap-3">
-                    <div class="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary">
+                    <div class="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary-ink">
                         <i class="fas fa-rocket text-lg" />
                     </div>
                     <h2 class="text-xl font-bold text-body-1">Welcome to Loger!</h2>
@@ -99,7 +99,7 @@ const visibleCards = allModuleCards.filter((card) =>
                     class="flex items-start gap-3 p-4 rounded-lg border border-base-lvl-2 bg-base-lvl-2 hover:border-primary/40 hover:bg-primary/5 transition-all group"
                     @click="dismiss"
                 >
-                    <div class="flex items-center justify-center w-9 h-9 rounded-md bg-primary/10 text-primary flex-shrink-0 group-hover:bg-primary group-hover:text-white transition-all">
+                    <div class="flex items-center justify-center w-9 h-9 rounded-md bg-primary/10 text-primary-ink flex-shrink-0 group-hover:bg-primary group-hover:text-white transition-all">
                         <i :class="card.icon" />
                     </div>
                     <div class="min-w-0">

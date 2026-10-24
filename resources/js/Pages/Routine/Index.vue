@@ -621,7 +621,7 @@ onBeforeUnmount(() => { if (toastTimer) clearTimeout(toastTimer); detachDrag(); 
               <div v-if="showNow(day - 1)" class="absolute left-0 right-0 h-0.5 bg-primary z-10"
                    :style="{ top: nowTop + 'px' }"></div>
               <div v-if="dragGhost && dragGhost.day === (day - 1)"
-                   class="absolute left-0.5 right-0.5 rounded-md border-2 border-dashed border-primary bg-primary/10 pointer-events-none z-20 flex items-start justify-center text-[11px] text-primary font-bold pt-0.5"
+                   class="absolute left-0.5 right-0.5 rounded-md border-2 border-dashed border-primary bg-primary/10 pointer-events-none z-20 flex items-start justify-center text-[11px] text-primary-ink font-bold pt-0.5"
                    :style="{ top: dragGhost.top + 'px', height: dragGhost.height + 'px' }">{{ dragGhost.label }}</div>
               <!-- blocks -->
               <div v-for="rb in renderBlocks(day - 1)" :key="rb._kind + rb.id"

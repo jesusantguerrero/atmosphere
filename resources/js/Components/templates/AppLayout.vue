@@ -291,7 +291,7 @@
                                         class="w-10 h-10 rounded-full object-cover flex-shrink-0"
                                         :alt="$page.props.auth.user.name"
                                     >
-                                    <div v-else class="w-10 h-10 rounded-full bg-primary/15 text-primary flex items-center justify-center font-semibold flex-shrink-0">
+                                    <div v-else class="w-10 h-10 rounded-full bg-primary/15 text-primary-ink flex items-center justify-center font-semibold flex-shrink-0">
                                         {{ ($page.props.auth.user.name || '?').slice(0, 1) }}
                                     </div>
                                     <div class="min-w-0">
@@ -318,7 +318,7 @@
                                         <Link
                                             :href="item.to"
                                             class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-body-1 hover:bg-base-lvl-2 hover:text-primary transition-colors"
-                                            :class="{ 'bg-primary/10 text-primary': currentPath?.startsWith(item.to) }"
+                                            :class="{ 'bg-primary/10 text-primary-ink': currentPath?.startsWith(item.to) }"
                                             @click="showingNavigationDropdown = false"
                                         >
                                             <i v-if="typeof item.icon === 'string'" :class="item.icon" class="w-5 text-center text-body-1/60"></i>

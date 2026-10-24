@@ -163,7 +163,7 @@ const toggleGroup = (group: string) => {
             <button v-for="option in filterOptions" :key="option.key" @click="selectedFilter = option.key" :class="[
                 'px-2 py-0.5 text-[11px] rounded-full transition-colors whitespace-nowrap',
                 selectedFilter === option.key
-                    ? 'bg-primary/15 text-primary font-medium'
+                    ? 'bg-primary/15 text-primary-ink font-medium'
                     : 'text-body-1/60 hover:bg-base-lvl-2'
             ]">
                 {{ $t(option.label) }}
@@ -204,7 +204,7 @@ const toggleGroup = (group: string) => {
 
             <!-- First-run: no accounts at all -->
             <div v-if="!accounts.length" class="flex flex-col items-center px-3 py-8 text-center">
-                <div class="flex items-center justify-center w-12 h-12 mb-3 rounded-full bg-primary/10 text-primary">
+                <div class="flex items-center justify-center w-12 h-12 mb-3 rounded-full bg-primary/10 text-primary-ink">
                     <i class="fas fa-wallet"></i>
                 </div>
                 <p class="text-sm font-semibold text-body">{{ $t('No accounts yet') }}</p>

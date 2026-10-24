@@ -166,7 +166,7 @@ const dueLabel = (goal: Goal): string | null => {
                         <div class="flex flex-col items-end gap-1 text-xs">
                             <span
                                 class="px-2 py-0.5 rounded-full"
-                                :class="goal.frequency === 'MONTHLY' ? 'bg-primary/10 text-primary' : 'bg-base-lvl-2 text-body-1'"
+                                :class="goal.frequency === 'MONTHLY' ? 'bg-primary/10 text-primary-ink' : 'bg-base-lvl-2 text-body-1'"
                             >
                                 {{ frequencyLabel(goal) }}
                             </span>

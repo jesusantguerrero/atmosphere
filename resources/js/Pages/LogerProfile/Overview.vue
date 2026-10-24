@@ -88,7 +88,7 @@ const dateLabel = (date?: string) =>
                         >
                             <div class="mb-4 flex items-center gap-3">
                                 <span
-                                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-lg text-primary"
+                                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-lg text-primary-ink"
                                     >{{
                                         profile.name.charAt(0).toUpperCase()
                                     }}</span
@@ -107,7 +107,7 @@ const dateLabel = (date?: string) =>
                                             Number(profile.personal_user_id) ===
                                             Number($page.props.auth.user.id)
                                         "
-                                        class="ml-1 rounded bg-primary/10 px-1.5 py-0.5 text-xs text-primary"
+                                        class="ml-1 rounded bg-primary/10 px-1.5 py-0.5 text-xs text-primary-ink"
                                         >Tú</span
                                     >
                                 </h3>

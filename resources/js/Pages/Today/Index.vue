@@ -147,7 +147,7 @@ const { openModal: openBulkPlanner } = useToggleModal('bulkPlanner');
                         type="button"
                         class="text-xs px-3 py-1.5 rounded-full border transition"
                         :class="isLandingPage
-                            ? 'border-primary/30 bg-primary/10 text-primary'
+                            ? 'border-primary/30 bg-primary/10 text-primary-ink'
                             : 'border-base text-body-1/60 hover:border-primary/30 hover:text-primary'"
                         :title="isLandingPage ? $t('Today is your landing page') : $t('Set Today as landing page')"
                         @click="toggleLandingPage"

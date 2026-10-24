@@ -70,7 +70,7 @@ const status = computed(() => {
       variant: "overspent",
       label: "Overspent",
       colorClass:
-        "bg-primary/10 border-primary/40 text-primary",
+        "bg-primary/10 border-primary/40 text-primary-ink",
       description:
         "You assigned more than you have. Take money from another category or add funds to balance the month.",
       amount: v,

@@ -108,7 +108,7 @@ const expand = () => {
             class="flex-shrink-0 flex items-center justify-center h-9 w-9 rounded-lg text-sm font-bold"
             :class="step1Complete
               ? 'bg-emerald-500/15 text-emerald-500'
-              : 'bg-primary/10 text-primary'"
+              : 'bg-primary/10 text-primary-ink'"
           >
             <svg v-if="step1Complete" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="20 6 9 17 4 12" />
@@ -138,7 +138,7 @@ const expand = () => {
             class="flex-shrink-0 flex items-center justify-center h-9 w-9 rounded-lg text-sm font-bold"
             :class="step2Complete
               ? 'bg-emerald-500/15 text-emerald-500'
-              : 'bg-primary/10 text-primary'"
+              : 'bg-primary/10 text-primary-ink'"
           >
             <svg v-if="step2Complete" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="20 6 9 17 4 12" />
@@ -164,7 +164,7 @@ const expand = () => {
           class="w-full flex items-center gap-3 px-5 py-3 hover:bg-base-lvl-2 transition text-left focus:outline-none focus-visible:bg-base-lvl-2"
           @click="scrollToTable"
         >
-          <span class="flex-shrink-0 flex items-center justify-center h-9 w-9 rounded-lg text-sm font-bold bg-primary/10 text-primary">
+          <span class="flex-shrink-0 flex items-center justify-center h-9 w-9 rounded-lg text-sm font-bold bg-primary/10 text-primary-ink">
             3
           </span>
           <span class="flex-1 min-w-0">

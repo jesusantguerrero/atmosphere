@@ -180,7 +180,7 @@ const toggleFaq = (i: number) => {
                             :key="step.n"
                             class="flex items-start gap-4 p-4 rounded-lg bg-base-lvl-2/40 border border-base-lvl-2"
                         >
-                            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary/15 text-primary flex items-center justify-center text-sm font-bold" aria-hidden="true">
+                            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary/15 text-primary-ink flex items-center justify-center text-sm font-bold" aria-hidden="true">
                                 {{ step.n }}
                             </div>
                             <div class="flex-1 min-w-0">

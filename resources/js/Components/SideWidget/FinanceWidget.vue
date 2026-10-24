@@ -218,7 +218,7 @@ onBeforeUnmount(() => {
           class="group relative flex flex-col items-center justify-center gap-1 py-2 mx-auto w-full rounded-lg transition-all duration-150"
           :class="[
             isActiveSection(section, index)
-              ? 'bg-primary/10 text-primary'
+              ? 'bg-primary/10 text-primary-ink'
               : 'text-body-1/60 hover:bg-base-lvl-2 hover:text-primary',
             { 'opacity-40 cursor-not-allowed': section.disabled }
           ]"
@@ -248,7 +248,7 @@ onBeforeUnmount(() => {
           class="group relative flex flex-col items-center justify-center gap-1 py-2 mx-auto w-full rounded-lg transition-all duration-150"
           :class="[
             isActiveSection(section, topSections.length + index)
-              ? 'bg-primary/10 text-primary'
+              ? 'bg-primary/10 text-primary-ink'
               : 'text-body-1/60 hover:bg-base-lvl-2 hover:text-primary',
             { 'opacity-40 cursor-not-allowed': section.disabled }
           ]"

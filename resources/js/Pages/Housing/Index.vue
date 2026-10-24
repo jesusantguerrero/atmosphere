@@ -52,7 +52,7 @@ const isFirstRun = computed(() => totalOccurrences.value === 0 && totalBoards.va
                 v-if="isFirstRun"
                 class="flex flex-col items-center justify-center max-w-xl py-16 mx-auto text-center"
             >
-                <div class="flex items-center justify-center w-16 h-16 mb-5 rounded-full bg-primary/10 text-primary">
+                <div class="flex items-center justify-center w-16 h-16 mb-5 rounded-full bg-primary/10 text-primary-ink">
                     <i class="text-2xl fa fa-house-user"></i>
                 </div>
                 <h2 class="text-xl font-bold text-body">{{ $t('Welcome to your Household') }}</h2>
