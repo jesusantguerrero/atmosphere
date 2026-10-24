@@ -365,10 +365,10 @@ class MobileController extends Controller
             ];
         }
 
-        // Uncategorized expenses (all dates, same query as BudgetCategoryController).
+        // Uncategorized expenses (all dates, team-wide — not filtered by user_id because the
+        // difference calculation uses account balances from all team members' transaction_lines).
         $uncategorized = Transaction::query()->uncategorizedExpenses()
             ->where('transactions.team_id', $teamId)
-            ->where('transactions.user_id', $request->user()->id)
             ->selectRaw('currency_code, SUM(total) as total, COUNT(*) as count')
             ->groupBy('currency_code')
             ->get()
