@@ -45,11 +45,27 @@ const { TRANSFER, WITHDRAW } = TRANSACTION_DIRECTIONS;
 // Without this, `!"0.00"` evaluates to `false` (non-empty string is truthy),
 // the divide-by-zero guard below is bypassed, and the card renders
 // "Infinity% spent" — a real regression seen on first-load-without-budget.
+//
+// budgetTotal only carries *assigned* amounts: `total` is everything assigned
+// this month; its `spending`/`savings` split it by target type. It has NO
+// actual-spending figure. The real "spent" number is the month's expense
+// total, passed in as `props.expenses` (transactionTotal.total_amount).
 const currentBudget = computed(() => ({
     total: Number(props.budgetTotal?.at(-1)?.total ?? 0),
-    spending: Number(props.budgetTotal?.at(-1)?.spending ?? 0),
-    savings: Number(props.budgetTotal?.at(-1)?.savings ?? 0),
 }));
+
+// Actual money spent this month (expense transactions), not an assignment
+// figure. The previous card compared `total` vs `spending`; but since
+// total = spending + savings, `total - spending` is just the net savings
+// assignment, which flipped the card to "Over budget" whenever a savings
+// category was drawn down (negative assignment) — even with nothing overspent.
+const spent = computed(() => {
+    const value = Number(props.expenses ?? 0);
+    return Number.isFinite(value) ? Math.abs(value) : 0;
+});
+
+// What's left of the month's budget after actual spending.
+const available = computed(() => currentBudget.value.total - spent.value);
 
 // A budget "exists" if the team has it configured (categories/targets) — even
 // when nothing is assigned THIS month yet. The month's assignment total is a
@@ -60,7 +76,7 @@ const hasBudget = computed(() => Boolean(props.budgetConfigured) || budgetAssign
 
 const spentPercentage = computed(() => {
     if (!budgetAssigned.value) return 0;
-    return Math.round((currentBudget.value.spending / currentBudget.value.total) * 100);
+    return Math.round((spent.value / currentBudget.value.total) * 100);
 });
 
 // balance arrives from the server as a string; `+` would coerce to concat.
@@ -273,21 +289,21 @@ const dismiss = (payment: any) => {
                 class="col-span-2 md:col-span-1 min-w-0 bg-base-lvl-3 rounded-lg p-4 text-left border border-base hover:border-primary/30 transition cursor-pointer"
                 @click="router.visit('/budgets')"
             >
-                <p class="text-xs text-body-1/70 dark:text-body-1/80 uppercase tracking-wide font-medium">{{ currentBudget.total - currentBudget.spending < 0 ? $t('Over budget') : $t('Budget available') }}</p>
+                <p class="text-xs text-body-1/70 dark:text-body-1/80 uppercase tracking-wide font-medium">{{ available < 0 ? $t('Over budget') : $t('Budget available') }}</p>
                 <template v-if="budgetAssigned">
-                    <p class="text-sm sm:text-lg font-bold mt-1 break-words" :class="currentBudget.total - currentBudget.spending < 0 ? 'text-error' : 'text-body'"><MoneyPresenter :value="currentBudget.total - currentBudget.spending" /></p>
+                    <p class="text-sm sm:text-lg font-bold mt-1 break-words" :class="available < 0 ? 'text-error' : 'text-body'"><MoneyPresenter :value="available" /></p>
                     <p class="text-xs text-body-1/70 mt-2">{{ spentPercentage }}%
                         <span class="text-xs font-normal text-body-1/70 dark:text-body-1/80">{{ $t('spent') }}</span>
-                        <template v-if="currentBudget.spending > currentBudget.total">
+                        <template v-if="spent > currentBudget.total">
                             <span class="text-xs font-normal text-body-1/70 dark:text-body-1/80"> · </span>
-                            <span class="text-xs font-medium text-error"><MoneyPresenter :value="currentBudget.spending - currentBudget.total" /> {{ $t('over') }}</span>
+                            <span class="text-xs font-medium text-error"><MoneyPresenter :value="spent - currentBudget.total" /> {{ $t('over') }}</span>
                         </template>
                     </p>
                     <div class="mt-2">
                         <BudgetProgress
                             class="h-1.5 rounded-full"
                             :goal="currentBudget.total"
-                            :current="currentBudget.spending"
+                            :current="spent"
                             :progress-class="['bg-primary', 'bg-base-lvl-1']"
                             :show-labels="false"
                         />
