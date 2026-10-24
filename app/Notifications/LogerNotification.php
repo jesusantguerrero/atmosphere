@@ -137,9 +137,9 @@ class LogerNotification extends Notification
      * Default OneSignal push payload derived from `toArray()`. The heading is
      * the CTA (a short action label) and the body is the message. Returns an
      * empty array when there is nothing meaningful to push, which the channel
-     * treats as a no-op.
+     * treats as a no-op. Includes a `data` object for mobile deep-linking.
      *
-     * @return array{heading?: string, message?: string, url?: string}
+     * @return array{heading?: string, message?: string, url?: string, data?: array<string, mixed>}
      */
     public function toOneSignal($notifiable): array
     {
@@ -157,6 +157,17 @@ class LogerNotification extends Notification
 
         if (! empty($data['link'])) {
             $payload['url'] = $this->absoluteLink($data['link']);
+        }
+
+        $pushData = array_filter([
+            'type' => $this->typeKey(),
+            'link' => $data['link'] ?? null,
+            'category_id' => $data['category_id'] ?? null,
+            'month' => $data['month'] ?? null,
+        ]);
+
+        if ($pushData) {
+            $payload['data'] = $pushData;
         }
 
         return $payload;

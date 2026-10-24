@@ -29,7 +29,11 @@ class OneSignalService
      * Returns false silently when credentials are missing — same contract as
      * `sendToTag`. Failures are logged, not thrown.
      */
-    public function sendToUser(int|string $userId, string $heading, string $message, ?array $url = null): bool
+    /**
+     * @param  array<string, string>|null  $url  Optional `{web: ..., app: ...}` deep link.
+     * @param  array<string, mixed>|null  $data  Custom data the mobile app reads for deep-linking.
+     */
+    public function sendToUser(int|string $userId, string $heading, string $message, ?array $url = null, ?array $data = null): bool
     {
         $appId = config('services.onesignal.app_id');
         $apiKey = config('services.onesignal.rest_api_key');
@@ -48,6 +52,10 @@ class OneSignalService
 
         if (isset($url['web'])) {
             $payload['web_url'] = $url['web'];
+        }
+
+        if ($data) {
+            $payload['data'] = $data;
         }
 
         return $this->dispatch($payload, $apiKey);
