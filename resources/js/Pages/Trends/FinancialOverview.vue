@@ -440,7 +440,7 @@ async function saveExchangeRate() {
                                 <tbody>
                                     <template v-for="group in accounts" :key="group.group">
                                         <tr class="bg-base-lvl-1">
-                                            <td class="px-5 py-1.5 text-xs font-semibold uppercase tracking-wide text-body-1/70" colspan="3">
+                                            <td class="px-5 py-1.5 text-xs font-semibold uppercase tracking-wide text-body-1/75" colspan="3">
                                                 {{ groupLabel(group.group) }}
                                             </td>
                                         </tr>
@@ -505,7 +505,7 @@ async function saveExchangeRate() {
                                             </td>
                                         </tr>
                                         <tr class="border-b-2 border-base bg-base-lvl-1/50">
-                                            <td class="px-5 py-1.5 text-xs font-semibold text-body-1/70 pl-8">{{ $t('Subtotal') }}</td>
+                                            <td class="px-5 py-1.5 text-xs font-semibold text-body-1/75 pl-8">{{ $t('Subtotal') }}</td>
                                             <td class="px-5 py-1.5 text-right text-xs font-semibold tabular-nums">
                                                 <span v-if="group.subtotals.base">{{ formatMoney(group.subtotals.base, baseCurrency) }}</span>
                                             </td>
