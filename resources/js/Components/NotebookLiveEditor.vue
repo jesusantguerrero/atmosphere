@@ -101,6 +101,7 @@ const blockClass = (text: string) =>
             </div>
         </div>
         <button
+            v-if="blocks.length > 1 || blocks[0]?.text.trim()"
             type="button"
             :disabled="disabled"
             aria-label="Añadir párrafo"

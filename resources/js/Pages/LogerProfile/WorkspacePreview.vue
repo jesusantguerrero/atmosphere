@@ -140,8 +140,11 @@ const visiblePages = computed(
                 .includes(pageSearch.value.toLocaleLowerCase()),
         ) ?? [],
 );
-const selectPage = (id: string) => {
+const selectPage = async (id: string) => {
     if (saving.value) return;
+    if (hasUnsavedPage.value && selectedPage.value) {
+        await savePage(selectedPage.value);
+    }
     pageId.value = id;
     editingPage.value = false;
 };
@@ -257,6 +260,9 @@ const registerOccurrence = async (item: Workspace["occurrences"][number]) => {
 };
 const changeView = async (key: BoardView) => {
     if (!activeBoard.value) return;
+    if (hasUnsavedPage.value && selectedPage.value) {
+        await savePage(selectedPage.value);
+    }
     if (
         await persist("patch", `/boards/${activeBoard.value.id}`, { view: key })
     )
@@ -341,7 +347,7 @@ const newPage = async () => {
     const response = await persist(
         "post",
         `/boards/${activeBoard.value.id}/pages`,
-        { stage_id: Number(selectedStage.value.id), title: "Sin título" },
+        { stage_id: Number(selectedStage.value.id), title: "" },
     );
     if (response) {
         pageId.value = response.item_id;
@@ -370,6 +376,23 @@ const followPageLink = (title: string) => {
     );
     if (page) selectPage(page.id);
 };
+const menuOpen = ref(false);
+let autoSaveTimer: ReturnType<typeof setTimeout> | null = null;
+watch(
+    () =>
+        selectedPage.value && editingPage.value
+            ? JSON.stringify(selectedPage.value)
+            : null,
+    () => {
+        if (!hasUnsavedPage.value || !editingPage.value) return;
+        if (autoSaveTimer) clearTimeout(autoSaveTimer);
+        autoSaveTimer = setTimeout(() => {
+            if (selectedPage.value && hasUnsavedPage.value && !saving.value) {
+                savePage(selectedPage.value);
+            }
+        }, 1500);
+    },
+);
 const saveShortcut = (event: KeyboardEvent) => {
     if (
         (event.ctrlKey || event.metaKey) &&
@@ -618,7 +641,7 @@ const setTab = (id: string) => {
                             :disabled="saving"
                             @click="newPage"
                         >
-                            <Glyph name="plus" />Añadir página
+                            <Glyph name="plus" />Nueva página
                         </button>
                         <button
                             v-else
@@ -641,7 +664,7 @@ const setTab = (id: string) => {
                             </p>
                         </div>
                         <span class="text-xs text-body-1/70"
-                            >{{ activeBoard.stages.length }} cuadernos</span
+                            >{{ activeBoard.stages.length }} {{ activeBoard.stages.length === 1 ? 'cuaderno' : 'cuadernos' }}</span
                         >
                     </div>
                     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -676,7 +699,7 @@ const setTab = (id: string) => {
                             class="flex min-h-[180px] flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-body-1/20 p-5 text-sm text-body-1/75 hover:border-primary hover:text-primary"
                             @click="panel = 'notebook'"
                         >
-                            <Glyph name="plus" />Crear cuaderno
+                            <Glyph name="plus" />Nuevo cuaderno
                         </button>
                     </div>
                 </section>
@@ -761,30 +784,33 @@ const setTab = (id: string) => {
                                     :name="editingPage ? 'book' : 'pencil'"
                                 />
                             </button>
-                            <details
-                                class="relative"
-                                @keydown.esc="
-                                    (
-                                        $event.currentTarget as HTMLDetailsElement
-                                    ).open = false
-                                "
-                            >
-                                <summary
+                            <div class="relative">
+                                <button
                                     aria-label="Opciones de página"
                                     title="Opciones de página"
-                                    class="flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-md text-body-1/70 hover:bg-body-1/5 focus-visible:ring-2 focus-visible:ring-primary"
+                                    class="flex h-11 w-11 items-center justify-center rounded-md text-body-1/70 hover:bg-body-1/5 focus-visible:ring-2 focus-visible:ring-primary"
+                                    @click="menuOpen = !menuOpen"
                                 >
                                     <Glyph name="more" />
-                                </summary>
+                                </button>
+                                <Teleport to="body">
+                                    <div
+                                        v-if="menuOpen"
+                                        class="fixed inset-0 z-10"
+                                        @click="menuOpen = false"
+                                    />
+                                </Teleport>
                                 <div
+                                    v-if="menuOpen"
                                     class="absolute right-0 top-full z-20 flex w-60 flex-col gap-2 rounded-lg border border-body-1/15 bg-base-lvl-3 p-3 shadow-xl"
+                                    @keydown.esc="menuOpen = false"
                                 >
                                     <button
                                         class="min-h-[44px] rounded px-2 text-left text-sm hover:bg-body-1/5"
                                         :disabled="saving"
-                                        @click="newPage"
+                                        @click="menuOpen = false; newPage()"
                                     >
-                                        Añadir página
+                                        Nueva página
                                     </button>
                                     <label
                                         class="flex min-h-[44px] items-center gap-2 text-sm"
@@ -829,7 +855,7 @@ const setTab = (id: string) => {
                                             class="workspace-input"
                                     /></label>
                                 </div>
-                            </details>
+                            </div>
                         </div>
                     </div>
                     <aside
@@ -874,7 +900,7 @@ const setTab = (id: string) => {
                                                   : 'book'
                                         "
                                         class="!h-4 !w-4"
-                                    /><span>{{ page.title }}</span>
+                                    /><span>{{ page.title || 'Sin título' }}</span>
                                 </button>
                             </div>
                         </div>
@@ -893,14 +919,15 @@ const setTab = (id: string) => {
                             v-if="!editingPage"
                             class="break-words text-2xl font-semibold leading-tight sm:text-3xl"
                         >
-                            {{ selectedPage.title }}
+                            {{ selectedPage.title || 'Sin título' }}
                         </h3>
                         <input
                             v-else
                             v-model="selectedPage.title"
                             aria-label="Título de la página"
+                            placeholder="Sin título"
                             :disabled="saving"
-                            class="w-full border-0 bg-transparent p-0 text-2xl font-semibold leading-tight focus:ring-0 sm:text-3xl"
+                            class="w-full border-0 bg-transparent p-0 text-2xl font-semibold leading-tight placeholder:text-body-1/40 focus:ring-0 sm:text-3xl"
                         />
                         <label
                             v-if="selectedPage.kind === 'task'"
@@ -981,7 +1008,7 @@ const setTab = (id: string) => {
                             Tu primera página empieza aquí.
                         </p>
                         <button class="workspace-button" @click="newPage">
-                            Crear página
+                            Nueva página
                         </button>
                     </div>
                     <footer
@@ -1061,7 +1088,7 @@ const setTab = (id: string) => {
                                 newPage();
                             "
                         >
-                            + Añadir página
+                            + Nueva página
                         </button>
                     </div>
                 </section>
@@ -1199,7 +1226,7 @@ const setTab = (id: string) => {
                                 class="text-xs font-medium text-primary"
                                 @click="panel = 'create'"
                             >
-                                + Crear carpeta
+                                + Nueva carpeta
                             </button>
                         </div>
                         <div class="grid gap-3 sm:grid-cols-3">
@@ -1238,7 +1265,7 @@ const setTab = (id: string) => {
                                         }}
                                         ·
                                         {{ pagesOf(board).length }}
-                                        páginas</span
+                                        {{ pagesOf(board).length === 1 ? 'página' : 'páginas' }}</span
                                     ><Glyph
                                         name="arrow"
                                         class="!h-4 !w-4 transition group-hover:text-primary"
@@ -1428,7 +1455,13 @@ const setTab = (id: string) => {
                         class="rounded-xl border border-dashed border-body-1/20 p-8 text-center"
                     >
                         <p class="text-sm text-body-1/75">
-                            Todavía no hay elementos vinculados en esta sección.
+                            {{
+                                tab === 'finance'
+                                    ? 'Vincula las categorías del presupuesto para ver las finanzas de esta persona.'
+                                    : tab === 'shopping'
+                                      ? 'Vincula una lista de compras para ver y gestionar sus productos.'
+                                      : 'Vincula los seguimientos para ver y registrar sus hábitos.'
+                            }}
                         </p>
                         <button
                             class="workspace-button mx-auto mt-4"
@@ -1599,7 +1632,7 @@ const setTab = (id: string) => {
                         class="workspace-button workspace-primary justify-center"
                         type="submit"
                     >
-                        Crear carpeta
+                        Nueva carpeta
                     </button>
                 </form>
                 <form
@@ -1627,7 +1660,7 @@ const setTab = (id: string) => {
                         class="workspace-button workspace-primary justify-center"
                         :disabled="saving"
                     >
-                        Crear cuaderno
+                        Nuevo cuaderno
                     </button>
                 </form>
                 <div v-else class="flex flex-col gap-4">
