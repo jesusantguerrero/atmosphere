@@ -104,10 +104,10 @@ class MobileController extends Controller
         $monthStart = $today->copy()->startOfMonth()->format('Y-m-d');
         $monthEnd = $today->copy()->endOfMonth()->format('Y-m-d');
 
-        // Closed accounts stay out of the phone's lists and the account picker. Only
-        // closed_at is reliable: `archived` defaults to 1 in the accounts table.
+        $includeClosed = $request->boolean('include_closed');
+
         $accounts = collect(Account::getByDetailTypes($teamId)->loadMissing('detailType'))
-            ->reject(fn ($a) => $a->closed_at !== null)
+            ->when(! $includeClosed, fn ($c) => $c->reject(fn ($a) => $a->closed_at !== null))
             ->map(fn ($a) => [
                 'id' => $a->id,
                 'name' => $a->name,
@@ -115,11 +115,12 @@ class MobileController extends Controller
                 'balance_type' => $a->balance_type,
                 'currency_code' => $a->currency_code,
                 'account_detail_type_id' => $a->account_detail_type_id,
-                // bank | cash | cash_on_hand | savings | credit_card | property | loan — lets the app group accounts.
                 'detail_type' => $a->detailType?->name,
                 'credit_closing_day' => $a->credit_closing_day,
                 'credit_limit' => $a->credit_limit ? (float) $a->credit_limit : null,
                 'type' => $a->type,
+                'index' => $a->index,
+                'closed_at' => $a->closed_at,
                 'reconciliation_last' => $a->reconciliationLast ? [
                     'status' => $a->reconciliationLast->status,
                     'amount' => (float) $a->reconciliationLast->amount,
@@ -1171,6 +1172,16 @@ class MobileController extends Controller
                 'status' => $planner->status,
             ],
         ], 201);
+    }
+
+    /**
+     * FAB shortcut: create a task (delegates to storeEvent with kind=task).
+     */
+    public function storeTask(Request $request): JsonResponse
+    {
+        $request->merge(['kind' => $request->input('kind', Planner::KIND_TASK)]);
+
+        return $this->storeEvent($request);
     }
 
     /**

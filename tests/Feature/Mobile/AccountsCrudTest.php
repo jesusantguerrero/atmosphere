@@ -180,6 +180,110 @@ class AccountsCrudTest extends TestCase
         return [$user, $team];
     }
 
+    public function test_overview_excludes_closed_accounts_by_default(): void
+    {
+        [$user, $team] = $this->makeSetup();
+        Sanctum::actingAs($user);
+
+        $open = $this->createTestAccount($user, $team, 'bank');
+        $closed = $this->createTestAccount($user, $team, 'savings');
+        $closed->forceFill(['name' => 'Closed Savings', 'closed_at' => now()])->save();
+
+        $response = $this->getJson('/api/mobile/overview')->assertOk();
+        $accountIds = collect($response->json('accounts'))->pluck('id')->all();
+
+        $this->assertContains($open->id, $accountIds);
+        $this->assertNotContains($closed->id, $accountIds);
+    }
+
+    public function test_overview_includes_closed_accounts_when_requested(): void
+    {
+        [$user, $team] = $this->makeSetup();
+        Sanctum::actingAs($user);
+
+        $open = $this->createTestAccount($user, $team, 'bank');
+        $closed = $this->createTestAccount($user, $team, 'savings');
+        $closed->forceFill(['name' => 'Closed Savings', 'closed_at' => now()])->save();
+
+        $response = $this->getJson('/api/mobile/overview?include_closed=1')->assertOk();
+        $accounts = collect($response->json('accounts'));
+
+        $this->assertTrue($accounts->contains('id', $open->id));
+        $this->assertTrue($accounts->contains('id', $closed->id));
+
+        $closedAccount = $accounts->firstWhere('id', $closed->id);
+        $this->assertNotNull($closedAccount['closed_at']);
+    }
+
+    public function test_overview_includes_index_field(): void
+    {
+        [$user, $team] = $this->makeSetup();
+        Sanctum::actingAs($user);
+
+        $account = $this->createTestAccount($user, $team, 'bank');
+        $account->forceFill(['index' => 5])->save();
+
+        $response = $this->getJson('/api/mobile/overview')->assertOk();
+        $found = collect($response->json('accounts'))->firstWhere('id', $account->id);
+
+        $this->assertEquals(5, $found['index']);
+    }
+
+    public function test_reorder_accounts_via_token(): void
+    {
+        [$user, $team] = $this->makeSetup();
+        Sanctum::actingAs($user);
+
+        $a = $this->createTestAccount($user, $team, 'bank');
+        $b = $this->createTestAccount($user, $team, 'savings');
+        $b->forceFill(['name' => 'Savings'])->save();
+
+        $this->patchJson('/api/mobile/accounts/reorder', [
+            'account_ids' => [$b->id, $a->id],
+        ])->assertOk()->assertJson(['success' => true]);
+
+        $this->assertEquals(0, $b->fresh()->index);
+        $this->assertEquals(1, $a->fresh()->index);
+    }
+
+    public function test_reorder_rejects_other_teams_accounts(): void
+    {
+        [$user] = $this->makeSetup();
+        Sanctum::actingAs($user);
+
+        $other = User::factory()->withPersonalTeam()->create();
+        $otherTeam = $other->ownedTeams()->first();
+        $type = AccountDetailType::where('name', 'bank')->first();
+        $alien = Account::create([
+            'team_id' => $otherTeam->id,
+            'user_id' => $other->id,
+            'name' => 'Foreign',
+            'display_id' => 'foreign',
+            'currency_code' => 'USD',
+            'account_detail_type_id' => $type->id,
+            'balance_type' => 'DEBIT',
+            'type' => 1,
+        ]);
+
+        $this->patchJson('/api/mobile/accounts/reorder', [
+            'account_ids' => [$alien->id],
+        ])->assertStatus(422);
+    }
+
+    public function test_store_task_via_fab_endpoint(): void
+    {
+        [$user] = $this->makeSetup();
+        Sanctum::actingAs($user);
+
+        $response = $this->postJson('/api/mobile/tasks', [
+            'name' => 'Buy groceries',
+            'date' => '2026-10-25',
+        ])->assertCreated()->assertJson(['success' => true]);
+
+        $this->assertEquals('task', $response->json('data.kind'));
+        $this->assertEquals('Buy groceries', $response->json('data.name'));
+    }
+
     private function createTestAccount(User $user, $team, string $detailTypeName = 'bank'): Account
     {
         $type = AccountDetailType::where('name', $detailTypeName)->first();
