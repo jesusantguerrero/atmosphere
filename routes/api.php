@@ -1,6 +1,7 @@
 <?php
 
 use App\Domains\AppCore\Http\Controllers\ApiLoginController;
+use App\Http\Controllers\Api\AccountApiController;
 use App\Http\Controllers\Api\DashboardApiController;
 use App\Http\Controllers\Api\MobileController;
 use App\Http\Controllers\Api\MobilePreferencesController;
@@ -130,6 +131,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
     Route::get('/categories', [MobileController::class, 'categoriesFlat'])->name('categories.index');
 
     // Accounts CRUD
+    Route::patch('/accounts/reorder', [AccountApiController::class, 'reorder'])->name('accounts.reorder');
     Route::post('/accounts', [MobileController::class, 'storeAccount'])->name('accounts.store');
     Route::get('/accounts/{account}', [MobileController::class, 'showAccount'])->name('accounts.show');
     Route::patch('/accounts/{account}', [MobileController::class, 'updateAccount'])->name('accounts.update');
@@ -155,6 +157,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
     Route::patch('/events/{planner}/complete', [MobileController::class, 'completeEvent'])->name('events.complete');
     Route::patch('/events/{planner}/cancel', [MobileController::class, 'cancelEvent'])->name('events.cancel');
     Route::patch('/events/{planner}/reopen', [MobileController::class, 'reopenEvent'])->name('events.reopen');
+    Route::post('/tasks', [MobileController::class, 'storeTask'])->name('tasks.store');
     Route::post('/transfers', [MobileController::class, 'transfer'])->name('transfers.store');
 
     // Chores (household tasks)
