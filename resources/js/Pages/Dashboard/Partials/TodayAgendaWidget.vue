@@ -59,12 +59,12 @@ onUnmounted(() => clearInterval(clockInterval));
             </Link>
         </div>
         <p v-else-if="loading" class="text-sm text-body-1/70">{{ $t('Loading agenda...') }}</p>
-        <div v-else-if="unavailable" class="text-sm text-body-1/70">
-            <p>{{ $t('We could not load your agenda.') }}
-                <button type="button" class="ml-1 text-sm text-primary hover:underline" @click="fetchGoogleEvents">{{ $t('Retry') }}</button>
-            </p>
-        </div>
         <p v-else class="text-sm text-body-1/70">{{ $t('No events today. A clear day.') }}</p>
-        <p v-if="unavailable && visibleEvents.length" class="pt-2 text-xs text-body-1/70">{{ $t('Google events could not be loaded.') }}</p>
+        <!-- Google is an optional layer on top of Loger's own agenda: when it
+             fails, the agenda above is still valid, so only note the gap. -->
+        <p v-if="unavailable && !loading" class="pt-2 text-xs text-body-1/70">
+            {{ $t('Google events could not be loaded.') }}
+            <button type="button" class="ml-1 font-semibold text-primary hover:underline" @click="fetchGoogleEvents">{{ $t('Retry') }}</button>
+        </p>
     </section>
 </template>
