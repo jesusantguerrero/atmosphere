@@ -191,7 +191,18 @@ class MobileController extends Controller
             ->whereNot('name', BudgetReservedNames::READY_TO_ASSIGN->value)
             ->whereNot('name', BudgetReservedNames::INFLOW->value)
             ->orderBy('index')
-            ->with(['subCategories', 'subCategories.budget', 'subCategories.account'])
+            ->with([
+                'subCategories' => function ($q) use ($month) {
+                    $q->where(function ($q) use ($month) {
+                        $q->whereNull('account_id')
+                            ->orWhereDoesntHave('account', function ($q) use ($month) {
+                                $q->whereNotNull('closed_at')->where('closed_at', '<=', $month);
+                            });
+                    });
+                },
+                'subCategories.budget',
+                'subCategories.account',
+            ])
             ->get();
 
         // Pre-load all accounts for CC payment enrichment.
