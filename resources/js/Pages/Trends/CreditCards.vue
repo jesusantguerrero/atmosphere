@@ -121,12 +121,12 @@ const deltaDisplay = computed(() => {
             class="bg-base-lvl-3 rounded-lg border border-base px-6 py-16 flex flex-col items-center justify-center text-center"
         >
             <div class="text-4xl mb-3 opacity-40">💳</div>
-            <h2 class="text-lg font-bold text-body mb-1">No credit cards yet</h2>
-            <p class="text-sm text-body-1/60 mb-5 max-w-sm">
-                Add a credit card account to see utilization, per-cycle spend, and category breakdowns.
+            <h2 class="text-lg font-bold text-body mb-1">{{ $t('No credit cards yet') }}</h2>
+            <p class="text-sm text-body-1/70 mb-5 max-w-sm">
+                {{ $t('Add a credit card account to see utilization, per-cycle spend, and category breakdowns.') }}
             </p>
             <a href="/finance/accounts/create?type=credit_card" class="px-4 py-2 text-sm font-medium rounded bg-primary text-white hover:opacity-90 transition">
-                Add a credit card
+                {{ $t('Add a credit card') }}
             </a>
         </section>
 
@@ -135,19 +135,19 @@ const deltaDisplay = computed(() => {
                 <BackgroundCard
                     class="w-full cursor-pointer text-body-1 bg-base-lvl-3"
                     :value="data.lastCycleBalances?.length ?? 0"
-                    :label="'Credits Qty'"
+                    :label="$t('Credits Qty')"
                     label-class="capitalize text-secondary font-base"
                 />
                 <BackgroundCard
                     class="w-full cursor-pointer text-body-1 bg-base-lvl-3"
                     :value="formatMoney(data.creditCapacity)"
-                    :label="'Total Capacity'"
+                    :label="$t('Total Capacity')"
                     label-class="capitalize text-secondary font-base"
                 />
                 <BackgroundCard
                     class="w-full cursor-pointer text-body-1 bg-base-lvl-3"
                     :value="formatMoney(data.creditTotal)"
-                    :label="'Credit Total'"
+                    :label="$t('Credit Total')"
                     label-class="capitalize text-secondary font-base"
                 >
                     <template #value>
@@ -162,7 +162,7 @@ const deltaDisplay = computed(() => {
                 <BackgroundCard
                     class="w-full cursor-pointer text-body-1 bg-base-lvl-3"
                     :value="`${data.creditLineUsage}%`"
-                    :label="'Credit Line Usage'"
+                    :label="$t('Credit Line Usage')"
                     :text-class="`text-2xl font-bold ${usageColorClass}`"
                     label-class="capitalize text-secondary font-base"
                 />
@@ -173,11 +173,11 @@ const deltaDisplay = computed(() => {
                 </div>
                 <table class="w-full text-sm">
                     <thead>
-                        <tr class="text-xs uppercase text-body-1/50 bg-base-lvl-2">
-                            <th class="text-left px-5 py-2 font-medium">Card</th>
-                            <th class="text-right px-5 py-2 font-medium">Balance</th>
-                            <th class="text-right px-5 py-2 font-medium">Limit</th>
-                            <th class="text-left px-5 py-2 font-medium w-1/3">Utilization</th>
+                        <tr class="text-xs uppercase text-body-1/80 bg-base-lvl-2">
+                            <th class="text-left px-5 py-2 font-medium">{{ $t('Card') }}</th>
+                            <th class="text-right px-5 py-2 font-medium">{{ $t('Balance') }}</th>
+                            <th class="text-right px-5 py-2 font-medium">{{ $t('Limit') }}</th>
+                            <th class="text-left px-5 py-2 font-medium w-1/3">{{ $t('Utilization') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -189,7 +189,7 @@ const deltaDisplay = computed(() => {
                         >
                             <td class="px-5 py-2 text-body">{{ card.name }}</td>
                             <td class="px-5 py-2 text-right tabular-nums">{{ formatMoney(card.total) }}</td>
-                            <td class="px-5 py-2 text-right text-body-1/60 tabular-nums">{{ formatMoney(card.credit_limit) }}</td>
+                            <td class="px-5 py-2 text-right text-body-1/70 tabular-nums">{{ formatMoney(card.credit_limit) }}</td>
                             <td class="px-5 py-2">
                                 <div class="flex items-center gap-2">
                                     <div class="flex-1 h-2 bg-base-lvl-1 rounded-full overflow-hidden">
@@ -199,7 +199,7 @@ const deltaDisplay = computed(() => {
                                             :style="{ width: `${cardUsagePct(card.total, card.credit_limit)}%` }"
                                         />
                                     </div>
-                                    <span class="text-xs tabular-nums text-body-1/60 w-12 text-right">
+                                    <span class="text-xs tabular-nums text-body-1/70 w-12 text-right">
                                         {{ cardUsagePct(card.total, card.credit_limit).toFixed(1) }}%
                                     </span>
                                 </div>
@@ -217,7 +217,7 @@ const deltaDisplay = computed(() => {
                         v-if="data.billingCyclesByCard?.discountTotal"
                         class="bg-base-lvl-3 border border-base rounded-lg px-4 py-3 flex items-baseline justify-between"
                     >
-                        <span class="text-xs uppercase tracking-wide text-body-1/60">Descuentos registrados</span>
+                        <span class="text-xs uppercase tracking-wide text-body-1/70">{{ $t('Discounts recorded') }}</span>
                         <span class="text-lg font-bold text-green-500 tabular-nums">
                             {{ formatMoney(data.billingCyclesByCard.discountTotal) }}
                         </span>

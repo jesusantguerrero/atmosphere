@@ -137,11 +137,11 @@ watch(() => props.journey, () => { selectedId.value = ''; }, { deep: true });
             <div>
               <b>{{ card.name }}</b>
               <span v-if="selected.kind === 'opened' && selected.account_id === card.id" class="text-primary"> · Nueva</span>
-              <span v-else-if="!card.opening_known" class="history-card-note text-body-1/60">Apertura por completar</span>
+              <span v-else-if="!card.opening_known" class="history-card-note text-body-1/70">Apertura por completar</span>
             </div>
             <span class="text-body-1/70">{{ card.balance === null ? 'Sin saldo histórico' : money(card.balance, card.currency) }}</span>
           </div>
-          <p class="history-footnote text-body-1/60">Saldos verificados en la moneda principal a esta fecha. Los datos que faltan no se muestran como cero. El límite histórico no está registrado.</p>
+          <p class="history-footnote text-body-1/70">Saldos verificados en la moneda principal a esta fecha. Los datos que faltan no se muestran como cero. El límite histórico no está registrado.</p>
         </template>
         <div v-else class="history-incomplete">
           <span class="text-primary history-incomplete-icon" aria-hidden="true">↶</span>
@@ -151,7 +151,7 @@ watch(() => props.journey, () => { selectedId.value = ''; }, { deep: true });
       </div>
     </div>
 
-    <p v-if="selected?.date_precision === 'month'" class="history-footnote text-body-1/60">Apertura conocida por mes; el día exacto no está registrado. Esta foto corresponde al {{ dateLabel(selected.snapshot_date || selected.date) }}.</p>
+    <p v-if="selected?.date_precision === 'month'" class="history-footnote text-body-1/70">Apertura conocida por mes; el día exacto no está registrado. Esta foto corresponde al {{ dateLabel(selected.snapshot_date || selected.date) }}.</p>
     <section v-if="selected?.preparation" class="mt-6 border-t border-base pt-5" aria-labelledby="preparation-title">
       <h3 id="preparation-title" class="text-lg font-bold">Cómo llegaste a este momento</h3>
       <p class="mt-1 text-sm text-body-1/70">Seis meses completos anteriores a la apertura · {{ dateLabel(selected.preparation.from) }} — {{ dateLabel(selected.preparation.until) }}.</p>
@@ -179,22 +179,22 @@ watch(() => props.journey, () => { selectedId.value = ''; }, { deep: true });
       <summary class="text-primary">Comparar antes y después de este momento</summary>
       <div class="history-comparison-grid">
         <article class="bg-base-lvl-2">
-          <span class="text-body-1/60">Antes · {{ selected.date_precision === 'month' ? 'fin del mes anterior' : 'día anterior' }}</span>
+          <span class="text-body-1/70">Antes · {{ selected.date_precision === 'month' ? 'fin del mes anterior' : 'día anterior' }}</span>
           <strong>{{ cardCount(selected.before_cards || []) }} tarjetas</strong>
           <p>{{ debtSummary(selected.before_cards || []) }}</p>
         </article>
         <article class="bg-base-lvl-2">
-          <span class="text-body-1/60">Después · {{ dateLabel(selected.snapshot_date || selected.date) }}</span>
+          <span class="text-body-1/70">Después · {{ dateLabel(selected.snapshot_date || selected.date) }}</span>
           <strong>{{ cardCount(selected.cards) }} tarjetas</strong>
           <p>{{ debtSummary(selected.cards) }}</p>
         </article>
       </div>
-      <p class="history-footnote text-body-1/60">Comparación con aperturas conocidas y movimientos verificados hasta cada día. Las monedas se mantienen separadas.</p>
+      <p class="history-footnote text-body-1/70">Comparación con aperturas conocidas y movimientos verificados hasta cada día. Las monedas se mantienen separadas.</p>
     </details>
 
     <details v-if="missingDates.length" class="history-completion border-base">
       <summary class="text-body-1/70">{{ missingDates.length }} fechas de apertura por completar</summary>
-      <p class="history-footnote text-body-1/60">Usa la fecha en que el banco te otorgó cada tarjeta. La fecha de creación en Loger no sustituye la apertura real.</p>
+      <p class="history-footnote text-body-1/70">Usa la fecha en que el banco te otorgó cada tarjeta. La fecha de creación en Loger no sustituye la apertura real.</p>
       <div class="history-missing-list">
         <div v-for="card in missingDates" :key="card.id" class="history-missing-row">
           <span>{{ card.name }}</span>
@@ -210,9 +210,9 @@ watch(() => props.journey, () => { selectedId.value = ''; }, { deep: true });
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
         <h2 id="card-benefits-title" class="font-bold">Lo que recibiste a cambio</h2>
-        <p class="mt-1 text-sm text-body-1/60">Beneficios del período seleccionado, por tarjeta.</p>
+        <p class="mt-1 text-sm text-body-1/70">Beneficios del período seleccionado, por tarjeta.</p>
       </div>
-      <label class="flex items-center gap-2 text-xs text-body-1/60">
+      <label class="flex items-center gap-2 text-xs text-body-1/70">
         <input v-model="includeClosed" type="checkbox" class="h-4 w-4 accent-primary" /> Incluir cerradas antes del período
       </label>
     </div>
@@ -220,19 +220,19 @@ watch(() => props.journey, () => { selectedId.value = ''; }, { deep: true });
       <article v-for="card in visibleCards" :key="card.id" class="rounded-lg border border-base p-4">
         <div class="flex flex-wrap justify-between gap-2">
           <h3 class="font-semibold text-sm">{{ card.name }}</h3>
-          <span v-if="card.closed_at" class="text-xs text-body-1/60">Cerrada {{ dateLabel(card.closed_at) }}{{ card.active_in_period ? ' · activa en el período' : '' }}</span>
+          <span v-if="card.closed_at" class="text-xs text-body-1/70">Cerrada {{ dateLabel(card.closed_at) }}{{ card.active_in_period ? ' · activa en el período' : '' }}</span>
         </div>
         <dl class="mt-3 space-y-2 text-sm">
-          <div class="flex justify-between gap-3"><dt class="text-body-1/60">Descuentos registrados</dt><dd class="text-green-500 tabular-nums">{{ money(discounts(card.id), card.currency) }}</dd></div>
-          <div class="flex justify-between gap-3"><dt class="text-body-1/60">Puntos estimados</dt><dd class="tabular-nums">{{ card.points === null ? 'Sin estimación' : card.points.toLocaleString('es') }}</dd></div>
-          <div v-if="card.estimated_value !== null" class="flex justify-between gap-3"><dt class="text-body-1/60">Valor de canje estimado</dt><dd>{{ money(card.estimated_value, card.currency) }}</dd></div>
+          <div class="flex justify-between gap-3"><dt class="text-body-1/70">Descuentos registrados</dt><dd class="text-green-500 tabular-nums">{{ money(discounts(card.id), card.currency) }}</dd></div>
+          <div class="flex justify-between gap-3"><dt class="text-body-1/70">Puntos estimados</dt><dd class="tabular-nums">{{ card.points === null ? 'Sin estimación' : card.points.toLocaleString('es') }}</dd></div>
+          <div v-if="card.estimated_value !== null" class="flex justify-between gap-3"><dt class="text-body-1/70">Valor de canje estimado</dt><dd>{{ money(card.estimated_value, card.currency) }}</dd></div>
         </dl>
-        <p v-if="card.points !== null" class="mt-3 text-xs text-body-1/60">{{ card.rules.points }} puntos por cada {{ money(Number(card.rules.spend), card.currency) }}. Calculados sobre compras verificadas; pueden variar por redondeos, devoluciones y exclusiones del banco.</p>
-        <p v-if="card.multi_currency" class="mt-3 text-xs text-body-1/60">La estimación incluye únicamente compras en {{ card.currency }}. Las compras en otras monedas necesitan su propia regla.</p>
+        <p v-if="card.points !== null" class="mt-3 text-xs text-body-1/70">{{ card.rules.points }} puntos por cada {{ money(Number(card.rules.spend), card.currency) }}. Calculados sobre compras verificadas; pueden variar por redondeos, devoluciones y exclusiones del banco.</p>
+        <p v-if="card.multi_currency" class="mt-3 text-xs text-body-1/70">La estimación incluye únicamente compras en {{ card.currency }}. Las compras en otras monedas necesitan su propia regla.</p>
         <Link :href="route('finance.accounts.show', card.id)" class="mt-3 inline-block text-xs text-primary underline">Ver tarjeta y configurar beneficios</Link>
       </article>
     </div>
-    <p class="mt-4 text-xs text-body-1/60">Los descuentos del ciclo no se clasifican automáticamente como cashback. Los puntos son estimaciones, no el saldo confirmado por el banco.</p>
+    <p class="mt-4 text-xs text-body-1/70">Los descuentos del ciclo no se clasifican automáticamente como cashback. Los puntos son estimaciones, no el saldo confirmado por el banco.</p>
   </section>
 </template>
 
