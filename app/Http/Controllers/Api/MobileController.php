@@ -429,6 +429,7 @@ class MobileController extends Controller
 
         $user = $request->user();
         $category = Category::where('team_id', $user->current_team_id)->findOrFail($validated['category_id']);
+        $this->authorize('update', $category);
 
         $service->registerAssignment(new BudgetAssignData(
             $user->current_team_id,
@@ -458,6 +459,8 @@ class MobileController extends Controller
         $teamId = $user->current_team_id;
         $source = Category::where('team_id', $teamId)->findOrFail($validated['source_category_id']);
         $destination = Category::where('team_id', $teamId)->findOrFail($validated['destination_category_id']);
+        $this->authorize('update', $source);
+        $this->authorize('update', $destination);
 
         $service->registerMovement(new BudgetMovementData(
             null,
@@ -738,6 +741,7 @@ class MobileController extends Controller
             ->whereNotNull('parent_id')
             ->where('resource_type', 'transactions')
             ->findOrFail($categoryId);
+        $this->authorize('update', $category);
 
         $updates = [];
 
@@ -776,6 +780,7 @@ class MobileController extends Controller
             ->whereNotNull('parent_id')
             ->where('resource_type', 'transactions')
             ->findOrFail($categoryId);
+        $this->authorize('delete', $category);
 
         // Prevent deleting categories with transactions or budget movements (same as web).
         $hasTransactions = Transaction::where('category_id', $category->id)->exists();
@@ -808,6 +813,7 @@ class MobileController extends Controller
         $category = Category::where('team_id', $teamId)
             ->where('resource_type', 'transactions')
             ->findOrFail($categoryId);
+        $this->authorize('update', $category);
 
         $service->setDefaultRole($category, $validated['role'] ?? null);
 
@@ -840,6 +846,7 @@ class MobileController extends Controller
             ->whereNotNull('parent_id')
             ->where('resource_type', 'transactions')
             ->findOrFail($categoryId);
+        $this->authorize('update', $category);
 
         if ($category->budget) {
             return response()->json(['message' => 'Category already has a target. Use PUT to update.'], 422);
@@ -871,6 +878,7 @@ class MobileController extends Controller
             ->whereNotNull('parent_id')
             ->where('resource_type', 'transactions')
             ->findOrFail($categoryId);
+        $this->authorize('update', $category);
 
         $target = $category->budget;
         abort_unless($target && $target->id === $targetId, 404);
@@ -891,6 +899,7 @@ class MobileController extends Controller
             ->whereNotNull('parent_id')
             ->where('resource_type', 'transactions')
             ->findOrFail($categoryId);
+        $this->authorize('update', $category);
 
         $target = $category->budget;
         abort_unless($target && $target->id === $targetId, 404);
@@ -917,6 +926,7 @@ class MobileController extends Controller
             ->whereNotNull('parent_id')
             ->where('resource_type', 'transactions')
             ->findOrFail($categoryId);
+        $this->authorize('update', $category);
 
         $target = $category->budget;
         abort_unless($target && $target->id === $targetId, 404);
@@ -933,6 +943,7 @@ class MobileController extends Controller
             ->whereNotNull('parent_id')
             ->where('resource_type', 'transactions')
             ->findOrFail($categoryId);
+        $this->authorize('update', $category);
 
         $target = BudgetTarget::archived()
             ->where(['team_id' => $category->team_id, 'category_id' => $category->id])
@@ -974,6 +985,7 @@ class MobileController extends Controller
             ->whereNotNull('parent_id')
             ->where('resource_type', 'transactions')
             ->findOrFail($categoryId);
+        $this->authorize('update', $category);
 
         $target = $category->budget;
         abort_unless($target, 404, 'This category has no target to snooze.');
