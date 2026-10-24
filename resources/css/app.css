@@ -165,7 +165,11 @@ html.dark {
     border-color: rgb(var(--c-border));
     color: rgb(var(--c-body));
 }
-.dark .date-pager button { color: rgb(var(--c-body)); }
+.dark .date-pager button {
+    color: rgb(var(--c-body));
+    background-color: rgb(var(--c-base-lvl-1));
+}
+.dark .date-pager button:hover { background-color: rgb(var(--c-base-lvl-3)); }
 
 /* AtInput / AtField (atmosphere-ui) hardcode text-gray-700 in every theme
    and border-gray-300 on the input shell. In dark mode this makes input text

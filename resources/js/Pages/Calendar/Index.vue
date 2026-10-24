@@ -276,7 +276,7 @@ const monthLabel = computed(() => formatMonth(currentDate.value, 'MMMM yyyy'));
                             v-for="(cell, idx) in calendarDays"
                             :key="idx"
                             type="button"
-                            class="min-h-[5rem] md:min-h-[6rem] border-r border-b border-base p-1.5 text-left transition hover:bg-base-lvl-2"
+                            class="flex flex-col justify-start min-w-0 min-h-[5rem] md:min-h-[6rem] border-r border-b border-base p-1.5 text-left transition hover:bg-base-lvl-2"
                             :class="[
                                 cell.isCurrentMonth ? 'bg-base-lvl-3' : 'bg-base-lvl-1/50',
                                 cell.isToday ? 'ring-2 ring-inset ring-primary/40' : '',
@@ -293,7 +293,7 @@ const monthLabel = computed(() => formatMonth(currentDate.value, 'MMMM yyyy'));
                             >
                                 {{ format(cell.date, 'd') }}
                             </span>
-                            <div v-if="cell.events.length" class="space-y-0.5">
+                            <div v-if="cell.events.length" class="w-full space-y-0.5">
                                 <div
                                     v-for="event in cell.events.slice(0, 3)"
                                     :key="event.id"
