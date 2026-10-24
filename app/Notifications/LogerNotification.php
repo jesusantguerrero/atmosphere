@@ -5,6 +5,7 @@ namespace App\Notifications;
 use App\Notifications\Channels\OneSignalChannel;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Str;
 
 /**
  * Base class for every Loger notification.
@@ -19,10 +20,34 @@ use Illuminate\Notifications\Notification;
  *   - `database` is always on (the in-app inbox is the source of truth).
  *   - `mail` and OneSignal `push` are opt-in per user, read from the
  *     notifiable\'s `notification_prefs` (defaults: both ON).
+ *   - Per-type preferences (when set) override the channel-level master switch.
  *   - Subclasses that also want Telegram/WhatsApp override `extraChannels()`.
  */
 class LogerNotification extends Notification
 {
+    /**
+     * @var array<string, string> Notification type key → human-readable label.
+     */
+    public const NOTIFICATION_TYPES = [
+        'entry_generated' => 'Imported transactions',
+        'occurrence_alert' => 'Bill & subscription reminders',
+        'loan_payment_alert' => 'Loan payment reminders',
+        'planned_alert' => 'Planned transaction alerts',
+        'watchlist_threshold_alert' => 'Watchlist limit alerts',
+        'watchlist_streak_alert' => 'Watchlist streak alerts',
+        'watchlist_auto_suggestion_alert' => 'Watchlist suggestions',
+        'shopping_list_ready' => 'Shopping list ready',
+        'transactions_imported' => 'Batch import completed',
+        'billing_cycle_cut_alert' => 'Credit card billing cycle',
+        'account_overdraft_alert' => 'Account overdraft warning',
+        'credit_card_renewal_alert' => 'Credit card renewal',
+    ];
+
+    public function typeKey(): string
+    {
+        return Str::snake(class_basename(static::class));
+    }
+
     /**
      * Channels this notification uses in addition to the prefs-gated
      * mail/push and the always-on database channel. Override in subclasses
@@ -68,11 +93,15 @@ class LogerNotification extends Notification
 
     /**
      * Whether the notifiable has opted into a given optional channel
-     * (`email` | `push`). Defaults to true when the notifiable predates the
-     * preference API, so behaviour is opt-out, not opt-in.
+     * (`email` | `push`). Checks per-type preference first, then falls
+     * back to the channel-level master switch.
      */
     protected function notifiableWants($notifiable, string $channel): bool
     {
+        if (method_exists($notifiable, 'wantsNotificationType')) {
+            return $notifiable->wantsNotificationType($this->typeKey(), $channel);
+        }
+
         if (method_exists($notifiable, 'wantsNotificationChannel')) {
             return $notifiable->wantsNotificationChannel($channel);
         }

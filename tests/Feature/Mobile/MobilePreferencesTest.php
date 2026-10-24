@@ -45,23 +45,70 @@ class MobilePreferencesTest extends TestCase
 
     public function test_notification_preferences_default_to_all_channels_on(): void
     {
-        $this->authed()->getJson('/api/mobile/me/notification-preferences')
-            ->assertOk()
-            ->assertExactJson(['channels' => ['email' => true, 'push' => true]]);
+        $response = $this->authed()->getJson('/api/mobile/me/notification-preferences')
+            ->assertOk();
+
+        $this->assertTrue($response->json('channels.email'));
+        $this->assertTrue($response->json('channels.push'));
+        $this->assertNotEmpty($response->json('types'));
+
+        $firstType = $response->json('types.0');
+        $this->assertArrayHasKey('key', $firstType);
+        $this->assertArrayHasKey('label', $firstType);
+        $this->assertArrayHasKey('email', $firstType);
+        $this->assertArrayHasKey('push', $firstType);
     }
 
     public function test_notification_preferences_can_be_updated_and_partially_updated(): void
     {
-        $this->authed()->putJson('/api/mobile/me/notification-preferences', ['channels' => ['email' => false, 'push' => true]])
-            ->assertOk()
-            ->assertExactJson(['channels' => ['email' => false, 'push' => true]]);
+        $response = $this->authed()->putJson('/api/mobile/me/notification-preferences', ['channels' => ['email' => false, 'push' => true]])
+            ->assertOk();
 
-        $this->authed()->putJson('/api/mobile/me/notification-preferences', ['channels' => ['push' => false]])
-            ->assertOk()
-            ->assertExactJson(['channels' => ['email' => false, 'push' => false]]);
+        $this->assertFalse($response->json('channels.email'));
+        $this->assertTrue($response->json('channels.push'));
+
+        $response = $this->authed()->putJson('/api/mobile/me/notification-preferences', ['channels' => ['push' => false]])
+            ->assertOk();
+
+        $this->assertFalse($response->json('channels.email'));
+        $this->assertFalse($response->json('channels.push'));
 
         $this->assertFalse($this->user->fresh()->wantsNotificationChannel('email'));
         $this->assertFalse($this->user->fresh()->wantsNotificationChannel('push'));
+    }
+
+    public function test_per_type_notification_preferences(): void
+    {
+        $this->authed()->putJson('/api/mobile/me/notification-preferences', [
+            'channels' => ['email' => true, 'push' => true],
+            'types' => [
+                'occurrence_alert' => ['email' => false],
+                'loan_payment_alert' => ['push' => false],
+            ],
+        ])->assertOk();
+
+        $user = $this->user->fresh();
+        $this->assertTrue($user->wantsNotificationType('occurrence_alert', 'push'));
+        $this->assertFalse($user->wantsNotificationType('occurrence_alert', 'email'));
+        $this->assertTrue($user->wantsNotificationType('loan_payment_alert', 'email'));
+        $this->assertFalse($user->wantsNotificationType('loan_payment_alert', 'push'));
+        $this->assertTrue($user->wantsNotificationType('entry_generated', 'email'));
+
+        $response = $this->authed()->getJson('/api/mobile/me/notification-preferences')->assertOk();
+        $occurrenceType = collect($response->json('types'))->firstWhere('key', 'occurrence_alert');
+        $this->assertFalse($occurrenceType['email']);
+        $this->assertTrue($occurrenceType['push']);
+    }
+
+    public function test_channel_off_overrides_type_on(): void
+    {
+        $this->authed()->putJson('/api/mobile/me/notification-preferences', [
+            'channels' => ['email' => false, 'push' => true],
+            'types' => ['occurrence_alert' => ['email' => true]],
+        ])->assertOk();
+
+        $user = $this->user->fresh();
+        $this->assertFalse($user->wantsNotificationType('occurrence_alert', 'email'));
     }
 
     public function test_notification_preferences_validate_input(): void

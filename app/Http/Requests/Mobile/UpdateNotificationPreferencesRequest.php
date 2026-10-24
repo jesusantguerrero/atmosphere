@@ -20,6 +20,10 @@ class UpdateNotificationPreferencesRequest extends FormRequest
             'channels' => ['required', 'array'],
             'channels.email' => ['sometimes', 'boolean'],
             'channels.push' => ['sometimes', 'boolean'],
+            'types' => ['sometimes', 'array'],
+            'types.*' => ['array'],
+            'types.*.email' => ['sometimes', 'boolean'],
+            'types.*.push' => ['sometimes', 'boolean'],
         ];
     }
 }
