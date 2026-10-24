@@ -2,6 +2,7 @@
 import formatMoney from "@/utils/formatMoney";
 import { computed, ref, inject } from "vue";
 import { useI18n } from "vue-i18n";
+import { useDarkMode } from "@/composables/useDarkMode";
 
 import LogerChart from "./organisms/LogerChart.vue";
 import ChartHeaderScroller from "./ChartHeaderScroller.vue";
@@ -9,6 +10,7 @@ import NumberHider from "./molecules/NumberHider.vue";
 import { formatMonth } from "@/utils";
 
 const { t, locale } = useI18n();
+const { isDark } = useDarkMode();
 const monthLabel = (date: string) => new Intl.DateTimeFormat(locale.value, { month: "short", year: "2-digit" }).format(new Date(`${date}T12:00:00`));
 
 const props = defineProps({
@@ -42,6 +44,7 @@ const currentSeries = computed(() => {
     }];
 })
 
+const tickColor = computed(() => isDark.value ? '#A6AFBD' : '#69727F');
 const state = computed(() => ({
     headers: Object.entries(props.data).map(([dateString, item]) => ({
         label: formatMonth(item.date_unit),
@@ -49,10 +52,12 @@ const state = computed(() => ({
         id: item.date_unit
     })),
     options: {
-        colors: ["#7B77D1B3", "#F37EA1B3"],
-        borderColors: ["#7B77D1", "#F37EA1"],
-        scales: { x: { ticks: { color: "#94A3B8", maxRotation: 0 } }, y: { ticks: { color: "#94A3B8", callback: (value: number) => hasHiddenValues.value ? "--" : new Intl.NumberFormat(locale.value, { notation: "compact" }).format(value) } } },
-        plugins: { legend: { labels: { color: "#94A3B8" } } },
+        colors: ["#E8837E33", "#56C08A33"],
+        borderColors: ["#E8837E", "#56C08A"],
+        borderWidth: 1.5,
+        summaryLineColor: "#7B77D1",
+        scales: { x: { ticks: { color: tickColor.value, maxRotation: 0 } }, y: { ticks: { color: tickColor.value, callback: (value: number) => hasHiddenValues.value ? "--" : new Intl.NumberFormat(locale.value, { notation: "compact" }).format(value) } } },
+        plugins: { legend: { labels: { color: tickColor.value } } },
     },
     series: currentSeries.value
 }));
