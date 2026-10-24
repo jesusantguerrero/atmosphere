@@ -207,7 +207,7 @@ const blockStyle = (b: Block) => {
     borderLeft: `3px solid ${b.color}`,
     // Pull the hue toward the theme's body color so the label stays legible
     // on its own tint (raw palette colors fall to ~3:1 there).
-    color: `color-mix(in srgb, ${b.color} 55%, rgb(var(--c-body)))`,
+    color: `color-mix(in srgb, ${b.color} 40%, rgb(var(--c-body)))`,
   };
 };
 
