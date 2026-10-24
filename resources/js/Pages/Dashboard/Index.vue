@@ -141,7 +141,7 @@ const deleteBulkTransactions = () => {
       <!-- Welcome heading (desktop only; mobile shows the app icon in the title slot). -->
       <div class="flex items-center justify-between mt-4 mb-4" v-if="!contextStore.isMobile">
         <h1 class="text-lg font-bold text-body">
-            {{ $t('dashboard.welcome') }} <span class="text-primary">{{ user?.name }}</span>
+            {{ $t('Hello') }}, <span class="text-primary">{{ user?.name }}</span>
         </h1>
       </div>
 

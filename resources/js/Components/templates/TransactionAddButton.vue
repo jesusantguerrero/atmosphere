@@ -45,7 +45,7 @@
                 <h4 class="px-2 text-body-1/80"> {{ $t('Transactions') }}: </h4>
                 <LogerButtonTab class="w-full font-bold" @click="open(DEPOSIT)">
                 <IMdiBankTransferIn class="mr-2 text-md" />
-                {{ $t('Income') }}
+                {{ $t('Record income') }}
                 </LogerButtonTab>
                 <LogerButtonTab class="w-full font-bold" @click="open(WITHDRAW)">
                     <IMdiBankTransferOut class="mr-2 text-md" />
@@ -57,7 +57,7 @@
                 </LogerButtonTab>
                 <LogerButtonTab class="w-full font-bold" @click="openImport()">
                     <IMdiFileImport class="mr-2 text-md" />
-                    {{ $t('Import') }}
+                    {{ $t('Import transactions') }}
                 </LogerButtonTab>
 
                 <h4 class="px-2 mt-2 border-t border-base pt-2 text-body-1/80"> {{ $t('Accounts') }}: </h4>
@@ -67,7 +67,7 @@
                 </LogerButtonTab>
                 <LogerButtonTab class="w-full font-bold" @click="router.visit('/finance/reconciliation')">
                     <IMdiScaleBalance class="mr-2 text-md" />
-                    {{ $t('New reconciliation') }}
+                    {{ $t('Reconcile account') }}
                 </LogerButtonTab>
 
                 <h4 class="px-2 mt-2 border-t border-base pt-2 text-body-1/80"> {{ $t('Budget') }}: </h4>

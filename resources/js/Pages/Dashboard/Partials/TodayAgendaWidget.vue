@@ -12,6 +12,7 @@ interface AgendaEvent {
 }
 
 const props = defineProps<{ events: AgendaEvent[]; date: string }>();
+defineEmits<{ (e: 'retry'): void }>();
 const googleEvents = ref<AgendaEvent[]>([]);
 const loading = ref(true);
 const unavailable = ref(false);
@@ -41,16 +42,21 @@ onUnmounted(() => clearInterval(clockInterval));
 <template>
     <section class="min-w-0 rounded-xl border border-base bg-base-lvl-3 p-4">
         <header class="flex items-center justify-between gap-3 pb-3">
-            <h2 class="text-sm font-bold text-body">Agenda de hoy</h2>
-            <Link :href="route('calendar')" class="inline-flex min-h-[44px] items-center text-sm text-primary hover:underline">Ver agenda →</Link>
+            <h2 class="text-sm font-bold text-body">{{ $t("Today's agenda") }}</h2>
+            <Link :href="route('calendar')" class="inline-flex min-h-[44px] items-center text-sm text-primary hover:underline">{{ $t('See agenda') }} →</Link>
         </header>
         <div v-if="visibleEvents.length" class="grid gap-2">
             <Link v-for="event in visibleEvents" :key="event.id" :href="route('calendar')" class="flex min-w-0 items-start gap-3 rounded-lg bg-base-lvl-2 p-3 hover:bg-base-lvl-1" :class="isPast(event) && 'opacity-60'">
-                <span class="shrink-0 text-sm font-semibold text-primary">{{ event.time ?? 'Todo el día' }}</span>
+                <span class="shrink-0 text-sm font-semibold text-primary">{{ event.time ?? $t('All day') }}</span>
                 <span class="min-w-0 text-sm text-body break-words" :class="event.completed_at && 'line-through'">{{ event.title }}</span>
             </Link>
         </div>
-        <p v-else class="text-sm text-body-1/70">{{ loading ? 'Cargando agenda…' : (unavailable ? 'No se pudo completar la agenda.' : 'No tienes actividades para hoy.') }}</p>
-        <p v-if="unavailable && visibleEvents.length" class="pt-2 text-xs text-body-1/70">No se pudieron cargar los eventos de Google.</p>
+        <p v-else-if="loading" class="text-sm text-body-1/70">{{ $t('Loading agenda...') }}</p>
+        <p v-else-if="unavailable" class="text-sm text-body-1/70">
+            {{ $t('We could not load your agenda.') }}
+            <button type="button" class="ml-1 text-primary hover:underline" @click="$emit('retry')">{{ $t('Retry') }}</button>
+        </p>
+        <p v-else class="text-sm text-body-1/70">{{ $t('No events today. A clear day.') }}</p>
+        <p v-if="unavailable && visibleEvents.length" class="pt-2 text-xs text-body-1/70">{{ $t('Google events could not be loaded.') }}</p>
     </section>
 </template>

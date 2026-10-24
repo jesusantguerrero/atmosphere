@@ -45,17 +45,13 @@ const cutDays = computed<number | null>(() => {
     return c.days_since_cut;
 })
 const creditLimitDate = computed(() => {
-    const formatter = new Intl.PluralRules('en-US', {
-        type: 'ordinal'
-    })
-
-    const suffixes = new Map([
-        ["one", "st"],
-        ["two", "nd"],
-        ["few", "rd"],
-        ["other", "th"],
-    ]);
-    return account.value.credit_closing_day ? ` - ${account.value.credit_closing_day}${suffixes.get(formatter.select(Number(account.value.credit_closing_day)))}` : '';
+    if (!account.value.credit_closing_day) return '';
+    const day = account.value.credit_closing_day;
+    const locale = (window as any).logerLocale ?? 'es';
+    if (locale === 'es') return ` - día ${day}`;
+    const formatter = new Intl.PluralRules('en-US', { type: 'ordinal' });
+    const suffixes: Record<string, string> = { one: 'st', two: 'nd', few: 'rd', other: 'th' };
+    return ` - ${day}${suffixes[formatter.select(Number(day))]}`;
 })
 
 const renewalNotice = computed(() => {

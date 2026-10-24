@@ -1,10 +1,10 @@
 <template>
-    <button v-if="hasImage" class="flex text-sm transition border-2 border-transparent rounded-full focus:outline-none focus:border-base-lvl-2 active:slate-600" >
+    <button v-if="hasImage" class="flex text-sm transition border-2 border-transparent rounded-full focus:outline-none focus:border-base-lvl-2 active:slate-600" :title="$t('Your account')" :aria-label="$t('Your account')">
         <img class="object-cover w-8 h-8 rounded-full" :src="imageUrl" :alt="user.name" />
     </button>
 
     <span v-else class="inline-flex rounded-md">
-        <button type="button" class="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 transition border border-transparent rounded-md text-body hover:text-gray-100 hover:bg-base-lvl-1 focus:outline-none focus:bg-base-lvl-2">
+        <button type="button" class="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 transition border border-transparent rounded-md text-body hover:text-gray-100 hover:bg-base-lvl-1 focus:outline-none focus:bg-base-lvl-2" :title="$t('Your account')" :aria-label="$t('Your account')">
             {{ user.name }}
 
             <svg class="ml-2 -mr-0.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
