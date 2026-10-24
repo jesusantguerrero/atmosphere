@@ -25,7 +25,7 @@ const setView = (view: 'day' | 'month'): void => {
             class="px-3 py-1 text-xs font-medium rounded-md transition-colors"
             :class="currentView === 'day'
                 ? 'bg-base-lvl-3 text-body shadow-sm'
-                : 'text-body-1/60 hover:text-body-1'"
+                : 'text-body-1/75 hover:text-body-1'"
             @click="setView('day')"
         >
             {{ $t('Day') }}
@@ -35,7 +35,7 @@ const setView = (view: 'day' | 'month'): void => {
             class="px-3 py-1 text-xs font-medium rounded-md transition-colors"
             :class="currentView === 'month'
                 ? 'bg-base-lvl-3 text-body shadow-sm'
-                : 'text-body-1/60 hover:text-body-1'"
+                : 'text-body-1/75 hover:text-body-1'"
             @click="setView('month')"
         >
             {{ $t('Month') }}

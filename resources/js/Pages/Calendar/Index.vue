@@ -130,7 +130,7 @@ const kindColor = (kind: string): string => {
         mealplan: 'bg-secondary/20 text-secondary border-secondary/30',
         task: 'bg-primary/20 text-primary border-primary/30',
         utility: 'bg-accent/20 text-accent border-accent/30',
-        relationship: 'bg-error/20 text-error border-error/30',
+        relationship: 'bg-error/20 text-error dark:text-body border-error/30',
         occurrence: 'bg-body-1/20 text-body-1 border-body-1/30',
         google: 'bg-[#4285F4]/15 text-[#4285F4] border-[#4285F4]/30',
     };
@@ -264,7 +264,7 @@ const monthLabel = computed(() => formatMonth(currentDate.value, 'MMMM yyyy'));
                         <div
                             v-for="day in weekdays"
                             :key="day"
-                            class="text-center text-xs font-semibold text-body-1/60 py-2"
+                            class="text-center text-xs font-semibold text-body-1/75 py-2"
                         >
                             {{ $t(day) }}
                         </div>
