@@ -128,13 +128,13 @@ const kindColor = (kind: string): string => {
     const map: Record<string, string> = {
         billing: 'bg-warning/20 text-warning border-warning/30',
         mealplan: 'bg-secondary/20 text-secondary border-secondary/30',
-        task: 'bg-primary/20 text-primary border-primary/30',
+        task: 'bg-primary/20 text-primary-ink border-primary/30',
         utility: 'bg-accent/20 text-accent border-accent/30',
         relationship: 'bg-error/20 text-error dark:text-body border-error/30',
         occurrence: 'bg-body-1/20 text-body-1 border-body-1/30',
         google: 'bg-[#4285F4]/15 text-[#4285F4] border-[#4285F4]/30',
     };
-    return map[kind] || 'bg-primary/20 text-primary border-primary/30';
+    return map[kind] || 'bg-primary/20 text-primary-ink border-primary/30';
 };
 
 const kindIcon = (kind: string): string => {
@@ -276,7 +276,7 @@ const monthLabel = computed(() => formatMonth(currentDate.value, 'MMMM yyyy'));
                             v-for="(cell, idx) in calendarDays"
                             :key="idx"
                             type="button"
-                            class="min-h-[5rem] md:min-h-[6rem] border-r border-b border-base p-1.5 text-left transition hover:bg-base-lvl-2"
+                            class="flex flex-col justify-start min-w-0 min-h-[5rem] md:min-h-[6rem] border-r border-b border-base p-1.5 text-left transition hover:bg-base-lvl-2"
                             :class="[
                                 cell.isCurrentMonth ? 'bg-base-lvl-3' : 'bg-base-lvl-1/50',
                                 cell.isToday ? 'ring-2 ring-inset ring-primary/40' : '',
@@ -293,7 +293,7 @@ const monthLabel = computed(() => formatMonth(currentDate.value, 'MMMM yyyy'));
                             >
                                 {{ format(cell.date, 'd') }}
                             </span>
-                            <div v-if="cell.events.length" class="space-y-0.5">
+                            <div v-if="cell.events.length" class="w-full space-y-0.5">
                                 <div
                                     v-for="event in cell.events.slice(0, 3)"
                                     :key="event.id"

@@ -334,7 +334,7 @@ const isCurrentMonth = computed(() => isSameMonth(periodStart(), new Date()));
             v-if="!isLoading && listData.length === 0 && accounts.length === 0"
             class="mx-6 my-8 flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-base-lvl-2 px-6 py-12 text-center"
         >
-            <div class="flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 text-primary mb-4">
+            <div class="flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 text-primary-ink mb-4">
                 <i class="fas fa-university text-2xl" />
             </div>
             <h3 class="text-lg font-bold text-body-1 mb-1">No accounts yet</h3>
@@ -366,7 +366,7 @@ const isCurrentMonth = computed(() => isSameMonth(periodStart(), new Date()));
         >
             <template #empty>
                 <div class="mx-6 my-8 flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-base-lvl-2 px-6 py-12 text-center">
-                    <div class="flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 text-primary mb-4">
+                    <div class="flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 text-primary-ink mb-4">
                         <i class="fas fa-receipt text-2xl" />
                     </div>
                     <h3 class="text-lg font-bold text-body-1 mb-1">

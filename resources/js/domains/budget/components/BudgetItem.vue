@@ -392,7 +392,7 @@ const context = useAppContextStore();
                 <button
                     v-if="showAveragePill"
                     type="button"
-                    class="mt-1 px-2 py-0.5 text-[11px] leading-none rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition"
+                    class="mt-1 px-2 py-0.5 text-[11px] leading-none rounded-full bg-primary/10 text-primary-ink hover:bg-primary/20 transition"
                     :title="$t('Click to use this amount')"
                     @click.stop="useAverage"
                 >

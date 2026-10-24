@@ -7,6 +7,8 @@ const customColors = {
 module.exports = {
     defaultDark: {
         primary: "#F2617A",
+        // Coral for text sitting on a primary tint (bg-primary/10..20).
+        "primary-ink": "#FFA8B6",
         "secondary": "#95b3f9",
         "accent": "#7c5bbf",
         "neutral": "#232130",
@@ -25,6 +27,7 @@ module.exports = {
     defaultLight: {
         primary: "#F37EA1",
         primaryDark: customColors.mauvelous[800],
+        "primary-ink": "#9B2346",
         secondary: "#7B77D1",
         "accent": "#f782c2",
         "neutral": "#F3F4F6",

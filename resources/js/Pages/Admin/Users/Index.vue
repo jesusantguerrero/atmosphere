@@ -59,7 +59,7 @@ watch(role, (value) => {
 
 const roleBadgeClass = (r: string) => {
     if (r === "super_admin") return "bg-primary text-white";
-    if (r === "admin") return "bg-primary/15 text-primary";
+    if (r === "admin") return "bg-primary/15 text-primary-ink";
     return "bg-base-lvl-2 text-body-1";
 };
 </script>

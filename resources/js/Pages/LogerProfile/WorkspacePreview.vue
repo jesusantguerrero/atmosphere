@@ -495,7 +495,7 @@ const setTab = (id: string) => {
             >
                 <div class="flex min-w-0 items-center gap-4">
                     <div
-                        class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-primary/25 bg-primary/10 text-2xl font-semibold text-primary"
+                        class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-primary/25 bg-primary/10 text-2xl font-semibold text-primary-ink"
                     >
                         {{ profile.name.charAt(0).toUpperCase() }}
                     </div>
@@ -763,7 +763,7 @@ const setTab = (id: string) => {
                                 class="flex h-11 w-11 items-center justify-center rounded-md text-body-1/70 hover:bg-body-1/5 focus-visible:ring-2 focus-visible:ring-primary"
                                 :class="
                                     editingPage
-                                        ? 'bg-primary/15 text-primary ring-1 ring-primary/40'
+                                        ? 'bg-primary/15 text-primary-ink ring-1 ring-primary/40'
                                         : ''
                                 "
                                 :aria-pressed="editingPage"
@@ -886,7 +886,7 @@ const setTab = (id: string) => {
                                     :disabled="saving"
                                     :class="
                                         pageId === page.id
-                                            ? 'bg-primary/10 text-primary'
+                                            ? 'bg-primary/10 text-primary-ink'
                                             : 'text-body-1/75 hover:bg-body-1/5'
                                     "
                                     @click="selectPage(page.id)"
@@ -1298,7 +1298,7 @@ const setTab = (id: string) => {
                                     class="mb-5 flex items-center justify-between"
                                 >
                                     <span
-                                        class="rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary"
+                                        class="rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary-ink"
                                         >{{ state.categoryGroup }}</span
                                     ><span class="text-xs text-body-1/40">{{
                                         monthLabel
@@ -1612,7 +1612,7 @@ const setTab = (id: string) => {
                                 class="flex cursor-pointer flex-col items-center gap-2 rounded-lg border p-4 text-xs"
                                 :class="
                                     boardView === key
-                                        ? 'border-primary bg-primary/5 text-primary'
+                                        ? 'border-primary bg-primary/5 text-primary-ink'
                                         : 'border-body-1/10 text-body-1/75'
                                 "
                                 ><input

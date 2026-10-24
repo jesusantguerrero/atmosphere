@@ -200,7 +200,7 @@ const captureMethods = [
                 <div class="flex items-center justify-between">
                     <h3 class="flex items-center gap-2 text-sm font-semibold tracking-wide uppercase text-body-2">
                         {{ $t('Needs your review') }}
-                        <span class="px-2 py-0.5 text-xs font-bold rounded-full bg-primary/10 text-primary">
+                        <span class="px-2 py-0.5 text-xs font-bold rounded-full bg-primary/10 text-primary-ink">
                             {{ $page.props.pendingReviewCount }}
                         </span>
                     </h3>

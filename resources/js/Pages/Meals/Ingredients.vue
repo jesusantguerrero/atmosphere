@@ -85,7 +85,7 @@ const assignProductLabel = (label: Record<string, string>, product: Record<strin
     </template>
     <MealTemplate class="mx-auto">
       <div v-if="!productData.length" class="flex flex-col items-center py-12 text-center">
-        <div class="flex items-center justify-center w-12 h-12 mb-3 rounded-full bg-primary/10 text-primary">
+        <div class="flex items-center justify-center w-12 h-12 mb-3 rounded-full bg-primary/10 text-primary-ink">
           <i class="fa fa-carrot"></i>
         </div>
         <p class="text-sm font-semibold text-body">{{ $t('No ingredients yet') }}</p>

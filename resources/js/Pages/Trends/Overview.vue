@@ -182,7 +182,7 @@ const clearActiveWatchlist = () => {
         </AtDatePager>
                     <div
                         v-if="activeWatchlist"
-                        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-semibold"
+                        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary-ink text-sm font-semibold"
                     >
                         <i class="fa fa-bookmark" />
                         <span>{{ activeWatchlist.name }}</span>
@@ -269,7 +269,7 @@ const clearActiveWatchlist = () => {
                     <a
                         :href="watchlistHref(w)"
                         class="flex items-center justify-between px-2 py-1.5 rounded-md text-sm hover:bg-base-lvl-2 transition"
-                        :class="isActiveWatchlist(w) ? 'bg-primary/10 text-primary font-semibold' : 'text-body'"
+                        :class="isActiveWatchlist(w) ? 'bg-primary/10 text-primary-ink font-semibold' : 'text-body'"
                     >
                         <span class="truncate">{{ w.name }}</span>
                         <span class="text-xs text-body-1/70 ml-2 capitalize">{{ w.type }}</span>

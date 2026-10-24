@@ -203,7 +203,7 @@ const streakLabel = computed(() => {
         <button
           v-if="!hasTarget"
           type="button"
-          class="w-full px-5 py-2 mt-4 rounded-md bg-primary/10 text-primary font-semibold hover:bg-primary/20 transition"
+          class="w-full px-5 py-2 mt-4 rounded-md bg-primary/10 text-primary-ink font-semibold hover:bg-primary/20 transition"
           @click.stop="emit('edit', item)"
         >
           + Set monthly target

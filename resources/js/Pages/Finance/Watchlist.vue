@@ -243,7 +243,7 @@ onMounted(() => {
               v-for="example in examples"
               :key="example.name"
               type="button"
-              class="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-semibold hover:bg-primary/20 transition"
+              class="px-3 py-1.5 rounded-full bg-primary/10 text-primary-ink text-sm font-semibold hover:bg-primary/20 transition"
               @click="openWithExample(example)"
             >
               {{ example.name }}

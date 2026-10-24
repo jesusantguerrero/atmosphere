@@ -786,7 +786,7 @@ const draftCount = computed(() => (props.drafts || []).length);
                     @edit="handleEdit" @approved="handleApprove" @sort="sort = $event">
                     <template #empty>
                         <div class="flex flex-col items-center justify-center px-6 py-12 text-center">
-                            <div class="flex items-center justify-center mb-4 rounded-full w-14 h-14 bg-primary/10 text-primary">
+                            <div class="flex items-center justify-center mb-4 rounded-full w-14 h-14 bg-primary/10 text-primary-ink">
                                 <i class="text-2xl fas fa-receipt" />
                             </div>
                             <h3 class="mb-1 text-lg font-bold text-body-1">

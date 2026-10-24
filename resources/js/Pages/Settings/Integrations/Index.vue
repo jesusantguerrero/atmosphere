@@ -453,7 +453,7 @@ const onItemSaved = (): void => {
                     <p class="text-xs text-body-1/60 mt-0.5">{{ $t('Turn selected emails into task cards you can triage.') }}</p>
                 </div>
                 <article class="bg-base-lvl-3 rounded-xl border border-base shadow-sm p-5 flex items-start gap-4">
-                    <span class="w-10 h-10 shrink-0 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                    <span class="w-10 h-10 shrink-0 rounded-lg bg-primary/10 text-primary-ink flex items-center justify-center">
                         <i class="fa fa-envelope-open-text" />
                     </span>
                     <div class="flex-1 min-w-0">

@@ -21,7 +21,7 @@ const todayLabel = new Date().toLocaleDateString('es', { weekday: 'long', day: '
   <div class="min-h-screen bg-base-lvl-1 text-body">
     <header class="flex items-center justify-between px-8 py-5 border-b border-base">
       <div class="flex items-center gap-3">
-        <span class="flex items-center justify-center w-11 h-11 rounded-xl bg-primary/15 text-primary">
+        <span class="flex items-center justify-center w-11 h-11 rounded-xl bg-primary/15 text-primary-ink">
           <i class="fa fa-home"></i>
         </span>
         <div>

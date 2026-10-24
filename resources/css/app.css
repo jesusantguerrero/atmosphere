@@ -7,6 +7,9 @@
 :root {
     --c-primary: 194 58 96;
     --c-primaryDark: 155 35 70;
+    /* Coral for text on primary tints (bg-primary/10..20): plain primary only
+       reaches ~4:1 there, ink clears AA in both themes. */
+    --c-primary-ink: 155 35 70;
     --c-secondary: 123 119 209;
     --c-accent: 247 130 194;
     --c-neutral: 243 244 246;
@@ -25,6 +28,7 @@
 }
 .dark {
     --c-primary: 242 97 122;
+    --c-primary-ink: 255 168 182;
     --c-secondary: 149 179 249;
     --c-accent: 124 91 191;
     --c-neutral: 35 33 48;
@@ -165,7 +169,11 @@ html.dark {
     border-color: rgb(var(--c-border));
     color: rgb(var(--c-body));
 }
-.dark .date-pager button { color: rgb(var(--c-body)); }
+.dark .date-pager button {
+    color: rgb(var(--c-body));
+    background-color: rgb(var(--c-base-lvl-1));
+}
+.dark .date-pager button:hover { background-color: rgb(var(--c-base-lvl-3)); }
 
 /* AtInput / AtField (atmosphere-ui) hardcode text-gray-700 in every theme
    and border-gray-300 on the input shell. In dark mode this makes input text

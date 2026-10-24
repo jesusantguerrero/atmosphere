@@ -103,7 +103,7 @@ const trendClass = (n: number) =>
                         </Link>
                         <span
                             v-if="user.role !== 'user'"
-                            class="ml-2 text-xs font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary shrink-0"
+                            class="ml-2 text-xs font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary-ink shrink-0"
                         >
                             {{ user.role }}
                         </span>

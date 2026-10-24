@@ -55,7 +55,7 @@
 <template>
     <article class="text-body">
         <section class="rounded-t-md h-64 w-full bg-gray-300 relative">
-            <span class="absolute bg-primary/10 font-bold text-sm text-primary top-2.5 right-5 rounded-md px-2 capitalize">
+            <span class="absolute bg-primary/10 font-bold text-sm text-primary-ink top-2.5 right-5 rounded-md px-2 capitalize">
                 {{  meal.meal_type }}
             </span>
             <button

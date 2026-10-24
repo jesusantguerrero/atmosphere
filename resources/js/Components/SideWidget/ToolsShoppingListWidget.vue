@@ -177,7 +177,7 @@ onMounted(fetchPlan);
             <button
                 type="button"
                 class="inline-flex items-center justify-center h-7 w-7 rounded-md text-body-1/60 hover:bg-base-lvl-2 hover:text-primary transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                :class="{ 'bg-primary/10 text-primary': showShareSheet || shareUrl }"
+                :class="{ 'bg-primary/10 text-primary-ink': showShareSheet || shareUrl }"
                 :title="shareUrl ? $t('Manage sharing') : $t('Share this list')"
                 :aria-label="shareUrl ? $t('Manage sharing') : $t('Share this list')"
                 @click="showShareSheet = !showShareSheet"

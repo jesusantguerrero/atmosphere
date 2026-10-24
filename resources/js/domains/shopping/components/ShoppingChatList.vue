@@ -1395,7 +1395,7 @@ onBeforeUnmount(() => {
                             :aria-pressed="onlyUnchecked"
                             class="relative flex h-11 w-10 items-center justify-center rounded-full text-body hover:bg-base-lvl-2"
                             :class="{
-                                'bg-primary/10 text-primary': onlyUnchecked,
+                                'bg-primary/10 text-primary-ink': onlyUnchecked,
                             }"
                             @click="onlyUnchecked = !onlyUnchecked"
                         >

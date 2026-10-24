@@ -105,7 +105,7 @@ const save = async () => {
                 )"
                 :key="profile.id"
                 :href="route('loger-profiles.show', { profileId: profile.id })"
-                class="rounded bg-primary/10 px-2 py-1 text-sm text-primary underline focus-visible:ring-2 focus-visible:ring-primary"
+                class="rounded bg-primary/10 px-2 py-1 text-sm text-primary-ink underline focus-visible:ring-2 focus-visible:ring-primary"
                 >{{ profile.name }}</Link
             ><span
                 v-if="!busy && !selected.length"

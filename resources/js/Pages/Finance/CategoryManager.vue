@@ -357,7 +357,7 @@ const restoreGroup = (id: number) =>
                                 class="flex min-h-[52px] w-full items-center justify-between gap-3 border-b border-body-1/5 px-4 py-2 text-left text-sm transition hover:bg-base-lvl-2 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
                                 :class="
                                     selectedId === category.id
-                                        ? 'bg-primary/10 text-primary'
+                                        ? 'bg-primary/10 text-primary-ink'
                                         : ''
                                 "
                                 :aria-pressed="selectedId === category.id"

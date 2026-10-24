@@ -38,7 +38,7 @@ const addToShoppingList = () => {
     <section class="rounded-md bg-base-lvl-3 pb-10">
         <header class="px-4 py-4">
             <slot name="prepend">
-                    <div class="px-4 py-2 font-bold rounded-md bg-primary/10 text-primary">
+                    <div class="px-4 py-2 font-bold rounded-md bg-primary/10 text-primary-ink">
                         {{ $t("What you'll need this week, based on your meal plan") }}
                     </div>
             </slot>

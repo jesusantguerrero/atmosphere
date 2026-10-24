@@ -71,7 +71,7 @@ const { isTab: isCurrentTab, selectedTab} = useTabs(
                 @click="selectedTab = tab.name"
                 class="px-4 py-1 relative text-sm  border border-transparent bg-base-lvl-2 rounded-3xl text-body-1"
                 :class="{
-                'bg-primary/10 border-primary  text-primary': isCurrentTab(tab.name),
+                'bg-primary/10 border-primary  text-primary-ink': isCurrentTab(tab.name),
                 }"
             >
                 {{ $t(tab.label) }}
