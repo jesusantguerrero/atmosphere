@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
+import { useI18n } from 'vue-i18n';
 import LogerButton from '@/Components/atoms/LogerButton.vue';
+
+const { t } = useI18n();
 
 type Menu = {
     id: number;
@@ -43,7 +46,7 @@ const useTemplate = () => {
 };
 
 const deleteMenu = () => {
-    if (!confirm(`Delete template "${props.menu.name}"? The planned meals will be kept.`)) {
+    if (!confirm(t('Delete template "{name}"? The planned meals will be kept.', { name: props.menu.name }))) {
         return;
     }
     isDeleting.value = true;
@@ -61,12 +64,12 @@ const deleteMenu = () => {
                 {{ menu.description }}
             </p>
             <p class="mt-2 text-xs text-body-1 opacity-60">
-                {{ menu.meal_plans_count }} meal{{ menu.meal_plans_count !== 1 ? 's' : '' }}
+                {{ menu.meal_plans_count }} {{ menu.meal_plans_count === 1 ? $t('meal') : $t('meals') }}
             </p>
         </div>
 
         <div v-if="isDatePickerOpen" class="px-5 pb-4 space-y-2 border-t border-base">
-            <label class="block mt-3 text-xs font-medium text-body">Start date for this week</label>
+            <label class="block mt-3 text-xs font-medium text-body">{{ $t('Start date for this week') }}</label>
             <input
                 v-model="targetDate"
                 type="date"
@@ -80,10 +83,10 @@ const deleteMenu = () => {
                     :disabled="!targetDate"
                     @click="useTemplate"
                 >
-                    Confirm
+                    {{ $t('Confirm') }}
                 </LogerButton>
                 <LogerButton variant="neutral" class="h-8 text-xs" @click="cancelLoad">
-                    Cancel
+                    {{ $t('Cancel') }}
                 </LogerButton>
             </div>
         </div>
@@ -94,7 +97,7 @@ const deleteMenu = () => {
                 class="flex-1 h-8 text-xs"
                 @click="openDatePicker"
             >
-                Use this template
+                {{ $t('Use this template') }}
             </LogerButton>
             <button
                 type="button"

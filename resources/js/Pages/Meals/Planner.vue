@@ -243,7 +243,7 @@
                         {{ name }} ({{ ingredient.quantity }}) {{ ingredient.unit }}
                     </div>
                     <p v-if="!ingredients || Object.keys(ingredients).length === 0" class="px-5 pt-4 text-sm text-body-1 opacity-60">
-                        No meals planned for this period.
+                        {{ $t('No meals planned for this period.') }}
                     </p>
                 </div>
 

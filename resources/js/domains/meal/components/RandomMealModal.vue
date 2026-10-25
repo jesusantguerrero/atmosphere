@@ -5,7 +5,7 @@
                 <div class="mt-3 text-center sm:mt-0 sm:ml-4">
                     <h3 class="w-full text-4xl font-bold text-white">
                         <slot name="title">
-                            The meal is:
+                            {{ $t('The meal is:') }}
                         </slot>
                     </h3>
 
@@ -15,7 +15,7 @@
                                 {{ meal.name }}
                             </div>
                             <div v-else class="mt-5 text-2xl">
-                                loading ...
+                                {{ $t('loading ...') }}
                             </div>
                         </slot>
                         <div class="mt-5">
@@ -23,7 +23,7 @@
                                 class="text-body-1 bg-base-lvl-1"
                                 :disabled="!meal"
                                 @click="submit()">
-                                    Random
+                                    {{ $t('Random') }}
                                 </at-button>
                         </div>
                     </div>

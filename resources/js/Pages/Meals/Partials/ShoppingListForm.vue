@@ -54,7 +54,7 @@ const addToShoppingList = () => {
 
                 <section class="text-left w-2/12">
                     <span class="font-bold">
-                        Qty:
+                        {{ $t('Qty') }}:
                     </span>
                     <span class="font-bold text-primary">
                         {{ ingredient.quantity }} {{ ingredient.unit }}
@@ -85,10 +85,10 @@ const addToShoppingList = () => {
                 variant="secondary"
                 :processing="form.processing"
             >
-                Add to shopping list
+                {{ $t('Add to shopping list') }}
             </LogerButton>
             <LogerButton class="ml-auto" variant="secondary" v-else>
-                Create shopping list
+                {{ $t('Create shopping list') }}
             </LogerButton>
         </footer>
     </section>

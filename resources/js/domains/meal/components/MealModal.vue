@@ -4,19 +4,19 @@
             <div class="sm:flex sm:items-start">
                 <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                     <h3 class="text-lg">
-                        <slot name="title">Add a new meal</slot>
+                        <slot name="title">{{ $t('Add a new meal') }}</slot>
                     </h3>
 
                     <div class="mt-2 text-left">
                         <slot name="content">
                             <div>
                                 <at-field
-                                    label="Title"
+                                    :label="$t('Title')"
                                 >
                                     <at-input v-model="form.name"/>
                                 </at-field>
                                 <at-field
-                                    label="Description"
+                                    :label="$t('Description')"
                                 >
                                     <at-input v-model="form.description"/>
                                 </at-field>
@@ -29,8 +29,8 @@
         </div>
 
         <div class="px-6 py-4 space-x-3 text-right bg-base-lvl-1 flex justify-end">
-            <AtButton type="secondary" rounded @click="close"> Cancel </AtButton>
-            <AtButton class="text-white bg-primary" rounded @click="submit"> Save </AtButton>
+            <AtButton type="secondary" rounded @click="close"> {{ $t('Cancel') }} </AtButton>
+            <AtButton class="text-white bg-primary" rounded @click="submit"> {{ $t('Save') }} </AtButton>
         </div>
     </modal>
 </template>

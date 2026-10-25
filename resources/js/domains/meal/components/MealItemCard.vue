@@ -95,14 +95,14 @@
                     @check="checkIngredients(index, $event)"
                 />
                 <LogerButton class="mt-4 w-full text-center justify-center" variant="secondary" @click="addToShoppingList">
-                    Add to shopping list
+                    {{ $t('Add to shopping list') }}
                 </LogerButton>
             </section>
         </template>
 
         <template #recipe >
             <section v-if="meal.notes"> {{ meal.notes }}</section>
-            <section v-else class="text-center pb-6 text-2xl font-bold text-body-1/20 first-letter:capitalize"> no description</section>
+            <section v-else class="text-center pb-6 text-2xl font-bold text-body-1/20 first-letter:capitalize"> {{ $t('no description') }}</section>
         </template>
 
         <template #instructions>

@@ -18,15 +18,15 @@ defineProps<{ templates: Menu[] }>();
 </script>
 
 <template>
-    <AppLayout title="Menu Templates">
+    <AppLayout :title="$t('Menu Templates')">
         <template #header>
             <MealSectionNav />
         </template>
         <MealTemplate :show-meal-types="false">
             <div class="mb-6">
-                <h1 class="text-xl font-bold text-body">Menu Templates</h1>
+                <h1 class="text-xl font-bold text-body">{{ $t('Menu Templates') }}</h1>
                 <p class="mt-1 text-sm text-body-1 opacity-70">
-                    Reusable weekly meal plans. Use one to populate any week in the Planner.
+                    {{ $t('Reusable weekly meal plans. Use one to populate any week in the Planner.') }}
                 </p>
             </div>
 
@@ -43,16 +43,16 @@ defineProps<{ templates: Menu[] }>();
 
             <div v-else class="flex flex-col items-center justify-center py-20 text-center">
                 <p class="text-4xl mb-4">🍽️</p>
-                <h2 class="text-lg font-semibold text-body">No templates yet</h2>
+                <h2 class="text-lg font-semibold text-body">{{ $t('No templates yet') }}</h2>
                 <p class="mt-1 text-sm text-body-1 opacity-60 max-w-sm">
-                    Go to the Planner, set up a week of meals, then click "Save as Menu" to create your first template.
+                    {{ $t('Go to the Planner, set up a week of meals, then click "{action}" to create your first template.', { action: $t('Save as Menu') }) }}
                 </p>
                 <LogerButton
                     variant="secondary"
                     class="mt-6 h-10 text-sm"
                     @click="router.visit(route('meal-planner.index'))"
                 >
-                    Go to Planner
+                    {{ $t('Go to Planner') }}
                 </LogerButton>
             </div>
         </MealTemplate>

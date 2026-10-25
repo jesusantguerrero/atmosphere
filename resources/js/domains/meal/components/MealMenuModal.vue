@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useForm, router } from '@inertiajs/vue3';
+import { useI18n } from 'vue-i18n';
 import Modal from '@/Components/atoms/Modal.vue';
 import LogerButton from '@/Components/atoms/LogerButton.vue';
+
+const { t } = useI18n();
 
 type Menu = {
     id: number;
@@ -54,7 +57,7 @@ const loadMenu = (menu: Menu) => {
 };
 
 const deleteMenu = (menu: Menu) => {
-    if (!confirm(`Delete menu "${menu.name}"? The planned meals will be kept.`)) {
+    if (!confirm(t('Delete menu "{name}"? The planned meals will be kept.', { name: menu.name }))) {
         return;
     }
     isDeleting.value = menu.id;
@@ -63,7 +66,7 @@ const deleteMenu = (menu: Menu) => {
     });
 };
 
-const title = computed(() => props.mode === 'save' ? 'Save Week as Menu' : 'Load a Saved Menu');
+const title = computed(() => props.mode === 'save' ? t('Save Week as Menu') : t('Load a Saved Menu'));
 </script>
 
 <template>
@@ -74,14 +77,14 @@ const title = computed(() => props.mode === 'save' ? 'Save Week as Menu' : 'Load
             <!-- Save mode -->
             <template v-if="mode === 'save'">
                 <p class="mt-1 text-sm text-body-1 opacity-70">
-                    Saves all meals in the current week as a reusable menu template.
+                    {{ $t('Saves all meals in the current week as a reusable menu template.') }}
                 </p>
                 <div class="mt-4">
-                    <label class="block mb-1 text-sm font-medium text-body">Menu name</label>
+                    <label class="block mb-1 text-sm font-medium text-body">{{ $t('Menu name') }}</label>
                     <input
                         v-model="saveForm.name"
                         type="text"
-                        placeholder="e.g. Healthy Week"
+                        :placeholder="$t('e.g. Healthy Week')"
                         class="w-full px-3 py-2 text-sm border rounded-md bg-base-lvl-2 border-base text-body focus:outline-none focus:ring-2 focus:ring-primary"
                         @keydown.enter.prevent="submitSave"
                     />
@@ -91,7 +94,7 @@ const title = computed(() => props.mode === 'save' ? 'Save Week as Menu' : 'Load
                 </div>
                 <div class="flex justify-end gap-2 mt-6">
                     <LogerButton variant="neutral" class="h-9 text-sm" @click="close">
-                        Cancel
+                        {{ $t('Cancel') }}
                     </LogerButton>
                     <LogerButton
                         variant="secondary"
@@ -99,7 +102,7 @@ const title = computed(() => props.mode === 'save' ? 'Save Week as Menu' : 'Load
                         :processing="saveForm.processing"
                         @click="submitSave"
                     >
-                        Save Menu
+                        {{ $t('Save Menu') }}
                     </LogerButton>
                 </div>
             </template>
@@ -107,7 +110,7 @@ const title = computed(() => props.mode === 'save' ? 'Save Week as Menu' : 'Load
             <!-- Load mode -->
             <template v-else>
                 <p class="mt-1 text-sm text-body-1 opacity-70">
-                    Select a menu to load into the current week.
+                    {{ $t('Select a menu to load into the current week.') }}
                 </p>
                 <div class="mt-4 space-y-2 max-h-72 overflow-y-auto">
                     <div
@@ -118,7 +121,7 @@ const title = computed(() => props.mode === 'save' ? 'Save Week as Menu' : 'Load
                         <div>
                             <p class="text-sm font-medium text-body">{{ menu.name }}</p>
                             <p class="text-xs text-body-1 opacity-60">
-                                {{ menu.meal_plans_count }} meal{{ menu.meal_plans_count !== 1 ? 's' : '' }}
+                                {{ menu.meal_plans_count }} {{ menu.meal_plans_count === 1 ? $t('meal') : $t('meals') }}
                             </p>
                         </div>
                         <div class="flex items-center gap-2">
@@ -127,7 +130,7 @@ const title = computed(() => props.mode === 'save' ? 'Save Week as Menu' : 'Load
                                 class="h-8 text-xs"
                                 @click="loadMenu(menu)"
                             >
-                                Load
+                                {{ $t('Load Menu') }}
                             </LogerButton>
                             <button
                                 class="p-1 text-error opacity-60 hover:opacity-100 transition-opacity"
@@ -140,12 +143,12 @@ const title = computed(() => props.mode === 'save' ? 'Save Week as Menu' : 'Load
                         </div>
                     </div>
                     <p v-if="!menus || menus.length === 0" class="py-4 text-sm text-center text-body-1 opacity-60">
-                        No saved menus yet.
+                        {{ $t('No saved menus yet.') }}
                     </p>
                 </div>
                 <div class="flex justify-end mt-4">
                     <LogerButton variant="neutral" class="h-9 text-sm" @click="close">
-                        Close
+                        {{ $t('Close') }}
                     </LogerButton>
                 </div>
             </template>
