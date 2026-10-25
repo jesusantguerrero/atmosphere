@@ -74,7 +74,7 @@ const emitCellEvent = (eventName: string) => {
         :placeholder="$t('Add') + ' ' + $t(mealType.name)"
         endpoint="/api/recipes"
       />
-      <LogerButtonTab @click="submit" v-if="recipe.id">Save</LogerButtonTab>
+      <LogerButtonTab @click="submit" v-if="recipe.id">{{ $t('Save') }}</LogerButtonTab>
     </div>
   </div>
 </template>

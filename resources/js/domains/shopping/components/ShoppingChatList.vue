@@ -1272,7 +1272,7 @@ onBeforeUnmount(() => {
 
                         <p
                             v-if="!inventoryMode"
-                            class="text-xs text-body-1/60 mt-0.5"
+                            class="text-xs text-body-1/70 mt-0.5"
                         >
                             {{
                                 $t(

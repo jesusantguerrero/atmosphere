@@ -1,7 +1,10 @@
 <script setup lang="ts">
     import { computed } from "vue";
     import { useForm } from "@inertiajs/vue3";
+    import { useI18n } from "vue-i18n";
     import {  ElMessageBox } from "element-plus";
+
+    const { t } = useI18n();
 
     import MealItem from "./MealItem.vue";
     import MealItemCard from "./MealItemCard.vue";
@@ -27,7 +30,7 @@
     });
 
     const deleteResource = async (meal: any) => {
-        const isConfirmed = await ElMessageBox.confirm("Are you sure to delete this meal?");
+        const isConfirmed = await ElMessageBox.confirm(t("Are you sure to delete this meal?"));
         if (!isConfirmed) return
 
         deleteForm.delete(route('meals.destroy', { meal }))

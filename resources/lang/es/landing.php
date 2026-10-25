@@ -151,6 +151,11 @@ return [
         'privacy' => 'Política de privacidad',
         'terms' => 'Términos de servicio',
         'built_by' => 'Hecho por Jesus Guerrero — Publicado bajo licencia BSD-3-Clause',
+        'open_source' => 'Código abierto',
+        'atmosphere' => 'Atmosphere en GitHub',
+        'self_host' => 'Próximamente: alojamiento propio',
+        'open_source_page' => 'Sobre el código abierto',
+        'powered_by' => 'Construido sobre Laravel, Vue y Tailwind CSS',
     ],
 
     'pricing' => [

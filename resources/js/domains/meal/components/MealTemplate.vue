@@ -27,7 +27,7 @@ defineProps({
         <div
           v-for="mealType in pageProps.mealTypes"
           :key="mealType.id"
-          class="flex flex-col items-center justify-center w-full h-14 md:h-20 font-bold text-white transition rounded-md cursor-pointer border-primary bg-primary/80"
+          class="flex flex-col items-center justify-center w-full h-14 md:h-20 font-bold text-white transition rounded-md cursor-pointer border-primaryDark bg-primaryDark"
         >
           <h4 class="capitalize">
             {{ $t(mealType.name) }}

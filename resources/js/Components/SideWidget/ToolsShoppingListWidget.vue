@@ -165,7 +165,7 @@ onMounted(fetchPlan);
     <main class="flex flex-col h-full min-h-0">
         <!-- Counts + share toggle -->
         <header v-if="plan && !loading" class="flex items-center justify-between gap-2 mb-2 shrink-0">
-            <div class="text-xs text-body-1/60">
+            <div class="text-xs text-body-1/70">
                 <span class="font-semibold text-body">{{ pendingItems.length }}</span> {{ $t('pending') }}
                 <span class="mx-1.5 text-body-1/30">·</span>
                 <span class="font-semibold text-success">{{ buyItems.length }}</span> {{ $t('buying') }}
