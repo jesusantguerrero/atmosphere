@@ -4,6 +4,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import axios from "axios";
 
 import { useI18n } from "vue-i18n";
+import { NSelect } from "naive-ui";
 
 const { t } = useI18n();
 
@@ -202,6 +203,16 @@ const stages = ref<Stage[]>(JSON.parse(JSON.stringify(props.plan.stages)));
 const composer = ref<string>("");
 const productCategory = ref<number | string>(props.plan.stages[0]?.id ?? "");
 const productCategoryName = ref("");
+
+const stageName = (name: string) =>
+    /^[A-Z][A-Z0-9_]+$/.test(name) ? "Otros productos" : name;
+const categoryOptions = computed(() => [
+    ...stages.value.map((s) => ({ label: stageName(s.name), value: s.id })),
+    { label: "+ Nueva categoría", value: "new" as unknown as number },
+]);
+const moveCategoryOptions = computed(() =>
+    stages.value.map((s) => ({ label: stageName(s.name), value: s.id })),
+);
 
 const inventorySearch = computed(() =>
     props.inventoryMode ? composer.value : "",
@@ -526,7 +537,7 @@ const submitReview = async () => {
 
         reviewDialog.value?.close();
         if (props.inventoryMode)
-            confirmationMessage.value = "Listo, ya le avisamos al propietario.";
+            confirmationMessage.value = "Listo, ya le avisamos a quien va a comprar.";
 
         if (data.review.status === "completed") reviewNote.value = "";
     } catch (error: any) {
@@ -1291,7 +1302,7 @@ onBeforeUnmount(() => {
 
                         <template v-if="inventoryMode">
                             <p class="mt-1 text-sm text-body-1">
-                                Marca lo que ya hay para omitirlo de la compra.
+                                Marca lo que ya hay en casa para omitirlo.
                             </p>
 
                             <p class="mt-2 text-xs font-medium text-body">
@@ -1455,13 +1466,13 @@ onBeforeUnmount(() => {
                                 updatingItems.length > 0 ||
                                 sending
                             "
-                            class="h-10 rounded-full bg-primary px-3 text-sm font-semibold text-white disabled:opacity-50"
+                            class="h-10 rounded-full bg-primaryDark px-3 text-sm font-semibold text-white disabled:opacity-50"
                             @click="openReview"
                         >
                             <i
                                 class="fa fa-check mr-1"
                                 aria-hidden="true"
-                            />Listo
+                            />Confirmar lista
                         </button>
                     </div>
 
@@ -1477,7 +1488,7 @@ onBeforeUnmount(() => {
                             v-if="!shoppingSession"
                             type="button"
                             :disabled="sessionBusy || updatingItems.length > 0"
-                            class="rounded-full bg-primary px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                            class="rounded-full bg-primaryDark px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
                             @click="startShopping"
                         >
                             Iniciar compra
@@ -1486,7 +1497,7 @@ onBeforeUnmount(() => {
                             v-else
                             type="button"
                             :disabled="sessionBusy || updatingItems.length > 0"
-                            class="rounded-full bg-primary px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                            class="rounded-full bg-primaryDark px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
                             @click="openFinishShopping"
                         >
                             Terminar compra
@@ -1618,9 +1629,9 @@ onBeforeUnmount(() => {
                                 class="w-full rounded-lg border border-base bg-base-lvl-1 p-3 text-sm text-body"
                             />
 
-                            <p class="text-xs text-body-1/60">
+                            <p class="text-xs text-body-1/70">
                                 Confirma cuando hayas revisado qué hace falta.
-                                Avisaremos al propietario.
+                                Avisaremos a quien va a comprar.
                             </p>
                         </template>
 
@@ -1886,7 +1897,7 @@ onBeforeUnmount(() => {
                                         !isReviewed(item) &&
                                         !updatingItems.includes(item.id)
                                     "
-                                    class="mt-1 block text-xs text-body-1/60"
+                                    class="mt-1 block text-xs text-body-1/70"
                                     >Sin revisar</small
                                 ><small
                                     v-if="
@@ -2044,25 +2055,13 @@ onBeforeUnmount(() => {
                 <label for="product-category" class="text-xs text-body-1/70"
                     >Categoría</label
                 >
-                <select
-                    id="product-category"
-                    v-model="productCategory"
-                    class="min-w-0 flex-1 rounded-lg border border-base bg-base-lvl-2 px-3 py-2 text-sm text-body"
+                <NSelect
+                    v-model:value="productCategory"
+                    :options="categoryOptions"
                     :disabled="sending"
-                >
-                    <option
-                        v-for="stage in stages"
-                        :key="stage.id"
-                        :value="stage.id"
-                    >
-                        {{
-                            /^[A-Z][A-Z0-9_]+$/.test(stage.name)
-                                ? "Otros productos"
-                                : stage.name
-                        }}
-                    </option>
-                    <option value="new">+ Nueva categoría</option>
-                </select>
+                    size="small"
+                    class="min-w-0 flex-1"
+                />
                 <input
                     v-if="productCategory === 'new'"
                     v-model="productCategoryName"
@@ -2485,6 +2484,11 @@ onBeforeUnmount(() => {
                         {{ shoppingSession?.purchased_ids.length ?? 0 }}
                         productos comprados. Los demás quedarán pendientes.
                     </p>
+                    <p class="text-xs text-body-1/70">
+                        Se buscará un movimiento en tu tarjeta con el mismo monto
+                        y categoría para vincularlo automáticamente. Si pagaste
+                        en efectivo, se registrará como gasto directo.
+                    </p>
                     <label for="visit-total" class="text-sm"
                         >Importe total</label
                     >
@@ -2512,7 +2516,7 @@ onBeforeUnmount(() => {
                     </div>
                     <label for="visit-note" class="text-sm"
                         >Notas de esta visita
-                        <span class="text-body-1/60">(opcional)</span></label
+                        <span class="text-body-1/70">(opcional)</span></label
                     >
                     <textarea
                         id="visit-note"
@@ -2543,7 +2547,7 @@ onBeforeUnmount(() => {
                                 sessionBusy ||
                                 !shoppingSession?.purchased_ids.length
                             "
-                            class="rounded-lg bg-primary px-4 py-3 font-semibold text-white disabled:opacity-50"
+                            class="rounded-lg bg-primaryDark px-4 py-3 font-semibold text-white disabled:opacity-50"
                         >
                             {{ sessionBusy ? "Guardando…" : "Guardar visita" }}
                         </button>
@@ -2567,27 +2571,15 @@ onBeforeUnmount(() => {
                         {{ movingItem?.title }}
                     </p>
                     <label for="move-category" class="text-sm">Categoría</label>
-                    <select
-                        id="move-category"
-                        v-model="movingCategory"
+                    <NSelect
+                        v-model:value="movingCategory"
+                        :options="moveCategoryOptions"
                         :disabled="categoryBusy"
-                        class="rounded-lg border border-base bg-base-lvl-2 p-3 text-body"
-                    >
-                        <option
-                            v-for="stage in stages"
-                            :key="stage.id"
-                            :value="stage.id"
-                        >
-                            {{
-                                /^[A-Z][A-Z0-9_]+$/.test(stage.name)
-                                    ? "Otros productos"
-                                    : stage.name
-                            }}
-                        </option>
-                    </select>
+                        size="medium"
+                    />
                     <label for="item-quantity" class="text-sm"
                         >Cantidad
-                        <span class="text-body-1/60">(opcional)</span></label
+                        <span class="text-body-1/70">(opcional)</span></label
                     >
                     <input
                         id="item-quantity"
@@ -2599,7 +2591,7 @@ onBeforeUnmount(() => {
                     />
                     <label for="item-note" class="text-sm"
                         >Indicación para esta compra
-                        <span class="text-body-1/60">(opcional)</span></label
+                        <span class="text-body-1/70">(opcional)</span></label
                     >
                     <textarea
                         id="item-note"
@@ -2674,7 +2666,7 @@ onBeforeUnmount(() => {
 
                     <label for="purchase-confirmation-note" class="text-sm"
                         >Nota para esta compra
-                        <span class="text-body-1/60">(opcional)</span></label
+                        <span class="text-body-1/70">(opcional)</span></label
                     >
 
                     <textarea
@@ -2691,8 +2683,8 @@ onBeforeUnmount(() => {
                         Quedan {{ uncheckedCount }} productos sin revisar.
                         Puedes volver para comprobarlos antes de confirmar.
                     </p>
-                    <p class="text-sm text-body-1/60">
-                        Al confirmar, avisaremos al propietario que ya puede
+                    <p class="text-sm text-body-1/70">
+                        Al confirmar, avisaremos a quien va a comprar que ya puede
                         comprar.
                     </p>
 
@@ -2709,7 +2701,7 @@ onBeforeUnmount(() => {
                         :disabled="
                             reviewBusy || updatingItems.length > 0 || sending
                         "
-                        class="rounded-xl bg-primary px-4 py-3 font-semibold text-white disabled:opacity-50"
+                        class="rounded-xl bg-primaryDark px-4 py-3 font-semibold text-white disabled:opacity-50"
                     >
                         {{ reviewBusy ? "Confirmando…" : "Confirmar lista" }}
                     </button>

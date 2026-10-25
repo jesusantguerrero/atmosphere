@@ -217,7 +217,7 @@ class ShoppingListReviewService
             }
             $details = $this->itemDetails($plan);
             $items = PlanItem::query()->without(['fields', 'checklist'])->with('stage')->where('team_id', $plan->team_id)->where('plan_id', $plan->id)->where('state', PlanItem::STATE_PENDING)->orderBy('order')->get()->map(fn (PlanItem $item) => ['id' => $item->id, 'title' => $item->title, 'stage_id' => $item->stage_id, 'category' => $item->stage?->name, 'details' => $details[$item->id] ?? null])->all();
-            abort_if(empty($items), 422, 'No hay productos pendientes para iniciar una compra.');
+            abort_if(empty($items), 422, 'No hay productos pendientes. Restablece los productos comprados a "pendiente" para iniciar una nueva compra.');
             $session = ['id' => (string) Str::uuid(), 'started_at' => now()->toIso8601String(), 'user_id' => $userId, 'review_id' => $this->status($plan)['id'], 'items' => $items, 'purchased_ids' => []];
             $this->store($plan, $session, 'shopping_active_session');
 
