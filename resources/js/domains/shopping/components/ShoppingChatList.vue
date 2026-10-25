@@ -4,6 +4,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import axios from "axios";
 
 import { useI18n } from "vue-i18n";
+import { NSelect } from "naive-ui";
 
 const { t } = useI18n();
 
@@ -202,6 +203,16 @@ const stages = ref<Stage[]>(JSON.parse(JSON.stringify(props.plan.stages)));
 const composer = ref<string>("");
 const productCategory = ref<number | string>(props.plan.stages[0]?.id ?? "");
 const productCategoryName = ref("");
+
+const stageName = (name: string) =>
+    /^[A-Z][A-Z0-9_]+$/.test(name) ? "Otros productos" : name;
+const categoryOptions = computed(() => [
+    ...stages.value.map((s) => ({ label: stageName(s.name), value: s.id })),
+    { label: "+ Nueva categoría", value: "new" as unknown as number },
+]);
+const moveCategoryOptions = computed(() =>
+    stages.value.map((s) => ({ label: stageName(s.name), value: s.id })),
+);
 
 const inventorySearch = computed(() =>
     props.inventoryMode ? composer.value : "",
@@ -2044,25 +2055,13 @@ onBeforeUnmount(() => {
                 <label for="product-category" class="text-xs text-body-1/70"
                     >Categoría</label
                 >
-                <select
-                    id="product-category"
-                    v-model="productCategory"
-                    class="min-w-0 flex-1 rounded-lg border border-base bg-base-lvl-2 px-3 py-2 text-sm text-body"
+                <NSelect
+                    v-model:value="productCategory"
+                    :options="categoryOptions"
                     :disabled="sending"
-                >
-                    <option
-                        v-for="stage in stages"
-                        :key="stage.id"
-                        :value="stage.id"
-                    >
-                        {{
-                            /^[A-Z][A-Z0-9_]+$/.test(stage.name)
-                                ? "Otros productos"
-                                : stage.name
-                        }}
-                    </option>
-                    <option value="new">+ Nueva categoría</option>
-                </select>
+                    size="small"
+                    class="min-w-0 flex-1"
+                />
                 <input
                     v-if="productCategory === 'new'"
                     v-model="productCategoryName"
@@ -2572,24 +2571,12 @@ onBeforeUnmount(() => {
                         {{ movingItem?.title }}
                     </p>
                     <label for="move-category" class="text-sm">Categoría</label>
-                    <select
-                        id="move-category"
-                        v-model="movingCategory"
+                    <NSelect
+                        v-model:value="movingCategory"
+                        :options="moveCategoryOptions"
                         :disabled="categoryBusy"
-                        class="rounded-lg border border-base bg-base-lvl-2 p-3 text-body"
-                    >
-                        <option
-                            v-for="stage in stages"
-                            :key="stage.id"
-                            :value="stage.id"
-                        >
-                            {{
-                                /^[A-Z][A-Z0-9_]+$/.test(stage.name)
-                                    ? "Otros productos"
-                                    : stage.name
-                            }}
-                        </option>
-                    </select>
+                        size="medium"
+                    />
                     <label for="item-quantity" class="text-sm"
                         >Cantidad
                         <span class="text-body-1/70">(opcional)</span></label
