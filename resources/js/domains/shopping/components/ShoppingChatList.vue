@@ -1289,8 +1289,8 @@ onBeforeUnmount(() => {
 
         <header class="bg-base-lvl-3 border-b border-base">
             <div class="max-w-5xl mx-auto px-4 py-3 w-full">
-                <div class="flex items-center justify-between gap-2">
-                    <div class="min-w-0 relative">
+                <div class="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+                    <div class="min-w-0 flex-1 relative">
                         <button
                             v-if="showOwnerControls && lists && lists.length"
                             type="button"
@@ -1310,7 +1310,7 @@ onBeforeUnmount(() => {
 
                         <p
                             v-if="!inventoryMode"
-                            class="text-xs text-body-1/70 mt-0.5"
+                            class="text-xs text-body-1/70 mt-0.5 whitespace-nowrap"
                         >
                             {{
                                 $t(
