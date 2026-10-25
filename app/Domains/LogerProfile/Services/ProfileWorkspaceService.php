@@ -142,7 +142,7 @@ class ProfileWorkspaceService
         return $profile->getConnection()->transaction(function () use ($profile, $plan, $stage, $data, $userId) {
             $item = PlanItem::create([
                 'team_id' => $profile->team_id, 'user_id' => $userId, 'plan_id' => $plan->id,
-                'stage_id' => $stage->id, 'title' => $data['title'], 'is_done' => $data['done'] ?? false,
+                'stage_id' => $stage->id, 'title' => $data['title'] ?: 'Sin título', 'is_done' => $data['done'] ?? false,
                 'order' => $stage->items()->max('order') + 1,
             ]);
             $item->forceFill(['profile_id' => $profile->id, 'rrule' => null])->saveQuietly();

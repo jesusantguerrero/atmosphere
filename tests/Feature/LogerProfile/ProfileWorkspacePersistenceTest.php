@@ -53,6 +53,16 @@ class ProfileWorkspacePersistenceTest extends TestCase
         $this->assertDatabaseHas('plan_items', ['id' => $itemId, 'state' => PlanItem::STATE_BUY, 'profile_id' => $this->profile->id, 'rrule' => null]);
     }
 
+    public function test_pages_can_be_created_with_empty_title(): void
+    {
+        $response = $this->postJson($this->path('/boards'), ['name' => 'Notebook', 'view' => 'notebook'])->assertOk();
+        $boardId = $response->json('board_id');
+        $stageId = $response->json('workspace.boards.0.stages.0.id');
+        $this->postJson($this->path('/boards/'.$boardId.'/pages'), ['stage_id' => $stageId, 'title' => ''])->assertOk();
+        $workspace = app(ProfileWorkspaceService::class)->snapshot($this->profile->fresh());
+        $this->assertSame('Sin título', $workspace['boards'][0]['stages'][0]['items'][0]['title']);
+    }
+
     public function test_validation_and_team_boundaries_reject_changes(): void
     {
         $this->postJson($this->path('/boards'), ['name' => '', 'view' => 'invalid'])->assertUnprocessable();
