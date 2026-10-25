@@ -938,7 +938,7 @@
     "Switch space": "Cambiar de espacio",
     "Current space": "Espacio actual",
     "All meals": "Todas las comidas",
-    "{buy} buying · {skip} skipped · {pending} pending": "{buy} comprando · {skip} omitido · {pending} pendiente",
+    "{buy} buying · {skip} skipped · {pending} pending": "{buy} en el carrito · {skip} omitido · {pending} pendiente",
     "What am I eating today?": "¿Qué voy a comer hoy?",
     "View full list": "Ver lista completa",
     "No liked meals yet.": "Aún no hay comidas favoritas.",

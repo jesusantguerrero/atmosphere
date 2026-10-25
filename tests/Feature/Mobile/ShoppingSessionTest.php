@@ -131,6 +131,50 @@ class ShoppingSessionTest extends TestCase
         $this->assertDatabaseHas('plan_items', ['id' => $bread->id, 'state' => 'pending']);
     }
 
+    public function test_finish_session_with_cash_creates_withdraw_transaction(): void
+    {
+        [$user, $plan, $stage] = $this->makeSetup();
+        Sanctum::actingAs($user);
+        $teamId = $user->ownedTeams()->first()->id;
+
+        $account = Account::where('team_id', $teamId)->first()
+            ?? Account::create([
+                'team_id' => $teamId,
+                'user_id' => $user->id,
+                'name' => 'Efectivo',
+                'currency_code' => 'DOP',
+                'balance_type' => 'DEBIT',
+                'type' => 1,
+            ]);
+
+        $milk = $this->addItem($plan, $stage, $user, 'Milk');
+        $sessionId = $this->postJson("/api/mobile/shopping/{$plan->id}/sessions/start")
+            ->json('session.id');
+
+        $this->postJson("/api/mobile/shopping/{$plan->id}/items/{$milk->id}/cycle", [
+            'state' => 'buy',
+        ]);
+
+        $response = $this->postJson("/api/mobile/shopping/{$plan->id}/sessions/finish", [
+            'session_id' => $sessionId,
+            'total' => 350.00,
+            'currency' => 'DOP',
+            'account_id' => $account->id,
+        ])->assertOk();
+
+        $visit = $response->json('visit');
+        $this->assertEquals('350.00', $visit['total']);
+        $this->assertNotNull($visit['transaction']);
+
+        $this->assertDatabaseHas('transactions', [
+            'id' => $visit['transaction']['id'],
+            'account_id' => $account->id,
+            'total' => 350,
+            'direction' => 'WITHDRAW',
+            'status' => 'verified',
+        ]);
+    }
+
     public function test_finish_session_requires_cart_items(): void
     {
         [$user, $plan, $stage] = $this->makeSetup();
