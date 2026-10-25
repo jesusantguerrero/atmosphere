@@ -4,6 +4,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import axios from "axios";
 
 import { useI18n } from "vue-i18n";
+import { usePage } from "@inertiajs/vue3";
 import { NSelect } from "naive-ui";
 
 const { t } = useI18n();
@@ -311,6 +312,23 @@ const backToHistory = () => {
 const visitTotal = ref("");
 const visitCurrency = ref("DOP");
 const visitNote = ref("");
+const cashPayment = ref(false);
+const cashAccountId = ref<number | null>(null);
+const cashCategoryId = ref<number | null>(null);
+
+const pageProps = usePage().props as any;
+const accountOptions = computed(() =>
+    (pageProps.accounts ?? [])
+        .flatMap((group: any) => group.accounts ?? [group])
+        .filter((a: any) => a.id)
+        .map((a: any) => ({ label: a.name, value: a.id })),
+);
+const categoryOptions2 = computed(() =>
+    (pageProps.categories ?? []).map((c: any) => ({
+        label: c.display_id || c.name,
+        value: c.id,
+    })),
+);
 const acceptShoppingPlan = (plan: PlanPayload) => {
     stages.value = plan.stages;
     review.value = plan.review ?? null;
@@ -357,6 +375,12 @@ const finishShopping = async () => {
                 total: visitTotal.value,
                 currency: visitCurrency.value,
                 note: visitNote.value,
+                ...(cashPayment.value && cashAccountId.value
+                    ? {
+                          account_id: cashAccountId.value,
+                          category_id: cashCategoryId.value,
+                      }
+                    : {}),
             },
             requestConfig(),
         );
@@ -364,6 +388,9 @@ const finishShopping = async () => {
         finishDialog.value?.close();
         visitTotal.value = "";
         visitNote.value = "";
+        cashPayment.value = false;
+        cashAccountId.value = null;
+        cashCategoryId.value = null;
         sessionMessage.value =
             "Visita guardada. La lista está lista para la próxima revisión.";
     } catch (error: any) {
@@ -1404,7 +1431,7 @@ onBeforeUnmount(() => {
                             :aria-label="`Mostrar solo sin revisar (${uncheckedCount})`"
                             title="Sin revisar"
                             :aria-pressed="onlyUnchecked"
-                            class="relative flex h-11 w-10 items-center justify-center rounded-full text-body hover:bg-base-lvl-2"
+                            class="relative flex h-11 w-11 items-center justify-center rounded-full text-body hover:bg-base-lvl-2"
                             :class="{
                                 'bg-primary/10 text-primary-ink': onlyUnchecked,
                             }"
@@ -1439,7 +1466,7 @@ onBeforeUnmount(() => {
                                 updatingItems.length > 0 ||
                                 sending
                             "
-                            class="h-11 w-10 rounded-full text-body hover:bg-base-lvl-2 disabled:opacity-50"
+                            class="h-11 w-11 rounded-full text-body hover:bg-base-lvl-2 disabled:opacity-50"
                             @click="refreshReview"
                         >
                             <svg
@@ -1466,7 +1493,7 @@ onBeforeUnmount(() => {
                                 updatingItems.length > 0 ||
                                 sending
                             "
-                            class="h-10 rounded-full bg-primaryDark px-3 text-sm font-semibold text-white disabled:opacity-50"
+                            class="h-11 rounded-full bg-primaryDark px-3 text-sm font-semibold text-white disabled:opacity-50"
                             @click="openReview"
                         >
                             <i
@@ -1987,7 +2014,7 @@ onBeforeUnmount(() => {
                             <button
                                 v-if="inventoryMode"
                                 type="button"
-                                class="flex h-11 w-7 shrink-0 items-center justify-center rounded-lg text-body-1/60 hover:bg-base-lvl-2"
+                                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-body-1/60 hover:bg-base-lvl-2"
                                 :aria-label="'Editar detalles: ' + item.title"
                                 @click.stop="openMoveCategory(item, section.id)"
                             >
@@ -2100,7 +2127,7 @@ onBeforeUnmount(() => {
                     type="button"
                     aria-label="Agregar nota para esta compra"
                     title="Agregar nota"
-                    class="relative h-11 w-10 shrink-0 rounded-full text-body-1 hover:bg-base-lvl-2"
+                    class="relative h-11 w-11 shrink-0 rounded-full text-body-1 hover:bg-base-lvl-2"
                     @click="openReview"
                 >
                     <svg
@@ -2127,7 +2154,7 @@ onBeforeUnmount(() => {
                     type="button"
                     aria-label="Ver historial de compras"
                     title="Historial de compras"
-                    class="flex h-11 w-10 shrink-0 items-center justify-center rounded-full text-body-1 hover:bg-base-lvl-2"
+                    class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-body-1 hover:bg-base-lvl-2"
                     @click="openHistory"
                 >
                     <svg
@@ -2484,11 +2511,39 @@ onBeforeUnmount(() => {
                         {{ shoppingSession?.purchased_ids.length ?? 0 }}
                         productos comprados. Los demás quedarán pendientes.
                     </p>
-                    <p class="text-xs text-body-1/70">
+                    <p v-if="!cashPayment" class="text-xs text-body-1/70">
                         Se buscará un movimiento en tu tarjeta con el mismo monto
-                        y categoría para vincularlo automáticamente. Si pagaste
-                        en efectivo, se registrará como gasto directo.
+                        para vincularlo automáticamente.
                     </p>
+                    <p v-else class="text-xs text-body-1/70">
+                        Se creará un gasto directo por este monto en la cuenta
+                        seleccionada.
+                    </p>
+                    <label class="flex items-center gap-2 text-sm cursor-pointer">
+                        <input
+                            v-model="cashPayment"
+                            type="checkbox"
+                            class="rounded border-base text-primary focus:ring-primary"
+                        />
+                        Pago en efectivo
+                    </label>
+                    <template v-if="cashPayment">
+                        <label class="text-sm">Cuenta</label>
+                        <NSelect
+                            v-model:value="cashAccountId"
+                            :options="accountOptions"
+                            placeholder="Selecciona una cuenta"
+                            size="medium"
+                        />
+                        <label class="text-sm">Categoría <span class="text-body-1/70">(opcional)</span></label>
+                        <NSelect
+                            v-model:value="cashCategoryId"
+                            :options="categoryOptions2"
+                            placeholder="Categoría del gasto"
+                            size="medium"
+                            clearable
+                        />
+                    </template>
                     <label for="visit-total" class="text-sm"
                         >Importe total</label
                     >
@@ -2546,6 +2601,7 @@ onBeforeUnmount(() => {
                             :disabled="
                                 sessionBusy ||
                                 !shoppingSession?.purchased_ids.length
+                                || (cashPayment && !cashAccountId)
                             "
                             class="rounded-lg bg-primaryDark px-4 py-3 font-semibold text-white disabled:opacity-50"
                         >
