@@ -11,6 +11,7 @@ import { formatMonth } from "@/utils";
 import ChartCurrentVsPrevious from "@/Components/widgets/ChartCurrentVsPrevious.vue";
 import ChartNetWorth from "@/Components/ChartNetworth.vue";
 import LogerChart from "@/Components/organisms/LogerChart.vue";
+import axios from "axios";
 
 const props = defineProps<{ data?: any; metaData?: any }>();
 const { t, locale } = useI18n();
@@ -81,7 +82,7 @@ const showNwComparison = computed<boolean>(() => !!nw3ago.value && nw3ago.value 
 const ie = computed<any>(() => props.data?.incomeExpenses ?? {});
 const expenseByCat = computed<any[]>(() =>
   Object.values(ie.value.expenses ?? {})
-    .map((e: any) => ({ id: e.id, name: e.name, total: abs(e.total) }))
+    .map((e: any) => ({ id: e.id, group_id: e.group_id, group_name: e.group_name, name: e.name, total: abs(e.total) }))
     .sort((a, b) => b.total - a.total)
 );
 const monthExpenseTotal = computed<number>(() => expenseByCat.value.reduce((a, x) => a + x.total, 0));
@@ -95,7 +96,7 @@ const incomeRows = computed<any[]>(() =>
 const rankRows = (arr: any[], showAll = false) => {
   const max = Math.max(1, ...arr.map((i) => i.total));
   const tot = arr.reduce((a, i) => a + i.total, 0) || 1;
-  const toRow = (i: any) => ({ id: i.id, uncategorized: i.uncategorized, name: i.name, amount: i.total, pct: (i.total / tot) * 100, w: (i.total / max) * 100 });
+  const toRow = (i: any) => ({ id: i.id, group_id: i.group_id, uncategorized: i.uncategorized, name: i.name, amount: i.total, pct: (i.total / tot) * 100, w: (i.total / max) * 100 });
 
   if (showAll) return arr.map(toRow);
 
@@ -168,7 +169,11 @@ const cardOptions = computed(() => ({ colors: ["#E8837E33"], borderColors: ["#E8
 // categories bar (widget under Spending)
 const catTop = computed(() => expenseByCat.value.slice(0, 12));
 const catLabels = computed(() => catTop.value.map((c) => c.name));
-const catSeries = computed(() => [{ name: t("Spend"), data: catTop.value.map((c) => c.total) }]);
+const catSeries = computed(() => [{
+  name: t("Spend"),
+  data: catTop.value.map((c) => c.total),
+  backgroundColor: catTop.value.map((c) => (isCatExcluded(c) ? "#7C6FF012" : "#7C6FF033")),
+}]);
 // Spending breakdown lens for the Gastos tab: by category (budget-aligned) or
 // by account (every verified outflow, to reconcile against the bank).
 const accountsOutRows = computed<any[]>(() =>
@@ -210,6 +215,73 @@ const uncategorizedHref = computed(() => {
   return `/finance/transactions?filter[uncategorized]=1${date}`;
 });
 const catOptions = computed(() => ({ colors: ["#7C6FF033"], borderColors: ["#7C6FF0"], borderWidth: 1.5, ...chartAxis.value }));
+
+// ---- "Exclude from average" (Spending tab) ---------------------------------
+// Categories/groups the user hides from the Spending average & line so the
+// baseline reflects real recurring spend (e.g. a land purchase, business
+// hosting). They stay on the chart, just faded, and the average recomputes
+// without them. Seeded from saved settings and persisted on change.
+const excludedCatIds = ref<Set<number>>(new Set((props.data?.exclusions?.categoryIds ?? []).map(Number)));
+const excludedGroupIds = ref<Set<number>>(new Set((props.data?.exclusions?.groupIds ?? []).map(Number)));
+const hasExclusions = computed(() => excludedCatIds.value.size > 0 || excludedGroupIds.value.size > 0);
+
+// Per-category rows with group + per-month columns (the matrix behind the
+// monthly bars). spendingSummary is built from this same source, so summing
+// the non-excluded rows per month reproduces today's totals when nothing is
+// excluded.
+const expenseRows = computed<any[]>(() => Object.values(ie.value.expenses ?? {}));
+const isExcludedRow = (row: any) => excludedCatIds.value.has(Number(row?.id)) || excludedGroupIds.value.has(Number(row?.group_id));
+const isCatExcluded = (row: any) => Boolean(row?.id) && (excludedCatIds.value.has(Number(row.id)) || excludedGroupIds.value.has(Number(row.group_id)));
+const isRowExcluded = isCatExcluded;
+const isGroupExcluded = (id: number) => excludedGroupIds.value.has(Number(id));
+
+const excludedForMonth = (month: string) => expenseRows.value.filter(isExcludedRow).reduce((acc: number, r: any) => acc + abs(r[month]), 0);
+const spendMonthsAdj = computed<any[]>(() => spendMonths.value.map((m) => {
+  const ex = excludedForMonth(m.month);
+  return { month: m.month, full: m.total, total: Math.max(0, m.total - ex), excluded: Math.min(ex, m.total) };
+}));
+const avgAdj = computed(() => (spendMonthsAdj.value.length ? spendMonthsAdj.value.reduce((a, m) => a + m.total, 0) / spendMonthsAdj.value.length : 0));
+const excludedPeriodTotal = computed(() => spendMonthsAdj.value.reduce((a, m) => a + m.excluded, 0));
+
+const excludedNames = computed<string[]>(() => {
+  const names: string[] = [];
+  (props.data?.groups ?? []).forEach((g: any) => { if (excludedGroupIds.value.has(Number(g.id))) names.push(g.name); });
+  expenseRows.value.forEach((r: any) => { if (excludedCatIds.value.has(Number(r.id)) && !excludedGroupIds.value.has(Number(r.group_id))) names.push(r.name); });
+  return names;
+});
+const excludableGroups = computed<any[]>(() => (props.data?.groups ?? []).map((g: any) => ({ id: Number(g.id), name: g.name })).filter((g: any) => g.id));
+
+// monthly spend chart: stacked included (solid) + excluded (faded) + avg line
+const spendSeries = computed<any[]>(() => {
+  const months = spendMonthsAdj.value;
+  const series: any[] = [{ name: t("Spending"), data: months.map((m) => m.total), backgroundColor: "#7C6FF033", borderColor: "#7C6FF0", borderWidth: 1.5, stack: "spend", order: 2 }];
+  if (hasExclusions.value) series.push({ name: t("Excluded"), data: months.map((m) => m.excluded), backgroundColor: "#7C6FF012", borderColor: "#7C6FF04D", borderWidth: 1, stack: "spend", order: 2 });
+  series.push({ name: t("Average"), data: months.map(() => avgAdj.value), type: "line", backgroundColor: "transparent", borderColor: "#E8837E", borderWidth: 1.6, borderDash: [6, 4], pointRadius: 0, pointHoverRadius: 0, fill: false, order: 0 });
+  return series;
+});
+const spendOptions = computed(() => ({
+  colors: ["#7C6FF033", "#7C6FF012", "transparent"],
+  borderColors: ["#7C6FF0", "#7C6FF04D", "#E8837E"],
+  borderWidth: 1.5,
+  ...chartAxis.value,
+  scales: {
+    ...chartAxis.value.scales,
+    x: { ...chartAxis.value.scales.x, stacked: true },
+    y: { ...chartAxis.value.scales.y, stacked: true },
+  },
+}));
+
+// toggles + debounced persistence
+let exclTimer: any = null;
+const persistExclusions = () => {
+  clearTimeout(exclTimer);
+  exclTimer = setTimeout(() => {
+    axios.post("/trends/insights/exclusions", { categoryIds: [...excludedCatIds.value], groupIds: [...excludedGroupIds.value] }).catch(() => {});
+  }, 600);
+};
+const toggleCat = (id: number) => { id = Number(id); if (!id) return; const set = new Set(excludedCatIds.value); set.has(id) ? set.delete(id) : set.add(id); excludedCatIds.value = set; persistExclusions(); };
+const toggleGroup = (id: number) => { id = Number(id); if (!id) return; const set = new Set(excludedGroupIds.value); set.has(id) ? set.delete(id) : set.add(id); excludedGroupIds.value = set; persistExclusions(); };
+const clearExclusions = () => { excludedCatIds.value = new Set(); excludedGroupIds.value = new Set(); persistExclusions(); };
 
 // ---- tabs
 const tabs = [
@@ -289,7 +361,7 @@ const summaryStats = computed<any[]>(() => {
   const tipNet = t("Net cashflow is money in minus money out for the selected period.");
   const tipAvg = t("Average per month over the period.");
   if (activeTab.value === "gastos") {
-    const avg = spendMonths.value.length ? spendMonths.value.reduce((a, m) => a + m.total, 0) / spendMonths.value.length : 0;
+    const avg = avgAdj.value;
     return [
       { label: t("Money out"), tip: t("Total money spent in the selected period."), tone: "error", kind: "money", value: -grandOut.value },
       { label: t("Monthly average"), tip: tipAvg, tone: "body", kind: "money", value: avg },
@@ -358,7 +430,7 @@ const narrative = computed<any[]>(() => {
   if (activeTab.value === "gastos") {
     const c = latestSpend.value?.total ?? 0;
     const p = prevSpend.value?.total ?? 0;
-    const avg = spendMonths.value.length ? spendMonths.value.reduce((s, m) => s + m.total, 0) / spendMonths.value.length : 0;
+    const avg = avgAdj.value;
     const out: any[] = [];
     if (p)
       out.push({ icon: c < p ? "↘" : "↗", title: c < p ? t("Spending is trending down") : t("Spending is going up"), text: t(`You closed {month} at {currency} {amount}, {pct}% {dir} than {prev}.`, { currency: currency.value, month: formatMonth(latestSpend.value.month), amount: money(c).main, pct: Math.abs(pctChange(c, p)).toFixed(0), dir: c < p ? t("less") : t("more"), prev: formatMonth(prevSpend.value.month) }) });
@@ -464,9 +536,23 @@ const chartMeta = computed(() => {
           </div>
 
           <div class="overflow-hidden">
-            <div v-if="activeTab === 'gastos'" key="c-gastos" style="height:360px" class="p-3" role="img" :aria-label="chartMeta.legend">
-              <LogerChart v-if="grandOut" type="bar" :labels="spendMonths.map(m => formatMonth(m.month))" :series="[{ name: $t('Spending'), data: spendMonths.map(m => m.total) }]" :options="catOptions" />
-              <div v-else class="h-full flex items-center justify-center text-sm text-body-1/70">{{ $t('No data for this period.') }}</div>
+            <div v-if="activeTab === 'gastos'" key="c-gastos" class="p-3" role="img" :aria-label="chartMeta.legend">
+              <div v-if="hasExclusions" class="flex flex-wrap items-center gap-x-2 gap-y-1 mb-2 text-[11px]">
+                <span class="text-body-1/80">{{ $t('Average excludes') }}:</span>
+                <span v-for="n in excludedNames" :key="n" class="px-1.5 py-0.5 rounded bg-base-lvl-2 text-body-1/70 line-through decoration-body-1/40">{{ n }}</span>
+                <span class="text-body-1/70">&middot; &minus;{{ currency }} {{ money(excludedPeriodTotal).main }} / {{ $t('period') }}</span>
+                <button type="button" class="text-primary font-medium" @click="clearExclusions">{{ $t('Show all') }}</button>
+              </div>
+              <details class="mb-2 text-xs">
+                <summary class="cursor-pointer text-body-1/80 select-none">{{ $t('Exclude groups from the average') }}</summary>
+                <div class="flex flex-wrap gap-1.5 mt-2">
+                  <button v-for="g in excludableGroups" :key="g.id" type="button" @click="toggleGroup(g.id)" class="px-2 py-1 rounded-full border text-[11px] transition" :class="isGroupExcluded(g.id) ? 'bg-base-lvl-2 text-body-1/50 line-through border-base' : 'bg-base-lvl-3 text-body border-base hover:border-primary/40'">{{ g.name }}</button>
+                </div>
+              </details>
+              <div style="height:308px">
+                <LogerChart v-if="grandOut" type="bar" :labels="spendMonthsAdj.map(m => formatMonth(m.month))" :series="spendSeries" :options="spendOptions" />
+                <div v-else class="h-full flex items-center justify-center text-sm text-body-1/70">{{ $t('No data for this period.') }}</div>
+              </div>
             </div>
             <div v-else-if="activeTab === 'income'" key="c-inc" style="height:360px" class="p-3" role="img" :aria-label="chartMeta.legend">
               <LogerChart v-if="grandIn" type="bar" :labels="incLabels" :series="incSeries" :options="incOptions" />
@@ -535,8 +621,8 @@ const chartMeta = computed(() => {
             </div>
           </div>
           <div style="height:300px" class="mt-3" role="img" :aria-label="$t('By category')"><LogerChart type="bar" :labels="catLabels" :series="catSeries" :options="catOptions" /></div>
-          <div v-if="spendMonths.length > 1" class="mt-3 pt-3 border-t border-base-lvl-2 flex flex-wrap gap-x-4 gap-y-1">
-            <span v-for="(m, i) in spendMonths" :key="i" class="text-xs text-body-1">
+          <div v-if="spendMonthsAdj.length > 1" class="mt-3 pt-3 border-t border-base-lvl-2 flex flex-wrap gap-x-4 gap-y-1">
+            <span v-for="(m, i) in spendMonthsAdj" :key="i" class="text-xs text-body-1">
               <span class="text-body-1/70">{{ formatMonth(m.month) }}</span>
               <span class="font-semibold tabular-nums ml-1">{{ currency }} {{ money(m.total).main }}</span>
             </span>
@@ -566,8 +652,11 @@ const chartMeta = computed(() => {
           <div class="flex items-center justify-end">
             <button v-if="gastoSrc.length > 8" class="min-h-[28px] px-2 text-primary font-medium text-xs" @click="showAllGasto = !showAllGasto">{{ showAllGasto ? $t('Show top 8') : $t('View all') }}</button>
           </div>
-          <div v-for="(r, i) in gastoRows" :key="i" class="grid items-center gap-3 py-2 border-t border-base-lvl-2" style="grid-template-columns:minmax(0, 2fr) minmax(48px, 0.8fr) auto">
-            <component :is="(r.id || r.uncategorized) ? 'a' : (r.isOthers ? 'button' : 'div')" :href="(r.id || r.uncategorized) ? gastoHref(r) : null" type="button" @click="r.isOthers ? (showAllGasto = true) : null" class="text-sm font-medium break-words text-left" :class="[(r.id || r.uncategorized || r.isOthers) ? 'hover:text-primary hover:underline' : '', r.uncategorized ? 'text-error font-semibold' : '', r.isOthers ? 'text-primary' : 'text-body']" :title="r.isOthers ? $t('View all') : r.name">{{ r.name }}<span v-if="r.isOthers" class="ml-1">→</span></component>
+          <div v-for="(r, i) in gastoRows" :key="i" class="grid items-center gap-3 py-2 border-t border-base-lvl-2 transition-opacity" :class="{ 'opacity-40': isRowExcluded(r) }" style="grid-template-columns:minmax(0, 2fr) minmax(48px, 0.8fr) auto">
+            <div class="flex items-center gap-1.5 min-w-0">
+              <button v-if="gastoDim === 'categoria' && r.id" type="button" @click="toggleCat(r.id)" class="shrink-0 w-5 text-body-1/45 hover:text-primary" :title="isRowExcluded(r) ? $t('Include in average') : $t('Exclude from average')" :aria-pressed="isRowExcluded(r)"><i class="fa" :class="isRowExcluded(r) ? 'fa-eye-slash' : 'fa-eye'" /></button>
+              <component :is="(r.id || r.uncategorized) ? 'a' : (r.isOthers ? 'button' : 'div')" :href="(r.id || r.uncategorized) ? gastoHref(r) : null" type="button" @click="r.isOthers ? (showAllGasto = true) : null" class="text-sm font-medium break-words text-left min-w-0" :class="[(r.id || r.uncategorized || r.isOthers) ? 'hover:text-primary hover:underline' : '', r.uncategorized ? 'text-error font-semibold' : '', r.isOthers ? 'text-primary' : 'text-body', isRowExcluded(r) ? 'line-through' : '']" :title="r.isOthers ? $t('View all') : r.name">{{ r.name }}<span v-if="r.isOthers" class="ml-1">→</span></component>
+            </div>
             <div class="flex items-center gap-2 text-xs text-body-1"><span style="min-width:38px">{{ r.pct.toFixed(1) }}%</span><span class="flex-1 h-1 rounded-full bg-base-lvl-2 relative overflow-hidden"><span class="absolute inset-y-0 left-0 rounded-full" :style="{ width: r.w + '%', background: '#E8837E' }"></span></span></div>
             <div class="text-right text-sm font-semibold tabular-nums">{{ currency }} {{ money(r.amount).main }}</div>
           </div>

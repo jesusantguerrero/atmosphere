@@ -6,6 +6,7 @@ use App\Domains\Transaction\Services\CreditCardReportService;
 use App\Domains\Transaction\Services\ReportService;
 use App\Domains\Transaction\Services\TransactionService;
 use App\Http\Controllers\Controller;
+use App\Models\Setting;
 use Carbon\Carbon;
 use Freesgen\Atmosphere\Http\Querify;
 use Illuminate\Http\Request;
@@ -142,6 +143,15 @@ class FinanceTrendController extends Controller
     {
         $teamId = $request->user()->current_team_id;
 
+        // Insights "exclude from average": categories/groups the user hid from
+        // the Spending average & line (e.g. the land purchase or business
+        // hosting) so the baseline reflects real recurring spend. Saved per
+        // team+user as JSON id lists; the chart still shows them, just faded,
+        // and recomputes the average client-side.
+        $insightsSettings = Setting::getByTeam($teamId);
+        $excludedCategoryIds = json_decode($insightsSettings['insights_excluded_category_ids'] ?? '[]', true) ?: [];
+        $excludedGroupIds = json_decode($insightsSettings['insights_excluded_group_ids'] ?? '[]', true) ?: [];
+
         // History length driven by the range toolbar (1M / 3M / 6M / YTD / 1Y).
         // YTD sends a dynamic count (Jan..current month, 1..12), so accept any
         // 1..12 span instead of the old fixed [3, 6, 12] whitelist that silently
@@ -260,6 +270,10 @@ class FinanceTrendController extends Controller
                 'netWorth' => $netWorth,
                 'monthlyFlow' => $monthlyFlow,
                 'creditCards' => $creditCards,
+                'exclusions' => [
+                    'categoryIds' => array_values(array_map('intval', $excludedCategoryIds)),
+                    'groupIds' => array_values(array_map('intval', $excludedGroupIds)),
+                ],
             ],
             'metaData' => [
                 'name' => 'insights',
@@ -274,6 +288,31 @@ class FinanceTrendController extends Controller
                 'hasNetWorthHistory' => $netWorthHistory->isNotEmpty(),
             ],
         ];
+    }
+
+    /**
+     * Persist the Insights "exclude from average" selection (category and group
+     * ids) for the current team+user. The Spending tab recomputes its monthly
+     * average and line without these, while still showing them faded.
+     */
+    public function updateExclusions(Request $request)
+    {
+        $validated = $request->validate([
+            'categoryIds' => ['present', 'array'],
+            'categoryIds.*' => ['integer'],
+            'groupIds' => ['present', 'array'],
+            'groupIds.*' => ['integer'],
+        ]);
+
+        Setting::storeBulk([
+            'insights_excluded_category_ids' => json_encode(array_values(array_map('intval', $validated['categoryIds']))),
+            'insights_excluded_group_ids' => json_encode(array_values(array_map('intval', $validated['groupIds']))),
+        ], [
+            'team_id' => $request->user()->current_team_id,
+            'user_id' => $request->user()->id,
+        ]);
+
+        return response()->json(['success' => true]);
     }
 
     public function category(Request $request)
