@@ -486,7 +486,7 @@ const chartMeta = computed(() => {
           <span class="text-sm font-semibold text-body min-w-[96px] text-center">{{ periodLabel }}</span>
           <button class="min-h-[36px] min-w-[36px] rounded-md text-body-1 hover:text-body hover:bg-base-lvl-3 focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-30 disabled:pointer-events-none" :disabled="isCurrentPeriod" :aria-label="$t('Next period')" @click="shiftPeriod(1)">›</button>
         </div>
-        <div class="flex gap-1" :aria-label="$t('Selected period')">
+        <div class="hidden lg:flex gap-1" :aria-label="$t('Selected period')">
           <span v-if="range === 'Custom'" class="rounded-md bg-base-lvl-3 px-3 py-2 text-sm font-semibold text-body">Personalizado</span>
           <button v-for="r in ['1M','3M','6M','YTD','1Y']" :key="r" class="min-h-[36px] px-3 text-sm rounded-md focus-visible:ring-2 focus-visible:ring-primary" :class="range === r ? 'bg-base-lvl-3 text-body font-semibold' : 'text-body-1 hover:text-body'" :aria-pressed="range === r" @click="setRange(r)">{{ r }}</button>
         </div>
@@ -497,12 +497,12 @@ const chartMeta = computed(() => {
     <div class="px-4 pb-20 mx-auto pt-32 max-w-6xl">
       <p class="pt-4 text-xs text-body-1">{{ activeTab === 'patrimonio' ? $t('Balance as of {date}', { date: balanceDate }) : activeTab === 'cards' ? $t('Cycle amounts below; category expenses use the selected period.') : $t('Accumulated during the selected period') }}</p>
       <!-- summary: net cashflow = money in − money out, on the filters line -->
-      <div class="flex flex-wrap items-start justify-between gap-6 mt-5 mb-8 pb-6 border-b border-base-lvl-2">
-        <div class="flex flex-wrap gap-8 sm:gap-14">
-          <div v-for="(st, i) in summaryStats" :key="i">
-            <div class="text-xs text-body-1/70 mb-1 w-max" :class="st.tip ? 'cursor-help border-b border-dotted border-body-1/30' : ''" :title="st.tip">{{ st.label }}</div>
-            <div class="text-3xl font-extrabold tabular-nums leading-none" :class="toneClass(st.tone)">
-              <template v-if="st.kind === 'money'"><span>{{ money(st.value).sign }}{{ currency }} {{ money(st.value).main }}</span><span class="text-base opacity-40">.{{ money(st.value).cents }}</span></template>
+      <div class="flex flex-wrap items-start justify-between gap-4 mt-3 mb-5 pb-4 sm:gap-6 sm:mt-5 sm:mb-8 sm:pb-6 border-b border-base-lvl-2">
+        <div class="grid grid-cols-2 gap-x-6 gap-y-3 w-full sm:w-auto sm:flex sm:flex-wrap sm:gap-14">
+          <div v-for="(st, i) in summaryStats" :key="i" class="min-w-0">
+            <div class="text-[11px] sm:text-xs text-body-1/70 mb-0.5 sm:mb-1 w-max" :class="st.tip ? 'cursor-help border-b border-dotted border-body-1/30' : ''" :title="st.tip">{{ st.label }}</div>
+            <div class="text-xl sm:text-3xl font-extrabold tabular-nums leading-none" :class="toneClass(st.tone)">
+              <template v-if="st.kind === 'money'"><span>{{ money(st.value).sign }}{{ currency }} {{ money(st.value).main }}</span><span class="text-xs sm:text-base opacity-40">.{{ money(st.value).cents }}</span></template>
               <template v-else>{{ st.value }}</template>
             </div>
           </div>
@@ -511,9 +511,13 @@ const chartMeta = computed(() => {
       </div>
 
       <!-- body: left rail + chart -->
+      <!-- Tabs: on mobile a row above the body; desktop keeps them in the left rail. -->
+      <div class="flex flex-wrap gap-1 mb-4 p-1 rounded-lg bg-base-lvl-1 border border-base w-max lg:hidden">
+        <button v-for="tab in tabs" :key="'m-' + tab.id" class="px-3 py-2 text-sm font-medium rounded-md transition" :class="activeTab === tab.id ? 'bg-base-lvl-3 text-body' : 'text-body-1/75 hover:text-body-1'" :aria-pressed="activeTab === tab.id" @click="activeTab = tab.id">{{ $t(tab.label) }}</button>
+      </div>
       <div class="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-8">
-        <div>
-          <div class="flex flex-wrap gap-1 mb-6 p-1 rounded-lg bg-base-lvl-1 border border-base w-max">
+        <div class="order-2 lg:order-1">
+          <div class="hidden lg:flex flex-wrap gap-1 mb-6 p-1 rounded-lg bg-base-lvl-1 border border-base w-max">
             <button v-for="tab in tabs" :key="tab.id" class="px-3 py-2 text-sm font-medium rounded-md transition" :class="activeTab === tab.id ? 'bg-base-lvl-3 text-body' : 'text-body-1/75 hover:text-body-1'" :aria-pressed="activeTab === tab.id" @click="activeTab = tab.id">{{ $t(tab.label) }}</button>
           </div>
 
@@ -529,7 +533,7 @@ const chartMeta = computed(() => {
         </div>
 
         <!-- main chart -->
-        <div class="min-w-0">
+        <div class="min-w-0 order-1 lg:order-2">
           <div class="flex items-baseline justify-between mb-3">
             <span class="flex items-center gap-2 text-xs text-body-1"><span v-if="chartMeta.swatch" class="w-2.5 h-2.5 rounded-sm" :style="{ background: chartMeta.swatch }"></span>{{ chartMeta.legend }}</span>
             <span class="text-[11px] text-body-1/80">{{ chartMeta.right }}</span>
@@ -566,6 +570,10 @@ const chartMeta = computed(() => {
               <ChartNetWorth v-if="metaData?.hasNetWorthHistory !== false" :data="nwChrono" type="bar" hide-headers />
               <div v-else class="h-72 flex items-center justify-center text-sm text-body-1/70">{{ $t('No data for this period.') }}</div>
             </div>
+          </div>
+          <!-- Range selector below the chart on mobile (Strava-style); desktop keeps it in the header. -->
+          <div class="flex gap-1.5 mt-4 lg:hidden" :aria-label="$t('Selected period')">
+            <button v-for="r in ['1M','3M','6M','YTD','1Y']" :key="'m-' + r" type="button" class="flex-1 min-h-[40px] text-sm font-semibold rounded-lg focus-visible:ring-2 focus-visible:ring-primary" :class="range === r ? 'bg-base-lvl-3 text-body border border-base' : 'text-body-1 hover:text-body'" :aria-pressed="range === r" @click="setRange(r)">{{ r }}</button>
           </div>
         </div>
       </div>
@@ -621,7 +629,7 @@ const chartMeta = computed(() => {
             </div>
           </div>
           <div style="height:300px" class="mt-3" role="img" :aria-label="$t('By category')"><LogerChart type="bar" :labels="catLabels" :series="catSeries" :options="catOptions" /></div>
-          <div v-if="spendMonthsAdj.length > 1" class="mt-3 pt-3 border-t border-base-lvl-2 flex flex-wrap gap-x-4 gap-y-1">
+          <div v-if="spendMonthsAdj.length > 1" class="mt-3 pt-3 border-t border-base-lvl-2 hidden sm:flex flex-wrap gap-x-4 gap-y-1">
             <span v-for="(m, i) in spendMonthsAdj" :key="i" class="text-xs text-body-1">
               <span class="text-body-1/70">{{ formatMonth(m.month) }}</span>
               <span class="font-semibold tabular-nums ml-1">{{ currency }} {{ money(m.total).main }}</span>
