@@ -108,4 +108,26 @@ class ShoppingListReviewTest extends TestCase
         $this->assertSame([], $service->status($plan)['item_details']);
         $this->assertDatabaseHas('plan_items', ['id' => $item->id, 'state' => 'pending']);
     }
+
+    public function test_guest_review_revision_increases_on_every_mark_change_so_clients_can_drop_stale_snapshots(): void
+    {
+        Event::fake([ShoppingListItemUpdated::class]);
+        $user = User::factory()->withPersonalTeam()->create();
+        $plan = app(PlanService::class)->createPlanBoard($user->currentTeam, PlanTypes::SHOPPING_LIST, 'Compra');
+        $plan->forceFill(['share_token' => (string) Str::uuid()])->save();
+        $stage = $plan->stages()->first();
+        $milk = PlanItem::create(['plan_id' => $plan->id, 'team_id' => $plan->team_id, 'user_id' => $plan->user_id, 'stage_id' => $stage->id, 'title' => 'Leche', 'state' => 'pending', 'order' => 1]);
+        $bread = PlanItem::create(['plan_id' => $plan->id, 'team_id' => $plan->team_id, 'user_id' => $plan->user_id, 'stage_id' => $stage->id, 'title' => 'Pan', 'state' => 'pending', 'order' => 2]);
+        $base = '/shared/list/'.$plan->share_token;
+
+        $this->getJson($base.'/review')->assertJsonPath('plan.review.reviewed_revision', 0);
+        $this->postJson($base.'/toggle/'.$milk->id, ['state' => 'skip'])->assertJsonPath('review.reviewed_revision', 1);
+        $this->postJson($base.'/toggle/'.$bread->id, ['state' => 'pending'])->assertJsonPath('review.reviewed_revision', 2)->assertJsonPath('review.reviewed_ids', [$milk->id, $bread->id]);
+        $this->postJson($base.'/toggle/'.$milk->id, ['state' => 'pending', 'reviewed' => false])->assertJsonPath('review.reviewed_revision', 3)->assertJsonPath('review.reviewed_ids', [$bread->id]);
+        $this->postJson($base.'/reset')->assertOk();
+        $status = app(ShoppingListReviewService::class)->status($plan);
+        $this->assertSame([], $status['reviewed_ids']);
+        $this->assertSame(4, $status['reviewed_revision']);
+        $this->getJson($base.'/review')->assertJsonPath('plan.review.reviewed_revision', 4);
+    }
 }

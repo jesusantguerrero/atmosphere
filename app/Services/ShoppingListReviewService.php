@@ -15,6 +15,8 @@ class ShoppingListReviewService
 {
     private const FIELD = 'shopping_review';
 
+    private const REVISION_KEY = '_revision';
+
     private function version(Plan $plan): string
     {
         $items = PlanItem::query()->without(['fields', 'checklist'])->where('team_id', $plan->team_id)->where('plan_id', $plan->id)->orderBy('id')->get(['id', 'stage_id', 'title', 'state']);
@@ -26,6 +28,7 @@ class ShoppingListReviewService
     {
         $value = FieldValue::query()->where(['team_id' => $plan->team_id, 'entity_type' => Plan::class, 'entity_id' => $plan->id, 'resource' => 'plan', 'field_name' => self::FIELD])->value('value');
         $review = $value ? json_decode($value, true) : [];
+        $marks = $this->marks($plan);
         $currentVersion = $this->version($plan);
 
         return [
@@ -34,7 +37,8 @@ class ShoppingListReviewService
             'note' => $review['note'] ?? '', 'reviewed_at' => $review['reviewed_at'] ?? null,
             'completed_at' => $review['completed_at'] ?? null, 'version' => $review['version'] ?? null,
             'current_version' => $currentVersion,
-            'reviewed_ids' => $this->reviewedIds($plan),
+            'reviewed_ids' => $this->reviewedIds($plan, $marks),
+            'reviewed_revision' => (int) ($marks[self::REVISION_KEY] ?? 0),
             'item_details' => $this->itemDetails($plan),
         ];
     }
@@ -59,9 +63,9 @@ class ShoppingListReviewService
         return $value ? (json_decode($value, true) ?? []) : [];
     }
 
-    public function reviewedIds(Plan $plan): array
+    public function reviewedIds(Plan $plan, ?array $marks = null): array
     {
-        $marks = $this->marks($plan);
+        $marks ??= $this->marks($plan);
 
         return PlanItem::query()->without(['fields', 'checklist'])->where('team_id', $plan->team_id)->where('plan_id', $plan->id)->get()->filter(fn (PlanItem $item) => ($marks[$item->id] ?? null) === $this->itemSignature($item))->pluck('id')->values()->all();
     }
@@ -93,7 +97,7 @@ class ShoppingListReviewService
             Plan::query()->whereKey($plan->id)->lockForUpdate()->firstOrFail();
             $marks = $this->marks($plan);
             unset($marks[$item->id]);
-            $this->store($plan, $marks, 'shopping_reviewed_items');
+            $this->storeMarks($plan, $marks);
         });
     }
 
@@ -103,13 +107,30 @@ class ShoppingListReviewService
             Plan::query()->whereKey($plan->id)->lockForUpdate()->firstOrFail();
             $marks = $this->marks($plan);
             $marks[$item->id] = $this->itemSignature($item);
-            $this->store($plan, $marks, 'shopping_reviewed_items');
+            $this->storeMarks($plan, $marks);
         });
     }
 
     public function clearReviewed(Plan $plan): void
     {
-        $this->store($plan, [], 'shopping_reviewed_items');
+        $plan->getConnection()->transaction(function () use ($plan): void {
+            Plan::query()->whereKey($plan->id)->lockForUpdate()->firstOrFail();
+            $this->storeMarks($plan, [self::REVISION_KEY => $this->marks($plan)[self::REVISION_KEY] ?? 0]);
+        });
+    }
+
+    /**
+     * Persist the reviewed marks with a bumped revision. Callers must hold the
+     * plan lock. Clients receive every snapshot (toggle responses, Mercure
+     * echoes, focus refreshes) out of order, and use the revision to drop
+     * snapshots older than the one they already applied.
+     *
+     * @param  array<int|string, mixed>  $marks
+     */
+    private function storeMarks(Plan $plan, array $marks): void
+    {
+        $marks[self::REVISION_KEY] = (int) ($marks[self::REVISION_KEY] ?? 0) + 1;
+        $this->store($plan, $marks, 'shopping_reviewed_items');
     }
 
     private function sessionField(Plan $plan, string $name): array
