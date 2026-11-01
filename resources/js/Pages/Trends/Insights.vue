@@ -425,12 +425,12 @@ const chartMeta = computed(() => {
     <div class="px-4 pb-20 mx-auto pt-32 max-w-6xl">
       <p class="pt-4 text-xs text-body-1">{{ activeTab === 'patrimonio' ? $t('Balance as of {date}', { date: balanceDate }) : activeTab === 'cards' ? $t('Cycle amounts below; category expenses use the selected period.') : $t('Accumulated during the selected period') }}</p>
       <!-- summary: net cashflow = money in − money out, on the filters line -->
-      <div class="flex flex-wrap items-start justify-between gap-6 mt-5 mb-8 pb-6 border-b border-base-lvl-2">
-        <div class="flex flex-wrap gap-8 sm:gap-14">
-          <div v-for="(st, i) in summaryStats" :key="i">
-            <div class="text-xs text-body-1/70 mb-1 w-max" :class="st.tip ? 'cursor-help border-b border-dotted border-body-1/30' : ''" :title="st.tip">{{ st.label }}</div>
-            <div class="text-3xl font-extrabold tabular-nums leading-none" :class="toneClass(st.tone)">
-              <template v-if="st.kind === 'money'"><span>{{ money(st.value).sign }}{{ currency }} {{ money(st.value).main }}</span><span class="text-base opacity-40">.{{ money(st.value).cents }}</span></template>
+      <div class="flex flex-wrap items-start justify-between gap-4 mt-3 mb-5 pb-4 sm:gap-6 sm:mt-5 sm:mb-8 sm:pb-6 border-b border-base-lvl-2">
+        <div class="grid grid-cols-2 gap-x-6 gap-y-3 w-full sm:w-auto sm:flex sm:flex-wrap sm:gap-14">
+          <div v-for="(st, i) in summaryStats" :key="i" class="min-w-0">
+            <div class="text-[11px] sm:text-xs text-body-1/70 mb-0.5 sm:mb-1 w-max" :class="st.tip ? 'cursor-help border-b border-dotted border-body-1/30' : ''" :title="st.tip">{{ st.label }}</div>
+            <div class="text-xl sm:text-3xl font-extrabold tabular-nums leading-none" :class="toneClass(st.tone)">
+              <template v-if="st.kind === 'money'"><span>{{ money(st.value).sign }}{{ currency }} {{ money(st.value).main }}</span><span class="text-xs sm:text-base opacity-40">.{{ money(st.value).cents }}</span></template>
               <template v-else>{{ st.value }}</template>
             </div>
           </div>
