@@ -20,6 +20,7 @@ use App\Domains\Integration\Actions\UniversalBankParser;
 use App\Domains\Integration\Services\UniversalBankAutomationService;
 use App\Domains\Journal\Actions\AccountCreate;
 use App\Domains\Journal\Actions\AccountUpdate;
+use App\Domains\Journal\Actions\TransactionCreate;
 use App\Domains\Journal\Actions\TransactionDelete;
 use App\Domains\Journal\Actions\TransactionUpdate;
 use App\Domains\LogerProfile\Models\LogerProfile;
@@ -2292,11 +2293,35 @@ class MobileController extends Controller
             'note' => ['nullable', 'string', 'max:2000'],
             // The store the trip was at; with its amount and date it is what ties the visit to the card charge.
             'payee_id' => ['nullable', 'integer', Rule::exists('payees', 'id')->where('team_id', $plan->team_id)],
+            // Cash payment: create a WITHDRAW transaction instead of waiting for a card match.
+            'account_id' => ['nullable', 'integer', Rule::exists('accounts', 'id')->where('team_id', $plan->team_id)],
+            'category_id' => ['nullable', 'integer', Rule::exists('categories', 'id')->where('team_id', $plan->team_id)],
         ]);
 
         $visit = $reviews->finishSession($plan, $validated);
-        // The charge may already be in (a bank import, or paid before saving the trip).
-        app(ShoppingVisitLinker::class)->linkVisit($plan, $visit);
+
+        if (! empty($validated['account_id'])) {
+            $transaction = app(TransactionCreate::class)->create($request->user(), [
+                'account_id' => $validated['account_id'],
+                'counter_account_id' => null,
+                'date' => now()->format('Y-m-d'),
+                'description' => $plan->name,
+                'total' => $validated['total'],
+                'currency_code' => $validated['currency'],
+                'direction' => Transaction::DIRECTION_CREDIT,
+                'status' => Transaction::STATUS_VERIFIED,
+                'category_id' => $validated['category_id'] ?? null,
+                'payee_id' => $validated['payee_id'] ?? null,
+            ]);
+
+            if ($transaction) {
+                $reviews->linkVisit($plan, $visit['id'], $transaction->id);
+            }
+        } else {
+            // The charge may already be in (a bank import, or paid before saving the trip).
+            app(ShoppingVisitLinker::class)->linkVisit($plan, $visit);
+        }
+
         $visit = $reviews->decorate($plan->team_id, [$reviews->visit($plan, $visit['id']) ?? $visit])[0];
 
         return response()->json([
