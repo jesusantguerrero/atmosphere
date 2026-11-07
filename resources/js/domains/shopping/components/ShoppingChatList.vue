@@ -41,6 +41,7 @@ interface Review {
 
     current_version: string;
     reviewed_ids?: number[];
+    reviewed_revision?: number;
     item_details?: Record<string, { quantity: string; note: string }>;
 }
 
@@ -233,6 +234,40 @@ const sending = ref(false);
 
 const review = ref<Review | null>(props.plan.review ?? null);
 
+// Review snapshots arrive from toggle responses, Mercure echoes and focus
+// refreshes in no guaranteed order — on a slow connection an older one can
+// land last. Drop anything older than what we already applied, and keep marks
+// whose save is still in flight on top of whatever arrives.
+const pendingMarks = new Map<number, boolean>();
+
+const isStaleReview = (next?: Review | null) =>
+    next?.reviewed_revision !== undefined &&
+    next.reviewed_revision < (review.value?.reviewed_revision ?? 0);
+
+const withPendingMarks = (next: Review): Review => {
+    if (!pendingMarks.size) return next;
+    const ids = new Set(next.reviewed_ids ?? []);
+    pendingMarks.forEach((reviewed, id) =>
+        reviewed ? ids.add(id) : ids.delete(id),
+    );
+    return { ...next, reviewed_ids: [...ids] };
+};
+
+const acceptReview = (next?: Review | null) => {
+    if (!next || isStaleReview(next)) return;
+    review.value = withPendingMarks(next);
+};
+
+const setLocalMark = (id: number, reviewed: boolean) => {
+    const ids = new Set(review.value?.reviewed_ids ?? []);
+    if (reviewed) ids.add(id);
+    else ids.delete(id);
+    review.value = {
+        ...(review.value ?? ({} as Review)),
+        reviewed_ids: [...ids],
+    };
+};
+
 const reviewNote = ref(
     props.plan.review?.status === "completed"
         ? ""
@@ -419,7 +454,7 @@ const undoMark = async () => {
             state: mark.state,
             is_done: mark.state === "buy",
         });
-        if (data.review) review.value = data.review;
+        acceptReview(data.review);
         lastMark.value = null;
     } catch {
         undoError.value = "No se pudo deshacer. Inténtalo otra vez.";
@@ -492,9 +527,12 @@ const refreshReview = async () => {
     try {
         const { data } = await axios.get(props.endpoints.review);
 
+        if (isStaleReview(data.plan.review) || updatingItems.value.length)
+            return;
+
         stages.value = data.plan.stages;
 
-        review.value = data.plan.review;
+        acceptReview(data.plan.review);
     } catch {
         reviewError.value = "No se pudo actualizar. Inténtalo otra vez.";
     } finally {
@@ -533,7 +571,7 @@ const submitReview = async () => {
             requestConfig(),
         );
 
-        review.value = data.review;
+        acceptReview(data.review);
 
         reviewDialog.value?.close();
         if (props.inventoryMode)
@@ -787,6 +825,7 @@ const desiredStates = new Map<number, Item["state"]>();
 
 const cycleItem = async (item: Item, availability?: boolean) => {
     const previous = findItem(item.id)?.state ?? item.state;
+    const wasReviewed = isReviewed(item);
     if (props.inventoryMode) {
         lastMark.value = {
             id: item.id,
@@ -815,6 +854,11 @@ const cycleItem = async (item: Item, availability?: boolean) => {
 
     applyItemUpdate({ id: item.id, state: next, is_done: next === "buy" });
 
+    if (props.inventoryMode) {
+        pendingMarks.set(item.id, true);
+        setLocalMark(item.id, true);
+    }
+
     if (updatingItems.value.includes(item.id)) return;
 
     updatingItems.value.push(item.id);
@@ -822,6 +866,8 @@ const cycleItem = async (item: Item, availability?: boolean) => {
     saveError.value = "";
 
     let confirmed = previous;
+
+    let confirmedReviewed = wasReviewed;
 
     try {
         while (desiredStates.has(item.id)) {
@@ -838,7 +884,7 @@ const cycleItem = async (item: Item, availability?: boolean) => {
                     requestConfig(),
                 );
 
-                if (response?.data?.review) review.value = response.data.review;
+                acceptReview(response?.data?.review);
 
                 if (
                     !props.inventoryMode &&
@@ -847,6 +893,7 @@ const cycleItem = async (item: Item, availability?: boolean) => {
                 )
                     shoppingSession.value = response.data.session;
                 confirmed = target;
+                confirmedReviewed = props.inventoryMode || confirmedReviewed;
             } catch {
                 if (!desiredStates.has(item.id)) {
                     applyItemUpdate({
@@ -856,6 +903,11 @@ const cycleItem = async (item: Item, availability?: boolean) => {
 
                         is_done: confirmed === "buy",
                     });
+
+                    if (props.inventoryMode) {
+                        pendingMarks.delete(item.id);
+                        setLocalMark(item.id, confirmedReviewed);
+                    }
                 }
 
                 saveError.value =
@@ -863,6 +915,7 @@ const cycleItem = async (item: Item, availability?: boolean) => {
             }
         }
     } finally {
+        pendingMarks.delete(item.id);
         updatingItems.value = updatingItems.value.filter(
             (id) => id !== item.id,
         );
@@ -902,7 +955,7 @@ const submitComposer = async () => {
             requestConfig(),
         );
 
-        if (response.data.review) review.value = response.data.review;
+        acceptReview(response.data.review);
 
         const created: Item = {
             id: response.data.id,
@@ -960,7 +1013,7 @@ const removeItem = async (item: Item) => {
             requestConfig(),
         );
 
-        if (response.data.review) review.value = response.data.review;
+        acceptReview(response.data.review);
     } catch {
         stages.value = snapshot;
     }
@@ -980,7 +1033,7 @@ const reset = async () => {
         requestConfig(),
     );
 
-    if (response.data.review) review.value = response.data.review;
+    acceptReview(response.data.review);
 
     for (const stage of stages.value) {
         for (const item of stage.items) {
@@ -1129,7 +1182,9 @@ const wireMercure = () => {
         try {
             const payload = JSON.parse(event.data);
 
-            if (payload.review) review.value = payload.review;
+            const staleEvent = isStaleReview(payload.review);
+
+            acceptReview(payload.review);
 
             if (
                 payload.action === "reset" ||
@@ -1171,6 +1226,11 @@ const wireMercure = () => {
             }
 
             if (payload.action === "updated" && payload.item) {
+                if (
+                    staleEvent ||
+                    updatingItems.value.includes(payload.item.id)
+                )
+                    return;
                 const currentStage = stages.value.find((stage) =>
                     stage.items.some((item) => item.id === payload.item.id),
                 );

@@ -69,4 +69,41 @@ JS;
         $process->setInput($script)->setTimeout(30)->run();
         $this->assertTrue($process->isSuccessful(), $process->getOutput().$process->getErrorOutput());
     }
+
+    public function test_guest_marks_survive_slow_out_of_order_and_stale_review_snapshots(): void
+    {
+        $script = <<<'JS'
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),ts=require('typescript'),vue=require('vue');
+const {parse}=require('@vue/compiler-sfc');
+const descriptor=parse(fs.readFileSync('resources/js/domains/shopping/components/ShoppingChatList.vue','utf8')).descriptor;
+const source=descriptor.scriptSetup.content.replace(/^import[\s\S]*?from\s+['"][^'"]+['"];\r?\n/gm,'');
+const pending=[];
+const props={inventoryMode:true,plan:{name:'Diana',review:{reviewed_ids:[],reviewed_revision:0},stages:[{id:1,name:'Lácteos',items:[{id:1,title:'Leche',state:'pending',is_done:false,order:1},{id:2,title:'Queso',state:'pending',is_done:false,order:2},{id:3,title:'Yogurt',state:'pending',is_done:false,order:3}]}]},endpoints:{cycle:id=>`/toggle/${id}`,add:'/add',reset:'/reset'}};
+const context={...vue,defineProps:()=>vue.reactive(props),defineEmits:()=>()=>{},useI18n:()=>({t:value=>value}),usePage:()=>({props:{accounts:[],categories:[]}}),onMounted:()=>{},onBeforeUnmount:()=>{},axios:{post:(url,data)=>new Promise((resolve,reject)=>pending.push({url,data,resolve,reject}))}};
+vm.createContext(context);vm.runInContext(ts.transpile(source+'\nglobalThis.list={allItems,cycleItem,review,isReviewed,acceptReview,saveError,updatingItems};',{target:ts.ScriptTarget.ES2020}),context);
+const l=context.list,item=id=>l.allItems.value.find(i=>i.id===id),reviewed=id=>l.isReviewed(item(id));
+const settle=()=>new Promise(resolve=>setImmediate(resolve));
+(async()=>{
+ const milk=l.cycleItem(item(1),true);
+ assert.equal(reviewed(1),true,'mark shows immediately, before the slow response');
+ const cheese=l.cycleItem(item(2),false);
+ assert.equal(reviewed(1),true);assert.equal(reviewed(2),true);
+ pending[1].resolve({data:{id:2,state:'pending',review:{reviewed_ids:[2],reviewed_revision:1}}});await settle();
+ assert.equal(reviewed(1),true,'a snapshot taken before the first tap saved must not unselect it');
+ pending[0].resolve({data:{id:1,state:'skip',review:{reviewed_ids:[1,2],reviewed_revision:2}}});await Promise.all([milk,cheese]);
+ assert.equal(reviewed(1),true);assert.equal(reviewed(2),true);
+ l.acceptReview({reviewed_ids:[2],reviewed_revision:1});
+ assert.equal(reviewed(1),true,'late Mercure echo of an older revision is dropped');assert.equal(l.review.value.reviewed_revision,2);
+ l.acceptReview({reviewed_ids:[1],reviewed_revision:3});
+ assert.equal(reviewed(2),false,'newer snapshots from other devices still apply');
+ const yogurt=l.cycleItem(item(3),true);assert.equal(reviewed(3),true);
+ pending[2].reject(new Error('offline'));await yogurt;
+ assert.equal(reviewed(3),false,'failed save reverts the optimistic mark');assert.equal(item(3).state,'pending');assert.ok(l.saveError.value);assert.equal(l.updatingItems.value.length,0);
+ assert.equal(reviewed(1),true);
+})().catch(error=>{console.error(error);process.exitCode=1;});
+JS;
+        $process = new Process(['node'], dirname(__DIR__, 2));
+        $process->setInput($script)->setTimeout(30)->run();
+        $this->assertTrue($process->isSuccessful(), $process->getOutput().$process->getErrorOutput());
+    }
 }
