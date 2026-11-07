@@ -76,6 +76,7 @@ class UniversalBankParser implements AutomationActionContract
             $bankCode = self::detectBank($automation, $from, $subject);
 
             if (! $bankCode) {
+                echo "\n  [bank] UNKNOWN sender · from: {$from} · subject: {$subject}";
                 Log::warning('Email from unknown bank received', [
                     'automation_id' => $automation->id,
                     'from' => $from,
@@ -84,6 +85,8 @@ class UniversalBankParser implements AutomationActionContract
 
                 return null; // Skip this email
             }
+
+            echo "\n  [bank] detected: {$bankCode} · from: {$from} · subject: {$subject}";
 
             // Get the bank-specific handler (which routes to alert/notification parsers)
             $bankHandler = self::getBankHandler($bankCode);
@@ -94,6 +97,9 @@ class UniversalBankParser implements AutomationActionContract
 
             // Log successful parsing
             if ($result) {
+                $parsedAmount = is_array($result) ? ($result['amount'] ?? 'n/a') : 'n/a';
+                $parsedPayee = is_array($result) ? ($result['payee'] ?? '') : '';
+                echo "\n  [bank] {$bankCode} → parsed · amount: {$parsedAmount} · payee: {$parsedPayee}";
                 Log::info('Bank email parsed successfully', [
                     'automation_id' => $automation->id,
                     'bank_code' => $bankCode,
@@ -102,6 +108,8 @@ class UniversalBankParser implements AutomationActionContract
 
                 return $result; // Already an array
             }
+
+            echo "\n  [bank] {$bankCode} → NO transaction (parser returned null)";
 
             return null;
 
