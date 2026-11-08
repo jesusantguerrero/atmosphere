@@ -27,9 +27,16 @@ module.exports = {
         // and win over `text-body`, painting text with the app background —
         // black-on-black in dark mode. Drop `base` from text colors only; it
         // stays available for bg/border/divide/ring.
+        // Status colors as text use their -ink variant (see app.css): the fill
+        // values are too light to read as text on light surfaces.
         textColor: ({ theme }) => {
             const { base, ...colors } = theme('colors');
-            return colors;
+            return {
+                ...colors,
+                success: 'rgb(var(--c-success-ink) / <alpha-value>)',
+                warning: 'rgb(var(--c-warning-ink) / <alpha-value>)',
+                info: 'rgb(var(--c-info-ink) / <alpha-value>)',
+            };
         },
         extend: {
             fontFamily: {
