@@ -380,9 +380,9 @@ const dismiss = (payment: any) => {
 <style scoped>
 /* Tokens from the "Qué necesita tu atención hoy" spec (light / dark). */
 .attention-card {
-    --c-card: #ffffff;
-    --c-line: #e6e8ec;
-    --c-ink: #111827;
+    --c-card: rgb(var(--c-base-lvl-3));
+    --c-line: #e6e6e3;
+    --c-ink: rgb(var(--c-body));
     --c-mut: #6a707a;
     --c-strip: #fbfbfc;
     --c-hover: rgba(0, 0, 0, 0.015);
@@ -407,11 +407,11 @@ const dismiss = (payment: any) => {
 
 /* Whole selector inside :global() — `:global(.dark) .attention-card` compiles to just `.dark`. */
 :global(.dark .attention-card) {
-    --c-card: #191e27;
-    --c-line: #242b38;
-    --c-ink: #e7eaf0;
-    --c-mut: #9ca3af;
-    --c-strip: #1b2028;
+    --c-card: rgb(var(--c-base-lvl-3));
+    --c-line: rgb(var(--c-border));
+    --c-ink: rgb(var(--c-body));
+    --c-mut: rgb(var(--c-body-1));
+    --c-strip: rgb(var(--c-base-lvl-2));
     --c-hover: rgba(255, 255, 255, 0.02);
     --c-shadow: none;
     --c-btn: #e11d48;

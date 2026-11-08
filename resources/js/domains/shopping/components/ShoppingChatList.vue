@@ -2050,7 +2050,7 @@ onBeforeUnmount(() => {
                                     :class="
                                         isReviewed(item) &&
                                         item.state === 'pending'
-                                            ? 'border-slate-500 bg-slate-100 text-slate-900 dark:border-slate-400 dark:bg-slate-800 dark:text-slate-100'
+                                            ? 'border-slate-500 bg-slate-100 text-slate-900 dark:border-neutral-400 dark:bg-neutral-800 dark:text-neutral-100'
                                             : 'border-base text-body-1/80'
                                     "
                                     :aria-pressed="
