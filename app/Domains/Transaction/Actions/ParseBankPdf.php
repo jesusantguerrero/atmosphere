@@ -35,9 +35,43 @@ class ParseBankPdf
             fn (string $line) => $line !== '' && ! self::isHeaderOrFooter($line),
         ));
 
+        if (preg_match('/Fecha\tRef\.\tDetalles/', $text)) {
+            return self::monthlyStatementRows($lines, $text);
+        }
+
         return str_contains($text, 'Tarjetas de crédito')
             ? self::creditCardRows($lines)
             : self::accountRows($lines);
+    }
+
+    /**
+     * Monthly «Estado de cuenta»: `dd/mm/yyyy \t ref \t details \t debit \t credit \t balance`,
+     * plain numbers; the account currency is printed once in the header («Moneda»).
+     *
+     * @param  list<string>  $lines
+     * @return array<int, array{date: string, reference: string, description: string, debit: float, credit: float, balance: float, currency: string}>
+     */
+    private static function monthlyStatementRows(array $lines, string $text): array
+    {
+        $currency = preg_match('/Moneda\s*\n\s*(RD|US)\$/', $text, $match) ? self::currency($match[1]) : 'DOP';
+        $number = '(-?[\d,]+\.\d{2})';
+        $transactions = [];
+
+        foreach ($lines as $line) {
+            if (preg_match("/^(\d{2}\/\d{2}\/\d{4})\t(\d+)\t(.+?)\t{$number}\t{$number}\t{$number}$/", $line, $row)) {
+                $transactions[] = [
+                    'date' => self::convertDate($row[1]),
+                    'reference' => $row[2],
+                    'description' => trim($row[3]),
+                    'debit' => self::parseAmount($row[4]),
+                    'credit' => self::parseAmount($row[5]),
+                    'balance' => self::parseAmount($row[6]),
+                    'currency' => $currency,
+                ];
+            }
+        }
+
+        return $transactions;
     }
 
     /**

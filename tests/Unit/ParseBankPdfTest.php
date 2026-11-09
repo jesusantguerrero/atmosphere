@@ -63,6 +63,22 @@ class ParseBankPdfTest extends TestCase
         $this->assertSame(['NETFLIX.COM', 15.49, 'USD'], [$rows[4]['description'], $rows[4]['debit'], $rows[4]['currency']]);
     }
 
+    public function test_monthly_statement_reads_the_table_and_the_header_currency(): void
+    {
+        $text = "Documento emitido por el Banco Múltiple BHD S.A.\nNúmero de cuenta\nXXXXXXX-004-5\nMoneda\nUS$\nFecha de corte\n31/07/2026\n"
+            ."Fecha\tRef.\tDetalles\tDébitos\tCréditos\tBalance\n"
+            ."Balance inicial: 01/07/2026 5,393.41\n"
+            ."01/07/2026\t85624\tCompra Divisas Ref. 2600588571\t2,500.00\t0.00\t2,893.41\n"
+            ."06/07/2026\t1414233\tCR TR INTL: EMPRESA, INC. USD TRA\t0.00\t3,491.25\t6,384.66\n"
+            ."0 CKS\t6 DEBITOS\t3,884.68\n";
+
+        $rows = ParseBankPdf::parseText($text);
+
+        $this->assertCount(2, $rows);
+        $this->assertSame(['date' => '2026-07-01', 'reference' => '85624', 'description' => 'Compra Divisas Ref. 2600588571', 'debit' => 2500.0, 'credit' => 0.0, 'balance' => 2893.41, 'currency' => 'USD'], $rows[0]);
+        $this->assertSame(3491.25, $rows[1]['credit']);
+    }
+
     public function test_text_without_movements_gives_nothing(): void
     {
         $this->assertSame([], ParseBankPdf::parseText("Detalle de movimientos | Cuenta de ahorros\nPágina 1/1\n"));
