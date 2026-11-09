@@ -58,7 +58,7 @@ services:
   mercure:
     image: dunglas/mercure:v0.18
     restart: unless-stopped
-    mem_limit: 64m
+    mem_limit: 128m
     environment:
       SERVER_NAME: ":80"
       MERCURE_PUBLISHER_JWT_KEY: ${MERCURE_SECRET}
