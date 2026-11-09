@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, h } from "vue";
+import { format } from "date-fns";
 import { useI18n } from "vue-i18n";
 import { router } from "@inertiajs/vue3";
 import { ElNotification } from "element-plus";
@@ -191,9 +192,16 @@ const handlePay = (payment: any) => {
             total: remaining,
             description: payment.description ?? payment.title ?? "",
             account_id: fundingAccountId,
-            date: payment.due_date ?? (payment as any).date ?? undefined,
+            date: paymentDate(payment.due_date ?? (payment as any).date),
         },
     });
+};
+
+// Paying ahead of time records today, not the future due date, so the payment
+// counts now and the reminder goes away. An overdue bill keeps its due date.
+const paymentDate = (dueDate?: string) => {
+    const today = format(new Date(), "yyyy-MM-dd");
+    return !dueDate || dueDate > today ? today : dueDate;
 };
 
 // Descartar un next-payment por un mes ("ya lo pagué en otra cuenta"). No crea

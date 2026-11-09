@@ -28,11 +28,9 @@ class UpdatePlannedTransactions implements ShouldQueue
 
         $month = substr($transaction->date, 0, 7).'-01';
 
-        if ($transaction->category_id) {
-            $plannedTransaction = $this->plannedTransactionService->find($transaction, $month);
-            if ($plannedTransaction) {
-                $plannedTransaction->schedule->markAsCompleted($transaction, 'Automatically completed by actual transaction');
-            }
+        $plannedTransaction = $this->plannedTransactionService->find($transaction, $month);
+        if ($plannedTransaction) {
+            $this->plannedTransactionService->completeOccurrence($plannedTransaction, $transaction);
         }
     }
 }

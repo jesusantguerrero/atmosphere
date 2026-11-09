@@ -305,4 +305,21 @@ class NextPaymentsCashbackSuppressionTest extends TestCase
             Carbon::setTestNow();
         }
     }
+    public function test_payment_dated_before_the_due_date_but_after_today_clears_the_statement(): void
+    {
+        Carbon::setTestNow(Carbon::create(2026, 5, 9, 10, 0, 0));
+
+        try {
+            [$user, $card, $bank] = $this->setupCardWithDebt(closingDay: 3);
+            $card->update(['credit_payment_days' => 20]);
+
+            // Scheduled with the bank for May 20; the statement is due May 23.
+            $this->recordPayment($user->current_team_id, $user->id, $bank, $card, '2026-05-20', 7000.00);
+
+            $this->assertFalse((new NextPaymentsService)->getNextPayments($user->current_team_id)
+                ->contains(fn ($p) => $p['type'] === 'credit_card_payment' && $p['account_id'] === $card->id));
+        } finally {
+            Carbon::setTestNow();
+        }
+    }
 }
