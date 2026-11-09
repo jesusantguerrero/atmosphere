@@ -4,96 +4,151 @@ namespace App\Domains\Transaction\Actions;
 
 use Smalot\PdfParser\Parser;
 
+/**
+ * Reads BHD «Detalle de movimientos» PDFs, both layouts:
+ *
+ * - Accounts (CA/CC): `dd/mm/yyyy<confirmation> description RD$ amount RD$ balance`
+ *   — the date is glued to the confirmation number, and long descriptions wrap
+ *   onto the next lines with the amounts at the end.
+ * - Credit cards (TC): `authorization \t dd/mm/yyyy \t dd/mm/yyyy description RD$ amount`
+ *   — one amount, negative for payments and refunds, in RD$ or US$.
+ */
 class ParseBankPdf
 {
+    private const AMOUNT = '(RD|US)\$\s*(-?[\d,]+\.\d{2})';
+
     /**
-     * Parse a BHD bank statement PDF and extract transaction rows.
-     *
-     * @return array<int, array{date: string, reference: string, description: string, debit: float, credit: float, balance: float}>
+     * @return array<int, array{date: string, reference: string, description: string, debit: float, credit: float, balance: float, currency?: string}>
      */
     public static function parse(string $filePath): array
     {
-        $parser = new Parser;
-        $pdf = $parser->parseFile($filePath);
-        $text = $pdf->getText();
-
-        return self::extractTransactions($text);
+        return self::parseText((new Parser)->parseFile($filePath)->getText());
     }
 
     /**
-     * @return array<int, array{date: string, reference: string, description: string, debit: float, credit: float, balance: float}>
+     * @return array<int, array{date: string, reference: string, description: string, debit: float, credit: float, balance: float, currency?: string}>
      */
-    private static function extractTransactions(string $text): array
+    public static function parseText(string $text): array
     {
-        $lines = explode("\n", $text);
+        $lines = array_values(array_filter(
+            array_map('trim', explode("\n", $text)),
+            fn (string $line) => $line !== '' && ! self::isHeaderOrFooter($line),
+        ));
+
+        return str_contains($text, 'Tarjetas de crédito')
+            ? self::creditCardRows($lines)
+            : self::accountRows($lines);
+    }
+
+    /**
+     * @param  list<string>  $lines
+     * @return array<int, array{date: string, reference: string, description: string, debit: float, credit: float, balance: float, currency: string}>
+     */
+    private static function accountRows(array $lines): array
+    {
         $rawRows = [];
-
-        foreach ($lines as $line) {
-            $line = trim($line);
-
-            if (empty($line) || self::isHeaderOrFooter($line)) {
-                continue;
-            }
-
-            // Match transaction lines: dd/mm/yyyy  reference  description  RD$ amount  RD$ balance
-            if (preg_match('/^(\d{2}\/\d{2}\/\d{4})\s+(\d+)\s+(.+)/', $line, $matches)) {
-                $date = $matches[1];
-                $reference = $matches[2];
-                $remainder = trim($matches[3]);
-
-                // Extract all RD$ amounts from the line
-                preg_match_all('/RD\$\s*([\d,]+\.\d{2})/', $remainder, $amountMatches);
-
-                if (count($amountMatches[0]) >= 2) {
-                    // Description is everything before the first RD$ occurrence
-                    $firstAmountPos = strpos($remainder, 'RD$');
-                    $description = trim(substr($remainder, 0, $firstAmountPos));
-
-                    $amount = self::parseAmount($amountMatches[1][0]);
-                    $balance = self::parseAmount($amountMatches[1][count($amountMatches[1]) - 1]);
-
-                    $rawRows[] = [
-                        'date' => self::convertDate($date),
-                        'reference' => $reference,
-                        'description' => $description,
-                        'amount' => $amount,
-                        'balance' => $balance,
-                    ];
-                }
-            }
+        foreach (self::records($lines, '/^(\d{2}\/\d{2}\/\d{4})\s*(\d+)\s*(.*)$/', 2) as [$start, $body]) {
+            preg_match_all('/'.self::AMOUNT.'/', $body, $amounts);
+            $rawRows[] = [
+                'date' => self::convertDate($start[1]),
+                'reference' => $start[2],
+                'description' => self::description($body),
+                'amount' => abs(self::parseAmount($amounts[2][0])),
+                'balance' => self::parseAmount(end($amounts[2])),
+                'currency' => self::currency($amounts[1][0]),
+            ];
         }
 
-        // Determine debit/credit by comparing consecutive balances.
-        // Rows are in reverse chronological order (newest first).
-        // For row i: if balance_i = next_row_balance + amount → credit (money in)
-        //            if balance_i = next_row_balance - amount → debit (money out)
+        // Debit or credit comes from the running balance. Rows are newest first:
+        // a credit means balance = next row's balance + amount.
         $transactions = [];
-        $rowCount = count($rawRows);
-
-        for ($i = 0; $i < $rowCount; $i++) {
-            $row = $rawRows[$i];
-            $amount = $row['amount'];
-            $balance = $row['balance'];
-
-            if ($i < $rowCount - 1) {
-                $previousBalance = $rawRows[$i + 1]['balance'];
-                $isCredit = abs($balance - ($previousBalance + $amount)) < 0.02;
-            } else {
-                // Last row (oldest transaction): infer from known patterns
-                $isCredit = self::looksLikeCredit($row['description']);
-            }
+        foreach ($rawRows as $i => $row) {
+            $isCredit = isset($rawRows[$i + 1])
+                ? abs($row['balance'] - ($rawRows[$i + 1]['balance'] + $row['amount'])) < 0.02
+                : self::looksLikeCredit($row['description']);
 
             $transactions[] = [
                 'date' => $row['date'],
                 'reference' => $row['reference'],
                 'description' => $row['description'],
-                'debit' => $isCredit ? 0 : $amount,
-                'credit' => $isCredit ? $amount : 0,
-                'balance' => $balance,
+                'debit' => $isCredit ? 0.0 : $row['amount'],
+                'credit' => $isCredit ? $row['amount'] : 0.0,
+                'balance' => $row['balance'],
+                'currency' => $row['currency'],
             ];
         }
 
         return $transactions;
+    }
+
+    /**
+     * @param  list<string>  $lines
+     * @return array<int, array{date: string, reference: string, description: string, debit: float, credit: float, balance: float, currency: string}>
+     */
+    private static function creditCardRows(array $lines): array
+    {
+        $transactions = [];
+        foreach (self::records($lines, '/^(\d*)\s*(\d{2}\/\d{2}\/\d{4})\s+(\d{2}\/\d{2}\/\d{4})\s*(.*)$/', 1) as [$start, $body]) {
+            preg_match_all('/'.self::AMOUNT.'/', $body, $amounts);
+            $amount = self::parseAmount($amounts[2][0]);
+
+            $transactions[] = [
+                'date' => self::convertDate($start[2]),
+                'reference' => $start[1],
+                'description' => self::description($body),
+                'debit' => $amount > 0 ? $amount : 0.0,
+                'credit' => $amount < 0 ? abs($amount) : 0.0,
+                'balance' => 0.0,
+                'currency' => self::currency($amounts[1][0]),
+            ];
+        }
+
+        return $transactions;
+    }
+
+    /**
+     * Group a movement's first line with the wrapped lines that follow it, until
+     * the group holds the amounts the layout expects.
+     *
+     * @param  list<string>  $lines
+     * @return list<array{0: array<int, string>, 1: string}>
+     */
+    private static function records(array $lines, string $startPattern, int $amountsNeeded): array
+    {
+        $records = [];
+        $start = null;
+        $body = '';
+
+        foreach ($lines as $line) {
+            if (preg_match($startPattern, $line, $matches)) {
+                $start = $matches;
+                $body = (string) end($matches);
+            } elseif ($start !== null) {
+                $body .= ' '.$line;
+            } else {
+                continue;
+            }
+
+            if (preg_match_all('/'.self::AMOUNT.'/', $body) >= $amountsNeeded) {
+                $records[] = [$start, $body];
+                $start = null;
+                $body = '';
+            }
+        }
+
+        return $records;
+    }
+
+    private static function description(string $body): string
+    {
+        $firstAmount = preg_match('/'.self::AMOUNT.'/', $body, $match, PREG_OFFSET_CAPTURE) ? $match[0][1] : strlen($body);
+
+        return trim(preg_replace('/\s+/', ' ', substr($body, 0, $firstAmount)));
+    }
+
+    private static function currency(string $symbol): string
+    {
+        return $symbol === 'US' ? 'USD' : 'DOP';
     }
 
     private static function parseAmount(string $amount): float
@@ -134,6 +189,7 @@ class ParseBankPdf
             'Detalle de movimientos',
             'N° de cuenta',
             'Nº de cuenta',
+            'Nº de tarjeta',
             'Titular de la cuenta',
             'Documento de identidad',
             'Fecha y hora de generación',
@@ -144,6 +200,8 @@ class ParseBankPdf
             'C/ Luis F.',
             'Tel.:',
             'Fecha Nº confirmación',
+            'Fecha de Aplicación',
+            'No. Autorización',
             'XXXXXXX',
         ];
 
@@ -153,6 +211,6 @@ class ParseBankPdf
             }
         }
 
-        return false;
+        return in_array($line, ['Fecha de', 'Transacción'], true);
     }
 }
