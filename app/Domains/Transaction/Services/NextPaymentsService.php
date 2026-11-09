@@ -304,6 +304,7 @@ class NextPaymentsService
 
         // Create actual transaction
         $transaction = Transaction::create([
+            'direction' => Transaction::DIRECTION_CREDIT,
             ...$transactionData,
             'category_id' => $target->category_id,
             'team_id' => $target->team_id,

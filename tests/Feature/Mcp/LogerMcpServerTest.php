@@ -77,7 +77,7 @@ class LogerMcpServerTest extends TestCase
         $server->tool(GetMonthBriefTool::class)->assertOk()->assertSee('"spent_to_date":4200');
         $server->tool(ListTransactionsTool::class, ['search' => 'Sire'])->assertOk()->assertSee(['Sirena', '"total":1']);
         $server->tool(ListAccountsAndCategoriesTool::class)->assertOk()->assertSee(['Popular', 'Supermercado']);
-        $server->tool(GetUpcomingPaymentsTool::class, ['days' => 10])->assertOk()->assertDontSee('budget_');
+        $server->tool(GetUpcomingPaymentsTool::class, ['days' => 10])->assertOk()->assertSee('budget_'); // 4,200 spent of a 25,000 bill: still pending
         $server->tool(GetSpendingByCategoryTool::class, ['month' => 'noviembre'])->assertHasErrors();
     }
 
