@@ -3,6 +3,7 @@
 namespace App\Domains\Housing\Models;
 
 use App\Domains\Housing\Contracts\OccurrenceNotifyTypes;
+use App\Domains\Transaction\Actions\SearchTransactions;
 use App\Domains\Transaction\Models\Transaction;
 use App\Events\OccurrenceCreated;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -74,6 +75,15 @@ class Occurrence extends Model
                 'subtypes' => ['label', 'group', 'category', 'payee'],
             ],
         ];
+    }
+
+    /**
+     * A rhythm with a rule is filled from its transactions by sync(); manual
+     * marks would be lost on the next sync, so they are refused for it.
+     */
+    public function hasRule(): bool
+    {
+        return app(SearchTransactions::class)->hasValidConditions($this->conditions);
     }
 
     public static function scopeByTeam($query, int $teamId)
