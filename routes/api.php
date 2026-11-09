@@ -4,6 +4,7 @@ use App\Domains\AppCore\Http\Controllers\ApiLoginController;
 use App\Http\Controllers\Api\AccountApiController;
 use App\Http\Controllers\Api\DashboardApiController;
 use App\Http\Controllers\Api\MobileController;
+use App\Http\Controllers\Api\MobileNextPaymentsController;
 use App\Http\Controllers\Api\MobilePreferencesController;
 use App\Http\Controllers\Api\MobileProfileController;
 use App\Http\Controllers\Api\MobileTeamController;
@@ -81,6 +82,8 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
 
     Route::get('/today', [MobileController::class, 'today'])->name('today');
     Route::get('/overview', [MobileController::class, 'overview'])->name('overview');
+    Route::post('/next-payments/dismiss', [MobileNextPaymentsController::class, 'dismiss'])->name('next-payments.dismiss');
+    Route::delete('/next-payments/dismiss', [MobileNextPaymentsController::class, 'undismiss'])->name('next-payments.undismiss');
     Route::get('/budget', [MobileController::class, 'budget'])->name('budget');
     Route::post('/budget/assign', [MobileController::class, 'assignBudget'])->name('budget.assign');
     Route::post('/budget/move', [MobileController::class, 'moveBudget'])->name('budget.move');
