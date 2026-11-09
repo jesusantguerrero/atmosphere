@@ -29,11 +29,11 @@ class NextPaymentsService
             ->map(fn ($d) => $d->payment_key.'|'.$d->period)
             ->flip();
 
-        return collect([
+        return $this->withoutPaid($teamId, collect([
             ...$this->getUnpaidBudgetCategories($teamId, $currentDate, $endDate),
             ...$this->getUpcomingCreditCardPayments($teamId, $currentDate, $endDate),
             ...$this->getPlannedTransactions($teamId, $currentDate, $endDate),
-        ])
+        ]))
             ->reject(function ($payment) use ($dismissed) {
                 $period = substr((string) ($payment['due_date'] ?? ''), 0, 7);
 
@@ -43,9 +43,49 @@ class NextPaymentsService
             ->values();
     }
 
+    /**
+     * Drop budget reminders and planned payments that a verified transaction
+     * already paid, however it was recorded (see PaymentMatcher).
+     *
+     * @param  Collection<int, array<string, mixed>>  $payments
+     * @return Collection<int, array<string, mixed>>
+     */
+    private function withoutPaid(int $teamId, Collection $payments): Collection
+    {
+        $matcher = app(PaymentMatcher::class);
+        $items = $payments
+            ->filter(fn (array $payment) => isset($payment['due_date'])
+                && ($payment['type'] === 'planned_transaction'
+                    || ($payment['type'] === 'budget_category' && ($payment['metadata']['target_type'] ?? null) !== BudgetTarget::TYPE_LOAN)))
+            ->map(fn (array $payment) => [
+                'id' => $payment['id'],
+                'total' => (float) $payment['total'],
+                'due_date' => $payment['due_date'],
+                'direction' => $payment['direction'] ?? Transaction::DIRECTION_CREDIT,
+                'keys' => [
+                    'category_id' => $payment['category_id'] ?? null,
+                    'payee_id' => $payment['payee_id'] ?? null,
+                    'counter_account_id' => $payment['counter_account_id'] ?? null,
+                ],
+                'window' => $matcher->windowFor($payment['due_date'], $payment['type']),
+            ])
+            ->values();
+
+        if ($items->isEmpty()) {
+            return $payments;
+        }
+
+        $paid = $matcher->allocate($items, $matcher->candidates(
+            $teamId,
+            $items->min(fn (array $item) => $item['window'][0]),
+            $items->max(fn (array $item) => $item['window'][1]),
+        ));
+
+        return $payments->reject(fn (array $payment) => isset($paid[$payment['id']]))->values();
+    }
+
     private function getUnpaidBudgetCategories(int $teamId, Carbon $startDate, Carbon $endDate): array
     {
-        $currentMonth = $startDate->format('Y-m-01');
 
         // Get budget categories with targets that haven't been paid this month
         $unpaidBudgets = BudgetTarget::where('team_id', $teamId)
@@ -55,7 +95,7 @@ class NextPaymentsService
             ->whereNotNull('frequency_month_date')
             ->with(['category' => fn ($query) => $query->without(['budget', 'matchAccount'])])
             ->get()
-            ->filter(function ($target) use ($teamId, $currentMonth, $startDate) {
+            ->filter(function ($target) use ($startDate) {
                 if (! $target->category) {
                     return false;
                 }
@@ -65,13 +105,9 @@ class NextPaymentsService
 
                     return (float) $target->amount <= 0 || $paid < (float) $target->amount;
                 }
-                // Check if there's already a transaction for this category this month
-                $hasTransaction = Transaction::where('team_id', $teamId)
-                    ->where('category_id', $target->category_id)
-                    ->whereRaw("DATE_FORMAT(date, '%Y-%m') = ?", [substr($currentMonth, 0, 7)])
-                    ->exists();
 
-                return ! $hasTransaction;
+                // Spending reminders are settled by PaymentMatcher in getNextPayments().
+                return true;
             })
             ->map(function ($target) use ($startDate) {
                 $dueDay = min($target->frequency_month_date, $startDate->daysInMonth);
@@ -89,9 +125,11 @@ class NextPaymentsService
                     'category_name' => $target->category?->name ?? 'Budget Category',
                     'status' => 'pending',
                     'source' => 'budget_target',
+                    'direction' => Transaction::DIRECTION_CREDIT,
                     'metadata' => [
                         'target_id' => $target->id,
                         'frequency' => $target->frequency,
+                        'target_type' => $target->target_type,
                     ],
                 ];
             })
@@ -215,7 +253,10 @@ class NextPaymentsService
                     'date' => $transaction->date ? $transaction->date : null,
                     'category_id' => $transaction->category_id,
                     'category_name' => $transaction->category?->name,
+                    'payee_id' => $transaction->payee_id,
                     'payee_name' => $transaction->payee?->name,
+                    'counter_account_id' => $transaction->counter_account_id,
+                    'direction' => $transaction->direction,
                     'status' => $transaction->status,
                     'source' => 'planned_transaction',
                     'metadata' => [
