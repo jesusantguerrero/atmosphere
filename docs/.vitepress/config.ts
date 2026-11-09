@@ -23,7 +23,8 @@ export default defineConfig({
       {
         text: 'Mobile',
         items: [
-          { text: 'Mobile MVP (Expo)', link: '/mobile-mvp-expo' }
+          { text: 'Mobile MVP (Expo)', link: '/mobile-mvp-expo' },
+          { text: 'Loger MCP (Claude Code)', link: '/mcp' }
         ]
       }
     ],
