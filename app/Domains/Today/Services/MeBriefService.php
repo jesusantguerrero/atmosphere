@@ -78,6 +78,27 @@ class MeBriefService
     }
 
     /**
+     * Spending per category between two dates, with the same criteria and exclusions as the brief.
+     *
+     * @return list<array{category_id: int, name: string, group_name: string, total: float}>
+     */
+    public function spendingByCategory(int $teamId, string $start, string $end): array
+    {
+        return $this->expenseQuery($this->context($teamId), $start, $end)
+            ->selectRaw('categories.id, categories.name, pc.name as group_name, SUM(COALESCE(transactions.total, 0)) as total')
+            ->groupBy('categories.id', 'categories.name', 'pc.name')
+            ->orderByDesc('total')
+            ->get()
+            ->map(fn (object $row) => [
+                'category_id' => (int) $row->id,
+                'name' => $row->name,
+                'group_name' => $row->group_name,
+                'total' => round((float) (string) $row->total, 2),
+            ])
+            ->all();
+    }
+
+    /**
      * @return array{team_id: int, today: Carbon, month: string, baseline_months: list<string>, start: string, end: string, currency_code: string, excluded_category_ids: list<int>, excluded_group_ids: list<int>}
      */
     private function context(int $teamId): array

@@ -17,7 +17,6 @@
         "php": "^8.4.27",
         "ext-mailparse": "*",
         "brick/money": "^0.10",
-        
         "dompdf/dompdf": "^2.0.3",
         "ernysans/laraworld": "^1.0",
         "freesgen/atmosphere": "dev-inertia-v2-compat",
@@ -32,6 +31,7 @@
         "lab404/laravel-impersonate": "^1.7",
         "laravel/framework": "^13.0",
         "laravel/jetstream": "^5.0",
+        "laravel/mcp": "^1.0",
         "laravel/pulse": "^1.0@beta",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^3.0",

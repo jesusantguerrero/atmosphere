@@ -6,6 +6,7 @@ use App\Http\Middleware\AppMenu;
 use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\EncryptCookies;
 use App\Http\Middleware\EnsureCoreModulePermissions;
+use App\Http\Middleware\EnsureMcpToken;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\PreventRequestsDuringMaintenance;
 use App\Http\Middleware\RedirectIfAuthenticated;
@@ -96,6 +97,7 @@ class Kernel extends HttpKernel
         'throttle' => ThrottleRequests::class,
         'verified' => EnsureEmailIsVerified::class,
         'atmosphere.teamed' => EnsureUserHasTeam::class,
+        'mcp.token' => EnsureMcpToken::class,
         'atmosphere.unteamed' => EnsureHasNoTeam::class,
         'treasurer.biller' => EnsureIsBiller::class,
         'treasurer.subscribed' => Subscribed::class,
