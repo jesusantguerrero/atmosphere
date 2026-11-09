@@ -4,6 +4,7 @@ namespace App\Mcp\Concerns;
 
 use App\Models\Setting;
 use App\Models\User;
+use App\Providers\PassportServiceProvider;
 use Illuminate\Support\Carbon;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
@@ -14,8 +15,6 @@ use Laravel\Mcp\Response;
  */
 trait InteractsWithTeam
 {
-    public const WRITE_ABILITY = 'mcp:write';
-
     protected function teamId(Request $request): int
     {
         return (int) $request->user()->current_team_id;
@@ -46,6 +45,6 @@ trait InteractsWithTeam
         /** @var User $user */
         $user = $request->user();
 
-        return $user->tokenCan(self::WRITE_ABILITY) ? null : Response::error('This connection is read-only. Reconnect Loger from Claude Code and allow recording transactions.');
+        return $user->tokenCan(PassportServiceProvider::WRITE_SCOPE) ? null : Response::error('This connection is read-only. Reconnect Loger from Claude Code and allow recording transactions.');
     }
 }

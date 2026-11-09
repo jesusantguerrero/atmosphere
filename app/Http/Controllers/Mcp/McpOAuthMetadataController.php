@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Mcp;
 
 use App\Http\Controllers\Controller;
-use App\Mcp\Concerns\InteractsWithTeam;
 use App\Providers\PassportServiceProvider;
 use Illuminate\Http\JsonResponse;
 
@@ -17,7 +16,7 @@ class McpOAuthMetadataController extends Controller
     /**
      * @var list<string>
      */
-    public const SCOPES = [PassportServiceProvider::READ_SCOPE, InteractsWithTeam::WRITE_ABILITY];
+    public const SCOPES = [PassportServiceProvider::READ_SCOPE, PassportServiceProvider::WRITE_SCOPE];
 
     public function protectedResource(?string $path = null): JsonResponse
     {

@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Mcp\Concerns\InteractsWithTeam;
 use Carbon\CarbonInterval;
 use Illuminate\Support\ServiceProvider;
 use Inertia\Inertia;
@@ -16,11 +15,13 @@ class PassportServiceProvider extends ServiceProvider
 {
     public const READ_SCOPE = 'mcp:read';
 
+    public const WRITE_SCOPE = 'mcp:write';
+
     public function boot(): void
     {
         Passport::tokensCan([
             self::READ_SCOPE => 'View your household finances',
-            InteractsWithTeam::WRITE_ABILITY => 'Record transactions and mark payments as paid',
+            self::WRITE_SCOPE => 'Record transactions and mark payments as paid',
         ]);
         Passport::defaultScopes([self::READ_SCOPE]);
         Passport::tokensExpireIn(CarbonInterval::days(30));
