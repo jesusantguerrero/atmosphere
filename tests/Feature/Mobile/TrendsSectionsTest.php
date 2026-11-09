@@ -105,12 +105,19 @@ class TrendsSectionsTest extends TestCase
         $trip = $this->label('Viaje');
         $this->label('Desayuno', 'meal');
         [, $strangerTeam] = $this->household();
-        $foreign = Label::create(['team_id' => $strangerTeam, 'user_id' => $this->user->id, 'name' => 'Ajena', 'label' => 'Ajena', 'color' => '#000', 'labelable_type' => TransactionLine::class]);
+        $foreign = Label::forceCreate(['team_id' => $strangerTeam, 'user_id' => $this->user->id, 'name' => 'Ajena', 'label' => 'Ajena', 'color' => '#000', 'labelable_type' => TransactionLine::class]);
         $tagged = $this->expense($bank, $food, '2026-11-03', 1800, labelId: $trip->id);
         $this->expense($bank, $food, '2026-11-04', 500);
 
-        $this->getJson('/api/mobile/labels')->assertOk()->assertJsonPath('data', [['id' => $trip->id, 'name' => 'Viaje', 'color' => '#ff0000']]);
-        $this->getJson('/api/mobile/insights?months=1')->assertOk()->assertJsonPath('expense_labels', [['id' => $trip->id, 'name' => 'Viaje', 'total' => 1800]]);
+        // Created from a transaction: labelable_type got dropped, but it is used on a line.
+        $untyped = Label::forceCreate(['team_id' => $this->teamId, 'user_id' => $this->user->id, 'name' => 'Bebé', 'label' => 'Bebé', 'color' => '#0000ff']);
+        $this->expense($bank, $food, '2026-11-05', 300, labelId: $untyped->id);
+
+        $this->getJson('/api/mobile/labels')->assertOk()->assertJsonPath('data', [
+            ['id' => $untyped->id, 'name' => 'Bebé', 'color' => '#0000ff'],
+            ['id' => $trip->id, 'name' => 'Viaje', 'color' => '#ff0000'],
+        ]);
+        $this->getJson('/api/mobile/insights?months=1')->assertOk()->assertJsonPath('expense_labels', [['id' => $trip->id, 'name' => 'Viaje', 'total' => 1800], ['id' => $untyped->id, 'name' => 'Bebé', 'total' => 300]]);
 
         $ids = array_column($this->getJson("/api/mobile/transactions?label_ids[]={$trip->id}")->assertOk()->json('data.transactions'), 'id');
         $this->assertSame([$tagged], $ids);
@@ -153,7 +160,7 @@ class TrendsSectionsTest extends TestCase
 
     private function label(string $name, string $kind = 'transaction'): Label
     {
-        return Label::create([
+        return Label::forceCreate([
             'team_id' => $this->teamId,
             'user_id' => $this->user->id,
             'name' => $name,
