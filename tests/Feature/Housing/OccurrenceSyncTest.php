@@ -233,7 +233,9 @@ const menuScope = {exports:{}};
 vm.createContext(menuScope);
 vm.runInContext(ts.transpileModule(fs.readFileSync('resources/js/domains/app/menus.ts','utf8'), {compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText, menuScope);
 assert.equal(menuScope.exports.getSectionMenu(menuScope.exports.MODULES.HOUSING).find(item=>item.url==='/housing/occurrence').label, 'Occurrences');
-assert.equal(JSON.parse(fs.readFileSync('resources/lang/es.json','utf8')).Occurrences, 'Ocurrencias');
+assert.equal(JSON.parse(fs.readFileSync('resources/lang/es.json','utf8')).Occurrences, 'Ritmos');
+assert.equal(JSON.parse(fs.readFileSync('resources/lang/es.json','utf8'))['overdue reminders'], 'ritmos atrasados');
+assert.equal(JSON.parse(fs.readFileSync('resources/lang/es.json','utf8')).Instances, 'Repeticiones');
 const files = ['resources/js/domains/housing/components/SiteUptime.vue'];
 const components = files.map(file => {
     const component = parse(fs.readFileSync(file, 'utf8')).descriptor;
