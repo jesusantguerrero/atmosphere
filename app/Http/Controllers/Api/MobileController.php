@@ -145,6 +145,7 @@ class MobileController extends Controller
                 'net' => $assets + $debts,
             ],
             'nextPayments' => $payments->take(8)->values(),
+            'nextPaymentsCount' => $payments->count(),
             'cardsToPay' => $payments
                 ->filter(fn ($p) => ($p['type'] ?? null) === 'credit_card_payment')
                 ->values(),

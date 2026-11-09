@@ -1352,5 +1352,8 @@
     "meal": "comida",
     "meals": "comidas",
     "Choose a household to switch to.": "Elige el hogar al que quieres cambiar.",
-    "The household is not valid.": "El hogar no es válido."
+    "The household is not valid.": "El hogar no es válido.",
+    "Choose the payment to dismiss.": "Elige el pago que quieres descartar.",
+    "Choose the month to dismiss the payment for.": "Elige el mes en que quieres descartar el pago.",
+    "The month must use the YYYY-MM format.": "El mes debe tener el formato AAAA-MM."
 }
