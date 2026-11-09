@@ -276,6 +276,8 @@ class MultiCurrencyTransactionController extends Controller
             'uncategorized' => 'nullable|boolean',
             'status' => 'nullable|in:verified,draft,scheduled',
             'search' => 'nullable|string|max:100',
+            'label_ids' => ['nullable', 'array'],
+            'label_ids.*' => ['integer', Rule::exists('labels', 'id')->where('team_id', $request->user()->current_team_id)],
             'limit' => 'nullable|integer|min:1|max:100',
             'page' => 'nullable|integer|min:1',
         ]);
@@ -329,6 +331,15 @@ class MultiCurrencyTransactionController extends Controller
                     $search->where('description', 'like', $term)
                         ->orWhereHas('payee', fn ($payee) => $payee->where('name', 'like', $term));
                 });
+            }
+
+            // Transactions with any of these labels (labels hang off transaction lines)
+            if (! empty($validated['label_ids'])) {
+                $query->whereExists(fn ($labels) => $labels->selectRaw('1')
+                    ->from('label_resource')
+                    ->join('transaction_lines', 'transaction_lines.id', '=', 'label_resource.resource_id')
+                    ->whereColumn('transaction_lines.transaction_id', 'transactions.id')
+                    ->whereIn('label_resource.label_id', $validated['label_ids']));
             }
 
             // Uncategorized expenses filter (same criteria as budget summary.uncategorized)
