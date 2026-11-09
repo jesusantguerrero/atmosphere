@@ -3206,11 +3206,27 @@ class MobileController extends Controller
 
         // Expense categories from incomeExpenses (already per-category with totals as arrays)
         // Totals may be BigDecimal objects — cast through string first.
+        $monthKeys = collect($monthlyFlow)->pluck('month');
         $expenseCategories = collect($incomeExpenses['expenses'] ?? [])->map(fn ($row) => [
             'id' => $row['id'] ?? null,
             'name' => $row['name'] ?? 'Unknown',
+            'group_id' => $row['group_id'] ?? null,
+            'group_name' => $row['group_name'] ?? null,
             'total' => (float) (string) ($row['total'] ?? 0),
+            'by_month' => $monthKeys->mapWithKeys(fn (string $month) => [substr($month, 0, 7) => (float) (string) ($row[$month] ?? 0)])->all(),
         ])->filter(fn ($c) => $c['total'] > 0)->sortByDesc('total')->values();
+
+        // Insights "exclude from average", same settings the web saves (#729).
+        $insightsSettings = Setting::getByTeam($teamId);
+        $exclusions = [
+            'category_ids' => array_map('intval', json_decode($insightsSettings['insights_excluded_category_ids'] ?? '[]', true) ?: []),
+            'group_ids' => array_map('intval', json_decode($insightsSettings['insights_excluded_group_ids'] ?? '[]', true) ?: []),
+        ];
+        $expenseGroups = $expenseCategories
+            ->filter(fn (array $category) => $category['group_id'] !== null)
+            ->unique('group_id')
+            ->map(fn (array $category) => ['id' => (int) $category['group_id'], 'name' => $category['group_name']])
+            ->values();
 
         // Income categories from incomeExpenses
         $incomeCategories = collect($incomeExpenses['incomes'] ?? [])->map(fn ($row) => [
@@ -3223,6 +3239,7 @@ class MobileController extends Controller
         $expensePayees = TransactionService::getExpensePayeesInPeriod($teamId, $startDate, $endDate)
             ->groupBy('name')
             ->map(fn ($rows, $name) => [
+                'id' => $rows->first()->id ?? null,
                 'name' => $name,
                 'total' => (float) (string) $rows->sum('total'),
             ])
@@ -3231,6 +3248,7 @@ class MobileController extends Controller
         $incomePayees = TransactionService::getTransactionsByPayeeInPeriod($teamId, $startDate, $endDate, Transaction::DIRECTION_DEBIT)
             ->groupBy('name')
             ->map(fn ($rows, $name) => [
+                'id' => $rows->first()->id ?? null,
                 'name' => $name,
                 'total' => (float) (string) $rows->sum('total'),
             ])
@@ -3282,6 +3300,8 @@ class MobileController extends Controller
             ],
             'months' => $monthsData,
             'expense_categories' => $expenseCategories,
+            'groups' => $expenseGroups,
+            'exclusions' => $exclusions,
             'income_categories' => $incomeCategories,
             'expense_payees' => $expensePayees,
             'income_payees' => $incomePayees,

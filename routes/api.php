@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\MobileProfileController;
 use App\Http\Controllers\Api\MobileTeamController;
 use App\Http\Controllers\Api\MobileTwoFactorController;
 use App\Http\Controllers\Api\MultiCurrencyTransactionController;
+use App\Http\Controllers\Finance\FinanceTrendController;
 use App\Http\Controllers\RoutineController;
 use App\Http\Controllers\ShoppingListController;
 use Illuminate\Http\Request;
@@ -221,6 +222,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
 
     // Insights (Tendencias)
     Route::get('/insights', [MobileController::class, 'insights'])->name('insights');
+    Route::post('/insights/exclusions', [FinanceTrendController::class, 'updateExclusions'])->name('insights.exclusions');
 
     // Notifications
     Route::get('/notifications', [MobileController::class, 'notifications'])->name('notifications.index');
