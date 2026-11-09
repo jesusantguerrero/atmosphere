@@ -5,10 +5,12 @@ namespace Tests\Feature\Mobile;
 use App\Domains\AppCore\Models\Category;
 use App\Domains\Budget\Models\BudgetMatchAccount;
 use App\Domains\Budget\Models\BudgetMonth;
+use App\Domains\Journal\Actions\AccountDetailTypesCreate;
 use App\Domains\Transaction\Models\Transaction;
 use App\Models\Account;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Insane\Journal\Models\Core\AccountDetailType;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -165,6 +167,7 @@ class BudgetAssignMoveTest extends TestCase
     {
         [$user, $team] = $this->makeUserAndTeam();
         Sanctum::actingAs($user);
+        app(AccountDetailTypesCreate::class)->create();
 
         $group = $this->createGroup($team);
         $food = $this->createCategory($team, $group, 'Food');
@@ -173,13 +176,13 @@ class BudgetAssignMoveTest extends TestCase
             'team_id' => $team->id,
             'user_id' => $user->id,
             'name' => 'Ahorros',
+            'account_detail_type_id' => AccountDetailType::where('name', 'bank')->value('id'),
             'currency_code' => 'DOP',
             'balance_type' => 'DEBIT',
             'type' => 1,
-            'balance' => 10000,
         ]);
-        BudgetMatchAccount::create(['team_id' => $team->id, 'user_id' => $user->id, 'category_id' => $savings->id, 'account_id' => $account->id]);
         $this->postJson('/api/mobile/budget/assign', ['category_id' => $food->id, 'month' => now()->subMonthNoOverflow()->format('Y-m'), 'budgeted' => 1200])->assertOk();
+        BudgetMatchAccount::create(['team_id' => $team->id, 'user_id' => $user->id, 'category_id' => $savings->id, 'account_id' => $account->id]);
         foreach ([1, 2, 3] as $monthsAgo) {
             Transaction::create([
                 'team_id' => $team->id,
@@ -195,6 +198,8 @@ class BudgetAssignMoveTest extends TestCase
             ]);
         }
 
+        BudgetMonth::updateOrCreate(['team_id' => $team->id, 'category_id' => $savings->id, 'month' => now()->format('Y-m-01')], ['user_id' => $user->id, 'name' => now()->format('Y-m-01'), 'budgeted' => 500, 'available' => 500]);
+
         $children = collect($this->getJson('/api/mobile/budget?month='.now()->format('Y-m'))->assertOk()->json('groups'))
             ->firstWhere('id', $group->id)['children'];
         $foodRow = collect($children)->firstWhere('id', $food->id);
@@ -203,8 +208,8 @@ class BudgetAssignMoveTest extends TestCase
         $this->assertEquals(1200, $foodRow['last_month_budgeted']);
         $this->assertEquals(900, $foodRow['average_3m']);
         $this->assertNull($foodRow['match_account_diff']);
-        $this->assertEquals(round((float) $account->fresh()->balance - $savingsRow['available'], 2), $savingsRow['match_account_diff']);
-        $this->assertNotNull($savingsRow['match_account_diff']);
+        $this->assertEquals(500, $savingsRow['available']);
+        $this->assertEquals(-500, $savingsRow['match_account_diff']);
     }
 
     private function makeUserAndTeam(): array
