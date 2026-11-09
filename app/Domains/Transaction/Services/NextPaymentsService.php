@@ -132,6 +132,9 @@ class NextPaymentsService
                 ->selectRaw('COALESCE(SUM(tl.amount * tl.type), 0) as balance')
                 ->value('balance');
             $statementDebt = abs(min(0, $balanceAtCut));
+            // A payment registered ahead of time (dated after today but before the
+            // due date) still settles this statement.
+            $paidUntil = $startDate->copy()->max($account->paymentDueDateForCut($lastCut));
 
             $paidAfterCut = (float) DB::table('transaction_lines as tl')
                 ->join('transactions as t', 'tl.transaction_id', '=', 't.id')
@@ -139,7 +142,7 @@ class NextPaymentsService
                 ->join('account_detail_types as srcType', 'srcType.id', '=', 'src.account_detail_type_id')
                 ->where('tl.account_id', $account->id)
                 ->where('tl.date', '>', $lastCut->format('Y-m-d'))
-                ->where('tl.date', '<=', $startDate->format('Y-m-d'))
+                ->where('tl.date', '<=', $paidUntil->format('Y-m-d'))
                 ->where('tl.type', 1)
                 ->where('t.status', 'verified')
                 ->whereColumn('t.account_id', '!=', 'tl.account_id')
