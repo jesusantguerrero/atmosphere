@@ -33,7 +33,7 @@ class NextPaymentsService
             ...$this->getUnpaidBudgetCategories($teamId, $currentDate, $endDate),
             ...$this->getUpcomingCreditCardPayments($teamId, $currentDate, $endDate),
             ...$this->getPlannedTransactions($teamId, $currentDate, $endDate),
-        ]))
+        ]), $currentDate->format('Y-m-d'))
             ->reject(function ($payment) use ($dismissed) {
                 $period = substr((string) ($payment['due_date'] ?? ''), 0, 7);
 
@@ -50,7 +50,7 @@ class NextPaymentsService
      * @param  Collection<int, array<string, mixed>>  $payments
      * @return Collection<int, array<string, mixed>>
      */
-    private function withoutPaid(int $teamId, Collection $payments): Collection
+    private function withoutPaid(int $teamId, Collection $payments, string $today): Collection
     {
         $matcher = app(PaymentMatcher::class);
         $items = $payments
@@ -67,7 +67,7 @@ class NextPaymentsService
                     'payee_id' => $payment['payee_id'] ?? null,
                     'counter_account_id' => $payment['counter_account_id'] ?? null,
                 ],
-                'window' => $matcher->windowFor($payment['due_date'], $payment['type']),
+                'window' => $matcher->windowFor($payment['due_date'], $payment['type'], $today),
             ])
             ->values();
 
@@ -233,16 +233,19 @@ class NextPaymentsService
 
     private function getPlannedTransactions(int $teamId, Carbon $startDate, Carbon $endDate): array
     {
+        // Unpaid plans from the last months stay listed as overdue until paid.
+        $overdueSince = $startDate->copy()->startOfMonth()->subMonthsNoOverflow(PaymentMatcher::OVERDUE_MONTHS);
+
         return Transaction::where('team_id', $teamId)
             ->planned()
-            ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+            ->whereBetween('date', [$overdueSince->format('Y-m-d'), $endDate->format('Y-m-d')])
             ->whereNull('resource_id')
             ->whereHas('schedule', function ($query) {
                 $query->whereNull('completed_at');
             })
             ->with(['category', 'payee'])
             ->get()
-            ->map(function ($transaction) {
+            ->map(function ($transaction) use ($startDate) {
                 return [
                     'id' => "planned_{$transaction->id}",
                     'type' => 'planned_transaction',
@@ -257,7 +260,7 @@ class NextPaymentsService
                     'payee_name' => $transaction->payee?->name,
                     'counter_account_id' => $transaction->counter_account_id,
                     'direction' => $transaction->direction,
-                    'status' => $transaction->status,
+                    'status' => substr((string) $transaction->date, 0, 10) < $startDate->format('Y-m-d') ? 'overdue' : $transaction->status,
                     'source' => 'planned_transaction',
                     'metadata' => [
                         'transaction_id' => $transaction->id,
