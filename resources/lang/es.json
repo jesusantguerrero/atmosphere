@@ -1373,5 +1373,10 @@
     "This rhythm is synced with its transactions. Use Sync instead of checking it by hand.": "Este ritmo se sincroniza con sus transacciones. Usa «Sincronizar» en vez de marcarlo a mano.",
     "Give this rhythm a name.": "Ponle nombre a este ritmo.",
     "The name is too long.": "El nombre es demasiado largo.",
-    "Choose a supported rhythm type.": "Elige un tipo de ritmo válido."
+    "Choose a supported rhythm type.": "Elige un tipo de ritmo válido.",
+    "We could not read this statement. Check that it is the file your bank exported.": "No pudimos leer este estado de cuenta. Revisa que sea el archivo que exportó tu banco.",
+    "Choose the statement file to import.": "Elige el archivo del estado de cuenta.",
+    "Use a PDF, CSV or Excel bank statement.": "Usa un estado de cuenta en PDF, CSV o Excel.",
+    "The statement must be 10 MB or smaller.": "El estado de cuenta debe pesar 10 MB o menos.",
+    "That account does not belong to this household.": "Esa cuenta no pertenece a este hogar."
 }

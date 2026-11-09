@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\MobileNextPaymentsController;
 use App\Http\Controllers\Api\MobileOccurrenceController;
 use App\Http\Controllers\Api\MobilePreferencesController;
 use App\Http\Controllers\Api\MobileProfileController;
+use App\Http\Controllers\Api\MobileStatementImportController;
 use App\Http\Controllers\Api\MobileTeamController;
 use App\Http\Controllers\Api\MobileTrendsController;
 use App\Http\Controllers\Api\MobileTwoFactorController;
@@ -237,6 +238,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', SetUserLocal
     Route::get('/trends/credit-cards', [MobileTrendsController::class, 'creditCards'])->name('trends.credit-cards');
     Route::get('/trends/financial-overview', [MobileTrendsController::class, 'financialOverview'])->name('trends.financial-overview');
     Route::get('/labels', [MobileLabelController::class, 'index'])->name('labels.index');
+    Route::post('/statements/import', [MobileStatementImportController::class, 'import'])->middleware('throttle:20,1')->name('statements.import');
 
     // Notifications
     Route::get('/notifications', [MobileController::class, 'notifications'])->name('notifications.index');

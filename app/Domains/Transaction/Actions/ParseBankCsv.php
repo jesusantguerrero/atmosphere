@@ -39,7 +39,22 @@ class ParseBankCsv
         }
 
         $delimiter = self::detectDelimiter($rawLines);
-        $rows = self::parseLines($rawLines, $delimiter);
+
+        return self::parseRows(self::parseLines($rawLines, $delimiter));
+    }
+
+    /**
+     * Extract transactions from already-split rows (header first), e.g. an Excel sheet.
+     *
+     * @param  array<int, array<int, mixed>>  $rows
+     * @return array<int, array{date: string, reference: string, description: string, debit: float, credit: float, balance: float}>
+     */
+    public static function parseRows(array $rows): array
+    {
+        $rows = array_values(array_filter(
+            array_map(fn (array $row) => array_map(fn ($cell) => trim((string) $cell), $row), $rows),
+            fn (array $row) => implode('', $row) !== '',
+        ));
 
         if (count($rows) < 2) {
             return [];
