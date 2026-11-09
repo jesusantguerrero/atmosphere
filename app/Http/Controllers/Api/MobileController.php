@@ -3200,6 +3200,7 @@ class MobileController extends Controller
             'exclusions' => $exclusions,
             'income_categories' => $incomeCategories,
             'expense_payees' => $expensePayees,
+            'expense_labels' => TransactionService::getExpensesByLabelInPeriod($teamId, $startDate, $endDate)->values(),
             'income_payees' => $incomePayees,
             'expense_accounts' => $expenseAccounts,
             'credit_cards' => $creditCardData,

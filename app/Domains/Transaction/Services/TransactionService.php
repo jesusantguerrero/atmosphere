@@ -457,6 +457,31 @@ class TransactionService
             ->get();
     }
 
+    /**
+     * Verified spending per transaction label in the period. Labels hang off
+     * transaction lines through label_resource; resource_type there is not a
+     * reliable class name, so the join goes by the line id only.
+     *
+     * @return Collection<int, array{id: int, name: string, total: float}>
+     */
+    public static function getExpensesByLabelInPeriod(int $teamId, string $startDate, string $endDate): Collection
+    {
+        return DB::table('label_resource as lr')
+            ->join('labels as l', fn ($join) => $join->on('l.id', '=', 'lr.label_id')->where('l.team_id', $teamId))
+            ->join('transaction_lines as tl', fn ($join) => $join->on('tl.id', '=', 'lr.resource_id')->where('tl.team_id', $teamId))
+            ->join('transactions as t', 't.id', '=', 'tl.transaction_id')
+            ->where('t.status', Transaction::STATUS_VERIFIED)
+            ->whereNull('t.deleted_at')
+            ->where('t.direction', Transaction::DIRECTION_CREDIT)
+            ->where(fn ($query) => $query->where('t.is_transfer', false)->orWhereNull('t.is_transfer'))
+            ->whereBetween('tl.date', [$startDate, $endDate])
+            ->groupBy('l.id', 'l.name')
+            ->selectRaw('l.id, l.name, SUM(t.total) as total')
+            ->orderByDesc('total')
+            ->get()
+            ->map(fn (object $row) => ['id' => (int) $row->id, 'name' => $row->name, 'total' => round((float) (string) $row->total, 2)]);
+    }
+
     public static function getExpensePayeesInPeriod(int $teamId, string $startDate, string $endDate): Collection
     {
         return Transaction::query()

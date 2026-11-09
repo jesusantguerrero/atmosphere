@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AccountApiController;
 use App\Http\Controllers\Api\DashboardApiController;
 use App\Http\Controllers\Api\MobileBriefController;
 use App\Http\Controllers\Api\MobileController;
+use App\Http\Controllers\Api\MobileLabelController;
 use App\Http\Controllers\Api\MobileNextPaymentsController;
 use App\Http\Controllers\Api\MobileOccurrenceController;
 use App\Http\Controllers\Api\MobilePreferencesController;
@@ -235,6 +236,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', SetUserLocal
     Route::post('/insights/exclusions', [FinanceTrendController::class, 'updateExclusions'])->name('insights.exclusions');
     Route::get('/trends/credit-cards', [MobileTrendsController::class, 'creditCards'])->name('trends.credit-cards');
     Route::get('/trends/financial-overview', [MobileTrendsController::class, 'financialOverview'])->name('trends.financial-overview');
+    Route::get('/labels', [MobileLabelController::class, 'index'])->name('labels.index');
 
     // Notifications
     Route::get('/notifications', [MobileController::class, 'notifications'])->name('notifications.index');
