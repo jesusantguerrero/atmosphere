@@ -50,6 +50,27 @@ services:
     depends_on:
       loger:
         condition: service_healthy
+  # Real-time hub for the shared shopping list. Laravel publishes to
+  # http://mercure/.well-known/mercure (MERCURE_URL); browsers subscribe through
+  # the public domain Coolify assigns to this service (MERCURE_PUBLIC_URL).
+  # Topics are public share-token URLs, so subscribers are anonymous; only the
+  # app can publish, signing with MERCURE_SECRET (HS256, at least 32 chars).
+  mercure:
+    image: dunglas/mercure:v0.18
+    restart: unless-stopped
+    mem_limit: 128m
+    environment:
+      SERVER_NAME: ":80"
+      MERCURE_PUBLISHER_JWT_KEY: ${MERCURE_SECRET}
+      MERCURE_SUBSCRIBER_JWT_KEY: ${MERCURE_SECRET}
+      MERCURE_EXTRA_DIRECTIVES: |-
+        anonymous
+        cors_origins ${APP_URL}
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
   queue:
     build:
       context: ./

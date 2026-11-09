@@ -60,7 +60,10 @@ return [
 
         'mercure' => [
             'driver' => 'mercure',
+            // Where Laravel publishes (the internal `mercure` service in Coolify).
             'url' => env('MERCURE_URL', 'http://localhost:3000/.well-known/mercure'),
+            // Where browsers subscribe (the hub's public HTTPS address).
+            'hub_url' => env('MERCURE_PUBLIC_URL', env('MERCURE_URL')),
             'secret' => env('MERCURE_SECRET', 'aVerySecretKey'),
             'publisher_key' => env('MERCURE_PUBLISHER_JWT_KEY')
         ],

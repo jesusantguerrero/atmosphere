@@ -11,7 +11,6 @@ import BulkAddPlannerModal from "@/Components/BulkAddPlannerModal.vue";
 import { useTransactionModal, transactionModalState } from "@/domains/transactions";
 import { useImportModal } from "@/domains/transactions/useImportModal";
 import { useAppContextStore } from "@/store";
-import { config } from "@/config/index";
 import {
     usePaymentModal,
     modalState as paymentModalState,
@@ -48,16 +47,6 @@ const { isOpen: isImportModalOpen } = useImportModal();
  */
 const page = usePage();
 const sharedAccounts = computed(() => (page.props as any).accounts ?? []);
-
-if (config.MERCURE_URL) {
-    const url = new URL(config.MERCURE_URL);
-    url.searchParams.append("topic", "https://example.com/main");
-    url.searchParams.append("topic", "https://example.com/users/jesus");
-    var es = new EventSource(url);
-    es.onmessage = (messageEvent) => {
-        var eventData = JSON.parse(messageEvent.data);
-    };
-}
 
 const { isOpen: isPaymentModalOpen } = usePaymentModal();
 
