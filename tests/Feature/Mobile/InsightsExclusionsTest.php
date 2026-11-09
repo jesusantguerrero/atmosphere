@@ -77,14 +77,14 @@ class InsightsExclusionsTest extends TestCase
         $fuel = Category::create(['name' => 'Gasolina', 'team_id' => $this->teamId, 'resource_type' => 'transactions', 'parent_id' => $house->id, 'depth' => 1, 'index' => 1]);
         $sirena = Payee::create(['team_id' => $this->teamId, 'user_id' => $this->user->id, 'name' => 'Sirena']);
         $shell = Payee::create(['team_id' => $this->teamId, 'user_id' => $this->user->id, 'name' => 'Shell']);
-        $this->expense($food, $sirena, '2026-11-03', 1200);
-        $this->expense($fuel, $shell, '2026-11-04', 2500);
+        $groceries = $this->expense($food, $sirena, '2026-11-03', 1200);
+        $gas = $this->expense($fuel, $shell, '2026-11-04', 2500);
 
-        $byCategory = $this->getJson("/api/mobile/transactions?category_id={$food->id}")->assertOk()->json('data.data');
-        $byPayee = $this->getJson("/api/mobile/transactions?payee_id={$shell->id}")->assertOk()->json('data.data');
+        $byCategory = $this->getJson("/api/mobile/transactions?category_id={$food->id}")->assertOk()->json('data.transactions');
+        $byPayee = $this->getJson("/api/mobile/transactions?payee_id={$shell->id}")->assertOk()->json('data.transactions');
 
-        $this->assertSame([$food->id], array_values(array_unique(array_column($byCategory, 'category_id'))));
-        $this->assertSame([$shell->id], array_values(array_unique(array_column($byPayee, 'payee_id'))));
+        $this->assertSame([$groceries->id], array_column($byCategory, 'id'));
+        $this->assertSame([$gas->id], array_column($byPayee, 'id'));
     }
 
     private function expense(Category $category, Payee $payee, string $date, float $total): Transaction
