@@ -469,7 +469,7 @@ class TransactionService
             ->where('transactions.direction', Transaction::DIRECTION_CREDIT)
             ->where('transactions.status', 'verified')
             ->whereBetween('transactions.date', [$startDate, $endDate])
-            ->selectRaw('COALESCE(payees.name, ?) as name, SUM(COALESCE(transactions.total, 0)) as total', [__('Without payee')])
+            ->selectRaw('payees.id as id, COALESCE(payees.name, ?) as name, SUM(COALESCE(transactions.total, 0)) as total', [__('Without payee')])
             ->groupBy('payees.id', 'payees.name')
             ->toBase()->get();
     }

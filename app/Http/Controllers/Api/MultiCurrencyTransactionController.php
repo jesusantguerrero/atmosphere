@@ -267,6 +267,8 @@ class MultiCurrencyTransactionController extends Controller
     {
         $validated = $request->validate([
             'account_id' => 'nullable|exists:accounts,id',
+            'category_id' => 'nullable|integer',
+            'payee_id' => 'nullable|integer',
             'currency_code' => 'nullable|string|size:3',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date',
@@ -285,6 +287,14 @@ class MultiCurrencyTransactionController extends Controller
             // Filter by account if specified
             if (! empty($validated['account_id'])) {
                 $query->where('account_id', $validated['account_id']);
+            }
+
+            // Insights rows open their transactions by category or payee
+            if (! empty($validated['category_id'])) {
+                $query->where('category_id', $validated['category_id']);
+            }
+            if (! empty($validated['payee_id'])) {
+                $query->where('payee_id', $validated['payee_id']);
             }
 
             // Filter by currency if specified
