@@ -6,6 +6,7 @@ import axios from "axios";
 import { useI18n } from "vue-i18n";
 import { usePage } from "@inertiajs/vue3";
 import { NSelect } from "naive-ui";
+import { unwrapMercureMessage } from "@/domains/shopping/mercure";
 
 const { t } = useI18n();
 
@@ -1207,7 +1208,8 @@ const wireMercure = () => {
 
     eventSource.onmessage = (event) => {
         try {
-            const payload = JSON.parse(event.data);
+            const payload = unwrapMercureMessage<any>(event.data);
+            if (!payload) return;
 
             const staleEvent = isStaleReview(payload.review);
 
