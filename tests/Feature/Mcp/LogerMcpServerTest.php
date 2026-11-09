@@ -6,7 +6,6 @@ use App\Domains\AppCore\Models\Category;
 use App\Domains\Budget\Models\BudgetTarget;
 use App\Domains\Journal\Actions\AccountDetailTypesCreate;
 use App\Domains\Transaction\Models\Transaction;
-use App\Http\Middleware\EnsureMcpToken;
 use App\Mcp\Servers\LogerServer;
 use App\Mcp\Tools\CreateTransactionTool;
 use App\Mcp\Tools\GetMonthBriefTool;
@@ -18,16 +17,21 @@ use App\Mcp\Tools\MarkPaymentPaidTool;
 use App\Models\Account;
 use App\Models\Team;
 use App\Models\User;
+use App\Providers\PassportServiceProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Insane\Journal\Models\Core\AccountDetailType;
+use Laravel\Passport\AccessToken;
+use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 class LogerMcpServerTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const WRITE_ABILITIES = [EnsureMcpToken::ABILITY, CreateTransactionTool::WRITE_ABILITY];
+    private const READ_SCOPES = [PassportServiceProvider::READ_SCOPE];
+
+    private const WRITE_SCOPES = [PassportServiceProvider::READ_SCOPE, PassportServiceProvider::WRITE_SCOPE];
 
     protected function setUp(): void
     {
@@ -42,19 +46,21 @@ class LogerMcpServerTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_http_endpoint_only_accepts_mcp_tokens(): void
+    public function test_http_endpoint_needs_an_oauth_token_not_a_mobile_one(): void
     {
         [$user] = $this->makeHousehold();
 
-        $this->postJson('/mcp', $this->rpc('initialize'))->assertUnauthorized();
-        $this->withToken($user->createToken('Mobile')->plainTextToken)->postJson('/mcp', $this->rpc('initialize'))->assertForbidden();
+        $this->postJson('/mcp', $this->rpc('initialize'))
+            ->assertUnauthorized()
+            ->assertHeader('WWW-Authenticate');
+        $this->withToken($user->createToken('Mobile')->plainTextToken)->postJson('/mcp', $this->rpc('initialize'))->assertUnauthorized();
         $this->app['auth']->forgetGuards();
 
-        $token = $user->createToken('Claude Code', [EnsureMcpToken::ABILITY])->plainTextToken;
-        $this->withToken($token)->postJson('/mcp', $this->rpc('initialize'))
+        Passport::actingAs($user, self::READ_SCOPES);
+        $this->postJson('/mcp', $this->rpc('initialize'))
             ->assertOk()
             ->assertJsonPath('result.serverInfo.name', 'Loger');
-        $this->withToken($token)->postJson('/mcp', $this->rpc('tools/list'))
+        $this->postJson('/mcp', $this->rpc('tools/list'))
             ->assertOk()
             ->assertJsonCount(7, 'result.tools');
     }
@@ -105,7 +111,7 @@ class LogerMcpServerTest extends TestCase
         $phone = $this->category($team, $group, 'Teléfono');
         $arguments = ['type' => 'expense', 'amount' => 2400, 'description' => 'Claro internet', 'account_id' => $account->id, 'category_id' => $phone->id, 'payee_name' => 'Claro'];
 
-        $server = LogerServer::actingAs($this->withAbilities($user, self::WRITE_ABILITIES));
+        $server = LogerServer::actingAs($this->withScopes($user, self::WRITE_SCOPES));
         $server->tool(CreateTransactionTool::class, $arguments)->assertOk()->assertSee(['"duplicate":false', 'Claro internet']);
         $server->tool(CreateTransactionTool::class, $arguments)->assertOk()->assertSee('"duplicate":true');
 
@@ -124,11 +130,11 @@ class LogerMcpServerTest extends TestCase
         $strangerCategory = $this->category($strangerTeam, $strangerGroup, 'Ajena');
         $valid = ['type' => 'expense', 'amount' => 2400, 'description' => 'Claro', 'account_id' => $account->id, 'category_id' => $phone->id];
 
-        LogerServer::actingAs($this->withAbilities($user, [EnsureMcpToken::ABILITY]))
+        LogerServer::actingAs($this->withScopes($user, self::READ_SCOPES))
             ->tool(CreateTransactionTool::class, $valid)
             ->assertHasErrors(['read-only']);
 
-        $server = LogerServer::actingAs($this->withAbilities($user, self::WRITE_ABILITIES));
+        $server = LogerServer::actingAs($this->withScopes($user, self::WRITE_SCOPES));
         $server->tool(CreateTransactionTool::class, [...$valid, 'amount' => 0])->assertHasErrors();
         $server->tool(CreateTransactionTool::class, [...$valid, 'category_id' => null])->assertHasErrors(['category_id']);
         $server->tool(CreateTransactionTool::class, [...$valid, 'account_id' => $strangerAccount->id])->assertHasErrors();
@@ -144,11 +150,11 @@ class LogerMcpServerTest extends TestCase
         $rent = $this->budgetTarget($team, $user, $this->category($team, $group, 'Alquiler'), 12);
         $strangerRent = $this->budgetTarget($strangerTeam, $user, $this->category($strangerTeam, $strangerGroup, 'Alquiler'), 12);
 
-        LogerServer::actingAs($this->withAbilities($user, [EnsureMcpToken::ABILITY]))
+        LogerServer::actingAs($this->withScopes($user, self::READ_SCOPES))
             ->tool(MarkPaymentPaidTool::class, ['payment_id' => "budget_{$rent->id}"])
             ->assertHasErrors(['read-only']);
 
-        $server = LogerServer::actingAs($this->withAbilities($user, self::WRITE_ABILITIES));
+        $server = LogerServer::actingAs($this->withScopes($user, self::WRITE_SCOPES));
         $server->tool(MarkPaymentPaidTool::class, ['payment_id' => "budget_{$strangerRent->id}"])->assertHasErrors(['not pending']);
         $server->tool(MarkPaymentPaidTool::class, ['payment_id' => "budget_{$rent->id}", 'account_id' => $account->id])
             ->assertOk()
@@ -184,11 +190,11 @@ class LogerMcpServerTest extends TestCase
     }
 
     /**
-     * @param  list<string>  $abilities
+     * @param  list<string>  $scopes
      */
-    private function withAbilities(User $user, array $abilities): User
+    private function withScopes(User $user, array $scopes): User
     {
-        return $user->withAccessToken($user->createToken('Claude Code', $abilities)->accessToken);
+        return $user->withAccessToken(new AccessToken(['oauth_user_id' => $user->id, 'oauth_scopes' => $scopes]));
     }
 
     private function category(Team $team, Category $group, string $name): Category
