@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\MobileTeamController;
 use App\Http\Controllers\Api\MobileTwoFactorController;
 use App\Http\Controllers\Api\MultiCurrencyTransactionController;
 use App\Http\Controllers\Finance\FinanceTrendController;
+use App\Http\Middleware\SetUserLocale;
 use App\Http\Controllers\RoutineController;
 use App\Http\Controllers\ShoppingListController;
 use Illuminate\Http\Request;
@@ -55,7 +56,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('ap
 
 // Mobile app surface: clean, token-authenticated URLs under /api/mobile.
 // Reuses existing controllers/services; only reshapes payloads for the phone.
-Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mobile')->name('mobile.')->group(function () {
+Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', SetUserLocale::class])->prefix('mobile')->name('mobile.')->group(function () {
     // Session & profile
     Route::get('/me', [MobileController::class, 'me'])->name('me');
     Route::delete('/session', [MobileController::class, 'logout'])->name('session.destroy');
