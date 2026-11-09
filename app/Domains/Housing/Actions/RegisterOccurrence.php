@@ -30,25 +30,39 @@ class RegisterOccurrence
         $occurrence->avg_days_passed = $totalDays / $occurrenceCount;
     }
 
-    public function add(int $teamId, string $name, string $date)
+    public function add(int $teamId, string $name, string $date): Occurrence
     {
         $occurrence = Occurrence::byTeam($teamId)->byName($name)->first();
-        if ($occurrence && ($occurrence->last_date && $occurrence->last_date->format('Y-m-d') !== $date || ! $occurrence->last_date)) {
-            $this->softAdd($occurrence, $date);
-            $occurrence->save();
-
-            return;
+        if ($occurrence) {
+            return $this->addTo($occurrence, $date);
         }
 
-        Occurrence::create([
+        return Occurrence::create([
             'name' => $name,
             'team_id' => $teamId,
             'last_date' => $date,
             'previous_days_count' => 0,
             'total_days' => 0,
             'avg_days_passed' => 0,
-            'log' => [],
+            'occurrence_count' => 1,
+            'log' => [$date],
         ]);
+    }
+
+    /**
+     * Mark a date on an existing occurrence. Marking the same day twice is a no-op
+     * (it used to create a second occurrence with the same name).
+     */
+    public function addTo(Occurrence $occurrence, string $date): Occurrence
+    {
+        if (in_array($date, (array) $occurrence->log, true) || $occurrence->last_date?->format('Y-m-d') === $date) {
+            return $occurrence;
+        }
+
+        $this->softAdd($occurrence, $date);
+        $occurrence->save();
+
+        return $occurrence;
     }
 
     public function remove(int $id, ?string $date = null)
@@ -56,8 +70,13 @@ class RegisterOccurrence
         $occurrence = Occurrence::find($id);
 
         if ($occurrence && $occurrence->last_date) {
-            $log = $occurrence->log;
+            $log = (array) $occurrence->log;
             array_pop($log);
+            if ($log === []) {
+                $occurrence->update(['last_date' => null, 'previous_days_count' => 0, 'total_days' => 0, 'avg_days_passed' => 0, 'occurrence_count' => 0, 'log' => []]);
+
+                return;
+            }
             $previousLastDate = count($log) > 1 ? $log[count($log) - 2] : null;
             $lastDate = $log[count($log) - 1];
 

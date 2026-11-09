@@ -13,8 +13,6 @@ use App\Domains\Budget\Models\BudgetTarget;
 use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Domains\Budget\Services\BudgetMovementService;
 use App\Domains\Budget\Services\BudgetTargetService;
-use App\Domains\Housing\Actions\RegisterOccurrence;
-use App\Domains\Housing\Models\Occurrence;
 use App\Domains\Integration\Actions\TransactionCreateEntry;
 use App\Domains\Integration\Actions\UniversalBankParser;
 use App\Domains\Integration\Services\UniversalBankAutomationService;
@@ -3065,83 +3063,6 @@ class MobileController extends Controller
     }
 
     // ─── Occurrences ──────────────────────────────────────────────
-
-    /**
-     * All occurrences for the team with computed cadence fields the app needs
-     * to render the "Explorar" carousel and overdue badges.
-     */
-    public function occurrences(Request $request): JsonResponse
-    {
-        $teamId = $request->user()->current_team_id;
-
-        $occurrences = Occurrence::byTeam($teamId)
-            ->where('is_active', true)
-            ->whereNotNull('last_date')
-            ->orderBy('name')
-            ->get()
-            ->map(function (Occurrence $o) {
-                $daysSinceLast = $o->last_date
-                    ? (int) $o->last_date->diffInDays(now(), true)
-                    : null;
-                $avg = (float) $o->avg_days_passed;
-                $isOverdue = $daysSinceLast !== null && $avg > 0 && $daysSinceLast >= $avg + Occurrence::DAYS_BEFORE;
-
-                return [
-                    'id' => $o->id,
-                    'name' => $o->name,
-                    'type' => $o->type,
-                    'last_date' => $o->last_date?->format('Y-m-d'),
-                    'avg_days_passed' => round($avg, 1),
-                    'occurrence_count' => (int) $o->occurrence_count,
-                    'days_since_last' => $daysSinceLast,
-                    'is_overdue' => $isOverdue,
-                    'days_until_next' => $o->daysUntilNext(),
-                ];
-            })
-            ->values();
-
-        return response()->json(['occurrences' => $occurrences]);
-    }
-
-    /**
-     * Record "happened now" for an occurrence.
-     */
-    public function addOccurrenceInstance(Request $request, Occurrence $occurrence, RegisterOccurrence $registerOccurrence): JsonResponse
-    {
-        abort_if((int) $occurrence->team_id !== (int) $request->user()->current_team_id, 403);
-
-        $registerOccurrence->add(
-            $occurrence->team_id,
-            $occurrence->name,
-            Carbon::now()->format('Y-m-d')
-        );
-
-        $occurrence->refresh();
-
-        return response()->json([
-            'success' => true,
-            'last_date' => $occurrence->last_date?->format('Y-m-d'),
-            'occurrence_count' => (int) $occurrence->occurrence_count,
-        ]);
-    }
-
-    /**
-     * Remove the last instance of an occurrence.
-     */
-    public function removeOccurrenceInstance(Request $request, Occurrence $occurrence, RegisterOccurrence $registerOccurrence): JsonResponse
-    {
-        abort_if((int) $occurrence->team_id !== (int) $request->user()->current_team_id, 403);
-
-        $registerOccurrence->remove($occurrence->id);
-
-        $occurrence->refresh();
-
-        return response()->json([
-            'success' => true,
-            'last_date' => $occurrence->last_date?->format('Y-m-d'),
-            'occurrence_count' => (int) $occurrence->occurrence_count,
-        ]);
-    }
 
     // ─── Insights (Tendencias) ────────────────────────────────────
 

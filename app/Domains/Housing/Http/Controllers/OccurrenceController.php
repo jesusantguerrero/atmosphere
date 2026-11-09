@@ -13,6 +13,7 @@ use Freesgen\Atmosphere\Http\InertiaController;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon as SupportCarbon;
+use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
 
 class OccurrenceController extends InertiaController
@@ -41,12 +42,13 @@ class OccurrenceController extends InertiaController
     public function addInstance(Occurrence $occurrence, RegisterOccurrence $registerOccurrence)
     {
         $this->ensureTeamOccurrence($occurrence);
+        if ($occurrence->hasRule()) {
+            throw ValidationException::withMessages([
+                'occurrence' => __('This rhythm is synced with its transactions. Use Sync instead of checking it by hand.'),
+            ]);
+        }
 
-        $registerOccurrence->add(
-            $occurrence->team_id,
-            $occurrence->name,
-            SupportCarbon::now()->format('Y-m-d')
-        );
+        $registerOccurrence->addTo($occurrence, SupportCarbon::now()->format('Y-m-d'));
 
         return redirect()->back();
     }
