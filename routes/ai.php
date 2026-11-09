@@ -1,10 +1,10 @@
 <?php
 
 use App\Http\Controllers\Mcp\McpOAuthMetadataController;
+use App\Http\Controllers\Mcp\McpOAuthRegisterController;
 use App\Mcp\Servers\LogerServer;
 use Illuminate\Support\Facades\Route;
 use Laravel\Mcp\Facades\Mcp;
-use Laravel\Mcp\Server\Http\Controllers\OAuthRegisterController;
 
 // Remote MCP server for Claude Code. Clients connect with OAuth (Passport):
 // they register themselves, the user approves them on /oauth/authorize.
@@ -23,6 +23,6 @@ Route::get('/.well-known/oauth-authorization-server', [McpOAuthMetadataControlle
 Route::get('/.well-known/oauth-authorization-server/{path}', [McpOAuthMetadataController::class, 'authorizationServer'])
     ->where('path', '.*')
     ->name('mcp.oauth.authorization-server.nested');
-Route::post('/oauth/register', OAuthRegisterController::class)
+Route::post('/oauth/register', McpOAuthRegisterController::class)
     ->middleware('throttle:10,1')
     ->name('mcp.oauth.register');

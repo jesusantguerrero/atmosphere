@@ -49,7 +49,8 @@ class McpOAuthTest extends TestCase
             'redirect_uris' => ['http://localhost:33418/callback'],
         ])
             ->assertCreated()
-            ->assertJsonPath('client_name', 'Claude Code')
+            ->assertJsonPath('scope', 'mcp:read mcp:write')
+            ->assertJsonPath('token_endpoint_auth_method', 'none')
             ->assertJsonStructure(['client_id', 'redirect_uris']);
 
         $this->assertSame(1, Client::query()->where('name', 'Claude Code')->count());
