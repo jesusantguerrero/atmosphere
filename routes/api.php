@@ -234,6 +234,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', SetUserLocal
     Route::get('/insights', [MobileController::class, 'insights'])->name('insights');
     Route::post('/insights/exclusions', [FinanceTrendController::class, 'updateExclusions'])->name('insights.exclusions');
     Route::get('/trends/credit-cards', [MobileTrendsController::class, 'creditCards'])->name('trends.credit-cards');
+    Route::get('/trends/financial-overview', [MobileTrendsController::class, 'financialOverview'])->name('trends.financial-overview');
 
     // Notifications
     Route::get('/notifications', [MobileController::class, 'notifications'])->name('notifications.index');

@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Api;
 
 use App\Domains\Transaction\Services\CreditCardReportService;
+use App\Domains\Transaction\Services\FinancialOverviewService;
 use App\Domains\Transaction\Services\SpendingByFundingService;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Mobile\TrendsPeriodRequest;
 use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 /**
  * The web Trends sections for the app: credit cards (with the journey) and,
@@ -46,6 +49,17 @@ class MobileTrendsController extends Controller
             'categories_by_funding' => $funding->categoriesByFunding($teamId, $start, $end),
             'spent_by_kind' => $funding->spentByKind($teamId, $start, $end),
         ]);
+    }
+
+    /**
+     * Read-only Financial overview: the web page's data with snake_case top-level
+     * keys. Like the web, it spans every team the user belongs to.
+     */
+    public function financialOverview(Request $request, FinancialOverviewService $overview): JsonResponse
+    {
+        return response()->json(collect($overview->build($request->user()))
+            ->mapWithKeys(fn ($value, string $key) => [Str::snake($key) => $value])
+            ->all());
     }
 
     /**
