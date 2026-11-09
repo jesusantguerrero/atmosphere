@@ -22,6 +22,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -169,6 +170,7 @@ class OccurrenceSyncTest extends TestCase
     public function test_single_and_bulk_draft_approval_schedule_occurrence_checks(): void
     {
         Bus::fake();
+        Event::fake([TransactionUpdated::class]);
         Gate::before(fn (?User $user) => true);
         Gate::define('update', fn (?User $user) => true);
         Gate::define('deleteBulk', fn (?User $user) => true);
@@ -183,12 +185,15 @@ class OccurrenceSyncTest extends TestCase
         $this->line('2026-10-23', status: 'draft');
         $controller->approve(\App\Domains\Transaction\Models\Transaction::firstOrFail());
         Bus::assertDispatchedTimes(RunTeamChecks::class, 1);
+        // RunTeamChecks is unique per team for a minute; release it to check the bulk path too.
+        Cache::lock('laravel_unique_job:'.RunTeamChecks::class.':1')->forceRelease();
         $this->line('2026-10-22', status: 'draft');
         $this->line('2026-10-21', status: 'draft');
         $this->line('2026-10-20', team: 2, status: 'draft');
         DB::table('transactions')->where('id', 4)->update(['team_id' => 2]);
         $controller->approveAllDrafts(request());
         Bus::assertDispatchedTimes(RunTeamChecks::class, 2);
+        Event::assertDispatchedTimes(TransactionUpdated::class, 3);
         $this->assertSame('draft', DB::table('transactions')->where('id', 4)->value('status'));
     }
 
