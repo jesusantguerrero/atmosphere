@@ -12,6 +12,7 @@ use App\Models\Account;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Insane\Journal\Events\TransactionCreated;
 use Insane\Journal\Models\Core\AccountDetailType;
 use Insane\Journal\Models\Core\Payee;
 use Laravel\Sanctum\Sanctum;
@@ -127,7 +128,8 @@ class NextPaymentsPaidDetectionTest extends TestCase
         $this->assertSame('2026-10-25', $overdue['due_date']);
         $this->assertFalse($this->payments()->contains('id', "planned_{$ancient->id}"));
 
-        $this->pay(['category_id' => $gas->id, 'total' => 1800, 'date' => '2026-11-03']);
+        $late = $this->pay(['category_id' => $gas->id, 'total' => 1800, 'date' => '2026-11-03']);
+        event(new TransactionCreated($late, $late->toArray()));
 
         $this->assertNotListed($plan, '2026-10-25');
         $this->assertSame('2026-11-25', substr((string) $plan->fresh()->date, 0, 10));
