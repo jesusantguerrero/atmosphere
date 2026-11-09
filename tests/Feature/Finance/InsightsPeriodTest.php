@@ -6,6 +6,7 @@ use App\Domains\Transaction\Services\CreditCardReportService;
 use App\Domains\Transaction\Services\ReportService;
 use App\Domains\Transaction\Services\TransactionService;
 use App\Http\Controllers\Finance\FinanceTrendController;
+use App\Models\Setting;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -49,6 +50,7 @@ class InsightsPeriodTest extends TestCase
         $transactions = Mockery::mock('alias:'.TransactionService::class);
         $reports = Mockery::mock('alias:'.ReportService::class);
         $cards = Mockery::mock(CreditCardReportService::class);
+        Mockery::mock('alias:'.Setting::class)->shouldReceive('getByTeam')->andReturn([]);
         $transactions->shouldReceive('getCategoryExpensesGroup')->once()->with(2, $startDate, $endDate, null, null)->andReturn([]);
         $transactions->shouldReceive('getIncomeVsExpenses')->once()->with(2, $months - 1, 'month', 'expenses', Mockery::type(Carbon::class))->andReturn([
             'expenses' => [['name' => 'School', $startDate => 1100, 'total' => 1100]],
@@ -95,6 +97,7 @@ class InsightsPeriodTest extends TestCase
         $transactions = Mockery::mock('alias:'.TransactionService::class);
         $reports = Mockery::mock('alias:'.ReportService::class);
         $cards = Mockery::mock(CreditCardReportService::class);
+        Mockery::mock('alias:'.Setting::class)->shouldReceive('getByTeam')->andReturn([]);
         $transactions->shouldReceive('getCategoryExpensesGroup')->once()->with(2, $start, $end, null, null)->andReturn([]);
         $transactions->shouldReceive('getIncomeVsExpenses')->once()->with(2, $months - 1, 'month', 'expenses', Mockery::on(fn ($date) => $date->format('Y-m') === $anchor))->andReturn([]);
         $reports->shouldReceive('getLatestExpenseDate')->once()->andReturn('2026-10-31');
