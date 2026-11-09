@@ -3,6 +3,7 @@
 use App\Domains\AppCore\Http\Controllers\ApiLoginController;
 use App\Http\Controllers\Api\AccountApiController;
 use App\Http\Controllers\Api\DashboardApiController;
+use App\Http\Controllers\Api\MobileBriefController;
 use App\Http\Controllers\Api\MobileController;
 use App\Http\Controllers\Api\MobileNextPaymentsController;
 use App\Http\Controllers\Api\MobilePreferencesController;
@@ -72,6 +73,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
     Route::put('/me/notification-preferences', [MobilePreferencesController::class, 'updateNotificationPreferences'])->name('me.notification-preferences.update');
     Route::get('/me/modules', [MobilePreferencesController::class, 'modules'])->name('me.modules');
     Route::put('/me/modules', [MobilePreferencesController::class, 'updateModules'])->name('me.modules.update');
+    Route::get('/me/brief', MobileBriefController::class)->name('me.brief');
 
     Route::put('/current-team', [MobileTeamController::class, 'switchCurrentTeam'])->name('current-team.update');
     Route::get('/team/members', [MobileTeamController::class, 'members'])->name('team.members');

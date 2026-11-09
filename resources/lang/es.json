@@ -1355,5 +1355,9 @@
     "The household is not valid.": "El hogar no es válido.",
     "Choose the payment to dismiss.": "Elige el pago que quieres descartar.",
     "Choose the month to dismiss the payment for.": "Elige el mes en que quieres descartar el pago.",
-    "The month must use the YYYY-MM format.": "El mes debe tener el formato AAAA-MM."
+    "The month must use the YYYY-MM format.": "El mes debe tener el formato AAAA-MM.",
+    "The minimum difference must be a number.": "La diferencia mínima debe ser un número.",
+    "The minimum difference cannot be negative.": "La diferencia mínima no puede ser negativa.",
+    "The minimum percentage must be a number.": "El porcentaje mínimo debe ser un número.",
+    "The minimum percentage cannot be negative.": "El porcentaje mínimo no puede ser negativo."
 }
