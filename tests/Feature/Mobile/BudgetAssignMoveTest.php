@@ -3,9 +3,14 @@
 namespace Tests\Feature\Mobile;
 
 use App\Domains\AppCore\Models\Category;
+use App\Domains\Budget\Models\BudgetMatchAccount;
 use App\Domains\Budget\Models\BudgetMonth;
+use App\Domains\Journal\Actions\AccountDetailTypesCreate;
+use App\Domains\Transaction\Models\Transaction;
+use App\Models\Account;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Insane\Journal\Models\Core\AccountDetailType;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -130,6 +135,81 @@ class BudgetAssignMoveTest extends TestCase
             'month' => 'not-a-month',
             'budgeted' => -50,
         ])->assertStatus(422);
+    }
+
+    public function test_move_returns_the_movement_to_undo_and_the_amount_really_applied(): void
+    {
+        [$user, $team] = $this->makeUserAndTeam();
+        Sanctum::actingAs($user);
+
+        $group = $this->createGroup($team);
+        $source = $this->createCategory($team, $group, 'Food');
+        $dest = $this->createCategory($team, $group, 'Transport');
+        $month = now()->format('Y-m');
+        $this->postJson('/api/mobile/budget/assign', ['category_id' => $source->id, 'month' => $month, 'budgeted' => 3000])->assertOk();
+
+        $response = $this->postJson('/api/mobile/budget/move', [
+            'source_category_id' => $source->id,
+            'destination_category_id' => $dest->id,
+            'month' => $month,
+            'amount' => 5000,
+        ])->assertOk()->assertJsonPath('success', true)->assertJsonPath('amount', 3000);
+
+        $movementId = $response->json('movement_id');
+        $this->assertSame([$movementId], $response->json('movement_ids'));
+        $this->assertDatabaseHas('budget_movements', ['id' => $movementId, 'destination_category_id' => $dest->id]);
+
+        $this->deleteJson("/api/mobile/budget/movements/{$movementId}")->assertOk();
+        $this->assertDatabaseMissing('budget_movements', ['id' => $movementId]);
+    }
+
+    public function test_budget_categories_carry_the_assign_shortcuts(): void
+    {
+        [$user, $team] = $this->makeUserAndTeam();
+        Sanctum::actingAs($user);
+        app(AccountDetailTypesCreate::class)->create();
+
+        $group = $this->createGroup($team);
+        $food = $this->createCategory($team, $group, 'Food');
+        $savings = $this->createCategory($team, $group, 'Savings');
+        $account = Account::create([
+            'team_id' => $team->id,
+            'user_id' => $user->id,
+            'name' => 'Ahorros',
+            'account_detail_type_id' => AccountDetailType::where('name', 'bank')->value('id'),
+            'currency_code' => 'DOP',
+            'balance_type' => 'DEBIT',
+            'type' => 1,
+        ]);
+        $this->postJson('/api/mobile/budget/assign', ['category_id' => $food->id, 'month' => now()->subMonthNoOverflow()->format('Y-m'), 'budgeted' => 1200])->assertOk();
+        BudgetMatchAccount::create(['team_id' => $team->id, 'user_id' => $user->id, 'category_id' => $savings->id, 'account_id' => $account->id]);
+        foreach ([1, 2, 3] as $monthsAgo) {
+            Transaction::create([
+                'team_id' => $team->id,
+                'user_id' => $user->id,
+                'account_id' => $account->id,
+                'category_id' => $food->id,
+                'date' => now()->subMonthsNoOverflow($monthsAgo)->startOfMonth()->addDays(4)->format('Y-m-d'),
+                'description' => 'Super',
+                'total' => 900,
+                'direction' => Transaction::DIRECTION_CREDIT,
+                'currency_code' => 'DOP',
+                'status' => 'verified',
+            ]);
+        }
+
+        BudgetMonth::updateOrCreate(['team_id' => $team->id, 'category_id' => $savings->id, 'month' => now()->format('Y-m-01')], ['user_id' => $user->id, 'name' => now()->format('Y-m-01'), 'budgeted' => 500, 'available' => 500]);
+
+        $children = collect($this->getJson('/api/mobile/budget?month='.now()->format('Y-m'))->assertOk()->json('groups'))
+            ->firstWhere('id', $group->id)['children'];
+        $foodRow = collect($children)->firstWhere('id', $food->id);
+        $savingsRow = collect($children)->firstWhere('id', $savings->id);
+
+        $this->assertEquals(1200, $foodRow['last_month_budgeted']);
+        $this->assertEquals(900, $foodRow['average_3m']);
+        $this->assertNull($foodRow['match_account_diff']);
+        $this->assertEquals(500, $savingsRow['available']);
+        $this->assertEquals(-500, $savingsRow['match_account_diff']);
     }
 
     private function makeUserAndTeam(): array

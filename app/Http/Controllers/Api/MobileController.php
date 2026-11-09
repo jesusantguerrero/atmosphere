@@ -55,6 +55,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
@@ -210,9 +211,19 @@ class MobileController extends Controller
         // Pre-load all accounts for CC payment enrichment.
         $accountsById = Account::getByDetailTypes($teamId)->keyBy('id');
 
+        // Assign shortcuts, same as the web's ⋮ menu (BudgetItem.vue).
+        $shortcuts = [
+            'last_month' => BudgetMonth::query()
+                ->where('team_id', $teamId)
+                ->where('month', Carbon::parse($month)->subMonthNoOverflow()->format('Y-m-01'))
+                ->pluck('budgeted', 'category_id'),
+            'average' => TransactionService::getCategoryAverages($teamId, 3),
+            'is_current_month' => Carbon::parse($month)->isSameMonth(now()),
+        ];
+
         $availableByCurrency = [];
-        $mapChildren = function (Category $group, bool $isCreditCardGroup = false) use ($service, $month, $baseCurrency, &$availableByCurrency, $accountsById) {
-            return $group->subCategories->map(function (Category $cat) use ($service, $month, $baseCurrency, &$availableByCurrency, $accountsById, $isCreditCardGroup) {
+        $mapChildren = function (Category $group, bool $isCreditCardGroup = false) use ($service, $month, $baseCurrency, &$availableByCurrency, $accountsById, $shortcuts) {
+            return $group->subCategories->map(function (Category $cat) use ($service, $month, $baseCurrency, &$availableByCurrency, $accountsById, $isCreditCardGroup, $shortcuts) {
                 try {
                     $data = $service->getBudgetData($cat, $month);
                 } catch (\Throwable) {
@@ -311,6 +322,9 @@ class MobileController extends Controller
                     'has_target' => $cat->budget !== null,
                     'target' => $target,
                     'payment' => $payment,
+                    'last_month_budgeted' => round((float) (string) ($shortcuts['last_month'][$cat->id] ?? 0), 2),
+                    'average_3m' => round((float) ($shortcuts['average'][$cat->id] ?? 0), 2),
+                    'match_account_diff' => $this->matchAccountDiff($cat, $accountsById, (float) ($data['available'] ?? 0), $shortcuts['is_current_month']),
                 ];
             });
         };
@@ -475,7 +489,7 @@ class MobileController extends Controller
         $this->authorize('update', $source);
         $this->authorize('update', $destination);
 
-        $service->registerMovement(new BudgetMovementData(
+        $movement = $service->registerMovement(new BudgetMovementData(
             null,
             $teamId,
             $user->id,
@@ -486,7 +500,42 @@ class MobileController extends Controller
             (float) $validated['amount'],
         ));
 
-        return response()->json(['success' => true]);
+        return response()->json($this->movementResult([$movement]));
+    }
+
+    /**
+     * What a move/cover/allocate really applied (registerMovement clamps to the
+     * source's available) plus the ids DELETE /budget/movements/{id} undoes.
+     *
+     * @param  array<int, BudgetMovement|null>  $movements
+     * @return array{success: bool, movement_id: int|null, movement_ids: list<int>, amount: float}
+     */
+    private function movementResult(array $movements): array
+    {
+        $saved = collect($movements)->filter();
+
+        return [
+            'success' => true,
+            'movement_id' => $saved->first()?->id,
+            'movement_ids' => $saved->pluck('id')->values()->all(),
+            'amount' => round($saved->sum(fn (BudgetMovement $movement) => (float) $movement->amount), 2),
+        ];
+    }
+
+    /**
+     * Amount that would make the category's available equal its matched account
+     * balance (web "Set match account"). Only meaningful for the current month.
+     */
+    private function matchAccountDiff(Category $category, Collection $accountsById, float $available, bool $isCurrentMonth): ?float
+    {
+        $account = $category->matchAccount ? $accountsById->get($category->matchAccount->account_id) : null;
+        if (! $isCurrentMonth || ! $account) {
+            return null;
+        }
+
+        $diff = round((float) $account->balance - $available, 2);
+
+        return $diff == 0.0 ? null : $diff;
     }
 
     /**
@@ -571,7 +620,7 @@ class MobileController extends Controller
 
         $sourceCategoryId = $inflowGroup?->subCategories->first()?->id;
 
-        $service->registerSplit(
+        $movements = $service->registerSplit(
             $teamId,
             $user->id,
             $sourceCategoryId,
@@ -579,7 +628,7 @@ class MobileController extends Controller
             $validated['splits'],
         );
 
-        return response()->json(['success' => true]);
+        return response()->json($this->movementResult($movements));
     }
 
     /**
@@ -605,7 +654,7 @@ class MobileController extends Controller
             BudgetReservedNames::READY_TO_ASSIGN->value,
         );
 
-        $service->registerMovement(new BudgetMovementData(
+        $movement = $service->registerMovement(new BudgetMovementData(
             null,
             $teamId,
             $user->id,
@@ -616,7 +665,7 @@ class MobileController extends Controller
             (float) $validated['amount'],
         ));
 
-        return response()->json(['success' => true]);
+        return response()->json($this->movementResult([$movement]));
     }
 
     // ── Budget Groups CRUD ──────────────────────────────────────────

@@ -223,17 +223,19 @@ class BudgetMovementService
      * Distribute an amount from one source category across multiple destinations in a single transaction.
      *
      * @param  array<int, array{destination_category_id:int, amount:float}>  $splits
+     * @return list<BudgetMovement>
      */
-    public function registerSplit(int $teamId, int $userId, ?int $sourceCategoryId, string $date, array $splits): void
+    public function registerSplit(int $teamId, int $userId, ?int $sourceCategoryId, string $date, array $splits): array
     {
-        DB::transaction(function () use ($teamId, $userId, $sourceCategoryId, $date, $splits) {
+        return DB::transaction(function () use ($teamId, $userId, $sourceCategoryId, $date, $splits) {
+            $movements = [];
             foreach ($splits as $split) {
                 $amount = (float) ($split['amount'] ?? 0);
                 if ($amount <= 0) {
                     continue;
                 }
 
-                $this->registerMovement(BudgetMovementData::from([
+                $movements[] = $this->registerMovement(BudgetMovementData::from([
                     'id' => null,
                     'team_id' => $teamId,
                     'user_id' => $userId,
@@ -244,6 +246,8 @@ class BudgetMovementService
                     'amount' => $amount,
                 ]), false, true);
             }
+
+            return $movements;
         });
     }
 }
