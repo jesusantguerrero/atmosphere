@@ -32,6 +32,7 @@
         "laravel/framework": "^13.0",
         "laravel/jetstream": "^5.0",
         "laravel/mcp": "^1.0",
+        "laravel/passport": "^13.8",
         "laravel/pulse": "^1.0@beta",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^3.0",
