@@ -1369,5 +1369,9 @@
     "Connected apps": "Aplicaciones conectadas",
     "Apps you allowed to use Loger on your behalf, like Claude Code.": "Aplicaciones a las que permitiste usar Loger por ti, como Claude Code.",
     "No apps connected. Connect Claude Code with: claude mcp add --transport http loger {url}": "No hay aplicaciones conectadas. Conecta Claude Code con: claude mcp add --transport http loger {url}",
-    "Connected on {date}": "Conectada el {date}"
+    "Connected on {date}": "Conectada el {date}",
+    "This rhythm is synced with its transactions. Use Sync instead of checking it by hand.": "Este ritmo se sincroniza con sus transacciones. Usa «Sincronizar» en vez de marcarlo a mano.",
+    "Give this rhythm a name.": "Ponle nombre a este ritmo.",
+    "The name is too long.": "El nombre es demasiado largo.",
+    "Choose a supported rhythm type.": "Elige un tipo de ritmo válido."
 }

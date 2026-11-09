@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\DashboardApiController;
 use App\Http\Controllers\Api\MobileBriefController;
 use App\Http\Controllers\Api\MobileController;
 use App\Http\Controllers\Api\MobileNextPaymentsController;
+use App\Http\Controllers\Api\MobileOccurrenceController;
 use App\Http\Controllers\Api\MobilePreferencesController;
 use App\Http\Controllers\Api\MobileProfileController;
 use App\Http\Controllers\Api\MobileTeamController;
@@ -216,9 +217,16 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
     Route::post('/transactions/bulk-delete', [MobileController::class, 'bulkDeleteTransactions'])->name('transactions.bulk-delete');
 
     // Occurrences
-    Route::get('/occurrences', [MobileController::class, 'occurrences'])->name('occurrences.index');
-    Route::post('/occurrences/{occurrence}/instances', [MobileController::class, 'addOccurrenceInstance'])->name('occurrences.instances.add');
-    Route::delete('/occurrences/{occurrence}/instances', [MobileController::class, 'removeOccurrenceInstance'])->name('occurrences.instances.remove');
+    Route::get('/occurrences', [MobileOccurrenceController::class, 'index'])->name('occurrences.index');
+    Route::post('/occurrences', [MobileOccurrenceController::class, 'store'])->name('occurrences.store');
+    Route::post('/occurrences/preview', [MobileOccurrenceController::class, 'preview'])->name('occurrences.preview');
+    Route::post('/occurrences/sync-all', [MobileOccurrenceController::class, 'syncAll'])->name('occurrences.sync-all');
+    Route::patch('/occurrences/{occurrence}', [MobileOccurrenceController::class, 'update'])->name('occurrences.update');
+    Route::delete('/occurrences/{occurrence}', [MobileOccurrenceController::class, 'destroy'])->name('occurrences.destroy');
+    Route::post('/occurrences/{occurrence}/sync', [MobileOccurrenceController::class, 'sync'])->name('occurrences.sync');
+    Route::post('/occurrences/{occurrence}/remind', [MobileOccurrenceController::class, 'remind'])->name('occurrences.remind');
+    Route::post('/occurrences/{occurrence}/instances', [MobileOccurrenceController::class, 'addInstance'])->name('occurrences.instances.add');
+    Route::delete('/occurrences/{occurrence}/instances', [MobileOccurrenceController::class, 'removeInstance'])->name('occurrences.instances.remove');
 
     // Insights (Tendencias)
     Route::get('/insights', [MobileController::class, 'insights'])->name('insights');
