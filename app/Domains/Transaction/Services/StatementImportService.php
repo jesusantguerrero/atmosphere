@@ -9,6 +9,7 @@ use App\Domains\Transaction\Models\Transaction;
 use App\Models\Account;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Validation\ValidationException;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 /**
@@ -64,6 +65,10 @@ class StatementImportService
                 'xlsx', 'xls' => ParseBankCsv::parseRows(IOFactory::load($path)->getActiveSheet()->toArray(null, true, true, false)),
                 default => ParseBankCsv::parse($path),
             };
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            throw ValidationException::withMessages(['file' => __('We could not read this statement. Check that it is the file your bank exported.')]);
         } finally {
             if (is_file($path)) {
                 unlink($path);

@@ -84,11 +84,13 @@ class StatementImportTest extends TestCase
         $this->assertSame(0, Transaction::query()->count());
     }
 
-    public function test_a_pdf_without_recognizable_movements_imports_nothing(): void
+    public function test_an_unreadable_pdf_answers_422_instead_of_crashing(): void
     {
         $this->postJson('/api/mobile/statements/import', ['file' => UploadedFile::fake()->createWithContent('estado.pdf', "%PDF-1.4\n%%EOF"), 'account_id' => $this->account->id])
-            ->assertOk()
-            ->assertJson(['found' => 0, 'imported' => 0, 'skipped' => 0]);
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('file');
+
+        $this->assertSame(0, Transaction::query()->count());
     }
 
     private function account(string $name, int $teamId, ?User $user = null): Account
