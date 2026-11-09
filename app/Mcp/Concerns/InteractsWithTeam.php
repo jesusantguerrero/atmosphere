@@ -39,13 +39,13 @@ trait InteractsWithTeam
     }
 
     /**
-     * Read tools only need the `mcp` ability; tools that change data also need `mcp:write`.
+     * Read tools only need `mcp:read`; tools that change data also need the `mcp:write` scope.
      */
     protected function denyWithoutWriteAbility(Request $request): ?Response
     {
         /** @var User $user */
         $user = $request->user();
 
-        return $user->tokenCan(self::WRITE_ABILITY) ? null : Response::error('This token is read-only. Create one with write access to change data.');
+        return $user->tokenCan(self::WRITE_ABILITY) ? null : Response::error('This connection is read-only. Reconnect Loger from Claude Code and allow recording transactions.');
     }
 }
