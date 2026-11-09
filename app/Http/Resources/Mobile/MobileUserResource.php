@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Mobile;
 
+use App\Models\Team;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -27,6 +28,12 @@ class MobileUserResource extends JsonResource
             'auth_provider' => $this->google_id ? 'google' : ($this->apple_id ? 'apple' : null),
             'language' => $this->language,
             'current_team_id' => $this->current_team_id,
+            'current_team' => $this->currentTeam ? ['id' => $this->currentTeam->id, 'name' => $this->currentTeam->name] : null,
+            'teams' => $this->allTeams()->map(fn (Team $team) => [
+                'id' => $team->id,
+                'name' => $team->name,
+                'role' => $team->user_id === $this->id ? 'owner' : $team->membership?->role,
+            ])->values(),
             'two_factor_enabled' => $this->hasEnabledTwoFactorAuthentication(),
             'two_factor_confirmed' => filled($this->two_factor_secret) && $this->two_factor_confirmed_at !== null,
         ];

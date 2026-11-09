@@ -205,4 +205,43 @@ class MobileTeamTest extends TestCase
         $this->as($this->owner)->deleteJson("/api/mobile/team/members/{$this->owner->id}")->assertNotFound();
         $this->assertSame($this->owner->id, $this->team->fresh()->user_id);
     }
+
+    public function test_me_lists_current_team_and_every_team_with_my_role(): void
+    {
+        $editor = $this->addMember('editor');
+        $personalTeam = $editor->ownedTeams()->first();
+
+        $response = $this->as($editor)->getJson('/api/mobile/me')->assertOk();
+
+        $response->assertJsonPath('current_team', ['id' => $this->team->id, 'name' => $this->team->name])
+            ->assertJsonCount(2, 'teams');
+        $roles = collect($response->json('teams'))->pluck('role', 'id');
+        $this->assertSame('owner', $roles[$personalTeam->id]);
+        $this->assertSame('editor', $roles[$this->team->id]);
+    }
+
+    public function test_switch_current_team_changes_household_and_returns_the_user(): void
+    {
+        $editor = $this->addMember('editor');
+        $personalTeam = $editor->ownedTeams()->first();
+
+        $this->as($editor)->putJson('/api/mobile/current-team', ['team_id' => $personalTeam->id])
+            ->assertOk()
+            ->assertJsonPath('current_team_id', $personalTeam->id)
+            ->assertJsonPath('current_team.name', $personalTeam->name);
+
+        $this->assertSame($personalTeam->id, $editor->fresh()->current_team_id);
+    }
+
+    public function test_switch_current_team_rejects_foreign_missing_and_invalid_teams(): void
+    {
+        $stranger = User::factory()->withPersonalTeam()->create();
+
+        $this->putJson('/api/mobile/current-team', ['team_id' => $this->team->id])->assertUnauthorized();
+        $this->as($this->owner)->putJson('/api/mobile/current-team', ['team_id' => $stranger->ownedTeams()->first()->id])->assertForbidden();
+        $this->as($this->owner)->putJson('/api/mobile/current-team', ['team_id' => 999999])->assertNotFound();
+        $this->as($this->owner)->putJson('/api/mobile/current-team', [])->assertUnprocessable()->assertJsonValidationErrors('team_id');
+
+        $this->assertSame($this->team->id, $this->owner->fresh()->current_team_id);
+    }
 }
