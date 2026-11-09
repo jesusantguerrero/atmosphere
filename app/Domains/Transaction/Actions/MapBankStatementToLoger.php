@@ -12,7 +12,7 @@ class MapBankStatementToLoger
     /**
      * Map a parsed bank statement row to the Loger transaction format.
      *
-     * @param  array{date: string, reference: string, description: string, debit: float, credit: float, balance: float}  $row
+     * @param  array{date: string, reference: string, description: string, debit: float, credit: float, balance: float, currency?: string}  $row
      * @param  array{team_id: int, user_id: int}  $session
      */
     public static function parse(array $row, array $session, int $accountId): array
@@ -25,8 +25,9 @@ class MapBankStatementToLoger
         $payeeName = self::extractPayeeName($description);
         $payee = PayeeResolver::resolve($session, $payeeName);
 
+        // Card statements mix RD$ and US$ rows; the row's own currency wins.
         $account = Account::find($accountId);
-        $currencyCode = $account?->currency_code ?? 'USD';
+        $currencyCode = $row['currency'] ?? $account?->currency_code ?? 'USD';
 
         return [
             'team_id' => $session['team_id'],
