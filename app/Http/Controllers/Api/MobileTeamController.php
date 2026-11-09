@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Mobile\InviteTeamMemberRequest;
+use App\Http\Requests\Mobile\SwitchCurrentTeamRequest;
 use App\Http\Requests\Mobile\UpdateTeamMemberRoleRequest;
+use App\Http\Resources\Mobile\MobileUserResource;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -91,6 +93,15 @@ class MobileTeamController extends Controller
         $this->fallBackToPersonalTeam($user->refresh());
 
         return response()->json(['success' => true]);
+    }
+
+    public function switchCurrentTeam(SwitchCurrentTeamRequest $request): JsonResponse
+    {
+        $team = Team::query()->findOrFail($request->validated('team_id'));
+
+        abort_unless($request->user()->switchTeam($team), 403);
+
+        return response()->json(MobileUserResource::make($request->user()->refresh()));
     }
 
     private function currentTeam(User $user): Team

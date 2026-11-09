@@ -1350,5 +1350,7 @@
     "Are you sure to delete this meal?": "¿Seguro que deseas eliminar esta comida?",
     "1 meal|{count} meals": "1 comida|{count} comidas",
     "meal": "comida",
-    "meals": "comidas"
+    "meals": "comidas",
+    "Choose a household to switch to.": "Elige el hogar al que quieres cambiar.",
+    "The household is not valid.": "El hogar no es válido."
 }

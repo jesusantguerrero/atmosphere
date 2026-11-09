@@ -72,6 +72,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->prefix('mo
     Route::get('/me/modules', [MobilePreferencesController::class, 'modules'])->name('me.modules');
     Route::put('/me/modules', [MobilePreferencesController::class, 'updateModules'])->name('me.modules.update');
 
+    Route::put('/current-team', [MobileTeamController::class, 'switchCurrentTeam'])->name('current-team.update');
     Route::get('/team/members', [MobileTeamController::class, 'members'])->name('team.members');
     Route::post('/team/invitations', [MobileTeamController::class, 'invite'])->name('team.invitations.store');
     Route::delete('/team/invitations/{invitation}', [MobileTeamController::class, 'cancelInvitation'])->whereNumber('invitation')->name('team.invitations.destroy');
