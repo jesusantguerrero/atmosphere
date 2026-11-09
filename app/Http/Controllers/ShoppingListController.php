@@ -555,7 +555,7 @@ class ShoppingListController extends Controller
             return null;
         }
 
-        $hub = config('broadcasting.connections.mercure.hub_url') ?? env('MERCURE_URL');
+        $hub = config('broadcasting.default') === 'mercure' ? config('broadcasting.connections.mercure.hub_url') : null;
         if (! $hub) {
             return null;
         }
