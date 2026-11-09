@@ -195,6 +195,7 @@ return [
         App\Providers\RouteServiceProvider::class,
         App\Providers\FortifyServiceProvider::class,
         App\Providers\JetstreamServiceProvider::class,
+        App\Providers\PassportServiceProvider::class,
         App\Providers\JournalServiceProvider::class,
         Lab404\Impersonate\ImpersonateServiceProvider::class,
     ],

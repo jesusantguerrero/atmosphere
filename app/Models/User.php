@@ -3,12 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Lab404\Impersonate\Models\Impersonate;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Jetstream\HasTeams;
+use Laravel\Passport\Token;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
@@ -104,6 +106,16 @@ class User extends Authenticatable
     public function canBeImpersonated(): bool
     {
         return ! $this->isSuperAdmin();
+    }
+
+    /**
+     * OAuth tokens granted to apps such as Claude Code (Passport). Passport's own
+     * HasApiTokens trait is left out on purpose: it clashes with Sanctum's, which
+     * mobile needs for createToken() and currentAccessToken().
+     */
+    public function oauthTokens(): HasMany
+    {
+        return $this->hasMany(Token::class, 'user_id');
     }
 
     public function sendLoginLink()

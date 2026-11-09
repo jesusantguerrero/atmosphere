@@ -1,5 +1,6 @@
 <script lang="ts" setup>
     import AppLayout from '@/Components/templates/AppLayout.vue'
+    import ConnectedAppsForm from './ConnectedAppsForm.vue'
     import DeleteUserForm from './DeleteUserForm.vue'
     import LogoutOtherBrowserSessionsForm from './LogoutOtherBrowserSessionsForm.vue'
     import TwoFactorAuthenticationForm from './TwoFactorAuthenticationForm.vue'
@@ -9,6 +10,7 @@
     defineProps<{
         confirmsTwoFactorAuthentication: boolean,
         sessions: any[],
+        connectedApps: any[],
     }>();
 
     // Security page: password, two-factor auth, active sessions and the account
@@ -38,6 +40,8 @@
                 />
 
                 <LogoutOtherBrowserSessionsForm :sessions="sessions" />
+
+                <ConnectedAppsForm :apps="connectedApps" />
 
                 <DeleteUserForm v-if="$page.props.jetstream.hasAccountDeletionFeatures" />
             </div>

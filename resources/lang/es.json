@@ -1359,5 +1359,15 @@
     "The minimum difference must be a number.": "La diferencia mínima debe ser un número.",
     "The minimum difference cannot be negative.": "La diferencia mínima no puede ser negativa.",
     "The minimum percentage must be a number.": "El porcentaje mínimo debe ser un número.",
-    "The minimum percentage cannot be negative.": "El porcentaje mínimo no puede ser negativo."
+    "The minimum percentage cannot be negative.": "El porcentaje mínimo no puede ser negativo.",
+    "Authorize {app}": "Autorizar {app}",
+    "{app} wants to access your home": "{app} quiere acceder a tu hogar",
+    "It will work with your current household. You can disconnect it any time from Settings → Security.": "Trabajará con tu hogar actual. Puedes desconectarlo cuando quieras desde Ajustes → Seguridad.",
+    "View your household finances": "Ver las finanzas de tu hogar",
+    "Record transactions and mark payments as paid": "Registrar movimientos y marcar pagos como pagados",
+    "Authorize": "Autorizar",
+    "Connected apps": "Aplicaciones conectadas",
+    "Apps you allowed to use Loger on your behalf, like Claude Code.": "Aplicaciones a las que permitiste usar Loger por ti, como Claude Code.",
+    "No apps connected. Connect Claude Code with: claude mcp add --transport http loger {url}": "No hay aplicaciones conectadas. Conecta Claude Code con: claude mcp add --transport http loger {url}",
+    "Connected on {date}": "Conectada el {date}"
 }

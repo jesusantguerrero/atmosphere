@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Laravel\Fortify\Features;
-use Laravel\Jetstream\Jetstream;
 use Laravel\Jetstream\Http\Controllers\Inertia\UserProfileController;
+use Laravel\Jetstream\Jetstream;
 
 /**
  * The user profile settings were split from one page into three routes
@@ -27,6 +27,7 @@ class ProfileSettingsController extends UserProfileController
         return Jetstream::inertia()->render($request, 'Profile/Security', [
             'confirmsTwoFactorAuthentication' => Features::optionEnabled(Features::twoFactorAuthentication(), 'confirm'),
             'sessions' => $this->sessions($request)->all(),
+            'connectedApps' => ConnectedAppController::forUser($request->user()),
         ]);
     }
 
