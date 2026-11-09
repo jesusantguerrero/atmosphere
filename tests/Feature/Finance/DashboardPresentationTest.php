@@ -37,7 +37,7 @@ assert.ok(descriptor.template.content.includes('v-for="payment in priorityPaymen
 assert.ok(descriptor.template.content.includes('@click="handlePay(payment)"'));
 assert.ok(descriptor.template.content.includes(':compact="true"'));
 for (const removed of ['AccountBalancesWidget','WatchlistDashboardWidget','OccurrenceWidget','RoutineNowNextWidget','Net credit card debt']) assert.ok(!descriptor.template.content.includes(removed));
-const context = {props:{nextPayments:[]}, overduePayments:{value:[{id:1},{id:2}]}, dueSoonPayments:{value:[{id:3},{id:4}]},computed:fn=>({get value(){return fn();}})};
+const context = {useI18n:()=>({locale:{value:'es'},t:key=>key}),props:{nextPayments:[]}, overduePayments:{value:[{id:1},{id:2}]}, dueSoonPayments:{value:[{id:3},{id:4}]},computed:fn=>({get value(){return fn();}})};
 vm.createContext(context);
 const priority = source.slice(source.indexOf('const priorityPayments ='),source.indexOf('// ---------------------------------------------------------------------------\n// Issue 1'));
 vm.runInContext(ts.transpile(priority+'\n globalThis.result=priorityPayments;'),context);
