@@ -133,9 +133,15 @@ class PlannedTransactionService
     public function completeOccurrence(Transaction $planned, Transaction|CoreTransaction $payment): void
     {
         $schedule = $planned->schedule;
-        $nextDate = $schedule?->frequency ? $this->nextDate($schedule) : null;
+        try {
+            $nextDate = $schedule?->frequency ? $this->nextDate($schedule) : null;
+        } catch (\Throwable $exception) {
+            report($exception);
 
-        if (! $nextDate || ($schedule->end_date && $nextDate > substr((string) $schedule->end_date, 0, 10))) {
+            return;
+        }
+
+        if (! $nextDate || ($schedule->end_date && $nextDate > Carbon::parse($schedule->end_date)->format('Y-m-d'))) {
             $schedule?->markAsCompleted($payment, 'Automatically completed by actual transaction');
 
             return;
@@ -152,10 +158,18 @@ class PlannedTransactionService
 
     private function nextDate(Planner $schedule): ?string
     {
+        // Planner stores DAILY | WEEK_DAY | WEEK | MONTHLY; Recurr speaks RRULE.
         $rule = (new Rule)
-            ->setStartDate(new \DateTime(substr((string) $schedule->date, 0, 10)))
-            ->setFreq($schedule->frequency)
+            ->setStartDate(new \DateTime(Carbon::parse($schedule->date)->format('Y-m-d')))
+            ->setFreq(match ($schedule->frequency) {
+                'WEEK' => 'WEEKLY',
+                'WEEK_DAY' => 'DAILY',
+                default => $schedule->frequency,
+            })
             ->setCount(2);
+        if ($schedule->frequency === 'WEEK_DAY') {
+            $rule->setByDay(['MO', 'TU', 'WE', 'TH', 'FR']);
+        }
 
         $config = new ArrayTransformerConfig;
         $config->enableLastDayOfMonthFix();
