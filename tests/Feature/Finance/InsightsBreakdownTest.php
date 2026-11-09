@@ -91,7 +91,7 @@ assert.ok(!descriptor.template.content.includes('{ periodLabel } ·'));
 assert.ok(descriptor.template.content.indexOf('v-for="tab in tabs"') > descriptor.template.content.indexOf('v-for="(st, i) in summaryStats"'));
 const source = descriptor.scriptSetup.content;
 const rank = source.slice(source.indexOf('const rankRows ='), source.indexOf('const payeesInRows ='));
-const context = { t: key => key };
+const context = { t: key => key, useDarkMode: () => ({ isDark: { value: false } }) };
 vm.createContext(context);
 vm.runInContext(ts.transpile(rank + '\n globalThis.rank = rankRows;'), context);
 const rows = Array.from({length: 10}, (_, i) => ({name: `Payee ${i}`, total: 100 - i}));
@@ -111,7 +111,7 @@ const props = { data: {
 }, metaData: {months:2, startDate:'2026-09-01',endDate:'2026-10-31',asOfDate:'2026-10-05',hasNetWorthHistory:true} };
 const page = {
  defineProps: () => props, ref: value => ({value}), computed: fn => ({get value() {return fn();}}),
- useI18n: () => ({t: key => key, locale: {value:'es'}}), useTrendOptions: () => [],
+ useI18n: () => ({t: key => key, locale: {value:'es'}}), useTrendOptions: () => [], useDarkMode: () => ({isDark: {value: false}}),
  window: {logerAppSettings:{currency_code:'DOP'}}, formatMonth: value => value,
 };
 vm.createContext(page);

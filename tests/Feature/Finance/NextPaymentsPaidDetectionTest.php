@@ -12,6 +12,7 @@ use App\Models\Account;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Insane\Journal\Events\TransactionCreated;
 use Insane\Journal\Models\Core\AccountDetailType;
 use Insane\Journal\Models\Core\Payee;
 use Laravel\Sanctum\Sanctum;
@@ -114,6 +115,24 @@ class NextPaymentsPaidDetectionTest extends TestCase
         $this->assertSame($draft->id, (int) $plan->schedule->completed_resource_id);
         $this->assertNull($plan->schedule->completed_at);
         $this->assertListed($plan, '2026-12-20');
+    }
+
+    public function test_an_overdue_plan_stays_listed_until_a_late_payment_settles_it(): void
+    {
+        $gas = $this->category('Gas');
+        $plan = $this->plan($gas, 1800, '2026-10-25');
+        $ancient = $this->plan($this->category('Viejo'), 900, '2026-08-10');
+
+        $overdue = $this->payments()->firstWhere('id', "planned_{$plan->id}");
+        $this->assertSame('overdue', $overdue['status']);
+        $this->assertSame('2026-10-25', $overdue['due_date']);
+        $this->assertFalse($this->payments()->contains('id', "planned_{$ancient->id}"));
+
+        $late = $this->pay(['category_id' => $gas->id, 'total' => 1800, 'date' => '2026-11-03']);
+        event(new TransactionCreated($late, $late->toArray()));
+
+        $this->assertNotListed($plan, '2026-10-25');
+        $this->assertSame('2026-11-25', substr((string) $plan->fresh()->date, 0, 10));
     }
 
     public function test_budget_reminder_needs_a_verified_payment_close_to_its_amount(): void

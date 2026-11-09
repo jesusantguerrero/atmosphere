@@ -25,6 +25,11 @@ final class PaymentMatcher
     public const EARLY_DAYS = 7;
 
     /**
+     * How far back an unpaid planned payment keeps showing as overdue.
+     */
+    public const OVERDUE_MONTHS = 2;
+
+    /**
      * @param  Collection<int, array{id: string, total: float, due_date: string, direction: string, keys: array<string, int|null>, window: array{0: string, 1: string}}>  $items
      * @param  Collection<int, object>  $candidates  verified transactions
      * @return array<string, list<int>> item id => transaction ids that pay it
@@ -99,19 +104,25 @@ final class PaymentMatcher
     }
 
     /**
-     * Budget reminders belong to their month; planned payments also accept early payments.
+     * Budget reminders belong to their month. Planned payments also accept early
+     * payments and, once overdue, late ones up to `$until` (today, or the date of
+     * the payment being matched).
      *
      * @return array{0: string, 1: string}
      */
-    public function windowFor(string $dueDate, string $type): array
+    public function windowFor(string $dueDate, string $type, ?string $until = null): array
     {
         $due = Carbon::parse($dueDate);
         $start = $due->copy()->startOfMonth();
+        $end = $due->copy()->endOfMonth();
         if ($type === 'planned_transaction') {
             $start = $start->min($due->copy()->subDays(self::EARLY_DAYS));
+            if ($until) {
+                $end = $end->max(Carbon::parse($until));
+            }
         }
 
-        return [$start->format('Y-m-d'), $due->copy()->endOfMonth()->format('Y-m-d')];
+        return [$start->format('Y-m-d'), $end->format('Y-m-d')];
     }
 
     /**

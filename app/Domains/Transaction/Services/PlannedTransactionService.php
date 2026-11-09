@@ -81,12 +81,14 @@ class PlannedTransactionService
     {
         $matcher = app(PaymentMatcher::class);
         $start = Carbon::parse($month)->startOfMonth();
+        $paidOn = substr((string) $transaction->date, 0, 10);
 
+        // Overdue plans from previous months can still be paid late.
         $planned = Transaction::query()
             ->where('team_id', $transaction->team_id)
             ->where('status', Transaction::STATUS_PLANNED)
             ->where('direction', $transaction->direction)
-            ->whereBetween('date', [$start->format('Y-m-d'), $start->copy()->endOfMonth()->addDays(PaymentMatcher::EARLY_DAYS)->format('Y-m-d')])
+            ->whereBetween('date', [$start->copy()->subMonthsNoOverflow(PaymentMatcher::OVERDUE_MONTHS)->format('Y-m-d'), $start->copy()->endOfMonth()->addDays(PaymentMatcher::EARLY_DAYS)->format('Y-m-d')])
             ->whereHas('schedule', fn ($query) => $query->whereNull('completed_at'))
             ->with('schedule')
             ->get()
@@ -102,9 +104,8 @@ class PlannedTransactionService
                 'payee_id' => $plan->payee_id,
                 'counter_account_id' => $plan->counter_account_id,
             ],
-            'window' => $matcher->windowFor(substr((string) $plan->date, 0, 10), 'planned_transaction'),
-        ])->filter(fn (array $item) => substr((string) $transaction->date, 0, 10) >= $item['window'][0]
-            && substr((string) $transaction->date, 0, 10) <= $item['window'][1])
+            'window' => $matcher->windowFor(substr((string) $plan->date, 0, 10), 'planned_transaction', $paidOn),
+        ])->filter(fn (array $item) => $paidOn >= $item['window'][0] && $paidOn <= $item['window'][1])
             ->values();
 
         if ($items->isEmpty()) {
