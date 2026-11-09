@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Insane\Journal\Events\TransactionUpdated;
 use Insane\Journal\Models\Core\AccountDetailType;
 use Insane\Journal\Models\Core\Category;
 use Insane\Journal\Models\Core\Transaction as CoreTransaction;
@@ -39,6 +40,22 @@ class Transaction extends CoreTransaction
                     ->whereColumn('uncategorized_counter.id', 'transactions.counter_account_id')
                     ->whereIn('uncategorized_type.name', AccountDetailType::ALL);
             });
+    }
+
+    /**
+     * Approving a draft (e.g. a bank-email import) must react like any verified
+     * save: settle planned payments, budget activity and team checks. The
+     * journal package's approve() only flips the status, so announce it here.
+     */
+    public function approve(): void
+    {
+        $wasVerified = $this->status === self::STATUS_VERIFIED;
+
+        parent::approve();
+
+        if (! $wasVerified) {
+            event(new TransactionUpdated($this, ['status' => self::STATUS_VERIFIED]));
+        }
     }
 
     /**
