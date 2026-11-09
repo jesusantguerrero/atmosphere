@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\LabelApiController;
 use App\Http\Controllers\Api\PayeeApiController;
 use App\Http\Controllers\Api\RecipeApiController;
 use App\Http\Controllers\Api\TimezonesApiController;
+use App\Http\Controllers\ConnectedAppController;
 use App\Http\Controllers\Finance\FinanceAccountController;
 use App\Http\Controllers\Finance\FinanceController;
 use App\Http\Controllers\Finance\FinanceLinesController;
@@ -241,6 +242,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     // /user/profile). Security/Preferences reuse ProfileSettingsController which
     // extends Jetstream's controller for its sessions()/2FA helpers.
     Route::get('/user/security', [ProfileSettingsController::class, 'security'])->name('user.security');
+    Route::delete('/user/connected-apps/{client}', [ConnectedAppController::class, 'destroy'])->name('user.connected-apps.destroy');
     Route::get('/user/preferences', [ProfileSettingsController::class, 'preferences'])->name('user.preferences');
 
     Route::controller(NotificationController::class)->group(function () {
