@@ -33,7 +33,7 @@ class StatementImportService
         $skipped = 0;
 
         foreach ($rows as $row) {
-            $transactionData = MapBankStatementToLoger::parse($row, $session, $account->id);
+            $transactionData = CreditCardPaymentDetector::apply(MapBankStatementToLoger::parse($row, $session, $account->id));
 
             $duplicate = $transactions->findDuplicateByBankReference($transactionData)
                 ?? $transactions->findIfDuplicated($transactionData);
