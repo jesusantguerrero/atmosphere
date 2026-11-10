@@ -8,8 +8,8 @@
     import { format, startOfMonth } from "date-fns";
     import Multiselect from "vue-multiselect";
 
+    import InfoHint from "@/Components/atoms/InfoHint.vue";
     import MoneyPresenter from "@/Components/molecules/MoneyPresenter.vue";
-    import BudgetProgress from "@/domains/budget/components/BudgetProgress.vue";
 
     import formatMoney from "@/utils/formatMoney";
 
@@ -37,26 +37,31 @@
 
     const afterScheduled = computed(() => Number(props.value ?? 0) - Number(props.scheduledTotal ?? 0))
 
-    const theme = {
-        good: 'bg-success/80 text-white',
-        danger: 'bg-error/15 text-error border border-error/30',
-        needs: 'bg-warning',
-        overspend: 'bg-warning',
-        default: 'bg-base-lvl-3'
-    }
-
+    /** Zero-based budget: 0 is the goal, so each state says what to do next. */
     const BALANCE_STATUS = {
         overspent: {
             name: 'overspent',
-            description: 'You assigned more than you have'
+            label: 'You assigned too much',
+            description: 'You assigned more than you have. Take money from another category or add funds to balance the month.',
+            heroClass: 'bg-error/10 border-error/30',
+            labelClass: 'text-error',
+            amountClass: 'text-error',
         },
         available: {
             name: 'available',
-            description: 'To budget'
+            label: 'Ready to assign',
+            description: 'You have unassigned money remaining. Assign it to categories, savings, or credit card payments to balance the month.',
+            heroClass: 'bg-primary/10 border-primary/30',
+            labelClass: 'text-primary',
+            amountClass: 'text-body',
         },
         empty: {
             name: 'empty',
-            description: 'All money assigned'
+            label: 'All balanced',
+            description: 'Every peso is assigned. Nice work.',
+            heroClass: 'bg-base-lvl-2 border-body-1/15',
+            labelClass: 'text-success',
+            amountClass: 'text-success',
         }
     }
 
@@ -73,19 +78,7 @@
         return status.value == BALANCE_STATUS.overspent.name
     })
 
-    const description = computed(() => {
-        return BALANCE_STATUS[status.value].description
-    })
-
-    const badgeClass = computed(() => {
-        let themeColor = theme.default
-        if (status.value === BALANCE_STATUS.available.name) {
-            themeColor = theme.good
-        } else if (status.value === BALANCE_STATUS.overspent.name) {
-            themeColor = theme.danger
-        }
-        return [themeColor]
-    })
+    const current = computed(() => BALANCE_STATUS[status.value])
 
     const form = useForm({
         amount: Math.abs(props.value),
@@ -229,31 +222,28 @@
 </script>
 
 <template>
+    <!-- Hero of the zero-based budget: the amount still to assign leads the
+         page, with the action that brings it to 0 right beside it. The
+         default slot holds the reconcile line as a footer. -->
     <section
-        class="overflow-hidden border divide-y-2 rounded-md text-body-1"
-        :class="theme.default"
+        class="rounded-xl border px-4 py-4 md:px-6 md:py-5"
+        :class="current.heroClass"
+        aria-live="polite"
     >
-        <!-- Month picker rendered outside the popover trigger so hovering
-             a month pill doesn't fire the debug tooltip. Keeps the strip
-             clickable without interference. -->
-        <slot name="top" />
+        <div class="flex flex-wrap items-center gap-x-6 gap-y-3">
+            <div class="min-w-0 flex-1">
+                <p class="flex items-center gap-1 text-xs font-semibold uppercase tracking-wide" :class="current.labelClass">
+                    <IMdiCheckCircle v-if="status === BALANCE_STATUS.empty.name" aria-hidden="true" />
+                    {{ $t(current.label) }}
+                    <InfoHint :title="$t('Ready to assign')" :body="$t('ready_to_assign_hint')" />
+                </p>
+                <p class="text-3xl md:text-4xl font-extrabold leading-tight tabular-nums" :class="current.amountClass">
+                    {{ formatter(value) }}
+                </p>
+                <p class="mt-1 text-sm text-body-1 max-w-prose">{{ $t(current.description) }}</p>
+            </div>
 
-        <NPopover>
-            <template #trigger>
-                <!-- Compact inline pill: amount + primary action only. The
-                     description text, "After scheduled" value, and monthly-
-                     goal progress bar were removed from the visible article
-                     so the pill matches Actual's tight "Assign $X" chip.
-                     All that context still surfaces in the hover debug
-                     tooltip below. Everything else — split popover, fix
-                     popover, activity/target slots — is intact. -->
-                <article
-                    class="relative flex items-center gap-x-2 px-3 py-1.5 cursor-pointer whitespace-nowrap"
-                    :class="badgeClass"
-                    :title="$t(description)"
-                >
-                    <span class="text-base font-bold">{{ formatter(value) }}</span>
-
+            <div class="flex flex-wrap items-center gap-2">
                     <NPopover
                         v-if="canSplit"
                         v-model:show="showSplitPopover"
@@ -262,7 +252,7 @@
                     >
                         <template #trigger>
                             <AtButton
-                                class="text-white rounded-md bg-black/30 text-sm shrink-0"
+                                class="text-white rounded-md bg-primary hover:opacity-90 font-semibold shrink-0"
                                 @click.stop="openSplit"
                             >
                                 {{ $t('Allocate leftover') }}
@@ -359,7 +349,7 @@
 
                     <NPopover v-if="isOverspent"  placement="bottom" trigger="click">
                         <template #trigger>
-                            <AtButton class="text-white rounded-md bg-error/80 hover:bg-error text-sm shrink-0" @click.stop>
+                            <AtButton class="text-white rounded-md bg-error/80 hover:bg-error font-semibold shrink-0" @click.stop>
                                 {{ $t('Fix this') }}
                             </AtButton>
                         </template>
@@ -400,9 +390,14 @@
                             </div>
                         </div>
                     </NPopover>
-                </article>
-            </template>
-            <section class="text-center">
+
+                <NPopover trigger="click" placement="bottom-end">
+                    <template #trigger>
+                        <AtButton class="text-body-1 hover:text-body rounded-md text-sm shrink-0">
+                            {{ $t('Breakdown') }}
+                        </AtButton>
+                    </template>
+                    <section class="space-y-0.5 text-sm">
                 <p>{{ $t('From last month') }}: <MoneyPresenter :value="toAssign.movedFromLastMonth"/> </p>
                 <p>{{ $t('Inflow') }}: <MoneyPresenter :value="toAssign.availableForFunding"/> </p>
                 <p>{{ $t('Left over') }}: <MoneyPresenter :value="toAssign.leftOver"/> </p>
@@ -414,16 +409,13 @@
                 <p>{{ $t('Last month overspending') }}: <MoneyPresenter :value="toAssign.overspending_from_previous_month"/> </p>
                 <p class="text-red-500">{{ $t('Funded') }}: <MoneyPresenter :value="toAssign.budgeted + toAssign.overspending_from_previous_month"/></p>
                 <p>{{ $t('Balance') }}: <MoneyPresenter :value="toAssign.availableForFunding + toAssign.leftOver - toAssign.budgeted" /> </p>
-            </section>
-        </NPopover>
+                    </section>
+                </NPopover>
+            </div>
+        </div>
 
-        <article class="grid grid-cols-2 overflow-hidden divide-x-2">
-            <section>
-                <slot name="activity" />
-            </section>
-            <section>
-                <slot name="target" />
-            </section>
-        </article>
+        <div v-if="$slots.default" class="mt-4 border-t border-body-1/10 pt-3">
+            <slot />
+        </div>
     </section>
 </template>

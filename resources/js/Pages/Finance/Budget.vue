@@ -315,15 +315,24 @@ const budgetCsvExportUrl = computed(() => {
         @change="executeSearchWithDelay(5)"
       />
 
-      <!-- Zero-sum reconciliation bar: Σ Available + To-assign vs cash in
-           on-budget accounts; the gap is uncategorized spend (see
-           .planning/budget-cuadre.md). Read-only. -->
-      <BudgetReconcileBanner
-        :accounts="accounts"
-        :budgets="budgets"
-        :ready-to-assign="readyToAssign"
-        :uncategorized-totals="uncategorizedTotals"
-      />
+      <!-- Zero-based budget: Ready to assign leads the page, where it is
+           assigned or fixed. The reconciliation (Σ Available + To-assign vs
+           cash, see .planning/budget-cuadre.md) is its read-only footer. -->
+      <BudgetBalanceAssign
+        class="mt-2"
+        :value="readyToAssignBalance"
+        :category="readyToAssignLeft"
+        :to-assign="readyToAssign"
+        :scheduled-total="scheduledTotal"
+      >
+        <BudgetReconcileBanner
+          embedded
+          :accounts="accounts"
+          :budgets="budgets"
+          :ready-to-assign="readyToAssign"
+          :uncategorized-totals="uncategorizedTotals"
+        />
+      </BudgetBalanceAssign>
 
       <!--
         Row 2 — consolidated header (Actual-style). Outer container
@@ -459,14 +468,6 @@ const budgetCsvExportUrl = computed(() => {
                CSV, Export Budget) moved to BudgetSidePanel's hamburger
                menu on the right so those month-level actions live with
                the rest of the budget-summary controls. -->
-
-          <BudgetBalanceAssign
-            class="rounded-md shrink-0"
-            :value="readyToAssignBalance"
-            :category="readyToAssignLeft"
-            :to-assign="readyToAssign"
-            :scheduled-total="scheduledTotal"
-          />
         </div>
 
         <!-- Right group: fixed w-36/w-44/w-28/w-8 no gap. Mirrors
