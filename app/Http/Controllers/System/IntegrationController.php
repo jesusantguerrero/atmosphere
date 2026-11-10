@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers\System;
 
-use Illuminate\Http\Request;
-use App\Domains\Integration\Models\Integration;
-use App\Domains\Automation\Models\AutomationTask;
 use App\Domains\Automation\Models\AutomationRecipe;
-use App\Domains\Integration\Services\GoogleService;
-use App\Domains\Integration\Services\EmailToTasksAutomation;
-use App\Domains\Integration\Services\UniversalBankAutomationService;
 use App\Domains\Automation\Models\AutomationService;
+use App\Domains\Automation\Models\AutomationTask;
+use App\Domains\Integration\Models\Integration;
+use App\Domains\Integration\Services\EmailToTasksAutomation;
+use App\Domains\Integration\Services\GoogleService;
+use App\Domains\Integration\Services\UniversalBankAutomationService;
+use Illuminate\Http\Request;
 
 class IntegrationController
 {
@@ -66,9 +66,28 @@ class IntegrationController
         return response()->json(UniversalBankAutomationService::status($user));
     }
 
+    /**
+     * Bank email import state (also polled while a sync runs).
+     */
+    public function bankTransactionsStatus(Request $request)
+    {
+        return response()->json(UniversalBankAutomationService::status($request->user()));
+    }
+
+    /**
+     * «Sync now»: catch up with every bank email since the last import.
+     */
+    public function syncBankTransactions(Request $request)
+    {
+        UniversalBankAutomationService::startSync($request->user());
+
+        return response()->json(UniversalBankAutomationService::status($request->user()), 202);
+    }
+
     public function social()
     {
         $user = request()->user();
+
         return inertia('Settings/Integrations/Social', [
             'services' => AutomationService::all(),
             'recipes' => AutomationRecipe::all(),
@@ -78,6 +97,7 @@ class IntegrationController
                 'user_id' => $user->id,
             ])->with(['automations'])->get(),
         ]);
+
         return GoogleService::setTokens((object) $request->post('credentials'), $request->user()->id);
     }
 

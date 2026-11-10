@@ -7,9 +7,13 @@ use App\Domains\Integration\Actions\GmailReceived;
 use App\Domains\Integration\Actions\TransactionCreateEntry;
 use App\Domains\Integration\Actions\UniversalBankParser;
 use App\Domains\Integration\Models\Integration;
-use App\Domains\Integration\Services\GoogleService;
+use App\Jobs\SyncBankEmails;
 use App\Models\Account;
+use App\Models\ProcessedEmail;
 use App\Models\User;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Validation\ValidationException;
 
 class UniversalBankAutomationService
 {
@@ -131,7 +135,7 @@ class UniversalBankAutomationService
      * has been set up, whether a Gmail account is connected, and when that
      * mailbox last synced (so the card can show a real "last synced" line).
      *
-     * @return array{enabled: bool, exists: bool, connected: bool, last_synced_at: ?string}
+     * @return array{enabled: bool, exists: bool, connected: bool, last_synced_at: ?string, last_import_at: ?string, sync: array<string, mixed>|null}
      */
     public static function status(User $user, ?int $teamId = null): array
     {
@@ -142,12 +146,79 @@ class UniversalBankAutomationService
             true
         );
 
+        $teamId ??= $user->current_team_id;
+
         return [
             'enabled' => (bool) ($automation?->status),
             'exists' => (bool) $automation,
             'connected' => (bool) $integration,
             'last_synced_at' => $integration?->last_synced_at,
+            'last_import_at' => self::lastImportDate($teamId, $automation?->id),
+            'sync' => Cache::get(self::syncCacheKey($teamId)),
         ];
+    }
+
+    /**
+     * Start a catch-up sync for the user's household. It runs right after the
+     * response (not through the queue), so it works even if the queue or the
+     * scheduler is down.
+     *
+     * @return array{status: string, since: string}
+     */
+    public static function startSync(User $user): array
+    {
+        $teamId = (int) $user->current_team_id;
+        $automation = self::find($user, $teamId);
+        if (! $automation || ! GoogleService::findGoogleIntegration($user->id, $teamId, true)) {
+            throw ValidationException::withMessages(['sync' => __('Connect Gmail and turn on bank email import first.')]);
+        }
+
+        $since = self::syncSince($teamId, $automation->id);
+        if (! SyncBankEmails::isRunning($teamId)) {
+            self::rememberSync($teamId, ['status' => 'running', 'since' => $since]);
+            SyncBankEmails::dispatchAfterResponse($user->id, $teamId);
+        }
+
+        return ['status' => 'running', 'since' => $since];
+    }
+
+    /**
+     * Where a catch-up sync starts: a few days before the last imported bank
+     * movement (emails can arrive late), or 30 days back if nothing was imported.
+     */
+    public static function syncSince(int $teamId, ?int $automationId): string
+    {
+        $last = self::lastImportDate($teamId, $automationId);
+
+        return ($last ? Carbon::parse($last)->subDays(3) : now()->subDays(30))->format('Y-m-d');
+    }
+
+    /**
+     * Date of the newest bank movement imported from email for the team.
+     */
+    public static function lastImportDate(int $teamId, ?int $automationId): ?string
+    {
+        $last = ProcessedEmail::query()
+            ->where('processed_emails.team_id', $teamId)
+            ->when($automationId, fn ($query) => $query->where('processed_emails.automation_id', $automationId))
+            ->leftJoin('transactions', 'transactions.id', '=', 'processed_emails.transaction_id')
+            ->selectRaw('MAX(COALESCE(transactions.date, processed_emails.created_at)) as last_date')
+            ->value('last_date');
+
+        return $last ? Carbon::parse($last)->format('Y-m-d') : null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $result
+     */
+    public static function rememberSync(int $teamId, array $result): void
+    {
+        Cache::put(self::syncCacheKey($teamId), [...$result, 'at' => now()->toIso8601String()], now()->addDays(7));
+    }
+
+    public static function syncCacheKey(int $teamId): string
+    {
+        return "bank-email-sync:{$teamId}";
     }
 
     public static function enable(User $user, ?int $teamId = null): Automation
