@@ -21,7 +21,7 @@
     // MCP). Disconnecting revokes every token of that app at once.
     const scopeLabels: Record<string, string> = {
         'mcp:read': 'View your household finances',
-        'mcp:write': 'Record transactions, import statements and planner items, and mark payments as paid',
+        'mcp:write': 'Record and edit transactions, import statements and planner items, and mark payments as paid',
     };
 
     const disconnecting = ref<string | null>(null);
