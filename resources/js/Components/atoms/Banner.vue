@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watchEffect, reactive, computed, watch } from "vue";
+import { reactive, watch, onBeforeUnmount } from "vue";
 import { usePage } from "@inertiajs/vue3"
 
 defineProps<{
@@ -13,27 +13,32 @@ const state = reactive({
 });
 
 
-const pageProps = computed<Record<string, any>>(() => usePage().props);
+const page = usePage();
 
-watchEffect(async () => {
-    state.style = pageProps.value.jetstream.flash?.bannerStyle || "success";
-    state.message = pageProps.value.jetstream.flash?.banner || "";
+// Each response with a flash shows it once, then hides it after a while
+// (errors stay longer); the close button hides it right away.
+let hideTimer: ReturnType<typeof setTimeout> | undefined;
+watch(() => (page.props as any).jetstream?.flash, (flash) => {
+    clearTimeout(hideTimer);
+    state.style = flash?.bannerStyle || "success";
+    state.message = flash?.banner || "";
     state.isVisible = Boolean(state.message);
-})
+    if (state.isVisible) {
+        hideTimer = setTimeout(() => { state.isVisible = false }, state.style === 'danger' ? 10000 : 6000);
+    }
+}, { immediate: true })
+
+onBeforeUnmount(() => clearTimeout(hideTimer));
 
 
 const isStyle = (styleName: 'danger'|'success'| 'info') => {
     return state.style === styleName;
 }
 
-watch(() =>state.message, ( ) => {
-    state.isVisible = false;
-})
-
 </script>
 
 <template>
-  <div :class="state.isVisible && activeClass"   v-if="state.isVisible && state.message">
+  <div :class="state.isVisible && activeClass" v-if="state.isVisible && state.message" role="status" aria-live="polite">
     <div
       :class="{ 'bg-indigo-500': isStyle('success'), 'bg-red-700': isStyle('danger') }"
 

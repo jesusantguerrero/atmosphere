@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { router } from '@inertiajs/vue3';
 
 import AppLayout from '@/Components/templates/AppLayout.vue';
 import HouseSectionNav from '@/Components/templates/HouseSectionNav.vue';
 import LogerButton from '@/Components/atoms/LogerButton.vue';
+import { useToggleModal } from '@/domains/app/useToggleModal';
 
 interface Utility {
     id: number;
@@ -15,11 +15,14 @@ interface Utility {
     days_until: number | null;
     is_overdue: boolean;
     is_active: boolean;
+    occurrence: Record<string, any>;
 }
 
 const props = defineProps<{
     utilities: Utility[];
 }>();
+
+const { openModal } = useToggleModal('occurrence');
 
 const overdue = computed(() => props.utilities.filter(u => u.is_overdue).length);
 
@@ -46,9 +49,9 @@ const badgeLabel = (utility: Utility): string => {
                     <div class="flex gap-2">
                         <LogerButton
                             variant="inverse"
-                            @click="router.visit('/housing/occurrence/create')"
+                            @click="openModal({ isOpen: true, data: { type: 'utility' } })"
                         >
-                            Add Utility
+                            {{ $t('Add Utility') }}
                         </LogerButton>
                     </div>
                 </template>
@@ -86,7 +89,7 @@ const badgeLabel = (utility: Utility): string => {
                                 v-for="utility in utilities"
                                 :key="utility.id"
                                 class="hover:bg-base-lvl-2 dark:hover:bg-base-lvl-2 cursor-pointer transition-colors"
-                                @click="router.visit(`/housing/occurrence/${utility.id}/edit`)"
+                                @click="openModal({ isOpen: true, data: utility.occurrence })"
                             >
                                 <td class="px-4 py-3 font-medium text-body">{{ utility.name }}</td>
                                 <td class="px-4 py-3 text-body-2">{{ utility.last_date ?? '—' }}</td>
@@ -110,7 +113,7 @@ const badgeLabel = (utility: Utility): string => {
 
             <section v-else class="flex flex-col items-center justify-center py-20 text-center space-y-4">
                 <p class="text-body-2 text-base">{{ $t('No utilities tracked yet.') }}</p>
-                <LogerButton variant="inverse" @click="router.visit('/housing/occurrence/create')">
+                <LogerButton variant="inverse" @click="openModal({ isOpen: true, data: { type: 'utility' } })">
                     {{ $t('Add your first utility') }}
                 </LogerButton>
             </section>

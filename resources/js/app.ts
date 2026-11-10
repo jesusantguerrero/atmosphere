@@ -81,7 +81,8 @@ createInertiaApp({
             duration: 5000,
             position: 'bottom-right',
         });
-        router.on('invalid', (event: any) => {
+        // Inertia 3 names these httpException / networkError (v1 used invalid / exception).
+        router.on('httpException', (event: any) => {
             const status = event?.detail?.response?.status ?? 0;
             const isGateway = [0, 419, 502, 503, 504].includes(status);
             if (import.meta.env.DEV && !isGateway) return; // keep debug modal for 500s in dev
@@ -90,7 +91,7 @@ createInertiaApp({
                 ? t('Your session expired. Please refresh the page.')
                 : t('The server did not respond. Please try again in a moment.'));
         });
-        router.on('exception', (event: any) => {
+        router.on('networkError', (event: any) => {
             // Request never completed (network dropped / timeout).
             event.preventDefault();
             notifyServerError(t('The server did not respond. Please try again in a moment.'));

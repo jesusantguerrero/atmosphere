@@ -10,6 +10,7 @@ use App\Http\Resources\PlannedMealResource;
 use Freesgen\Atmosphere\Http\InertiaController;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Redirect;
 use Modules\Plan\Entities\PlanTypes;
@@ -76,6 +77,34 @@ class MealController extends InertiaController
                 'user_id' => $request->user()->current_team_id,
             ])->get(),
         ];
+    }
+
+    /**
+     * The recipe form sends its ingredients with the meal; they are saved by
+     * afterSave(), so only the meal's own columns go to the model.
+     */
+    public function store(Request $request, Response $response)
+    {
+        $this->validate($request, $this->validationRules);
+        $postData = $request->post();
+        $meal = Meal::create([
+            ...collect($postData)->only((new Meal)->getFillable())->all(),
+            'user_id' => $request->user()->id,
+            'team_id' => $request->user()->current_team_id,
+        ]);
+        $this->afterSave($postData, $meal);
+
+        return redirect()->back();
+    }
+
+    public function update(Request $request, int $id)
+    {
+        $meal = $this->findTeamResource($request, $id);
+        $postData = $request->post();
+        $meal->update(collect($postData)->only((new Meal)->getFillable())->except(['team_id', 'user_id'])->all());
+        $this->afterSave($postData, $meal);
+
+        return redirect()->back();
     }
 
     protected function afterSave($postData, $resource): void

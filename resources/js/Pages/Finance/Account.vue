@@ -432,6 +432,9 @@ const setPaymentBill = (transaction: ITransaction) => {
         })
 }
 
+// Import errors (bad file, unreadable PDF) come back on the form, not the holder.
+const firstError = (errors: Record<string, string>): string => Object.values(errors)[0] ?? "";
+
 // PDF Import
 const showImportPdf = ref(false);
 const importPdfForm = useForm<{ file: any }>({ file: null });
@@ -906,6 +909,8 @@ const draftCount = computed(() => (props.drafts || []).length);
                     v-model:file="importPdfForm.file"
                     :endpoint="`/finance/accounts/${accountId}/import-pdf`"
                     :processing="importPdfForm.processing"
+                    :progress="importPdfForm.progress?.percentage ?? null"
+                    :error="firstError(importPdfForm.errors)"
                     :placeholder="$t('Drag a PDF bank statement here or click to browse')"
                 />
             </section>
@@ -934,6 +939,8 @@ const draftCount = computed(() => (props.drafts || []).length);
                     v-model:file="importCsvForm.file"
                     :endpoint="`/finance/accounts/${accountId}/import-csv`"
                     :processing="importCsvForm.processing"
+                    :progress="importCsvForm.progress?.percentage ?? null"
+                    :error="firstError(importCsvForm.errors)"
                     :placeholder="$t('Drag a CSV bank statement here or click to browse')"
                     accept=".csv,.txt"
                 />

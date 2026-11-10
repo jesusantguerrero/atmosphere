@@ -61,12 +61,14 @@ class FinanceAccountController extends InertiaController
      * Accounts are created through the AccountModal in the accounts ledger, not
      * a dedicated page -- so the resource `create` route had no handler and
      * every first-run CTA / deep-link to /finance/accounts/create returned 500.
-     * Redirect to the transactions overview with a flag that auto-opens the
+     * Redirect to the accounts overview with a flag that auto-opens the
      * add-account modal (preserving an optional ?type= hint, e.g. credit_card).
+     * The overview reads the flag on every screen size; the transactions page
+     * only mounts the ledger on mobile.
      */
     public function create(Request $request): RedirectResponse
     {
-        return redirect()->route('finance.transactions', array_filter([
+        return redirect()->route('finance.accounts.index', array_filter([
             'newAccount' => 1,
             'type' => $request->query('type'),
         ]));

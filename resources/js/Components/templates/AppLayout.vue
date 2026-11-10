@@ -3,6 +3,7 @@
     import { router } from '@inertiajs/vue3'
     import { AtSide, AtTeamSelect } from "atmosphere-ui"
     import { useLocalStorage } from "@vueuse/core"
+    import { NDropdown } from 'naive-ui'
     import { Link, usePage } from '@inertiajs/vue3'
 
     import JetBanner from '@/Components/atoms/Banner.vue'
@@ -105,6 +106,21 @@
         }, {
             preserveState: false
         })
+    }
+
+    // Phones don't fit the full space picker: a compact menu of the other spaces.
+    const pageForTeams = usePage()
+    const mobileTeamOptions = computed(() => {
+        const user = (pageForTeams.props as any).auth?.user
+        return (user?.all_teams ?? []).map((team: any) => ({
+            key: team.id,
+            label: team.name,
+            disabled: team.id === user?.current_team?.id,
+        }))
+    })
+    const switchToTeamById = (teamId: number) => {
+        const team = ((pageForTeams.props as any).auth?.user?.all_teams ?? []).find((item: any) => item.id === teamId)
+        if (team) switchToTeam(team)
     }
 
     const teamSelectRef = ref<HTMLElement | null>(null)
@@ -217,6 +233,21 @@
                                 @click="router.visit('/notifications')"
                              />
                              <!-- <LogerAssistant /> -->
+                             <NDropdown
+                                v-if="context.isMobile && mobileTeamOptions.length > 1"
+                                trigger="click"
+                                :options="mobileTeamOptions"
+                                @select="switchToTeamById"
+                             >
+                                <button
+                                    type="button"
+                                    class="flex items-center max-w-[8rem] gap-1 px-2 py-1 text-xs font-semibold rounded-md text-body-1 bg-base-lvl-2"
+                                    :aria-label="$t('Switch space')"
+                                >
+                                    <span class="truncate">{{ $page.props.auth.user?.current_team?.name }}</span>
+                                    <i class="text-[10px] fas fa-chevron-down" aria-hidden="true" />
+                                </button>
+                             </NDropdown>
                              <div ref="teamSelectRef" class="team-select-fix flex items-center" v-if="$page.props.auth.user?.all_teams.length && !context.isMobile" :aria-label="$t('Switch space')" role="navigation">
                              <AtTeamSelect
                                 :aria-label="$t('Current space') + ': ' + ($page.props.auth.user?.current_team?.name ?? '')"
@@ -446,6 +477,10 @@
                      left. Empirically verified: both gutters land at ~1px. -->
                 <main class="overflow-hidden overflow-y-auto ic-scroller pb-32 lg:pb-0 lg:pr-3">
                     <JetBanner active-class="mt-14" />
+                    <div
+                        id="mobile-section-actions"
+                        class="flex flex-wrap items-center justify-end gap-2 px-4 pt-14 pb-1 text-xs sm:hidden empty:hidden"
+                    />
                     <slot />
                 </main>
                 <MobileMenuBar v-if="!focusMode" :menu="mobileMenu" @action="handleActions" />

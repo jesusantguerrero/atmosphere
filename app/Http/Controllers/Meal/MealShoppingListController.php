@@ -3,16 +3,15 @@
 namespace App\Http\Controllers\Meal;
 
 use App\Domains\AppCore\Models\Planner;
-use App\Domains\LogerProfile\Models\LogerProfile;
 use App\Domains\Meal\Models\Meal;
 use App\Domains\Meal\Models\MealPlan;
 use App\Domains\Meal\Services\MealService;
+use App\Services\ShoppingListReviewService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Str;
-use Inertia\Response;
 use Modules\Plan\Entities\PlanTypes;
 use Modules\Plan\Services\PlanService;
 
@@ -41,7 +40,7 @@ class MealShoppingListController
         $this->mealService->addToShoppingList($items);
     }
 
-    public function generateFromMealPlan(Request $request, PlanService $planService): RedirectResponse
+    public function generateFromMealPlan(Request $request, PlanService $planService, ShoppingListReviewService $reviews): RedirectResponse
     {
         $request->validate([
             'start_date' => ['required', 'date'],
@@ -60,7 +59,7 @@ class MealShoppingListController
         $ingredients = MealService::getIngredients($plans);
 
         if (empty($ingredients)) {
-            return Redirect::back()->with('flash', ['message' => 'No ingredients found in the selected date range.', 'type' => 'warning']);
+            return Redirect::back()->with('flash', ['banner' => __('No ingredients found in the selected date range.'), 'bannerStyle' => 'danger']);
         }
 
         $shoppingList = $planService->getPlanTypeModel($team->id, PlanTypes::SHOPPING_LIST);
@@ -75,19 +74,22 @@ class MealShoppingListController
         $added = 0;
         foreach ($ingredients as $name => $ingredient) {
             if (! in_array(strtolower($name), $existingTitles)) {
-                $shoppingList->addItem($user, [
+                $item = $shoppingList->addItem($user, [
                     'title' => $name,
                     'stage_id' => $firstStage->id,
                     'fields' => [],
                     'order' => 1,
                 ]);
+                $amount = MealService::ingredientAmountLabel($ingredient);
+                if ($amount !== '') {
+                    $reviews->saveItemDetails($shoppingList, $item, $amount, '');
+                }
                 $added++;
             }
         }
 
         return Redirect::route('meals.shoppingList')->with('flash', [
-            'message' => "$added ingredient(s) added to your shopping list.",
-            'type' => 'success',
+            'banner' => __(':count ingredient(s) added to your shopping list.', ['count' => $added]),
         ]);
     }
 

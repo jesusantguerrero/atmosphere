@@ -68,7 +68,7 @@ const {
 <template>
     <TransactionModal v-model:show="isOpen" v-bind="transactionModalState" :accounts="sharedAccounts"
         :max-width="transactionModalMaxWidth" :full-height="context.isMobile"
-        @saved="onTransactionSaved" @close="onTransactionSaved" />
+        @saved="onTransactionSaved" @close="closeTransactionModal" />
 
     <MoreOptionsModal v-model:show="context.isMoreOptionsModalOpen" :max-width="modalMaxWidth"
         v-if="context.isMobile" />

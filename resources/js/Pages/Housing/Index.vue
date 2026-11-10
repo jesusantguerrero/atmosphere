@@ -5,6 +5,7 @@ import { Link, router } from '@inertiajs/vue3';
 import AppLayout from '@/Components/templates/AppLayout.vue';
 import HouseSectionNav from '@/Components/templates/HouseSectionNav.vue';
 import LogerButton from '@/Components/atoms/LogerButton.vue';
+import { useToggleModal } from '@/domains/app/useToggleModal';
 import OccurrenceWidget from '@/domains/housing/components/OccurrenceWidget.vue';
 import ChoreWidget from '@/Components/widgets/ChoreWidget.vue';
 import WidgetTitleCard from '@/Components/molecules/WidgetTitleCard.vue';
@@ -30,6 +31,8 @@ const overdueOccurrences = computed(() => {
 
 const totalBoards = computed(() => props.boards.length);
 
+const { openModal: openOccurrenceModal } = useToggleModal('occurrence');
+
 const isFirstRun = computed(() => totalOccurrences.value === 0 && totalBoards.value === 0);
 </script>
 
@@ -39,7 +42,7 @@ const isFirstRun = computed(() => totalOccurrences.value === 0 && totalBoards.va
             <HouseSectionNav>
                 <template #actions>
                     <div class="flex gap-2">
-                        <LogerButton variant="inverse" @click="router.visit('/housing/occurrence/create')">
+                        <LogerButton variant="inverse" @click="openOccurrenceModal()">
                             {{ $t('Add Reminder') }}
                         </LogerButton>
                     </div>
@@ -60,7 +63,7 @@ const isFirstRun = computed(() => totalOccurrences.value === 0 && totalBoards.va
                     {{ $t('Keep your home running: track recurring tasks like oil changes or filter swaps, and share chores the whole family can pick up.') }}
                 </p>
                 <div class="flex flex-col gap-3 sm:flex-row">
-                    <LogerButton variant="inverse" @click="router.visit('/housing/occurrence/create')">
+                    <LogerButton variant="inverse" @click="openOccurrenceModal()">
                         {{ $t('Add Reminder') }}
                     </LogerButton>
                     <LogerButton variant="neutral" @click="router.visit('/housing/chores')">

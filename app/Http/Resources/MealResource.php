@@ -2,6 +2,8 @@
 
 namespace App\Http\Resources;
 
+use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class MealResource extends JsonResource
@@ -9,8 +11,8 @@ class MealResource extends JsonResource
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
+     * @param  Request  $request
+     * @return array|Arrayable|\JsonSerializable
      */
     public function toArray($request)
     {
@@ -18,6 +20,9 @@ class MealResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'notes' => $this->notes,
+            'prep_minutes' => $this->prep_minutes,
+            'cook_minutes' => $this->cook_minutes,
+            'servings' => $this->servings,
             'is_liked' => $this->is_liked,
             'meal_type_id' => $this->meal_type_id,
             'meal_type' => $this->mealType?->name,
