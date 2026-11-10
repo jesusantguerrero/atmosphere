@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Meal;
 
 use App\Domains\AppCore\Models\Planner;
-use App\Domains\LogerProfile\Models\LogerProfile;
 use App\Domains\Meal\Models\Meal;
 use App\Domains\Meal\Models\MealPlan;
 use App\Domains\Meal\Services\MealService;
@@ -13,7 +12,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Str;
-use Inertia\Response;
 use Modules\Plan\Entities\PlanTypes;
 use Modules\Plan\Services\PlanService;
 
