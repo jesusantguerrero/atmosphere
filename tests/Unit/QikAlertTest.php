@@ -9,7 +9,7 @@ use Tests\TestCase;
 
 class QikAlertTest extends TestCase
 {
-    private function buildMail(string $amount): array
+    private function buildMail(string $amount, string $gmailId = '1a09b686e1403129'): array
     {
         $html = <<<HTML
         <html><body>
@@ -20,7 +20,7 @@ class QikAlertTest extends TestCase
         HTML;
 
         return [
-            'id' => 99,
+            'id' => $gmailId,
             'message' => $html,
             'date' => '2026-06-13',
         ];
@@ -42,5 +42,15 @@ class QikAlertTest extends TestCase
 
         $this->assertNotNull($transaction);
         $this->assertEquals('1234.56', $transaction->amount);
+    }
+
+    #[Test]
+    public function it_keeps_the_gmail_id_intact(): void
+    {
+        // Gmail ids are hex: casting to int turned every «1a…» id into 1, so all
+        // emails after the first looked already imported.
+        $transaction = (new QikAlert)->handle(new Automation, $this->buildMail('395.90', '1a09b686e1403129'));
+
+        $this->assertSame('1a09b686e1403129', $transaction->id);
     }
 }

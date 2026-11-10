@@ -6,6 +6,7 @@ use App\Domains\Automation\Models\Automation;
 use App\Domains\Automation\Models\AutomationTaskAction;
 use App\Domains\Integration\Actions\TransactionCreateEntry;
 use App\Domains\Transaction\Services\TransactionService;
+use App\Models\ProcessedEmail;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
@@ -312,7 +313,7 @@ class EmailImportReliabilityTest extends TestCase
     {
         $teamId = $this->user->current_team_id;
 
-        Transaction::create([
+        $imported = Transaction::create([
             'team_id' => $teamId,
             'user_id' => $this->user->id,
             'account_id' => $this->account->id,
@@ -322,6 +323,7 @@ class EmailImportReliabilityTest extends TestCase
             'currency_code' => 'DOP',
             'description' => 'Original charge',
         ]);
+        ProcessedEmail::record($teamId, 'gmail_alert', null, $this->automation->id, $imported->id);
 
         $service = new TransactionService;
         $match = $service->findDuplicateByAccountSignature([
@@ -332,7 +334,44 @@ class EmailImportReliabilityTest extends TestCase
             'currency_code' => 'DOP',
         ]);
 
-        $this->assertNotNull($match);
+        $this->assertSame($imported->id, $match?->id);
+    }
+
+    #[Test]
+    public function a_manual_entry_of_the_same_amount_does_not_swallow_the_bank_email(): void
+    {
+        Transaction::create([
+            'team_id' => $this->user->current_team_id,
+            'user_id' => $this->user->id,
+            'account_id' => $this->account->id,
+            'date' => '2026-10-24',
+            'total' => 1500,
+            'direction' => 'WITHDRAW',
+            'currency_code' => 'DOP',
+            'description' => 'Entered by hand',
+        ]);
+
+        $result = TransactionCreateEntry::handle(
+            $this->automation,
+            $this->makePayload(['payee' => 'La Sirena', 'description' => 'Compra POS']),
+            $this->task,
+            $this->previousTask,
+            $this->trigger
+        );
+
+        $this->assertSame('La Sirena - Compra POS', $result->description);
+        $this->assertSame(2, Transaction::where('team_id', $this->user->current_team_id)->count());
+        $this->assertSame('processed', ProcessedEmail::where('gmail_id', 'gmail_msg_001')->value('status'));
+    }
+
+    #[Test]
+    public function an_email_linked_to_another_emails_charge_is_recorded_as_duplicate(): void
+    {
+        $first = TransactionCreateEntry::handle($this->automation, $this->makePayload(['id' => 'gmail_alert']), $this->task, $this->previousTask, $this->trigger);
+        $second = TransactionCreateEntry::handle($this->automation, $this->makePayload(['id' => 'gmail_notif', 'messageId' => '<n@bhd.com>', 'description' => 'Notificacion']), $this->task, $this->previousTask, $this->trigger);
+
+        $this->assertSame($first->id, $second->id);
+        $this->assertSame('duplicate', ProcessedEmail::where('gmail_id', 'gmail_notif')->value('status'));
     }
 
     #[Test]
@@ -361,5 +400,16 @@ class EmailImportReliabilityTest extends TestCase
         ]);
 
         $this->assertNull($match);
+    }
+
+    #[Test]
+    public function emails_whose_gmail_ids_share_a_leading_digit_are_imported_separately(): void
+    {
+        $first = TransactionCreateEntry::handle($this->automation, $this->makePayload(['id' => '1a09b686e1403129', 'messageId' => '<a@qik.do>']), $this->task, $this->previousTask, $this->trigger);
+        $second = TransactionCreateEntry::handle($this->automation, $this->makePayload(['id' => '1a0e4c2b77d10f3a', 'messageId' => '<b@qik.do>', 'payee' => 'La Sirena', 'total' => '6574.03']), $this->task, $this->previousTask, $this->trigger);
+
+        $this->assertNotNull($second);
+        $this->assertNotSame($first->id, $second->id);
+        $this->assertSame(2, ProcessedEmail::count());
     }
 }
