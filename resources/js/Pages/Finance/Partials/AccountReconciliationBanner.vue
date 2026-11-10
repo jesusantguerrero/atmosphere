@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { router, useForm} from "@inertiajs/vue3";
 import { computed } from "vue";
+import { useI18n } from "vue-i18n";
+import { ElMessageBox } from "element-plus";
 import LogerButton from "@/Components/atoms/LogerButton.vue";
 
 // import { IServerSearchData, useServerSearch } from "@/composables/useServerSearch";
@@ -14,20 +16,31 @@ const { account } = defineProps<{
     account: IAccount;
 }>();
 
+const { t } = useI18n();
+
+const toCents = (value: unknown): number => Math.round(Number(value || 0) * 100);
+
 const goToReconciliation = () => {
     router.visit(`/finance/reconciliation/${account?.reconciliation_last?.id}`)
 }
 
 const isMatched = computed(() => {
-    return account.balance == account.reconciliation_last?.amount;
+    return toCents(account.balance) === toCents(account.reconciliation_last?.amount);
 })
 
 const adjustmentForm = useForm({
     date: account.reconciliation_last?.date,
     balance: account.balance,
 })
-const adjustAndFinish = () => {
+const adjustAndFinish = async () => {
     if (!isMatched.value) {
+        const isConfirmed = await ElMessageBox.confirm(
+            t("This records an adjustment of {amount} so Loger matches your bank statement.", { amount: formatMoney(differenceAmount.value) }),
+            t("Save adjustment and finish"),
+            { confirmButtonText: t("Save adjustment"), cancelButtonText: t("Cancel") },
+        ).catch(() => false);
+        if (!isConfirmed) return;
+
         adjustmentForm.put(`/finance/reconciliation/${account?.reconciliation_last?.id}/save-adjustment`)
     } else {
         adjustmentForm
@@ -44,11 +57,11 @@ const adjustAndFinish = () => {
 }
 
 const differenceStateText = computed(() => {
-    return (account.balance || 0) > (account.reconciliation_last?.amount ?? 0) ? 'higher' : 'lower'
+    return toCents(account.balance) > toCents(account.reconciliation_last?.amount) ? t('higher') : t('lower')
 })
 
 const differenceAmount = computed(() => {
-    return Math.abs(account.reconciliation_last?.amount ?? 0 - account.balance)
+    return Math.abs(toCents(account.reconciliation_last?.amount) - toCents(account.balance)) / 100
 })
 
 const hasPendingReconciliation = computed(() => {
@@ -64,12 +77,12 @@ const hasPendingReconciliation = computed(() => {
         <article class="flex items-center">
             <AccountReconciliationAlert class="mr-2 text-white" />
             <p v-if="!isMatched">
-                Difference of
+                {{ $t('Difference of') }}
                 <strong>{{ formatMoney(differenceAmount) }}</strong>
-                — Loger balance is {{ differenceStateText }} than your bank statement.
+                — {{ $t('Loger balance is {state} than your bank statement.', { state: differenceStateText }) }}
             </p>
             <p v-else>
-                Reconciliation is balanced and ready to complete.
+                {{ $t('Reconciliation is balanced and ready to complete.') }}
             </p>
         </article>
         <article class="flex space-x-2">
@@ -80,7 +93,7 @@ const hasPendingReconciliation = computed(() => {
                 :disabled="adjustmentForm.processing"
                 :processing="adjustmentForm.processing"
             >
-                Review
+                {{ $t('Review') }}
             </LogerButton>
             <LogerButton variant="secondary"
                 @click="adjustAndFinish()"
@@ -90,7 +103,7 @@ const hasPendingReconciliation = computed(() => {
                 <template #icon>
                     <IMdiCheck />
                 </template>
-                Save adjustment and finish
+                {{ isMatched ? $t('Finish reconciliation') : $t('Save adjustment and finish') }}
             </LogerButton>
         </article>
     </section>
