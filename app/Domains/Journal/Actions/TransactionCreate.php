@@ -3,6 +3,7 @@
 namespace App\Domains\Journal\Actions;
 
 use App\Domains\Journal\Actions\Concerns\EnsuresTeamReferences;
+use App\Domains\Transaction\Services\CreditCardPaymentDetector;
 use App\Domains\Transaction\Services\MultiCurrencyTransactionService;
 use App\Models\Account;
 use Illuminate\Foundation\Auth\User;
@@ -73,6 +74,8 @@ class TransactionCreate implements TransactionCreates
                 'account_id' => __('Select a valid account for this transaction.'),
             ]);
         }
+
+        $transactionData = CreditCardPaymentDetector::apply($transactionData);
 
         if (isset($transactionData['account_id'], $transactionData['currency_code'])) {
             $account = Account::find($transactionData['account_id']);

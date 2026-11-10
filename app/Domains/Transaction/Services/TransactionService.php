@@ -657,9 +657,9 @@ class TransactionService
      * (alert + notification) that have different messageIds/descriptions but
      * represent the same underlying transaction.
      *
-     * Only transactions imported from another bank email count: a manual or
-     * statement entry of the same amount that day is a different purchase as
-     * far as this can tell, and matching it made the new email vanish.
+     * The match must be another bank email's transaction, or one with the same
+     * payee (the purchase entered by hand before the email arrived). A manual
+     * entry of the same amount at another merchant is a different purchase.
      */
     public function findDuplicateByAccountSignature(array $transactionData): ?Transaction
     {
@@ -672,7 +672,9 @@ class TransactionService
             ->where('total', $transactionData['total'])
             ->where('direction', $transactionData['direction'])
             ->where('currency_code', $transactionData['currency_code'])
-            ->whereIn('id', ProcessedEmail::query()->select('transaction_id')->where('status', 'processed'))
+            ->where(fn ($query) => $query
+                ->whereIn('id', ProcessedEmail::query()->select('transaction_id')->where('status', 'processed'))
+                ->when($transactionData['payee_id'] ?? null, fn ($query, $payeeId) => $query->orWhere('payee_id', $payeeId)))
             ->first();
     }
 

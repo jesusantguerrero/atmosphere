@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Domains\Automation\Models\Automation;
 use App\Domains\Automation\Models\AutomationTaskAction;
 use App\Domains\Integration\Actions\TransactionCreateEntry;
+use App\Domains\Transaction\Services\PayeeResolver;
 use App\Domains\Transaction\Services\TransactionService;
 use App\Models\ProcessedEmail;
 use App\Models\User;
@@ -362,6 +363,35 @@ class EmailImportReliabilityTest extends TestCase
         $this->assertSame('La Sirena - Compra POS', $result->description);
         $this->assertSame(2, Transaction::where('team_id', $this->user->current_team_id)->count());
         $this->assertSame('processed', ProcessedEmail::where('gmail_id', 'gmail_msg_001')->value('status'));
+    }
+
+    #[Test]
+    public function a_purchase_entered_by_hand_at_the_same_merchant_absorbs_the_bank_email(): void
+    {
+        $payee = PayeeResolver::resolve($this->automation, 'Shell La Romana');
+        $manual = Transaction::create([
+            'team_id' => $this->user->current_team_id,
+            'user_id' => $this->user->id,
+            'account_id' => $this->account->id,
+            'payee_id' => $payee->id,
+            'date' => '2026-10-24',
+            'total' => 1500,
+            'direction' => 'WITHDRAW',
+            'currency_code' => 'DOP',
+            'description' => 'gasolina 7 galones',
+        ]);
+
+        $result = TransactionCreateEntry::handle(
+            $this->automation,
+            $this->makePayload(['payee' => 'Shell La Romana', 'description' => 'Tarjeta crédito Qik']),
+            $this->task,
+            $this->previousTask,
+            $this->trigger
+        );
+
+        $this->assertSame($manual->id, $result->id);
+        $this->assertSame(1, Transaction::where('team_id', $this->user->current_team_id)->count());
+        $this->assertSame('duplicate', ProcessedEmail::where('gmail_id', 'gmail_msg_001')->value('status'));
     }
 
     #[Test]

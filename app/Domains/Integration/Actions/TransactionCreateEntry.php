@@ -7,6 +7,7 @@ use App\Domains\Automation\Models\Automation;
 use App\Domains\Automation\Models\AutomationTaskAction;
 use App\Domains\Integration\Concerns\TransactionDataDTO;
 use App\Domains\Transaction\Models\TransactionLine;
+use App\Domains\Transaction\Services\CreditCardPaymentDetector;
 use App\Domains\Transaction\Services\PayeeResolver;
 use App\Domains\Transaction\Services\TransactionService;
 use App\Helpers\FormulaHelper;
@@ -112,6 +113,11 @@ class TransactionCreateEntry implements AutomationActionContract
             $transactionData['payee_id'] = null;
             $transactionData['payee_name'] = null;
             $transactionData['category_id'] = null;
+        }
+
+        $transactionData = CreditCardPaymentDetector::apply($transactionData);
+        if (! empty($transactionData['is_transfer'])) {
+            $transactionData['payee_name'] = null;
         }
 
         // Auto-confirm transactions for credit card accounts (email is the confirmation)
