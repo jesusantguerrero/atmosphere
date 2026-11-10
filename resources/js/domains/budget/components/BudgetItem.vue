@@ -96,12 +96,12 @@ const progressBarClass = computed(() => {
         return '';
     }
     if (overspentPercent.value > 0) {
-        return 'bg-error';
+        return 'bg-error/60';
     }
     if (pct >= 90) {
-        return 'bg-warning';
+        return 'bg-warning/60';
     }
-    return 'bg-success';
+    return 'bg-success/60';
 });
 
 enum BudgetAssignOptions {
@@ -371,7 +371,7 @@ const context = useAppContextStore();
         <div class="flex items-center w-full space-x-4 ">
             <!-- On mobile (no hover state), show the drag handle always so reorder is
                  discoverable. Desktop keeps the hover-reveal pattern. -->
-            <div class="mr-4 cursor-grab inline-block md:hidden">
+            <div class="mr-1 cursor-grab inline-block md:hidden">
                 <IconDrag class="handle" />
             </div>
             <div class="hidden mr-4 cursor-grab md:group-hover:inline-block">
@@ -380,46 +380,57 @@ const context = useAppContextStore();
             <BudgetItemHeader :item="item" :show-delete="showDelete" />
 
         </div>
-        <div class="flex items-center md:justify-end justify-between text-right flex-nowrap">
+        <div class="flex items-center md:justify-end justify-between gap-2 md:gap-0 mt-2 md:mt-0 text-right flex-nowrap">
             <div
                 ref="inputContainer"
                 :title="$t('Money assigned')"
-                class="w-36"
+                class="flex-1 min-w-0 md:flex-none md:w-36"
                 @click.stop
                 @focusin="isFocused = true"
                 @focusout="onInputFocusOut"
             >
                 <InputMoney
                     ref="input"
-                    class="opacity-100 cursor-text"
+                    class="opacity-100 cursor-text !border-transparent !rounded-md hover:!border-base focus-within:!border-primary/50"
                     v-model="budgeted"
                     :number-format="true"
                     @blur="onAssignBudget()"
                     @click="toggleEditing"
                 >
                     <template #prefix>
-                        <IconAllocated class="text-lg text-success" />
+                        <IconAllocated class="text-lg text-body-1/40" />
                     </template>
                     <template #suffix>
-                        <NDropdown
-                            trigger="click"
-                            :options="assignOptions"
-                            key-field="name"
-                            :on-select="handleAssignOptions"
-                        >
-                            <LogerButtonTab> <i class="fa fa-ellipsis-v"></i></LogerButtonTab>
-                        </NDropdown>
+                        <!-- Hover/focus reveal on desktop; touch has no hover, so it stays visible below md. -->
+                        <span class="flex items-center transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100">
+                            <NDropdown
+                                trigger="click"
+                                :options="assignOptions"
+                                key-field="name"
+                                :on-select="handleAssignOptions"
+                            >
+                                <LogerButtonTab :aria-label="$t('Assign options')"> <i class="fa fa-ellipsis-v"></i></LogerButtonTab>
+                            </NDropdown>
+                        </span>
                     </template>
                 </InputMoney>
                 <button
                     v-if="showAveragePill"
                     type="button"
-                    class="mt-1 px-2 py-0.5 text-[11px] leading-none rounded-full bg-primary/10 text-primary-ink hover:bg-primary/20 transition"
+                    class="mt-1 px-2 py-0.5 text-[11px] leading-none rounded-full bg-base-lvl-2 text-body-1 hover:text-body transition"
                     :title="$t('Click to use this amount')"
                     @click.stop="useAverage"
                 >
                     {{ $t('Avg') }}: {{ formatMoney(averageAmount) }}
                 </button>
+                <!-- Spending bar sits under the Assigned column only; under 5% it is noise. -->
+                <div
+                    v-if="spentPercent !== null && spentPercent >= 5"
+                    class="relative w-full h-1 mt-1 overflow-hidden rounded-sm bg-base-lvl-2"
+                    :title="$t('{percent}% spent', { percent: spentPercent })"
+                >
+                    <div class="absolute inset-y-0 left-0" :class="progressBarClass" :style="{ width: spentPercent + '%' }" />
+                </div>
             </div>
             <ExpenseChartWidgetRow
                 :value="item.activity"
@@ -444,6 +455,7 @@ const context = useAppContextStore();
                         :data="item.budget"
                         :category="item"
                         icon-only
+                        class="transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
                     />
                 </template>
             </BalanceInput>
@@ -451,7 +463,7 @@ const context = useAppContextStore();
                  header's action column (⋮) and with the ASSIGNED/SPENT/
                  AVAILABLE labels above. Individual items don't have their
                  own row-level action menu; the column reserves the width. -->
-            <div class="w-8" aria-hidden="true"></div>
+            <div class="hidden md:block w-8" aria-hidden="true"></div>
         </div>
     </section>
     <!-- Credit-card payment row: "Pago" reframing — what you set aside vs what
@@ -469,13 +481,6 @@ const context = useAppContextStore();
             class="font-semibold text-error hover:underline tabular-nums"
         >{{ formatMoney(brecha, card?.currency_code) }} {{ $t('Remaining to pay') }} · {{ $t('Review uncategorized') }} &rarr;</a>
         <span v-else class="font-semibold text-success">{{ $t('Ready to pay') }} &check;</span>
-    </div>
-    <div
-        v-if="spentPercent !== null"
-        class="relative w-full h-1 mt-1 overflow-hidden rounded-sm bg-base-lvl-2"
-        :title="`${spentPercent}% spent`"
-    >
-        <div class="absolute inset-y-0 left-0" :class="progressBarClass" :style="{ width: spentPercent + '%' }" />
     </div>
 </div>
 </template>

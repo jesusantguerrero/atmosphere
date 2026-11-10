@@ -39,7 +39,7 @@
 
     const theme = {
         good: 'bg-success/80 text-white',
-        danger: 'bg-primary text-white',
+        danger: 'bg-error/15 text-error border border-error/30',
         needs: 'bg-warning',
         overspend: 'bg-warning',
         default: 'bg-base-lvl-3'
@@ -359,7 +359,7 @@
 
                     <NPopover v-if="isOverspent"  placement="bottom" trigger="click">
                         <template #trigger>
-                            <AtButton class="text-white rounded-md bg-black/30 text-sm shrink-0" @click.stop>
+                            <AtButton class="text-white rounded-md bg-error/80 hover:bg-error text-sm shrink-0" @click.stop>
                                 {{ $t('Fix this') }}
                             </AtButton>
                         </template>

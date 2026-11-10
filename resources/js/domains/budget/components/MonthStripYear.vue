@@ -141,7 +141,7 @@ watch(currentMonthIndex, () => nextTick(scrollActiveIntoView));
                 class="flex-shrink-0 md:flex-shrink min-w-[52px] md:min-w-0 py-1.5 px-3 md:px-1 snap-center rounded-md text-xs font-medium transition-colors"
                 :class="[
                     index === currentMonthIndex
-                        ? 'bg-primary text-white'
+                        ? 'bg-base-lvl-3 text-body font-semibold ring-1 ring-primary/40'
                         : 'text-body-1 hover:bg-base-lvl-1 hover:text-body'
                 ]"
                 @click="selectMonth(index)"

@@ -1485,5 +1485,15 @@
     "Repeat every": "Repetir cada",
     "Every {count} days": "Cada {count} días",
     "Every {count} weeks": "Cada {count} semanas",
-    "Every {count} months": "Cada {count} meses"
+    "Every {count} months": "Cada {count} meses",
+    "Assigned − Spent = Available": "Asignado − Gastado = Disponible",
+    "How Available is calculated": "Cómo se calcula Disponible",
+    "available_formula_hint": "Disponible es lo que asignaste este mes menos lo que gastaste, más lo que te sobró del mes pasado en esa categoría. Si queda en rojo, gastaste más de lo asignado.",
+    "Assign options": "Opciones de asignación",
+    "Record an expense in this category": "Registrar gasto de esta categoría",
+    "{percent}% spent": "{percent}% gastado",
+    "{count} uncategorized": "{count} sin categorizar",
+    "reconcile_difference_hint": "Lo disponible en tus categorías más lo que falta por asignar debería igualar el efectivo en tus cuentas. La diferencia casi siempre son transacciones sin categoría: categorízalas y el cuadre vuelve a cero.",
+    "Show calculation": "Ver cálculo",
+    "Hide calculation": "Ocultar cálculo"
 }

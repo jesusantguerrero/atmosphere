@@ -159,26 +159,24 @@ const status = computed(() => {
     </section>
 
     <!-- Summary card — aggregate totals across all groups. -->
-    <section class="rounded-lg bg-base-lvl-3 border border-base p-4">
-      <h4 class="text-xs font-semibold text-body-1 uppercase tracking-wide mb-3">
+    <section class="rounded-lg border border-base px-4 py-3">
+      <h4 class="text-xs font-semibold text-body-1 uppercase tracking-wide mb-2">
         {{ $t('Summary') }}
       </h4>
-      <div class="space-y-1 text-sm">
-        <div
-          class="flex justify-between items-center py-2 px-3 rounded-md bg-base-lvl-2"
-        >
-          <span class="font-medium text-body">{{ $t('Assigned') }}</span>
-          <span class="font-bold text-body tabular-nums">
+      <div class="space-y-0.5 text-xs">
+        <div class="flex justify-between items-center py-1">
+          <span class="text-body-1">{{ $t('Assigned') }}</span>
+          <span class="font-medium text-body tabular-nums">
             {{ formatMoney(totals.assigned) }}
           </span>
         </div>
-        <div class="flex justify-between items-center py-2 px-3">
+        <div class="flex justify-between items-center py-1">
           <span class="text-body-1">{{ $t('Outflow') }}</span>
           <span class="tabular-nums text-body-1">
             {{ formatMoney(totals.activity) }}
           </span>
         </div>
-        <div class="flex justify-between items-center py-2 px-3">
+        <div class="flex justify-between items-center py-1">
           <span class="text-body-1">{{ $t('Available') }}</span>
           <span
             class="tabular-nums font-semibold"

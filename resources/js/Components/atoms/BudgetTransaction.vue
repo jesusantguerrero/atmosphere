@@ -91,7 +91,7 @@
         class="flex items-center py-1 cursor-pointer rounded-3xl text-body-1 group"
         :class="[badgeClass, iconOnly ? 'px-2' : 'w-full text-right px-5']"
         @click.stop="onAssignBudget()"
-        :title="$t('Execute transaction')"
+        :title="$t('Record an expense in this category')"
         v-if="spendingAmount"
     >
         <IconBolt class="group-hover:text-yellow-500" />
