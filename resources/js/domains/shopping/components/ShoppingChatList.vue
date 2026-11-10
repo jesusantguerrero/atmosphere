@@ -6,6 +6,7 @@ import axios from "axios";
 import { useI18n } from "vue-i18n";
 import { usePage } from "@inertiajs/vue3";
 import { NSelect } from "naive-ui";
+import LogerApiSimpleSelect from "@/Components/organisms/LogerApiSimpleSelect.vue";
 import { unwrapMercureMessage } from "@/domains/shopping/mercure";
 
 const { t } = useI18n();
@@ -58,6 +59,9 @@ interface ShoppingVisit extends ShoppingSession {
     total: string;
     currency: string;
     note: string;
+    /** Shared by every visit of one outing (continued at another store, or split afterwards). */
+    trip_id?: string;
+    payee?: { id: number; name: string } | null;
     purchased_items: { id: number; title: string; category?: string }[];
     remaining_items: { id: number; title: string }[];
 }
@@ -345,9 +349,82 @@ const backToHistory = () => {
     selectedVisit.value = null;
     headerShowsAmount.value = false;
 };
+/** Visits of the same outing stay together, in the order the newest of them appears. */
+const visitTrips = computed(() => {
+    const trips = new Map<string, ShoppingVisit[]>();
+    for (const visit of visits.value) {
+        const tripId = visit.trip_id ?? visit.id;
+        if (!trips.has(tripId)) trips.set(tripId, []);
+        trips.get(tripId)!.push(visit);
+    }
+    return Array.from(trips, ([id, tripVisits]) => ({ id, visits: tripVisits }));
+});
+const splitDialog = ref<HTMLDialogElement | null>(null);
+const splitItemIds = ref<number[]>([]);
+const splitTotal = ref("");
+const splitPayeeId = ref<number | null>(null);
+const splitNote = ref("");
+const splitBusy = ref(false);
+const splitError = ref("");
+const splitRemainder = computed(() =>
+    selectedVisit.value
+        ? Math.round(
+              (Number(selectedVisit.value.total) - Number(splitTotal.value || 0)) * 100,
+          ) / 100
+        : 0,
+);
+const canSplit = computed(
+    () =>
+        !!selectedVisit.value &&
+        splitItemIds.value.length > 0 &&
+        splitItemIds.value.length < selectedVisit.value.purchased_items.length &&
+        Number(splitTotal.value) > 0 &&
+        splitRemainder.value > 0,
+);
+const openSplitVisit = () => {
+    splitItemIds.value = [];
+    splitTotal.value = "";
+    splitPayeeId.value = null;
+    splitNote.value = "";
+    splitError.value = "";
+    splitDialog.value?.showModal();
+};
+const splitVisit = async () => {
+    if (!selectedVisit.value || splitBusy.value || !canSplit.value) return;
+    splitBusy.value = true;
+    splitError.value = "";
+    try {
+        const { data } = await axios.post(
+            `${props.apiBase}/visits/${selectedVisit.value.id}/split`,
+            {
+                item_ids: splitItemIds.value,
+                total: splitTotal.value,
+                payee_id: splitPayeeId.value || null,
+                note: splitNote.value,
+            },
+            requestConfig(),
+        );
+        acceptShoppingPlan(data.plan);
+        selectedVisit.value = data.visit;
+        splitDialog.value?.close();
+    } catch (error: any) {
+        splitError.value =
+            error.response?.data?.message ??
+            "No se pudo dividir la visita. Inténtalo otra vez.";
+    } finally {
+        splitBusy.value = false;
+    }
+};
 const visitTotal = ref("");
 const visitCurrency = ref("DOP");
 const visitNote = ref("");
+const visitPayeeId = ref<number | null>(null);
+const sessionItemsLeft = computed(() =>
+    shoppingSession.value
+        ? shoppingSession.value.items.length -
+          shoppingSession.value.purchased_ids.length
+        : 0,
+);
 const cashPayment = ref(false);
 const cashAccountId = ref<number | null>(null);
 const cashCategoryId = ref<number | null>(null);
@@ -394,7 +471,7 @@ const openFinishShopping = () => {
     sessionError.value = "";
     finishDialog.value?.showModal();
 };
-const finishShopping = async () => {
+const finishShopping = async (continueTrip = false) => {
     if (
         !shoppingSession.value ||
         sessionBusy.value ||
@@ -411,6 +488,8 @@ const finishShopping = async () => {
                 total: visitTotal.value,
                 currency: visitCurrency.value,
                 note: visitNote.value,
+                payee_id: visitPayeeId.value || null,
+                continue: continueTrip,
                 ...(cashPayment.value && cashAccountId.value
                     ? {
                           account_id: cashAccountId.value,
@@ -424,11 +503,13 @@ const finishShopping = async () => {
         finishDialog.value?.close();
         visitTotal.value = "";
         visitNote.value = "";
+        visitPayeeId.value = null;
         cashPayment.value = false;
         cashAccountId.value = null;
         cashCategoryId.value = null;
-        sessionMessage.value =
-            "Visita guardada. La lista está lista para la próxima revisión.";
+        sessionMessage.value = continueTrip
+            ? "Visita guardada. Sigue con lo que falta en la próxima tienda."
+            : "Visita guardada. La lista está lista para la próxima revisión.";
     } catch (error: any) {
         sessionError.value =
             error.response?.data?.message ??
@@ -2375,6 +2456,24 @@ onBeforeUnmount(() => {
                                     >Terminada</span
                                 >
                             </div>
+                            <div
+                                class="flex items-center justify-between gap-3 text-xs text-body-1/60"
+                            >
+                                <span class="min-w-0 truncate">{{
+                                    selectedVisit.payee?.name ?? "Sin tienda"
+                                }}</span>
+                                <button
+                                    v-if="
+                                        showOwnerControls &&
+                                        selectedVisit.purchased_items.length > 1
+                                    "
+                                    type="button"
+                                    class="shrink-0 rounded-full border border-base px-3 py-1.5 font-medium text-body-1 hover:bg-base-lvl-2"
+                                    @click="openSplitVisit"
+                                >
+                                    Dividir visita
+                                </button>
+                            </div>
                         </div>
                         <section
                             v-if="selectedVisit.note"
@@ -2468,62 +2567,80 @@ onBeforeUnmount(() => {
                             }}
                         </p>
                         <div class="divide-y divide-base px-3 pb-2">
-                            <button
-                                v-for="visit in visits"
-                                :key="visit.id"
-                                type="button"
-                                class="flex min-h-[52px] w-full items-center justify-between gap-3 rounded-lg px-2 py-2 text-left hover:bg-base-lvl-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                                @click="viewVisit(visit)"
+                            <div
+                                v-for="trip in visitTrips"
+                                :key="trip.id"
+                                :class="
+                                    trip.visits.length > 1
+                                        ? 'my-1 rounded-lg border-l-2 border-primary/40 py-1 pl-1'
+                                        : ''
+                                "
                             >
-                                <span
-                                    class="flex min-w-0 flex-1 flex-col gap-0.5"
+                                <p
+                                    v-if="trip.visits.length > 1"
+                                    class="px-2 pb-0.5 text-[11px] font-medium text-body-1/60"
+                                >
+                                    Misma salida · {{ trip.visits.length }} visitas
+                                </p>
+                                <button
+                                    v-for="visit in trip.visits"
+                                    :key="visit.id"
+                                    type="button"
+                                    class="flex min-h-[52px] w-full items-center justify-between gap-3 rounded-lg px-2 py-2 text-left hover:bg-base-lvl-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                    @click="viewVisit(visit)"
                                 >
                                     <span
-                                        class="flex items-baseline justify-between gap-3"
-                                        ><span
-                                            class="text-sm font-semibold tabular-nums"
-                                            >{{ visit.currency }}
-                                            {{
-                                                formatVisitAmount(visit.total)
-                                            }}</span
-                                        ><span class="text-xs text-body-1/60"
+                                        class="flex min-w-0 flex-1 flex-col gap-0.5"
+                                    >
+                                        <span
+                                            class="flex items-baseline justify-between gap-3"
+                                            ><span
+                                                class="text-sm font-semibold tabular-nums"
+                                                >{{ visit.currency }}
+                                                {{
+                                                    formatVisitAmount(visit.total)
+                                                }}</span
+                                            ><span class="text-xs text-body-1/60"
+                                                >{{
+                                                    visit.purchased_items.length
+                                                }}
+                                                productos</span
+                                            ></span
+                                        >
+                                        <span class="text-xs text-body-1/60"
                                             >{{
-                                                visit.purchased_items.length
+                                                new Date(
+                                                    visit.completed_at,
+                                                ).toLocaleDateString("es-DO", {
+                                                    day: "numeric",
+                                                    month: "short",
+                                                    year: "numeric",
+                                                })
                                             }}
-                                            productos</span
-                                        ></span
+                                            ·
+                                            {{
+                                                formatVisitTime(visit.completed_at)
+                                            }}<template v-if="visit.payee">
+                                                · {{ visit.payee.name }}</template
+                                            ></span
+                                        >
+                                    </span>
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="1.8"
+                                        class="h-5 w-5 shrink-0 text-body-1/60"
+                                        aria-hidden="true"
                                     >
-                                    <span class="text-xs text-body-1/60"
-                                        >{{
-                                            new Date(
-                                                visit.completed_at,
-                                            ).toLocaleDateString("es-DO", {
-                                                day: "numeric",
-                                                month: "short",
-                                                year: "numeric",
-                                            })
-                                        }}
-                                        ·
-                                        {{
-                                            formatVisitTime(visit.completed_at)
-                                        }}</span
-                                    >
-                                </span>
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="1.8"
-                                    class="h-5 w-5 shrink-0 text-body-1/60"
-                                    aria-hidden="true"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="m9 6 6 6-6 6"
-                                    />
-                                </svg>
-                            </button>
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            d="m9 6 6 6-6 6"
+                                        />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     </template>
                 </div>
@@ -2565,7 +2682,7 @@ onBeforeUnmount(() => {
             >
                 <form
                     class="flex flex-col gap-4"
-                    @submit.prevent="finishShopping"
+                    @submit.prevent="finishShopping()"
                 >
                     <h2
                         id="finish-shopping-title"
@@ -2635,6 +2752,20 @@ onBeforeUnmount(() => {
                             class="min-w-0 flex-1 rounded-lg border border-base bg-base-lvl-2 p-3"
                         />
                     </div>
+                    <label class="text-sm"
+                        >Tienda
+                        <span class="text-body-1/70">(opcional)</span></label
+                    >
+                    <LogerApiSimpleSelect
+                        v-model="visitPayeeId"
+                        :allow-create="false"
+                        :to="false"
+                        custom-label="name"
+                        track-id="id"
+                        endpoint="/api/payees"
+                        placeholder="¿Dónde compraste?"
+                        size="medium"
+                    />
                     <label for="visit-note" class="text-sm"
                         >Notas de esta visita
                         <span class="text-body-1/70">(opcional)</span></label
@@ -2654,7 +2785,17 @@ onBeforeUnmount(() => {
                     >
                         {{ sessionError }}
                     </p>
-                    <div class="flex justify-end gap-2">
+                    <p
+                        v-if="sessionItemsLeft > 0"
+                        class="text-xs text-body-1/70"
+                    >
+                        ¿Te falta algo de otra tienda? «Seguir en otra tienda»
+                        guarda esta visita y deja
+                        {{ sessionItemsLeft }}
+                        {{ sessionItemsLeft === 1 ? "producto" : "productos" }}
+                        en una compra nueva.
+                    </p>
+                    <div class="flex flex-wrap justify-end gap-2">
                         <button
                             type="button"
                             :disabled="sessionBusy"
@@ -2662,6 +2803,19 @@ onBeforeUnmount(() => {
                             @click="finishDialog?.close()"
                         >
                             Volver</button
+                        ><button
+                            v-if="sessionItemsLeft > 0"
+                            type="button"
+                            :disabled="
+                                sessionBusy ||
+                                !shoppingSession?.purchased_ids.length ||
+                                !visitTotal ||
+                                (cashPayment && !cashAccountId)
+                            "
+                            class="rounded-lg border border-base px-4 py-3 font-semibold hover:bg-base-lvl-2 disabled:opacity-50"
+                            @click="finishShopping(true)"
+                        >
+                            Seguir en otra tienda</button
                         ><button
                             type="submit"
                             :disabled="
@@ -2672,6 +2826,123 @@ onBeforeUnmount(() => {
                             class="rounded-lg bg-primaryDark px-4 py-3 font-semibold text-white disabled:opacity-50"
                         >
                             {{ sessionBusy ? "Guardando…" : "Guardar visita" }}
+                        </button>
+                    </div>
+                </form>
+            </dialog>
+            <dialog
+                ref="splitDialog"
+                aria-labelledby="split-visit-title"
+                class="w-[calc(100%-2rem)] max-w-md rounded-2xl border border-base bg-base-lvl-3 p-5 text-body shadow-xl backdrop:bg-black/50"
+                @cancel="splitBusy && $event.preventDefault()"
+            >
+                <form
+                    v-if="selectedVisit"
+                    class="flex flex-col gap-4"
+                    @submit.prevent="splitVisit"
+                >
+                    <h2 id="split-visit-title" class="text-lg font-semibold">
+                        Dividir visita
+                    </h2>
+                    <p class="text-sm text-body-1/70">
+                        Si pagaste en dos tiendas, elige lo que compraste en la
+                        otra. Cada visita se vinculará a su propio cargo.
+                    </p>
+                    <fieldset class="flex flex-col gap-1">
+                        <legend class="mb-1 text-sm">
+                            Productos de la otra tienda
+                        </legend>
+                        <div
+                            class="max-h-48 divide-y divide-base overflow-y-auto rounded-lg border border-base bg-base-lvl-2"
+                        >
+                            <label
+                                v-for="item in selectedVisit.purchased_items"
+                                :key="item.id"
+                                class="flex min-h-[44px] cursor-pointer items-center gap-3 px-3 py-2 text-sm"
+                            >
+                                <input
+                                    v-model="splitItemIds"
+                                    type="checkbox"
+                                    :value="item.id"
+                                    class="rounded border-base text-primary focus:ring-primary"
+                                />
+                                <span class="break-words">{{
+                                    item.title
+                                }}</span>
+                            </label>
+                        </div>
+                    </fieldset>
+                    <label for="split-total" class="text-sm"
+                        >Importe en la otra tienda</label
+                    >
+                    <div class="flex items-center gap-2">
+                        <span
+                            class="rounded-lg border border-base bg-base-lvl-2 p-3 text-sm text-body-1/70"
+                            >{{ selectedVisit.currency }}</span
+                        ><input
+                            id="split-total"
+                            v-model="splitTotal"
+                            type="number"
+                            min="0.01"
+                            :max="selectedVisit.total"
+                            step="0.01"
+                            required
+                            inputmode="decimal"
+                            placeholder="0.00"
+                            class="min-w-0 flex-1 rounded-lg border border-base bg-base-lvl-2 p-3"
+                        />
+                    </div>
+                    <p class="text-xs tabular-nums text-body-1/70">
+                        Quedan en esta visita:
+                        {{ selectedVisit.currency }}
+                        {{ formatVisitAmount(String(splitRemainder)) }}
+                    </p>
+                    <label class="text-sm"
+                        >Tienda
+                        <span class="text-body-1/70">(opcional)</span></label
+                    >
+                    <LogerApiSimpleSelect
+                        v-model="splitPayeeId"
+                        :allow-create="false"
+                        :to="false"
+                        custom-label="name"
+                        track-id="id"
+                        endpoint="/api/payees"
+                        placeholder="¿En qué tienda?"
+                        size="medium"
+                    />
+                    <label for="split-note" class="text-sm"
+                        >Nota
+                        <span class="text-body-1/70">(opcional)</span></label
+                    >
+                    <textarea
+                        id="split-note"
+                        v-model="splitNote"
+                        rows="2"
+                        maxlength="2000"
+                        class="rounded-lg border border-base bg-base-lvl-2 p-3"
+                    />
+                    <p
+                        v-if="splitError"
+                        role="alert"
+                        class="text-sm text-error"
+                    >
+                        {{ splitError }}
+                    </p>
+                    <div class="flex justify-end gap-2">
+                        <button
+                            type="button"
+                            :disabled="splitBusy"
+                            class="rounded-lg px-4 py-3"
+                            @click="splitDialog?.close()"
+                        >
+                            Volver</button
+                        ><button
+                            type="submit"
+                            :disabled="splitBusy || !canSplit"
+                            class="rounded-lg bg-primaryDark px-4 py-3 font-semibold text-white disabled:opacity-50"
+                        >
+                            {{ splitBusy ? "Guardando…" : "Dividir" }}
                         </button>
                     </div>
                 </form>

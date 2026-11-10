@@ -21,7 +21,7 @@ class PassportServiceProvider extends ServiceProvider
     {
         Passport::tokensCan([
             self::READ_SCOPE => 'View your household finances',
-            self::WRITE_SCOPE => 'Record transactions and mark payments as paid',
+            self::WRITE_SCOPE => 'Record and edit transactions, schedule recurring payments, import statements and planner items, and mark payments as paid',
         ]);
         Passport::defaultScopes([self::READ_SCOPE]);
         Passport::tokensExpireIn(CarbonInterval::days(30));

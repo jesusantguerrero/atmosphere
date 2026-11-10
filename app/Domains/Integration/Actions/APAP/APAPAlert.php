@@ -49,7 +49,7 @@ class APAPAlert implements MailToTransaction
         $type = 1;
 
         return new TransactionDataDTO([
-            'id' => (int) $mail['id'],
+            'id' => (string) $mail['id'],
             'date' => date('Y-m-d', strtotime($mail['date'])),
             'payee' => $tdValues[15],
             'category' => '',

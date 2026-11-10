@@ -61,7 +61,7 @@ class BSCAlert implements MailToTransaction
         dump($product, $productCode, $total, $seller, $date, $status, $currencyCode);
 
         return new TransactionDataDTO([
-            'id' => (int) $mail['id'],
+            'id' => (string) $mail['id'],
             'date' => $date,
             'payee' => $seller,
             'category' => '',

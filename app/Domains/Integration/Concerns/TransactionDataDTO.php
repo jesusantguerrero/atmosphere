@@ -14,7 +14,7 @@ class TransactionDataDTO extends Data
 
     const TYPE_INTERNAL_TRANSFER = 'INTERNAL_TRANSFER';
 
-    public int $id;
+    public string $id;
 
     public string $date;
 

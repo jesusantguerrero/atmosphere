@@ -28,6 +28,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     Route::post('/shopping/import', [ShoppingListController::class, 'import'])->name('shopping.import');
     Route::post('/shopping/{plan}/sessions/start', [ShoppingListController::class, 'startSession'])->name('shopping.sessions.start');
     Route::post('/shopping/{plan}/sessions/finish', [ShoppingListController::class, 'finishSession'])->name('shopping.sessions.finish');
+    Route::post('/shopping/{plan}/visits/{session}/split', [ShoppingListController::class, 'splitVisit'])->name('shopping.visits.split')->whereUuid('session');
     Route::get('/shopping/{plan}/review', [ShoppingListController::class, 'review'])->name('shopping.review');
     Route::post('/shopping/{plan}/review/complete', [ShoppingListController::class, 'completeReview'])->name('shopping.review.complete');
     Route::post('/shopping/{plan}/items', [ShoppingListController::class, 'addItem'])->name('shopping.items.add');

@@ -1149,5 +1149,10 @@
     "Record payment": "Record payment",
     "See all {count}": "See all {count}",
     "Already paid": "Already paid",
-    "Payment dismissed for this month": "Payment dismissed for this month"
+    "Payment dismissed for this month": "Payment dismissed for this month",
+    "weeks": "weeks",
+    "Repeat every": "Repeat every",
+    "Every {count} days": "Every {count} days",
+    "Every {count} weeks": "Every {count} weeks",
+    "Every {count} months": "Every {count} months"
 }

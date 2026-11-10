@@ -91,7 +91,7 @@ class BHDNotification implements MailToTransaction
         $destinationProductLast4 = $destinationProduct !== '' ? substr($destinationProduct, -4) : null;
 
         return new TransactionDataDTO([
-            'id' => (int) $mail['id'],
+            'id' => (string) $mail['id'],
             'messageId' => $mail['messageId'],
             'date' => $bhdOutput['date'],
             'payee' => $seller !== '' ? $seller : ($destinationProductLast4 ? 'Transferencia a '.$destinationProductLast4 : 'BHD Notification'),

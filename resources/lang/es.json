@@ -1365,6 +1365,8 @@
     "It will work with your current household. You can disconnect it any time from Settings → Security.": "Trabajará con tu hogar actual. Puedes desconectarlo cuando quieras desde Ajustes → Seguridad.",
     "View your household finances": "Ver las finanzas de tu hogar",
     "Record transactions and mark payments as paid": "Registrar movimientos y marcar pagos como pagados",
+    "Record and edit transactions, import statements and planner items, and mark payments as paid": "Registrar y editar movimientos, importar estados de cuenta y eventos del planificador, y marcar pagos como pagados",
+    "Record and edit transactions, schedule recurring payments, import statements and planner items, and mark payments as paid": "Registrar y editar movimientos, programar pagos recurrentes, importar estados de cuenta y eventos del planificador, y marcar pagos como pagados",
     "Authorize": "Autorizar",
     "Connected apps": "Aplicaciones conectadas",
     "Apps you allowed to use Loger on your behalf, like Claude Code.": "Aplicaciones a las que permitiste usar Loger por ti, como Claude Code.",
@@ -1420,5 +1422,10 @@
     "A list needs at least one category.": "Una lista necesita al menos una categoría.",
     "Choose a category from this list.": "Selecciona una categoría de esta lista.",
     "No ingredients found in the selected date range.": "No hay ingredientes en las fechas seleccionadas.",
-    ":count ingredient(s) added to your shopping list.": ":count ingrediente(s) agregados a tu lista de compras."
+    ":count ingredient(s) added to your shopping list.": ":count ingrediente(s) agregados a tu lista de compras.",
+    "weeks": "semanas",
+    "Repeat every": "Repetir cada",
+    "Every {count} days": "Cada {count} días",
+    "Every {count} weeks": "Cada {count} semanas",
+    "Every {count} months": "Cada {count} meses"
 }

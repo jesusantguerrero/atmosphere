@@ -6,7 +6,9 @@ use App\Events\ShoppingListItemUpdated;
 use App\Http\Requests\SharedShoppingCategoryRequest;
 use App\Http\Requests\ShoppingListReviewRequest;
 use App\Http\Requests\ShoppingSessionRequest;
+use App\Http\Requests\SplitShoppingVisitRequest;
 use App\Services\ShoppingListReviewService;
+use App\Services\ShoppingVisitLinker;
 use Illuminate\Broadcasting\BroadcastException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -63,10 +65,39 @@ class ShoppingListController extends Controller
     public function finishSession(ShoppingSessionRequest $request, Plan $plan, ShoppingListReviewService $reviews): JsonResponse
     {
         $this->guard($request, $plan);
-        $visit = $reviews->finishSession($plan, $request->validated());
-        $this->notifyChange($request, $plan, null, 'visit_completed');
+        $validated = $request->validated();
+        $visit = $reviews->finishSession($plan, $validated);
+        if (! empty($validated['account_id'])) {
+            $reviews->recordCashExpense($plan, $request->user(), $visit, (int) $validated['account_id'], isset($validated['category_id']) ? (int) $validated['category_id'] : null);
+        } else {
+            app(ShoppingVisitLinker::class)->linkVisit($plan, $visit);
+        }
+        $this->notifyChange($request, $plan, null, empty($validated['continue']) ? 'visit_completed' : 'visit_continued');
 
-        return response()->json(['visit' => $visit, 'plan' => $this->planPayload($plan->fresh())]);
+        return response()->json([
+            'visit' => $reviews->decorate($plan->team_id, [$reviews->visit($plan, $visit['id']) ?? $visit])[0],
+            'plan' => $this->planPayload($plan->fresh()),
+        ]);
+    }
+
+    /**
+     * Splits a finished trip that was paid with two charges: the chosen items, total and store become a visit of
+     * their own, and each visit is then linked to its own charge.
+     */
+    public function splitVisit(SplitShoppingVisitRequest $request, Plan $plan, string $session, ShoppingListReviewService $reviews, ShoppingVisitLinker $linker): JsonResponse
+    {
+        $this->guard($request, $plan);
+        $payeeId = $request->validated('payee_id');
+        $result = $reviews->splitVisit($plan, $session, $request->validated('item_ids'), $request->validated('total'), $payeeId === null ? null : (int) $payeeId, $request->validated('note'));
+        foreach ($result as $visit) {
+            $linker->linkVisit($plan, $visit);
+        }
+
+        return response()->json([
+            'visit' => $reviews->decorate($plan->team_id, [$reviews->visit($plan, $result['visit']['id'])])[0],
+            'split_visit' => $reviews->decorate($plan->team_id, [$reviews->visit($plan, $result['split_visit']['id'])])[0],
+            'plan' => $this->planPayload($plan->fresh()),
+        ]);
     }
 
     public function completeReview(ShoppingListReviewRequest $request, Plan $plan, ShoppingListReviewService $reviews): JsonResponse

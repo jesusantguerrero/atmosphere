@@ -26,11 +26,15 @@ return [
     | your application. By default, the keys are stored as local files but
     | can be set via environment variables when that is more convenient.
     |
+    | Coolify hands the keys over with escaped line breaks ("\\n", or "\" left
+    | at each line end), which OpenSSL rejects as "Invalid key supplied". Any
+    | run of backslashes before "n" or before a line break becomes one break.
+    |
     */
 
-    'private_key' => env('PASSPORT_PRIVATE_KEY'),
+    'private_key' => env('PASSPORT_PRIVATE_KEY') ? preg_replace(['/\\\\+n/', '/\\\\+(?=\r?\n)/', '/\r/'], ["\n", '', ''], env('PASSPORT_PRIVATE_KEY')) : null,
 
-    'public_key' => env('PASSPORT_PUBLIC_KEY'),
+    'public_key' => env('PASSPORT_PUBLIC_KEY') ? preg_replace(['/\\\\+n/', '/\\\\+(?=\r?\n)/', '/\r/'], ["\n", '', ''], env('PASSPORT_PUBLIC_KEY')) : null,
 
     /*
     |--------------------------------------------------------------------------

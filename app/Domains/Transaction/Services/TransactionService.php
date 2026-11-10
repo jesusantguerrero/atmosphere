@@ -6,6 +6,7 @@ use App\Domains\Budget\Data\BudgetReservedNames;
 use App\Domains\Transaction\Imports\TransactionsImport;
 use App\Domains\Transaction\Models\Transaction;
 use App\Domains\Transaction\Models\TransactionLine;
+use App\Models\ProcessedEmail;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Carbon\CarbonInterface;
@@ -655,6 +656,10 @@ class TransactionService
      * Catches the common case where a bank sends two emails for one charge
      * (alert + notification) that have different messageIds/descriptions but
      * represent the same underlying transaction.
+     *
+     * The match must be another bank email's transaction, or one with the same
+     * payee (the purchase entered by hand before the email arrived). A manual
+     * entry of the same amount at another merchant is a different purchase.
      */
     public function findDuplicateByAccountSignature(array $transactionData): ?Transaction
     {
@@ -667,6 +672,9 @@ class TransactionService
             ->where('total', $transactionData['total'])
             ->where('direction', $transactionData['direction'])
             ->where('currency_code', $transactionData['currency_code'])
+            ->where(fn ($query) => $query
+                ->whereIn('id', ProcessedEmail::query()->select('transaction_id')->where('status', 'processed'))
+                ->when($transactionData['payee_id'] ?? null, fn ($query, $payeeId) => $query->orWhere('payee_id', $payeeId)))
             ->first();
     }
 

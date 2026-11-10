@@ -467,6 +467,106 @@ class ShoppingSessionTest extends TestCase
         $this->assertNull($this->getJson("/api/mobile/shopping?plan={$plan->id}")->json('plan.visits.0.transaction'));
     }
 
+    public function test_finishing_with_continue_opens_a_session_for_the_next_store(): void
+    {
+        [$user, $plan, $stage] = $this->makeSetup();
+        Sanctum::actingAs($user);
+        $milk = $this->addItem($plan, $stage, $user, 'Milk');
+        $bread = $this->addItem($plan, $stage, $user, 'Bread');
+        $sid = $this->postJson("/api/mobile/shopping/{$plan->id}/sessions/start")->json('session.id');
+        $this->postJson("/api/mobile/shopping/{$plan->id}/items/{$milk->id}/cycle", ['state' => 'buy']);
+
+        $response = $this->postJson("/api/mobile/shopping/{$plan->id}/sessions/finish", ['session_id' => $sid, 'total' => 300, 'currency' => 'DOP', 'continue' => true])
+            ->assertOk()
+            ->assertJsonPath('visit.trip_id', $sid)
+            ->assertJsonPath('plan.session.trip_id', $sid)
+            ->assertJsonPath('plan.session.continues_visit_id', $sid)
+            ->assertJsonCount(1, 'plan.session.items')
+            ->assertJsonPath('plan.session.items.0.id', $bread->id);
+
+        $this->assertDatabaseHas('plan_items', ['id' => $milk->id, 'state' => 'buy']);
+        $this->assertNotEquals($sid, $response->json('plan.session.id'));
+    }
+
+    public function test_splitting_a_visit_links_each_part_to_its_own_charge(): void
+    {
+        [$user, $plan, $stage] = $this->makeSetup();
+        Sanctum::actingAs($user);
+        $bravo = $this->makeStore($user, 'Bravo');
+        $sirena = $this->makeStore($user, 'La Sirena');
+        $milk = $this->addItem($plan, $stage, $user, 'Milk');
+        $bread = $this->addItem($plan, $stage, $user, 'Bread');
+        $sid = $this->postJson("/api/mobile/shopping/{$plan->id}/sessions/start")->json('session.id');
+        $this->postJson("/api/mobile/shopping/{$plan->id}/items/{$milk->id}/cycle", ['state' => 'buy']);
+        $this->postJson("/api/mobile/shopping/{$plan->id}/items/{$bread->id}/cycle", ['state' => 'buy']);
+        $this->postJson("/api/mobile/shopping/{$plan->id}/sessions/finish", ['session_id' => $sid, 'total' => 1000, 'currency' => 'DOP', 'payee_id' => $bravo->id])
+            ->assertOk()
+            ->assertJsonPath('visit.transaction', null);
+        $bravoCharge = $this->charge($user, 650, $bravo);
+        $sirenaCharge = $this->charge($user, 350, $sirena);
+
+        $response = $this->postJson("/api/mobile/shopping/{$plan->id}/visits/{$sid}/split", ['item_ids' => [$bread->id], 'total' => 350, 'payee_id' => $sirena->id])
+            ->assertOk()
+            ->assertJsonPath('visit.total', '650.00')
+            ->assertJsonPath('visit.transaction.id', $bravoCharge)
+            ->assertJsonPath('split_visit.total', '350.00')
+            ->assertJsonPath('split_visit.trip_id', $sid)
+            ->assertJsonPath('split_visit.payee.name', 'La Sirena')
+            ->assertJsonPath('split_visit.transaction.id', $sirenaCharge)
+            ->assertJsonCount(2, 'visits');
+
+        $this->assertEquals([$bread->id], array_column($response->json('split_visit.purchased_items'), 'id'));
+    }
+
+    public function test_splitting_a_visit_unlinks_a_charge_that_no_longer_matches(): void
+    {
+        [$user, $plan, $stage] = $this->makeSetup();
+        Sanctum::actingAs($user);
+        $store = $this->makeStore($user, 'Bravo');
+        $charge = $this->charge($user, 800, $store);
+        $milk = $this->addItem($plan, $stage, $user, 'Milk');
+        $bread = $this->addItem($plan, $stage, $user, 'Bread');
+        $sid = $this->postJson("/api/mobile/shopping/{$plan->id}/sessions/start")->json('session.id');
+        $this->postJson("/api/mobile/shopping/{$plan->id}/items/{$milk->id}/cycle", ['state' => 'buy']);
+        $this->postJson("/api/mobile/shopping/{$plan->id}/items/{$bread->id}/cycle", ['state' => 'buy']);
+        $this->postJson("/api/mobile/shopping/{$plan->id}/sessions/finish", ['session_id' => $sid, 'total' => 800, 'currency' => 'DOP', 'payee_id' => $store->id])
+            ->assertJsonPath('visit.transaction.id', $charge);
+
+        $this->postJson("/api/mobile/shopping/{$plan->id}/visits/{$sid}/split", ['item_ids' => [$bread->id], 'total' => 300])
+            ->assertOk()
+            ->assertJsonPath('visit.total', '500.00')
+            ->assertJsonPath('visit.transaction', null)
+            ->assertJsonPath('split_visit.transaction', null);
+
+        $this->assertArrayNotHasKey('transaction_id', app(ShoppingListReviewService::class)->visit($plan, $sid));
+    }
+
+    public function test_splitting_a_visit_validates_and_guards_the_team(): void
+    {
+        [$user, $plan, $stage] = $this->makeSetup();
+        Sanctum::actingAs($user);
+        $milk = $this->addItem($plan, $stage, $user, 'Milk');
+        $bread = $this->addItem($plan, $stage, $user, 'Bread');
+        $sid = $this->postJson("/api/mobile/shopping/{$plan->id}/sessions/start")->json('session.id');
+        $this->postJson("/api/mobile/shopping/{$plan->id}/items/{$milk->id}/cycle", ['state' => 'buy']);
+        $this->postJson("/api/mobile/shopping/{$plan->id}/items/{$bread->id}/cycle", ['state' => 'buy']);
+        $this->postJson("/api/mobile/shopping/{$plan->id}/sessions/finish", ['session_id' => $sid, 'total' => 400, 'currency' => 'DOP'])->assertOk();
+        $url = "/api/mobile/shopping/{$plan->id}/visits/{$sid}/split";
+
+        $this->postJson($url, ['item_ids' => [$bread->id], 'total' => 400])->assertStatus(422);
+        $this->postJson($url, ['item_ids' => [$milk->id, $bread->id], 'total' => 100])->assertStatus(422);
+        $this->postJson($url, ['item_ids' => [999999], 'total' => 100])->assertStatus(422);
+        $this->postJson($url, ['total' => 100])->assertStatus(422)->assertJsonValidationErrors('item_ids');
+        $this->postJson('/api/mobile/shopping/'.$plan->id.'/visits/'.Str::uuid().'/split', ['item_ids' => [$bread->id], 'total' => 100])->assertNotFound();
+
+        $other = User::factory()->withPersonalTeam()->create();
+        $other->forceFill(['current_team_id' => $other->ownedTeams()->first()->id])->save();
+        Sanctum::actingAs($other->fresh());
+        $this->postJson($url, ['item_ids' => [$bread->id], 'total' => 100])->assertForbidden();
+
+        $this->assertEquals('400.00', app(ShoppingListReviewService::class)->visit($plan, $sid)['total']);
+    }
+
     // ── Helpers for the trips ──────────────────────────────────────────
 
     private function makeStore(User $user, string $name): Payee

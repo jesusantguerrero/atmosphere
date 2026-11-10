@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use App\Domains\Journal\Actions\TransactionCreate;
 use App\Domains\Transaction\Models\Transaction;
+use App\Models\Setting;
 use App\Models\User;
 use App\Notifications\ShoppingListReady;
 use Illuminate\Support\Str;
@@ -236,14 +238,26 @@ class ShoppingListReviewService
             if ($active = $this->activeSession($plan)) {
                 return $active;
             }
-            $details = $this->itemDetails($plan);
-            $items = PlanItem::query()->without(['fields', 'checklist'])->with('stage')->where('team_id', $plan->team_id)->where('plan_id', $plan->id)->where('state', PlanItem::STATE_PENDING)->orderBy('order')->get()->map(fn (PlanItem $item) => ['id' => $item->id, 'title' => $item->title, 'stage_id' => $item->stage_id, 'category' => $item->stage?->name, 'details' => $details[$item->id] ?? null])->all();
+            $items = $this->pendingSessionItems($plan);
             abort_if(empty($items), 422, 'No hay productos pendientes. Restablece los productos comprados a "pendiente" para iniciar una nueva compra.');
-            $session = ['id' => (string) Str::uuid(), 'started_at' => now()->toIso8601String(), 'user_id' => $userId, 'review_id' => $this->status($plan)['id'], 'items' => $items, 'purchased_ids' => []];
+            $sessionId = (string) Str::uuid();
+            $session = ['id' => $sessionId, 'trip_id' => $sessionId, 'started_at' => now()->toIso8601String(), 'user_id' => $userId, 'review_id' => $this->status($plan)['id'], 'items' => $items, 'purchased_ids' => []];
             $this->store($plan, $session, 'shopping_active_session');
 
             return $session;
         });
+    }
+
+    /**
+     * The list's pending items, shaped the way a session holds them.
+     *
+     * @return array<int, array{id: int, title: string, stage_id: int, category: ?string, details: ?array}>
+     */
+    private function pendingSessionItems(Plan $plan): array
+    {
+        $details = $this->itemDetails($plan);
+
+        return PlanItem::query()->without(['fields', 'checklist'])->with('stage')->where('team_id', $plan->team_id)->where('plan_id', $plan->id)->where('state', PlanItem::STATE_PENDING)->orderBy('order')->get()->map(fn (PlanItem $item) => ['id' => $item->id, 'title' => $item->title, 'stage_id' => $item->stage_id, 'category' => $item->stage?->name, 'details' => $details[$item->id] ?? null])->all();
     }
 
     public function updateSessionCart(Plan $plan, PlanItem $item): void
@@ -278,9 +292,18 @@ class ShoppingListReviewService
             abort_unless($active && $active['id'] === $data['session_id'], 409, 'La sesión de compra cambió. Actualiza la lista.');
             $bought = array_values(array_filter($active['items'], fn (array $item) => in_array($item['id'], $active['purchased_ids'], true)));
             abort_if(empty($bought), 422, 'Marca al menos un producto en el carrito antes de terminar.');
-            $visit = [...$active, 'completed_at' => now()->toIso8601String(), 'total' => number_format((float) $data['total'], 2, '.', ''), 'currency' => $data['currency'], 'note' => trim($data['note'] ?? ''), ...(! empty($data['payee_id']) ? ['payee_id' => (int) $data['payee_id']] : []), 'purchased_items' => $bought, 'remaining_items' => array_values(array_filter($active['items'], fn (array $item) => ! in_array($item['id'], $active['purchased_ids'], true)))];
+            $continues = ! empty($data['continue']);
+            $pending = $continues ? $this->pendingSessionItems($plan) : [];
+            abort_if($continues && empty($pending), 422, 'No quedan productos pendientes para otra tienda. Usa «Terminar».');
+            $tripId = $active['trip_id'] ?? $active['id'];
+            $visit = [...$active, 'trip_id' => $tripId, 'completed_at' => now()->toIso8601String(), 'total' => number_format((float) $data['total'], 2, '.', ''), 'currency' => $data['currency'], 'note' => trim($data['note'] ?? ''), ...(! empty($data['payee_id']) ? ['payee_id' => (int) $data['payee_id']] : []), 'purchased_items' => $bought, 'remaining_items' => array_values(array_filter($active['items'], fn (array $item) => ! in_array($item['id'], $active['purchased_ids'], true)))];
             unset($visit['items'], $visit['purchased_ids']);
             $this->store($plan, $visit, $field);
+            if ($continues) {
+                $this->store($plan, ['id' => (string) Str::uuid(), 'trip_id' => $tripId, 'continues_visit_id' => $active['id'], 'started_at' => now()->toIso8601String(), 'user_id' => $active['user_id'] ?? null, 'review_id' => $active['review_id'] ?? null, 'items' => $pending, 'purchased_ids' => []], 'shopping_active_session');
+
+                return $visit;
+            }
             $this->store($plan, [], 'shopping_active_session');
             $current = $this->status($plan);
             if ($current['id']) {
@@ -291,6 +314,89 @@ class ShoppingListReviewService
             PlanItem::query()->where('team_id', $plan->team_id)->where('plan_id', $plan->id)->update(['state' => PlanItem::STATE_PENDING, 'is_done' => false, 'commit_date' => null]);
 
             return $visit;
+        });
+    }
+
+    /**
+     * Records a trip paid in cash as a verified expense on the chosen account and ties it to the visit, so the card
+     * charge linker leaves the visit alone. A retried finish whose visit is already linked creates nothing.
+     *
+     * @param  array<string, mixed>  $visit
+     * @return array<string, mixed>
+     */
+    public function recordCashExpense(Plan $plan, User $user, array $visit, int $accountId, ?int $categoryId): array
+    {
+        if (! empty($visit['transaction_id'])) {
+            return $visit;
+        }
+
+        $timezone = Setting::getByTeam($plan->team_id)['team_timezone'] ?? config('app.timezone');
+        $transaction = app(TransactionCreate::class)->create($user, [
+            'account_id' => $accountId,
+            'counter_account_id' => null,
+            'date' => now($timezone)->format('Y-m-d'),
+            'description' => 'Compra · '.$plan->name,
+            'total' => $visit['total'],
+            'currency_code' => $visit['currency'],
+            'direction' => Transaction::DIRECTION_CREDIT,
+            'status' => Transaction::STATUS_VERIFIED,
+            'category_id' => $categoryId,
+            'payee_id' => $visit['payee_id'] ?? null,
+        ]);
+
+        return $transaction ? $this->linkVisit($plan, $visit['id'], $transaction->id) : $visit;
+    }
+
+    /**
+     * Moves some of a finished trip's purchased items into a visit of their own, for when one outing was paid with
+     * two charges (two stores). The new visit keeps the trip's date and trip id and takes the given total and store;
+     * the original keeps the other items and the rest of the money. A charge linked to the original that no longer
+     * matches its amount is unlinked, so each visit can be tied to its own charge.
+     *
+     * @param  array<int, int>  $itemIds
+     * @return array{visit: array<string, mixed>, split_visit: array<string, mixed>}
+     */
+    public function splitVisit(Plan $plan, string $sessionId, array $itemIds, string|float $total, ?int $payeeId, ?string $note): array
+    {
+        return $plan->getConnection()->transaction(function () use ($plan, $sessionId, $itemIds, $total, $payeeId, $note) {
+            Plan::query()->whereKey($plan->id)->lockForUpdate()->firstOrFail();
+            $field = 'shopping_visit_'.$sessionId;
+            $visit = $this->sessionField($plan, $field);
+            abort_if(! $visit, 404);
+
+            $itemIds = array_values(array_unique(array_map('intval', $itemIds)));
+            $purchased = collect($visit['purchased_items'] ?? []);
+            $purchasedIds = $purchased->pluck('id')->map(fn ($id) => (int) $id)->all();
+            abort_if(empty($itemIds), 422, 'Elige al menos un producto para la nueva visita.');
+            abort_if(array_diff($itemIds, $purchasedIds) !== [], 422, 'Algunos productos no son de esta visita.');
+            abort_if(count($itemIds) >= count($purchasedIds), 422, 'Deja al menos un producto en la visita original.');
+
+            $originalCents = (int) round((float) $visit['total'] * 100);
+            $splitCents = (int) round((float) $total * 100);
+            abort_if($splitCents <= 0 || $splitCents >= $originalCents, 422, 'El importe debe ser menor que el total de la visita.');
+
+            $tripId = $visit['trip_id'] ?? $visit['id'];
+            $isMoved = fn (array $item) => in_array((int) $item['id'], $itemIds, true);
+            $split = [...$visit, 'id' => (string) Str::uuid(), 'trip_id' => $tripId, 'split_from' => $visit['id'], 'total' => number_format($splitCents / 100, 2, '.', ''), 'note' => trim($note ?? ''), 'purchased_items' => $purchased->filter($isMoved)->values()->all(), 'remaining_items' => []];
+            unset($split['transaction_id'], $split['payee_id']);
+            if ($payeeId !== null) {
+                $split['payee_id'] = $payeeId;
+            }
+
+            $visit['trip_id'] = $tripId;
+            $visit['total'] = number_format(($originalCents - $splitCents) / 100, 2, '.', '');
+            $visit['purchased_items'] = $purchased->reject($isMoved)->values()->all();
+            if (! empty($visit['transaction_id'])) {
+                $charge = Transaction::query()->where('team_id', $plan->team_id)->find($visit['transaction_id']);
+                if (! $charge || abs((float) $charge->total - (float) $visit['total']) >= 0.01) {
+                    unset($visit['transaction_id']);
+                }
+            }
+
+            $this->store($plan, $visit, $field);
+            $this->store($plan, $split, 'shopping_visit_'.$split['id']);
+
+            return ['visit' => $visit, 'split_visit' => $split];
         });
     }
 

@@ -1,15 +1,24 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import SectionTitle from '@/Components/atoms/SectionTitle.vue';
 import { formatDate } from '@/utils';
 import { ITransaction } from '../models';
 import MoneyPresenter from '@/Components/molecules/MoneyPresenter.vue';
+import { recurrenceLabel } from '../formatters';
 
 const props = defineProps<{
     payment: ITransaction
 }>();
 
 defineEmits(['edit', 'deleted', 'pay']);
+
+const { t } = useI18n();
+
+// «Mensual» / «Cada 4 semanas» on planned (recurring) transactions.
+const recurrence = computed(() => props.payment.type === 'planned_transaction'
+    ? recurrenceLabel((props.payment as any).frequency, (props.payment as any).frequency_interval, t)
+    : null);
 
 // Billing-cycle status badge (only renders when this row is a credit-card
 // cycle, identified by `payment.status` being one of the BillingCycle
@@ -188,6 +197,14 @@ const dateBadgeConfig = computed(() => {
                         :class="cycleStatus.classes"
                     >
                         {{ $t(cycleStatus.label) }}
+                    </span>
+                    <span
+                        v-if="recurrence"
+                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold ring-1 ring-inset bg-base-lvl-2 text-body-1 ring-base dark:ring-white/10"
+                        :title="$t('Repeat every')"
+                    >
+                        <i class="fa fa-rotate text-[10px]" />
+                        {{ recurrence }}
                     </span>
                 </div>
                 <span class="text-sm text-body-1/70 truncate block">

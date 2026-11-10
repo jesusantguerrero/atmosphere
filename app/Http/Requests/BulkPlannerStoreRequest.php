@@ -20,6 +20,7 @@ class BulkPlannerStoreRequest extends FormRequest
             'source' => 'nullable|string|max:64',
             'items' => 'required|array|min:1|max:100',
             'items.*.date' => 'required|date',
+            'items.*.end_date' => 'nullable|date|after_or_equal:items.*.date',
             'items.*.name' => 'required|string|max:255',
             'items.*.notes' => 'nullable|string|max:1000',
             'items.*.total' => 'nullable|numeric|min:0',
