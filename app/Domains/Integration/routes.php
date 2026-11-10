@@ -11,6 +11,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     Route::post('/integrations/google', [IntegrationController::class, 'google'])->name('services.google');
     Route::post('/integrations/email-to-tasks', [IntegrationController::class, 'toggleEmailToTasks'])->name('settings.integrations.email-to-tasks');
     Route::post('/integrations/bank-transactions', [IntegrationController::class, 'toggleBankTransactions'])->name('settings.integrations.bank-transactions');
+    Route::get('/integrations/bank-transactions', [IntegrationController::class, 'bankTransactionsStatus'])->name('settings.integrations.bank-transactions.status');
     Route::post('/integrations/bank-transactions/sync', [IntegrationController::class, 'syncBankTransactions'])->middleware('throttle:6,1')->name('settings.integrations.bank-transactions.sync');
 });
 

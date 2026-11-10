@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Domains\Integration\Actions\GmailReceived;
 use App\Domains\Integration\Services\UniversalBankAutomationService;
+use App\Models\ProcessedEmail;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -34,11 +35,13 @@ class SyncBankEmails
                 throw new \RuntimeException('Bank email import is not set up.');
             }
 
+            $before = ProcessedEmail::query()->where('team_id', $this->teamId)->count();
             $result = GmailReceived::sync($automation, $since);
             UniversalBankAutomationService::rememberSync($this->teamId, [
                 'status' => 'done',
                 'since' => $since,
-                ...$result,
+                'checked' => $result['checked'],
+                'imported' => ProcessedEmail::query()->where('team_id', $this->teamId)->count() - $before,
             ]);
         } catch (\Throwable $exception) {
             Log::error('SyncBankEmails failed', ['team_id' => $this->teamId, 'error' => $exception->getMessage()]);
