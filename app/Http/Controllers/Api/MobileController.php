@@ -18,7 +18,6 @@ use App\Domains\Integration\Actions\UniversalBankParser;
 use App\Domains\Integration\Services\UniversalBankAutomationService;
 use App\Domains\Journal\Actions\AccountCreate;
 use App\Domains\Journal\Actions\AccountUpdate;
-use App\Domains\Journal\Actions\TransactionCreate;
 use App\Domains\Journal\Actions\TransactionDelete;
 use App\Domains\Journal\Actions\TransactionUpdate;
 use App\Domains\LogerProfile\Models\LogerProfile;
@@ -2374,22 +2373,7 @@ class MobileController extends Controller
         $visit = $reviews->finishSession($plan, $validated);
 
         if (! empty($validated['account_id'])) {
-            $transaction = app(TransactionCreate::class)->create($request->user(), [
-                'account_id' => $validated['account_id'],
-                'counter_account_id' => null,
-                'date' => now()->format('Y-m-d'),
-                'description' => $plan->name,
-                'total' => $validated['total'],
-                'currency_code' => $validated['currency'],
-                'direction' => Transaction::DIRECTION_CREDIT,
-                'status' => Transaction::STATUS_VERIFIED,
-                'category_id' => $validated['category_id'] ?? null,
-                'payee_id' => $validated['payee_id'] ?? null,
-            ]);
-
-            if ($transaction) {
-                $reviews->linkVisit($plan, $visit['id'], $transaction->id);
-            }
+            $reviews->recordCashExpense($plan, $request->user(), $visit, (int) $validated['account_id'], isset($validated['category_id']) ? (int) $validated['category_id'] : null);
         } else {
             // The charge may already be in (a bank import, or paid before saving the trip).
             app(ShoppingVisitLinker::class)->linkVisit($plan, $visit);

@@ -2,7 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Domains\AppCore\Models\Category;
 use App\Events\ShoppingListItemUpdated;
+use App\Models\Account;
+use App\Models\Setting;
 use App\Models\User;
 use App\Services\ShoppingListReviewService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -161,6 +164,63 @@ class ShoppingSplitTripTest extends TestCase
         $this->assertCount(1, app(ShoppingListReviewService::class)->visits($this->plan));
     }
 
+    public function test_a_trip_paid_in_cash_records_the_expense_and_links_it_to_each_visit(): void
+    {
+        [$milk, $bread] = $this->items('Leche', 'Pan');
+        $store = $this->store('Bravo');
+        $cash = $this->account($this->plan->team_id, 'Efectivo');
+        $groceries = $this->category($this->plan->team_id, 'Supermercado');
+        Setting::create(['team_id' => $this->plan->team_id, 'user_id' => $this->user->id, 'name' => 'team_timezone', 'value' => 'Pacific/Kiritimati']);
+        $first = $this->start();
+        $this->buy($milk);
+        $payload = ['session_id' => $first['id'], 'total' => '350.50', 'currency' => 'DOP', 'payee_id' => $store->id, 'account_id' => $cash->id, 'category_id' => $groceries->id, 'continue' => true];
+
+        $visit = $this->postJson($this->base().'/sessions/finish', $payload)->assertOk()->json('visit');
+
+        $this->assertNotNull($visit['transaction_id']);
+        $this->assertDatabaseHas('transactions', ['id' => $visit['transaction_id'], 'team_id' => $this->plan->team_id, 'account_id' => $cash->id, 'category_id' => $groceries->id, 'payee_id' => $store->id, 'total' => 350.50, 'direction' => 'WITHDRAW', 'status' => 'verified', 'description' => 'Compra · Compra', 'date' => now('Pacific/Kiritimati')->format('Y-m-d')]);
+        $this->postJson($this->base().'/sessions/finish', $payload)->assertOk()->assertJsonPath('visit.transaction_id', $visit['transaction_id']);
+        $this->assertDatabaseCount('transactions', 1);
+
+        $second = $this->postJson($this->base().'/sessions/start')->assertOk()->json('plan.session');
+        $this->buy($bread);
+        $last = $this->postJson($this->base().'/sessions/finish', ['session_id' => $second['id'], 'total' => '120', 'currency' => 'DOP', 'account_id' => $cash->id])->assertOk()->json('visit');
+
+        $this->assertNotSame($visit['transaction_id'], $last['transaction_id']);
+        $this->assertDatabaseHas('transactions', ['id' => $last['transaction_id'], 'account_id' => $cash->id, 'category_id' => null, 'payee_id' => null, 'total' => 120, 'direction' => 'WITHDRAW']);
+        $this->assertDatabaseCount('transactions', 2);
+    }
+
+    public function test_a_cash_payment_on_another_household_account_or_category_is_rejected(): void
+    {
+        [$milk] = $this->items('Leche');
+        $other = User::factory()->withPersonalTeam()->create();
+        $foreignAccount = $this->account($other->ownedTeams()->first()->id, 'Ajena');
+        $foreignCategory = $this->category($other->ownedTeams()->first()->id, 'Ajena');
+        $session = $this->start();
+        $this->buy($milk);
+        $payload = ['session_id' => $session['id'], 'total' => '100', 'currency' => 'DOP'];
+
+        $this->postJson($this->base().'/sessions/finish', [...$payload, 'account_id' => $foreignAccount->id])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('account_id');
+        $this->postJson($this->base().'/sessions/finish', [...$payload, 'account_id' => $this->account($this->plan->team_id, 'Efectivo')->id, 'category_id' => $foreignCategory->id])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('category_id');
+
+        $this->assertDatabaseCount('transactions', 0);
+        $this->getJson($this->base().'/review')->assertOk()->assertJsonPath('plan.session.id', $session['id'])->assertJsonCount(0, 'plan.visits');
+    }
+
+    public function test_a_trip_paid_by_card_creates_no_expense(): void
+    {
+        [$milk] = $this->items('Leche');
+        $visit = $this->finishedVisit([$milk], '200', $this->store('Bravo'));
+
+        $this->assertArrayNotHasKey('transaction_id', $visit);
+        $this->assertDatabaseCount('transactions', 0);
+    }
+
     public function test_another_team_cannot_split_a_visit(): void
     {
         [$milk, $bread] = $this->items('Leche', 'Pan');
@@ -192,6 +252,16 @@ class ShoppingSplitTripTest extends TestCase
     private function store(string $name): Payee
     {
         return Payee::create(['team_id' => $this->plan->team_id, 'user_id' => $this->user->id, 'name' => $name]);
+    }
+
+    private function account(int $teamId, string $name): Account
+    {
+        return Account::create(['team_id' => $teamId, 'user_id' => $this->user->id, 'name' => $name, 'currency_code' => 'DOP', 'balance_type' => 'DEBIT', 'type' => 1]);
+    }
+
+    private function category(int $teamId, string $name): Category
+    {
+        return Category::create(['name' => $name, 'team_id' => $teamId, 'resource_type' => 'transactions', 'parent_id' => null, 'depth' => 0, 'index' => 0]);
     }
 
     private function foreignStore(): Payee

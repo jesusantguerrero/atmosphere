@@ -65,7 +65,11 @@ class ShoppingListController extends Controller
         $this->guard($request, $plan);
         $validated = $request->validated();
         $visit = $reviews->finishSession($plan, $validated);
-        app(ShoppingVisitLinker::class)->linkVisit($plan, $visit);
+        if (! empty($validated['account_id'])) {
+            $reviews->recordCashExpense($plan, $request->user(), $visit, (int) $validated['account_id'], isset($validated['category_id']) ? (int) $validated['category_id'] : null);
+        } else {
+            app(ShoppingVisitLinker::class)->linkVisit($plan, $visit);
+        }
         $this->notifyChange($request, $plan, null, empty($validated['continue']) ? 'visit_completed' : 'visit_continued');
 
         return response()->json([
