@@ -5,6 +5,7 @@ import autoAnimate from "@formkit/auto-animate"
 import { NDropdown } from "naive-ui";
 import { router } from "@inertiajs/vue3";
 import { useStorage } from "@vueuse/core";
+import { useI18n } from "vue-i18n";
 
 import IconDrag from "@/Components/icons/IconDrag.vue";
 import PointAlert from "@/Components/atoms/PointAlert.vue";
@@ -69,13 +70,15 @@ onMounted(() => {
     autoAnimate(dropdown.value)
 })
 
-const options = [{
+const { t } = useI18n();
+
+const options = computed(() => [{
     name: 'delete',
-    label: 'Delete'
+    label: t('Delete')
 }, {
     name: 'transactions',
-    label: 'Transactions'
-}]
+    label: t('Transactions')
+}])
 
 const isConfirmingRemove = ref(false);
 
@@ -155,13 +158,13 @@ const fetchDetails = async (category: ICategory) => {
                         :title="$t('Has overspent categories')"
                     />
                     <PointAlert
-                        v-else-if="item.hasUnderfunded"
+                        v-else-if="item.hasUnderFunded"
                         color="warning"
                         :title="$t('Has underfunded categories')"
                     />
                 </h4>
-                <button class="ml-2 font-bold text-secondary" @click=" toggleAdding()">
-                    <IMdiMinus v-if="isAdding" title="Add new category" />
+                <button class="ml-2 font-bold text-secondary" :title="$t('Add subcategory')" @click=" toggleAdding()">
+                    <IMdiMinus v-if="isAdding" />
                     <IMdiPlus  v-else />
                 </button>
             </div>
@@ -218,12 +221,12 @@ const fetchDetails = async (category: ICategory) => {
             :title="$t('Has overspent categories')"
         />
         <span
-            v-else-if="item.hasUnderfunded"
+            v-else-if="item.hasUnderFunded"
             class="w-2 h-2 rounded-full bg-warning shrink-0 animate-pulse"
             :title="$t('Has underfunded categories')"
         />
-        <button class="font-bold text-secondary shrink-0 px-1" @click="toggleAdding()">
-            <IMdiMinus v-if="isAdding" title="Add new category" />
+        <button class="font-bold text-secondary shrink-0 px-1" :title="$t('Add subcategory')" @click="toggleAdding()">
+            <IMdiMinus v-if="isAdding" />
             <IMdiPlus  v-else />
         </button>
         <div class="text-right shrink-0 tabular-nums font-semibold text-sm">

@@ -250,7 +250,7 @@
                 <article
                     class="relative flex items-center gap-x-2 px-3 py-1.5 cursor-pointer whitespace-nowrap"
                     :class="badgeClass"
-                    :title="description"
+                    :title="$t(description)"
                 >
                     <span class="text-base font-bold">{{ formatter(value) }}</span>
 
@@ -364,13 +364,13 @@
                             </AtButton>
                         </template>
                         <div class="w-72 md:w-96">
-                            <AtField label="From">
+                            <AtField :label="$t('From')">
                                 <Multiselect
                                     v-model="form.source_category_id"
                                     :options="categoryOptions"
                                     group-values="children"
                                     group-label="label"
-                                    placeholder="Type to search"
+                                    :placeholder="$t('Type to search')"
                                     track-by="value"
                                     label="label"
                                     select-label=""
@@ -391,29 +391,29 @@
                                 </Multiselect>
                             </AtField>
                             <div class="flex items-center justify-end space-x-2">
-                                <AtButton class="text-body-1" @click="clear">Cancel</AtButton>
+                                <AtButton class="text-body-1" @click="clear">{{ $t('Cancel') }}</AtButton>
                                 <AtButton
                                     class="text-white rounded-md bg-success"
                                     :class="form.processing ? 'pointer-events-none opacity-50' : ''"
                                     :disabled="form.processing"
-                                    @click="onAssignBudget()"> Save</AtButton>
+                                    @click="onAssignBudget()">{{ $t('Save') }}</AtButton>
                             </div>
                         </div>
                     </NPopover>
                 </article>
             </template>
             <section class="text-center">
-                <p>From last month: <MoneyPresenter :value="toAssign.movedFromLastMonth"/> </p>
-                <p>Inflow: <MoneyPresenter :value="toAssign.availableForFunding"/> </p>
-                <p>left over: <MoneyPresenter :value="toAssign.leftOver"/> </p>
+                <p>{{ $t('From last month') }}: <MoneyPresenter :value="toAssign.movedFromLastMonth"/> </p>
+                <p>{{ $t('Inflow') }}: <MoneyPresenter :value="toAssign.availableForFunding"/> </p>
+                <p>{{ $t('Left over') }}: <MoneyPresenter :value="toAssign.leftOver"/> </p>
                 <p>{{ $t('Scheduled this period') }}: <MoneyPresenter :value="scheduledTotal"/> </p>
                 <p class="text-blue-300">{{ $t('After scheduled') }}: <MoneyPresenter :value="afterScheduled"/> </p>
-                <p class="text-green-300">Total Available: <MoneyPresenter :value="toAssign.availableForFunding + toAssign.leftOver + toAssign.movedFromLastMonth"/> </p>
-                <p class="text-green-500">Total to budget: <MoneyPresenter :value="toAssign.availableForFunding + toAssign.leftOver"/> </p>
-                <p>Budgeted: <MoneyPresenter :value="toAssign.budgeted"/> </p>
-                <p>Last month overspending: <MoneyPresenter :value="toAssign.overspending_from_previous_month"/> </p>
-                <p class="text-red-500">Funded: <MoneyPresenter :value="toAssign.budgeted + toAssign.overspending_from_previous_month"/></p>
-                <p>Balance: <MoneyPresenter :value="toAssign.availableForFunding + toAssign.leftOver - toAssign.budgeted" /> </p>
+                <p class="text-green-300">{{ $t('Total available') }}: <MoneyPresenter :value="toAssign.availableForFunding + toAssign.leftOver + toAssign.movedFromLastMonth"/> </p>
+                <p class="text-green-500">{{ $t('Total to budget') }}: <MoneyPresenter :value="toAssign.availableForFunding + toAssign.leftOver"/> </p>
+                <p>{{ $t('Budgeted') }}: <MoneyPresenter :value="toAssign.budgeted"/> </p>
+                <p>{{ $t('Last month overspending') }}: <MoneyPresenter :value="toAssign.overspending_from_previous_month"/> </p>
+                <p class="text-red-500">{{ $t('Funded') }}: <MoneyPresenter :value="toAssign.budgeted + toAssign.overspending_from_previous_month"/></p>
+                <p>{{ $t('Balance') }}: <MoneyPresenter :value="toAssign.availableForFunding + toAssign.leftOver - toAssign.budgeted" /> </p>
             </section>
         </NPopover>
 

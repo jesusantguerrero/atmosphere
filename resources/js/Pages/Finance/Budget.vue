@@ -95,6 +95,7 @@ const {
   filters,
   visibleFilters,
   data: categories,
+  outflow,
   setBudgetFilter,
   selectedBudget,
   setSelectedBudget,
@@ -110,7 +111,14 @@ const { isSmaller } = useBreakpoints(breakpointsTailwind);
 const showCategoriesInMain = isSmaller("md");
 
 //  budget filters
+const ALL_CATEGORIES = "all";
 const budgetStatus = {
+  [ALL_CATEGORIES]: {
+    label: "All",
+  },
+  overspent: {
+    label: "Overspent filter",
+  },
   funded: {
     label: "Funded",
   },
@@ -231,10 +239,12 @@ const confirmCopyOverwrite = () => {
 };
 
 const toggleFilter = async (value: string) => {
-    setBudgetFilter(value)
+    setBudgetFilter(value === ALL_CATEGORIES ? "" : value)
     const status = Object.keys(filters.value).find((key) => filters.value[key]) ?? "";
     toggleCustomFilter('mode', status, SearchFilterMode.Replace, false);
 };
+
+const clearFilter = () => toggleFilter(ALL_CATEGORIES);
 
 onMounted(() => {
     nextTick(() => {
@@ -331,21 +341,21 @@ const budgetCsvExportUrl = computed(() => {
              popover), today (jump to current month), more-actions (⋮).
              The Overspent chip stays as a text banner when triggered
              because it's a contextual alert, not a permanent control. -->
-        <div class="flex-1 min-w-0 flex flex-wrap md:flex-nowrap items-center gap-1">
+        <div class="flex-1 min-w-0 flex flex-wrap items-center gap-1">
           <AtButton
             v-if="visibleFilters.overspent"
             @click="toggleFilter('overspent')"
-            class="relative flex items-center justify-between gap-1.5 rounded-md min-w-0 max-w-full group"
+            class="relative flex items-center justify-between gap-1.5 rounded-md shrink-0 whitespace-nowrap group"
             :class="[
               filters.overspent
                 ? (overspentIsCovered ? 'bg-warning text-white' : 'bg-primary text-white')
                 : (overspentIsCovered ? 'text-warning' : 'text-primary')
             ]"
           >
-            <!-- min-w-0 + truncate so a long label ellipsizes at phone width
-                 instead of overflowing and clipping off the left edge. -->
-            <span class="truncate min-w-0">
-              {{ filterGroups.overSpent.length }} {{ overspentIsCovered ? $t('categories to fund') : $t('overspent categories') }}
+            <!-- shrink-0 + nowrap: the toolbar row wraps instead of squeezing
+                 this label to 0px next to the assign pill. -->
+            <span>
+              {{ filterGroups.overSpent.length }} {{ overspentIsCovered ? $t('categories to fund') : $t('categories in the red') }}
             </span>
 
             <div class="shrink-0 text-white text-sm rounded-full group-hover:bg-base-lvl-3/20 p-0.5">
@@ -383,7 +393,7 @@ const budgetCsvExportUrl = computed(() => {
             </template>
             <div class="p-2">
               <StatusButtons
-                :modelValue="currentStatus"
+                :modelValue="currentStatus || ALL_CATEGORIES"
                 :statuses="budgetStatus"
                 @change="toggleFilter"
               />
@@ -486,7 +496,7 @@ const budgetCsvExportUrl = computed(() => {
       <section data-budget-table class="w-full mt-4 pb-24 lg:pb-0 rounded-lg text-body bg-base">
           <article class="w-full space-y-4">
             <BudgetErrorBanner />
-            <BudgetCategories :budgets="budgets" />
+            <BudgetCategories :budgets="budgets" @clear-filter="clearFilter" />
         </article>
       </section>
 
@@ -506,7 +516,7 @@ const budgetCsvExportUrl = computed(() => {
         <BudgetSidePanel
           :value="readyToAssignBalance"
           :to-assign="readyToAssign"
-          :budgets="budgets"
+          :budgets="outflow"
           :budget-csv-export-url="budgetCsvExportUrl"
           :export-budget-url="route('budget.export')"
           @copy-from-previous="copyFromPrevious()"

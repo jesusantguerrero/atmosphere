@@ -254,7 +254,8 @@ interface AssignBudgetProps {
     category: IBudgetCategory,
     categoryGroup: IBudgetCategory,
     month: string,
-    budgeted: number
+    budgeted: number,
+    onFinish?: () => void,
 }
 
 interface BudgetMovementProps {
@@ -280,6 +281,7 @@ export const useBudget = (budgets: Ref<Record<string, any>>) => {
             BudgetState.filters[filter] = filterName == filter ? !value : false ;
         })
         setVisibleCategories();
+        clearHiddenSelection();
     }
 
     const assignBudget = (assign: AssignBudgetProps) => {
@@ -297,6 +299,7 @@ export const useBudget = (budgets: Ref<Record<string, any>>) => {
                 only: ['budgets', 'flash'],
                 onSuccess: handleAssignSuccess,
                 onError: handleBudgetError,
+                onFinish: () => assign.onFinish?.(),
             }
         );
     }
@@ -359,6 +362,23 @@ function getVisibleCategories(budgetData: Record<string, any>, filterName?: Filt
     }, [])
 
     return visibleGroups;
+}
+
+/**
+ * A filter change must not leave the side panel showing a category the list no
+ * longer shows, so the selection is dropped when its row is filtered out.
+ */
+const clearHiddenSelection = () => {
+    const selectedId = BudgetState.selectedBudgetIds.id;
+    if (!selectedId) {
+        return;
+    }
+    const isVisible = BudgetState.visibleCategories.some((group: IBudgetCategory) =>
+        group.subCategories?.some((category: IBudgetCategory) => category.id == selectedId)
+    );
+    if (!isVisible) {
+        setSelectedBudget();
+    }
 }
 
 const setSelectedBudget = (categoryId = null, groupId = null) => {

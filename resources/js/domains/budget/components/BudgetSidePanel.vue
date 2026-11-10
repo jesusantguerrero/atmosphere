@@ -39,8 +39,9 @@ const props = defineProps<{
 const emit = defineEmits<{ (e: "copy-from-previous"): void }>();
 
 /**
- * Aggregate totals across every visible group. Same shape and math
- * TotalBudgetRow uses so the two surfaces stay in sync.
+ * Aggregate totals across every group. Expects the groups as useBudget
+ * computes them (outflow), which carry the per-group totals the raw server
+ * props do not. Same math TotalBudgetRow uses so the two surfaces agree.
  */
 const totals = computed(() => {
   const groups = Array.isArray(props.budgets)
@@ -68,7 +69,7 @@ const status = computed(() => {
   if (v < 0) {
     return {
       variant: "overspent",
-      label: "Overspent",
+      label: "You assigned too much",
       colorClass:
         "bg-primary/10 border-primary/40 text-primary-ink",
       description:
