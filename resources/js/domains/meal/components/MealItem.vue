@@ -2,11 +2,6 @@
     // @ts-ignore
     import { AtButton } from "atmosphere-ui";
     import { reactive } from "vue";
-    import { useForm } from "@inertiajs/vue3";
-    import { useI18n } from "vue-i18n";
-    import {  ElMessageBox } from "element-plus";
-
-    const { t: $t } = useI18n();
 
     import LogerApiSimpleSelect from "@/Components/organisms/LogerApiSimpleSelect.vue";
     import IconHeart from "@/Components/icons/IconHeart.vue";
@@ -19,24 +14,15 @@
     defineProps<{
         meal: Meal;
         isSelected: boolean;
+        deleting?: boolean;
     }>();
+
+    defineEmits(["toggle-like", "click", "tag-selected", "delete"]);
 
     const label = reactive({
         label_id: "",
         name: ""
-    })
-
-    const deleteForm = useForm({
-        id: 0
-    });
-
-    const deleteResource = async (meal: any) => {
-        const isConfirmed = await ElMessageBox.confirm($t("Are you sure to delete this meal?"));
-        if (!isConfirmed) return
-
-        deleteForm.delete(route('meals.destroy', { meal }))
-    }
-</script>
+    })</script>
 
 <template>
         <article
@@ -78,9 +64,10 @@
                 </div>
                 <LogerButton
                     variant="error"
-                    @click="deleteResource(meal)"
-                    :disabled="deleteForm.processing"
-                    :processing="deleteForm.processing && deleteForm.id==meal.id"
+                    :aria-label="$t('Delete')"
+                    @click="$emit('delete', meal)"
+                    :disabled="deleting"
+                    :processing="deleting"
                 >
                     <template #icon>
                         <i class="fa fa-trash"></i>
