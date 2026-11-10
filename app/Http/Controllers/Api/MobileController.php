@@ -37,6 +37,7 @@ use App\Domains\Transaction\Services\TransactionService;
 use App\Domains\Transaction\Services\TransactionSplits;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DraftTransactionsRangeRequest;
+use App\Http\Requests\SplitShoppingVisitRequest;
 use App\Http\Requests\UpdateReconciliationRequest;
 use App\Http\Requests\UpdateShoppingItemRequest;
 use App\Http\Requests\UpdateShoppingVisitRequest;
@@ -2313,6 +2314,27 @@ class MobileController extends Controller
         ]);
     }
 
+    /**
+     * Split a finished trip that was paid with two charges: the chosen items, total and store become a visit of
+     * their own, and each visit is then linked to its own charge.
+     */
+    public function splitShoppingVisit(SplitShoppingVisitRequest $request, Plan $plan, string $session, ShoppingListReviewService $reviews, ShoppingVisitLinker $linker): JsonResponse
+    {
+        abort_if((int) $plan->team_id !== (int) $request->user()->current_team_id, 403);
+
+        $payeeId = $request->validated('payee_id');
+        $result = $reviews->splitVisit($plan, $session, $request->validated('item_ids'), $request->validated('total'), $payeeId === null ? null : (int) $payeeId, $request->validated('note'));
+        foreach ($result as $visit) {
+            $linker->linkVisit($plan, $visit);
+        }
+
+        return response()->json([
+            'visit' => $reviews->decorate($plan->team_id, [$reviews->visit($plan, $result['visit']['id'])])[0],
+            'split_visit' => $reviews->decorate($plan->team_id, [$reviews->visit($plan, $result['split_visit']['id'])])[0],
+            'visits' => $reviews->visits($plan),
+        ]);
+    }
+
     // ─── Shopping sessions ──────────────────────────────────────
 
     /**
@@ -2328,7 +2350,8 @@ class MobileController extends Controller
     }
 
     /**
-     * Finish a shopping session: record the visit, reset the list.
+     * Finish a shopping session: record the visit, reset the list. With `continue`, the list is kept and a new
+     * session (same trip) starts with the items still pending, for the next store.
      */
     public function finishShoppingSession(Request $request, Plan $plan, ShoppingListReviewService $reviews): JsonResponse
     {
@@ -2344,6 +2367,8 @@ class MobileController extends Controller
             // Cash payment: create a WITHDRAW transaction instead of waiting for a card match.
             'account_id' => ['nullable', 'integer', Rule::exists('accounts', 'id')->where('team_id', $plan->team_id)],
             'category_id' => ['nullable', 'integer', Rule::exists('categories', 'id')->where('team_id', $plan->team_id)],
+            // Paid here, but the rest of the list is bought at another store: keep it open in a new session.
+            'continue' => ['sometimes', 'boolean'],
         ]);
 
         $visit = $reviews->finishSession($plan, $validated);
