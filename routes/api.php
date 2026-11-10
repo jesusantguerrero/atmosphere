@@ -16,10 +16,10 @@ use App\Http\Controllers\Api\MobileTrendsController;
 use App\Http\Controllers\Api\MobileTwoFactorController;
 use App\Http\Controllers\Api\MultiCurrencyTransactionController;
 use App\Http\Controllers\Finance\FinanceTrendController;
-use App\Http\Controllers\System\IntegrationController;
-use App\Http\Middleware\SetUserLocale;
 use App\Http\Controllers\RoutineController;
 use App\Http\Controllers\ShoppingListController;
+use App\Http\Controllers\System\IntegrationController;
+use App\Http\Middleware\SetUserLocale;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -213,6 +213,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', SetUserLocal
     Route::post('/shopping/{plan}/sessions/start', [MobileController::class, 'startShoppingSession'])->name('shopping.sessions.start');
     Route::post('/shopping/{plan}/sessions/finish', [MobileController::class, 'finishShoppingSession'])->name('shopping.sessions.finish');
     Route::patch('/shopping/{plan}/visits/{session}', [MobileController::class, 'updateShoppingVisit'])->name('shopping.visits.update')->whereUuid('session');
+    Route::post('/shopping/{plan}/visits/{session}/split', [MobileController::class, 'splitShoppingVisit'])->name('shopping.visits.split')->whereUuid('session');
 
     // Inbox (draft transactions)
     Route::get('/bank-email', [IntegrationController::class, 'bankTransactionsStatus'])->name('bank-email.status');
