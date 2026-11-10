@@ -23,6 +23,7 @@ import { removeTransaction, useTransactionModal } from "@/domains/transactions";
 import { useImportModal } from "@/domains/transactions/useImportModal";
 import { useServerSearch, IServerSearchData } from "@/composables/useServerSearch";
 import { useAppContextStore } from "@/store";
+import { useTransactionStore } from "@/store/transactions";
 import { IAccount, ITransaction } from "@/domains/transactions/models";
 import AccountFilter from "@/domains/transactions/components/AccountFilter.vue";
 
@@ -106,6 +107,11 @@ const refreshCategories = async (): Promise<void> => {
 };
 
 provide("selectedAccountId", selectedAccountId.value);
+
+// The list comes from the API, not page props, so Inertia reloads after a
+// save or delete don't touch it; the store's revision tells us to re-pull.
+const transactionStore = useTransactionStore();
+watch(() => transactionStore.revision, () => { refreshCategories(); });
 
 const isDraft = computed(() => {
   return pageState?.filters?.status == "draft";
