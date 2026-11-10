@@ -22,7 +22,7 @@ const listRef = ref();
 const { t } = useI18n();
 
 interface BankEmailSync {
-    status: 'running' | 'done' | 'failed';
+    status: 'running' | 'done' | 'failed' | 'stalled';
     since: string;
     checked?: number;
     imported?: number;
@@ -50,26 +50,41 @@ const bank = ref<BankEmailStatus>({ ...props.bankTransactions });
 // movement (filling gaps the minute check missed), then keeps going forward.
 const syncing = computed(() => bank.value.sync?.status === 'running');
 let syncPoll: ReturnType<typeof setTimeout> | null = null;
+// Each status read runs one short step of the sync on the server, so polling
+// is what moves it forward; it stops when the sync is done, failed or stalled.
 const pollSync = () => {
     syncPoll = setTimeout(async () => {
-        const { data } = await axios.get('/integrations/bank-transactions');
+        try {
+            const { data } = await axios.get('/integrations/bank-transactions');
+            bank.value = data;
+        } catch {
+            // A slow or dropped step: try again on the next tick.
+        }
+        if (bank.value.sync?.status === 'running') {
+            pollSync();
+        } else {
+            refresh();
+        }
+    }, 1000);
+};
+const syncNow = async () => {
+    try {
+        const { data } = await axios.post('/integrations/bank-transactions/sync');
         bank.value = data;
         if (data.sync?.status === 'running') {
             pollSync();
         } else {
             refresh();
         }
-    }, 3000);
-};
-const syncNow = async () => {
-    try {
-        const { data } = await axios.post('/integrations/bank-transactions/sync');
-        bank.value = data;
-        pollSync();
     } catch (error: any) {
         bank.value = { ...bank.value, sync: { status: 'failed', since: '', error: error?.response?.data?.message ?? t('Could not start the sync.') } };
     }
 };
+onMounted(() => {
+    if (syncing.value) {
+        pollSync();
+    }
+});
 onBeforeUnmount(() => syncPoll && clearTimeout(syncPoll));
 
 // Same relative-time phrasing as the Integrations page (shared i18n keys).
@@ -229,7 +244,7 @@ const captureMethods = [
                                 @click="syncNow"
                             >
                                 <i class="fa fa-rotate" :class="{ 'fa-spin': syncing }" />
-                                {{ syncing ? $t('Syncing emails…') : $t('Sync emails now') }}
+                                {{ syncing ? $t('Syncing emails… {checked} checked', { checked: bank.sync?.checked ?? 0 }) : $t('Sync emails now') }}
                             </button>
                             <Link href="/integrations" class="text-body-2/60 hover:text-primary hover:underline">{{ $t('Manage') }}</Link>
                             <span v-if="bank.sync?.status === 'done'" class="w-full text-body-2/70" role="status">
@@ -237,6 +252,9 @@ const captureMethods = [
                             </span>
                             <span v-else-if="bank.sync?.status === 'failed'" class="w-full text-error" role="alert">
                                 {{ $t('The sync failed: {error}', { error: bank.sync.error ?? '' }) }}
+                            </span>
+                            <span v-else-if="bank.sync?.status === 'stalled'" class="w-full text-warning" role="status">
+                                {{ $t('The last sync stopped after {checked} emails. Press sync to continue.', { checked: bank.sync.checked ?? 0 }) }}
                             </span>
                         </template>
                         <Link v-else href="/integrations" class="inline-flex items-center text-primary hover:underline">

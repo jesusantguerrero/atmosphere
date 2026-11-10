@@ -1385,5 +1385,7 @@
     "Checked {checked} emails since {since} · {imported} new": "Revisé {checked} correos desde el {since} · {imported} nuevos",
     "The sync failed: {error}": "La sincronización falló: {error}",
     "Could not start the sync.": "No se pudo iniciar la sincronización.",
-    "Connect Gmail and turn on bank email import first.": "Primero conecta Gmail y activa la importación de correos del banco."
+    "Connect Gmail and turn on bank email import first.": "Primero conecta Gmail y activa la importación de correos del banco.",
+    "Syncing emails… {checked} checked": "Sincronizando… {checked} correos revisados",
+    "The last sync stopped after {checked} emails. Press sync to continue.": "La última sincronización se detuvo tras {checked} correos. Pulsa «Sincronizar correos» para seguir."
 }
