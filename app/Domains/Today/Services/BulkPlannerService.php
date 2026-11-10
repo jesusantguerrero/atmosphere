@@ -13,7 +13,7 @@ use Illuminate\Support\Collection;
 class BulkPlannerService
 {
     /**
-     * @param  array<int, array{date: string, name: string, notes?: ?string, total?: ?float}>  $items
+     * @param  array<int, array{date: string, end_date?: ?string, name: string, notes?: ?string, total?: ?float}>  $items
      * @return Collection<int, Planner>
      */
     public function createMany(int $teamId, int $userId, array $items, ?string $source = null): Collection
@@ -26,7 +26,7 @@ class BulkPlannerService
             'total' => $item['total'] ?? null,
             'source' => $source,
             'date' => $item['date'],
-            'end_date' => $item['date'],
+            'end_date' => $item['end_date'] ?? $item['date'],
             'frequency' => 'DAILY',
             'status' => Planner::STATUS_PENDING,
         ]));
