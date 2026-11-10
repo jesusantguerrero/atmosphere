@@ -101,7 +101,12 @@ const handleOptionClick = (url: string) => {
             {{ $t('More') }}
         </SubmenuTab>
     </NDropdown>
-    <div class="items-center justify-end hidden py-1 ml-auto space-x-2 text-xs md:flex">
+    <!-- Phones have no room beside the tabs: the actions move to a bar at the
+         top of the page content (AppLayout's #mobile-section-actions). -->
+    <Teleport v-if="isMobile && $slots.actions" defer to="#mobile-section-actions">
+       <slot name="actions" />
+    </Teleport>
+    <div v-else class="flex items-center justify-end py-1 ml-auto space-x-2 text-xs">
        <slot name="actions" />
     </div>
 </div>

@@ -446,6 +446,10 @@
                      left. Empirically verified: both gutters land at ~1px. -->
                 <main class="overflow-hidden overflow-y-auto ic-scroller pb-32 lg:pb-0 lg:pr-3">
                     <JetBanner active-class="mt-14" />
+                    <div
+                        id="mobile-section-actions"
+                        class="flex flex-wrap items-center justify-end gap-2 px-4 pt-14 pb-1 text-xs sm:hidden empty:hidden"
+                    />
                     <slot />
                 </main>
                 <MobileMenuBar v-if="!focusMode" :menu="mobileMenu" @action="handleActions" />
