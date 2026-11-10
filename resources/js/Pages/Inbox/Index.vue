@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { router, useForm, usePage, Link } from '@inertiajs/vue3';
 import axios from 'axios';
 
@@ -21,12 +21,56 @@ const selected = ref([]);
 const listRef = ref();
 const { t } = useI18n();
 
+interface BankEmailSync {
+    status: 'running' | 'done' | 'failed';
+    since: string;
+    checked?: number;
+    imported?: number;
+    error?: string;
+    at?: string;
+}
+
+interface BankEmailStatus {
+    enabled: boolean;
+    exists: boolean;
+    connected: boolean;
+    last_synced_at: string | null;
+    last_import_at?: string | null;
+    sync?: BankEmailSync | null;
+}
+
 const props = withDefaults(defineProps<{
-    bankTransactions?: { enabled: boolean; exists: boolean; connected: boolean; last_synced_at: string | null };
+    bankTransactions?: BankEmailStatus;
 }>(), {
     bankTransactions: () => ({ enabled: false, exists: false, connected: false, last_synced_at: null }),
 });
-const bank = computed(() => props.bankTransactions);
+const bank = ref<BankEmailStatus>({ ...props.bankTransactions });
+
+// «Sync now»: reads every bank email since a few days before the last imported
+// movement (filling gaps the minute check missed), then keeps going forward.
+const syncing = computed(() => bank.value.sync?.status === 'running');
+let syncPoll: ReturnType<typeof setTimeout> | null = null;
+const pollSync = () => {
+    syncPoll = setTimeout(async () => {
+        const { data } = await axios.get('/integrations/bank-transactions');
+        bank.value = data;
+        if (data.sync?.status === 'running') {
+            pollSync();
+        } else {
+            refresh();
+        }
+    }, 3000);
+};
+const syncNow = async () => {
+    try {
+        const { data } = await axios.post('/integrations/bank-transactions/sync');
+        bank.value = data;
+        pollSync();
+    } catch (error: any) {
+        bank.value = { ...bank.value, sync: { status: 'failed', since: '', error: error?.response?.data?.message ?? t('Could not start the sync.') } };
+    }
+};
+onBeforeUnmount(() => syncPoll && clearTimeout(syncPoll));
 
 // Same relative-time phrasing as the Integrations page (shared i18n keys).
 const formatRelativeTime = (iso: string | null): string => {
@@ -173,7 +217,27 @@ const captureMethods = [
                                 <template v-if="bank.last_synced_at">{{ $t('Last synced') }} {{ formatRelativeTime(bank.last_synced_at) }}</template>
                                 <template v-else>{{ $t('Awaiting first sync') }}</template>
                             </span>
+                            <template v-if="bank.last_import_at">
+                                <span class="text-body-2/60">·</span>
+                                <span class="text-body-2/70">{{ $t('Last imported movement: {date}', { date: bank.last_import_at }) }}</span>
+                            </template>
+                            <button
+                                v-if="bank.enabled"
+                                type="button"
+                                class="inline-flex min-h-[32px] items-center gap-1 rounded-full border border-base px-3 font-semibold text-primary hover:bg-base-lvl-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-60"
+                                :disabled="syncing"
+                                @click="syncNow"
+                            >
+                                <i class="fa fa-rotate" :class="{ 'fa-spin': syncing }" />
+                                {{ syncing ? $t('Syncing emails…') : $t('Sync emails now') }}
+                            </button>
                             <Link href="/integrations" class="text-body-2/60 hover:text-primary hover:underline">{{ $t('Manage') }}</Link>
+                            <span v-if="bank.sync?.status === 'done'" class="w-full text-body-2/70" role="status">
+                                {{ $t('Checked {checked} emails since {since} · {imported} new', { checked: bank.sync.checked ?? 0, since: bank.sync.since, imported: bank.sync.imported ?? 0 }) }}
+                            </span>
+                            <span v-else-if="bank.sync?.status === 'failed'" class="w-full text-error" role="alert">
+                                {{ $t('The sync failed: {error}', { error: bank.sync.error ?? '' }) }}
+                            </span>
                         </template>
                         <Link v-else href="/integrations" class="inline-flex items-center text-primary hover:underline">
                             <i class="fa fa-plug mr-1" />{{ $t('Connect your email to import bank transactions') }}
