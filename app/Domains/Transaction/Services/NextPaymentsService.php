@@ -243,7 +243,7 @@ class NextPaymentsService
             ->whereHas('schedule', function ($query) {
                 $query->whereNull('completed_at');
             })
-            ->with(['category', 'payee'])
+            ->with(['category', 'payee', 'schedule'])
             ->get()
             ->map(function ($transaction) use ($startDate) {
                 return [
@@ -262,6 +262,8 @@ class NextPaymentsService
                     'direction' => $transaction->direction,
                     'status' => substr((string) $transaction->date, 0, 10) < $startDate->format('Y-m-d') ? 'overdue' : $transaction->status,
                     'source' => 'planned_transaction',
+                    'frequency' => $transaction->schedule?->frequency,
+                    'frequency_interval' => (int) ($transaction->schedule?->frequency_interval ?? 1),
                     'metadata' => [
                         'transaction_id' => $transaction->id,
                         'description' => $transaction->description,

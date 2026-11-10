@@ -1366,6 +1366,7 @@
     "View your household finances": "Ver las finanzas de tu hogar",
     "Record transactions and mark payments as paid": "Registrar movimientos y marcar pagos como pagados",
     "Record and edit transactions, import statements and planner items, and mark payments as paid": "Registrar y editar movimientos, importar estados de cuenta y eventos del planificador, y marcar pagos como pagados",
+    "Record and edit transactions, schedule recurring payments, import statements and planner items, and mark payments as paid": "Registrar y editar movimientos, programar pagos recurrentes, importar estados de cuenta y eventos del planificador, y marcar pagos como pagados",
     "Authorize": "Autorizar",
     "Connected apps": "Aplicaciones conectadas",
     "Apps you allowed to use Loger on your behalf, like Claude Code.": "Aplicaciones a las que permitiste usar Loger por ti, como Claude Code.",
@@ -1388,5 +1389,10 @@
     "Could not start the sync.": "No se pudo iniciar la sincronización.",
     "Connect Gmail and turn on bank email import first.": "Primero conecta Gmail y activa la importación de correos del banco.",
     "Syncing emails… {checked} checked": "Sincronizando… {checked} correos revisados",
-    "The last sync stopped after {checked} emails. Press sync to continue.": "La última sincronización se detuvo tras {checked} correos. Pulsa «Sincronizar correos» para seguir."
+    "The last sync stopped after {checked} emails. Press sync to continue.": "La última sincronización se detuvo tras {checked} correos. Pulsa «Sincronizar correos» para seguir.",
+    "weeks": "semanas",
+    "Repeat every": "Repetir cada",
+    "Every {count} days": "Cada {count} días",
+    "Every {count} weeks": "Cada {count} semanas",
+    "Every {count} months": "Cada {count} meses"
 }

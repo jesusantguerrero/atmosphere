@@ -14,14 +14,22 @@ use Recurr\Transformer\ArrayTransformerConfig;
 
 class PlannedTransactionService
 {
-    public function add(PlannedTransactionDTO $plannedData)
+    /**
+     * Save a planned (recurring) transaction and its schedule. By default a plan
+     * of the same household category is reused (budget targets keep one plan per
+     * category); pass `$reuseCategoryPlan = false` to always start a new one.
+     */
+    public function add(PlannedTransactionDTO $plannedData, bool $reuseCategoryPlan = true): Transaction
     {
         $plannedData->status = Transaction::STATUS_PLANNED;
 
-        $transaction = Transaction::where([
-            'category_id' => $plannedData->category_id,
-            'status' => Transaction::STATUS_PLANNED,
-        ])->first();
+        $transaction = $reuseCategoryPlan && $plannedData->category_id
+            ? Transaction::where([
+                'team_id' => $plannedData->team_id,
+                'category_id' => $plannedData->category_id,
+                'status' => Transaction::STATUS_PLANNED,
+            ])->first()
+            : null;
 
         // Restrict the DTO to real columns before mass-assigning: it carries
         // schedule-only fields (frequency, interval, end_type, items, metaData,
@@ -38,10 +46,13 @@ class PlannedTransactionService
         Planner::create(array_merge(
             Arr::only($plannedData->toArray(), (new Planner)->getFillable()),
             [
+                'frequency_interval' => max(1, $plannedData->frequency_interval),
                 'dateable_type' => Transaction::class,
                 'dateable_id' => $transaction->id,
             ]
         ));
+
+        return $transaction;
     }
 
     public function getPlanned($teamId)
@@ -157,18 +168,39 @@ class PlannedTransactionService
         ]);
     }
 
-    private function nextDate(Planner $schedule): ?string
+    /**
+     * The occurrence after the schedule's current date, honoring its interval.
+     */
+    public function nextDate(Planner $schedule): ?string
     {
-        // Planner stores DAILY | WEEK_DAY | WEEK | MONTHLY; Recurr speaks RRULE.
+        return $this->upcomingDates(
+            Carbon::parse($schedule->date)->format('Y-m-d'),
+            (string) $schedule->frequency,
+            (int) ($schedule->frequency_interval ?? 1),
+            2,
+        )[1] ?? null;
+    }
+
+    /**
+     * `$count` occurrences starting at `$from` (included): every `$interval`
+     * days, weekdays, weeks or months.
+     *
+     * @return list<string>
+     */
+    public function upcomingDates(string $from, string $frequency, int $interval = 1, int $count = 3): array
+    {
+        // Planner stores DAILY | WEEK_DAY | WEEK | MONTHLY (the web form sends WEEKLY); Recurr speaks RRULE.
+        $frequency = strtoupper($frequency);
         $rule = (new Rule)
-            ->setStartDate(new \DateTime(Carbon::parse($schedule->date)->format('Y-m-d')))
-            ->setFreq(match ($schedule->frequency) {
+            ->setStartDate(new \DateTime($from))
+            ->setFreq(match ($frequency) {
                 'WEEK' => 'WEEKLY',
                 'WEEK_DAY' => 'DAILY',
-                default => $schedule->frequency,
+                default => $frequency,
             })
-            ->setCount(2);
-        if ($schedule->frequency === 'WEEK_DAY') {
+            ->setInterval($frequency === 'WEEK_DAY' ? 1 : max(1, $interval))
+            ->setCount($count);
+        if ($frequency === 'WEEK_DAY') {
             $rule->setByDay(['MO', 'TU', 'WE', 'TH', 'FR']);
         }
 
@@ -177,31 +209,14 @@ class PlannedTransactionService
         $transformer = new ArrayTransformer;
         $transformer->setConfig($config);
 
-        return $transformer->transform($rule)[1]?->getStart()->format('Y-m-d');
+        return array_values(array_map(
+            fn ($occurrence) => $occurrence->getStart()->format('Y-m-d'),
+            $transformer->transform($rule)->toArray(),
+        ));
     }
 
-    public function update(PlannedTransactionDTO $plannedData)
+    public function update(PlannedTransactionDTO $plannedData): Transaction
     {
-        $plannedData->status = Transaction::STATUS_PLANNED;
-
-        $transaction = Transaction::where([
-            'category_id' => $plannedData->category_id,
-            'status' => Transaction::STATUS_PLANNED,
-        ])->first();
-
-        if (! $transaction) {
-            $transaction = Transaction::create(Arr::only($plannedData->toArray(), (new Transaction)->getFillable()));
-            $transaction->createLines($plannedData->items ?? []);
-        } else {
-            $transaction->updateTransaction(Arr::only($plannedData->toArray(), (new Transaction)->getFillable()));
-        }
-
-        Planner::create(array_merge(
-            Arr::only($plannedData->toArray(), (new Planner)->getFillable()),
-            [
-                'dateable_type' => Transaction::class,
-                'dateable_id' => $transaction->id,
-            ]
-        ));
+        return $this->add($plannedData);
     }
 }

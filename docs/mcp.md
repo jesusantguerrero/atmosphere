@@ -13,7 +13,7 @@ Claude Code opens the browser. Log into Loger, review what Claude Code asks for 
 | Scope | Lets the app |
 | --- | --- |
 | `mcp:read` | Read the household finances (default) |
-| `mcp:write` | Create and edit transactions, import bank statements and planner items, and mark payments as paid |
+| `mcp:write` | Create and edit transactions, schedule recurring payments, import bank statements and planner items, and mark payments as paid |
 
 Tokens last 30 days and refresh for up to 90.
 
@@ -28,6 +28,7 @@ Tokens last 30 days and refresh for up to 90.
 | `list_accounts_and_categories` | read | Turns names into ids |
 | `create_transaction` | write | «Registra RD$2,400 de Claro en Teléfono» |
 | `update_transaction` | write | «Pon el pago de Qik como transferencia a la tarjeta», «Aprueba el borrador de Jumbo como Groceries» (only the fields sent change; split transactions and deleting are not supported) |
+| `create_planned_transaction` | write | «Programa la terapia de la niña, RD$12,000 cada 4 semanas desde el 1 de diciembre» (DAILY, WEEK_DAY, WEEK or MONTHLY every 1–52 units; returns the next dates and moves forward when the real payment is recorded) |
 | `mark_payment_paid` | write | «Marca el alquiler como pagado» |
 | `add_planner_items` | write | «Importa este calendario del colegio» |
 | `import_bank_statement` | write | «Importa este estado de cuenta del BHD a Personal» (rows land as drafts in the Bandeja; duplicates are skipped) |

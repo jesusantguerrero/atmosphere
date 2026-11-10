@@ -15,6 +15,7 @@ use App\Domains\Transaction\Services\PlannedTransactionService;
 use App\Domains\Transaction\Services\TransactionService;
 use App\Http\Controllers\Traits\QuerifySlim;
 use App\Http\Requests\RecategorizeTransactionLineRequest;
+use App\Http\Requests\StorePlannedTransactionRequest;
 use App\Jobs\RunTeamChecks;
 use App\Services\MultiCurrencyDisplayService;
 use Dompdf\Dompdf;
@@ -27,9 +28,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Insane\Journal\Models\Core\Category;
 use Maatwebsite\Excel\Facades\Excel;
-use Recurr\Rule;
-use Recurr\Transformer\ArrayTransformer;
-use Recurr\Transformer\ArrayTransformerConfig;
 
 class FinanceTransactionController extends InertiaController
 {
@@ -173,10 +171,14 @@ class FinanceTransactionController extends InertiaController
         ]);
     }
 
-    public function addPlanned(Request $request)
+    public function addPlanned(StorePlannedTransactionRequest $request)
     {
-        $postData = $this->getPostData($request);
-        $this->plannedService->add(PlannedTransactionDTO::from($postData));
+        $validated = $request->validated();
+        $this->plannedService->add(PlannedTransactionDTO::from([
+            ...$this->getPostData($request),
+            ...$validated,
+            'frequency_interval' => (int) ($validated['frequency_interval'] ?? 1),
+        ]));
 
         return redirect()->back();
     }
@@ -186,22 +188,11 @@ class FinanceTransactionController extends InertiaController
         $transaction = Transaction::with(['schedule'])->find($transactionId);
 
         if ($transaction->team_id == $request->user()->current_team_id) {
-            $schedule = $transaction->schedule;
-            $rule = (new Rule)
-                ->setStartDate(new \DateTime($schedule['date']))
-                ->setTimezone($schedule->timezone)
-                ->setFreq($schedule->frequency);
-
-            $transformer = new ArrayTransformer;
-            $transformerConfig = new ArrayTransformerConfig;
-            $transformerConfig->enableLastDayOfMonthFix();
-            $transformer->setConfig($transformerConfig);
-
-            $nextDate = $transformer->transform($rule)[1];
+            $nextDate = $this->plannedService->nextDate($transaction->schedule);
 
             $transaction->copy(['status' => 'verified']);
-            $transaction->update(['date' => $nextDate->getStart()->format('Y-m-d')]);
-            $transaction->schedule->update(['date' => $nextDate->getStart()->format('Y-m-d')]);
+            $transaction->update(['date' => $nextDate]);
+            $transaction->schedule->update(['date' => $nextDate]);
         }
 
         return redirect()->back();

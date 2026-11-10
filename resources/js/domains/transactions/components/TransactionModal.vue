@@ -84,7 +84,8 @@ const state = reactive({
     end_type: "NEVER" as string,
     final_item_date: null as Date | null,
     interval: 1,
-    frequency: "monthly" as string,
+    frequency_interval: 1,
+    frequency: "MONTHLY" as string,
     repeat_at_end_of_month: false,
     repeat_on_day_of_month: null as number | null,
     start_date: null as Date | null,
@@ -494,6 +495,9 @@ const onSubmit = (addAnother = false) => {
           category_id: form.is_transfer ? null : form.category_id,
           ...(isRecurrence.value ? {
             ...state.schedule_settings,
+            frequency_interval: ['WEEKLY', 'MONTHLY'].includes(state.schedule_settings.frequency)
+              ? Math.round(Number(state.schedule_settings.frequency_interval) || 1)
+              : 1,
             start_date: format(new Date(form.date), "yyyy-MM-dd"),
           } : {}),
         };
@@ -719,8 +723,26 @@ const assignTransactionLabel = (label: Record<string, string>, transaction: Reco
                     },
                   ]" />
                 </AtField>
-                <AtField :label="$t(state.frequencyLabel)" class="capitalize">
-                  <AtInput type="number" v-model="state.schedule_settings.repeat_on_day_of_month" />
+                <!-- «Cada [N] semanas / meses»: e.g. therapy paid every 4 weeks. -->
+                <AtField
+                  v-if="['WEEKLY', 'MONTHLY'].includes(state.schedule_settings.frequency)"
+                  :label="$t(state.frequencyLabel)"
+                  class="capitalize shrink-0"
+                >
+                  <div class="flex items-center gap-2">
+                    <input
+                      v-model.number="state.schedule_settings.frequency_interval"
+                      type="number"
+                      min="1"
+                      max="52"
+                      step="1"
+                      class="w-16 px-2 py-2 text-center rounded-md bg-base-lvl-1 text-body border border-base focus:border-primary focus:outline-none"
+                      :aria-label="$t('Repeat every')"
+                    />
+                    <span class="text-sm text-body-1/70 normal-case whitespace-nowrap">
+                      {{ state.schedule_settings.frequency === 'WEEKLY' ? $t('weeks') : $t('months') }}
+                    </span>
+                  </div>
                 </AtField>
               </div>
               <div class="flex">
