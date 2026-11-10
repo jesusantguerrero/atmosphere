@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use App\Domains\Journal\Actions\TransactionCreate;
 use App\Domains\Transaction\Models\Transaction;
+use App\Models\Setting;
 use App\Models\User;
 use App\Notifications\ShoppingListReady;
 use Illuminate\Support\Str;
@@ -313,6 +315,36 @@ class ShoppingListReviewService
 
             return $visit;
         });
+    }
+
+    /**
+     * Records a trip paid in cash as a verified expense on the chosen account and ties it to the visit, so the card
+     * charge linker leaves the visit alone. A retried finish whose visit is already linked creates nothing.
+     *
+     * @param  array<string, mixed>  $visit
+     * @return array<string, mixed>
+     */
+    public function recordCashExpense(Plan $plan, User $user, array $visit, int $accountId, ?int $categoryId): array
+    {
+        if (! empty($visit['transaction_id'])) {
+            return $visit;
+        }
+
+        $timezone = Setting::getByTeam($plan->team_id)['team_timezone'] ?? config('app.timezone');
+        $transaction = app(TransactionCreate::class)->create($user, [
+            'account_id' => $accountId,
+            'counter_account_id' => null,
+            'date' => now($timezone)->format('Y-m-d'),
+            'description' => 'Compra · '.$plan->name,
+            'total' => $visit['total'],
+            'currency_code' => $visit['currency'],
+            'direction' => Transaction::DIRECTION_CREDIT,
+            'status' => Transaction::STATUS_VERIFIED,
+            'category_id' => $categoryId,
+            'payee_id' => $visit['payee_id'] ?? null,
+        ]);
+
+        return $transaction ? $this->linkVisit($plan, $visit['id'], $transaction->id) : $visit;
     }
 
     /**
