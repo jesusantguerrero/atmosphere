@@ -1,7 +1,7 @@
 <script setup lang="ts">
     import { useForm } from '@inertiajs/vue3'
-    import { router } from '@inertiajs/vue3'
-    import { reactive } from 'vue'
+    import { router, usePage } from '@inertiajs/vue3'
+    import { reactive, toRefs } from 'vue'
     // @ts-ignore
     import { AtField, AtButton } from "atmosphere-ui"
 
@@ -47,6 +47,8 @@
         confirmingLeavingTeam: false,
         teamMemberBeingRemoved: null,
     });
+    const { currentlyManagingRole, managingRoleFor, confirmingLeavingTeam, teamMemberBeingRemoved } = toRefs(state);
+    const page = usePage();
 
     function addTeamMember() {
         addTeamMemberForm.post(route('team-members.store', props.team), {
@@ -77,7 +79,7 @@
     function updateRole() {
         updateRoleForm.put(route('team-members.update', [props.team, state.managingRoleFor]), {
             preserveScroll: true,
-            onSuccess: () => (this.currentlyManagingRole = false),
+            onSuccess: () => (state.currentlyManagingRole = false),
         })
     }
 
@@ -86,7 +88,7 @@
     }
 
     function leaveTeam() {
-        leaveTeamForm.delete(route('team-members.destroy', [this.team, this.$page.props.user]))
+        leaveTeamForm.delete(route('team-members.destroy', [props.team, (page.props as any).auth.user]))
     }
 
     function confirmTeamMemberRemoval(teamMember) {
@@ -94,16 +96,16 @@
     }
 
     function removeTeamMember() {
-        removeTeamMemberForm.delete(route('team-members.destroy', [this.team, this.teamMemberBeingRemoved]), {
+        removeTeamMemberForm.delete(route('team-members.destroy', [props.team, state.teamMemberBeingRemoved]), {
             errorBag: 'removeTeamMember',
             preserveScroll: true,
             preserveState: true,
-            onSuccess: () => (this.teamMemberBeingRemoved = null),
+            onSuccess: () => (state.teamMemberBeingRemoved = null),
         })
     }
 
     function displayableRole(role) {
-        return props.availableRoles.find(r => r.key === role).name
+        return props.availableRoles.find(r => r.key === role)?.name ?? role
     };
 </script>
 
@@ -336,7 +338,7 @@
         </JetConfirmationModal>
 
         <!-- Remove Team Member Confirmation Modal -->
-        <JetConfirmationModal :show="teamMemberBeingRemoved" @close="teamMemberBeingRemoved = null">
+        <JetConfirmationModal :show="!!teamMemberBeingRemoved" @close="teamMemberBeingRemoved = null">
             <template #title>
                 Remove Team Member
             </template>
