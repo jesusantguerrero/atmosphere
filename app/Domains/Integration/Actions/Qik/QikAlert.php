@@ -48,7 +48,7 @@ class QikAlert implements MailToTransaction
         $type = 1;
 
         return new TransactionDataDTO([
-            'id' => (int) $mail['id'],
+            'id' => (string) $mail['id'],
             'date' => $date,
             'payee' => $payee,
             'category' => '',

@@ -24,7 +24,7 @@ class ProcessedEmail extends Model
             ->exists();
     }
 
-    public static function record(int $teamId, string $gmailId, ?string $messageId, int $automationId, ?int $transactionId): static
+    public static function record(int $teamId, string $gmailId, ?string $messageId, int $automationId, ?int $transactionId, string $status = 'processed'): static
     {
         return static::create([
             'team_id' => $teamId,
@@ -32,7 +32,7 @@ class ProcessedEmail extends Model
             'message_id' => $messageId,
             'automation_id' => $automationId,
             'transaction_id' => $transactionId,
-            'status' => 'processed',
+            'status' => $status,
         ]);
     }
 }

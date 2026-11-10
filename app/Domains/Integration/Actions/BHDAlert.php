@@ -43,7 +43,7 @@ class BHDAlert implements MailToTransaction
             $productCode = $rawProduct->get(1) ?? null;
 
             return new TransactionDataDTO([
-                'id' => (int) $mail['id'],
+                'id' => (string) $mail['id'],
                 'messageId' => $mail['messageId'],
                 'date' => date('Y-m-d', strtotime($mail['date'])),
                 'payee' => $tdValues[3],

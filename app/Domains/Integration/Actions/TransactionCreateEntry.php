@@ -127,25 +127,30 @@ class TransactionCreateEntry implements AutomationActionContract
                 'gmail_id' => $payload['id'] ?? null,
                 'raw_total' => $transactionData['total'],
             ]);
+            self::say("skipped: amount {$transactionData['total']} is not positive");
 
             return null;
         }
 
         $gmailId = $payload['id'] ?? null;
         if ($gmailId && ProcessedEmail::wasProcessed($automation->team_id, $gmailId)) {
+            self::say("skipped: email {$gmailId} was already imported");
+
             return null;
         }
 
         $transactionService = new TransactionService;
 
         if ($transaction = $transactionService->findIfDuplicated($transactionData)) {
-            self::markEmailProcessed($automation, $payload, $transaction);
+            self::markEmailProcessed($automation, $payload, $transaction, 'duplicate');
+            self::say("linked: same payee and description as transaction #{$transaction->id}");
 
             return $transaction;
         }
 
         if ($transaction = $transactionService->findDuplicateByAccountSignature($transactionData)) {
-            self::markEmailProcessed($automation, $payload, $transaction);
+            self::markEmailProcessed($automation, $payload, $transaction, 'duplicate');
+            self::say("linked: another bank email already imported this charge as transaction #{$transaction->id}");
 
             return $transaction;
         }
@@ -155,6 +160,7 @@ class TransactionCreateEntry implements AutomationActionContract
         );
 
         self::markEmailProcessed($automation, $payload, $transaction);
+        self::say("created: transaction #{$transaction->id} · {$transaction->date} · {$transaction->total} · account {$transaction->account_id}");
 
         /**
          * Dedupe import notifications: an automation that ingests a batch
@@ -254,7 +260,10 @@ class TransactionCreateEntry implements AutomationActionContract
         return $destinationAccount;
     }
 
-    private static function markEmailProcessed(Automation $automation, mixed $payload, ?Transaction $transaction): void
+    /**
+     * @param  'processed'|'duplicate'  $status  `duplicate` when the email was linked to an existing transaction
+     */
+    private static function markEmailProcessed(Automation $automation, mixed $payload, ?Transaction $transaction, string $status = 'processed'): void
     {
         $gmailId = $payload['id'] ?? null;
         if (! $gmailId) {
@@ -267,10 +276,21 @@ class TransactionCreateEntry implements AutomationActionContract
                 $gmailId,
                 $payload['messageId'] ?? null,
                 $automation->id,
-                $transaction?->id
+                $transaction?->id,
+                $status
             );
         } catch (UniqueConstraintViolationException) {
             // already recorded
+        }
+    }
+
+    /**
+     * What happened to each email, for `php artisan app:automation-check`; silent on web requests.
+     */
+    private static function say(string $line): void
+    {
+        if (app()->runningInConsole() && ! app()->runningUnitTests()) {
+            echo "\n  [transaction] {$line}";
         }
     }
 
