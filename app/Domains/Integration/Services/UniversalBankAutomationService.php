@@ -7,12 +7,12 @@ use App\Domains\Integration\Actions\GmailReceived;
 use App\Domains\Integration\Actions\TransactionCreateEntry;
 use App\Domains\Integration\Actions\UniversalBankParser;
 use App\Domains\Integration\Models\Integration;
-use App\Jobs\SyncBankEmails;
 use App\Models\Account;
 use App\Models\ProcessedEmail;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class UniversalBankAutomationService
@@ -154,16 +154,27 @@ class UniversalBankAutomationService
             'connected' => (bool) $integration,
             'last_synced_at' => $integration?->last_synced_at,
             'last_import_at' => self::lastImportDate($teamId, $automation?->id),
-            'sync' => Cache::get(self::syncCacheKey($teamId)),
+            'sync' => self::presentSync($teamId),
         ];
     }
 
     /**
-     * Start a catch-up sync for the user's household. It runs right after the
-     * response (not through the queue), so it works even if the queue or the
-     * scheduler is down.
+     * A sync with no progress for this long is considered dead (the process was
+     * killed) and can be started again.
+     */
+    public const SYNC_STALE_SECONDS = 120;
+
+    /**
+     * Time spent per step, so no single request runs long enough to be killed.
+     */
+    public const SYNC_STEP_SECONDS = 15;
+
+    /**
+     * Start (or resume) a catch-up sync and run its first step. Further steps run
+     * each time the status is read while it is running (the page polls it), so
+     * no long process and no queue is needed.
      *
-     * @return array{status: string, since: string}
+     * @return array<string, mixed>
      */
     public static function startSync(User $user): array
     {
@@ -173,13 +184,97 @@ class UniversalBankAutomationService
             throw ValidationException::withMessages(['sync' => __('Connect Gmail and turn on bank email import first.')]);
         }
 
-        $since = self::syncSince($teamId, $automation->id);
-        if (! SyncBankEmails::isRunning($teamId)) {
-            self::rememberSync($teamId, ['status' => 'running', 'since' => $since]);
-            SyncBankEmails::dispatchAfterResponse($user->id, $teamId);
+        if (! self::syncIsRunning($teamId)) {
+            self::rememberSync($teamId, [
+                'status' => 'running',
+                'since' => self::syncSince($teamId, $automation->id),
+                'checked' => 0,
+                'imported' => 0,
+                'page_token' => null,
+                'latest' => null,
+                'processed_before' => ProcessedEmail::query()->where('team_id', $teamId)->count(),
+            ]);
         }
 
-        return ['status' => 'running', 'since' => $since];
+        return self::continueSync($user);
+    }
+
+    /**
+     * Run the next step of a running sync (no-op otherwise) and return its state.
+     *
+     * @return array<string, mixed>|null
+     */
+    public static function continueSync(User $user): ?array
+    {
+        $teamId = (int) $user->current_team_id;
+        $state = Cache::get(self::syncCacheKey($teamId));
+        if (($state['status'] ?? null) !== 'running') {
+            return $state;
+        }
+
+        $lock = Cache::lock("bank-email-sync-lock:{$teamId}", self::SYNC_STEP_SECONDS * 4);
+        if (! $lock->get()) {
+            return $state;
+        }
+
+        try {
+            $automation = self::find($user, $teamId) ?? throw new \RuntimeException('Bank email import is not set up.');
+            $startedAt = microtime(true);
+            do {
+                $step = GmailReceived::syncChunk($automation, $state['since'], $state['page_token'], $state['latest']);
+                $state['checked'] += $step['checked'];
+                $state['page_token'] = $step['next_page_token'];
+                $state['latest'] = $step['latest'];
+            } while (! $step['done'] && microtime(true) - $startedAt < self::SYNC_STEP_SECONDS);
+
+            $state['imported'] = ProcessedEmail::query()->where('team_id', $teamId)->count() - $state['processed_before'];
+            if ($step['done']) {
+                $state['status'] = 'done';
+            }
+        } catch (\Throwable $exception) {
+            Log::error('Bank email sync failed', ['team_id' => $teamId, 'error' => $exception->getMessage()]);
+            $state['status'] = 'failed';
+            $state['error'] = $exception->getMessage();
+        } finally {
+            $lock->release();
+        }
+
+        self::rememberSync($teamId, $state);
+
+        return Cache::get(self::syncCacheKey($teamId));
+    }
+
+    /**
+     * What the UI sees of the last sync. A running sync without progress for a
+     * while shows as «stalled», so the button can be pressed again.
+     *
+     * @return array{status: string, since: ?string, checked: int, imported: int, error: ?string, at: ?string}|null
+     */
+    public static function presentSync(int $teamId): ?array
+    {
+        $state = Cache::get(self::syncCacheKey($teamId));
+        if (! $state) {
+            return null;
+        }
+
+        $status = $state['status'] === 'running' && ! self::syncIsRunning($teamId) ? 'stalled' : $state['status'];
+
+        return [
+            'status' => $status,
+            'since' => $state['since'] ?? null,
+            'checked' => (int) ($state['checked'] ?? 0),
+            'imported' => (int) ($state['imported'] ?? 0),
+            'error' => $state['error'] ?? null,
+            'at' => $state['at'] ?? null,
+        ];
+    }
+
+    public static function syncIsRunning(int $teamId): bool
+    {
+        $state = Cache::get(self::syncCacheKey($teamId));
+
+        return ($state['status'] ?? null) === 'running'
+            && Carbon::parse($state['at'])->diffInSeconds(now(), true) < self::SYNC_STALE_SECONDS;
     }
 
     /**

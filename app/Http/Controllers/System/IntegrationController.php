@@ -71,6 +71,9 @@ class IntegrationController
      */
     public function bankTransactionsStatus(Request $request)
     {
+        // While a sync runs, each poll moves it one short step forward.
+        UniversalBankAutomationService::continueSync($request->user());
+
         return response()->json(UniversalBankAutomationService::status($request->user()));
     }
 
