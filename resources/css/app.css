@@ -40,12 +40,15 @@
     --c-primary-ink: 255 168 182;
     --c-secondary: 149 179 249;
     --c-accent: 124 91 191;
-    --c-neutral: 38 38 38;
-    --c-base-deep-1: 36 36 36;
-    --c-base: 26 26 26;
-    --c-base-lvl-1: 30 30 30;
-    --c-base-lvl-2: 35 35 35;
-    --c-base-lvl-3: 42 42 42;
+    /* Graphite surfaces, shared with the mobile app: base #111214,
+       lvl-2 = cardAlt #15161A, lvl-3 = card #1F2024. lvl-1, neutral and
+       deep-1 have no app equivalent; they sit in between to keep the order. */
+    --c-neutral: 27 28 32;
+    --c-base-deep-1: 24 25 29;
+    --c-base: 17 18 20;
+    --c-base-lvl-1: 19 20 23;
+    --c-base-lvl-2: 21 22 26;
+    --c-base-lvl-3: 31 32 36;
     --c-info: 61 104 245;
     --c-success: 86 192 138;
     --c-warning: 211 158 23;
@@ -54,10 +57,10 @@
     --c-warning-ink: 211 158 23;
     --c-info-ink: 122 156 255;
     /* White on the dark-mode pink is 3.1:1; dark text on it is 5.6:1. */
-    --c-on-primary: 26 26 26;
-    --c-body: 236 236 236;
-    --c-body-1: 176 176 176;
-    --c-border: 64 64 64;
+    --c-on-primary: 17 18 20;
+    --c-body: 236 236 238;
+    --c-body-1: 166 168 173;
+    --c-border: 52 54 59;
 }
 
 /* Solid primary buttons are written `bg-primary text-white` across the app;
