@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\MobileTrendsController;
 use App\Http\Controllers\Api\MobileTwoFactorController;
 use App\Http\Controllers\Api\MultiCurrencyTransactionController;
 use App\Http\Controllers\Finance\FinanceTrendController;
+use App\Http\Controllers\System\IntegrationController;
 use App\Http\Middleware\SetUserLocale;
 use App\Http\Controllers\RoutineController;
 use App\Http\Controllers\ShoppingListController;
@@ -214,6 +215,8 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', SetUserLocal
     Route::patch('/shopping/{plan}/visits/{session}', [MobileController::class, 'updateShoppingVisit'])->name('shopping.visits.update')->whereUuid('session');
 
     // Inbox (draft transactions)
+    Route::get('/bank-email', [IntegrationController::class, 'bankTransactionsStatus'])->name('bank-email.status');
+    Route::post('/bank-email/sync', [IntegrationController::class, 'syncBankTransactions'])->middleware('throttle:6,1')->name('bank-email.sync');
     Route::post('/transactions/{transaction}/approve', [MobileController::class, 'approveTransaction'])->name('transactions.approve');
     Route::delete('/transactions/{transaction}', [MobileController::class, 'deleteTransaction'])->name('transactions.delete');
     Route::post('/transactions/approve-all-drafts', [MobileController::class, 'approveAllDrafts'])->name('transactions.approve-all-drafts');

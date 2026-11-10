@@ -25,7 +25,9 @@ class GmailReceived implements AutomationActionContract
     const CONDITION_CUSTOM = 'custom';
 
     /**
-     * Validate and create a new team for the given user.
+     * Minute-by-minute check: the newest threads of the bank query, processing
+     * only messages newer than the last one seen (track.historyId). With
+     * ['backfill' => true] it pages back through older threads instead.
      *
      * @return void
      */
@@ -49,56 +51,12 @@ class GmailReceived implements AutomationActionContract
             $pageToken = null;
         }
 
-        $taskConditions = json_decode($trigger->values);
-
-        // The automation may carry a null or stale integration_id (created before
-        // Gmail was linked, or the integration was reconnected/replaced). Resolve
-        // the team's token-bearing Gmail integration and self-heal the row so this
-        // run — and every future one, plus the status card — points at a live
-        // connection instead of fataling on a missing token.
-        $integration = $automation->integration_id
-            ? Integration::find($automation->integration_id)
-            : null;
-        if (! $integration || ! $integration->token) {
-            $integration = GoogleService::findGoogleIntegration(
-                (int) $automation->user_id,
-                (int) $automation->team_id,
-                true
-            );
-        }
-        if (! $integration) {
-            Log::warning('GmailReceived: no connected Gmail integration for automation', [
-                'automation_id' => $automation->id,
-            ]);
-
+        $service = self::connect($automation);
+        if (! $service) {
             return;
         }
-        if ((int) $automation->integration_id !== (int) $integration->id) {
-            $automation->forceFill(['integration_id' => $integration->id])->save();
-        }
 
-        $client = GoogleService::getClient($integration->id);
-        $service = new ServiceGmail($client);
-
-        // Support both query formats:
-        // 1. New format: {"query": "from:(email1 OR email2)"}
-        // 2. Old format: [{"conditionType":"from","value":"email"}]
-        if (is_object($taskConditions) && isset($taskConditions->query)) {
-            // New query string format (Universal Bank Parser)
-            $queryOptions = $taskConditions->query;
-        } else {
-            // Old conditions array format (legacy bank-specific automations)
-            $conditions = [];
-            if (is_array($taskConditions)) {
-                foreach ($taskConditions as $taskCondition) {
-                    if (isset($taskCondition->conditionType) && $taskCondition->value) {
-                        $conditions[] = "$taskCondition->conditionType:$taskCondition->value";
-                    }
-                }
-            }
-            $queryOptions = count($conditions) ? implode(' ', $conditions) : '';
-        }
-
+        $queryOptions = self::query($trigger);
         if (is_array($lastData)) {
             if (! empty($lastData['startDate'])) {
                 $queryOptions = trim($queryOptions.' after:'.str_replace('-', '/', $lastData['startDate']));
@@ -125,76 +83,204 @@ class GmailReceived implements AutomationActionContract
                 $shouldProcess = $backfillMode || ($message && $message->getHistoryId() > $trackId);
 
                 if ($shouldProcess) {
-                    try {
-                        $raw = $service->users_messages->get('me', $message->id, ['format' => 'raw']);
-                        $parser = self::parseEmail($raw);
-
-                        $body = $parser->getMessageBody('html');
-                        $mail = [
-                            'from' => $parser->getHeader('from'),
-                            'subject' => $parser->getHeader('subject'),
-                            'messageId' => $parser->getHeader('message-id'),
-                            'id' => $message->id,
-                            'threadId' => $message->threadId,
-                            'historyId' => $message->historyId,
-                            'date' => $parser->getHeader('date'),
-                        ];
-
-                        $mail['message'] = $body;
-                        $payload = $mail;
-                        $tasks = $automation->tasks;
-                        $previousTask = $tasks->first();
-                        foreach ($tasks as $taskIndex => $task) {
-                            if ($taskIndex !== 0) {
-                                $actionEntity = $task->entity;
-                                echo "\n running workflow-task:$task->id:$task->name";
-                                if (! $payload) {
-                                    // Payload is null - task returned null (e.g., transaction in progress)
-                                    // Skip remaining tasks for this email and move to next email
-                                    echo "\n payload is null, skipping remaining tasks for this email";
-                                    break;
-                                }
-                                $payload = $actionEntity::handle($automation, $payload, $task, $previousTask, $tasks[0]);
-                                $previousTask = $task;
-                            }
-                        }
-
-                        if ($latestMailData === null || $message->getHistoryId() > $latestMailData['historyId']) {
-                            $latestMailData = [
-                                'from' => $mail['from'],
-                                'subject' => $mail['subject'],
-                                'messageId' => $mail['messageId'],
-                                'id' => $mail['id'],
-                                'threadId' => $mail['threadId'],
-                                'historyId' => $mail['historyId'],
-                                'date' => $mail['date'],
-                            ];
-                        }
-
-                        // Save track data
-                        if ($backfillMode) {
-                            // In backfill mode: store pageToken for next batch
-                            $nextPageToken = $results->getNextPageToken();
-                            $automation->track = json_encode(array_merge($latestMailData ?? [], [
-                                'pageToken' => $nextPageToken,
-                            ]));
-                        } else {
-                            // In normal mode: store latest mail data with historyId
-                            $automation->track = json_encode($latestMailData);
-                        }
-                        $automation->save();
-                    } catch (TransactionInProgressException $e) {
-                        // Transaction is in progress - this is expected, skip without error logging
-                        echo "\n transaction in progress, skipping remaining tasks for this email";
-
+                    $mail = self::processMessage($automation, $service, $message);
+                    if ($mail === null) {
                         continue;
-                    } catch (Exception $e) {
-                        Log::error($e->getMessage(), [$e]);
+                    }
 
+                    if ($latestMailData === null || $message->getHistoryId() > $latestMailData['historyId']) {
+                        $latestMailData = $mail;
+                    }
+
+                    // Save track data
+                    if ($backfillMode) {
+                        // In backfill mode: store pageToken for next batch
+                        $automation->track = json_encode(array_merge($latestMailData ?? [], [
+                            'pageToken' => $results->getNextPageToken(),
+                        ]));
+                    } else {
+                        // In normal mode: store latest mail data with historyId
+                        $automation->track = json_encode($latestMailData);
+                    }
+                    $automation->save();
+                }
+            }
+        }
+    }
+
+    /**
+     * Catch-up sync (the «Sync now» button): every bank email since `$since`,
+     * all pages, older gaps included. Emails already imported are skipped by
+     * ProcessedEmail downstream. Afterwards the minute check carries on from the
+     * newest email seen.
+     *
+     * @return array{checked: int, processed: int, pages: int}
+     */
+    public static function sync(Automation $automation, string $since, int $maxPages = 20): array
+    {
+        $service = self::connect($automation);
+        if (! $service) {
+            throw new \RuntimeException('Gmail is not connected for this automation.');
+        }
+
+        $query = trim(self::query($automation->triggerTask).' after:'.str_replace('-', '/', $since));
+        $track = json_decode($automation->track, true);
+        $latestMailData = is_array($track) && isset($track['historyId']) ? $track : null;
+        unset($latestMailData['pageToken']);
+        $checked = 0;
+        $processed = 0;
+        $pages = 0;
+        $pageToken = null;
+
+        do {
+            $params = ['maxResults' => 50, 'q' => $query];
+            if ($pageToken) {
+                $params['pageToken'] = $pageToken;
+            }
+            $results = $service->users_threads->listUsersThreads('me', $params);
+            $pages++;
+
+            foreach ($results->getThreads() ?? [] as $thread) {
+                foreach ($service->users_threads->get('me', $thread->id, ['format' => 'METADATA'])->getMessages() as $message) {
+                    $checked++;
+                    $mail = self::processMessage($automation, $service, $message);
+                    if ($mail === null) {
                         continue;
+                    }
+                    $processed++;
+                    if ($latestMailData === null || $message->getHistoryId() > ($latestMailData['historyId'] ?? 0)) {
+                        $latestMailData = $mail;
                     }
                 }
             }
+
+            $pageToken = $results->getNextPageToken();
+        } while ($pageToken && $pages < $maxPages);
+
+        // Leave any half-done backfill behind and resume the minute check from the newest email.
+        if ($latestMailData) {
+            $automation->track = json_encode($latestMailData);
+            $automation->save();
+        }
+        Integration::find($automation->integration_id)?->markSynced();
+
+        return ['checked' => $checked, 'processed' => $processed, 'pages' => $pages];
+    }
+
+    /**
+     * The team's live Gmail connection. The automation may carry a null or stale
+     * integration_id (created before Gmail was linked, or the integration was
+     * reconnected); resolve the token-bearing one and self-heal the row.
+     */
+    private static function connect(Automation $automation): ?ServiceGmail
+    {
+        $integration = $automation->integration_id
+            ? Integration::find($automation->integration_id)
+            : null;
+        if (! $integration || ! $integration->token) {
+            $integration = GoogleService::findGoogleIntegration(
+                (int) $automation->user_id,
+                (int) $automation->team_id,
+                true
+            );
+        }
+        if (! $integration) {
+            Log::warning('GmailReceived: no connected Gmail integration for automation', [
+                'automation_id' => $automation->id,
+            ]);
+
+            return null;
+        }
+        if ((int) $automation->integration_id !== (int) $integration->id) {
+            $automation->forceFill(['integration_id' => $integration->id])->save();
+        }
+
+        return new ServiceGmail(GoogleService::getClient($integration->id));
+    }
+
+    /**
+     * Gmail search built from the trigger. Supports both formats:
+     * 1. New: {"query": "from:(email1 OR email2)"} (Universal Bank Parser)
+     * 2. Old: [{"conditionType":"from","value":"email"}] (legacy bank automations)
+     */
+    private static function query($trigger): string
+    {
+        $taskConditions = json_decode($trigger?->values ?? 'null');
+
+        if (is_object($taskConditions) && isset($taskConditions->query)) {
+            return (string) $taskConditions->query;
+        }
+
+        $conditions = [];
+        if (is_array($taskConditions)) {
+            foreach ($taskConditions as $taskCondition) {
+                if (isset($taskCondition->conditionType) && $taskCondition->value) {
+                    $conditions[] = "$taskCondition->conditionType:$taskCondition->value";
+                }
+            }
+        }
+
+        return implode(' ', $conditions);
+    }
+
+    /**
+     * Run one email through the automation's tasks. Returns the email's summary
+     * (for the track), or null when it could not be processed.
+     *
+     * @return array{from: mixed, subject: mixed, messageId: mixed, id: string, threadId: string, historyId: mixed, date: mixed}|null
+     */
+    private static function processMessage(Automation $automation, ServiceGmail $service, $message): ?array
+    {
+        try {
+            $raw = $service->users_messages->get('me', $message->id, ['format' => 'raw']);
+            $parser = self::parseEmail($raw);
+
+            $mail = [
+                'from' => $parser->getHeader('from'),
+                'subject' => $parser->getHeader('subject'),
+                'messageId' => $parser->getHeader('message-id'),
+                'id' => $message->id,
+                'threadId' => $message->threadId,
+                'historyId' => $message->historyId,
+                'date' => $parser->getHeader('date'),
+            ];
+
+            $payload = [...$mail, 'message' => $parser->getMessageBody('html')];
+            $tasks = $automation->tasks;
+            $previousTask = $tasks->first();
+            foreach ($tasks as $taskIndex => $task) {
+                if ($taskIndex !== 0) {
+                    self::say("running workflow-task:$task->id:$task->name");
+                    if (! $payload) {
+                        // A task returned null (e.g. transaction in progress): skip the rest for this email.
+                        self::say('payload is null, skipping remaining tasks for this email');
+                        break;
+                    }
+                    $payload = $task->entity::handle($automation, $payload, $task, $previousTask, $tasks[0]);
+                    $previousTask = $task;
+                }
+            }
+
+            return $mail;
+        } catch (TransactionInProgressException $e) {
+            // Transaction is in progress - this is expected, skip without error logging
+            self::say('transaction in progress, skipping remaining tasks for this email');
+
+            return null;
+        } catch (Exception $e) {
+            Log::error($e->getMessage(), [$e]);
+
+            return null;
+        }
+    }
+
+    /**
+     * Progress lines for `php artisan app:automation-check`; silent on web requests.
+     */
+    private static function say(string $line): void
+    {
+        if (app()->runningInConsole()) {
+            echo "\n {$line}";
         }
     }
 

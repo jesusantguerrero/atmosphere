@@ -43,9 +43,21 @@ services:
       dockerfile: coolify.Dockerfile
     image: freesgen/loger
     command: ["php", "/var/www/html/artisan", "schedule:work"]
+    # Runs the minute bank-email check. It needs the same env as `loger` and must
+    # come back if it crashes, or email import silently stops.
+    restart: unless-stopped
+    env_file:
+      - .env
     environment:
       PHP_PFM_POOL_NAME: "loger_task"
+      DB_CONNECTION: mysql
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
     volumes:
+      - ./storage:/var/www/storage
       - /var/.config/gcloud/loger/credentials.json:/var/www/credentials.json
     depends_on:
       loger:
@@ -79,8 +91,20 @@ services:
       dockerfile: coolify.Dockerfile
     image: freesgen/loger
     command: ["php", "/var/www/html/artisan", "queue:work", "--tries=3"]
+    restart: unless-stopped
+    env_file:
+      - .env
     environment:
       PHP_FPM_POOL_NAME: "loger_queue"
+      DB_CONNECTION: mysql
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ./storage:/var/www/storage
+      - /var/.config/gcloud/loger/credentials.json:/var/www/credentials.json
     depends_on:
       loger:
         condition: service_healthy

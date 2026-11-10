@@ -1378,5 +1378,12 @@
     "Choose the statement file to import.": "Elige el archivo del estado de cuenta.",
     "Use a PDF, CSV or Excel bank statement.": "Usa un estado de cuenta en PDF, CSV o Excel.",
     "The statement must be 10 MB or smaller.": "El estado de cuenta debe pesar 10 MB o menos.",
-    "That account does not belong to this household.": "Esa cuenta no pertenece a este hogar."
+    "That account does not belong to this household.": "Esa cuenta no pertenece a este hogar.",
+    "Last imported movement: {date}": "Último movimiento importado: {date}",
+    "Sync emails now": "Sincronizar correos",
+    "Syncing emails…": "Sincronizando correos…",
+    "Checked {checked} emails since {since} · {imported} new": "Revisé {checked} correos desde el {since} · {imported} nuevos",
+    "The sync failed: {error}": "La sincronización falló: {error}",
+    "Could not start the sync.": "No se pudo iniciar la sincronización.",
+    "Connect Gmail and turn on bank email import first.": "Primero conecta Gmail y activa la importación de correos del banco."
 }
