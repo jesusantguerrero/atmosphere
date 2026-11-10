@@ -89,7 +89,7 @@ const uncategorizedHref = (currency: string): string =>
             </div>
         </div>
         <div v-if="uncategorizedTotals?.length" class="mt-2 flex flex-wrap gap-x-4 gap-y-1 border-t border-body-1/15 pt-2">
-            <a v-for="total in uncategorizedTotals" :key="total.currency_code" :href="uncategorizedHref(total.currency_code)" class="text-xs font-medium text-primary hover:underline">{{ formatMoney(total.total, total.currency_code) }} {{ $t('Uncategorized') }} · {{ total.count }} txns →</a>
+            <a v-for="total in uncategorizedTotals" :key="total.currency_code" :href="uncategorizedHref(total.currency_code)" class="text-xs font-medium text-primary hover:underline">{{ formatMoney(total.total, total.currency_code) }} {{ $t('Uncategorized') }} · {{ total.count }} {{ $t('txns') }} →</a>
         </div>
     </div>
 </template>

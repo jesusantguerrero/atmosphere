@@ -53,12 +53,12 @@ onMounted(() => {
             :model-value="modelValue"
             @update:modelValue="$emit('update:model-value', $event)"
             class="bg-transparent border-none shadow-none"
-            :placeholder="placeholder"
+            :placeholder="$t(placeholder)"
         />
     </div>
     <div class="flex" :class="{'w-full justify-center': !isCreating}">
         <AtButton class="font-bold text-body-1" @click="onCancel" v-if="isCreating && !modelValue.length">
-            Cancel
+            {{ $t('Cancel') }}
         </AtButton>
         <AtButton
             class="justify-center text-center rounded-md"
@@ -66,7 +66,7 @@ onMounted(() => {
             @click="onCreateClicked"
             v-if="modelValue.length || !isCreating"
         >
-            {{ saveButtonLabel }}
+            {{ $t(saveButtonLabel) }}
         </AtButton>
     </div>
 </section>

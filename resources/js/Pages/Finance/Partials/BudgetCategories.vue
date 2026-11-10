@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { toRefs, ref, nextTick } from "vue";
+import { toRefs, ref, computed } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
 import { VueDraggableNext as Draggable } from "vue-draggable-next";
 import { useBreakpoints, breakpointsTailwind } from "@vueuse/core";
@@ -23,6 +23,8 @@ const props = defineProps({
   }
 });
 
+const emit = defineEmits<{ (e: "clear-filter"): void }>();
+
 const { isSmaller } = useBreakpoints(breakpointsTailwind)
 const isMobile = isSmaller('md');
 
@@ -35,6 +37,8 @@ const {
   assignBudget,
   moveBudget,
 } = useBudget(budgets);
+
+const hasActiveFilter = computed(() => Object.values(filters.value ?? {}).some(Boolean));
 
 const categoryForm = useForm({
     account_id: null,
@@ -87,9 +91,20 @@ const handleBudgetMovement = (budgetMovementData: any) => {
 </script>
 
 <template>
+    <!-- A filter that matches nothing is good news, not an empty account. -->
+    <div
+        v-if="!visibleCategories?.length && hasActiveFilter"
+        class="flex flex-col items-center justify-center gap-2 py-10 px-6 mt-4 rounded-md bg-base-lvl-3 border border-base"
+    >
+        <p class="text-base font-semibold text-body">{{ $t('Nothing here this month') }} ✓</p>
+        <button type="button" class="text-sm font-medium text-primary hover:underline" @click="emit('clear-filter')">
+            {{ $t('Clear filter') }}
+        </button>
+    </div>
+
     <!-- Empty state: new account with no budget categories yet. -->
     <div
-        v-if="!visibleCategories?.length"
+        v-else-if="!visibleCategories?.length"
         class="flex flex-col items-center justify-center py-12 px-6 mt-4 rounded-md bg-base-lvl-3 border border-base"
     >
         <div class="text-4xl mb-3">📊</div>

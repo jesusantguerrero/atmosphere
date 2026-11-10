@@ -199,7 +199,11 @@ class BudgetCategoryService
         ]);
     }
 
-    public function updateMonthBalances(Category $category, string $month)
+    /**
+     * Recomputes a category's stored `available` for one month (budgeted + carry + activity) without waiting for
+     * the queued rollover, which still carries the result into later months and Ready to Assign.
+     */
+    public function updateMonthBalances(Category $category, string $month): void
     {
         $monthBudgetInfo = $this->getBudgetInfo($category, $month);
         BudgetMonth::updateOrCreate([
@@ -208,11 +212,8 @@ class BudgetCategoryService
             'month' => $month,
             'name' => $month,
         ], [
-            'available' => $monthBudgetInfo['available'],
-            'payments' => $monthBudgetInfo['payments'],
-            'left_from_last_month' => $monthBudgetInfo['left_from_last_month'],
-            'funded_spending_previous_month' => 0,
-            'funded_spending' => $monthBudgetInfo['funded_spending'],
+            'user_id' => $category->user_id,
+            'available' => $monthBudgetInfo['available'] ?? 0,
         ]);
     }
 
@@ -230,7 +231,7 @@ class BudgetCategoryService
 
         return $model->transactionLines()
             ->withoutEagerLoads()
-            ->whereHas('transaction', fn ($q) => $q->where('status', \App\Domains\Transaction\Models\Transaction::STATUS_VERIFIED))
+            ->whereHas('transaction', fn ($q) => $q->where('status', Transaction::STATUS_VERIFIED))
             ->whereRaw("date_format(transaction_lines.date, '%Y-%m') = ?", [$yearMonth])
             ->selectRaw('COALESCE(SUM(amount * type), 0) as balance')
             ->first();

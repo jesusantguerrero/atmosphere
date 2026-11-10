@@ -3,6 +3,7 @@ import { format, startOfMonth, isThisMonth } from 'date-fns';
 import { ref, nextTick, onMounted, inject, computed, watch } from 'vue';
 import { NDropdown } from 'naive-ui';
 import { router, usePage } from '@inertiajs/vue3';
+import { useI18n } from 'vue-i18n';
 import autoAnimate from '@formkit/auto-animate';
 
 import IconDrag from '@/Components/icons/IconDrag.vue';
@@ -28,6 +29,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits(['removed', 'edit', 'assign', 'move']);
+const { t } = useI18n();
 
 // Fix-2 (Hope/CEO): a negative "available" is only a *true* overspend when
 // there's no Ready-to-Assign money left to cover it. While RTA balance > 0 the
@@ -135,52 +137,52 @@ const assignOptions = computed(() => {
     const role = currentDefaultRole.value
     const options = [{
         name: BudgetAssignOptions.Target,
-        label: `Set Target (${formatMoney(budgetTarget.value)})`,
+        label: t('Set target ({amount})', { amount: formatMoney(budgetTarget.value) }),
         hidden: !budgetTarget.value
     },
     {
         name: BudgetAssignOptions.MatchAccount,
-        label: `Set match account (${formatMoney(matchAccountDiffAmount)})`,
+        label: t('Set match account ({amount})', { amount: formatMoney(matchAccountDiffAmount) }),
         hidden: !accountMatch.value || !isCurrentMonth.value || !matchAccountDiffAmount
     },
     {
         name: BudgetAssignOptions.Underfunded,
-        label: `Set account match (${formatMoney(underfundedAmount)})`,
+        label: t('Fund what is missing ({amount})', { amount: formatMoney(underfundedAmount) }),
         hidden: !budgetTarget.value || !underfundedAmount
     },
     {
         name: BudgetAssignOptions.Snooze,
-        label: isSnoozed.value ? 'Unsnooze target' : 'Snooze target (this month)',
+        label: isSnoozed.value ? t('Unsnooze target') : t('Snooze target (this month)'),
         hidden: !budgetTarget.value || !isCurrentMonth.value
     },
     {
         name: BudgetAssignOptions.LastMonth,
-        label: `Set last amount (${formatMoney(lastMonthAmount.value)})`,
+        label: t('Set last amount ({amount})', { amount: formatMoney(lastMonthAmount.value) }),
         hidden: !lastMonthAmount.value
     },
     {
         name: BudgetAssignOptions.Average,
-        label: `Set 3-month avg (${formatMoney(averageAmount.value)})`,
+        label: t('Set 3-month avg ({amount})', { amount: formatMoney(averageAmount.value) }),
         hidden: !averageAmount.value
     },
     {
         name: 'clear',
-        label: 'Clear',
+        label: t('Clear'),
     },
     { type: 'divider', key: 'divider-1' } as any,
     {
         name: BudgetAssignOptions.SetSavingsDefault,
-        label: 'Use as default Savings target',
+        label: t('Use as default Savings target'),
         hidden: role === 'savings',
     },
     {
         name: BudgetAssignOptions.SetSpendingDefault,
-        label: 'Use as default Spending target',
+        label: t('Use as default Spending target'),
         hidden: role === 'spending',
     },
     {
         name: BudgetAssignOptions.ClearDefaultRole,
-        label: 'Remove default role',
+        label: t('Remove default role'),
         hidden: role === null,
     }]
 
@@ -249,14 +251,22 @@ const handleAssignOptions = (option: string) => {
   onAssignBudget()
 };
 const isEditing = ref(false);
-// With a stable :key (item.id) the row is reused across re-renders instead of
-// being remounted on every budget change, so sync the local input value when the
-// server-provided amount changes and the user isn't actively editing.
-watch(() => props.item.budgeted, (val) => {
-    if (!isEditing.value) {
-        budgeted.value = val;
+// The input owns its value while it has focus and while its own assignment is
+// in flight; an unrelated reload landing in between must not overwrite what
+// the user typed. With a stable :key (item.id) the row is reused across
+// re-renders, so the server amount is synced back once neither applies.
+const isFocused = ref(false);
+const isSaving = ref(false);
+const syncFromServer = () => {
+    if (!isFocused.value && !isSaving.value) {
+        budgeted.value = props.item.budgeted;
     }
-});
+};
+watch(() => props.item.budgeted, syncFromServer);
+const onInputFocusOut = () => {
+    isFocused.value = false;
+    nextTick(syncFromServer);
+};
 const input = ref()
 const toggleEditing = () => {
     isEditing.value = !isEditing.value
@@ -309,9 +319,14 @@ const brechaHref = computed(() =>
 const onAssignBudget = () => {
     nextTick(() => {
         if (Number(props.item.budgeted) !== Number(budgeted.value) && budgeted.value !== null) {
+            isSaving.value = true;
             emit('assign', {
                 month: currentMonth.value,
                 budgeted: Number(budgeted.value),
+                onFinish: () => nextTick(() => {
+                    isSaving.value = false;
+                    syncFromServer();
+                }),
             })
         }
         isEditing.value = false;
@@ -366,7 +381,14 @@ const context = useAppContextStore();
 
         </div>
         <div class="flex items-center md:justify-end justify-between text-right flex-nowrap">
-            <div ref="inputContainer" title="Money Assigned" class="w-36" @click.stop>
+            <div
+                ref="inputContainer"
+                :title="$t('Money assigned')"
+                class="w-36"
+                @click.stop
+                @focusin="isFocused = true"
+                @focusout="onInputFocusOut"
+            >
                 <InputMoney
                     ref="input"
                     class="opacity-100 cursor-text"

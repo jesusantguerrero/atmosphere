@@ -55,6 +55,37 @@ class RecategorizeTransactionLineTest extends TestCase
         Queue::assertPushed(RollBudgetForward::class);
     }
 
+    public function test_both_categories_available_is_settled_before_the_rollover_runs(): void
+    {
+        $month = '2026-09-01';
+        foreach ([$this->groceries, $this->personal] as $category) {
+            BudgetMonth::create([
+                'team_id' => $this->teamId,
+                'user_id' => $this->user->id,
+                'category_id' => $category->id,
+                'month' => $month,
+                'name' => $month,
+                'budgeted' => 300,
+                'activity' => 0,
+                'available' => 300,
+            ]);
+        }
+        BudgetMonth::where(['category_id' => $this->groceries->id, 'month' => $month])->update(['activity' => -450, 'available' => -150]);
+        [, $line] = $this->seedExpense($this->groceries, 450);
+
+        $this->actingAs($this->user)
+            ->patch("/finance/transaction-lines/{$line->id}/category", ['category_id' => $this->personal->id])
+            ->assertRedirect();
+
+        Queue::assertPushed(RollBudgetForward::class);
+        $groceries = BudgetMonth::where(['category_id' => $this->groceries->id, 'month' => $month])->firstOrFail();
+        $personal = BudgetMonth::where(['category_id' => $this->personal->id, 'month' => $month])->firstOrFail();
+        $this->assertEquals(0, (float) $groceries->activity);
+        $this->assertEquals(300, (float) $groceries->available);
+        $this->assertEquals(-450, (float) $personal->activity);
+        $this->assertEquals(-150, (float) $personal->available);
+    }
+
     public function test_it_only_moves_the_selected_split_line(): void
     {
         [$transaction, $line] = $this->seedExpense($this->groceries, 300, hasSplits: true);

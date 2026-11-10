@@ -14,6 +14,10 @@ use Insane\Journal\Models\Core\Transaction;
  * Moves one categorized transaction line to another category without
  * rebuilding the transaction's lines. A non-split transaction keeps its own
  * category_id in sync so a later edit doesn't revert the change.
+ *
+ * Both categories' activity and available are recomputed for the line's month
+ * before returning, so the budget screen reloaded right after shows them
+ * settled; the queued rollover only carries the change into later months.
  */
 class RecategorizeTransactionLine
 {
@@ -39,6 +43,9 @@ class RecategorizeTransactionLine
         $month = substr($line->date, 0, 7).'-01';
         foreach (array_filter([$previousCategory, $category]) as $affectedCategory) {
             $this->budgetCategoryService->updateActivity($affectedCategory, $month);
+            if (! $affectedCategory->account_id) {
+                $this->budgetCategoryService->updateMonthBalances($affectedCategory, $month);
+            }
         }
 
         if ($line->transaction?->status === Transaction::STATUS_VERIFIED) {

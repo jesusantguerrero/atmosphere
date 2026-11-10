@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { format, startOfMonth } from 'date-fns';
-import { inject } from 'vue';
+import { computed, inject } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { router } from '@inertiajs/vue3';
 import { NDropdown } from 'naive-ui';
 
@@ -20,19 +21,21 @@ const props = defineProps<{
 const emit = defineEmits(['removed', 'edit', 'open'])
 
 
-const options = [{
+const { t } = useI18n();
+
+const options = computed(() => [{
     name: 'delete',
-    label: 'Delete'
+    label: t('Delete')
 }, {
     name: 'hide',
-    label: 'Hide'
+    label: t('Hide')
 }, {
     name: 'updateActivity',
-    label: 'Update Activity'
-}]
+    label: t('Update Activity')
+}])
 
 const removeCategory = () => {
-    if (confirm("Are you sure you want to remove this category?")) {
+    if (confirm(t('Are you sure you want to remove this category?'))) {
         router.delete(`budgets/${props.item.id}`, {
             onSuccess() {
                 emit('removed', props.item.id)
@@ -93,6 +96,8 @@ const handleOptions = (option: string) => {
             </span>
             <PointAlert
                 v-if="item.hasOverspent || item.hasUnderFunded"
+                :color="item.hasOverspent ? 'error' : 'warning'"
+                :title="item.hasOverspent ? $t('Overspent') : $t('Underfunded')"
             />
             <span
                 v-if="item.description"
