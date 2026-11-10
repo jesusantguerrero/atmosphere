@@ -106,7 +106,8 @@ class UniversalBankParser implements AutomationActionContract
                     'from' => $from,
                 ]);
 
-                return $result; // Already an array
+                // The subject tells an alert from a notification of the same charge (see ProcessedEmail::canAbsorb).
+                return is_array($result) ? [...$result, 'subject' => $subject] : $result;
             }
 
             echo "\n  [bank] {$bankCode} → NO transaction (parser returned null)";

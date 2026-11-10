@@ -442,4 +442,60 @@ class EmailImportReliabilityTest extends TestCase
         $this->assertNotSame($first->id, $second->id);
         $this->assertSame(2, ProcessedEmail::count());
     }
+
+    #[Test]
+    public function two_identical_purchases_at_the_same_store_are_both_imported(): void
+    {
+        $coffee = ['payee' => 'Cafe Ole', 'total' => '150.00', 'subject' => 'Usaste tu tarjeta de crédito Qik'];
+
+        $first = $this->importEmail(['id' => 'gmail_cafe_1', 'messageId' => '<c1@qik.do>', ...$coffee]);
+        $second = $this->importEmail(['id' => 'gmail_cafe_2', 'messageId' => '<c2@qik.do>', ...$coffee]);
+
+        $this->assertNotSame($first->id, $second->id);
+        $this->assertSame(2, Transaction::where('team_id', $this->user->current_team_id)->count());
+    }
+
+    #[Test]
+    public function an_alert_and_a_notification_of_one_charge_stay_one_transaction(): void
+    {
+        $alert = $this->importEmail(['id' => 'gmail_alert', 'messageId' => '<a@bhd.com.do>', 'subject' => 'Alertas BHD']);
+        $notification = $this->importEmail(['id' => 'gmail_notif', 'messageId' => '<n@bhd.com.do>', 'description' => 'Notificacion', 'subject' => 'BHD Notificación de Transacciones']);
+
+        $this->assertSame($alert->id, $notification->id);
+        $this->assertSame(1, Transaction::where('team_id', $this->user->current_team_id)->count());
+    }
+
+    #[Test]
+    public function a_hand_entered_purchase_takes_one_email_and_the_next_identical_one_is_a_new_purchase(): void
+    {
+        $payee = PayeeResolver::resolve($this->automation, 'Cafe Ole');
+        $manual = Transaction::create([
+            'team_id' => $this->user->current_team_id,
+            'user_id' => $this->user->id,
+            'account_id' => $this->account->id,
+            'payee_id' => $payee->id,
+            'date' => '2026-10-24',
+            'total' => 150,
+            'direction' => 'WITHDRAW',
+            'currency_code' => 'DOP',
+            'description' => 'cafe',
+        ]);
+        $coffee = ['payee' => 'Cafe Ole', 'total' => '150.00', 'subject' => 'Usaste tu tarjeta de crédito Qik'];
+
+        $first = $this->importEmail(['id' => 'gmail_cafe_1', 'messageId' => '<c1@qik.do>', ...$coffee]);
+        $second = $this->importEmail(['id' => 'gmail_cafe_2', 'messageId' => '<c2@qik.do>', ...$coffee]);
+
+        $this->assertSame($manual->id, $first->id);
+        $this->assertNotSame($manual->id, $second->id);
+        $this->assertSame(2, Transaction::where('team_id', $this->user->current_team_id)->count());
+        $this->assertSame('Usaste tu tarjeta de crédito Qik', ProcessedEmail::where('gmail_id', 'gmail_cafe_1')->value('subject'));
+    }
+
+    /**
+     * @param  array<string, mixed>  $overrides
+     */
+    private function importEmail(array $overrides): mixed
+    {
+        return TransactionCreateEntry::handle($this->automation, $this->makePayload($overrides), $this->task, $this->previousTask, $this->trigger);
+    }
 }
