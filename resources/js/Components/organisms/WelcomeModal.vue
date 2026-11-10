@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { Link } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import Modal from '@/Components/atoms/Modal.vue';
 import LogerButton from '@/Components/atoms/LogerButton.vue';
 
@@ -13,15 +13,24 @@ const props = defineProps<{
 const isVisible = ref(false);
 
 onMounted(() => {
-    const alreadySeen = localStorage.getItem(STORAGE_KEY);
-    if (!alreadySeen) {
-        isVisible.value = true;
+    try {
+        isVisible.value = !localStorage.getItem(STORAGE_KEY);
+    } catch (e) {
+        isVisible.value = false;
     }
 });
 
 const dismiss = () => {
-    localStorage.setItem(STORAGE_KEY, '1');
+    try {
+        localStorage.setItem(STORAGE_KEY, '1');
+    } catch (e) { /* private mode: it just shows again next time */ }
     isVisible.value = false;
+};
+
+// The first useful step is an account: everything else builds on it.
+const startWithAnAccount = () => {
+    dismiss();
+    router.visit('/finance/accounts?newAccount=1');
 };
 
 interface ModuleCard {
@@ -77,18 +86,18 @@ const visibleCards = allModuleCards.filter((card) =>
                     <div class="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary-ink">
                         <i class="fas fa-rocket text-lg" />
                     </div>
-                    <h2 class="text-xl font-bold text-body-1">Welcome to Loger!</h2>
+                    <h2 class="text-xl font-bold text-body-1">{{ $t('Welcome to Loger!') }}</h2>
                 </div>
                 <button
                     class="text-body-1/50 hover:text-body-1 transition-colors"
                     @click="dismiss"
-                    aria-label="Close"
+                    :aria-label="$t('Close')"
                 >
                     <i class="fas fa-times" />
                 </button>
             </div>
             <p class="text-sm text-body-1/70 mb-5 ml-13">
-                Here's a quick overview of what you can do
+                {{ $t("Here's a quick overview of what you can do") }}
             </p>
 
             <div class="grid gap-3" :class="visibleCards.length > 1 ? 'sm:grid-cols-2' : 'grid-cols-1'">
@@ -103,10 +112,10 @@ const visibleCards = allModuleCards.filter((card) =>
                         <i :class="card.icon" />
                     </div>
                     <div class="min-w-0">
-                        <p class="font-bold text-body-1 text-sm">{{ card.title }}</p>
-                        <p class="text-xs text-body-1/60 mt-0.5 leading-relaxed">{{ card.description }}</p>
+                        <p class="font-bold text-body-1 text-sm">{{ $t(card.title) }}</p>
+                        <p class="text-xs text-body-1/60 mt-0.5 leading-relaxed">{{ $t(card.description) }}</p>
                         <span class="mt-1 inline-block text-xs font-semibold text-primary group-hover:underline">
-                            {{ card.linkLabel }} &rarr;
+                            {{ $t(card.linkLabel) }} &rarr;
                         </span>
                     </div>
                 </Link>
@@ -118,10 +127,10 @@ const visibleCards = allModuleCards.filter((card) =>
                 class="text-sm text-body-1/50 hover:text-body-1 transition-colors"
                 @click="dismiss"
             >
-                Skip tour
+                {{ $t('Not now') }}
             </button>
-            <LogerButton variant="primary" @click="dismiss">
-                Show me around
+            <LogerButton variant="primary" @click="startWithAnAccount">
+                {{ $t('Add my first account') }}
             </LogerButton>
         </footer>
     </Modal>
