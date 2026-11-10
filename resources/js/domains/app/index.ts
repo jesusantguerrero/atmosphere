@@ -11,14 +11,6 @@ export const useAppMenu = (t: any, modules: any[]) => {
 
     const appMenu =  [
         {
-            icon: 'fas fa-bolt',
-            name: 'Today',
-            mobileOnly: true,
-            label: t('Today'),
-            to: '/today',
-            as: Link
-        },
-        {
             icon: 'fa fa-home',
             name: 'Dashboard',
             label: t('Dashboard'),
@@ -151,7 +143,7 @@ export const useAppMenu = (t: any, modules: any[]) => {
     // Each section page carries its own sub-nav (Overview/Budget/Planner...), so
     // landing deep never strands the user — Overview is always one tap away.
     const mobileMenu = [
-        { icon: 'fas fa-bolt',         name: 'Today',  label: t('Today'),  to: '/today',          as: Link, activeMatch: /^\/(today|dashboard)/ },
+        { icon: 'fas fa-bolt',         name: 'Today',  label: t('Today'),  to: '/dashboard',      as: Link, activeMatch: /^\/(today|dashboard)/ },
         { icon: 'fas fa-calendar',     name: 'Agenda', label: t('Agenda'), to: '/calendar',       as: Link, activeMatch: /^\/calendar/ },
         { icon: 'fas fa-utensils',     name: 'Food',   label: t('Food'),   to: '/meal-planner',   as: Link, activeMatch: /(meal-planner|meals|ingredients)/ },
         { icon: 'fas fa-check-circle', name: 'Tasks',  label: t('Tasks'),  to: '/housing/chores', as: Link, activeMatch: /^\/housing(?:\/|$)/ },

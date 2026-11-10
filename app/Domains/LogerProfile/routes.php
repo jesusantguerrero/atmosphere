@@ -31,7 +31,10 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', 'loger.conce
     Route::get('/relationships/{profileName}', [LogerProfileController::class, 'relationships'])->name('relationships.profile');
 });
 
-Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
-    Route::get('/relationships-mock', fn () => inertia('Relationships/CoupleSupportMock'))
-        ->name('relationships.mock');
-});
+// Design mock with made-up data: never served in production.
+if (! app()->isProduction()) {
+    Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
+        Route::get('/relationships-mock', fn () => inertia('Relationships/CoupleSupportMock'))
+            ->name('relationships.mock');
+    });
+}
