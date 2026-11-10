@@ -287,7 +287,7 @@ const budgetCsvExportUrl = computed(() => {
   >
     <template #header>
       <FinanceSectionNav>
-        <template #actions><LogerButton @click="router.visit(route('category-manager.index'))">{{ $t('Manage categories') }}</LogerButton></template>
+        <template #actions><LogerButton variant="neutral" @click="router.visit(route('category-manager.index'))">{{ $t('Manage categories') }}</LogerButton></template>
       </FinanceSectionNav>
     </template>
 
@@ -347,9 +347,8 @@ const budgetCsvExportUrl = computed(() => {
             @click="toggleFilter('overspent')"
             class="relative flex items-center justify-between gap-1.5 rounded-md shrink-0 whitespace-nowrap group"
             :class="[
-              filters.overspent
-                ? (overspentIsCovered ? 'bg-warning text-white' : 'bg-primary text-white')
-                : (overspentIsCovered ? 'text-warning' : 'text-primary')
+              overspentIsCovered ? 'text-warning' : 'text-error',
+              filters.overspent && (overspentIsCovered ? 'bg-warning/10 ring-1 ring-warning/30' : 'bg-error/10 ring-1 ring-error/30')
             ]"
           >
             <!-- shrink-0 + nowrap: the toolbar row wraps instead of squeezing
@@ -358,7 +357,7 @@ const budgetCsvExportUrl = computed(() => {
               {{ filterGroups.overSpent.length }} {{ overspentIsCovered ? $t('categories to fund') : $t('categories in the red') }}
             </span>
 
-            <div class="shrink-0 text-white text-sm rounded-full group-hover:bg-base-lvl-3/20 p-0.5">
+            <div class="shrink-0 text-current text-sm rounded-full group-hover:bg-base-lvl-3/40 p-0.5">
               <IconClose />
             </div>
             <!-- Anchored to the button (relative above), not the truncated
@@ -480,11 +479,18 @@ const budgetCsvExportUrl = computed(() => {
              switches to `justify-end pl-4` when hideTitle, so the value
              hugs the right edge of the w-44 column. text-right on the
              label sits it directly above that value. -->
-        <div class="hidden md:flex items-center flex-nowrap shrink-0 text-xs uppercase tracking-wide text-body-1/50 font-medium">
-          <span class="w-36 text-right">{{ $t('Assigned') }} <InfoHint :title="$t('100% assigned')" :body="$t('assigned_100_hint')" /></span>
-          <span class="w-44 text-right">{{ $t('Spent') }}</span>
-          <span class="w-36 text-right">{{ $t('Available') }} <InfoHint :title="$t('Funded vs overspent')" :body="$t('funded_vs_overspent_hint')" /></span>
-          <span class="w-8" aria-hidden="true"></span>
+        <div class="hidden md:flex flex-col items-end shrink-0 gap-0.5">
+          <div class="flex items-center flex-nowrap text-xs uppercase tracking-wide text-body-1/50 font-medium">
+            <span class="w-36 text-right">{{ $t('Assigned') }} <InfoHint :title="$t('100% assigned')" :body="$t('assigned_100_hint')" /></span>
+            <span class="w-44 text-right">{{ $t('Spent') }}</span>
+            <span class="w-36 text-right">{{ $t('Available') }} <InfoHint :title="$t('Funded vs overspent')" :body="$t('funded_vs_overspent_hint')" /></span>
+            <span class="w-8" aria-hidden="true"></span>
+          </div>
+          <!-- Persistent novice hint: how the three columns relate. -->
+          <p class="pr-8 text-[11px] text-body-1/60">
+            {{ $t('Assigned − Spent = Available') }}
+            <InfoHint :title="$t('How Available is calculated')" :body="$t('available_formula_hint')" />
+          </p>
         </div>
       </div>
 

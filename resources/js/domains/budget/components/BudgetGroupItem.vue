@@ -170,7 +170,7 @@ const fetchDetails = async (category: ICategory) => {
             </div>
         </div>
         <div class="flex items-center flex-nowrap">
-            <div class="w-36 text-right">
+            <div class="w-36 text-right font-medium text-body-1">
                 <MoneyPresenter :value="item.budgeted" />
             </div>
             <ExpenseChartWidgetRow
@@ -182,7 +182,7 @@ const fetchDetails = async (category: ICategory) => {
                 :details="details"
                 @open-details="fetchDetails(item)"
             />
-            <div class="w-36 text-right">
+            <div class="w-36 text-right font-medium text-body-1">
                 <MoneyPresenter :value="item.available" />
             </div>
             <div class="w-8 flex items-center justify-center">

@@ -81,18 +81,22 @@ const handleOptions = (option: string) => {
 
 
 <template>
-<header class="flex group items-center justify-between w-56 h-6 relative">
-    <section class="flex items-center ">
+<header class="flex group items-center justify-between w-full md:w-56 min-w-0 h-6 relative">
+    <section class="flex items-center min-w-0">
         <section class="hidden group-hover:block">
             <NDropdown trigger="click" :options="options" key-field="name" :on-select="handleOptions" >
                 <LogerButtonTab> <i class="fa fa-ellipsis-v"></i></LogerButtonTab>
             </NDropdown>
         </section>
-        <h4 class="flex cursor-pointer ml-12   items-center group-hover:ml-6" @click="$emit('open')" :title="`ID: ${item.id}`">
-            <span class="items-center font-bold text-body-1">
-                <span :style="{ color: item.color }">
-                    {{ item.name }}
-                </span>
+        <h4 class="flex min-w-0 cursor-pointer md:ml-12 items-center md:group-hover:ml-6" @click="$emit('open')" :title="`ID: ${item.id}`">
+            <span
+                v-if="item.color"
+                class="w-1.5 h-1.5 mr-2 shrink-0 rounded-full"
+                :style="{ backgroundColor: item.color }"
+                aria-hidden="true"
+            />
+            <span class="truncate font-bold text-body">
+                {{ item.name }}
             </span>
             <PointAlert
                 v-if="item.hasOverspent || item.hasUnderFunded"

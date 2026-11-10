@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
+import InfoHint from '@/Components/atoms/InfoHint.vue';
 import formatMoney from '@/utils/formatMoney';
 
 const props = defineProps<{
@@ -58,6 +59,13 @@ const hasGap = computed(() => rows.value.some((r) => Math.abs(r.uncategorized) >
 
 const uncategorizedHref = (currency: string): string =>
     `/finance/transactions?filter[uncategorized]=1&filter[currency_code]=${encodeURIComponent(currency)}`;
+
+const gapRows = computed(() => rows.value.filter((r) => Math.abs(r.uncategorized) >= 0.01));
+const uncategorizedFor = (currency: string) =>
+    (props.uncategorizedTotals || []).find((total) => total.currency_code === currency);
+
+/** The full identity (Available + To assign vs cash) stays one click away instead of always on screen. */
+const showCalculation = ref(false);
 </script>
 
 <template>
@@ -69,7 +77,26 @@ const uncategorizedHref = (currency: string): string =>
             <i class="fa fa-check-circle" aria-hidden="true" />
             {{ $t('Your budget matches your accounts') }}
         </div>
-        <div v-else class="space-y-1">
+        <div v-else class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+            <span v-for="r in gapRows" :key="r.cur" class="text-body-1">
+                {{ $t('Difference') }} <b class="text-body tabular-nums">{{ formatMoney(r.uncategorized, r.cur) }}</b>
+                <a
+                    v-if="uncategorizedFor(r.cur)"
+                    :href="uncategorizedHref(r.cur)"
+                    class="font-medium text-primary hover:underline"
+                >· {{ $t('{count} uncategorized', { count: uncategorizedFor(r.cur)?.count }) }} →</a>
+            </span>
+            <InfoHint :title="$t('Difference')" :body="$t('reconcile_difference_hint')" />
+            <button
+                type="button"
+                class="text-body-1/70 hover:text-body underline-offset-2 hover:underline md:ml-auto"
+                :aria-expanded="showCalculation"
+                @click="showCalculation = !showCalculation"
+            >
+                {{ showCalculation ? $t('Hide calculation') : $t('Show calculation') }}
+            </button>
+        </div>
+        <div v-if="hasGap && showCalculation" class="mt-2 space-y-1 border-t border-body-1/15 pt-2">
             <div
                 v-for="r in rows"
                 :key="r.cur"
@@ -88,7 +115,7 @@ const uncategorizedHref = (currency: string): string =>
                 <span v-if="Math.abs(r.uncategorized) >= 0.01" class="font-medium tabular-nums text-body-1 md:ml-auto">{{ $t('Difference') }} {{ formatMoney(r.uncategorized, r.cur) }}</span>
             </div>
         </div>
-        <div v-if="uncategorizedTotals?.length" class="mt-2 flex flex-wrap gap-x-4 gap-y-1 border-t border-body-1/15 pt-2">
+        <div v-if="uncategorizedTotals?.length && (!hasGap || showCalculation)" class="mt-2 flex flex-wrap gap-x-4 gap-y-1 border-t border-body-1/15 pt-2">
             <a v-for="total in uncategorizedTotals" :key="total.currency_code" :href="uncategorizedHref(total.currency_code)" class="text-xs font-medium text-primary hover:underline">{{ formatMoney(total.total, total.currency_code) }} {{ $t('Uncategorized') }} · {{ total.count }} {{ $t('txns') }} →</a>
         </div>
     </div>

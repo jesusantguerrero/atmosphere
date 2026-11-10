@@ -1152,5 +1152,7 @@
     "Payment dismissed for this month": "Payment dismissed for this month",
     "Overspent filter": "Overspent",
     "categories in the red": "categories in the red",
-    "You assigned too much": "You assigned too much"
+    "You assigned too much": "You assigned too much",
+    "available_formula_hint": "Available is what you assigned this month minus what you spent, plus what was left in that category from last month. If it turns red, you spent more than you assigned.",
+    "reconcile_difference_hint": "What is available in your categories plus what is left to assign should equal the cash in your accounts. The gap is almost always uncategorized transactions: categorize them and the difference goes back to zero."
 }
