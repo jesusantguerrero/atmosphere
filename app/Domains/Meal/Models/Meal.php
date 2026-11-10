@@ -10,7 +10,7 @@ class Meal extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['team_id', 'user_id', 'name', 'meal_type_id', 'menu_id', 'notes', 'is_liked'];
+    protected $fillable = ['team_id', 'user_id', 'name', 'meal_type_id', 'menu_id', 'notes', 'is_liked', 'prep_minutes', 'cook_minutes', 'servings'];
 
     protected $with = ['mealType'];
 
