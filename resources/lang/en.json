@@ -1153,6 +1153,11 @@
     "Overspent filter": "Overspent",
     "categories in the red": "categories in the red",
     "You assigned too much": "You assigned too much",
+    "weeks": "weeks",
+    "Repeat every": "Repeat every",
+    "Every {count} days": "Every {count} days",
+    "Every {count} weeks": "Every {count} weeks",
+    "Every {count} months": "Every {count} months",
     "available_formula_hint": "Available is what you assigned this month minus what you spent, plus what was left in that category from last month. If it turns red, you spent more than you assigned.",
     "reconcile_difference_hint": "What is available in your categories plus what is left to assign should equal the cash in your accounts. The gap is almost always uncategorized transactions: categorize them and the difference goes back to zero."
 }

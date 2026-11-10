@@ -16,10 +16,12 @@
     });
 
     const form = useForm({
-        ...{
-            name: props.meal?.name,
-        },
-        ingredients: props.meal ? [...props.meal.ingredients, {}]: [{}]
+        name: props.meal?.name,
+        notes: props.meal?.notes ?? '',
+        prep_minutes: props.meal?.prep_minutes || null,
+        cook_minutes: props.meal?.cook_minutes || null,
+        servings: props.meal?.servings || null,
+        ingredients: props.meal ? [...(props.meal.ingredients ?? []), {}]: [{}]
     })
 
     const submit = async (redirectTo: string = "") => {
@@ -28,6 +30,9 @@
         form
             .transform(data => ({
                 ...data,
+                prep_minutes: Number(data.prep_minutes) || 0,
+                cook_minutes: Number(data.cook_minutes) || 0,
+                servings: Number(data.servings) || 0,
                 ingredients: data.ingredients.filter( ingredient => ingredient.name)
         }))
         [method](url, {
@@ -58,9 +63,11 @@
 
     const removeIngredient = (index) => {
         form.ingredients.splice(index, 1);
-        const len = form.ingredients.length - 1;
         nextTick(() => {
-            checkIngredients(len, form.ingredients[len].name);
+            const last = form.ingredients.length - 1;
+            if (last < 0 || form.ingredients[last].name) {
+                checkIngredients(last, true);
+            }
         })
     }
 
@@ -86,27 +93,27 @@
                 :index="index"
                 :ingredient="ingredient"
                 @check="checkIngredients(index, $event)"
+                @remove="removeIngredient"
             />
         </AtField>
-        <AtField
-            :label="$t('Tags')"
-        >
-            <LogerInput v-model="form.tags" rounded />
-        </AtField>
-        <AtField
-            :label="$t('Link')"
-        >
-            <LogerInput v-model="form.link" rounded />
-        </AtField>
-        <AtField
-            :label="$t('Dish')"
-        >
-            <LogerInput v-model="form.dish" rounded />
-        </AtField>
-        <AtField
-            :label="$t('Time')"
-        >
-            <LogerInput v-model="form.time" rounded />
+        <div class="grid grid-cols-3 gap-4">
+            <AtField :label="$t('Prep (min)')">
+                <LogerInput v-model="form.prep_minutes" type="number" min="0" rounded />
+            </AtField>
+            <AtField :label="$t('Cook (min)')">
+                <LogerInput v-model="form.cook_minutes" type="number" min="0" rounded />
+            </AtField>
+            <AtField :label="$t('Servings')">
+                <LogerInput v-model="form.servings" type="number" min="0" rounded />
+            </AtField>
+        </div>
+        <AtField :label="$t('Notes')">
+            <textarea
+                v-model="form.notes"
+                rows="3"
+                class="w-full px-4 py-2 text-sm border rounded-md bg-base-lvl-1 border-base text-body focus:border-primary focus:outline-none"
+                :placeholder="$t('Steps, a link to the recipe, tips…')"
+            />
         </AtField>
     </div>
 </template>

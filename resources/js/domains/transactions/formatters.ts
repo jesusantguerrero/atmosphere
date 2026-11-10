@@ -68,3 +68,22 @@ export const plannedDBToTransaction = (transactions) => {
         status: 'PLANNED'
     }))
 }
+
+type Translate = (key: string, params?: Record<string, unknown>) => string;
+
+/**
+ * Human label for a planned transaction's schedule: «Mensual», «Semanal» or
+ * «Cada 4 semanas». Null when the row has no frequency (not a recurring plan).
+ */
+export const recurrenceLabel = (frequency: string | null | undefined, interval: number | string | null | undefined, t: Translate): string | null => {
+    if (!frequency) return null;
+    const every = Math.max(1, Number(interval) || 1);
+    const unit = frequency.toUpperCase();
+
+    if (unit === 'WEEK_DAY') return t('Weekdays');
+    if (unit === 'DAILY') return every === 1 ? t('Daily') : t('Every {count} days', { count: every });
+    if (unit === 'WEEK' || unit === 'WEEKLY') return every === 1 ? t('Weekly') : t('Every {count} weeks', { count: every });
+    if (unit === 'MONTHLY') return every === 1 ? t('Monthly') : t('Every {count} months', { count: every });
+
+    return null;
+};

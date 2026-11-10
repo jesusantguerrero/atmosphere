@@ -1,14 +1,13 @@
 <script setup lang="ts">
-import { reactive, ref } from "vue";
-import { router } from "@inertiajs/vue3";
+import { getCurrentInstance } from "vue";
 
 import TransactionsTable from "@/domains/transactions/components/TransactionsList.vue";
 import { ITransaction } from "@/domains/transactions/models/transactions";
 
-import { fromDBToAllAccounts, transactionDBToTransaction } from "@/domains/transactions";
+import { fromDBToAllAccounts, removeTransaction as removeWithConfirm, transactionDBToTransaction, useTransactionModal } from "@/domains/transactions";
 import InlineTransactionCategory from './InlineTransactionCategory.vue';
 
-const emit = defineEmits(['categorized']);
+const emit = defineEmits(['categorized', 'edit', 'removed']);
 
 const props = defineProps({
   transactions: {
@@ -28,31 +27,27 @@ const props = defineProps({
   }
 });
 
-const isTransferModalOpen = ref(false);
-const transferConfig = reactive<{
-    recurrence: boolean;
-    automatic: boolean;
-    transactionData: null | Record<string, any>
-}>({
-  recurrence: false,
-  automatic: false,
-  transactionData: null,
-});
+// Pages that list transactions handle edit/remove themselves; the ones that
+// don't still get the global modal and the shared confirm-then-delete.
+const instance = getCurrentInstance();
+const parentListens = (event: string): boolean => !!instance?.vnode.props?.[event];
+const { openTransactionModal } = useTransactionModal();
 
 const handleEdit = (transaction: ITransaction) => {
-  transferConfig.transactionData = transaction;
-  isTransferModalOpen.value = true;
+  if (parentListens('onEdit')) {
+    emit('edit', transaction);
+    return;
+  }
+  openTransactionModal({ transactionData: transaction });
 };
 
 const removeTransaction = (transaction: ITransaction) => {
-    if (confirm("Are you sure you want to remove this transaction?")) {
-        router.delete(`/transactions/${transaction.id}`, {
-            onSuccess() {
-                router.reload();
-            }
-        })
-    }
-}
+  if (parentListens('onRemoved')) {
+    emit('removed', transaction);
+    return;
+  }
+  removeWithConfirm(transaction);
+};
 
 const parser = props.allAccounts ? fromDBToAllAccounts : transactionDBToTransaction;
 </script>

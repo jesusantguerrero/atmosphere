@@ -5,7 +5,7 @@
     import LogerApiSimpleSelect from "@/Components/organisms/LogerApiSimpleSelect.vue";
     import { IMealIngredient } from "../models";
 
-    defineEmits(['close']);
+    defineEmits(['close', 'check', 'remove']);
 
     withDefaults(defineProps<{
         meal: Object;
@@ -52,7 +52,7 @@
             <LogerInput rounded v-model="ingredient.unit" class="border border-none rounded-t-none rounded-b-none text-body bg-base border-base-deep-1"/>
         </AtField>
         <AtField :label="$t('Actions')">
-            <AtButton type="danger" class="items-center h-10" rounded @click="removeIngredient(index)">
+            <AtButton type="danger" class="items-center h-10" rounded @click="$emit('remove', index)" :aria-label="$t('Remove ingredient')">
                 <i class="fa fa-trash"></i>
             </AtButton>
         </AtField>

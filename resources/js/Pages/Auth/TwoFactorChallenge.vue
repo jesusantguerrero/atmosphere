@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { useForm, Link } from "@inertiajs/vue3";
+import { useForm, Link, router } from "@inertiajs/vue3";
 import { ref, nextTick } from "vue";
 import { AtAuthBox, AtAuthForm, AtField } from "atmosphere-ui";
 
@@ -14,20 +14,26 @@ import JetValidationErrors from "@/Components/atoms/ValidationErrors.vue";
 
 
     const recovery =  ref(false);
+    const code = ref();
+    const recoveryCode = ref();
+    const focusInput = (input: any) => {
+      const element = input?.$el ?? input;
+      (element?.matches?.("input") ? element : element?.querySelector?.("input"))?.focus();
+    };
     const form = useForm({
         code: "",
         recovery_code: "",
     });
 
     const toggleRecovery = () => {
-      recovery.value ^= true;
+      recovery.value = !recovery.value;
 
       nextTick(() => {
         if (recovery.value) {
-          recoveryCode.value.focus();
+          focusInput(recoveryCode.value);
           form.code = "";
         } else {
-          code.value.focus();
+          focusInput(code.value);
           form.recovery_code = "";
         }
       });
@@ -36,6 +42,9 @@ import JetValidationErrors from "@/Components/atoms/ValidationErrors.vue";
     const submit = () => {
       form.post(route("two-factor.login"));
     };
+
+    const onHomePressed = () => router.visit("/");
+    const onLinkPressed = () => router.visit(route("login"));
 </script>
 
 <template>
@@ -89,7 +98,7 @@ import JetValidationErrors from "@/Components/atoms/ValidationErrors.vue";
 
                 <AtField v-else name="recovery_code" label="Recovery Code" >
                   <LogerInput
-                    ref="recovery_code"
+                    ref="recoveryCode"
                     id="recovery_code"
                     type="text"
                     class="block w-full mt-1 bg-base-lvl-3"
