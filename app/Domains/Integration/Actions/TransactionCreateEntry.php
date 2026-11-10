@@ -17,6 +17,7 @@ use App\Models\User;
 use App\Notifications\EntryGenerated;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\Log;
+use Insane\Journal\Events\TransactionCreated;
 use Insane\Journal\Models\Core\Account;
 use Insane\Journal\Models\Core\Transaction;
 
@@ -147,23 +148,37 @@ class TransactionCreateEntry implements AutomationActionContract
 
         $transactionService = new TransactionService;
 
-        if ($transaction = $transactionService->findIfDuplicated($transactionData)) {
+        $subject = $payload['subject'] ?? null;
+        $lookalike = false;
+        $sameCharge = function (?Transaction $candidate) use ($subject, &$lookalike): ?Transaction {
+            if (! $candidate) {
+                return null;
+            }
+            if (ProcessedEmail::canAbsorb($candidate->id, $subject)) {
+                return $candidate;
+            }
+            $lookalike = true;
+
+            return null;
+        };
+
+        if ($transaction = $sameCharge($transactionService->findIfDuplicated($transactionData))) {
             self::markEmailProcessed($automation, $payload, $transaction, 'duplicate');
             self::say("linked: same payee and description as transaction #{$transaction->id}");
 
             return $transaction;
         }
 
-        if ($transaction = $transactionService->findDuplicateByAccountSignature($transactionData)) {
+        if ($transaction = $sameCharge($transactionService->findDuplicateByAccountSignature($transactionData))) {
             self::markEmailProcessed($automation, $payload, $transaction, 'duplicate');
             self::say("linked: another bank email already imported this charge as transaction #{$transaction->id}");
 
             return $transaction;
         }
 
-        $transaction = Transaction::createTransaction(
-            collect($transactionData)->except(['items', 'payee_name'])->all()
-        );
+        $transaction = $lookalike
+            ? self::createAlongside(collect($transactionData)->except(['items', 'payee_name'])->all())
+            : Transaction::createTransaction(collect($transactionData)->except(['items', 'payee_name'])->all());
 
         self::markEmailProcessed($automation, $payload, $transaction);
         self::say("created: transaction #{$transaction->id} · {$transaction->date} · {$transaction->total} · account {$transaction->account_id}");
@@ -267,6 +282,23 @@ class TransactionCreateEntry implements AutomationActionContract
     }
 
     /**
+     * Same as Transaction::createTransaction() without its lookup of an equal
+     * transaction: that lookup would hand back the identical purchase this
+     * email was just found to be different from.
+     *
+     * @param  array<string, mixed>  $transactionData
+     */
+    private static function createAlongside(array $transactionData): Transaction
+    {
+        $data = Transaction::sanitizeData($transactionData);
+        $transaction = Transaction::create($data);
+        $transaction->createLines([], $data);
+        event(new TransactionCreated($transaction, $data));
+
+        return $transaction;
+    }
+
+    /**
      * @param  'processed'|'duplicate'  $status  `duplicate` when the email was linked to an existing transaction
      */
     private static function markEmailProcessed(Automation $automation, mixed $payload, ?Transaction $transaction, string $status = 'processed'): void
@@ -283,7 +315,8 @@ class TransactionCreateEntry implements AutomationActionContract
                 $payload['messageId'] ?? null,
                 $automation->id,
                 $transaction?->id,
-                $status
+                $status,
+                $payload['subject'] ?? null
             );
         } catch (UniqueConstraintViolationException) {
             // already recorded
