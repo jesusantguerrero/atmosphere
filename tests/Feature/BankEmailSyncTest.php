@@ -3,18 +3,18 @@
 namespace Tests\Feature;
 
 use App\Domains\Automation\Models\Automation;
+use App\Domains\Integration\Actions\GmailReceived;
 use App\Domains\Integration\Models\Integration;
 use App\Domains\Integration\Services\UniversalBankAutomationService;
 use App\Domains\Transaction\Models\Transaction;
-use App\Jobs\SyncBankEmails;
 use App\Models\ProcessedEmail;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
+use Mockery;
 use Tests\TestCase;
 
 class BankEmailSyncTest extends TestCase
@@ -55,60 +55,90 @@ class BankEmailSyncTest extends TestCase
         $this->assertSame('2026-11-02', UniversalBankAutomationService::syncSince($this->teamId, $automation->id));
     }
 
-    public function test_sync_now_runs_after_the_response_and_reports_running(): void
+    public function test_each_poll_moves_the_sync_one_step_until_the_last_page(): void
     {
-        Bus::fake();
-        $this->automation();
+        $automation = $this->automation();
         $this->gmail();
+        $steps = $this->fakeSteps([
+            ['checked' => 10, 'next_page_token' => 'page-2', 'done' => false, 'import' => 'gmail-a'],
+            ['checked' => 4, 'next_page_token' => null, 'done' => true, 'import' => 'gmail-b'],
+        ], $automation);
 
+        // The step budget is long enough for one page per request here.
+        $steps->shouldReceive('syncStep')->with(Mockery::any(), '2026-10-10', null, null)->once()->andReturnUsing($this->stepAnswer(0));
         $this->actingAs($this->user)->postJson('/integrations/bank-transactions/sync')
             ->assertStatus(202)
-            ->assertJsonPath('sync.status', 'running')
-            ->assertJsonPath('sync.since', '2026-10-10');
+            ->assertJsonPath('sync.status', 'done')
+            ->assertJsonPath('sync.checked', 14)
+            ->assertJsonPath('sync.imported', 2)
+            ->assertJsonPath('sync.since', '2026-10-10')
+            ->assertJsonMissingPath('sync.page_token');
+    }
 
-        Bus::assertDispatchedAfterResponse(SyncBankEmails::class, fn (SyncBankEmails $job) => $job->teamId === $this->teamId);
+    public function test_a_sync_left_without_progress_shows_as_stalled_and_can_start_again(): void
+    {
+        $this->automation();
+        $this->gmail();
+        UniversalBankAutomationService::rememberSync($this->teamId, ['status' => 'running', 'since' => '2026-10-10', 'checked' => 30, 'imported' => 0, 'page_token' => 'p', 'latest' => null, 'processed_before' => 0]);
 
-        // A second press while it runs does not start another sync.
-        $this->actingAs($this->user)->postJson('/integrations/bank-transactions/sync')->assertStatus(202);
-        Bus::assertDispatchedAfterResponseTimes(SyncBankEmails::class, 1);
+        $this->travel(3)->minutes();
 
-        $this->actingAs($this->user)->getJson('/integrations/bank-transactions')->assertOk()->assertJsonPath('sync.status', 'running');
+        $this->actingAs($this->user)->getJson('/integrations/bank-transactions')
+            ->assertOk()
+            ->assertJsonPath('sync.status', 'stalled')
+            ->assertJsonPath('sync.checked', 30);
+        $this->assertFalse(UniversalBankAutomationService::syncIsRunning($this->teamId));
     }
 
     public function test_sync_needs_gmail_and_the_bank_import_on(): void
     {
-        Bus::fake();
-
         $this->actingAs($this->user)->postJson('/integrations/bank-transactions/sync')
             ->assertUnprocessable()
             ->assertJsonValidationErrors('sync');
 
-        Bus::assertNothingDispatched();
+        $this->assertNull(UniversalBankAutomationService::presentSync($this->teamId));
     }
 
-    public function test_mobile_can_read_the_status_and_start_a_sync(): void
-    {
-        Bus::fake();
-        $this->automation();
-        $this->gmail();
-        Sanctum::actingAs($this->user);
-
-        $this->getJson('/api/mobile/bank-email')->assertOk()->assertJsonPath('connected', true)->assertJsonPath('sync', null);
-        $this->postJson('/api/mobile/bank-email/sync')->assertStatus(202)->assertJsonPath('sync.status', 'running');
-    }
-
-    public function test_a_failed_sync_is_reported_on_the_status(): void
+    public function test_a_failed_step_is_reported_and_mobile_sees_it(): void
     {
         $automation = $this->automation();
-        // No Gmail integration: the sync cannot connect.
+        $this->gmail();
+        $this->mock(GmailReceived::class)->shouldReceive('syncStep')->andThrow(new \RuntimeException('Token expired'));
+        Sanctum::actingAs($this->user);
 
-        (new SyncBankEmails($this->user->id, $this->teamId))->handle();
-
-        $sync = UniversalBankAutomationService::status($this->user)['sync'];
-        $this->assertSame('failed', $sync['status']);
-        $this->assertSame('2026-10-10', $sync['since']);
-        $this->assertNotEmpty($sync['error']);
+        $this->postJson('/api/mobile/bank-email/sync')->assertStatus(202)
+            ->assertJsonPath('sync.status', 'failed')
+            ->assertJsonPath('sync.error', 'Token expired');
+        $this->getJson('/api/mobile/bank-email')->assertOk()->assertJsonPath('sync.status', 'failed');
         $this->assertNull($automation->fresh()->track);
+    }
+
+    /**
+     * @param  list<array{checked: int, next_page_token: ?string, done: bool, import: string}>  $answers
+     */
+    private function fakeSteps(array $answers, Automation $automation): Mockery\MockInterface
+    {
+        $this->answers = $answers;
+        $this->syncAutomation = $automation;
+        $mock = $this->mock(GmailReceived::class);
+        $mock->shouldReceive('syncStep')->with(Mockery::any(), '2026-10-10', 'page-2', Mockery::any())->andReturnUsing($this->stepAnswer(1));
+
+        return $mock;
+    }
+
+    /** @var list<array{checked: int, next_page_token: ?string, done: bool, import: string}> */
+    private array $answers = [];
+
+    private ?Automation $syncAutomation = null;
+
+    private function stepAnswer(int $index): \Closure
+    {
+        return function () use ($index) {
+            $answer = $this->answers[$index];
+            $this->importedEmail($this->syncAutomation, '2026-11-0'.($index + 1), $answer['import']);
+
+            return ['checked' => $answer['checked'], 'processed' => 1, 'next_page_token' => $answer['next_page_token'], 'done' => $answer['done'], 'latest' => ['historyId' => $index + 1]];
+        };
     }
 
     private function automation(): Automation

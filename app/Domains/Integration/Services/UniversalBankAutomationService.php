@@ -208,7 +208,7 @@ class UniversalBankAutomationService
     {
         $teamId = (int) $user->current_team_id;
         $state = Cache::get(self::syncCacheKey($teamId));
-        if (($state['status'] ?? null) !== 'running') {
+        if (($state['status'] ?? null) !== 'running' || ! self::syncIsRunning($teamId)) {
             return $state;
         }
 
@@ -221,7 +221,7 @@ class UniversalBankAutomationService
             $automation = self::find($user, $teamId) ?? throw new \RuntimeException('Bank email import is not set up.');
             $startedAt = microtime(true);
             do {
-                $step = GmailReceived::syncChunk($automation, $state['since'], $state['page_token'], $state['latest']);
+                $step = app(GmailReceived::class)->syncStep($automation, $state['since'], $state['page_token'], $state['latest']);
                 $state['checked'] += $step['checked'];
                 $state['page_token'] = $step['next_page_token'];
                 $state['latest'] = $step['latest'];

@@ -163,6 +163,17 @@ class GmailReceived implements AutomationActionContract
     }
 
     /**
+     * Instance entry point for syncChunk(), so callers can swap it in tests.
+     *
+     * @param  array<string, mixed>|null  $latest
+     * @return array{checked: int, processed: int, next_page_token: ?string, done: bool, latest: array<string, mixed>|null}
+     */
+    public function syncStep(Automation $automation, string $since, ?string $pageToken = null, ?array $latest = null): array
+    {
+        return self::syncChunk($automation, $since, $pageToken, $latest);
+    }
+
+    /**
      * The team's live Gmail connection. The automation may carry a null or stale
      * integration_id (created before Gmail was linked, or the integration was
      * reconnected); resolve the token-bearing one and self-heal the row.
