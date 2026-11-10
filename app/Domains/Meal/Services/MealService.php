@@ -87,28 +87,39 @@ class MealService
         ]);
     }
 
+    /**
+     * Ingredients of the planned meals, one entry per name. Quantities add up per
+     * unit: `quantity`/`unit` are the first unit seen, `amounts` holds every unit.
+     *
+     * @return array<string, array{quantity: float|int, unit: ?string, amounts: array<string, float|int>}>
+     */
     public static function getIngredients($plans)
     {
         $ingredients = [];
         foreach ($plans as $plan) {
-            $mealIngredients = $plan->dateable?->meal?->ingredients;
-            if ($mealIngredients && count($mealIngredients)) {
-                foreach ($mealIngredients as $product) {
-                    if (array_key_exists($product->name, $ingredients)) {
-                        $ingredients[$product->name] = array_merge($ingredients[$product->name], [
-                            'quantity' => $ingredients[$product->name]['quantity']++,
-                        ]);
-                    } else {
-                        $ingredients[$product->name] = [
-                            'quantity' => $product->quantity,
-                            'unit' => $product->unit,
-                        ];
-                    }
-                }
+            foreach ($plan->dateable?->meal?->ingredients ?? [] as $product) {
+                $unit = (string) ($product->unit ?? '');
+                $quantity = is_numeric($product->quantity) ? $product->quantity + 0 : 1;
+                $ingredients[$product->name] ??= ['quantity' => 0, 'unit' => $product->unit, 'amounts' => []];
+                $ingredients[$product->name]['amounts'][$unit] = ($ingredients[$product->name]['amounts'][$unit] ?? 0) + $quantity;
+                $firstUnit = (string) ($ingredients[$product->name]['unit'] ?? '');
+                $ingredients[$product->name]['quantity'] = $ingredients[$product->name]['amounts'][$firstUnit];
             }
         }
 
         return $ingredients;
+    }
+
+    /**
+     * "3 taza + 2 unit" for a shopping list item.
+     *
+     * @param  array{amounts?: array<string, float|int>}  $ingredient
+     */
+    public static function ingredientAmountLabel(array $ingredient): string
+    {
+        return collect($ingredient['amounts'] ?? [])
+            ->map(fn ($quantity, $unit) => trim(round($quantity, 2).' '.$unit))
+            ->implode(' + ');
     }
 
     public function addIngredientLabel(Product $product, mixed $postData, User $user)

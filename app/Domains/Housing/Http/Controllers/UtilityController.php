@@ -32,6 +32,7 @@ class UtilityController extends Controller
                     'days_until' => $daysUntil,
                     'is_overdue' => $daysUntil !== null && $daysUntil < 0,
                     'is_active' => (bool) $occurrence->is_active,
+                    'occurrence' => $occurrence,
                 ];
             });
 

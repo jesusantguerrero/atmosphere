@@ -104,7 +104,7 @@ const assignProductLabel = (label: Record<string, string>, product: Record<strin
           >{{ $t('Add') }}</button>
         </form>
       </div>
-      <MealSection v-else :meals="productData" @tag-selected="assignProductLabel" display="list" />
+      <MealSection v-else :meals="productData" @tag-selected="assignProductLabel" display="list" resource="ingredient" />
     </MealTemplate>
   </AppLayout>
 </template>

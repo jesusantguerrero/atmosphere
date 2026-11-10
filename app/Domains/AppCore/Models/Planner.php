@@ -41,6 +41,7 @@ class Planner extends Model
         'date',
         'end_date',
         'frequency',
+        'frequency_interval',
         'automatic',
         'is_liked',
         'status',
@@ -56,6 +57,7 @@ class Planner extends Model
         'date' => 'date',
         'end_date' => 'date',
         'total' => 'decimal:2',
+        'frequency_interval' => 'integer',
     ];
 
     /**

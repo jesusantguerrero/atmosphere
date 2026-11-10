@@ -118,7 +118,11 @@ const createBudget = () => {
             : []
         parsed.members = JSON.stringify(names)
         return parsed
-    }).post('/onboarding')
+    }).post('/onboarding', {
+        // Field errors belong to the space step (name, currency…): go back
+        // there so the user sees what to fix instead of a button that did nothing.
+        onError: () => { step.value = 0 },
+    })
 }
 </script>
 
@@ -157,6 +161,17 @@ const createBudget = () => {
                             {{ isLast ? $t('Create Space') : $t('Next') }}
                         </LogerButton>
                     </div>
+                </div>
+
+                <div
+                    v-if="formData.hasErrors"
+                    class="px-4 py-3 mb-6 text-sm text-red-700 border border-red-200 rounded-md bg-red-50 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800"
+                    role="alert"
+                >
+                    <p class="font-bold">{{ $t('We could not create your space') }}</p>
+                    <ul class="mt-1 list-disc list-inside">
+                        <li v-for="(message, field) in formData.errors" :key="field">{{ message }}</li>
+                    </ul>
                 </div>
 
                 <!-- Step: space basics -->

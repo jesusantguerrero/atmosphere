@@ -20,6 +20,14 @@ const props = defineProps({
     endpoint: {
         type: String,
         default: "/financial/import"
+    },
+    progress: {
+        type: Number,
+        default: null
+    },
+    error: {
+        type: String,
+        default: ""
     }
 })
 const emit = defineEmits(['uploaded', 'error', 'canceled', 'update:file'])
@@ -50,7 +58,7 @@ const filePlaceholderText = computed(() => {
 
 const progressStyle = computed(() => {
     return {
-        width: `${formData.progress?.percentage || 0 }%` || '0px'
+        width: `${props.progress ?? formData.progress?.percentage ?? 0}%`
     }
 })
 
@@ -116,7 +124,7 @@ defineExpose({
             </div>
         </div>
         <div class="absolute z-10 flex w-full h-full bg-primary/30" :style="progressStyle" />
-        <small v-if="formData.hasErrors" class="text-red-300">  {{ formData.errors.file }}</small>
+        <small v-if="error || formData.hasErrors" class="relative z-30 mb-2 text-sm font-semibold text-red-500" role="alert">{{ error || formData.errors.file }}</small>
     </div>
 </template>
 

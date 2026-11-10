@@ -44,6 +44,8 @@ class UtilitiesIndexTest extends TestCase
                 ->has('utilities.0.days_until')
                 ->has('utilities.0.due_at')
                 ->has('utilities.0.is_overdue')
+                ->where('utilities.0.occurrence.name', 'Water Bill')
+                ->where('utilities.0.occurrence.type', Occurrence::TYPE_UTILITY)
             );
     }
 

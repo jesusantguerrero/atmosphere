@@ -1152,5 +1152,10 @@
     "Payment dismissed for this month": "Payment dismissed for this month",
     "Overspent filter": "Overspent",
     "categories in the red": "categories in the red",
-    "You assigned too much": "You assigned too much"
+    "You assigned too much": "You assigned too much",
+    "weeks": "weeks",
+    "Repeat every": "Repeat every",
+    "Every {count} days": "Every {count} days",
+    "Every {count} weeks": "Every {count} weeks",
+    "Every {count} months": "Every {count} months"
 }

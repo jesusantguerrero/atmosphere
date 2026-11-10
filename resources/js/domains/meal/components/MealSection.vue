@@ -16,8 +16,10 @@
         meals: Meal[];
         selected: Meal[]
         display: "grid" | "list"
+        resource?: "meal" | "ingredient"
     }>(), {
-        display: "grid"
+        display: "grid",
+        resource: "meal"
     });
 
     const isSelected = (meal: Meal) => {
@@ -29,11 +31,20 @@
         id: 0
     });
 
-    const deleteResource = async (meal: any) => {
-        const isConfirmed = await ElMessageBox.confirm(t("Are you sure to delete this meal?"));
+    const deleteResource = async (item: Meal) => {
+        const isIngredient = props.resource == "ingredient";
+        const isConfirmed = await ElMessageBox.confirm(
+            t(isIngredient ? "Are you sure to delete this ingredient?" : "Are you sure to delete this meal?")
+        ).catch(() => false);
         if (!isConfirmed) return
 
-        deleteForm.delete(route('meals.destroy', { meal }))
+        deleteForm.id = item.id;
+        deleteForm.delete(isIngredient
+            ? route('ingredients.destroy', { ingredient: item.id })
+            : route('meals.destroy', { meal: item.id }), {
+            preserveScroll: true,
+            onFinish: () => { deleteForm.id = 0 }
+        })
     }
 
     const MealItemComponent = computed(() => {
@@ -54,6 +65,7 @@
             :key="meal.id"
             compact
             :class="{'bg-primary-300 text-white': isSelected(meal)}"
+            :deleting="deleteForm.processing && deleteForm.id == meal.id"
             @toggle-like="$emit('toggle-like', meal)"
             @click="$emit('click', meal)"
             @tag-selected="$emit('tag-selected', ...$event)"
