@@ -26,7 +26,19 @@ class StatementImportService
      */
     public function import(UploadedFile $file, Account $account, User $user): array
     {
-        $rows = $this->rows($file);
+        return $this->importRows($this->rows($file), $account, $user);
+    }
+
+    /**
+     * Import rows already read from a statement (by the file parsers or by an
+     * assistant that read the PDF), with the same card-payment detection and
+     * duplicate checks as a file upload.
+     *
+     * @param  array<int, array{date: string, reference: string, description: string, debit: float, credit: float, balance?: float, currency?: string}>  $rows
+     * @return array{found: int, imported: int, skipped: int}
+     */
+    public function importRows(array $rows, Account $account, User $user): array
+    {
         $session = ['team_id' => $user->current_team_id, 'user_id' => $user->id];
         $transactions = new TransactionService;
         $imported = 0;

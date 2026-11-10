@@ -15,7 +15,7 @@ const props = defineProps<{
 // so both are native form posts: an Inertia visit would follow it as XHR and fail.
 const scopeLabels: Record<string, string> = {
     "mcp:read": "View your household finances",
-    "mcp:write": "Record transactions and mark payments as paid",
+    "mcp:write": "Record transactions, import statements and planner items, and mark payments as paid",
 };
 </script>
 

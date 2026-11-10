@@ -62,7 +62,7 @@ class LogerMcpServerTest extends TestCase
             ->assertJsonPath('result.serverInfo.name', 'Loger');
         $this->postJson('/mcp', $this->rpc('tools/list'))
             ->assertOk()
-            ->assertJsonCount(7, 'result.tools');
+            ->assertJsonCount(9, 'result.tools');
     }
 
     public function test_read_tools_answer_with_this_households_data(): void
