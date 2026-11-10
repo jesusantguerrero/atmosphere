@@ -7,6 +7,7 @@ use App\Domains\Automation\Models\Automation;
 use App\Domains\Integration\Models\Integration;
 use App\Domains\Integration\Services\GoogleService;
 use App\Exceptions\TransactionInProgressException;
+use App\Models\ProcessedEmail;
 use Exception;
 use Google\Service\Gmail as ServiceGmail;
 use Illuminate\Support\Facades\Log;
@@ -109,62 +110,67 @@ class GmailReceived implements AutomationActionContract
     }
 
     /**
-     * Catch-up sync (the «Sync now» button): every bank email since `$since`,
-     * all pages, older gaps included. Emails already imported are skipped by
-     * ProcessedEmail downstream. Afterwards the minute check carries on from the
-     * newest email seen.
+     * One short step of the catch-up sync (the «Sync now» button): one page of
+     * bank emails since `$since`. Emails already imported are skipped before
+     * downloading them. Call again with the returned page token until `done`.
+     * When done, the minute check carries on from the newest email seen.
      *
-     * @return array{checked: int, processed: int, pages: int}
+     * @param  array<string, mixed>|null  $latest  newest email seen in previous steps
+     * @return array{checked: int, processed: int, next_page_token: ?string, done: bool, latest: array<string, mixed>|null}
      */
-    public static function sync(Automation $automation, string $since, int $maxPages = 20): array
+    public static function syncChunk(Automation $automation, string $since, ?string $pageToken = null, ?array $latest = null, int $pageSize = 10): array
     {
         $service = self::connect($automation);
         if (! $service) {
             throw new \RuntimeException('Gmail is not connected for this automation.');
         }
 
-        $query = trim(self::query($automation->triggerTask).' after:'.str_replace('-', '/', $since));
-        $track = json_decode($automation->track, true);
-        $latestMailData = is_array($track) && isset($track['historyId']) ? $track : null;
-        unset($latestMailData['pageToken']);
+        $params = ['maxResults' => $pageSize, 'q' => trim(self::query($automation->triggerTask).' after:'.str_replace('-', '/', $since))];
+        if ($pageToken) {
+            $params['pageToken'] = $pageToken;
+        }
+        $results = $service->users_threads->listUsersThreads('me', $params);
         $checked = 0;
         $processed = 0;
-        $pages = 0;
-        $pageToken = null;
 
-        do {
-            $params = ['maxResults' => 50, 'q' => $query];
-            if ($pageToken) {
-                $params['pageToken'] = $pageToken;
-            }
-            $results = $service->users_threads->listUsersThreads('me', $params);
-            $pages++;
-
-            foreach ($results->getThreads() ?? [] as $thread) {
-                foreach ($service->users_threads->get('me', $thread->id, ['format' => 'METADATA'])->getMessages() as $message) {
-                    $checked++;
-                    $mail = self::processMessage($automation, $service, $message);
-                    if ($mail === null) {
-                        continue;
-                    }
+        foreach ($results->getThreads() ?? [] as $thread) {
+            foreach ($service->users_threads->get('me', $thread->id, ['format' => 'METADATA'])->getMessages() as $message) {
+                $checked++;
+                if ($latest === null || $message->getHistoryId() > ($latest['historyId'] ?? 0)) {
+                    $latest = ['id' => $message->id, 'threadId' => $message->threadId, 'historyId' => $message->historyId];
+                }
+                if (ProcessedEmail::wasProcessed((int) $automation->team_id, (string) $message->id)) {
+                    continue;
+                }
+                if (self::processMessage($automation, $service, $message) !== null) {
                     $processed++;
-                    if ($latestMailData === null || $message->getHistoryId() > ($latestMailData['historyId'] ?? 0)) {
-                        $latestMailData = $mail;
-                    }
                 }
             }
-
-            $pageToken = $results->getNextPageToken();
-        } while ($pageToken && $pages < $maxPages);
-
-        // Leave any half-done backfill behind and resume the minute check from the newest email.
-        if ($latestMailData) {
-            $automation->track = json_encode($latestMailData);
-            $automation->save();
         }
-        Integration::find($automation->integration_id)?->markSynced();
 
-        return ['checked' => $checked, 'processed' => $processed, 'pages' => $pages];
+        $next = $results->getNextPageToken();
+        if (! $next) {
+            // Leave any half-done backfill behind and resume the minute check from the newest email.
+            $track = json_decode($automation->track, true);
+            if ($latest && (! is_array($track) || ($latest['historyId'] ?? 0) >= ($track['historyId'] ?? 0))) {
+                $automation->track = json_encode($latest);
+                $automation->save();
+            }
+            Integration::find($automation->integration_id)?->markSynced();
+        }
+
+        return ['checked' => $checked, 'processed' => $processed, 'next_page_token' => $next, 'done' => ! $next, 'latest' => $latest];
+    }
+
+    /**
+     * Instance entry point for syncChunk(), so callers can swap it in tests.
+     *
+     * @param  array<string, mixed>|null  $latest
+     * @return array{checked: int, processed: int, next_page_token: ?string, done: bool, latest: array<string, mixed>|null}
+     */
+    public function syncStep(Automation $automation, string $since, ?string $pageToken = null, ?array $latest = null): array
+    {
+        return self::syncChunk($automation, $since, $pageToken, $latest);
     }
 
     /**
