@@ -60,19 +60,29 @@ class ListTransactionsTool extends Tool
             'page' => $page->currentPage(),
             'last_page' => $page->lastPage(),
             'total' => $page->total(),
-            'items' => collect($page->items())->map(fn (Transaction $transaction) => [
-                'id' => $transaction->id,
-                'date' => substr((string) $transaction->date, 0, 10),
-                'description' => $transaction->description,
-                'payee' => $transaction->payee?->name,
-                'category' => $transaction->category?->name,
-                'account' => $transaction->account?->name,
-                'total' => round((float) (string) $transaction->total, 2),
-                'direction' => $transaction->direction === Transaction::DIRECTION_DEBIT ? 'income' : ($transaction->direction === Transaction::DIRECTION_CREDIT ? 'expense' : 'entry'),
-                'currency_code' => $transaction->currency_code,
-                'status' => $transaction->status,
-            ])->values(),
+            'items' => collect($page->items())->map(fn (Transaction $transaction) => self::present($transaction))->values(),
         ]);
+    }
+
+    /**
+     * The shape the MCP tools use to show a transaction.
+     *
+     * @return array<string, mixed>
+     */
+    public static function present(Transaction $transaction): array
+    {
+        return [
+            'id' => $transaction->id,
+            'date' => substr((string) $transaction->date, 0, 10),
+            'description' => $transaction->description,
+            'payee' => $transaction->payee?->name,
+            'category' => $transaction->category?->name,
+            'account' => $transaction->account?->name,
+            'total' => round((float) (string) $transaction->total, 2),
+            'direction' => $transaction->direction === Transaction::DIRECTION_DEBIT ? 'income' : ($transaction->direction === Transaction::DIRECTION_CREDIT ? 'expense' : 'entry'),
+            'currency_code' => $transaction->currency_code,
+            'status' => $transaction->status,
+        ];
     }
 
     /**
