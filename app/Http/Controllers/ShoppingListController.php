@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\ShoppingListItemUpdated;
+use App\Http\Requests\SharedShoppingCategoryRequest;
 use App\Http\Requests\ShoppingListReviewRequest;
 use App\Http\Requests\ShoppingSessionRequest;
 use App\Services\ShoppingListReviewService;
@@ -14,6 +15,7 @@ use Illuminate\Support\Str;
 use Inertia\Response;
 use Modules\Plan\Entities\Plan;
 use Modules\Plan\Entities\PlanItem;
+use Modules\Plan\Entities\PlanStage;
 use Modules\Plan\Entities\PlanTypes;
 use Modules\Plan\Services\PlanService;
 use Symfony\Component\Mercure\Exception\RuntimeException as MercureException;
@@ -194,6 +196,54 @@ class ShoppingListController extends Controller
      * (-, *, and similar) become items; other non-empty lines become category
      * headers; a leading cart-emoji line (or the `name` field) sets the name.
      */
+    /** Rename a category (stage) of a list. */
+    public function renameStage(Request $request, Plan $plan, PlanStage $stage): JsonResponse
+    {
+        $this->guard($request, $plan);
+        abort_if((int) $stage->plan_id !== (int) $plan->id, 404);
+
+        $data = $request->validate(['name' => ['required', 'string', 'max:120']]);
+        $stage->update(['name' => trim($data['name'])]);
+
+        return response()->json(['id' => $stage->id, 'name' => $stage->name]);
+    }
+
+    /** Delete a category; its items move to the first remaining one. */
+    public function deleteStage(Request $request, Plan $plan, PlanStage $stage): JsonResponse
+    {
+        $this->guard($request, $plan);
+        abort_if((int) $stage->plan_id !== (int) $plan->id, 404);
+
+        $fallback = $plan->stages()->where('id', '!=', $stage->id)->orderBy('order')->first();
+        abort_unless($fallback, 422, __('A list needs at least one category.'));
+
+        DB::transaction(function () use ($stage, $fallback) {
+            PlanItem::where('stage_id', $stage->id)->update(['stage_id' => $fallback->id]);
+            $stage->delete();
+        });
+
+        return response()->json(['deleted' => true, 'moved_to' => $fallback->id]);
+    }
+
+    /** Move an item to another category of the same list, optionally saving its quantity and note. */
+    public function moveItemCategory(SharedShoppingCategoryRequest $request, Plan $plan, PlanItem $item, ShoppingListReviewService $reviews): JsonResponse
+    {
+        $this->guard($request, $plan);
+        $this->ensureItemBelongsTo($plan, $item);
+
+        $stage = $plan->stages()->whereKey($request->validated('stage_id'))->first();
+        abort_unless($stage, 422, __('Choose a category from this list.'));
+        if ((int) $item->stage_id !== (int) $stage->id) {
+            $item->update(['stage_id' => $stage->id, 'order' => ((int) $stage->items()->max('order')) + 1]);
+        }
+        if ($request->hasAny(['quantity', 'note'])) {
+            $reviews->saveItemDetails($plan, $item, (string) $request->validated('quantity', ''), (string) $request->validated('note', ''));
+        }
+        $this->notifyChange($request, $plan, $item->fresh(), 'updated');
+
+        return response()->json(['plan' => $this->planPayload($plan->fresh())]);
+    }
+
     public function import(Request $request, PlanService $planService): JsonResponse
     {
         $data = $request->validate([

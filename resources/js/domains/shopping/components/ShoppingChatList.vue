@@ -824,8 +824,9 @@ const commitRename = async (stage: Stage) => {
         await axios.patch(`${props.apiBase}/stages/${stage.id}`, { name });
 
         stage.name = name;
+        saveError.value = "";
     } catch {
-        // silent
+        saveError.value = "No se pudo renombrar la categoría. Inténtalo otra vez.";
     }
 };
 
@@ -844,8 +845,11 @@ const deleteCategory = async (stage: Stage) => {
         if (fallback) fallback.items.push(...stage.items);
 
         stages.value = stages.value.filter((s) => s.id !== stage.id);
-    } catch {
-        // silent
+        saveError.value = "";
+    } catch (error: any) {
+        saveError.value = error?.response?.status === 422
+            ? "Una lista necesita al menos una categoría."
+            : "No se pudo eliminar la categoría. Inténtalo otra vez.";
     }
 };
 

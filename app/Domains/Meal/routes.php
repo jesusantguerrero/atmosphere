@@ -32,6 +32,9 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     Route::post('/shopping/{plan}/review/complete', [ShoppingListController::class, 'completeReview'])->name('shopping.review.complete');
     Route::post('/shopping/{plan}/items', [ShoppingListController::class, 'addItem'])->name('shopping.items.add');
     Route::post('/shopping/{plan}/stages', [ShoppingListController::class, 'addStage'])->name('shopping.stages.add');
+    Route::patch('/shopping/{plan}/stages/{stage}', [ShoppingListController::class, 'renameStage'])->name('shopping.stages.rename');
+    Route::delete('/shopping/{plan}/stages/{stage}', [ShoppingListController::class, 'deleteStage'])->name('shopping.stages.delete');
+    Route::patch('/shopping/{plan}/items/{item}/category', [ShoppingListController::class, 'moveItemCategory'])->name('shopping.items.category');
     Route::put('/shopping/{plan}', [ShoppingListController::class, 'renameList'])->name('shopping.rename');
     Route::delete('/shopping/{plan}', [ShoppingListController::class, 'deleteList'])->name('shopping.delete');
     Route::post('/shopping/{plan}/items/{item}/cycle', [ShoppingListController::class, 'cycleItem'])->name('shopping.items.cycle');
