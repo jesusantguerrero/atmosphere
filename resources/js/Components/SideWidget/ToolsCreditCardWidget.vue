@@ -307,7 +307,7 @@ onMounted(fetchSummary);
 
         <footer class="pt-3 mt-2 border-t border-base shrink-0">
             <Link
-                href="/finance"
+                href="/finance/accounts"
                 class="block text-center text-xs text-primary hover:underline"
             >
                 {{ $t('Open accounts') }} →

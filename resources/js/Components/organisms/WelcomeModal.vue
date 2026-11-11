@@ -48,7 +48,7 @@ const allModuleCards: ModuleCard[] = [
         icon: 'fas fa-dollar-sign',
         title: 'Finance',
         description: 'Track income, expenses, and manage your accounts with full transaction history.',
-        link: '/finance',
+        link: '/budgets',
         linkLabel: 'Go to Finance',
     },
     {

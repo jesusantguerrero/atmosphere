@@ -282,8 +282,6 @@ const budgetCsvExportUrl = computed(() => {
 <template>
   <AppLayout
     :title="sectionTitle"
-    @back="router.visit(route('finance'))"
-    :show-back-button="true"
   >
     <template #header>
       <FinanceSectionNav>

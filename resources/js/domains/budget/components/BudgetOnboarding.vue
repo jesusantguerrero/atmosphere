@@ -50,7 +50,7 @@ const completedSteps = computed(() => {
   return n;
 });
 
-const goToAccounts = () => router.visit('/finance');
+const goToAccounts = () => router.visit('/finance/accounts');
 const goToNewIncome = () => router.visit('/finance/transactions?new=income');
 const scrollToTable = () => {
   const el = document.querySelector('[data-budget-table]');

@@ -133,7 +133,7 @@ const navigateToAccount = (account: IAccount) => {
                     v-if="accounts?.length"
                     type="button"
                     class="w-full text-center text-xs font-semibold text-primary hover:underline py-2.5"
-                    @click="router.visit('/finance')"
+                    @click="router.visit('/finance/accounts')"
                 >
                     {{ $t('View all') }} →
                 </button>

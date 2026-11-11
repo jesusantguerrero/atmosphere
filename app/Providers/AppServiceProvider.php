@@ -6,9 +6,9 @@ use App\Concerns\AppMenu;
 use App\Domains\AppCore\Facades\Feature;
 use App\Domains\AppCore\Services\FeatureFlagService;
 use App\Domains\Housing\Actions\RegisterOccurrence;
+use App\Domains\LogerProfile\Models\LogerProfile;
 use App\Jobs\RunTeamChecks;
 use App\Models\Account;
-use App\Domains\LogerProfile\Models\LogerProfile;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Contracts\Foundation\Application;
@@ -77,7 +77,7 @@ class AppServiceProvider extends ServiceProvider
         // Spanish teams. attributes(callable) defers translation until the
         // dashboard controller reads the steps, when the team's locale is set.
         Onboard::addStep('Add your accounts')
-            ->link('/finance?panel=accounts')
+            ->link('/finance/accounts')
             ->attributes(fn () => [
                 'title' => __('Add your accounts'),
                 'cta' => __('Add accounts'),

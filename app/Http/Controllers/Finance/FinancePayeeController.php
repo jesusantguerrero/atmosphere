@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Finance;
 
-use App\Models\Setting;
-use Illuminate\Support\Facades\Gate;
-use Freesgen\Atmosphere\Http\Querify;
-use Insane\Journal\Models\Core\Payee;
-use Freesgen\Atmosphere\Http\InertiaController;
 use App\Domains\Transaction\Services\ReportService;
+use App\Models\Setting;
+use Freesgen\Atmosphere\Http\InertiaController;
+use Freesgen\Atmosphere\Http\Querify;
+use Illuminate\Support\Facades\Gate;
+use Insane\Journal\Models\Core\Payee;
 
 class FinancePayeeController extends InertiaController
 {
@@ -40,7 +40,7 @@ class FinancePayeeController extends InertiaController
         $timeZone = $settings['team_timezone'] ?? config('app.timezone');
 
         if (! $response->allowed()) {
-            return redirect(route('finance'));
+            return redirect(route('budgets.index'));
         }
 
         $filters = isset($queryParams['filter']) ? $queryParams['filter'] : [];
