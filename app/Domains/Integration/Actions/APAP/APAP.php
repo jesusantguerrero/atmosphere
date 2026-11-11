@@ -8,6 +8,7 @@ use App\Domains\Automation\Models\AutomationTaskAction;
 use App\Domains\Integration\Actions\GmailReceived;
 use Exception;
 use Illuminate\Support\Facades\Log;
+use Insane\Journal\Models\Core\Transaction;
 use Symfony\Component\DomCrawler\Crawler;
 
 class APAP implements AutomationActionContract
@@ -130,6 +131,17 @@ class APAP implements AutomationActionContract
         } catch (Exception $e) {
             Log::error($e->getMessage(), [$nankCurrencyCode]);
         }
+    }
+
+    /**
+     * DEPOSIT when the email text says the money came in («Transferencia LBTR - Entrante»),
+     * null when it does not say so and the automation's default direction applies.
+     */
+    public static function parseDirection(string $text): ?string
+    {
+        $incoming = '/\b(entrante|recibid[oa]|acreditad[oa]|dep[oó]sito recibido|cr[eé]dito a su cuenta)\b/iu';
+
+        return preg_match($incoming, $text) ? Transaction::DIRECTION_DEBIT : null;
     }
 
     public static function parseTypes($type)

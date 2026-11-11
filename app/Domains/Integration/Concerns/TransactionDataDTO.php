@@ -44,6 +44,8 @@ class TransactionDataDTO extends Data
 
     public ?string $transactionType;
 
+    public ?string $direction;
+
     public function __construct($data)
     {
         $this->id = $data['id'];
@@ -61,6 +63,7 @@ class TransactionDataDTO extends Data
         $this->destinationProductName = $data['destinationProductName'] ?? null;
         $this->destinationProductCode = $data['destinationProductCode'] ?? null;
         $this->transactionType = $data['transactionType'] ?? null;
+        $this->direction = $data['direction'] ?? null;
     }
 
     /**
