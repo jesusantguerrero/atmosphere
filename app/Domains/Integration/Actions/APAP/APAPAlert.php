@@ -36,10 +36,13 @@ class APAPAlert implements MailToTransaction
         // Use regex to extract product name between "titular-" and "terminada"
         preg_match('/titular-(.*?)\s+terminada/', $productLine, $matches);
         $product = isset($matches[1]) ? trim($matches[1]) : '';
+        if ($product === '' && preg_match('/^Tu\s+(.*?)\s+terminada/iu', $productLine, $accountMatches)) {
+            $product = trim($accountMatches[1]);
+        }
 
         // Extract product code after "terminada en"
-        preg_match('/terminada en\s+(\d+)/', $productLine, $codeMatches);
-        $productCode = isset($codeMatches[1]) ? $codeMatches[1] : '';
+        preg_match('/terminada en\s+\D*?(\d+)/', $productLine, $codeMatches);
+        $productCode = isset($codeMatches[1]) ? substr($codeMatches[1], -4) : '';
 
         $tdValues = $body->filter('table td')->each(function (Crawler $node) {
             return $node->text();
@@ -54,12 +57,13 @@ class APAPAlert implements MailToTransaction
             'payee' => $tdValues[15],
             'category' => '',
             'categoryGroup' => '',
-            'description' => $product,
+            'description' => $product !== '' ? $product : $tdValues[15],
             'productCode' => $productCode,
             'productName' => $product,
             'amount' => $total * $type,
             'currencyCode' => APAP::parseCurrency($tdValues[11]) ?? 'DOP',
             'productBrand' => 'APAP',
+            'direction' => APAP::parseDirection($tdValues[15]),
         ]);
         // } catch (Exception $e) {
         //     Log::error($e->getMessage(), [$e]);

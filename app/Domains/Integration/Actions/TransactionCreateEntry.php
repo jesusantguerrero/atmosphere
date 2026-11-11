@@ -5,9 +5,12 @@ namespace App\Domains\Integration\Actions;
 use App\Domains\Automation\Concerns\AutomationActionContract;
 use App\Domains\Automation\Models\Automation;
 use App\Domains\Automation\Models\AutomationTaskAction;
+use App\Domains\Integration\Concerns\GenericPayee;
 use App\Domains\Integration\Concerns\TransactionDataDTO;
+use App\Domains\Integration\Services\BankAccountMatcher;
 use App\Domains\Transaction\Models\TransactionLine;
 use App\Domains\Transaction\Services\CreditCardPaymentDetector;
+use App\Domains\Transaction\Services\ImportedTransferPairer;
 use App\Domains\Transaction\Services\PayeeResolver;
 use App\Domains\Transaction\Services\TransactionService;
 use App\Helpers\FormulaHelper;
@@ -40,7 +43,11 @@ class TransactionCreateEntry implements AutomationActionContract
         $counterAccountId = null;
         $transactionCategoryId = null;
 
-        if ($payeeName = $payload['payee']) {
+        $payeeName = $payload['payee'] ?? null;
+        $accountHolderName = User::find($automation->user_id)?->name;
+        $hasMerchantPayee = $payeeName && ! GenericPayee::matches($payeeName, $accountHolderName);
+
+        if ($hasMerchantPayee) {
             $payee = PayeeResolver::resolve($automation, $payeeName ?? 'General Provider');
             $lastTransaction = TransactionLine::where([
                 'payee_id' => $payee->id,
@@ -51,13 +58,14 @@ class TransactionCreateEntry implements AutomationActionContract
             $counterAccountId = $payee->account_id;
         }
 
-        $description = FormulaHelper::parseFormula($taskData?->description, $payload);
+        $description = self::resolveDescription(FormulaHelper::parseFormula($taskData?->description, $payload), $payload);
 
         if ($payload['productCode'] ?? false) {
-            $account = Account::where('team_id', $automation->team_id)
-                ->where('number', $payload['productCode'])
-                ->whereRaw('name like ?', ['%'.$payload['productBrand'].'%'])
-                ->first();
+            $account = BankAccountMatcher::find(
+                $automation->team_id,
+                $payload['productCode'],
+                $payload['productBrand'] ?? null
+            );
 
             if ($account) {
                 $accountId = $account->id;
@@ -83,7 +91,7 @@ class TransactionCreateEntry implements AutomationActionContract
             'category_id' => $transactionCategoryId ?? null,
             'description' => $description,
             'reference' => $payload['messageId'] ?? ("{$payload['id']}:{$description}:{$date}") ?? null,
-            'direction' => FormulaHelper::parseFormula($taskData?->direction, $payload),
+            'direction' => self::resolveDirection($payload, FormulaHelper::parseFormula($taskData?->direction, $payload)),
             'total' => FormulaHelper::parseFormula($taskData?->total, $payload),
             'items' => [],
             'meta_data' => json_encode([
@@ -176,6 +184,13 @@ class TransactionCreateEntry implements AutomationActionContract
             return $transaction;
         }
 
+        if ($transaction = ImportedTransferPairer::pair($transactionData)) {
+            self::markEmailProcessed($automation, $payload, $transaction, 'duplicate');
+            self::say("linked: paired with the opposite movement as transfer #{$transaction->id}");
+
+            return $transaction;
+        }
+
         $transaction = $lookalike
             ? self::createAlongside(collect($transactionData)->except(['items', 'payee_name'])->all())
             : Transaction::createTransaction(collect($transactionData)->except(['items', 'payee_name'])->all());
@@ -227,6 +242,32 @@ class TransactionCreateEntry implements AutomationActionContract
     }
 
     /**
+     * The parser's direction wins over the automation's fixed one, which only
+     * knows outgoing money; without it an incoming transfer became an expense.
+     */
+    private static function resolveDirection(mixed $payload, mixed $configuredDirection): mixed
+    {
+        $parsed = $payload['direction'] ?? null;
+
+        return in_array($parsed, [Transaction::DIRECTION_DEBIT, Transaction::DIRECTION_CREDIT], true) ? $parsed : $configuredDirection;
+    }
+
+    /**
+     * A description formula over a missing field collapses to "0" or an empty
+     * string; the payee text says more than that.
+     */
+    private static function resolveDescription(mixed $description, mixed $payload): string
+    {
+        $description = trim((string) $description);
+
+        if ($description === '' || $description === '0') {
+            return trim((string) ($payload['payee'] ?? ''));
+        }
+
+        return $description;
+    }
+
+    /**
      * Return the configured cash account when this email is a cash withdrawal
      * that should be routed there as a transfer, or null to keep the default
      * expense behavior.
@@ -266,19 +307,7 @@ class TransactionCreateEntry implements AutomationActionContract
             return null;
         }
 
-        $destinationAccount = Account::where('team_id', $teamId)
-            ->where('number', $destinationProductCode)
-            ->when(
-                $payload['productBrand'] ?? null,
-                fn ($query, $brand) => $query->whereRaw('name like ?', ['%'.$brand.'%'])
-            )
-            ->first();
-
-        if (! $destinationAccount || (int) $destinationAccount->id === (int) $sourceAccountId) {
-            return null;
-        }
-
-        return $destinationAccount;
+        return BankAccountMatcher::find($teamId, $destinationProductCode, $payload['productBrand'] ?? null, $sourceAccountId);
     }
 
     /**
