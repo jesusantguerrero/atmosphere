@@ -8,6 +8,8 @@ const props = defineProps<{
     budgets?: any[] | Record<string, any>;
     readyToAssign?: { balance?: number } | null;
     uncategorizedTotals?: { currency_code: string; total: number | string; count: number }[];
+    /** Rendered inside the Ready-to-assign hero: no box of its own. */
+    embedded?: boolean;
 }>();
 
 const baseCurrency = computed(() => (window as any)?.logerAppSettings?.currency_code || 'DOP');
@@ -71,7 +73,7 @@ const showCalculation = ref(false);
 <template>
     <div
         v-if="rows.length || uncategorizedTotals?.length"
-        class="px-4 py-2 mt-2 rounded-lg border border-body-1/15 bg-base-lvl-2"
+        :class="embedded ? '' : 'px-4 py-2 mt-2 rounded-lg border border-body-1/15 bg-base-lvl-2'"
     >
         <div v-if="!hasGap" class="flex items-center gap-2 text-xs font-medium text-success">
             <i class="fa fa-check-circle" aria-hidden="true" />
