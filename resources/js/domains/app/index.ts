@@ -61,7 +61,7 @@ export const useAppMenu = (t: any, modules: any[]) => {
             icon: 'fas fa-dollar-sign',
             label: t('Finance'),
             name: 'finance',
-            to: '/finance',
+            to: '/budgets',
             as: Link,
             isActiveFunction(url: string, currentPath: string) {
                return /finance|budgets/.test(currentPath)

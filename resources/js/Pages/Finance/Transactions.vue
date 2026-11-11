@@ -61,7 +61,7 @@ const handleBackButton = () => {
     showAllTransactions.value = false;
     return;
   }
-  return router.visit(route("finance"));
+  return router.visit(route("budgets.index"));
 };
 
 const isLoading = ref(false);

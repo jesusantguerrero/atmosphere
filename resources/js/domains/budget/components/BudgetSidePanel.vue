@@ -76,6 +76,13 @@ const totals = computed(() => {
               </section>
             </AtDropdownLink>
 
+            <AtDropdownLink href="/budget-funds" as="a">
+              <section class="flex items-center w-full">
+                <IMdiShieldOutline class="mr-2" />
+                <span>{{ $t('Emergency fund') }}</span>
+              </section>
+            </AtDropdownLink>
+
             <AtDropdownLink :href="budgetCsvExportUrl" target="_blank" as="a">
               <section class="flex items-center w-full">
                 <IMdiDownload class="mr-2" />

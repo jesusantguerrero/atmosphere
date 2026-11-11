@@ -12,7 +12,6 @@ use App\Http\Controllers\Api\RecipeApiController;
 use App\Http\Controllers\Api\TimezonesApiController;
 use App\Http\Controllers\ConnectedAppController;
 use App\Http\Controllers\Finance\FinanceAccountController;
-use App\Http\Controllers\Finance\FinanceController;
 use App\Http\Controllers\Finance\FinanceLinesController;
 use App\Http\Controllers\Finance\FinanceTransactionController;
 use App\Http\Controllers\Finance\FinanceTrendController;
@@ -277,10 +276,10 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     /**************************************************************************************
       *                               Finance Section
      ***************************************************************************************/
-    // Finance dashboard related routes
-    Route::controller(FinanceController::class)->group(function () {
-        Route::get('/finance', 'index')->name('finance.overview');
-    });
+    // Finance opens straight on the budget; the query string carries over for old links.
+    Route::get('/finance', function (Request $request) {
+        return redirect()->route('budgets.index', $request->query());
+    })->name('finance.overview');
 
     // Accounts
     Route::resource('/finance/accounts', FinanceAccountController::class, [

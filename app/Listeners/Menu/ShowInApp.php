@@ -20,7 +20,7 @@ class ShowInApp
         // Meal
         $menu->add('Meals', route('meals.overview'));
         // Finance
-        $menu->add('Finance', route('finance.overview'));
+        $menu->add('Finance', route('budgets.index'));
         // Housing
         $menu->add('Housing', route('housing.overview'));
         // Loger Profiles
