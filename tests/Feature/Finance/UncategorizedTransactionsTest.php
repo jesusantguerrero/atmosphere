@@ -63,4 +63,32 @@ class UncategorizedTransactionsTest extends TestCase
             ->where('uncategorizedTotals.0.total', fn ($total) => (float) $total === 200.0)
         );
     }
+
+    public function test_expenses_saved_with_category_zero_count_as_uncategorized(): void
+    {
+        $user = User::factory()->withPersonalTeam()->create();
+        $user->forceFill(['current_team_id' => $user->ownedTeams()->first()->id])->save();
+        $transaction = new Transaction;
+        $transaction->forceFill([
+            'team_id' => $user->current_team_id,
+            'user_id' => $user->id,
+            'account_id' => 1001,
+            'date' => '2026-03-10',
+            'currency_code' => 'DOP',
+            'category_id' => 0,
+            'description' => 'Ret. VISA',
+            'direction' => Transaction::DIRECTION_CREDIT,
+            'total' => 7700,
+            'status' => Transaction::STATUS_VERIFIED,
+        ])->save();
+
+        $response = $this->actingAs($user)->getJson('/api/finance/transactions?filter[uncategorized]=1&filter[currency_code]=DOP');
+        $response->assertOk();
+        $this->assertSame([$transaction->id], array_column($response->json(), 'id'));
+
+        $this->get('/budgets')->assertInertia(fn ($page) => $page
+            ->where('uncategorizedTotals.0.count', 1)
+            ->where('uncategorizedTotals.0.total', fn ($total) => (float) $total === 7700.0)
+        );
+    }
 }

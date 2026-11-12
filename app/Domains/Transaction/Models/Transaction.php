@@ -28,7 +28,10 @@ class Transaction extends CoreTransaction
 
     public function scopeUncategorizedExpenses(Builder $query): Builder
     {
-        return $query->whereNull('transactions.category_id')
+        return $query->where(function ($query) {
+            // Older imports saved "no category" as 0 instead of null.
+            $query->whereNull('transactions.category_id')->orWhere('transactions.category_id', 0);
+        })
             ->where('transactions.direction', self::DIRECTION_CREDIT)
             ->where('transactions.status', self::STATUS_VERIFIED)
             ->where(function ($query) {
