@@ -36,7 +36,7 @@ class PassportServiceProvider extends ServiceProvider
             'authToken' => $parameters['authToken'],
             'state' => $parameters['request']->query('state'),
             'csrfToken' => csrf_token(),
-            'approveUrl' => route('passport.authorizations.approve'),
+            'approveUrl' => route('mcp.oauth.approve'),
             'denyUrl' => route('passport.authorizations.deny'),
         ]));
     }
