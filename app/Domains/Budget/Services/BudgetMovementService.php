@@ -51,7 +51,13 @@ class BudgetMovementService
         $destinationBalance = self::getBalanceOfCategory($destinationId, $data->date);
 
         $sourceCategoryBalance = self::getBalanceOfCategory($sourceId, $data->date); // 2000
-        $amount = $data->amount > $sourceCategoryBalance->available && ! $fromReadyToAssign ? $sourceCategoryBalance->available : $data->amount; // 2096 > 2000 ? 2000 : 2096
+        // A month that was never opened has no row, so nothing is available yet.
+        $sourceAvailable = (float) ($sourceCategoryBalance->available ?? 0);
+        $amount = $data->amount > $sourceAvailable && ! $fromReadyToAssign ? $sourceAvailable : $data->amount; // 2096 > 2000 ? 2000 : 2096
+
+        if ((float) $amount === 0.0) {
+            return null;
+        }
 
         $isPositiveTransaction = $amount > 0;
 
