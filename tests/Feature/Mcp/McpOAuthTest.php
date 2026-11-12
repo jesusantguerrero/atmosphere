@@ -70,7 +70,44 @@ class McpOAuthTest extends TestCase
                 ->where('client.name', 'Claude Code')
                 ->where('scopes', [PassportServiceProvider::READ_SCOPE, PassportServiceProvider::WRITE_SCOPE])
                 ->has('authToken')
-                ->where('approveUrl', route('passport.authorizations.approve')));
+                ->where('approveUrl', route('mcp.oauth.approve')));
+    }
+
+    public function test_approving_shows_the_connected_screen_before_returning_to_the_app(): void
+    {
+        $user = $this->makeUser();
+        $client = $this->publicClient();
+
+        $authToken = $this->actingAs($user)->get($this->authorizeUrl($client))
+            ->viewData('page')['props']['authToken'];
+
+        $this->actingAs($user)->post(route('mcp.oauth.approve'), [
+            'auth_token' => $authToken,
+            'client_id' => $client->getKey(),
+            'state' => 'state-123',
+        ])
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Auth/OAuthConnected')
+                ->where('client.name', 'Claude Code')
+                ->where('redirectUrl', fn (string $url) => str_starts_with($url, 'http://localhost:33418/callback?code=')
+                    && str_contains($url, 'state=state-123')));
+    }
+
+    public function test_approving_with_a_stale_auth_token_does_not_claim_success(): void
+    {
+        $user = $this->makeUser();
+        $client = $this->publicClient();
+
+        $this->actingAs($user)->get($this->authorizeUrl($client));
+
+        $response = $this->actingAs($user)->post(route('mcp.oauth.approve'), [
+            'auth_token' => 'not-the-token',
+            'client_id' => $client->getKey(),
+        ]);
+
+        $this->assertNotSame(200, $response->getStatusCode());
+        $this->assertStringNotContainsString('Auth/OAuthConnected', (string) $response->getContent());
     }
 
     public function test_user_can_disconnect_an_app_but_not_someone_elses(): void

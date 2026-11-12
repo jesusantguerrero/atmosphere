@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Mcp\McpOAuthApproveController;
 use App\Http\Controllers\Mcp\McpOAuthMetadataController;
 use App\Http\Controllers\Mcp\McpOAuthRegisterController;
 use App\Mcp\Servers\LogerServer;
@@ -23,6 +24,9 @@ Route::get('/.well-known/oauth-authorization-server', [McpOAuthMetadataControlle
 Route::get('/.well-known/oauth-authorization-server/{path}', [McpOAuthMetadataController::class, 'authorizationServer'])
     ->where('path', '.*')
     ->name('mcp.oauth.authorization-server.nested');
+Route::post('/oauth/authorize/approve', [McpOAuthApproveController::class, 'approve'])
+    ->middleware(['web', 'auth'])
+    ->name('mcp.oauth.approve');
 Route::post('/oauth/register', McpOAuthRegisterController::class)
     ->middleware('throttle:10,1')
     ->name('mcp.oauth.register');
