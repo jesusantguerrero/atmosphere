@@ -41,6 +41,7 @@ class LogerNotification extends Notification
         'billing_cycle_cut_alert' => 'Credit card billing cycle',
         'account_overdraft_alert' => 'Account overdraft warning',
         'credit_card_renewal_alert' => 'Credit card renewal',
+        'weekly_digest' => 'Weekly summary',
     ];
 
     public function typeKey(): string
