@@ -26,13 +26,18 @@ class Transaction extends CoreTransaction
 
     const STATUS_PLANNED = 'planned';
 
-    public function scopeUncategorizedExpenses(Builder $query): Builder
+    /**
+     * Verified money in or out with no category and no internal counter account:
+     * it moves an account balance without touching the budget, so the budget
+     * stops matching the accounts. Income counts too (it belongs in Ready to Assign).
+     */
+    public function scopeUncategorized(Builder $query): Builder
     {
         return $query->where(function ($query) {
             // Older imports saved "no category" as 0 instead of null.
             $query->whereNull('transactions.category_id')->orWhere('transactions.category_id', 0);
         })
-            ->where('transactions.direction', self::DIRECTION_CREDIT)
+            ->whereIn('transactions.direction', [self::DIRECTION_CREDIT, self::DIRECTION_DEBIT])
             ->where('transactions.status', self::STATUS_VERIFIED)
             ->where(function ($query) {
                 $query->where('transactions.is_transfer', false)->orWhereNull('transactions.is_transfer');

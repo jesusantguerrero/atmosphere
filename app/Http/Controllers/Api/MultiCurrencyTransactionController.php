@@ -342,9 +342,9 @@ class MultiCurrencyTransactionController extends Controller
                     ->whereIn('label_resource.label_id', $validated['label_ids']));
             }
 
-            // Uncategorized expenses filter (same criteria as budget summary.uncategorized)
+            // Uncategorized filter (same criteria as budget summary.uncategorized)
             if (! empty($validated['uncategorized'])) {
-                $query->uncategorizedExpenses();
+                $query->uncategorized();
             }
 
             $limit = $validated['limit'] ?? 20;

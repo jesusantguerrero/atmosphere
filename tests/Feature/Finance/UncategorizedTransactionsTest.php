@@ -14,7 +14,7 @@ class UncategorizedTransactionsTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_uncategorized_filter_excludes_income_transfers_and_deleted_transactions(): void
+    public function test_uncategorized_filter_includes_income_and_excludes_transfers_and_deleted_transactions(): void
     {
         $user = User::factory()->withPersonalTeam()->create();
         $user->forceFill(['current_team_id' => $user->ownedTeams()->first()->id])->save();
@@ -50,17 +50,17 @@ class UncategorizedTransactionsTest extends TestCase
             'filter' => ['uncategorized' => 1, 'date' => '2026-10-01~2026-10-31', 'currency_code' => 'DOP'],
         ]));
         $response->assertOk();
-        $this->assertSame([$ids['expense']], array_column($response->json(), 'id'));
+        $this->assertEqualsCanonicalizing([$ids['expense'], $ids['income']], array_column($response->json(), 'id'));
 
         $allDates = $this->getJson('/api/finance/transactions?filter[uncategorized]=1&filter[currency_code]=DOP');
         $allDates->assertOk();
-        $this->assertEqualsCanonicalizing([$ids['expense'], $ids['older']], array_column($allDates->json(), 'id'));
-        $this->assertEquals(200, array_sum(array_column($allDates->json(), 'total')));
+        $this->assertEqualsCanonicalizing([$ids['expense'], $ids['older'], $ids['income']], array_column($allDates->json(), 'id'));
 
+        // Income nets against expenses: the total is what the budget is off by.
         $this->get('/budgets')->assertInertia(fn ($page) => $page
             ->where('uncategorizedTotals.0.currency_code', 'DOP')
-            ->where('uncategorizedTotals.0.count', 2)
-            ->where('uncategorizedTotals.0.total', fn ($total) => (float) $total === 200.0)
+            ->where('uncategorizedTotals.0.count', 3)
+            ->where('uncategorizedTotals.0.total', fn ($total) => (float) $total === 100.0)
         );
     }
 
@@ -90,5 +90,38 @@ class UncategorizedTransactionsTest extends TestCase
             ->where('uncategorizedTotals.0.count', 1)
             ->where('uncategorizedTotals.0.total', fn ($total) => (float) $total === 7700.0)
         );
+    }
+
+    public function test_income_without_a_category_is_listed_until_it_goes_to_ready_to_assign(): void
+    {
+        $user = User::factory()->withPersonalTeam()->create();
+        $user->forceFill(['current_team_id' => $user->ownedTeams()->first()->id])->save();
+        $income = new Transaction;
+        $income->forceFill([
+            'team_id' => $user->current_team_id,
+            'user_id' => $user->id,
+            'account_id' => 1001,
+            'date' => '2026-04-01',
+            'currency_code' => 'DOP',
+            'category_id' => null,
+            'description' => 'TRANSFERENCIA RECIBIDA DE RODRIGUEZ',
+            'direction' => Transaction::DIRECTION_DEBIT,
+            'total' => 50,
+            'status' => Transaction::STATUS_VERIFIED,
+        ])->save();
+
+        $this->actingAs($user)->getJson('/api/finance/transactions?filter[uncategorized]=1&filter[currency_code]=DOP')
+            ->assertOk()
+            ->assertJsonPath('0.id', $income->id);
+        $this->get('/budgets')->assertInertia(fn ($page) => $page
+            ->where('uncategorizedTotals.0.count', 1)
+            ->where('uncategorizedTotals.0.total', fn ($total) => (float) $total === -50.0)
+        );
+
+        $income->forceFill(['category_id' => 9999])->save();
+
+        $this->getJson('/api/finance/transactions?filter[uncategorized]=1&filter[currency_code]=DOP')
+            ->assertOk()
+            ->assertJsonCount(0);
     }
 }

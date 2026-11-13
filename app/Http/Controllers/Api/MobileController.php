@@ -391,11 +391,11 @@ class MobileController extends Controller
             ];
         }
 
-        // Uncategorized expenses (all dates, team-wide — not filtered by user_id because the
+        // Uncategorized money in or out (all dates, team-wide — not filtered by user_id because the
         // difference calculation uses account balances from all team members' transaction_lines).
-        $uncategorized = Transaction::query()->uncategorizedExpenses()
+        $uncategorized = Transaction::query()->uncategorized()
             ->where('transactions.team_id', $teamId)
-            ->selectRaw('currency_code, SUM(total) as total, COUNT(*) as count')
+            ->selectRaw('currency_code, SUM(CASE WHEN transactions.direction = ? THEN total ELSE -total END) as total, COUNT(*) as count', [Transaction::DIRECTION_CREDIT])
             ->groupBy('currency_code')
             ->get()
             ->map(fn ($row) => [

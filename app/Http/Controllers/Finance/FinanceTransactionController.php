@@ -121,7 +121,7 @@ class FinanceTransactionController extends InertiaController
                 ->where('anchor', 1)->orderBy('id')->limit(1), 'category_line_id');
 
             if (! empty($filters['uncategorized'])) {
-                $query->whereIn('transactions.id', Transaction::query()->uncategorizedExpenses()->select('transactions.id'));
+                $query->whereIn('transactions.id', Transaction::query()->uncategorized()->select('transactions.id'));
             }
         });
     }
