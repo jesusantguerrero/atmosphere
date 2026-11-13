@@ -359,10 +359,19 @@ class MobileController extends Controller
         // Cash in on-budget accounts by currency (exclude credit cards and resource accounts).
         // `balance` is a computed accessor (SUM of transaction_lines), not a DB column —
         // load via getByDetailTypes() which batch-precomputes balances, then filter in PHP.
+        // A past month reconciles against the balances it closed with (an account
+        // closed later still counted then); the current month uses live balances.
+        $monthEnd = Carbon::parse($month)->endOfMonth()->format('Y-m-d');
+        $closingBalances = $monthEnd < now()->format('Y-m-d')
+            ? $request->user()->currentTeam->balanceDetail($monthEnd)->pluck('balance', 'account_id')
+            : null;
         $cashByCurrency = Account::getByDetailTypes($teamId)
-            ->reject(fn (Account $a) => $a->closed_at || $a->credit_closing_day || $a->resource_type_id)
+            ->reject(fn (Account $a) => $a->credit_closing_day || $a->resource_type_id
+                || ($a->closed_at && ($closingBalances === null || $a->closed_at->format('Y-m-d') <= $monthEnd)))
             ->groupBy('currency_code')
-            ->map(fn ($group) => (float) $group->sum('balance'))
+            ->map(fn ($group) => (float) $group->sum(fn (Account $a) => $closingBalances === null
+                ? $a->balance
+                : (float) ($closingBalances[$a->id] ?? 0)))
             ->all();
 
         $allCurrencies = array_unique(array_merge(
