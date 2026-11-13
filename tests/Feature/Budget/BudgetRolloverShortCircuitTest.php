@@ -169,6 +169,21 @@ class BudgetRolloverShortCircuitTest extends TestCase
         $this->assertSame(25.0, $this->leftInMonth($team, $category, '2026-09-01'), 'the extra 5 outflow reached September');
     }
 
+    public function test_full_roll_rolls_every_month_even_when_the_carry_settles(): void
+    {
+        [$team, $user, $bank, $category] = $this->teamWithBankAndCategory();
+        $this->recordOutflow($team, $user, $bank, $category, '2026-06-15', 20);
+        app(BudgetRolloverService::class)->startFrom($team->id, '2026-06');
+        BudgetMonth::where(['team_id' => $team->id, 'category_id' => $category->id, 'month' => '2026-08-01'])
+            ->update(['available' => 999]);
+
+        $service = $this->recordingService();
+        $service->startFrom($team->id, '2026-06', full: true);
+
+        $this->assertSame(['2026-06-01', '2026-07-01', '2026-08-01', '2026-09-01'], $service->rolled);
+        $this->assertSame(30.0, (float) BudgetMonth::where(['team_id' => $team->id, 'category_id' => $category->id, 'month' => '2026-08-01'])->value('available'), 'the stale August row is recomputed');
+    }
+
     public function test_ready_to_assign_carry_is_part_of_the_settle_check(): void
     {
         [$team, $user, $bank, $category] = $this->teamWithBankAndCategory();

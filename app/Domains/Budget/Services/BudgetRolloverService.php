@@ -12,6 +12,7 @@ use Carbon\CarbonInterface;
 use Carbon\CarbonPeriod;
 use Exception;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Insane\Journal\Models\Core\Account;
@@ -69,7 +70,8 @@ class BudgetRolloverService
             }
             $available = $this->getAvailableInMonth($category, $month, $category->account_id ? null : $currentRows);
             $this->setMonthBudget($category, $month, $available, $nextRows);
-            if ($available < 0) {
+            // A card's payment category below zero means the card is in credit, not overspending.
+            if ($available < 0 && ! $category->account_id) {
                 $overspending += abs($available);
                 $overspendingCategories[] = $category->display_id;
             }
@@ -109,7 +111,7 @@ class BudgetRolloverService
             ->keyBy('category_id');
     }
 
-    /** @param  \Illuminate\Support\Collection|null  $rows  The month's rows of the team by category; a category missing from it has no row. */
+    /** @param  Collection|null  $rows  The month's rows of the team by category; a category missing from it has no row. */
     private function getAvailableInMonth($category, $month, $rows = null)
     {
         $activity = (new BudgetCategoryService($category))->getCategoryActivity($category, $month);
@@ -154,7 +156,7 @@ class BudgetRolloverService
         return $available;
     }
 
-    /** @param  \Illuminate\Support\Collection|null  $rows  The next month's rows of the team by category. */
+    /** @param  Collection|null  $rows  The next month's rows of the team by category. */
     private function setMonthBudget($category, $month, $available = 0, $rows = null)
     {
         $nextMonth = Carbon::createFromFormat('Y-m-d', $month)->addMonthsWithNoOverflow(1)->format('Y-m-d');
@@ -166,7 +168,8 @@ class BudgetRolloverService
         ];
         $values = [
             'user_id' => $category->user_id,
-            'left_from_last_month' => $available > 0 ? $available : 0,
+            // Overspending resets to 0 (Ready to Assign covers it); a card credit carries on.
+            'left_from_last_month' => $available > 0 || $category->account_id ? (float) $available : 0,
         ];
 
         $existing = $rows !== null ? $rows->get($category->id) : BudgetMonth::where($identity)->first();
@@ -205,7 +208,7 @@ class BudgetRolloverService
             coalesce(sum(activity), 0) as budgetsActivity,
             coalesce(sum(payments), 0) as payments,
             sum(coalesce(available, 0)) as available,
-            sum(CASE WHEN available < 0 THEN available ELSE 0 END) as overspendingInMonth,
+            sum(CASE WHEN available < 0 AND categories.account_id IS NULL THEN available ELSE 0 END) as overspendingInMonth,
             group_concat(g.index, '.', categories.index, ':', categories.name, ':', available) as description,
             coalesce(sum(funded_spending), 0) as funded_spending
         ")
@@ -301,8 +304,9 @@ class BudgetRolloverService
      *
      * @param  string  $yearMonth  `YYYY-MM`
      * @param  int|null  $limit  roll at most this many months from `$yearMonth`; the current month is always rolled
+     * @param  bool  $full  roll every month instead of stopping once the carry settles (repairs stale rows)
      */
-    public function startFrom($teamId, $yearMonth, $limit = null)
+    public function startFrom($teamId, $yearMonth, $limit = null, bool $full = false)
     {
         $this->team = Team::find($teamId);
         $this->accounts = Account::getByDetailTypes($teamId, AccountDetailType::ALL_CASH)->pluck('id');
@@ -332,7 +336,7 @@ class BudgetRolloverService
         // it may never have been opened (first roll after a month change).
         $settled = false;
         foreach ($months as $month) {
-            if ($settled && $month !== $lastMonth) {
+            if ($settled && ! $full && $month !== $lastMonth) {
                 continue;
             }
 
