@@ -26,15 +26,15 @@ const isModalOpen = ref(false);
 // kitchen-screen view). BoardSection reads this through its `layout` prop.
 const initialView = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '').get('view') || 'family';
 
-// «Áreas | Lista» switch. Lista (the board) stays the default; ?tab=areas
-// deep-links straight into the Tody-style areas view.
+// «Áreas | Lista» switch. Áreas (Tody-style) is the default; ?tab=list
+// opens the board.
 type ChoresTab = 'areas' | 'list';
 const choreTabs: { key: ChoresTab; label: string }[] = [
     { key: 'areas', label: 'Areas' },
     { key: 'list', label: 'List' },
 ];
 const initialTab = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '').get('tab');
-const activeTab = ref<ChoresTab>(initialTab === 'areas' ? 'areas' : 'list');
+const activeTab = ref<ChoresTab>(initialTab === 'list' ? 'list' : 'areas');
 
 const chorePlan = computed(() => {
     return props.chores?.at(0)
