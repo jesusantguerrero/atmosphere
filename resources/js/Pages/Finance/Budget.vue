@@ -59,6 +59,10 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  accountBalances: {
+    type: Object,
+    default: null,
+  },
   scheduledTotal: {
     type: Number,
     default: 0
@@ -329,6 +333,7 @@ const budgetCsvExportUrl = computed(() => {
           :budgets="budgets"
           :ready-to-assign="readyToAssign"
           :uncategorized-totals="uncategorizedTotals"
+          :account-balances="accountBalances"
         />
       </BudgetBalanceAssign>
 

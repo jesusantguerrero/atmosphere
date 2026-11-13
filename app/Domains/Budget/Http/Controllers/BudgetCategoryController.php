@@ -77,6 +77,10 @@ class BudgetCategoryController extends InertiaController
                     ->where('transactions.team_id', $teamId)
                     ->selectRaw('currency_code, SUM(CASE WHEN transactions.direction = ? THEN total ELSE -total END) as total, COUNT(*) as count', [Transaction::DIRECTION_CREDIT])
                     ->groupBy('currency_code')->get(),
+                // A past month reconciles against the balances it closed with; the current month uses live ones.
+                'accountBalances' => $endDate < now($timeZone)->format('Y-m-d')
+                    ? $request->user()->currentTeam->balanceDetail($endDate)->pluck('balance', 'account_id')
+                    : null,
             ]);
     }
 

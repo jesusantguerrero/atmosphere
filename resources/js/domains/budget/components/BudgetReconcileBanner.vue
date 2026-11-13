@@ -8,6 +8,8 @@ const props = defineProps<{
     budgets?: any[] | Record<string, any>;
     readyToAssign?: { balance?: number } | null;
     uncategorizedTotals?: { currency_code: string; total: number | string; count: number }[];
+    /** Balances by account id at the close of a past month; null for the current month (live balances). */
+    accountBalances?: Record<number, number | string> | null;
     /** Rendered inside the Ready-to-assign hero: no box of its own. */
     embedded?: boolean;
 }>();
@@ -22,7 +24,8 @@ const cashByCurrency = computed<Record<string, number>>(() => {
     (props.accounts || []).forEach((a: any) => {
         if (!a || a.credit_closing_day || a.resource_type_id) return;
         const cur = a.currency_code || baseCurrency.value;
-        out[cur] = (out[cur] || 0) + Number(a.balance || 0);
+        const balance = props.accountBalances ? props.accountBalances[a.id] ?? 0 : a.balance;
+        out[cur] = (out[cur] || 0) + Number(balance || 0);
     });
     return out;
 });
