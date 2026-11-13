@@ -1,6 +1,7 @@
 <?php
 
 use App\Domains\Housing\Contracts\OccurrenceNotifyTypes;
+use App\Domains\Housing\Http\Controllers\ChoreAreaController;
 use App\Domains\Housing\Http\Controllers\OccurrenceController;
 use App\Domains\Housing\Http\Controllers\ProjectController;
 use App\Domains\Housing\Http\Controllers\UtilityController;
@@ -35,4 +36,9 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', 'loger.conce
             $occurrencesOnLast,
         ];
     });
+});
+
+Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(function () {
+    Route::get('/housing/chores/areas', [ChoreAreaController::class, 'index'])->name('housing.chores.areas');
+    Route::patch('/housing/chores/{item}/area', [ChoreAreaController::class, 'update'])->name('housing.chores.area.update');
 });
