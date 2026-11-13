@@ -13,6 +13,7 @@ use App\Domains\Budget\Models\BudgetTarget;
 use App\Domains\Budget\Services\BudgetCategoryService;
 use App\Domains\Budget\Services\BudgetMovementService;
 use App\Domains\Budget\Services\BudgetTargetService;
+use App\Domains\Housing\Services\ChoreAreaService;
 use App\Domains\Integration\Actions\TransactionCreateEntry;
 use App\Domains\Integration\Actions\UniversalBankParser;
 use App\Domains\Integration\Services\UniversalBankAutomationService;
@@ -37,6 +38,7 @@ use App\Domains\Transaction\Services\TransactionSplits;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DraftTransactionsRangeRequest;
 use App\Http\Requests\SplitShoppingVisitRequest;
+use App\Http\Requests\UpdateChoreAreaRequest;
 use App\Http\Requests\UpdateReconciliationRequest;
 use App\Http\Requests\UpdateShoppingItemRequest;
 use App\Http\Requests\UpdateShoppingVisitRequest;
@@ -83,11 +85,12 @@ class MobileController extends Controller
      * The same daily glance the web "Today" page renders: money pace,
      * things needing attention, due today, upcoming and this week's meals.
      */
-    public function today(Request $request, TodayService $today): JsonResponse
+    public function today(Request $request, TodayService $today, ChoreAreaService $choreAreas): JsonResponse
     {
         $user = $request->user();
         $payload = $today->buildPayload($user->current_team_id, $user->id);
         $payload['pending_review_count'] = TransactionService::getDraftCount($user->current_team_id);
+        $payload['most_overdue_chore'] = $choreAreas->mostOverdue((int) $user->current_team_id);
 
         return response()->json($payload);
     }
@@ -1534,6 +1537,26 @@ class MobileController extends Controller
             'chores' => $chores,
             'members' => $members,
         ]);
+    }
+
+    /**
+     * Tody-style chores by area: every default area with its worst status,
+     * each chore with its freshness, and the single most overdue chore.
+     */
+    public function choreAreas(Request $request, ChoreAreaService $choreAreas): JsonResponse
+    {
+        return response()->json($choreAreas->overview((int) $request->user()->current_team_id));
+    }
+
+    /**
+     * Move a chore to another area (null = General). Saved without model
+     * events so the Plan module's updating hook keeps the chore's due date.
+     */
+    public function updateChoreArea(UpdateChoreAreaRequest $request, PlanItem $item, ChoreAreaService $choreAreas): JsonResponse
+    {
+        PlanItem::withoutEvents(fn () => $item->forceFill(['area' => $request->validated('area')])->save());
+
+        return response()->json($choreAreas->describe($item->fresh()));
     }
 
     /**

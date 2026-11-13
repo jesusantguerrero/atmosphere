@@ -6,6 +6,7 @@ use App\Concerns\AppMenu;
 use App\Domains\AppCore\Facades\Feature;
 use App\Domains\AppCore\Services\FeatureFlagService;
 use App\Domains\Housing\Actions\RegisterOccurrence;
+use App\Domains\Housing\Services\ChoreAreaService;
 use App\Domains\LogerProfile\Models\LogerProfile;
 use App\Jobs\RunTeamChecks;
 use App\Models\Account;
@@ -16,6 +17,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Modules\Plan\Entities\PlanItem;
 use Spatie\Onboard\Facades\Onboard;
 
 class AppServiceProvider extends ServiceProvider
@@ -44,6 +46,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Model::preventSilentlyDiscardingAttributes(! $this->app->isProduction());
+
+        PlanItem::saving(fn (PlanItem $item) => $this->app->make(ChoreAreaService::class)->stampCompletion($item));
 
         Gate::define('superadmin', function (User $user) {
             return $user->isSuperAdmin();

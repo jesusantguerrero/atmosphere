@@ -175,6 +175,8 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified', SetUserLocal
 
     // Chores (household tasks)
     Route::get('/chores', [MobileController::class, 'chores'])->name('chores.index');
+    Route::get('/chores/areas', [MobileController::class, 'choreAreas'])->name('chores.areas');
+    Route::patch('/chores/{item}/area', [MobileController::class, 'updateChoreArea'])->name('chores.area.update');
     Route::patch('/chores/{item}/toggle', [MobileController::class, 'toggleChore'])->name('chores.toggle');
     Route::post('/chores', [MobileController::class, 'storeChore'])->name('chores.store');
     Route::patch('/chores/{item}', [MobileController::class, 'updateChore'])->name('chores.update');
