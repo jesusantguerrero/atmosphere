@@ -47,8 +47,10 @@ class BudgetCategoryService
                 ->minus($monthPayment, RoundingMode::HalfUp)
                 ->getAmount()
                 ->toFloat();
-            $available = Money::of($monthBalance, 'USD', null, RoundingMode::HalfUp)
-                ->plus(($monthBudget->left_from_last_month * -1), RoundingMode::HalfUp)
+            // Same formula the rollover stores: carry + assigned + funded spending - payments.
+            $available = Money::of($monthBudget?->left_from_last_month ?? 0, 'USD', null, RoundingMode::HalfUp)
+                ->plus($budgeted, RoundingMode::HalfUp)
+                ->plus($monthBalance, RoundingMode::HalfUp)
                 ->getAmount()
                 ->toFloat();
         } else {
