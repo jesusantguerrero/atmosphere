@@ -43,20 +43,20 @@ class BudgetCategoryService
             $funded = $monthBudget ? $monthBudget->funded_spending : 0;
             $monthPayment = $monthBudget ? $monthBudget->payments : 0;
 
-            $monthBalance = Money::of($funded, $category->account->currency_code)
-                ->minus($monthPayment)
+            $monthBalance = Money::of($funded, $category->account->currency_code, null, RoundingMode::HalfUp)
+                ->minus($monthPayment, RoundingMode::HalfUp)
                 ->getAmount()
                 ->toFloat();
-            $available = Money::of($monthBalance, 'USD')
-                ->plus(($monthBudget->left_from_last_month * -1))
+            $available = Money::of($monthBalance, 'USD', null, RoundingMode::HalfUp)
+                ->plus(($monthBudget->left_from_last_month * -1), RoundingMode::HalfUp)
                 ->getAmount()
                 ->toFloat();
         } else {
             $monthBalance = (float) self::monthBalance($category, $yearMonth)->balance;
 
             $available = Money::of($budgeted, 'USD', null, RoundingMode::HalfUp)
-                ->plus($monthBudget?->left_from_last_month ?? 0)
-                ->plus($monthBalance)
+                ->plus($monthBudget?->left_from_last_month ?? 0, RoundingMode::HalfUp)
+                ->plus($monthBalance, RoundingMode::HalfUp)
                 ->getAmount()
                 ->toFloat();
 
