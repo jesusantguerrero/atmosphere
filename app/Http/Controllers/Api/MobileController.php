@@ -3431,6 +3431,11 @@ class MobileController extends Controller
             $user = $this->createSocialUser($name, $email, ['google_id' => $googleId]);
         }
 
+        // Google signs the email it vouches for, so it counts as verified.
+        if (! $user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
+        }
+
         $token = $user->createToken($request->input('device_name'))->plainTextToken;
 
         return response()->json($token);
@@ -3475,6 +3480,10 @@ class MobileController extends Controller
             }
             $name = $name ?? explode('@', $email)[0];
             $user = $this->createSocialUser($name, $email, ['apple_id' => $appleId]);
+        }
+
+        if (! $user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
         }
 
         $token = $user->createToken($request->input('device_name'))->plainTextToken;
