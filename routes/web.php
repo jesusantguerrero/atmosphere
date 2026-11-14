@@ -31,6 +31,7 @@ use App\Http\Controllers\System\OnboardingController;
 use App\Http\Controllers\System\PlannerController;
 use App\Http\Controllers\System\ServiceController;
 use App\Http\Controllers\System\TeamInvitationController;
+use App\Http\Controllers\System\TeamOwnershipController;
 use App\Http\Controllers\System\UserDeviceController;
 use App\Models\Setting;
 use Freesgen\Atmosphere\Http\Controllers\SettingsController;
@@ -186,6 +187,7 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
 
     // Jetstream teams invitations override
     Route::put('/team-invitations/{invitation}', [TeamInvitationController::class, 'resend'])->name('team-invitations.resend');
+    Route::put('/teams/{team}/owner', [TeamOwnershipController::class, 'update'])->name('teams.owner.update');
 
     // Landing page preference (before settings resource to avoid route conflict)
     Route::patch('/settings/landing-page', function (Request $request) {

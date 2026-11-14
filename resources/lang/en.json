@@ -633,7 +633,7 @@
     "Manage and log out your active sessions on other browsers and devices.": "Manage and log out your active sessions on other browsers and devices.",
     "Delete Account": "Delete Account",
     "Permanently delete your account.": "Permanently delete your account.",
-    "Once your account is deleted, all of its resources and data will be permanently deleted. Download anything you want to keep first.": "Once your account is deleted, all of its resources and data will be permanently deleted. Download anything you want to keep first.",
+    "Once your account is deleted, your spaces and all their data are permanently deleted. Spaces you share with others pass to another member instead. Download anything you want to keep first.": "Once your account is deleted, your spaces and all their data are permanently deleted. Spaces you share with others pass to another member instead. Download anything you want to keep first.",
     "Are you sure you want to delete your account? This is permanent. Enter your password to confirm.": "Are you sure you want to delete your account? This is permanent. Enter your password to confirm.",
     "Password": "Password",
     "Email": "Email",
@@ -1159,5 +1159,12 @@
     "Every {count} weeks": "Every {count} weeks",
     "Every {count} months": "Every {count} months",
     "available_formula_hint": "Available is what you assigned this month minus what you spent, plus what was left in that category from last month. If it turns red, you spent more than you assigned.",
-    "reconcile_difference_hint": "What is available in your categories plus what is left to assign should equal the cash in your accounts. The gap is almost always uncategorized transactions: categorize them and the difference goes back to zero."
+    "reconcile_difference_hint": "What is available in your categories plus what is left to assign should equal the cash in your accounts. The gap is almost always uncategorized transactions: categorize them and the difference goes back to zero.",
+    "Transfer ownership": "Transfer ownership",
+    "Hand this space to another member. You stay as an administrator.": "Hand this space to another member. You stay as an administrator.",
+    "The new owner can delete the space, manage billing and remove you.": "The new owner can delete the space, manage billing and remove you.",
+    "Enter your password to confirm the transfer.": "Enter your password to confirm the transfer.",
+    "Ownership transferred.": "Ownership transferred.",
+    "The new owner must be a member of this space.": "The new owner must be a member of this space.",
+    "Choose who will own this space.": "Choose who will own this space."
 }

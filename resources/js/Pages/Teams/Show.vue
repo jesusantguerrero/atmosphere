@@ -2,6 +2,7 @@
     import TeamMemberManager from './TeamMemberManager.vue'
     import AppLayout from '@/Components/templates/AppLayout.vue'
     import DeleteTeamForm from './DeleteTeamForm.vue'
+    import TransferTeamOwnershipForm from './TransferTeamOwnershipForm.vue'
     import JetSectionBorder from '@/Components/atoms/SectionBorder.vue'
     import UpdateTeamNameForm from './UpdateTeamNameForm.vue'
     import SettingsSectionNav from '@/Components/templates/SettingsSectionNav.vue'
@@ -34,6 +35,12 @@
                     :team="team"
                     :available-roles="availableRoles"
                     :user-permissions="permissions" />
+
+                <template v-if="permissions?.canUpdateTeam && team?.users?.length">
+                    <JetSectionBorder />
+
+                    <TransferTeamOwnershipForm class="mt-10 sm:mt-0" :team="team" />
+                </template>
 
                 <template v-if="permissions?.canDeleteTeam && !team?.personal_team">
                     <JetSectionBorder />
