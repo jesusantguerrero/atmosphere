@@ -1166,5 +1166,12 @@
     "Enter your password to confirm the transfer.": "Enter your password to confirm the transfer.",
     "Ownership transferred.": "Ownership transferred.",
     "The new owner must be a member of this space.": "The new owner must be a member of this space.",
-    "Choose who will own this space.": "Choose who will own this space."
+    "Choose who will own this space.": "Choose who will own this space.",
+    "Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn't receive the email, we will gladly send you another.": "Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn't receive the email, we will gladly send you another.",
+    "A new verification link has been sent to the email address you provided during registration.": "A new verification link has been sent to the email address you provided during registration.",
+    "Resend Verification Email": "Resend Verification Email",
+    "Verify Email Address": "Verify Email Address",
+    "Please click the button below to verify your email address.": "Please click the button below to verify your email address.",
+    "If you did not create an account, no further action is required.": "If you did not create an account, no further action is required.",
+    "Verify your email first. We just sent you a new link.": "Verify your email first. We just sent you a new link."
 }

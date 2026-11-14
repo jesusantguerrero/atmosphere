@@ -39,6 +39,14 @@ class ApiLoginController extends Controller
                 ]);
             }
 
+            if (! $user->hasVerifiedEmail()) {
+                $user->sendEmailVerificationNotification();
+
+                throw ValidationException::withMessages([
+                    'email' => [__('Verify your email first. We just sent you a new link.')],
+                ]);
+            }
+
             return response()->json($user->createToken($request->device_name)->plainTextToken);
         } catch (Exception $e) {
             return response()->json([
