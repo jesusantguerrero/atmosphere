@@ -1,6 +1,7 @@
 <?php
 
 use App\Domains\Integration\Http\Controllers\ApiIntegrationController;
+use App\Http\Controllers\AccountDataExportController;
 use App\Http\Controllers\Api\AccountApiController;
 use App\Http\Controllers\Api\BillingCycleApiController;
 use App\Http\Controllers\Api\CategoryApiController;
@@ -243,6 +244,8 @@ Route::middleware(['auth:sanctum', 'atmosphere.teamed', 'verified'])->group(func
     // /user/profile). Security/Preferences reuse ProfileSettingsController which
     // extends Jetstream's controller for its sessions()/2FA helpers.
     Route::get('/user/security', [ProfileSettingsController::class, 'security'])->name('user.security');
+    Route::post('/user/data-export', [AccountDataExportController::class, 'store'])->middleware('throttle:3,60')->name('user.data-export.store');
+    Route::get('/user/data-export/{export}', [AccountDataExportController::class, 'show'])->name('user.data-export.show');
     Route::delete('/user/connected-apps/{client}', [ConnectedAppController::class, 'destroy'])->name('user.connected-apps.destroy');
     Route::get('/user/preferences', [ProfileSettingsController::class, 'preferences'])->name('user.preferences');
 

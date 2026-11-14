@@ -42,6 +42,7 @@ class LogerNotification extends Notification
         'account_overdraft_alert' => 'Account overdraft warning',
         'credit_card_renewal_alert' => 'Credit card renewal',
         'weekly_digest' => 'Weekly summary',
+        'account_data_export_ready' => 'Data export ready',
     ];
 
     public function typeKey(): string

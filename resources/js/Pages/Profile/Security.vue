@@ -1,6 +1,7 @@
 <script lang="ts" setup>
     import AppLayout from '@/Components/templates/AppLayout.vue'
     import ConnectedAppsForm from './ConnectedAppsForm.vue'
+    import DataExportForm from './DataExportForm.vue'
     import DeleteUserForm from './DeleteUserForm.vue'
     import LogoutOtherBrowserSessionsForm from './LogoutOtherBrowserSessionsForm.vue'
     import TwoFactorAuthenticationForm from './TwoFactorAuthenticationForm.vue'
@@ -42,6 +43,8 @@
                 <LogoutOtherBrowserSessionsForm :sessions="sessions" />
 
                 <ConnectedAppsForm :apps="connectedApps" />
+
+                <DataExportForm />
 
                 <DeleteUserForm v-if="$page.props.jetstream.hasAccountDeletionFeatures" />
             </div>
