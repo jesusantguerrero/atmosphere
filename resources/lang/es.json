@@ -773,7 +773,7 @@
     "Manage and log out your active sessions on other browsers and devices.": "Gestiona y cierra tus sesiones activas en otros navegadores y dispositivos.",
     "Delete Account": "Eliminar cuenta",
     "Permanently delete your account.": "Elimina tu cuenta de forma permanente.",
-    "Once your account is deleted, all of its resources and data will be permanently deleted. Download anything you want to keep first.": "Al eliminar tu cuenta, todos sus recursos y datos se borrarán permanentemente. Descarga lo que quieras conservar primero.",
+    "Once your account is deleted, your spaces and all their data are permanently deleted. Spaces you share with others pass to another member instead. Download anything you want to keep first.": "Al eliminar tu cuenta, tus espacios y todos sus datos se borran permanentemente. Los espacios que compartes pasan a otro miembro. Descarga lo que quieras conservar primero.",
     "Are you sure you want to delete your account? This is permanent. Enter your password to confirm.": "¿Seguro que quieres eliminar tu cuenta? Es permanente. Ingresa tu contraseña para confirmar.",
     "Password": "Contraseña",
     "Email": "Correo",
@@ -1520,5 +1520,12 @@
     "In 1 day": "En 1 día",
     "In {count} days": "En {count} días",
     "Move to area": "Mover a otra área",
-    "Could not load the areas.": "No se pudieron cargar las áreas."
+    "Could not load the areas.": "No se pudieron cargar las áreas.",
+    "Transfer ownership": "Transferir propiedad",
+    "Hand this space to another member. You stay as an administrator.": "Pasa este espacio a otro miembro. Tú sigues como administrador.",
+    "The new owner can delete the space, manage billing and remove you.": "El nuevo dueño podrá borrar el espacio, manejar la facturación y sacarte.",
+    "Enter your password to confirm the transfer.": "Escribe tu contraseña para confirmar la transferencia.",
+    "Ownership transferred.": "Propiedad transferida.",
+    "The new owner must be a member of this space.": "El nuevo dueño debe ser miembro de este espacio.",
+    "Choose who will own this space.": "Elige quién será el dueño de este espacio."
 }
