@@ -1173,5 +1173,12 @@
     "Verify Email Address": "Verify Email Address",
     "Please click the button below to verify your email address.": "Please click the button below to verify your email address.",
     "If you did not create an account, no further action is required.": "If you did not create an account, no further action is required.",
-    "Verify your email first. We just sent you a new link.": "Verify your email first. We just sent you a new link."
+    "Verify your email first. We just sent you a new link.": "Verify your email first. We just sent you a new link.",
+    "Download my data": "Download my data",
+    "Get a copy of everything in the spaces you own.": "Get a copy of everything in the spaces you own.",
+    "We put your transactions, accounts, budgets, meals, planner and tasks in a ZIP file with one spreadsheet per table, and email you the link. Passwords and connected-app credentials are left out.": "We put your transactions, accounts, budgets, meals, planner and tasks in a ZIP file with one spreadsheet per table, and email you the link. Passwords and connected-app credentials are left out.",
+    "Preparing your data…": "Preparing your data…",
+    "We are preparing your data. You will get an email with the download link.": "We are preparing your data. You will get an email with the download link.",
+    "Your data export is ready. The link works for :days days.": "Your data export is ready. The link works for :days days.",
+    "Data export ready": "Data export ready"
 }

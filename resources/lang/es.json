@@ -1534,5 +1534,12 @@
     "Verify Email Address": "Verifica tu correo",
     "Please click the button below to verify your email address.": "Haz clic en el botón para verificar tu correo.",
     "If you did not create an account, no further action is required.": "Si no creaste una cuenta, puedes ignorar este correo.",
-    "Verify your email first. We just sent you a new link.": "Primero verifica tu correo. Te acabamos de enviar un enlace nuevo."
+    "Verify your email first. We just sent you a new link.": "Primero verifica tu correo. Te acabamos de enviar un enlace nuevo.",
+    "Download my data": "Descargar mis datos",
+    "Get a copy of everything in the spaces you own.": "Obtén una copia de todo lo que hay en tus espacios.",
+    "We put your transactions, accounts, budgets, meals, planner and tasks in a ZIP file with one spreadsheet per table, and email you the link. Passwords and connected-app credentials are left out.": "Ponemos tus transacciones, cuentas, presupuestos, comidas, planner y tareas en un ZIP con una hoja por tabla, y te enviamos el enlace por correo. No incluye contraseñas ni credenciales de apps conectadas.",
+    "Preparing your data…": "Preparando tus datos…",
+    "We are preparing your data. You will get an email with the download link.": "Estamos preparando tus datos. Te llegará un correo con el enlace de descarga.",
+    "Your data export is ready. The link works for :days days.": "Tu exportación de datos está lista. El enlace funciona por :days días.",
+    "Data export ready": "Exportación de datos lista"
 }
