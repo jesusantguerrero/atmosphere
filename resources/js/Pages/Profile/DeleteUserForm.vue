@@ -6,7 +6,7 @@
     >
         <template #content>
             <div class="max-w-xl text-sm text-body-1/70">
-                {{ $t('Once your account is deleted, all of its resources and data will be permanently deleted. Download anything you want to keep first.') }}
+                {{ $t('Once your account is deleted, your spaces and all their data are permanently deleted. Spaces you share with others pass to another member instead. Download anything you want to keep first.') }}
             </div>
 
             <div class="mt-5">
