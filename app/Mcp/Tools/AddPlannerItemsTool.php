@@ -7,6 +7,7 @@ use App\Domains\Today\Services\BulkPlannerService;
 use App\Http\Requests\BulkPlannerStoreRequest;
 use App\Mcp\Concerns\InteractsWithTeam;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Illuminate\Validation\Rule;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -16,7 +17,7 @@ use Laravel\Mcp\Server\Tool;
 
 #[Title('Add planner items')]
 #[Name('add_planner_items')]
-#[Description('Add dated items to the household Planner in one go ("importa este calendario del colegio"). Read the document (school calendar, circular, PDF) and extract one item per dated event: its date, a short name, the amount to pay if any, and useful notes. Show the list to the user and confirm it before calling. Up to 100 items per call.')]
+#[Description('Add dated items to the household Planner in one go ("importa este calendario del colegio"). Read the document (school calendar, circular, PDF) and extract one item per dated event: its date, a short name, the amount to pay if any, and useful notes. Show the list to the user and confirm it before calling. Up to 100 items per call. When the items belong to one person (like a school calendar for one kid), pass that profile_id from list_accounts_and_categories.')]
 class AddPlannerItemsTool extends Tool
 {
     use InteractsWithTeam;
@@ -28,18 +29,21 @@ class AddPlannerItemsTool extends Tool
         }
 
         $rules = new BulkPlannerStoreRequest;
+        $teamId = $this->teamId($request);
         $validated = $request->validate([
             ...$rules->rules(),
+            'profile_id' => ['nullable', 'integer', Rule::exists('loger_profiles', 'id')->where('team_id', $teamId)],
             'items.*.date' => 'required|date_format:Y-m-d',
             'items.*.end_date' => 'nullable|date_format:Y-m-d|after_or_equal:items.*.date',
-        ], $rules->messages());
+        ], [...$rules->messages(), 'profile_id.exists' => 'That profile is not part of this household.']);
 
         $user = $request->user();
         $planners = $bulk->createMany(
-            teamId: $this->teamId($request),
+            teamId: $teamId,
             userId: $user->id,
             items: $validated['items'],
             source: $validated['source'] ?? null,
+            profileId: $validated['profile_id'] ?? null,
         );
 
         return Response::json([
@@ -51,6 +55,7 @@ class AddPlannerItemsTool extends Tool
                 'name' => $planner->name,
                 'total' => $planner->total === null ? null : round((float) $planner->total, 2),
                 'notes' => $planner->notes,
+                'profile_id' => $planner->loger_profile_id,
             ])->values(),
         ]);
     }
@@ -62,6 +67,7 @@ class AddPlannerItemsTool extends Tool
     {
         return [
             'source' => $schema->string()->description('Where the items come from, e.g. "school". Shown as their source in the Planner.'),
+            'profile_id' => $schema->integer()->description('The household profile these items belong to, e.g. the kid whose school calendar it is. Omit for the whole household.'),
             'items' => $schema->array()->items($schema->object([
                 'date' => $schema->string()->description('YYYY-MM-DD.')->required(),
                 'end_date' => $schema->string()->description('YYYY-MM-DD, for events spanning several days. Defaults to date.'),

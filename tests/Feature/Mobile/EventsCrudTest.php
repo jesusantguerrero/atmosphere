@@ -3,6 +3,7 @@
 namespace Tests\Feature\Mobile;
 
 use App\Domains\AppCore\Models\Planner;
+use App\Domains\LogerProfile\Models\LogerProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
@@ -110,7 +111,72 @@ class EventsCrudTest extends TestCase
             ->assertJsonValidationErrors('kind');
     }
 
+    public function test_an_event_belongs_to_a_profile_and_the_calendar_filters_by_it(): void
+    {
+        [$user, $household] = $this->makeEvent();
+        Sanctum::actingAs($user);
+        $dianita = $this->profile($user, 'Dianita');
+        $date = now()->format('Y-m-d');
+        $household->update(['date' => $date]);
+
+        $school = $this->postJson('/api/mobile/events', ['name' => 'Disfraz de planeta', 'date' => $date, 'profile_id' => $dianita->id])
+            ->assertCreated()
+            ->assertJsonPath('data.profile_id', $dianita->id)
+            ->assertJsonPath('data.profile_name', 'Dianita');
+
+        $month = now()->format('Y-m');
+        $all = collect($this->getJson("/api/mobile/calendar?month={$month}")->assertOk()->json('events'))->keyBy('planner_id');
+        $this->assertSame('Dianita', $all[$school->json('data.id')]['profile_name']);
+        $this->assertNull($all[$household->id]['profile_id']);
+
+        $only = $this->getJson("/api/mobile/calendar?month={$month}&profile_id={$dianita->id}")->assertOk()->json('events');
+        $this->assertSame([$school->json('data.id')], array_column($only, 'planner_id'));
+    }
+
+    public function test_an_event_profile_can_be_changed_and_cleared(): void
+    {
+        [$user, $event] = $this->makeEvent();
+        Sanctum::actingAs($user);
+        $dianita = $this->profile($user, 'Dianita');
+
+        $this->patchJson("/api/mobile/events/{$event->id}", ['profile_id' => $dianita->id])
+            ->assertOk()
+            ->assertJsonPath('event.profile_name', 'Dianita');
+        $this->assertSame($dianita->id, $event->fresh()->loger_profile_id);
+
+        $this->patchJson("/api/mobile/events/{$event->id}", ['name' => 'Renamed'])->assertOk();
+        $this->assertSame($dianita->id, $event->fresh()->loger_profile_id);
+
+        $this->patchJson("/api/mobile/events/{$event->id}", ['profile_id' => null])
+            ->assertOk()
+            ->assertJsonPath('event.profile_id', null);
+        $this->assertNull($event->fresh()->loger_profile_id);
+    }
+
+    public function test_a_profile_from_another_household_is_rejected(): void
+    {
+        [$user, $event] = $this->makeEvent();
+        [$stranger] = $this->makeEvent();
+        $foreign = $this->profile($stranger, 'Not yours');
+        Sanctum::actingAs($user);
+
+        $this->postJson('/api/mobile/events', ['name' => 'Party', 'date' => now()->format('Y-m-d'), 'profile_id' => $foreign->id])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('profile_id');
+        $this->patchJson("/api/mobile/events/{$event->id}", ['profile_id' => $foreign->id])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('profile_id');
+        $this->getJson('/api/mobile/calendar?profile_id='.$foreign->id)
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('profile_id');
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────
+
+    private function profile(User $user, string $name): LogerProfile
+    {
+        return LogerProfile::create(['team_id' => $user->current_team_id, 'user_id' => $user->id, 'name' => $name]);
+    }
 
     private function makeEvent(): array
     {

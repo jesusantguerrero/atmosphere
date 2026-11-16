@@ -61,6 +61,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Exists;
 use Illuminate\Validation\ValidationException;
 use Insane\Journal\Events\TransactionCreated;
 use Insane\Journal\Models\Accounting\Reconciliation;
@@ -1199,20 +1200,23 @@ class MobileController extends Controller
 
     /**
      * Calendar events for a given month — planner items, billing cycles,
-     * and recurring occurrences merged into one timeline.
+     * and recurring occurrences merged into one timeline. `profile_id` narrows it to one profile's events.
      */
     public function calendar(Request $request, CalendarService $calendarService): JsonResponse
     {
-        $request->validate(['month' => 'nullable|date_format:Y-m']);
-
         $teamId = $request->user()->current_team_id;
+        $request->validate([
+            'month' => 'nullable|date_format:Y-m',
+            'profile_id' => ['nullable', 'integer', $this->teamProfileRule($teamId)],
+        ]);
+
         $monthStr = $request->query('month') ?? now()->format('Y-m');
         $start = Carbon::parse($monthStr.'-01')->startOfMonth()->format('Y-m-d');
         $end = Carbon::parse($monthStr.'-01')->endOfMonth()->format('Y-m-d');
 
         return response()->json([
             'month' => $monthStr,
-            'events' => $calendarService->getEvents($teamId, $start, $end),
+            'events' => $calendarService->getEvents($teamId, $start, $end, $request->integer('profile_id') ?: null),
         ]);
     }
 
@@ -1222,6 +1226,7 @@ class MobileController extends Controller
     public function storeEvent(Request $request): JsonResponse
     {
         $validated = $request->validate([
+            'profile_id' => ['nullable', 'integer', $this->teamProfileRule($request->user()->current_team_id)],
             'name' => ['required', 'string', 'max:255'],
             'date' => ['required', 'date'],
             'end_date' => ['nullable', 'date', 'after_or_equal:date'],
@@ -1244,6 +1249,7 @@ class MobileController extends Controller
             'source' => $validated['source'] ?? null,
             'kind' => $validated['kind'] ?? Planner::KIND_EVENT,
             'status' => Planner::STATUS_PENDING,
+            'loger_profile_id' => $validated['profile_id'] ?? null,
         ]);
 
         return response()->json([
@@ -1254,6 +1260,8 @@ class MobileController extends Controller
                 'date' => $planner->date->format('Y-m-d'),
                 'kind' => $planner->kind,
                 'status' => $planner->status,
+                'profile_id' => $planner->loger_profile_id,
+                'profile_name' => $planner->profile?->name,
             ],
         ], 201);
     }
@@ -1293,7 +1301,13 @@ class MobileController extends Controller
             'end_date' => ['sometimes', 'nullable', 'date'],
             'notes' => ['sometimes', 'nullable', 'string', 'max:1000'],
             'total' => ['sometimes', 'nullable', 'numeric', 'min:0'],
+            'profile_id' => ['sometimes', 'nullable', 'integer', $this->teamProfileRule($planner->team_id)],
         ]);
+
+        if (array_key_exists('profile_id', $validated)) {
+            $validated['loger_profile_id'] = $validated['profile_id'];
+            unset($validated['profile_id']);
+        }
 
         $planner->update($validated);
 
@@ -1309,6 +1323,8 @@ class MobileController extends Controller
                 'total' => $planner->total ? (float) $planner->total : null,
                 'notes' => $planner->notes,
                 'completed_at' => $planner->completed_at?->format('Y-m-d'),
+                'profile_id' => $planner->loger_profile_id,
+                'profile_name' => $planner->profile?->name,
             ],
         ]);
     }
@@ -3869,6 +3885,11 @@ class MobileController extends Controller
         }
 
         return $anchor->greaterThan($now) ? $now : $anchor;
+    }
+
+    private function teamProfileRule(int $teamId): Exists
+    {
+        return Rule::exists('loger_profiles', 'id')->where('team_id', $teamId);
     }
 
     private function toMinutes(string $hhmm): int

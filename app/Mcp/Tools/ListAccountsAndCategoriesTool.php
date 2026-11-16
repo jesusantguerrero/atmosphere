@@ -3,6 +3,7 @@
 namespace App\Mcp\Tools;
 
 use App\Domains\AppCore\Models\Category;
+use App\Domains\LogerProfile\Models\LogerProfile;
 use App\Mcp\Concerns\InteractsWithTeam;
 use App\Models\Account;
 use App\Models\Setting;
@@ -17,7 +18,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 
 #[Title('Accounts and categories')]
 #[Name('list_accounts_and_categories')]
-#[Description('The household open accounts with their balances, and its budget categories with their group. Call it to turn names like "Popular" or "Teléfono" into the ids other tools need.')]
+#[Description('The household open accounts with their balances, its budget categories with their group, and its profiles (the people in it). Call it to turn names like "Popular", "Teléfono" or "Dianita" into the ids other tools need.')]
 #[IsReadOnly]
 class ListAccountsAndCategoriesTool extends Tool
 {
@@ -51,10 +52,17 @@ class ListAccountsAndCategoriesTool extends Tool
                 'group' => $category->group?->name,
             ]);
 
+        $profiles = LogerProfile::query()
+            ->where('team_id', $teamId)
+            ->orderBy('name')
+            ->get(['id', 'name'])
+            ->map(fn (LogerProfile $profile) => ['id' => $profile->id, 'name' => $profile->name]);
+
         return Response::json([
             'currency_code' => strtoupper(trim((string) (Setting::getByTeam($teamId)['team_primary_currency_code'] ?? ''))) ?: 'DOP',
             'accounts' => $accounts,
             'categories' => $categories,
+            'profiles' => $profiles,
         ]);
     }
 

@@ -16,11 +16,12 @@ class BulkPlannerService
      * @param  array<int, array{date: string, end_date?: ?string, name: string, notes?: ?string, total?: ?float}>  $items
      * @return Collection<int, Planner>
      */
-    public function createMany(int $teamId, int $userId, array $items, ?string $source = null): Collection
+    public function createMany(int $teamId, int $userId, array $items, ?string $source = null, ?int $profileId = null): Collection
     {
         return collect($items)->map(fn (array $item) => Planner::create([
             'team_id' => $teamId,
             'user_id' => $userId,
+            'loger_profile_id' => $profileId,
             'name' => $item['name'],
             'notes' => $item['notes'] ?? null,
             'total' => $item['total'] ?? null,
