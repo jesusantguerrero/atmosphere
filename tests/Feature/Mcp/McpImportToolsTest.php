@@ -4,10 +4,12 @@ namespace Tests\Feature\Mcp;
 
 use App\Domains\AppCore\Models\Planner;
 use App\Domains\Journal\Actions\AccountDetailTypesCreate;
+use App\Domains\LogerProfile\Models\LogerProfile;
 use App\Domains\Transaction\Models\Transaction;
 use App\Mcp\Servers\LogerServer;
 use App\Mcp\Tools\AddPlannerItemsTool;
 use App\Mcp\Tools\ImportBankStatementTool;
+use App\Mcp\Tools\ListAccountsAndCategoriesTool;
 use App\Models\Account;
 use App\Models\Team;
 use App\Models\User;
@@ -87,6 +89,30 @@ class McpImportToolsTest extends TestCase
         $server->tool(AddPlannerItemsTool::class, ['items' => array_fill(0, 101, ['date' => '2026-11-12', 'name' => 'Muchos'])])->assertHasErrors();
 
         $this->assertSame(0, Planner::query()->count());
+    }
+
+    public function test_add_planner_items_assigns_a_household_profile(): void
+    {
+        [$user, $team] = $this->makeHousehold();
+        [$stranger, $otherTeam] = $this->makeHousehold();
+        $dianita = LogerProfile::create(['team_id' => $team->id, 'user_id' => $user->id, 'name' => 'Dianita']);
+        $foreign = LogerProfile::create(['team_id' => $otherTeam->id, 'user_id' => $stranger->id, 'name' => 'Not yours']);
+        $server = LogerServer::actingAs($this->withScopes($user, self::WRITE_SCOPES));
+
+        $server->tool(ListAccountsAndCategoriesTool::class)->assertOk()->assertSee('"name":"Dianita"');
+
+        $server->tool(AddPlannerItemsTool::class, [
+            'source' => 'school',
+            'profile_id' => $dianita->id,
+            'items' => [['date' => '2026-11-12', 'name' => 'Disfraz de planeta']],
+        ])->assertOk()->assertSee('"profile_id":'.$dianita->id);
+
+        $server->tool(AddPlannerItemsTool::class, [
+            'profile_id' => $foreign->id,
+            'items' => [['date' => '2026-11-12', 'name' => 'Intruso']],
+        ])->assertHasErrors(['That profile is not part of this household.']);
+
+        $this->assertSame([$dianita->id], Planner::query()->pluck('loger_profile_id')->all());
     }
 
     public function test_import_bank_statement_creates_drafts_and_skips_them_the_second_time(): void

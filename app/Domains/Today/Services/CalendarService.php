@@ -11,13 +11,19 @@ use Illuminate\Support\Collection;
 class CalendarService
 {
     /**
-     * Aggregate all time-based items across domains for a date range.
+     * Aggregate all time-based items across domains for a date range. With a profile, only that
+     * profile's planner events: bills and occurrences belong to the whole household.
      *
      * @return array<int, array<string, mixed>>
      */
-    public function getEvents(int $teamId, string $start, string $end): array
+    public function getEvents(int $teamId, string $start, string $end, ?int $profileId = null): array
     {
-        $plannerEvents = $this->plannerEvents($teamId, $start, $end);
+        $plannerEvents = $this->plannerEvents($teamId, $start, $end, $profileId);
+
+        if ($profileId) {
+            return $plannerEvents->values()->all();
+        }
+
         $billingEvents = $this->billingEvents($teamId, $start, $end);
         $occurrenceEvents = $this->occurrenceEvents($teamId, $start, $end);
 
@@ -29,11 +35,13 @@ class CalendarService
             ->all();
     }
 
-    private function plannerEvents(int $teamId, string $start, string $end): Collection
+    private function plannerEvents(int $teamId, string $start, string $end, ?int $profileId = null): Collection
     {
         return Planner::query()
             ->where('team_id', $teamId)
+            ->when($profileId, fn ($query) => $query->where('loger_profile_id', $profileId))
             ->whereBetween('date', [$start, $end])
+            ->with('profile:id,name')
             ->orderBy('date')
             ->get()
             ->map(fn (Planner $p) => [
@@ -48,6 +56,8 @@ class CalendarService
                 'source' => $p->source,
                 'notes' => $p->notes,
                 'completed_at' => $p->completed_at?->toDateTimeString(),
+                'profile_id' => $p->loger_profile_id,
+                'profile_name' => $p->profile?->name,
             ]);
     }
 
@@ -78,6 +88,8 @@ class CalendarService
                 'completed_at' => $c->status === BillingCycle::STATUS_PAID
                     ? $c->updated_at?->toDateTimeString()
                     : null,
+                'profile_id' => null,
+                'profile_name' => null,
             ]);
     }
 
@@ -104,6 +116,8 @@ class CalendarService
                     'source' => null,
                     'notes' => null,
                     'completed_at' => null,
+                    'profile_id' => null,
+                    'profile_name' => null,
                 ];
             })
             ->filter(fn ($event) => $event['start'] >= $start && $event['start'] <= $end);
